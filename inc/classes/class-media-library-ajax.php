@@ -98,6 +98,11 @@ class Media_Library_Ajax {
 		// trim the extension from title if present.
 		$title = preg_replace( '/\.[^.]+$/', '', $title );
 
+		// GoDAM stores the human-readable summary in `ai_content_summary`; the
+		// `description` field is usually empty. Fall back to it so the description
+		// shown in the GoDAM dashboard also appears in WordPress.
+		$description = ! empty( $item['description'] ) ? $item['description'] : ( $item['ai_content_summary'] ?? '' );
+
 		// Get video duration in seconds.
 		$video_duration = isset( $item['playtime'] ) ? $item['playtime'] : 0;
 		// Round video duration to integer seconds.
@@ -106,7 +111,7 @@ class Media_Library_Ajax {
 		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => $title,
-			'description'           => $item['description'] ?? '',
+			'description'           => $description,
 			'filename'              => $item['orignal_file_name'] ?? $item['name'],
 			'url'                   => isset( $item['transcoded_mp4_url'] ) ? $item['transcoded_mp4_url'] : ( isset( $item['transcoded_file_path'] ) ? $item['transcoded_file_path'] : '' ),
 			'mime'                  => isset( $item['transcoded_mp4_url'] ) ? 'video/mp4' : $computed_mime,
@@ -297,6 +302,8 @@ class Media_Library_Ajax {
 			'file_origin'          => $attachment_url,
 			'orignal_file_name'    => $file_name ?? $file_title,
 			'mime_type'            => $mime_type,
+			'title'                => sanitize_text_field( $file_title ),
+			'description'          => sanitize_textarea_field( (string) get_post_field( 'post_content', $attachment_id ) ),
 			'callback_url'         => rawurlencode( $callback_url ),
 			'status_callback'      => rawurlencode( $status_callback_url ),
 			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
@@ -1206,7 +1213,7 @@ class Media_Library_Ajax {
 		}
 
 		// Get the GoDAM logo URL.
-		$logo_url = plugins_url( 'assets/src/images/godam-logo.png', dirname( __DIR__ ) );
+		$logo_url = plugins_url( 'assets/src/images/godam-logo.svg', dirname( __DIR__ ) );
 
 		?>
 		<div class="notice notice-error godam-http-auth-notice">

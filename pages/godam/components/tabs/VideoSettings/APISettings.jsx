@@ -7,6 +7,7 @@ import { useState } from 'react';
  * WordPress dependencies
  */
 import { Button, Panel, PanelBody, Spinner } from '@wordpress/components';
+import { trash } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -14,44 +15,40 @@ import { __ } from '@wordpress/i18n';
  */
 import { useDeactivateAPIKeyMutation, useRefreshAPIKeyStatusMutation, useVerifyAPIKeyMutation } from '../../../redux/api/media-settings.js';
 import { hasValidAPIKey, hasAPIKey, maskedAPIKey, apiKeyStatus, scrollToTop } from '../../../utils/index.js';
-import UsageData from './UsageData.jsx';
 import PasswordFieldWithToggle from './components/PasswordFieldWIthToggle/index.jsx';
+import ConfirmModal from '../../ConfirmModal.jsx';
+import UsageData from './UsageData.jsx';
 
 const APISettings = ( { setNotice } ) => {
 	const [ apiKey, setAPIKey ] = useState( hasAPIKey ? maskedAPIKey : '' );
+	const [ isRemoveModalOpen, setIsRemoveModalOpen ] = useState( false );
 	const [ verifyAPIKey, { isLoading: isAPIKeyLoading } ] = useVerifyAPIKeyMutation();
 	const [ deactivateAPIKey, { isLoading: isDeactivateLoading } ] = useDeactivateAPIKeyMutation();
 	const [ refreshAPIKeyStatus, { isLoading: isRefreshLoading } ] = useRefreshAPIKeyStatusMutation();
+	const [ validationError, setValidationError ] = useState( null );
+
+	// Update the API key value and clear any inline validation error.
+	const handleAPIKeyChange = ( value ) => {
+		setAPIKey( value );
+		setValidationError( null );
+	};
 
 	// Function to handle saving the API key
 	const handleSaveAPIKey = async () => {
 		if ( ! apiKey.trim() ) {
-			setNotice( {
-				message: __( 'Please enter a valid API key', 'godam' ),
-				status: 'error',
-				isVisible: true,
-			} );
+			setValidationError( __( 'Please enter a valid API key', 'godam' ) );
 			return;
 		}
 
 		try {
-			const response = await verifyAPIKey( apiKey ).unwrap();
-			setNotice( {
-				message: response.message || __( 'API key verified successfully!', 'godam' ),
-				status: 'success',
-				isVisible: true,
-			} );
+			await verifyAPIKey( apiKey ).unwrap();
+			setValidationError( null );
 
+			// Reload so the verified state and Plan Usage reflect the new key.
 			window.location.reload();
 		} catch ( error ) {
-			setNotice( {
-				message: error.data?.message || __( 'Failed to verify API key', 'godam' ),
-				status: 'error',
-				isVisible: true,
-			} );
+			setValidationError( error.data?.message || __( 'The API key you’ve entered is incorrect. Please enter a valid key', 'godam' ) );
 		}
-
-		scrollToTop();
 	};
 
 	// Function to handle deactivating the API key
@@ -67,6 +64,7 @@ const APISettings = ( { setNotice } ) => {
 
 			window.location.reload();
 		} catch ( error ) {
+			setIsRemoveModalOpen( false );
 			setNotice( {
 				message: error.data?.message || __( 'Failed to deactivate API key', 'godam' ),
 				status: 'error',
@@ -88,7 +86,6 @@ const APISettings = ( { setNotice } ) => {
 				isVisible: true,
 			} );
 
-			// Reload to update the UI with new status
 			setTimeout( () => {
 				window.location.reload();
 			}, 1000 );
@@ -104,66 +101,102 @@ const APISettings = ( { setNotice } ) => {
 	};
 
 	return (
-		<Panel header={ __( 'API Settings', 'godam' ) } className="godam-panel">
-			<PanelBody initialOpen className="flex gap-8 flex-col sm:flex-row">
+		<Panel header={ __( 'API Settings', 'godam' ) } className="godam-panel godam-margin-bottom">
+			<PanelBody initialOpen>
 				<div className="flex flex-col gap-2 b-4m">
-					<PasswordFieldWithToggle
-						hasValidAPIKey={ hasValidAPIKey }
-						hasAPIKey={ hasAPIKey }
-						apiKey={ apiKey }
-						setAPIKey={ setAPIKey }
-						apiKeyStatus={ apiKeyStatus }
-					/>
+					<div className="godam-api-key-row">
+						<div className="godam-api-key-row__field">
+							<PasswordFieldWithToggle
+								hasValidAPIKey={ hasValidAPIKey }
+								hasAPIKey={ hasAPIKey }
+								apiKey={ apiKey }
+								setAPIKey={ handleAPIKeyChange }
+								apiKeyStatus={ apiKeyStatus }
+								validationError={ validationError }
+							/>
+						</div>
+						<div className="godam-api-key-row__actions">
+							<Button
+								icon={ trash }
+								variant="secondary"
+								onClick={ () => setIsRemoveModalOpen( true ) }
+								disabled={ ! hasAPIKey }
+								isBusy={ isDeactivateLoading }
+								label={ __( 'Remove API key', 'godam' ) }
+								showTooltip
+								data-test-id="godam-settings-video-button-remove-api-key"
+							/>
+						</div>
+					</div>
+
 					<div className="flex flex-wrap gap-2">
 						<Button
-							className="godam-button godam-margin-right"
 							onClick={ handleSaveAPIKey }
 							icon={ isAPIKeyLoading && <Spinner /> }
 							disabled={ isAPIKeyLoading || hasAPIKey || ! apiKey.trim() }
 							variant="primary"
 							isBusy={ isAPIKeyLoading }
-							data-test-id="godam-settings-video-button-save-api-key"
+							data-test-id="godam-settings-api-key-button-save"
 						>
 							{ isAPIKeyLoading ? __( 'Saving…', 'godam' ) : __( 'Save API Key', 'godam' ) }
 						</Button>
-						<Button
-							className="godam-button"
-							onClick={ handleDeactivateAPIKey }
-							disabled={ isAPIKeyLoading || ! hasAPIKey }
-							variant="secondary"
-							isDestructive
-							isBusy={ isDeactivateLoading }
-							data-test-id="godam-settings-video-button-remove-api-key"
-						>
-							{ __( 'Remove API Key', 'godam' ) }
-						</Button>
-						{ hasAPIKey && (
+						{ hasAPIKey && ! hasValidAPIKey && (
 							<Button
-								className="godam-button"
 								onClick={ handleRefreshAPIKeyStatus }
 								disabled={ isRefreshLoading }
 								variant="secondary"
 								isBusy={ isRefreshLoading }
+								data-test-id="godam-settings-api-key-button-refresh"
 							>
 								{ isRefreshLoading ? __( 'Refreshing…', 'godam' ) : __( 'Refresh Status', 'godam' ) }
 							</Button>
 						) }
 					</div>
-					<p className="description">
-						{ __( 'Having any issues?', 'godam' ) } { ' ' }
-						<a
-							href="https://app.godam.io/helpdesk/my-tickets"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="text-blue-500 underline"
-						>
-							{ __( 'Contact Support', 'godam' ) }
-						</a>
-					</p>
-				</div>
 
-				{ hasAPIKey && ( <UsageData /> ) }
+					{ hasAPIKey && <UsageData /> }
+
+					<div className="godam-api-key-footer">
+						{ hasValidAPIKey && (
+							<p className="description">
+								{ __( 'Access your active API key from', 'godam' ) } { ' ' }
+								<a
+									href={ ( window.godamRestRoute?.apiBase ?? 'https://app.godam.io' ) + '/web/billing?tab=API' }
+									target="_blank"
+									rel="noopener noreferrer"
+									className="text-blue-500 underline"
+								>
+									{ __( 'Account', 'godam' ) }
+								</a>.
+							</p>
+						) }
+						<p className="description">
+							{ __( 'Having any issue?', 'godam' ) } { ' ' }
+							<a
+								href="https://app.godam.io/helpdesk/my-tickets"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-blue-500 underline"
+							>
+								{ __( 'Contact Support', 'godam' ) }
+							</a>
+						</p>
+					</div>
+				</div>
 			</PanelBody>
+
+			<ConfirmModal
+				isOpen={ isRemoveModalOpen }
+				title={ __( 'Remove API Key?', 'godam' ) }
+				confirmLabel={ __( 'Yes, Remove', 'godam' ) }
+				cancelLabel={ __( 'Cancel', 'godam' ) }
+				isDestructive
+				isBusy={ isDeactivateLoading }
+				onCancel={ () => setIsRemoveModalOpen( false ) }
+				onConfirm={ handleDeactivateAPIKey }
+				data-test-id="godam-settings-api-key-button-confirm-remove"
+			>
+				{ __( 'If you remove the API key, your account will be deactivated and you’ll lose access to the platform.', 'godam' ) }
+			</ConfirmModal>
 		</Panel>
 	);
 };

@@ -68,15 +68,13 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 		if ( ! mediaItem?.id ) {
 			return;
 		}
-		// Only allow video attachments.
-		if ( mediaItem.type && mediaItem.type !== 'video' ) {
-			createNotice( 'warning', __( 'Only video files can be added to the gallery.', 'godam' ), {
-				type: 'snackbar',
-				isDismissible: true,
-			} );
-			return;
-		}
-		if ( mediaItem.mime && ! mediaItem.mime.startsWith( 'video/' ) ) {
+		// Only allow video attachments. Check the MIME string rather than
+		// `mediaItem.type`: for library selections that is the top-level type
+		// ("video"), but for freshly uploaded files it is the REST post type
+		// ("attachment"), which would wrongly reject every uploaded video.
+		// `mime` is set on library selections, `mime_type` on uploads.
+		const mimeString = mediaItem.mime || mediaItem.mime_type || '';
+		if ( mimeString && ! mimeString.startsWith( 'video/' ) ) {
 			createNotice( 'warning', __( 'Only video files can be added to the gallery.', 'godam' ), {
 				type: 'snackbar',
 				isDismissible: true,
@@ -210,6 +208,52 @@ export default function Edit( { attributes, setAttributes, context, clientId } )
 						icon={ closeSmall }
 						isDestructive
 						className="godam-gallery-v2-item__overlay-action"
+						onClick={ ( event ) => {
+							event.stopPropagation();
+							removeBlock( clientId );
+						} }
+					>
+						{ __( 'Remove', 'godam' ) }
+					</Button>
+				</div>
+			</>
+		);
+	} else if ( videoId ) {
+		// Video selected but no thumbnail yet — show a generic video placeholder
+		// with the title so the editor tile looks populated, not empty.
+		previewContent = (
+			<>
+				<div className="godam-gallery-v2-item__placeholder godam-gallery-v2-item__placeholder--no-thumb">
+					{ videoIcon }
+				</div>
+				<div className="godam-gallery-v2-item__preview-overlay">
+					<MediaUploadCheck>
+						<MediaUpload
+							onSelect={ onSelectVideo }
+							allowedTypes={ [ 'video' ] }
+							value={ videoId }
+							render={ ( { open: openMediaModal } ) => (
+								<Button
+									variant="secondary"
+									icon={ pencil }
+									className="godam-gallery-v2-item__overlay-action"
+									data-test-id="godam-gallery-v2-item-button-replace"
+									onClick={ ( event ) => {
+										event.stopPropagation();
+										openMediaModal();
+									} }
+								>
+									{ __( 'Replace', 'godam' ) }
+								</Button>
+							) }
+						/>
+					</MediaUploadCheck>
+					<Button
+						variant="secondary"
+						icon={ closeSmall }
+						isDestructive
+						className="godam-gallery-v2-item__overlay-action"
+						data-test-id="godam-gallery-v2-item-button-remove"
 						onClick={ ( event ) => {
 							event.stopPropagation();
 							removeBlock( clientId );

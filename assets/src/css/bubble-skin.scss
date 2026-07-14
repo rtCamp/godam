@@ -220,11 +220,11 @@
 			background-color: var(--rtgodam-control-bar-color, #000000AD) !important;
 			opacity: 1;
 			visibility: visible;
-	
+
 			&:hover {
 				background: #1C1C1C;
 			}
-	
+
 			img {
 				height: 12px;
 				max-width: unset;
@@ -563,6 +563,47 @@
 				order: 2 !important;
 				margin: 0;
 			}
+		}
+	}
+}
+// Transcript toggle button on the Bubble skin: match the share pill's shape and
+// extend the right-hand control column upward, sitting directly above the share
+// pill (the column is bottom-anchored: fullscreen → settings → share → here).
+.easydam-video-container.godam-bubble-skin .vjs-button.godam-transcript-button {
+	top: unset;
+	bottom: 156px;
+	right: 8px;
+	height: 2rem;
+	width: 3.7rem;
+	padding: 19px;
+	border-radius: 80px;
+	background-color: var(--rtgodam-control-bar-color, #000000AD);
+	opacity: 1;
+	visibility: visible;
+
+	.godam-transcript-icon {
+		height: 14px;
+		width: 14px;
+	}
+
+	&:hover,
+	&.godam-transcript-button--active {
+		background: #1c1c1c;
+	}
+}
+
+// Narrow Bubble players shrink the share pill (bottom: 136px, height: 24px);
+// keep the transcript button stacked just above it and matched in size.
+@container godam-player-bubble-skin (max-width: 480px) {
+
+	.easydam-video-container.godam-bubble-skin .vjs-button.godam-transcript-button {
+		bottom: 172px;
+		height: 24px;
+		border-radius: 12px;
+
+		.godam-transcript-icon {
+			height: 12px;
+			width: 12px;
 		}
 	}
 }

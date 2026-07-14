@@ -175,7 +175,7 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 			if ( undefined !== virtual && virtual ) {
 				this.$el.append( `
 					<div class="transcoding-status__loader" data-percent="100">
-						<img src="${ GodamLogo }" alt="${ __( 'GoDAM Logo', 'godam' ) }" width="24" height="24" />
+						<img src="${ GodamLogo }" alt="${ __( 'GoDAM Logo', 'godam' ) }" width="18" height="18" />
 					</div>
 				` );
 				this.$el.addClass( 'transcoding-status--completed' );

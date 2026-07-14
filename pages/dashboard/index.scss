@@ -1,7 +1,8 @@
 .godam-button-icon {
 
 	svg {
-		fill: #ab3a6c;
+		// P0: follow the WP admin colour scheme (GoDAM pink as fallback).
+		fill: var(--wp-admin-theme-color, #ab3a6c);
 	}
 }
 
@@ -20,7 +21,7 @@
 }
 
 .api-key-message a {
-	color: #ab3a6c;
+	color: var(--wp-admin-theme-color, #ab3a6c);
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -77,7 +78,29 @@
 		font-weight: 600;
 		margin: 0;
 		display: flex;
+		// Baseline (not center) so a trailing count/badge shares the heading's
+		// text baseline instead of floating against its vertical centre.
+		align-items: baseline;
+	}
+
+	&__head {
+		display: flex;
 		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding-top: 1rem;
+		flex-wrap: wrap;
+	}
+
+	&__tools {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		flex-wrap: wrap;
+	}
+
+	&__search {
+		min-width: 220px;
 	}
 
 	.export-button {
@@ -166,6 +189,59 @@
 		}
 	}
 
+	.godam-pagination {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 4px;
+		margin-top: 16px;
+
+		&__nav,
+		&__page {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 32px;
+			height: 32px;
+			padding: 0 8px;
+			border: 1px solid #E4E4E7;
+			border-radius: 6px;
+			background-color: #fff;
+			color: #3F3F46;
+			font-size: 13px;
+			cursor: pointer;
+
+			&:disabled {
+				opacity: 0.4;
+				cursor: default;
+			}
+
+			&:hover:not( :disabled ) {
+				background-color: #F4F4F5;
+			}
+		}
+
+		&__page.is-current {
+			border-color: var( --wp-admin-theme-color, #ab3a6c );
+			color: var( --wp-admin-theme-color, #ab3a6c );
+			font-weight: 600;
+		}
+
+		&__gap {
+			min-width: 24px;
+			text-align: center;
+			color: #A1A1AA;
+		}
+
+		.chevron-icon {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	// Prev/next pagination for the Reel Pops analytics table (godam-for-woo),
+	// which renders inside `.top-media-container` and reuses these classes.
+	// Keep them even though the Top Videos table above uses `.godam-pagination`.
 	.previous-btn {
 		background-color: transparent;
 	}
@@ -328,14 +404,14 @@
 			padding-right: 4px;
 
 			scrollbar-width: thin;
-			scrollbar-color: #AB3A6C #f0f0f0;
+			scrollbar-color: var(--wp-admin-theme-color, #ab3a6c) #f0f0f0;
 
 			&::-webkit-scrollbar {
 				width: 4px;
 			}
 
 			&::-webkit-scrollbar-thumb {
-				background-color: #AB3A6C;
+				background-color: var(--wp-admin-theme-color, #ab3a6c);
 				border-radius: 3px;
 			}
 
@@ -381,7 +457,7 @@
 	font-size: 0.875rem;
 	font-weight: 500;
 	color: #fff;
-	background-color: #AB3A6C;
+	background-color: var(--wp-admin-theme-color);
 	border-radius: 0.375rem;
 	transition: background-color 0.3s ease, transform 0.2s ease;
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -413,3 +489,236 @@
 		border-radius: 8px;
 	}
 }
+
+// P0: friendly empty state for the Top Videos table (no plays recorded yet).
+.godam-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	padding: 40px 16px;
+	text-align: center;
+
+	&__title {
+		margin: 0;
+		font-size: 15px;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	&__hint {
+		margin: 0;
+		font-size: 13px;
+		color: #757575;
+		max-width: 420px;
+	}
+}
+
+// =====================================================================
+// GoDAM 2.0 dashboard reskin (P0, FE-only) — "Insights" layout.
+// =====================================================================
+.godam-dashboard-head {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px 16px;
+	margin-bottom: 16px;
+
+	.godam-dashboard-title {
+		margin: 0;
+		font-size: 22px;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	// "See Reel Pop Analytics" link — pushed to the right edge of the head row.
+	.godam-reel-pop-link {
+		margin-left: auto;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 13px;
+		font-weight: 500;
+		color: var(--wp-admin-theme-color);
+		text-decoration: none;
+		white-space: nowrap;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+.godam-dashboard-grid {
+	display: grid;
+	grid-template-columns: minmax(280px, 1fr) 2fr;
+	gap: 16px;
+	align-items: start;
+
+	@media (max-width: 1024px) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.godam-dashboard-right {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	// Allow the responsive chart/SVG to shrink within the grid track.
+	min-width: 0;
+}
+
+// Note: the shared card primitives (.godam-card, .godam-pill, .godam-insights-card)
+// live in pages/analytics/index.scss so the per-video Analytics page (which only
+// bundles that stylesheet) can use them too. The dashboard imports analytics/index.scss,
+// so they remain available here as well.
+
+// Left card: viewers gauge + geography. The geography block is the plain
+// .country-views markup (its card styling only applies inside the old
+// .playback-country-container, so style it for this context here).
+.godam-viewers-card {
+
+	.country-views {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		margin-top: 8px;
+
+		.country-views-map {
+			width: 100%;
+		}
+
+		.country-views-table {
+			width: 100%;
+			max-height: 220px;
+			overflow-y: auto;
+			padding-right: 4px;
+
+			scrollbar-width: thin;
+			scrollbar-color: var(--wp-admin-theme-color, #ab3a6c) #f0f0f0;
+
+			&::-webkit-scrollbar {
+				width: 4px;
+			}
+
+			&::-webkit-scrollbar-thumb {
+				background-color: var(--wp-admin-theme-color, #ab3a6c);
+				border-radius: 3px;
+			}
+		}
+	}
+}
+
+.godam-gauge {
+
+	&__chart {
+		position: relative;
+		width: 100%;
+		max-width: 260px;
+		margin: 0 auto;
+	}
+
+	&__svg {
+		display: block;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+	}
+
+	// Light track = background (Total Plays); dark fill = Unique Viewers portion.
+	&__track {
+		stroke: color-mix(in srgb, var(--wp-admin-theme-color, #ab3a6c) 20%, #fff);
+	}
+
+	&__fill {
+		stroke: var(--wp-admin-theme-color, #ab3a6c);
+		transition: stroke-dasharray 0.4s ease;
+	}
+
+	&__center {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 4px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+	}
+
+	&__value {
+		font-size: 30px;
+		font-weight: 700;
+		line-height: 1;
+		color: #1e1e1e;
+	}
+
+	&__label {
+		font-size: 12px;
+		color: #757575;
+	}
+
+	// Hover tooltip: legend of the two arc segments + their raw values.
+	&__tooltip {
+		position: absolute;
+		top: 6px;
+		left: 50%;
+		transform: translateX(-50%);
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 12px 16px;
+		background: #1e1e1e;
+		border-radius: 10px;
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+		white-space: nowrap;
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+		transition: opacity 0.15s ease;
+		z-index: 5;
+	}
+
+	&__chart:hover &__tooltip,
+	&__chart:focus-within &__tooltip {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	&__tooltip-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 13px;
+		color: #fff;
+	}
+
+	&__swatch {
+		width: 12px;
+		height: 12px;
+		border-radius: 3px;
+		flex-shrink: 0;
+
+		&--light {
+			background: color-mix(in srgb, var(--wp-admin-theme-color, #ab3a6c) 20%, #fff);
+		}
+
+		&--dark {
+			background: var(--wp-admin-theme-color, #ab3a6c);
+		}
+	}
+
+	&__tooltip-label {
+		flex: 1;
+		color: #e5e7eb;
+	}
+
+	&__tooltip-value {
+		font-weight: 600;
+		margin-left: 20px;
+	}
+}
+
+// (.godam-insights-card moved to pages/analytics/index.scss — shared by both surfaces.)
+
+// .godam-analytics-unavailable moved to pages/shared/analytics-unavailable.scss (shared via AnalyticsUnavailableNotice).

@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import GoDAM from '../../../../../assets/src/images/GoDAM.png';
+import GoDAM from '../../../../../assets/src/images/godam-branding.svg';
 import SettingsButton from '../masterSettings.js';
 import { PLAYER_SKINS } from '../utils/constants.js';
 import MenuButtonHoverManager from './menuButtonHover.js';

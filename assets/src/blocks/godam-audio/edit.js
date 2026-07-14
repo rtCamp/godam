@@ -8,17 +8,20 @@ import clsx from 'clsx';
  */
 import { isBlobURL } from '@wordpress/blob';
 import {
+	Button,
 	Disabled,
 	PanelBody,
 	SelectControl,
 	Spinner,
+	TextControl,
+	TextareaControl,
 	ToggleControl,
 } from '@wordpress/components';
 import {
 	BlockControls,
-	BlockIcon,
 	InspectorControls,
-	MediaPlaceholder,
+	MediaUpload,
+	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
 } from '@wordpress/block-editor';
@@ -26,15 +29,16 @@ import { __, _x } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { useState } from '@wordpress/element';
+import { trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import { Caption } from './caption';
 import './editor.scss';
-import { ReactComponent as icon } from '../../images/godam-audio-filled.svg';
 
 const ALLOWED_MEDIA_TYPES = [ 'audio' ];
+const ALLOWED_THUMBNAIL_TYPES = [ 'image' ];
 
 /**
  * Edit component for the GoDAM Audio block.
@@ -55,7 +59,7 @@ function AudioEdit( {
 	isSelected: isSingleSelected,
 	insertBlocksAfter,
 } ) {
-	const { id, autoplay, loop, preload, src } = attributes;
+	const { id, autoplay, loop, preload, src, audioTitle, description, thumbnail, thumbnailId } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 
 	function toggleAttribute( attribute ) {
@@ -77,8 +81,6 @@ function AudioEdit( {
 
 	function onSelectAudio( media ) {
 		if ( ! media || ! media.url ) {
-			// In this case there was an error and we should continue in the editing state
-			// previous attributes should be removed because they may be temporary blob urls.
 			setAttributes( {
 				src: undefined,
 				id: undefined,
@@ -89,9 +91,13 @@ function AudioEdit( {
 			return;
 		}
 
-		// Guard against non-audio selections. The media library lets users pick
-		// any attachment type even when allowedTypes is set, so re-check here.
-		const mediaType = media.type || ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
+		// Guard against non-audio selections. Derive the type from the MIME
+		// string rather than `media.type`: the latter is the top-level type
+		// ("audio") for library selections but the REST post type
+		// ("attachment") for freshly uploaded files, which would reject every
+		// uploaded audio file. `mime` is set on library selections,
+		// `mime_type` on uploads.
+		const mediaType = ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
 		if ( mediaType && mediaType !== 'audio' ) {
 			createErrorNotice(
 				__( 'Only audio files are allowed in the GoDAM Audio block.', 'godam' ),
@@ -105,44 +111,139 @@ function AudioEdit( {
 			return;
 		}
 
-		// Always store the src and id returned by the media selection.
+		// Normalize the description/title/caption to strings. Library selections
+		// expose them as plain strings, but freshly uploaded files come from the
+		// REST API where each is an object ( { raw, rendered } ). Storing the
+		// object would make React throw "Objects are not valid as a React child"
+		// when the value is rendered (and PHP `esc_html()` warns on the frontend).
+		const mediaDescription = typeof media.description === 'string'
+			? media.description
+			: ( media.description?.raw ?? media.description?.rendered ?? '' );
+		const mediaTitle = typeof media.title === 'string'
+			? media.title
+			: ( media.title?.raw ?? media.title?.rendered ?? '' );
+		const mediaCaption = typeof media.caption === 'string'
+			? media.caption
+			: ( media.caption?.raw ?? media.caption?.rendered ?? '' );
+
 		setAttributes( {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
-			caption: media.caption || media.title,
+			caption: mediaCaption || mediaTitle,
+			audioTitle: mediaTitle,
+			description: mediaDescription,
 		} );
 		setTemporaryURL();
 	}
+
+	function onRemoveAudio() {
+		setAttributes( {
+			src: undefined,
+			id: undefined,
+			caption: undefined,
+			blob: undefined,
+			audioTitle: '',
+			description: '',
+			thumbnail: '',
+			thumbnailId: undefined,
+		} );
+	}
+
+	function onSelectThumbnail( media ) {
+		if ( ! media || ! media.url ) {
+			return;
+		}
+		// Derive the type from the MIME string; `media.type` is "attachment"
+		// for freshly uploaded files and would reject valid image uploads.
+		const mediaType = ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
+		if ( mediaType && mediaType !== 'image' ) {
+			createErrorNotice(
+				__( 'Only image files are allowed for the GoDAM Audio thumbnail.', 'godam' ),
+				{ type: 'snackbar' },
+			);
+			return;
+		}
+		setAttributes( { thumbnail: media.url, thumbnailId: media.id } );
+	}
+
+	function onRemoveThumbnail() {
+		setAttributes( { thumbnail: '', thumbnailId: undefined } );
+	}
+
+	const hasAudio = !! ( src || temporaryURL );
+	const fileName = src ? decodeURIComponent( src.split( '/' ).pop().split( '?' )[ 0 ] ) : '';
 
 	const classes = clsx( className, {
 		'is-transient': !! temporaryURL,
 	} );
 
-	const blockProps = useBlockProps( {
-		className: classes,
-	} );
+	const blockProps = useBlockProps( { className: classes } );
 
-	if ( ! src && ! temporaryURL ) {
+	// ── Empty state ───────────────────────────────────────────────────────────
+	if ( ! hasAudio ) {
 		return (
-			<div { ...blockProps } data-test-id="godam-audio-canvas-placeholder">
-				<div data-test-id="godam-audio-button-select">
-					<MediaPlaceholder
-						icon={ <BlockIcon icon={ icon } /> }
-						onSelect={ onSelectAudio }
-						accept="audio/*"
-						allowedTypes={ ALLOWED_MEDIA_TYPES }
-						value={ attributes }
-						onError={ onUploadError }
-						labels={ { title: __( 'Audio', 'godam' ) } }
-					/>
-				</div>
-			</div>
+			<>
+				<InspectorControls>
+					<PanelBody title={ __( 'Audio Selection', 'godam' ) } initialOpen={ true }>
+						<MediaUploadCheck>
+							<MediaUpload
+								onSelect={ onSelectAudio }
+								allowedTypes={ ALLOWED_MEDIA_TYPES }
+								accept="audio/*"
+								onError={ onUploadError }
+								render={ ( { open } ) => (
+									<Button
+										__next40pxDefaultSize
+										variant="secondary"
+										onClick={ open }
+										className="godam-audio__add-btn"
+										data-test-id="godam-audio-button-select"
+									>
+										{ __( '+ Add Audio File', 'godam' ) }
+									</Button>
+								) }
+							/>
+						</MediaUploadCheck>
+					</PanelBody>
+				</InspectorControls>
+
+				<figure { ...blockProps } data-test-id="godam-audio-canvas-placeholder">
+					<div className="godam-audio-empty">
+						<h3 className="godam-audio-empty__title">
+							{ __( 'Add an audio file', 'godam' ) }
+						</h3>
+						<p className="godam-audio-empty__subtitle">
+							{ __( 'Upload an audio file to embed a player on your page or post.', 'godam' ) }
+						</p>
+						<MediaUploadCheck>
+							<MediaUpload
+								onSelect={ onSelectAudio }
+								allowedTypes={ ALLOWED_MEDIA_TYPES }
+								accept="audio/*"
+								onError={ onUploadError }
+								render={ ( { open } ) => (
+									<Button
+										variant="primary"
+										onClick={ open }
+										className="godam-audio-empty__btn"
+										data-test-id="godam-audio-button-upload"
+									>
+										{ __( '+ Upload Audio', 'godam' ) }
+									</Button>
+								) }
+							/>
+						</MediaUploadCheck>
+					</div>
+				</figure>
+			</>
 		);
 	}
 
+	// ── Has audio ─────────────────────────────────────────────────────────────
 	return (
 		<>
+			{ /* ── Toolbar ─────────────────────────────────────────────────── */ }
 			{ isSingleSelected && (
 				<BlockControls group="other">
 					<MediaReplaceFlow
@@ -156,8 +257,103 @@ function AudioEdit( {
 					/>
 				</BlockControls>
 			) }
+
+			{ /* ── Inspector ─────────────────────────────────────────────────── */ }
 			<InspectorControls>
-				<PanelBody title={ __( 'Settings', 'godam' ) } data-test-id="godam-audio-panel-settings">
+
+				{ /* Audio Selection */ }
+				<PanelBody title={ __( 'Audio Selection', 'godam' ) } initialOpen={ true } data-test-id="godam-audio-panel-selection">
+					{ fileName && (
+						<div className="godam-audio-file-row">
+							<span className="godam-audio-file-row__icon dashicons dashicons-media-audio" />
+							<span className="godam-audio-file-row__name" title={ fileName }>
+								{ fileName }
+							</span>
+							<Button
+								icon={ trash }
+								label={ __( 'Remove audio', 'godam' ) }
+								isDestructive
+								size="small"
+								onClick={ onRemoveAudio }
+								data-test-id="godam-audio-button-remove"
+							/>
+						</div>
+					) }
+
+					<TextControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						label={ __( 'Audio Title', 'godam' ) }
+						data-test-id="godam-audio-control-title"
+						value={ audioTitle }
+						placeholder={ __( 'Add a title…', 'godam' ) }
+						onChange={ ( value ) => setAttributes( { audioTitle: value } ) }
+					/>
+
+					<TextareaControl
+						__nextHasNoMarginBottom
+						label={ __( 'Description', 'godam' ) }
+						data-test-id="godam-audio-control-description"
+						value={ description }
+						placeholder={ __( 'Add a short description…', 'godam' ) }
+						rows={ 4 }
+						onChange={ ( value ) => setAttributes( { description: value } ) }
+					/>
+				</PanelBody>
+
+				{ /* Thumbnail */ }
+				<PanelBody title={ __( 'Thumbnail', 'godam' ) } initialOpen={ true } data-test-id="godam-audio-panel-thumbnail">
+					{ thumbnail ? (
+						<div className="godam-audio-thumbnail-preview">
+							<img src={ thumbnail } alt={ __( 'Audio thumbnail', 'godam' ) } />
+							<div className="godam-audio-thumbnail-preview__actions">
+								<MediaUploadCheck>
+									<MediaUpload
+										onSelect={ onSelectThumbnail }
+										allowedTypes={ ALLOWED_THUMBNAIL_TYPES }
+										value={ thumbnailId }
+										render={ ( { open } ) => (
+											<Button variant="secondary" size="small" onClick={ open } data-test-id="godam-audio-button-replace-thumbnail">
+												{ __( 'Replace', 'godam' ) }
+											</Button>
+										) }
+									/>
+								</MediaUploadCheck>
+								<Button
+									variant="secondary"
+									size="small"
+									isDestructive
+									onClick={ onRemoveThumbnail }
+									data-test-id="godam-audio-button-remove-thumbnail"
+								>
+									{ __( 'Remove', 'godam' ) }
+								</Button>
+							</div>
+						</div>
+					) : (
+						<MediaUploadCheck>
+							<MediaUpload
+								onSelect={ onSelectThumbnail }
+								allowedTypes={ ALLOWED_THUMBNAIL_TYPES }
+								value={ thumbnailId }
+								render={ ( { open } ) => (
+									<Button
+										__next40pxDefaultSize
+										variant="secondary"
+										onClick={ open }
+										className="godam-audio__add-btn"
+										data-test-id="godam-audio-button-upload-thumbnail"
+									>
+										{ __( '+ Upload Image', 'godam' ) }
+									</Button>
+								) }
+							/>
+						</MediaUploadCheck>
+					) }
+				</PanelBody>
+
+				{ /* Settings */ }
+				<PanelBody title={ __( 'Settings', 'godam' ) } initialOpen={ false } data-test-id="godam-audio-panel-settings">
 					<div data-test-id="godam-audio-control-autoplay">
 						<ToggleControl
 							__nextHasNoMarginBottom
@@ -181,34 +377,49 @@ function AudioEdit( {
 						label={ _x( 'Preload', 'noun; Audio block parameter', 'godam' ) }
 						data-test-id="godam-audio-control-preload"
 						value={ preload || '' }
-						// `undefined` is required for the preload attribute to be unset.
 						onChange={ ( value ) =>
-							setAttributes( {
-								preload: value || undefined,
-							} )
+							setAttributes( { preload: value || undefined } )
 						}
 						options={ [
 							{ value: '', label: __( 'Browser default', 'godam' ) },
 							{ value: 'auto', label: __( 'Auto', 'godam' ) },
 							{ value: 'metadata', label: __( 'Metadata', 'godam' ) },
-							{
-								value: 'none',
-								label: _x( 'None', 'Preload value', 'godam' ),
-							},
+							{ value: 'none', label: _x( 'None', 'Preload value', 'godam' ) },
 						] }
 					/>
 				</PanelBody>
+
 			</InspectorControls>
+
+			{ /* ── Block canvas ─────────────────────────────────────────────── */ }
 			<figure { ...blockProps } data-test-id="godam-audio-canvas">
-				{ /*
-				Disable the audio tag if the block is not selected
-				so the user clicking on it won't play the
-				file or change the position slider when the controls are enabled.
-				*/ }
-				<Disabled isDisabled={ ! isSingleSelected }>
-					<audio controls="controls" src={ src ?? temporaryURL } />
-				</Disabled>
-				{ !! temporaryURL && <Spinner /> }
+				<div className="godam-audio-card">
+					{ /* Thumbnail */ }
+					<div className="godam-audio-card__cover" data-test-id="godam-audio-element-cover">
+						{ thumbnail ? (
+							<img src={ thumbnail } alt={ audioTitle || __( 'Audio thumbnail', 'godam' ) } />
+						) : (
+							<div className="godam-audio-card__cover-placeholder">
+								<span className="dashicons dashicons-media-audio" />
+							</div>
+						) }
+					</div>
+
+					{ /* Info + player */ }
+					<div className="godam-audio-card__body">
+						{ audioTitle && (
+							<p className="godam-audio-card__title" data-test-id="godam-audio-element-title">{ audioTitle }</p>
+						) }
+						{ description && (
+							<p className="godam-audio-card__description" data-test-id="godam-audio-element-description">{ description }</p>
+						) }
+						<Disabled isDisabled={ ! isSingleSelected }>
+							<audio controls src={ src ?? temporaryURL } style={ { width: '100%' } } />
+						</Disabled>
+						{ !! temporaryURL && <Spinner /> }
+					</div>
+				</div>
+
 				<Caption
 					attributes={ attributes }
 					setAttributes={ setAttributes }

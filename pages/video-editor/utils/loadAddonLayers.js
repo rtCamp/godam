@@ -11,7 +11,7 @@ export const ensureAddonLayersRegistered = async () => {
 		if ( ! loadedComponents[ componentName ] ) {
 			// eslint-disable-next-line no-console
 			console.warn(
-				`GoDAM: Layer component "${ componentName }" for type "${ layerType }" not found. Ensure the relevant add-on is active.`
+				`GoDAM: Layer component "${ componentName }" for type "${ layerType }" not found. Ensure the relevant add-on is active.`,
 			);
 		}
 	} );

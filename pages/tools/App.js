@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { addSubmenu, cloudDownload, alignJustify, close } from '@wordpress/icons';
+import { addSubmenu, cloudDownload, alignJustify, close, chevronRight, update } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -13,6 +13,7 @@ import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import GoDAMFooter from '../godam/components/GoDAMFooter.jsx';
 import MigrationTab from './components/tabs/Migration/MigrationTab.jsx';
 import RetranscodeTab from './components/tabs/RetranscodeTab.jsx';
+import MediaUsageSyncTab from './components/tabs/MediaUsageSyncTab.jsx';
 import { isSafari } from '../godam/utils/index.js';
 
 const TABS = [
@@ -27,6 +28,12 @@ const TABS = [
 		label: __( 'Video Migration', 'godam' ),
 		component: MigrationTab,
 		icon: cloudDownload,
+	},
+	{
+		id: 'media-usage-sync',
+		label: __( 'Media Usage Sync', 'godam' ),
+		component: MediaUsageSyncTab,
+		icon: update,
 	},
 ];
 
@@ -95,6 +102,9 @@ const App = () => {
 						>
 							<Icon icon={ icon } />
 							{ label }
+							{ activeTab === id && (
+								<Icon icon={ chevronRight } className="sidebar-nav-item__chevron ml-auto" />
+							) }
 						</a>
 					) ) }
 				</nav>

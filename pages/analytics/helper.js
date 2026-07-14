@@ -11,6 +11,21 @@ import DurationIcon from '../../assets/src/images/duration.svg';
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Resolve the active WP admin accent colour. GoDAM 2.0 follows the admin
+ * colour scheme on the analytics surface, so data-viz that used the hardcoded
+ * brand pink reads the live `--wp-admin-theme-color` instead.
+ *
+ * @return {string} A colour string, falling back to the GoDAM pink.
+ */
+function getGodamAccent() {
+	return (
+		getComputedStyle( document.body )
+			.getPropertyValue( '--wp-admin-theme-color' )
+			.trim() || '#ab3a6c'
+	);
+}
+
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
 	const remainingSeconds = seconds % 60;
@@ -79,213 +94,6 @@ function showAPIActivationMessage() {
 	}
 }
 
-export function singleMetricsChart(
-	parsedData,
-	selector,
-	selectedMetric,
-	selectedDays,
-	changeTrend,
-) {
-	// Set the dimensions and margins of the graph - smaller to match card design
-	const margin = { top: 10, right: 10, bottom: 0, left: 0 },
-		width = 170 - margin.left - margin.right,
-		height = 40 - margin.top - margin.bottom;
-
-	// Define metric options to display proper labels and units with color
-	const metricsOptions = [
-		{
-			value: 'engagement_rate',
-			label: __( 'Engagement Rate', 'godam' ),
-			unit: '%',
-			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
-		},
-		{
-			value: 'play_rate',
-			label: __( 'Play Rate', 'godam' ),
-			unit: '%',
-			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
-		},
-		{
-			value: 'watch_time',
-			label: __( 'Watch Time', 'godam' ),
-			unit: 's',
-			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
-		},
-		{
-			value: 'plays',
-			label: __( 'Plays', 'godam' ),
-			unit: '',
-			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
-		},
-		{
-			value: 'total_videos',
-			label: __( 'Total Videos', 'godam' ),
-			unit: '',
-			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
-		},
-	];
-
-	// Ensure the container exists - add # to the selector if it doesn't have one
-	const selectorWithHash = selector.startsWith( '#' ) ? selector : `#${ selector }`;
-	const container = d3.select( selectorWithHash );
-
-	if ( container.empty() ) {
-		return;
-	}
-
-	// Remove any existing SVG to prevent duplication
-	container.select( 'svg' ).remove();
-
-	// Create an SVG element
-	const svg = container
-		.append( 'svg' )
-		.attr(
-			'viewBox',
-			`0 0 ${ width + margin.left + margin.right } ${ height + margin.top + margin.bottom }`,
-		)
-		.attr( 'preserveAspectRatio', 'xMidYMid meet' )
-		.style( 'width', '100%' )
-		.style( 'height', 'auto' );
-
-	// Create main chart group
-	const chartGroup = svg
-		.append( 'g' )
-		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
-
-	// Ensure `parsedData` is properly formatted
-	const parseDate = d3.timeParse( '%Y-%m-%d' );
-
-	// parsedData already contains all 7 days with zeros filled in from SingleMetrics.js
-	// Just parse the dates and convert to proper format
-	const filteredData = parsedData.map( ( d ) => ( {
-		date: parseDate( d.date ),
-		engagement_rate: +d.engagement_rate,
-		play_rate: +d.play_rate || 0,
-		watch_time: +d.watch_time || 0,
-		plays: +d.plays || 0,
-		total_videos: +d.total_videos || 0,
-	} ) ).sort( ( a, b ) => a.date - b.date );
-
-	// Remove any existing chart elements before redrawing
-	chartGroup.selectAll( '*' ).remove();
-
-	// Validate data before rendering
-	if ( filteredData.length === 0 ) {
-		chartGroup
-			.append( 'text' )
-			.attr( 'x', width / 2 )
-			.attr( 'y', height / 2 )
-			.attr( 'text-anchor', 'middle' )
-			.text( __( 'No data available.', 'godam' ) );
-		return;
-	}
-
-	// Create X axis (Time)
-	const x = d3
-		.scaleTime()
-		.domain( d3.extent( filteredData, ( d ) => d.date ) )
-		.range( [ 0, width ] );
-
-	const y = d3
-		.scaleLinear()
-		.domain( [ 0, d3.max( filteredData, ( d ) => d[ selectedMetric ] ) * 1.1 ] )
-		.range( [ height, 0 ] );
-
-	const metricOption = metricsOptions.find(
-		( option ) => option.value === selectedMetric,
-	);
-
-	// Generate line function
-	const line = d3
-		.line()
-		.x( ( d ) => x( d.date ) )
-		.y( ( d ) => y( d[ selectedMetric ] ) )
-		.curve( d3.curveMonotoneX ); // Add curve for smoother line
-
-	// Add the line with metric-specific color
-	chartGroup
-		.append( 'path' )
-		.datum( filteredData )
-		.attr( 'fill', 'none' )
-		.attr( 'stroke', metricOption.color )
-		.attr( 'stroke-linecap', 'round' )
-		.attr( 'stroke-width', 1.5 )
-		.attr( 'd', line );
-
-	// Add subtle area fill below the line
-	const area = d3
-		.area()
-		.x( ( d ) => x( d.date ) )
-		.y0( height )
-		.y1( ( d ) => y( d[ selectedMetric ] ) )
-		.curve( d3.curveMonotoneX );
-
-	chartGroup
-		.append( 'path' )
-		.datum( filteredData )
-		.attr( 'fill', changeTrend >= 0 ? '#4caf50' : '#e05252' )
-		.attr( 'fill-opacity', 0.1 )
-		.attr( 'd', area );
-
-	// Tooltip container
-	const tooltip = container
-		.append( 'div' )
-		.attr( 'class', 'mini-chart-tooltip' )
-		.style( 'position', 'absolute' )
-		.style( 'background', '#fff' )
-		.style( 'padding', '4px 8px' )
-		.style( 'border', '1px solid #ccc' )
-		.style( 'border-radius', '4px' )
-		.style( 'font-size', '12px' )
-		.style( 'pointer-events', 'none' )
-		.style( 'opacity', 0 );
-
-	// Add an invisible overlay to capture mouse events
-	chartGroup
-		.append( 'rect' )
-		.attr( 'width', width )
-		.attr( 'height', height )
-		.attr( 'fill', 'transparent' )
-		.on( 'mousemove', function( event ) {
-			const [ xPos ] = d3.pointer( event );
-			const xDate = x.invert( xPos );
-
-			// Find closest point
-			const bisectDate = d3.bisector( ( d ) => d.date ).left;
-			const index = bisectDate( filteredData, xDate, 1 );
-			const d0 = filteredData[ index - 1 ];
-			const d1 = filteredData[ index ];
-			let d;
-			if ( ! d0 ) {
-				d = d1;
-			} else if ( ! d1 ) {
-				d = d0;
-			} else {
-				d = xDate - d0.date > d1.date - xDate ? d1 : d0;
-			}
-
-			// Format value
-			const val = d[ selectedMetric ];
-			const formattedVal =
-        selectedMetric === 'watch_time' ? `${ val.toFixed( 2 ) }s` : `${ val.toFixed( 2 ) }${ metricOption.unit }`;
-
-			// Position tooltip
-			const tooltipX = x( d.date );
-			const tooltipY = y( d[ selectedMetric ] ) + margin.top;
-
-			tooltip
-				.html(
-					`<strong>${ d3.timeFormat( '%b %d' )( d.date ) }</strong><br>${ formattedVal }`,
-				)
-				.style( 'left', `${ tooltipX - 10 }px` )
-				.style( 'top', `${ tooltipY }px` )
-				.style( 'opacity', 1 );
-		} )
-		.on( 'mouseleave', () => {
-			tooltip.style( 'opacity', 0 );
-		} );
-}
-
 export function calculateEngagementRate( plays, videoLength, playTime ) {
 	const engagementRate =
     plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
@@ -303,12 +111,16 @@ export function generateCountryHeatmap(
 	tableSelector,
 ) {
 	// Convert object to array for table sorting
-	const countryDataArray = Object.entries( countryData )
+	const countryDataArray = Object.entries( countryData || {} )
 		.map( ( [ country, views ] ) => ( {
 			country,
 			views,
 		} ) )
 		.sort( ( a, b ) => b.views - a.views );
+
+	// Clear the table container on every render (the map is rebuilt below) so a
+	// refetch replaces rows instead of appending a second <table>.
+	d3.select( tableSelector ).html( '' );
 
 	// ===== MAP VISUALIZATION =====
 	const width = 800,
@@ -321,13 +133,30 @@ export function generateCountryHeatmap(
 		.style( 'width', '100%' )
 		.style( 'height', 'auto' );
 
+	// Idempotent: clear any previous render before redrawing.
+	container.selectAll( '*' ).remove();
+
 	container
 		.append( 'h2' )
-		.text( 'Views by Location' )
+		.text( __( 'Views by Location', 'godam' ) )
 		.style( 'font-size', '16px' )
 		.style( 'font-weight', '700' )
 		.style( 'text-align', 'left' )
 		.style( 'margin-bottom', '16px' );
+
+	// Empty state — no geography recorded yet (e.g. a brand-new site).
+	if ( countryDataArray.length === 0 ) {
+		d3.select( tableSelector ).html( '' );
+		container
+			.append( 'p' )
+			.text( __( 'Views by location will show up here', 'godam' ) )
+			.style( 'color', '#757575' )
+			.style( 'font-size', '13px' )
+			.style( 'text-align', 'center' )
+			.style( 'padding', '28px 8px' )
+			.style( 'margin', '0' );
+		return;
+	}
 
 	// Create the SVG for the map
 	const svg = container
@@ -430,7 +259,7 @@ export function generateCountryHeatmap(
 		const colorScale = d3
 			.scaleSequential()
 			.domain( [ 0, maxViews ] )
-			.interpolator( ( t ) => d3.interpolateRgb( '#ddd', '#AB3A6C' )( t ) );
+			.interpolator( ( t ) => d3.interpolateRgb( '#ddd', getGodamAccent() )( t ) );
 
 		const features = worldData.features.filter(
 			( f ) => f.properties.name !== 'Antarctica',
@@ -486,7 +315,7 @@ export function generateCountryHeatmap(
 										fill="none" stroke="#eee" stroke-width="4"/>
 								<!-- progress arc -->
 								<circle cx="25" cy="25" r="${ radius }"
-										fill="none" stroke="#AB3A6C" stroke-width="4"
+										fill="none" stroke="${ getGodamAccent() }" stroke-width="4"
 										stroke-dasharray="${ dash } ${ circumference - dash }"
 										transform="rotate(-90 25 25)"/>
 								 <text
@@ -598,7 +427,7 @@ export function generateCountryHeatmap(
 				.append( 'div' )
 				.style( 'height', '100%' )
 				.style( 'width', `${ ( d.views / totalViews ) * 100 }%` )
-				.style( 'background-color', '#AB3A6C' )
+				.style( 'background-color', 'var(--wp-admin-theme-color)' )
 				.style( 'border-radius', '8px' );
 		} );
 }

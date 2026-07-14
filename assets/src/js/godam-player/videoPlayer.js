@@ -20,6 +20,7 @@ import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
 import TranscriptManager from './managers/transcriptManager.js';
+import TranscriptPanelManager from './managers/transcriptPanelManager.js';
 import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
 
 /**
@@ -45,6 +46,7 @@ export default class GodamVideoPlayer {
 		this.adsManager = null;
 		this.hoverManager = null;
 		this.transcriptManager = null;
+		this.transcriptPanelManager = null;
 		this.shareManager = null;
 	}
 
@@ -91,10 +93,10 @@ export default class GodamVideoPlayer {
 
 		if ( needsAds ) {
 			loadPromises.push(
-				loadAdsPlugins().catch( ( error ) => {
-					// eslint-disable-next-line no-console
-					console.error( 'Failed to load ads plugins:', error );
-				} ),
+				// Ads are optional and loadAdsPlugins() already warns once when
+				// the chunk is blocked (e.g. by an ad blocker). Swallow here so a
+				// blocked ad script doesn't reject Promise.all and halt init.
+				loadAdsPlugins().catch( () => {} ),
 			);
 		}
 
@@ -165,9 +167,10 @@ export default class GodamVideoPlayer {
 
 		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
-		this.adsManager?.setupAdsIntegration().catch( ( error ) => {
-			// eslint-disable-next-line no-console
-			console.error( 'Ads integration failed:', error );
+		this.adsManager?.setupAdsIntegration().catch( () => {
+			// Ads are optional (the ads chunk is commonly blocked by ad
+			// blockers); pluginLoader already warns once. Don't surface a hard
+			// error — playback is unaffected.
 		} );
 
 		this.setupAspectRatio();
@@ -296,6 +299,7 @@ export default class GodamVideoPlayer {
 			this.initializeChapters();
 			this.setupQualitySelector();
 			this.initializeTranscript();
+			this.setupDefaultSubtitle();
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
@@ -429,6 +433,64 @@ export default class GodamVideoPlayer {
 
 		// Attach to player for external access
 		this.player.transcriptManager = this.transcriptManager;
+
+		// Initialize the on-video transcript panel (toggle button + side panel).
+		// Reads its own config (`showTranscription`, `showShareBtn`) and resolves
+		// the transcript independently, so it works regardless of subtitle state.
+		this.transcriptPanelManager = new TranscriptPanelManager(
+			this.player,
+			this.video,
+			this.configManager.videoSetupOptions,
+		);
+		this.player.transcriptPanelManager = this.transcriptPanelManager;
+	}
+
+	/**
+	 * When "Show caption" is enabled, turn on the first available
+	 * subtitle/caption track by default. Re-checks as tracks are added (the
+	 * AI transcript track loads asynchronously) and never overrides a track
+	 * the viewer has already enabled.
+	 */
+	setupDefaultSubtitle() {
+		if ( ! this.configManager.videoSetupOptions?.showCaption ) {
+			return;
+		}
+
+		const textTracks = this.player.textTracks();
+		if ( ! textTracks ) {
+			return;
+		}
+
+		// Auto-enable at most once. After the first track is turned on (or one is
+		// already showing), a viewer who turns captions back off must be respected
+		// even when a late-loading track (the async AI transcript) fires `addtrack`.
+		let hasAutoEnabled = false;
+		const enableFirstSubtitle = () => {
+			if ( hasAutoEnabled ) {
+				return;
+			}
+			const subtitleTracks = [];
+			for ( let i = 0; i < textTracks.length; i++ ) {
+				const track = textTracks[ i ];
+				if ( track.kind === 'subtitles' || track.kind === 'captions' ) {
+					// A subtitle track is already active — respect the viewer's choice.
+					if ( track.mode === 'showing' ) {
+						hasAutoEnabled = true;
+						return;
+					}
+					subtitleTracks.push( track );
+				}
+			}
+			if ( subtitleTracks.length > 0 ) {
+				subtitleTracks[ 0 ].mode = 'showing';
+				hasAutoEnabled = true;
+			}
+		};
+
+		enableFirstSubtitle();
+		textTracks.addEventListener( 'addtrack', enableFirstSubtitle );
+		// Avoid leaking the listener on SPA / infinite-scroll teardowns.
+		this.player.one( 'dispose', () => textTracks.removeEventListener( 'addtrack', enableFirstSubtitle ) );
 	}
 
 	/**

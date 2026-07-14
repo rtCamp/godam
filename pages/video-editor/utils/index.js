@@ -145,6 +145,25 @@ export const prefetchMediaDataForCopy = async ( attachmentId ) => {
 	}
 };
 
+/**
+ * Build the GoDAM Video block markup for an attachment (without touching the
+ * clipboard). Used by the product guide's "add it to a page" flow to seed a new
+ * draft page. Reuses the cached payload populated by the copy/prefetch helpers.
+ *
+ * @param {number} attachmentId Attachment ID.
+ * @return {Promise<string>} Serialized block markup.
+ */
+export const getGoDAMVideoBlockMarkup = async ( attachmentId ) => {
+	if ( mediaDataCache.has( attachmentId ) ) {
+		return mediaDataCache.get( attachmentId );
+	}
+	const mediaData = await fetchMediaData( attachmentId );
+	const attrs = createVideoAttributes( attachmentId, mediaData );
+	const html = createGoDAMVideoBlockMarkup( attrs );
+	mediaDataCache.set( attachmentId, html );
+	return html;
+};
+
 export const copyGoDAMVideoBlock = async ( attachmentId ) => {
 	// Check clipboard API availability.
 	if ( ! navigator.clipboard?.writeText ) {

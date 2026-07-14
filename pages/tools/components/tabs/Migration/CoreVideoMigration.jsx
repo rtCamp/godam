@@ -181,7 +181,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 						<Button
 							variant="secondary"
 							onClick={ handleAbortClick }
-							className="godam-button mt-2"
+							className="mt-2"
 						>
 							{ __( 'Abort', 'godam' ) }
 						</Button>
@@ -189,7 +189,7 @@ const CoreVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice }
 						<Button
 							variant="primary"
 							onClick={ handleMigrationClick }
-							className="godam-button mt-2"
+							className="mt-2"
 							disabled={ ! migrationStatus }
 						>
 							{ migrationStatus?.status === 'completed' ? __( 'Restart Migration', 'godam' ) : __( 'Start Migration', 'godam' ) }

@@ -88,9 +88,15 @@ $godam_hover_select = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSe
 if ( $godam_autoplay ) {
 	$godam_hover_select = 'none';
 }
-$godam_caption        = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
-$godam_tracks         = ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
-$godam_show_share_btn = ! empty( $attributes['showShareButton'] );
+// Raw "Show caption" block attribute: true/false when explicitly set, null when
+// unset (inherit from the attachment's Display-captions setting — resolved into
+// $godam_show_caption once the attachment meta is loaded, further below).
+$godam_caption           = ! empty( $attributes['caption'] ) ? esc_html( $attributes['caption'] ) : '';
+$godam_show_caption_attr = isset( $attributes['showCaption'] ) ? ! empty( $attributes['showCaption'] ) : null;
+$godam_show_share_btn    = ! empty( $attributes['showShareButton'] );
+
+// Transcription panel defaults to on; only an explicit `false` disables it.
+$godam_show_transcription = ! isset( $attributes['showTranscription'] ) || ! empty( $attributes['showTranscription'] );
 
 // Determine if subtitles and transcript should be disabled based on the context (e.g., product gallery or reels contexts not require them).
 $godam_disable_subtitles_and_transcript = isset( $attributes['godam_context'] ) &&
@@ -246,6 +252,14 @@ if ( ! empty( $attributes['aspectRatio'] ) && 'responsive' === $attributes['aspe
 
 // Extract control bar settings with a fallback to an empty array.
 $godam_control_bar_settings = $godam_meta_data['videoConfig']['controlBar'] ?? array();
+
+// Resolve "Show caption": the block attribute (when set) overrides the
+// attachment's Display-captions setting (Video Editor > Display Settings,
+// stored as `subsCapsButton`). When the block attribute is unset (legacy
+// blocks), inherit the attachment setting, which itself defaults to on.
+$godam_attachment_show_caption = ! isset( $godam_control_bar_settings['subsCapsButton'] ) || ! empty( $godam_control_bar_settings['subsCapsButton'] );
+$godam_show_caption            = null === $godam_show_caption_attr ? $godam_attachment_show_caption : $godam_show_caption_attr;
+$godam_tracks                  = $godam_show_caption && ! empty( $attributes['tracks'] ) ? $attributes['tracks'] : array();
 
 $godam_job_id  = '';
 $godam_sources = array();
@@ -461,6 +475,10 @@ if ( ! empty( $godam_control_bar_settings ) ) {
 	$godam_video_setup['controlBar']['volumePanel'] = $godam_volume_panel_setting;
 }
 
+// The block's "Show caption" overrides the attachment's Display-captions
+// setting for the CC button + caption display on the frontend.
+$godam_video_setup['controlBar']['subsCapsButton'] = $godam_disable_subtitles_and_transcript ? false : $godam_show_caption;
+
 // Allow add-ons to disable double-click-to-fullscreen for specific contexts.
 $godam_no_dblclick_fullscreen_contexts = apply_filters( 'godam_player_no_dblclick_fullscreen_contexts', array() );
 if ( isset( $attributes['godam_context'] ) && in_array( $attributes['godam_context'], $godam_no_dblclick_fullscreen_contexts, true ) ) {
@@ -476,13 +494,15 @@ $godam_frontend_layers = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_dat
 
 $godam_video_config = wp_json_encode(
 	array(
-		'preview'          => $godam_video_preview,
-		'layers'           => $godam_frontend_layers, // contains list of layers.
-		'chapters'         => ! empty( $godam_meta_data['chapters'] ) ? $godam_meta_data['chapters'] : array(), // contains list of chapters.
-		'overlayTimeRange' => $godam_overlay_time_range, // Add overlay time range to video config.
-		'playerSkin'       => $godam_player_skin, // Add player skin to video config. Add brand image to video config.
-		'aspectRatio'      => $godam_aspect_ratio,
-		'showShareBtn'     => true === $godam_global_video_share ? $godam_show_share_btn : false,
+		'preview'           => $godam_video_preview,
+		'layers'            => $godam_frontend_layers, // contains list of layers.
+		'chapters'          => ! empty( $godam_meta_data['chapters'] ) ? $godam_meta_data['chapters'] : array(), // contains list of chapters.
+		'overlayTimeRange'  => $godam_overlay_time_range, // Add overlay time range to video config.
+		'playerSkin'        => $godam_player_skin, // Add player skin to video config. Add brand image to video config.
+		'aspectRatio'       => $godam_aspect_ratio,
+		'showShareBtn'      => true === $godam_global_video_share ? $godam_show_share_btn : false,
+		'showTranscription' => $godam_disable_subtitles_and_transcript ? false : $godam_show_transcription,
+		'showCaption'       => $godam_disable_subtitles_and_transcript ? false : $godam_show_caption,
 	)
 );
 
@@ -683,21 +703,9 @@ if ( empty( $godam_attachment_title ) ) {
 				</div>
 				<?php endif; ?>
 
-				<div class="easydam-video-container loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>" >
+				<div class="easydam-video-container loading <?php echo esc_attr( 'godam-' . strtolower( $godam_player_skin ) . '-skin' ); ?>" data-test-id="godam-video-render" >
 					<?php if ( isset( $godam_hover_select ) && 'shadow-overlay' === $godam_hover_select ) : ?>
 						<div class="godam-player-overlay"></div>
-					<?php endif; ?>
-
-					<?php if ( ! $godam_woocommerce_context ) : ?>
-						<?php
-						/**
-						 * Action to render the WooCommerce mini-cart inside the player.
-						 *
-						 * @param array   $godam_layers             The layers configuration.
-						 * @param boolean $godam_is_gallery_context Whether this is a gallery iframe context.
-						 */
-						do_action( 'godam_player_render_mini_cart', $godam_layers, $godam_is_gallery_context );
-						?>
 					<?php endif; ?>
 
 					<video
@@ -723,10 +731,9 @@ if ( empty( $godam_attachment_title ) ) {
 						>
 							<?php
 
-							$godam_display_caption = ! $godam_disable_subtitles_and_transcript && (
-								( ! isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) ) ||
-								( isset( $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] ) && $godam_meta_data['videoConfig']['controlBar']['subsCapsButton'] )
-							);
+							// Caption display follows the block's "Show caption" (already
+							// resolved against the attachment's Display-captions setting).
+							$godam_display_caption = ! $godam_disable_subtitles_and_transcript && $godam_show_caption;
 
 							if ( $godam_display_caption ) {
 								foreach ( $godam_tracks as $godam_track ) :
@@ -937,21 +944,27 @@ if ( empty( $godam_attachment_title ) ) {
 								<?php
 								// CTA layer.
 							elseif ( isset( $godam_layer['type'] ) && 'cta' === $godam_layer['type'] ) :
-								?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-									<?php if ( 'text' === $godam_layer['cta_type'] ) : ?>
-										<div class="ql-editor easydam-layer--cta-text">
-											<?php echo wp_kses_post( $godam_layer['text'] ); ?>
-										</div>
-									<?php elseif ( 'html' === $godam_layer['cta_type'] && ! empty( $godam_layer['html'] ) ) : ?>
-										<div class="easydam-layer--cta-html">
-											<?php echo wp_kses_post( $godam_layer['html'] ); ?>
-										</div>
-									<?php elseif ( 'image' === $godam_layer['cta_type'] ) : ?>
-										<?php echo wp_kses_post( rtgodam_image_cta_html( $godam_layer ) ); ?>
-									<?php endif; ?>
-								</div>
-								<?php
+								$godam_cta_type         = isset( $godam_layer['cta_type'] ) ? $godam_layer['cta_type'] : '';
+								$godam_render_html_cta  = ( 'html' === $godam_cta_type && ! empty( $godam_layer['html'] ) );
+								$godam_render_image_cta = ( 'image' === $godam_cta_type );
+								// Only HTML and Card (image) CTAs are supported. Legacy "text" CTAs
+								// (and any other unknown/empty type) render nothing — skipping the
+								// overlay container avoids an empty box that would otherwise pause
+								// playback with no content. The frontend layer JS no-ops when the
+								// matching DOM element is absent, so the video just plays through.
+								if ( $godam_render_html_cta || $godam_render_image_cta ) :
+									?>
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<?php if ( $godam_render_html_cta ) : ?>
+											<div class="easydam-layer--cta-html">
+												<?php echo wp_kses_post( $godam_layer['html'] ); ?>
+											</div>
+										<?php else : ?>
+											<?php echo wp_kses_post( rtgodam_image_cta_html( $godam_layer ) ); ?>
+										<?php endif; ?>
+									</div>
+									<?php
+								endif;
 								// HOTSPOT layer.
 							elseif ( isset( $godam_layer['type'] ) && 'hotspot' === $godam_layer['type'] ) :
 								?>

@@ -305,7 +305,7 @@ const IntegrationSettings = () => {
 											href={ getPricingUrl( `${ tab.name }-integration` ) }
 											target="_blank"
 											rel="noopener noreferrer"
-											style={ { color: '#b02544', textDecoration: 'underline', fontWeight: 500 } }
+											style={ { color: 'var(--wp-admin-theme-color, #5D31FF)', textDecoration: 'underline', fontWeight: 500 } }
 										>
 											{ __( 'Upgrade to Pro', 'godam' ) }
 											{ ' ↗' }
@@ -348,16 +348,18 @@ const IntegrationSettings = () => {
 				</TabPanel>
 			</Panel>
 
-			<Button
-				variant="primary"
-				className="godam-button"
-				onClick={ handleSaveSettings }
-				icon={ saveMediaSettingsLoading && <Spinner /> }
-				isBusy={ saveMediaSettingsLoading }
-				disabled={ saveMediaSettingsLoading || ! isChanged || ! hasValidAPIKey }
-			>
-				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
-			</Button>
+			<div className="godam-settings__save-row">
+				<Button
+					variant="primary"
+					onClick={ handleSaveSettings }
+					icon={ saveMediaSettingsLoading && <Spinner /> }
+					isBusy={ saveMediaSettingsLoading }
+					disabled={ saveMediaSettingsLoading || ! isChanged || ! hasValidAPIKey }
+					data-test-id="godam-settings-integrations-button-save"
+				>
+					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
+				</Button>
+			</div>
 		</>
 	);
 };

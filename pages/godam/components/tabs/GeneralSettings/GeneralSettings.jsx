@@ -98,44 +98,48 @@ const GeneralSettings = () => {
 				</Notice>
 			) }
 
-			<Panel header={ __( 'General Settings', 'godam' ) } className="godam-panel">
+			<Panel header={ __( 'General Settings', 'godam' ) } className="godam-panel godam-margin-bottom">
 				<PanelBody opened>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						className="godam-toggle godam-margin-bottom"
-						label={ __( 'Enable GoDAM media library features', 'godam' ) }
+						className="godam-margin-bottom"
+						label={ __( 'Enable folder organization in media library.', 'godam' ) }
 						help={
 							mediaLibraryUICodeManaged
 								? __( 'This setting is managed by your site administrator and can’t be changed here.', 'godam' )
-								: __( 'Turn this on to organize and manage media with GoDAM — folders, search, and filters. Turn it off to keep the WordPress media library as it is.', 'godam' )
+								: __( 'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.', 'godam' )
 						}
 						checked={ folderOrgEnabled }
 						disabled={ mediaLibraryUICodeManaged }
 						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
+						data-test-id="godam-settings-general-control-folder-org"
 					/>
 
 					<ToggleControl
 						__nextHasNoMarginBottom
-						className="godam-toggle godam-margin-bottom"
+						className="godam-margin-bottom"
 						label={ __( 'Enable GTM Tracking', 'godam' ) }
 						help={ __( 'Enable Google Tag Manager video tracking for analytics and conversion tracking.', 'godam' ) }
 						checked={ mediaSettings?.general?.enable_gtm_tracking }
 						onChange={ ( value ) => handleSettingChange( 'enable_gtm_tracking', value ) }
+						data-test-id="godam-settings-general-control-gtm"
 					/>
 
 				</PanelBody>
 			</Panel>
 
-			<Button
-				variant="primary"
-				className="godam-button"
-				onClick={ handleSaveSettings }
-				icon={ saveMediaSettingsLoading && <Spinner /> }
-				isBusy={ saveMediaSettingsLoading }
-				disabled={ saveMediaSettingsLoading || ! isChanged }
-			>
-				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
-			</Button>
+			<div className="godam-settings__save-row">
+				<Button
+					variant="primary"
+					onClick={ handleSaveSettings }
+					icon={ saveMediaSettingsLoading && <Spinner /> }
+					isBusy={ saveMediaSettingsLoading }
+					disabled={ saveMediaSettingsLoading || ! isChanged }
+					data-test-id="godam-settings-general-button-save"
+				>
+					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
+				</Button>
+			</div>
 		</>
 	);
 };

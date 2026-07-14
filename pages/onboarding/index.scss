@@ -1,0 +1,417 @@
+/**
+ * GoDAM onboarding SPA styles.
+ *
+ * A centered modal over a dimmed scrim (the dashboard sits behind). Radii,
+ * spacing and type are taken from the Figma onboarding board; the accent and
+ * brand surfaces follow the WP admin colour scheme the user picks in their
+ * profile (--wp-admin-theme-color), falling back to the GoDAM purple from the
+ * design when that variable isn't present.
+ */
+
+.godam-onboarding {
+	// --- design tokens (from Figma) ---
+	// All derive from the admin colour scheme (--wp-admin-theme-color), with the
+	// GoDAM purple from Figma as the fallback. Light tints use color-mix so the
+	// chips / borders / hover surfaces track whatever accent the user picks.
+	--godam-onb-accent: var( --wp-admin-theme-color, #5d31ff );
+	--godam-onb-accent-hover: var( --wp-admin-theme-color-darker-10, #4a27d6 );
+	--godam-onb-accent-soft: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 8%, transparent );
+	--godam-onb-panel-bg: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 6%, #fff );
+	// Side-panel gradient: light at the bottom-left → the admin accent at the
+	// top-right. The darkest stop is a soft ~35% tint of the accent (not the full
+	// colour) so the checklist text stays legible across it. (Figma: #FFFEFC → #7049FF.)
+	--godam-onb-panel-gradient: linear-gradient( 45deg, #fffefc 0%, color-mix( in srgb, var( --wp-admin-theme-color, #7049ff ) 35%, #fff ) 100% );
+	--godam-onb-panel-border: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 16%, #fff );
+	--godam-onb-chip-bg: color-mix( in srgb, var( --wp-admin-theme-color, #5d31ff ) 12%, #fff );
+	--godam-onb-text: #020617;
+	--godam-onb-text-muted: #64748b;
+	--godam-onb-required: #cc1818;
+	--godam-onb-border: #ccc;
+	--godam-onb-input-border: #949494;
+	--godam-onb-scrim: rgba( 2, 6, 23, 0.55 );
+	--godam-onb-font: "Geist", -apple-system, "Segoe UI", roboto, sans-serif;
+
+	// Cover only the wp-admin content area — clear of the admin bar (top) and
+	// the admin menu (left) — so the modal centres in the visible whitespace and
+	// the WP chrome stays usable. Sits *below* the menu (9990) + bar (99999).
+	position: fixed;
+	top: 32px;    // admin bar
+	right: 0;
+	bottom: 0;
+	left: 160px;  // expanded admin menu
+	z-index: 9989;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var( --godam-onb-font );
+	color: var( --godam-onb-text );
+
+	// Folded / auto-fold menu (≤ 960px) is 36px wide.
+	@media screen and ( max-width: 960px ) { left: 36px; }
+
+	// Manually-folded menu at wider widths.
+	@media screen and ( min-width: 961px ) {
+
+		body.folded & { left: 36px; }
+	}
+
+	// Responsive breakpoint: menu is off-canvas, admin bar is 46px tall.
+	@media screen and ( max-width: 782px ) {
+		left: 0;
+		top: 46px;
+	}
+
+	*, *::before, *::after { box-sizing: border-box; }
+
+	&__scrim {
+		position: absolute;
+		inset: 0;
+		background: var( --godam-onb-scrim );
+	}
+
+	// --- modal card ---
+	&__modal {
+		position: relative;
+		display: flex;
+		background: #fff;
+		border-radius: 16px;
+		box-shadow: 0 24px 64px rgba( 2, 6, 23, 0.28 );
+		overflow: hidden;
+		max-height: calc( 100vh - 64px );
+
+		&--split { width: min( 1000px, calc( 100vw - 48px ) ); }
+
+		&--dialog { width: min( 620px, calc( 100vw - 48px ) ); }
+	}
+
+	&__content {
+		flex: 1 1 50%;
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		padding: 40px 48px;
+		overflow-y: auto;
+	}
+
+	&__modal--dialog &__content { padding: 32px; }
+
+	// --- brand ---
+	&__brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		color: var( --godam-onb-accent );
+		font-weight: 700;
+	}
+
+	&__brand-word { font-size: 20px; letter-spacing: -0.01em; }
+
+	// --- typography ---
+	&__back {
+		align-self: flex-start;
+		background: none;
+		border: 0;
+		padding: 0;
+		font: 600 13px/1 var( --godam-onb-font );
+		color: var( --godam-onb-text );
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	// Form-screen H1 = Geist 28/32 (Figma); entry/welcome use --lg = 32/40.
+	&__title { margin: 0; font-size: 28px; line-height: 1.14; font-weight: 600; letter-spacing: -0.01em; }
+
+	&__title--lg { font-size: 32px; line-height: 1.25; }
+
+	&__subtitle { margin: 0; font-size: 15px; line-height: 1.35; color: var( --godam-onb-text-muted ); }
+
+	&__trial-note { margin: 0; font-size: 13px; line-height: 1.4; color: var( --godam-onb-text-muted ); }
+
+	&__alt { margin: 0; font-size: 13px; line-height: 1.4; color: var( --godam-onb-text-muted ); }
+
+	// --- form ---
+	&__form { display: flex; flex-direction: column; gap: 16px; }
+
+	// License-key field with a show/hide toggle (mirrors Settings → API key).
+	&__pw {
+		position: relative;
+
+		.components-text-control__input { padding-right: 40px; }
+
+		.components-button.godam-onboarding__pw-toggle {
+			position: absolute;
+			right: 4px;
+			bottom: 0;
+			height: 40px;
+			width: 36px;
+			min-width: 36px;
+			padding: 0;
+			color: var( --godam-onb-text-muted );
+		}
+	}
+
+	&__row { display: flex; gap: 12px;
+
+ > * { flex: 1; min-width: 0; } }
+
+	// --- buttons (override @wordpress/components) ---
+	.components-button {
+
+		&.godam-onb-btn {
+			height: 40px;
+			flex-shrink: 0; // never compress when a notice pushes the column past its height
+			justify-content: center;
+			width: 100%;
+			font: 500 14px/1 var( --godam-onb-font );
+			border-radius: 4px;
+			gap: 8px;
+		}
+
+		&.godam-onb-btn--primary {
+			background: var( --godam-onb-accent );
+			color: #fff;
+			border-radius: 2px;
+
+			&:disabled { background: var( --godam-onb-accent ); opacity: 0.5; }
+
+			&:hover:not( :disabled ) { background: var( --godam-onb-accent-hover ); color: #fff; }
+		}
+
+		&.godam-onb-btn--secondary {
+			background: #fff;
+			color: var( --godam-onb-text );
+			border: 1px solid var( --godam-onb-border );
+
+			&:hover:not( :disabled ) { border-color: var( --godam-onb-accent ); color: var( --godam-onb-text ); }
+		}
+	}
+
+	&__link {
+		background: none;
+		border: 0;
+		padding: 0;
+		color: var( --godam-onb-accent );
+		font: inherit;
+		font-weight: 500;
+		cursor: pointer;
+		text-decoration: none;
+
+		&:hover { text-decoration: underline; }
+	}
+
+	// --- or divider ---
+	&__or {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		color: var( --godam-onb-text-muted );
+		font-size: 12px;
+
+		&::before, &::after { content: ""; flex: 1; height: 1px; background: #e6e6e6; }
+	}
+
+	// --- inputs (override @wordpress/components) ---
+	.components-base-control__label {
+		font: 500 13px/1 var( --godam-onb-font );
+		color: var( --godam-onb-text );
+		text-transform: none;
+		margin-bottom: 6px;
+	}
+
+	.components-text-control__input,
+	.components-input-control__input {
+		min-height: 40px;
+		border-radius: 4px;
+		border-color: var( --godam-onb-input-border );
+		font-family: var( --godam-onb-font );
+
+		&:focus { border-color: var( --godam-onb-accent ); box-shadow: 0 0 0 1px var( --godam-onb-accent ); }
+	}
+
+	.godam-onboarding__required { color: var( --godam-onb-required ); margin-left: 2px; }
+
+	// Field-level validation errors (passed via `help`) render in red, not the
+	// default muted help colour — every `help` in these forms is an error.
+	.components-base-control__help,
+	.components-checkbox-control__help { color: var( --godam-onb-required ); }
+
+	.components-checkbox-control__label { font-size: 13px; line-height: 1.4; color: var( --godam-onb-text-muted ); }
+
+	// --- right side panel ---
+	&__aside {
+		flex: 1 1 50%;
+		// Default: a solid light tint of the scheme accent, so the feature-grid
+		// text (Sites / Bandwidth / Storage …) stays readable. The gradient is
+		// reserved for the social (entry) variant below.
+		background: var( --godam-onb-panel-bg );
+		border-left: 1px solid var( --godam-onb-panel-border );
+		padding: 40px 32px;
+		display: flex;
+		align-items: center;
+	}
+
+	&__aside-inner { width: 100%; }
+
+	// Social (entry) variant: keeps the accent gradient, and fills its height so
+	// the preview card reaches the modal's bottom edge (no gap below it).
+	&__aside--social {
+		align-items: stretch;
+		padding-bottom: 0;
+		background: var( --godam-onb-panel-gradient );
+	}
+
+	&__aside--social &__aside-inner {
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__features { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 20px; }
+
+	&__feature { display: flex; gap: 12px; }
+
+	&__feature-chip {
+		flex: 0 0 auto;
+		width: 36px;
+		height: 36px;
+		border-radius: 8px;
+		background: var( --godam-onb-chip-bg );
+		color: var( --godam-onb-accent );
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__feature-text { display: flex; flex-direction: column; gap: 2px; }
+
+	&__feature-title { font-weight: 600; font-size: 14px; }
+
+	&__feature-body { font-size: 12px; line-height: 1.35; color: var( --godam-onb-text-muted ); }
+
+	// social variant
+	// Social-panel heading — large, bold, black, sentence case (per Figma).
+	&__eyebrow { font-size: 20px; line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; color: var( --godam-onb-text ); margin: 0 0 32px; }
+
+	&__checklist { list-style: none; margin: 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+
+	&__checklist li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+
+	&__check { color: var( --godam-onb-accent ); display: inline-flex; }
+
+	// Preview card that bleeds past the modal's right + bottom edges (clipped by
+	// the modal's overflow:hidden) so only its top-left corner is rounded.
+	&__media-placeholder {
+		align-self: flex-start;
+		flex: 1 1 auto;
+		min-height: 200px;
+		width: calc( 100% + 92px );
+		margin-top: 16px;
+		border-radius: 12px 0 0 0;
+		background: #fff;
+		border: 1px solid var( --godam-onb-panel-border );
+	}
+
+	// --- workspace dialog ---
+	&__dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+
+	&__close { background: none; border: 0; cursor: pointer; color: var( --godam-onb-text-muted ); padding: 4px; line-height: 0; }
+
+	&__ws-note {
+		display: flex;
+		gap: 10px;
+		background: var( --godam-onb-accent-soft );
+		border-left: 3px solid var( --godam-onb-accent );
+		border-radius: 4px;
+		padding: 12px 14px;
+		font-size: 13px;
+		line-height: 1.4;
+		color: var( --godam-onb-text );
+	}
+
+	&__dialog-footer { display: flex; justify-content: flex-end; }
+
+	.godam-onboarding__modal--dialog .godam-onboarding__cta { width: auto; min-width: 120px; }
+
+	&__inline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+	&__center { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+
+	// workspace dropdown
+	&__ws-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+	&__ws-avatar {
+		flex: 0 0 auto; width: 36px; height: 36px; border-radius: 8px;
+		background: #f97316; color: #fff; font-weight: 600; font-size: 15px;
+		display: flex; align-items: center; justify-content: center;
+	}
+
+	&__ws-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; text-align: left; }
+
+	&__ws-name { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
+
+	&__ws-badge {
+		font-size: 11px; font-weight: 600; line-height: 1; padding: 3px 8px; border-radius: 999px;
+		background: var( --godam-onb-accent ); color: #fff;
+	}
+
+	&__ws-role { font-size: 12px; color: var( --godam-onb-text-muted ); }
+
+	&__ws-dropdown { display: block; }
+
+	&__ws-select {
+		width: 100%; display: flex; align-items: center; justify-content: space-between;
+		gap: 8px; padding: 10px 12px; border: 1px solid var( --godam-onb-border );
+		border-radius: 6px; background: #fff; cursor: pointer;
+	}
+
+	&__ws-chevron { color: var( --godam-onb-text-muted ); }
+
+	&__ws-options { list-style: none; margin: 0; padding: 4px; min-width: 320px; }
+
+	&__ws-option {
+		width: 100%; display: flex; align-items: center; justify-content: space-between;
+		gap: 8px; padding: 8px; border: 0; background: none; border-radius: 6px; cursor: pointer;
+
+		&:hover { background: var( --godam-onb-panel-bg ); }
+	}
+
+	&__ws-check { color: var( --godam-onb-accent ); }
+
+	@media ( max-width: 782px ) {
+
+		&__modal--split { flex-direction: column; }
+
+		&__aside { display: none; }
+
+		&__content { padding: 28px 24px; }
+	}
+}
+
+// @wordpress/components inside the modal (the CheckboxControl checked state, the
+// Google-button Spinner, input focus rings, …) read --wp-components-color-accent,
+// which GoDAM pins to its brand pink plugin-wide on `.toplevel_page_rtgodam`
+// button/a/input. Re-point that var (and its darker stops) at the scheme accent,
+// scoped by the mount id so it outranks the pin.
+#root-godam-onboarding {
+	--wp-components-color-accent: var( --godam-onb-accent );
+	--wp-components-color-accent-darker-10: var( --godam-onb-accent-hover );
+	--wp-components-color-accent-darker-20: var( --godam-onb-accent-hover );
+
+	button,
+	a,
+	input {
+
+		&:not( .is-destructive ) {
+			--wp-components-color-accent: var( --godam-onb-accent );
+			--wp-components-color-accent-darker-10: var( --godam-onb-accent-hover );
+			--wp-components-color-accent-darker-20: var( --godam-onb-accent-hover );
+		}
+	}
+}
+
+// The free-user dashboard's old "connect your API key" overlay card is
+// redundant behind the new onboarding modal — hide it so only the empty-state
+// dashboard shows as the backdrop. (This stylesheet only loads while the
+// onboarding overlay is active, so no extra guard is needed.)
+.api-key-overlay .api-key-message { display: none; }

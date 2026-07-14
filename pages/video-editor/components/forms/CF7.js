@@ -6,8 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Notice, SelectControl } from '@wordpress/components';
-import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -15,8 +13,8 @@ import { __ } from '@wordpress/i18n';
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import { useGetSingleCF7FormQuery } from '../../redux/api/cf7-forms';
-import LayerControl from '../LayerControls';
-import FormSelector from './FormSelector';
+import FormFields from './FormFields';
+import FormPreview from './FormPreview';
 
 const templateOptions = [
 	{
@@ -54,75 +52,29 @@ const CF7 = ( { layerID } ) => {
 
 	return (
 		<>
-			{
-				! isCF7PluginActive &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Please activate the Contact Form 7 plugin to use this feature.', 'godam' ) }
-				</Notice>
-			}
-			{
-				<FormSelector disabled={ ! isCF7PluginActive } className="mb-4" formID={ layer.cf7_id } forms={ forms } handleChange={ changeFormID } />
-			}
-
-			<SelectControl
-				__next40pxDefaultSize
-				className="mb-4"
-				label={ __( 'Select form theme', 'godam' ) }
-				options={ templateOptions }
-				value={ layer.theme || 'godam' }
-				onChange={ handleThemeChange }
-				disabled={ ! isCF7PluginActive }
+			<FormFields
+				isActive={ isCF7PluginActive }
+				pluginLabel={ __( 'Contact Form 7', 'godam' ) }
+				formID={ layer.cf7_id }
+				formType={ layer.form_type }
+				forms={ forms }
+				onSelectForm={ changeFormID }
+				theme={ {
+					value: formTheme,
+					options: templateOptions,
+					onChange: handleThemeChange,
+				} }
+				editUrl={ `${ window?.videoData?.adminUrl }admin.php?page=wpcf7&post=${ layer.cf7_id }&action=edit` }
+				showEditButton={ Boolean( formHTML ) }
 			/>
 
-			<LayerControl>
-				<>
-					<div
-						style={ {
-							backgroundColor: layer.bg_color,
-						} }
-						className="easydam-layer relative"
-					>
-
-						{
-							( formHTML && ! isFetching ) &&
-							<div className={ `form-container ${ formTheme === 'godam' ? 'rtgodam-wpcf7-form' : '' }` } dangerouslySetInnerHTML={ { __html: formHTML } } />
-						}
-
-						{
-							isFetching &&
-							<div className="form-container">
-								<p>{ __( 'Loading form…', 'godam' ) }</p>
-							</div>
-						}
-
-						{
-							formHTML &&
-							<Button
-								href={ `${ window?.videoData?.adminUrl }admin.php?page=wpcf7&post=${ layer.cf7_id }&action=edit` }
-								target="_blank"
-								variant="secondary"
-								icon={ pencil }
-								className="absolute top-2 right-2"
-							>{ __( 'Edit form', 'godam' ) }</Button>
-						}
-					</div>
-					{ layer.allow_skip &&
-					<Button
-						className="skip-button"
-						variant="primary"
-						icon={ chevronRight }
-						iconSize="18"
-						iconPosition="right"
-					>
-						{ __( 'Skip', 'godam' ) }
-					</Button>
-					}
-				</>
-			</LayerControl>
+			<FormPreview
+				bgColor={ layer.bg_color }
+				allowSkip={ layer.allow_skip }
+				isFetching={ isFetching }
+				html={ formHTML }
+				containerClassName={ formTheme === 'godam' ? 'rtgodam-wpcf7-form' : '' }
+			/>
 		</>
 	);
 };

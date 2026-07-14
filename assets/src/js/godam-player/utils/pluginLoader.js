@@ -4,6 +4,11 @@
  */
 
 /**
+ * Internal dependencies
+ */
+import { resolveHotspotStyle } from './hotspotStyle';
+
+/**
  * Cache for loaded plugins to avoid duplicate loads
  */
 const loadedPlugins = {
@@ -21,6 +26,12 @@ let adsPluginsPromise = null;
 let flvPluginPromise = null;
 let quillPromise = null;
 let fontAwesomePromise = null;
+
+// Ad blockers commonly block the `videojs-contrib-ads` chunk (its filename
+// contains "ads"), which rejects the dynamic import with a ChunkLoadError on
+// every player init. Ads are optional and playback is unaffected, so warn once
+// instead of logging a hard error per player.
+let adsLoadWarned = false;
 
 /**
  * Load video.js ads plugins (videojs-contrib-ads and videojs-ima)
@@ -50,8 +61,11 @@ export async function loadAdsPlugins() {
 		adsPluginsPromise = null; // Clear promise cache after success
 	} ).catch( ( error ) => {
 		adsPluginsPromise = null; // Clear promise cache on error to allow retry
-		// eslint-disable-next-line no-console
-		console.error( 'Failed to load ads plugins:', error );
+		if ( ! adsLoadWarned ) {
+			adsLoadWarned = true;
+			// eslint-disable-next-line no-console
+			console.warn( 'GoDAM: video ad plugins could not be loaded (often blocked by an ad blocker). Video playback is unaffected.' );
+		}
 		throw error;
 	} );
 
@@ -201,13 +215,26 @@ export function hasHotspotsWithIcons( layers ) {
 	}
 
 	return layers.some( ( layer ) => {
-		// Check if it's a hotspot layer
-		if ( layer.type !== 'hotspot' ) {
-			return false;
+		// Regular hotspot layer. Resolve each point's effective style (shared
+		// layer-level model for refactored layers, per-hotspot for legacy ones)
+		// so detection matches exactly when the player renders a FontAwesome
+		// glyph. Previously this only checked the pre-refactor `hotspot.showIcon`
+		// flag, so icon-style hotspots on the new model never triggered the
+		// FontAwesome load and rendered blank on the frontend. Mirrors the Woo
+		// branch below, which already moved to the layer-level style model.
+		if ( layer.type === 'hotspot' ) {
+			return layer.hotspots?.some( ( hotspot ) => resolveHotspotStyle( layer, hotspot ).icon );
 		}
 
-		// Check if any hotspot in this layer has an icon
-		return layer.hotspots?.some( ( hotspot ) => hotspot.showIcon );
+		// Woo layer: layer-level FA icon (new model) or per-hotspot legacy icon
+		if ( layer.type === 'woo' ) {
+			if ( layer.styleType === 'icon' && layer.icon ) {
+				return true;
+			}
+			return layer.productHotspots?.some( ( hotspot ) => hotspot.icon );
+		}
+
+		return false;
 	} );
 }
 

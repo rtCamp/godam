@@ -1,10 +1,16 @@
 .wp-block-godam-pdf {
-	// Remove the left and right margin the figure is born with.
 	margin-left: 0;
 	margin-right: 0;
 	position: relative;
 
-	.godam-pdf-preview {
+	// Dashed lavender wrapper visible in editor for all states.
+	background: #eef2ff;
+	border: 2px dashed #a5b4fc;
+	border-radius: 8px;
+	padding: 24px;
+
+	// ── Default embed view ───────────────────────────────────────────────────
+	.godam-pdf-preview--default {
 		width: 100%;
 		border: 1px solid #ddd;
 		border-radius: 4px;
@@ -16,11 +22,104 @@
 		}
 	}
 
-	&.is-transient .godam-pdf-preview {
-		opacity: 0.3;
+	.rtgodam-pdf-caption {
+		margin-top: 8px;
 	}
 
-	// Shown while PDF is being uploaded
+	// ── Card view ────────────────────────────────────────────────────────────
+	.godam-pdf-preview--card {
+		width: 100%;
+	}
+
+	.godam-pdf-card {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		border: 1px solid #ddd;
+		border-radius: 10px;
+		background: #fff;
+
+		&__cover {
+			flex: 0 0 151px;
+			height: 120px;
+			border-radius: 10px 0 0 10px;
+			overflow: hidden;
+
+			img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				display: block;
+			}
+
+			@media ( max-width: 480px ) {
+				border-radius: 10px 10px 0 0;
+			}
+		}
+
+		&__cover-placeholder {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #e5e7eb;
+
+			.dashicons {
+				font-size: 32px;
+				width: 32px;
+				height: 32px;
+				color: #9ca3af;
+			}
+		}
+
+		&__info {
+			flex: 1;
+			min-width: 0;
+
+			@media ( max-width: 480px ) {
+				padding: 0 16px 16px 16px;
+			}
+		}
+
+		&__title {
+			font-weight: 600;
+			font-size: 15px;
+			margin: 0 0 4px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			color: #1e1e1e;
+
+			@media ( max-width: 480px ) {
+				white-space: normal;
+			}
+		}
+
+		&__description {
+			font-size: 13px;
+			color: #555;
+			margin: 0 0 4px;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+		}
+
+		&__meta {
+			font-size: 12px;
+			color: #9ca3af;
+			margin: 0;
+		}
+	}
+
+	&.is-transient {
+		.godam-pdf-preview--default,
+		.godam-pdf-preview--card {
+			opacity: 0.3;
+		}
+	}
+
 	.components-spinner {
 		position: absolute;
 		top: 50%;
@@ -30,4 +129,309 @@
 	}
 }
 
+// ── Inspector helpers ────────────────────────────────────────────────────────
+.godam-pdf-panel-description {
+	font-size: 12px;
+	color: #757575;
+	margin: 0 0 12px;
+}
 
+.godam-pdf-panel-sublabel {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #1e1e1e;
+	margin-bottom: 16px !important;
+	margin-top: 16px !important;
+}
+
+.godam-pdf-panel-hint {
+	font-size: 11px;
+	color: #757575;
+	margin-top: 8px !important;
+	margin-bottom: 0;
+}
+
+// File row shown after a document is selected.
+.godam-pdf-file-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	margin-bottom: 12px;
+	background: #f9f9f9;
+
+	&__icon {
+		font-size: 20px;
+		color: #757575;
+		flex-shrink: 0;
+	}
+
+	&__name {
+		flex: 1;
+		font-size: 12px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: #1e1e1e;
+	}
+}
+
+// Full-width action buttons.
+.godam-pdf__add-document-btn,
+.godam-pdf__upload-cover-btn {
+	width: 100%;
+	justify-content: center;
+}
+
+// Custom cover section in inspector.
+.godam-pdf-custom-cover {
+	margin-top: 8px;
+}
+
+// Horizontally scrollable tile row.
+.godam-pdf-covers-list {
+	display: flex;
+	gap: 8px;
+	overflow-x: auto;
+	// Top + right padding gives the overflow delete badge room to show without being clipped.
+	padding: 10px 10px 8px 0;
+	margin-bottom: 12px;
+	scrollbar-width: thin;
+	scrollbar-color: #ccc #f1f1f1;
+
+	&::-webkit-scrollbar {
+		height: 4px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: #f1f1f1;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: #ccc;
+		border-radius: 2px;
+	}
+}
+
+// Individual cover tile.
+.godam-pdf-cover-tile {
+	position: relative;
+	flex: 0 0 76px;
+	width: 76px;
+	height: 46px;
+	border-radius: 4px;
+	overflow: visible; // allow delete button to overflow outside corner
+	cursor: pointer;
+	border: 2px solid transparent;
+	padding: 0;
+	background: #e5e7eb;
+	transition: border-color 0.15s ease;
+
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		border-radius: 2px; // clip image corners since overflow is visible
+	}
+
+	&__placeholder {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 2px;
+
+		.dashicons {
+			font-size: 18px;
+			width: 18px;
+			height: 18px;
+			color: #9ca3af;
+		}
+	}
+
+	// Sparkle SVG badge — bottom-left corner, marks auto-generated tile.
+	&__badge {
+		position: absolute;
+		bottom: 4px;
+		left: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		background: rgba( 0, 0, 0, 0.55 );
+		border-radius: 4px;
+		pointer-events: none;
+		color: #fff;
+
+		svg {
+			display: block;
+		}
+	}
+
+	// Selected-state check — circle with checkmark SVG, centred.
+	&__check {
+		position: absolute;
+		top: 30%;
+		left: 80%;
+		transform: translate( -50%, -50% );
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		pointer-events: none;
+		filter: drop-shadow( 0 1px 2px rgba( 0, 0, 0, 0.4 ) );
+
+		svg {
+			display: block;
+		}
+	}
+
+	// × delete button — outside the tile, top-right corner.
+	&__delete {
+		position: absolute;
+		top: -7px;
+		right: -7px;
+		width: 16px;
+		height: 16px;
+		background: #1e1e1e;
+		color: #fff;
+		border: 2px solid #fff;
+		border-radius: 50%;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 3px;
+		opacity: 0;
+		transition: opacity 0.15s ease, background 0.15s ease;
+		z-index: 2;
+
+		svg {
+			display: block;
+		}
+
+		&:hover {
+			background: #cc2222;
+		}
+	}
+
+	// Show delete on tile hover.
+	&:hover .godam-pdf-cover-tile__delete {
+		opacity: 1;
+	}
+
+	// Selected state.
+	&.is-selected {
+		border-color: var( --wp-admin-theme-color, #3858e9 );
+		padding: 2px;
+	}
+}
+
+// ── Empty state ──────────────────────────────────────────────────────────────
+.godam-pdf-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 48px 24px;
+
+	&__title {
+		font-size: 20px;
+		font-weight: 600;
+		color: #1e1e1e;
+		margin: 0 0 8px;
+	}
+
+	&__subtitle {
+		font-size: 14px;
+		color: #757575;
+		margin: 0 0 24px;
+		max-width: 360px;
+	}
+
+	&__btn {
+		min-width: 160px;
+		justify-content: center;
+		letter-spacing: 1px;
+	}
+}
+
+// ── Uploading state ──────────────────────────────────────────────────────────
+.godam-pdf-uploading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+
+	&__card {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		background: #fff;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		padding: 16px 20px;
+		width: 100%;
+		max-width: 480px;
+	}
+
+	&__icon {
+		font-size: 28px;
+		width: 28px;
+		height: 28px;
+		color: #757575;
+		flex-shrink: 0;
+	}
+
+	&__details {
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__name {
+		display: block;
+		font-size: 13px;
+		font-weight: 500;
+		color: #1e1e1e;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		margin-bottom: 4px;
+	}
+
+	&__size {
+		display: block;
+		font-size: 11px;
+		color: #757575;
+		margin-bottom: 6px;
+	}
+
+	&__bar-track {
+		width: 100%;
+		height: 3px;
+		background: #e0e0e0;
+		border-radius: 2px;
+		overflow: hidden;
+	}
+
+	&__bar-fill {
+		height: 100%;
+		width: 30%;
+		background: var( --wp-admin-theme-color, #3858e9 );
+		border-radius: 2px;
+		animation: godam-uploading-progress 1.4s ease-in-out infinite;
+	}
+}
+
+@keyframes godam-uploading-progress {
+	0%   { width: 10%; margin-left: 0; }
+	50%  { width: 40%; margin-left: 30%; }
+	100% { width: 10%; margin-left: 90%; }
+}

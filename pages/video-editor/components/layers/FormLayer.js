@@ -2,12 +2,10 @@
  * External dependencies
  */
 import { useDispatch, useSelector } from 'react-redux';
-import Editor from '@monaco-editor/react';
 
 /**
  * WordPress dependencies
  */
-import { ToggleControl, Panel, PanelBody } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -16,8 +14,7 @@ import { __ } from '@wordpress/i18n';
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
-import AjaxWarning from '../forms/AjaxWarning.js';
-import { getFormIdFromLayer } from '../../utils/formUtils';
+import { VeSection, VeToggle, VeColorList } from '../controls';
 import GravityForm from '../forms/GravityForm';
 import WPForm from '../forms/WPForm';
 import EverestForm from '../forms/EverestForm';
@@ -121,68 +118,40 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	const FormLayerComponent = FormLayerData?.component;
 	const isPluginActive = FormLayerData?.isActive;
 
-	// Get the form ID using the centralized configuration
-	const getFormId = () => {
-		return getFormIdFromLayer( layer, layer?.form_type );
-	};
-
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
-			<FormLayerComponent layerID={ layer.id } />
+			<div className="godam-ve-config">
+				<FormLayerComponent layerID={ layer.id } />
 
-			<AjaxWarning formType={ layer?.form_type } formId={ getFormId() } />
-
-			<div data-test-id="godam-form-control-allow-skip">
-				<ToggleControl
-					__nextHasNoMarginBottom
-					className="mb-4 godam-toggle"
-					label={ __( 'Allow user to skip', 'godam' ) }
-					checked={ layer.allow_skip }
-					onChange={ ( value ) =>
-						dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
-					}
-					help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
-					disabled={ ! isPluginActive }
-				/>
-			</div>
-
-			<Panel className="-mx-4 border-x-0">
-				<PanelBody
-					title={ __( 'Advance', 'godam' ) }
-					initialOpen={ false }
-				>
-
-					{ /* Layer background color */ }
-					<label htmlFor="color" className="easydam-label">{ __( 'Color', 'godam' ) }</label>
-					<ColorPickerButton
-						className="mb-4"
-						value={ layer?.bg_color ?? '#FFFFFFB3' }
-						label={ __( 'Layer background color', 'godam' ) }
-						enableAlpha={ true }
-						onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
-						disabled={ ! isPluginActive }
-					/>
-
-					<label htmlFor="custom-css" className="easydam-label">{ __( 'Custom CSS', 'godam' ) }</label>
-
-					<div className={ ( ! isPluginActive ) ? 'pointer-events-none opacity-50' : '' }>
-						<Editor
-							id="custom-css"
-							className="code-editor"
-							defaultLanguage="css"
-							options={ {
-								minimap: { enabled: false },
-							} }
-							defaultValue={ layer.custom_css }
+				<VeSection title={ __( 'Behaviour', 'godam' ) }>
+					<div data-test-id="godam-form-control-allow-skip">
+						<VeToggle
+							label={ __( 'Allow user to skip', 'godam' ) }
+							checked={ layer.allow_skip }
 							onChange={ ( value ) =>
-								dispatch( updateLayerField( { id: layer.id, field: 'custom_css', value } ) )
+								dispatch( updateLayerField( { id: layer.id, field: 'allow_skip', value } ) )
 							}
+							help={ __( 'If enabled, the user will be able to skip the form submission.', 'godam' ) }
+							disabled={ ! isPluginActive }
 						/>
 					</div>
-				</PanelBody>
-			</Panel>
+				</VeSection>
+
+				<VeSection title={ __( 'Background Colour', 'godam' ) }>
+					<VeColorList>
+						<ColorPickerButton
+							className="godam-ve-color-row"
+							value={ layer?.bg_color ?? '#FFFFFFB3' }
+							label={ __( 'Background', 'godam' ) }
+							enableAlpha={ true }
+							onChange={ ( value ) => dispatch( updateLayerField( { id: layer.id, field: 'bg_color', value } ) ) }
+							disabled={ ! isPluginActive }
+						/>
+					</VeColorList>
+				</VeSection>
+			</div>
 		</>
 	);
 };

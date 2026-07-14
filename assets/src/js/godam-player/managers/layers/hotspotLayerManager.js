@@ -8,6 +8,7 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import { HOTSPOT_CONSTANTS } from '../../utils/constants';
 import { getLayerDisplayName } from '../../utils/layerActions.js';
+import { resolveHotspotStyle } from '../../utils/hotspotStyle';
 
 /**
  * Resolve the analytics videoKey (data-id or data-job_id) for a player.
@@ -453,7 +454,7 @@ export default class HotspotLayerManager {
 		const baseHeight = HotspotLayerManager.BASE_HEIGHT;
 
 		layerObj.hotspots.forEach( ( hotspot, index ) => {
-			const hotspotDiv = this.createHotspotElement( hotspot, index, containerWidth, containerHeight, baseWidth, baseHeight );
+			const hotspotDiv = this.createHotspotElement( hotspot, index, containerWidth, containerHeight, baseWidth, baseHeight, layerObj.layer );
 
 			this.setupHotspotHoverEvents( hotspotDiv, layerObj.pauseOnHover );
 
@@ -578,9 +579,10 @@ export default class HotspotLayerManager {
 	 * @param {number} containerHeight - Height of the video container
 	 * @param {number} baseWidth       - Base width for calculations
 	 * @param {number} baseHeight      - Base height for calculations
+	 * @param {Object} [layer]         - Parent layer config (for shared style resolution)
 	 * @return {HTMLElement} Created hotspot element
 	 */
-	createHotspotElement( hotspot, index, containerWidth, containerHeight, baseWidth, baseHeight ) {
+	createHotspotElement( hotspot, index, containerWidth, containerHeight, baseWidth, baseHeight, layer ) {
 		const hotspotDiv = document.createElement( 'div' );
 		hotspotDiv.classList.add( 'hotspot', 'circle' );
 		hotspotDiv.style.position = 'absolute';
@@ -621,11 +623,15 @@ export default class HotspotLayerManager {
 		hotspotDiv.style.width = `${ pixelDiameter }px`;
 		hotspotDiv.style.height = `${ pixelDiameter }px`;
 
+		// Resolve effective style — shared at the layer level for new layers,
+		// per-hotspot for legacy layers (backward compatibility).
+		const style = resolveHotspotStyle( layer, hotspot );
+
 		// Background color
-		hotspotDiv.style.backgroundColor = ( hotspot.icon || hotspot.customIconUrl ) ? 'white' : ( hotspot.backgroundColor || '#0c80dfa6' );
+		hotspotDiv.style.backgroundColor = ( style.icon || style.customIconUrl ) ? 'white' : ( style.color || '#0c80dfa6' );
 
 		// Create content
-		const hotspotContent = this.createHotspotContent( hotspot, index, hotspotDiv );
+		const hotspotContent = this.createHotspotContent( hotspot, index, hotspotDiv, style );
 		hotspotDiv.appendChild( hotspotContent );
 
 		return hotspotDiv;
@@ -637,20 +643,22 @@ export default class HotspotLayerManager {
 	 * @param {Object}      hotspot    - Hotspot configuration object
 	 * @param {number}      index      - Index of the hotspot
 	 * @param {HTMLElement} hotspotDiv - Parent hotspot div element
+	 * @param {Object}      [style]    - Resolved style { icon, customIconUrl, color }
 	 * @return {HTMLElement} Created content element
 	 */
-	createHotspotContent( hotspot, index, hotspotDiv ) {
+	createHotspotContent( hotspot, index, hotspotDiv, style ) {
+		const effective = style || resolveHotspotStyle( null, hotspot );
 		const hotspotContent = document.createElement( 'div' );
 		hotspotContent.classList.add( 'hotspot-content' );
 		hotspotContent.style.position = 'relative';
 		hotspotContent.style.width = '100%';
 		hotspotContent.style.height = '100%';
 
-		if ( hotspot.icon ) {
-			const iconEl = this.createHotspotIcon( hotspot.icon );
+		if ( effective.icon ) {
+			const iconEl = this.createHotspotIcon( effective.icon );
 			hotspotContent.appendChild( iconEl );
-		} else if ( hotspot.customIconUrl ) {
-			const customIconEl = this.createCustomIcon( hotspot.customIconUrl, hotspot.backgroundColor, hotspotDiv );
+		} else if ( effective.customIconUrl ) {
+			const customIconEl = this.createCustomIcon( effective.customIconUrl, effective.color, hotspotDiv );
 			hotspotContent.appendChild( customIconEl );
 		} else {
 			hotspotContent.classList.add( 'no-icon' );

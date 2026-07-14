@@ -6,11 +6,6 @@ $GREEN: #4CAF50;
 $RED: #F44336;
 $LIGHT_BLUE: #2196F3;
 
-#root-easydam,
-#root-video-editor {
-	--wp-components-color-accent: #ab3a6c;
-}
-
 $media-library-sidebar-bg: #fff;
 $media-library-sidebar-bg-dark: #a3a3a3;
 $media-library-sidebar-border: #E0E0E0;
@@ -100,31 +95,14 @@ $media-frame-width: calc(300px + 2 * 24px);
 	left: $media-frame-width;
 }
 
-/**
-* Admin page CSS changes for the top-level EasyDAM page.
-*/
+// GoDAM 2.0: the analytics surface (dashboard + per-video analytics) follows
+// the user's WP admin colour scheme; the rest of the plugin keeps the brand
+// pink for now (migrated in a later phase). Capture the real scheme accent on
+// the analytics page bodies *before* the brand pink is applied below, so we can
+// restore it once .godam-admin-root has overridden --wp-admin-theme-color.
 .toplevel_page_rtgodam,
-.godam_page_rtgodam_video_editor,
-.godam_page_rtgodam_help,
-.godam-analytics-container,
-.godam-dashboard-container,
-.godam-admin-root {
-	--wp-admin-theme-color: #ab3a6c;
-
-	button,
-	a,
-	input {
-
-		&:not(.is-destructive) {
-			--wp-components-color-accent: #ab3a6c;
-			--wp-components-color-accent-darker-10: #9a2d5e;
-			--wp-components-color-accent-darker-20: #6e2445;
-		}
-	}
-
-	.circle {
-		--wp-components-color-accent: #e6533a;
-	}
+.godam_page_rtgodam_analytics {
+	--godam-scheme-accent: var(--wp-admin-theme-color);
 }
 
 /* Style for GoDAM admin pages container */
@@ -150,6 +128,28 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 	#root-video-help {
 		margin-left: 20px;
+	}
+}
+
+// Analytics surface (dashboard + per-video analytics) opts back into the WP
+// admin colour scheme. Higher specificity than the base .godam-admin-root rule
+// and placed after it, so it wins without descending-specificity churn.
+.toplevel_page_rtgodam .godam-admin-root,
+.godam_page_rtgodam_analytics .godam-admin-root {
+	--wp-admin-theme-color: var(--godam-scheme-accent);
+
+	button,
+	a,
+	input {
+
+		&:not(.is-destructive) {
+			--wp-components-color-accent: var(--godam-scheme-accent);
+			// Fall back to the captured scheme accent when the admin scheme
+			// doesn't define darker shades, so hover/active never reverts to the
+			// pinned brand pink (mirrors the guard in godam-for-woo #152).
+			--wp-components-color-accent-darker-10: var(--wp-admin-theme-color-darker-10, var(--godam-scheme-accent));
+			--wp-components-color-accent-darker-20: var(--wp-admin-theme-color-darker-20, var(--godam-scheme-accent));
+		}
 	}
 }
 
@@ -500,7 +500,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 		.attachment-actions {
 
 			.button {
-				background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+				background: var(--wp-admin-theme-color, #AB3A6C);
 					border-radius: 0.25rem;
 					border: none;
 					color: $media-library-sidebar-bg;
@@ -510,7 +510,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 		.media-menu-item.active {
 			border: none !important;
-			border-bottom: 2px solid #AB3A6C !important;
+			border-bottom: 2px solid var(--wp-admin-theme-color, #AB3A6C) !important;
 		}
 	}
 
@@ -565,6 +565,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 		border-radius: 50%;
 
 		--status-text: "Not Started";
+
+		img {
+			position: relative;
+			right: 2px; // optical centering for the GoDAM logo
+		}
 
 		&__progress {
 			transform: rotate(-90deg); /* Rotates the circle so progress starts from top */
@@ -702,7 +707,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 		.submit-feedback {
 			border: none;
-			background-color: #ab3a6c;
+			background-color: var(--wp-admin-theme-color, #ab3a6c);
 			color: #fff;
 			padding: 5px 12px;
 			border-radius: 4px;
@@ -797,7 +802,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 		transform: translateY(-50%);
 		pointer-events: none;
 		font-size: 18px;
-		color: #ab3a6c;
+		color: var(--wp-admin-theme-color, #ab3a6c);
 	}
 }
 
@@ -812,7 +817,7 @@ to ensure proper responsiveness and avoid layout issues.
 	margin: 0;
 	margin-left: -2rem;
 	padding: 0;
-	background: #AB3A6C;
+	background: var(--wp-admin-theme-color, #AB3A6C);
 	display: flex;
 	justify-content: center;
 	position: relative;
@@ -907,7 +912,7 @@ to ensure proper responsiveness and avoid layout issues.
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	color: #fff;
-	background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+	background: var(--wp-admin-theme-color, #5D31FF);
 	border-radius: 0.25rem;
 	vertical-align: middle;
 	line-height: 1.5;
@@ -1012,7 +1017,7 @@ to ensure proper responsiveness and avoid layout issues.
 }
 
 .text-\[\#AB3A6C\] {
-	color: #AB3A6C;
+	color: var(--wp-admin-theme-color, #AB3A6C);
 }
 
 .no-underline {
@@ -1118,6 +1123,7 @@ to ensure proper responsiveness and avoid layout issues.
 }
 
 @keyframes godam-elementor-thumbnail-spin {
+
 	to {
 		transform: rotate(360deg);
 	}

@@ -6,60 +6,77 @@ import React from 'react';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { Dropdown, Button, MenuGroup, MenuItem, Icon } from '@wordpress/components';
+import { chevronDown } from '@wordpress/icons';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
- * Pill-toggle for the timeline's global date range. 7D / 30D / 90D / 1Y / All.
+ * Date-range dropdown for the timeline's global range. 7D / 30D / 90D / 1Y / All.
  *
- * Plain unstyled radio group via buttons — matches the mockup. Selected
- * pill gets a soft pink-tinted background so it reads as the active
- * filter; remaining pills are neutral. "All" mirrors the Playback
- * Performance chart's all-time option — it maps to no `days` param so the
- * microservice returns the full history (see rangeToDays in
- * useVideoLayerData).
+ * Mirrors the Playback Performance chart's range dropdown (same `Dropdown` +
+ * secondary `Button` + `MenuGroup` pattern and `godam-period-dropdown` styling)
+ * so both range pickers on the analytics page look and behave identically and
+ * follow the WP admin colour scheme. "All" maps to no `days` param so the
+ * microservice returns the full history (see rangeToDays in useVideoLayerData).
  *
  * @param {Object}   props
- * @param {string}   props.value    Currently selected key.
+ * @param {string}   props.value    Currently selected key ('7d' | '30d' | '90d' | '1y' | 'all').
  * @param {Function} props.onChange (next) => void.
- * @return {JSX.Element} Toggle group.
+ * @return {JSX.Element} Range dropdown.
  */
 const DateRangePicker = ( { value, onChange } ) => {
 	const options = [
-		{ id: '7d', label: __( '7D', 'godam' ), aria: __( 'Last 7 days', 'godam' ) },
-		{ id: '30d', label: __( '30D', 'godam' ), aria: __( 'Last 30 days', 'godam' ) },
-		{ id: '90d', label: __( '90D', 'godam' ), aria: __( 'Last 90 days', 'godam' ) },
-		{ id: '1y', label: __( '1Y', 'godam' ), aria: __( 'Last year', 'godam' ) },
-		{ id: 'all', label: __( 'All', 'godam' ), aria: __( 'All time', 'godam' ) },
+		{ id: '7d', label: __( 'Last 7 days', 'godam' ) },
+		{ id: '30d', label: __( 'Last 30 days', 'godam' ) },
+		{ id: '90d', label: __( 'Last 90 days', 'godam' ) },
+		{ id: '1y', label: __( 'Last year', 'godam' ) },
+		{ id: 'all', label: __( 'All time', 'godam' ) },
 	];
 
+	const currentLabel =
+		options.find( ( o ) => o.id === value )?.label || options[ 0 ].label;
+
+	// Fold the current selection into the toggle's accessible name so screen
+	// readers keep it (a bare aria-label="Date range" overrode it — Copilot note).
+	const rangeAriaLabel = sprintf(
+		/* translators: %s: the selected range label, e.g. "Last 7 days". */
+		__( 'Date range: %s', 'godam' ),
+		currentLabel,
+	);
+
 	return (
-		<div
-			role="radiogroup"
-			aria-label={ __( 'Date range', 'godam' ) }
-			className="inline-flex flex-wrap rounded-lg border border-zinc-200 bg-white p-0.5"
-		>
-			{ options.map( ( opt ) => {
-				const active = value === opt.id;
-				return (
-					<button
-						key={ opt.id }
-						type="button"
-						role="radio"
-						aria-checked={ active }
-						aria-label={ opt.aria }
-						onClick={ () => onChange( opt.id ) }
-						className="text-sm font-medium px-3 py-1.5 cursor-pointer border-0 rounded-md tabular-nums"
-						style={ {
-							background: active ? '#FCE7F3' : 'transparent',
-							color: active ? '#BE185D' : '#475569',
-							transition: 'background-color 140ms ease-out, color 140ms ease-out',
-						} }
-					>
-						{ opt.label }
-					</button>
-				);
-			} ) }
-		</div>
+		<Dropdown
+			className="godam-period-dropdown"
+			popoverProps={ { placement: 'bottom-end' } }
+			renderToggle={ ( { isOpen, onToggle } ) => (
+				<Button
+					variant="secondary"
+					onClick={ onToggle }
+					aria-expanded={ isOpen }
+					aria-label={ rangeAriaLabel }
+					className="godam-period-dropdown__toggle"
+				>
+					{ currentLabel }
+					<Icon icon={ chevronDown } size={ 20 } />
+				</Button>
+			) }
+			renderContent={ ( { onClose } ) => (
+				<MenuGroup>
+					{ options.map( ( opt ) => (
+						<MenuItem
+							key={ opt.id }
+							isSelected={ value === opt.id }
+							onClick={ () => {
+								onChange( opt.id );
+								onClose();
+							} }
+						>
+							{ opt.label }
+						</MenuItem>
+					) ) }
+				</MenuGroup>
+			) }
+		/>
 	);
 };
 

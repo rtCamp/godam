@@ -239,12 +239,20 @@ if ( ! function_exists( 'rtgodam_gallery_v2_get_video_data' ) ) {
 			return null;
 		}
 
+		// Use the original attachment URL for the silent preview video.
+		// rtgodam_transcoded_url stores an MPEG-DASH (.mpd) manifest which cannot
+		// be played by a plain <video> element — only video.js can decode it.
+		// The source MP4 is always browser-playable and is good enough for the
+		// muted hover-preview thumbnail.
+		$godam_video_url = wp_get_attachment_url( $attachment_id );
+
 		return array(
 			'id'          => $attachment_id,
 			'title'       => get_the_title( $attachment_id ) ?: __( 'Untitled video', 'godam' ),
 			'date'        => rtgodam_gallery_v2_format_display_date( $post->post_date ),
 			'thumbnail'   => rtgodam_gallery_v2_get_thumbnail_url( $attachment_id ),
 			'placeholder' => rtgodam_gallery_v2_get_placeholder_thumbnail_url( $attachment_id ),
+			'video_url'   => $godam_video_url ?: '',
 		);
 	}
 }
@@ -306,14 +314,21 @@ $godam_inline_styles = sprintf(
 	esc_attr( $godam_block_gap )
 );
 
+$godam_autoplay         = ! empty( $attributes['autoplay'] );
+$godam_play_on_hover    = isset( $attributes['playOnHover'] ) ? (bool) $attributes['playOnHover'] : true;
+$godam_show_play_button = ! isset( $attributes['showPlayButton'] ) || (bool) $attributes['showPlayButton'];
+
 $godam_wrapper_attrs = array(
-	'class'               => sprintf( 'godam-gallery-v2 godam-gallery-v2--%s', $godam_gallery_mode ),
-	'style'               => $godam_inline_styles,
-	'data-mode'           => $godam_gallery_mode,
-	'data-layout'         => $godam_layout,
-	'data-ratio'          => $godam_view_ratio,
-	'data-embed-base-url' => home_url( '/' ),
-	'data-engagements'    => rtgodam_is_engagement_feature_enabled() && ! empty( $attributes['engagements'] ) ? 'show' : '',
+	'class'                 => sprintf( 'godam-gallery-v2 godam-gallery-v2--%s', $godam_gallery_mode ),
+	'style'                 => $godam_inline_styles,
+	'data-mode'             => $godam_gallery_mode,
+	'data-layout'           => $godam_layout,
+	'data-ratio'            => $godam_view_ratio,
+	'data-embed-base-url'   => home_url( '/' ),
+	'data-engagements'      => rtgodam_is_engagement_feature_enabled() && ! empty( $attributes['engagements'] ) ? 'show' : '',
+	'data-autoplay'         => $godam_autoplay ? 'true' : 'false',
+	'data-play-on-hover'    => $godam_play_on_hover ? 'true' : 'false',
+	'data-show-play-button' => $godam_show_play_button ? 'true' : 'false',
 );
 
 if ( $godam_is_shortcode ) {
@@ -373,7 +388,7 @@ if ( 'query' === $godam_gallery_mode ) {
 }
 
 ?>
-<div <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
+<div data-test-id="godam-gallery-render" <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
 	<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2__canvas godam-gallery-v2__canvas--%s', $godam_layout ) ); ?>">
 		<?php if ( empty( $godam_items ) && 'query' === $godam_gallery_mode ) : ?>
 			<div class="godam-gallery-v2__state">
@@ -399,7 +414,7 @@ if ( 'query' === $godam_gallery_mode ) {
 					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-%s', $godam_ratio_class ) ); ?>">
 						<button
 							type="button"
-							class="godam-gallery-v2__query-button"
+							class="godam-gallery-v2__query-button<?php echo ( empty( $godam_item['thumbnail'] ) && ! empty( $godam_item['video_url'] ) ) ? ' godam-gallery-v2-item--no-thumb' : ''; ?>"
 							data-godam-gallery-v2-trigger="true"
 							data-video-id="<?php echo esc_attr( $godam_item['id'] ); ?>"
 							<?php /* translators: %s: video title. */ ?>
@@ -409,8 +424,24 @@ if ( 'query' === $godam_gallery_mode ) {
 								<?php if ( ! empty( $godam_item['thumbnail'] ) ) : ?>
 									<img src="<?php echo esc_url( $godam_item['thumbnail'] ); ?>" alt="<?php echo esc_attr( $godam_item['title'] ); ?>" class="godam-gallery-v2__thumbnail" <?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?> />
 								<?php else : ?>
-									<span><?php esc_html_e( 'Video', 'godam' ); ?></span>
+									<span class="godam-gallery-v2__thumbnail godam-gallery-v2__thumbnail--pending" aria-hidden="true" hidden></span>
 								<?php endif; ?>
+								<?php if ( ! empty( $godam_item['video_url'] ) ) : ?>
+									<video
+										class="godam-gallery-v2-item__preview-video"
+										src="<?php echo esc_url( $godam_item['video_url'] ); ?>"
+										muted
+										playsinline
+										preload="<?php echo esc_attr( empty( $godam_item['thumbnail'] ) ? 'metadata' : 'none' ); ?>"
+										aria-hidden="true"
+										tabindex="-1"
+									></video>
+								<?php endif; ?>
+								<div class="godam-gallery-v2__play-icon" aria-hidden="true">
+									<svg viewBox="0 0 24 24" fill="currentColor">
+										<path d="M8 5v14l11-7z" />
+									</svg>
+								</div>
 							</div>
 							<?php if ( $godam_show_title ) : ?>
 								<div class="godam-gallery-v2__query-meta">
@@ -449,7 +480,7 @@ if ( 'query' === $godam_gallery_mode ) {
 					<div class="<?php echo esc_attr( sprintf( 'godam-gallery-v2-item godam-gallery-v2-item--%s godam-gallery-v2-item--ratio-%s', $godam_layout, $godam_ratio_class ) ); ?>">
 						<button
 							type="button"
-							class="godam-gallery-v2-item__button"
+							class="godam-gallery-v2-item__button<?php echo ( empty( $godam_item['thumbnail'] ) && ! empty( $godam_item['video_url'] ) ) ? ' godam-gallery-v2-item--no-thumb' : ''; ?>"
 							data-godam-gallery-v2-trigger="true"
 							data-video-id="<?php echo esc_attr( $godam_item['id'] ); ?>"
 							<?php /* translators: %s: video title. */ ?>
@@ -464,9 +495,22 @@ if ( 'query' === $godam_gallery_mode ) {
 										<?php echo $godam_thumbnail_attributes ? wp_kses_data( $godam_thumbnail_attributes ) : ''; ?>
 									/>
 								<?php else : ?>
-									<div class="godam-gallery-v2-item__placeholder">
-										<span><?php esc_html_e( 'Video', 'godam' ); ?></span>
-									</div>
+									<span
+										class="godam-gallery-v2-item__thumbnail godam-gallery-v2__thumbnail godam-gallery-v2__thumbnail--pending"
+										aria-hidden="true"
+										hidden
+									></span>
+								<?php endif; ?>
+								<?php if ( ! empty( $godam_item['video_url'] ) ) : ?>
+									<video
+										class="godam-gallery-v2-item__preview-video"
+										src="<?php echo esc_url( $godam_item['video_url'] ); ?>"
+										muted
+										playsinline
+										preload="<?php echo esc_attr( empty( $godam_item['thumbnail'] ) ? 'metadata' : 'none' ); ?>"
+										aria-hidden="true"
+										tabindex="-1"
+									></video>
 								<?php endif; ?>
 								<div class="godam-gallery-v2-item__play-icon" aria-hidden="true">
 									<svg viewBox="0 0 24 24" fill="currentColor">

@@ -16,7 +16,7 @@
 	height: auto;
 
 	&.is-primary.is-busy:disabled {
-		background: linear-gradient(-45deg, #AB3A6C 20%, #E6533A 50%, #AB3A6C 80%);
+		background: var(--wp-admin-theme-color, #AB3A6C);
 
 	}
 
@@ -181,11 +181,6 @@
         background: #fff;
     }
 
-	.components-form-token-field__suggestion:hover,
-    .components-form-token-field__suggestion.is-selected {
-        background: variables.$godam-primary-gradient !important;
-    }
-
     .components-combobox-control__input {
         width: 100%;
         background: rgba(255, 255, 255, 1) !important;
@@ -335,8 +330,24 @@
 	}
 
 	.components-panel__body {
-		padding: 1.25rem;
 		border-top: 0;
+
+		&-title {
+			outline: none;
+			box-shadow: none;
+
+			&:hover {
+				background: transparent;
+			}
+		}
+
+		&.is-opened {
+
+			.components-panel__body-title {
+				border-bottom: 1px solid #e0e0e0;
+				margin-bottom: 1rem;
+			}
+		}
 	}
 
 
@@ -389,12 +400,13 @@
 
 .godam-form-group {
 
-	.label-text {
-		font-size: 0.875rem !important;
-		line-height: 1.375 !important;
+	label, .label-text, .components-base-control__label {
+		font-size: 13px;
+		line-height: 1.375;
 		display: block;
 		margin-bottom: 0.5rem;
 		font-weight: 500;
+		text-transform: none !important;
 	}
 
 	.help-text {

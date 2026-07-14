@@ -55,7 +55,7 @@
 
 .godam-link {
 	text-decoration: none;
-	color: #AB3A6C;
+	color: var(--wp-admin-theme-color, #AB3A6C);
 
 	&:hover {
 		text-decoration: underline;
@@ -89,7 +89,7 @@
 		}
 
 		&:focus-visible {
-			outline: 2px solid #ab3a6c;
+			outline: 2px solid var(--wp-admin-theme-color, #ab3a6c);
 			outline-offset: -2px;
 		}
 
@@ -104,236 +104,11 @@
 	}
 }
 
-.slider {
-	position: relative;
-	height: 12px;
-
-	.slider-input {
-		cursor: pointer;
-		padding: 0;
-		margin: 0;
-		-webkit-appearance: none;
-		width: 100%;
-		height: 12px;
-		background: #ddd;
-		outline: none;
-		opacity: 0.7;
-		-webkit-transition: .2s;
-		transition: opacity .2s;
-		border: none;
-		position: relative;
-		border-radius: 4px;
-
-		&::before {
-			content: '';
-			background-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
-			;
-			position: absolute;
-			left: 0;
-			top: 0;
-			height: 100%;
-			width: var(--progress-value, 0%);
-			border-radius: 4px;
-		}
-
-		&:hover {
-			opacity: 1;
-			transform: scaleY(1.2);
-		}
-
-		&::-webkit-slider-thumb {
-			-webkit-appearance: none;
-			appearance: none;
-			width: 0;
-			height: 12px;
-			background: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
-			;
-			cursor: pointer;
-		}
-
-		&::-moz-range-thumb {
-			width: 0;
-			height: 12px;
-			border-radius: 50%;
-			background: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
-			;
-			cursor: pointer;
-		}
-	}
-
-	.slider-input[disabled] {
-		background: #ddd;
-	}
-
-	.tooltip {
-		position: absolute;
-		background: #fff;
-		padding: 0.25rem;
-		border-radius: 0.25rem;
-		transform: translate(-50%, 0);
-		border: 1px solid #ddd;
-	}
-
-	.layer-indicator {
-		position: absolute;
-		top: 0;
-		width: 8px;
-		height: 18px;
-		background-color: rgb(255, 177, 31, 0.8);
-		border-radius: 2px;
-		cursor: pointer;
-		user-select: none;
-
-		&.hotspot-indicator {
-
-			&:hover {
-				background-color: rgb(255, 177, 31, 0.5);
-			}
-		}
-
-		&--container {
-			position: relative;
-			// display: none;
-
-
-			.icon {
-				position: absolute;
-				top: -2.25rem;
-				left: 4px;
-				transform: translate(-50%, 0);
-				font-size: 12px;
-				background-color: #fff;
-				border-radius: 100px;
-				padding: 0.25rem;
-				box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-				z-index: 1;
-				display: flex;
-				align-items: center;
-				flex-wrap: nowrap;
-				white-space: nowrap;
-				gap: 0.25rem;
-
-				&.active {
-					background-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, rgb(56, 88, 233, 0.8)));
-					fill: #fff;
-					color: #fff;
-					box-shadow: 0 0 10px rgb(56, 88, 233, 0.6);
-
-					&::after {
-						background-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, rgb(56, 88, 233, 0.8)));
-					}
-				}
-
-				div {
-					align-items: center;
-					flex-wrap: nowrap;
-					white-space: nowrap;
-					gap: 0.25rem;
-					display: none;
-					padding-right: 1px;
-				}
-
-				&::after {
-					z-index: -1;
-					content: '';
-					position: absolute;
-					bottom: -4px;
-					left: 50%;
-					width: 12px;
-					height: 12px;
-					transform: translate(-50%, 0) rotate(45deg);
-					background-color: #fff;
-				}
-			}
-
-			// Add-on layer icon (e.g. WooCommerce) rendered as <img>.
-			// Matches the intrinsic 24x24 size of the WordPress <Icon> SVG component.
-			.layer-indicator__addon-icon {
-				width: 20px;
-				height: 20px;
-				display: block;
-				flex-shrink: 0;
-				margin: 2px;
-			}
-
-			.info {
-				position: absolute;
-				bottom: -3rem;
-				left: 4px;
-				font-size: 12px;
-				padding: 0.25rem;
-				background-color: #fff;
-				border-radius: 0.25rem;
-				transform: translate(-50%, 0);
-				border: 1px solid #ddd;
-				z-index: 1;
-				align-items: center;
-				flex-wrap: nowrap;
-				white-space: nowrap;
-				display: none;
-			}
-		}
-
-		&:hover {
-			background-color: rgb(255, 177, 31);
-			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-			z-index: 99;
-			width: var(--hover-width, 8px);
-
-			.layer-indicator--container {
-				display: block;
-
-				.icon {
-					border-radius: 0.5rem;
-
-					div {
-						display: flex;
-					}
-				}
-
-				.info {
-					display: flex;
-				}
-			}
-		}
-	}
-
-	.chapter-indicator {
-
-		&--duration {
-			display: none;
-		}
-
-		&--text {
-			position: absolute;
-			left: 50%;
-			bottom: -20px;
-			font-size: 11px;
-			white-space: nowrap;
-		}
-
-		&:hover {
-
-			.chapter-indicator--duration {
-				display: block;
-				position: absolute;
-				top: -20px;
-				left: 50%;
-				white-space: nowrap;
-				font-size: 11px;
-			}
-
-			.chapter-indicator--text {
-				max-width: var(--hover-width, 8px);
-				overflow: hidden;
-				white-space: nowrap;
-				text-overflow: ellipsis;
-			}
-		}
-	}
-}
-
 #root-video-editor {
+	height: 100%;
+	background-color: #fff;
+	display: flex;
+	flex-direction: column;
 
 	.godam-settings-header-content {
 
@@ -349,10 +124,22 @@
 			padding: .75rem 0.75rem;
 		}
 	}
+
+	// Canvas wrapper for the single-video editor. Migrated from the now-removed
+	// attachment-picker.scss (the old list-view stylesheet) so it survives once
+	// that file is gone.
+	.video-canvas-wrapper {
+		max-width: 90%;
+
+		@media screen and (min-width: 1440px) {
+			max-width: 80%;
+		}
+	}
 }
 
 .godam-video-list__video__thumbnail__overlay__menu {
 
+	// stylelint-disable-next-line no-descending-specificity
 	.components-button.has-icon.has-text {
 		justify-content: flex-start !important;
 	}

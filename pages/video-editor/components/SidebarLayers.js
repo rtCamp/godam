@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * Internal dependencies
  */
-import { addLayer, setCurrentLayer, setAddLayerModalTime } from '../redux/slice/videoSlice';
+import { addLayer, setCurrentLayer, setAddLayerModalTime, removeLayer } from '../redux/slice/videoSlice';
 import { v4 as uuidv4 } from 'uuid';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
@@ -18,17 +18,17 @@ import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
+import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from './editor-shell/icons';
+import { LAYER_TYPE_COLORS } from '../utils/layerTypes';
+import { notify as notifyGuide } from '../onboarding/productGuide';
 
 /**
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, Icon, Tooltip } from '@wordpress/components';
-import { plus, preformatted, customLink, arrowRight, video, customPostType, thumbsUp, error } from '@wordpress/icons';
-import { useState, useEffect, useCallback } from '@wordpress/element';
-
-import Layer from './layers/Layer';
-import LayerSelector from './LayerSelector.jsx';
+import { Button, Icon, Tooltip, Dropdown, DropdownMenu, MenuGroup, MenuItem, NavigableMenu, Popover } from '@wordpress/components';
+import { plus, preformatted, customLink, video, customPostType, thumbsUp, moreVertical, copy, trash, chevronRight, info } from '@wordpress/icons';
+import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 
 /**
  * Layer types with their labels, icons, and integration-specific state.
@@ -133,13 +133,120 @@ export const layerTypes = [
 ];
 
 /**
+ * Build the default display name for a layer, e.g. "CTA Layer", "Hotspot Layer",
+ * "Gravity Forms Layer". The label is pulled from the layer-type registry above
+ * (including add-on layers merged via `godamVideoEditorConfig`) so it stays in
+ * sync with the Add-layer menu. Returns `''` for unknown types.
+ *
+ * @param {string} type       Layer type (e.g. 'cta', 'hotspot', 'form').
+ * @param {string} [formType] Form integration key for `form` layers (e.g. 'gravity').
+ * @return {string} The default layer name.
+ */
+export const getDefaultLayerName = ( type, formType ) => {
+	const data = layerTypes.find( ( l ) => l.type === type );
+	const label = (
+		'form' === type
+			? data?.formType?.[ formType || 'gravity' ]?.layerText
+			: ( data?.layerText || data?.title )
+	) || '';
+
+	if ( ! label ) {
+		return '';
+	}
+
+	return sprintf(
+		/* translators: %s is the layer type label; e.g. "CTA" produces "CTA Layer". */
+		__( '%s Layer', 'godam' ),
+		label,
+	);
+};
+
+/**
+ * A submenu item for the "Add layer" menu (e.g. Form) that opens a side Popover
+ * listing the choices. The trigger is a real MenuItem button inside a plain
+ * wrapper (no tabindex), so it is keyboard-navigable within the parent
+ * NavigableMenu (arrow keys move to it, Enter/Space opens the submenu).
+ *
+ * @param {Object}   param0               Props.
+ * @param {Object}   param0.opt           The option, including a `submenu` array.
+ * @param {Function} param0.onParentClose Closes the parent Add-layer menu.
+ *
+ * @return {JSX.Element} The submenu item.
+ */
+const AddLayerSubmenuItem = ( { opt, onParentClose } ) => {
+	const [ isSubOpen, setSubOpen ] = useState( false );
+	const anchorRef = useRef( null );
+
+	return (
+		<div className="godam-ve-add-menu__submenu" ref={ anchorRef }>
+			<MenuItem
+				className="godam-ve-add-menu__item"
+				data-test-id={ `godam-video-editor-control-add-${ opt.key }` }
+				aria-haspopup="menu"
+				aria-expanded={ isSubOpen }
+				onClick={ () => setSubOpen( ( value ) => ! value ) }
+			>
+				<span
+					className="godam-ve-add-menu__icon"
+					style={ { '--godam-layer-color': LAYER_TYPE_COLORS[ opt.key ] } }
+				>
+					{ opt.iconUrl
+						? <img src={ opt.iconUrl } alt="" />
+						: <Icon icon={ opt.iconComponent } /> }
+				</span>
+				<span className="godam-ve-add-menu__text">
+					<span className="godam-ve-add-menu__title">{ opt.title }</span>
+					{ opt.description && (
+						<span className="godam-ve-add-menu__desc">{ opt.description }</span>
+					) }
+				</span>
+				<Icon className="godam-ve-add-menu__chevron" icon={ chevronRight } />
+			</MenuItem>
+			{ isSubOpen && (
+				<Popover
+					className="godam-ve-add-menu__popover"
+					anchor={ anchorRef.current }
+					placement="right-start"
+					onClose={ () => setSubOpen( false ) }
+					onFocusOutside={ () => setSubOpen( false ) }
+				>
+					<NavigableMenu orientation="vertical" className="godam-ve-add-menu">
+						{ opt.submenu.map( ( sub ) => (
+							<MenuItem
+								key={ sub.key }
+								className="godam-ve-add-menu__item"
+								data-test-id={ `godam-video-editor-control-add-form-${ sub.key }` }
+								onClick={ () => {
+									sub.onSelect();
+									setSubOpen( false );
+									onParentClose();
+								} }
+							>
+								<span className="godam-ve-add-menu__icon">
+									{ sub.iconUrl
+										? <img src={ sub.iconUrl } alt="" />
+										: <Icon icon={ sub.iconComponent } /> }
+								</span>
+								<span className="godam-ve-add-menu__text">
+									<span className="godam-ve-add-menu__title">{ sub.title }</span>
+								</span>
+							</MenuItem>
+						) ) }
+					</NavigableMenu>
+				</Popover>
+			) }
+		</div>
+	);
+};
+
+/**
  * Sidebar component to display and select different types of layers to be added to the video.
  *
  * @param {Object}   param0               - Props passed to SidebarLayers component.
  * @param {number}   param0.currentTime   - The current playback time of the video (in seconds or milliseconds).
  * @param {Function} param0.onSelectLayer - Callback function invoked when a layer is selected.
  * @param {Function} param0.onPauseVideo  - Function to pause the video playback.
- * @param {number}   param0.duration      - The total duration of the video (in seconds or milliseconds).
+ * @param {number}   param0.duration      - The total duration of the video (used to bound duplicated layers).
  *
  * @return {JSX.Element} The rendered SidebarLayers component.
  */
@@ -150,24 +257,35 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 	const dispatch = useDispatch();
 
-	const openModal = useCallback( () => {
+	// Open the "Add layer" dropdown menu (from the sidebar button or the timeline).
+	const openAddMenu = useCallback( () => {
 		setOpen( true );
 		if ( onPauseVideo ) {
 			onPauseVideo();
 		}
+		// Advances the product guide's "open the dropdown" step.
+		notifyGuide( 'open-add-layer' );
 	}, [ onPauseVideo ] );
-	const closeModal = () => {
+
+	// Controlled toggle for the dropdown. Closing also clears any pending
+	// add-time requested from the timeline's "Add layer" chip.
+	const handleAddMenuToggle = ( next ) => {
+		if ( next ) {
+			openAddMenu();
+			return;
+		}
 		setOpen( false );
-		// Clear the addLayerModalTime when closing the modal
-		dispatch( setAddLayerModalTime( null ) );
+		if ( addLayerModalTime !== null ) {
+			dispatch( setAddLayerModalTime( null ) );
+		}
 	};
 
-	// Listen for addLayerModalTime changes to open the modal from the slider
+	// The timeline's "Add layer" chip requests the menu by setting addLayerModalTime.
 	useEffect( () => {
 		if ( addLayerModalTime !== null ) {
-			openModal();
+			openAddMenu();
 		}
-	}, [ addLayerModalTime, openModal ] );
+	}, [ addLayerModalTime, openAddMenu ] );
 
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
@@ -180,12 +298,16 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 		.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	const addNewLayer = ( type, formType ) => {
+		// Add at the time requested from the timeline ("Add layer" chip), else at
+		// the current playhead. `??` keeps a valid 0:00. Cleared on menu close.
+		const addTime = addLayerModalTime ?? currentTime;
 		switch ( type ) {
 			case 'form':
 				dispatch( addLayer( {
 					id: uuidv4(),
-					displayTime: currentTime,
+					displayTime: addTime,
 					type,
+					name: getDefaultLayerName( type, formType ),
 					form_type: formType || 'gravity',
 					submitted: false,
 					allow_skip: true,
@@ -196,11 +318,13 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			case 'cta':
 				dispatch( addLayer( {
 					id: uuidv4(),
-					displayTime: currentTime,
+					displayTime: addTime,
 					type,
+					name: getDefaultLayerName( type ),
 					cta_type: 'image',
 					cardLayout: 'card-layout--imagecover-text',
-					text: '',
+					trigger: 'timestamp',
+					watchDepth: 50,
 					html: '',
 					link: '',
 					allow_skip: true,
@@ -210,11 +334,22 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				dispatch(
 					addLayer( {
 						id: uuidv4(),
-						displayTime: currentTime,
+						displayTime: addTime,
 						type,
+						name: getDefaultLayerName( type ),
 						duration: 5,
 						pauseOnHover: false,
 						hotspots: [],
+						// Shared style for all hotspot points (new model). The
+						// presence of `styleType` marks a layer as using the
+						// shared style; legacy layers without it fall back to
+						// per-hotspot style on the player.
+						styleType: 'pulse',
+						pulseColor: '#0c80dfa6',
+						icon: '',
+						customIconUrl: null,
+						customIconId: null,
+						iconColor: '#0c80dfa6',
 						isNew: true,
 					} ),
 				);
@@ -222,8 +357,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			case 'ad':
 				dispatch( addLayer( {
 					id: uuidv4(),
-					displayTime: currentTime,
+					displayTime: addTime,
 					type,
+					name: getDefaultLayerName( type ),
 					adTagUrl: '',
 					ad_url: '',
 					skippable: false,
@@ -233,8 +369,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			case 'poll':
 				dispatch( addLayer( {
 					id: uuidv4(),
-					displayTime: currentTime,
+					displayTime: addTime,
 					type,
+					name: getDefaultLayerName( type ),
 					poll_id: '',
 					allow_skip: true,
 					custom_css: '',
@@ -244,164 +381,368 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				// Check for add-on layer creators (registered via window.godamLayerCreators).
 				const addonCreator = window.godamLayerCreators?.[ type ];
 				if ( addonCreator ) {
-					const layerData = addonCreator( { layers, currentTime, type } );
+					const layerData = addonCreator( { layers, currentTime: addTime, type } );
 					if ( layerData ) {
-						dispatch( addLayer( { ...layerData, id: uuidv4() } ) );
+						// Seed a registry-derived default name; the add-on creator can
+						// override it by returning its own `name` (e.g. the WooCommerce
+						// layer names itself "Product Hotspot Layer").
+						dispatch( addLayer( { name: getDefaultLayerName( type ), ...layerData, id: uuidv4() } ) );
 					}
 				}
 				break;
 			}
 		}
+
+		// Advance the product guide's "add a layer" step once a layer is added.
+		notifyGuide( 'layer-added' );
 	};
 
+	const formatTime = ( seconds ) => {
+		const total = Math.max( 0, Math.floor( Number( seconds ) || 0 ) );
+		const mins = Math.floor( total / 60 );
+		const secs = total % 60;
+		return `${ mins }:${ secs < 10 ? '0' : '' }${ secs }`;
+	};
+
+	const handleDeleteLayer = ( layer ) => {
+		if ( currentLayer?.id === layer.id ) {
+			dispatch( setCurrentLayer( null ) );
+		}
+		dispatch( removeLayer( { id: layer.id } ) );
+	};
+
+	// Duplicate a layer at the next free whole-second slot (layers can't share a timestamp).
+	const handleDuplicateLayer = ( layer ) => {
+		const usedTimes = new Set( layers.map( ( l ) => Number( l.displayTime ) ) );
+		const maxTime = duration ? Math.floor( duration ) : Number( layer.displayTime ) + layers.length + 1;
+		let nextTime = Math.floor( Number( layer.displayTime ) ) + 1;
+		while ( usedTimes.has( nextTime ) && nextTime <= maxTime ) {
+			nextTime += 1;
+		}
+		if ( usedTimes.has( nextTime ) ) {
+			nextTime = Number( layer.displayTime ) + 0.5;
+		}
+		const clone = {
+			...JSON.parse( JSON.stringify( layer ) ),
+			id: uuidv4(),
+			displayTime: nextTime,
+		};
+		dispatch( addLayer( clone ) );
+	};
+
+	const hasLayerAtCurrentTime = Boolean( layers.find( ( l ) => l.displayTime === currentTime ) );
+	const isAddDisabled = ! currentTime || hasLayerAtCurrentTime;
+
+	// Colored layer-type icons (from design) used in the list rows + add menu.
+	const layerTypeIcons = {
+		cta: CtaLayerIcon,
+		hotspot: HotspotLayerIcon,
+		poll: PollLayerIcon,
+	};
+
+	// Build the "Add layer" dropdown options from the live layer types so that
+	// plugin availability (forms/poll/ad/add-ons) is reflected here, mirroring
+	// the modal's behaviour.
+	const buildAddOptions = () => {
+		const options = [
+			{ key: 'cta', iconComponent: CtaLayerIcon, title: __( 'CTA', 'godam' ), description: __( 'Add a clickable button', 'godam' ), onSelect: () => addNewLayer( 'cta' ) },
+			{ key: 'hotspot', iconComponent: HotspotLayerIcon, title: __( 'Hotspot', 'godam' ), description: __( 'Add an info hotspot', 'godam' ), onSelect: () => addNewLayer( 'hotspot' ) },
+		];
+
+		// "Form" entry. With multiple active form plugins it opens a side submenu
+		// to choose one; with a single plugin it adds directly; disabled when none
+		// are active.
+		const formLayer = layerTypes.find( ( l ) => l.type === 'form' );
+		const activeForms = Object.entries( formLayer?.formType ?? {} )
+			.filter( ( [ , ft ] ) => ft.isActive )
+			.map( ( [ ftKey, ft ] ) => ( {
+				key: ftKey,
+				title: ft.layerText,
+				iconUrl: ft.icon,
+				onSelect: () => addNewLayer( 'form', ftKey ),
+			} ) );
+		const formOption = {
+			key: 'form',
+			iconComponent: FormLayerIcon,
+			title: __( 'Form', 'godam' ),
+			description: __( 'Embed a lead form', 'godam' ),
+		};
+		if ( activeForms.length === 0 ) {
+			formOption.disabled = true;
+			formOption.tooltip = __( 'No form plugin is active', 'godam' );
+		} else if ( activeForms.length === 1 ) {
+			formOption.onSelect = activeForms[ 0 ].onSelect;
+		} else {
+			formOption.submenu = activeForms;
+		}
+		options.push( formOption );
+
+		const pollLayer = layerTypes.find( ( l ) => l.type === 'poll' );
+		options.push( {
+			key: 'poll',
+			iconComponent: PollLayerIcon,
+			title: __( 'Poll', 'godam' ),
+			description: __( 'Create an interactive poll', 'godam' ),
+			disabled: pollLayer?.isActive === false,
+			tooltip: pollLayer?.isActive === false ? pollLayer?.tooltipMessage : '',
+			onSelect: () => addNewLayer( 'poll' ),
+		} );
+
+		const adLayer = layerTypes.find( ( l ) => l.type === 'ad' );
+		const adDisabled = 'ad-server' === adServer;
+		options.push( {
+			key: 'ad',
+			iconComponent: adLayer?.icon,
+			title: __( 'Ad', 'godam' ),
+			description: __( 'Insert an advertisement', 'godam' ),
+			disabled: adDisabled,
+			tooltip: adDisabled ? adLayer?.tooltipMessage : '',
+			onSelect: () => addNewLayer( 'ad' ),
+		} );
+
+		// Add-on layers (e.g., WooCommerce) merged from PHP.
+		layerTypes
+			.filter( ( lt ) => ! [ 'cta', 'hotspot', 'form', 'ad', 'poll' ].includes( lt.type ) )
+			.forEach( ( lt ) => {
+				options.push( {
+					key: lt.type,
+					iconUrl: lt.iconUrl,
+					iconComponent: lt.iconUrl ? undefined : lt.icon,
+					title: lt.title || lt.layerText,
+					description: ( lt.title && lt.layerText ) ? lt.layerText : '',
+					disabled: lt.isActive === false,
+					tooltip: lt.isActive === false ? ( lt.tooltipMessage ?? '' ) : '',
+					onSelect: () => addNewLayer( lt.type ),
+				} );
+			} );
+
+		return options;
+	};
+	const addOptions = buildAddOptions();
+
 	return (
-		<>
-			{
-				! currentLayer ? (
-					<div id="sidebar-layers" className="pt-4 h-max">
-						{
-							sortedLayers?.map( ( layer ) => {
-								let addWarning = false;
-								const layerData = layerTypes.find( ( l ) => l.type === layer.type );
-								const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
-								const icon = formType ? formType?.icon : ( layerData?.icon || layerData?.iconUrl );
-								const layerText = formType ? formType?.layerText : ( layerData?.layerText || layerData?.title );
+		<div id="sidebar-layers" className="godam-ve-layers">
+			<div className="godam-ve-layers__head">
+				<h2 className="godam-ve-layers__title">
+					{ sprintf(
+						// translators: %d is the number of layers.
+						__( 'Layers (%d)', 'godam' ),
+						layers.length,
+					) }
+				</h2>
 
-								/**
-								 * Get Tooltip message.
-								 */
-								const tooltipMessage = ( () => {
-									if ( formType && ! formType.isActive ) {
-										return formType.tooltipMessage;
-									}
-
-									if ( 'ad-server' === adServer && 'ad' === layerData?.type ) {
-										return layerData?.tooltipMessage;
-									}
-
-									if ( layerData?.isActive === false ) {
-										return layerData?.tooltipMessage ?? '';
-									}
-
-									return '';
-								} )();
-
-								if ( '' !== tooltipMessage ) {
-									addWarning = true;
+				<Dropdown
+					className="godam-ve-layers__add"
+					contentClassName="godam-ve-add-menu__popover"
+					popoverProps={ { placement: 'bottom-start' } }
+					open={ isOpen }
+					onToggle={ handleAddMenuToggle }
+					renderToggle={ ( { isOpen: menuOpen, onToggle } ) => {
+						const handleToggle = () => {
+							if ( onPauseVideo ) {
+								onPauseVideo();
+							}
+							onToggle();
+						};
+						return (
+							<>
+								<Button
+									variant="primary"
+									className="godam-ve-layers__add-button"
+									iconPosition="left"
+									id="add-layer-btn"
+									data-test-id="godam-video-editor-button-add-layer"
+									onClick={ handleToggle }
+									aria-expanded={ menuOpen }
+									icon={ plus }
+									disabled={ isAddDisabled }
+								>
+									{ __( 'Add layer', 'godam' ) }
+								</Button>
+							</>
+						);
+					} }
+					renderContent={ ( { onClose } ) => (
+						<NavigableMenu orientation="vertical" className="godam-ve-add-menu">
+							{ addOptions.map( ( opt ) => {
+								// Options with a submenu (e.g. Form) open a side submenu.
+								if ( opt.submenu ) {
+									return (
+										<AddLayerSubmenuItem
+											key={ opt.key }
+											opt={ opt }
+											onParentClose={ onClose }
+										/>
+									);
 								}
 
-								// Disable the button when the required plugin/feature is inactive
-								// (e.g. form plugin not installed, or WooCommerce layer API key missing/expired).
-								const isLayerDisabled = ( formType && ! formType.isActive ) || layerData?.isActive === false;
-
-								return (
-									<Tooltip
-										key={ layer.id }
-										text={ tooltipMessage }
-										placement="right"
+								const item = (
+									<MenuItem
+										className="godam-ve-add-menu__item"
+										data-test-id={ `godam-video-editor-control-add-${ opt.key }` }
+										disabled={ opt.disabled }
+										onClick={ () => {
+											opt.onSelect?.();
+											onClose();
+										} }
 									>
-										<div className="border rounded-lg mb-2">
-											<Button
-												className={ `w-full flex justify-between items-center px-2 py-3 border-1 rounded-lg h-auto hover:bg-gray-50 cursor-pointer border-[#e5e7eb] ${ addWarning ? 'bg-orange-50 hover:bg-orange-50' : '' }` }
-												onClick={ () => {
-													dispatch( setCurrentLayer( layer ) );
-													onSelectLayer( layer.displayTime );
-												} }
-												disabled={ isLayerDisabled }
-											>
-												<div className="flex items-center gap-2">
-													{
-														formType || ( typeof icon === 'string' && icon ) ? (
-															<img src={ icon } alt={ layer.type } className="w-6 h-6" />
-														) : (
-															<Icon icon={ icon } />
-														)
-													}
-													<p className="m-0 text-base">{ layerText } layer at <b>{ layer.displayTime }s</b></p>
-													{ layer.badge && (
-														<span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded-full">
-															{ layer.badge }
-														</span>
-													) }
-												</div>
-												<div>
-													<Icon icon={ arrowRight } />
-												</div>
-											</Button>
-										</div>
-									</Tooltip>
+										<span
+											className="godam-ve-add-menu__icon"
+											style={ { '--godam-layer-color': LAYER_TYPE_COLORS[ opt.key ] } }
+										>
+											{ opt.iconUrl
+												? <img src={ opt.iconUrl } alt="" />
+												: <Icon icon={ opt.iconComponent } /> }
+										</span>
+										<span className="godam-ve-add-menu__text">
+											<span className="godam-ve-add-menu__title">{ opt.title }</span>
+											{ opt.description && (
+												<span className="godam-ve-add-menu__desc">{ opt.description }</span>
+											) }
+										</span>
+									</MenuItem>
 								);
-							} )
-						}
-						{
-							! loading && layers.length === 0 && (
-								<>
-									<h3 className="text-2xl m-0 text-center">{ __( 'No layers added', 'godam' ) }</h3>
-								</>
-							)
-						}
-						{
-							loading && (
-								<div className="loading-skeleton">
-									<div className="skeleton-container skeleton-container-short">
-										<div className="skeleton-header"></div>
-									</div>
-									<div className="skeleton-container skeleton-container-short">
-										<div className="skeleton-header"></div>
-									</div>
-									<div className="skeleton-container skeleton-container-short">
-										<div className="skeleton-header"></div>
-									</div>
-								</div>
-							)
-						}
 
-						{
-							! loading && (
-								<div className="mt-10 flex justify-center flex-col items-center">
-									<Button
-										className="godam-button w-fit"
-										variant="primary"
-										id="add-layer-btn"
-										icon={ plus }
-										iconPosition="left"
-										onClick={ openModal }
-										disabled={ ! currentTime || layers.find( ( l ) => ( l.displayTime ) === ( currentTime ) ) }
-									>
-										{
-											// translators: %s is the current time in seconds.
-											sprintf( __( 'Add layer at %ss', 'godam' ), currentTime )
-										}
-									</Button>
-									{ layers.find( ( l ) => l.displayTime === currentTime ) && (
-										<p className="text-slate-500 text-center">
-											{ __( 'There is already a layer at this timestamp. Please choose a different timestamp.', 'godam' ) }
-										</p>
-									) }
-									{ ! currentTime && (
-										<div className="flex items-center gap-2">
-											<Icon icon={ error } className="w-4 h-4" style={ { fill: '#EAB308' } } />
-											<p className="text-center text-[#AB3A6C]">{ __( 'Play video to add layer.', 'godam' ) }</p>
-										</div>
-									) }
-								</div>
-							)
-						}
+								return opt.tooltip
+									? <Tooltip key={ opt.key } text={ opt.tooltip } placement="right">{ item }</Tooltip>
+									: <span key={ opt.key }>{ item }</span>;
+							} ) }
+						</NavigableMenu>
+					) }
+				/>
 
-						{ isOpen && (
-							<LayerSelector
-								closeModal={ closeModal }
-								addNewLayer={ addNewLayer }
-							/>
-						) }
+				{ ! currentTime && ! hasLayerAtCurrentTime && (
+					<p className="godam-ve-layers__hint">
+						<Icon icon={ info } size={ 24 } />
+						{ __( 'To add a layer, pick a spot on the timeline where you want the layer.', 'godam' ) }
+					</p>
+				) }
+			</div>
+
+			{ loading && (
+				<div className="loading-skeleton">
+					<div className="skeleton-container skeleton-container-short">
+						<div className="skeleton-header"></div>
 					</div>
-				) : (
-					<div id="sidebar-layers">
-						<Layer layer={ currentLayer } goBack={ () => dispatch( setCurrentLayer( null ) ) } duration={ duration } />
+					<div className="skeleton-container skeleton-container-short">
+						<div className="skeleton-header"></div>
 					</div>
-				)
-			}
-		</>
+					<div className="skeleton-container skeleton-container-short">
+						<div className="skeleton-header"></div>
+					</div>
+				</div>
+			) }
+
+			{ ! loading && sortedLayers.length === 0 && (
+				<div className="godam-ve-layers__empty">
+					<p className="godam-ve-layers__empty-title">{ __( 'No layers yet', 'godam' ) }</p>
+					<p className="godam-ve-layers__empty-text">
+						{ __( 'Add interactive elements like CTAs, polls, and forms to your video', 'godam' ) }
+					</p>
+				</div>
+			) }
+
+			{ ! loading && sortedLayers.length > 0 && (
+				<ul className="godam-ve-layers__list">
+					{ sortedLayers.map( ( layer ) => {
+						const layerData = layerTypes.find( ( l ) => l.type === layer.type );
+						const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
+						const icon = formType ? formType?.icon : ( layerTypeIcons[ layer.type ] || layerData?.iconUrl || layerData?.icon );
+						const layerText = formType ? formType?.layerText : ( layerData?.layerText || layerData?.title );
+
+						// Tooltip shown when the layer's required plugin/feature is unavailable.
+						const tooltipMessage = ( () => {
+							if ( formType && ! formType.isActive ) {
+								return formType.tooltipMessage;
+							}
+							if ( 'ad-server' === adServer && 'ad' === layerData?.type ) {
+								return layerData?.tooltipMessage;
+							}
+							if ( layerData?.isActive === false ) {
+								return layerData?.tooltipMessage ?? '';
+							}
+							return '';
+						} )();
+
+						const isLayerDisabled = ( formType && ! formType.isActive ) || layerData?.isActive === false;
+						const isActive = currentLayer?.id === layer.id;
+						const hasImageIcon = formType || ( typeof icon === 'string' && icon );
+
+						return (
+							<li
+								key={ layer.id }
+								className={ `godam-ve-layer-row${ isActive ? ' is-active' : '' }${ tooltipMessage ? ' has-warning' : '' }` }
+							>
+								<Tooltip text={ tooltipMessage } placement="right">
+									<div className="godam-ve-layer-row__hit">
+										<Button
+											className="godam-ve-layer-row__main"
+											onClick={ () => {
+												dispatch( setCurrentLayer( layer ) );
+												onSelectLayer( layer.displayTime );
+											} }
+											disabled={ isLayerDisabled }
+										>
+											<span
+												className="godam-ve-layer-row__icon"
+												style={ { '--godam-layer-color': LAYER_TYPE_COLORS[ layer.type ] } }
+											>
+												{ hasImageIcon
+													? <img src={ icon } alt="" className="godam-ve-layer-row__icon-img" />
+													: <Icon icon={ icon } /> }
+											</span>
+											<span className="godam-ve-layer-row__text">
+												<span className="godam-ve-layer-row__name">
+													{ layer.name || sprintf(
+														// translators: %s is the layer type label; e.g. "CTA Layer".
+														__( '%s Layer', 'godam' ),
+														layerText,
+													) }
+												</span>
+												<span className="godam-ve-layer-row__meta">
+													{ layerText } • { formatTime( layer.displayTime ) }
+												</span>
+											</span>
+										</Button>
+										<DropdownMenu
+											className="godam-ve-layer-row__menu"
+											icon={ moreVertical }
+											label={ __( 'Layer options', 'godam' ) }
+											popoverProps={ { placement: 'bottom-end' } }
+										>
+											{ ( { onClose } ) => (
+												<MenuGroup>
+													<MenuItem
+														icon={ copy }
+														onClick={ () => {
+															handleDuplicateLayer( layer );
+															onClose();
+														} }
+													>
+														{ __( 'Duplicate', 'godam' ) }
+													</MenuItem>
+													<MenuItem
+														icon={ trash }
+														isDestructive
+														onClick={ () => {
+															handleDeleteLayer( layer );
+															onClose();
+														} }
+													>
+														{ __( 'Delete', 'godam' ) }
+													</MenuItem>
+												</MenuGroup>
+											) }
+										</DropdownMenu>
+									</div>
+								</Tooltip>
+							</li>
+						);
+					} ) }
+				</ul>
+			) }
+
+		</div>
 	);
 };
 

@@ -205,7 +205,8 @@ function rtgodam_image_cta_html( $layer ) {
 	$image_text           = isset( $layer['imageText'] ) ? sanitize_text_field( $layer['imageText'] ) : '';
 	$image_description    = isset( $layer['imageDescription'] ) ? sanitize_text_field( $layer['imageDescription'] ) : '';
 	$image_link           = isset( $layer['imageLink'] ) ? $layer['imageLink'] : '#';
-	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? sanitize_hex_color( $layer['imageCtaButtonColor'] ) : '#EEAB95';
+	$cta_background_color = isset( $layer['imageCtaButtonColor'] ) ? sanitize_hex_color( $layer['imageCtaButtonColor'] ) : '#111';
+	$cta_text_color       = isset( $layer['imageCtaButtonTextColor'] ) ? sanitize_hex_color( $layer['imageCtaButtonTextColor'] ) : '#ffffff';
 	$cta_button_text      = ! empty( $layer['imageCtaButtonText'] ) ? sanitize_text_field( $layer['imageCtaButtonText'] ) : __( 'Check now', 'godam' );
 
 	// Ensure opacity is within valid range.
@@ -248,9 +249,10 @@ function rtgodam_image_cta_html( $layer ) {
 
 	if ( ! empty( $cta_button_text ) || ! empty( $image_link ) ) {
 		$content_element .= sprintf(
-			'<div class="btns"><a class="godam-cta-btn" href="%s" target="_blank" rel="noopener noreferrer" style="background-color: %s; text-decoration: none;">%s</a></div>',
+			'<div class="btns"><a class="godam-cta-btn" href="%s" target="_blank" rel="noopener noreferrer" style="background-color: %s; color: %s; text-decoration: none;">%s</a></div>',
 			esc_url( $image_link ),
 			esc_attr( $cta_background_color ),
+			esc_attr( $cta_text_color ),
 			esc_html( $cta_button_text )
 		);
 	}
@@ -1739,16 +1741,10 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 		}
 	}
 
-	if ( empty( $resolved_thumbnail ) ) {
-		$icon = wp_mime_type_icon( $attachment_id );
-		if ( $icon ) {
-			$resolved_thumbnail = esc_url_raw( $icon );
-		}
-	}
-
-	if ( empty( $resolved_thumbnail ) && defined( 'RTGODAM_URL' ) ) {
-		$resolved_thumbnail = trailingslashit( RTGODAM_URL ) . 'assets/src/images/video-thumbnail-default.png';
-	}
+	// Do NOT fall back to wp_mime_type_icon() or a generic default image here.
+	// When no real thumbnail is available, returning '' lets the gallery template
+	// emit a --pending sentinel instead, which the frontend JS replaces with the
+	// video's first frame via initFirstFrameThumbnails().
 
 	return array(
 		'thumbnail'   => $resolved_thumbnail,

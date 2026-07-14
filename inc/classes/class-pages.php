@@ -168,7 +168,7 @@ class Pages {
 			'edit_pages',
 			$this->menu_slug,
 			array( $this, 'render_dashboard_page' ),
-			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
+			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTcuNzY3MDEgMy42MDcwN0M3LjcxODY3IDMuNTUyNzMgNy42Mzk2NiAzLjUzOTA1IDcuNTcxNDIgMy41NzM5TDEuNjU2ODIgNi43MTc2OEMxLjMxNSA2LjkwMTExIDEuMDQ4NzMgNy4yMTA0NSAxLjAwNjY4IDcuNTczMDFDMC45NTc1MjkgOC4wMTI1NyAxLjE4MjM2IDguNDE3ODQgMS41ODc1NSA4LjYzNDI1TDIuNTgzMTYgOS4xNjZDMi42MTAxOCA5LjE4MDQzIDIuNjQwNjQgOS4xNzI5MyAyLjY2MTc3IDkuMTU1N0w3Ljc2ODYzIDMuNzkzMzFDNy44MTgxOSAzLjczODk3IDcuODE5MjEgMy42NjM0NiA3Ljc3NDczIDMuNjExMTlMNy43NjcwMSAzLjYwNzA3WiIgZmlsbD0iI0ZGRkNFRiIvPgo8cGF0aCBkPSJNMTQuODAwNyAyLjQxNTY0QzE0LjgwMjkgMS44NzAyMiAxNC40Njk4IDEuNDQwNCAxNC4wMTMzIDEuMjE1NTZDMTMuNTc0NiAwLjk2MjIzNSAxMy4wMDQ3IDAuOTA5NzcgMTIuNDk1MyAxLjE3OTU3TDEwLjMxNDUgMi4zMzkxN0MxMC4wNTc2IDIuNDc3NjMgOS44NDg0MiAyLjY3OTYxIDkuNzEyNTQgMi45MjA3NUw1LjMyNTI1IDEwLjM1NDhDNS4yNTI1NCAxMC40ODcxIDUuMzAxOSAxMC42NDY2IDUuNDQwODIgMTAuNzIwOEw5LjM0OTk0IDEyLjgwODZDOS40ODg4NiAxMi44ODI4IDkuNjYzMzMgMTIuODQyOSA5Ljc1MTQ4IDEyLjcxODlMMTQuNTU1NSA1LjUwNzM2QzE0LjcxNDYgNS4yNzg1OSAxNC44MDAzIDUuMDEwNjYgMTQuODAyNSA0LjczNjE3TDE0LjgwNjggMi40MTQxNEwxNC44MDA3IDIuNDE1NjRaIiBmaWxsPSIjRkZGQ0VGIi8+CjxwYXRoIGQ9Ik0xNC45OTM0IDEzLjg0MDdMMTQuOTk5OSA3LjU0MTQxQzE1LjAwMjYgNy40NzE1MyAxNC45NDY1IDcuNDEzMDcgMTQuODcxMyA3LjQwMTQ1QzE0Ljc5NjIgNy4zODk4MyAxNC43MjU3IDcuNDI4MjQgMTQuNzAzMiA3LjQ5NzAxTDEyLjIwNSAxNC4yNTI3QzEyLjE5MzIgMTQuMjc5NiAxMi4yMDc0IDE0LjMwNjIgMTIuMjM0NCAxNC4zMjA3TDEzLjIzIDE0Ljg1MjRDMTMuNjM1MiAxNS4wNjg4IDE0LjEyODEgMTUuMDQ2OSAxNC41MTY5IDE0Ljc4ODdDMTQuODM2OCAxNC41NzQ2IDE0Ljk5ODkgMTQuMjA5NiAxNC45OTcyIDEzLjg0MjdMMTQuOTkzNCAxMy44NDA3WiIgZmlsbD0iI0ZGRkNFRiIvPgo8L3N2Zz4K',
 			11
 		);
 
@@ -238,6 +238,9 @@ class Pages {
 			array( $this, 'render_help_page' ),
 			7
 		);
+
+		// GoDAM 2.0 onboarding has no menu item — it overlays the Dashboard when
+		// the site isn't connected (see render_dashboard_page()).
 
 		// Only add "What's New" submenu page if we are on a GoDAM menu.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -402,6 +405,11 @@ class Pages {
 			<div id="root-video-dashboard" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
+		// When the site isn't connected, overlay the 2.0 onboarding modal on the
+		// (empty-state) dashboard that renders behind it.
+		if ( $this->should_overlay_onboarding() ) {
+			echo '<div id="root-godam-onboarding"></div>';
+		}
 	}
 
 	/**
@@ -416,6 +424,11 @@ class Pages {
 			<div id="root-video-analytics" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
+		// When the site isn't connected, overlay the onboarding modal here too —
+		// the analytics view sits behind it (same gate as the dashboard).
+		if ( $this->should_overlay_onboarding() ) {
+			echo '<div id="root-godam-onboarding"></div>';
+		}
 	}
 
 	/**
@@ -427,6 +440,18 @@ class Pages {
 		?>
 		<div id="root-whats-new"></div>
 		<?php
+	}
+
+	/**
+	 * Whether to overlay the onboarding modal on the current GoDAM screen.
+	 *
+	 * True when the site isn't connected and the user can manage options
+	 * (matching the onboarding REST routes' capability).
+	 *
+	 * @return bool
+	 */
+	private function should_overlay_onboarding() {
+		return ! rtgodam_is_api_key_valid() && current_user_can( 'manage_options' );
 	}
 
 	/**
@@ -460,12 +485,65 @@ class Pages {
 			wp_enqueue_style( 'easydam-media-library' );
 
 		}
+		// GoDAM 2.0 onboarding SPA — overlays the Dashboard + Analytics when not connected.
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->analytics_page_id ), true ) && $this->should_overlay_onboarding() ) {
+			$onboarding_asset = RTGODAM_PATH . 'assets/build/pages/onboarding.min.js';
+
+			wp_register_script(
+				'godam-page-script-onboarding',
+				RTGODAM_URL . 'assets/build/pages/onboarding.min.js',
+				array( 'wp-element', 'wp-i18n', 'wp-components' ),
+				file_exists( $onboarding_asset ) ? filemtime( $onboarding_asset ) : RTGODAM_VERSION,
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-onboarding', 'godam' );
+			wp_enqueue_script( 'godam-page-script-onboarding' );
+
+			$current_user = wp_get_current_user();
+
+			// Origin of the GoDAM app host — the SPA pins the Google popup's
+			// postMessage to this origin before trusting the handoff code.
+			$api_parts  = wp_parse_url( defined( 'RTGODAM_API_BASE' ) ? RTGODAM_API_BASE : '' );
+			$app_origin = ( ! empty( $api_parts['scheme'] ) && ! empty( $api_parts['host'] ) )
+				? $api_parts['scheme'] . '://' . $api_parts['host'] . ( empty( $api_parts['port'] ) ? '' : ':' . $api_parts['port'] )
+				: '';
+
+			wp_localize_script(
+				'godam-page-script-onboarding',
+				'godamOnboarding',
+				array(
+					'restUrl'      => esc_url_raw( rest_url() ),
+					'nonce'        => wp_create_nonce( 'wp_rest' ),
+					'siteUrl'      => home_url(),
+					'adminUrl'     => admin_url(),
+					'dashboardUrl' => admin_url( 'admin.php?page=' . $this->menu_slug ),
+					'isConnected'  => rtgodam_is_api_key_valid(),
+					'displayName'  => $current_user->display_name,
+					'appOrigin'    => $app_origin,
+					'isE2E'        => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
+					// O9: WooCommerce active → the entry screen shows the Woo signup variant.
+					'isWoo'        => class_exists( 'WooCommerce' ),
+				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-onboarding',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+		}
+
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
 				RTGODAM_URL . 'assets/build/pages/video-editor.min.js',
-				array( 'wp-element', 'wp-i18n' ),
+				// `@wordpress/dataviews` (used by the videos list view) is bundled
+				// but depends on the WP-provided builds of these packages being
+				// present. `wp-private-apis` in particular must load so the
+				// bundled DataViews can unlock `@wordpress/components` private APIs.
+				array( 'wp-element', 'wp-components', 'wp-primitives', 'wp-api-fetch', 'wp-data', 'wp-notices', 'wp-private-apis', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.min.js' ),
 				true
 			);
@@ -494,6 +572,7 @@ class Pages {
 					'currentUserId'      => get_current_user_id(),          // Current user ID.
 					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
 					'validApiKey'        => rtgodam_is_api_key_valid(),
+					'productGuideState'  => \RTGODAM\Inc\REST_API\Onboarding::get_product_guide_state(),
 					'adminUrl'           => admin_url(),
 					'godamBaseUrl'       => RTGODAM_IO_API_BASE,
 					'gfActive'           => $is_gf_active,
@@ -506,6 +585,12 @@ class Pages {
 					'everestFormsActive' => $is_everest_forms_active,
 					'ninjaFormsActive'   => $is_ninja_forms_active,
 					'metformActive'      => $is_met_form_active,
+					// O9: Woo empty-state copy on the connected Video Editor.
+					'wooActive'          => class_exists( 'WooCommerce' ),
+					// Woo product-guide entry: only when GoDAM-for-Woo ships the
+					// Shoppable Video tour (capability gate, not just plugin-active),
+					// so the Woo card never leads to a missing block or dead-end page.
+					'wooGuideActive'     => \RTGODAM\Inc\REST_API\Onboarding::is_woo_guide_available(),
 				)
 			);
 
@@ -603,6 +688,12 @@ class Pages {
 
 			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
+
+			// The "Edit metadata" action reuses the native two-column attachment
+			// details modal (wp.media.view.MediaFrame.EditAttachments), which is
+			// defined in core's media-grid script. wp_enqueue_media() does not
+			// pull it in, so enqueue it explicitly on the video editor screen.
+			wp_enqueue_script( 'media-grid' );
 
 			/**
 			 * Fires after the video editor scripts are enqueued.

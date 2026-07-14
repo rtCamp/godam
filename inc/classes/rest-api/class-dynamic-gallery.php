@@ -165,15 +165,24 @@ class Dynamic_Gallery extends Base {
 				);
 
 				echo '<div class="godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-' . esc_attr( $ratio_class ) . '">';
+				$no_thumb_class = ( empty( $item['thumbnail'] ) && ! empty( $item['video_url'] ) ) ? ' godam-gallery-v2-item--no-thumb' : '';
 				/* translators: %s: video title. */
-				echo '<button type="button" class="godam-gallery-v2__query-button" data-godam-gallery-v2-trigger="true" data-video-id="' . esc_attr( $item['id'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $item['title'] ) ) . '">';
+				echo '<button type="button" class="godam-gallery-v2__query-button' . esc_attr( $no_thumb_class ) . '" data-godam-gallery-v2-trigger="true" data-video-id="' . esc_attr( $item['id'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $item['title'] ) ) . '">';
 				echo '<div class="godam-gallery-v2__query-thumb' . ( ! empty( $item['placeholder'] ) ? ' godam-gallery-blurred-img' : '' ) . '"' . ( ! empty( $item['placeholder'] ) ? ' style="background-image: url(\'' . esc_url( $item['placeholder'] ) . '\')"' : '' ) . '>';
+
 				if ( ! empty( $item['thumbnail'] ) ) {
 					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $thumbnail_attributes comes from rtgodam_format_html_attributes() which pre-sanitizes.
 					echo '<img src="' . esc_url( $item['thumbnail'] ) . '" alt="' . esc_attr( $item['title'] ) . '" class="godam-gallery-v2__thumbnail"' . ( $thumbnail_attributes ? ' ' . $thumbnail_attributes : '' ) . ' />';
 				} else {
-					echo '<span>' . esc_html__( 'Video', 'godam' ) . '</span>';
+					echo '<span class="godam-gallery-v2__thumbnail godam-gallery-v2__thumbnail--pending" aria-hidden="true" hidden></span>';
 				}
+
+				if ( ! empty( $item['video_url'] ) ) {
+					$preload_val = empty( $item['thumbnail'] ) ? 'metadata' : 'none';
+					echo '<video class="godam-gallery-v2-item__preview-video" src="' . esc_url( $item['video_url'] ) . '" muted playsinline preload="' . esc_attr( $preload_val ) . '" aria-hidden="true" tabindex="-1"></video>';
+				}
+
+				echo '<div class="godam-gallery-v2__play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg></div>';
 				echo '</div>';
 
 				if ( $show_title ) {

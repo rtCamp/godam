@@ -1,0 +1,129 @@
+/**
+ * Product-guide popover theming.
+ *
+ * Restyles driver.js's popover to match the design's coachmark bubble: a dark
+ * indigo→purple gradient surface with a single white message, an X (top-right),
+ * an n/total counter (bottom-right) and a progress bar along the bottom. No
+ * title and no Next button — the tour is action-driven. Scoped to
+ * `.godam-product-guide` (the popoverClass on the driver instance).
+ */
+
+$godam-guide-accent: #7c4dff;
+$godam-guide-text: #fff;
+$godam-guide-muted: rgba(255, 255, 255, 0.72);
+
+// The guide is action-driven (the user clicks real controls — Add layer, the
+// CTA menu item, Copy). driver.js's overlay normally captures every click
+// except the highlighted element's cutout, which blocks the "Add layer"
+// dropdown menu (it opens in a portal outside that cutout). Make the overlay
+// purely cosmetic so all controls stay interactive; exits are still funnelled
+// through the popover's X (allowClose is disabled on the driver instance).
+.driver-overlay {
+	pointer-events: none !important;
+}
+
+.driver-popover.godam-product-guide {
+	background: linear-gradient(135deg, #241655 0%, #4a1d96 100%);
+	color: $godam-guide-text;
+	border-radius: 12px;
+	max-width: 320px;
+	padding: 18px 18px 16px;
+	box-shadow: 0 14px 36px rgba(20, 8, 48, 0.45);
+
+	// Single message line (no title in the design).
+	.driver-popover-description {
+		font-size: 14px;
+		font-weight: 500;
+		line-height: 1.5;
+		color: $godam-guide-text;
+		margin: 0;
+		padding-right: 18px; // leave room for the X
+	}
+
+	// Footer: just the n/total counter (bottom-right per the design). The Next
+	// button's row is moved out (below the progress bar) in onPopoverRender.
+	.driver-popover-footer {
+		margin-top: 16px;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+
+		.driver-popover-progress-text {
+			font-size: 12px;
+			font-weight: 500;
+			color: $godam-guide-muted;
+		}
+	}
+
+	// No Previous button anywhere in the guide.
+	.driver-popover-prev-btn {
+		display: none;
+	}
+
+	// Next button (config-panel step), relocated below the progress bar.
+	& > .driver-popover-navigation-btns {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 12px;
+	}
+
+	.driver-popover-next-btn {
+		background: $godam-guide-accent;
+		color: #fff;
+		border: 0;
+		border-radius: 6px;
+		font-size: 13px;
+		font-weight: 500;
+		padding: 6px 14px;
+		text-shadow: none;
+
+		&:hover,
+		&:focus {
+			background: #6a3aff;
+		}
+	}
+
+	// Close (X) — the guide's "skip" affordance.
+	.driver-popover-close-btn {
+		color: $godam-guide-muted;
+		font-size: 18px;
+
+		&:hover,
+		&:focus {
+			color: $godam-guide-text;
+		}
+	}
+
+	// Progress bar pinned along the bottom edge of the bubble.
+	.godam-product-guide__bar {
+		height: 4px;
+		border-radius: 12px;
+		background: rgba(255, 255, 255, 0.16);
+		overflow: hidden;
+
+		.godam-product-guide__bar-fill {
+			display: block;
+			height: 100%;
+			background: $godam-guide-accent;
+			border-radius: 0 2px 2px 0;
+			transition: width 0.25s ease;
+		}
+	}
+
+	// Arrow inherits the bubble's surface colour on every side.
+	&.driver-popover-arrow-side-left .driver-popover-arrow {
+		border-left-color: #3a1880;
+	}
+
+	&.driver-popover-arrow-side-right .driver-popover-arrow {
+		border-right-color: #2c1668;
+	}
+
+	&.driver-popover-arrow-side-top .driver-popover-arrow {
+		border-top-color: #3a1880;
+	}
+
+	&.driver-popover-arrow-side-bottom .driver-popover-arrow {
+		border-bottom-color: #2c1668;
+	}
+}

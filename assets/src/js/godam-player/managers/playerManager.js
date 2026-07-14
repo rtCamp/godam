@@ -315,6 +315,13 @@ export default class PlayerManager {
 	 * @return {boolean} True if event should be skipped
 	 */
 	shouldSkipKeyboardEvent( event ) {
+		// Let native browser shortcuts (Cmd+F, Ctrl+F, Ctrl+arrows, etc.) pass
+		// through untouched. The player only handles unmodified keystrokes, so a
+		// modified key must never be captured or preventDefault()-ed.
+		if ( event.metaKey || event.ctrlKey || event.altKey ) {
+			return true;
+		}
+
 		const skipTags = [ 'INPUT', 'TEXTAREA' ];
 		return skipTags.includes( event.target.tagName ) || event.target.isContentEditable;
 	}
