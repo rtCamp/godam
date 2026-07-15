@@ -150,7 +150,7 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 ### Pricing Plans
 [View Pricing Plans](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link)
 
-- **7-Day Free Trial** available for each subscription plan.
+- **30-day Free Trial** with all features included
 - **Flexible pricing** options to suit different needs.
 - **Upgrade or cancel anytime** based on usage.
 
