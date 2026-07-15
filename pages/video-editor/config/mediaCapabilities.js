@@ -19,6 +19,7 @@
  * `showPreview` — whether the top-bar Preview button renders.
  * `showTimeline` — whether the timeline dock is available.
  * `showStats` — whether the analytics stats row / Analytics menu render.
+ * `showCopy` — whether the top-bar Copy-block button renders (defaults to `true` when absent).
  */
 
 export const MEDIA_TYPES = {
@@ -60,20 +61,22 @@ const CAPABILITIES = {
 		showTimeline: false,
 		showStats: false,
 	},
-	// Future image editor — resolvable today so the seams are exercised, but no
-	// image preview/UI is wired yet. A hotspot-only add menu falls out of
-	// `allowedLayerTypes` without touching the core layer arrays.
+	// Image editor — Hotspot + WooCommerce (product) hotspot layers placed
+	// spatially on a static image. The restricted `allowedLayerTypes` set falls
+	// out through the add menu without touching the core layer arrays. Copy is
+	// hidden until the `godam/image` front-end block ships (Iteration 2).
 	image: {
 		mediaType: 'image',
 		tabs: [ 'layers' ],
 		defaultTab: 'layers',
-		allowedLayerTypes: [ 'hotspot' ],
+		allowedLayerTypes: [ 'hotspot', 'woo' ],
 		preview: 'image',
 		copyBlockName: 'godam/image',
 		previewPage: 'image-preview',
 		showPreview: false,
 		showTimeline: false,
 		showStats: false,
+		showCopy: false,
 	},
 };
 

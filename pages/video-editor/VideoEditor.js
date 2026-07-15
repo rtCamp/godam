@@ -15,6 +15,7 @@ import { __, _n } from '@wordpress/i18n';
  */
 import VideoJSPlayer from './VideoJSPlayer';
 import AudioCardPreview from './components/audio/AudioCardPreview';
+import ImagePreview from './components/image/ImagePreview';
 import SidebarLayers from './components/SidebarLayers';
 import Appearance from './components/appearance/Appearance';
 import EditorTopBar from './components/editor-shell/EditorTopBar';
@@ -534,6 +535,12 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 								sources={ sources }
 								seekRef={ audioSeekRef }
 								onDuration={ setDuration }
+							/>
+						) }
+						{ attachmentConfig && sources.length > 0 && capability.preview === 'image' && (
+							<ImagePreview
+								attachmentConfig={ attachmentConfig }
+								sources={ sources }
 							/>
 						) }
 						{ attachmentConfig && sources.length > 0 && capability.preview === 'videojs' && (

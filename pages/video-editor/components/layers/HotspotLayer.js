@@ -69,6 +69,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
+	// Images have no timeline, so the Start Time / Layer Duration controls are
+	// hidden and layers are always visible (displayTime defaults to 0).
+	const mediaType = useSelector( ( state ) => state.videoReducer.mediaType );
 
 	const hotspots = layer?.hotspots || [];
 	// Track expanded hotspot
@@ -261,16 +264,20 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	const computeContentRect = () => {
-		const videoEl = document.querySelector( 'video' );
+		// Resolve the media element generically: video for the player stage,
+		// img for the image editor stage. `videoWidth`/`naturalWidth` give the
+		// intrinsic size in each case so the aspect math below is shared.
+		const mediaEl = document.querySelector( '#easydam-video-player video' ) ||
+			document.querySelector( '#easydam-video-player img' );
 		const containerEl = document.getElementById( 'easydam-video-player' );
 
-		if ( ! videoEl || ! containerEl ) {
+		if ( ! mediaEl || ! containerEl ) {
 			setContentRect( null );
 			return;
 		}
 
-		const nativeW = videoEl.videoWidth || 0;
-		const nativeH = videoEl.videoHeight || 0;
+		const nativeW = mediaEl.videoWidth || mediaEl.naturalWidth || 0;
+		const nativeH = mediaEl.videoHeight || mediaEl.naturalHeight || 0;
 
 		const elW = containerEl.offsetWidth;
 		const elH = containerEl.offsetHeight;
@@ -320,19 +327,21 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		window.addEventListener( 'resize', computeContentRect );
 		document.addEventListener( 'fullscreenchange', computeContentRect );
 
-		// Also listen for video metadata loaded
-		const videoEl = document.querySelector( 'video' );
-		videoRef.current = videoEl;
+		// Recompute once the intrinsic media size is known: `loadedmetadata` for
+		// a video, `load` for an image.
+		const mediaEl = document.querySelector( '#easydam-video-player video, #easydam-video-player img' );
+		videoRef.current = mediaEl;
+		const loadEvent = mediaEl?.tagName === 'IMG' ? 'load' : 'loadedmetadata';
 
-		if ( videoEl ) {
-			videoEl.addEventListener( 'loadedmetadata', computeContentRect );
+		if ( mediaEl ) {
+			mediaEl.addEventListener( loadEvent, computeContentRect );
 		}
 
 		return () => {
 			window.removeEventListener( 'resize', computeContentRect );
 			document.removeEventListener( 'fullscreenchange', computeContentRect );
 			if ( videoRef.current ) {
-				videoRef.current.removeEventListener( 'loadedmetadata', computeContentRect );
+				videoRef.current.removeEventListener( loadEvent, computeContentRect );
 			}
 		};
 	}, [] );
@@ -448,26 +457,28 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					</div>
 				</VeSection>
 
-				{ /* Duration: shared Start Time + Layer Duration. */ }
-				<VeSection title={ __( 'Duration', 'godam' ) }>
-					<VeTextInput
-						label={ __( 'Start Time', 'godam' ) }
-						value={ formatClock( layer?.displayTime ) }
-						onChange={ handleStartTimeChange }
-						placeholder="0:00"
-					/>
-					<VeTextInput
-						data-test-id="godam-hotspot-control-duration"
-						label={ __( 'Layer Duration (seconds)', 'godam' ) }
-						type="number"
-						min="1"
-						max="36000"
-						value={ durationInput }
-						onChange={ handleDurationInputChange }
-						onBlur={ validateDuration }
-						help={ __( 'Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)', 'godam' ) }
-					/>
-				</VeSection>
+				{ /* Duration: shared Start Time + Layer Duration. Timeline-only; hidden for images. */ }
+				{ mediaType !== 'image' && (
+					<VeSection title={ __( 'Duration', 'godam' ) }>
+						<VeTextInput
+							label={ __( 'Start Time', 'godam' ) }
+							value={ formatClock( layer?.displayTime ) }
+							onChange={ handleStartTimeChange }
+							placeholder="0:00"
+						/>
+						<VeTextInput
+							data-test-id="godam-hotspot-control-duration"
+							label={ __( 'Layer Duration (seconds)', 'godam' ) }
+							type="number"
+							min="1"
+							max="36000"
+							value={ durationInput }
+							onChange={ handleDurationInputChange }
+							onBlur={ validateDuration }
+							help={ __( 'Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)', 'godam' ) }
+						/>
+					</VeSection>
+				) }
 
 				{ /* Style: shared across all hotspot points. */ }
 				<VeSection title={ __( 'Style', 'godam' ) }>
@@ -500,17 +511,19 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					</VeColorList>
 				</VeSection>
 
-				{ /* Behaviour. */ }
-				<VeSection title={ __( 'Behaviour', 'godam' ) }>
-					<div data-test-id="godam-hotspot-control-pause-on-hover">
-						<VeToggle
-							label={ __( 'Pause video when hotspot is hovered', 'godam' ) }
-							checked={ layer?.pauseOnHover || false }
-							onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
-							help={ __( 'Player will pause the video while the layer is displayed and users hover over the hotspots.', 'godam' ) }
-						/>
-					</div>
-				</VeSection>
+				{ /* Behaviour: pause-on-hover is video-only, so hidden for images. */ }
+				{ mediaType !== 'image' && (
+					<VeSection title={ __( 'Behaviour', 'godam' ) }>
+						<div data-test-id="godam-hotspot-control-pause-on-hover">
+							<VeToggle
+								label={ __( 'Pause video when hotspot is hovered', 'godam' ) }
+								checked={ layer?.pauseOnHover || false }
+								onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
+								help={ __( 'Player will pause the video while the layer is displayed and users hover over the hotspots.', 'godam' ) }
+							/>
+						</div>
+					</VeSection>
+				) }
 			</div>
 
 			<LayerControls>
