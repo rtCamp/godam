@@ -18,6 +18,21 @@ $godam_audio_title   = ! empty( $attributes['audioTitle'] ) ? $attributes['audio
 $godam_description   = ! empty( $attributes['description'] ) ? $attributes['description'] : '';
 $godam_thumbnail     = ! empty( $attributes['thumbnail'] ) ? esc_url( $attributes['thumbnail'] ) : '';
 
+// The [godam_audio] shortcode only passes an id (no title/thumbnail block
+// attributes), so fall back to the attachment's own data — the title and the
+// GoDAM cover stored in rtgodam_media_audio_thumbnail — to match the block.
+if ( $godam_attachment_id ) {
+	if ( '' === $godam_audio_title ) {
+		$godam_audio_title = get_the_title( $godam_attachment_id );
+	}
+	if ( '' === $godam_thumbnail ) {
+		$godam_meta_thumbnail = get_post_meta( $godam_attachment_id, 'rtgodam_media_audio_thumbnail', true );
+		if ( ! empty( $godam_meta_thumbnail ) ) {
+			$godam_thumbnail = esc_url( $godam_meta_thumbnail );
+		}
+	}
+}
+
 // The transcript toggle defaults to on when the attribute is absent.
 $godam_show_transcript = ! array_key_exists( 'showTranscript', $attributes ) || ! empty( $attributes['showTranscript'] );
 $godam_show_chapters   = ! array_key_exists( 'showChapters', $attributes ) || ! empty( $attributes['showChapters'] );
@@ -71,9 +86,17 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 		return;
 	}
 }
+// Root wrapper: emit a stable `godam-audio` hook class that view.js targets on
+// both render paths. In block context also merge WordPress' block-support
+// attributes (align/spacing/etc.); the [godam_audio] shortcode sets
+// $godam_is_shortcode and runs outside a block, where get_block_wrapper_attributes()
+// would raise a warning, so it gets just the hook class.
+$godam_wrapper_attributes = empty( $godam_is_shortcode )
+	? get_block_wrapper_attributes( array( 'class' => 'godam-audio' ) )
+	: 'class="godam-audio"';
 ?>
 
-<figure data-test-id="godam-audio-render" <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
+<figure data-test-id="godam-audio-render" <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
 	<div class="godam-audio-card">
 		<div class="godam-audio-card__head">
 
@@ -95,10 +118,17 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 					<p class="godam-audio-card__description" data-test-id="godam-audio-render-description"><?php echo esc_html( $godam_description ); ?></p>
 				<?php endif; ?>
 
+			<?php
+			/*
+			 * Media element without native `controls`: the custom player below is
+			 * rendered server-side (no flash of native chrome) and view.js wires
+			 * playback onto it. The <noscript> block restores native controls when
+			 * JavaScript is unavailable.
+			 */
+			?>
 			<audio
 				class="godam-audio-card__player"
 				data-test-id="godam-audio-render-player"
-				controls
 				<?php echo esc_attr( $godam_autoplay ); ?>
 				<?php echo esc_attr( $godam_loop ); ?>
 				preload="<?php echo esc_attr( $godam_preload ); ?>"
@@ -113,6 +143,43 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 
 				<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
 			</audio>
+
+			<?php /* Custom player chrome (play/pause, seek, duration) — matches the block editor + preview. */ ?>
+			<div class="godam-audio-player">
+				<button type="button" class="godam-audio-player__play" aria-label="<?php esc_attr_e( 'Play', 'godam' ); ?>">
+					<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+				</button>
+				<input
+					type="range"
+					class="godam-audio-player__scrubber"
+					min="0"
+					max="0"
+					step="0.1"
+					value="0"
+					style="--godam-audio-progress: 0%;"
+					aria-label="<?php esc_attr_e( 'Seek', 'godam' ); ?>"
+				/>
+				<span class="godam-audio-player__time">0:00</span>
+			</div>
+
+			<noscript>
+				<style>.godam-audio .godam-audio-player{display:none;}</style>
+				<audio
+					class="godam-audio-card__player"
+					controls
+					<?php echo esc_attr( $godam_autoplay ); ?>
+					<?php echo esc_attr( $godam_loop ); ?>
+					preload="<?php echo esc_attr( $godam_preload ); ?>"
+				>
+					<?php if ( ! empty( $godam_primary_audio ) ) : ?>
+						<source src="<?php echo esc_url( $godam_primary_audio ); ?>" type="audio/mpeg" />
+					<?php endif; ?>
+
+					<?php if ( ! empty( $godam_backup_audio ) ) : ?>
+						<source src="<?php echo esc_url( $godam_backup_audio ); ?>" type="audio/mpeg" />
+					<?php endif; ?>
+				</audio>
+			</noscript>
 		</div>
 
 	</div>

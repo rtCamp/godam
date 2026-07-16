@@ -26,7 +26,7 @@ import { parseCaptions } from '../../js/godam-player/utils/parseCaptions';
  * @param {HTMLElement} panel The `[data-godam-audio-panel]` element.
  */
 function initAudioPanel( panel ) {
-	const figure = panel.closest( '.wp-block-godam-audio' );
+	const figure = panel.closest( '.godam-audio' );
 	const audio = figure?.querySelector( 'audio' );
 	if ( ! audio ) {
 		return;
@@ -183,51 +183,53 @@ const COPY_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" w
 const CHECK_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"/></svg>';
 
 /**
- * Replace the native `<audio controls>` chrome with the minimal custom player
- * from the design (plain play/pause triangle, progress bar, duration). Native
- * controls remain the no-JS fallback — they're only removed once we've built
- * the custom UI.
+ * Wire playback onto the server-rendered custom player (plain play/pause
+ * triangle, progress bar, duration). The markup is emitted by render.php so
+ * there is no flash of native `<audio controls>`; a <noscript> fallback there
+ * restores native controls when JavaScript is unavailable. This only attaches
+ * behaviour to the existing elements.
  *
- * @param {HTMLElement} figure The `.wp-block-godam-audio` element.
+ * @param {HTMLElement} figure The `.godam-audio` element (block or shortcode).
  */
 function enhancePlayer( figure ) {
 	const audio = figure.querySelector( 'audio.godam-audio-card__player' );
-	if ( ! audio || audio.dataset.godamEnhanced ) {
+	const player = figure.querySelector( '.godam-audio-player' );
+	if ( ! audio || ! player || player.dataset.godamEnhanced ) {
 		return;
 	}
-	audio.dataset.godamEnhanced = '1';
-	audio.removeAttribute( 'controls' );
 
-	const player = document.createElement( 'div' );
-	player.className = 'godam-audio-player';
-
-	const playBtn = document.createElement( 'button' );
-	playBtn.type = 'button';
-	playBtn.className = 'godam-audio-player__play';
-	playBtn.setAttribute( 'aria-label', __( 'Play', 'godam' ) );
-	playBtn.innerHTML = PLAY_ICON;
-
-	const scrubber = document.createElement( 'input' );
-	scrubber.type = 'range';
-	scrubber.className = 'godam-audio-player__scrubber';
-	scrubber.min = '0';
-	scrubber.max = '0';
-	scrubber.step = '0.1';
-	scrubber.value = '0';
-	scrubber.setAttribute( 'aria-label', __( 'Seek', 'godam' ) );
-
-	const time = document.createElement( 'span' );
-	time.className = 'godam-audio-player__time';
-	time.textContent = '0:00';
-
-	player.append( playBtn, scrubber, time );
-	audio.parentNode.insertBefore( player, audio.nextSibling );
+	const playBtn = player.querySelector( '.godam-audio-player__play' );
+	const scrubber = player.querySelector( '.godam-audio-player__scrubber' );
+	const time = player.querySelector( '.godam-audio-player__time' );
+	if ( ! playBtn || ! scrubber || ! time ) {
+		return;
+	}
+	player.dataset.godamEnhanced = '1';
 
 	const syncProgress = () => {
 		const max = Number( scrubber.max ) || 0;
 		const pct = max > 0 ? ( audio.currentTime / max ) * 100 : 0;
 		scrubber.value = audio.currentTime;
 		scrubber.style.setProperty( '--godam-audio-progress', `${ pct }%` );
+	};
+
+	const showPause = () => {
+		playBtn.innerHTML = PAUSE_ICON;
+		playBtn.setAttribute( 'aria-label', __( 'Pause', 'godam' ) );
+	};
+	const showPlay = () => {
+		playBtn.innerHTML = PLAY_ICON;
+		playBtn.setAttribute( 'aria-label', __( 'Play', 'godam' ) );
+	};
+
+	// Reflect the duration in the scrubber + time display. Called on
+	// loadedmetadata and also immediately below in case metadata already
+	// loaded before this deferred script ran (server-rendered markup).
+	const initDuration = () => {
+		scrubber.max = audio.duration || 0;
+		// Match the design: show the total duration.
+		time.textContent = formatTime( audio.duration || 0 );
+		syncProgress();
 	};
 
 	playBtn.addEventListener( 'click', () => {
@@ -237,30 +239,27 @@ function enhancePlayer( figure ) {
 			audio.pause();
 		}
 	} );
-	audio.addEventListener( 'play', () => {
-		playBtn.innerHTML = PAUSE_ICON;
-		playBtn.setAttribute( 'aria-label', __( 'Pause', 'godam' ) );
-	} );
-	const showPlay = () => {
-		playBtn.innerHTML = PLAY_ICON;
-		playBtn.setAttribute( 'aria-label', __( 'Play', 'godam' ) );
-	};
+	audio.addEventListener( 'play', showPause );
 	audio.addEventListener( 'pause', showPlay );
 	audio.addEventListener( 'ended', showPlay );
-	audio.addEventListener( 'loadedmetadata', () => {
-		scrubber.max = audio.duration || 0;
-		// Match the design: show the total duration.
-		time.textContent = formatTime( audio.duration || 0 );
-		syncProgress();
-	} );
+	audio.addEventListener( 'loadedmetadata', initDuration );
 	audio.addEventListener( 'timeupdate', syncProgress );
 	scrubber.addEventListener( 'input', () => {
 		audio.currentTime = Number( scrubber.value );
 	} );
+
+	// Sync state that may already have settled before wiring (deferred script):
+	// metadata (duration) and an in-progress autoplay.
+	if ( audio.readyState >= 1 && audio.duration ) {
+		initDuration();
+	}
+	if ( ! audio.paused ) {
+		showPause();
+	}
 }
 
 const init = () => {
-	document.querySelectorAll( '.wp-block-godam-audio' ).forEach( enhancePlayer );
+	document.querySelectorAll( '.godam-audio' ).forEach( enhancePlayer );
 	document.querySelectorAll( '[data-godam-audio-panel]' ).forEach( initAudioPanel );
 };
 
