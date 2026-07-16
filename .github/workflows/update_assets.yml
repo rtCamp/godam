@@ -1,0 +1,25 @@
+name: Update WordPress.org Assets
+
+# Manual only
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update-assets:
+    name: Push assets to WordPress.org
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Update WordPress.org plugin assets
+        uses: 10up/action-wordpress-plugin-asset-update@2.2.0
+        env:
+          SLUG: 'godam'
+          ASSETS_DIR: 'wp-assets'
+          IGNORE_OTHER_FILES: 'true'
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
