@@ -38,10 +38,20 @@ $godam_show_transcript = ! array_key_exists( 'showTranscript', $attributes ) || 
 $godam_show_chapters   = ! array_key_exists( 'showChapters', $attributes ) || ! empty( $attributes['showChapters'] );
 
 // Chapters live on the attachment's rtgodam_meta; the transcript is a caption
-// file URL stored in rtgodam_transcript_path (resolved by the helper).
-$godam_meta_all       = $godam_attachment_id ? get_post_meta( $godam_attachment_id, 'rtgodam_meta', true ) : array();
-$godam_chapters_raw   = ( is_array( $godam_meta_all ) && ! empty( $godam_meta_all['chapters'] ) ) ? $godam_meta_all['chapters'] : array();
-$godam_transcript_url = $godam_attachment_id && function_exists( 'godam_get_transcript_path' ) ? godam_get_transcript_path( $godam_attachment_id ) : '';
+// file URL cached in the rtgodam_transcript_path meta.
+$godam_meta_all     = $godam_attachment_id ? get_post_meta( $godam_attachment_id, 'rtgodam_meta', true ) : array();
+$godam_chapters_raw = ( is_array( $godam_meta_all ) && ! empty( $godam_meta_all['chapters'] ) ) ? $godam_meta_all['chapters'] : array();
+
+// Read ONLY the cached transcript path, and only when the toggle is on. Never
+// call godam_get_transcript_path() at render time: on a cache miss it makes a
+// blocking wp_remote_post() to the SaaS (on public, unauthenticated page loads)
+// and re-caches the path without the delete guard, which would resurrect a
+// transcript the user deleted. Discovery + caching happen in the authenticated
+// editor (block canvas + customization editor) via the /godam/v1/transcription
+// route, which applies that guard.
+$godam_transcript_url = ( $godam_attachment_id && $godam_show_transcript )
+	? (string) get_post_meta( $godam_attachment_id, 'rtgodam_transcript_path', true )
+	: '';
 
 // Chapters are normally stored as an array, but tolerate a JSON string (old
 // installs / external sources) so the foreach below never warns.
