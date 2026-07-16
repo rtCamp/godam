@@ -43,6 +43,15 @@ $godam_meta_all       = $godam_attachment_id ? get_post_meta( $godam_attachment_
 $godam_chapters_raw   = ( is_array( $godam_meta_all ) && ! empty( $godam_meta_all['chapters'] ) ) ? $godam_meta_all['chapters'] : array();
 $godam_transcript_url = $godam_attachment_id && function_exists( 'godam_get_transcript_path' ) ? godam_get_transcript_path( $godam_attachment_id ) : '';
 
+// Chapters are normally stored as an array, but tolerate a JSON string (old
+// installs / external sources) so the foreach below never warns.
+if ( is_string( $godam_chapters_raw ) ) {
+	$godam_decoded_chapters = json_decode( $godam_chapters_raw, true );
+	$godam_chapters_raw     = is_array( $godam_decoded_chapters ) ? $godam_decoded_chapters : array();
+} elseif ( ! is_array( $godam_chapters_raw ) ) {
+	$godam_chapters_raw = array();
+}
+
 // Normalise chapters for both server rendering and the front-end script.
 $godam_chapters = array();
 foreach ( $godam_chapters_raw as $godam_chapter ) {

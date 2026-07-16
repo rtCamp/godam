@@ -294,7 +294,18 @@ function AudioEdit( {
 	}
 
 	const hasAudio = !! ( src || temporaryURL );
-	const fileName = src ? decodeURIComponent( src.split( '/' ).pop().split( '?' )[ 0 ] ) : '';
+	// Derive a display file name from the URL. `decodeURIComponent` throws on
+	// malformed percent-encoding (e.g. a literal "%" in the file name), which
+	// would crash the block during render, so fall back to the raw segment.
+	let fileName = '';
+	if ( src ) {
+		const rawFileName = src.split( '/' ).pop().split( '?' )[ 0 ];
+		try {
+			fileName = decodeURIComponent( rawFileName );
+		} catch {
+			fileName = rawFileName;
+		}
+	}
 
 	// The selected attachment's file size, shown in the Audio Selection file row.
 	const audioMedia = useSelect( ( select ) => ( id ? select( 'core' ).getMedia( id ) : null ), [ id ] );
