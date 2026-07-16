@@ -124,6 +124,7 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 			align-items: center;
 			gap: 0.75rem;
 			width: 100%;
+			max-width: 240px;
 			height: auto;
 			min-height: 64px;
 			padding: 0.625rem 1rem;

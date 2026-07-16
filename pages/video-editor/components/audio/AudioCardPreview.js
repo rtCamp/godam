@@ -77,6 +77,13 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 		.replace( /\s+/g, ' ' )
 		.trim();
 	const audioSrc = sources?.[ 0 ]?.src || attachmentConfig?.source_url || '';
+	// GoDAM audio stores its cover in post meta (rtgodam_media_audio_thumbnail),
+	// exposed under `.meta` in the /wp/v2/media payload. Fall back to the video
+	// thumbnail key for safety.
+	const cover =
+		attachmentConfig?.meta?.rtgodam_media_audio_thumbnail ||
+		attachmentConfig?.meta?.rtgodam_media_video_thumbnail ||
+		'';
 
 	// Fetch the saved transcript path, then load and parse the caption file.
 	const { data: transcription } = useGetTranscriptionQuery( attachmentID, { skip: ! attachmentID } );
@@ -166,8 +173,8 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 			<div className="godam-audio-card">
 				<div className="godam-audio-card__head">
 					<div className="godam-audio-card__cover">
-						{ attachmentConfig?.rtgodam_media_video_thumbnail && (
-							<img src={ attachmentConfig.rtgodam_media_video_thumbnail } alt="" />
+						{ cover && (
+							<img src={ cover } alt="" />
 						) }
 					</div>
 					<div className="godam-audio-card__body">
