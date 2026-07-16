@@ -63,10 +63,14 @@ const AudioTabs = ( { id, showTranscript, showChapters = true, onRendered } ) =>
 				const raw = media?.rtgodam_meta?.chapters;
 				const list = Array.isArray( raw ) ? raw : [];
 				setChapters(
-					list.map( ( chapter ) => ( {
-						start: parseFloat( chapter.startTime ) || 0,
-						text: chapter.text || '',
-					} ) ),
+					list
+						.map( ( chapter ) => ( {
+							start: parseFloat( chapter.startTime ) || 0,
+							text: chapter.text || '',
+						} ) )
+						// Chapters are stored in authoring order; sort so the block
+						// canvas matches the front end and the editor preview.
+						.sort( ( a, b ) => a.start - b.start ),
 				);
 			} )
 			.catch( () => {} );

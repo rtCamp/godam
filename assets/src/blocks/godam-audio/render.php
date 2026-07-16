@@ -71,6 +71,17 @@ foreach ( $godam_chapters_raw as $godam_chapter ) {
 	);
 }
 
+// Sort by start time. Chapters are stored in authoring order (not necessarily
+// chronological), but the rendered list and the front-end active-line logic
+// (which derives each chapter's window from the next row) both assume ascending
+// order — matching how the editor preview sorts via getChapterRows().
+usort(
+	$godam_chapters,
+	static function ( $a, $b ) {
+		return $a['start'] <=> $b['start'];
+	}
+);
+
 // Each tab shows only when its own toggle is on and it has content; the panel
 // appears when at least one tab is visible.
 $godam_chapters_visible   = $godam_show_chapters && ! empty( $godam_chapters );
