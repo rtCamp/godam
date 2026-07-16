@@ -32,20 +32,46 @@ function initAudioPanel( panel ) {
 		return;
 	}
 
-	// ── Tabs ────────────────────────────────────────────────────────────────
+	// ── Tabs (ARIA tab pattern: roving tabindex + arrow-key nav) ─────────────
 	const tabs = Array.from( panel.querySelectorAll( '.godam-audio-tabs__tab' ) );
 	const bodies = Array.from( panel.querySelectorAll( '.godam-audio-tabs__panel' ) );
-	tabs.forEach( ( tab ) => {
-		tab.addEventListener( 'click', () => {
-			const name = tab.dataset.godamTab;
-			tabs.forEach( ( t ) => {
-				const active = t === tab;
-				t.classList.toggle( 'is-active', active );
-				t.setAttribute( 'aria-selected', active ? 'true' : 'false' );
-			} );
-			bodies.forEach( ( b ) => {
-				b.hidden = b.dataset.godamPanel !== name;
-			} );
+
+	const activateTab = ( tab, focus ) => {
+		const name = tab.dataset.godamTab;
+		tabs.forEach( ( t ) => {
+			const active = t === tab;
+			t.classList.toggle( 'is-active', active );
+			t.setAttribute( 'aria-selected', active ? 'true' : 'false' );
+			// Roving tabindex: only the active tab is in the tab order.
+			t.setAttribute( 'tabindex', active ? '0' : '-1' );
+		} );
+		bodies.forEach( ( b ) => {
+			b.hidden = b.dataset.godamPanel !== name;
+		} );
+		if ( focus ) {
+			tab.focus();
+		}
+	};
+
+	tabs.forEach( ( tab, index ) => {
+		tab.addEventListener( 'click', () => activateTab( tab ) );
+		// Left/Right (and Up/Down) move between tabs, Home/End jump to ends —
+		// the keyboard interaction the tab roles imply (WAI-ARIA APG).
+		tab.addEventListener( 'keydown', ( event ) => {
+			let nextIndex = null;
+			if ( event.key === 'ArrowRight' || event.key === 'ArrowDown' ) {
+				nextIndex = ( index + 1 ) % tabs.length;
+			} else if ( event.key === 'ArrowLeft' || event.key === 'ArrowUp' ) {
+				nextIndex = ( index - 1 + tabs.length ) % tabs.length;
+			} else if ( event.key === 'Home' ) {
+				nextIndex = 0;
+			} else if ( event.key === 'End' ) {
+				nextIndex = tabs.length - 1;
+			}
+			if ( nextIndex !== null ) {
+				event.preventDefault();
+				activateTab( tabs[ nextIndex ], true );
+			}
 		} );
 	} );
 

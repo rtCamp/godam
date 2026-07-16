@@ -100,6 +100,18 @@ $godam_transcript_aria      = $godam_transcript_active ? 'true' : 'false';
 $godam_chapters_hidden      = $godam_chapters_active ? '' : 'hidden';
 $godam_transcript_hidden    = $godam_transcript_active ? '' : 'hidden';
 
+// Unique IDs to wire the ARIA tab pattern (role="tab" <-> role="tabpanel") so
+// screen readers announce which panel each tab controls. wp_unique_id() keeps
+// them unique even with multiple audio blocks on one page. Roving tabindex:
+// only the active tab is in the tab order.
+$godam_tabs_uid            = wp_unique_id( 'godam-audio-tabs-' );
+$godam_chapters_tab_id     = $godam_tabs_uid . '-tab-chapters';
+$godam_chapters_panel_id   = $godam_tabs_uid . '-panel-chapters';
+$godam_transcript_tab_id   = $godam_tabs_uid . '-tab-transcript';
+$godam_transcript_panel_id = $godam_tabs_uid . '-panel-transcript';
+$godam_chapters_tabindex   = $godam_chapters_active ? '0' : '-1';
+$godam_transcript_tabindex = $godam_transcript_active ? '0' : '-1';
+
 if ( ! $godam_attachment_id && empty( $godam_src ) ) {
 	return;
 }
@@ -226,12 +238,12 @@ $godam_wrapper_attributes = empty( $godam_is_shortcode )
 			<div class="godam-audio-tabs__bar">
 				<div class="godam-audio-tabs__nav" role="tablist">
 					<?php if ( $godam_chapters_visible ) : ?>
-						<button type="button" class="<?php echo esc_attr( $godam_chapters_tab_class ); ?>" role="tab" aria-selected="<?php echo esc_attr( $godam_chapters_aria ); ?>" data-godam-tab="chapters">
+						<button type="button" id="<?php echo esc_attr( $godam_chapters_tab_id ); ?>" class="<?php echo esc_attr( $godam_chapters_tab_class ); ?>" role="tab" aria-selected="<?php echo esc_attr( $godam_chapters_aria ); ?>" aria-controls="<?php echo esc_attr( $godam_chapters_panel_id ); ?>" tabindex="<?php echo esc_attr( $godam_chapters_tabindex ); ?>" data-godam-tab="chapters">
 							<?php esc_html_e( 'Chapters', 'godam' ); ?>
 						</button>
 					<?php endif; ?>
 					<?php if ( $godam_transcript_visible ) : ?>
-						<button type="button" class="<?php echo esc_attr( $godam_transcript_tab_class ); ?>" role="tab" aria-selected="<?php echo esc_attr( $godam_transcript_aria ); ?>" data-godam-tab="transcript">
+						<button type="button" id="<?php echo esc_attr( $godam_transcript_tab_id ); ?>" class="<?php echo esc_attr( $godam_transcript_tab_class ); ?>" role="tab" aria-selected="<?php echo esc_attr( $godam_transcript_aria ); ?>" aria-controls="<?php echo esc_attr( $godam_transcript_panel_id ); ?>" tabindex="<?php echo esc_attr( $godam_transcript_tabindex ); ?>" data-godam-tab="transcript">
 							<?php esc_html_e( 'Transcript', 'godam' ); ?>
 						</button>
 					<?php endif; ?>
@@ -243,7 +255,7 @@ $godam_wrapper_attributes = empty( $godam_is_shortcode )
 
 			<div class="godam-audio-tabs__body">
 				<?php if ( $godam_chapters_visible ) : ?>
-				<div class="godam-audio-tabs__panel" data-godam-panel="chapters" role="tabpanel" <?php echo esc_attr( $godam_chapters_hidden ); ?>>
+				<div class="godam-audio-tabs__panel" id="<?php echo esc_attr( $godam_chapters_panel_id ); ?>" data-godam-panel="chapters" role="tabpanel" tabindex="0" aria-labelledby="<?php echo esc_attr( $godam_chapters_tab_id ); ?>" <?php echo esc_attr( $godam_chapters_hidden ); ?>>
 					<?php if ( ! empty( $godam_chapters ) ) : ?>
 						<ul class="godam-audio-tabs__list">
 							<?php foreach ( $godam_chapters as $godam_chapter ) : ?>
@@ -268,7 +280,7 @@ $godam_wrapper_attributes = empty( $godam_is_shortcode )
 				<?php endif; ?>
 
 				<?php if ( $godam_transcript_visible ) : ?>
-				<div class="godam-audio-tabs__panel" data-godam-panel="transcript" role="tabpanel" <?php echo esc_attr( $godam_transcript_hidden ); ?>>
+				<div class="godam-audio-tabs__panel" id="<?php echo esc_attr( $godam_transcript_panel_id ); ?>" data-godam-panel="transcript" role="tabpanel" tabindex="0" aria-labelledby="<?php echo esc_attr( $godam_transcript_tab_id ); ?>" <?php echo esc_attr( $godam_transcript_hidden ); ?>>
 					<?php if ( ! empty( $godam_transcript_url ) ) : ?>
 						<p class="godam-audio-tabs__empty" data-godam-transcript-loading><?php esc_html_e( 'Loading transcript…', 'godam' ); ?></p>
 					<?php else : ?>
