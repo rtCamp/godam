@@ -153,6 +153,10 @@ function initAudioPanel( panel ) {
 	}
 
 	// ── Active-line sync (chapters + transcript) ─────────────────────────────
+	// Remember the last cue we auto-scrolled to so we only scroll when the active
+	// cue actually changes — otherwise every timeupdate (~4×/s) would yank a user
+	// who is manually scrolling the open transcript back to the playhead.
+	let lastScrolledCueIndex = -1;
 	audio.addEventListener( 'timeupdate', () => {
 		const time = audio.currentTime;
 
@@ -167,11 +171,13 @@ function initAudioPanel( panel ) {
 		if ( cueEls.length ) {
 			const activeIndex = cues.findIndex( ( cue ) => time >= cue.start && time < cue.end );
 			cueEls.forEach( ( el, index ) => el.classList.toggle( 'is-active', index === activeIndex ) );
-			// Keep the active cue visible, but only when the transcript is open
-			// so playback never yanks the page while another tab is showing.
-			if ( activeIndex >= 0 && transcriptPanel && ! transcriptPanel.hidden ) {
+			// Keep the active cue visible, but only when it changes and the
+			// transcript is open, so playback never yanks the page (or fights a
+			// user scrolling) while another tab is showing.
+			if ( activeIndex >= 0 && activeIndex !== lastScrolledCueIndex && transcriptPanel && ! transcriptPanel.hidden ) {
 				cueEls[ activeIndex ].scrollIntoView( { block: 'nearest' } );
 			}
+			lastScrolledCueIndex = activeIndex;
 		}
 	} );
 }

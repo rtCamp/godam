@@ -98,7 +98,13 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 		( async () => {
 			try {
 				const response = await fetch( transcriptPath );
+				if ( cancelled ) {
+					return;
+				}
+				// Clear any previously loaded cues when the new path 404s, so a
+				// stale transcript doesn't keep rendering after a regenerate/upload.
 				if ( ! response.ok ) {
+					setCues( [] );
 					return;
 				}
 				const raw = await response.text();
@@ -106,7 +112,10 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 					setCues( parseCaptions( raw ) );
 				}
 			} catch {
-				// Leave cues empty on failure; the empty state is shown.
+				// Clear stale cues on failure; the empty state is shown.
+				if ( ! cancelled ) {
+					setCues( [] );
+				}
 			}
 		} )();
 		return () => {
