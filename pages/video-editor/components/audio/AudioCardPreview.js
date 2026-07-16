@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { useState, useRef, useEffect, useMemo } from '@wordpress/element';
 import { Icon } from '@wordpress/components';
 import { check, copy } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -280,7 +280,11 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 										>
 											<span className="godam-audio-tabs__stamp">{ formatClock( row.startSeconds ) }</span>
 											<span className="godam-audio-tabs__row-text">
-												{ row.text?.trim() || __( 'Chapter', 'godam' ) + ' ' + ( index + 1 ) }
+												{ row.text?.trim() || sprintf(
+													/* translators: %d is the chapter number. */
+													__( 'Chapter %d', 'godam' ),
+													index + 1,
+												) }
 											</span>
 										</button>
 									) ) }

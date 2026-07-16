@@ -193,7 +193,8 @@ $godam_wrapper_attributes = empty( $godam_is_shortcode )
 			</div>
 
 			<noscript>
-				<style>.godam-audio .godam-audio-player{display:none;}</style>
+				<?php /* Without JS, view.js never fetches/renders the transcript, so hide its "Loading…" placeholder (and the custom player, which also needs JS). */ ?>
+				<style>.godam-audio .godam-audio-player{display:none;}.godam-audio [data-godam-transcript-loading]{display:none;}</style>
 				<audio
 					class="godam-audio-card__player"
 					controls

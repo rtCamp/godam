@@ -80,9 +80,10 @@
 		overflow: hidden;
 	}
 
-	// The native <audio> used on the front end is hidden once view.js builds the
-	// custom player from it.
-	&__player[data-godam-enhanced] {
+	// The native <audio> is only a media source — the visible UI is the custom
+	// player (.godam-audio-player) rendered alongside it — so hide the element
+	// itself. (display:none does not stop audio playback.)
+	&__player {
 		display: none;
 	}
 }
