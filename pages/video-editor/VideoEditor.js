@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 /**
@@ -48,9 +48,29 @@ import Transcription from './components/transcription/Transcription';
 import { formatBytes } from './components/transcription/utils';
 import Timeline from './components/timeline/Timeline';
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from './utils/index';
+import { openAttachmentDetailsModal } from './utils/openAttachmentDetails';
 import { getFormIdFromLayer } from './utils/formUtils';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 import { ensureAddonLayersRegistered } from './utils/loadAddonLayers';
+
+/**
+ * Decode HTML entities in a string (e.g. `&amp;` → `&`).
+ *
+ * The REST API returns the attachment title as `title.rendered`, which is
+ * entity-encoded. We decode it so the editable input shows the human-readable
+ * title rather than raw entities.
+ *
+ * @param {string} str Possibly entity-encoded string.
+ * @return {string} Decoded string.
+ */
+const decodeHtmlEntities = ( str ) => {
+	if ( ! str ) {
+		return '';
+	}
+	const textarea = document.createElement( 'textarea' );
+	textarea.innerHTML = str;
+	return textarea.value;
+};
 
 const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ currentTime, setCurrentTime ] = useState( 0 );
@@ -60,6 +80,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
 	const [ aspectRatio, setAspectRatio ] = useState( '16:9' );
+	const [ videoTitle, setVideoTitle ] = useState( '' );
 
 	useEffect( () => {
 		// Verify add-on layer components are registered via PHP filters.
@@ -70,6 +91,13 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	// For audio, playback is owned by AudioCardPreview; it assigns a seek fn here
 	// so the Chapters tab can scrub the preview (video uses `playerRef`).
 	const audioSeekRef = useRef( null );
+	// Wraps the video preview; its width drives the player's computed width.
+	const canvasWrapperRef = useRef( null );
+	// The stage area that holds the preview; its width AND height bound the
+	// preview (the layers/chapters tabs dock a timeline that eats vertical room).
+	const stageCanvasRef = useRef( null );
+	// Teardown for the "Edit metadata" popup's title-sync listener; called on unmount.
+	const detachTitleSyncRef = useRef( null );
 
 	const dispatch = useDispatch();
 
@@ -82,6 +110,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 	const { data: attachmentConfig, isLoading: isAttachmentConfigLoading } = useGetAttachmentMetaQuery( attachmentID );
 	const [ saveAttachmentMeta, { isLoading: isSavingMeta } ] = useSaveAttachmentMetaMutation();
+	// A separate mutation instance so saving the title doesn't flip the
+	// "Save Video" button into its busy state.
+	const [ saveTitle ] = useSaveAttachmentMetaMutation();
 
 	// Resolve the media-type capability from the attachment MIME. Before the
 	// attachment loads this falls back to the video descriptor (a no-op).
@@ -203,6 +234,18 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		setSources( videoSources );
 	}, [ attachmentConfig, dispatch, onBackToAttachmentPicker ] );
 
+	// Seed the editable title from the fetched attachment. `title.raw` is only
+	// present in edit context; otherwise decode the entity-encoded rendered
+	// title so the input shows plain text.
+	useEffect( () => {
+		if ( ! attachmentConfig ) {
+			return;
+		}
+		const rawTitle = attachmentConfig?.title?.raw;
+		const renderedTitle = attachmentConfig?.title?.rendered ?? attachmentConfig?.title;
+		setVideoTitle( rawTitle ?? decodeHtmlEntities( renderedTitle ) );
+	}, [ attachmentConfig ] );
+
 	/**
 	 * Update the store with the fetched forms.
 	 */
@@ -297,6 +340,63 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		}
 	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms ] );
 
+	// Size the video preview so it fits the stage in BOTH dimensions.
+	//
+	// The preview is height-driven: it aims for a 500px-tall preview, but never
+	// taller than the vertical room the stage actually has — the layers/chapters
+	// tabs dock a timeline at the bottom, so on shorter viewports there is less
+	// height to work with. The width follows from the winning height and is then
+	// clamped to the container width.
+	//
+	// A minimum width keeps short viewports from shrinking the preview to
+	// nothing: once the width hits `MIN_PREVIEW_WIDTH` it stops shrinking and the
+	// stage scrolls instead. The floor never exceeds the video's natural
+	// (500px-tall) width, so portrait clips are never stretched wider than their
+	// own aspect ratio. A ResizeObserver on the stage drives re-runs.
+	const resizeVideoPlayer = useCallback( () => {
+		const player = playerRef.current;
+		const video = player?.el_?.querySelector( 'video' );
+
+		// Prefer metadata dimensions; fall back to the aspect-ratio state
+		// (virtual media can be missing intrinsic video dimensions).
+		const [ fallbackW, fallbackH ] = String( aspectRatio || '16:9' )
+			.split( ':' )
+			.map( ( value ) => Number( value ) );
+		const widthForCalc = video?.videoWidth || ( Number.isFinite( fallbackW ) && fallbackW > 0 ? fallbackW : 16 );
+		const heightForCalc = video?.videoHeight || ( Number.isFinite( fallbackH ) && fallbackH > 0 ? fallbackH : 9 );
+		const ratio = widthForCalc / heightForCalc;
+
+		const MAX_PREVIEW_HEIGHT = 500;
+		const MIN_PREVIEW_WIDTH = 400;
+		// Breathing room so the preview never butts against the timeline dock.
+		const VERTICAL_BUFFER = 16;
+
+		// Vertical room: the stage-canvas height, minus buffer. Fall back to the
+		// full target height when the element isn't measurable yet.
+		const stageHeight = stageCanvasRef.current?.clientHeight;
+		const availableHeight = stageHeight ? stageHeight - VERTICAL_BUFFER : MAX_PREVIEW_HEIGHT;
+		const targetHeight = Math.max( 1, Math.min( MAX_PREVIEW_HEIGHT, availableHeight ) );
+
+		// Horizontal room: the preview wrapper (already capped at a fraction of
+		// the stage via CSS `max-width`).
+		const containerWidth = canvasWrapperRef.current?.getBoundingClientRect().width;
+		const maxWidth = containerWidth ? Math.floor( containerWidth ) : window.innerWidth;
+
+		const naturalWidth = MAX_PREVIEW_HEIGHT * ratio; // width at the full 500px height
+		const heightFitWidth = targetHeight * ratio; // width that fits the available height
+
+		// Never floor above the natural width (portrait clips) or the container.
+		const floor = Math.min( MIN_PREVIEW_WIDTH, Math.floor( naturalWidth ), maxWidth );
+		const constrainedWidth = Math.round(
+			Math.max( floor, Math.min( heightFitWidth, maxWidth ) ),
+		);
+
+		const videoPlayerElement = document.querySelector( '#easydam-video-player' );
+		if ( videoPlayerElement ) {
+			videoPlayerElement.style.width = `${ constrainedWidth }px`;
+		}
+	}, [ aspectRatio ] );
+
 	const handleTimeUpdate = ( _, time ) => setCurrentTime( time.toFixed( 2 ) );
 	const handlePlayerReady = ( player ) => {
 		if ( player ) {
@@ -319,25 +419,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						player.aspectRatio( metadataAspectRatio );
 					}
 
-					const [ fallbackW, fallbackH ] = String( aspectRatio || '16:9' )
-						.split( ':' )
-						.map( ( value ) => Number( value ) );
-					const widthForCalc = videoWidth || ( Number.isFinite( fallbackW ) && fallbackW > 0 ? fallbackW : 16 );
-					const heightForCalc = videoHeight || ( Number.isFinite( fallbackH ) && fallbackH > 0 ? fallbackH : 9 );
-
-					// Set width based on aspect ratio for 500px height
-					const targetHeight = 500;
-					const calculatedWidth = Math.round( targetHeight * ( widthForCalc / heightForCalc ) );
-					const canvasWrapper = document.querySelector( '.video-canvas-wrapper' );
-					const containerWidth = canvasWrapper?.getBoundingClientRect().width;
-					const maxWidth = containerWidth ? Math.floor( containerWidth ) : window.innerWidth;
-					const constrainedWidth = Math.min( calculatedWidth, maxWidth );
-
-					// Find the easydam-video-player wrapper and set its width
-					const videoPlayerElement = document.querySelector( '#easydam-video-player' );
-					if ( videoPlayerElement ) {
-						videoPlayerElement.style.width = `${ constrainedWidth }px`;
-					}
+					resizeVideoPlayer();
 				};
 
 				if ( video.readyState >= 1 ) {
@@ -346,6 +428,40 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			}
 		}
 	};
+
+	// Keep the preview sized to the stage whenever the stage changes size. We
+	// observe the stage-canvas (not the preview wrapper) because it reflects
+	// BOTH axes: its width changes on tab switches (the Configuration Panel
+	// appears only on the "layers" tab) and the admin-sidebar collapse, and its
+	// height changes when the timeline dock mounts/unmounts or the window is
+	// resized. The stage-canvas is flex-sized by its parent and scrolls its
+	// overflow, so re-sizing the preview inside it never changes its own size —
+	// the observer can't feed back into itself.
+	useEffect( () => {
+		const stageCanvas = stageCanvasRef.current;
+		if ( ! stageCanvas || typeof ResizeObserver === 'undefined' ) {
+			return;
+		}
+
+		let rafId = null;
+		const observer = new ResizeObserver( () => {
+			// Defer to the next frame so the resize runs after layout settles,
+			// avoiding ResizeObserver loop warnings.
+			if ( rafId ) {
+				cancelAnimationFrame( rafId );
+			}
+			rafId = requestAnimationFrame( resizeVideoPlayer );
+		} );
+		observer.observe( stageCanvas );
+
+		return () => {
+			if ( rafId ) {
+				cancelAnimationFrame( rafId );
+			}
+			observer.disconnect();
+		};
+	}, [ resizeVideoPlayer, sources ] );
+
 	// Seek the active preview: the VideoJS player for video, or the audio
 	// preview's element (via `audioSeekRef`) for audio.
 	const seekToTime = ( time ) => {
@@ -438,6 +554,81 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		setShowSnackbar( false );
 	};
 
+	// Opens the same attachment-details popup used in the media library, so
+	// core metadata (title, alt text, caption, description) can be edited
+	// without leaving the editor. Title edits made in the popup are mirrored
+	// back to the editor's top bar so the two stay in sync.
+	const handleEditMetadata = () => {
+		const teardown = openAttachmentDetailsModal( attachmentID, {
+			onChange: ( attributes ) => {
+				const nextTitle = attributes?.title;
+				if ( typeof nextTitle === 'string' ) {
+					setVideoTitle( decodeHtmlEntities( nextTitle ) );
+				}
+			},
+		} );
+		detachTitleSyncRef.current = typeof teardown === 'function' ? teardown : null;
+	};
+
+	// The wp.media attachment model is cached globally and outlives this
+	// component, so unbind the popup's title-sync listener on unmount to avoid
+	// retaining a stale reference to this instance's setVideoTitle.
+	useEffect( () => {
+		return () => {
+			detachTitleSyncRef.current?.();
+			detachTitleSyncRef.current = null;
+		};
+	}, [] );
+
+	// Label the "Edit metadata" action by the attachment's media type. In the
+	// video editor this is always a video, but derive it generically so the
+	// wording stays correct if other media types are ever edited here.
+	const getEditMetadataLabel = () => {
+		const mimeGroup = ( attachmentConfig?.mime_type || '' ).split( '/' )[ 0 ];
+
+		switch ( mimeGroup ) {
+			case 'video':
+				return __( 'Edit video metadata', 'godam' );
+			case 'image':
+				return __( 'Edit image metadata', 'godam' );
+			case 'audio':
+				return __( 'Edit audio metadata', 'godam' );
+			default:
+				return __( 'Edit metadata', 'godam' );
+		}
+	};
+
+	// Persist an edited video title to the attachment. Updates the display
+	// optimistically and reverts if the request fails.
+	const handleSaveTitle = async ( newTitle ) => {
+		const previousTitle = videoTitle;
+		setVideoTitle( newTitle );
+
+		try {
+			await saveTitle( { id: attachmentID, data: { title: newTitle } } ).unwrap();
+
+			// Keep the wp.media Backbone model — the data layer the "Edit
+			// metadata" popup reads — in sync so the two don't drift.
+			//
+			// We deliberately do NOT invalidate/refetch the getAttachmentMeta
+			// RTK query: that same query seeds the layer store via the init
+			// effect, so a refetch would re-run initializeStore() and discard
+			// unsaved layer edits (and reload the video). The title display is
+			// driven by local `videoTitle` state, which we already updated.
+			const attachmentModel = window.wp?.media?.attachment?.( attachmentID );
+			if ( attachmentModel && attachmentModel.get( 'title' ) !== newTitle ) {
+				attachmentModel.set( 'title', newTitle );
+			}
+
+			setSnackbarMessage( __( 'Title updated', 'godam' ) );
+			setShowSnackbar( true );
+		} catch ( error ) {
+			setVideoTitle( previousTitle );
+			setSnackbarMessage( __( 'Failed to update title', 'godam' ) );
+			setShowSnackbar( true );
+		}
+	};
+
 	// Switch the active section and reflect it in the URL so a refresh or
 	// bookmark preserves the user's place. `replaceState` is used so each tab
 	// switch doesn't push a new browser-history entry.
@@ -452,17 +643,14 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		return <EditorSkeleton />;
 	}
 
-	const videoTitle =
-		attachmentConfig?.title?.rendered ||
-		attachmentConfig?.title ||
-		( capability.mediaType === 'audio'
-			? __( 'Untitled audio', 'godam' )
-			: __( 'Untitled video', 'godam' ) );
+	const displayTitle = videoTitle || ( capability.mediaType === 'audio'
+		? __( 'Untitled audio', 'godam' )
+		: __( 'Untitled video', 'godam' ) );
 
 	return (
 		<div className="godam-video-editor">
 			<EditorTopBar
-				title={ videoTitle }
+				title={ displayTitle }
 				layerCount={ layers.length }
 				attachmentID={ attachmentID }
 				isChanged={ isChanged }
@@ -471,6 +659,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 				onBack={ onBackToAttachmentPicker }
 				onSave={ handleSaveAttachmentMeta }
 				onCopy={ handleCopyGoDAMVideoBlock }
+				onEditMetadata={ handleEditMetadata }
+				editMetadataLabel={ getEditMetadataLabel() }
+				onSaveTitle={ handleSaveTitle }
 			/>
 
 			{ capability.showStats && <EditorStatsRow attachmentID={ attachmentID } /> }
@@ -526,7 +717,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 						</Snackbar>
 					) }
 
-					<div className="godam-video-editor__stage-canvas">
+					<div className="godam-video-editor__stage-canvas" ref={ stageCanvasRef }>
 						{ attachmentConfig && sources.length > 0 && capability.preview === 'audio' && (
 							<AudioCardPreview
 								attachmentID={ attachmentID }
@@ -537,7 +728,8 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 							/>
 						) }
 						{ attachmentConfig && sources.length > 0 && capability.preview === 'videojs' && (
-							<div className="w-full video-canvas-wrapper">
+							<div className="w-full video-canvas-wrapper" ref={ canvasWrapperRef }>
+
 								<div className="relative">
 									<VideoJSPlayer
 										options={ {

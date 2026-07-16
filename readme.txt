@@ -141,7 +141,7 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 = Pricing Plans =
 [View Pricing Plans](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link)
 
-✓ **7-Day Free Trial** available for each subscription plan.
+✓ **30-day Free Trial** with all features included
 ✓ Flexible pricing options to suit different needs.
 ✓ Upgrade or cancel anytime based on usage.
 
@@ -219,7 +219,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v2.0.0 (July 2, 2026) =
+= v2.0.0 (July 14, 2026) =
 
 - Feat: GoDAM 2.0 brings a complete visual redesign across the admin and front end, with refreshed branding, new logos, and updated block icons.
 - Feat: Rebuilt the Video Editor with a streamlined layout for managing layers, hotspots, CTAs, and forms.
