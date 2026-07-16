@@ -28,8 +28,9 @@ import {
 } from '@wordpress/block-editor';
 import { __, _x, sprintf } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
+import apiFetch from '@wordpress/api-fetch';
 import { store as noticesStore } from '@wordpress/notices';
-import { useState, useRef } from '@wordpress/element';
+import { useState, useRef, useEffect } from '@wordpress/element';
 import { plus, trash, edit as editIcon } from '@wordpress/icons';
 
 /**
@@ -95,6 +96,32 @@ function AudioEdit( {
 } ) {
 	const { id, autoplay, loop, preload, src, audioTitle, description, thumbnail, thumbnailId, showTranscript, showChapters } = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
+
+	// Tracks the most recent audio selection so an in-flight thumbnail fetch can
+	// discard its result if the user has since picked a different file.
+	const latestThumbnailRequestId = useRef();
+
+	// A GoDAM-tab selection first sets the block's id to the GoDAM (string) id,
+	// then the media frame creates the backing WP attachment asynchronously and
+	// dispatches this event with the real numeric id. Swap it in so chapters,
+	// the transcript and the thumbnail resolve by attachment id (mirrors the
+	// video block). Runs only for the placeholder/matching id, leaving native
+	// WP audio untouched.
+	useEffect( () => {
+		const handleVirtualAttachmentCreated = ( event ) => {
+			const { attachment, virtualMediaId } = event.detail || {};
+
+			if ( attachment && ( id === undefined || id === virtualMediaId ) ) {
+				setAttributes( { id: attachment.id } );
+			}
+		};
+
+		document.addEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+
+		return () => {
+			document.removeEventListener( 'godam-virtual-attachment-created', handleVirtualAttachmentCreated );
+		};
+	}, [ id, setAttributes ] );
 
 	// The customization editor (transcription + chapters) is the video editor in
 	// audio mode, opened by attachment ID. Relative to /wp-admin/ so it works in
@@ -167,14 +194,48 @@ function AudioEdit( {
 			? media.title
 			: ( media.title?.raw ?? media.title?.rendered ?? '' );
 
-		setAttributes( {
+		const nextAttributes = {
 			blob: undefined,
 			src: media.url,
 			id: media.id,
 			audioTitle: mediaTitle,
 			description: mediaDescription,
-		} );
+		};
+
+		// Auto-fill the thumbnail with the GoDAM cover on selection. GoDAM-tab
+		// items carry it on the media model (`thumbnail_url`), so apply it in the
+		// same batch. `thumbnailId` is cleared because the cover is an external
+		// URL, not a WP image attachment.
+		if ( media.origin === 'godam' && media.thumbnail_url ) {
+			nextAttributes.thumbnail = media.thumbnail_url;
+			nextAttributes.thumbnailId = undefined;
+		}
+
+		setAttributes( nextAttributes );
 		setTemporaryURL();
+
+		// Media Library-tab items are plain WP attachments — the cover is not on
+		// the media model, so read it from the attachment's meta. This surfaces
+		// the cover of an already-created virtual GoDAM audio picked from that tab;
+		// a user-uploaded audio has no such meta, so nothing is overwritten.
+		if ( media.origin !== 'godam' && media.id ) {
+			const requestedId = media.id;
+			latestThumbnailRequestId.current = requestedId;
+
+			apiFetch( { path: `/wp/v2/media/${ media.id }` } )
+				.then( ( response ) => {
+					// Discard a stale response if a different file was selected
+					// while this request was in flight.
+					if ( latestThumbnailRequestId.current !== requestedId ) {
+						return;
+					}
+					const audioThumbnail = response?.meta?.rtgodam_media_audio_thumbnail;
+					if ( audioThumbnail ) {
+						setAttributes( { thumbnail: audioThumbnail, thumbnailId: undefined } );
+					}
+				} )
+				.catch( () => {} );
+		}
 	}
 
 	function onRemoveAudio() {
