@@ -1,0 +1,363 @@
+/**
+ * Shared GoDAM audio card + player + Chapters/Transcript panel styles.
+ *
+ * Single source of truth for the audio UI so it looks identical across all
+ * three surfaces:
+ *   - the Gutenberg block editor canvas (blocks/godam-audio/edit.js)
+ *   - the front end (blocks/godam-audio/render.php + view.js)
+ *   - the customization editor preview (pages/video-editor/.../AudioCardPreview.js)
+ *
+ * Imported by blocks/godam-audio/style.scss (front end + block editor) and by
+ * pages/video-editor/components/audio/audio-card-preview.scss (customization
+ * editor). Markup structure must match in all three:
+ *
+ *   .godam-audio-card
+ *     .godam-audio-card__head
+ *       .godam-audio-card__cover  (img | empty)
+ *       .godam-audio-card__body   (title, description, .godam-audio-player)
+ *     .godam-audio-tabs           (Chapters / Transcript — optional)
+ */
+
+.godam-audio-card {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 720px;
+	margin: 0 auto;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 12px;
+	padding: 20px 24px;
+
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+
+	&__head {
+		display: flex;
+		gap: 16px;
+		align-items: flex-start;
+	}
+
+	&__cover {
+		flex: 0 0 auto;
+		width: 96px;
+		height: 96px;
+		border-radius: 8px;
+		background: #f3f1fe;
+		overflow: hidden;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+
+	&__body {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	&__title {
+		margin: 0 0 6px;
+		font-size: 18px;
+		font-weight: 600;
+		line-height: 1.3;
+		color: #1e1e1e;
+	}
+
+	&__description {
+		margin: 0;
+		font-size: 14px;
+		line-height: 1.5;
+		color: #6b7280;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	// The native <audio> is only a media source — the visible UI is the custom
+	// player (.godam-audio-player) rendered alongside it — so hide the element
+	// itself. (display:none does not stop audio playback.)
+	&__player {
+		display: none;
+	}
+}
+
+// ── Custom player ───────────────────────────────────────────────────────────────
+.godam-audio-player {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	width: 100%;
+	margin: 16px 0 0;
+
+	&__play {
+		flex: 0 0 auto;
+		width: 24px;
+		height: 24px;
+		min-width: 0;
+		padding: 0;
+		border: none;
+		background: transparent;
+		color: #1e1e1e;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		&:hover:not( :disabled ) {
+			color: #000;
+			background: transparent;
+		}
+
+		svg {
+			width: 22px;
+			height: 22px;
+			fill: currentcolor;
+		}
+	}
+
+	&__scrubber {
+		flex: 1 1 auto;
+		appearance: none;
+		-webkit-appearance: none;
+		padding: 0;
+		height: 7px;
+		border: none;
+		border-radius: 100px;
+		background: linear-gradient(
+			to right,
+			#1e1e1e 0%,
+			#1e1e1e var( --godam-audio-progress, 0% ),
+			#e0e0e0 var( --godam-audio-progress, 0% ),
+			#e0e0e0 100%
+		);
+		cursor: pointer;
+
+		// No visible knob — the fill alone shows progress.
+		&::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			width: 0;
+			height: 0;
+		}
+
+		&::-moz-range-thumb {
+			width: 0;
+			height: 0;
+			border: none;
+		}
+	}
+
+	&__time {
+		flex: 0 0 auto;
+		font-size: 13px;
+		color: #4b5563;
+		font-variant-numeric: tabular-nums;
+	}
+}
+
+// ── Chapters / Transcript panel (a section inside the card) ─────────────────────
+.godam-audio-tabs {
+
+	&__bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: 20px;
+		border-bottom: 1px solid #e5e7eb;
+	}
+
+	&__nav {
+		display: flex;
+		gap: 24px;
+	}
+
+	&__tab {
+		background: none;
+		border: none;
+		padding: 14px 2px;
+		font-size: 15px;
+		color: #4b5563;
+		cursor: pointer;
+		border-bottom: 2px solid transparent;
+		margin-bottom: -1px;
+
+		&.is-active {
+			color: #1e1e1e;
+			font-weight: 600;
+			border-bottom-color: #5046e5;
+		}
+	}
+
+	&__toggle {
+		background: none;
+		border: 1px solid #e0e0e0;
+		border-radius: 4px;
+		width: 28px;
+		height: 28px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		color: #4b5563;
+
+		.dashicons {
+			transition: transform 0.2s ease;
+		}
+	}
+
+	&.is-collapsed &__toggle .dashicons {
+		transform: rotate( -90deg );
+	}
+
+	&__body {
+		padding-top: 16px;
+	}
+
+	&__list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__empty {
+		text-align: center;
+		color: #9ca3af;
+		font-size: 14px;
+		padding: 28px 0;
+	}
+
+	&__row {
+		display: flex;
+		align-items: flex-start;
+		gap: 16px;
+		width: 100%;
+		background: none;
+		border: none;
+		padding: 8px 4px;
+		text-align: left;
+		cursor: pointer;
+		border-radius: 6px;
+
+		&:hover {
+			background: #f9fafb;
+		}
+
+		&.is-active {
+			background: #f0f0f1;
+		}
+	}
+
+	&__stamp {
+		flex: 0 0 auto;
+		font-size: 13px;
+		color: #4b5563;
+		background: #f3f4f6;
+		border-radius: 4px;
+		padding: 2px 8px;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__row-text {
+		font-size: 14px;
+		color: #1e1e1e;
+		line-height: 1.5;
+	}
+
+	&__transcript {
+		max-height: 320px;
+		overflow-y: auto;
+
+		// Transcript cues drop the chapter row's pill + hover/active background
+		// for the cleaner design: a plain timestamp column, grey by default, with
+		// the whole active cue turning dark. (Chapters keep their own styling.)
+		.godam-audio-tabs__row {
+			align-items: flex-start;
+			gap: 16px;
+			padding: 12px 4px;
+			border-radius: 0;
+
+			&:hover,
+			&.is-active {
+				background: none;
+			}
+		}
+
+		.godam-audio-tabs__stamp {
+			min-width: 44px;
+			padding: 0;
+			background: none;
+			border-radius: 0;
+			font-size: 14px;
+			font-weight: 500;
+			line-height: 1.6;
+			color: #9ca3af;
+		}
+
+		.godam-audio-tabs__row-text {
+			font-size: 15px;
+			line-height: 1.6;
+			color: #9ca3af;
+		}
+
+		// Active cue: timestamp + text go dark (design).
+		.godam-audio-tabs__row.is-active {
+
+			.godam-audio-tabs__stamp {
+				color: #1e1e1e;
+				font-weight: 700;
+			}
+
+			.godam-audio-tabs__row-text {
+				color: #1e1e1e;
+			}
+		}
+	}
+
+	&__copy {
+		background: none;
+		border: 1px solid #e0e0e0;
+		border-radius: 6px;
+		width: 36px;
+		height: 36px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		color: #4b5563;
+		margin-bottom: 12px;
+
+		svg {
+			width: 20px;
+			height: 20px;
+			fill: currentcolor;
+		}
+
+		&:hover {
+			background: #f9fafb;
+			color: #1e1e1e;
+		}
+
+		&.is-copied {
+			color: #10b77f;
+			border-color: #10b77f;
+		}
+	}
+
+	// Mobile
+	@media ( max-width: 480px ) {
+
+		&__nav {
+			gap: 16px;
+		}
+
+		&__tab {
+			font-size: 14px;
+		}
+	}
+}

@@ -99,6 +99,19 @@ class Meta_Rest_Fields {
 
 		register_post_meta(
 			'attachment',
+			'rtgodam_media_audio_thumbnail',
+			array(
+				'type'          => 'string',
+				'single'        => true,
+				'show_in_rest'  => true,
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			'attachment',
 			'rtgodam_hls_transcoded_url',
 			array(
 				'type'          => 'string',

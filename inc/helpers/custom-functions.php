@@ -1194,16 +1194,24 @@ function godam_preview_page_content( $video_id ) {
 		</div>
 		<?php
 	} else {
-		// Display video content.
+		// Render the block appropriate to the attachment's media type: audio
+		// attachments use the audio block, everything else the video player.
+		$godam_is_audio  = 0 === strpos( (string) get_post_mime_type( $video_id ), 'audio/' );
+		$godam_notice    = $godam_is_audio
+			? __( 'Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles.', 'godam' )
+			: __( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' );
+		$godam_shortcode = $godam_is_audio
+			? '[godam_audio id="' . $video_id . '"]'
+			: '[godam_video id="' . $video_id . '"]';
 		?>
 		<div class="godam-video-preview--notice">
-			<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
+			<?php echo esc_html( $godam_notice ); ?>
 		</div>
 		<div class="godam-video-preview">
 			<h1 class="godam-video-preview--title">
 				<?php echo esc_html( get_the_title( $video_id ) ); ?>
 			</h1>
-			<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
+			<?php echo do_shortcode( $godam_shortcode ); ?>
 		</div>
 		<?php
 	}

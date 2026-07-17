@@ -1779,6 +1779,13 @@ class Media_Library extends Base {
 			);
 
 			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+
+			// Persist the audio thumbnail from GoDAM Central (falls back to the
+			// icon URL) so the block can surface it. Mirrors the video/PDF paths.
+			$audio_thumbnail = ! empty( $data['thumbnail_url'] ) ? $data['thumbnail_url'] : ( $data['icon'] ?? '' );
+			if ( ! empty( $audio_thumbnail ) ) {
+				update_post_meta( $attach_id, 'rtgodam_media_audio_thumbnail', esc_url_raw( $audio_thumbnail ) );
+			}
 		} elseif ( 'pdf' === $type ) {
 			$wp_attachment_metadata = array(
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
@@ -1789,6 +1796,32 @@ class Media_Library extends Base {
 			// Set PDF thumbnail from icon URL if provided.
 			if ( ! empty( $data['icon'] ) ) {
 				update_post_meta( $attach_id, 'rtgodam_media_pdf_thumbnail', esc_url_raw( $data['icon'] ) );
+			}
+		}
+
+		// Persist chapters from GoDAM Central into rtgodam_meta for any media type
+		// that carries them (video + audio). The block, its render template, the
+		// video player and the customization editor all resolve chapters from
+		// rtgodam_meta['chapters']. Guarded on non-empty, so image/PDF (which
+		// never carry chapters) are a no-op.
+		if ( ! empty( $data['chapters'] ) && is_array( $data['chapters'] ) ) {
+			$sanitized_chapters = array();
+			foreach ( $data['chapters'] as $chapter ) {
+				$chapter              = (array) $chapter;
+				$sanitized_chapters[] = array(
+					'id'           => isset( $chapter['id'] ) ? sanitize_text_field( $chapter['id'] ) : '',
+					'text'         => isset( $chapter['text'] ) ? sanitize_text_field( $chapter['text'] ) : '',
+					'originalTime' => isset( $chapter['originalTime'] ) ? sanitize_text_field( $chapter['originalTime'] ) : '',
+					'startTime'    => isset( $chapter['startTime'] ) ? sanitize_text_field( (string) $chapter['startTime'] ) : '0',
+				);
+			}
+
+			if ( ! empty( $sanitized_chapters ) ) {
+				$rtgodam_meta = get_post_meta( $attach_id, 'rtgodam_meta', true );
+				$rtgodam_meta = is_array( $rtgodam_meta ) ? $rtgodam_meta : array();
+
+				$rtgodam_meta['chapters'] = $sanitized_chapters;
+				update_post_meta( $attach_id, 'rtgodam_meta', $rtgodam_meta );
 			}
 		}
 
