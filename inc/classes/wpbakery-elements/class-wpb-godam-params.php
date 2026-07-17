@@ -249,7 +249,10 @@ class WPB_GoDAM_Params {
 	 * @return string
 	 */
 	public function document_cover_selector_settings_field( $settings, $value ) {
-		return '<div class="document_cover_selector_block">'
+		// Pass the site's REST root (rest_url()) so the JS never has to guess it —
+		// this is correct for subdirectory installs, custom REST prefixes and
+		// multisite, unlike deriving it from window.location.
+		return '<div class="document_cover_selector_block" data-rest-url="' . esc_url( rest_url() ) . '">'
 			. '<input name="' . esc_attr( $settings['param_name'] ) . '" data-test-id="godam-wpb-input-cover" class="wpb_vc_param_value wpb-textinput document_cover_selector_field ' .
 			esc_attr( $settings['param_name'] ) . ' ' .
 			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'

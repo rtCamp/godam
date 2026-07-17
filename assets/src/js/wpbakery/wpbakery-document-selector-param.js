@@ -1,6 +1,10 @@
 ( function( $ ) {
 	'use strict';
 
+	// Use WordPress i18n when available so user-facing strings are translatable;
+	// fall back to identity if wp.i18n is not loaded in the current context.
+	const { __ } = ( window.wp && window.wp.i18n ) ? window.wp.i18n : { __: ( s ) => s };
+
 	// Initialize document selector on document ready and when WPBakery reloads the params
 	$( document ).ready( initDocumentSelector );
 	$( document ).on( 'vc.reload', initDocumentSelector );
@@ -14,7 +18,10 @@
 			const paramName = $button.data( 'param' );
 			const $container = $button.closest( '.document_selector_block' );
 			const $input = $container.find( '.document_selector_field' );
-			const $srcInput = $attributeContainer.find( '.textfield_hidden_field' );
+			// Target the `src` hidden param specifically — a bare
+			// `.textfield_hidden_field` match could update another hidden field
+			// if the element ever gains more of them.
+			const $srcInput = $attributeContainer.find( '.textfield_hidden_field[name="src"]' );
 			// Sibling param fields to auto-populate from the attachment, mirroring
 			// the Gutenberg block's onSelectPdf (Doc Title + Description).
 			const $docTitleInput = $attributeContainer.find( '[name="doc_title"]' );
@@ -22,9 +29,9 @@
 
 			// Create WordPress media frame, restricted to PDF documents.
 			const frame = wp.media( {
-				title: 'Select or Upload Document',
+				title: __( 'Select or Upload Document', 'godam' ),
 				button: {
-					text: 'Select Document',
+					text: __( 'Select Document', 'godam' ),
 				},
 				library: {
 					type: 'application/pdf',
@@ -53,9 +60,9 @@
 				}
 
 				// Update button text
-				$button.text( 'Replace' );
+				$button.text( __( 'Replace', 'godam' ) );
 
-				const fileName = attachment.filename || attachment.title || 'Document';
+				const fileName = attachment.filename || attachment.title || __( 'Document', 'godam' );
 
 				// Add or update preview
 				let $preview = $container.find( '.document-selector-preview' );
@@ -64,16 +71,20 @@
 					$container.append( $preview );
 				}
 
-				$preview.html(
-					'<span class="dashicons dashicons-media-document" style="vertical-align: middle;"></span> ' +
-					'<span class="document-selector-preview__name">' + fileName + '</span>',
-				);
+				// Build the preview via DOM + .text() so the (attachment-derived)
+				// file name is never interpolated into markup — avoids XSS from a
+				// crafted attachment title/filename.
+				const $icon = $( '<span class="dashicons dashicons-media-document" style="vertical-align: middle;"></span>' );
+				const $name = $( '<span class="document-selector-preview__name"></span>' ).text( fileName );
+				$preview.empty().append( $icon, ' ', $name );
 
 				// Add or update remove button in the buttons wrapper
 				const $buttonsWrapper = $container.find( '.document_selector-buttons-wrapper' );
 				let $removeButton = $buttonsWrapper.find( '.document-selector-remove' );
 				if ( $removeButton.length === 0 ) {
-					$removeButton = $( '<button class="button document-selector-remove" data-test-id="godam-wpb-button-remove-document" data-param="' + paramName + '" style="margin-left: 5px;">Remove</button>' );
+					$removeButton = $( '<button type="button" class="button document-selector-remove" data-test-id="godam-wpb-button-remove-document" style="margin-left: 5px;"></button>' )
+						.attr( 'data-param', paramName )
+						.text( __( 'Remove', 'godam' ) );
 					$buttonsWrapper.append( $removeButton );
 				}
 
@@ -98,7 +109,7 @@
 			const $container = $button.closest( '.document_selector_block' );
 			const $input = $container.find( '.document_selector_field' );
 			const $selectButton = $container.find( '.document-selector-button' );
-			const $srcInput = $attributeContainer.find( '.textfield_hidden_field' );
+			const $srcInput = $attributeContainer.find( '.textfield_hidden_field[name="src"]' );
 
 			// Clear the input values
 			$input.val( '' ).trigger( 'change' );
@@ -111,7 +122,7 @@
 			$button.remove();
 
 			// Update button text
-			$selectButton.text( 'Select document' );
+			$selectButton.text( __( 'Select document', 'godam' ) );
 		} );
 	}
 }( window.jQuery ) );
