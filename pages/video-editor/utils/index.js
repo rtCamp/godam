@@ -159,12 +159,17 @@ function createAudioAttributes( attachmentId, mediaData ) {
 
 	const title = stripHtmlToText( mediaData.title?.rendered ?? mediaData.title );
 	const description = clean( mediaData.description?.rendered ?? mediaData.description );
+	// The GoDAM audio cover lives in post meta (an external CDN URL, so no
+	// thumbnailId). Carry it into the copied block so the pasted player shows the
+	// same cover the editor/front end does.
+	const thumbnail = mediaData.meta?.rtgodam_media_audio_thumbnail || '';
 
 	return {
 		id: Number( attachmentId ),
 		src: mediaData.source_url || '',
 		audioTitle: title,
 		description,
+		thumbnail,
 		className: 'wp-block-godam-audio',
 	};
 }

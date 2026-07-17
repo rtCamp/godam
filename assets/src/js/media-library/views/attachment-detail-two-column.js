@@ -786,6 +786,24 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Renders the Edit Audio button in the attachment details view.
+	 *
+	 * Audio uses the same editor as video (in audio mode) and has no analytics,
+	 * so this is a single "Edit Audio" button shown only to users who can manage
+	 * the attachment.
+	 */
+	renderAudioActions() {
+		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
+			return;
+		}
+
+		const editAudioURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
+		const buttonHTML = `<a href="${ editAudioURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Audio', 'godam' ) }</a>`;
+
+		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-audio-actions">${ buttonHTML }</div>` ) );
+	},
+
+	/**
 	 * Calculates the optimal dimensions for the video player.
 	 *
 	 * @param {number} videoWidth  - The original width of the video.
@@ -1118,6 +1136,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			if ( canManageAttachment( this.model.get( 'author' ) ) ) {
 				this.renderImageActions();
 			}
+		}
+		// Audio: show an "Edit Audio" button (opens the editor in audio mode).
+		if ( this.model.get( 'type' ) === 'audio' ) {
+			this.$el.find( '.attachment-audio-actions' ).remove();
+			this.renderAudioActions();
 		}
 
 		if ( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' ) {

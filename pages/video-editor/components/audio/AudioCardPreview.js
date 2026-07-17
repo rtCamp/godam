@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import { useState, useRef, useEffect, useMemo } from '@wordpress/element';
 import { Icon } from '@wordpress/components';
 import { check, copy } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -77,6 +77,13 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 		.replace( /\s+/g, ' ' )
 		.trim();
 	const audioSrc = sources?.[ 0 ]?.src || attachmentConfig?.source_url || '';
+	// GoDAM audio stores its cover in post meta (rtgodam_media_audio_thumbnail),
+	// exposed under `.meta` in the /wp/v2/media payload. Fall back to the video
+	// thumbnail key for safety.
+	const cover =
+		attachmentConfig?.meta?.rtgodam_media_audio_thumbnail ||
+		attachmentConfig?.meta?.rtgodam_media_video_thumbnail ||
+		'';
 
 	// Fetch the saved transcript path, then load and parse the caption file.
 	const { data: transcription } = useGetTranscriptionQuery( attachmentID, { skip: ! attachmentID } );
@@ -91,7 +98,13 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 		( async () => {
 			try {
 				const response = await fetch( transcriptPath );
+				if ( cancelled ) {
+					return;
+				}
+				// Clear any previously loaded cues when the new path 404s, so a
+				// stale transcript doesn't keep rendering after a regenerate/upload.
 				if ( ! response.ok ) {
+					setCues( [] );
 					return;
 				}
 				const raw = await response.text();
@@ -99,7 +112,10 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 					setCues( parseCaptions( raw ) );
 				}
 			} catch {
-				// Leave cues empty on failure; the empty state is shown.
+				// Clear stale cues on failure; the empty state is shown.
+				if ( ! cancelled ) {
+					setCues( [] );
+				}
 			}
 		} )();
 		return () => {
@@ -166,8 +182,8 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 			<div className="godam-audio-card">
 				<div className="godam-audio-card__head">
 					<div className="godam-audio-card__cover">
-						{ attachmentConfig?.rtgodam_media_video_thumbnail && (
-							<img src={ attachmentConfig.rtgodam_media_video_thumbnail } alt="" />
+						{ cover && (
+							<img src={ cover } alt="" />
 						) }
 					</div>
 					<div className="godam-audio-card__body">
@@ -264,7 +280,11 @@ const AudioCardPreview = ( { attachmentID, attachmentConfig, sources, onDuration
 										>
 											<span className="godam-audio-tabs__stamp">{ formatClock( row.startSeconds ) }</span>
 											<span className="godam-audio-tabs__row-text">
-												{ row.text?.trim() || __( 'Chapter', 'godam' ) + ' ' + ( index + 1 ) }
+												{ row.text?.trim() || sprintf(
+													/* translators: %d is the chapter number. */
+													__( 'Chapter %d', 'godam' ),
+													index + 1,
+												) }
 											</span>
 										</button>
 									) ) }

@@ -189,23 +189,31 @@ class Video_Metadata {
 	 * @return array
 	 */
 	public function set_media_library_thumbnail( $response, $attachment, $meta ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $attachment and $meta are not modified.
-		if ( 0 === strpos( $response['mime'], 'video/' ) || 'application/pdf' === $response['mime'] ) {
+		$mime          = isset( $response['mime'] ) ? $response['mime'] : '';
+		$thumbnail_url = '';
 
+		if ( 0 === strpos( $mime, 'video/' ) || 'application/pdf' === $mime ) {
 			$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
 
 			// Check for icon if it is a virtual media (for PDFs imported from GoDAM).
 			if ( empty( $thumbnail_url ) ) {
 				$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_pdf_thumbnail', true );
 			}
+		} elseif ( 0 === strpos( $mime, 'audio/' ) ) {
+			// Virtual GoDAM audio carries its cover in dedicated meta (no image
+			// subsizes exist for it), so surface it in the media library grid
+			// and in the media object blocks receive on selection.
+			$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_audio_thumbnail', true );
+		}
 
+		if ( ! empty( $thumbnail_url ) ) {
 			$attachment_meta = get_post_meta( $response['id'], '_wp_attachment_metadata', true );
 
-			if ( ! empty( $thumbnail_url ) ) {
-				$response['image']['src']    = esc_url( rtgodam_convert_to_https_url( $thumbnail_url ) );
-				$response['image']['width']  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
-				$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
-			}
+			$response['image']['src']    = esc_url( rtgodam_convert_to_https_url( $thumbnail_url ) );
+			$response['image']['width']  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
+			$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 		}
+
 		return $response;
 	}
 
@@ -252,6 +260,11 @@ class Video_Metadata {
 		if ( is_admin() && 'upload' === get_current_screen()->id && array( 60, 60 ) === $size ) {
 
 			$thumbnail_url = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+
+			// Virtual GoDAM audio stores its cover in dedicated meta.
+			if ( empty( $thumbnail_url ) ) {
+				$thumbnail_url = get_post_meta( $attachment_id, 'rtgodam_media_audio_thumbnail', true );
+			}
 
 			// Check for icon if it is a virtual media.
 			if ( empty( $thumbnail_url ) ) {
