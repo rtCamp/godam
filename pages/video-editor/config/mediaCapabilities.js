@@ -13,7 +13,7 @@
  * `tabs` — ordered left-rail tab names; also the allow-list validating `setCurrentTab`.
  * `defaultTab` — tab selected when the editor opens for this media type.
  * `allowedLayerTypes` — `'*'` for every registered layer type, or an array of layer `type` strings to restrict the "Add layer" menu (`[]` disables layers).
- * `preview` — discriminator the editor maps to a preview component (`'videojs'` → VideoJSPlayer, `'audio'` → AudioCardPreview). Components are not stored here to keep this module free of React/store imports.
+ * `preview` — discriminator the editor maps to a preview component (`'videojs'` → VideoJSPlayer, `'audio'` → AudioCardPreview, `'image'` → ImagePreview). Components are not stored here to keep this module free of React/store imports.
  * `copyBlockName` — Gutenberg block emitted by the Copy action.
  * `previewPage` — `godam_page` query value for the front-end Preview link.
  * `showPreview` — whether the top-bar Preview button renders.
@@ -63,8 +63,8 @@ const CAPABILITIES = {
 	},
 	// Image editor — Hotspot + WooCommerce (product) hotspot layers placed
 	// spatially on a static image. The restricted `allowedLayerTypes` set falls
-	// out through the add menu without touching the core layer arrays. Copy is
-	// hidden until the `godam/image` front-end block ships (Iteration 2).
+	// out through the add menu without touching the core layer arrays. Copy and
+	// Preview are enabled: the `godam/image` front-end block exists (Iteration 2).
 	image: {
 		mediaType: 'image',
 		tabs: [ 'layers' ],
@@ -72,11 +72,13 @@ const CAPABILITIES = {
 		allowedLayerTypes: [ 'hotspot', 'woo' ],
 		preview: 'image',
 		copyBlockName: 'godam/image',
-		previewPage: 'image-preview',
-		showPreview: false,
+		// Images reuse the shared front-end preview page (`godam_page=video-preview`),
+		// which renders the `godam/image` block and adapts its labels for images.
+		// See godam_preview_page_content() and inc/templates/video-preview.php.
+		previewPage: 'video-preview',
+		showPreview: true,
 		showTimeline: false,
 		showStats: false,
-		showCopy: false,
 	},
 };
 

@@ -311,10 +311,6 @@ function AudioEdit( {
 	const audioMedia = useSelect( ( select ) => ( id ? select( 'core' ).getMedia( id ) : null ), [ id ] );
 	const fileSize = formatBytes( audioMedia?.media_details?.filesize );
 
-	// The selected attachment's file size, shown in the Audio Selection file row.
-	const audioMedia = useSelect( ( select ) => ( id ? select( 'core' ).getMedia( id ) : null ), [ id ] );
-	const fileSize = formatBytes( audioMedia?.media_details?.filesize );
-
 	const classes = clsx( className, {
 		'is-transient': !! temporaryURL,
 	} );

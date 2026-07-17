@@ -52,6 +52,28 @@ class Blocks {
 		);
 
 		register_block_type(
+			RTGODAM_PATH . '/assets/build/blocks/godam-image/'
+		);
+
+		// The godam/image block draws hotspot / product-hotspot markers using the
+		// shared player stylesheet (`.easydam-layer` / `.hotspot` rules live there,
+		// unscoped). Tie it to the block via wp_enqueue_block_style so WordPress
+		// prints it reliably whenever the block renders — including block themes /
+		// FSE, where a late wp_enqueue_style() from render.php is not printed.
+		if ( function_exists( 'wp_enqueue_block_style' ) ) {
+			$godam_player_css = RTGODAM_PATH . 'assets/build/css/godam-player.css';
+			wp_enqueue_block_style(
+				'godam/image',
+				array(
+					'handle' => 'godam-player-style',
+					'src'    => RTGODAM_URL . 'assets/build/css/godam-player.css',
+					'path'   => $godam_player_css,
+					'ver'    => file_exists( $godam_player_css ) ? filemtime( $godam_player_css ) : RTGODAM_VERSION,
+				)
+			);
+		}
+
+		register_block_type(
 			RTGODAM_PATH . '/assets/build/blocks/godam-gallery-v2/'
 		);
 

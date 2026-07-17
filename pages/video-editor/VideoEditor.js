@@ -128,19 +128,6 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		} );
 	}, [ attachmentID, capability.copyBlockName, capability.mediaType ] );
 
-	// Resolve the media-type capability from the attachment MIME. Before the
-	// attachment loads this falls back to the video descriptor (a no-op).
-	const capability = getCapabilityForMime( attachmentConfig?.mime_type );
-
-	// Pre-fetch data so copy always works. Re-runs once the capability is known
-	// (after the attachment loads) so the correct block markup is cached.
-	useEffect( () => {
-		prefetchMediaDataForCopy( attachmentID, {
-			blockName: capability.copyBlockName,
-			mediaType: capability.mediaType,
-		} );
-	}, [ attachmentID, capability.copyBlockName, capability.mediaType ] );
-
 	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
 
 	useEffect( () => {

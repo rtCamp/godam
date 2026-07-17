@@ -114,6 +114,13 @@ const godamPlayerFrontend = {
 	},
 };
 
+const godamImageLayersFrontend = {
+	...sharedConfig,
+	entry: {
+		'godam-image-layers-frontend': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-image-layers', 'frontend.js' ),
+	},
+};
+
 const godamPlayerAnalytics = {
 	...sharedConfig,
 	entry: {
@@ -367,6 +374,7 @@ module.exports = [
 	adminJS,
 	mediaLibrary,
 	godamPlayerFrontend,
+	godamImageLayersFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
 	httpAuthDetector,

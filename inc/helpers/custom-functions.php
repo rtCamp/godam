@@ -1166,13 +1166,15 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 }
 
 /**
- * Generate the HTML content for the video preview page.
+ * Generate the HTML content for the preview page.
  *
- * This function constructs the HTML structure for a video preview page based on the provided video ID.
- * It checks if the video exists and displays either the video player or an error message accordingly.
+ * Constructs the HTML for the shared front-end preview page based on the given
+ * attachment ID. It checks that the attachment exists and renders the markup for
+ * its media type — video player, audio player, or the image block (with hotspot /
+ * product layers) — or an error message when the attachment is missing.
  *
- * @param int $video_id The ID of the video attachment to preview.
- * @return string The generated HTML content for the video preview page.
+ * @param int $video_id The ID of the attachment to preview (video, audio or image).
+ * @return string The generated HTML content for the preview page.
  */
 function godam_preview_page_content( $video_id ) {
 	ob_start();
@@ -1194,15 +1196,40 @@ function godam_preview_page_content( $video_id ) {
 		</div>
 		<?php
 	} else {
-		// Render the block appropriate to the attachment's media type: audio
-		// attachments use the audio block, everything else the video player.
-		$godam_is_audio  = 0 === strpos( (string) get_post_mime_type( $video_id ), 'audio/' );
-		$godam_notice    = $godam_is_audio
-			? __( 'Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles.', 'godam' )
-			: __( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' );
-		$godam_shortcode = $godam_is_audio
-			? '[godam_audio id="' . $video_id . '"]'
-			: '[godam_video id="' . $video_id . '"]';
+		// Render the markup appropriate to the attachment's media type: audio
+		// attachments use the audio shortcode, image attachments the image block
+		// (hotspot / product layers), everything else the video player.
+		$godam_mime     = (string) get_post_mime_type( $video_id );
+		$godam_is_audio = 0 === strpos( $godam_mime, 'audio/' );
+		$godam_is_image = 0 === strpos( $godam_mime, 'image/' );
+
+		if ( $godam_is_image ) {
+			$godam_notice = __( 'Note: This is a simple image preview. The image and its layers may display differently when added to a page based on theme styles.', 'godam' );
+		} elseif ( $godam_is_audio ) {
+			$godam_notice = __( 'Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles.', 'godam' );
+		} else {
+			$godam_notice = __( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' );
+		}
+
+		// The image block is dynamic and has no shortcode, so render it directly
+		// via do_blocks(); audio and video reuse their registered shortcodes. This
+		// runs before wp_head() in the template, so the block's lazily-enqueued
+		// styles / scripts are still printed.
+		if ( $godam_is_image ) {
+			$godam_media_output = do_blocks(
+				'<!-- wp:godam/image ' . wp_json_encode(
+					array(
+						'id'              => $video_id,
+						'showImageLayers' => true,
+					)
+				) . ' /-->'
+			);
+		} else {
+			$godam_shortcode    = $godam_is_audio
+				? '[godam_audio id="' . $video_id . '"]'
+				: '[godam_video id="' . $video_id . '"]';
+			$godam_media_output = do_shortcode( $godam_shortcode );
+		}
 		?>
 		<div class="godam-video-preview--notice">
 			<?php echo esc_html( $godam_notice ); ?>
@@ -1211,7 +1238,7 @@ function godam_preview_page_content( $video_id ) {
 			<h1 class="godam-video-preview--title">
 				<?php echo esc_html( get_the_title( $video_id ) ); ?>
 			</h1>
-			<?php echo do_shortcode( $godam_shortcode ); ?>
+			<?php echo $godam_media_output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped inside the block / shortcode render templates. ?>
 		</div>
 		<?php
 	}
