@@ -34,6 +34,12 @@ const ImagePreview = ( { attachmentConfig, sources } ) => {
 				<div
 					id="easydam-video-player"
 					className="relative rounded-lg overflow-hidden godam-image-preview"
+					// Cap the stage container to the canvas width. A landscape image's
+					// width is driven by the 500px height cap (e.g. 1280x719 -> 890px
+					// wide), which otherwise grows this content-sized container past the
+					// stage and overflows it horizontally. The image's own max-width:100%
+					// resolves against this cap, so it shrinks to fit and stays responsive.
+					style={ { maxWidth: '100%' } }
 				>
 					<img
 						ref={ imgRef }
