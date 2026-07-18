@@ -43,7 +43,11 @@ const ImagePreview = ( { attachmentConfig, sources } ) => {
 						// Once the intrinsic size is known, nudge the layer components'
 						// `computeContentRect` (bound to `resize`) to recompute the box.
 						onLoad={ () => window.dispatchEvent( new Event( 'resize' ) ) }
-						style={ { display: 'block', width: '100%', height: 'auto', maxHeight: '500px', objectFit: 'contain' } }
+						// Responsive: shrink to fit the stage width AND the 500px height
+						// cap while preserving aspect ratio, and never upscale (`width`/
+						// `height: auto`, not `100%`). The rendered box then equals the
+						// image, so the hotspot overlay (computeContentRect) stays aligned.
+						style={ { display: 'block', width: 'auto', height: 'auto', maxWidth: '100%', maxHeight: '500px', margin: '0 auto' } }
 					/>
 					<div id="easydam-layer-placeholder" />
 				</div>
