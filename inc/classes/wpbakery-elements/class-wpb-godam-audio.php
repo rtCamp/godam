@@ -95,6 +95,48 @@ class WPB_GoDAM_Audio {
 						),
 					),
 
+					// Audio Title.
+					array(
+						'type'        => 'textfield',
+						'heading'     => esc_html__( 'Audio Title', 'godam' ),
+						'param_name'  => 'audio_title',
+						'value'       => '',
+						'description' => esc_html__( 'Title shown in the player. Leave empty to use the attachment title.', 'godam' ),
+						'save_always' => true,
+						'dependency'  => array(
+							'element'   => 'id',
+							'not_empty' => true,
+						),
+					),
+
+					// Description.
+					array(
+						'type'        => 'textarea',
+						'heading'     => esc_html__( 'Description', 'godam' ),
+						'param_name'  => 'description',
+						'value'       => '',
+						'description' => esc_html__( 'Short description shown beneath the title.', 'godam' ),
+						'save_always' => true,
+						'dependency'  => array(
+							'element'   => 'id',
+							'not_empty' => true,
+						),
+					),
+
+					// Thumbnail.
+					array(
+						'type'        => 'image_src_selector',
+						'heading'     => esc_html__( 'Thumbnail', 'godam' ),
+						'param_name'  => 'thumbnail',
+						'value'       => '',
+						'description' => esc_html__( 'Cover image for the audio player. Leave empty to use the GoDAM-generated cover.', 'godam' ),
+						'save_always' => true,
+						'dependency'  => array(
+							'element'   => 'id',
+							'not_empty' => true,
+						),
+					),
+
 					// Audio Playback Controls.
 					array(
 						'type'        => 'dropdown',
@@ -147,13 +189,27 @@ class WPB_GoDAM_Audio {
 						),
 					),
 					
-					// Caption Settings.
+					// Transcription Settings.
 					array(
-						'type'        => 'textfield',
-						'heading'     => esc_html__( 'Audio Caption', 'godam' ),
-						'param_name'  => 'caption',
-						'value'       => '',
-						'description' => esc_html__( 'Add a caption for the audio player.', 'godam' ),
+						'type'        => 'checkbox',
+						'heading'     => esc_html__( 'Show Transcript', 'godam' ),
+						'param_name'  => 'show_transcript',
+						'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
+						'std'         => 'true',
+						'description' => esc_html__( 'Show the transcript panel (when a transcript is available).', 'godam' ),
+						'save_always' => true,
+						'dependency'  => array(
+							'element'   => 'id',
+							'not_empty' => true,
+						),
+					),
+					array(
+						'type'        => 'checkbox',
+						'heading'     => esc_html__( 'Show Chapters', 'godam' ),
+						'param_name'  => 'show_chapters',
+						'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
+						'std'         => 'true',
+						'description' => esc_html__( 'Show the chapters panel (when chapters are available).', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
 							'element'   => 'id',

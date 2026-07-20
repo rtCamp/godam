@@ -14,7 +14,13 @@
 			const paramName = $button.data( 'param' );
 			const $container = $button.closest( '.audio_selector_block' );
 			const $input = $container.find( '.audio_selector_field' );
-			const $srcInput = $attributeContainer.find( '.textfield_hidden_field' );
+			// Target the `src` hidden param specifically so other hidden fields
+			// are never touched.
+			const $srcInput = $attributeContainer.find( '.textfield_hidden_field[name="src"]' );
+			// Sibling params to auto-populate from the attachment, mirroring the
+			// Gutenberg block's onSelectAudio (Audio Title + Description).
+			const $audioTitleInput = $attributeContainer.find( '[name="audio_title"]' );
+			const $descriptionInput = $attributeContainer.find( '[name="description"]' );
 
 			// Create WordPress media frame
 			const frame = wp.media( {
@@ -35,6 +41,17 @@
 				// Update the hidden input value
 				$input.val( attachment.id ).trigger( 'change' );
 				$srcInput.val( attachment.url ).trigger( 'change' );
+
+				// Auto-populate Audio Title and Description from the attachment.
+				if ( $audioTitleInput.length ) {
+					$audioTitleInput.val( attachment.title || '' ).trigger( 'change' );
+				}
+				if ( $descriptionInput.length ) {
+					const attachmentDescription = typeof attachment.description === 'string'
+						? attachment.description
+						: '';
+					$descriptionInput.val( attachmentDescription ).trigger( 'change' );
+				}
 
 				// Update button text
 				$button.text( 'Replace' );
@@ -81,7 +98,7 @@
 			const $container = $button.closest( '.audio_selector_block' );
 			const $input = $container.find( '.audio_selector_field' );
 			const $selectButton = $container.find( '.audio-selector-button' );
-			const $srcInput = $attributeContainer.find( '.textfield_hidden_field' );
+			const $srcInput = $attributeContainer.find( '.textfield_hidden_field[name="src"]' );
 
 			// Clear the input value
 			$input.val( '' ).trigger( 'change' );
