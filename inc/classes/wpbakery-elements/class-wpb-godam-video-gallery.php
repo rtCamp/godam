@@ -242,6 +242,7 @@ class WPB_GoDAM_Video_Gallery {
 				'value'       => array(
 					esc_html__( 'Grid', 'godam' )     => 'grid',
 					esc_html__( 'Carousel', 'godam' ) => 'carousel',
+					esc_html__( 'List', 'godam' )     => 'list',
 				),
 				'std'         => 'grid',
 				'description' => esc_html__( 'Choose the layout style for the gallery.', 'godam' ),
@@ -282,6 +283,27 @@ class WPB_GoDAM_Video_Gallery {
 				'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
 				'std'         => 'true',
 				'description' => esc_html__( 'Display video titles and upload dates beneath each tile.', 'godam' ),
+				'group'       => $display_group,
+			),
+			array(
+				'type'        => 'dropdown',
+				'heading'     => esc_html__( 'Interaction', 'godam' ),
+				'param_name'  => 'interaction',
+				'value'       => array(
+					esc_html__( 'Play on hover', 'godam' ) => 'hover',
+					esc_html__( 'Autoplay all videos', 'godam' ) => 'autoplay',
+				),
+				'std'         => 'hover',
+				'description' => esc_html__( 'Play on hover: videos play when hovered. Autoplay: visible videos autoplay one at a time.', 'godam' ),
+				'group'       => $display_group,
+			),
+			array(
+				'type'        => 'checkbox',
+				'heading'     => esc_html__( 'Show Play Button', 'godam' ),
+				'param_name'  => 'show_play_button',
+				'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
+				'std'         => 'true',
+				'description' => esc_html__( 'Show the play button overlay on each tile.', 'godam' ),
 				'group'       => $display_group,
 			),
 			array(
