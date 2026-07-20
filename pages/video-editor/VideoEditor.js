@@ -644,9 +644,12 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		return <EditorSkeleton />;
 	}
 
-	const displayTitle = videoTitle || ( capability.mediaType === 'audio'
-		? __( 'Untitled audio', 'godam' )
-		: __( 'Untitled video', 'godam' ) );
+	// Fallback title matches the attachment's media type (video/audio/image).
+	const untitledLabel = {
+		audio: __( 'Untitled audio', 'godam' ),
+		image: __( 'Untitled image', 'godam' ),
+	}[ capability.mediaType ] || __( 'Untitled video', 'godam' );
+	const displayTitle = videoTitle || untitledLabel;
 
 	return (
 		<div className="godam-video-editor">

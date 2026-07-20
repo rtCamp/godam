@@ -24,7 +24,7 @@ import apiFetch from '@wordpress/api-fetch';
 export const PlaybackControls = ( { setAttributes, attributes } ) => {
 	const { autoplay, controls, loop, muted, showShareButton, showCaption, showTranscription, tracks, id, cmmId } = attributes;
 	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
-	const videoEditorUrl = `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ id || cmmId }&tab=transcription`;
+	const videoEditorUrl = `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_media_editor&id=${ id || cmmId }&tab=transcription`;
 	const hasNoTracks = ! tracks || tracks.length === 0;
 
 	// The "upload subtitles" notice is irrelevant once a transcript exists for

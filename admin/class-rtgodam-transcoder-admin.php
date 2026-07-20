@@ -83,7 +83,7 @@ class RTGODAM_Transcoder_Admin {
 			$this->render_admin_notice(
 				sprintf(
 					// translators: %s is the URL to the plugin settings page where the API key can be activated.
-					__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
+					__( 'Enjoy using our <strong>DAM and Media Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 					esc_url( $video_editor_settings_url )
 				),
 				'warning',
@@ -145,7 +145,7 @@ class RTGODAM_Transcoder_Admin {
 				$this->render_admin_notice(
 					sprintf(
 						// translators: %s is the URL to the plugin settings page where the API key can be activated.
-						__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
+						__( 'Enjoy using our <strong>DAM and Media Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 						esc_url( $video_editor_settings_url )
 					),
 					'error',
@@ -160,7 +160,7 @@ class RTGODAM_Transcoder_Admin {
 		$this->render_admin_notice(
 			sprintf(
 				// translators: %s is the URL to the plugin settings page where the API key can be activated.
-				__( 'Enjoy using our <strong>DAM and Video Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
+				__( 'Enjoy using our <strong>DAM and Media Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href="%s">please activate your API key.</a>', 'godam' ),
 				esc_url( $video_editor_settings_url )
 			),
 			'warning',
@@ -182,8 +182,8 @@ class RTGODAM_Transcoder_Admin {
 		// Get the GoDAM logo URL.
 		$logo_url = plugins_url( 'assets/src/images/godam-logo.svg', __DIR__ );
 
-		$button_label = ( 'activate' === $button_type ) ? esc_html__( 'Activate API Key', 'godam' ) : esc_html__( 'Use Video Editor', 'godam' );
-		$button_link  = ( 'activate' === $button_type ) ? admin_url( 'admin.php?page=rtgodam_settings' ) : admin_url( 'admin.php?page=rtgodam_video_editor' );
+		$button_label = ( 'activate' === $button_type ) ? esc_html__( 'Activate API Key', 'godam' ) : esc_html__( 'Use Media Editor', 'godam' );
+		$button_link  = ( 'activate' === $button_type ) ? admin_url( 'admin.php?page=rtgodam_settings' ) : admin_url( 'admin.php?page=rtgodam_media_editor' );
 
 		?>
 		<div class="notice notice-<?php echo esc_attr( $notice_type ); ?> is-dismissible rt-transcoder-api-key-notice">

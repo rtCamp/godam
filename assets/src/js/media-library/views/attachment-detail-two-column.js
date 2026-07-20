@@ -744,7 +744,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * stats).
 	 */
 	renderImageActions() {
-		const editImageURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
+		const editImageURL = `admin.php?page=rtgodam_media_editor&id=${ this.model.get( 'id' ) }`;
 		const buttonHTML = `<a href="${ editImageURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Image', 'godam' ) }</a>`;
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonHTML }</div>` ) );
 	},
@@ -755,7 +755,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	 * @return {string} - The generated button HTML.
 	 */
 	getButtonsHTML() {
-		const editVideoURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
+		const editVideoURL = `admin.php?page=rtgodam_media_editor&id=${ this.model.get( 'id' ) }`;
 		const analyticsURL = `admin.php?page=rtgodam_analytics&id=${ this.model.get( 'id' ) }`;
 
 		const activeUser = window?.MediaLibrary?.userData?.validApiKey;
@@ -797,7 +797,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			return;
 		}
 
-		const editAudioURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
+		const editAudioURL = `admin.php?page=rtgodam_media_editor&id=${ this.model.get( 'id' ) }`;
 		const buttonHTML = `<a href="${ editAudioURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Audio', 'godam' ) }</a>`;
 
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-audio-actions">${ buttonHTML }</div>` ) );

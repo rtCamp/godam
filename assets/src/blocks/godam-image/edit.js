@@ -65,7 +65,7 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 	// The GoDAM image editor is the shared editor shell opened by attachment id.
 	// Relative to /wp-admin/ so it works in any install path; new tab so block
 	// edits aren't lost.
-	const editorUrl = id ? `admin.php?page=rtgodam_video_editor&id=${ id }` : '';
+	const editorUrl = id ? `admin.php?page=rtgodam_media_editor&id=${ id }` : '';
 
 	function onSelectImage( media ) {
 		if ( ! media || ! media.url ) {

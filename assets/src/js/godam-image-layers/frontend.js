@@ -150,21 +150,36 @@ function initFrame( frame ) {
 		}
 
 		// Woo layers — resolved from the shared registry (present only when the
-		// godam-for-woo add-on is active). Merge product hotspots into one layer
-		// object (using the first woo layer's style / behaviour as the base).
+		// godam-for-woo add-on is active). Each layer is set up INDIVIDUALLY on
+		// its own container rather than merged into one: the Woo manager resolves
+		// every marker's style (pulse / icon / custom icon + colours), behaviour
+		// (clickBehaviour, tooltipDisplay, pauseOnHover) and analytics id from that
+		// layer's own config, and its resize reposition queries `.hotspot` by index
+		// WITHIN each layer's element against that layer's productHotspots. Merging
+		// (the old behaviour) forced every product to inherit the first layer's
+		// style/id, so a second layer's custom icon rendered as the first layer's
+		// pulse. A single shared manager instance keeps the product cache/prefetch
+		// shared across layers.
 		if ( wooLayers.length ) {
 			const WooManager = window.godamLayerRegistry?.getLayerManager?.( 'woo' );
 			if ( WooManager ) {
-				const mergedWoo = {
-					...wooLayers[ 0 ],
-					id: 'godam-image-woo',
-					productHotspots: wooLayers.flatMap( ( layer ) => layer.productHotspots || [] ),
-				};
 				wooManager = new WooManager( adapter, {}, instanceId );
 				wooManager.computeContentRect = () => adapter.computeContentRect();
-				wooManager.setupLayer( mergedWoo, wooGroup );
-				const layerObj = wooManager.wooLayers[ wooManager.wooLayers.length - 1 ];
-				wooManager.createProductHotspots( layerObj );
+				wooLayers.forEach( ( layer ) => {
+					// A per-layer `display:contents` wrapper: it carries no box and
+					// forms no stacking context, so all markers still share the ONE
+					// overlay's stacking context (the z-index fix) and absolute
+					// markers resolve against the positioned `.godam-image__frame`,
+					// while giving each layer a private scope for the manager's
+					// index-based `.hotspot` reposition queries.
+					const layerEl = document.createElement( 'div' );
+					layerEl.className = 'godam-image-woo-layer';
+					layerEl.style.display = 'contents';
+					wooGroup.appendChild( layerEl );
+					wooManager.setupLayer( layer, layerEl );
+					const layerObj = wooManager.wooLayers[ wooManager.wooLayers.length - 1 ];
+					wooManager.createProductHotspots( layerObj );
+				} );
 			}
 		}
 

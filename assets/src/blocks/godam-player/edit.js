@@ -807,7 +807,7 @@ function VideoEdit( {
 			) : (
 				<>
 					<Button
-						href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+						href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_media_editor&id=${ undefined !== id ? id : cmmId }` }
 						target="_blank"
 						className="godam-video-selection__customize-btn"
 						icon={ CustomizeVideoIcon }
@@ -950,7 +950,7 @@ function VideoEdit( {
 							<ToolbarButton
 								icon={ edit }
 								label={ __( 'Edit Video', 'godam' ) }
-								href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+								href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_media_editor&id=${ undefined !== id ? id : cmmId }` }
 								target="_blank"
 								data-test-id="godam-video-toolbar-edit"
 							/>

@@ -26,11 +26,22 @@ class Pages {
 	private $menu_slug = 'rtgodam';
 
 	/**
-	 * Slug for the video editor page.
+	 * Slug for the media editor page.
+	 *
+	 * Renamed from `rtgodam_video_editor` to `rtgodam_media_editor` (the editor is
+	 * multi-media). A redirect from the old slug is registered in
+	 * `redirect_legacy_video_editor_slug()` so existing bookmarks keep working.
 	 *
 	 * @var string
 	 */
-	private $video_editor_slug = 'rtgodam_video_editor';
+	private $video_editor_slug = 'rtgodam_media_editor';
+
+	/**
+	 * The previous admin slug, kept only to redirect old links to the new one.
+	 *
+	 * @var string
+	 */
+	private $legacy_video_editor_slug = 'rtgodam_video_editor';
 
 	/**
 	 * Slug for the analytics page.
@@ -75,11 +86,11 @@ class Pages {
 	private $menu_page_id = 'toplevel_page_rtgodam';
 
 	/**
-	 * Video editor page ID.
+	 * Media editor page ID (WordPress derives this from the slug).
 	 *
 	 * @var string
 	 */
-	private $video_editor_page_id = 'godam_page_rtgodam_video_editor';
+	private $video_editor_page_id = 'godam_page_rtgodam_media_editor';
 
 	/**
 	 * Analytics page ID.
@@ -135,6 +146,10 @@ class Pages {
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+		// The old slug is no longer a registered menu page, so WordPress' menu
+		// access check (wp-admin/menu.php) wp_die()s before `admin_init` fires.
+		// `admin_page_access_denied` runs at that exact point, so redirect there.
+		add_action( 'admin_page_access_denied', array( $this, 'redirect_legacy_video_editor_slug' ) );
 
 		// "What's New" page related actions.
 		add_action( 'current_screen', array( $this, 'redirect_to_whats_new' ) );
@@ -188,9 +203,9 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
-			__( 'Video Editor', 'godam' ),
-			__( 'Video Editor', 'godam' ),
-			'upload_files', // Video Editor is accessible to authors and above.
+			__( 'Media Editor', 'godam' ),
+			__( 'Media Editor', 'godam' ),
+			'upload_files', // Media Editor is accessible to authors and above.
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' ),
 			3
@@ -255,6 +270,39 @@ class Pages {
 				8
 			);
 		}
+	}
+
+	/**
+	 * Redirect the old Video Editor admin URL to the renamed Media Editor page.
+	 *
+	 * The admin slug changed from `rtgodam_video_editor` to `rtgodam_media_editor`,
+	 * so existing bookmarks / deep links (media-library "Edit" buttons, block
+	 * inspectors, analytics) would otherwise 404. Preserve `id` and `tab`. The URL
+	 * fragment (`#layer=`) is not sent to the server, but browsers re-apply it
+	 * across the redirect, so analytics deep links keep working.
+	 *
+	 * @return void
+	 */
+	public function redirect_legacy_video_editor_slug() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only routing of a GET page request; no state change.
+		if ( ! isset( $_GET['page'] ) || sanitize_key( wp_unslash( $_GET['page'] ) !== $this->legacy_video_editor_slug ) ) {
+			return;
+		}
+
+		$args = array( 'page' => $this->video_editor_slug );
+
+		if ( isset( $_GET['id'] ) ) {
+			// id may be numeric or a GoDAM Central slug — keep it as a text field.
+			$args['id'] = sanitize_text_field( wp_unslash( $_GET['id'] ) );
+		}
+
+		if ( isset( $_GET['tab'] ) ) {
+			$args['tab'] = sanitize_key( wp_unslash( $_GET['tab'] ) );
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
+		exit;
 	}
 
 	/**

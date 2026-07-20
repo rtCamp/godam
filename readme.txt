@@ -191,7 +191,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 == Screenshots ==
 1. General Settings
 2. Video Settings with valid API Key
-3. Video Editor
+3. Media Editor
 4. Video Layer Selection
 5. Hotspot Layer
 6. Ads Integration

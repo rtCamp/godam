@@ -316,6 +316,22 @@ $godam-border: rgba(246, 246, 246, 1);
 		&.is-fallback {
 			object-fit: cover;
 		}
+
+		// Audio attachments have no poster — a centered audio icon on a neutral
+		// tile stands in for the thumbnail.
+		&--audio {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: #e7e7e9;
+			color: #6b6b70;
+
+			svg {
+				width: 48px;
+				height: 48px;
+				fill: currentColor;
+			}
+		}
 	}
 
 	&__source-badge {

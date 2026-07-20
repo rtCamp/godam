@@ -126,7 +126,7 @@ function AudioEdit( {
 	// The customization editor (transcription + chapters) is the video editor in
 	// audio mode, opened by attachment ID. Relative to /wp-admin/ so it works in
 	// any install path; opened in a new tab so block edits aren't lost.
-	const editorUrl = id ? `admin.php?page=rtgodam_video_editor&id=${ id }` : '';
+	const editorUrl = id ? `admin.php?page=rtgodam_media_editor&id=${ id }` : '';
 
 	function toggleAttribute( attribute ) {
 		return ( newValue ) => {

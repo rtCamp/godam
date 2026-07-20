@@ -1437,7 +1437,7 @@ function godam_should_load_auth_detector_script( $screen ) {
 	// Check if on GoDAM admin pages (where media library/modal can be opened).
 	$godam_pages = array(
 		'toplevel_page_godam',             // Dashboard page.
-		'godam_page_rtgodam_video_editor', // Video Editor page.
+		'godam_page_rtgodam_media_editor', // Media Editor page.
 	);
 
 	if ( in_array( $screen->id, $godam_pages, true ) ) {

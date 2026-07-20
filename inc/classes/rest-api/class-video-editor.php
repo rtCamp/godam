@@ -106,10 +106,17 @@ class Video_Editor extends Base {
 				'sanitize_callback' => 'sanitize_key',
 			),
 			'filter'        => array(
-				'description'       => __( 'Limit the collection to a subset of videos.', 'godam' ),
+				'description'       => __( 'Limit the collection to a subset of items.', 'godam' ),
 				'type'              => 'string',
 				'default'           => 'all',
 				'enum'              => array( 'all', 'edited', 'unedited', 'transcoded', 'non_transcoded' ),
+				'sanitize_callback' => 'sanitize_key',
+			),
+			'media_type'    => array(
+				'description'       => __( 'Limit the collection to a media type.', 'godam' ),
+				'type'              => 'string',
+				'default'           => 'video',
+				'enum'              => array( 'video', 'image', 'audio' ),
 				'sanitize_callback' => 'sanitize_key',
 			),
 			'prioritize_id' => array(
@@ -136,10 +143,17 @@ class Video_Editor extends Base {
 		$order    = strtoupper( (string) $request->get_param( 'order' ) ) === 'ASC' ? 'ASC' : 'DESC';
 		$filter   = (string) $request->get_param( 'filter' );
 
+		// Which media type the list is showing (video|image|audio). Defaults to
+		// video (the historic behaviour); WP_Query accepts these as mime prefixes.
+		$media_type = (string) $request->get_param( 'media_type' );
+		if ( ! in_array( $media_type, array( 'video', 'image', 'audio' ), true ) ) {
+			$media_type = 'video';
+		}
+
 		$args = array(
 			'post_type'      => 'attachment',
 			'post_status'    => 'inherit',
-			'post_mime_type' => 'video',
+			'post_mime_type' => $media_type,
 			'posts_per_page' => $per_page,
 			'paged'          => $page,
 			'orderby'        => in_array( $orderby, array( 'date', 'modified', 'title' ), true ) ? $orderby : 'date',
@@ -156,7 +170,7 @@ class Video_Editor extends Base {
 			$args['s'] = $search;
 		}
 
-		$meta_query = $this->build_filter_meta_query( $filter );
+		$meta_query = $this->build_filter_meta_query( $filter, $media_type );
 		if ( ! empty( $meta_query ) ) {
 			$args['meta_query'] = $meta_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		}
@@ -171,8 +185,11 @@ class Video_Editor extends Base {
 		// Pin a specific attachment (the tour's demo video) to the front of page 1.
 		// Only for the unfiltered, unsearched first page, so a filter/search view
 		// isn't shown a card that violates it; capped to per_page so counts hold.
+		// The pinned item is only the onboarding demo VIDEO, so only apply it when
+		// the list is showing videos (also keeps the video-only guard in
+		// prioritize_item valid).
 		$prioritize_id = (int) $request->get_param( 'prioritize_id' );
-		if ( $prioritize_id > 0 && 1 === $page && '' === $search && 'all' === $filter ) {
+		if ( $prioritize_id > 0 && 1 === $page && '' === $search && 'all' === $filter && 'video' === $media_type ) {
 			$items = $this->prioritize_item( $items, $prioritize_id, $per_page );
 		}
 
@@ -256,10 +273,23 @@ class Video_Editor extends Base {
 	 * boolean meta (e.g. `_rtgodam_has_layers`) written on save plus a one-time
 	 * backfill, which `meta_query` can hit via an index instead of scanning.
 	 *
-	 * @param string $filter One of all|edited|unedited|transcoded|non_transcoded.
-	 * @return array meta_query fragment (empty for 'all').
+	 * @param string $filter     One of all|edited|unedited|transcoded|non_transcoded.
+	 * @param string $media_type video|image|audio — narrows which filters apply.
+	 * @return array meta_query fragment (empty for 'all' or a non-applicable filter).
 	 */
-	private function build_filter_meta_query( $filter ) {
+	private function build_filter_meta_query( $filter, $media_type = 'video' ) {
+		// Transcode filters only apply to transcodable media (video/audio); images
+		// are never transcoded, so treat these as "all" for images.
+		if ( in_array( $filter, array( 'transcoded', 'non_transcoded' ), true ) && 'image' === $media_type ) {
+			return array();
+		}
+
+		// Edited/unedited is derived from authored layers; audio has no layers, so
+		// treat these as "all" for audio.
+		if ( in_array( $filter, array( 'edited', 'unedited' ), true ) && 'audio' === $media_type ) {
+			return array();
+		}
+
 		switch ( $filter ) {
 			case 'transcoded':
 				return array(
@@ -345,11 +375,63 @@ class Video_Editor extends Base {
 
 		$godam_original_id = get_post_meta( $post->ID, '_godam_original_id', true );
 
+		// Media type so the grid can render/route per type (audio has no poster →
+		// the client shows an icon fallback; images use the image itself).
+		$godam_mime = (string) get_post_mime_type( $post );
+		if ( 0 === strpos( $godam_mime, 'image/' ) ) {
+			$godam_type = 'image';
+		} elseif ( 0 === strpos( $godam_mime, 'audio/' ) ) {
+			$godam_type = 'audio';
+		} else {
+			$godam_type = 'video';
+		}
+
+		// Thumbnail resolution differs per media type. NOTE: `image.src` from
+		// wp_prepare_attachment_for_js is only trustworthy for VIDEO (GoDAM injects
+		// the poster there). For images it is WordPress' generic mime icon when the
+		// attachment has no generated sizes — which is exactly the case for virtual
+		// GoDAM Central images — so it must not be used as a thumbnail.
+		$godam_thumbnail = '';
+		if ( 'video' === $godam_type ) {
+			$godam_thumbnail = isset( $prepared['image']['src'] ) ? $prepared['image']['src'] : '';
+		} elseif ( 'image' === $godam_type ) {
+			// Mirror the GoDAM media library: prefer the GoDAM CDN sub-sizes
+			// (`rtgodam_image_sizes`, set for virtual/offloaded images), then local
+			// generated sizes, then the attachment URL — which
+			// filter_attachment_url_for_virtual_media rewrites to the CDN URL for
+			// virtual media, so virtual images resolve to a real image.
+			$godam_cdn_sizes = get_post_meta( $post->ID, 'rtgodam_image_sizes', true );
+			$godam_cdn_sizes = is_array( $godam_cdn_sizes ) ? $godam_cdn_sizes : array();
+			foreach ( array( 'thumbnail', 'medium', 'large' ) as $godam_size ) {
+				if ( ! empty( $godam_cdn_sizes[ $godam_size ]['url'] ) ) {
+					$godam_thumbnail = $godam_cdn_sizes[ $godam_size ]['url'];
+					break;
+				}
+			}
+			if ( empty( $godam_thumbnail ) && ! empty( $prepared['sizes']['medium']['url'] ) ) {
+				$godam_thumbnail = $prepared['sizes']['medium']['url'];
+			}
+			if ( empty( $godam_thumbnail ) && ! empty( $prepared['sizes']['thumbnail']['url'] ) ) {
+				$godam_thumbnail = $prepared['sizes']['thumbnail']['url'];
+			}
+			if ( empty( $godam_thumbnail ) ) {
+				$godam_thumbnail = (string) wp_get_attachment_url( $post->ID );
+			}
+		} elseif ( 'audio' === $godam_type ) {
+			// For audio, `image.src` is WordPress' generic audio MIME-type icon
+			// (wp-includes/images/media/audio.png), not a real cover — ignore it and
+			// use ONLY the GoDAM audio cover (matches the godam/audio block). When
+			// there's none, leave it empty so the client shows the audio-icon tile.
+			$godam_audio_cover = get_post_meta( $post->ID, 'rtgodam_media_audio_thumbnail', true );
+			$godam_thumbnail   = ! empty( $godam_audio_cover ) ? $godam_audio_cover : '';
+		}
+
 		return array(
 			'id'                => (int) $post->ID,
+			'type'              => $godam_type,
 			'title'             => isset( $prepared['title'] ) ? $prepared['title'] : get_the_title( $post ),
 			'url'               => isset( $prepared['url'] ) ? $prepared['url'] : wp_get_attachment_url( $post->ID ),
-			'thumbnail'         => isset( $prepared['image']['src'] ) ? $prepared['image']['src'] : '',
+			'thumbnail'         => $godam_thumbnail,
 			'fileLength'        => isset( $prepared['fileLength'] ) ? $prepared['fileLength'] : '',
 			'author'            => (int) $post->post_author,
 			'godamCentral'      => ! empty( $godam_original_id ),

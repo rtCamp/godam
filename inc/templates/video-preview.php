@@ -67,7 +67,7 @@ $godam_page_title = empty( $godam_video_id )
 					</a>
 					<?php endif; ?>
 					<!-- Edit media link (opens the same GoDAM editor). -->
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_video_editor&id=' . $godam_video_id ) ); ?>" class="godam-button button-primary">
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_media_editor&id=' . $godam_video_id ) ); ?>" class="godam-button button-primary">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m19 7-3-3-8.5 8.5-1 4 4-1L19 7Zm-7 11.5H5V20h7v-1.5Z"></path></svg>
 						<?php echo esc_html( $godam_is_image ? __( 'Edit Image', 'godam' ) : __( 'Edit Video', 'godam' ) ); ?>
 					</a>
