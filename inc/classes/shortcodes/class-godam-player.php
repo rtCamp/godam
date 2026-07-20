@@ -269,6 +269,8 @@ class GoDAM_Player {
 				'show_share_button'  => false, // WPBakery format (lowercase with underscore).
 				'playerHeight'       => '',
 				'player_height'      => '', // WPBakery format (lowercase with underscore).
+				'show_transcription' => '', // WPBakery toggle → maps to showTranscription.
+				'show_caption'       => '', // WPBakery toggle → maps to showCaption.
 				'css'                => '',
 				'godam_context'      => '',
 			),
@@ -311,6 +313,17 @@ class GoDAM_Player {
 		$raw_has_performance_mode_camel_case = is_array( $atts ) && array_key_exists( 'performanceMode', $atts );
 		if ( $raw_has_performance_mode && ! $raw_has_performance_mode_camel_case && isset( $attributes['performance_mode'] ) && '' !== $attributes['performance_mode'] ) {
 			$attributes['performanceMode'] = $attributes['performance_mode'];
+		}
+
+		// Map the WPBakery caption/transcription toggles to the block's camelCase
+		// attributes, but only when explicitly provided. This preserves the
+		// template's own defaults (showTranscription on; showCaption derived from
+		// the attachment) for hand-written shortcodes that omit them.
+		if ( is_array( $atts ) && array_key_exists( 'show_transcription', $atts ) ) {
+			$attributes['showTranscription'] = filter_var( $attributes['show_transcription'], FILTER_VALIDATE_BOOLEAN );
+		}
+		if ( is_array( $atts ) && array_key_exists( 'show_caption', $atts ) ) {
+			$attributes['showCaption'] = filter_var( $attributes['show_caption'], FILTER_VALIDATE_BOOLEAN );
 		}
 
 		// Get WPBakery Design Options CSS class if available.

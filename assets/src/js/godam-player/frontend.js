@@ -24,7 +24,7 @@ import './api/godam-api.js';
 /**
  * Initialize player on DOM content loaded
  */
-document.addEventListener( 'DOMContentLoaded', () => {
+const initGodamPlayers = () => {
 	new PlayerManager();
 
 	// Scroll to a specific video and optionally seek to a timestamp when the URL
@@ -87,7 +87,81 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			document.addEventListener( 'godamPlayerReady', onPlayerReady );
 		}
 	}
-} );
+};
+
+// Run on DOMContentLoaded, or immediately if the DOM is already parsed. Page
+// builders such as WPBakery's inline editor enqueue/inject this script AFTER
+// DOMContentLoaded has fired inside their preview iframe, so a bare listener
+// would never run and the player would stay stuck in its pre-init "loading"
+// state (0×0, only the play button visible). The readyState fallback ensures
+// PlayerManager still runs in that case.
+if ( document.readyState === 'loading' ) {
+	document.addEventListener( 'DOMContentLoaded', initGodamPlayers );
+} else {
+	initGodamPlayers();
+}
+
+/**
+ * Re-initialize any players that appear after the initial run.
+ *
+ * Page builders (e.g. WPBakery's inline editor) render the shortcode markup into
+ * their preview AFTER this script has already executed, which leaves the player
+ * stuck in its pre-init "loading" state (0×0, only the play button visible).
+ * PlayerManager.initializeVideo() is idempotent — it is guarded by
+ * `data-godam-initialized` — so re-running only initializes players that were
+ * missed. On a normal front-end load where everything is already initialized,
+ * the guard below finds nothing pending and this is a cheap no-op.
+ */
+const reinitPendingPlayers = () => {
+	if ( document.querySelector( '.easydam-player.video-js:not([data-godam-initialized])' ) ) {
+		new PlayerManager();
+	}
+};
+
+// Catch players rendered slightly after our initial init. Each pass is a single
+// querySelector no-op when nothing is pending.
+[ 300, 1200, 3000 ].forEach( ( delay ) => setTimeout( reinitPendingPlayers, delay ) );
+
+/**
+ * In a page-builder preview the markup can be re-rendered repeatedly as the user
+ * edits, so keep watching and re-initialize on demand. Restricted to editor
+ * previews so no observer is attached on the published front end.
+ *
+ * @return {boolean} True when running inside a WPBakery editor preview.
+ */
+const isBuilderPreview = () => {
+	try {
+		const fe = window.frameElement;
+		if ( fe && /vc[-_]inline-frame|vc_editor/i.test( ( fe.id || '' ) + ' ' + ( fe.className || '' ) ) ) {
+			return true;
+		}
+	} catch ( e ) {}
+	try {
+		return !! document.body?.classList.contains( 'vc_editor' );
+	} catch ( e ) {
+		return false;
+	}
+};
+
+if ( isBuilderPreview() && 'MutationObserver' in window ) {
+	let scheduled = false;
+	const observer = new MutationObserver( () => {
+		if ( scheduled ) {
+			return;
+		}
+		scheduled = true;
+		window.requestAnimationFrame( () => {
+			scheduled = false;
+			reinitPendingPlayers();
+		} );
+	} );
+	const startObserving = () => observer.observe( document.body, { childList: true, subtree: true } );
+	if ( document.body ) {
+		startObserving();
+	} else {
+		document.addEventListener( 'DOMContentLoaded', startObserving );
+	}
+}
 
 /**
  * Handle Content Security Policy (CSP) violations related to blob workers
