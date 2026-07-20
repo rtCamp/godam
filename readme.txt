@@ -189,33 +189,26 @@ A. Yes! You can start with a 7-day free trial to explore all features. If you de
 A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and heatmaps to see which parts of your videos are most engaging. These insights help you optimize your content strategy.
 
 == Screenshots ==
-1. General Settings
-2. Video Settings with valid API Key
-3. Video Editor
-4. Video Layer Selection
-5. Hotspot Layer
-6. Ads Integration
-7. Gravity Forms Integration
-8. Player Settings
-9. Enhanced Media Library (DAM)
-10. Post-Specific Video Settings
-11. Attachment Video Details
-12. Single Video Analytics
-13. Video Analytics Dashboard
-14. GoDAM Central Selector Tab
-15. GoDAM Recorder Field for Gravity Forms
-16. Automatic Video Transcription
-17. GoDAM Central
-18. Image Upload to GoDAM Central
-19. Single Video Page in  GoDAM Central
-20. Settings Page in GoDAM Central
-21. GoDAM Video Gallery Block
-22. Elementor GoDAM Gallery Widget
-23. Elementor GoDAM Video Widget
-24. Video Player Style Settings
-25. Global Ads Settings
-26. Chapters Interface
-27. Likes and Comments
+1. Video Editor
+2. Video Layer Selection
+3. Hotspot Layer
+4. Ads Integration
+5. Gravity Forms Integration
+6. Enhanced Media Library (DAM)
+7. Attachment Video Details
+8. Single Video Analytics
+9. Video Analytics Dashboard
+10. Automatic Video Transcription
+11. GoDAM Central
+12. GoDAM Video Gallery Block
+13. Elementor GoDAM Gallery Widget
+14. Elementor GoDAM Video Widget
+15. Video Player Style Settings
+16. Chapters Interface
+17. Reel Pops
+18. Shoppable Video Block 
+19. Product Page Reels
+20. Shoppable Hotspot Layer
 
 == Changelog ==
 
