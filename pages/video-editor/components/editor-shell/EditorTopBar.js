@@ -223,7 +223,6 @@ const EditorTopBar = ( {
 					/>
 				</FlexItem>
 				<FlexItem>
-					<h1 className="godam-video-editor__title">{ title }</h1>
 					<EditableTitle title={ title } onSave={ onSaveTitle } />
 					{ showLayerCount && (
 						<p className="godam-video-editor__subtitle">
