@@ -9,6 +9,7 @@ import { SearchControl, ToggleControl } from '@wordpress/components';
  * Internal dependencies
  */
 import { useFetchTopVideosQuery, useLazyFetchTopVideosQuery } from '../redux/api/dashboardAnalyticsApi';
+import DateRangePicker from '../../analytics/components/DateRangePicker';
 import { formatWatchTime } from '../../utils/formatters';
 import DefaultThumbnail from '../../../assets/src/images/video-thumbnail-default.png';
 import ExportBtn from '../../../assets/src/images/export.svg';
@@ -85,6 +86,13 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 	// deleted-media videos that still have analytics.
 	const [ showDeleted, setShowDeleted ] = useState( false );
 	const [ isExporting, setIsExporting ] = useState( false );
+	// Date range for the table. Empty = all-time (unchanged default behaviour).
+	const [ dateRange, setDateRange ] = useState( { startDate: null, endDate: null } );
+
+	const onChangeRange = ( next ) => {
+		setDateRange( next );
+		setPage( 1 );
+	};
 
 	// Debounce the search box and reset to the first page on a new term.
 	useEffect( () => {
@@ -96,7 +104,15 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 	}, [ searchInput ] );
 
 	const { data, isFetching } = useFetchTopVideosQuery(
-		{ siteUrl, page, limit: PER_PAGE, search, hideDeleted: ! showDeleted },
+		{
+			siteUrl,
+			page,
+			limit: PER_PAGE,
+			search,
+			hideDeleted: ! showDeleted,
+			startDate: dateRange.startDate,
+			endDate: dateRange.endDate,
+		},
 		{ skip },
 	);
 
@@ -162,6 +178,8 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 					limit: EXPORT_PAGE_SIZE,
 					search,
 					hideDeleted: ! showDeleted,
+					startDate: dateRange.startDate,
+					endDate: dateRange.endDate,
 				} ).unwrap().catch( () => ( { videos: [] } ) ),
 			),
 		);
@@ -230,6 +248,11 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 						label={ __( 'Show deleted videos', 'godam' ) }
 						checked={ showDeleted }
 						onChange={ onToggleDeleted }
+					/>
+					<DateRangePicker
+						value={ dateRange }
+						onChange={ onChangeRange }
+						testIdPrefix="godam-top-videos-daterange"
 					/>
 					<button onClick={ handleExportCSV } disabled={ isExporting } className="export-button" data-test-id="godam-top-videos-export">
 						<img src={ ExportBtn } alt="" className="export-icon" />

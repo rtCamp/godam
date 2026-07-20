@@ -1,0 +1,101 @@
+/**
+ * Analytics date-range picker.
+ *
+ * Reuses the shared `.godam-period-dropdown` toggle styling; adds the popover
+ * body layout (custom calendar on the left, preset list on the right) matching
+ * the Figma "Analytics Final" flow. Accent colour follows the WP admin scheme
+ * via `--wp-admin-theme-color` (never a hard-coded brand value).
+ */
+
+.godam-daterange {
+	display: flex;
+	align-items: stretch;
+
+	// Preset list on the right, fixed comfortable width.
+	&__presets {
+		min-width: 140px;
+		padding: 4px;
+	}
+
+	// Calendar sits to the left of the presets when custom mode is open.
+	&__calendar {
+		padding: 12px;
+		border-right: 1px solid #e0e0e0;
+		width: 300px;
+	}
+
+	&__cal-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 8px;
+	}
+
+	&__cal-title {
+		font-weight: 600;
+		font-size: 13px;
+	}
+
+	&__weekdays {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		gap: 2px;
+		margin-bottom: 4px;
+
+		span {
+			text-align: center;
+			font-size: 11px;
+			color: #757575;
+			padding: 4px 0;
+		}
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		gap: 2px;
+	}
+
+	&__day {
+		all: unset;
+		box-sizing: border-box;
+		text-align: center;
+		font-size: 12px;
+		line-height: 32px;
+		height: 32px;
+		border-radius: 4px;
+		cursor: pointer;
+		color: #1e1e1e;
+
+		&:hover:not(.is-disabled) {
+			background: color-mix(in srgb, var(--wp-admin-theme-color, #3a58bf) 12%, transparent);
+		}
+
+		&.is-outside {
+			color: #b0b0b0;
+		}
+
+		&.is-disabled {
+			color: #dcdcde;
+			cursor: default;
+		}
+
+		// Shaded band between the two endpoints.
+		&.is-in-range {
+			background: color-mix(in srgb, var(--wp-admin-theme-color, #3a58bf) 14%, transparent);
+			border-radius: 0;
+		}
+
+		// Selected start / end days.
+		&.is-endpoint {
+			background: var(--wp-admin-theme-color, #3a58bf);
+			color: #fff;
+			border-radius: 4px;
+		}
+	}
+
+	&__custom-toggle {
+		border-top: 1px solid #e0e0e0;
+		margin-top: 4px;
+	}
+}

@@ -5,6 +5,20 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
+/**
+ * Optional date-range query params. Only emits `start_date`/`end_date` when set
+ * so all-time requests keep their existing shape and cache key. ISO YYYY-MM-DD.
+ *
+ * @param {Object} range             Selected range.
+ * @param {string} [range.startDate] ISO start date.
+ * @param {string} [range.endDate]   ISO end date.
+ * @return {Object} Params with start_date/end_date when present.
+ */
+const rangeParams = ( { startDate, endDate } = {} ) => ( {
+	...( startDate ? { start_date: startDate } : {} ),
+	...( endDate ? { end_date: endDate } : {} ),
+} );
+
 export const analyticsApi = createApi( {
 	reducerPath: 'analyticsApi',
 	baseQuery: fetchBaseQuery( {
@@ -17,11 +31,12 @@ export const analyticsApi = createApi( {
 	} ),
 	endpoints: ( builder ) => ( {
 		fetchAnalyticsData: builder.query( {
-			query: ( { videoId, siteUrl } ) => ( {
+			query: ( { videoId, siteUrl, startDate, endDate } ) => ( {
 				url: 'godam/v1/analytics/fetch',
 				params: {
 					video_id: videoId,
 					site_url: siteUrl,
+					...rangeParams( { startDate, endDate } ),
 				},
 			} ),
 			transformResponse: ( response ) => {
@@ -40,12 +55,15 @@ export const analyticsApi = createApi( {
 			},
 		} ),
 		fetchProcessedAnalyticsHistory: builder.query( {
-			query: ( { days, videoId, siteUrl } ) => ( {
+			query: ( { days, videoId, siteUrl, startDate, endDate } ) => ( {
 				url: 'godam/v1/analytics/history',
 				params: {
-					days,
+					// Explicit range wins over `days`; only send `days` when no
+					// range is set (matches the microservice precedence).
+					...( startDate || endDate ? {} : { days } ),
 					video_id: videoId,
 					site_url: siteUrl,
+					...rangeParams( { startDate, endDate } ),
 				},
 			} ),
 			transformResponse: ( response ) => {
@@ -56,18 +74,20 @@ export const analyticsApi = createApi( {
 			},
 		} ),
 		fetchProcessedLayerAnalytics: builder.query( {
-			query: ( { layerType, days, siteUrl, videoId } ) => {
+			query: ( { layerType, days, siteUrl, videoId, startDate, endDate } ) => {
 				const params = {
 					layer_type: layerType,
 					site_url: siteUrl,
 					video_id: videoId,
 				};
-				// `days` is undefined for the "All" range — omit it so the
-				// proxy forwards no date filter and the microservice returns
-				// the full history. (Sending days=0 would 400.)
-				if ( days !== undefined ) {
+				const hasRange = Boolean( startDate || endDate );
+				// Explicit range wins over `days`. `days` is undefined for the
+				// "All" range — omit it so the proxy forwards no date filter and
+				// the microservice returns the full history. (days=0 would 400.)
+				if ( ! hasRange && days !== undefined ) {
 					params.days = days;
 				}
+				Object.assign( params, rangeParams( { startDate, endDate } ) );
 				return {
 					url: 'godam/v1/analytics/layer-analytics',
 					params,

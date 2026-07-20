@@ -5,6 +5,21 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
+/**
+ * Build the optional date-range query params. Only includes `start_date` /
+ * `end_date` when set, so all-time requests keep their existing shape (and
+ * cache key). Dates are ISO `YYYY-MM-DD` strings; `null`/`undefined` = all-time.
+ *
+ * @param {Object} range             Selected range.
+ * @param {string} [range.startDate] ISO start date.
+ * @param {string} [range.endDate]   ISO end date.
+ * @return {Object} Params object with start_date/end_date when present.
+ */
+const rangeParams = ( { startDate, endDate } = {} ) => ( {
+	...( startDate ? { start_date: startDate } : {} ),
+	...( endDate ? { end_date: endDate } : {} ),
+} );
+
 export const dashboardAnalyticsApi = createApi( {
 	reducerPath: 'dashboardAnalyticsApi',
 	baseQuery: fetchBaseQuery( {
@@ -16,12 +31,14 @@ export const dashboardAnalyticsApi = createApi( {
 		},
 	} ),
 	endpoints: ( builder ) => ( {
-		// Fetch All-Time Dashboard Metrics
+		// Fetch Dashboard Metrics (all-time by default; range-scoped when
+		// startDate/endDate are supplied).
 		fetchDashboardMetrics: builder.query( {
-			query: ( { siteUrl } ) => ( {
+			query: ( { siteUrl, startDate, endDate } ) => ( {
 				url: 'godam/v1/analytics/dashboard-metrics',
 				params: {
 					site_url: siteUrl,
+					...rangeParams( { startDate, endDate } ),
 				},
 			} ),
 			transformResponse: ( response ) => {
@@ -37,11 +54,14 @@ export const dashboardAnalyticsApi = createApi( {
 		} ),
 		// Fetch Dashboard Metrics History
 		fetchDashboardMetricsHistory: builder.query( {
-			query: ( { siteUrl, days } ) => ( {
+			query: ( { siteUrl, days, startDate, endDate } ) => ( {
 				url: 'godam/v1/analytics/dashboard-history',
 				params: {
 					site_url: siteUrl,
-					days,
+					// Explicit range wins over `days` (the microservice enforces
+					// the same precedence); only send `days` when no range is set.
+					...( startDate || endDate ? {} : { days } ),
+					...rangeParams( { startDate, endDate } ),
 				},
 			} ),
 			transformResponse: ( response ) => {
@@ -53,7 +73,7 @@ export const dashboardAnalyticsApi = createApi( {
 		} ),
 		// Fetch Top Videos
 		fetchTopVideos: builder.query( {
-			query: ( { siteUrl, page = 1, limit = 10, search = '', hideDeleted = true } ) => ( {
+			query: ( { siteUrl, page = 1, limit = 10, search = '', hideDeleted = true, startDate, endDate } ) => ( {
 				url: 'godam/v1/analytics/top-videos',
 				params: {
 					site_url: siteUrl,
@@ -62,6 +82,7 @@ export const dashboardAnalyticsApi = createApi( {
 					hide_deleted: hideDeleted ? 1 : 0,
 					// Only send `search` when set so the proxy can skip the WP_Query.
 					...( search ? { search } : {} ),
+					...rangeParams( { startDate, endDate } ),
 				},
 			} ),
 			transformResponse: ( response ) => {
