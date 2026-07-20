@@ -33,6 +33,7 @@ const ImagePreview = ( { attachmentConfig, sources } ) => {
 			<div className="relative">
 				<div
 					id="easydam-video-player"
+					data-test-id="godam-image-editor-element-stage"
 					className="relative rounded-lg overflow-hidden godam-image-preview"
 					// Cap the stage container to 90% of the canvas (mirrors the video's
 					// .video-canvas-wrapper): keeps a symmetric horizontal gap so the
@@ -47,6 +48,7 @@ const ImagePreview = ( { attachmentConfig, sources } ) => {
 						ref={ imgRef }
 						src={ src }
 						alt={ alt }
+						data-test-id="godam-image-editor-element-preview-img"
 						className="godam-image-preview__img"
 						// Once the intrinsic size is known, nudge the layer components'
 						// `computeContentRect` (bound to `resize`) to recompute the box.
@@ -57,7 +59,7 @@ const ImagePreview = ( { attachmentConfig, sources } ) => {
 						// image, so the hotspot overlay (computeContentRect) stays aligned.
 						style={ { display: 'block', width: 'auto', height: 'auto', maxWidth: '100%', maxHeight: '500px', margin: '0 auto' } }
 					/>
-					<div id="easydam-layer-placeholder" />
+					<div id="easydam-layer-placeholder" data-test-id="godam-image-editor-element-layer-placeholder" />
 				</div>
 			</div>
 		</div>

@@ -116,7 +116,7 @@ $godam_frame_style = $godam_width
 // Block-support wrapper attributes (align / spacing / anchor + our hook class).
 $godam_wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'godam-image' ) );
 ?>
-<figure <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
+<figure data-test-id="godam-image-render" <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
 	<div
 		class="godam-image__frame"
 		style="<?php echo esc_attr( $godam_frame_style ); ?>"
@@ -128,6 +128,7 @@ $godam_wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'god
 	>
 		<img
 			class="godam-image__img"
+			data-test-id="godam-image-render-img"
 			style="display:block;width:100%;height:auto;"
 			src="<?php echo esc_url( $godam_src ); ?>"
 			alt="<?php echo esc_attr( $godam_alt ); ?>"
@@ -137,7 +138,7 @@ $godam_wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'god
 			decoding="async"
 		/>
 		<?php if ( $godam_has_layers ) : ?>
-			<div id="layer-<?php echo esc_attr( $godam_instance_id ); ?>-all" class="easydam-layer hotspot-layer godam-image-layer"></div>
+			<div id="layer-<?php echo esc_attr( $godam_instance_id ); ?>-all" class="easydam-layer hotspot-layer godam-image-layer" data-test-id="godam-image-render-layers"></div>
 		<?php endif; ?>
 	</div>
 </figure>
