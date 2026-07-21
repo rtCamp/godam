@@ -55,10 +55,10 @@ function createBlockDelimiter( { blockName, attrs = {}, innerHTML = '' } ) {
 }
 
 function createGoDAMVideoBlockMarkup( attrs, blockName = 'godam/video' ) {
-	// The audio block is dynamic (its save() returns null), so Gutenberg stores
-	// it as a self-closing block comment with no inner HTML. Serialize it that
-	// way — wrapping it in a <div> would make the pasted block invalid.
-	if ( blockName === 'godam/audio' ) {
+	// The audio and image blocks are dynamic (their save() returns null), so
+	// Gutenberg stores them as a self-closing block comment with no inner HTML.
+	// Serialize that way — wrapping in a <div> would make the pasted block invalid.
+	if ( blockName === 'godam/audio' || blockName === 'godam/image' ) {
 		return createBlockDelimiter( { blockName, attrs, innerHTML: '' } );
 	}
 
@@ -175,18 +175,54 @@ function createAudioAttributes( attachmentId, mediaData ) {
 }
 
 /**
- * Build the block attributes appropriate to the media type. Video keeps its
- * full source/dimension attributes; audio needs only id + src (title,
- * description and thumbnail are block-level, user-entered values).
+ * Build the attributes for a copied `godam/image` block. Matches how the block
+ * stores them (see its edit.js onSelectImage): id + url + alt + dimensions, and
+ * `showImageLayers` on so the pasted block shows the authored layers. The block
+ * is dynamic, so this is serialized as a self-closing comment.
  *
  * @param {number} attachmentId Attachment ID.
  * @param {Object} mediaData    The `/wp/v2/media/:id` payload (may be null).
- * @param {string} mediaType    `'video' | 'audio'`.
  * @return {Object} Block attributes.
  */
-function createBlockAttributes( attachmentId, mediaData, mediaType ) {
+export function createImageAttributes( attachmentId, mediaData ) {
+	const baseAttrs = {
+		id: Number( attachmentId ),
+		showImageLayers: true,
+		className: 'wp-block-godam-image',
+	};
+
+	if ( ! mediaData ) {
+		return baseAttrs;
+	}
+
+	const width = mediaData.media_details?.width || mediaData.meta?.width;
+	const height = mediaData.media_details?.height || mediaData.meta?.height;
+
+	return {
+		...baseAttrs,
+		...( mediaData.source_url ? { url: mediaData.source_url } : {} ),
+		...( mediaData.alt_text ? { alt: stripHtmlToText( mediaData.alt_text ) } : {} ),
+		...( width && height ? { width: Number( width ), height: Number( height ) } : {} ),
+	};
+}
+
+/**
+ * Build the block attributes appropriate to the media type. Video keeps its
+ * full source/dimension attributes; audio needs only id + src (title,
+ * description and thumbnail are block-level, user-entered values); image carries
+ * id + url + dimensions + the layers toggle.
+ *
+ * @param {number} attachmentId Attachment ID.
+ * @param {Object} mediaData    The `/wp/v2/media/:id` payload (may be null).
+ * @param {string} mediaType    `'video' | 'audio' | 'image'`.
+ * @return {Object} Block attributes.
+ */
+export function createBlockAttributes( attachmentId, mediaData, mediaType ) {
 	if ( mediaType === 'audio' ) {
 		return createAudioAttributes( attachmentId, mediaData );
+	}
+	if ( mediaType === 'image' ) {
+		return createImageAttributes( attachmentId, mediaData );
 	}
 	return createVideoAttributes( attachmentId, mediaData );
 }

@@ -298,6 +298,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 		( type ) => allowedLayerTypes === '*' || ! Array.isArray( allowedLayerTypes ) || allowedLayerTypes.includes( type ),
 		[ allowedLayerTypes ],
 	);
+	// Timeline-based media (video) gate the add flow on a playhead position;
+	// images have no timeline, so layers are added freely and land at 0:00.
+	const mediaType = useSelector( ( state ) => state.videoReducer.mediaType );
+	const isTimelineMedia = mediaType !== 'image';
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
 	// Sort the array (ascending order), excluding unknown and disallowed types.
@@ -439,7 +443,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	};
 
 	const hasLayerAtCurrentTime = Boolean( layers.find( ( l ) => l.displayTime === currentTime ) );
-	const isAddDisabled = ! currentTime || hasLayerAtCurrentTime;
+	const isAddDisabled = isTimelineMedia && ( ! currentTime || hasLayerAtCurrentTime );
 
 	// Colored layer-type icons (from design) used in the list rows + add menu.
 	const layerTypeIcons = {
@@ -620,7 +624,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					) }
 				/>
 
-				{ ! currentTime && ! hasLayerAtCurrentTime && (
+				{ isTimelineMedia && ! currentTime && ! hasLayerAtCurrentTime && (
 					<p className="godam-ve-layers__hint">
 						<Icon icon={ info } size={ 24 } />
 						{ __( 'To add a layer, pick a spot on the timeline where you want the layer.', 'godam' ) }

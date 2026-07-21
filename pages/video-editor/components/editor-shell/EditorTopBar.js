@@ -177,6 +177,11 @@ const EditorTopBar = ( {
 	const previewPage = capability.previewPage || 'video-preview';
 	// Media types without a front-end preview page (e.g. audio) hide the button.
 	const showPreview = capability.showPreview !== false;
+	// Copy emits a `copyBlockName` block. Defaults on and mirrors the other
+	// `show*` seams: a media type sets `showCopy: false` when it has no Gutenberg
+	// block to copy into. All current types (video/audio/image) ship a block, so
+	// none opts out today.
+	const showCopy = capability.showCopy !== false;
 	// Analytics is tied to stats support — audio has neither.
 	const showAnalytics = hasValidApiKey && capability.showStats !== false;
 	// Only media types with a Layers tab show the layer count subtitle.
@@ -240,33 +245,35 @@ const EditorTopBar = ( {
 				gap={ 2 }
 				expanded={ false }
 			>
-				<FlexItem>
-					<Tooltip
-						text={
-							<p>
-								{ __( 'You can copy the block into one of the two options:', 'godam' ) }
-								<br />
-								{ __( '1. Insert as a block in the Block editor.', 'godam' ) }
-								<br />
-								{ __( '2. Insert as HTML content in the Block editor.', 'godam' ) }
-							</p>
-						}
-					>
-						<Button
-							variant="tertiary"
-							icon={ copy }
-							onClick={ () => {
-								onCopy();
-								// Final product-guide step: copying completes the tour
-								// and prompts to drop the video into a new page.
-								notifyGuide( 'copy' );
-							} }
-							data-test-id="godam-video-editor-button-copy-block"
+				{ showCopy && (
+					<FlexItem>
+						<Tooltip
+							text={
+								<p>
+									{ __( 'You can copy the block into one of the two options:', 'godam' ) }
+									<br />
+									{ __( '1. Insert as a block in the Block editor.', 'godam' ) }
+									<br />
+									{ __( '2. Insert as HTML content in the Block editor.', 'godam' ) }
+								</p>
+							}
 						>
-							{ __( 'Copy', 'godam' ) }
-						</Button>
-					</Tooltip>
-				</FlexItem>
+							<Button
+								variant="tertiary"
+								icon={ copy }
+								onClick={ () => {
+									onCopy();
+									// Final product-guide step: copying completes the tour
+									// and prompts to drop the video into a new page.
+									notifyGuide( 'copy' );
+								} }
+								data-test-id="godam-video-editor-button-copy-block"
+							>
+								{ __( 'Copy', 'godam' ) }
+							</Button>
+						</Tooltip>
+					</FlexItem>
+				) }
 				{ showPreview && (
 					<FlexItem>
 						<Button

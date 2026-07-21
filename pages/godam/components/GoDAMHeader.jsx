@@ -18,7 +18,7 @@ import WooUnlockedNotice from './WooUnlockedNotice';
 import './GoDAMHeader.scss';
 
 const GodamHeader = () => {
-	const isVideoEditorPage = window.location.href.includes( 'page=rtgodam_video_editor' );
+	const isVideoEditorPage = window.location.href.includes( 'page=rtgodam_media_editor' );
 	const isAnalyticsPage = window.location.href.includes( 'page=rtgodam_analytics' );
 	const helpLink = window.godamRestRoute?.apiBase + '/helpdesk';
 	const pricingLink = `https://godam.io/pricing?utm_campaign=buy-plan&utm_source=${ window?.location?.host || '' }&utm_medium=plugin&utm_content=header`;

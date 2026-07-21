@@ -109,7 +109,7 @@ const WooUnlockedNotice = () => {
 		// Never on the Video Editor page — that screen has its own first-run
 		// welcome chooser (Flow 2); the nudge (Flow 3) belongs to the other
 		// GoDAM admin screens (e.g. the Dashboard) that share GoDAMHeader.
-		if ( new URLSearchParams( window.location.search ).get( 'page' ) === 'rtgodam_video_editor' ) {
+		if ( new URLSearchParams( window.location.search ).get( 'page' ) === 'rtgodam_media_editor' ) {
 			return;
 		}
 		// Only connected sites can have "unlocked" Woo features; skip the request

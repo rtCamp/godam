@@ -114,6 +114,27 @@ const godamPlayerFrontend = {
 	},
 };
 
+const godamImageLayersFrontend = {
+	...sharedConfig,
+	entry: {
+		'godam-image-layers-frontend': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-image-layers', 'frontend.js' ),
+	},
+	// This is a separate webpack compilation that shares the output dir with
+	// godam-player-frontend, and BOTH code-split FontAwesome into async chunks
+	// named `fontawesome-core`/`fontawesome-icons` (via loadFontAwesome). With the
+	// default settings the two builds emit identically-named chunks that clobber
+	// each other on disk AND share the default `webpackChunkgodam` chunk-loading
+	// global, so this entry ends up loading the player build's FA chunk under its
+	// own runtime -> "TypeError: o[t] is not a function" and icons never render.
+	// Give this entry its own runtime global (uniqueName) and chunk filenames so
+	// its async chunks stay independent of the player's.
+	output: {
+		...sharedConfig.output,
+		uniqueName: 'godamImageLayers',
+		chunkFilename: 'godam-image-layers-[name].min.js',
+	},
+};
+
 const godamPlayerAnalytics = {
 	...sharedConfig,
 	entry: {
@@ -367,6 +388,7 @@ module.exports = [
 	adminJS,
 	mediaLibrary,
 	godamPlayerFrontend,
+	godamImageLayersFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
 	httpAuthDetector,

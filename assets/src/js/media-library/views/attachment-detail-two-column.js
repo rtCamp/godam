@@ -738,12 +738,24 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Renders the "Edit Image" button for image attachments. Images reach the
+	 * GoDAM editor via the same page as video/audio; the editor resolves the
+	 * image capability from the MIME type. No Analytics button (images have no
+	 * stats).
+	 */
+	renderImageActions() {
+		const editImageURL = `admin.php?page=rtgodam_media_editor&id=${ this.model.get( 'id' ) }`;
+		const buttonHTML = `<a href="${ editImageURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Image', 'godam' ) }</a>`;
+		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonHTML }</div>` ) );
+	},
+
+	/**
 	 * Generates HTML for the Edit Video and Analytics buttons.
 	 *
 	 * @return {string} - The generated button HTML.
 	 */
 	getButtonsHTML() {
-		const editVideoURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
+		const editVideoURL = `admin.php?page=rtgodam_media_editor&id=${ this.model.get( 'id' ) }`;
 		const analyticsURL = `admin.php?page=rtgodam_analytics&id=${ this.model.get( 'id' ) }`;
 
 		const activeUser = window?.MediaLibrary?.userData?.validApiKey;
@@ -785,7 +797,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			return;
 		}
 
-		const editAudioURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
+		const editAudioURL = `admin.php?page=rtgodam_media_editor&id=${ this.model.get( 'id' ) }`;
 		const buttonHTML = `<a href="${ editAudioURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Audio', 'godam' ) }</a>`;
 
 		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-audio-actions">${ buttonHTML }</div>` ) );
@@ -1117,6 +1129,14 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			);
 		}
 
+		// Image attachments get an "Edit Image" button linking to the GoDAM editor,
+		// where Hotspot / WooCommerce hotspot layers can be placed on the image.
+		if ( this.model.get( 'type' ) === 'image' ) {
+			this.$el.find( '.attachment-video-actions' ).remove();
+			if ( canManageAttachment( this.model.get( 'author' ) ) ) {
+				this.renderImageActions();
+			}
+		}
 		// Audio: show an "Edit Audio" button (opens the editor in audio mode).
 		if ( this.model.get( 'type' ) === 'audio' ) {
 			this.$el.find( '.attachment-audio-actions' ).remove();

@@ -101,7 +101,7 @@ class WPForms_Integration {
 	public function enqueue_admin_assets() {
 		// GoDAM Video Editor page.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['page'] ) && 'rtgodam_video_editor' === $_GET['page'] ) {
+		if ( isset( $_GET['page'] ) && 'rtgodam_media_editor' === $_GET['page'] ) {
 			// Enqueue the WPForms styles.
 			$frontend = wpforms()->obj( 'frontend' );
 			$frontend->assets_css();

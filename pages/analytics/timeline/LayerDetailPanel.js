@@ -25,7 +25,7 @@ import LayerModifiedNotice from './LayerModifiedNotice';
 /**
  * Build the deep-link URL into the video editor for a layer.
  *
- * Lands on /wp-admin/admin.php?page=rtgodam_video_editor&id=<videoId>
+ * Lands on /wp-admin/admin.php?page=rtgodam_media_editor&id=<videoId>
  * with `#layer=<layerId>`. Sub-hotspot rows always link to the PARENT —
  * individual sub-hotspots inside a layer aren't separately editable.
  *
@@ -36,12 +36,12 @@ import LayerModifiedNotice from './LayerModifiedNotice';
 function getEditorUrl( attachmentID, layerId ) {
 	try {
 		const url = new URL( window.location.href );
-		url.searchParams.set( 'page', 'rtgodam_video_editor' );
+		url.searchParams.set( 'page', 'rtgodam_media_editor' );
 		url.searchParams.set( 'id', String( attachmentID ) );
 		url.hash = `layer=${ layerId }`;
 		return url.toString();
 	} catch ( e ) {
-		return `?page=rtgodam_video_editor&id=${ encodeURIComponent( attachmentID ) }#layer=${ encodeURIComponent( layerId ) }`;
+		return `?page=rtgodam_media_editor&id=${ encodeURIComponent( attachmentID ) }#layer=${ encodeURIComponent( layerId ) }`;
 	}
 }
 

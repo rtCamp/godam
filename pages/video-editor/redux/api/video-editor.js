@@ -27,7 +27,7 @@ export const videoEditorAPI = createApi( {
 	} ),
 	endpoints: ( builder ) => ( {
 		getVideoEditorVideos: builder.mutation( {
-			query: ( { page = 1, perPage = 20, search = '', orderby = 'date', order = 'desc', filter = 'all', prioritizeId = 0 } = {} ) => ( {
+			query: ( { page = 1, perPage = 20, search = '', orderby = 'date', order = 'desc', filter = 'all', mediaType = 'video', prioritizeId = 0 } = {} ) => ( {
 				url: 'godam/v1/video-editor/videos',
 				method: 'GET',
 				params: {
@@ -37,6 +37,8 @@ export const videoEditorAPI = createApi( {
 					orderby,
 					order,
 					filter,
+					// Which media type to list (video|image|audio); defaults to video.
+					media_type: mediaType,
 					// Pin the tour's demo video first (server ignores 0 / non-page-1).
 					prioritize_id: prioritizeId,
 				},

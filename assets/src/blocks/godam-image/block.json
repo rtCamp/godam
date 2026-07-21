@@ -1,0 +1,50 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "godam/image",
+	"title": "GoDAM Image",
+	"category": "media",
+	"icon": "format-image",
+	"description": "Display an image with interactive GoDAM hotspot and product layers.",
+	"keywords": [ "image", "hotspot", "shoppable", "godam" ],
+	"textdomain": "godam",
+	"attributes": {
+		"id": {
+			"type": "number",
+			"role": "content"
+		},
+		"url": {
+			"type": "string",
+			"role": "content"
+		},
+		"alt": {
+			"type": "string",
+			"default": "",
+			"role": "content"
+		},
+		"width": {
+			"type": "number"
+		},
+		"height": {
+			"type": "number"
+		},
+		"showImageLayers": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"align": true,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"interactivity": {
+			"clientNavigation": true
+		}
+	},
+	"style": [ "file:./style-index.css" ],
+	"editorScript": [ "file:./index.js" ],
+	"render": "file:./render.php"
+}

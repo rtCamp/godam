@@ -13,12 +13,13 @@
  * `tabs` — ordered left-rail tab names; also the allow-list validating `setCurrentTab`.
  * `defaultTab` — tab selected when the editor opens for this media type.
  * `allowedLayerTypes` — `'*'` for every registered layer type, or an array of layer `type` strings to restrict the "Add layer" menu (`[]` disables layers).
- * `preview` — discriminator the editor maps to a preview component (`'videojs'` → VideoJSPlayer, `'audio'` → AudioCardPreview). Components are not stored here to keep this module free of React/store imports.
+ * `preview` — discriminator the editor maps to a preview component (`'videojs'` → VideoJSPlayer, `'audio'` → AudioCardPreview, `'image'` → ImagePreview). Components are not stored here to keep this module free of React/store imports.
  * `copyBlockName` — Gutenberg block emitted by the Copy action.
  * `previewPage` — `godam_page` query value for the front-end Preview link.
  * `showPreview` — whether the top-bar Preview button renders.
  * `showTimeline` — whether the timeline dock is available.
  * `showStats` — whether the analytics stats row / Analytics menu render.
+ * `showCopy` — whether the top-bar Copy-block button renders (defaults to `true` when absent).
  */
 
 export const MEDIA_TYPES = {
@@ -60,18 +61,22 @@ const CAPABILITIES = {
 		showTimeline: false,
 		showStats: false,
 	},
-	// Future image editor — resolvable today so the seams are exercised, but no
-	// image preview/UI is wired yet. A hotspot-only add menu falls out of
-	// `allowedLayerTypes` without touching the core layer arrays.
+	// Image editor — Hotspot + WooCommerce (product) hotspot layers placed
+	// spatially on a static image. The restricted `allowedLayerTypes` set falls
+	// out through the add menu without touching the core layer arrays. Copy and
+	// Preview are enabled: the `godam/image` front-end block exists (Iteration 2).
 	image: {
 		mediaType: 'image',
 		tabs: [ 'layers' ],
 		defaultTab: 'layers',
-		allowedLayerTypes: [ 'hotspot' ],
+		allowedLayerTypes: [ 'hotspot', 'woo' ],
 		preview: 'image',
 		copyBlockName: 'godam/image',
-		previewPage: 'image-preview',
-		showPreview: false,
+		// Images reuse the shared front-end preview page (`godam_page=video-preview`),
+		// which renders the `godam/image` block and adapts its labels for images.
+		// See godam_preview_page_content() and inc/templates/video-preview.php.
+		previewPage: 'video-preview',
+		showPreview: true,
 		showTimeline: false,
 		showStats: false,
 	},
