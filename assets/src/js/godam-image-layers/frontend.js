@@ -143,9 +143,9 @@ function initFrame( frame ) {
 			hotspotManager.computeContentRect = () => adapter.computeContentRect();
 			hotspotManager.setupHotspotLayer( mergedLayer, hotspotGroup );
 			const layerObj = hotspotManager.hotspotLayers[ hotspotManager.hotspotLayers.length - 1 ];
-			if ( typeof hotspotManager.emitParentLayerEvent === 'function' ) {
-				hotspotManager.emitParentLayerEvent( mergedLayer, 'viewed' );
-			}
+			// No analytics on images (see godam-image/render.php): the block does
+			// not load the analytics buffer, so the managers' interaction emits are
+			// guarded no-ops — there is no `viewed` beacon to fire here.
 			hotspotManager.createHotspots( layerObj );
 		}
 

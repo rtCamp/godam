@@ -67,10 +67,10 @@ if ( $godam_show_layers && $godam_attachment_id ) {
 
 $godam_has_layers = ! empty( $godam_layers );
 
-// Enqueue the shared image-layers front-end renderer (+ hotspot styles + the
-// analytics buffer) only when there are layers to draw. Registered lazily here
-// as footer scripts, so the Woo add-on's `godam_image_layers_frontend_dependencies`
-// hook (added on wp_enqueue_scripts) is already in place.
+// Enqueue the shared image-layers front-end renderer (+ hotspot styles) only
+// when there are layers to draw. Registered lazily here as footer scripts, so
+// the Woo add-on's `godam_image_layers_frontend_dependencies` hook (added on
+// wp_enqueue_scripts) is already in place.
 if ( $godam_has_layers ) {
 	$godam_img_asset_path = RTGODAM_PATH . 'assets/build/js/godam-image-layers-frontend.min.asset.php';
 	$godam_img_asset      = file_exists( $godam_img_asset_path )
@@ -96,10 +96,15 @@ if ( $godam_has_layers ) {
 	// The hotspot stylesheet (`godam-player-style`) is tied to this block via
 	// wp_enqueue_block_style() in class-blocks.php, so WordPress prints it
 	// whenever the block renders (reliable on block themes / FSE, unlike a late
-	// wp_enqueue_style() here). Only the analytics buffer needs enqueuing.
-	if ( wp_script_is( 'godam-player-analytics-script', 'registered' ) ) {
-		wp_enqueue_script( 'godam-player-analytics-script' );
-	}
+	// wp_enqueue_style() here), so nothing else needs enqueuing here.
+	//
+	// Analytics is intentionally NOT enqueued for images: they have no analytics
+	// view (`image` capability sets `showStats: false`) and no transcoding job,
+	// so a beacon per hotspot interaction would only collect data nothing
+	// consumes. Without `godam-player-analytics-script`,
+	// `window.GoDAM.addLayerInteraction` is absent, so every emit in the shared
+	// managers / frontend.js is a guarded no-op. Re-enable here when an image
+	// analytics view ships.
 }
 
 $godam_instance_id = 'img_' . bin2hex( random_bytes( 8 ) );

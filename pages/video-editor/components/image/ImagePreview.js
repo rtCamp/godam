@@ -35,8 +35,7 @@ const ImagePreview = ( { attachmentConfig, sources } ) => {
 					id="easydam-video-player"
 					data-test-id="godam-image-editor-element-stage"
 					className="relative rounded-lg overflow-hidden godam-image-preview"
-					data-test-id="godam-image-editor-preview"
-					// Cap the stage container to 90% of the canvas (mirrors the video's
+					// Cap the stage container to 95% of the canvas (mirrors the video's
 					// .video-canvas-wrapper): keeps a symmetric horizontal gap so the
 					// image doesn't touch the stage edges, and guards against overflow —
 					// a landscape image's width is driven by the 500px height cap (e.g.

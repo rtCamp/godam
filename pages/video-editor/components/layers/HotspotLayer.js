@@ -326,6 +326,14 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		let resizeObserver = null;
 		let rafId = null;
 		let cancelled = false;
+		let stageWaitFrames = 0;
+
+		// Cap the wait for the stage container so a layer selected while the
+		// preview never mounts can't spin requestAnimationFrame for the
+		// component's whole lifetime. ~300 frames (~5s at 60fps) is far beyond
+		// the frame-or-two the normal path needs; past that the stage isn't
+		// coming and there is nothing to position against.
+		const MAX_STAGE_WAIT_FRAMES = 300;
 
 		// The stage preview may not be in the DOM yet when this layer mounts (a
 		// layer can be selected before the attachment finishes loading). A one-shot
@@ -342,7 +350,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 			const containerEl = document.getElementById( 'easydam-video-player' );
 			if ( ! containerEl ) {
-				rafId = requestAnimationFrame( start );
+				if ( stageWaitFrames++ < MAX_STAGE_WAIT_FRAMES ) {
+					rafId = requestAnimationFrame( start );
+				}
 				return;
 			}
 
