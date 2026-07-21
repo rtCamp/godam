@@ -323,24 +323,63 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	useEffect( () => {
-		computeContentRect();
+		let resizeObserver = null;
+		let rafId = null;
+		let cancelled = false;
+
+		// The stage preview may not be in the DOM yet when this layer mounts (a
+		// layer can be selected before the attachment finishes loading). A one-shot
+		// computeContentRect() would then find no media element, set contentRect to
+		// null and never recover, collapsing hotspots to 0x0 at (0,0). So retry
+		// until the stage container exists, then observe it: ResizeObserver fires on
+		// observe and whenever the media box gets/changes a laid-out size (0 -> WxH
+		// on image load), reliably (re)computing contentRect regardless of mount
+		// order.
+		const start = () => {
+			if ( cancelled ) {
+				return;
+			}
+
+			const containerEl = document.getElementById( 'easydam-video-player' );
+			if ( ! containerEl ) {
+				rafId = requestAnimationFrame( start );
+				return;
+			}
+
+			computeContentRect();
+
+			resizeObserver = new ResizeObserver( computeContentRect );
+			resizeObserver.observe( containerEl );
+
+			// `loadedmetadata` for a video, `load` for an image; cached images may
+			// already be complete (no future load event), so compute now too.
+			const mediaEl = containerEl.querySelector( 'video, img' );
+			if ( mediaEl ) {
+				videoRef.current = mediaEl;
+				const loadEvent = mediaEl.tagName === 'IMG' ? 'load' : 'loadedmetadata';
+				mediaEl.addEventListener( loadEvent, computeContentRect );
+				if ( 'IMG' === mediaEl.tagName && mediaEl.complete ) {
+					computeContentRect();
+				}
+			}
+		};
+
+		start();
 		window.addEventListener( 'resize', computeContentRect );
 		document.addEventListener( 'fullscreenchange', computeContentRect );
 
-		// Recompute once the intrinsic media size is known: `loadedmetadata` for
-		// a video, `load` for an image.
-		const mediaEl = document.querySelector( '#easydam-video-player video, #easydam-video-player img' );
-		videoRef.current = mediaEl;
-		const loadEvent = mediaEl?.tagName === 'IMG' ? 'load' : 'loadedmetadata';
-
-		if ( mediaEl ) {
-			mediaEl.addEventListener( loadEvent, computeContentRect );
-		}
-
 		return () => {
+			cancelled = true;
+			if ( rafId ) {
+				cancelAnimationFrame( rafId );
+			}
+			if ( resizeObserver ) {
+				resizeObserver.disconnect();
+			}
 			window.removeEventListener( 'resize', computeContentRect );
 			document.removeEventListener( 'fullscreenchange', computeContentRect );
 			if ( videoRef.current ) {
+				const loadEvent = videoRef.current.tagName === 'IMG' ? 'load' : 'loadedmetadata';
 				videoRef.current.removeEventListener( loadEvent, computeContentRect );
 			}
 		};

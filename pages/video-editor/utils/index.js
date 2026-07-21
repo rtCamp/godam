@@ -184,7 +184,7 @@ function createAudioAttributes( attachmentId, mediaData ) {
  * @param {Object} mediaData    The `/wp/v2/media/:id` payload (may be null).
  * @return {Object} Block attributes.
  */
-function createImageAttributes( attachmentId, mediaData ) {
+export function createImageAttributes( attachmentId, mediaData ) {
 	const baseAttrs = {
 		id: Number( attachmentId ),
 		showImageLayers: true,
@@ -217,7 +217,7 @@ function createImageAttributes( attachmentId, mediaData ) {
  * @param {string} mediaType    `'video' | 'audio' | 'image'`.
  * @return {Object} Block attributes.
  */
-function createBlockAttributes( attachmentId, mediaData, mediaType ) {
+export function createBlockAttributes( attachmentId, mediaData, mediaType ) {
 	if ( mediaType === 'audio' ) {
 		return createAudioAttributes( attachmentId, mediaData );
 	}

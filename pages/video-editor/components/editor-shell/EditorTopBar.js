@@ -177,8 +177,10 @@ const EditorTopBar = ( {
 	const previewPage = capability.previewPage || 'video-preview';
 	// Media types without a front-end preview page (e.g. audio) hide the button.
 	const showPreview = capability.showPreview !== false;
-	// Copy emits a `copyBlockName` block; hidden for media types whose block
-	// isn't available yet (e.g. image, until the `godam/image` block ships).
+	// Copy emits a `copyBlockName` block. Defaults on and mirrors the other
+	// `show*` seams: a media type sets `showCopy: false` when it has no Gutenberg
+	// block to copy into. All current types (video/audio/image) ship a block, so
+	// none opts out today.
 	const showCopy = capability.showCopy !== false;
 	// Analytics is tied to stats support — audio has neither.
 	const showAnalytics = hasValidApiKey && capability.showStats !== false;

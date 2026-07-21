@@ -285,7 +285,7 @@ class Pages {
 	 */
 	public function redirect_legacy_video_editor_slug() {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only routing of a GET page request; no state change.
-		if ( ! isset( $_GET['page'] ) || sanitize_key( wp_unslash( $_GET['page'] ) !== $this->legacy_video_editor_slug ) ) {
+		if ( ! isset( $_GET['page'] ) || sanitize_key( wp_unslash( $_GET['page'] ) ) !== $this->legacy_video_editor_slug ) {
 			return;
 		}
 
