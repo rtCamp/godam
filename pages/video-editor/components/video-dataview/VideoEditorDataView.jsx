@@ -119,6 +119,56 @@ const SORT_OPTIONS = [
 	{ key: 'name_desc', label: __( 'Name Z-A', 'godam' ), orderby: 'title', order: 'desc' },
 ];
 
+/**
+ * URL query-param names for the shareable list-view state. Kept distinct from
+ * the admin `page` / `id` / `tab` params (owned by App.js) so the filtered view
+ * can be bookmarked, shared, and restored on back/forward navigation.
+ */
+const QUERY_PARAM = {
+	mediaType: 'media_type',
+	filter: 'filter',
+	sort: 'sort',
+	search: 'search',
+};
+
+const DEFAULT_QUERY = {
+	mediaType: 'video',
+	filter: 'all',
+	sortKey: 'newest',
+	search: '',
+};
+
+/**
+ * Read the shareable list-view query state from the current URL. Unknown or
+ * inapplicable values (e.g. a transcode filter under Images, a stale/hand-edited
+ * link) fall back to the defaults so the view can't wedge. `filter` is validated
+ * against the options for the resolved media type, mirroring handleMediaTypeChange.
+ *
+ * @return {{mediaType: string, filter: string, sortKey: string, search: string}} Query state.
+ */
+const readQueryFromUrl = () => {
+	const params = new URLSearchParams( window.location.search );
+
+	const rawMediaType = params.get( QUERY_PARAM.mediaType );
+	const mediaType = MEDIA_TYPE_OPTIONS.some( ( o ) => o.key === rawMediaType )
+		? rawMediaType
+		: DEFAULT_QUERY.mediaType;
+
+	const rawFilter = params.get( QUERY_PARAM.filter );
+	const filter = getFilterOptions( mediaType ).some( ( o ) => o.key === rawFilter )
+		? rawFilter
+		: DEFAULT_QUERY.filter;
+
+	const rawSort = params.get( QUERY_PARAM.sort );
+	const sortKey = SORT_OPTIONS.some( ( o ) => o.key === rawSort )
+		? rawSort
+		: DEFAULT_QUERY.sortKey;
+
+	const search = params.get( QUERY_PARAM.search ) || DEFAULT_QUERY.search;
+
+	return { mediaType, filter, sortKey, search };
+};
+
 const DEFAULT_VIEW = {
 	type: 'grid',
 	page: 1,
@@ -275,12 +325,14 @@ const VideoEditorDataView = ( { onEdit } ) => {
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 
 	// Query state (drives the REST request, independent of DataViews' hidden
-	// built-in controls).
-	const [ search, setSearch ] = useState( '' );
-	const [ filter, setFilter ] = useState( 'all' );
-	const [ sortKey, setSortKey ] = useState( 'newest' );
+	// built-in controls). Seeded from the URL (lazy initializers run once) so a
+	// shared/bookmarked filtered view — and back/forward navigation out of the
+	// editor — restores the same list.
+	const [ search, setSearch ] = useState( () => readQueryFromUrl().search );
+	const [ filter, setFilter ] = useState( () => readQueryFromUrl().filter );
+	const [ sortKey, setSortKey ] = useState( () => readQueryFromUrl().sortKey );
 	// Primary media-type filter — Videos by default (historic behaviour).
-	const [ mediaType, setMediaType ] = useState( 'video' );
+	const [ mediaType, setMediaType ] = useState( () => readQueryFromUrl().mediaType );
 
 	// Attachment id the onboarding tour wants pinned first (the demo video).
 	const [ prioritizeId, setPrioritizeId ] = useState( getTourPrioritizeId() );
@@ -344,6 +396,28 @@ const VideoEditorDataView = ( { onEdit } ) => {
 		setFilter( 'all' );
 		resetCollection();
 	};
+
+	// Mirror the active query into the URL so the filtered list view can be
+	// bookmarked/shared and is restored on back/forward navigation (App.js owns
+	// the `id` param separately, and preserves these across the list⇄editor
+	// switch). replaceState — not push — so filter tweaks and per-keystroke
+	// search edits don't flood the browser history; only non-default values are
+	// written, keeping the base URL clean.
+	useEffect( () => {
+		const url = new URL( window.location );
+		const sync = ( key, value, defaultValue ) => {
+			if ( value && value !== defaultValue ) {
+				url.searchParams.set( key, value );
+			} else {
+				url.searchParams.delete( key );
+			}
+		};
+		sync( QUERY_PARAM.mediaType, mediaType, DEFAULT_QUERY.mediaType );
+		sync( QUERY_PARAM.filter, filter, DEFAULT_QUERY.filter );
+		sync( QUERY_PARAM.sort, sortKey, DEFAULT_QUERY.sortKey );
+		sync( QUERY_PARAM.search, search, DEFAULT_QUERY.search );
+		window.history.replaceState( {}, '', url );
+	}, [ mediaType, filter, sortKey, search ] );
 
 	// Fetch the current page directly via the REST endpoint. Modelled on the
 	// legacy MediaGrid effect: debounce, stale-request guard, append on
