@@ -573,6 +573,10 @@ class Seo {
 	 * excludes admin screens, REST requests (e.g. editor block previews) and
 	 * feeds, none of which output a `wp_footer` document head we can attach to.
 	 *
+	 * The `godam_video_seo_render_context` filter lets integrators narrow this
+	 * scope further (e.g. suppress on archives to avoid repeating the same
+	 * schema across listing pages).
+	 *
 	 * @return bool True on a front-end HTML page render, false otherwise.
 	 */
 	private function is_render_time_seo_context() {
@@ -588,7 +592,33 @@ class Seo {
 			return false;
 		}
 
-		return true;
+		/**
+		 * Filters whether render-time video SEO schema should be collected and
+		 * emitted for the current front-end view.
+		 *
+		 * This runs only for genuine front-end page renders — admin, REST and
+		 * feed requests are already excluded and never reach the filter. Return
+		 * false to suppress the render-time VideoObject output on specific
+		 * views. For example, to keep it on singular content and the front page
+		 * only, and off other archives/search (avoiding the same schema being
+		 * repeated across listing pages):
+		 *
+		 *     add_filter(
+		 *         'godam_video_seo_render_context',
+		 *         function ( $emit ) {
+		 *             return is_singular() || is_front_page();
+		 *         }
+		 *     );
+		 *
+		 * All conditional tags (is_singular(), is_archive(), is_front_page(),
+		 * is_search(), …) are available inside the callback.
+		 *
+		 * @since 2.0.0
+		 *
+		 * @param bool $emit Whether to emit render-time video SEO on this view.
+		 *                    Defaults to true for every front-end view.
+		 */
+		return (bool) apply_filters( 'godam_video_seo_render_context', true );
 	}
 
 	/**
