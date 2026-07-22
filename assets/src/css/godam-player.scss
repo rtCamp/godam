@@ -1837,6 +1837,18 @@ body.godam-share-modal-open {
 		}
 	}
 
+	// Share-specific: size the icon to the transcript icon's footprint so the
+	// share and transcript buttons read as one consistent set across every skin.
+	// (Skins that intentionally restyle both buttons — e.g. Bubble — override this
+	// on higher specificity.)
+	.vjs-button.godam-share-button img {
+		display: block;
+		width: 24px;
+		height: 24px;
+		max-width: unset;
+		object-fit: contain;
+	}
+
 	// The transcript button sits at the top of the stack; when it is present the
 	// share button drops directly below it. (Bubble skin positions both via the
 	// control-bar column and is unaffected — its rules win on specificity.)
