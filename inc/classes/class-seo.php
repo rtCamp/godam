@@ -29,6 +29,8 @@ class Seo {
 	 * Lets the render-time collector skip videos that were already output from
 	 * the queried post's content, avoiding duplicate JSON-LD.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var array<string,bool>
 	 */
 	private $emitted_content_urls = array();
@@ -36,15 +38,31 @@ class Seo {
 	/**
 	 * Attachment IDs already emitted by the cached wp_head schema output.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @var array<int,bool>
 	 */
 	private $emitted_attachment_ids = array();
+
+	/**
+	 * Headlines already emitted by the cached wp_head schema output for entries
+	 * that carry neither a contentUrl nor an attachment ID (e.g. a seoOverride
+	 * block without a media id). Lets the render-time collector de-duplicate
+	 * those entries too, which cannot be keyed by URL or attachment.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var array<string,bool>
+	 */
+	private $emitted_headlines = array();
 
 	/**
 	 * Video SEO entries collected at render time from block-theme templates,
 	 * template parts and synced patterns (content that is not part of the
 	 * queried post's own post_content). Keyed by contentUrl (or headline) for
 	 * de-duplication.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @var array<string,array>
 	 */
@@ -468,12 +486,17 @@ class Seo {
 			}
 
 			// Record what we emit here so the render-time collector (wp_footer)
-			// does not output the same video a second time.
+			// does not output the same video a second time. Track by contentUrl
+			// and attachment ID, plus headline as a last resort for entries that
+			// have neither (so those can still be de-duplicated at flush time).
 			if ( $content_url ) {
 				$this->emitted_content_urls[ $content_url ] = true;
 			}
 			if ( ! empty( $video['attachment_id'] ) ) {
 				$this->emitted_attachment_ids[ (int) $video['attachment_id'] ] = true;
+			}
+			if ( ! $content_url && empty( $video['attachment_id'] ) && ! empty( $video['headline'] ) ) {
+				$this->emitted_headlines[ $video['headline'] ] = true;
 			}
 
 			$output_schemas[] = $schema;
@@ -520,8 +543,12 @@ class Seo {
 	 * render-time output ({@see output_render_time_video_seo_schema}) so both
 	 * paths produce identical schema and fire the same per-entry filter.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @param array $video   Raw video SEO data (headline, contentUrl, etc.).
-	 * @param int   $post_id The current post ID (filter context).
+	 * @param int   $post_id The current post ID for filter context. May be 0 on
+	 *                       non-singular render-time views (archives/search/404),
+	 *                       where the queried object has no post ID.
 	 * @return array|null The VideoObject schema array, or null when invalid.
 	 */
 	private function build_video_object_schema( $video, $post_id ) {
@@ -557,7 +584,10 @@ class Seo {
 		 *
 		 * @param array $schema  The VideoObject schema array.
 		 * @param array $video   The raw cached video SEO data.
-		 * @param int   $post_id The current post ID.
+		 * @param int   $post_id The current post ID. May be 0 when emitted from
+		 *                       the render-time path on non-singular views
+		 *                       (archives/search/404); guard with a check before
+		 *                       using it (e.g. get_post_type( $post_id )).
 		 */
 		return apply_filters( 'godam_video_seo_schema', $schema, $video, $post_id );
 	}
@@ -576,6 +606,8 @@ class Seo {
 	 * The `godam_video_seo_render_context` filter lets integrators narrow this
 	 * scope further (e.g. suppress on archives to avoid repeating the same
 	 * schema across listing pages).
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return bool True on a front-end HTML page render, false otherwise.
 	 */
@@ -613,7 +645,7 @@ class Seo {
 		 * All conditional tags (is_singular(), is_archive(), is_front_page(),
 		 * is_search(), …) are available inside the callback.
 		 *
-		 * @since 2.0.0
+		 * @since n.e.x.t
 		 *
 		 * @param bool $emit Whether to emit render-time video SEO on this view.
 		 *                    Defaults to true for every front-end view.
@@ -633,6 +665,8 @@ class Seo {
 	 * emitted together in {@see output_render_time_video_seo_schema}.
 	 *
 	 * This is a read-only pass; the block output is always returned unchanged.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $block_content The rendered block HTML (returned unchanged).
 	 * @param array  $parsed_block  The parsed block array.
@@ -658,17 +692,27 @@ class Seo {
 				continue;
 			}
 
-			$content_url = ! empty( $seo_entry['contentUrl'] ) && is_string( $seo_entry['contentUrl'] ) ? $seo_entry['contentUrl'] : '';
+			$content_url   = ! empty( $seo_entry['contentUrl'] ) && is_string( $seo_entry['contentUrl'] ) ? $seo_entry['contentUrl'] : '';
+			$attachment_id = ! empty( $seo_entry['attachment_id'] ) ? (int) $seo_entry['attachment_id'] : 0;
 
 			// Deduplicate within the render-collected set (a template part or
 			// synced pattern carrying the same video can render many times).
+			// Prefer the attachment ID as the key: the same underlying video can
+			// render with slightly different contentUrl strings, and keying by
+			// attachment collapses those reliably. Fall back to contentUrl, then
+			// headline, for entries without an attachment (e.g. seoOverride).
 			//
 			// De-duplication against the cached wp_head output is deferred to
-			// flush time ({@see output_render_time_video_seo_schema}): in block
-			// themes the template — and therefore render_block — runs *before*
-			// wp_head, so the "already emitted" sets are not yet populated while
-			// this collector runs.
-			$dedupe_key = $content_url ? $content_url : 'headline:' . $seo_entry['headline'];
+			// flush time ({@see output_render_time_video_seo_schema}): render_block
+			// can fire before wp_head (e.g. in block themes), so the "already
+			// emitted" sets may still be empty while this collector runs.
+			if ( $attachment_id > 0 ) {
+				$dedupe_key = 'attachment:' . $attachment_id;
+			} elseif ( $content_url ) {
+				$dedupe_key = 'url:' . $content_url;
+			} else {
+				$dedupe_key = 'headline:' . $seo_entry['headline'];
+			}
 			if ( isset( $this->render_collected_schemas[ $dedupe_key ] ) ) {
 				continue;
 			}
@@ -688,6 +732,8 @@ class Seo {
 	 * wp_head output has recorded which videos it already emitted, so the two
 	 * paths never duplicate a VideoObject.
 	 *
+	 * @since n.e.x.t
+	 *
 	 * @return void
 	 */
 	public function output_render_time_video_seo_schema() {
@@ -704,16 +750,23 @@ class Seo {
 		$output_schemas = array();
 		foreach ( $this->render_collected_schemas as $video ) {
 			// Skip videos already emitted by the cached wp_head output. This
-			// de-duplication runs here (not at collect time) because in block
-			// themes the template — and thus render_block — fires before
-			// wp_head; by wp_footer both paths have finished populating state.
+			// de-duplication runs here (not at collect time) because render_block
+			// can fire before wp_head (e.g. in block themes), so the "already
+			// emitted" sets may still be empty while the collector runs. By
+			// wp_footer — which always runs after both — both paths have finished
+			// populating state, so this comparison is reliable either way.
 			$content_url   = ! empty( $video['contentUrl'] ) && is_string( $video['contentUrl'] ) ? $video['contentUrl'] : '';
 			$attachment_id = ! empty( $video['attachment_id'] ) ? (int) $video['attachment_id'] : 0;
+			$headline      = ! empty( $video['headline'] ) ? $video['headline'] : '';
 
 			if ( $content_url && isset( $this->emitted_content_urls[ $content_url ] ) ) {
 				continue;
 			}
 			if ( $attachment_id > 0 && isset( $this->emitted_attachment_ids[ $attachment_id ] ) ) {
+				continue;
+			}
+			// Last resort for entries with neither a contentUrl nor an attachment.
+			if ( ! $content_url && 0 === $attachment_id && $headline && isset( $this->emitted_headlines[ $headline ] ) ) {
 				continue;
 			}
 
@@ -729,6 +782,9 @@ class Seo {
 
 		/**
 		 * This filter is documented in this file, in add_video_seo_schema().
+		 *
+		 * Note: on this render-time path `$post_id` may be 0 for non-singular
+		 * views (archives/search/404), unlike the singular-only wp_head path.
 		 *
 		 * The third argument is an empty array here because render-collected
 		 * schemas have no backing post-meta cache; add-ons that inspect it
