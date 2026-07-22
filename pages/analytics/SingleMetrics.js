@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React from 'react';
 /**
  * Internal dependencies
  */
@@ -92,69 +92,29 @@ const SingleMetrics = ( {
 	const hasServerDelta = serverDelta !== null && serverDelta !== undefined;
 	const showChange = isDashboard ? hasServerDelta : true;
 
-	useEffect( () => {
-		// Dashboard mode is fully React-rendered — no imperative DOM writes
-		// (they would detach React's text nodes and freeze range updates).
-		if ( isDashboard ) {
-			return;
-		}
-		if ( ! processedAnalyticsHistory || ! analyticsDataFetched ) {
-			return;
-		}
-
-		let finalHistoryArray = [];
-
-		if ( mode === 'analytics' ) {
-			const mappedData = processedAnalyticsHistory.map( ( history ) => {
-				return {
-					date: history.date,
-					engagement_rate: parseFloat( calculateEngagementRate(
-						history.plays,
-						history.video_length,
-						history.play_time,
-					) ) || 0,
-					play_rate: parseFloat( calculatePlayRate( history.page_load, history.plays ) ) || 0,
-					plays: parseFloat( history.plays ) || 0,
-					watch_time: parseFloat( history.play_time ) || 0,
-				};
-			} );
-			finalHistoryArray = ensureAll7Days( mappedData );
-		} else if ( mode === 'dashboard' ) {
-			const mappedData = processedAnalyticsHistory.map( ( history ) => {
-				return {
-					date: history.date,
-					engagement_rate: parseFloat( history.avg_engagement ) || 0,
-					play_rate: history.play_rate
-						? parseFloat( history.play_rate * 100 )
-						: 0,
-					plays: parseFloat( history.plays ) || 0,
-					watch_time: parseFloat( history.watch_time ) || 0,
-					total_videos: parseInt( history.total_videos ) || 0,
-				};
-			} );
-			finalHistoryArray = ensureAll7Days( mappedData );
-		}
-
-		if ( config ) {
-			// Ensure we have the data sorted by date (oldest to newest)
-			const sortedData = [ ...finalHistoryArray ].sort( ( a, b ) => {
-				return new Date( a.date ) - new Date( b.date );
-			} );
-
-			const trendPercentage = calculateTrendPercentage( sortedData, config.key );
-
-			// Update the change percentage UI
-			const changeEl = document.getElementById( `${ metricType }-change` );
-			if ( changeEl ) {
-				const rounded = Math.abs( trendPercentage ).toFixed( 2 );
-				const prefix = trendPercentage >= 0 ? '+' : '-';
-				changeEl.innerText = `${ prefix }${ rounded }%`;
-				// Remove existing classes first
-				changeEl.classList.remove( 'change-rise', 'change-drop' );
-				changeEl.classList.add( trendPercentage >= 0 ? 'change-rise' : 'change-drop' );
-			}
-		}
-	}, [ processedAnalyticsHistory, analyticsDataFetched, metricType, mode, config, isDashboard ] );
+	// Analytics (per-video) mode: client-side "vs prev 7 days" trend from the
+	// 7-day processed history. Computed in render (not an imperative DOM write)
+	// so it can be shown on the card's bottom row as an arrow + coloured % —
+	// matching Figma — instead of a pill in the header (which overflowed the
+	// narrow cards).
+	let analyticsTrend = null;
+	if ( ! isDashboard && config && processedAnalyticsHistory && analyticsDataFetched ) {
+		const mapped = processedAnalyticsHistory.map( ( history ) => ( {
+			date: history.date,
+			engagement_rate: parseFloat( calculateEngagementRate(
+				history.plays,
+				history.video_length,
+				history.play_time,
+			) ) || 0,
+			play_rate: parseFloat( calculatePlayRate( history.page_load, history.plays ) ) || 0,
+			plays: parseFloat( history.plays ) || 0,
+			watch_time: parseFloat( history.play_time ) || 0,
+		} ) );
+		const sorted = ensureAll7Days( mapped ).sort(
+			( a, b ) => new Date( a.date ) - new Date( b.date ),
+		);
+		analyticsTrend = calculateTrendPercentage( sorted, config.key );
+	}
 
 	return (
 		<div className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full">
@@ -164,20 +124,16 @@ const SingleMetrics = ( {
 						<p className="text-xs text-[#525252] whitespace-nowrap">{ label }</p>
 						<Tooltip text={ tooltipText } />
 					</div>
-					{ showChange && (
-						isDashboard ? (
-							<div className="flex flex-col items-end shrink-0">
-								<p className={ `metric-change ${ serverDelta >= 0 ? 'change-rise' : 'change-drop' }` }>
-									{ `${ serverDelta >= 0 ? '+' : '-' }${ Math.abs( serverDelta ).toFixed( 2 ) }%` }
-								</p>
-								<span className="text-[10px] text-zinc-400 whitespace-nowrap">{ deltaLabel || __( 'vs previous period', 'godam' ) }</span>
-							</div>
-						) : (
-							<div className="flex items-center gap-1.5">
-								<p id={ `${ metricType }-change` } className="metric-change">+0%</p>
-								<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ __( 'vs 7 days ago', 'godam' ) }</span>
-							</div>
-						)
+					{ /* Dashboard shows the server delta as a pill top-right. Per-video
+					    puts its delta on the bottom row (below the value) to match
+					    Figma, so nothing sits in the header there. */ }
+					{ isDashboard && showChange && (
+						<div className="flex flex-col items-end shrink-0">
+							<p className={ `metric-change ${ serverDelta >= 0 ? 'change-rise' : 'change-drop' }` }>
+								{ `${ serverDelta >= 0 ? '+' : '-' }${ Math.abs( serverDelta ).toFixed( 2 ) }%` }
+							</p>
+							<span className="text-[10px] text-zinc-400 whitespace-nowrap">{ deltaLabel || __( 'vs prev period', 'godam' ) }</span>
+						</div>
 					) }
 				</div>
 				<div className="flex flex-row justify-between gap-2 items-end">
@@ -188,7 +144,16 @@ const SingleMetrics = ( {
 						>
 							{ isDashboard ? dashboardValue : '0%' }
 						</p>
-						<p className="text-zinc-500 text-xs">{ dataLabel || __( 'All time', 'godam' ) }</p>
+						{ ! isDashboard && analyticsTrend !== null ? (
+							<div className="flex items-center gap-1.5">
+								<span className={ `text-xs font-semibold ${ analyticsTrend >= 0 ? 'text-[#15803D]' : 'text-[#B91C1C]' }` }>
+									{ `${ analyticsTrend >= 0 ? '↑' : '↓' } ${ Math.abs( analyticsTrend ).toFixed( 2 ) }%` }
+								</span>
+								<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ __( 'vs prev 7 days', 'godam' ) }</span>
+							</div>
+						) : (
+							<p className="text-zinc-500 text-xs">{ dataLabel || __( 'All time', 'godam' ) }</p>
+						) }
 					</div>
 				</div>
 			</div>

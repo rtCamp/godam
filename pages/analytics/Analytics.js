@@ -133,7 +133,7 @@ const Analytics = ( { attachmentID } ) => {
 	// This prevents parallel requests being sent when the server rejects the API key.
 	const shouldSkipSecondaryQueries = ! attachmentID || shouldSkipAnalytics || ! analyticsDataFetched || !! analyticsDataFetched?.errorType;
 
-	// Processed analytics history feeds the "vs 7 days ago" trend badges +
+	// Processed analytics history feeds the "vs prev 7 days" trend badges +
 	// sparklines, which are inherently a fixed last-7-days window (SingleMetrics
 	// / PlaysVsViewers rebuild a today-6..today grid via ensureAll7Days). So it
 	// stays pinned to `days: 7` and is NOT range-scoped — range-scoping it made

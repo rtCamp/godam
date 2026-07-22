@@ -218,7 +218,7 @@ const Dashboard = () => {
 		: 0;
 	const insightsDeltaLabel = sprintf(
 		/* translators: %d: number of days in the compared previous window. */
-		__( 'vs previous %d days', 'godam' ),
+		__( 'vs prev %d days', 'godam' ),
 		insightsSpanDays,
 	);
 	const insightsCardLabel = insightsRangeActive ? triggerLabelFor( insightsRange ) : __( 'All time', 'godam' );

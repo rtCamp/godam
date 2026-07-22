@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -54,46 +54,34 @@ const PlaysVsViewers = ( {
 	const formattedPlays = Number( plays ).toLocaleString();
 	const formattedViewers = viewersUnavailable ? '—' : Number( uniqueViewers ).toLocaleString();
 
-	useEffect( () => {
-		if ( ! processedAnalyticsHistory || processedAnalyticsHistory.length === 0 ) {
-			return;
-		}
-
-		let mappedData;
-		if ( mode === 'analytics' ) {
-			mappedData = processedAnalyticsHistory.map( ( h ) => ( {
-				date: h.date,
-				plays: parseFloat( h.plays ) || 0,
-				engagement_rate: parseFloat( calculateEngagementRate( h.plays, h.video_length, h.play_time ) ) || 0,
-				play_rate: parseFloat( calculatePlayRate( h.page_load, h.plays ) ) || 0,
-				watch_time: parseFloat( h.play_time ) || 0,
-			} ) );
-		} else {
-			mappedData = processedAnalyticsHistory.map( ( h ) => ( {
-				date: h.date,
-				plays: parseFloat( h.plays ) || 0,
-				engagement_rate: parseFloat( h.avg_engagement ) || 0,
-				play_rate: h.play_rate ? parseFloat( h.play_rate * 100 ) : 0,
-				watch_time: parseFloat( h.watch_time ) || 0,
-				total_videos: parseInt( h.total_videos ) || 0,
-			} ) );
-		}
-
+	// Client-side "vs prev 7 days" plays trend from the 7-day history. Computed
+	// in render so the delta shows on the card's bottom row (arrow + coloured %,
+	// matching Figma) instead of an overflowing pill in the header.
+	let playsTrend = null;
+	if ( Array.isArray( processedAnalyticsHistory ) ) {
+		const mappedData = processedAnalyticsHistory.map( ( h ) => (
+			mode === 'analytics'
+				? {
+					date: h.date,
+					plays: parseFloat( h.plays ) || 0,
+					engagement_rate: parseFloat( calculateEngagementRate( h.plays, h.video_length, h.play_time ) ) || 0,
+					play_rate: parseFloat( calculatePlayRate( h.page_load, h.plays ) ) || 0,
+					watch_time: parseFloat( h.play_time ) || 0,
+				}
+				: {
+					date: h.date,
+					plays: parseFloat( h.plays ) || 0,
+					engagement_rate: parseFloat( h.avg_engagement ) || 0,
+					play_rate: h.play_rate ? parseFloat( h.play_rate * 100 ) : 0,
+					watch_time: parseFloat( h.watch_time ) || 0,
+					total_videos: parseInt( h.total_videos ) || 0,
+				}
+		) );
 		const sortedData = ensureAll7Days( mappedData ).sort(
 			( a, b ) => new Date( a.date ) - new Date( b.date ),
 		);
-
-		const trendPercentage = calculateTrendPercentage( sortedData, 'plays' );
-
-		const changeEl = document.getElementById( 'plays-vs-viewers-change' );
-		if ( changeEl ) {
-			const rounded = Math.abs( trendPercentage ).toFixed( 2 );
-			const prefix = trendPercentage >= 0 ? '+' : '-';
-			changeEl.innerText = `${ prefix }${ rounded }%`;
-			changeEl.classList.remove( 'change-rise', 'change-drop' );
-			changeEl.classList.add( trendPercentage >= 0 ? 'change-rise' : 'change-drop' );
-		}
-	}, [ processedAnalyticsHistory, plays, mode ] );
+		playsTrend = calculateTrendPercentage( sortedData, 'plays' );
+	}
 
 	return (
 		<div className="analytics-info plays-vs-viewers-card flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full">
@@ -102,12 +90,6 @@ const PlaysVsViewers = ( {
 					<div className="analytics-info-heading">
 						<p className="text-xs text-[#525252]">{ __( 'Plays / Unique viewers', 'godam' ) }</p>
 					</div>
-					{ mode !== 'dashboard' && (
-						<div className="flex items-center gap-1.5">
-							<p id="plays-vs-viewers-change" className="metric-change">+0%</p>
-							<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ __( 'vs 7 days ago', 'godam' ) }</span>
-						</div>
-					) }
 				</div>
 
 				{ isLoading ? (
@@ -134,6 +116,15 @@ const PlaysVsViewers = ( {
 								<p className="text-zinc-500 text-xs">{ __( 'Unique viewers', 'godam' ) }</p>
 							</div>
 						</div>
+					</div>
+				) }
+
+				{ mode !== 'dashboard' && playsTrend !== null && (
+					<div className="flex items-center gap-1.5">
+						<span className={ `text-xs font-semibold ${ playsTrend >= 0 ? 'text-[#15803D]' : 'text-[#B91C1C]' }` }>
+							{ `${ playsTrend >= 0 ? '↑' : '↓' } ${ Math.abs( playsTrend ).toFixed( 2 ) }%` }
+						</span>
+						<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ __( 'vs prev 7 days', 'godam' ) }</span>
 					</div>
 				) }
 
