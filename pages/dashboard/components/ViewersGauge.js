@@ -18,19 +18,27 @@ import { __, sprintf } from '@wordpress/i18n';
  *
  * FE-only: uses data already in the dashboard metrics payload. Full numbers.
  *
- * @param {Object} props
- * @param {number} props.plays         Total plays.
- * @param {number} props.uniqueViewers Deduplicated distinct-person count.
+ * `uniqueViewers` of `null`/`undefined` means unavailable (range mode has no
+ * range-scoped unique count until the uniqExactState rollup) and renders "—"
+ * with no dark fill arc.
+ *
+ * @param {Object}      props
+ * @param {number}      props.plays         Total plays.
+ * @param {number|null} props.uniqueViewers Deduplicated distinct-person count.
  * @return {JSX.Element} The gauge.
  */
 const ViewersGauge = ( { plays = 0, uniqueViewers = 0 } ) => {
 	const playsNum = Number( plays ) || 0;
-	const viewersNum = Number( uniqueViewers ) || 0;
+	// Distinguish "unavailable" (null/undefined, e.g. range mode) from a real 0.
+	const viewersUnavailable = uniqueViewers === null || uniqueViewers === undefined;
+	const viewersNum = viewersUnavailable ? 0 : ( Number( uniqueViewers ) || 0 );
+	const viewersDisplay = viewersUnavailable ? '—' : viewersNum.toLocaleString();
 
 	// Top semicircle arc: from (20,100) to (180,100), radius 80.
 	const radius = 80;
 	const arcLength = Math.PI * radius;
-	const ratio = playsNum > 0 ? Math.min( viewersNum / playsNum, 1 ) : 0;
+	// No dark fill when uniques are unavailable — only the total-plays track shows.
+	const ratio = ( ! viewersUnavailable && playsNum > 0 ) ? Math.min( viewersNum / playsNum, 1 ) : 0;
 	const dash = ratio * arcLength;
 	const arcPath = 'M 20 100 A 80 80 0 0 1 180 100';
 
@@ -71,7 +79,7 @@ const ViewersGauge = ( { plays = 0, uniqueViewers = 0 } ) => {
 				</svg>
 
 				<div className="godam-gauge__center">
-					<span className="godam-gauge__value">{ viewersNum.toLocaleString() }</span>
+					<span className="godam-gauge__value">{ viewersDisplay }</span>
 					<span className="godam-gauge__label">{ __( 'Unique viewers', 'godam' ) }</span>
 				</div>
 
@@ -84,7 +92,7 @@ const ViewersGauge = ( { plays = 0, uniqueViewers = 0 } ) => {
 					<div className="godam-gauge__tooltip-row">
 						<span className="godam-gauge__swatch godam-gauge__swatch--dark" aria-hidden="true" />
 						<span className="godam-gauge__tooltip-label">{ __( 'Unique Viewers', 'godam' ) }</span>
-						<span className="godam-gauge__tooltip-value">{ viewersNum.toLocaleString() }</span>
+						<span className="godam-gauge__tooltip-value">{ viewersDisplay }</span>
 					</div>
 				</div>
 			</div>
