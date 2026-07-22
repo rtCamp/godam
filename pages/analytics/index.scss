@@ -782,6 +782,112 @@
 		}
 	}
 
+	// Viewer Retention Curve — standalone area+line chart that replaced the
+	// "Views across the video" overlay. Neutral greys for the curve; the WP
+	// admin accent only for the hover focus dot.
+	.godam-retention-card {
+
+		.godam-retention {
+			position: relative;
+			width: 100%;
+			padding: 8px 4px 0;
+		}
+
+		#retention-curve {
+			display: block;
+			width: 100%;
+			height: 320px;
+			overflow: visible;
+		}
+
+		.godam-retention__area {
+			fill: #e5e7eb;
+			opacity: 0.55;
+		}
+
+		.godam-retention__line {
+			fill: none;
+			stroke: #6b7280;
+			stroke-width: 2px;
+		}
+
+		.godam-retention__grid .tick line {
+			stroke: #eef0f2;
+		}
+
+		.godam-retention__grid .tick text {
+			display: none;
+		}
+
+		.godam-retention__axis .tick text {
+			fill: #71717a;
+			font-size: 11px;
+		}
+
+		.godam-retention__axis .tick line {
+			stroke: transparent;
+		}
+
+		.godam-retention__focus {
+			r: 4;
+			fill: var(--wp-admin-theme-color, #3858e9);
+			stroke: #fff;
+			stroke-width: 2px;
+		}
+
+		.godam-retention__hover-line {
+			stroke: #9ca3af;
+			stroke-width: 1px;
+			stroke-dasharray: 4 2;
+		}
+
+		.retention-curve-tooltip {
+			position: absolute;
+			top: 0;
+			z-index: 2;
+			transform: translateX(-50%);
+			padding: 6px 10px;
+			background: #fff;
+			border: 1px solid #e5e7eb;
+			border-radius: 6px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+			font-size: 12px;
+			white-space: nowrap;
+			pointer-events: none;
+			opacity: 0;
+
+			.godam-retention__tt {
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+			}
+
+			.godam-retention__tt-value {
+				display: flex;
+				gap: 6px;
+				align-items: center;
+				font-weight: 600;
+				color: #18181b;
+			}
+
+			.godam-retention__tt-time {
+				color: #71717a;
+			}
+		}
+
+		// Only present to keep charts.js's per-video render triggering.
+		.godam-retention__trigger {
+			display: none;
+		}
+
+		.godam-retention__empty {
+			padding: 32px 8px;
+			color: #71717a;
+			font-size: 13px;
+			text-align: center;
+		}
+	}
+
 	// Three-up metrics row (playback / country / sources) — make every card use
 	// the shared .godam-card look so the row is visually uniform.
 	.metrics-container {

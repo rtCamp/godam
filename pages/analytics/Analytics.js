@@ -15,7 +15,7 @@ import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
 } from './redux/api/analyticsApi';
-import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
+import { calculateEngagementRate, calculatePlayRate, generateLineChart, generateRetentionCurve } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
 import './charts.js';
 
@@ -295,88 +295,45 @@ const Analytics = ( { attachmentID } ) => {
 		};
 	}, [ analyticsData, abTestComparisonAnalyticsData, attachmentData, abTestComparisonAttachmentData, isABTestCompleted, mediaLibraryAttachment ] );
 
+	// Render the Viewer Retention Curve from the all-time per-second heatmap.
+	// (Replaces the old video-overlay line chart — see generateRetentionCurve.)
+	// The SVG is viewBox-scaled, so it stays responsive without a resize handler.
 	useEffect( () => {
-		const analyticsVideoEl = document.getElementById( 'analytics-video' );
-
-		if ( ! analyticsVideoEl ) {
+		if ( ! analyticsData?.all_time_heatmap ) {
 			return;
 		}
-
-		const existingPlayer = videojs.getPlayer( 'analytics-video' );
-		if ( existingPlayer ) {
-			existingPlayer.dispose();
+		let heatmapData;
+		try {
+			heatmapData = JSON.parse( analyticsData.all_time_heatmap );
+		} catch {
+			return;
 		}
-
-		const player = videojs( 'analytics-video', {
-			fluid: false,
-			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
-			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
-			html5: {
-				vhs: {
-					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
-					bandwidthVariance: 1.0, // allow renditions close to estimate
-					limitRenditionByPlayerDimensions: false, // don't cap by video element size
-				},
-			},
-		} );
-
-		let resizeHandler = null;
-
-		// When video metadata loads, get actual dimensions and set aspect ratio
-		player.on( 'loadedmetadata', () => {
-			const videoWidth = player.videoWidth();
-			const videoHeight = player.videoHeight();
-
-			if ( videoWidth && videoHeight ) {
-				// Calculate aspect ratio
-				const aspectRatio = `${ videoWidth }:${ videoHeight }`;
-				player.aspectRatio( aspectRatio );
-
-				const container = document.querySelector( '.video-container' );
-				if ( container ) {
-					// Function to update container width based on aspect ratio
-					resizeHandler = () => {
-						// Get available width (parent width or viewport width - padding)
-						const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
-						const maxWidth = Math.min( parentWidth - 40, 640 ); // 40px for padding
-						const calculatedWidth = 360 * ( videoWidth / videoHeight );
-
-						// Use the smaller of calculated width or available space
-						const finalWidth = Math.min( calculatedWidth, maxWidth );
-						container.style.width = `${ finalWidth }px`;
-					};
-
-					resizeHandler();
-
-					// Update on window resize
-					window.addEventListener( 'resize', resizeHandler );
-
-					// Generate line chart after container is set
-					if ( analyticsData?.all_time_heatmap ) {
-						const heatmapData = JSON.parse( analyticsData.all_time_heatmap );
-						generateLineChart(
-							heatmapData,
-							'#line-chart',
-							player,
-							'.line-chart-tooltip',
-							640,
-							300,
-						);
-					}
-				}
-			}
-		} );
-
-		// Add cleanup for when this specific effect unmounts
-		return () => {
-			if ( resizeHandler ) {
-				window.removeEventListener( 'resize', resizeHandler );
-			}
-			if ( player ) {
-				player.dispose();
-			}
-		};
+		if ( ! Array.isArray( heatmapData ) || ! heatmapData.some( ( v ) => v > 0 ) ) {
+			return;
+		}
+		if ( ! document.getElementById( 'retention-curve' ) ) {
+			return;
+		}
+		generateRetentionCurve(
+			heatmapData,
+			'#retention-curve',
+			'.retention-curve-tooltip',
+			{ width: 900, height: 320 },
+		);
 	}, [ analyticsData ] );
+
+	// Whether the all-time heatmap has any real views (drives the empty state).
+	const retentionHasData = ( () => {
+		if ( ! analyticsData?.all_time_heatmap ) {
+			return false;
+		}
+		try {
+			const parsed = JSON.parse( analyticsData.all_time_heatmap );
+			return Array.isArray( parsed ) && parsed.some( ( v ) => v > 0 );
+		} catch {
+			return false;
+		}
+	} )();
 
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
@@ -578,24 +535,36 @@ const Analytics = ( { attachmentID } ) => {
 								</div>
 							</div>
 
-							{ /* Views across the video — player with the per-second overlay. */ }
-							<div className="godam-card godam-video-card">
+							{ /* Viewer Retention Curve — standalone chart of per-second
+							    viewer counts across the video timeline (converted from
+							    the old "Views across the video" per-second video overlay).
+							    All-time; a range-scoped variant needs a microservice
+							    change, so no date picker here yet. */ }
+							<div className="godam-card godam-retention-card">
 								<div className="godam-card__head">
-									<h2>{ __( 'Views across the video', 'godam' ) }</h2>
+									<h2>{ __( 'Viewer Retention Curve', 'godam' ) }</h2>
 								</div>
-								<div className="video-container">
-									<RenderVideo
-										attachmentData={ attachmentData }
-										attachmentID={ attachmentID }
-										videoId={ 'analytics-video' }
-									/>
-									<div className="video-chart-container">
-										<div id="chart-container">
-											<svg id="line-chart" width="640" height="300"></svg>
-											<div className="line-chart-tooltip"></div>
-										</div>
+								{ retentionHasData ? (
+									<div className="godam-retention">
+										<svg id="retention-curve"></svg>
+										<div className="retention-curve-tooltip"></div>
 									</div>
-								</div>
+								) : (
+									<p className="godam-retention__empty">
+										{ __( 'Viewer retention will appear here once this video receives views.', 'godam' ) }
+									</p>
+								) }
+								{ /* Hidden trigger: charts.js keys its per-video render
+								    (KPIs / geography / Views-by-Source) off #analytics-video.
+								    The visible player was replaced by the curve above, so we
+								    keep a bare, hidden element to preserve that trigger. */ }
+								<video
+									id="analytics-video"
+									data-id={ attachmentID }
+									className="godam-retention__trigger"
+									aria-hidden="true"
+									muted
+								/>
 							</div>
 						</div>
 					</div>
