@@ -90,7 +90,6 @@ const SingleMetrics = ( {
 			? analyticsDataFetched[ config.changeKey ]
 			: null;
 	const hasServerDelta = serverDelta !== null && serverDelta !== undefined;
-	const showChange = isDashboard ? hasServerDelta : true;
 
 	// Analytics (per-video) mode: client-side "vs prev 7 days" trend from the
 	// 7-day processed history. Computed in render (not an imperative DOM write)
@@ -116,6 +115,17 @@ const SingleMetrics = ( {
 		analyticsTrend = calculateTrendPercentage( sorted, config.key );
 	}
 
+	// Unified delta for the card's bottom row (arrow + coloured % + muted
+	// label), matching Figma on BOTH dashboard and per-video. Dashboard uses
+	// the server period-over-period delta (present only for a bounded range);
+	// per-video uses the client-side last-7-days trend. Falls back to the range
+	// sub-label when there is no delta to show.
+	const deltaValue = isDashboard ? serverDelta : analyticsTrend;
+	const showDelta = isDashboard ? hasServerDelta : analyticsTrend !== null;
+	const deltaText = isDashboard
+		? ( deltaLabel || __( 'vs prev period', 'godam' ) )
+		: __( 'vs prev 7 days', 'godam' );
+
 	return (
 		<div className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full">
 			<div className="analytics-single-info">
@@ -124,17 +134,6 @@ const SingleMetrics = ( {
 						<p className="text-xs text-[#525252] whitespace-nowrap">{ label }</p>
 						<Tooltip text={ tooltipText } />
 					</div>
-					{ /* Dashboard shows the server delta as a pill top-right. Per-video
-					    puts its delta on the bottom row (below the value) to match
-					    Figma, so nothing sits in the header there. */ }
-					{ isDashboard && showChange && (
-						<div className="flex flex-col items-end shrink-0">
-							<p className={ `metric-change ${ serverDelta >= 0 ? 'change-rise' : 'change-drop' }` }>
-								{ `${ serverDelta >= 0 ? '+' : '-' }${ Math.abs( serverDelta ).toFixed( 2 ) }%` }
-							</p>
-							<span className="text-[10px] text-zinc-400 whitespace-nowrap">{ deltaLabel || __( 'vs prev period', 'godam' ) }</span>
-						</div>
-					) }
 				</div>
 				<div className="flex flex-row justify-between gap-2 items-end">
 					<div className="flex flex-col gap-3">
@@ -144,12 +143,15 @@ const SingleMetrics = ( {
 						>
 							{ isDashboard ? dashboardValue : '0%' }
 						</p>
-						{ ! isDashboard && analyticsTrend !== null ? (
+						{ /* Delta on the bottom row (arrow + coloured % + muted label),
+						    matching Figma, for both dashboard and per-video. Falls back
+						    to the range sub-label when there is no delta to show. */ }
+						{ showDelta ? (
 							<div className="flex items-center gap-1.5">
-								<span className={ `text-xs font-semibold ${ analyticsTrend >= 0 ? 'text-[#15803D]' : 'text-[#B91C1C]' }` }>
-									{ `${ analyticsTrend >= 0 ? '↑' : '↓' } ${ Math.abs( analyticsTrend ).toFixed( 2 ) }%` }
+								<span className={ `text-xs font-semibold ${ deltaValue >= 0 ? 'text-[#15803D]' : 'text-[#B91C1C]' }` }>
+									{ `${ deltaValue >= 0 ? '↑' : '↓' } ${ Math.abs( deltaValue ).toFixed( 2 ) }%` }
 								</span>
-								<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ __( 'vs prev 7 days', 'godam' ) }</span>
+								<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ deltaText }</span>
 							</div>
 						) : (
 							<p className="text-zinc-500 text-xs">{ dataLabel || __( 'All time', 'godam' ) }</p>
