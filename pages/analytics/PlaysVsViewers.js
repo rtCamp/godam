@@ -39,15 +39,20 @@ const PlaysVsViewers = ( {
 	isLoading = false,
 	processedAnalyticsHistory,
 } ) => {
+	// `uniqueViewers` of null/undefined means unavailable (range mode has no
+	// range-scoped unique count until the uniqExactState rollup) — shown as "—"
+	// with no sessions-per-user ratio.
+	const viewersUnavailable = uniqueViewers === null || uniqueViewers === undefined;
+
 	// Plays / deduplicated unique viewers (industry-standard "avg views per viewer").
-	// Guard against division by zero only.
+	// Guard against division by zero (and unavailable uniques) only.
 	const sessionsPerUser =
-		uniqueViewers > 0
+		! viewersUnavailable && uniqueViewers > 0
 			? ( plays / uniqueViewers ).toFixed( 2 )
 			: null;
 
 	const formattedPlays = Number( plays ).toLocaleString();
-	const formattedViewers = Number( uniqueViewers ).toLocaleString();
+	const formattedViewers = viewersUnavailable ? '—' : Number( uniqueViewers ).toLocaleString();
 
 	useEffect( () => {
 		if ( ! processedAnalyticsHistory || processedAnalyticsHistory.length === 0 ) {
