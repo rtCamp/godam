@@ -1846,12 +1846,6 @@ body.godam-share-modal-open {
 
 	// FULLSCREEN CONTAINER STYLES - Critical for iOS Safari compatibility
 	&.godam-video-fullscreen {
-		// Hide share button in custom fullscreen (consistency with other devices)
-		.vjs-button.godam-share-button,
-		.vjs-button.godam-transcript-button {
-			display: none !important;
-		}
-
 		// Position the player to cover the entire viewport
 		position: fixed;
 		inset: 0;
@@ -1909,12 +1903,10 @@ body.godam-share-modal-open {
 		}
 	}
 
-	// Hide share button in standard fullscreen
-	.video-js.vjs-fullscreen .vjs-button.godam-share-button,
-	.video-js.vjs-fullscreen .vjs-button.godam-transcript-button {
-		display: none !important;
-	}
-
+	// In fullscreen the share/transcript buttons are reparented into the
+	// fullscreen element (`.video-js`) so they render in the fullscreen top
+	// layer. They keep the normal hover-to-reveal behaviour (a wider hit area
+	// than the auto-hiding control bar), so no extra fullscreen rule is needed.
 
 	.video-js {
 
@@ -2310,43 +2302,46 @@ body.godam-share-modal-open {
 // ---------------------------------------------------------------------------
 // Transcript side panel
 // ---------------------------------------------------------------------------
-// The video and the transcript panel share the block's full width. When the
-// panel is open the wrapper becomes a flex row: the video flexes down and the
-// panel takes a column beside it. The wrapper is a size container, so below a
-// container-query threshold the two items wrap onto separate rows and the
-// panel drops beneath the video (responsive without media queries).
+// The panel overlays the right side of the video so the video keeps its full
+// width when the transcript opens (no reflow / resize). It slides in from the
+// right for a smooth transition. The wrapper is a size container, so below a
+// container-query threshold the panel instead drops beneath the video and
+// stacks full width (see the container query at the end of this section).
 .godam-video-wrapper {
 	container-type: inline-size;
 	container-name: godam-video-wrapper;
-}
 
-.godam-video-wrapper.godam-transcript-open {
-	display: flex;
-	flex-wrap: wrap;
-	// Top-align so the panel doesn't stretch the video to its content height;
-	// the panel's height is matched to the video in JS (with internal scroll).
-	align-items: flex-start;
-
-	// Grow from a zero basis so the video fills whatever width the fixed-width
-	// panel leaves — keeps them side by side instead of wrapping.
-	.easydam-video-container {
-		flex: 1 1 0;
-		min-width: 0;
+	// While a transcript panel is present it is parked (slid) off the right
+	// edge when closed, so clip the wrapper to keep it from widening the block
+	// or spawning a horizontal scrollbar. The clip would cut the inner
+	// container's drop shadow, so re-apply the same shadow on the wrapper (an
+	// element's own box-shadow is not affected by its overflow).
+	&:has(.godam-transcript-panel) {
+		overflow: hidden;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 	}
 }
 
 .godam-transcript-panel {
-	display: none;
+	position: absolute;
+	inset: 0 0 0 auto;
+	z-index: 20;
+	width: clamp(260px, 38%, 340px);
+	display: flex;
 	flex-direction: column;
 	min-height: 0;
 	background-color: #fff;
 	color: #1e1e1e;
 	border: 1px solid #e0e0e0;
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	box-shadow: -4px 0 12px rgba(0, 0, 0, 0.12);
+
+	// Closed: slid out to the right and non-interactive.
+	transform: translateX(100%);
+	transition: transform 0.3s ease;
+	will-change: transform;
 
 	.godam-transcript-open & {
-		display: flex;
-		flex: 0 0 clamp(260px, 38%, 340px);
+		transform: translateX(0);
 	}
 
 	&__header {
@@ -2385,10 +2380,14 @@ body.godam-share-modal-open {
 		&:hover {
 			background-color: #f0f0f1;
 		}
-	}
 
-	&__close {
-		font-size: 22px;
+		/* stylelint-disable-next-line no-descending-specificity */
+		svg {
+			display: block;
+			width: 20px;
+			height: 20px;
+			fill: currentcolor;
+		}
 	}
 
 	&__body {
@@ -2433,18 +2432,60 @@ body.godam-share-modal-open {
 	}
 }
 
-// Below this width the video + panel stack vertically (panel under the video).
+// Below this width the right-side strip would be too narrow, so the panel
+// covers the full video instead — but it keeps the exact same overlay layout
+// and slide-in-from-the-right behaviour as desktop (base rule), rather than
+// stacking beneath the video. Only the width changes (full cover); `inset: 0
+// 0 0 auto` from the base already spans top-to-bottom.
 @container godam-video-wrapper (max-width: 560px) {
 
-	.godam-transcript-open {
-
-		.easydam-video-container,
-		.godam-transcript-panel {
-			flex-basis: 100%;
-		}
-
-		.godam-transcript-panel {
-			max-height: 320px;
-		}
+	.godam-transcript-panel {
+		width: 100%;
 	}
+}
+
+// In fullscreen the panel is reparented into the fullscreen element
+// (`.video-js.vjs-fullscreen`). Force the slide-in overlay layout there so a
+// narrow block (whose container query would otherwise stack/hide the panel)
+// still shows it as an on-video overlay. Higher specificity than the base and
+// container-query rules so it wins regardless of source order.
+.video-js.vjs-fullscreen .godam-transcript-panel {
+	position: absolute;
+	inset: 0 0 0 auto;
+	width: clamp(280px, 32%, 420px);
+	max-height: none;
+	display: flex;
+	transform: translateX(100%);
+}
+
+.godam-transcript-open .video-js.vjs-fullscreen .godam-transcript-panel {
+	transform: translateX(0);
+}
+
+// In fullscreen the overlay share/transcript buttons are reparented as direct
+// children of the fullscreen element (`.video-js`). That makes them start
+// matching Video.js's own `.video-js .vjs-control { height:100%; width:4em }`,
+// which — with `border-radius:50%` — stretches them into a full-height lens.
+// Restore their intrinsic circular size. The child combinator keeps this from
+// touching the Bubble skin's buttons, which live inside the control bar.
+// (Sizing props only — the earlier `:hover` reveal rule sets opacity/filter, so
+// there is no real cascade conflict despite the specificity-order lint.)
+/* stylelint-disable no-descending-specificity */
+.video-js.vjs-fullscreen > .vjs-button.godam-share-button,
+.video-js.vjs-fullscreen > .vjs-button.godam-transcript-button {
+	width: auto;
+	height: auto;
+}
+/* stylelint-enable no-descending-specificity */
+
+// The normal hover-to-reveal relies on `.easydam-video-container:hover`, which
+// does not propagate reliably across the fullscreen top layer — so tie the
+// buttons' visibility to Video.js's user-active state instead, exactly like the
+// control bar (visible while the user is active or the video is paused, hidden
+// once the controls auto-hide during playback).
+.video-js.vjs-fullscreen:not(.vjs-user-inactive) .vjs-button.godam-share-button,
+.video-js.vjs-fullscreen:not(.vjs-user-inactive) .vjs-button.godam-transcript-button {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
 }
