@@ -303,6 +303,10 @@ class WPB_GoDAM_Video_Gallery {
 				'param_name'  => 'show_play_button',
 				'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
 				'std'         => 'true',
+				// save_always so unchecking persists an empty value; without it VC
+				// omits the attribute and the shortcode's `true` default keeps the
+				// overlay on, making the toggle impossible to turn off.
+				'save_always' => true,
 				'description' => esc_html__( 'Show the play button overlay on each tile.', 'godam' ),
 				'group'       => $display_group,
 			),

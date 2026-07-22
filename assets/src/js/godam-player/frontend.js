@@ -24,8 +24,16 @@ import './api/godam-api.js';
 /**
  * Initialize player on DOM content loaded
  */
+let godamPlayerManager = null;
 const initGodamPlayers = () => {
-	new PlayerManager();
+	// Idempotent: if a deferred re-init pass (editor preview) already created the
+	// manager, reuse it and just initialize any pending players — never construct
+	// a second PlayerManager (which would duplicate global listeners).
+	if ( godamPlayerManager ) {
+		godamPlayerManager.initializePendingVideos();
+	} else {
+		godamPlayerManager = new PlayerManager();
+	}
 
 	// Scroll to a specific video and optionally seek to a timestamp when the URL
 	// hash matches #godam-video-{jobId} and an optional ?t={seconds} query param is present.
@@ -105,27 +113,26 @@ if ( document.readyState === 'loading' ) {
  * Re-initialize any players that appear after the initial run.
  *
  * Page builders (e.g. WPBakery's inline editor) render the shortcode markup into
- * their preview AFTER this script has already executed, which leaves the player
- * stuck in its pre-init "loading" state (0×0, only the play button visible).
- * PlayerManager.initializeVideo() is idempotent — it is guarded by
- * `data-godam-initialized` — so re-running only initializes players that were
- * missed. On a normal front-end load where everything is already initialized,
- * the guard below finds nothing pending and this is a cheap no-op.
+ * their preview AFTER this script has already executed, leaving the player stuck
+ * in its pre-init "loading" state (0×0, only the play button visible). This
+ * initializes only players that were missed (via the manager's guarded
+ * `initializePendingVideos()`), so it never duplicates global listeners.
  */
 const reinitPendingPlayers = () => {
-	if ( document.querySelector( '.easydam-player.video-js:not([data-godam-initialized])' ) ) {
-		new PlayerManager();
+	if ( ! document.querySelector( '.easydam-player.video-js:not([data-godam-initialized])' ) ) {
+		return;
+	}
+	if ( godamPlayerManager ) {
+		godamPlayerManager.initializePendingVideos();
+	} else {
+		godamPlayerManager = new PlayerManager();
 	}
 };
 
-// Catch players rendered slightly after our initial init. Each pass is a single
-// querySelector no-op when nothing is pending.
-[ 300, 1200, 3000 ].forEach( ( delay ) => setTimeout( reinitPendingPlayers, delay ) );
-
 /**
- * In a page-builder preview the markup can be re-rendered repeatedly as the user
- * edits, so keep watching and re-initialize on demand. Restricted to editor
- * previews so no observer is attached on the published front end.
+ * Detect a WPBakery editor preview. The re-init timers/observer below are scoped
+ * to this so nothing extra runs on the published front end, where the one-shot
+ * init above already handles every player present at load.
  *
  * @return {boolean} True when running inside a WPBakery editor preview.
  */
@@ -143,23 +150,30 @@ const isBuilderPreview = () => {
 	}
 };
 
-if ( isBuilderPreview() && 'MutationObserver' in window ) {
-	let scheduled = false;
-	const observer = new MutationObserver( () => {
-		if ( scheduled ) {
-			return;
-		}
-		scheduled = true;
-		window.requestAnimationFrame( () => {
-			scheduled = false;
-			reinitPendingPlayers();
+// Only in a page-builder preview: the markup is rendered/re-rendered after this
+// script runs, so catch it with a few deferred passes plus an observer for
+// ongoing edits. None of this is scheduled on the published front end.
+if ( isBuilderPreview() ) {
+	[ 300, 1200, 3000 ].forEach( ( delay ) => setTimeout( reinitPendingPlayers, delay ) );
+
+	if ( 'MutationObserver' in window ) {
+		let scheduled = false;
+		const observer = new MutationObserver( () => {
+			if ( scheduled ) {
+				return;
+			}
+			scheduled = true;
+			window.requestAnimationFrame( () => {
+				scheduled = false;
+				reinitPendingPlayers();
+			} );
 		} );
-	} );
-	const startObserving = () => observer.observe( document.body, { childList: true, subtree: true } );
-	if ( document.body ) {
-		startObserving();
-	} else {
-		document.addEventListener( 'DOMContentLoaded', startObserving );
+		const startObserving = () => observer.observe( document.body, { childList: true, subtree: true } );
+		if ( document.body ) {
+			startObserving();
+		} else {
+			document.addEventListener( 'DOMContentLoaded', startObserving );
+		}
 	}
 }
 

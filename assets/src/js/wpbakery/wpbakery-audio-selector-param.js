@@ -42,7 +42,10 @@
 				$input.val( attachment.id ).trigger( 'change' );
 				$srcInput.val( attachment.url ).trigger( 'change' );
 
-				// Auto-populate Audio Title and Description from the attachment.
+				// Auto-populate Audio Title and Description from the attachment on
+				// every select/replace, matching the block's onSelectAudio — so
+				// swapping the audio file refreshes the title/description to the
+				// newly selected attachment's values.
 				if ( $audioTitleInput.length ) {
 					$audioTitleInput.val( attachment.title || '' ).trigger( 'change' );
 				}

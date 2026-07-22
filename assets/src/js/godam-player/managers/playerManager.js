@@ -124,6 +124,28 @@ export default class PlayerManager {
 	}
 
 	/**
+	 * Initialize players that were added to the DOM after construction (e.g.
+	 * markup rendered by a page builder such as WPBakery's inline editor).
+	 *
+	 * Re-scans the document and initializes ONLY elements that are not already
+	 * initialized — initializeVideo() is guarded by `data-godam-initialized`.
+	 * This deliberately does NOT re-run the one-time global setup (keyboard
+	 * handler, autoplay-on-view observer, engagement, blur-up), so it can be
+	 * called repeatedly without ever duplicating global listeners.
+	 *
+	 * @return {void}
+	 */
+	initializePendingVideos() {
+		document.querySelectorAll( '.easydam-player.video-js' ).forEach( ( video ) => {
+			const instanceId = video.dataset.instanceId;
+			if ( instanceId && ! ( instanceId in this.isDisplayingLayers ) ) {
+				this.isDisplayingLayers[ instanceId ] = false;
+			}
+			this.initializeVideo( video );
+		} );
+	}
+
+	/**
 	 * Initialize individual video
 	 *
 	 * @param {HTMLElement} video - Video element to initialize

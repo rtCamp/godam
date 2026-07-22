@@ -316,14 +316,16 @@ class GoDAM_Player {
 		}
 
 		// Map the WPBakery caption/transcription toggles to the block's camelCase
-		// attributes, but only when explicitly provided. This preserves the
-		// template's own defaults (showTranscription on; showCaption derived from
-		// the attachment) for hand-written shortcodes that omit them.
-		if ( is_array( $atts ) && array_key_exists( 'show_transcription', $atts ) ) {
-			$attributes['showTranscription'] = filter_var( $attributes['show_transcription'], FILTER_VALIDATE_BOOLEAN );
+		// attributes, but only when explicitly provided with a non-empty value.
+		// A bare/empty flag (e.g. [godam_video show_transcription=""]) must NOT be
+		// read as `false` — leaving the attribute unset preserves the template's
+		// own defaults (showTranscription on; showCaption derived from the
+		// attachment). '0'/'false' are still honoured as an explicit "off".
+		if ( is_array( $atts ) && isset( $atts['show_transcription'] ) && '' !== $atts['show_transcription'] ) {
+			$attributes['showTranscription'] = filter_var( $atts['show_transcription'], FILTER_VALIDATE_BOOLEAN );
 		}
-		if ( is_array( $atts ) && array_key_exists( 'show_caption', $atts ) ) {
-			$attributes['showCaption'] = filter_var( $attributes['show_caption'], FILTER_VALIDATE_BOOLEAN );
+		if ( is_array( $atts ) && isset( $atts['show_caption'] ) && '' !== $atts['show_caption'] ) {
+			$attributes['showCaption'] = filter_var( $atts['show_caption'], FILTER_VALIDATE_BOOLEAN );
 		}
 
 		// Get WPBakery Design Options CSS class if available.
