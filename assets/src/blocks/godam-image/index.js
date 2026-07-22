@@ -5,6 +5,7 @@ import initBlock from '../../utils/init-block';
 import edit from './edit';
 import metadata from './block.json';
 import save from './save';
+import icon from '../../images/godam-image-filled.svg';
 import './style.scss';
 
 const { name } = metadata;
@@ -15,6 +16,7 @@ export { metadata, name };
  * Block registration settings.
  */
 export const settings = {
+	icon: <img src={ icon } alt={ metadata.title } />,
 	edit,
 	save,
 };
