@@ -16,7 +16,7 @@ import { Icon } from '@wordpress/components';
 import { useVideoLayerData } from './hooks/useVideoLayerData';
 import LayerTimelineStrip from './timeline/LayerTimelineStrip';
 import LayerDetailPanel from './timeline/LayerDetailPanel';
-import DateRangePicker from './timeline/DateRangePicker';
+import DateRangePicker, { spanDays } from './components/DateRangePicker';
 import InfoTooltip from './timeline/InfoTooltip';
 import HistoricalLayersDrawer from './timeline/HistoricalLayersDrawer';
 
@@ -97,14 +97,18 @@ function TimelineSkeleton() {
  * @return {JSX.Element} The full timeline section.
  */
 const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
-	const [ dateRange, setDateRange ] = useState( '7d' );
+	// Shared date-range picker value (last 7 days by default, matching the
+	// other analytics surfaces). Replaces the timeline's old bespoke preset
+	// picker so the whole page uses one consistent control.
+	const [ range, setRange ] = useState( () => spanDays( 7 ) );
 	const siteUrl = window.location.origin;
 
 	const { parents, isLoading, errorType, errorMessage, videoConversion } =
 		useVideoLayerData( {
 			videoId: attachmentID,
 			siteUrl,
-			dateRange,
+			startDate: range.startDate,
+			endDate: range.endDate,
 		} );
 
 	// Cumulative video conversion — same metric as the Dashboard's per-video
@@ -172,7 +176,7 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 						) }
 					</p>
 				</div>
-				<DateRangePicker value={ dateRange } onChange={ setDateRange } />
+				<DateRangePicker value={ range } onChange={ setRange } testIdPrefix="godam-video-layer-daterange" />
 			</header>
 
 			{ /* Video-level conversion — cumulative for the selected range */ }
