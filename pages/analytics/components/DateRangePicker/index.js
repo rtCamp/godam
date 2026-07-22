@@ -35,8 +35,6 @@ import './style.scss';
  * @return {JSX.Element} The picker.
  */
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
 // Local-midnight Date -> 'YYYY-MM-DD'.
 const toISO = ( date ) => {
 	const y = date.getFullYear();
@@ -95,7 +93,11 @@ const PRESETS = [
 
 function spanDays( n ) {
 	const end = today();
-	const start = new Date( end.getTime() - ( ( n - 1 ) * MS_PER_DAY ) );
+	// Calendar arithmetic (not fixed-ms subtraction): the Date constructor
+	// normalises the day field while keeping local midnight, so a DST
+	// spring-forward inside the window can't push the start an hour before
+	// midnight and make toISO() report the previous calendar day.
+	const start = new Date( end.getFullYear(), end.getMonth(), end.getDate() - ( n - 1 ) );
 	return { startDate: toISO( start ), endDate: toISO( end ) };
 }
 
@@ -145,9 +147,13 @@ function monthGrid( viewDate ) {
 	const year = viewDate.getFullYear();
 	const month = viewDate.getMonth();
 	const first = new Date( year, month, 1 );
-	const gridStart = new Date( year, month, 1 - first.getDay() );
+	const gridStartDay = 1 - first.getDay();
 	return Array.from( { length: 42 }, ( _, i ) => {
-		const d = new Date( gridStart.getTime() + ( i * MS_PER_DAY ) );
+		// Calendar arithmetic (not fixed-ms): keeps every cell at local
+		// midnight so a DST fall-back in the month can't drift later cells to
+		// 23:00 of the prior day (which would duplicate a day number and
+		// misalign selection/highlighting).
+		const d = new Date( year, month, gridStartDay + i );
 		return { date: d, inMonth: d.getMonth() === month };
 	} );
 }

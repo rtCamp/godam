@@ -29,18 +29,24 @@ describe( 'DateRangePicker helpers', () => {
 	} );
 
 	describe( 'spanDays', () => {
-		it( 'produces an inclusive N-day window ending today', () => {
-			const { startDate, endDate } = spanDays( 7 );
-			const start = fromISO( startDate );
-			const end = fromISO( endDate );
-			const diffDays = Math.round( ( end - start ) / ( 24 * 60 * 60 * 1000 ) );
-			// 7-day inclusive window => 6 days between endpoints.
-			expect( diffDays ).toBe( 6 );
-			// End is today.
-			const today = new Date();
-			expect( endDate ).toBe(
-				toISO( new Date( today.getFullYear(), today.getMonth(), today.getDate() ) ),
-			);
+		it( 'produces an inclusive N-day window ending today, by calendar day', () => {
+			const now = new Date();
+			const todayMidnight = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
+			// Assert exact calendar endpoints rather than an elapsed-ms count:
+			// a fixed-ms span drifts the start one calendar day early across a
+			// DST spring-forward, which a `(end - start) / 86400000` check
+			// cannot see (it stays exactly N-1). Expected dates are built with
+			// the Date constructor so the assertion itself is DST-safe.
+			for ( const n of [ 7, 15, 30 ] ) {
+				const { startDate, endDate } = spanDays( n );
+				expect( endDate ).toBe( toISO( todayMidnight ) );
+				const expectedStart = new Date(
+					todayMidnight.getFullYear(),
+					todayMidnight.getMonth(),
+					todayMidnight.getDate() - ( n - 1 ),
+				);
+				expect( startDate ).toBe( toISO( expectedStart ) );
+			}
 		} );
 	} );
 

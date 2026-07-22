@@ -183,13 +183,20 @@ const Dashboard = () => {
 	window.dashboardMetrics = dashboardMetrics;
 
 	// Per-card date range for the "Total Plays / Unique Viewers" card (gauge +
-	// geography). `{ null, null }` = All Time, so this first request shares the
-	// primary query's cache key (RTK dedups it) and only forks once a range is
-	// picked. Range mode has no range-scoped unique-viewer count yet, so the
-	// microservice returns `unique_viewers: null` and the gauge shows "—".
+	// geography). The date args are omitted at All Time so the args reduce to
+	// `{ siteUrl }` — the exact same cache key as the primary query above, so
+	// RTK actually dedups (one request) and only forks once a range is picked.
+	// (RTK's default serializeQueryArgs keys on the arg object, so a literal
+	// `startDate: null` would NOT dedup.) Range mode has no range-scoped
+	// unique-viewer count yet, so the microservice returns `unique_viewers:
+	// null` and the gauge shows "—".
 	const [ gaugeRange, setGaugeRange ] = useState( { startDate: null, endDate: null } );
 	const { data: gaugeMetrics } = useFetchDashboardMetricsQuery(
-		{ siteUrl, startDate: gaugeRange.startDate, endDate: gaugeRange.endDate },
+		{
+			siteUrl,
+			...( gaugeRange.startDate ? { startDate: gaugeRange.startDate } : {} ),
+			...( gaugeRange.endDate ? { endDate: gaugeRange.endDate } : {} ),
+		},
 		{ skip: shouldSkipAnalytics },
 	);
 
@@ -198,7 +205,11 @@ const Dashboard = () => {
 	// all-time returns them null, so the delta badges stay hidden.
 	const [ insightsRange, setInsightsRange ] = useState( { startDate: null, endDate: null } );
 	const { data: insightsMetrics } = useFetchDashboardMetricsQuery(
-		{ siteUrl, startDate: insightsRange.startDate, endDate: insightsRange.endDate },
+		{
+			siteUrl,
+			...( insightsRange.startDate ? { startDate: insightsRange.startDate } : {} ),
+			...( insightsRange.endDate ? { endDate: insightsRange.endDate } : {} ),
+		},
 		{ skip: shouldSkipAnalytics },
 	);
 	const insightsRangeActive = Boolean( insightsRange.startDate && insightsRange.endDate );

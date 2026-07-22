@@ -133,12 +133,16 @@ const Analytics = ( { attachmentID } ) => {
 	// This prevents parallel requests being sent when the server rejects the API key.
 	const shouldSkipSecondaryQueries = ! attachmentID || shouldSkipAnalytics || ! analyticsDataFetched || !! analyticsDataFetched?.errorType;
 
-	// Processed analytics history (KPI trend badges + sparklines). Follows the
-	// page range; defaults to the last 7 days when All Time is selected.
+	// Processed analytics history feeds the "vs 7 days ago" trend badges +
+	// sparklines, which are inherently a fixed last-7-days window (SingleMetrics
+	// / PlaysVsViewers rebuild a today-6..today grid via ensureAll7Days). So it
+	// stays pinned to `days: 7` and is NOT range-scoped — range-scoping it made
+	// the badge read a false +0.00% for any range not overlapping the last 7
+	// days. The KPI values re-scope via the range-scoped query above instead.
 	const {
 		data: processedAnalyticsHistory,
 	} = useFetchProcessedAnalyticsHistoryQuery(
-		{ videoId: attachmentID, siteUrl, days: 7, startDate: range.startDate, endDate: range.endDate },
+		{ videoId: attachmentID, siteUrl, days: 7 },
 		{ skip: shouldSkipSecondaryQueries },
 	);
 

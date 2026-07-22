@@ -49,12 +49,18 @@ const ViewersGauge = ( { plays = 0, uniqueViewers = 0 } ) => {
 					className="godam-gauge__svg"
 					viewBox="0 0 200 112"
 					role="img"
-					aria-label={ sprintf(
-						/* translators: 1: unique viewers count, 2: total plays count. */
-						__( '%1$s unique viewers of %2$s total plays', 'godam' ),
-						viewersNum.toLocaleString(),
-						playsNum.toLocaleString(),
-					) }
+					aria-label={ viewersUnavailable
+						? sprintf(
+							/* translators: %s: total plays count. */
+							__( 'Unique viewers unavailable for the selected range; %s total plays', 'godam' ),
+							playsNum.toLocaleString(),
+						)
+						: sprintf(
+							/* translators: 1: unique viewers count, 2: total plays count. */
+							__( '%1$s unique viewers of %2$s total plays', 'godam' ),
+							viewersNum.toLocaleString(),
+							playsNum.toLocaleString(),
+						) }
 				>
 					<path
 						className="godam-gauge__track"
