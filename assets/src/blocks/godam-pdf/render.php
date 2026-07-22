@@ -163,7 +163,7 @@ if ( empty( $godam_is_shortcode ) ) {
 			style="height: <?php echo esc_attr( $godam_height ); ?>px;"
 		>
 			<object
-				id="pdfObject"
+				id="<?php echo esc_attr( wp_unique_id( 'godam-pdf-object-' ) ); ?>"
 				type="application/pdf"
 				width="100%"
 				height="100%"

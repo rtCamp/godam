@@ -179,14 +179,13 @@
 		} );
 
 		// WPBakery dependencies only support a single condition, so custom_cover
-		// is gated on show_cover alone. When the view leaves Card, reset both
-		// show_cover and the custom cover value so the cover picker can't linger
-		// with a stale show_cover=1 in Default view.
+		// is gated on show_cover alone. When the view leaves Card, reset show_cover
+		// to 0 — that already hides the custom cover field via its dependency. Do
+		// NOT clear the stored custom_cover value: the field is only hidden, so a
+		// previously chosen cover must survive peeking at Default and back.
 		$formContainer.find( '[name="preview_mode"]' ).off( 'change.godamCoverMode' ).on( 'change.godamCoverMode', function() {
 			if ( 'card' !== $( this ).val() ) {
 				$formContainer.find( '[name="show_cover"]' ).val( '0' ).trigger( 'change' );
-				$valueInput.val( '' ).trigger( 'change' );
-				render();
 			}
 		} );
 	}
