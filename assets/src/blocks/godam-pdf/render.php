@@ -53,8 +53,20 @@ if ( empty( $godam_sources ) ) {
 
 $godam_file_name = basename( $godam_sources[0] );
 
+// Root wrapper: in block context merge WordPress' block-support attributes
+// (align/spacing/etc.). The [godam_document] shortcode (used by the WPBakery
+// element) sets $godam_is_shortcode and runs outside a block, where
+// get_block_wrapper_attributes() would raise a warning, so it instead applies
+// any WPBakery Design Options CSS class passed in via $godam_css_class.
+if ( empty( $godam_is_shortcode ) ) {
+	$godam_wrapper_attributes = get_block_wrapper_attributes();
+} else {
+	$godam_shortcode_class    = trim( 'wp-block-godam-pdf ' . ( isset( $godam_css_class ) ? $godam_css_class : '' ) );
+	$godam_wrapper_attributes = 'class="' . esc_attr( $godam_shortcode_class ) . '"';
+}
+
 ?>
-<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
+<figure <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
 
 	<?php if ( 'card' === $godam_preview_mode ) : ?>
 
@@ -151,7 +163,7 @@ $godam_file_name = basename( $godam_sources[0] );
 			style="height: <?php echo esc_attr( $godam_height ); ?>px;"
 		>
 			<object
-				id="pdfObject"
+				id="<?php echo esc_attr( wp_unique_id( 'godam-pdf-object-' ) ); ?>"
 				type="application/pdf"
 				width="100%"
 				height="100%"
