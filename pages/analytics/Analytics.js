@@ -458,12 +458,9 @@ const Analytics = ( { attachmentID } ) => {
 				<div id="analytics-content" className="hidden">
 					<div>
 						<div className="subheading-container flex flex-row max-md:flex-row-reverse pt-6">
-							{ attachmentData?.title?.rendered
-								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }{ ' ' }
-									<span dangerouslySetInnerHTML={ {
-										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
-									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
-							}
+							{ /* Generic page label — the video name now lives in the hero
+							    below, so don't repeat it here. */ }
+							<div className="subheading">{ __( 'Single Video Analytics', 'godam' ) }</div>
 							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_media_editor' }><span className="max-md:hidden">{ __( 'Back to Media Editor', 'godam' ) }</span></Button>
 
 						</div>
