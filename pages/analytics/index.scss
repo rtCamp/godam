@@ -830,6 +830,16 @@
 	// admin accent only for the hover focus dot.
 	.godam-retention-card {
 
+		// Lay the date picker out to the right of the title. #2028 adds a global
+		// .godam-card__head style; this scoped rule keeps the head tidy on its own.
+		.godam-card__head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 12px;
+		}
+
 		.godam-retention {
 			position: relative;
 			width: 100%;

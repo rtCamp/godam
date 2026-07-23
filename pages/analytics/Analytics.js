@@ -32,6 +32,9 @@ import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
 import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
+// Shared date-range picker + range threading come from the date-range PR (#2028).
+// This PR reuses them to scope the retention curve; merge #2028 first, then rebase.
+import DateRangePicker from './components/DateRangePicker';
 import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
@@ -79,6 +82,11 @@ const Analytics = ( { attachmentID } ) => {
 	const [ mediaLibraryAttachment, setMediaLibraryAttachment ] = useState( null );
 	const [ mediaNotFound, setMediaNotFound ] = useState( false );
 
+	// Date range scoping the Viewer Retention Curve. Null start/end = all-time.
+	// The range-scoped heatmap is summed server-side (godam-analytics #235).
+	const [ retentionRange, setRetentionRange ] = useState( { startDate: null, endDate: null } );
+	const retentionRangeActive = Boolean( retentionRange.startDate && retentionRange.endDate );
+
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
 	const apiKeyError = getAPIKeyErrorInfo();
@@ -94,6 +102,19 @@ const Analytics = ( { attachmentID } ) => {
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID || shouldSkipAnalytics },
+	);
+
+	// Range-scoped copy of the analytics payload, used only for the retention
+	// curve. Skipped unless a range is picked, so the all-time request above keeps
+	// its own cache key. Range threading (start_date/end_date) is added by #2028.
+	const { data: retentionRangeDataFetched } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( retentionRange.startDate ? { startDate: retentionRange.startDate } : {} ),
+			...( retentionRange.endDate ? { endDate: retentionRange.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics || ! retentionRangeActive },
 	);
 
 	// Connected, but the analytics backend is unreachable (server down) or returned
@@ -296,19 +317,24 @@ const Analytics = ( { attachmentID } ) => {
 		};
 	}, [ analyticsData, abTestComparisonAnalyticsData, attachmentData, abTestComparisonAttachmentData, isABTestCompleted, mediaLibraryAttachment ] );
 
-	// Parse the all-time per-second heatmap once and reuse it for both the empty
-	// state and the chart render (avoids parsing the JSON twice per render).
+	// Per-second heatmap feeding the retention curve. When a range is picked we
+	// use the range-scoped payload (summed daily heatmaps, godam-analytics #235);
+	// otherwise the all-time payload. Parsed once and reused for the empty state
+	// and the chart render (avoids parsing the JSON twice per render).
+	const retentionHeatmapSource = retentionRangeActive
+		? retentionRangeDataFetched?.all_time_heatmap
+		: analyticsData?.all_time_heatmap;
 	const retentionHeatmap = useMemo( () => {
-		if ( ! analyticsData?.all_time_heatmap ) {
+		if ( ! retentionHeatmapSource ) {
 			return [];
 		}
 		try {
-			const parsed = JSON.parse( analyticsData.all_time_heatmap );
+			const parsed = JSON.parse( retentionHeatmapSource );
 			return Array.isArray( parsed ) ? parsed : [];
 		} catch {
 			return [];
 		}
-	}, [ analyticsData?.all_time_heatmap ] );
+	}, [ retentionHeatmapSource ] );
 
 	// Whether the heatmap has any real views (drives the empty state).
 	const retentionHasData = retentionHeatmap.some( ( v ) => v > 0 );
@@ -570,11 +596,16 @@ const Analytics = ( { attachmentID } ) => {
 							{ /* Viewer Retention Curve — standalone chart of per-second
 							    viewer counts across the video timeline (converted from
 							    the old "Views across the video" per-second video overlay).
-							    All-time; a range-scoped variant needs a microservice
-							    change, so no date picker here yet. */ }
+							    Scoped by the date picker; the range-scoped heatmap is
+							    summed server-side (godam-analytics #235). */ }
 							<div className="godam-card godam-retention-card">
 								<div className="godam-card__head">
 									<h2>{ __( 'Viewer Retention Curve', 'godam' ) }</h2>
+									<DateRangePicker
+										value={ retentionRange }
+										onChange={ setRetentionRange }
+										testIdPrefix="godam-retention-daterange"
+									/>
 								</div>
 								{ retentionHasData ? (
 									<div className="godam-retention">
