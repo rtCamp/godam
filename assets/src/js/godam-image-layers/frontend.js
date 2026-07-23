@@ -218,8 +218,66 @@ function initFrame( frame ) {
 	}
 }
 
-document.addEventListener( 'DOMContentLoaded', () => {
+const initAllFrames = () => {
 	document
 		.querySelectorAll( '.godam-image__frame[data-godam-image-layers]' )
 		.forEach( initFrame );
-} );
+};
+
+// Run on DOMContentLoaded, or immediately if the DOM is already parsed — the
+// script may execute after that event (e.g. injected by a page builder).
+if ( document.readyState === 'loading' ) {
+	document.addEventListener( 'DOMContentLoaded', initAllFrames );
+} else {
+	initAllFrames();
+}
+
+/**
+ * Detect a WPBakery editor preview. Its inline editor renders the block markup
+ * (hotspot / product-hotspot layers) into an iframe AFTER this script has run,
+ * so a one-shot init never sees it — the layers stay invisible even though the
+ * published page renders them fine. The Gutenberg canvas draws them via React,
+ * which is why they show there.
+ *
+ * @return {boolean} True when running inside a WPBakery editor preview.
+ */
+const isBuilderPreview = () => {
+	try {
+		const fe = window.frameElement;
+		if ( fe && /vc[-_]inline-frame|vc_editor/i.test( ( fe.id || '' ) + ' ' + ( fe.className || '' ) ) ) {
+			return true;
+		}
+	} catch ( e ) {}
+	try {
+		return !! document.body?.classList.contains( 'vc_editor' );
+	} catch ( e ) {
+		return false;
+	}
+};
+
+// Editor preview only: re-run init on a few deferred passes plus an observer for
+// ongoing edits. initFrame() is idempotent (guarded by data-godam-layers-rendered),
+// so re-running is safe. Nothing extra is scheduled on the published front end.
+if ( isBuilderPreview() ) {
+	[ 300, 1200, 3000 ].forEach( ( delay ) => setTimeout( initAllFrames, delay ) );
+
+	if ( 'MutationObserver' in window ) {
+		let scheduled = false;
+		const observer = new MutationObserver( () => {
+			if ( scheduled ) {
+				return;
+			}
+			scheduled = true;
+			window.requestAnimationFrame( () => {
+				scheduled = false;
+				initAllFrames();
+			} );
+		} );
+		const startObserving = () => observer.observe( document.body, { childList: true, subtree: true } );
+		if ( document.body ) {
+			startObserving();
+		} else {
+			document.addEventListener( 'DOMContentLoaded', startObserving );
+		}
+	}
+}

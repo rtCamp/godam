@@ -66,6 +66,12 @@ class WPB_GoDAM_Params {
 		);
 
 		vc_add_shortcode_param(
+			'image_selector',
+			array( $this, 'image_selector_settings_field' ),
+			RTGODAM_URL . 'assets/build/js/wpbakery-image-selector-param.min.js'
+		);
+
+		vc_add_shortcode_param(
 			'document_selector',
 			array( $this, 'document_selector_settings_field' ),
 			RTGODAM_URL . 'assets/build/js/wpbakery-document-selector-param.min.js'
@@ -260,6 +266,47 @@ class WPB_GoDAM_Params {
 			. '<div class="document_cover_selector-buttons-wrapper" style="display:flex;align-items:center;">'
 			. '<button type="button" class="button document-cover-select" data-test-id="godam-wpb-button-select-cover">' . esc_html__( 'Select image', 'godam' ) . '</button>'
 			. '</div>'
+			. '</div>';
+	}
+
+	/**
+	 * Image selector settings field.
+	 *
+	 * Stores the image attachment ID (the GoDAM Image block keys its hotspot /
+	 * product layers off the attachment ID). The selector JS also fills the
+	 * sibling hidden `url` and `alt` params from the chosen attachment.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param array  $settings Field settings.
+	 * @param string $value    Field value (attachment ID).
+	 * @return string
+	 */
+	public function image_selector_settings_field( $settings, $value ) {
+		$button_text   = ! empty( $value ) ? esc_html__( 'Replace', 'godam' ) : esc_html__( 'Select image', 'godam' );
+		$preview_html  = '';
+		$remove_button = '';
+
+		// If an image is selected, show preview and remove button.
+		if ( ! empty( $value ) && is_numeric( $value ) ) {
+			$attachment = wp_get_attachment_image_url( $value, 'medium' );
+			if ( $attachment ) {
+				$preview_html  = '<div class="image-selector-preview" data-test-id="godam-wpb-preview-image-block" style="margin-top: 10px;">
+					<img src="' . esc_url( $attachment ) . '" alt="" style="max-width: 300px; height: auto;" />
+				</div>';
+				$remove_button = '<button type="button" class="button image-selector-remove" data-test-id="godam-wpb-button-remove-image-block" data-param="' . esc_attr( $settings['param_name'] ) . '" style="margin-left: 5px;">' . esc_html__( 'Remove', 'godam' ) . '</button>';
+			}
+		}
+
+		return '<div class="image_selector_block">'
+			. '<input name="' . esc_attr( $settings['param_name'] ) . '" data-test-id="godam-wpb-input-image-block" class="wpb_vc_param_value wpb-textinput image_selector_field ' .
+			esc_attr( $settings['param_name'] ) . ' ' .
+			esc_attr( $settings['type'] ) . '_field" type="hidden" value="' . esc_attr( $value ) . '" />'
+			. '<div class="image_selector-buttons-wrapper" style="display: flex; align-items: center;">'
+			. '<button type="button" class="button image-selector-button" data-test-id="godam-wpb-button-select-image-block" data-param="' . esc_attr( $settings['param_name'] ) . '">' . $button_text . '</button>'
+			. $remove_button
+			. '</div>'
+			. $preview_html
 			. '</div>';
 	}
 
