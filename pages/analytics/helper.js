@@ -586,6 +586,19 @@ export function generateRetentionCurve( data, selector, tooltipSelector, opts = 
 		return;
 	}
 
+	// A retention curve must be monotonically non-increasing: retention[t] =
+	// "viewers who reached at least second t". all_time_heatmap holds per-second
+	// concurrent view counts, which spike up and down as viewers seek/rewatch,
+	// so reconstruct the monotonic curve as the suffix maximum — anyone watching
+	// a later second necessarily passed second t, so at least max(data[t..end])
+	// reached t. This is the tightest monotonic curve consistent with the data.
+	const retention = new Array( data.length );
+	let runningMax = 0;
+	for ( let i = data.length - 1; i >= 0; i-- ) {
+		runningMax = Math.max( runningMax, Number( data[ i ] ) || 0 );
+		retention[ i ] = runningMax;
+	}
+
 	const margin = { top: 16, right: 16, bottom: 28, left: 44 };
 	const width = outerW - margin.left - margin.right;
 	const height = outerH - margin.top - margin.bottom;
@@ -601,7 +614,7 @@ export function generateRetentionCurve( data, selector, tooltipSelector, opts = 
 		.domain( [ 0, Math.max( 1, data.length - 1 ) ] )
 		.range( [ 0, width ] );
 
-	const maxY = d3.max( data ) || 0;
+	const maxY = d3.max( retention ) || 0;
 	const y = d3
 		.scaleLinear()
 		.domain( [ 0, maxY === 0 ? 1 : maxY * 1.1 ] )
@@ -621,7 +634,7 @@ export function generateRetentionCurve( data, selector, tooltipSelector, opts = 
 		.y0( height )
 		.y1( ( d ) => y( d ) )
 		.curve( d3.curveMonotoneX );
-	svg.append( 'path' ).datum( data ).attr( 'class', 'godam-retention__area' ).attr( 'd', area );
+	svg.append( 'path' ).datum( retention ).attr( 'class', 'godam-retention__area' ).attr( 'd', area );
 
 	// Retention line.
 	const line = d3
@@ -629,7 +642,7 @@ export function generateRetentionCurve( data, selector, tooltipSelector, opts = 
 		.x( ( d, i ) => x( i ) )
 		.y( ( d ) => y( d ) )
 		.curve( d3.curveMonotoneX );
-	svg.append( 'path' ).datum( data ).attr( 'class', 'godam-retention__line' ).attr( 'd', line );
+	svg.append( 'path' ).datum( retention ).attr( 'class', 'godam-retention__line' ).attr( 'd', line );
 
 	// Y axis — viewer counts (full numbers).
 	svg
@@ -638,8 +651,19 @@ export function generateRetentionCurve( data, selector, tooltipSelector, opts = 
 		.call( d3.axisLeft( y ).ticks( 5 ).tickFormat( ( d ) => d.toLocaleString() ) )
 		.call( ( g ) => g.select( '.domain' ).remove() );
 
-	// X axis — video timestamps (each bucket is one second).
-	const xTicks = x.ticks( Math.min( 8, data.length ) );
+	// X axis — video timestamps (each bucket is one second). Use integer-second
+	// tick indices at a fixed step (always including the last second) rather than
+	// d3's default (fractional) ticks: fractional ticks rounded to mm:ss can
+	// collide into duplicate labels on short videos.
+	const desiredTicks = Math.min( 8, data.length );
+	const step = Math.max( 1, Math.ceil( ( data.length - 1 ) / Math.max( 1, desiredTicks - 1 ) ) );
+	const xTicks = [];
+	for ( let i = 0; i < data.length; i += step ) {
+		xTicks.push( i );
+	}
+	if ( xTicks[ xTicks.length - 1 ] !== data.length - 1 ) {
+		xTicks.push( data.length - 1 );
+	}
 	svg
 		.append( 'g' )
 		.attr( 'class', 'godam-retention__axis' )
@@ -648,7 +672,7 @@ export function generateRetentionCurve( data, selector, tooltipSelector, opts = 
 			d3
 				.axisBottom( x )
 				.tickValues( xTicks )
-				.tickFormat( ( i ) => formatTime( Math.round( i ) ) ),
+				.tickFormat( ( i ) => formatTime( i ) ),
 		)
 		.call( ( g ) => g.select( '.domain' ).remove() );
 
@@ -662,26 +686,29 @@ export function generateRetentionCurve( data, selector, tooltipSelector, opts = 
 		.style( 'opacity', 0 );
 	const tooltip = d3.select( tooltipSelector );
 
+	// Cache the SVG rect once per hover session (on enter) so the mousemove
+	// handler doesn't force a synchronous layout on every pointer move.
+	let hoverScaleX = 1;
 	svg
 		.append( 'rect' )
 		.attr( 'width', width )
 		.attr( 'height', height )
 		.style( 'fill', 'none' )
 		.style( 'pointer-events', 'all' )
+		.on( 'mouseenter', function() {
+			hoverScaleX = ( svgSel.node().getBoundingClientRect().width || outerW ) / outerW;
+		} )
 		.on( 'mousemove', function( event ) {
 			const [ mouseX ] = d3.pointer( event );
-			const index = Math.max( 0, Math.min( data.length - 1, Math.round( x.invert( mouseX ) ) ) );
-			const value = data[ index ];
+			const index = Math.max( 0, Math.min( retention.length - 1, Math.round( x.invert( mouseX ) ) ) );
+			const value = retention[ index ];
 
 			focus.style( 'opacity', 1 ).attr( 'cx', x( index ) ).attr( 'cy', y( value ) );
 			hoverLine.style( 'opacity', 1 ).attr( 'x1', x( index ) ).attr( 'x2', x( index ) );
 
-			// Position the (container-relative) tooltip, accounting for the
-			// viewBox -> rendered-width scale and the left axis margin.
-			const svgNode = svgSel.node();
-			const rect = svgNode.getBoundingClientRect();
-			const scaleX = rect.width / outerW;
-			const px = ( x( index ) + margin.left ) * scaleX;
+			// Position the (container-relative) tooltip using the cached
+			// viewBox -> rendered-width scale plus the left axis margin.
+			const px = ( x( index ) + margin.left ) * hoverScaleX;
 
 			tooltip
 				.style( 'opacity', 1 )

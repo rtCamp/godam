@@ -782,6 +782,49 @@
 		}
 	}
 
+	// Video hero (thumbnail + title + layer count) — visual reference for the
+	// video now that the inline player was replaced by the retention curve.
+	.godam-video-hero {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+
+		&__thumb {
+			width: 72px;
+			height: 72px;
+			flex-shrink: 0;
+			object-fit: cover;
+			background: #e5e7eb;
+			border-radius: 10px;
+		}
+
+		&__meta {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			min-width: 0;
+		}
+
+		&__title {
+			margin: 0;
+			font-size: 24px;
+			font-weight: 700;
+			line-height: 1.2;
+			color: #1e1e1e;
+			overflow-wrap: anywhere;
+		}
+
+		&__badge {
+			align-self: flex-start;
+			padding: 4px 12px;
+			font-size: 13px;
+			color: #52525b;
+			background: #fff;
+			border: 1px solid #e5e7eb;
+			border-radius: 8px;
+		}
+	}
+
 	// Viewer Retention Curve — standalone area+line chart that replaced the
 	// "Views across the video" overlay. Neutral greys for the curve; the WP
 	// admin accent only for the hover focus dot.

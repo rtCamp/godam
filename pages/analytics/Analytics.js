@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import 'video.js/dist/video-js.css';
 
 /**
@@ -22,7 +22,7 @@ import './charts.js';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf, _n } from '@wordpress/i18n';
 import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
@@ -34,6 +34,7 @@ import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
 import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
+import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
@@ -295,45 +296,44 @@ const Analytics = ( { attachmentID } ) => {
 		};
 	}, [ analyticsData, abTestComparisonAnalyticsData, attachmentData, abTestComparisonAttachmentData, isABTestCompleted, mediaLibraryAttachment ] );
 
-	// Render the Viewer Retention Curve from the all-time per-second heatmap.
+	// Parse the all-time per-second heatmap once and reuse it for both the empty
+	// state and the chart render (avoids parsing the JSON twice per render).
+	const retentionHeatmap = useMemo( () => {
+		if ( ! analyticsData?.all_time_heatmap ) {
+			return [];
+		}
+		try {
+			const parsed = JSON.parse( analyticsData.all_time_heatmap );
+			return Array.isArray( parsed ) ? parsed : [];
+		} catch {
+			return [];
+		}
+	}, [ analyticsData?.all_time_heatmap ] );
+
+	// Whether the heatmap has any real views (drives the empty state).
+	const retentionHasData = retentionHeatmap.some( ( v ) => v > 0 );
+
+	// Video hero (thumbnail + title + layer count). The visible player was
+	// replaced by the retention curve, so this gives the user a visual reference
+	// for which video they're looking at (matches the Figma "Video Detail" head).
+	const videoThumbnail = attachmentData?.meta?.rtgodam_media_video_thumbnail || DefaultThumbnail;
+	const videoLayers = attachmentData?.meta?.rtgodam_meta?.layers;
+	const layerCount = Array.isArray( videoLayers ) ? videoLayers.length : 0;
+
+	// Render the Viewer Retention Curve from the parsed heatmap.
 	// (Replaces the old video-overlay line chart — see generateRetentionCurve.)
 	// The SVG is viewBox-scaled, so it stays responsive without a resize handler.
 	useEffect( () => {
-		if ( ! analyticsData?.all_time_heatmap ) {
-			return;
-		}
-		let heatmapData;
-		try {
-			heatmapData = JSON.parse( analyticsData.all_time_heatmap );
-		} catch {
-			return;
-		}
-		if ( ! Array.isArray( heatmapData ) || ! heatmapData.some( ( v ) => v > 0 ) ) {
-			return;
-		}
-		if ( ! document.getElementById( 'retention-curve' ) ) {
+		if ( ! retentionHasData || ! document.getElementById( 'retention-curve' ) ) {
 			return;
 		}
 		generateRetentionCurve(
-			heatmapData,
+			retentionHeatmap,
 			'#retention-curve',
 			'.retention-curve-tooltip',
 			{ width: 900, height: 320 },
 		);
-	}, [ analyticsData ] );
-
-	// Whether the all-time heatmap has any real views (drives the empty state).
-	const retentionHasData = ( () => {
-		if ( ! analyticsData?.all_time_heatmap ) {
-			return false;
-		}
-		try {
-			const parsed = JSON.parse( analyticsData.all_time_heatmap );
-			return Array.isArray( parsed ) && parsed.some( ( v ) => v > 0 );
-		} catch {
-			return false;
-		}
-	} )();
+	}, [ retentionHeatmap, retentionHasData ] );
 
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
@@ -480,6 +480,41 @@ const Analytics = ( { attachmentID } ) => {
 						</span>
 					</div>
 
+					{ /* Video hero — thumbnail + title + layer count (Figma "Video
+					    Detail" head). Gives a visual reference now that the inline
+					    player was replaced by the retention curve. */ }
+					<div className="godam-video-hero mx-10 mt-4">
+						<img
+							className="godam-video-hero__thumb"
+							src={ videoThumbnail }
+							alt={ __( 'Video thumbnail', 'godam' ) }
+							onError={ ( e ) => {
+								if ( e.currentTarget.src !== DefaultThumbnail ) {
+									e.currentTarget.src = DefaultThumbnail;
+								}
+							} }
+						/>
+						<div className="godam-video-hero__meta">
+							<h2
+								className="godam-video-hero__title"
+								dangerouslySetInnerHTML={ {
+									__html: DOMPurify.sanitize(
+										attachmentData?.title?.rendered || __( 'Untitled video', 'godam' ),
+									),
+								} }
+							/>
+							{ layerCount > 0 && (
+								<span className="godam-video-hero__badge">
+									{ sprintf(
+										/* translators: %d: number of interactive layers on the video. */
+										_n( '%d layer', '%d layers', layerCount, 'godam' ),
+										layerCount,
+									) }
+								</span>
+							) }
+						</div>
+					</div>
+
 					<div
 						id="video-analytics-container"
 						className="video-analytics-container hidden"
@@ -554,16 +589,20 @@ const Analytics = ( { attachmentID } ) => {
 										{ __( 'Viewer retention will appear here once this video receives views.', 'godam' ) }
 									</p>
 								) }
-								{ /* Hidden trigger: charts.js keys its per-video render
-								    (KPIs / geography / Views-by-Source) off #analytics-video.
-								    The visible player was replaced by the curve above, so we
-								    keep a bare, hidden element to preserve that trigger. */ }
-								<video
+								{ /* Hidden trigger marker: on develop, charts.js keys its
+								    per-video render (KPIs / geography / Views-by-Source) off
+								    the presence of #analytics-video + its data-id. The visible
+								    player is gone (replaced by the curve above), so this is a
+								    neutral hidden marker — charts.js only reads the id + data-id,
+								    never treats it as a media element. The proper fix (an
+								    explicit exported init keyed on attachmentID) lands with the
+								    charts.js refactor in the date-range PR (#2028). */ }
+								<div
 									id="analytics-video"
 									data-id={ attachmentID }
 									className="godam-retention__trigger"
 									aria-hidden="true"
-									muted
+									hidden
 								/>
 							</div>
 						</div>
