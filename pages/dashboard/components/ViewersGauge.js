@@ -18,9 +18,9 @@ import { __, sprintf } from '@wordpress/i18n';
  *
  * FE-only: uses data already in the dashboard metrics payload. Full numbers.
  *
- * `uniqueViewers` of `null`/`undefined` means unavailable (range mode has no
- * range-scoped unique count until the uniqExactState rollup) and renders "—"
- * with no dark fill arc.
+ * Range mode returns a live range-scoped unique count (0 is valid), so only a
+ * `null`/`undefined` `uniqueViewers` is treated as unavailable, rendering "—"
+ * with no dark fill arc (a defensive guard for older/erroring APIs).
  *
  * @param {Object}      props
  * @param {number}      props.plays         Total plays.

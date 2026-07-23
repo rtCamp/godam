@@ -187,9 +187,9 @@ const Dashboard = () => {
 	// `{ siteUrl }` — the exact same cache key as the primary query above, so
 	// RTK actually dedups (one request) and only forks once a range is picked.
 	// (RTK's default serializeQueryArgs keys on the arg object, so a literal
-	// `startDate: null` would NOT dedup.) Range mode has no range-scoped
-	// unique-viewer count yet, so the microservice returns `unique_viewers:
-	// null` and the gauge shows "—".
+	// `startDate: null` would NOT dedup.) Range mode returns a live range-scoped
+	// unique-viewer count from the microservice, so the gauge shows real numbers
+	// in every range (not just All Time).
 	const [ gaugeRange, setGaugeRange ] = useState( { startDate: null, endDate: null } );
 	const { data: gaugeMetrics } = useFetchDashboardMetricsQuery(
 		{

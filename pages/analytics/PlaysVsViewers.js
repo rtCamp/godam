@@ -39,9 +39,9 @@ const PlaysVsViewers = ( {
 	isLoading = false,
 	processedAnalyticsHistory,
 } ) => {
-	// `uniqueViewers` of null/undefined means unavailable (range mode has no
-	// range-scoped unique count until the uniqExactState rollup) — shown as "—"
-	// with no sessions-per-user ratio.
+	// Range mode returns a live range-scoped unique count (0 is valid), so only
+	// a null/undefined means genuinely unavailable, shown as "—" with no
+	// sessions-per-user ratio. Kept as a defensive guard for older/erroring APIs.
 	const viewersUnavailable = uniqueViewers === null || uniqueViewers === undefined;
 
 	// Plays / deduplicated unique viewers (industry-standard "avg views per viewer").
