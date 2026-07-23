@@ -18,11 +18,12 @@ import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { useEffect } from '@wordpress/element';
-import { edit as editIcon } from '@wordpress/icons';
+import { plus, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
+import { CustomizeVideoIcon } from '../godam-player/icons';
 import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -96,41 +97,66 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 	const blockProps = useBlockProps( { className: 'godam-image' } );
 	const hasImage = !! url;
 
-	// ── Empty state ───────────────────────────────────────────────────────────
-	if ( ! hasImage ) {
-		return (
-			<figure { ...blockProps } data-test-id="godam-image-canvas-placeholder">
-				<div className="godam-image-empty">
-					<h3 className="godam-image-empty__title">{ __( 'Add an image', 'godam' ) }</h3>
-					<p className="godam-image-empty__subtitle">
-						{ __( 'Select an image to overlay GoDAM hotspot and product layers.', 'godam' ) }
-					</p>
-					<MediaUploadCheck>
-						<MediaUpload
-							onSelect={ onSelectImage }
-							allowedTypes={ ALLOWED_MEDIA_TYPES }
-							accept="image/*"
-							render={ ( { open } ) => (
-								<Button
-									variant="primary"
-									onClick={ open }
-									className="godam-image-empty__btn"
-									data-test-id="godam-image-button-upload"
-								>
-									{ __( '+ Select Image', 'godam' ) }
-								</Button>
-							) }
-						/>
-					</MediaUploadCheck>
-				</div>
-			</figure>
-		);
-	}
+	// The inspector "Image Selection" panel mirrors the GoDAM Video block: an
+	// outlined "Add Image" button when empty, or a "Customize Image" button plus
+	// the selected-media row once an image is chosen.
+	const imageSelectionPanelContent = ! hasImage ? (
+		<MediaUploadCheck>
+			<MediaUpload
+				onSelect={ onSelectImage }
+				allowedTypes={ ALLOWED_MEDIA_TYPES }
+				accept="image/*"
+				render={ ( { open } ) => (
+					<Button
+						onClick={ open }
+						icon={ plus }
+						className="godam-image-selection__add-btn"
+						data-test-id="godam-image-button-add-image"
+					>
+						{ __( 'Add Image', 'godam' ) }
+					</Button>
+				) }
+			/>
+		</MediaUploadCheck>
+	) : (
+		<>
+			{ id && (
+				<Button
+					href={ editorUrl }
+					target="_blank"
+					rel="noopener noreferrer"
+					className="godam-image-selection__customize-btn"
+					icon={ CustomizeVideoIcon }
+					iconSize={ 14 }
+					data-test-id="godam-image-button-edit"
+				>
+					{ __( 'Customize Image', 'godam' ) }
+				</Button>
+			) }
+			<div className="godam-image-selection__item">
+				<img
+					src={ url }
+					alt=""
+					className="godam-image-selection__item-thumbnail"
+				/>
+				<span className="godam-image-selection__item-title">
+					{ alt || url }
+				</span>
+				<Button
+					icon={ trash }
+					iconSize={ 16 }
+					label={ __( 'Remove image', 'godam' ) }
+					onClick={ () => onSelectImage( undefined ) }
+					className="godam-image-selection__item-delete"
+					data-test-id="godam-image-button-remove"
+				/>
+			</div>
+		</>
+	);
 
-	// ── Has image ─────────────────────────────────────────────────────────────
 	return (
 		<>
-			{ isSelected && (
+			{ isSelected && hasImage && (
 				<BlockControls group="other">
 					<MediaReplaceFlow
 						mediaId={ id }
@@ -144,37 +170,62 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 			) }
 
 			<InspectorControls>
-				<PanelBody title={ __( 'Image Layers', 'godam' ) } initialOpen={ true } data-test-id="godam-image-panel-layers">
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={ __( 'Show image layers', 'godam' ) }
-						checked={ !! showImageLayers }
-						onChange={ ( value ) => setAttributes( { showImageLayers: value } ) }
-						help={ __( 'Overlays the hotspot / product layers authored in the GoDAM image editor.', 'godam' ) }
-						data-test-id="godam-image-control-show-layers"
-					/>
-					{ id && (
-						<Button
-							__next40pxDefaultSize
-							variant="secondary"
-							href={ editorUrl }
-							target="_blank"
-							rel="noopener noreferrer"
-							icon={ editIcon }
-							className="godam-image__btn"
-							data-test-id="godam-image-button-edit"
-						>
-							{ __( 'Edit in GoDAM', 'godam' ) }
-						</Button>
+				<PanelBody title={ __( 'Image Selection', 'godam' ) } data-test-id="godam-image-panel-image-selection">
+					<p className="godam-image-selection__description">
+						{ __( 'Add hotspot and product layers to make your image stand out.', 'godam' ) }
+					</p>
+					{ imageSelectionPanelContent }
+					{ hasImage && (
+						<ToggleControl
+							__nextHasNoMarginBottom
+							className="godam-image-selection__toggle"
+							label={ __( 'Show image layers', 'godam' ) }
+							checked={ !! showImageLayers }
+							onChange={ ( value ) => setAttributes( { showImageLayers: value } ) }
+							help={ __( 'Overlays the hotspot / product layers authored in the GoDAM image editor.', 'godam' ) }
+							data-test-id="godam-image-control-show-layers"
+						/>
 					) }
 				</PanelBody>
 			</InspectorControls>
 
-			<figure { ...blockProps } data-test-id="godam-image-canvas">
-				<div className="godam-image__frame">
-					<img className="godam-image__img" src={ url } alt={ alt || '' } />
+			{ ! hasImage ? (
+				<div { ...blockProps } data-test-id="godam-image-canvas-placeholder">
+					<div className="godam-image-add-placeholder">
+						<div className="godam-image-add-placeholder__preview" />
+						<h2 className="godam-image-add-placeholder__title">
+							{ __( 'Add Image Here', 'godam' ) }
+						</h2>
+						<p className="godam-image-add-placeholder__description">
+							{ __( 'Upload or select an image from your media library to get started.', 'godam' ) }
+						</p>
+						<MediaUploadCheck>
+							<MediaUpload
+								onSelect={ onSelectImage }
+								allowedTypes={ ALLOWED_MEDIA_TYPES }
+								accept="image/*"
+								render={ ( { open } ) => (
+									<Button
+										onClick={ open }
+										icon={ plus }
+										variant="primary"
+										className="godam-image-add-placeholder__btn"
+										data-test-id="godam-image-button-upload"
+									>
+										{ __( 'Add Image', 'godam' ) }
+									</Button>
+								) }
+							/>
+						</MediaUploadCheck>
+					</div>
 				</div>
-			</figure>
+			) : (
+				<figure { ...blockProps } data-test-id="godam-image-canvas">
+					<div className="godam-image__frame">
+						<img className="godam-image__img" src={ url } alt={ alt || '' } />
+					</div>
+				</figure>
+			) }
 		</>
 	);
 }
