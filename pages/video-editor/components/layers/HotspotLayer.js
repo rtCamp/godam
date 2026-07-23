@@ -36,7 +36,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from './LayersHeader';
 import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
-import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
+import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR, DEFAULT_HOTSPOT_ICON_COLOR, DEFAULT_HOTSPOT_CUSTOM_ICON_BG } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
 import { VeSection, VeColorList, VeSegmented, VeTextInput, VeToggle } from '../controls';
 
 /**
@@ -97,16 +97,19 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	}, [ dispatch, layer?.id ] );
 
 	const styleType = layer?.styleType || 'pulse';
-	const sharedColor = styleType === 'icon'
-		? ( layer?.iconColor || DEFAULT_HOTSPOT_COLOR )
-		: ( layer?.pulseColor || DEFAULT_HOTSPOT_COLOR );
+	// Whether a library glyph or custom image is chosen — gates the icon-mode
+	// colour pickers (mirrors the WooCommerce hotspot layer).
+	const hasLayerIcon = !! ( layer?.icon || layer?.customIconUrl );
 
 	/**
 	 * Migrate legacy layers (saved with per-hotspot style and no `styleType`)
 	 * to the shared style model on open: seed the shared Style controls from the
-	 * first hotspot's icon/colour so the new UI is populated. The frontend still
-	 * renders legacy layers correctly until they are re-saved (see
-	 * resolveHotspotStyle); after a save they use the shared model.
+	 * first hotspot so the new UI is populated. Mirrors the WooCommerce hotspot
+	 * layer's migration exactly — only `styleType` + `backgroundColor` are
+	 * seeded; `pulseColor` / `iconColor` are left unset so their pickers show the
+	 * default swatch, while resolveHotspotStyle still falls back to each
+	 * hotspot's own `backgroundColor` for the rendered colour. The frontend
+	 * renders legacy layers correctly until they are re-saved.
 	 */
 	useEffect( () => {
 		if ( ! layer || layer.styleType ) {
@@ -114,11 +117,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		}
 		const first = layer.hotspots?.[ 0 ] || {};
 		const hasIcon = !! ( first.icon || first.customIconUrl );
-		const seededColor = first.backgroundColor || DEFAULT_HOTSPOT_COLOR;
 
 		dispatch( updateLayerField( { id: layer.id, field: 'styleType', value: hasIcon ? 'icon' : 'pulse' } ) );
-		dispatch( updateLayerField( { id: layer.id, field: 'pulseColor', value: seededColor } ) );
-		dispatch( updateLayerField( { id: layer.id, field: 'iconColor', value: seededColor } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'backgroundColor', value: first.backgroundColor || DEFAULT_HOTSPOT_COLOR } ) );
 		dispatch( updateLayerField( { id: layer.id, field: 'icon', value: first.icon || '' } ) );
 		dispatch( updateLayerField( { id: layer.id, field: 'customIconUrl', value: first.customIconUrl || null } ) );
 		dispatch( updateLayerField( { id: layer.id, field: 'customIconId', value: first.customIconId || null } ) );
@@ -550,14 +551,38 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 						/>
 					) }
 
-					<VeColorList>
-						<ColorPickerButton
-							value={ sharedColor }
-							label={ styleType === 'icon' ? __( 'Colour', 'godam' ) : __( 'Pulse colour', 'godam' ) }
-							enableAlpha={ true }
-							onChange={ ( value ) => updateField( styleType === 'icon' ? 'iconColor' : 'pulseColor', value ) }
-						/>
-					</VeColorList>
+					{ styleType === 'pulse' && (
+						<VeColorList>
+							<ColorPickerButton
+								value={ layer?.pulseColor || DEFAULT_HOTSPOT_COLOR }
+								label={ __( 'Pulse colour', 'godam' ) }
+								enableAlpha={ true }
+								onChange={ ( value ) => updateField( 'pulseColor', value ) }
+							/>
+						</VeColorList>
+					) }
+
+					{ /* Icon-mode colours mirror the WooCommerce hotspot layer: a
+					     glyph "Icon" colour (library icons only — a custom uploaded
+					     image can't be recoloured) plus a circle "Background". */ }
+					{ styleType === 'icon' && hasLayerIcon && (
+						<VeColorList>
+							{ layer?.icon && (
+								<ColorPickerButton
+									value={ layer?.iconColor || DEFAULT_HOTSPOT_ICON_COLOR }
+									label={ __( 'Icon', 'godam' ) }
+									enableAlpha={ true }
+									onChange={ ( value ) => updateField( 'iconColor', value ) }
+								/>
+							) }
+							<ColorPickerButton
+								value={ layer?.backgroundColor || ( layer?.icon ? DEFAULT_HOTSPOT_COLOR : DEFAULT_HOTSPOT_CUSTOM_ICON_BG ) }
+								label={ __( 'Background', 'godam' ) }
+								enableAlpha={ true }
+								onChange={ ( value ) => updateField( 'backgroundColor', value ) }
+							/>
+						</VeColorList>
+					) }
 				</VeSection>
 
 				{ /* Behaviour: pause-on-hover is video-only, so hidden for images. */ }
@@ -723,7 +748,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								onClick={ () => setExpandedHotspotIndex( index ) }
 								className="hotspot circle"
 								style={ {
-									backgroundColor: hasIcon ? 'white' : ( effective.color || DEFAULT_HOTSPOT_COLOR ),
+									backgroundColor: effective.color || DEFAULT_HOTSPOT_COLOR,
 								} }
 							>
 								<div className={ `hotspot-content flex items-center justify-center ${ ! hasIcon ? 'no-icon' : '' }` }>
@@ -735,7 +760,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											style={ {
 												width: '50%',
 												height: '50%',
-												color: '#000',
+												color: effective.iconColor,
 											} }
 										/>
 									) : effective.customIconUrl ? (

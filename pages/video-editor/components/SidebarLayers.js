@@ -352,16 +352,18 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						duration: 5,
 						pauseOnHover: false,
 						hotspots: [],
-						// Shared style for all hotspot points (new model). The
-						// presence of `styleType` marks a layer as using the
-						// shared style; legacy layers without it fall back to
-						// per-hotspot style on the player.
+						// `styleType` marks the layer as using the shared-style
+						// model (and keeps the legacy-migration effect from running
+						// on this fresh layer). Colours are intentionally NOT seeded
+						// here: the Style pickers and resolveHotspotStyle supply the
+						// conditional defaults (pulse / library-icon background
+						// #0c80dfa6, library glyph #fff, custom-icon background #fff).
+						// Hardcoding them overrode those defaults — e.g. a seeded
+						// blue `iconColor` made the glyph render blue, not white.
 						styleType: 'pulse',
-						pulseColor: '#0c80dfa6',
 						icon: '',
 						customIconUrl: null,
 						customIconId: null,
-						iconColor: '#0c80dfa6',
 						isNew: true,
 					} ),
 				);

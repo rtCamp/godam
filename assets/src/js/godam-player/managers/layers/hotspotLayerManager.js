@@ -627,8 +627,9 @@ export default class HotspotLayerManager {
 		// per-hotspot for legacy layers (backward compatibility).
 		const style = resolveHotspotStyle( layer, hotspot );
 
-		// Background color
-		hotspotDiv.style.backgroundColor = ( style.icon || style.customIconUrl ) ? 'white' : ( style.color || '#0c80dfa6' );
+		// Background color — a single resolved circle fill (pulse colour in pulse
+		// mode, background colour in icon mode), exactly like the Woo hotspot.
+		hotspotDiv.style.backgroundColor = style.color || '#0c80dfa6';
 
 		// Create content
 		const hotspotContent = this.createHotspotContent( hotspot, index, hotspotDiv, style );
@@ -643,7 +644,7 @@ export default class HotspotLayerManager {
 	 * @param {Object}      hotspot    - Hotspot configuration object
 	 * @param {number}      index      - Index of the hotspot
 	 * @param {HTMLElement} hotspotDiv - Parent hotspot div element
-	 * @param {Object}      [style]    - Resolved style { icon, customIconUrl, color }
+	 * @param {Object}      [style]    - Resolved style { icon, customIconUrl, color, iconColor, backgroundColor }
 	 * @return {HTMLElement} Created content element
 	 */
 	createHotspotContent( hotspot, index, hotspotDiv, style ) {
@@ -655,7 +656,7 @@ export default class HotspotLayerManager {
 		hotspotContent.style.height = '100%';
 
 		if ( effective.icon ) {
-			const iconEl = this.createHotspotIcon( effective.icon );
+			const iconEl = this.createHotspotIcon( effective.icon, effective.iconColor );
 			hotspotContent.appendChild( iconEl );
 		} else if ( effective.customIconUrl ) {
 			const customIconEl = this.createCustomIcon( effective.customIconUrl, effective.color, hotspotDiv );
@@ -673,10 +674,11 @@ export default class HotspotLayerManager {
 	/**
 	 * Create hotspot icon
 	 *
-	 * @param {string} icon - Icon configuration or path
+	 * @param {string} icon        - Icon configuration or path
+	 * @param {string} [iconColor] - Glyph colour (defaults to white)
 	 * @return {HTMLElement} Created icon element
 	 */
-	createHotspotIcon( icon ) {
+	createHotspotIcon( icon, iconColor = '#ffffff' ) {
 		const iconEl = document.createElement( 'i' );
 		iconEl.className = `fa-solid fa-${ icon }`;
 		iconEl.style.width = '50%';
@@ -686,7 +688,7 @@ export default class HotspotLayerManager {
 		iconEl.style.alignItems = 'center';
 		iconEl.style.justifyContent = 'center';
 		iconEl.style.margin = 'auto';
-		iconEl.style.color = '#000';
+		iconEl.style.color = iconColor;
 
 		return iconEl;
 	}

@@ -129,7 +129,13 @@ function initFrame( frame ) {
 						...hotspot,
 						icon: style.icon || '',
 						customIconUrl: style.customIconUrl || null,
+						// Flatten the resolved circle fill + glyph colour onto each
+						// hotspot as per-hotspot fields. The merged layer has no
+						// `styleType`, so the manager re-resolves via
+						// resolveHotspotStyle's per-hotspot fallback — this keeps
+						// distinct per-layer colours after the merge.
 						backgroundColor: style.color,
+						iconColor: style.iconColor,
 					} );
 				} );
 			} );
