@@ -209,11 +209,13 @@ class Godam_Document extends Base {
 			'caption'      => $caption,
 		);
 
-		$shortcode_atts_string = '';
-		foreach ( $shortcode_atts as $key => $value ) {
-			$shortcode_atts_string .= sprintf( ' %s="%s"', $key, esc_attr( $value ) );
-		}
-
-		echo do_shortcode( '[godam_document' . $shortcode_atts_string . ']' );
+		// Call the shortcode renderer directly with the raw attributes instead of
+		// building a "[godam_document …]" string. Round-tripping the free-text
+		// fields (doc_title/description/caption) through a shortcode string breaks
+		// on a "]" (it truncates the tag, dropping every later attribute and
+		// leaking the remainder as raw text), lets a "[…]" inject an unintended
+		// shortcode, and double-encodes entities via esc_attr(). render() enqueues
+		// its own script/style and returns escaped HTML.
+		echo \RTGODAM\Inc\Shortcodes\GoDAM_Document::get_instance()->render( $shortcode_atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- render() returns escaped HTML.
 	}
 }
