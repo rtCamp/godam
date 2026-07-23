@@ -16,7 +16,8 @@ export { metadata, name };
  * Block registration settings.
  */
 export const settings = {
-	icon: <img src={ icon } alt={ metadata.title } />,
+	// Block inserter icons are decorative — keep it out of the a11y tree.
+	icon: <img src={ icon } alt="" aria-hidden="true" />,
 	edit,
 	save,
 };

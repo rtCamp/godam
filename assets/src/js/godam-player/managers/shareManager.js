@@ -24,6 +24,7 @@ import Complete from '../../../../../assets/src/images/check.svg';
 
 import videojs from 'video.js';
 import { formatTime, parseTime, validateTimeString } from '../utils/dataHelpers.js';
+import { setupFullscreenReparenting, isPlayerFullscreen } from '../utils/fullscreenReparent.js';
 
 import { KEYBOARD_CONTROLS } from '../utils/constants';
 
@@ -95,7 +96,10 @@ class ShareManager {
 		this.shareButtonEl = null;
 		this.buttonInControlBar = false;
 
-		this.handleFullscreenChange = this.handleFullscreenChange.bind( this );
+		// The share modal is transient; while it is open its reparenting listeners
+		// are tracked here so they can be removed when it closes.
+		this.modalContainer = null;
+		this.modalFullscreenDispose = null;
 
 		this.init();
 	}
@@ -355,6 +359,17 @@ class ShareManager {
 		this.getModalParent().appendChild( container );
 		document.body.classList.add( BODY_MODAL_OPEN_CLASS );
 
+		this.modalContainer = container;
+		// Keep the modal in the right layer if the user enters/exits fullscreen
+		// while it is open: into `.video-js` in fullscreen, back to `<body>` on
+		// exit. Torn down in `setupModalCloseHandlers` when the modal closes.
+		this.modalFullscreenDispose = setupFullscreenReparenting( {
+			player: this.player,
+			getElement: () => this.modalContainer,
+			getRestoreParent: () => document.body,
+			runNow: false,
+		} );
+
 		this.setupModalEventListeners( container, socialLinks, urls );
 	}
 
@@ -366,8 +381,7 @@ class ShareManager {
 	 */
 	getModalParent() {
 		const fullscreenEl = this.player?.el?.();
-		const isFullscreen = this.player?.isFullscreen?.() || fullscreenEl?.classList?.contains( 'vjs-fullscreen' );
-		if ( isFullscreen && fullscreenEl ) {
+		if ( isPlayerFullscreen( this.player ) && fullscreenEl ) {
 			return fullscreenEl;
 		}
 		return document.body;
@@ -419,6 +433,11 @@ class ShareManager {
 			container.classList.add( `${ MODAL_CONTAINER_CLASS }${ CLOSING_CLASS_SUFFIX }` );
 			container.querySelector( `.${ MODAL_POPUP_CLASS }` )
 				.classList.add( `${ MODAL_POPUP_CLASS }${ CLOSING_CLASS_SUFFIX }` );
+
+			// Stop tracking the modal for fullscreen reparenting before it is gone.
+			this.modalFullscreenDispose?.();
+			this.modalFullscreenDispose = null;
+			this.modalContainer = null;
 
 			setTimeout( () => {
 				container.remove();
@@ -707,34 +726,13 @@ class ShareManager {
 	 * are left in place.
 	 */
 	setupFullscreenReparenting() {
-		this.player.on( 'fullscreenchange', this.handleFullscreenChange );
-		this.player.on( 'customfullscreenchange', this.handleFullscreenChange );
-		this.player.one( 'dispose', () => {
-			this.player.off( 'fullscreenchange', this.handleFullscreenChange );
-			this.player.off( 'customfullscreenchange', this.handleFullscreenChange );
+		// Control-bar buttons (Bubble skin) are already inside `.video-js`, so the
+		// getter returns null for them and only the overlay button is moved.
+		setupFullscreenReparenting( {
+			player: this.player,
+			getElement: () => ( this.buttonInControlBar ? null : this.shareButtonEl ),
+			getRestoreParent: () => this.container,
 		} );
-	}
-
-	/**
-	 * Move the overlay share button into (or out of) the fullscreen element.
-	 */
-	handleFullscreenChange() {
-		if ( ! this.shareButtonEl || this.buttonInControlBar ) {
-			return;
-		}
-
-		const fullscreenEl = this.player.el();
-		// Native fullscreen sets `isFullscreen()`; the iOS custom fullscreen only
-		// toggles the `vjs-fullscreen` class. Check both so either path works.
-		const isFullscreen = this.player.isFullscreen() || fullscreenEl.classList.contains( 'vjs-fullscreen' );
-
-		if ( isFullscreen ) {
-			if ( this.shareButtonEl.parentElement !== fullscreenEl ) {
-				fullscreenEl.appendChild( this.shareButtonEl );
-			}
-		} else if ( this.container && this.shareButtonEl.parentElement !== this.container ) {
-			this.container.appendChild( this.shareButtonEl );
-		}
 	}
 
 	/**

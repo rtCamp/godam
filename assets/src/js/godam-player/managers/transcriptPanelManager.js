@@ -8,6 +8,11 @@ import videojs from 'video.js';
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import { setupFullscreenReparenting } from '../utils/fullscreenReparent.js';
+
 // Minimum container width (px) at which the Bubble skin routes the button into
 // the control bar instead of overlaying it — matches ShareManager.
 const MIN_BUBBLE_WIDTH = 480;
@@ -33,6 +38,9 @@ const PANEL_CLASS = 'godam-transcript-panel';
 const CUE_CLASS = 'godam-transcript-cue';
 // Added to the video wrapper so the video + panel share the block width.
 const OPEN_CLASS = 'godam-transcript-open';
+// Added to the wrapper while a panel is present so its overflow/shadow can be
+// clipped without relying on `:has()` (unsupported in some browsers).
+const HAS_PANEL_CLASS = 'godam-has-transcript-panel';
 const ACTIVE_CUE_CLASS = 'godam-transcript-cue--active';
 
 // Copy feedback duration in ms.
@@ -77,7 +85,6 @@ export default class TranscriptPanelManager {
 		this.isOpen = false;
 
 		this.handleTimeUpdate = this.handleTimeUpdate.bind( this );
-		this.handleFullscreenChange = this.handleFullscreenChange.bind( this );
 
 		this.init();
 	}
@@ -399,6 +406,9 @@ export default class TranscriptPanelManager {
 		// Append inside the wrapper as an overlay so it sits above the video
 		// without taking layout space (the video keeps its full width).
 		this.wrapper.appendChild( panel );
+		// Flag the wrapper so its overflow/shadow clip can be scoped with a plain
+		// class selector instead of `:has()` (which some browsers lack).
+		this.wrapper.classList.add( HAS_PANEL_CLASS );
 		this.panel = panel;
 		this.bodyEl = body;
 	}
@@ -416,37 +426,19 @@ export default class TranscriptPanelManager {
 	 * the player element is set for both.
 	 */
 	setupFullscreenReparenting() {
-		this.player.on( 'fullscreenchange', this.handleFullscreenChange );
-		this.player.on( 'customfullscreenchange', this.handleFullscreenChange );
-	}
-
-	/**
-	 * Move the overlay button and panel into (or out of) the fullscreen element.
-	 */
-	handleFullscreenChange() {
-		const fullscreenEl = this.player.el();
-		// Native fullscreen sets `isFullscreen()`; the iOS custom fullscreen only
-		// toggles the `vjs-fullscreen` class. Check both so either path works.
-		const isFullscreen = this.player.isFullscreen() || fullscreenEl.classList.contains( 'vjs-fullscreen' );
-
-		// The panel always starts life in the wrapper; the control-bar button is
-		// already inside `.video-js`, so only the overlay button needs moving.
-		if ( isFullscreen ) {
-			if ( this.panel && this.panel.parentElement !== fullscreenEl ) {
-				fullscreenEl.appendChild( this.panel );
-			}
-			if ( this.button && ! this.buttonInControlBar && this.button.parentElement !== fullscreenEl ) {
-				fullscreenEl.appendChild( this.button );
-			}
-			return;
-		}
-
-		if ( this.panel && this.wrapper && this.panel.parentElement !== this.wrapper ) {
-			this.wrapper.appendChild( this.panel );
-		}
-		if ( this.button && ! this.buttonInControlBar && this.container && this.button.parentElement !== this.container ) {
-			this.container.appendChild( this.button );
-		}
+		// The panel restores into the wrapper; the overlay button into the
+		// container. The control-bar button (Bubble skin) is already inside
+		// `.video-js`, so it is skipped by returning null from its getter.
+		setupFullscreenReparenting( {
+			player: this.player,
+			getElement: () => this.panel,
+			getRestoreParent: () => this.wrapper,
+		} );
+		setupFullscreenReparenting( {
+			player: this.player,
+			getElement: () => ( this.buttonInControlBar ? null : this.button ),
+			getRestoreParent: () => this.container,
+		} );
 	}
 
 	/**
@@ -570,9 +562,10 @@ export default class TranscriptPanelManager {
 	destroy() {
 		clearTimeout( this.copyResetTimeout );
 		this.player.off( 'timeupdate', this.handleTimeUpdate );
-		this.player.off( 'fullscreenchange', this.handleFullscreenChange );
-		this.player.off( 'customfullscreenchange', this.handleFullscreenChange );
+		// Fullscreen listeners are removed by the reparenting helper on player
+		// `dispose`; nothing to detach here.
 		this.wrapper?.classList.remove( OPEN_CLASS );
+		this.wrapper?.classList.remove( HAS_PANEL_CLASS );
 		this.container?.classList.remove( 'godam-has-transcript' );
 		this.button?.remove();
 		this.panel?.remove();

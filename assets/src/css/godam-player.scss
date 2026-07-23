@@ -2327,8 +2327,10 @@ body.godam-share-modal-open {
 	// edge when closed, so clip the wrapper to keep it from widening the block
 	// or spawning a horizontal scrollbar. The clip would cut the inner
 	// container's drop shadow, so re-apply the same shadow on the wrapper (an
-	// element's own box-shadow is not affected by its overflow).
-	&:has(.godam-transcript-panel) {
+	// element's own box-shadow is not affected by its overflow). The
+	// `godam-has-transcript-panel` class is toggled by TranscriptPanelManager —
+	// a plain class avoids `:has()`, which some browsers do not support.
+	&.godam-has-transcript-panel {
 		overflow: hidden;
 		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 	}
