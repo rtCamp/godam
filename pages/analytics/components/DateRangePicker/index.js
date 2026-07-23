@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 /**
  * WordPress dependencies
@@ -211,6 +211,14 @@ const DateRangePicker = ( { value = {}, onChange, testIdPrefix = 'godam-analytic
 // Popover body: preset list + optional custom-range calendar.
 const DateRangePanel = ( { value, activeKey, testIdPrefix, onSelect } ) => {
 	const [ showCalendar, setShowCalendar ] = useState( activeKey === 'custom' );
+	// Keep the calendar's visibility in sync when the controlled value changes
+	// while the panel stays mounted (e.g. a preset is picked, or the parent
+	// updates the range externally) — otherwise showCalendar would be stuck at
+	// its initial value. Only fires on an actual activeKey change, so the manual
+	// "Custom range" toggle (which doesn't change activeKey) is preserved.
+	useEffect( () => {
+		setShowCalendar( activeKey === 'custom' );
+	}, [ activeKey ] );
 	const initialMonth = useMemo(
 		() => fromISO( value?.startDate ) || today(),
 		[ value ],
@@ -301,6 +309,8 @@ const DateRangePanel = ( { value, activeKey, testIdPrefix, onSelect } ) => {
 					<div className="godam-daterange__grid">
 						{ grid.map( ( { date, inMonth }, i ) => {
 							const disabled = date > maxDate;
+							const isRangeDay = inRange( date );
+							const isEnd = isEndpoint( date );
 							const classes = [ 'godam-daterange__day' ];
 							if ( ! inMonth ) {
 								classes.push( 'is-outside' );
@@ -308,18 +318,28 @@ const DateRangePanel = ( { value, activeKey, testIdPrefix, onSelect } ) => {
 							if ( disabled ) {
 								classes.push( 'is-disabled' );
 							}
-							if ( inRange( date ) ) {
+							if ( isRangeDay ) {
 								classes.push( 'is-in-range' );
 							}
-							if ( isEndpoint( date ) ) {
+							if ( isEnd ) {
 								classes.push( 'is-endpoint' );
 							}
+							// The visible label is just the day number, which a
+							// screen reader can't disambiguate across months/years,
+							// so expose the full localized date + selection state.
+							const dayLabel = date.toLocaleDateString( undefined, {
+								year: 'numeric',
+								month: 'long',
+								day: 'numeric',
+							} );
 							return (
 								<button
 									type="button"
 									key={ i }
 									className={ classes.join( ' ' ) }
 									disabled={ disabled }
+									aria-label={ dayLabel }
+									aria-pressed={ isEnd || isRangeDay }
 									onClick={ () => onDayClick( date ) }
 								>
 									{ date.getDate() }

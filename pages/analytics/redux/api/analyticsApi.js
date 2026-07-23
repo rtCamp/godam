@@ -59,8 +59,10 @@ export const analyticsApi = createApi( {
 				url: 'godam/v1/analytics/history',
 				params: {
 					// Explicit range wins over `days`; only send `days` when no
-					// range is set (matches the microservice precedence).
-					...( startDate || endDate ? {} : { days } ),
+					// range is set (matches the microservice precedence). Guarded
+					// on a real value so an undefined `days` never serializes to
+					// `days=undefined` and trips proxy/microservice validation.
+					...( ! startDate && ! endDate && days !== undefined ? { days } : {} ),
 					video_id: videoId,
 					site_url: siteUrl,
 					...rangeParams( { startDate, endDate } ),

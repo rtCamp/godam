@@ -60,7 +60,9 @@ export const dashboardAnalyticsApi = createApi( {
 					site_url: siteUrl,
 					// Explicit range wins over `days` (the microservice enforces
 					// the same precedence); only send `days` when no range is set.
-					...( startDate || endDate ? {} : { days } ),
+					// Guarded on a real value so an undefined `days` never
+					// serializes to `days=undefined` and trips proxy validation.
+					...( ! startDate && ! endDate && days !== undefined ? { days } : {} ),
 					...rangeParams( { startDate, endDate } ),
 				},
 			} ),

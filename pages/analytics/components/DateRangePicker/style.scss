@@ -59,13 +59,22 @@
 	&__day {
 		all: unset;
 		box-sizing: border-box;
-		text-align: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		font-size: 12px;
-		line-height: 32px;
 		height: 32px;
 		border-radius: 4px;
 		cursor: pointer;
 		color: #1e1e1e;
+
+		// `all: unset` above strips the default outline, so restore a visible
+		// keyboard focus ring (mouse clicks stay clean via :focus-visible).
+		// Declared before :hover to keep selector specificity non-descending.
+		&:focus-visible {
+			outline: 2px solid var(--wp-admin-theme-color, #3a58bf);
+			outline-offset: 1px;
+		}
 
 		&:hover:not(.is-disabled) {
 			background: color-mix(in srgb, var(--wp-admin-theme-color, #3a58bf) 12%, transparent);
