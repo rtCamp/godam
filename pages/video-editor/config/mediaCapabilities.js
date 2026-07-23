@@ -54,10 +54,12 @@ const CAPABILITIES = {
 		allowedLayerTypes: [],
 		preview: 'audio',
 		copyBlockName: 'godam/audio',
-		// Audio has no front-end preview page, so the editor hides the Preview
-		// button entirely.
-		previewPage: '',
-		showPreview: false,
+		// Audio reuses the shared front-end preview page (`godam_page=video-preview`),
+		// which renders the `[godam_audio]` shortcode (custom player + Chapters /
+		// Transcript panel) and adapts its labels for audio. See
+		// godam_preview_page_content() and inc/templates/video-preview.php.
+		previewPage: 'video-preview',
+		showPreview: true,
 		showTimeline: false,
 		showStats: false,
 	},
