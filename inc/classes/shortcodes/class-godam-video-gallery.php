@@ -63,14 +63,21 @@ class GoDAM_Video_Gallery {
 				'show_title'          => true,
 				'performance_mode'    => 'balanced',
 				'engagements'         => true,
+				// Interaction: 'hover' (play on hover) or 'autoplay'. Maps to the
+				// block's mutually-exclusive autoplay / playOnHover booleans.
+				'interaction'         => 'hover',
+				'show_play_button'    => true,
 			),
 			$atts,
 			'godam_video_gallery'
 		);
 
-		foreach ( array( 'infinite_scroll', 'enable_more_items', 'show_title', 'engagements' ) as $bool_key ) {
+		foreach ( array( 'infinite_scroll', 'enable_more_items', 'show_title', 'engagements', 'show_play_button' ) as $bool_key ) {
 			$atts[ $bool_key ] = filter_var( $atts[ $bool_key ], FILTER_VALIDATE_BOOLEAN );
 		}
+
+		// Split the single interaction choice into the two block booleans.
+		$godam_is_autoplay = ( 'autoplay' === sanitize_key( $atts['interaction'] ) );
 
 		// WPBakery saves param_group as rawurlencode(json_encode([{video_id: …}, …])).
 		// Decode it and fold each row's video_id into the comma-separated `ids`
@@ -131,6 +138,9 @@ class GoDAM_Video_Gallery {
 			'showTitle'         => $atts['show_title'],
 			'performanceMode'   => sanitize_key( $atts['performance_mode'] ),
 			'engagements'       => $atts['engagements'],
+			'autoplay'          => $godam_is_autoplay,
+			'playOnHover'       => ! $godam_is_autoplay,
+			'showPlayButton'    => $atts['show_play_button'],
 		);
 
 		// Enqueue the block's frontend assets so the shortcode reuses the same
