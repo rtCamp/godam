@@ -399,23 +399,62 @@ function refreshPanelControls( names ) {
  * @param {Object} values Map of setting keys to values.
  */
 function applyAudioSettings( values ) {
-	if ( activeAudioContainer && window.$e?.run ) {
-		window.$e.run( 'document/elements/settings', {
-			container: activeAudioContainer,
-			settings: values,
-		} );
-	} else if ( activeAudioSettings ) {
-		Object.keys( values ).forEach( ( key ) => activeAudioSettings.set( key, values[ key ] ) );
+	// The container ref is captured at hydrate; if Elementor rebuilt the element
+	// it can go stale and $e.run() may throw. Guard it (this runs from a fetch
+	// .then()/.catch(), so an unguarded throw would surface as an unhandled
+	// rejection) and fall back to a direct model update.
+	try {
+		if ( activeAudioContainer && window.$e?.run ) {
+			window.$e.run( 'document/elements/settings', {
+				container: activeAudioContainer,
+				settings: values,
+			} );
+		} else if ( activeAudioSettings ) {
+			Object.keys( values ).forEach( ( key ) => activeAudioSettings.set( key, values[ key ] ) );
+		}
+	} catch ( e ) {
+		try {
+			if ( activeAudioSettings ) {
+				Object.keys( values ).forEach( ( key ) => activeAudioSettings.set( key, values[ key ] ) );
+			}
+		} catch ( e2 ) {}
 	}
 
 	refreshPanelControls( Object.keys( values ) );
 }
 
 /**
+ * Apply only the fields the user has NOT edited since `snapshot` was captured,
+ * so a late REST populate never clobbers an in-progress Title / Description edit
+ * (the user may select an audio and immediately start typing an override).
+ *
+ * @param {Object} values   Proposed setting values.
+ * @param {Object} snapshot Field values captured when the populate started.
+ */
+function applyAudioSettingsIfUntouched( values, snapshot ) {
+	const settings = activeAudioSettings;
+	if ( ! settings ) {
+		return;
+	}
+	const toApply = {};
+	Object.keys( values ).forEach( ( key ) => {
+		if ( settings.get( key ) === snapshot[ key ] ) {
+			toApply[ key ] = values[ key ];
+		}
+	} );
+	if ( Object.keys( toApply ).length ) {
+		applyAudioSettings( toApply );
+	}
+}
+
+/**
  * Fill the Audio Title + Description controls from the selected attachment.
  * Title is already carried on the godam-media control value; the description is
  * fetched from the REST API. Mirrors the block: a new selection overwrites both,
- * and clearing the audio empties them.
+ * clearing the audio empties them — but an edit the user makes after selecting
+ * is preserved (see applyAudioSettingsIfUntouched). Only runs on an audio-file
+ * change, never on panel open, so existing widgets keep their saved values and
+ * render.php's "leave empty → attachment title" fallback stays intact.
  */
 function populateAudioMeta() {
 	const settings = activeAudioSettings;
@@ -426,9 +465,16 @@ function populateAudioMeta() {
 	const audioFile = settings.get( 'audio-file' ) || {};
 	const id = audioFile.id;
 
+	// Snapshot current field values so a late apply only writes fields the user
+	// hasn't touched since this populate started.
+	const snapshot = {
+		audio_title: settings.get( 'audio_title' ),
+		description: settings.get( 'description' ),
+	};
+
 	// Audio removed — clear the auto-filled fields (matches the block).
 	if ( ! id ) {
-		applyAudioSettings( { audio_title: '', description: '' } );
+		applyAudioSettingsIfUntouched( { audio_title: '', description: '' }, snapshot );
 		return;
 	}
 
@@ -442,17 +488,17 @@ function populateAudioMeta() {
 			}
 			const title = media?.title?.raw ?? media?.title?.rendered ?? controlTitle;
 			const description = media?.description?.raw ?? stripHtml( media?.description?.rendered );
-			applyAudioSettings( {
+			applyAudioSettingsIfUntouched( {
 				audio_title: title || controlTitle,
 				description: ( description || '' ).trim(),
-			} );
+			}, snapshot );
 		} )
 		.catch( () => {
 			if ( token !== audioFetchToken ) {
 				return;
 			}
 			// Fall back to the title already on the control value.
-			applyAudioSettings( { audio_title: controlTitle } );
+			applyAudioSettingsIfUntouched( { audio_title: controlTitle }, snapshot );
 		} );
 }
 

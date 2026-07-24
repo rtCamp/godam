@@ -134,8 +134,10 @@ class Godam_Audio extends Base {
 				'label'     => __( 'Preload', 'godam' ),
 				'type'      => Controls_Manager::SELECT,
 				'default'   => 'metadata',
+				// No "Browser default" (empty) option: the shared render.php coerces
+				// an empty preload to "metadata", so an empty choice could never take
+				// effect. Offer only values that actually render.
 				'options'   => array(
-					''         => esc_html__( 'Browser default', 'godam' ),
 					'auto'     => esc_html__( 'Auto', 'godam' ),
 					'metadata' => esc_html__( 'Metadata', 'godam' ),
 					'none'     => esc_html_x( 'None', 'Preload value', 'godam' ),
