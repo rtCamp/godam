@@ -134,18 +134,16 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 	// image or layers change. The canvas is an iframe; the ref points at the real
 	// node inside it, and initImageFrame() draws directly onto that node — the
 	// same renderer the front end uses (Woo hotspots included, when the woo add-on
-	// registers its manager). We reset the render guard + overlay so edits redraw.
+	// registers its manager). initImageFrame is self-cleaning and returns a
+	// teardown that removes its resize listener / ResizeObserver / pending load
+	// handler and clears the overlay; returning it lets React tear down before
+	// each redraw and on unmount (e.g. toggling layers off), so nothing leaks.
 	useEffect( () => {
 		const frame = frameRef.current;
 		if ( ! frame || ! showLayers ) {
-			return;
+			return undefined;
 		}
-		frame.dataset.godamLayersRendered = '';
-		const overlay = frame.querySelector( '.godam-image-layer' );
-		if ( overlay ) {
-			overlay.innerHTML = '';
-		}
-		initImageFrame( frame );
+		return initImageFrame( frame );
 	}, [ showLayers, layersJson, url, instanceId ] );
 
 	// The inspector "Image Selection" panel mirrors the GoDAM Video block: an
