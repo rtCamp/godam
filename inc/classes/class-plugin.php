@@ -60,6 +60,7 @@ use RTGODAM\Inc\Shortcodes\GoDAM_Player;
 use RTGODAM\Inc\Shortcodes\GoDAM_Video_Gallery;
 use RTGODAM\Inc\Shortcodes\GoDAM_Audio;
 use RTGODAM\Inc\Shortcodes\GoDAM_Document;
+use RTGODAM\Inc\Shortcodes\GoDAM_Image;
 
 use RTGODAM\Inc\Migrations\Runner as Migrations_Runner;
 use RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media;
@@ -80,6 +81,7 @@ use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video;
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video_Gallery;
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Audio;
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Document;
+use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Image;
 
 /**
  * Class Plugin.
@@ -118,6 +120,7 @@ class Plugin {
 		GoDAM_Video_Gallery::get_instance();
 		GoDAM_Audio::get_instance();
 		GoDAM_Document::get_instance();
+		GoDAM_Image::get_instance();
 		Video_Engagement::get_instance();
 
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
@@ -253,6 +256,7 @@ class Plugin {
 		WPB_GoDAM_Video_Gallery::get_instance();
 		WPB_GoDAM_Audio::get_instance();
 		WPB_GoDAM_Document::get_instance();
+		WPB_GoDAM_Image::get_instance();
 	}
 
 	/**

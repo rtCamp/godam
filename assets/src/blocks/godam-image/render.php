@@ -119,7 +119,15 @@ $godam_frame_style = $godam_width
 	: 'position:relative;display:inline-block;max-width:100%;line-height:0;';
 
 // Block-support wrapper attributes (align / spacing / anchor + our hook class).
-$godam_wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'godam-image' ) );
+// The [godam_image] shortcode (WPBakery element) sets $godam_is_shortcode and
+// runs outside a block, where get_block_wrapper_attributes() would warn, so it
+// gets the stable hook class plus any WPBakery Design Options CSS class.
+if ( empty( $godam_is_shortcode ) ) {
+	$godam_wrapper_attributes = get_block_wrapper_attributes( array( 'class' => 'godam-image' ) );
+} else {
+	$godam_shortcode_class    = trim( 'godam-image ' . ( isset( $godam_css_class ) ? $godam_css_class : '' ) );
+	$godam_wrapper_attributes = 'class="' . esc_attr( $godam_shortcode_class ) . '"';
+}
 ?>
 <figure data-test-id="godam-image-render" <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
 	<div
