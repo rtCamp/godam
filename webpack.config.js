@@ -286,6 +286,13 @@ const wpBakeryImageSrcSelectorParam = {
 	},
 };
 
+const wpBakeryImageSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-image-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-image-selector-param.js' ),
+	},
+};
+
 const wpBakeryDocumentSelectorParam = {
 	...sharedConfig,
 	entry: {
@@ -426,6 +433,7 @@ module.exports = [
 	wpBakeryVideoSelectorParam,
 	wpBakeryAudioSelectorParam,
 	wpBakeryImageSrcSelectorParam,
+	wpBakeryImageSelectorParam,
 	wpBakeryDocumentSelectorParam,
 	wpBakeryDocumentCoverSelectorParam,
 	ninjaFormsSubmissionsList,
