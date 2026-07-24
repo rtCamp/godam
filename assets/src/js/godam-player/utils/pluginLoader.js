@@ -27,6 +27,11 @@ let flvPluginPromise = null;
 let quillPromise = null;
 let fontAwesomePromise = null;
 
+// Cached reference to FontAwesome's `dom` API so icons can be transformed
+// explicitly inside a specific document (e.g. the block-editor canvas iframe),
+// where the global `dom.watch()` observer + injected CSS never reach.
+let fontAwesomeDom = null;
+
 // Ad blockers commonly block the `videojs-contrib-ads` chunk (its filename
 // contains "ads"), which rejects the dynamic import with a ChunkLoadError on
 // every player init. Ads are optional and playback is unaffected, so warn once
@@ -187,6 +192,7 @@ export async function loadFontAwesome() {
 
 		library.add( fas );
 		dom.watch();
+		fontAwesomeDom = dom;
 
 		loadedPlugins.fontAwesome = true;
 	} )()
@@ -201,6 +207,42 @@ export async function loadFontAwesome() {
 		} );
 
 	return fontAwesomePromise;
+}
+
+/**
+ * Transform FontAwesome `<i>` icons into inline `<svg>` inside a given node,
+ * and ensure the base SVG CSS exists in that node's document.
+ *
+ * FontAwesome's SVG core auto-transforms icons via a `dom.watch()` observer and
+ * injects its CSS, but both are bound to the document the bundle runs in. In the
+ * block-editor canvas the icons live inside an iframe, so the observer never
+ * sees them and the sizing CSS (`.svg-inline--fa`) is missing there — the icon
+ * renders as an unstyled empty box. Call this after creating the icon markup to
+ * convert + style them in the right document. Safe to call on the front end too
+ * (idempotent: once an `<i>` becomes `<svg>` there is nothing left to convert).
+ *
+ * @param {HTMLElement} node The subtree whose FontAwesome icons should render.
+ * @return {void}
+ */
+export function renderFontAwesomeIcons( node ) {
+	if ( ! fontAwesomeDom || ! node ) {
+		return;
+	}
+	try {
+		const doc = node.ownerDocument;
+		if (
+			doc &&
+			doc.head &&
+			! doc.getElementById( 'godam-fa-svg-css' ) &&
+			typeof fontAwesomeDom.css === 'function'
+		) {
+			const style = doc.createElement( 'style' );
+			style.id = 'godam-fa-svg-css';
+			style.textContent = fontAwesomeDom.css();
+			doc.head.appendChild( style );
+		}
+		fontAwesomeDom.i2svg( { node } );
+	} catch ( e ) {}
 }
 
 /**
