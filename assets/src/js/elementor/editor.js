@@ -53,6 +53,15 @@ window.addEventListener( 'load', function() {
 			setTimeout( makeFieldsReadonly, 200 );
 		}
 	} );
+
+	// GoDAM Audio: auto-fill the title/description from the selected attachment,
+	// mirroring the Gutenberg block (which populates them on selection).
+	window?.elementor.hooks.addAction(
+		'panel/open_editor/widget/godam-audio',
+		function( panel, model, view ) {
+			hydrateAudioWidget( model, view );
+		},
+	);
 } );
 
 /**
@@ -328,4 +337,159 @@ function escapeAttr( value ) {
 		.replace( /"/g, '&quot;' )
 		.replace( /</g, '&lt;' )
 		.replace( />/g, '&gt;' );
+}
+
+/* ── GoDAM Audio: auto-populate title / description ────────────────────────── */
+
+/**
+ * Settings model + container of the currently-edited godam-audio widget.
+ */
+let activeAudioSettings = null;
+let activeAudioContainer = null;
+
+/**
+ * Monotonic token so a stale description fetch (user swapped the audio before
+ * the previous request resolved) is discarded.
+ */
+let audioFetchToken = 0;
+
+/**
+ * Strip tags from a rendered HTML string and collapse whitespace. Used for the
+ * attachment description, whose REST `rendered` form is wrapped in markup.
+ *
+ * @param {string} html Rendered HTML.
+ * @return {string} Plain text.
+ */
+function stripHtml( html ) {
+	const tmp = document.createElement( 'div' );
+	tmp.innerHTML = String( html || '' );
+	return ( tmp.textContent || tmp.innerText || '' ).replace( /\s+/g, ' ' ).trim();
+}
+
+/**
+ * Re-render the given controls in the currently open panel so their inputs
+ * reflect the model. Elementor text/textarea controls read the model only on
+ * render and deliberately don't sync external model changes back into the input
+ * (to avoid cursor jumps while typing), so a programmatic value change leaves
+ * the visible field stale until we force a re-render. No-op when the panel
+ * isn't showing a widget with these controls.
+ *
+ * @param {string[]} names Control names to refresh.
+ */
+function refreshPanelControls( names ) {
+	try {
+		const page = window.elementor?.getPanelView?.()?.getCurrentPageView?.();
+		if ( ! page || ! page.children || ! page.children.each ) {
+			return;
+		}
+		page.children.each( ( view ) => {
+			const name = view?.model?.get?.( 'name' );
+			if ( name && names.indexOf( name ) !== -1 && 'function' === typeof view.render ) {
+				view.render();
+			}
+		} );
+	} catch ( e ) {}
+}
+
+/**
+ * Push settings onto the active audio widget so the canvas preview re-renders
+ * (a bare Backbone .set() updates the model but not the preview node), then
+ * refresh the matching panel inputs so the field values are visible immediately.
+ *
+ * @param {Object} values Map of setting keys to values.
+ */
+function applyAudioSettings( values ) {
+	if ( activeAudioContainer && window.$e?.run ) {
+		window.$e.run( 'document/elements/settings', {
+			container: activeAudioContainer,
+			settings: values,
+		} );
+	} else if ( activeAudioSettings ) {
+		Object.keys( values ).forEach( ( key ) => activeAudioSettings.set( key, values[ key ] ) );
+	}
+
+	refreshPanelControls( Object.keys( values ) );
+}
+
+/**
+ * Fill the Audio Title + Description controls from the selected attachment.
+ * Title is already carried on the godam-media control value; the description is
+ * fetched from the REST API. Mirrors the block: a new selection overwrites both,
+ * and clearing the audio empties them.
+ */
+function populateAudioMeta() {
+	const settings = activeAudioSettings;
+	if ( ! settings ) {
+		return;
+	}
+
+	const audioFile = settings.get( 'audio-file' ) || {};
+	const id = audioFile.id;
+
+	// Audio removed — clear the auto-filled fields (matches the block).
+	if ( ! id ) {
+		applyAudioSettings( { audio_title: '', description: '' } );
+		return;
+	}
+
+	const controlTitle = 'string' === typeof audioFile.title ? audioFile.title : '';
+	const token = ++audioFetchToken;
+
+	apiFetch( { path: '/wp/v2/media/' + encodeURIComponent( id ) + '?context=edit' } )
+		.then( ( media ) => {
+			if ( token !== audioFetchToken ) {
+				return; // A newer selection is in flight.
+			}
+			const title = media?.title?.raw ?? media?.title?.rendered ?? controlTitle;
+			const description = media?.description?.raw ?? stripHtml( media?.description?.rendered );
+			applyAudioSettings( {
+				audio_title: title || controlTitle,
+				description: ( description || '' ).trim(),
+			} );
+		} )
+		.catch( () => {
+			if ( token !== audioFetchToken ) {
+				return;
+			}
+			// Fall back to the title already on the control value.
+			applyAudioSettings( { audio_title: controlTitle } );
+		} );
+}
+
+/**
+ * Change handler for the audio widget. The godam-media control emits sub-key
+ * changes (`change:audio-file.id` / `.url` / `.title`), so inspect model.changed
+ * and react to any `audio-file*` key.
+ *
+ * @param {Object} changedModel Backbone model that changed.
+ */
+function onAudioSettingsChange( changedModel ) {
+	const changed = changedModel?.changed || {};
+	const keys = Object.keys( changed );
+	if ( keys.some( ( key ) => key === 'audio-file' || key.indexOf( 'audio-file' ) === 0 ) ) {
+		populateAudioMeta();
+	}
+}
+
+/**
+ * Track the currently-edited godam-audio widget and wire the change listener.
+ *
+ * @param {Object} model Backbone model of the widget element.
+ * @param {Object} view  Editor view (used to resolve the $e.run container).
+ */
+function hydrateAudioWidget( model, view ) {
+	const settings = model?.get?.( 'settings' );
+	if ( ! settings ) {
+		return;
+	}
+
+	if ( activeAudioSettings && activeAudioSettings !== settings ) {
+		activeAudioSettings.off( 'change', onAudioSettingsChange );
+	}
+
+	activeAudioSettings = settings;
+	activeAudioContainer = view?.getContainer?.() || view?.container || null;
+
+	settings.off( 'change', onAudioSettingsChange );
+	settings.on( 'change', onAudioSettingsChange );
 }
