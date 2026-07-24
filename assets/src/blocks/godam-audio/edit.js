@@ -10,6 +10,7 @@ import { isBlobURL } from '@wordpress/blob';
 import {
 	Button,
 	DropZone,
+	Notice,
 	PanelBody,
 	SelectControl,
 	Spinner,
@@ -296,9 +297,26 @@ function AudioEdit( {
 		}
 	}
 
-	// The selected attachment's file size, shown in the Audio Selection file row.
-	const audioMedia = useSelect( ( select ) => ( id ? select( 'core' ).getMedia( id ) : null ), [ id ] );
+	// The selected attachment's record, plus whether its lookup has finished.
+	// `isMediaResolved` lets us distinguish "still loading" from "resolved to
+	// nothing", so we only flag a deletion once the REST lookup has completed.
+	const { audioMedia, isMediaResolved } = useSelect( ( select ) => {
+		if ( ! id ) {
+			return { audioMedia: null, isMediaResolved: false };
+		}
+		const core = select( 'core' );
+		return {
+			audioMedia: core.getMedia( id ),
+			isMediaResolved: core.hasFinishedResolution( 'getMedia', [ id ] ),
+		};
+	}, [ id ] );
 	const fileSize = formatBytes( audioMedia?.media_details?.filesize );
+
+	// The attachment was deleted from the Media Library out from under the block:
+	// its numeric id is still stored, the lookup has finished, yet no record came
+	// back. `src` (and thus `hasAudio`) still holds the now-dangling URL, so surface
+	// an error instead of rendering a player that points at a 404.
+	const isAudioDeleted = Boolean( id ) && isMediaResolved && ! audioMedia;
 
 	const classes = clsx( className, {
 		'is-transient': !! temporaryURL,
@@ -330,7 +348,7 @@ function AudioEdit( {
 		/>
 	) : (
 		<>
-			{ id && (
+			{ id && ! isAudioDeleted && (
 				<Button
 					__next40pxDefaultSize
 					variant="primary"
@@ -560,7 +578,7 @@ function AudioEdit( {
 						onChange={ toggleAttribute( 'showChapters' ) }
 						data-test-id="godam-audio-control-show-chapters"
 					/>
-					{ id && (
+					{ id && ! isAudioDeleted && (
 						<Button
 							__next40pxDefaultSize
 							variant="secondary"
@@ -616,28 +634,64 @@ function AudioEdit( {
 
 			{ /* ── Block canvas ─────────────────────────────────────────────── */ }
 			<figure { ...blockProps } data-test-id="godam-audio-canvas">
-				<div className="godam-audio-card">
-					<div className="godam-audio-card__head">
-						<div className="godam-audio-card__cover" data-test-id="godam-audio-element-cover">
-							{ thumbnail && (
-								<img src={ thumbnail } alt={ audioTitle || __( 'Audio thumbnail', 'godam' ) } />
-							) }
-						</div>
-
-						<div className="godam-audio-card__body">
-							<p className="godam-audio-card__title" data-test-id="godam-audio-element-title">
-								{ audioTitle || __( 'Untitled audio', 'godam' ) }
-							</p>
-							{ description && (
-								<p className="godam-audio-card__description" data-test-id="godam-audio-element-description">{ description }</p>
-							) }
-							<AudioMiniPlayer src={ src ?? temporaryURL } />
-							{ !! temporaryURL && <Spinner /> }
+				{ isAudioDeleted ? (
+					<div className="godam-audio-error" data-test-id="godam-audio-error">
+						<Notice status="error" isDismissible={ false }>
+							{ __( 'The audio file for this block was deleted from the Media Library. Replace it with another file or remove the block.', 'godam' ) }
+						</Notice>
+						<div className="godam-audio-error__actions">
+							<MediaUploadCheck>
+								<MediaUpload
+									onSelect={ onSelectAudio }
+									allowedTypes={ ALLOWED_MEDIA_TYPES }
+									accept="audio/*"
+									onError={ onUploadError }
+									render={ ( { open } ) => (
+										<Button
+											__next40pxDefaultSize
+											variant="primary"
+											onClick={ open }
+											data-test-id="godam-audio-error-button-replace"
+										>
+											{ __( 'Replace audio file', 'godam' ) }
+										</Button>
+									) }
+								/>
+							</MediaUploadCheck>
+							<Button
+								__next40pxDefaultSize
+								variant="secondary"
+								onClick={ onRemoveAudio }
+								data-test-id="godam-audio-error-button-remove"
+							>
+								{ __( 'Remove audio', 'godam' ) }
+							</Button>
 						</div>
 					</div>
+				) : (
+					<div className="godam-audio-card">
+						<div className="godam-audio-card__head">
+							<div className="godam-audio-card__cover" data-test-id="godam-audio-element-cover">
+								{ thumbnail && (
+									<img src={ thumbnail } alt={ audioTitle || __( 'Audio thumbnail', 'godam' ) } />
+								) }
+							</div>
 
-					<AudioTabs id={ id } showTranscript={ showTranscript } showChapters={ showChapters } />
-				</div>
+							<div className="godam-audio-card__body">
+								<p className="godam-audio-card__title" data-test-id="godam-audio-element-title">
+									{ audioTitle || __( 'Untitled audio', 'godam' ) }
+								</p>
+								{ description && (
+									<p className="godam-audio-card__description" data-test-id="godam-audio-element-description">{ description }</p>
+								) }
+								<AudioMiniPlayer src={ src ?? temporaryURL } />
+								{ !! temporaryURL && <Spinner /> }
+							</div>
+						</div>
+
+						<AudioTabs id={ id } showTranscript={ showTranscript } showChapters={ showChapters } />
+					</div>
+				) }
 			</figure>
 		</>
 	);

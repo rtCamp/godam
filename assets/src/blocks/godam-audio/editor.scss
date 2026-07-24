@@ -64,6 +64,23 @@
 	}
 }
 
+// ── Deleted-attachment error state ─────────────────────────────────────────────
+.godam-audio-error {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+
+	.components-notice {
+		margin: 0;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+}
+
 // ── Inspector: full-width action buttons ──────────────────────────────────────
 // Customize Audio (primary), Add Audio File / Upload Image / Edit (secondary).
 // Colour comes from the Gutenberg Button variant (admin theme colour).
