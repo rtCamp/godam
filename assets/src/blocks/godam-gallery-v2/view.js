@@ -922,7 +922,10 @@ const { __ } = require( '@wordpress/i18n' );
 			this.currentIndex = index;
 			activeGallery = this;
 			const engagementsParam = this.engagements === 'show' ? '&engagements=show' : '';
-			const newIframeSrc = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }&godam_gallery=1${ engagementsParam }`;
+			// Placement attribution: the iframe's plays should count against the
+			// page hosting the gallery, tagged with the gallery placement slug.
+			const hostPostId = window.videoAnalyticsParams?.postId || 0;
+			const newIframeSrc = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }&godam_gallery=1${ engagementsParam }&host_post_id=${ hostPostId }&block_source=video-gallery`;
 
 			// Flush analytics from the previous video (navigation case) before
 			// the iframe navigates away. First-open is a no-op because the

@@ -420,6 +420,86 @@ class Analytics extends Base {
 	}
 
 	/**
+	 * Enrich microservice placement rows with WP-side page data.
+	 *
+	 * Each row arrives as { post_id, block_source, views, plays, page_load,
+	 * play_time }. WP adds title (with a "Deleted page" fallback), permalink,
+	 * edit_url (null when the current user can't edit the post) and is_deleted.
+	 * The metric primitives pass through untouched. Lookups are capped to the
+	 * first 100 rows as a defensive bound on per-request DB work; rows past the
+	 * cap still get a constant-cost attributable label so none render blank.
+	 *
+	 * The /analytics/fetch route is public (permission_callback __return_true),
+	 * so this never leaks non-public pages (private, draft, pending, trashed) to
+	 * anonymous callers: the real title/permalink is revealed only when the page
+	 * is publicly viewable, or the current user can edit it.
+	 *
+	 * @param array $placements Placement rows from the microservice.
+	 * @return array Enriched placement rows.
+	 */
+	private function enrich_placements( $placements ) {
+		if ( ! is_array( $placements ) || empty( $placements ) ) {
+			return is_array( $placements ) ? $placements : array();
+		}
+
+		$lookup_limit = 100;
+		$placements   = array_values( $placements );
+
+		foreach ( $placements as $index => $placement ) {
+			if ( ! is_array( $placement ) ) {
+				continue;
+			}
+
+			$placement_post_id = isset( $placement['post_id'] ) ? absint( $placement['post_id'] ) : 0;
+
+			// Beyond the per-request lookup cap: skip the DB work, but emit a
+			// constant-cost attributable label so the row never renders blank.
+			if ( $index >= $lookup_limit ) {
+				$placements[ $index ]['title'] = $placement_post_id
+					/* translators: %d: WordPress post ID. */
+					? sprintf( __( 'Post #%d', 'godam' ), $placement_post_id )
+					: __( 'Deleted page', 'godam' );
+				$placements[ $index ]['permalink']  = null;
+				$placements[ $index ]['edit_url']   = null;
+				$placements[ $index ]['is_deleted'] = false;
+				continue;
+			}
+
+			$placement_post = $placement_post_id ? get_post( $placement_post_id ) : null;
+
+			$can_edit    = $placement_post && current_user_can( 'edit_post', $placement_post_id );
+			$is_viewable = $placement_post && is_post_publicly_viewable( $placement_post );
+			$edit_url    = $can_edit ? get_edit_post_link( $placement_post_id, 'raw' ) : null;
+
+			if ( $is_viewable ) {
+				// Public page: reveal title, permalink and (if capable) an edit link.
+				$permalink = get_permalink( $placement_post );
+
+				$placements[ $index ]['title']      = get_the_title( $placement_post );
+				$placements[ $index ]['permalink']  = $permalink ? $permalink : null;
+				$placements[ $index ]['edit_url']   = $edit_url ? $edit_url : null;
+				$placements[ $index ]['is_deleted'] = false;
+			} elseif ( $can_edit ) {
+				// Not public (private/draft/pending), but this user may edit it:
+				// show the real title + an Edit link, without a public permalink.
+				$placements[ $index ]['title']      = get_the_title( $placement_post );
+				$placements[ $index ]['permalink']  = null;
+				$placements[ $index ]['edit_url']   = $edit_url ? $edit_url : null;
+				$placements[ $index ]['is_deleted'] = false;
+			} else {
+				// Missing, trashed, or non-public and this caller can't edit it:
+				// present as unavailable so nothing sensitive leaks.
+				$placements[ $index ]['title']      = __( 'Deleted page', 'godam' );
+				$placements[ $index ]['permalink']  = null;
+				$placements[ $index ]['edit_url']   = null;
+				$placements[ $index ]['is_deleted'] = true;
+			}
+		}
+
+		return $placements;
+	}
+
+	/**
 	 * Fetch analytics data from the external API securely.
 	 *
 	 * @param WP_REST_Request $request REST API request.
@@ -503,6 +583,16 @@ class Analytics extends Base {
 
 		// Return analytics data if available.
 		if ( isset( $data['processed_analytics'] ) ) {
+			// Placement rows (added by the placements-capable microservice) get
+			// WP-side page context. Key left absent when the microservice
+			// doesn't send it, so the frontend can treat "old microservice"
+			// and "no placements yet" the same way.
+			if ( isset( $data['processed_analytics']['placements'] ) ) {
+				$data['processed_analytics']['placements'] = $this->enrich_placements(
+					$data['processed_analytics']['placements']
+				);
+			}
+
 			$post_views   = $data['processed_analytics']['post_views'] ?? array();
 			$post_ids     = array_keys( $post_views );
 			$post_details = array();
