@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
 import { info } from '@wordpress/icons';
 
@@ -23,6 +23,7 @@ import SingleMetrics from '../analytics/SingleMetrics';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
+import DateRangePicker, { triggerLabelFor, fromISO } from '../analytics/components/DateRangePicker';
 
 /**
  * Retrieve dashboard sections registered by add-ons.
@@ -181,6 +182,47 @@ const Dashboard = () => {
 	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading, isError: isDashboardMetricsError } = useFetchDashboardMetricsQuery( { siteUrl }, { skip: shouldSkipAnalytics } );
 	window.dashboardMetrics = dashboardMetrics;
 
+	// Per-card date range for the "Total Plays / Unique Viewers" card (gauge +
+	// geography). The date args are omitted at All Time so the args reduce to
+	// `{ siteUrl }` — the exact same cache key as the primary query above, so
+	// RTK actually dedups (one request) and only forks once a range is picked.
+	// (RTK's default serializeQueryArgs keys on the arg object, so a literal
+	// `startDate: null` would NOT dedup.) Range mode returns a live range-scoped
+	// unique-viewer count from the microservice, so the gauge shows real numbers
+	// in every range (not just All Time).
+	const [ gaugeRange, setGaugeRange ] = useState( { startDate: null, endDate: null } );
+	const { data: gaugeMetrics } = useFetchDashboardMetricsQuery(
+		{
+			siteUrl,
+			...( gaugeRange.startDate ? { startDate: gaugeRange.startDate } : {} ),
+			...( gaugeRange.endDate ? { endDate: gaugeRange.endDate } : {} ),
+		},
+		{ skip: shouldSkipAnalytics },
+	);
+
+	// Per-card date range for the "Insights" KPI cards. A bounded range makes
+	// the microservice return per-card % deltas (vs the previous equal window);
+	// all-time returns them null, so the delta badges stay hidden.
+	const [ insightsRange, setInsightsRange ] = useState( { startDate: null, endDate: null } );
+	const { data: insightsMetrics } = useFetchDashboardMetricsQuery(
+		{
+			siteUrl,
+			...( insightsRange.startDate ? { startDate: insightsRange.startDate } : {} ),
+			...( insightsRange.endDate ? { endDate: insightsRange.endDate } : {} ),
+		},
+		{ skip: shouldSkipAnalytics },
+	);
+	const insightsRangeActive = Boolean( insightsRange.startDate && insightsRange.endDate );
+	const insightsSpanDays = insightsRangeActive
+		? Math.round( ( fromISO( insightsRange.endDate ) - fromISO( insightsRange.startDate ) ) / 86400000 ) + 1
+		: 0;
+	const insightsDeltaLabel = sprintf(
+		/* translators: %d: number of days in the compared previous window. */
+		__( 'vs prev %d days', 'godam' ),
+		insightsSpanDays,
+	);
+	const insightsCardLabel = insightsRangeActive ? triggerLabelFor( insightsRange ) : __( 'All time', 'godam' );
+
 	// Skip secondary queries until the primary metrics call has returned without an error.
 	// This prevents parallel requests being sent when the server rejects the API key.
 	const shouldSkipSecondaryQueries = shouldSkipAnalytics || ! dashboardMetrics || !! dashboardMetrics?.errorType;
@@ -211,16 +253,18 @@ const Dashboard = () => {
 	}, [ dashboardMetrics, isDashboardMetricsLoading, isDashboardMetricsError, analyticsUnreachable ] );
 
 	useEffect( () => {
-		// Render once metrics have loaded. generateCountryHeatmap shows an
-		// empty-state placeholder when there is no geography data yet.
-		if ( ! isDashboardMetricsLoading && dashboardMetrics ) {
+		// The geography map lives inside the gauge card, so it follows the same
+		// per-card range (gaugeMetrics). generateCountryHeatmap clears both
+		// containers before drawing, so it is safe to re-run when the range
+		// changes; it shows an empty-state placeholder when there is no data.
+		if ( gaugeMetrics ) {
 			const interval = setInterval( () => {
 				const mapContainer = document.querySelector( '#map-container' );
 				const tableContainer = document.querySelector( '#table-container' );
 				if ( mapContainer && tableContainer ) {
 					clearInterval( interval );
 					generateCountryHeatmap(
-						dashboardMetrics.country_views || {},
+						gaugeMetrics.country_views || {},
 						'#map-container',
 						'#table-container',
 					);
@@ -229,7 +273,7 @@ const Dashboard = () => {
 
 			return () => clearInterval( interval );
 		}
-	}, [ isDashboardMetricsLoading, dashboardMetrics ] );
+	}, [ gaugeMetrics ] );
 
 	useEffect( () => {
 		const checkExist = setInterval( () => {
@@ -287,10 +331,15 @@ const Dashboard = () => {
 					<div className="godam-card godam-viewers-card">
 						<div className="godam-card__head">
 							<h2>{ __( 'Total Plays / Unique Viewers', 'godam' ) }</h2>
+							<DateRangePicker
+								value={ gaugeRange }
+								onChange={ setGaugeRange }
+								testIdPrefix="godam-dashboard-gauge-daterange"
+							/>
 						</div>
 						<ViewersGauge
-							plays={ dashboardMetrics?.plays ?? 0 }
-							uniqueViewers={ dashboardMetrics?.unique_viewers ?? 0 }
+							plays={ gaugeMetrics?.plays ?? 0 }
+							uniqueViewers={ gaugeMetrics?.unique_viewers ?? null }
 						/>
 						<div className="country-views">
 							<div className="country-views-map" id="map-container"></div>
@@ -303,7 +352,11 @@ const Dashboard = () => {
 						<div className="godam-card godam-insights-card">
 							<div className="godam-card__head">
 								<h2>{ __( 'Insights', 'godam' ) }</h2>
-								<span className="godam-pill">{ __( 'All time', 'godam' ) }</span>
+								<DateRangePicker
+									value={ insightsRange }
+									onChange={ setInsightsRange }
+									testIdPrefix="godam-dashboard-insights-daterange"
+								/>
 							</div>
 							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
 
@@ -315,9 +368,11 @@ const Dashboard = () => {
 										'Number of unique videos that received user interactions each day, such as views or plays.',
 										'godam',
 									) }
-									processedAnalyticsHistory={ dashboardMetricsHistory }
+									rangeActive={ insightsRangeActive }
+									deltaLabel={ insightsDeltaLabel }
+									dataLabel={ insightsCardLabel }
 									analyticsDataFetched={ {
-										total_videos: dashboardMetrics?.total_videos ?? 0,
+										total_videos: insightsMetrics?.total_videos ?? 0,
 									} }
 								/>
 
@@ -329,8 +384,10 @@ const Dashboard = () => {
 										'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
 										'godam',
 									) }
-									processedAnalyticsHistory={ dashboardMetricsHistory }
-									analyticsDataFetched={ dashboardMetrics }
+									rangeActive={ insightsRangeActive }
+									deltaLabel={ insightsDeltaLabel }
+									dataLabel={ insightsCardLabel }
+									analyticsDataFetched={ insightsMetrics }
 								/>
 
 								<SingleMetrics
@@ -341,8 +398,10 @@ const Dashboard = () => {
 										'Total time the video has been watched, aggregated across all plays',
 										'godam',
 									) }
-									processedAnalyticsHistory={ dashboardMetricsHistory }
-									analyticsDataFetched={ dashboardMetrics }
+									rangeActive={ insightsRangeActive }
+									deltaLabel={ insightsDeltaLabel }
+									dataLabel={ insightsCardLabel }
+									analyticsDataFetched={ insightsMetrics }
 								/>
 
 								<SingleMetrics
@@ -353,8 +412,10 @@ const Dashboard = () => {
 										'Average share of each video that viewers watched, across all plays.',
 										'godam',
 									) }
-									processedAnalyticsHistory={ dashboardMetricsHistory }
-									analyticsDataFetched={ dashboardMetrics }
+									rangeActive={ insightsRangeActive }
+									deltaLabel={ insightsDeltaLabel }
+									dataLabel={ insightsCardLabel }
+									analyticsDataFetched={ insightsMetrics }
 								/>
 							</div>
 						</div>

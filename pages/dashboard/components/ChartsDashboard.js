@@ -1,10 +1,5 @@
 /* global d3 */
 
-/**
- * Internal dependencies
- */
-import { formatWatchTime } from '../../utils/formatters';
-
 export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'bandwidth', label = 'Used' ) {
 	const used = parseFloat( usedRaw ) || 0;
 	const total = parseFloat( totalRaw ) || 0;
@@ -152,42 +147,11 @@ function main() {
 		return;
 	}
 
-	const {
-		plays,
-		page_load: pageLoad,
-		play_time: playTime,
-		total_videos: totalVideos,
-		avg_engagement: avgEngagement,
-	} = dashboardMetrics;
-
-	const totalVideosEl = document.getElementById( 'total-videos' );
-	if ( totalVideosEl ) {
-		// Full numbers, no hover tooltip (Figma review: Riya, 2026-06-18).
-		totalVideosEl.innerText = ( totalVideos ?? 0 ).toLocaleString();
-	}
-
-	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0;
-
-	const playRateEl = document.getElementById( 'play-rate' );
-	if ( playRateEl ) {
-		playRateEl.innerText = `${ playRate?.toFixed( 2 ) }%`;
-	}
-
-	const playsEl = document.getElementById( 'plays' );
-	if ( playsEl ) {
-		playsEl.innerText = ( plays ?? 0 ).toLocaleString();
-	}
-
-	const watchTimeEl = document.getElementById( 'watch-time' );
-	if ( watchTimeEl ) {
-		// Watch time stays in h m s format; no exact-seconds hover tooltip.
-		watchTimeEl.innerText = formatWatchTime( playTime );
-	}
-
-	const engagementEl = document.getElementById( 'engagement-rate' );
-	if ( engagementEl ) {
-		engagementEl.innerText = `${ ( avgEngagement ?? 0 ).toFixed( 2 ) }%`;
-	}
+	// The "Insights" KPI values + deltas are now rendered by SingleMetrics
+	// (React), so they can react to each card's date range. Setting them here
+	// via innerText would detach React's text nodes and freeze range updates,
+	// so the imperative KPI writes were removed. This function only keeps the
+	// (dashboard-inert) container reveal below.
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );
 	if ( analyticsContainer ) {

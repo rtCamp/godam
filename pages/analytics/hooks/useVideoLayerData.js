@@ -18,32 +18,6 @@ import {
 import { LAYER_TYPE_BY_ID, FORM_TYPE_LABELS } from '../constants/layerTypes';
 
 /**
- * Convert a UI date range key to the integer days parameter the analytics
- * endpoint expects. '1y' is mapped to 365 as a reasonable upper bound.
- * 'all' returns undefined so the `days` query param is omitted entirely —
- * the microservice then applies no date lower-bound and returns the full
- * history (matching the Playback Performance chart's "All" option).
- *
- * @param {string} dateRange '7d' | '30d' | '90d' | '1y' | 'all'.
- * @return {number|undefined} Days, or undefined for all-time.
- */
-function rangeToDays( dateRange ) {
-	switch ( dateRange ) {
-		case '7d':
-			return 7;
-		case '30d':
-			return 30;
-		case '90d':
-			return 90;
-		case 'all':
-			return undefined;
-		case '1y':
-		default:
-			return 365;
-	}
-}
-
-/**
  * Parse layer_metadata which the microservice returns as a JSON string
  * (or sometimes a parsed object, depending on transport). Safe — never
  * throws.
@@ -556,34 +530,33 @@ export function groupRows( rows, layerType, configIndex ) {
  * @param {Object}        params
  * @param {number|string} params.videoId   WP attachment ID.
  * @param {string}        params.siteUrl   site_url query param.
- * @param {string}        params.dateRange '7d' | '30d' | '90d' | '1y' | 'all'.
+ * @param {?string}       params.startDate ISO start date (null = All Time).
+ * @param {?string}       params.endDate   ISO end date (null = All Time).
  * @return {Object} { parents, isLoading, errorType, errorMessage }.
  */
-export function useVideoLayerData( { videoId, siteUrl, dateRange } ) {
-	const days = rangeToDays( dateRange );
-
+export function useVideoLayerData( { videoId, siteUrl, startDate, endDate } ) {
 	// One RTK Query hook per layer type. React's rules-of-hooks forbid
 	// looping `useFetchProcessedLayerAnalyticsQuery` over LAYER_TYPES, so
 	// we expand explicitly — five calls, fixed at compile time, each
 	// caches independently and won't re-fire on identical args.
 	const cta = useFetchProcessedLayerAnalyticsQuery(
-		{ layerType: 'cta', days, siteUrl, videoId },
+		{ layerType: 'cta', startDate, endDate, siteUrl, videoId },
 		{ skip: ! videoId },
 	);
 	const form = useFetchProcessedLayerAnalyticsQuery(
-		{ layerType: 'form', days, siteUrl, videoId },
+		{ layerType: 'form', startDate, endDate, siteUrl, videoId },
 		{ skip: ! videoId },
 	);
 	const hotspot = useFetchProcessedLayerAnalyticsQuery(
-		{ layerType: 'hotspot', days, siteUrl, videoId },
+		{ layerType: 'hotspot', startDate, endDate, siteUrl, videoId },
 		{ skip: ! videoId },
 	);
 	const poll = useFetchProcessedLayerAnalyticsQuery(
-		{ layerType: 'poll', days, siteUrl, videoId },
+		{ layerType: 'poll', startDate, endDate, siteUrl, videoId },
 		{ skip: ! videoId },
 	);
 	const woo = useFetchProcessedLayerAnalyticsQuery(
-		{ layerType: 'woo', days, siteUrl, videoId },
+		{ layerType: 'woo', startDate, endDate, siteUrl, videoId },
 		{ skip: ! videoId },
 	);
 
@@ -593,7 +566,7 @@ export function useVideoLayerData( { videoId, siteUrl, dateRange } ) {
 	// day) so it tracks the same date pill as the layer data above. The
 	// numerator is already type=1 gated server-side, so the ratio is ≤ 100%.
 	const history = useFetchProcessedAnalyticsHistoryQuery(
-		{ days, videoId, siteUrl },
+		{ startDate, endDate, videoId, siteUrl },
 		{ skip: ! videoId },
 	);
 

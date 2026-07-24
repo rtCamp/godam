@@ -13,6 +13,13 @@ import { formatNumber, formatWatchTime } from '../utils/formatters';
 import { __ } from '@wordpress/i18n';
 
 function generatePostViewsChart( postsData, selector ) {
+	// Idempotent: clear any previous render so re-runs (e.g. on a date-range
+	// change) replace the donut + legend instead of stacking them, and drop
+	// leaked tooltip nodes this chart appended to <body> on a prior run.
+	d3.select( selector ).selectAll( '*' ).remove();
+	d3.select( '#legend' ).selectAll( '*' ).remove();
+	d3.select( 'body' ).selectAll( 'div.tooltip' ).remove();
+
 	// Set dimensions
 	const width = 200;
 	const height = 200;
@@ -173,7 +180,7 @@ function generatePostViewsChart( postsData, selector ) {
 	} );
 }
 
-async function main() {
+export async function main() {
 	const analyticsData = window.analyticsDataFetched;
 
 	if ( ! analyticsData ) {
