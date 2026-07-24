@@ -1,6 +1,10 @@
 ( function( $ ) {
 	'use strict';
 
+	// Use WordPress i18n when available so the WPBakery param UI is translatable
+	// like the PHP-rendered labels; fall back to identity if wp.i18n is absent.
+	const { __ } = ( window.wp && window.wp.i18n ) ? window.wp.i18n : { __: ( s ) => s };
+
 	// Initialize image selector on document ready and when WPBakery reloads the params.
 	$( document ).ready( initImageSelector );
 	$( document ).on( 'vc.reload', initImageSelector );
@@ -14,16 +18,16 @@
 			const paramName = $button.data( 'param' );
 			const $container = $button.closest( '.image_selector_block' );
 			const $input = $container.find( '.image_selector_field' );
-			// Sibling hidden params filled from the attachment; the GoDAM Image
-			// block's render.php falls back to the attachment for anything empty.
+			// Sibling hidden `url` param filled from the attachment; the GoDAM Image
+			// block's render.php falls back to the attachment (URL / alt / size) for
+			// anything empty, so alt is not exposed as a param.
 			const $urlInput = $attributeContainer.find( '[name="url"]' );
-			const $altInput = $attributeContainer.find( '[name="alt"]' );
 
 			// Create WordPress media frame, restricted to images.
 			const frame = wp.media( {
-				title: 'Select or Upload Image',
+				title: __( 'Select or Upload Image', 'godam' ),
 				button: {
-					text: 'Select Image',
+					text: __( 'Select image', 'godam' ),
 				},
 				library: {
 					type: 'image',
@@ -35,17 +39,14 @@
 			frame.on( 'select', function() {
 				const attachment = frame.state().get( 'selection' ).first().toJSON();
 
-				// Store the attachment ID (layers are keyed off it) + url/alt.
+				// Store the attachment ID (layers are keyed off it) + source URL.
 				$input.val( attachment.id ).trigger( 'change' );
 				if ( $urlInput.length ) {
 					$urlInput.val( attachment.url || '' ).trigger( 'change' );
 				}
-				if ( $altInput.length ) {
-					$altInput.val( typeof attachment.alt === 'string' ? attachment.alt : '' ).trigger( 'change' );
-				}
 
 				// Update button text.
-				$button.text( 'Replace' );
+				$button.text( __( 'Replace', 'godam' ) );
 
 				// Add or update preview.
 				let $preview = $container.find( '.image-selector-preview' );
@@ -63,7 +64,7 @@
 				if ( $removeButton.length === 0 ) {
 					$removeButton = $( '<button type="button" class="button image-selector-remove" data-test-id="godam-wpb-button-remove-image-block" style="margin-left: 5px;"></button>' )
 						.attr( 'data-param', paramName )
-						.text( 'Remove' );
+						.text( __( 'Remove', 'godam' ) );
 					$buttonsWrapper.append( $removeButton );
 				}
 
@@ -89,15 +90,11 @@
 			const $input = $container.find( '.image_selector_field' );
 			const $selectButton = $container.find( '.image-selector-button' );
 			const $urlInput = $attributeContainer.find( '[name="url"]' );
-			const $altInput = $attributeContainer.find( '[name="alt"]' );
 
 			// Clear the values.
 			$input.val( '' ).trigger( 'change' );
 			if ( $urlInput.length ) {
 				$urlInput.val( '' ).trigger( 'change' );
-			}
-			if ( $altInput.length ) {
-				$altInput.val( '' ).trigger( 'change' );
 			}
 
 			// Remove preview.
@@ -107,7 +104,7 @@
 			$button.remove();
 
 			// Update button text.
-			$selectButton.text( 'Select image' );
+			$selectButton.text( __( 'Select image', 'godam' ) );
 		} );
 	}
 }( window.jQuery ) );

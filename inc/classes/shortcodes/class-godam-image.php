@@ -25,6 +25,64 @@ class GoDAM_Image {
 	 */
 	final protected function __construct() {
 		add_shortcode( 'godam_image', array( $this, 'render' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'preload_wpbakery_editor_assets' ) );
+	}
+
+	/**
+	 * Register the shared image-layers front-end script (idempotent).
+	 *
+	 * Mirrors the lazy registration in the block's render.php so the script can
+	 * also be enqueued up front (e.g. in the WPBakery inline editor) with the
+	 * same Woo dependencies applied via the filter.
+	 *
+	 * @return void
+	 */
+	private function register_image_layers_script() {
+		if ( wp_script_is( 'godam-image-layers-frontend', 'registered' ) ) {
+			return;
+		}
+
+		$asset_path = RTGODAM_PATH . 'assets/build/js/godam-image-layers-frontend.min.asset.php';
+		$asset      = file_exists( $asset_path )
+			? include $asset_path
+			: array(
+				'dependencies' => array(),
+				'version'      => RTGODAM_VERSION,
+			);
+
+		$deps = apply_filters( 'godam_image_layers_frontend_dependencies', $asset['dependencies'] );
+
+		wp_register_script(
+			'godam-image-layers-frontend',
+			RTGODAM_URL . 'assets/build/js/godam-image-layers-frontend.min.js',
+			$deps,
+			$asset['version'],
+			true
+		);
+	}
+
+	/**
+	 * Preload the image-layers assets in the WPBakery inline editor.
+	 *
+	 * WPBakery adds/updates an element via AJAX and does NOT inject newly
+	 * enqueued scripts into the running editor page. So when a GoDAM Image is
+	 * added for the first time and saved, the layers script wouldn't be present
+	 * yet — the hotspot / product layers only appeared after a full reload. Load
+	 * the script (and hotspot styles) up front in the inline editor so the
+	 * editor-scoped re-init in frontend.js can draw a just-added image's layers
+	 * immediately, without a refresh. Editor-only; nothing changes on the front end.
+	 *
+	 * @return void
+	 */
+	public function preload_wpbakery_editor_assets() {
+		if ( ! function_exists( 'vc_is_inline' ) || ! vc_is_inline() ) {
+			return;
+		}
+
+		$this->register_image_layers_script();
+		wp_enqueue_script( 'godam-image-layers-frontend' );
+		wp_enqueue_style( 'godam-image-style' );
+		wp_enqueue_style( 'godam-player-style' );
 	}
 
 	/**
@@ -52,8 +110,10 @@ class GoDAM_Image {
 		}
 
 		// Map the flat shortcode atts to the block attribute shape render.php reads.
+		// Normalize the attachment ID to an int (shortcode atts arrive as strings)
+		// so it matches how core attachment APIs and the block attribute expect it.
 		$attributes = array(
-			'id'              => $atts['id'],
+			'id'              => absint( $atts['id'] ),
 			'url'             => $atts['url'],
 			'alt'             => $atts['alt'],
 			'showImageLayers' => filter_var( $atts['show_image_layers'], FILTER_VALIDATE_BOOLEAN ),

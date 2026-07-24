@@ -95,20 +95,6 @@ class WPB_GoDAM_Image {
 						),
 					),
 
-					// Alt text (auto-filled by the image selector).
-					array(
-						'type'        => 'textfield_hidden',
-						'heading'     => esc_html__( 'Alt Text', 'godam' ),
-						'param_name'  => 'alt',
-						'value'       => '',
-						'description' => esc_html__( 'Alternative text for the image.', 'godam' ),
-						'save_always' => true,
-						'dependency'  => array(
-							'element'   => 'id',
-							'not_empty' => true,
-						),
-					),
-
 					// Show Image Layers toggle.
 					array(
 						'type'        => 'checkbox',
