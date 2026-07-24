@@ -15,15 +15,17 @@ import {
 	useBlockProps,
 } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
-import { useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { store as coreStore } from '@wordpress/core-data';
 import { store as noticesStore } from '@wordpress/notices';
-import { useEffect } from '@wordpress/element';
+import { useEffect, useMemo, useRef } from '@wordpress/element';
 import { plus, trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import { CustomizeVideoIcon } from '../godam-player/icons';
+import { initImageFrame } from '../../js/godam-image-layers/render-image-frame.js';
 import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = [ 'image' ];
@@ -96,6 +98,55 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 
 	const blockProps = useBlockProps( { className: 'godam-image' } );
 	const hasImage = !! url;
+
+	// Fetch the attachment's authored layers so the editor canvas can preview the
+	// same hotspot / product-hotspot overlays the front end renders. rtgodam_meta
+	// is exposed as a REST field on attachments (see Meta_Rest_Fields).
+	const rtgodamMeta = useSelect(
+		( select ) => ( id ? select( coreStore ).getEntityRecord( 'postType', 'attachment', id )?.rtgodam_meta : null ),
+		[ id ],
+	);
+
+	// Keep only drawable layers (mirror render.php): hotspot layers with hotspots
+	// and Woo layers with product hotspots.
+	const layers = useMemo( () => {
+		const all = ( rtgodamMeta && Array.isArray( rtgodamMeta.layers ) ) ? rtgodamMeta.layers : [];
+		return all.filter( ( layer ) => {
+			if ( ! layer || ! layer.type ) {
+				return false;
+			}
+			if ( 'hotspot' === layer.type ) {
+				return Array.isArray( layer.hotspots ) && layer.hotspots.length > 0;
+			}
+			if ( 'woo' === layer.type ) {
+				return Array.isArray( layer.productHotspots ) && layer.productHotspots.length > 0;
+			}
+			return false;
+		} );
+	}, [ rtgodamMeta ] );
+
+	const showLayers = !! showImageLayers && layers.length > 0;
+	const layersJson = useMemo( () => JSON.stringify( layers ), [ layers ] );
+	const instanceId = useMemo( () => `img_editor_${ Math.random().toString( 36 ).slice( 2, 10 ) }`, [] );
+	const frameRef = useRef( null );
+
+	// Draw (and redraw) the layers onto the editor-canvas frame whenever the
+	// image or layers change. The canvas is an iframe; the ref points at the real
+	// node inside it, and initImageFrame() draws directly onto that node — the
+	// same renderer the front end uses (Woo hotspots included, when the woo add-on
+	// registers its manager). We reset the render guard + overlay so edits redraw.
+	useEffect( () => {
+		const frame = frameRef.current;
+		if ( ! frame || ! showLayers ) {
+			return;
+		}
+		frame.dataset.godamLayersRendered = '';
+		const overlay = frame.querySelector( '.godam-image-layer' );
+		if ( overlay ) {
+			overlay.innerHTML = '';
+		}
+		initImageFrame( frame );
+	}, [ showLayers, layersJson, url, instanceId ] );
 
 	// The inspector "Image Selection" panel mirrors the GoDAM Video block: an
 	// outlined "Add Image" button when empty, or a "Customize Image" button plus
@@ -221,9 +272,28 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 				</div>
 			) : (
 				<figure { ...blockProps } data-test-id="godam-image-canvas">
-					<div className="godam-image__frame">
-						<img className="godam-image__img" src={ url } alt={ alt || '' } />
-					</div>
+					{ showLayers ? (
+						<div
+							className="godam-image__frame"
+							ref={ frameRef }
+							data-id={ id }
+							data-instance-id={ instanceId }
+							data-godam-image-layers={ layersJson }
+							style={ { position: 'relative', display: 'inline-block', maxWidth: '100%', lineHeight: 0 } }
+						>
+							<img
+								className="godam-image__img"
+								src={ url }
+								alt={ alt || '' }
+								style={ { display: 'block', width: '100%', height: 'auto' } }
+							/>
+							<div className="easydam-layer hotspot-layer godam-image-layer"></div>
+						</div>
+					) : (
+						<div className="godam-image__frame">
+							<img className="godam-image__img" src={ url } alt={ alt || '' } />
+						</div>
+					) }
 				</figure>
 			) }
 		</>
