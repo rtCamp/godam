@@ -44,6 +44,7 @@ class GoDAM_Image {
 
 		$asset_path = RTGODAM_PATH . 'assets/build/js/godam-image-layers-frontend.min.asset.php';
 		$asset      = file_exists( $asset_path )
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is a plugin constant + hardcoded build filename.
 			? include $asset_path
 			: array(
 				'dependencies' => array(),
