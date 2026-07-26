@@ -48,7 +48,23 @@ const SECTION_ORDER = [
  * @return {string} Human-readable section label.
  */
 export function getBlockSourceLabel( blockSource ) {
-	return BLOCK_SOURCE_LABELS[ blockSource ] || __( 'Other', 'godam' );
+	// hasOwnProperty, not a bare lookup: block_source is untrusted free text and
+	// an inherited Object.prototype member name ('toString', 'valueOf', …) would
+	// otherwise resolve to a function and be treated as a known label.
+	return isKnownBlockSource( blockSource )
+		? BLOCK_SOURCE_LABELS[ blockSource ]
+		: __( 'Other', 'godam' );
+}
+
+/**
+ * Whether a block_source is one of the labelled placements. Own-property check
+ * only, so inherited Object.prototype names never count as known.
+ *
+ * @param {string} blockSource Raw block_source value.
+ * @return {boolean} True when the value has a defined label.
+ */
+function isKnownBlockSource( blockSource ) {
+	return Object.prototype.hasOwnProperty.call( BLOCK_SOURCE_LABELS, blockSource );
 }
 
 /**
@@ -62,11 +78,17 @@ export function getBlockSourceLabel( blockSource ) {
  * @return {Array<{key: string, label: string, rows: Array}>} Ordered sections.
  */
 export function groupPlacementsByBlockSource( placements ) {
-	const buckets = {};
+	// Null-prototype map: block_source is untrusted free text (the microservice
+	// normalizes but deliberately never rejects it, and the public embed page
+	// accepts it from a query arg), so a value like 'toString' or 'constructor'
+	// would otherwise hit an inherited Object.prototype member — making the
+	// label lookup truthy and `buckets[ key ]` a function, so the push threw a
+	// TypeError during render and took the whole Analytics page down.
+	const buckets = Object.create( null );
 
 	( Array.isArray( placements ) ? placements : [] ).forEach( ( row ) => {
 		const raw = typeof row?.block_source === 'string' ? row.block_source : '';
-		const key = BLOCK_SOURCE_LABELS[ raw ] ? raw : 'other';
+		const key = isKnownBlockSource( raw ) ? raw : 'other';
 		if ( ! buckets[ key ] ) {
 			buckets[ key ] = [];
 		}
@@ -307,6 +329,7 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 
 	const selectedSection = sections.find( ( s ) => s.key === selectedKey ) || null;
 	const showSkeleton = isLoading || isFetching;
+	const hasRange = Boolean( range.startDate || range.endDate );
 
 	return (
 		<div className="godam-card godam-placements-card" data-test-id="godam-placements-section">
@@ -329,15 +352,43 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 
 			{ ! showSkeleton && ! hasError && sections.length === 0 && (
 				<div className="px-6 py-10 text-center">
-					<p className="text-sm font-semibold text-zinc-700 m-0">
-						{ __( 'Collecting placement data', 'godam' ) }
-					</p>
-					<p className="text-sm text-zinc-500 m-0 mt-1">
-						{ __(
-							'Placement analytics starts collecting after this update. Data appears as new plays come in.',
-							'godam',
-						) }
-					</p>
+					{ hasRange ? (
+						/* A range is active: this is "nothing in this window", not
+						   "the feature hasn't started collecting" — and the empty
+						   state offers the action that resolves it. */
+						<>
+							<p className="text-sm font-semibold text-zinc-700 m-0">
+								{ __( 'No placements in this date range', 'godam' ) }
+							</p>
+							<p className="text-sm text-zinc-500 m-0 mt-1">
+								{ __(
+									'This video had no placement activity in the selected range.',
+									'godam',
+								) }
+							</p>
+							<Button
+								variant="secondary"
+								size="small"
+								className="mt-3"
+								onClick={ () => setRange( { startDate: null, endDate: null } ) }
+								data-test-id="godam-placements-reset-range"
+							>
+								{ __( 'View all time', 'godam' ) }
+							</Button>
+						</>
+					) : (
+						<>
+							<p className="text-sm font-semibold text-zinc-700 m-0">
+								{ __( 'Collecting placement data', 'godam' ) }
+							</p>
+							<p className="text-sm text-zinc-500 m-0 mt-1">
+								{ __(
+									'Placement analytics starts collecting after this update. Data appears as new plays come in.',
+									'godam',
+								) }
+							</p>
+						</>
+					) }
 				</div>
 			) }
 

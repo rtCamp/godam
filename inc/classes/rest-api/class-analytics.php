@@ -445,6 +445,20 @@ class Analytics extends Base {
 		$lookup_limit = 100;
 		$placements   = array_values( $placements );
 
+		// Prime the post cache in ONE query for the rows we are about to enrich,
+		// so the loop below hits cache instead of issuing up to 100 individual
+		// uncached get_post() calls per request on a public endpoint.
+		$prime_ids = array();
+		foreach ( array_slice( $placements, 0, $lookup_limit ) as $placement ) {
+			if ( is_array( $placement ) && ! empty( $placement['post_id'] ) ) {
+				$prime_ids[] = absint( $placement['post_id'] );
+			}
+		}
+		$prime_ids = array_filter( array_unique( $prime_ids ) );
+		if ( ! empty( $prime_ids ) ) {
+			_prime_post_caches( $prime_ids, false, false );
+		}
+
 		foreach ( $placements as $index => $placement ) {
 			if ( ! is_array( $placement ) ) {
 				continue;
@@ -467,8 +481,15 @@ class Analytics extends Base {
 
 			$placement_post = $placement_post_id ? get_post( $placement_post_id ) : null;
 
-			$can_edit    = $placement_post && current_user_can( 'edit_post', $placement_post_id );
-			$is_viewable = $placement_post && is_post_publicly_viewable( $placement_post );
+			// A trashed post is treated as gone even for users who can edit it:
+			// WordPress maps edit_post on a trashed post to its pre-trash status
+			// (so current_user_can passes), but wp-admin/post.php refuses to open
+			// it ("You cannot edit this item because it is in the Trash", HTTP
+			// 409). Surfacing an Edit link would be a dead end, and the page is
+			// unreachable for visitors, so it belongs in the deleted state.
+			$is_trashed  = $placement_post && 'trash' === $placement_post->post_status;
+			$can_edit    = $placement_post && ! $is_trashed && current_user_can( 'edit_post', $placement_post_id );
+			$is_viewable = $placement_post && ! $is_trashed && is_post_publicly_viewable( $placement_post );
 			$edit_url    = $can_edit ? get_edit_post_link( $placement_post_id, 'raw' ) : null;
 
 			if ( $is_viewable ) {
@@ -488,8 +509,13 @@ class Analytics extends Base {
 				$placements[ $index ]['is_deleted'] = false;
 			} else {
 				// Missing, trashed, or non-public and this caller can't edit it:
-				// present as unavailable so nothing sensitive leaks.
-				$placements[ $index ]['title']      = __( 'Deleted page', 'godam' );
+				// present as unavailable so nothing sensitive leaks. Keep the ID
+				// in the title when known, so several unavailable rows stay
+				// distinguishable instead of repeating one constant string.
+				$placements[ $index ]['title'] = $placement_post_id
+					/* translators: %d: WordPress post ID. */
+					? sprintf( __( 'Post #%d (unavailable)', 'godam' ), $placement_post_id )
+					: __( 'Deleted page', 'godam' );
 				$placements[ $index ]['permalink']  = null;
 				$placements[ $index ]['edit_url']   = null;
 				$placements[ $index ]['is_deleted'] = true;

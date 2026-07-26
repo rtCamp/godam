@@ -90,18 +90,40 @@ function getPageLoadVideoInfo( video ) {
 }
 
 /**
- * Page-level host-post attribution for embed iframes.
+ * Host-post attribution for a single player element.
  *
- * `data-host-post-id` is only ever stamped inside a gallery/embed iframe,
- * where every player on the page belongs to the same host page, so a single
- * page-level lookup is safe for batched sends that span multiple videos.
- *
- * @return {number|null} The host page's post ID, or null outside embeds.
+ * @param {HTMLElement|null} el The video element (or null).
+ * @return {number|null} The host page's post ID, or null when not stamped.
  */
-function getPageHostPostId() {
-	const el = document.querySelector( '[data-host-post-id]' );
+function elementHostPostId( el ) {
 	const id = parseInt( el?.dataset?.hostPostId, 10 );
 	return id > 0 ? id : null;
+}
+
+/**
+ * Split a page_load batch into one group per host post ID.
+ *
+ * `post_id` is a single top-level field per request, so entries that carry
+ * different host attributions cannot share one send. Host attribution is
+ * per-element (`data-host-post-id` comes from the `host_post_id` shortcode att
+ * as well as the embed page), so a page-level lookup would let one stamped
+ * player silently re-attribute every other video's page_load on that page.
+ *
+ * @param {Array} batch Queue entries.
+ * @return {Map<number, Array>} hostPostId (0 = none) -> wire triples.
+ */
+function groupBatchByHostPostId( batch ) {
+	const groups = new Map();
+
+	batch.forEach( ( entry ) => {
+		const key = entry.hostPostId > 0 ? entry.hostPostId : 0;
+		if ( ! groups.has( key ) ) {
+			groups.set( key, [] );
+		}
+		groups.get( key ).push( [ entry.videoId, entry.jobId, entry.blockSource || '' ] );
+	} );
+
+	return groups;
 }
 
 // Keep instance tracking on window so repeat evaluations share one registry.
@@ -110,8 +132,10 @@ window.godamObservedPageLoadVideos = window.godamObservedPageLoadVideos || new W
 window.godamPageLoadObserver = window.godamPageLoadObserver || null;
 
 // Pending type 1 page_load events awaiting batched dispatch. Kept on window so
-// repeat evaluations share one queue; entries are [ videoId, jobId, blockSource ]
-// triples matching the bulk schema (videoIds: [[id, job, source], ...]).
+// repeat evaluations share one queue; entries are
+// { videoId, jobId, blockSource, hostPostId } objects, converted to the wire
+// schema (videoIds: [[id, job, source], ...]) at flush time, grouped by
+// hostPostId so each request carries the post_id override that applies to it.
 window.godamPageLoadQueue = window.godamPageLoadQueue || [];
 window.godamPageLoadFlushTimer = window.godamPageLoadFlushTimer || null;
 
@@ -130,7 +154,14 @@ const PAGE_LOAD_FLUSH_DELAY_MS = 1000;
  * @param {{ videoId: number, jobId: string, blockSource: string }} videoInfo
  */
 function enqueuePageLoad( videoInfo ) {
-	window.godamPageLoadQueue.push( [ videoInfo.videoId, videoInfo.jobId, videoInfo.blockSource || '' ] );
+	window.godamPageLoadQueue.push( {
+		videoId: videoInfo.videoId,
+		jobId: videoInfo.jobId,
+		blockSource: videoInfo.blockSource || '',
+		// Kept per entry so the flush can group by host attribution instead of
+		// applying one page-global value to every video on the page.
+		hostPostId: videoInfo.hostPostId || null,
+	} );
 
 	if ( window.godamPageLoadQueue.length >= PAGE_LOAD_BATCH_SIZE ) {
 		flushPageLoadQueue();
@@ -177,23 +208,27 @@ function flushPageLoadQueue( sync = false ) {
 		}
 
 		const batch = window.godamPageLoadQueue.splice( 0 );
+		const userToken = window.analytics?.user?.()?.anonymousId || '';
 
-		const { endpoint, body } = buildAnalyticsRequestBody( {
-			type: 1,
-			userToken: window.analytics?.user?.()?.anonymousId || '',
-			videoIds: batch,
-			hostPostId: getPageHostPostId(),
-		} );
+		// One request per host attribution: post_id is a single top-level field.
+		groupBatchByHostPostId( batch ).forEach( ( videoIds, hostPostId ) => {
+			const { endpoint, body } = buildAnalyticsRequestBody( {
+				type: 1,
+				userToken,
+				videoIds,
+				hostPostId: hostPostId || null,
+			} );
 
-		if ( ! endpoint ) {
-			return;
-		}
+			if ( ! endpoint ) {
+				return;
+			}
 
-		fetch( endpoint + '/analytics/', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify( body ),
-			keepalive: true,
+			fetch( endpoint + '/analytics/', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify( body ),
+				keepalive: true,
+			} );
 		} );
 
 		return;
@@ -209,10 +244,12 @@ function flushPageLoadQueue( sync = false ) {
 
 	const batch = window.godamPageLoadQueue.splice( 0 );
 
-	window.analytics.track( 'page_load', {
-		type: 1,
-		videoIds: batch,
-		hostPostId: getPageHostPostId(),
+	groupBatchByHostPostId( batch ).forEach( ( videoIds, hostPostId ) => {
+		window.analytics.track( 'page_load', {
+			type: 1,
+			videoIds,
+			hostPostId: hostPostId || null,
+		} );
 	} );
 }
 
@@ -430,7 +467,9 @@ function observePageLoadForVideo( video ) {
 					jobId: isNumeric ? '' : videoKey,
 					layers: chunk,
 					blockSource: flushVideoEl?.dataset?.blockSource || '',
-					hostPostId: getPageHostPostId(),
+					// From this video's own element, not a page-level lookup: a
+					// single host-stamped player must not re-attribute the rest.
+					hostPostId: elementHostPostId( flushVideoEl ),
 				} );
 
 				if ( ! endpoint ) {

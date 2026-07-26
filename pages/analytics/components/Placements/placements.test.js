@@ -135,6 +135,45 @@ describe( 'getAvgWatchTime', () => {
 	} );
 } );
 
+describe( 'untrusted block_source keys', () => {
+	// block_source is free text: the microservice normalizes but never rejects
+	// it, and the public embed page accepts it from a query arg. An inherited
+	// Object.prototype member name used to make the label lookup truthy and the
+	// bucket a function, throwing a TypeError during render.
+	const PROTO_KEYS = [
+		'toString',
+		'valueOf',
+		'constructor',
+		'hasOwnProperty',
+		'__proto__',
+		'isPrototypeOf',
+	];
+
+	it.each( PROTO_KEYS )( 'groups %s into "other" without throwing', ( bs ) => {
+		const sections = groupPlacementsByBlockSource( [ row( { block_source: bs } ) ] );
+		expect( sections ).toHaveLength( 1 );
+		expect( sections[ 0 ].key ).toBe( 'other' );
+		expect( sections[ 0 ].rows ).toHaveLength( 1 );
+	} );
+
+	it.each( PROTO_KEYS )( 'labels %s as "Other"', ( bs ) => {
+		expect( getBlockSourceLabel( bs ) ).toBe( 'Other' );
+	} );
+
+	it( 'still groups a mix of real and hostile sources correctly', () => {
+		const sections = groupPlacementsByBlockSource( [
+			row( { block_source: 'video-block' } ),
+			row( { block_source: 'toString' } ),
+			row( { block_source: 'reel-pop' } ),
+			row( { block_source: 'constructor' } ),
+		] );
+		const byKey = Object.fromEntries( sections.map( ( s ) => [ s.key, s.rows.length ] ) );
+		expect( byKey[ 'video-block' ] ).toBe( 1 );
+		expect( byKey[ 'reel-pop' ] ).toBe( 1 );
+		expect( byKey.other ).toBe( 2 );
+	} );
+} );
+
 describe( 'getPlacementTitle', () => {
 	it( 'uses the enriched title when present', () => {
 		expect( getPlacementTitle( row( { title: 'Home Page' } ) ) ).toBe( 'Home Page' );
