@@ -7,7 +7,11 @@ import { Analytics } from 'analytics';
  */
 import videoAnalyticsPlugin from './video-analytics-plugin';
 import GTMVideoTracker from './gtm-video-tracker';
-import { shouldSkipAnalytics, buildAnalyticsRequestBody } from './analytics-helpers';
+import {
+	shouldSkipAnalytics,
+	buildAnalyticsRequestBody,
+	groupBatchByHostPostId,
+} from './analytics-helpers';
 import {
 	addLayerInteraction as bufferAddLayerInteraction,
 	getLayerInteractions as bufferGetLayerInteractions,
@@ -98,32 +102,6 @@ function getPageLoadVideoInfo( video ) {
 function elementHostPostId( el ) {
 	const id = parseInt( el?.dataset?.hostPostId, 10 );
 	return id > 0 ? id : null;
-}
-
-/**
- * Split a page_load batch into one group per host post ID.
- *
- * `post_id` is a single top-level field per request, so entries that carry
- * different host attributions cannot share one send. Host attribution is
- * per-element (`data-host-post-id` comes from the `host_post_id` shortcode att
- * as well as the embed page), so a page-level lookup would let one stamped
- * player silently re-attribute every other video's page_load on that page.
- *
- * @param {Array} batch Queue entries.
- * @return {Map<number, Array>} hostPostId (0 = none) -> wire triples.
- */
-function groupBatchByHostPostId( batch ) {
-	const groups = new Map();
-
-	batch.forEach( ( entry ) => {
-		const key = entry.hostPostId > 0 ? entry.hostPostId : 0;
-		if ( ! groups.has( key ) ) {
-			groups.set( key, [] );
-		}
-		groups.get( key ).push( [ entry.videoId, entry.jobId, entry.blockSource || '' ] );
-	} );
-
-	return groups;
 }
 
 // Keep instance tracking on window so repeat evaluations share one registry.
