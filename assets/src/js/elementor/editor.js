@@ -43,7 +43,7 @@ window.addEventListener( 'load', function() {
 		'panel/open_editor/widget/godam-video',
 		function( panel, model, view ) {
 			setTimeout( makeFieldsReadonly, 100 );
-			hydrateWidget( model, view );
+			hydrateWidget( model, view, panel );
 		},
 	);
 
@@ -94,6 +94,16 @@ let activeFetchToken = 0;
 let renderedAttachmentId = null;
 
 /**
+ * Cached tiles markup for `renderedAttachmentId`. Elementor rebuilds the panel
+ * control DOM on every re-render (e.g. the GoDAM Video widget's SEO auto-sync
+ * calls panel.currentPageView.render() right after a video is picked), which
+ * wipes the freshly-populated grid. Caching lets us restore the tiles on the
+ * next render without another REST round-trip. `null` = not fetched yet;
+ * `''` = fetched, no thumbnails available.
+ */
+let renderedTilesHtml = null;
+
+/**
  * Re-render the thumbnail grid for the currently active widget settings.
  */
 function renderThumbnailPicker() {
@@ -109,28 +119,44 @@ function renderThumbnailPicker() {
 	}
 
 	const grid = container.querySelector( '[data-godam-thumbnail-grid]' );
-	const emptyState = container.querySelector( '[data-godam-thumbnail-empty]' );
 	if ( ! grid ) {
 		return;
 	}
+
+	const emptyState = container.querySelector( '[data-godam-thumbnail-empty]' );
 
 	const videoFile = settings.get( 'video-file' );
 	const attachmentId = videoFile?.id;
 	if ( ! attachmentId ) {
 		grid.innerHTML = '';
 		renderedAttachmentId = null;
+		renderedTilesHtml = null;
 		if ( emptyState ) {
 			emptyState.hidden = true;
 		}
 		return;
 	}
 
-	// Same video as last render — skip the REST round-trip and just repaint
-	// the selection ring on the existing tiles. Triggered when the user
-	// clicks a tile (poster changed, video did not).
+	// Same video as last render — no REST round-trip needed.
 	if ( renderedAttachmentId === attachmentId ) {
-		updateSelectionRing( settings, grid );
-		return;
+		// Tiles are still in the DOM: just repaint the selection ring (e.g. the
+		// user clicked a tile, changing only the poster).
+		if ( grid.children.length > 0 ) {
+			updateSelectionRing( settings, grid );
+			return;
+		}
+		// The grid was wiped by a panel re-render (Elementor rebuilds the RAW_HTML
+		// control DOM — notably the SEO auto-sync re-renders the panel right after
+		// a video is picked). Restore the cached tiles instead of refetching.
+		if ( null !== renderedTilesHtml ) {
+			grid.innerHTML = renderedTilesHtml;
+			if ( emptyState ) {
+				emptyState.hidden = grid.children.length > 0;
+			}
+			updateSelectionRing( settings, grid );
+			return;
+		}
+		// Otherwise a fetch is still in flight — fall through and (re)issue it.
 	}
 
 	const token = ++activeFetchToken;
@@ -159,6 +185,7 @@ function renderThumbnailPicker() {
 
 			if ( ! tiles.length ) {
 				grid.innerHTML = '';
+				renderedTilesHtml = ''; // Fetched: no thumbnails for this video.
 				if ( emptyState ) {
 					emptyState.hidden = false;
 				}
@@ -177,6 +204,9 @@ function renderThumbnailPicker() {
 					);
 				} )
 				.join( '' );
+
+			// Cache so a subsequent panel re-render can restore without refetching.
+			renderedTilesHtml = grid.innerHTML;
 		} )
 		.catch( () => {
 			if ( token !== activeFetchToken ) {
@@ -242,23 +272,55 @@ function updateSelectionRing( settings, grid ) {
 }
 
 /**
+ * Render the thumbnail picker once its container is present in the panel DOM.
+ *
+ * The picker is a conditional RAW_HTML control Elementor injects asynchronously
+ * — and only once a video with an id is selected. So on first add (select a
+ * video, which reveals the control) or a passive panel open, the container may
+ * not exist yet at the moment we want to render, and renderThumbnailPicker()
+ * would bail with nothing to re-trigger it (the grid then only fills after a
+ * reload). Poll (bounded, ~2s) until the container appears, then render once;
+ * bail if the panel has since switched to a different widget.
+ */
+function scheduleThumbnailPickerRender() {
+	const settings = activeWidgetSettings;
+	let attempts = 0;
+	const attempt = () => {
+		if ( activeWidgetSettings !== settings ) {
+			return;
+		}
+		if ( document.querySelector( '[data-godam-thumbnail-picker]' ) ) {
+			renderThumbnailPicker();
+			return;
+		}
+		if ( attempts < 20 ) {
+			attempts++;
+			setTimeout( attempt, 100 );
+		}
+	};
+	attempt();
+}
+
+/**
  * Wildcard `change` handler used to refresh the thumbnail grid when the
  * underlying video changes. Elementor's BaseMultiple controls (godam-media
  * included) update sub-keys via paths and emit `change:video-file.id` /
  * `change:video-file.url` — NOT `change:video-file`. Listening to the
  * generic 'change' event and inspecting `model.changed` is the only way to
  * catch both shapes reliably across Elementor versions.
- * @param changedModel
+ * @param {any} changedModel
  */
 function onSettingsChange( changedModel ) {
 	const changed = changedModel?.changed || {};
 	const keys = Object.keys( changed );
 	if ( keys.some( ( key ) => key === 'video-file' || key.indexOf( 'video-file' ) === 0 ) ) {
-		renderThumbnailPicker();
+		// Selecting a video reveals the (conditional) picker control, which
+		// Elementor mounts asynchronously — wait for it before rendering.
+		scheduleThumbnailPickerRender();
 	} else if ( keys.indexOf( 'poster' ) !== -1 ) {
 		// Selection ring follows the poster, even when the user uploads via
 		// the godam-media tile above the grid.
-		renderThumbnailPicker();
+		scheduleThumbnailPickerRender();
 	} else if ( keys.indexOf( 'autoplay' ) !== -1 ) {
 		applyAutoplayLock( !! changed.autoplay && 'yes' === changed.autoplay );
 	}
@@ -287,12 +349,11 @@ function applyAutoplayLock( locked ) {
  * Also wires the autoplay → disabled state for the muted / hover_select
  * controls (these stay visible but go non-interactive when autoplay is on).
  *
- * @param {Object} model Backbone model of the widget element (the `model`
- *                       arg from the `panel/open_editor/widget/X` hook).
- * @param {Object} view  Editor view for the widget — used to resolve the
- *                       Elementor container for $e.run() preview updates.
+ * @param {Object} model Backbone model of the widget element (the `model` arg from the `panel/open_editor/widget/X` hook).
+ * @param {Object} view  Editor view for the widget — used to resolve the Elementor container for $e.run() preview updates.
+ * @param {Object} panel Elementor panel object (the `panel` arg from the hook), used to re-populate the picker after panel re-renders.
  */
-function hydrateWidget( model, view ) {
+function hydrateWidget( model, view, panel ) {
 	const settings = model?.get?.( 'settings' );
 	if ( ! settings ) {
 		return;
@@ -308,40 +369,29 @@ function hydrateWidget( model, view ) {
 	activeWidgetSettings = settings;
 	activeWidgetContainer = view?.getContainer?.() || view?.container || null;
 
-	// Each panel open replaces the picker's DOM. Invalidate the
-	// "same attachment, skip refetch" cache so the first render after
-	// hydration always rebuilds the grid (otherwise the cached id would
-	// match and we'd be left with an empty grid container).
+	// Each panel open replaces the picker's DOM. Invalidate the caches so the
+	// first render after hydration always rebuilds the grid (otherwise the
+	// cached id would match and we'd be left with an empty grid container).
 	renderedAttachmentId = null;
+	renderedTilesHtml = null;
 
 	settings.off( 'change', onSettingsChange );
 	settings.on( 'change', onSettingsChange );
 
+	// Elementor rebuilds the panel control DOM on every re-render (e.g. the SEO
+	// auto-sync calls panel.currentPageView.render() right after a video is
+	// picked), which wipes the freshly-populated picker grid. Re-populate on each
+	// render — renderThumbnailPicker() restores cached tiles without refetching.
+	if ( panel && panel.currentPageView && panel.currentPageView.on ) {
+		panel.currentPageView.off( 'render', scheduleThumbnailPickerRender );
+		panel.currentPageView.on( 'render', scheduleThumbnailPickerRender );
+	}
+
 	// Autoplay-lock doesn't depend on the picker DOM, so apply it on a short delay.
 	setTimeout( () => applyAutoplayLock( 'yes' === settings.get( 'autoplay' ) ), 100 );
 
-	// Elementor injects the RAW_HTML thumbnail-picker control into the panel DOM
-	// asynchronously (and only when a video with an id is selected). A single
-	// fixed delay can fire before the container exists — then renderThumbnailPicker()
-	// bails and, with no settings change to re-trigger it, the grid never fills
-	// and the "none available" message never shows (an empty gap under the label).
-	// Poll (bounded) until the container appears, then render once.
-	let pickerAttempts = 0;
-	const renderPickerWhenReady = () => {
-		// Bail if the panel has since moved to a different widget.
-		if ( activeWidgetSettings !== settings ) {
-			return;
-		}
-		if ( document.querySelector( '[data-godam-thumbnail-picker]' ) ) {
-			renderThumbnailPicker();
-			return;
-		}
-		if ( pickerAttempts < 20 ) {
-			pickerAttempts++;
-			setTimeout( renderPickerWhenReady, 100 );
-		}
-	};
-	setTimeout( renderPickerWhenReady, 100 );
+	// Render the picker once Elementor has mounted its (conditional) control.
+	scheduleThumbnailPickerRender();
 }
 
 /**
