@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use RTGODAM\Inc\Elementor_Controls\Godam_Media;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Audio;
+use RTGODAM\Inc\Elementor_Widgets\Godam_Document;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Gallery;
 use RTGODAM\Inc\Elementor_Widgets\GoDAM_Video;
 use RTGODAM\Inc\Traits\Singleton;
@@ -75,13 +76,15 @@ class Elementor_Widgets {
 		// each class is backed by the SVG via background-image (absolute URLs, so
 		// no build-time url() resolution is needed).
 		$godam_icon_css = sprintf(
-			'.godam-eicon-video,.godam-eicon-gallery,.godam-eicon-audio{display:inline-block;width:1em;height:1em;vertical-align:middle;background-size:contain;background-repeat:no-repeat;background-position:center;}' .
+			'.godam-eicon-video,.godam-eicon-gallery,.godam-eicon-audio,.godam-eicon-document{display:inline-block;width:1em;height:1em;vertical-align:middle;background-size:contain;background-repeat:no-repeat;background-position:center;}' .
 			'.godam-eicon-video{background-image:url(%1$s);}' .
 			'.godam-eicon-gallery{background-image:url(%2$s);}' .
-			'.godam-eicon-audio{background-image:url(%3$s);}',
+			'.godam-eicon-audio{background-image:url(%3$s);}' .
+			'.godam-eicon-document{background-image:url(%4$s);}',
 			esc_url( RTGODAM_URL . 'assets/images/godam-video-filled.svg' ),
 			esc_url( RTGODAM_URL . 'assets/images/godam-gallery-filled.svg' ),
-			esc_url( RTGODAM_URL . 'assets/images/godam-audio-filled.svg' )
+			esc_url( RTGODAM_URL . 'assets/images/godam-audio-filled.svg' ),
+			esc_url( RTGODAM_URL . 'assets/images/godam-pdf.svg' )
 		);
 		wp_add_inline_style( 'godam-elementor-editor-style', $godam_icon_css );
 	}
@@ -151,6 +154,7 @@ class Elementor_Widgets {
 		\Elementor\Plugin::$instance->widgets_manager->register( new GoDAM_Video() );
 		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Gallery() );
 		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Audio() );
+		\Elementor\Plugin::$instance->widgets_manager->register( new Godam_Document() );
 	}
 
 	/**
