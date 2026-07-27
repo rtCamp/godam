@@ -345,16 +345,21 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 	);
 
 	// Auto-select the first section with data; re-resolve when the current
-	// selection disappears (e.g. after a range change).
+	// selection disappears (e.g. after a range change). Reads the PREVIOUS
+	// selectedKey via the functional updater instead of the closed-over
+	// variable, so the effect only needs to react to `sections` — no
+	// eslint-disable needed, and no risk of overriding a selection the user
+	// just made while `sections` happens to be unchanged.
 	useEffect( () => {
 		if ( sections.length === 0 ) {
 			setSelectedKey( null );
 			return;
 		}
-		if ( ! selectedKey || ! sections.find( ( s ) => s.key === selectedKey ) ) {
-			setSelectedKey( sections[ 0 ].key );
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		setSelectedKey( ( prevKey ) =>
+			prevKey && sections.find( ( s ) => s.key === prevKey )
+				? prevKey
+				: sections[ 0 ].key,
+		);
 	}, [ sections ] );
 
 	const selectedSection = sections.find( ( s ) => s.key === selectedKey ) || null;
@@ -443,9 +448,14 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 					{ /* Detail: the selected section's per-page rows. */ }
 					<div className="flex flex-col gap-3 min-w-0">
 						{ selectedSection &&
-							selectedSection.rows.map( ( row, index ) => (
+							selectedSection.rows.map( ( row ) => (
+								// (post_id, block_source) is already unique per row: the
+								// microservice aggregates by that exact pair, so no two
+								// rows in one placements array can share it. Dropping
+								// `index` avoids needless remounts when a range change
+								// re-sorts rows by plays desc.
 								<PlacementRow
-									key={ `${ row.post_id }-${ row.block_source }-${ index }` }
+									key={ `${ row.post_id }-${ row.block_source }` }
 									row={ row }
 								/>
 							) ) }

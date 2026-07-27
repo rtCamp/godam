@@ -110,8 +110,12 @@ $godam_disable_subtitles_and_transcript = isset( $attributes['godam_context'] ) 
 // An explicit `block_source` attribute (the embed page threads the gallery
 // iframe's value through) wins over the godam_context-derived mapping; the
 // block/Elementor render paths carry no context and default to 'video-block'.
+// block_source is ultimately user-controlled (threaded from a public GET param
+// on the embed page), so cap its length here too, matching the same
+// mb_substr(...,100) cap video-embed.php already applies to that GET param --
+// otherwise an oversized value could reach this attribute uncapped.
 $godam_block_source = ! empty( $attributes['block_source'] )
-	? sanitize_text_field( $attributes['block_source'] )
+	? mb_substr( sanitize_text_field( $attributes['block_source'] ), 0, 100, 'UTF-8' )
 	: rtgodam_get_block_source_from_context( isset( $attributes['godam_context'] ) ? $attributes['godam_context'] : '' );
 
 // Host page attribution for embeds: when the (iframe) render carries the
