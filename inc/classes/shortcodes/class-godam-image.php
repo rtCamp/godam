@@ -31,14 +31,22 @@ class GoDAM_Image {
 	/**
 	 * Register the shared image-layers front-end script (idempotent).
 	 *
-	 * Mirrors the lazy registration in the block's render.php so the script can
-	 * also be enqueued up front (e.g. in the WPBakery inline editor) with the
-	 * same Woo dependencies applied via the filter.
+	 * Single registrar reused by the shortcode/WPBakery path and the Elementor
+	 * editor preload, so the handle, deps filter, and version live in one place.
+	 * Mirrors the lazy registration in the block's render.php (kept separate there
+	 * so the template stays self-contained in block context). Bails if the built
+	 * script is missing so callers never enqueue a 404 with empty dependencies.
 	 *
 	 * @return void
 	 */
-	private function register_image_layers_script() {
+	public static function register_image_layers_script() {
 		if ( wp_script_is( 'godam-image-layers-frontend', 'registered' ) ) {
+			return;
+		}
+
+		// The build directory is gitignored / created at build time; skip cleanly
+		// if the compiled script isn't present rather than registering a broken URL.
+		if ( ! file_exists( RTGODAM_PATH . 'assets/build/js/godam-image-layers-frontend.min.js' ) ) {
 			return;
 		}
 
@@ -80,8 +88,10 @@ class GoDAM_Image {
 			return;
 		}
 
-		$this->register_image_layers_script();
-		wp_enqueue_script( 'godam-image-layers-frontend' );
+		self::register_image_layers_script();
+		if ( wp_script_is( 'godam-image-layers-frontend', 'registered' ) ) {
+			wp_enqueue_script( 'godam-image-layers-frontend' );
+		}
 		wp_enqueue_style( 'godam-image-style' );
 		wp_enqueue_style( 'godam-player-style' );
 	}
