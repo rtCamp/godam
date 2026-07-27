@@ -515,11 +515,9 @@ class Godam_Gallery extends Base {
 	 *
 	 * Mirrors the Gutenberg block's empty state (faux tiles + prompt) so the
 	 * widget reads clearly in the editor instead of showing a bare, confusing
-	 * box. The widget preview renders inside Elementor's preview iframe where the
-	 * plugin's editor stylesheet isn't loaded, so the styling ships as a small
-	 * self-contained <style> block (printed once per request, scoped to the
-	 * placeholder's classes) rather than long inline style attributes. Nothing
-	 * renders on the front end.
+	 * box. Styling is enqueued into the preview iframe (see
+	 * Elementor_Widgets::enqueue_preview_styles / godam-elementor-preview.scss).
+	 * Nothing renders on the front end.
 	 *
 	 * @access protected
 	 * @return void
@@ -536,21 +534,6 @@ class Godam_Gallery extends Base {
 			return;
 		}
 
-		// Print the scoped stylesheet only once per request even if several empty
-		// galleries render on the same page.
-		static $style_printed = false;
-		if ( ! $style_printed ) {
-			$style_printed = true;
-			?>
-			<style>
-				.godam-gallery-elementor-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:40px 24px;border:1px dashed #c3c4c7;border-radius:8px;background:#f6f7f7;color:#1e1e1e;}
-				.godam-gallery-elementor-empty__tiles{display:flex;gap:8px;margin-bottom:8px;}
-				.godam-gallery-elementor-empty__tile{width:48px;height:32px;border-radius:4px;background:#e0e0e0;}
-				.godam-gallery-elementor-empty__title{margin:0;font-size:15px;font-weight:600;line-height:1.3;}
-				.godam-gallery-elementor-empty__desc{margin:0;max-width:340px;font-size:13px;color:#646970;line-height:1.5;}
-			</style>
-			<?php
-		}
 		?>
 		<div class="godam-gallery-elementor-empty" data-test-id="godam-gallery-elementor-empty">
 			<div class="godam-gallery-elementor-empty__tiles" aria-hidden="true">

@@ -47,6 +47,32 @@ class Elementor_Widgets {
 		add_action( 'elementor/editor/before_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'preload_image_layers_in_editor' ) );
+		add_action( 'elementor/preview/enqueue_styles', array( $this, 'enqueue_preview_styles' ) );
+	}
+
+	/**
+	 * Enqueue the editor-preview stylesheet INTO the Elementor preview iframe.
+	 *
+	 * The GoDAM widgets render editor-only affordances in the preview canvas —
+	 * empty-state placeholders and the video share/transcript overlay. Their
+	 * styling can't come from the editor-panel stylesheet (that loads in the
+	 * editor's main window, not this iframe) and shouldn't ship to the front end,
+	 * so it lives in a dedicated stylesheet enqueued only here.
+	 * Source: assets/src/css/godam-elementor-preview.scss.
+	 *
+	 * @return void
+	 */
+	public function enqueue_preview_styles() {
+		$preview_css = RTGODAM_PATH . 'assets/build/css/godam-elementor-preview.css';
+		if ( ! file_exists( $preview_css ) ) {
+			return;
+		}
+		wp_enqueue_style(
+			'godam-elementor-preview',
+			RTGODAM_URL . 'assets/build/css/godam-elementor-preview.css',
+			array(),
+			filemtime( $preview_css )
+		);
 	}
 
 	/**

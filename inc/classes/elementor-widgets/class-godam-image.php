@@ -129,11 +129,10 @@ class Godam_Image extends Base {
 	 * Editor-only empty-state placeholder.
 	 *
 	 * Mirrors the Gutenberg block's empty state so an image-less widget reads
-	 * clearly in the editor instead of showing a bare, confusing box. The widget
-	 * preview renders inside Elementor's preview iframe where the plugin's editor
-	 * stylesheet isn't loaded, so the styling ships as a small self-contained
-	 * <style> block (printed once per request, scoped to the placeholder's
-	 * classes). Nothing renders on the front end.
+	 * clearly in the editor instead of showing a bare, confusing box. Styling is
+	 * enqueued into the preview iframe (see Elementor_Widgets::enqueue_preview_styles
+	 * / godam-elementor-preview.scss); only the dynamic icon URL is passed inline
+	 * via the `--godam-preview-icon` custom property. Nothing renders on the front end.
 	 *
 	 * @access protected
 	 * @return void
@@ -150,60 +149,10 @@ class Godam_Image extends Base {
 			return;
 		}
 
-		// Print the scoped stylesheet only once per request even if several empty
-		// image widgets render on the same page.
-		static $style_printed = false;
-		if ( ! $style_printed ) {
-			$style_printed = true;
-			$icon_url      = RTGODAM_URL . 'assets/src/images/godam-image-filled.svg';
-			?>
-			<style>
-				.godam-image-elementor-empty {
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-					justify-content: center;
-					text-align: center;
-					gap: 6px;
-					padding: 40px 24px;
-					border: 1px dashed #c3c4c7;
-					border-radius: 8px;
-					background: #f6f7f7;
-					color: #1e1e1e;
-				}
-				/* Dummy image preview: a framed box with a faint image glyph, echoing the block's placeholder. */
-				.godam-image-elementor-empty__preview {
-					width: 180px;
-					max-width: 60%;
-					aspect-ratio: 16 / 10;
-					margin-bottom: 12px;
-					border-radius: 6px;
-					background-color: #e6e7e9;
-					background-image: url('<?php echo esc_url( $icon_url ); ?>');
-					background-repeat: no-repeat;
-					background-position: center;
-					background-size: 44px auto;
-					box-shadow: inset 0 0 0 1px rgba( 0, 0, 0, .06 );
-				}
-				.godam-image-elementor-empty__title {
-					margin: 0;
-					font-size: 15px;
-					font-weight: 600;
-					line-height: 1.3;
-				}
-				.godam-image-elementor-empty__desc {
-					margin: 0;
-					max-width: 340px;
-					font-size: 13px;
-					color: #646970;
-					line-height: 1.5;
-				}
-			</style>
-			<?php
-		}
+		$icon_style = '--godam-preview-icon:url(' . esc_url( RTGODAM_URL . 'assets/src/images/godam-image-filled.svg' ) . ');';
 		?>
 		<div class="godam-image-elementor-empty" data-test-id="godam-image-elementor-empty">
-			<div class="godam-image-elementor-empty__preview" aria-hidden="true"></div>
+			<div class="godam-image-elementor-empty__preview" aria-hidden="true" style="<?php echo esc_attr( $icon_style ); ?>"></div>
 			<h3 class="godam-image-elementor-empty__title">
 				<?php esc_html_e( 'Add Image Here', 'godam' ); ?>
 			</h3>

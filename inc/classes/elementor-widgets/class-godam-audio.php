@@ -255,21 +255,14 @@ class Godam_Audio extends Base {
 			return;
 		}
 
-		$icon_url = RTGODAM_URL . 'assets/images/godam-audio-filled.svg';
+		$icon_style = '--godam-preview-icon:url(' . esc_url( RTGODAM_URL . 'assets/images/godam-audio-filled.svg' ) . ');';
 		?>
-		<div
-			class="godam-audio-elementor-empty"
-			data-test-id="godam-audio-elementor-empty"
-			style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:40px 24px;border:1px dashed #c3c4c7;border-radius:8px;background:#f6f7f7;color:#1e1e1e;"
-		>
-			<span
-				aria-hidden="true"
-				style="width:40px;height:40px;margin-bottom:4px;opacity:.55;background:url('<?php echo esc_url( $icon_url ); ?>') center/contain no-repeat;"
-			></span>
-			<h3 style="margin:0;font-size:15px;font-weight:600;line-height:1.3;">
+		<div class="godam-audio-elementor-empty" data-test-id="godam-audio-elementor-empty">
+			<span class="godam-audio-elementor-empty__icon" aria-hidden="true" style="<?php echo esc_attr( $icon_style ); ?>"></span>
+			<h3 class="godam-audio-elementor-empty__title">
 				<?php esc_html_e( 'Add an audio file', 'godam' ); ?>
 			</h3>
-			<p style="margin:0;max-width:320px;font-size:13px;color:#646970;line-height:1.5;">
+			<p class="godam-audio-elementor-empty__desc">
 				<?php esc_html_e( 'Select an audio file in the Player Settings panel to embed a player on your page or post.', 'godam' ); ?>
 			</p>
 		</div>
