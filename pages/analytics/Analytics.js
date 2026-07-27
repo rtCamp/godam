@@ -17,7 +17,8 @@ import {
 } from './redux/api/analyticsApi';
 import { calculateEngagementRate, calculatePlayRate, generateLineChart, generateRetentionCurve } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
-import './charts.js';
+import { main as renderVideoAnalyticsCharts } from './charts.js';
+import DateRangePicker, { triggerLabelFor } from './components/DateRangePicker';
 
 /**
  * WordPress dependencies
@@ -32,9 +33,6 @@ import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
 import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
-// Shared date-range picker + range threading come from the date-range PR (#2028).
-// This PR reuses them to scope the retention curve; merge #2028 first, then rebase.
-import DateRangePicker from './components/DateRangePicker';
 import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
@@ -95,6 +93,16 @@ const Analytics = ( { attachmentID } ) => {
 	// Skip all analytics queries when there is no API key or there is a locally-known key error.
 	const shouldSkipAnalytics = ! hasAPIKey || !! apiKeyErrorType;
 
+	// Page-level date range. All Time by default. Drives the KPIs, geography
+	// map and Views-by-Source (all from the ranged metrics query). The "Views
+	// across the video" heatmap stays all-time (the microservice nulls
+	// all_time_heatmap in range mode), so it reads the unranged query below.
+	const [ range, setRange ] = useState( { startDate: null, endDate: null } );
+	const rangeActive = Boolean( range.startDate && range.endDate );
+	const rangeLabel = rangeActive ? triggerLabelFor( range ) : __( 'All time', 'godam' );
+
+	// All-time query — feeds the always-all-time surfaces: the heatmap, the
+	// video length used by the layer timeline, and the A/B comparison baseline.
 	const {
 		data: analyticsDataFetched,
 		isLoading: isAnalyticsDataLoading,
@@ -117,18 +125,39 @@ const Analytics = ( { attachmentID } ) => {
 		{ skip: ! attachmentID || shouldSkipAnalytics || ! retentionRangeActive },
 	);
 
+	// Range-scoped query — feeds the KPIs, geography map and Views-by-Source
+	// (via charts.js reading window.analyticsDataFetched). The date args are
+	// omitted at All Time so this shares the all-time query's cache key (RTK
+	// dedups — one request) and only forks into its own request once a range
+	// is picked.
+	const { data: rangedAnalyticsData } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( range.startDate ? { startDate: range.startDate } : {} ),
+			...( range.endDate ? { endDate: range.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics },
+	);
+
 	// Connected, but the analytics backend is unreachable (server down) or returned
 	// a microservice error. Gated on a valid key so it never shows for a
 	// disconnected site — that case is handled by the onboarding overlay.
 	const analyticsUnreachable = !! window.userData?.validApiKey && !! attachmentID && ! shouldSkipAnalytics && ( isAnalyticsDataError || analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
 
-	window.analyticsDataFetched = analyticsDataFetched;
+	// charts.js (KPIs + geography + Views-by-Source) renders from this global.
+	window.analyticsDataFetched = rangedAnalyticsData ?? analyticsDataFetched;
 
 	// Skip secondary queries until the primary analytics call has returned without an error.
 	// This prevents parallel requests being sent when the server rejects the API key.
 	const shouldSkipSecondaryQueries = ! attachmentID || shouldSkipAnalytics || ! analyticsDataFetched || !! analyticsDataFetched?.errorType;
 
-	// Query for last 30 days of processed analytics history
+	// Processed analytics history feeds the "vs prev 7 days" trend badges +
+	// sparklines, which are inherently a fixed last-7-days window (SingleMetrics
+	// / PlaysVsViewers rebuild a today-6..today grid via ensureAll7Days). So it
+	// stays pinned to `days: 7` and is NOT range-scoped — range-scoping it made
+	// the badge read a false +0.00% for any range not overlapping the last 7
+	// days. The KPI values re-scope via the range-scoped query above instead.
 	const {
 		data: processedAnalyticsHistory,
 	} = useFetchProcessedAnalyticsHistoryQuery(
@@ -162,6 +191,18 @@ const Analytics = ( { attachmentID } ) => {
 			setAnalyticsData( analyticsDataFetched );
 		}
 	}, [ analyticsDataFetched, apiKeyErrorType, isAnalyticsDataError ] );
+
+	// Re-render the imperative charts (KPIs + geography + Views-by-Source) when
+	// the range-scoped data changes. charts.js reads window.analyticsDataFetched
+	// (set above during render) and is idempotent, so this safely re-scopes
+	// those surfaces on every range change. The heatmap + video are React-driven
+	// from the all-time query and are intentionally left untouched here.
+	useEffect( () => {
+		if ( ! rangedAnalyticsData || rangedAnalyticsData?.errorType || ! processedAnalyticsHistory ) {
+			return;
+		}
+		renderVideoAnalyticsCharts();
+	}, [ rangedAnalyticsData, processedAnalyticsHistory ] );
 
 	// Sync A/B test comparison data
 	useEffect( () => {
@@ -546,8 +587,12 @@ const Analytics = ( { attachmentID } ) => {
 							{ /* All Time Insights — existing KPIs grouped into the shared card. */ }
 							<div className="godam-card godam-insights-card">
 								<div className="godam-card__head">
-									<h2>{ __( 'All Time Insights', 'godam' ) }</h2>
-									<span className="godam-pill">{ __( 'All time', 'godam' ) }</span>
+									<h2>{ __( 'Insights', 'godam' ) }</h2>
+									<DateRangePicker
+										value={ range }
+										onChange={ setRange }
+										testIdPrefix="godam-video-insights-daterange"
+									/>
 								</div>
 								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
 									<SingleMetrics
@@ -558,7 +603,8 @@ const Analytics = ( { attachmentID } ) => {
 											'godam',
 										) }
 										processedAnalyticsHistory={ processedAnalyticsHistory }
-										analyticsDataFetched={ analyticsDataFetched }
+										analyticsDataFetched={ rangedAnalyticsData }
+										dataLabel={ rangeLabel }
 									/>
 
 									<SingleMetrics
@@ -569,7 +615,8 @@ const Analytics = ( { attachmentID } ) => {
 											'godam',
 										) }
 										processedAnalyticsHistory={ processedAnalyticsHistory }
-										analyticsDataFetched={ analyticsDataFetched }
+										analyticsDataFetched={ rangedAnalyticsData }
+										dataLabel={ rangeLabel }
 									/>
 
 									<SingleMetrics
@@ -580,12 +627,13 @@ const Analytics = ( { attachmentID } ) => {
 											'godam',
 										) }
 										processedAnalyticsHistory={ processedAnalyticsHistory }
-										analyticsDataFetched={ analyticsDataFetched }
+										analyticsDataFetched={ rangedAnalyticsData }
+										dataLabel={ rangeLabel }
 									/>
 
 									<PlaysVsViewers
-										plays={ analyticsDataFetched?.plays ?? 0 }
-										uniqueViewers={ analyticsDataFetched?.unique_viewers ?? 0 }
+										plays={ rangedAnalyticsData?.plays ?? 0 }
+										uniqueViewers={ rangedAnalyticsData?.unique_viewers ?? null }
 										showRatio={ true }
 										isLoading={ isAnalyticsDataLoading }
 										processedAnalyticsHistory={ processedAnalyticsHistory }

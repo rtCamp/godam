@@ -99,20 +99,12 @@
 		}
 	}
 
-	.vjs-button.godam-share-button{
-		background: #FFFFFF24;
-		border-radius: 4px;
-		width: 40px;
-		height: 36px;		
-		display: flex;
-		align-items: center;
-		justify-content: center;
-
-		img {
-			height: 18px;
-			width: 16px;
-			max-width: unset;
-		}
+	// Share button inherits the shared circular button style so it matches the
+	// transcript button (see godam-player.scss). Scale just the arrow down to the
+	// smaller size this skin used before — the 24px icon box (and so the button's
+	// circular footprint) is left intact.
+	.vjs-button.godam-share-button img {
+		transform: scale(0.7);
 	}
 
 	.video-js .vjs-remaining-time {
@@ -211,14 +203,6 @@
 			}
 		}
 
-
-		.vjs-button.godam-share-button {
-			background-color: var(--rtgodam-control-bar-color, #000000AD);
-			border: 0.26px solid #FFF3;
-			height: 24px;
-			padding: 4px 20px;
-			border-radius: 12px;
-		}
 
 		.video-js .vjs-menu {
 			width: 8em;

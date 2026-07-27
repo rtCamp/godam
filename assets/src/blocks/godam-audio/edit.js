@@ -36,24 +36,13 @@ import { plus, trash, edit as editIcon } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import { CustomizeVideoIcon } from '../godam-player/icons';
 import AudioMiniPlayer from './player';
 import AudioTabs from './tabs';
 import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = [ 'audio' ];
 const ALLOWED_THUMBNAIL_TYPES = [ 'image' ];
-
-/**
- * Sliders/adjustments icon for the "Customize Audio" button (matches the design).
- */
-const customizeIcon = (
-	<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-		<line x1="4" y1="9" x2="20" y2="9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-		<line x1="4" y1="15" x2="20" y2="15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-		<circle cx="9" cy="9" r="2.4" fill="currentColor" />
-		<circle cx="15" cy="15" r="2.4" fill="currentColor" />
-	</svg>
-);
 
 /**
  * Format a byte count as a human-readable size (e.g. "84 KB").
@@ -348,7 +337,8 @@ function AudioEdit( {
 					href={ editorUrl }
 					target="_blank"
 					rel="noopener noreferrer"
-					icon={ customizeIcon }
+					icon={ CustomizeVideoIcon }
+					iconSize={ 14 }
 					className="godam-audio__btn"
 					data-test-id="godam-audio-button-customize"
 				>

@@ -285,6 +285,27 @@ const wpBakeryImageSrcSelectorParam = {
 		'wpbakery-image-src-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-image-src-selector-param.js' ),
 	},
 };
+
+const wpBakeryImageSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-image-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-image-selector-param.js' ),
+	},
+};
+
+const wpBakeryDocumentSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-document-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-document-selector-param.js' ),
+	},
+};
+
+const wpBakeryDocumentCoverSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-document-cover-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-document-cover-selector-param.js' ),
+	},
+};
 const ninjaFormsSubmissionsList = {
 	...sharedConfig,
 	entry: {
@@ -412,6 +433,9 @@ module.exports = [
 	wpBakeryVideoSelectorParam,
 	wpBakeryAudioSelectorParam,
 	wpBakeryImageSrcSelectorParam,
+	wpBakeryImageSelectorParam,
+	wpBakeryDocumentSelectorParam,
+	wpBakeryDocumentCoverSelectorParam,
 	ninjaFormsSubmissionsList,
 	blockExtensions,
 ];
