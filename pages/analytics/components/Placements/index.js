@@ -452,6 +452,20 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 					</div>
 				</div>
 			) }
+
+			{ /* Scope disclaimer: placement attribution is forward-only (no
+				   backfill), so this breakdown can undercount relative to the
+				   video's full-history totals in the Insights above. Shown
+				   whenever the card has actually resolved (data or empty), not
+				   during loading/error where it would just add noise. */ }
+			{ ! showSkeleton && ! hasError && (
+				<p className="px-6 pt-3 pb-4 m-0 border-t border-zinc-100 text-xs text-zinc-400">
+					{ __(
+						'Placement breakdown reflects activity since v2.1.0. Totals above include the video\'s full history.',
+						'godam',
+					) }
+				</p>
+			) }
 		</div>
 	);
 };
