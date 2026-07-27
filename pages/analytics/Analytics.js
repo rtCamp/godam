@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import 'video.js/dist/video-js.css';
 
 /**
@@ -15,7 +15,7 @@ import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
 } from './redux/api/analyticsApi';
-import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
+import { calculateEngagementRate, calculatePlayRate, generateLineChart, generateRetentionCurve } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
 import { main as renderVideoAnalyticsCharts } from './charts.js';
 import DateRangePicker, { triggerLabelFor } from './components/DateRangePicker';
@@ -23,7 +23,7 @@ import DateRangePicker, { triggerLabelFor } from './components/DateRangePicker';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf, _n } from '@wordpress/i18n';
 import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
@@ -35,6 +35,7 @@ import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
 import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
+import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
@@ -79,6 +80,11 @@ const Analytics = ( { attachmentID } ) => {
 	const [ mediaLibraryAttachment, setMediaLibraryAttachment ] = useState( null );
 	const [ mediaNotFound, setMediaNotFound ] = useState( false );
 
+	// Date range scoping the Viewer Retention Curve. Null start/end = all-time.
+	// The range-scoped heatmap is summed server-side (godam-analytics #235).
+	const [ retentionRange, setRetentionRange ] = useState( { startDate: null, endDate: null } );
+	const retentionRangeActive = Boolean( retentionRange.startDate && retentionRange.endDate );
+
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
 	const apiKeyError = getAPIKeyErrorInfo();
@@ -104,6 +110,19 @@ const Analytics = ( { attachmentID } ) => {
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID || shouldSkipAnalytics },
+	);
+
+	// Range-scoped copy of the analytics payload, used only for the retention
+	// curve. Skipped unless a range is picked, so the all-time request above keeps
+	// its own cache key. Range threading (start_date/end_date) is added by #2028.
+	const { data: retentionRangeDataFetched } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( retentionRange.startDate ? { startDate: retentionRange.startDate } : {} ),
+			...( retentionRange.endDate ? { endDate: retentionRange.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics || ! retentionRangeActive },
 	);
 
 	// Range-scoped query — feeds the KPIs, geography map and Views-by-Source
@@ -339,88 +358,49 @@ const Analytics = ( { attachmentID } ) => {
 		};
 	}, [ analyticsData, abTestComparisonAnalyticsData, attachmentData, abTestComparisonAttachmentData, isABTestCompleted, mediaLibraryAttachment ] );
 
-	useEffect( () => {
-		const analyticsVideoEl = document.getElementById( 'analytics-video' );
+	// Per-second heatmap feeding the retention curve. When a range is picked we
+	// use the range-scoped payload (summed daily heatmaps, godam-analytics #235);
+	// otherwise the all-time payload. Parsed once and reused for the empty state
+	// and the chart render (avoids parsing the JSON twice per render).
+	const retentionHeatmapSource = retentionRangeActive
+		? retentionRangeDataFetched?.all_time_heatmap
+		: analyticsData?.all_time_heatmap;
+	const retentionHeatmap = useMemo( () => {
+		if ( ! retentionHeatmapSource ) {
+			return [];
+		}
+		try {
+			const parsed = JSON.parse( retentionHeatmapSource );
+			return Array.isArray( parsed ) ? parsed : [];
+		} catch {
+			return [];
+		}
+	}, [ retentionHeatmapSource ] );
 
-		if ( ! analyticsVideoEl ) {
+	// Whether the heatmap has any real views (drives the empty state).
+	const retentionHasData = retentionHeatmap.some( ( v ) => v > 0 );
+
+	// Video hero (thumbnail + title + layer count). The visible player was
+	// replaced by the retention curve, so this gives the user a visual reference
+	// for which video they're looking at (matches the Figma "Video Detail" head).
+	const videoThumbnail = attachmentData?.meta?.rtgodam_media_video_thumbnail || DefaultThumbnail;
+	const videoLayers = attachmentData?.meta?.rtgodam_meta?.layers;
+	const layerCount = Array.isArray( videoLayers ) ? videoLayers.length : 0;
+
+	// Render the Viewer Retention Curve from the parsed heatmap.
+	// (Replaces the old video-overlay line chart — see generateRetentionCurve.)
+	// The SVG is viewBox-scaled, so it stays responsive without a resize handler.
+	useEffect( () => {
+		if ( ! retentionHasData || ! document.getElementById( 'retention-curve' ) ) {
 			return;
 		}
-
-		const existingPlayer = videojs.getPlayer( 'analytics-video' );
-		if ( existingPlayer ) {
-			existingPlayer.dispose();
-		}
-
-		const player = videojs( 'analytics-video', {
-			fluid: false,
-			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
-			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
-			html5: {
-				vhs: {
-					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
-					bandwidthVariance: 1.0, // allow renditions close to estimate
-					limitRenditionByPlayerDimensions: false, // don't cap by video element size
-				},
-			},
-		} );
-
-		let resizeHandler = null;
-
-		// When video metadata loads, get actual dimensions and set aspect ratio
-		player.on( 'loadedmetadata', () => {
-			const videoWidth = player.videoWidth();
-			const videoHeight = player.videoHeight();
-
-			if ( videoWidth && videoHeight ) {
-				// Calculate aspect ratio
-				const aspectRatio = `${ videoWidth }:${ videoHeight }`;
-				player.aspectRatio( aspectRatio );
-
-				const container = document.querySelector( '.video-container' );
-				if ( container ) {
-					// Function to update container width based on aspect ratio
-					resizeHandler = () => {
-						// Get available width (parent width or viewport width - padding)
-						const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
-						const maxWidth = Math.min( parentWidth - 40, 640 ); // 40px for padding
-						const calculatedWidth = 360 * ( videoWidth / videoHeight );
-
-						// Use the smaller of calculated width or available space
-						const finalWidth = Math.min( calculatedWidth, maxWidth );
-						container.style.width = `${ finalWidth }px`;
-					};
-
-					resizeHandler();
-
-					// Update on window resize
-					window.addEventListener( 'resize', resizeHandler );
-
-					// Generate line chart after container is set
-					if ( analyticsData?.all_time_heatmap ) {
-						const heatmapData = JSON.parse( analyticsData.all_time_heatmap );
-						generateLineChart(
-							heatmapData,
-							'#line-chart',
-							player,
-							'.line-chart-tooltip',
-							640,
-							300,
-						);
-					}
-				}
-			}
-		} );
-
-		// Add cleanup for when this specific effect unmounts
-		return () => {
-			if ( resizeHandler ) {
-				window.removeEventListener( 'resize', resizeHandler );
-			}
-			if ( player ) {
-				player.dispose();
-			}
-		};
-	}, [ analyticsData ] );
+		generateRetentionCurve(
+			retentionHeatmap,
+			'#retention-curve',
+			'.retention-curve-tooltip',
+			{ width: 900, height: 320 },
+		);
+	}, [ retentionHeatmap, retentionHasData ] );
 
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
@@ -545,12 +525,9 @@ const Analytics = ( { attachmentID } ) => {
 				<div id="analytics-content" className="hidden">
 					<div>
 						<div className="subheading-container flex flex-row max-md:flex-row-reverse pt-6">
-							{ attachmentData?.title?.rendered
-								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }{ ' ' }
-									<span dangerouslySetInnerHTML={ {
-										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
-									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
-							}
+							{ /* Generic page label — the video name now lives in the hero
+							    below, so don't repeat it here. */ }
+							<div className="subheading">{ __( 'Single Video Analytics', 'godam' ) }</div>
 							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_media_editor' }><span className="max-md:hidden">{ __( 'Back to Media Editor', 'godam' ) }</span></Button>
 
 						</div>
@@ -565,6 +542,41 @@ const Analytics = ( { attachmentID } ) => {
 								'godam',
 							) }
 						</span>
+					</div>
+
+					{ /* Video hero — thumbnail + title + layer count (Figma "Video
+					    Detail" head). Gives a visual reference now that the inline
+					    player was replaced by the retention curve. */ }
+					<div className="godam-video-hero mx-10 mt-4">
+						<img
+							className="godam-video-hero__thumb"
+							src={ videoThumbnail }
+							alt={ __( 'Video thumbnail', 'godam' ) }
+							onError={ ( e ) => {
+								if ( e.currentTarget.src !== DefaultThumbnail ) {
+									e.currentTarget.src = DefaultThumbnail;
+								}
+							} }
+						/>
+						<div className="godam-video-hero__meta">
+							<h2
+								className="godam-video-hero__title"
+								dangerouslySetInnerHTML={ {
+									__html: DOMPurify.sanitize(
+										attachmentData?.title?.rendered || __( 'Untitled video', 'godam' ),
+									),
+								} }
+							/>
+							{ layerCount > 0 && (
+								<span className="godam-video-hero__badge">
+									{ sprintf(
+										/* translators: %d: number of interactive layers on the video. */
+										_n( '%d layer', '%d layers', layerCount, 'godam' ),
+										layerCount,
+									) }
+								</span>
+							) }
+						</div>
 					</div>
 
 					<div
@@ -629,35 +641,45 @@ const Analytics = ( { attachmentID } ) => {
 								</div>
 							</div>
 
-							{ /* Views across the video — player with the per-second overlay.
-							    The per-second distribution is an all-time snapshot (the
-							    microservice has no range-scoped variant yet), so it stays
-							    all-time and shows a note when a date range is active. */ }
-							<div className="godam-card godam-video-card">
+							{ /* Viewer Retention Curve — standalone chart of per-second
+							    viewer counts across the video timeline (converted from
+							    the old "Views across the video" per-second video overlay).
+							    Scoped by the date picker; the range-scoped heatmap is
+							    summed server-side (godam-analytics #235). */ }
+							<div className="godam-card godam-retention-card">
 								<div className="godam-card__head">
-									<h2>{ __( 'Views across the video', 'godam' ) }</h2>
-									{ rangeActive && (
-										<span
-											className="godam-pill"
-											title={ __( 'The per-second view distribution is aggregated across all time and is not affected by the selected date range.', 'godam' ) }
-										>
-											{ __( 'All time', 'godam' ) }
-										</span>
-									) }
-								</div>
-								<div className="video-container">
-									<RenderVideo
-										attachmentData={ attachmentData }
-										attachmentID={ attachmentID }
-										videoId={ 'analytics-video' }
+									<h2>{ __( 'Viewer Retention Curve', 'godam' ) }</h2>
+									<DateRangePicker
+										value={ retentionRange }
+										onChange={ setRetentionRange }
+										testIdPrefix="godam-retention-daterange"
 									/>
-									<div className="video-chart-container">
-										<div id="chart-container">
-											<svg id="line-chart" width="640" height="300"></svg>
-											<div className="line-chart-tooltip"></div>
-										</div>
-									</div>
 								</div>
+								{ retentionHasData ? (
+									<div className="godam-retention">
+										<svg id="retention-curve"></svg>
+										<div className="retention-curve-tooltip"></div>
+									</div>
+								) : (
+									<p className="godam-retention__empty">
+										{ __( 'Viewer retention will appear here once this video receives views.', 'godam' ) }
+									</p>
+								) }
+								{ /* Hidden trigger marker: on develop, charts.js keys its
+								    per-video render (KPIs / geography / Views-by-Source) off
+								    the presence of #analytics-video + its data-id. The visible
+								    player is gone (replaced by the curve above), so this is a
+								    neutral hidden marker — charts.js only reads the id + data-id,
+								    never treats it as a media element. The proper fix (an
+								    explicit exported init keyed on attachmentID) lands with the
+								    charts.js refactor in the date-range PR (#2028). */ }
+								<div
+									id="analytics-video"
+									data-id={ attachmentID }
+									className="godam-retention__trigger"
+									aria-hidden="true"
+									hidden
+								/>
 							</div>
 						</div>
 					</div>
