@@ -556,7 +556,7 @@ class GoDAM_Video extends Base {
 			'sources'           => isset( $widget_video_file['sources'] ) ? $widget_video_file['sources'] : array(),
 			'src'               => $widget_video_file['url'],
 			'transcoded_url'    => '',
-			'poster'            => $widget_poster_file['url'],
+			'poster'            => isset( $widget_poster_file['url'] ) ? $widget_poster_file['url'] : '',
 			'aspectRatio'       => $widget_aspect_ratio,
 			'autoplay'          => $widget_autoplay,
 			'controls'          => $widget_controls,
