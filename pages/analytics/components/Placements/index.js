@@ -18,12 +18,15 @@ import DateRangePicker from '../DateRangePicker';
 import { formatWatchTime } from '../../../utils/formatters';
 
 /**
- * Known placement slugs and their display labels.
- *
- * A row whose block_source is not one of these has no placement to attribute
- * it to, so it is dropped rather than collected into a catch-all section: those
- * plays are already reported in the video's overall metrics above this card,
- * and repeating them here would double-report them.
+ * Known placement slugs and their display labels. A non-empty block_source
+ * that is not in this map is still a real, attributed placement (a surface
+ * this build doesn't have a friendly label for yet) — it gets its own section
+ * labelled with the raw slug, exactly like a labelled one. Only the EMPTY
+ * block_source (unattributed: the play carries no surface at all) is dropped;
+ * those plays are already reported in the video's overall metrics above this
+ * card, and repeating them under a catch-all would double-report them. An
+ * unmapped-but-real slug does not double-report anything, so it must not be
+ * dropped the same way — the dashboard's placements_count already counts it.
  */
 const BLOCK_SOURCE_LABELS = {
 	'video-block': __( 'Video Block', 'godam' ),
@@ -45,16 +48,21 @@ const SECTION_ORDER = [
 ];
 
 /**
- * Display label for a known block_source slug.
+ * Display label for a block_source slug: the mapped label when known, the raw
+ * slug itself when it is a real but unmapped surface, or '' only for the
+ * empty (unattributed) string.
  *
  * @param {string} blockSource Placement slug from the microservice.
- * @return {string} Human-readable section label, or '' when not a known slug.
+ * @return {string} Human-readable section label, or '' for the empty string.
  */
 export function getBlockSourceLabel( blockSource ) {
 	// hasOwnProperty, not a bare lookup: block_source is untrusted free text and
 	// an inherited Object.prototype member name ('toString', 'valueOf', …) would
 	// otherwise resolve to a function and be treated as a known label.
-	return isKnownBlockSource( blockSource ) ? BLOCK_SOURCE_LABELS[ blockSource ] : '';
+	if ( isKnownBlockSource( blockSource ) ) {
+		return BLOCK_SOURCE_LABELS[ blockSource ];
+	}
+	return typeof blockSource === 'string' ? blockSource : '';
 }
 
 /**
@@ -71,12 +79,14 @@ function isKnownBlockSource( blockSource ) {
 /**
  * Group placement rows into ordered sections by block_source.
  *
- * Rows whose block_source is not a known placement slug (including the empty
- * string, i.e. unattributed) are dropped: those plays are already reported in
- * the video's overall metrics above this card, so a catch-all section would
- * double-report them. Section order follows SECTION_ORDER; row order inside a
- * section keeps the server's sort (plays desc). Only sections with rows are
- * returned.
+ * Only the empty block_source (unattributed: no surface at all) is dropped —
+ * those plays are already reported in the video's overall metrics above this
+ * card, so showing them again would double-report them. Any other value is a
+ * real, attributed placement and gets its own section: known slugs use their
+ * mapped label and sort first in SECTION_ORDER; unmapped-but-real slugs get
+ * their own section (labelled with the raw slug) sunk after the known ones,
+ * sorted by total rows desc. This must match what the dashboard's
+ * placements_count counts (every non-empty key), or the two disagree.
  *
  * @param {Array} placements Placement rows ({ post_id, block_source, … }).
  * @return {Array<{key: string, label: string, rows: Array}>} Ordered sections.
@@ -92,8 +102,8 @@ export function groupPlacementsByBlockSource( placements ) {
 
 	( Array.isArray( placements ) ? placements : [] ).forEach( ( row ) => {
 		const raw = typeof row?.block_source === 'string' ? row.block_source : '';
-		if ( ! isKnownBlockSource( raw ) ) {
-			return;
+		if ( ! raw ) {
+			return; // Unattributed — see docblock.
 		}
 		if ( ! buckets[ raw ] ) {
 			buckets[ raw ] = [];
@@ -101,7 +111,12 @@ export function groupPlacementsByBlockSource( placements ) {
 		buckets[ raw ].push( row );
 	} );
 
-	return SECTION_ORDER.filter( ( key ) => buckets[ key ] ).map( ( key ) => ( {
+	const knownKeys = SECTION_ORDER.filter( ( key ) => buckets[ key ] );
+	const unknownKeys = Object.keys( buckets )
+		.filter( ( key ) => ! isKnownBlockSource( key ) )
+		.sort( ( a, b ) => buckets[ b ].length - buckets[ a ].length );
+
+	return [ ...knownKeys, ...unknownKeys ].map( ( key ) => ( {
 		key,
 		label: getBlockSourceLabel( key ),
 		rows: buckets[ key ],

@@ -54,10 +54,13 @@ describe( 'groupPlacementsByBlockSource', () => {
 		expect( keys ).toEqual( [ 'video-block', 'shoppable-video', 'reel-pop' ] );
 	} );
 
-	// Unattributed / unlabelled rows are NOT shown: those plays are already
-	// reported in the video's overall metrics above the card, so a catch-all
-	// section would double-report them.
-	it( 'drops empty, missing and unknown block_source rows', () => {
+	// Only the empty block_source (unattributed: no surface at all) is dropped —
+	// those plays are already reported in the video's overall metrics above the
+	// card, so showing them again would double-report them. A non-empty but
+	// unmapped slug is still a real, attributed placement and must be kept —
+	// it does not double-report anything, and the dashboard's placements_count
+	// already counts it, so dropping it here would make the two disagree.
+	it( 'drops only the empty/missing block_source row, keeping an unmapped-but-real one', () => {
 		const rows = [
 			row( { post_id: 1, block_source: '' } ),
 			row( { post_id: 2, block_source: 'some-future-slug' } ),
@@ -65,10 +68,14 @@ describe( 'groupPlacementsByBlockSource', () => {
 		];
 		delete rows[ 2 ].block_source;
 
-		expect( groupPlacementsByBlockSource( rows ) ).toEqual( [] );
+		const sections = groupPlacementsByBlockSource( rows );
+
+		expect( sections ).toEqual( [
+			{ key: 'some-future-slug', label: 'some-future-slug', rows: [ rows[ 1 ] ] },
+		] );
 	} );
 
-	it( 'keeps known rows and drops unlabelled ones from the same set', () => {
+	it( 'keeps an unmapped-but-real slug as its own section, labelled with the raw slug', () => {
 		const rows = [
 			row( { post_id: 1, block_source: 'mystery' } ),
 			row( { post_id: 2, block_source: '' } ),
@@ -77,8 +84,10 @@ describe( 'groupPlacementsByBlockSource', () => {
 
 		const sections = groupPlacementsByBlockSource( rows );
 
-		expect( sections.map( ( s ) => s.key ) ).toEqual( [ 'reel-pop' ] );
+		// Known sections (per SECTION_ORDER) sort before unmapped ones.
+		expect( sections.map( ( s ) => s.key ) ).toEqual( [ 'reel-pop', 'mystery' ] );
 		expect( sections[ 0 ].rows.map( ( r ) => r.post_id ) ).toEqual( [ 3 ] );
+		expect( sections[ 1 ] ).toEqual( { key: 'mystery', label: 'mystery', rows: [ rows[ 0 ] ] } );
 	} );
 
 	it( 'returns an empty list for empty or non-array input', () => {
@@ -100,9 +109,12 @@ describe( 'getBlockSourceLabel', () => {
 		expect( getBlockSourceLabel( slug ) ).toBe( label );
 	} );
 
-	it( 'has no label for the empty string or unknown slugs', () => {
+	it( 'has no label for the empty string (unattributed)', () => {
 		expect( getBlockSourceLabel( '' ) ).toBe( '' );
-		expect( getBlockSourceLabel( 'some-future-slug' ) ).toBe( '' );
+	} );
+
+	it( 'labels an unmapped slug with the raw value itself', () => {
+		expect( getBlockSourceLabel( 'some-future-slug' ) ).toBe( 'some-future-slug' );
 	} );
 } );
 
@@ -146,25 +158,33 @@ describe( 'untrusted block_source keys', () => {
 		'isPrototypeOf',
 	];
 
-	it.each( PROTO_KEYS )( 'drops %s without throwing', ( bs ) => {
-		expect( () =>
-			groupPlacementsByBlockSource( [ row( { block_source: bs } ) ] ),
-		).not.toThrow();
-		expect( groupPlacementsByBlockSource( [ row( { block_source: bs } ) ] ) ).toEqual( [] );
+	// These are still non-empty strings, so per the "only empty is dropped" rule
+	// they are real placements and must be kept, not dropped — the null-prototype
+	// bucket map (Object.create(null)) makes that safe: `buckets[ 'toString' ]` is
+	// undefined until assigned, never the inherited Function. The value is only
+	// ever rendered as text (a section label), never invoked, so keeping it is safe.
+	it.each( PROTO_KEYS )( 'keeps %s as its own section without throwing', ( bs ) => {
+		let sections;
+		expect( () => {
+			sections = groupPlacementsByBlockSource( [ row( { block_source: bs } ) ] );
+		} ).not.toThrow();
+		expect( sections ).toEqual( [ { key: bs, label: bs, rows: [ row( { block_source: bs } ) ] } ] );
 	} );
 
-	it.each( PROTO_KEYS )( 'has no label for %s', ( bs ) => {
-		expect( getBlockSourceLabel( bs ) ).toBe( '' );
+	it.each( PROTO_KEYS )( 'labels %s with the raw value itself', ( bs ) => {
+		expect( getBlockSourceLabel( bs ) ).toBe( bs );
 	} );
 
-	it( 'keeps real sources intact when hostile ones are mixed in', () => {
+	it( 'keeps known and hostile-but-real sources side by side', () => {
 		const sections = groupPlacementsByBlockSource( [
 			row( { block_source: 'video-block' } ),
 			row( { block_source: 'toString' } ),
 			row( { block_source: 'reel-pop' } ),
 			row( { block_source: 'constructor' } ),
 		] );
-		expect( sections.map( ( s ) => s.key ) ).toEqual( [ 'video-block', 'reel-pop' ] );
+		expect( sections.map( ( s ) => s.key ) ).toEqual( [
+			'video-block', 'reel-pop', 'toString', 'constructor',
+		] );
 		expect( sections.every( ( s ) => s.rows.length === 1 ) ).toBe( true );
 	} );
 } );
