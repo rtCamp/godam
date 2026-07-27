@@ -73,23 +73,12 @@ class Elementor_Widgets {
 			return;
 		}
 
+		// Reuse the single shared registrar (handle/deps/version live in one
+		// place); it bails if the built script is missing, so guard the enqueue on
+		// successful registration to avoid a 404 in the editor preview.
+		\RTGODAM\Inc\Shortcodes\GoDAM_Image::register_image_layers_script();
 		if ( ! wp_script_is( 'godam-image-layers-frontend', 'registered' ) ) {
-			$asset_path = RTGODAM_PATH . 'assets/build/js/godam-image-layers-frontend.min.asset.php';
-			$asset      = file_exists( $asset_path )
-				// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is a plugin constant + hardcoded build filename.
-				? include $asset_path
-				: array(
-					'dependencies' => array(),
-					'version'      => RTGODAM_VERSION,
-				);
-			$deps = apply_filters( 'godam_image_layers_frontend_dependencies', $asset['dependencies'] );
-			wp_register_script(
-				'godam-image-layers-frontend',
-				RTGODAM_URL . 'assets/build/js/godam-image-layers-frontend.min.js',
-				$deps,
-				$asset['version'],
-				true
-			);
+			return;
 		}
 
 		wp_enqueue_script( 'godam-image-layers-frontend' );

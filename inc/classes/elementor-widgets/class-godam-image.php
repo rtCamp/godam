@@ -88,11 +88,13 @@ class Godam_Image extends Base {
 	/**
 	 * Render GoDAM Image widget output on the frontend.
 	 *
-	 * Maps the widget settings into the block attribute shape render.php reads,
-	 * then delegates to the block's render.php. The alt text is pulled from the
-	 * attachment (matching the block, which seeds `alt` from the media on
-	 * selection); there is no alt control because it is not author-editable in
-	 * the block inspector either.
+	 * Delegates to the [godam_image] shortcode's renderer (the single mapping /
+	 * enqueue / render.php entry point shared with the WPBakery element), matching
+	 * the GoDAM Document widget. The alt text is pulled from the attachment
+	 * (mirroring the block, which seeds `alt` from the media on selection); there
+	 * is no alt control because it is not author-editable in the block inspector.
+	 * URL and alt are sanitized here as defense-in-depth before they reach the
+	 * shared renderer.
 	 *
 	 * @access protected
 	 */
@@ -111,27 +113,16 @@ class Godam_Image extends Base {
 		// Mirror the block: alt comes from the attachment's stored alt text.
 		$alt = $image_id ? (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ) : '';
 
-		// Map widget settings to the block attribute shape render.php reads.
-		$attributes = array(
-			'id'              => $image_id,
-			'url'             => $image_url,
-			'alt'             => $alt,
-			'showImageLayers' => 'yes' === $this->get_settings_for_display( 'show_image_layers' ),
+		$shortcode_atts = array(
+			'id'                => $image_id,
+			'url'               => esc_url_raw( $image_url ),
+			'alt'               => sanitize_text_field( $alt ),
+			'show_image_layers' => 'yes' === $this->get_settings_for_display( 'show_image_layers' ) ? 'true' : 'false',
 		);
 
-		// The block's hotspot stylesheet is attached via wp_enqueue_block_style()
-		// (block context only); enqueue the image + shared hotspot styles here for
-		// the shortcode/widget path. render.php registers + enqueues the layers
-		// front-end script itself when the image has layers.
-		wp_enqueue_style( 'godam-image-style' );
-		wp_enqueue_style( 'godam-player-style' );
-
-		// Tells the shared render.php it runs outside block context, so it skips
-		// get_block_wrapper_attributes() (which warns without a block) and emits
-		// the stable `godam-image` hook class the front-end script targets.
-		$godam_is_shortcode = true;
-
-		require RTGODAM_PATH . 'assets/build/blocks/godam-image/render.php';
+		// render() maps the atts, enqueues its own script/style, and returns
+		// escaped HTML — so no extra enqueues or render.php include are needed here.
+		echo \RTGODAM\Inc\Shortcodes\GoDAM_Image::get_instance()->render( $shortcode_atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- render() returns escaped HTML.
 	}
 
 	/**
@@ -167,11 +158,46 @@ class Godam_Image extends Base {
 			$icon_url      = RTGODAM_URL . 'assets/src/images/godam-image-filled.svg';
 			?>
 			<style>
-				.godam-image-elementor-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:40px 24px;border:1px dashed #c3c4c7;border-radius:8px;background:#f6f7f7;color:#1e1e1e;}
+				.godam-image-elementor-empty {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+					text-align: center;
+					gap: 6px;
+					padding: 40px 24px;
+					border: 1px dashed #c3c4c7;
+					border-radius: 8px;
+					background: #f6f7f7;
+					color: #1e1e1e;
+				}
 				/* Dummy image preview: a framed box with a faint image glyph, echoing the block's placeholder. */
-				.godam-image-elementor-empty__preview{width:180px;max-width:60%;aspect-ratio:16/10;margin-bottom:12px;border-radius:6px;background-color:#e6e7e9;background-image:url('<?php echo esc_url( $icon_url ); ?>');background-repeat:no-repeat;background-position:center;background-size:44px auto;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);}
-				.godam-image-elementor-empty__title{margin:0;font-size:15px;font-weight:600;line-height:1.3;}
-				.godam-image-elementor-empty__desc{margin:0;max-width:340px;font-size:13px;color:#646970;line-height:1.5;}
+				.godam-image-elementor-empty__preview {
+					width: 180px;
+					max-width: 60%;
+					aspect-ratio: 16 / 10;
+					margin-bottom: 12px;
+					border-radius: 6px;
+					background-color: #e6e7e9;
+					background-image: url('<?php echo esc_url( $icon_url ); ?>');
+					background-repeat: no-repeat;
+					background-position: center;
+					background-size: 44px auto;
+					box-shadow: inset 0 0 0 1px rgba( 0, 0, 0, .06 );
+				}
+				.godam-image-elementor-empty__title {
+					margin: 0;
+					font-size: 15px;
+					font-weight: 600;
+					line-height: 1.3;
+				}
+				.godam-image-elementor-empty__desc {
+					margin: 0;
+					max-width: 340px;
+					font-size: 13px;
+					color: #646970;
+					line-height: 1.5;
+				}
 			</style>
 			<?php
 		}
