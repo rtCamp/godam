@@ -1,0 +1,142 @@
+/**
+ * GoDAM — Elementor editor preview affordances.
+ *
+ * Enqueued INTO the Elementor preview iframe via
+ * RTGODAM\Inc\Elementor_Widgets::enqueue_preview_styles() (hooked to
+ * `elementor/preview/enqueue_styles` in inc/classes/class-elementor-widgets.php).
+ *
+ * These rules style editor-only markup the GoDAM widgets output in the preview
+ * canvas — the empty-state placeholders (image / gallery / audio / video) and
+ * the video share/transcript overlay. None of it renders on the published front
+ * end. The plugin's editor-panel stylesheet (godam-elementor-editor.css) loads
+ * in the editor's main window, not this iframe, which is why these live here.
+ *
+ * Dynamic icon URLs depend on RTGODAM_URL, so they can't be hard-coded here;
+ * each widget passes its SVG via the `--godam-preview-icon` custom property on
+ * the relevant element.
+ */
+
+/* ── Empty-state placeholders ─────────────────────────────────────────────── */
+
+.godam-image-elementor-empty,
+.godam-video-elementor-empty,
+.godam-audio-elementor-empty,
+.godam-gallery-elementor-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	gap: 6px;
+	padding: 40px 24px;
+	border: 1px dashed #c3c4c7;
+	border-radius: 8px;
+	background: #f6f7f7;
+	color: #1e1e1e;
+}
+
+.godam-gallery-elementor-empty {
+	gap: 8px;
+}
+
+.godam-image-elementor-empty__title,
+.godam-video-elementor-empty__title,
+.godam-audio-elementor-empty__title,
+.godam-gallery-elementor-empty__title {
+	margin: 0;
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.godam-image-elementor-empty__desc,
+.godam-video-elementor-empty__desc,
+.godam-audio-elementor-empty__desc,
+.godam-gallery-elementor-empty__desc {
+	margin: 0;
+	max-width: 340px;
+	font-size: 13px;
+	color: #646970;
+	line-height: 1.5;
+}
+
+/* Image / Video: a framed dummy-media box with a faint centered glyph. */
+.godam-image-elementor-empty__preview,
+.godam-video-elementor-empty__preview {
+	max-width: 60%;
+	margin-bottom: 12px;
+	border-radius: 6px;
+	background-color: #e6e7e9;
+	background-image: var( --godam-preview-icon );
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 44px auto;
+	box-shadow: inset 0 0 0 1px rgba( 0, 0, 0, .06 );
+}
+
+.godam-image-elementor-empty__preview {
+	width: 180px;
+	aspect-ratio: 16 / 10;
+}
+
+.godam-video-elementor-empty__preview {
+	width: 220px;
+	aspect-ratio: 16 / 9;
+}
+
+/* Audio: a small glyph (no framed box). */
+.godam-audio-elementor-empty__icon {
+	width: 40px;
+	height: 40px;
+	margin-bottom: 4px;
+	opacity: .55;
+	background: var( --godam-preview-icon ) center / contain no-repeat;
+}
+
+/* Gallery: faux tiles above the prompt. */
+.godam-gallery-elementor-empty__tiles {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+
+.godam-gallery-elementor-empty__tile {
+	width: 48px;
+	height: 32px;
+	border-radius: 4px;
+	background: #e0e0e0;
+}
+
+/* ── Video share / transcript overlay (editor preview only) ───────────────── */
+
+.godam-elementor-video-overlay {
+	position: relative;
+	display: block;
+}
+
+.godam-elementor-video-overlay__btn {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	z-index: 5;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: rgba( 0, 0, 0, .55 );
+	color: #fff;
+	pointer-events: none;
+}
+
+.godam-elementor-video-overlay__btn--below {
+	top: 60px;
+}
+
+/* The static indicators stand in for the live player's own control-bar
+ * buttons, so hide those within the preview wrapper to avoid duplicates. */
+.godam-elementor-video-overlay .godam-share-button,
+.godam-elementor-video-overlay .godam-transcript-button {
+	display: none !important;
+}
