@@ -297,17 +297,20 @@ function AudioEdit( {
 		}
 	}
 
-	// The selected attachment's record, plus whether its lookup has finished.
-	// `isMediaResolved` lets us distinguish "still loading" from "resolved to
-	// nothing", so we only flag a deletion once the REST lookup has completed.
-	const { audioMedia, isMediaResolved } = useSelect( ( select ) => {
+	// The selected attachment's record, whether its lookup has finished, and any
+	// error the lookup threw. `isMediaResolved` distinguishes "still loading"
+	// from "resolved to nothing"; `mediaError` distinguishes a genuine deletion
+	// (404) from a merely unreadable attachment (401/403) or a transient network
+	// failure — see `isAudioDeleted` below.
+	const { audioMedia, isMediaResolved, mediaError } = useSelect( ( select ) => {
 		if ( ! id ) {
-			return { audioMedia: null, isMediaResolved: false };
+			return { audioMedia: null, isMediaResolved: false, mediaError: null };
 		}
 		const core = select( 'core' );
 		return {
 			audioMedia: core.getMedia( id ),
 			isMediaResolved: core.hasFinishedResolution( 'getMedia', [ id ] ),
+			mediaError: core.getResolutionError( 'getMedia', [ id ] ),
 		};
 	}, [ id ] );
 	const fileSize = formatBytes( audioMedia?.media_details?.filesize );
@@ -316,7 +319,14 @@ function AudioEdit( {
 	// its numeric id is still stored, the lookup has finished, yet no record came
 	// back. `src` (and thus `hasAudio`) still holds the now-dangling URL, so surface
 	// an error instead of rendering a player that points at a 404.
-	const isAudioDeleted = Boolean( id ) && isMediaResolved && ! audioMedia;
+	//
+	// A finished-but-empty lookup is NOT proof of deletion: it also happens when
+	// the current user lacks permission to read the attachment (401/403) or when
+	// the REST request failed transiently. So only claim deletion when the
+	// resolver returned a genuine "not found" (HTTP 404); other errors leave the
+	// player in place rather than telling the user, wrongly, that their file is
+	// gone.
+	const isAudioDeleted = Boolean( id ) && isMediaResolved && ! audioMedia && mediaError?.data?.status === 404;
 
 	const classes = clsx( className, {
 		'is-transient': !! temporaryURL,

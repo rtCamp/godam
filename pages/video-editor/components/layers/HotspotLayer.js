@@ -97,9 +97,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	}, [ dispatch, layer?.id ] );
 
 	const styleType = layer?.styleType || 'pulse';
-	// Whether a library glyph or custom image is chosen — gates the icon-mode
-	// colour pickers (mirrors the WooCommerce hotspot layer).
-	const hasLayerIcon = !! ( layer?.icon || layer?.customIconUrl );
 
 	/**
 	 * Migrate legacy layers (saved with per-hotspot style and no `styleType`)
@@ -564,8 +561,11 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 					{ /* Icon-mode colours mirror the WooCommerce hotspot layer: a
 					     glyph "Icon" colour (library icons only — a custom uploaded
-					     image can't be recoloured) plus a circle "Background". */ }
-					{ styleType === 'icon' && hasLayerIcon && (
+					     image can't be recoloured) plus a circle "Background". The
+					     Background picker is always shown in icon mode — even before
+					     an icon is chosen — so the circle colour is never stuck at an
+					     unchangeable (and, on light content, invisible) default. */ }
+					{ styleType === 'icon' && (
 						<VeColorList>
 							{ layer?.icon && (
 								<ColorPickerButton
@@ -576,7 +576,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								/>
 							) }
 							<ColorPickerButton
-								value={ layer?.backgroundColor || ( layer?.icon ? DEFAULT_HOTSPOT_COLOR : DEFAULT_HOTSPOT_CUSTOM_ICON_BG ) }
+								value={ layer?.backgroundColor || ( layer?.customIconUrl ? DEFAULT_HOTSPOT_CUSTOM_ICON_BG : DEFAULT_HOTSPOT_COLOR ) }
 								label={ __( 'Background', 'godam' ) }
 								enableAlpha={ true }
 								onChange={ ( value ) => updateField( 'backgroundColor', value ) }

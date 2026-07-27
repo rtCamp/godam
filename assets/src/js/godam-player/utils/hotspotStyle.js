@@ -38,22 +38,32 @@ const DEFAULT_HOTSPOT_CUSTOM_ICON_BG = '#ffffff';
  * @return {{icon: (string|null), customIconUrl: (string|null), color: string, iconColor: string}} Effective style. `color` is the circle fill (pulse colour in pulse mode, background colour in icon mode); `iconColor` recolours a library glyph.
  */
 export function resolveHotspotStyle( layer, hotspot = {} ) {
-	// Layer-level style (new shared model) with per-hotspot fallback (legacy) —
-	// the same resolution order the Woo hotspot manager uses.
-	const icon = layer?.icon || hotspot.icon || null;
-	const customIconUrl = layer?.customIconUrl || hotspot.customIconUrl || null;
+	// `styleType` marks a layer as using the shared layer-level model — set both
+	// on layers created after the refactor and on legacy layers once migrated on
+	// editor open. For those layers the layer-level fields are AUTHORITATIVE: an
+	// explicitly cleared field (e.g. `icon` set to '' by the picker's trash
+	// button) must resolve to "no icon", not fall back to the stale per-hotspot
+	// value that migration leaves behind. Only a truly legacy layer — saved
+	// before the refactor and never re-opened, so it has no `styleType` — falls
+	// back to each hotspot's own fields, preserving its original appearance.
+	const legacy = layer?.styleType ? {} : hotspot;
+
+	const icon = layer?.icon || legacy.icon || null;
+	const customIconUrl = layer?.customIconUrl || legacy.customIconUrl || null;
 	const hasIcon = !! ( icon || customIconUrl );
 	const styleType = layer?.styleType || ( hasIcon ? 'icon' : 'pulse' );
 
 	if ( styleType === 'icon' ) {
-		// A library glyph sits on the brand-blue circle; a custom uploaded image
-		// sits on a neutral white circle by default.
-		const bgDefault = icon ? DEFAULT_HOTSPOT_COLOR : DEFAULT_HOTSPOT_CUSTOM_ICON_BG;
+		// A custom uploaded image sits on a neutral white circle by default; a
+		// library glyph — or an icon slot with nothing chosen yet — keeps the
+		// brand-blue circle so it never renders as an invisible white dot on
+		// light content.
+		const bgDefault = customIconUrl ? DEFAULT_HOTSPOT_CUSTOM_ICON_BG : DEFAULT_HOTSPOT_COLOR;
 		return {
 			icon,
 			customIconUrl,
-			color: layer?.backgroundColor || hotspot.backgroundColor || bgDefault,
-			iconColor: layer?.iconColor || hotspot.iconColor || DEFAULT_HOTSPOT_ICON_COLOR,
+			color: layer?.backgroundColor || legacy.backgroundColor || bgDefault,
+			iconColor: layer?.iconColor || legacy.iconColor || DEFAULT_HOTSPOT_ICON_COLOR,
 		};
 	}
 
@@ -61,7 +71,7 @@ export function resolveHotspotStyle( layer, hotspot = {} ) {
 	return {
 		icon: null,
 		customIconUrl: null,
-		color: layer?.pulseColor || hotspot.backgroundColor || DEFAULT_HOTSPOT_COLOR,
+		color: layer?.pulseColor || legacy.backgroundColor || DEFAULT_HOTSPOT_COLOR,
 		iconColor: DEFAULT_HOTSPOT_ICON_COLOR,
 	};
 }
