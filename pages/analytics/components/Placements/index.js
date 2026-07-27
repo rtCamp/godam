@@ -228,7 +228,16 @@ function PlacementRow( { row } ) {
 		{ label: __( 'Views', 'godam' ), value: Number( row.views ?? 0 ).toLocaleString() },
 		{ label: __( 'Plays', 'godam' ), value: Number( row.plays ?? 0 ).toLocaleString() },
 		{ label: __( 'Play Rate', 'godam' ), value: `${ playRate.toFixed( 2 ) }%` },
-		{ label: __( 'Avg Watch Time', 'godam' ), value: formatWatchTime( avgWatchTime ) },
+		{
+			label: __( 'Avg Watch Time', 'godam' ),
+			// formatWatchTime floors to whole seconds, so a real but sub-second
+			// average would render as a bare "0s" and read like "nothing was
+			// watched". Distinguish "watched, but briefly" from "not watched".
+			value:
+				avgWatchTime > 0 && avgWatchTime < 1
+					? __( '<1s', 'godam' )
+					: formatWatchTime( avgWatchTime ),
+		},
 	];
 
 	return (
