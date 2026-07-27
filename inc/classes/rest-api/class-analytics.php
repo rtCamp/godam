@@ -31,7 +31,7 @@ class Analytics extends Base {
 	 * @return array Array of registered REST API routes.
 	 */
 	public function get_rest_routes() {
-		return array(
+		$routes = array(
 			array(
 				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/fetch',
@@ -212,6 +212,78 @@ class Analytics extends Base {
 				),
 			),
 		);
+
+		// Optional start_date / end_date (YYYY-MM-DD) range args, forwarded to
+		// the range-capable microservice read endpoints. Additive: when absent
+		// the request behaves exactly as before (all-time / `days`).
+		$range_args   = array(
+			'start_date' => array(
+				'required'          => false,
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => array( $this, 'validate_iso_date' ),
+			),
+			'end_date'   => array(
+				'required'          => false,
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => array( $this, 'validate_iso_date' ),
+			),
+		);
+		$range_routes = array(
+			'/' . $this->rest_base . '/fetch',
+			'/' . $this->rest_base . '/history',
+			'/' . $this->rest_base . '/dashboard-metrics',
+			'/' . $this->rest_base . '/dashboard-history',
+			'/' . $this->rest_base . '/layer-analytics',
+			'/' . $this->rest_base . '/top-videos',
+		);
+		foreach ( $routes as &$route ) {
+			if ( in_array( $route['route'], $range_routes, true ) ) {
+				$route['args']['args'] = array_merge( $route['args']['args'], $range_args );
+			}
+		}
+		unset( $route );
+
+		return $routes;
+	}
+
+	/**
+	 * Validate an optional ISO-8601 (YYYY-MM-DD) date range param.
+	 *
+	 * Empty is allowed (the param is optional); a non-empty value must parse as
+	 * a real calendar date in strict Y-m-d form so a malformed string 400s at
+	 * the proxy rather than being forwarded to the microservice.
+	 *
+	 * @param mixed $param The submitted value.
+	 * @return bool
+	 */
+	public function validate_iso_date( $param ) {
+		if ( empty( $param ) ) {
+			return true;
+		}
+		$date = \DateTime::createFromFormat( 'Y-m-d', (string) $param );
+		return $date && $date->format( 'Y-m-d' ) === (string) $param;
+	}
+
+	/**
+	 * Merge start_date / end_date (when supplied) into a microservice query arg
+	 * array. No-op when neither is present, so all-time requests are unchanged.
+	 *
+	 * @param WP_REST_Request $request The incoming request.
+	 * @param array           $params  Query params destined for the microservice.
+	 * @return array
+	 */
+	private function append_range_params( WP_REST_Request $request, array $params ) {
+		$start_date = $request->get_param( 'start_date' );
+		$end_date   = $request->get_param( 'end_date' );
+		if ( ! empty( $start_date ) ) {
+			$params['start_date'] = $start_date;
+		}
+		if ( ! empty( $end_date ) ) {
+			$params['end_date'] = $end_date;
+		}
+		return $params;
 	}
 
 	/**
@@ -284,6 +356,7 @@ class Analytics extends Base {
 		if ( ! empty( $job_id ) ) {
 			$query_params['job_id'] = $job_id;
 		}
+		$query_params = $this->append_range_params( $request, $query_params );
 
 		$endpoint = add_query_arg( $query_params, RTGODAM_ANALYTICS_BASE . '/processed-layer-analytics/' );
 		// Bounded timeout: useVideoLayerData fires one of these per layer type
@@ -381,6 +454,7 @@ class Analytics extends Base {
 			'account_token' => $account_token,
 			'api_key'       => $api_key,
 		);
+		$query_params = $this->append_range_params( $request, $query_params );
 
 		$analytics_url = add_query_arg( $query_params, $analytics_endpoint );
 
@@ -533,6 +607,7 @@ class Analytics extends Base {
 		if ( ! empty( $days ) ) {
 			$params['days'] = $days;
 		}
+		$params = $this->append_range_params( $request, $params );
 
 		$history_url = add_query_arg( $params, $microservice_url );
 		$response    = wp_remote_get( $history_url );
@@ -582,12 +657,16 @@ class Analytics extends Base {
 			);
 		}
 
-		$endpoint = add_query_arg(
+		$params   = $this->append_range_params(
+			$request,
 			array(
 				'site_url'      => $site_url,
 				'account_token' => $account_token,
 				'api_key'       => $api_key,
-			),
+			)
+		);
+		$endpoint = add_query_arg(
+			$params,
 			RTGODAM_ANALYTICS_BASE . '/dashboard/metrics/fetch/'
 		);
 
@@ -683,6 +762,7 @@ class Analytics extends Base {
 		if ( ! empty( $days ) ) {
 			$params['days'] = $days;
 		}
+		$params = $this->append_range_params( $request, $params );
 
 		$endpoint = add_query_arg(
 			$params,
@@ -743,12 +823,15 @@ class Analytics extends Base {
 		$video_ids = $this->resolve_top_videos_id_filter( $search, $hide_deleted );
 
 		$endpoint = add_query_arg(
-			array(
-				'page'          => $page,
-				'limit'         => $limit,
-				'site_url'      => $site_url,
-				'account_token' => $account_token,
-				'api_key'       => $api_key,
+			$this->append_range_params(
+				$request,
+				array(
+					'page'          => $page,
+					'limit'         => $limit,
+					'site_url'      => $site_url,
+					'account_token' => $account_token,
+					'api_key'       => $api_key,
+				)
 			),
 			RTGODAM_ANALYTICS_BASE . '/dashboard/top-videos/'
 		);

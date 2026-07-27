@@ -144,6 +144,9 @@ class Pages {
 		 * Action
 		 */
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
+		// Priority 5: register the shared-components bundle before add-ons
+		// (default priority 10) enqueue scripts that depend on it.
+		add_action( 'admin_enqueue_scripts', array( $this, 'register_shared_components' ), 5 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
 		// The old slug is no longer a registered menu page, so WordPress' menu
@@ -500,6 +503,34 @@ class Pages {
 	 */
 	private function should_overlay_onboarding() {
 		return ! rtgodam_is_api_key_valid() && current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Register the shared GoDAM admin components bundle.
+	 *
+	 * Exposes `window.GoDAM` (e.g. `window.GoDAM.DateRangePicker`) so separate
+	 * plugins — currently godam-for-woo's Reel Pop analytics — can reuse GoDAM
+	 * admin components without duplicating the source. Registered (not enqueued)
+	 * on every admin page at an early priority so add-ons can list
+	 * `godam-shared-components` as a script dependency; GoDAM's own bundles
+	 * import the components directly and so do not need it enqueued.
+	 *
+	 * @return void
+	 */
+	public function register_shared_components() {
+		$asset = RTGODAM_PATH . 'assets/build/pages/shared-components.min.js';
+
+		if ( ! file_exists( $asset ) ) {
+			return;
+		}
+
+		wp_register_script(
+			'godam-shared-components',
+			RTGODAM_URL . 'assets/build/pages/shared-components.min.js',
+			array( 'wp-element', 'wp-components', 'wp-i18n' ),
+			filemtime( $asset ),
+			true
+		);
 	}
 
 	/**

@@ -10,12 +10,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useFetchProcessedAnalyticsHistoryQuery } from './redux/api/analyticsApi';
 import { useFetchDashboardMetricsHistoryQuery } from '../dashboard/redux/api/dashboardAnalyticsApi';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
+import DateRangePicker, { spanDays, fromISO } from './components/DateRangePicker';
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Dropdown, Button, MenuGroup, MenuItem, Icon } from '@wordpress/components';
-import { chevronDown } from '@wordpress/icons';
 
 // Distinct multi-series palette for the chart lines + legend dots (Figma:
 // Play Rate cyan, Engagement Rate pink). Not the admin accent — these must stay
@@ -31,7 +30,11 @@ export default function PlaybackPerformanceDashboard( {
 	mode = 'analytics',
 } ) {
 	const chartRef = useRef( null );
-	const [ selectedPeriod, setSelectedPeriod ] = useState( '7D' );
+	// Shared date-range picker value. Defaults to the last 7 days to preserve
+	// the previous "Last 7 days" default. `{ null, null }` = All Time. The d3
+	// x-axis already adapts its tick density to the span, so arbitrary custom
+	// ranges render correctly.
+	const [ range, setRange ] = useState( () => spanDays( 7 ) );
 	const [ selectedMetrics, setSelectedMetrics ] = useState( [
 		'engagement_rate',
 		'play_rate',
@@ -42,32 +45,13 @@ export default function PlaybackPerformanceDashboard( {
 	const apiKeyErrorType = apiKeyError?.type || null;
 	const shouldSkipAnalytics = ! hasAPIKey || !! apiKeyErrorType;
 
-	// Get days value from selected period
-	const getDaysFromPeriod = ( period ) => {
-		switch ( period ) {
-			case '7D':
-				return 7;
-			case '15D':
-				return 15;
-			case '1M':
-				return 30;
-			case '6M':
-				return 180;
-			case '1Y':
-				return 365;
-			case 'All':
-				return null; // Return null to fetch all available days
-			default:
-				return 7;
-		}
-	};
-
-	// Fetch analytics data based on selected period
-	const days = getDaysFromPeriod( selectedPeriod );
+	// The history queries take the range directly (start_date/end_date win over
+	// `days`; both null = full history).
 	const dashboardHistoryResult = useFetchDashboardMetricsHistoryQuery(
 		{
-			...( days !== null && { days } ),
 			siteUrl: window.location.origin,
+			startDate: range.startDate,
+			endDate: range.endDate,
 		},
 		{ skip: mode !== 'dashboard' || shouldSkipAnalytics },
 	);
@@ -76,7 +60,8 @@ export default function PlaybackPerformanceDashboard( {
 		{
 			videoId: attachmentID,
 			siteUrl: window.location.origin,
-			...( days !== null && { days } ),
+			startDate: range.startDate,
+			endDate: range.endDate,
 		},
 		{ skip: mode === 'dashboard' || ! attachmentID || shouldSkipAnalytics },
 	);
@@ -165,72 +150,33 @@ export default function PlaybackPerformanceDashboard( {
 			.append( 'g' )
 			.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
 
-		// Filter data based on selected period
-		const filterData = ( data, period ) => {
-			const now = new Date();
-			const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
-			let cutoffDate = new Date( today );
-
-			switch ( period ) {
-				case '7D':
-					cutoffDate.setDate( today.getDate() - 6 ); // 6 days ago + today = 7 days
-					break;
-				case '15D':
-					cutoffDate.setDate( today.getDate() - 14 ); // 14 days ago + today = 15 days
-					break;
-				case '1M':
-					cutoffDate.setMonth( today.getMonth() - 1 );
-					break;
-				case '6M':
-					cutoffDate.setMonth( today.getMonth() - 6 );
-					break;
-				case '1Y':
-					cutoffDate.setFullYear( today.getFullYear() - 1 );
-					break;
-				case 'All':
-				default:
-					// For "All", use the earliest date in data if available
-					if ( data && data.length > 0 ) {
-						cutoffDate = d3.min( data, ( d ) => d.date );
-					}
-					return data;
-			}
-
-			return data.filter( ( d ) => new Date( d.date ) >= cutoffDate );
-		};
-
-		const filteredData = filterData( parsedData, selectedPeriod );
-
-		// Calculate date range based on the selected period, not just the available data
+		// Derive the chart's date domain from the picked range. When a bounded
+		// range is set the domain is exactly [start, end]; All Time spans the
+		// data's own extent up to today. Data is filtered to the domain so
+		// generateDateRange can backfill missing days with zeros.
 		const now = new Date();
 		const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
+		const rangeActive = Boolean( range.startDate && range.endDate );
+
 		let startDate;
+		let endDate;
+		let filteredData;
 
-		if ( selectedPeriod === 'All' && filteredData.length > 0 ) {
-			startDate = d3.min( filteredData, ( d ) => d.date );
+		if ( rangeActive ) {
+			startDate = fromISO( range.startDate );
+			endDate = fromISO( range.endDate );
+			filteredData = ( parsedData || [] ).filter( ( d ) => {
+				const t = new Date( d.date );
+				return t >= startDate && t <= endDate;
+			} );
 		} else {
-			// Calculate start date based on period to ensure all days are included
-			startDate = new Date( today );
-			switch ( selectedPeriod ) {
-				case '7D':
-					startDate.setDate( today.getDate() - 6 ); // 6 days ago + today = 7 days
-					break;
-				case '15D':
-					startDate.setDate( today.getDate() - 14 ); // 14 days ago + today = 15 days
-					break;
-				case '1M':
-					startDate.setMonth( today.getMonth() - 1 );
-					break;
-				case '6M':
-					startDate.setMonth( today.getMonth() - 6 );
-					break;
-				case '1Y':
-					startDate.setFullYear( today.getFullYear() - 1 );
-					break;
-			}
+			filteredData = parsedData || [];
+			startDate =
+				filteredData.length > 0
+					? d3.min( filteredData, ( d ) => d.date )
+					: today;
+			endDate = today;
 		}
-
-		const endDate = today; // Always end at today
 
 		const allDates = generateDateRange( startDate, endDate );
 
@@ -527,7 +473,7 @@ export default function PlaybackPerformanceDashboard( {
 			clearInterval( interval );
 			d3.select( '#chart-tooltip' ).remove();
 		};
-	}, [ selectedPeriod, selectedMetrics, parsedData ] );
+	}, [ range.startDate, range.endDate, selectedMetrics, parsedData ] );
 
 	useEffect( () => {
 		if ( ! chartRef.current ) {
@@ -546,19 +492,7 @@ export default function PlaybackPerformanceDashboard( {
 		return () => {
 			resizeObserver.disconnect();
 		};
-	}, [ parsedData, selectedMetrics, selectedPeriod ] );
-
-	// Date-range presets. Each maps to the existing `days` history param; a
-	// custom from/to range would need a backend change, so it's deferred.
-	const periodOptions = [
-		{ value: '7D', label: __( 'Last 7 days', 'godam' ) },
-		{ value: '15D', label: __( 'Last 15 days', 'godam' ) },
-		{ value: '1M', label: __( 'Last 1 month', 'godam' ) },
-		{ value: 'All', label: __( 'All time', 'godam' ) },
-	];
-	const currentPeriodLabel =
-		periodOptions.find( ( o ) => o.value === selectedPeriod )?.label ||
-		periodOptions[ 0 ].label;
+	}, [ parsedData, selectedMetrics, range.startDate, range.endDate ] );
 
 	// Dot-style legend item that toggles its metric on the chart.
 	const renderLegendItem = ( metricKey, label ) => {
@@ -591,36 +525,10 @@ export default function PlaybackPerformanceDashboard( {
 						{ renderLegendItem( 'engagement_rate', __( 'Engagement Rate', 'godam' ) ) }
 					</div>
 
-					<Dropdown
-						className="godam-period-dropdown"
-						popoverProps={ { placement: 'bottom-end' } }
-						renderToggle={ ( { isOpen, onToggle } ) => (
-							<Button
-								variant="secondary"
-								onClick={ onToggle }
-								aria-expanded={ isOpen }
-								className="godam-period-dropdown__toggle"
-							>
-								{ currentPeriodLabel }
-								<Icon icon={ chevronDown } size={ 20 } />
-							</Button>
-						) }
-						renderContent={ ( { onClose } ) => (
-							<MenuGroup>
-								{ periodOptions.map( ( opt ) => (
-									<MenuItem
-										key={ opt.value }
-										isSelected={ selectedPeriod === opt.value }
-										onClick={ () => {
-											setSelectedPeriod( opt.value );
-											onClose();
-										} }
-									>
-										{ opt.label }
-									</MenuItem>
-								) ) }
-							</MenuGroup>
-						) }
+					<DateRangePicker
+						value={ range }
+						onChange={ setRange }
+						testIdPrefix="godam-playback-performance-daterange"
 					/>
 				</div>
 			</div>
