@@ -18,8 +18,12 @@ import DateRangePicker from '../DateRangePicker';
 import { formatWatchTime } from '../../../utils/formatters';
 
 /**
- * Known placement slugs and their display labels. Anything else (including
- * the empty string) is bucketed into the catch-all "Other" section.
+ * Known placement slugs and their display labels.
+ *
+ * A row whose block_source is not one of these has no placement to attribute
+ * it to, so it is dropped rather than collected into a catch-all section: those
+ * plays are already reported in the video's overall metrics above this card,
+ * and repeating them here would double-report them.
  */
 const BLOCK_SOURCE_LABELS = {
 	'video-block': __( 'Video Block', 'godam' ),
@@ -30,7 +34,7 @@ const BLOCK_SOURCE_LABELS = {
 	'reel-pop': __( 'Reel Pop', 'godam' ),
 };
 
-// Canonical section order for the left-hand list; 'other' always sinks last.
+// Canonical section order for the left-hand list.
 const SECTION_ORDER = [
 	'video-block',
 	'video-gallery',
@@ -38,22 +42,19 @@ const SECTION_ORDER = [
 	'wc-product-gallery',
 	'product-reels',
 	'reel-pop',
-	'other',
 ];
 
 /**
- * Display label for a block_source slug. '' and unknown slugs read "Other".
+ * Display label for a known block_source slug.
  *
  * @param {string} blockSource Placement slug from the microservice.
- * @return {string} Human-readable section label.
+ * @return {string} Human-readable section label, or '' when not a known slug.
  */
 export function getBlockSourceLabel( blockSource ) {
 	// hasOwnProperty, not a bare lookup: block_source is untrusted free text and
 	// an inherited Object.prototype member name ('toString', 'valueOf', …) would
 	// otherwise resolve to a function and be treated as a known label.
-	return isKnownBlockSource( blockSource )
-		? BLOCK_SOURCE_LABELS[ blockSource ]
-		: __( 'Other', 'godam' );
+	return isKnownBlockSource( blockSource ) ? BLOCK_SOURCE_LABELS[ blockSource ] : '';
 }
 
 /**
@@ -70,9 +71,12 @@ function isKnownBlockSource( blockSource ) {
 /**
  * Group placement rows into ordered sections by block_source.
  *
- * Rows with an empty or unknown block_source merge into one 'other' section.
- * Section order follows SECTION_ORDER; row order inside a section keeps the
- * server's sort (plays desc). Only sections that have rows are returned.
+ * Rows whose block_source is not a known placement slug (including the empty
+ * string, i.e. unattributed) are dropped: those plays are already reported in
+ * the video's overall metrics above this card, so a catch-all section would
+ * double-report them. Section order follows SECTION_ORDER; row order inside a
+ * section keeps the server's sort (plays desc). Only sections with rows are
+ * returned.
  *
  * @param {Array} placements Placement rows ({ post_id, block_source, … }).
  * @return {Array<{key: string, label: string, rows: Array}>} Ordered sections.
@@ -88,16 +92,18 @@ export function groupPlacementsByBlockSource( placements ) {
 
 	( Array.isArray( placements ) ? placements : [] ).forEach( ( row ) => {
 		const raw = typeof row?.block_source === 'string' ? row.block_source : '';
-		const key = isKnownBlockSource( raw ) ? raw : 'other';
-		if ( ! buckets[ key ] ) {
-			buckets[ key ] = [];
+		if ( ! isKnownBlockSource( raw ) ) {
+			return;
 		}
-		buckets[ key ].push( row );
+		if ( ! buckets[ raw ] ) {
+			buckets[ raw ] = [];
+		}
+		buckets[ raw ].push( row );
 	} );
 
 	return SECTION_ORDER.filter( ( key ) => buckets[ key ] ).map( ( key ) => ( {
 		key,
-		label: key === 'other' ? __( 'Other', 'godam' ) : getBlockSourceLabel( key ),
+		label: getBlockSourceLabel( key ),
 		rows: buckets[ key ],
 	} ) );
 }
@@ -307,8 +313,8 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 
 	const hasError = isError || !! data?.errorType;
 
-	// Missing key (old microservice) and empty array render the same
-	// "collecting data" state; either way there is nothing to show yet.
+	// A missing key (old microservice) and an empty array render the same empty
+	// state; either way there is nothing to show yet.
 	const sections = useMemo(
 		() => groupPlacementsByBlockSource( Array.isArray( data?.placements ) ? data.placements : [] ),
 		[ data ],
@@ -353,9 +359,9 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 			{ ! showSkeleton && ! hasError && sections.length === 0 && (
 				<div className="px-6 py-10 text-center">
 					{ hasRange ? (
-						/* A range is active: this is "nothing in this window", not
-						   "the feature hasn't started collecting" — and the empty
-						   state offers the action that resolves it. */
+						/* A range is active, so this is "nothing in this window"
+						   rather than "nothing at all" — and the empty state
+						   offers the action that resolves it. */
 						<>
 							<p className="text-sm font-semibold text-zinc-700 m-0">
 								{ __( 'No placements in this date range', 'godam' ) }
@@ -377,17 +383,9 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 							</Button>
 						</>
 					) : (
-						<>
-							<p className="text-sm font-semibold text-zinc-700 m-0">
-								{ __( 'Collecting placement data', 'godam' ) }
-							</p>
-							<p className="text-sm text-zinc-500 m-0 mt-1">
-								{ __(
-									'Placement analytics starts collecting after this update. Data appears as new plays come in.',
-									'godam',
-								) }
-							</p>
-						</>
+						<p className="text-sm font-semibold text-zinc-700 m-0">
+							{ __( 'No placement data for this video yet', 'godam' ) }
+						</p>
 					) }
 				</div>
 			) }

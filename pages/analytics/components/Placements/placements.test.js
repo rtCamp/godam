@@ -54,7 +54,10 @@ describe( 'groupPlacementsByBlockSource', () => {
 		expect( keys ).toEqual( [ 'video-block', 'shoppable-video', 'reel-pop' ] );
 	} );
 
-	it( 'buckets empty and unknown block_source values into one Other section', () => {
+	// Unattributed / unlabelled rows are NOT shown: those plays are already
+	// reported in the video's overall metrics above the card, so a catch-all
+	// section would double-report them.
+	it( 'drops empty, missing and unknown block_source rows', () => {
 		const rows = [
 			row( { post_id: 1, block_source: '' } ),
 			row( { post_id: 2, block_source: 'some-future-slug' } ),
@@ -62,23 +65,20 @@ describe( 'groupPlacementsByBlockSource', () => {
 		];
 		delete rows[ 2 ].block_source;
 
-		const sections = groupPlacementsByBlockSource( rows );
-
-		expect( sections ).toHaveLength( 1 );
-		expect( sections[ 0 ].key ).toBe( 'other' );
-		expect( sections[ 0 ].label ).toBe( 'Other' );
-		expect( sections[ 0 ].rows ).toHaveLength( 3 );
+		expect( groupPlacementsByBlockSource( rows ) ).toEqual( [] );
 	} );
 
-	it( 'sinks the Other section below every known section', () => {
+	it( 'keeps known rows and drops unlabelled ones from the same set', () => {
 		const rows = [
-			row( { block_source: 'mystery' } ),
-			row( { block_source: 'reel-pop' } ),
+			row( { post_id: 1, block_source: 'mystery' } ),
+			row( { post_id: 2, block_source: '' } ),
+			row( { post_id: 3, block_source: 'reel-pop' } ),
 		];
 
-		const keys = groupPlacementsByBlockSource( rows ).map( ( s ) => s.key );
+		const sections = groupPlacementsByBlockSource( rows );
 
-		expect( keys ).toEqual( [ 'reel-pop', 'other' ] );
+		expect( sections.map( ( s ) => s.key ) ).toEqual( [ 'reel-pop' ] );
+		expect( sections[ 0 ].rows.map( ( r ) => r.post_id ) ).toEqual( [ 3 ] );
 	} );
 
 	it( 'returns an empty list for empty or non-array input', () => {
@@ -100,12 +100,9 @@ describe( 'getBlockSourceLabel', () => {
 		expect( getBlockSourceLabel( slug ) ).toBe( label );
 	} );
 
-	it( 'maps the empty string to Other', () => {
-		expect( getBlockSourceLabel( '' ) ).toBe( 'Other' );
-	} );
-
-	it( 'maps unknown slugs to Other', () => {
-		expect( getBlockSourceLabel( 'some-future-slug' ) ).toBe( 'Other' );
+	it( 'has no label for the empty string or unknown slugs', () => {
+		expect( getBlockSourceLabel( '' ) ).toBe( '' );
+		expect( getBlockSourceLabel( 'some-future-slug' ) ).toBe( '' );
 	} );
 } );
 
@@ -149,28 +146,26 @@ describe( 'untrusted block_source keys', () => {
 		'isPrototypeOf',
 	];
 
-	it.each( PROTO_KEYS )( 'groups %s into "other" without throwing', ( bs ) => {
-		const sections = groupPlacementsByBlockSource( [ row( { block_source: bs } ) ] );
-		expect( sections ).toHaveLength( 1 );
-		expect( sections[ 0 ].key ).toBe( 'other' );
-		expect( sections[ 0 ].rows ).toHaveLength( 1 );
+	it.each( PROTO_KEYS )( 'drops %s without throwing', ( bs ) => {
+		expect( () =>
+			groupPlacementsByBlockSource( [ row( { block_source: bs } ) ] ),
+		).not.toThrow();
+		expect( groupPlacementsByBlockSource( [ row( { block_source: bs } ) ] ) ).toEqual( [] );
 	} );
 
-	it.each( PROTO_KEYS )( 'labels %s as "Other"', ( bs ) => {
-		expect( getBlockSourceLabel( bs ) ).toBe( 'Other' );
+	it.each( PROTO_KEYS )( 'has no label for %s', ( bs ) => {
+		expect( getBlockSourceLabel( bs ) ).toBe( '' );
 	} );
 
-	it( 'still groups a mix of real and hostile sources correctly', () => {
+	it( 'keeps real sources intact when hostile ones are mixed in', () => {
 		const sections = groupPlacementsByBlockSource( [
 			row( { block_source: 'video-block' } ),
 			row( { block_source: 'toString' } ),
 			row( { block_source: 'reel-pop' } ),
 			row( { block_source: 'constructor' } ),
 		] );
-		const byKey = Object.fromEntries( sections.map( ( s ) => [ s.key, s.rows.length ] ) );
-		expect( byKey[ 'video-block' ] ).toBe( 1 );
-		expect( byKey[ 'reel-pop' ] ).toBe( 1 );
-		expect( byKey.other ).toBe( 2 );
+		expect( sections.map( ( s ) => s.key ) ).toEqual( [ 'video-block', 'reel-pop' ] );
+		expect( sections.every( ( s ) => s.rows.length === 1 ) ).toBe( true );
 	} );
 } );
 
