@@ -317,12 +317,31 @@ function hydrateWidget( model, view ) {
 	settings.off( 'change', onSettingsChange );
 	settings.on( 'change', onSettingsChange );
 
-	// Initial render + autoplay-lock application once Elementor finishes
-	// injecting the control DOM for this panel open.
-	setTimeout( () => {
-		renderThumbnailPicker();
-		applyAutoplayLock( 'yes' === settings.get( 'autoplay' ) );
-	}, 100 );
+	// Autoplay-lock doesn't depend on the picker DOM, so apply it on a short delay.
+	setTimeout( () => applyAutoplayLock( 'yes' === settings.get( 'autoplay' ) ), 100 );
+
+	// Elementor injects the RAW_HTML thumbnail-picker control into the panel DOM
+	// asynchronously (and only when a video with an id is selected). A single
+	// fixed delay can fire before the container exists — then renderThumbnailPicker()
+	// bails and, with no settings change to re-trigger it, the grid never fills
+	// and the "none available" message never shows (an empty gap under the label).
+	// Poll (bounded) until the container appears, then render once.
+	let pickerAttempts = 0;
+	const renderPickerWhenReady = () => {
+		// Bail if the panel has since moved to a different widget.
+		if ( activeWidgetSettings !== settings ) {
+			return;
+		}
+		if ( document.querySelector( '[data-godam-thumbnail-picker]' ) ) {
+			renderThumbnailPicker();
+			return;
+		}
+		if ( pickerAttempts < 20 ) {
+			pickerAttempts++;
+			setTimeout( renderPickerWhenReady, 100 );
+		}
+	};
+	setTimeout( renderPickerWhenReady, 100 );
 }
 
 /**
