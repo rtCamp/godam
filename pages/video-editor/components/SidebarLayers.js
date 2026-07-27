@@ -715,7 +715,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 													) }
 												</span>
 												<span className="godam-ve-layer-row__meta">
-													{ layerText } • { formatTime( layer.displayTime ) }
+													{ /* Images have no timeline — every layer renders at 0:00, so drop the timestamp. */ }
+													{ isTimelineMedia
+														? `${ layerText } • ${ formatTime( layer.displayTime ) }`
+														: layerText }
 												</span>
 											</span>
 										</Button>
