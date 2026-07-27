@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * WordPress dependencies
@@ -34,6 +34,10 @@ import { layerTypes } from '../SidebarLayers';
 const LayersHeader = ( { layer, goBack, layerName: customLayerName } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 	const dispatch = useDispatch();
+	// Images have no timeline — every layer renders at 0s, so the timestamp is
+	// meaningless there and the subtitle shows only the type label.
+	const mediaType = useSelector( ( state ) => state.videoReducer.mediaType );
+	const isTimelineMedia = mediaType !== 'image';
 
 	/**
 	 * Resolve the layer type label (e.g. "CTA", or the specific form integration).
@@ -64,14 +68,18 @@ const LayersHeader = ( { layer, goBack, layerName: customLayerName } ) => {
 					/>
 					<p className="godam-ve-layer-head__subtitle">
 						<span>{ typeLabel }</span>
-						<span aria-hidden="true">•</span>
-						<span>
-							{ sprintf(
-								/* translators: %s is the layer display time in seconds. */
-								__( '%ss', 'godam' ),
-								layer.displayTime,
-							) }
-						</span>
+						{ isTimelineMedia && (
+							<>
+								<span aria-hidden="true">•</span>
+								<span>
+									{ sprintf(
+										/* translators: %s is the layer display time in seconds. */
+										__( '%ss', 'godam' ),
+										layer.displayTime,
+									) }
+								</span>
+							</>
+						) }
 					</p>
 				</div>
 

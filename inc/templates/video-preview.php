@@ -16,11 +16,19 @@ wp_enqueue_script( 'godam-video-preview-script' );
 $godam_video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
 
 // The preview page is shared across media types. Its slug stays `video-preview`,
-// but the chrome (title, header label, edit button) adapts for images, which
-// also skip the video-only Analytics link.
-$godam_media_mime  = $godam_video_id ? (string) get_post_mime_type( $godam_video_id ) : '';
-$godam_is_image    = 0 === strpos( $godam_media_mime, 'image/' );
-$godam_media_label = $godam_is_image ? __( 'Image Preview', 'godam' ) : __( 'Video Preview', 'godam' );
+// but the chrome (title, header label, edit button) adapts for images and audio,
+// both of which also skip the video-only Analytics link.
+$godam_media_mime = $godam_video_id ? (string) get_post_mime_type( $godam_video_id ) : '';
+$godam_is_image   = 0 === strpos( $godam_media_mime, 'image/' );
+$godam_is_audio   = 0 === strpos( $godam_media_mime, 'audio/' );
+
+if ( $godam_is_image ) {
+	$godam_media_label = __( 'Image Preview', 'godam' );
+} elseif ( $godam_is_audio ) {
+	$godam_media_label = __( 'Audio Preview', 'godam' );
+} else {
+	$godam_media_label = __( 'Video Preview', 'godam' );
+}
 
 $godam_preview_content = godam_preview_page_content( $godam_video_id );
 
@@ -59,8 +67,8 @@ $godam_page_title = empty( $godam_video_id )
 			<div class="godam-video-preview-header--center"></div>
 			<div class="godam-video-preview-header--right">
 				<?php if ( $godam_video_id ) : ?>
-					<!-- Analytics link (video-only; images have no analytics view). -->
-					<?php if ( $godam_api_key_valid && ! $godam_is_image ) : ?>
+					<!-- Analytics link (video-only; images and audio have no analytics view). -->
+					<?php if ( $godam_api_key_valid && ! $godam_is_image && ! $godam_is_audio ) : ?>
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_analytics&id=' . $godam_video_id ) ); ?>" class="godam-button button-secondary">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.25 5h1.5v15h-1.5V5zM6 10h1.5v10H6V10zm12 4h-1.5v6H18v-6z"></path></svg>
 						<?php esc_html_e( 'Analytics', 'godam' ); ?>
@@ -69,7 +77,15 @@ $godam_page_title = empty( $godam_video_id )
 					<!-- Edit media link (opens the same GoDAM editor). -->
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_media_editor&id=' . $godam_video_id ) ); ?>" class="godam-button button-primary">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m19 7-3-3-8.5 8.5-1 4 4-1L19 7Zm-7 11.5H5V20h7v-1.5Z"></path></svg>
-						<?php echo esc_html( $godam_is_image ? __( 'Edit Image', 'godam' ) : __( 'Edit Video', 'godam' ) ); ?>
+						<?php
+						if ( $godam_is_image ) {
+							echo esc_html__( 'Edit Image', 'godam' );
+						} elseif ( $godam_is_audio ) {
+							echo esc_html__( 'Edit Audio', 'godam' );
+						} else {
+							echo esc_html__( 'Edit Video', 'godam' );
+						}
+						?>
 					</a>
 				<?php endif; ?>
 			</div>
