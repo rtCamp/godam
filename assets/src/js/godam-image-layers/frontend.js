@@ -27,22 +27,26 @@ if ( document.readyState === 'loading' ) {
 }
 
 /**
- * Detect a WPBakery editor preview. Its inline editor renders the block markup
- * (hotspot / product-hotspot layers) into an iframe AFTER this script has run,
- * so a one-shot init never sees it — the layers stay invisible even though the
- * published page renders them fine. The Gutenberg canvas draws them via edit.js.
+ * Detect a page-builder editor preview (WPBakery inline editor or Elementor
+ * editor). Both render the block markup (hotspot / product-hotspot layers) into
+ * an iframe AFTER this script has run — and re-render it on every edit — so a
+ * one-shot init never sees it and the layers stay invisible in the canvas even
+ * though the published page renders them fine. The Gutenberg canvas draws them
+ * via edit.js instead.
  *
- * @return {boolean} True when running inside a WPBakery editor preview.
+ * @return {boolean} True when running inside a WPBakery or Elementor editor preview.
  */
 const isBuilderPreview = () => {
 	try {
 		const fe = window.frameElement;
-		if ( fe && /vc[-_]inline-frame|vc_editor/i.test( ( fe.id || '' ) + ' ' + ( fe.className || '' ) ) ) {
+		// WPBakery inline editor iframe ids/classes, and Elementor's preview iframe id.
+		if ( fe && /vc[-_]inline-frame|vc_editor|elementor-preview-iframe/i.test( ( fe.id || '' ) + ' ' + ( fe.className || '' ) ) ) {
 			return true;
 		}
 	} catch ( e ) {}
 	try {
-		return !! document.body?.classList.contains( 'vc_editor' );
+		const cls = document.body?.classList;
+		return !! ( cls && ( cls.contains( 'vc_editor' ) || cls.contains( 'elementor-editor-active' ) ) );
 	} catch ( e ) {
 		return false;
 	}
