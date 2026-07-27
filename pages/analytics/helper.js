@@ -557,6 +557,188 @@ export function generateLineChart( data, selector, videoPlayer, tooltipSelector,
 }
 
 /**
+ * Viewer Retention Curve — a standalone area+line chart of absolute audience
+ * retention across the video timeline. It takes the same `all_time_heatmap`
+ * data the old "Views across the video" overlay used (an array where index i =
+ * views at second i) but normalises it to the % of the video's starting viewers
+ * (views[t] / views[0]), so the y-axis reads "% still watching" and is anchored
+ * at 100% at 0:00 — that is what makes it a retention metric rather than the raw
+ * count heatmap. Non-monotonic by design: dips = skip-ahead / drop-off, bumps =
+ * rewatch / skip-to (a rewatched second can exceed 100%). Self-contained:
+ * visible axes + gridlines, an always-on area fill, its own hover tooltip (which
+ * also surfaces the underlying viewer count); it does not sync a video player.
+ *
+ * Idempotent: clears the target SVG before drawing, so it is safe to re-run.
+ *
+ * @param {number[]} data              Per-second view counts (all_time_heatmap).
+ * @param {string}   selector          Target SVG selector, e.g. '#retention-curve'.
+ * @param {string}   tooltipSelector   Tooltip element selector.
+ * @param {Object}   [opts]
+ * @param {number}   [opts.width=900]  Logical viewBox width.
+ * @param {number}   [opts.height=320] Logical viewBox height.
+ */
+export function generateRetentionCurve( data, selector, tooltipSelector, opts = {} ) {
+	const { width: outerW = 900, height: outerH = 320 } = opts;
+	const svgSel = d3.select( selector );
+
+	// Idempotent re-render — drop any previous drawing first.
+	svgSel.selectAll( '*' ).remove();
+
+	if ( ! Array.isArray( data ) || data.length === 0 ) {
+		return;
+	}
+
+	// Absolute audience retention: the % of the video's starting viewers still
+	// watching at each second (views[t] / views at second 0). This is what makes
+	// it a retention *metric* rather than the old raw per-second heatmap — it's
+	// normalised to the start, so it reads "X% of viewers are still here" and is
+	// anchored at 100% at 0:00.
+	//
+	// It is intentionally NOT monotonic (a common misconception): dips mark where
+	// viewers skip ahead or drop off, and bumps mark rewatched / skipped-to
+	// moments. A heavily rewatched second can legitimately exceed 100%, since one
+	// view can watch a segment more than once.
+	const startViews = Number( data[ 0 ] ) || d3.max( data ) || 1;
+	const retention = data.map( ( v ) => ( ( Number( v ) || 0 ) / startViews ) * 100 );
+
+	const margin = { top: 16, right: 16, bottom: 28, left: 44 };
+	const width = outerW - margin.left - margin.right;
+	const height = outerH - margin.top - margin.bottom;
+
+	const svg = svgSel
+		.attr( 'viewBox', `0 0 ${ outerW } ${ outerH }` )
+		.attr( 'preserveAspectRatio', 'xMidYMid meet' )
+		.append( 'g' )
+		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
+
+	const x = d3
+		.scaleLinear()
+		.domain( [ 0, Math.max( 1, data.length - 1 ) ] )
+		.range( [ 0, width ] );
+
+	// Cap at 100% normally, but leave headroom when rewatch spikes push a second
+	// above 100% so those bumps stay visible.
+	const maxY = d3.max( retention ) || 0;
+	const y = d3
+		.scaleLinear()
+		.domain( [ 0, Math.max( 105, maxY * 1.05 ) ] )
+		.range( [ height, 0 ] );
+
+	// Horizontal gridlines, inserted first so they sit behind the data.
+	svg
+		.append( 'g' )
+		.attr( 'class', 'godam-retention__grid' )
+		.call( d3.axisLeft( y ).ticks( 5 ).tickSize( -width ).tickFormat( () => '' ) )
+		.call( ( g ) => g.select( '.domain' ).remove() );
+
+	// Area fill under the curve (always visible).
+	const area = d3
+		.area()
+		.x( ( d, i ) => x( i ) )
+		.y0( height )
+		.y1( ( d ) => y( d ) )
+		.curve( d3.curveMonotoneX );
+	svg.append( 'path' ).datum( retention ).attr( 'class', 'godam-retention__area' ).attr( 'd', area );
+
+	// Retention line.
+	const line = d3
+		.line()
+		.x( ( d, i ) => x( i ) )
+		.y( ( d ) => y( d ) )
+		.curve( d3.curveMonotoneX );
+	svg.append( 'path' ).datum( retention ).attr( 'class', 'godam-retention__line' ).attr( 'd', line );
+
+	// Y axis — retention as a percentage of the starting viewers.
+	svg
+		.append( 'g' )
+		.attr( 'class', 'godam-retention__axis' )
+		.call( d3.axisLeft( y ).ticks( 5 ).tickFormat( ( d ) => `${ Math.round( d ) }%` ) )
+		.call( ( g ) => g.select( '.domain' ).remove() );
+
+	// X axis — video timestamps (each bucket is one second). Use integer-second
+	// tick indices at a fixed step (always including the last second) rather than
+	// d3's default (fractional) ticks: fractional ticks rounded to mm:ss can
+	// collide into duplicate labels on short videos.
+	const desiredTicks = Math.min( 8, data.length );
+	const step = Math.max( 1, Math.ceil( ( data.length - 1 ) / Math.max( 1, desiredTicks - 1 ) ) );
+	const xTicks = [];
+	for ( let i = 0; i < data.length; i += step ) {
+		xTicks.push( i );
+	}
+	if ( xTicks[ xTicks.length - 1 ] !== data.length - 1 ) {
+		xTicks.push( data.length - 1 );
+	}
+	svg
+		.append( 'g' )
+		.attr( 'class', 'godam-retention__axis' )
+		.attr( 'transform', `translate(0, ${ height })` )
+		.call(
+			d3
+				.axisBottom( x )
+				.tickValues( xTicks )
+				.tickFormat( ( i ) => formatTime( i ) ),
+		)
+		.call( ( g ) => g.select( '.domain' ).remove() );
+
+	// Hover affordances.
+	const focus = svg.append( 'circle' ).attr( 'class', 'godam-retention__focus' ).style( 'opacity', 0 );
+	const hoverLine = svg
+		.append( 'line' )
+		.attr( 'class', 'godam-retention__hover-line' )
+		.attr( 'y1', 0 )
+		.attr( 'y2', height )
+		.style( 'opacity', 0 );
+	const tooltip = d3.select( tooltipSelector );
+
+	// Cache the SVG rect once per hover session (on enter) so the mousemove
+	// handler doesn't force a synchronous layout on every pointer move.
+	let hoverScaleX = 1;
+	svg
+		.append( 'rect' )
+		.attr( 'width', width )
+		.attr( 'height', height )
+		.style( 'fill', 'none' )
+		.style( 'pointer-events', 'all' )
+		.on( 'mouseenter', function() {
+			hoverScaleX = ( svgSel.node().getBoundingClientRect().width || outerW ) / outerW;
+		} )
+		.on( 'mousemove', function( event ) {
+			const [ mouseX ] = d3.pointer( event );
+			const index = Math.max( 0, Math.min( retention.length - 1, Math.round( x.invert( mouseX ) ) ) );
+			const pctValue = retention[ index ];
+			const viewers = Number( data[ index ] ) || 0;
+
+			focus.style( 'opacity', 1 ).attr( 'cx', x( index ) ).attr( 'cy', y( pctValue ) );
+			hoverLine.style( 'opacity', 1 ).attr( 'x1', x( index ) ).attr( 'x2', x( index ) );
+
+			// Position the (container-relative) tooltip using the cached
+			// viewBox -> rendered-width scale plus the left axis margin.
+			const px = ( x( index ) + margin.left ) * hoverScaleX;
+
+			tooltip
+				.style( 'opacity', 1 )
+				.style( 'left', `${ px }px` )
+				.style( 'top', 0 )
+				.html(
+					`<div class="godam-retention__tt">
+						<span class="godam-retention__tt-value">
+							<img src="${ ViewIcon }" alt="" height="14" width="14" />
+							${ Math.round( pctValue ) }% ${ __( 'retention', 'godam' ) }
+						</span>
+						<span class="godam-retention__tt-time">
+							${ viewers.toLocaleString() } ${ __( 'viewers', 'godam' ) } · ${ formatTime( index ) }
+						</span>
+					</div>`,
+				);
+		} )
+		.on( 'mouseout', () => {
+			focus.style( 'opacity', 0 );
+			hoverLine.style( 'opacity', 0 );
+			tooltip.style( 'opacity', 0 );
+		} );
+}
+
+/**
  * Ensure all 7 days are represented in a data array, filling missing dates with zeros.
  *
  * Produces an array of exactly 7 entries ordered oldest → newest, where any date
