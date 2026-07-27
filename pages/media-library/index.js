@@ -170,7 +170,50 @@ function setupMediaModalCloseDetection() {
 	}
 }
 
-function initializeMediaLibrary() {
+/**
+ * Mount (or remount) the media-library sidebar React app into a root element.
+ * Idempotent: skips when a live React root is already rendered into it.
+ *
+ * @param {HTMLElement} rootElement The #rt-transcoder-media-library-root node.
+ */
+function renderSidebarInto( rootElement ) {
+	if ( ! rootElement ) {
+		return;
+	}
+
+	const needsNewRoot = ! rootElement._reactRoot ||
+		! rootElement._reactRoot._internalRoot ||
+		! rootElement.hasChildNodes();
+
+	if ( ! needsNewRoot ) {
+		return;
+	}
+
+	// Unmount an existing but stale root before recreating.
+	if ( rootElement._reactRoot ) {
+		try {
+			rootElement._reactRoot.unmount();
+		} catch ( e ) {
+			// Ignore unmounting errors for stale roots
+		}
+	}
+
+	const root = ReactDOM.createRoot( rootElement );
+	rootElement._reactRoot = root;
+	root.render( <Index /> );
+}
+
+function initializeMediaLibrary( event ) {
+	// Preferred path: the frame that just opened passes the exact root it created
+	// (Elementor create step). Rendering into that node avoids guessing which
+	// frame/container is active — the previous "last visible" heuristic was racy
+	// in the Elementor editor and the sidebar often never mounted.
+	const passedRoot = event && event.detail && event.detail.root;
+	if ( passedRoot ) {
+		renderSidebarInto( passedRoot );
+		return;
+	}
+
 	if ( window.elementor ) {
 		const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) )
 			.filter( ( container ) => getComputedStyle( container ).display !== 'none' );
@@ -178,29 +221,7 @@ function initializeMediaLibrary() {
 		const activeContainer = visibleContainers[ visibleContainers.length - 1 ]; // Most recent visible container
 
 		if ( activeContainer ) {
-			const rootElement = activeContainer.querySelector( '#rt-transcoder-media-library-root' );
-
-			if ( rootElement ) {
-				// Check if React root needs to be created/recreated
-				const needsNewRoot = ! rootElement._reactRoot ||
-					! rootElement._reactRoot._internalRoot ||
-					! rootElement.hasChildNodes();
-
-				if ( needsNewRoot ) {
-					// Unmount existing root if it exists but is stale
-					if ( rootElement._reactRoot ) {
-						try {
-							rootElement._reactRoot.unmount();
-						} catch ( e ) {
-							// Ignore unmounting errors for stale roots
-						}
-					}
-
-					const root = ReactDOM.createRoot( rootElement );
-					rootElement._reactRoot = root;
-					root.render( <Index /> );
-				}
-			}
+			renderSidebarInto( activeContainer.querySelector( '#rt-transcoder-media-library-root' ) );
 		}
 
 		return;
@@ -224,25 +245,5 @@ function initializeMediaLibrary() {
 		rootElement = document.getElementById( 'rt-transcoder-media-library-root' );
 	}
 
-	if ( rootElement ) {
-		// Check if React root needs to be created/recreated
-		const needsNewRoot = ! rootElement._reactRoot ||
-			! rootElement._reactRoot._internalRoot ||
-			! rootElement.hasChildNodes();
-
-		if ( needsNewRoot ) {
-			// Unmount existing root if it exists but is stale
-			if ( rootElement._reactRoot ) {
-				try {
-					rootElement._reactRoot.unmount();
-				} catch ( e ) {
-					// Ignore unmounting errors for stale roots
-				}
-			}
-
-			const root = ReactDOM.createRoot( rootElement );
-			rootElement._reactRoot = root;
-			root.render( <Index /> );
-		}
-	}
+	renderSidebarInto( rootElement );
 }

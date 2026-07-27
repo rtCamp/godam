@@ -1230,7 +1230,13 @@ class Pages {
 		wp_register_script(
 			'media-library-react',
 			RTGODAM_URL . 'assets/build/pages/media-library.min.js',
-			array( 'wp-element', 'wp-i18n' ),
+			// The bundle externalizes several @wordpress packages to wp.* globals
+			// (see the `pages` externals in webpack.config.js). On WP admin / the
+			// block editor these globals are already present, but in other contexts
+			// (e.g. the Elementor editor) they are not — a missing wp.primitives
+			// crashed the app ("Cannot read properties of undefined (reading 'SVG')")
+			// so the folder sidebar never rendered. Declare them all as dependencies.
+			array( 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch', 'wp-primitives', 'wp-data', 'wp-notices' ),
 			filemtime( RTGODAM_PATH . 'assets/build/pages/media-library.min.js' ),
 			true
 		);
