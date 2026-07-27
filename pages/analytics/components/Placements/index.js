@@ -459,7 +459,7 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 				   whenever the card has actually resolved (data or empty), not
 				   during loading/error where it would just add noise. */ }
 			{ ! showSkeleton && ! hasError && (
-				<p className="px-6 pt-3 pb-4 m-0 border-t border-zinc-100 text-xs text-zinc-400">
+				<p className="px-6 mx-0 mb-0 mt-3 pt-3 pb-2 border-t border-zinc-100 text-xs text-zinc-400">
 					{ __(
 						'Placement breakdown reflects activity since v2.1.0. Totals above include the video\'s full history.',
 						'godam',
