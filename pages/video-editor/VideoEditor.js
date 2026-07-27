@@ -738,7 +738,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 							/>
 						) }
 						{ attachmentConfig && sources.length > 0 && capability.preview === 'videojs' && (
-							<div className="w-full video-canvas-wrapper">
+							<div className="w-full video-canvas-wrapper" ref={ canvasWrapperRef }>
 								<div className="relative">
 									<VideoJSPlayer
 										options={ {
