@@ -60,6 +60,88 @@ function destroyVideoJSPlayersInContainer( container ) {
 }
 
 /**
+ * Elementor renders its media-frame menu asynchronously, so poll for it before
+ * mounting the folder sidebar. MAX_ATTEMPTS × RETRY_DELAY_MS (≈ 2s) covers the
+ * frame render without spinning indefinitely.
+ */
+const ELEMENTOR_MENU_MAX_ATTEMPTS = 40;
+const ELEMENTOR_MENU_RETRY_DELAY_MS = 50;
+
+/**
+ * Inject the folder-sidebar root into a media frame's menu and tell the React
+ * app to render into it. Shared by the Select and Post media frames so the
+ * mounting logic (and its retry tuning) lives in one place instead of being
+ * duplicated per frame.
+ *
+ * @param {Object} frame A wp.media MediaFrame view (Select or Post).
+ */
+function initializeMediaLibrarySidebar( frame ) {
+	const hasActiveSortable = frame.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
+
+	if ( isUploadPage() || isFolderOrgDisabled() || hasActiveSortable ) {
+		return;
+	}
+
+	if ( window.elementor ) {
+		// Mount the sidebar into THIS frame's own menu, retrying until
+		// Elementor has rendered it. The previous single 100ms timer plus a
+		// "last visible .supports-drag-drop" guess was racy — it often fired
+		// before the frame menu existed, or targeted the wrong frame, so the
+		// folder sidebar frequently never appeared in the Elementor editor.
+		let attempts = 0;
+		const mountElementorSidebar = () => {
+			const menu = frame.$el.find( '.media-frame-menu' ).get( 0 );
+			if ( menu ) {
+				frame.$el.removeClass( 'hide-menu' );
+				menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+				const div = document.createElement( 'div' );
+				div.id = 'rt-transcoder-media-library-root';
+				// Append into the menu's first element child (the .media-menu
+				// container). firstChild could be a whitespace text node, which
+				// cannot take children and would throw a HierarchyRequestError.
+				( menu.firstElementChild || menu ).appendChild( div );
+				// Pass the exact root so the React app renders into THIS frame's
+				// sidebar instead of guessing which frame/container is active.
+				document.dispatchEvent( new CustomEvent( 'media-frame-opened', { detail: { root: div } } ) );
+				return;
+			}
+			if ( attempts < ELEMENTOR_MENU_MAX_ATTEMPTS ) {
+				attempts++;
+				setTimeout( mountElementorSidebar, ELEMENTOR_MENU_RETRY_DELAY_MS );
+			}
+		};
+		mountElementorSidebar();
+		return;
+	}
+
+	/**
+	 * Non-Elementor (WP admin / block editor) — unchanged. A timeout lets the
+	 * media frame finish rendering before injecting the root + dispatching.
+	 */
+	setTimeout( () => {
+		$( '.media-frame' ).removeClass( 'hide-menu' );
+
+		const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) ).filter(
+			( mediaFrame ) => getComputedStyle( mediaFrame ).display !== 'none',
+		);
+
+		const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // most recently opened visible one
+
+		if ( activeFrame ) {
+			const menu = activeFrame.querySelector( '.media-frame-menu .media-menu' );
+			if ( menu ) {
+				menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+				const div = document.createElement( 'div' );
+				div.id = 'rt-transcoder-media-library-root';
+				menu.appendChild( div );
+			}
+		}
+
+		document.dispatchEvent( new CustomEvent( 'media-frame-opened' ) );
+	}, 100 );
+}
+
+/**
  * MediaLibrary class.
  */
 class MediaLibrary {
@@ -190,71 +272,7 @@ class MediaLibrary {
 					this.on( 'content:render:godam', this.GoDAMCreate, this );
 
 					// Initialize sidebar immediately
-					this.initializeMediaLibrarySidebar();
-				},
-
-				initializeMediaLibrarySidebar() {
-					const frame = this;
-					const hasActiveSortable = frame.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
-
-					if ( isUploadPage() || isFolderOrgDisabled() || hasActiveSortable ) {
-						return;
-					}
-
-					if ( window.elementor ) {
-						// Mount the sidebar into THIS frame's own menu, retrying until
-						// Elementor has rendered it. The previous single 100ms timer plus a
-						// "last visible .supports-drag-drop" guess was racy — it often fired
-						// before the frame menu existed, or targeted the wrong frame, so the
-						// folder sidebar frequently never appeared in the Elementor editor.
-						let attempts = 0;
-						const mountElementorSidebar = () => {
-							const menu = frame.$el.find( '.media-frame-menu' ).get( 0 );
-							if ( menu ) {
-								frame.$el.removeClass( 'hide-menu' );
-								menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
-								const div = document.createElement( 'div' );
-								div.id = 'rt-transcoder-media-library-root';
-								( menu.firstChild || menu ).appendChild( div );
-								// Pass the exact root so the React app renders into THIS frame's
-								// sidebar instead of guessing which frame/container is active.
-								document.dispatchEvent( new CustomEvent( 'media-frame-opened', { detail: { root: div } } ) );
-								return;
-							}
-							if ( attempts < 40 ) {
-								attempts++;
-								setTimeout( mountElementorSidebar, 50 );
-							}
-						};
-						mountElementorSidebar();
-						return;
-					}
-
-					/**
-					 * Non-Elementor (WP admin / block editor) — unchanged. A timeout lets the
-					 * media frame finish rendering before injecting the root + dispatching.
-					 */
-					setTimeout( () => {
-						$( '.media-frame' ).removeClass( 'hide-menu' );
-
-						const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) ).filter(
-							( mediaFrame ) => getComputedStyle( mediaFrame ).display !== 'none',
-						);
-
-						const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // most recently opened visible one
-
-						if ( activeFrame ) {
-							const menu = activeFrame.querySelector( '.media-frame-menu .media-menu' );
-							if ( menu ) {
-								menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
-								const div = document.createElement( 'div' );
-								div.id = 'rt-transcoder-media-library-root';
-								menu.appendChild( div );
-							}
-						}
-
-						document.dispatchEvent( new CustomEvent( 'media-frame-opened' ) );
-					}, 100 );
+					initializeMediaLibrarySidebar( this );
 				},
 
 				// Include all other GoDAM methods from the shared object
@@ -272,71 +290,7 @@ class MediaLibrary {
 					// Initialize GoDAM functionality
 					this.on( 'content:render:godam', this.GoDAMCreate, this );
 
-					this.initializeMediaLibrarySidebar();
-				},
-
-				initializeMediaLibrarySidebar() {
-					const frame = this;
-					const hasActiveSortable = frame.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
-
-					if ( isUploadPage() || isFolderOrgDisabled() || hasActiveSortable ) {
-						return;
-					}
-
-					if ( window.elementor ) {
-						// Mount the sidebar into THIS frame's own menu, retrying until
-						// Elementor has rendered it. The previous single 100ms timer plus a
-						// "last visible .supports-drag-drop" guess was racy — it often fired
-						// before the frame menu existed, or targeted the wrong frame, so the
-						// folder sidebar frequently never appeared in the Elementor editor.
-						let attempts = 0;
-						const mountElementorSidebar = () => {
-							const menu = frame.$el.find( '.media-frame-menu' ).get( 0 );
-							if ( menu ) {
-								frame.$el.removeClass( 'hide-menu' );
-								menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
-								const div = document.createElement( 'div' );
-								div.id = 'rt-transcoder-media-library-root';
-								( menu.firstChild || menu ).appendChild( div );
-								// Pass the exact root so the React app renders into THIS frame's
-								// sidebar instead of guessing which frame/container is active.
-								document.dispatchEvent( new CustomEvent( 'media-frame-opened', { detail: { root: div } } ) );
-								return;
-							}
-							if ( attempts < 40 ) {
-								attempts++;
-								setTimeout( mountElementorSidebar, 50 );
-							}
-						};
-						mountElementorSidebar();
-						return;
-					}
-
-					/**
-					 * Non-Elementor (WP admin / block editor) — unchanged. A timeout lets the
-					 * media frame finish rendering before injecting the root + dispatching.
-					 */
-					setTimeout( () => {
-						$( '.media-frame' ).removeClass( 'hide-menu' );
-
-						const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) ).filter(
-							( mediaFrame ) => getComputedStyle( mediaFrame ).display !== 'none',
-						);
-
-						const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // most recently opened visible one
-
-						if ( activeFrame ) {
-							const menu = activeFrame.querySelector( '.media-frame-menu .media-menu' );
-							if ( menu ) {
-								menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
-								const div = document.createElement( 'div' );
-								div.id = 'rt-transcoder-media-library-root';
-								menu.appendChild( div );
-							}
-						}
-
-						document.dispatchEvent( new CustomEvent( 'media-frame-opened' ) );
-					}, 100 );
+					initializeMediaLibrarySidebar( this );
 				},
 
 				// Include all other GoDAM methods from the shared object

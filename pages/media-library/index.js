@@ -181,11 +181,16 @@ function renderSidebarInto( rootElement ) {
 		return;
 	}
 
-	const needsNewRoot = ! rootElement._reactRoot ||
-		! rootElement._reactRoot._internalRoot ||
-		! rootElement.hasChildNodes();
+	// Consider the root "live" using plugin-owned signals only — never React's
+	// private internals (e.g. `_internalRoot`), which change between versions.
+	// A live root is one we created (`_reactRoot`) that still carries our own
+	// `data-godam-mounted` flag and rendered DOM. If the node was emptied or its
+	// root torn down (see modal-close cleanup), fall through and remount.
+	const hasLiveRoot = rootElement._reactRoot &&
+		rootElement.dataset.godamMounted === 'true' &&
+		rootElement.hasChildNodes();
 
-	if ( ! needsNewRoot ) {
+	if ( hasLiveRoot ) {
 		return;
 	}
 
@@ -196,10 +201,13 @@ function renderSidebarInto( rootElement ) {
 		} catch ( e ) {
 			// Ignore unmounting errors for stale roots
 		}
+		rootElement._reactRoot = null;
+		delete rootElement.dataset.godamMounted;
 	}
 
 	const root = ReactDOM.createRoot( rootElement );
 	rootElement._reactRoot = root;
+	rootElement.dataset.godamMounted = 'true';
 	root.render( <Index /> );
 }
 
