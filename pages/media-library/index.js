@@ -53,6 +53,33 @@ document.addEventListener( 'media-frame-opened', initializeMediaLibrary );
 setupMediaModalCloseDetection();
 
 /**
+ * Whether any WordPress media modal is currently visible.
+ *
+ * @return {boolean} True if at least one `.media-modal` is displayed.
+ */
+function isAnyMediaModalOpen() {
+	return Array.from( document.querySelectorAll( '.media-modal' ) )
+		.some( ( modal ) => getComputedStyle( modal ).display !== 'none' );
+}
+
+/**
+ * Reset the folder sidebar's UI state and resync the WP media query — but ONLY
+ * when no media modal remains open. Closing a nested modal (e.g. an attachment
+ * details overlay) while the picker the user is working in is still open must not
+ * wipe the active folder selection, which the previous unconditional reset did.
+ */
+function resetSidebarIfAllModalsClosed() {
+	if ( isAnyMediaModalOpen() ) {
+		return;
+	}
+
+	store.dispatch( resetUIState() );
+
+	// Resync the WordPress media query back to "all".
+	triggerFilterChange( 'all' );
+}
+
+/**
  * Set up detection for when WordPress media modals are closed
  * and reset the React state to ensure fresh UI state for new modal instances
  */
@@ -82,11 +109,8 @@ function setupMediaModalCloseDetection() {
 								}
 							} );
 
-							// Media modal was closed, reset React state
-							store.dispatch( resetUIState() );
-
-							// Also trigger WordPress media filter change to sync
-							triggerFilterChange( 'all' );
+							// Media modal removed — reset only if no modal remains open.
+							resetSidebarIfAllModalsClosed();
 						// Also check if it contains media modal children
 						} else if ( node.querySelector && node.querySelector( '.media-modal' ) ) {
 							// Clean up any React roots in child modals
@@ -102,10 +126,8 @@ function setupMediaModalCloseDetection() {
 								}
 							} );
 
-							store.dispatch( resetUIState() );
-
-							// Also trigger WordPress media filter change to sync
-							triggerFilterChange( 'all' );
+							// Nested media modal removed — reset only if no modal remains open.
+							resetSidebarIfAllModalsClosed();
 						}
 					}
 				} );
@@ -124,12 +146,10 @@ function setupMediaModalCloseDetection() {
 	setInterval( () => {
 		const currentModalCount = document.querySelectorAll( '.media-modal:not([style*="display: none"])' ).length;
 
-		// If modal count decreased, a modal was closed
+		// If modal count decreased a modal was closed — reset only once the last one
+		// is gone so closing a nested modal doesn't clobber the picker in use.
 		if ( currentModalCount < lastModalCount ) {
-			store.dispatch( resetUIState() );
-
-			// Also trigger WordPress media filter change to sync
-			triggerFilterChange( 'all' );
+			resetSidebarIfAllModalsClosed();
 		}
 
 		lastModalCount = currentModalCount;
@@ -140,29 +160,35 @@ function setupMediaModalCloseDetection() {
 		// Hook into wp.media to detect when frames are closed
 		const originalClose = wp.media.view.Modal.prototype.close;
 		wp.media.view.Modal.prototype.close = function( ...args ) {
+			// Capture the closing modal's element before the async cleanup runs.
+			const modalEl = this.el;
+
 			// Call original close method
 			const result = originalClose.apply( this, args );
 
-			// Clean up React roots in modal elements before they're removed
+			// Clean up the React root in THIS closing modal before it is hidden/removed.
+			// Scoped to the closing modal so closing one frame never tears down a sibling
+			// frame's still-visible sidebar.
 			setTimeout( () => {
-				// Find all React root elements in closing modals and clean them up
-				const modalElements = document.querySelectorAll( '.media-modal #rt-transcoder-media-library-root' );
-				modalElements.forEach( ( element ) => {
-					if ( element._reactRoot ) {
-						try {
-							element._reactRoot.unmount();
-						} catch ( e ) {
-							// Ignore unmounting errors
+				// Skip cleanup if the modal was reopened within this delay (still visible) —
+				// otherwise we would unmount a freshly-mounted sidebar.
+				const modalHidden = ! modalEl || ! modalEl.isConnected || getComputedStyle( modalEl ).display === 'none';
+
+				if ( modalHidden && modalEl ) {
+					modalEl.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( element ) => {
+						if ( element._reactRoot ) {
+							try {
+								element._reactRoot.unmount();
+							} catch ( e ) {
+								// Ignore unmounting errors
+							}
+							element._reactRoot = null;
 						}
-						element._reactRoot = null;
-					}
-				} );
+					} );
+				}
 
-				// Reset React state after modal closes
-				store.dispatch( resetUIState() );
-
-				// Also trigger WordPress media filter change to sync
-				triggerFilterChange( 'all' );
+				// Reset React state only once the last media modal has closed.
+				resetSidebarIfAllModalsClosed();
 			}, 100 ); // Small delay to ensure modal is fully closed
 
 			return result;
