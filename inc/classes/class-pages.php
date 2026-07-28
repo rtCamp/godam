@@ -1227,10 +1227,28 @@ class Pages {
 
 		wp_enqueue_style( 'wp-components' );
 
+		// The bundle externalizes several @wordpress packages to wp.* globals
+		// (see the `pages` externals in webpack.config.js). On WP admin / the
+		// block editor these globals are already present, but in other contexts
+		// (e.g. the Elementor editor) they are not — a missing wp.primitives
+		// crashed the app ("Cannot read properties of undefined (reading 'SVG')")
+		// so the folder sidebar never rendered. Declare them as dependencies, but
+		// only the handles actually registered in the current context: a handle
+		// missing on older WP / non-standard admin screens would otherwise block
+		// the enqueue entirely.
+		$media_library_deps = array_values(
+			array_filter(
+				array( 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch', 'wp-primitives', 'wp-data', 'wp-notices' ),
+				static function ( $handle ) {
+					return wp_script_is( $handle, 'registered' );
+				}
+			)
+		);
+
 		wp_register_script(
 			'media-library-react',
 			RTGODAM_URL . 'assets/build/pages/media-library.min.js',
-			array( 'wp-element', 'wp-i18n' ),
+			$media_library_deps,
 			filemtime( RTGODAM_PATH . 'assets/build/pages/media-library.min.js' ),
 			true
 		);
