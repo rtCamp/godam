@@ -507,14 +507,32 @@ class Analytics extends Base {
 				$placements[ $index ]['permalink']  = null;
 				$placements[ $index ]['edit_url']   = $edit_url ? $edit_url : null;
 				$placements[ $index ]['is_deleted'] = false;
+			} elseif ( $placement_post ) {
+				// A REAL post exists (private/draft/pending/trashed) and this
+				// caller may not even know it exists. Redact everything that
+				// could identify or describe it -- not just the title: the raw
+				// post_id and its engagement metrics (views/plays/page_load/
+				// play_time) were still passing through on the public
+				// `/analytics/fetch` route, letting an anonymous caller
+				// enumerate hidden page IDs and read their traffic. Every
+				// redacted row is intentionally identical (same generic label,
+				// zeroed metrics, post_id 0) so nothing distinguishes one
+				// hidden page from another.
+				$placements[ $index ]['post_id']    = 0;
+				$placements[ $index ]['title']      = __( 'Unavailable', 'godam' );
+				$placements[ $index ]['permalink']  = null;
+				$placements[ $index ]['edit_url']   = null;
+				$placements[ $index ]['is_deleted'] = true;
+				$placements[ $index ]['views']      = 0;
+				$placements[ $index ]['plays']      = 0;
+				$placements[ $index ]['page_load']  = 0;
+				$placements[ $index ]['play_time']  = 0;
 			} else {
-				// Missing, trashed, or non-public and this caller can't edit it:
-				// present as unavailable so nothing sensitive leaks. Keep the ID
-				// in the title when known, so several unavailable rows stay
-				// distinguishable instead of repeating one constant string.
+				// post_id doesn't resolve to any post at all: nothing real to
+				// protect, so the metrics stay and the ID is safe to show.
 				$placements[ $index ]['title'] = $placement_post_id
 					/* translators: %d: WordPress post ID. */
-					? sprintf( __( 'Post #%d (unavailable)', 'godam' ), $placement_post_id )
+					? sprintf( __( 'Post #%d (deleted)', 'godam' ), $placement_post_id )
 					: __( 'Deleted page', 'godam' );
 				$placements[ $index ]['permalink']  = null;
 				$placements[ $index ]['edit_url']   = null;

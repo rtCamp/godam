@@ -448,14 +448,15 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 					{ /* Detail: the selected section's per-page rows. */ }
 					<div className="flex flex-col gap-3 min-w-0">
 						{ selectedSection &&
-							selectedSection.rows.map( ( row ) => (
-								// (post_id, block_source) is already unique per row: the
-								// microservice aggregates by that exact pair, so no two
-								// rows in one placements array can share it. Dropping
-								// `index` avoids needless remounts when a range change
-								// re-sorts rows by plays desc.
+							selectedSection.rows.map( ( row, index ) => (
+								// (post_id, block_source) is unique per row EXCEPT when
+								// post_id has been redacted to 0 for a hidden (private/
+								// draft/trashed) page the caller can't see -- several such
+								// rows in one section would otherwise collide on the same
+								// key. Fall back to `index` only in that case; the normal
+								// case still avoids needless remounts on a range change.
 								<PlacementRow
-									key={ `${ row.post_id }-${ row.block_source }` }
+									key={ row.post_id ? `${ row.post_id }-${ row.block_source }` : `redacted-${ row.block_source }-${ index }` }
 									row={ row }
 								/>
 							) ) }
