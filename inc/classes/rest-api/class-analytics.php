@@ -420,6 +420,130 @@ class Analytics extends Base {
 	}
 
 	/**
+	 * Enrich microservice placement rows with WP-side page data.
+	 *
+	 * Each row arrives as { post_id, block_source, views, plays, page_load,
+	 * play_time }. WP adds title (with a "Deleted page" fallback), permalink,
+	 * edit_url (null when the current user can't edit the post) and is_deleted.
+	 * The metric primitives pass through untouched. Lookups are capped to the
+	 * first 100 rows as a defensive bound on per-request DB work; rows past the
+	 * cap still get a constant-cost attributable label so none render blank.
+	 *
+	 * The /analytics/fetch route is public (permission_callback __return_true),
+	 * so this never leaks non-public pages (private, draft, pending, trashed) to
+	 * anonymous callers: the real title/permalink is revealed only when the page
+	 * is publicly viewable, or the current user can edit it.
+	 *
+	 * @param array $placements Placement rows from the microservice.
+	 * @return array Enriched placement rows.
+	 */
+	private function enrich_placements( $placements ) {
+		if ( ! is_array( $placements ) || empty( $placements ) ) {
+			return is_array( $placements ) ? $placements : array();
+		}
+
+		$lookup_limit = 100;
+		$placements   = array_values( $placements );
+
+		// Prime the post cache in ONE query for the rows we are about to enrich,
+		// so the loop below hits cache instead of issuing up to 100 individual
+		// uncached get_post() calls per request on a public endpoint.
+		$prime_ids = array();
+		foreach ( array_slice( $placements, 0, $lookup_limit ) as $placement ) {
+			if ( is_array( $placement ) && ! empty( $placement['post_id'] ) ) {
+				$prime_ids[] = absint( $placement['post_id'] );
+			}
+		}
+		$prime_ids = array_filter( array_unique( $prime_ids ) );
+		if ( ! empty( $prime_ids ) ) {
+			_prime_post_caches( $prime_ids, false, false );
+		}
+
+		foreach ( $placements as $index => $placement ) {
+			if ( ! is_array( $placement ) ) {
+				continue;
+			}
+
+			$placement_post_id = isset( $placement['post_id'] ) ? absint( $placement['post_id'] ) : 0;
+
+			// Beyond the per-request lookup cap: skip the DB work, but emit a
+			// constant-cost attributable label so the row never renders blank.
+			if ( $index >= $lookup_limit ) {
+				$placements[ $index ]['title'] = $placement_post_id
+					/* translators: %d: WordPress post ID. */
+					? sprintf( __( 'Post #%d', 'godam' ), $placement_post_id )
+					: __( 'Deleted page', 'godam' );
+				$placements[ $index ]['permalink']  = null;
+				$placements[ $index ]['edit_url']   = null;
+				$placements[ $index ]['is_deleted'] = false;
+				continue;
+			}
+
+			$placement_post = $placement_post_id ? get_post( $placement_post_id ) : null;
+
+			// A trashed post is treated as gone even for users who can edit it:
+			// WordPress maps edit_post on a trashed post to its pre-trash status
+			// (so current_user_can passes), but wp-admin/post.php refuses to open
+			// it ("You cannot edit this item because it is in the Trash", HTTP
+			// 409). Surfacing an Edit link would be a dead end, and the page is
+			// unreachable for visitors, so it belongs in the deleted state.
+			$is_trashed  = $placement_post && 'trash' === $placement_post->post_status;
+			$can_edit    = $placement_post && ! $is_trashed && current_user_can( 'edit_post', $placement_post_id );
+			$is_viewable = $placement_post && ! $is_trashed && is_post_publicly_viewable( $placement_post );
+			$edit_url    = $can_edit ? get_edit_post_link( $placement_post_id, 'raw' ) : null;
+
+			if ( $is_viewable ) {
+				// Public page: reveal title, permalink and (if capable) an edit link.
+				$permalink = get_permalink( $placement_post );
+
+				$placements[ $index ]['title']      = get_the_title( $placement_post );
+				$placements[ $index ]['permalink']  = $permalink ? $permalink : null;
+				$placements[ $index ]['edit_url']   = $edit_url ? $edit_url : null;
+				$placements[ $index ]['is_deleted'] = false;
+			} elseif ( $can_edit ) {
+				// Not public (private/draft/pending), but this user may edit it:
+				// show the real title + an Edit link, without a public permalink.
+				$placements[ $index ]['title']      = get_the_title( $placement_post );
+				$placements[ $index ]['permalink']  = null;
+				$placements[ $index ]['edit_url']   = $edit_url ? $edit_url : null;
+				$placements[ $index ]['is_deleted'] = false;
+			} elseif ( $placement_post ) {
+				// A REAL post exists (private/draft/pending/trashed) and this
+				// caller may not even know it exists. Redact everything that
+				// could identify or describe it -- not just the title: the raw
+				// post_id and its engagement metrics (views/plays/page_load/
+				// play_time) were still passing through on the public
+				// `/analytics/fetch` route, letting an anonymous caller
+				// enumerate hidden page IDs and read their traffic. Every
+				// redacted row is intentionally identical (same generic label,
+				// zeroed metrics, post_id 0) so nothing distinguishes one
+				// hidden page from another.
+				$placements[ $index ]['post_id']    = 0;
+				$placements[ $index ]['title']      = __( 'Unavailable', 'godam' );
+				$placements[ $index ]['permalink']  = null;
+				$placements[ $index ]['edit_url']   = null;
+				$placements[ $index ]['is_deleted'] = true;
+				$placements[ $index ]['views']      = 0;
+				$placements[ $index ]['plays']      = 0;
+				$placements[ $index ]['page_load']  = 0;
+				$placements[ $index ]['play_time']  = 0;
+			} else {
+				// post_id doesn't resolve to any post at all: nothing real to
+				// protect, so the metrics stay and the ID is safe to show.
+				$placements[ $index ]['title'] = $placement_post_id
+					/* translators: %d: WordPress post ID. */
+					? sprintf( __( 'Post #%d (deleted)', 'godam' ), $placement_post_id )
+					: __( 'Deleted page', 'godam' );
+				$placements[ $index ]['permalink']  = null;
+				$placements[ $index ]['edit_url']   = null;
+				$placements[ $index ]['is_deleted'] = true;
+			}
+		}
+
+		return $placements;
+	}
+
+	/**
 	 * Fetch analytics data from the external API securely.
 	 *
 	 * @param WP_REST_Request $request REST API request.
@@ -503,6 +627,16 @@ class Analytics extends Base {
 
 		// Return analytics data if available.
 		if ( isset( $data['processed_analytics'] ) ) {
+			// Placement rows (added by the placements-capable microservice) get
+			// WP-side page context. Key left absent when the microservice
+			// doesn't send it, so the frontend can treat "old microservice"
+			// and "no placements yet" the same way.
+			if ( isset( $data['processed_analytics']['placements'] ) ) {
+				$data['processed_analytics']['placements'] = $this->enrich_placements(
+					$data['processed_analytics']['placements']
+				);
+			}
+
 			$post_views   = $data['processed_analytics']['post_views'] ?? array();
 			$post_ids     = array_keys( $post_views );
 			$post_details = array();

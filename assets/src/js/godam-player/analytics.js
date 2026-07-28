@@ -7,7 +7,11 @@ import { Analytics } from 'analytics';
  */
 import videoAnalyticsPlugin from './video-analytics-plugin';
 import GTMVideoTracker from './gtm-video-tracker';
-import { shouldSkipAnalytics, buildAnalyticsRequestBody } from './analytics-helpers';
+import {
+	shouldSkipAnalytics,
+	buildAnalyticsRequestBody,
+	groupBatchByHostPostId,
+} from './analytics-helpers';
 import {
 	addLayerInteraction as bufferAddLayerInteraction,
 	getLayerInteractions as bufferGetLayerInteractions,
@@ -66,7 +70,7 @@ function resolveAnalyticsVideoElement( video ) {
  * Build analytics metadata for a single video instance.
  *
  * @param {HTMLElement} video - Candidate video or wrapper element.
- * @return {{ videoEl: HTMLElement, instanceId: string, videoId: number, jobId: string }|null} Parsed analytics data.
+ * @return {{ videoEl: HTMLElement, instanceId: string, videoId: number, jobId: string, blockSource: string, hostPostId: number|null }|null} Parsed analytics data.
  */
 function getPageLoadVideoInfo( video ) {
 	const videoEl = resolveAnalyticsVideoElement( video );
@@ -77,12 +81,27 @@ function getPageLoadVideoInfo( video ) {
 		return null;
 	}
 
+	const hostPostId = parseInt( videoEl.dataset.hostPostId, 10 );
+
 	return {
 		videoEl,
 		instanceId,
 		videoId,
 		jobId: videoEl.getAttribute( 'data-job_id' ) || '',
+		blockSource: videoEl.dataset.blockSource || '',
+		hostPostId: hostPostId > 0 ? hostPostId : null,
 	};
+}
+
+/**
+ * Host-post attribution for a single player element.
+ *
+ * @param {HTMLElement|null} el The video element (or null).
+ * @return {number|null} The host page's post ID, or null when not stamped.
+ */
+function elementHostPostId( el ) {
+	const id = parseInt( el?.dataset?.hostPostId, 10 );
+	return id > 0 ? id : null;
 }
 
 // Keep instance tracking on window so repeat evaluations share one registry.
@@ -91,8 +110,10 @@ window.godamObservedPageLoadVideos = window.godamObservedPageLoadVideos || new W
 window.godamPageLoadObserver = window.godamPageLoadObserver || null;
 
 // Pending type 1 page_load events awaiting batched dispatch. Kept on window so
-// repeat evaluations share one queue; entries are [ videoId, jobId ] pairs to
-// match the legacy bulk schema (videoIds: [[id, job], ...]).
+// repeat evaluations share one queue; entries are
+// { videoId, jobId, blockSource, hostPostId } objects, converted to the wire
+// schema (videoIds: [[id, job, source], ...]) at flush time, grouped by
+// hostPostId so each request carries the post_id override that applies to it.
 window.godamPageLoadQueue = window.godamPageLoadQueue || [];
 window.godamPageLoadFlushTimer = window.godamPageLoadFlushTimer || null;
 
@@ -108,10 +129,17 @@ const PAGE_LOAD_FLUSH_DELAY_MS = 1000;
  * once the queue hits PAGE_LOAD_BATCH_SIZE; otherwise schedules a debounced
  * flush after PAGE_LOAD_FLUSH_DELAY_MS.
  *
- * @param {{ videoId: number, jobId: string }} videoInfo
+ * @param {{ videoId: number, jobId: string, blockSource: string }} videoInfo
  */
 function enqueuePageLoad( videoInfo ) {
-	window.godamPageLoadQueue.push( [ videoInfo.videoId, videoInfo.jobId ] );
+	window.godamPageLoadQueue.push( {
+		videoId: videoInfo.videoId,
+		jobId: videoInfo.jobId,
+		blockSource: videoInfo.blockSource || '',
+		// Kept per entry so the flush can group by host attribution instead of
+		// applying one page-global value to every video on the page.
+		hostPostId: videoInfo.hostPostId || null,
+	} );
 
 	if ( window.godamPageLoadQueue.length >= PAGE_LOAD_BATCH_SIZE ) {
 		flushPageLoadQueue();
@@ -158,22 +186,27 @@ function flushPageLoadQueue( sync = false ) {
 		}
 
 		const batch = window.godamPageLoadQueue.splice( 0 );
+		const userToken = window.analytics?.user?.()?.anonymousId || '';
 
-		const { endpoint, body } = buildAnalyticsRequestBody( {
-			type: 1,
-			userToken: window.analytics?.user?.()?.anonymousId || '',
-			videoIds: batch,
-		} );
+		// One request per host attribution: post_id is a single top-level field.
+		groupBatchByHostPostId( batch ).forEach( ( videoIds, hostPostId ) => {
+			const { endpoint, body } = buildAnalyticsRequestBody( {
+				type: 1,
+				userToken,
+				videoIds,
+				hostPostId: hostPostId || null,
+			} );
 
-		if ( ! endpoint ) {
-			return;
-		}
+			if ( ! endpoint ) {
+				return;
+			}
 
-		fetch( endpoint + '/analytics/', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify( body ),
-			keepalive: true,
+			fetch( endpoint + '/analytics/', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify( body ),
+				keepalive: true,
+			} );
 		} );
 
 		return;
@@ -189,9 +222,12 @@ function flushPageLoadQueue( sync = false ) {
 
 	const batch = window.godamPageLoadQueue.splice( 0 );
 
-	window.analytics.track( 'page_load', {
-		type: 1,
-		videoIds: batch,
+	groupBatchByHostPostId( batch ).forEach( ( videoIds, hostPostId ) => {
+		window.analytics.track( 'page_load', {
+			type: 1,
+			videoIds,
+			hostPostId: hostPostId || null,
+		} );
 	} );
 }
 
@@ -229,8 +265,9 @@ function trackPageLoadForVideo( video, reelPopId = 0 ) {
 		// instance can't be folded into the shared batch — dispatch it on its own.
 		window.analytics.track( 'page_load', {
 			type: 1,
-			videoIds: [ [ videoInfo.videoId, videoInfo.jobId ] ],
+			videoIds: [ [ videoInfo.videoId, videoInfo.jobId, videoInfo.blockSource || '' ] ],
 			reelPopId: rpId,
+			hostPostId: videoInfo.hostPostId,
 		} );
 	} else {
 		enqueuePageLoad( videoInfo );
@@ -393,6 +430,12 @@ function observePageLoadForVideo( video ) {
 			const numericId = parseInt( videoKey, 10 );
 			const isNumeric = Number.isFinite( numericId ) && String( numericId ) === videoKey;
 
+			// Placement attribution rides along when the video's element is
+			// still in the DOM at flush time; best-effort, '' otherwise.
+			const flushVideoEl = isNumeric
+				? findVideoElementById( numericId )
+				: document.querySelector( `.video-js[data-job_id="${ videoKey }"]` );
+
 			for ( let i = 0; i < events.length; i += MAX_PER_REQUEST ) {
 				const chunk = events.slice( i, i + MAX_PER_REQUEST );
 				const { endpoint, body } = buildAnalyticsRequestBody( {
@@ -401,6 +444,10 @@ function observePageLoadForVideo( video ) {
 					videoId: isNumeric ? numericId : 0,
 					jobId: isNumeric ? '' : videoKey,
 					layers: chunk,
+					blockSource: flushVideoEl?.dataset?.blockSource || '',
+					// From this video's own element, not a page-level lookup: a
+					// single host-stamped player must not re-attribute the rest.
+					hostPostId: elementHostPostId( flushVideoEl ),
 				} );
 
 				if ( ! endpoint ) {
@@ -528,6 +575,9 @@ function observePageLoadForVideo( video ) {
 
 			const videoLength = Number( player.duration && player.duration() ) || 0;
 
+			// Placement attribution stamped on the element by the PHP template.
+			const heatmapHostPostId = parseInt( videoEl?.dataset?.hostPostId, 10 ) || 0;
+
 			window.analytics.track( 'video_heatmap', {
 				type: 2,
 				videoId: vid,
@@ -535,6 +585,8 @@ function observePageLoadForVideo( video ) {
 				ranges,
 				videoLength,
 				reelPopId: rpId,
+				blockSource: videoEl?.dataset?.blockSource || '',
+				hostPostId: heatmapHostPostId,
 			} );
 			return true;
 		}
@@ -711,6 +763,10 @@ function buildHeatmapPayload( player, video, skipIfKey = null ) {
 		// even though the godam SDK itself has no concept of reel pops.
 		const reelPopId = parseInt( video.getAttribute( 'data-reel-pop-id' ), 10 ) || 0;
 
+		// Placement attribution stamped on the element by the PHP template.
+		const blockSource = video.getAttribute( 'data-block-source' ) || '';
+		const hostPostId = parseInt( video.getAttribute( 'data-host-post-id' ), 10 ) || 0;
+
 		const { endpoint, body } = buildAnalyticsRequestBody( {
 			type: 2,
 			userToken: window.analytics?.user?.()?.anonymousId || '',
@@ -719,6 +775,8 @@ function buildHeatmapPayload( player, video, skipIfKey = null ) {
 			ranges,
 			videoLength,
 			reelPopId,
+			blockSource,
+			hostPostId,
 		} );
 
 		if ( ! endpoint ) {

@@ -161,6 +161,7 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 		item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
 			? Number( item.video_conversion_rate ).toFixed( 2 ) + '%'
 			: '-',
+		Number( item.placements_count ?? 0 ),
 	];
 
 	const handleExportCSV = async () => {
@@ -196,6 +197,7 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 			__( 'Watch Time', 'godam' ),
 			__( 'Engagement Rate', 'godam' ),
 			__( 'Conversion Rate', 'godam' ),
+			__( 'Placements', 'godam' ),
 		];
 
 		const csvContent = [ headers, ...exportVideos.map( buildCsvRow ) ]
@@ -272,13 +274,14 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 							<th scope="col">{ __( 'Total Watch Time', 'godam' ) }</th>
 							<th scope="col">{ __( 'Average Engagement', 'godam' ) }</th>
 							<th scope="col">{ __( 'Conversion Rate', 'godam' ) }</th>
+							<th scope="col">{ __( 'Placements', 'godam' ) }</th>
 						</tr>
 					</thead>
 					<tbody>
 
 						{ isFetching ? (
 							<tr>
-								<td colSpan="7">
+								<td colSpan="8">
 									<div className="space-y-4 mt-3">
 										<div className="skeleton h-4 w-full"></div>
 										<div className="skeleton h-4 w-full"></div>
@@ -340,13 +343,14 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 											? `${ Number( item.video_conversion_rate ).toFixed( 2 ) }%`
 											: '-' }
 									</td>
+									<td>{ Number( item.placements_count ?? 0 ).toLocaleString() }</td>
 								</tr>
 							) )
 						) }
 
 						{ ! isFetching && videos.length === 0 && (
 							<tr>
-								<td colSpan="7">
+								<td colSpan="8">
 									<div className="godam-empty-state">
 										<p className="godam-empty-state__title">
 											{ search

@@ -106,6 +106,23 @@ $godam_disable_subtitles_and_transcript = isset( $attributes['godam_context'] ) 
 		true
 	);
 
+// Analytics placement attribution: which surface this player render came from.
+// An explicit `block_source` attribute (the embed page threads the gallery
+// iframe's value through) wins over the godam_context-derived mapping; the
+// block/Elementor render paths carry no context and default to 'video-block'.
+// block_source is ultimately user-controlled (threaded from a public GET param
+// on the embed page), so cap its length here too, matching the same
+// mb_substr(...,100) cap video-embed.php already applies to that GET param --
+// otherwise an oversized value could reach this attribute uncapped.
+$godam_block_source = ! empty( $attributes['block_source'] )
+	? mb_substr( sanitize_text_field( $attributes['block_source'] ), 0, 100, 'UTF-8' )
+	: rtgodam_get_block_source_from_context( isset( $attributes['godam_context'] ) ? $attributes['godam_context'] : '' );
+
+// Host page attribution for embeds: when the (iframe) render carries the
+// embedding page's post ID, stamp it so analytics count against that page
+// instead of the embed page itself.
+$godam_host_post_id = ! empty( $attributes['host_post_id'] ) ? absint( $attributes['host_post_id'] ) : 0;
+
 // Resolve the attachment ID (could be WordPress or virtual media).
 $godam_attachment_id = '';
 
@@ -723,6 +740,10 @@ if ( empty( $godam_attachment_title ) ) {
 						data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
 						data-controls="<?php echo esc_attr( $godam_video_setup ); ?>"
 						data-job_id="<?php echo esc_attr( $godam_job_id ); ?>"
+						data-block-source="<?php echo esc_attr( $godam_block_source ); ?>"
+						<?php if ( ! empty( $godam_host_post_id ) ) : ?>
+							data-host-post-id="<?php echo esc_attr( $godam_host_post_id ); ?>"
+						<?php endif; ?>
 							data-global_ads_settings="<?php echo esc_attr( $godam_ads_settings ); ?>"
 							data-hover-select="<?php echo esc_attr( $godam_hover_select ); ?>"
 							data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"

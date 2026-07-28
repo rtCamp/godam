@@ -273,6 +273,8 @@ class GoDAM_Player {
 				'show_caption'       => '', // WPBakery toggle → maps to showCaption.
 				'css'                => '',
 				'godam_context'      => '',
+				'block_source'       => '', // Analytics placement slug; overrides the godam_context-derived mapping (embed iframes).
+				'host_post_id'       => 0, // Post ID of the page hosting an embed iframe, for analytics attribution.
 			),
 			$atts,
 			'godam_video'

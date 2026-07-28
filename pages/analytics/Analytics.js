@@ -29,6 +29,7 @@ import SingleMetrics from './SingleMetrics.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
+import Placements from './components/Placements';
 import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
 import { ERROR_TYPE } from '../shared/enums';
@@ -681,6 +682,13 @@ const Analytics = ( { attachmentID } ) => {
 									hidden
 								/>
 							</div>
+
+							{ /* Placements: where this video is embedded and how each placement performs. */ }
+							<Placements
+								videoId={ attachmentID }
+								siteUrl={ siteUrl }
+								shouldSkip={ shouldSkipAnalytics }
+							/>
 						</div>
 					</div>
 					<VideoLayerTimeline

@@ -1299,6 +1299,36 @@ function rtgodam_is_engagement_feature_enabled() {
 }
 
 /**
+ * Map a player context (godam_context) to its analytics block_source slug.
+ *
+ * The placement taxonomy the analytics microservice groups by. Known contexts
+ * map to their canonical slug; an empty context means the plain video block /
+ * shortcode; unknown contexts pass through as-is (the microservice normalizes
+ * server-side and never rejects on this value).
+ *
+ * @since n.e.x.t
+ *
+ * @param string $context The godam_context attribute value.
+ * @return string The block_source slug for analytics events.
+ */
+function rtgodam_get_block_source_from_context( $context ) {
+	$context = (string) $context;
+
+	if ( '' === $context ) {
+		return 'video-block';
+	}
+
+	$map = array(
+		'godam-video-product-gallery'      => 'shoppable-video',
+		'godam-featured-video-gallery'     => 'wc-product-gallery',
+		'godam-for-woo-product-page-reels' => 'product-reels',
+		'godam-reel-pop-widget'            => 'reel-pop',
+	);
+
+	return isset( $map[ $context ] ) ? $map[ $context ] : $context;
+}
+
+/**
  * Generate HTML content for the video embed page.
  *
  * This function produces the HTML markup for embedding a single video.
@@ -1309,12 +1339,14 @@ function rtgodam_is_engagement_feature_enabled() {
  * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only').
  * @param string $bg_color      Optional. Hex background color applied as --godam-video-bg-color CSS variable on the wrapper.
  * @param bool   $show_engagements Optional. Whether to show engagements in the embed. Default false (no engagements shown).
+ * @param string $block_source  Optional. Analytics placement slug forwarded to the player (e.g. 'video-gallery' for gallery iframes).
+ * @param int    $host_post_id  Optional. Post ID of the page embedding this iframe, so analytics attribute to the host page.
  *
  * @since 1.5.0
  *
  * @return string The generated HTML content for the video embed page.
  */
-function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '', $show_engagements = false ) {
+function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '', $show_engagements = false, $block_source = '', $host_post_id = 0 ) {
 	ob_start();
 	// Check if video ID is provided and if video attachment exists.
 	$video_attachment  = null;
@@ -1342,6 +1374,12 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		}
 		if ( ! empty( $engagements_value ) ) {
 			$godam_shortcode .= ' engagements="' . esc_attr( $engagements_value ) . '"';
+		}
+		if ( ! empty( $block_source ) ) {
+			$godam_shortcode .= ' block_source="' . esc_attr( $block_source ) . '"';
+		}
+		if ( ! empty( $host_post_id ) ) {
+			$godam_shortcode .= ' host_post_id="' . absint( $host_post_id ) . '"';
 		}
 		$godam_shortcode .= ']';
 
