@@ -298,12 +298,19 @@ function PdfEdit( {
 	// Content saved before the format was validated (or added by URL) can still hold
 	// a non-PDF. The front end renders nothing for those, so flag it here rather than
 	// showing an <embed> that just paints blank.
-	// Only flag on positive evidence: a loaded attachment whose MIME is not PDF, or,
-	// for a URL-only document, a URL that is not a .pdf. Staying quiet while the
-	// attachment record is still loading avoids flashing the notice on a good PDF.
+	// Decided from the stored URL first, because that is the only signal available
+	// on the very first render. The attachment's MIME type arrives asynchronously,
+	// and waiting for it means rendering the <embed> speculatively: the browser
+	// fetches the file, and for a non-PDF that alone raises a download prompt
+	// before any notice can replace it. The MIME type still overrides the URL once
+	// present, since it is the authoritative answer.
+	//
+	// Trade-off: a PDF served from an extension-less URL is flagged until its MIME
+	// arrives. Erring that way is deliberate, because the opposite error hands the
+	// visitor's browser a file to download.
 	const isUnsupported = hasDocument && ! temporaryURL && (
-		id
-			? ( !! mimeType && 'application/pdf' !== mimeType )
+		mimeType
+			? 'application/pdf' !== mimeType
 			: ! /\.pdf(?:[?#]|$)/i.test( src || '' )
 	);
 
@@ -480,6 +487,15 @@ function PdfEdit( {
 			</div>
 		</div>
 	);
+
+	// Resolved before the JSX: an unsupported file wins over the view toggle, since
+	// neither preview can represent it.
+	let canvasContent = DefaultViewCanvas;
+	if ( isUnsupported ) {
+		canvasContent = UnsupportedCanvas;
+	} else if ( isCardView ) {
+		canvasContent = CardViewCanvas;
+	}
 
 	return (
 		<>
@@ -711,8 +727,7 @@ function PdfEdit( {
 
 			{ /* ── Block canvas ─────────────────────────────────────────────── */ }
 			<figure { ...blockProps } data-test-id="godam-pdf-canvas">
-				{ /* eslint-disable-next-line no-nested-ternary */ }
-				{ isUnsupported ? UnsupportedCanvas : ( isCardView ? CardViewCanvas : DefaultViewCanvas ) }
+				{ canvasContent }
 				<Caption
 					attributes={ attributes }
 					setAttributes={ setAttributes }
