@@ -267,6 +267,8 @@ class GoDAM_Player {
 				'preview'            => false,
 				'showShareButton'    => false,
 				'show_share_button'  => false, // WPBakery format (lowercase with underscore).
+				'playOnModal'        => false,
+				'play_on_modal'      => false, // WPBakery format (lowercase with underscore).
 				'playerHeight'       => '',
 				'player_height'      => '', // WPBakery format (lowercase with underscore).
 				'show_transcription' => '', // WPBakery toggle → maps to showTranscription.
@@ -281,7 +283,7 @@ class GoDAM_Player {
 		);
 
 		// Handle boolean attributes passed as strings (do this before mapping).
-		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'preview', 'showShareButton', 'show_share_button' );
+		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'preview', 'showShareButton', 'show_share_button', 'playOnModal', 'play_on_modal' );
 		foreach ( $boolean_attributes as $bool_attr ) {
 			if ( isset( $attributes[ $bool_attr ] ) ) {
 				$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
@@ -307,6 +309,9 @@ class GoDAM_Player {
 		}
 		if ( isset( $attributes['show_share_button'] ) && '' !== $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
 			$attributes['showShareButton'] = $attributes['show_share_button'];
+		}
+		if ( isset( $attributes['play_on_modal'] ) && '' !== $attributes['play_on_modal'] && ( ! isset( $attributes['playOnModal'] ) || false === $attributes['playOnModal'] ) ) {
+			$attributes['playOnModal'] = $attributes['play_on_modal'];
 		}
 		if ( isset( $attributes['player_height'] ) && '' !== $attributes['player_height'] && ( ! isset( $attributes['playerHeight'] ) || '' === $attributes['playerHeight'] ) ) {
 			$attributes['playerHeight'] = $attributes['player_height'];

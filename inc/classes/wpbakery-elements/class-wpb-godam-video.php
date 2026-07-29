@@ -138,6 +138,22 @@ class WPB_GoDAM_Video {
 			),
 			array(
 				'type'        => 'dropdown',
+				'heading'     => esc_html__( 'Play on Modal', 'godam' ),
+				'param_name'  => 'play_on_modal',
+				'value'       => array(
+					esc_html__( 'No', 'godam' )  => '0',
+					esc_html__( 'Yes', 'godam' ) => '1',
+				),
+				'std'         => '0',
+				'description' => esc_html__( 'Play video in a popup modal when clicked.', 'godam' ),
+				'save_always' => true,
+				'dependency'  => array(
+					'element'   => 'id',
+					'not_empty' => true,
+				),
+			),
+			array(
+				'type'        => 'dropdown',
 				'heading'     => esc_html__( 'Performance Mode', 'godam' ),
 				'param_name'  => 'performance_mode',
 				'value'       => array(

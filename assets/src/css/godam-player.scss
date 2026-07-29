@@ -1143,6 +1143,7 @@ body.godam-share-modal-open {
 	z-index: 8;
 }
 
+/* stylelint-disable-next-line no-descending-specificity -- hover-effect rule kept in this section; sets different properties than the earlier .vjs-control rule, so order is harmless. */
 .vjs-control:hover {
 	color: var(--rtgodam-control-hover-color) !important;
 	transform: scale(var(--rtgodam-control-hover-zoom));
@@ -2319,6 +2320,7 @@ body.godam-share-modal-open {
 // right for a smooth transition. The wrapper is a size container, so below a
 // container-query threshold the panel instead drops beneath the video and
 // stacks full width (see the container query at the end of this section).
+/* stylelint-disable-next-line no-duplicate-selectors -- container-query setup intentionally grouped here with its explanatory comment, separate from the base .godam-video-wrapper rule above. */
 .godam-video-wrapper {
 	container-type: inline-size;
 	container-name: godam-video-wrapper;
@@ -2502,4 +2504,100 @@ body.godam-share-modal-open {
 	opacity: 1;
 	visibility: visible;
 	pointer-events: auto;
+}
+
+/* ---------------------------------------------------------------------------
+ * "Play on modal" — click the inline player to open it in a lightbox.
+ * Modal structure/behaviour is inspired by the GoDAM-for-Woo shoppable video
+ * modal. See assets/src/js/godam-player/managers/modalManager.js.
+ * ------------------------------------------------------------------------- */
+
+.godam-video-wrapper.godam-play-on-modal {
+	cursor: pointer;
+}
+
+/* Prevent the page from scrolling behind an open modal. */
+body.godam-player-modal-open {
+	overflow: hidden;
+}
+
+/* Dark backdrop. */
+.godam-player-modal-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	background: rgba(0, 0, 0, 0.8);
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transition: opacity 0.3s ease, visibility 0.3s ease;
+
+	&.is-active {
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+	}
+}
+
+/* Close button (fixed, top-right). */
+.godam-player-modal-close {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	z-index: 100002;
+	width: 40px;
+	height: 40px;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.4);
+	border: 0;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: background 0.2s ease;
+
+	&.is-active {
+		display: flex;
+	}
+
+	&:hover,
+	&:focus-visible {
+		background: rgba(255, 255, 255, 0.2);
+		outline: none;
+	}
+}
+
+/* Centered wrapper holding the moved player. */
+.godam-player-modal-wrapper {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 100001;
+	width: min(1000px, 92vw);
+	max-height: 90dvh;
+	opacity: 0;
+	pointer-events: none;
+	outline: none;
+	transition: opacity 0.3s ease;
+
+	&.is-active {
+		opacity: 1;
+		pointer-events: auto;
+	}
+}
+
+.godam-player-modal-video {
+	width: 100%;
+}
+
+/* The moved player root carries its own inline max-width (from Player Height);
+ * neutralise it so the player fills the modal width instead. The class is added
+ * to the player root by modalManager.js while it lives inside the modal. */
+.godam-player-modal-item {
+	width: 100% !important;
+	max-width: 100% !important;
+	margin: 0 !important;
 }

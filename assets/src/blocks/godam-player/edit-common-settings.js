@@ -22,7 +22,7 @@ import apiFetch from '@wordpress/api-fetch';
  * @param {Object}   props.attributes    Block attributes.
  */
 export const PlaybackControls = ( { setAttributes, attributes } ) => {
-	const { autoplay, controls, loop, muted, showShareButton, showCaption, showTranscription, tracks, id, cmmId } = attributes;
+	const { autoplay, controls, loop, muted, showShareButton, showCaption, showTranscription, playOnModal, tracks, id, cmmId } = attributes;
 	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
 	const videoEditorUrl = `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_media_editor&id=${ id || cmmId }&tab=transcription`;
 	const hasNoTracks = ! tracks || tracks.length === 0;
@@ -82,6 +82,7 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 			showShareButton: toggleAttribute( 'showShareButton' ),
 			showCaption: toggleAttribute( 'showCaption' ),
 			showTranscription: toggleAttribute( 'showTranscription' ),
+			playOnModal: toggleAttribute( 'playOnModal' ),
 		};
 	}, [ setAttributes ] );
 
@@ -123,6 +124,15 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 					label={ __( 'Playback controls', 'godam' ) }
 					onChange={ toggleFactory.controls }
 					checked={ !! controls }
+				/>
+			</div>
+			<div data-test-id="godam-video-control-play-on-modal">
+				<ToggleControl
+					__nextHasNoMarginBottom
+					label={ __( 'Play on modal', 'godam' ) }
+					onChange={ toggleFactory.playOnModal }
+					checked={ !! playOnModal }
+					help={ __( 'Play video in a popup modal when clicked.', 'godam' ) }
 				/>
 			</div>
 			{ showShareButtonSetting && (

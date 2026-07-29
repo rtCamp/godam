@@ -88,6 +88,11 @@ $godam_hover_select = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSe
 if ( $godam_autoplay ) {
 	$godam_hover_select = 'none';
 }
+
+// "Play on modal": the inline player becomes a click-to-open trigger that plays
+// the video inside a lightbox modal (see godam-player/managers/modalManager.js).
+// The inline render itself is left untouched.
+$godam_play_on_modal = ! empty( $attributes['playOnModal'] );
 // Raw "Show caption" block attribute: true/false when explicitly set, null when
 // unset (inherit from the attachment's Display-captions setting — resolved into
 // $godam_show_caption once the attachment meta is loaded, further below).
@@ -663,7 +668,7 @@ if ( empty( $godam_attachment_title ) ) {
 <?php if ( ! empty( $godam_sources ) ) : ?>
 	<div <?php echo wp_kses_data( $godam_figure_attributes ); ?>>
 		<figure id="godam-player-container-<?php echo esc_attr( $godam_instance_id ); ?>">
-			<div class="godam-video-wrapper">
+			<div class="godam-video-wrapper<?php echo $godam_play_on_modal ? ' godam-play-on-modal' : ''; ?>">
 				<?php if ( $godam_show_overlay && ! empty( $godam_inner_blocks_content ) ) : ?>
 					<div
 						class="godam-video-overlay-container godam-overlay-alignment-<?php echo esc_attr( $godam_vertical_alignment ); ?>"
@@ -749,6 +754,7 @@ if ( empty( $godam_attachment_title ) ) {
 							data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
 							data-autoplay-on-view="<?php echo esc_attr( ( $godam_autoplay && 'auto' !== $godam_preload ) ? 'true' : 'false' ); ?>"
 							data-disable-transcript="<?php echo esc_attr( $godam_disable_subtitles_and_transcript ? 'true' : 'false' ); ?>"
+							data-play-on-modal="<?php echo esc_attr( $godam_play_on_modal ? 'true' : 'false' ); ?>"
 						>
 							<?php
 

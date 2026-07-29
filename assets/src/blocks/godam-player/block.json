@@ -127,6 +127,10 @@
 		"showTranscription": {
 			"type": "boolean",
 			"default": false
+		},
+		"playOnModal": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

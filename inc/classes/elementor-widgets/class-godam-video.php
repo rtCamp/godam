@@ -315,6 +315,19 @@ class GoDAM_Video extends Base {
 		);
 
 		$this->add_control(
+			'play_on_modal',
+			array(
+				'label'       => esc_html__( 'Play on modal', 'godam' ),
+				'type'        => Controls_Manager::SWITCHER,
+				'default'     => '',
+				'description' => esc_html__( 'Play video in a popup modal when clicked.', 'godam' ),
+				'condition'   => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		$this->add_control(
 			'performance_mode',
 			array(
 				'label'     => esc_html__( 'Performance Mode', 'godam' ),
@@ -500,6 +513,7 @@ class GoDAM_Video extends Base {
 		$widget_hover_select       = $this->get_settings_for_display( 'hover_select' ) ?? 'none';
 		$widget_show_share_button  = 'yes' === $this->get_settings_for_display( 'show_share_button' );
 		$widget_show_transcription = 'yes' === $this->get_settings_for_display( 'show_transcription' );
+		$widget_play_on_modal      = 'yes' === $this->get_settings_for_display( 'play_on_modal' );
 		$widget_engagements        = rtgodam_is_engagement_feature_enabled() && 'yes' === $this->get_settings_for_display( 'engagements' );
 		$widget_player_height      = $this->get_settings_for_display( 'player_height' ) ?? '';
 		$widget_aspect_ratio       = $this->get_settings_for_display( 'aspect_ratio' ) ?? 'responsive';
@@ -568,6 +582,7 @@ class GoDAM_Video extends Base {
 			'hoverSelect'       => $widget_hover_select,
 			'showShareButton'   => $widget_show_share_button,
 			'showTranscription' => $widget_show_transcription,
+			'playOnModal'       => $widget_play_on_modal,
 			'engagements'       => $widget_engagements,
 			'playerHeight'      => $widget_player_height,
 			'seo'               => $widget_seo,
