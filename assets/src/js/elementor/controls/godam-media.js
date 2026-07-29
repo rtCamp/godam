@@ -115,13 +115,6 @@ if ( window.elementor ) {
 			} else if ( 'video' === mediaType ) {
 				this.ui.mediaVideo.attr( 'poster', icon ?? '' );
 				this.ui.mediaVideo.attr( 'src', url );
-
-				// Elementor centres .eicon-video-camera over the media area as the
-				// empty-state affordance and never hides it, because its own control
-				// only ever sets `src`, never a poster. We do set one, so without
-				// this the icon is left stranded on top of the thumbnail. Hide it
-				// whenever a poster is showing, and keep it for the empty state.
-				this.$el.find( '.eicon-video-camera' ).toggle( ! icon );
 			} else if ( 'string' === typeof value ) {
 				const fileName = url ? url.split( '/' ).pop() : '';
 				this.ui.fileName.text( fileName );
