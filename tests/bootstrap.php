@@ -18,6 +18,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', __DIR__ . '/' );
 }
 
+// WP core time constants, needed by the cache-TTL defines in custom-functions.php.
+if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
+	define( 'MINUTE_IN_SECONDS', 60 );
+}
+if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
+	define( 'HOUR_IN_SECONDS', 60 * MINUTE_IN_SECONDS );
+}
+if ( ! defined( 'DAY_IN_SECONDS' ) ) {
+	define( 'DAY_IN_SECONDS', 24 * HOUR_IN_SECONDS );
+}
+if ( ! defined( 'WEEK_IN_SECONDS' ) ) {
+	define( 'WEEK_IN_SECONDS', 7 * DAY_IN_SECONDS );
+}
+
 // Minimal stub so the parsing helper can run outside WordPress.
 if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 
@@ -113,6 +127,18 @@ if ( ! function_exists( 'date_i18n' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_parse_url' ) ) {
+
+	/**
+	 * @param string $url       URL to parse.
+	 * @param int    $component Component to retrieve, per parse_url().
+	 * @return mixed
+	 */
+	function wp_parse_url( $url, $component = -1 ) {
+		return parse_url( $url, $component ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- this stub is what wp_parse_url() wraps.
+	}
+}
+
 // Empty stand-in for the WP core base so Video_Editor's parent chain resolves
 // without a WordPress install; the constructor is never run (tests build the
 // object with ReflectionClass::newInstanceWithoutConstructor()).
@@ -125,3 +151,7 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-base.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
+
+// Helper functions under test (godam_is_supported_document). The file only
+// declares functions plus a few guarded define()s, so it is safe to load here.
+require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';

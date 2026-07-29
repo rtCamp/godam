@@ -707,6 +707,51 @@ function godam_is_audio_file( $file_path_or_url ) {
 }
 
 /**
+ * Check whether a document can be embedded by the Document block.
+ *
+ * PDF is the only format the block supports. It embeds through
+ * `<object type="application/pdf">`, so pointing that at anything else gives the
+ * browser a type it cannot display: it paints an empty box (and suppresses the
+ * `<object>` fallback content, so nothing at all is shown) or hands the file to
+ * the download manager, which starts a download on every page load.
+ *
+ * Callers use this to skip front-end output entirely and to show an "unsupported
+ * format" notice in the editors instead.
+ *
+ * The attachment's stored MIME type is authoritative. The URL extension is only a
+ * fallback, for GoDAM tab media whose id is not a local numeric attachment and for
+ * documents added by URL alone.
+ *
+ * @since n.e.x.t
+ *
+ * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
+ * @param string     $url           Document URL. Used when no local attachment is available.
+ *
+ * @return bool True when the document is a PDF and can be embedded, false otherwise.
+ */
+function godam_is_supported_document( $attachment_id = 0, $url = '' ) {
+	if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
+		$mime_type = get_post_mime_type( intval( $attachment_id ) );
+
+		if ( ! empty( $mime_type ) ) {
+			return 'application/pdf' === $mime_type;
+		}
+
+		// Attachment no longer exists; fall through to the URL check so content
+		// that still carries a valid PDF URL keeps rendering.
+	}
+
+	if ( empty( $url ) || ! is_string( $url ) ) {
+		return false;
+	}
+
+	// Drop any query string / fragment before reading the extension.
+	$path = wp_parse_url( $url, PHP_URL_PATH );
+
+	return 'pdf' === strtolower( pathinfo( ! empty( $path ) ? $path : $url, PATHINFO_EXTENSION ) );
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.

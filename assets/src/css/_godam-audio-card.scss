@@ -124,6 +124,12 @@
 
 	&__scrubber {
 		flex: 1 1 auto;
+		// input[type=range] carries an intrinsic min-content width (~129px in
+		// Chrome), and the flex default of min-width:auto pins the track to it. In a
+		// narrow card, such as a 3-column layout, play + track + time then need more
+		// room than the row has, and the non-shrinking time label is pushed outside
+		// the card and the column. Allow the track to shrink so the row always fits.
+		min-width: 0;
 		appearance: none;
 		-webkit-appearance: none;
 		padding: 0;
