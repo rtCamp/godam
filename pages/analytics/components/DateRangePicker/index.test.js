@@ -12,6 +12,7 @@ import {
 	triggerLabelFor,
 	toISO,
 	fromISO,
+	monthGrid,
 } from './index';
 
 describe( 'DateRangePicker helpers', () => {
@@ -67,6 +68,34 @@ describe( 'DateRangePicker helpers', () => {
 			expect(
 				matchPreset( { startDate: '2020-01-01', endDate: '2020-01-05' } ),
 			).toBe( 'custom' );
+		} );
+	} );
+
+	describe( 'monthGrid', () => {
+		// Only the weeks the month actually touches, so no month renders a
+		// trailing row made entirely of next-month days.
+		it.each( [
+			[ 'July 2026 (Wed start, 31 days)', 2026, 6, 5, '2026-06-28', '2026-08-01' ],
+			[ 'August 2026 (Sat start, 31 days)', 2026, 7, 6, '2026-07-26', '2026-09-05' ],
+			[ 'February 2026 (Sun start, 28 days)', 2026, 1, 4, '2026-02-01', '2026-02-28' ],
+		] )( 'spans only the weeks touched by %s', ( _label, year, month, weeks, firstCell, lastCell ) => {
+			const grid = monthGrid( new Date( year, month, 1 ) );
+			expect( grid ).toHaveLength( weeks * 7 );
+			expect( toISO( grid[ 0 ].date ) ).toBe( firstCell );
+			expect( toISO( grid[ grid.length - 1 ].date ) ).toBe( lastCell );
+			// Every row starts on a Sunday, and the month's own days are flagged.
+			expect( grid[ 0 ].date.getDay() ).toBe( 0 );
+			expect( grid.filter( ( d ) => d.inMonth ) ).toHaveLength(
+				new Date( year, month + 1, 0 ).getDate(),
+			);
+		} );
+
+		it( 'never ends on a row of only next-month days', () => {
+			for ( let month = 0; month < 12; month++ ) {
+				const grid = monthGrid( new Date( 2026, month, 1 ) );
+				const lastRow = grid.slice( -7 );
+				expect( lastRow.some( ( d ) => d.inMonth ) ).toBe( true );
+			}
 		} );
 	} );
 
