@@ -59,6 +59,22 @@ function isFolderOrgDisabled() {
 	return ! window.easydamMediaLibrary?.enableFolderOrganization || false;
 }
 
+/**
+ * Whether GoDAM's grid-view transcoding UI — the transcoding status badges and the
+ * "Transcode Media" (retranscode) bulk action — should be active.
+ *
+ * Transcoding is a core GoDAM feature, not a folder-organization one, so it stays
+ * available on the media library grid page (upload.php) even in additive mode
+ * (folder organization disabled). Everywhere else in additive mode (e.g. the media
+ * modal opened from a post) it remains suppressed to keep GoDAM's footprint minimal
+ * alongside another media/DAM plugin.
+ *
+ * @return {boolean} True if the grid-view transcoding UI should be enabled.
+ */
+function isMediaTranscodingUIEnabled() {
+	return ! isFolderOrgDisabled() || isUploadPage();
+}
+
 async function addManageMediaButton() {
 	const referenceElement = document.querySelector( '.wrap .page-title-action' );
 
@@ -173,4 +189,4 @@ function canEditPages() {
 	return _canEditPages;
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, isMediaTranscodingUIEnabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };
