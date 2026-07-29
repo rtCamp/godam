@@ -127,9 +127,13 @@ class GF extends Base {
 			return self::ALLOWED_FORM_FIELDS;
 		}
 
-		$fields = array_map( 'trim', explode( ',', $requested ) );
+		$fields = array_unique( array_map( 'trim', explode( ',', $requested ) ) );
+		$fields = array_values( array_intersect( $fields, self::ALLOWED_FORM_FIELDS ) );
 
-		return array_values( array_intersect( $fields, self::ALLOWED_FORM_FIELDS ) );
+		// Naming only disallowed fields would otherwise yield a list of empty
+		// objects; fall back so the response is always usable. Narrowing to the
+		// allowlist can never widen it.
+		return empty( $fields ) ? self::ALLOWED_FORM_FIELDS : $fields;
 	}
 
 	/**

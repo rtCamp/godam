@@ -43,15 +43,35 @@ class GravityFormsFieldAllowlistTest extends TestCase {
 		$this->assertSame( array( 'id', 'title' ), GF::resolve_requested_fields( 'id,title' ) );
 	}
 
-	/** Privileged keys are dropped even when named explicitly. */
+	/**
+	 * Privileged keys are dropped even when named explicitly.
+	 *
+	 * A selection naming nothing allowed falls back to the allowlist rather
+	 * than returning an empty set, which would render as a list of empty
+	 * objects. The privileged fields are absent either way.
+	 */
 	public function test_privileged_fields_are_rejected() {
-		$this->assertSame( array(), GF::resolve_requested_fields( 'notifications' ) );
-		$this->assertSame( array(), GF::resolve_requested_fields( 'confirmations,fields,feeds' ) );
+		foreach ( array( 'notifications', 'confirmations,fields,feeds' ) as $requested ) {
+			$resolved = GF::resolve_requested_fields( $requested );
+
+			$this->assertSame( array( 'id', 'title', 'description' ), $resolved );
+			foreach ( explode( ',', $requested ) as $privileged ) {
+				$this->assertNotContains( $privileged, $resolved );
+			}
+		}
 	}
 
 	/** The exact shape reported in #1289 — an add-on credential blob in form meta. */
 	public function test_addon_credential_key_is_rejected() {
-		$this->assertSame( array(), GF::resolve_requested_fields( 'atd-salesforce' ) );
+		$resolved = GF::resolve_requested_fields( 'atd-salesforce' );
+
+		$this->assertNotContains( 'atd-salesforce', $resolved );
+		$this->assertSame( array( 'id', 'title', 'description' ), $resolved );
+	}
+
+	/** Repeated names must not produce duplicate entries. */
+	public function test_duplicates_are_collapsed() {
+		$this->assertSame( array( 'id', 'title' ), GF::resolve_requested_fields( 'id,id,title,id' ) );
 	}
 
 	/** Mixing an allowed field with a privileged one keeps only the allowed field. */
@@ -66,7 +86,11 @@ class GravityFormsFieldAllowlistTest extends TestCase {
 
 	/** Matching is case-sensitive; a cased variant is not an allowed field. */
 	public function test_matching_is_case_sensitive() {
-		$this->assertSame( array(), GF::resolve_requested_fields( 'ID,Title' ) );
+		$resolved = GF::resolve_requested_fields( 'ID,Title' );
+
+		$this->assertNotContains( 'ID', $resolved );
+		$this->assertNotContains( 'Title', $resolved );
+		$this->assertSame( array( 'id', 'title', 'description' ), $resolved );
 	}
 
 	/** Non-string input (e.g. `fields[]=x`) falls back to the allowlist. */

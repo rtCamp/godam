@@ -10,7 +10,10 @@ export const gravityFormsAPI = createApi( {
 	baseQuery: fetchBaseQuery( {
 		baseUrl: window.pathJoin( [ restURL, '/godam/v1/' ] ),
 		prepareHeaders: ( headers ) => {
-			headers.set( 'X-WP-Nonce', window.godamRestRoute?.nonce || window.wpApiSettings?.nonce || '' );
+			const nonce = window.godamRestRoute?.nonce || window.wpApiSettings?.nonce;
+			if ( nonce ) {
+				headers.set( 'X-WP-Nonce', nonce );
+			}
 			return headers;
 		},
 	} ),
