@@ -730,8 +730,21 @@ function godam_is_audio_file( $file_path_or_url ) {
  * @return bool True when the document is a PDF and can be embedded, false otherwise.
  */
 function godam_is_supported_document( $attachment_id = 0, $url = '' ) {
-	if ( ! empty( $attachment_id ) && is_numeric( $attachment_id ) ) {
-		$mime_type = get_post_mime_type( intval( $attachment_id ) );
+	// Attachment IDs are positive integers, so require digits rather than any
+	// numeric-looking value. is_numeric() would also accept floats and scientific
+	// notation ('12.5', '1e3'), which absint() then silently turns into a
+	// DIFFERENT id, and a mistyped shortcode would resolve somebody else's
+	// attachment and answer for that instead. Anything else falls through to the
+	// URL check below, which is the safe direction.
+	$godam_post_id = 0;
+	if ( is_int( $attachment_id ) && $attachment_id > 0 ) {
+		$godam_post_id = $attachment_id;
+	} elseif ( is_string( $attachment_id ) && ctype_digit( trim( $attachment_id ) ) ) {
+		$godam_post_id = absint( trim( $attachment_id ) );
+	}
+
+	if ( $godam_post_id ) {
+		$mime_type = get_post_mime_type( $godam_post_id );
 
 		if ( ! empty( $mime_type ) ) {
 			return 'application/pdf' === $mime_type;

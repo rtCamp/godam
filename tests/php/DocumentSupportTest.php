@@ -62,6 +62,50 @@ class DocumentSupportTest extends TestCase {
 	}
 
 	/**
+	 * A digit-string id is accepted, since shortcode attributes always arrive as
+	 * strings.
+	 *
+	 * @return void
+	 */
+	public function test_digit_string_id_is_accepted() {
+		$this->stub_mime( 'application/pdf' );
+		$this->assertTrue( godam_is_supported_document( '201', '' ), 'A digit-string id should resolve via its MIME type.' );
+		$this->assertTrue( godam_is_supported_document( ' 201 ', '' ), 'Surrounding whitespace should be tolerated.' );
+	}
+
+	/**
+	 * Only whole positive numbers may be treated as attachment IDs.
+	 *
+	 * is_numeric() would accept '12.5' and '1e3', and absint() would then turn those
+	 * into 12 and 1000 respectively: a different, possibly existing attachment whose
+	 * MIME type would answer for the one that was actually requested. Such values
+	 * must fall through to the URL check instead.
+	 *
+	 * @return void
+	 */
+	public function test_non_integer_ids_do_not_resolve_an_attachment() {
+		// A PDF MIME is stubbed, so if any of these wrongly took the attachment
+		// branch they would come back true despite the .docx URL.
+		$this->stub_mime( 'application/pdf' );
+
+		foreach ( array( '12.5', '1e3', '0x1A', '+201', '-201', '2 0 1', '', '0' ) as $bad_id ) {
+			$this->assertFalse(
+				godam_is_supported_document( $bad_id, 'https://example.com/notes.docx' ),
+				sprintf( 'id "%s" must not resolve an attachment; it should fall through to the URL.', $bad_id )
+			);
+		}
+
+		// Same inputs with a PDF URL prove the fall-through really happened rather
+		// than the function simply rejecting everything.
+		foreach ( array( '12.5', '1e3', '-201' ) as $bad_id ) {
+			$this->assertTrue(
+				godam_is_supported_document( $bad_id, 'https://example.com/report.pdf' ),
+				sprintf( 'id "%s" should fall through to the URL check, which passes for a PDF.', $bad_id )
+			);
+		}
+	}
+
+	/**
 	 * Other media types that share the media library are rejected too.
 	 *
 	 * @return void

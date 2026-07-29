@@ -127,6 +127,17 @@ if ( ! function_exists( 'date_i18n' ) ) {
 	}
 }
 
+if ( ! function_exists( 'absint' ) ) {
+
+	/**
+	 * @param mixed $maybeint Value to convert.
+	 * @return int
+	 */
+	function absint( $maybeint ) {
+		return abs( (int) $maybeint );
+	}
+}
+
 if ( ! function_exists( 'wp_parse_url' ) ) {
 
 	/**
