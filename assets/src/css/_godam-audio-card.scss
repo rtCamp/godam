@@ -18,6 +18,19 @@
  *     .godam-audio-tabs           (Chapters / Transcript — optional)
  */
 
+// Establish the query container on each surface's card wrapper so the card
+// reflows based on its OWN available width (a narrow sidebar / column vs. the
+// full content area) rather than the viewport. The container must sit on the
+// wrapper — a parent of .godam-audio-card — because the responsive rules also
+// restyle the card's own box (padding), which a container query cannot do to
+// its own container element. `:where()` keeps specificity at 0.
+//   - front end (block) + block editor canvas: .wp-block-godam-audio
+//   - front end (shortcode):                   .godam-audio
+//   - customization editor preview:            .godam-audio-preview
+:where( .wp-block-godam-audio, .godam-audio, .godam-audio-preview ) {
+	container: godam-audio / inline-size;
+}
+
 .godam-audio-card {
 	box-sizing: border-box;
 	width: 100%;
@@ -95,6 +108,7 @@
 	gap: 14px;
 	width: 100%;
 	margin: 16px 0 0;
+	overflow: auto;
 
 	&__play {
 		flex: 0 0 auto;
@@ -349,8 +363,8 @@
 		}
 	}
 
-	// Mobile
-	@media ( max-width: 480px ) {
+	// Narrow container
+	@container godam-audio ( max-width: 480px ) {
 
 		&__nav {
 			gap: 16px;
@@ -362,13 +376,14 @@
 	}
 }
 
-// ── Mobile: shrink cover, drop the player onto its own full-width row ───────────
+// ── Narrow container: shrink cover, drop the player onto its own full-width row ─
 // The player is markup-nested inside .godam-audio-card__body (alongside the title
 // and description). `display: contents` on the body dissolves its box so those
 // children become grid items of __head, letting the player span the full width
 // beneath the [cover][title / description] row without any markup change. Applies
-// identically on the block editor, the front end and the customization preview.
-@media ( max-width: 480px ) {
+// identically on the block editor, the front end and the customization preview,
+// and reflows whenever the card itself is narrow — even on a wide viewport.
+@container godam-audio ( max-width: 480px ) {
 
 	.godam-audio-card {
 		padding: 16px;
