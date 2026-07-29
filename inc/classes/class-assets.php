@@ -187,14 +187,30 @@ class Assets {
 			true
 		);
 
+		/**
+		 * Filter the guide message shown in the "Video Thumbnail" panel of the
+		 * godam/video block Inspector (block editor).
+		 *
+		 * Empty by default. Add-ons/extensions can hook in to surface guidance about
+		 * video thumbnails (how they are generated, links to docs, upgrade prompts,
+		 * etc.). The returned HTML is sanitized client-side before it is rendered, so
+		 * only a safe subset of markup survives. Return an empty string to show nothing.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param string $message Guide message HTML. Default empty string.
+		 */
+		$block_video_thumbnails_guide_message = apply_filters( 'rtgodam_video_block_video_thumbnails_guide_message', '' );
+
 		wp_localize_script(
 			'rtgodam-script',
 			'pluginInfo',
 			array(
-				'version'     => RTGODAM_VERSION,
-				'adminUrl'    => admin_url(),
-				'uploadUrl'   => wp_upload_dir()['baseurl'],
-				'validApiKey' => rtgodam_is_api_key_valid(),
+				'version'                     => RTGODAM_VERSION,
+				'adminUrl'                    => admin_url(),
+				'uploadUrl'                   => wp_upload_dir()['baseurl'],
+				'validApiKey'                 => rtgodam_is_api_key_valid(),
+				'videoThumbnailsGuideMessage' => $block_video_thumbnails_guide_message,
 			)
 		);
 
@@ -291,17 +307,33 @@ class Assets {
 
 		$current_user_id = get_current_user_id();
 
+		/**
+		 * Filter the guide message shown in the "Video Thumbnails" section of the
+		 * media-library attachment-details popup.
+		 *
+		 * Empty by default. Add-ons/extensions can hook in to surface guidance about
+		 * video thumbnails (how they are generated, links to docs, upgrade prompts,
+		 * etc.). The returned HTML is sanitized client-side before it is rendered, so
+		 * only a safe subset of markup survives. Return an empty string to show nothing.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param string $message Guide message HTML. Default empty string.
+		 */
+		$media_library_video_thumbnails_guide_message = apply_filters( 'rtgodam_media_library_video_thumbnails_guide_message', '' );
+
 		$easydam_media_library_data = array(
-			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
-			'nonce'                    => wp_create_nonce( 'easydam_media_library' ),
-			'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
-			'enableFolderOrganization' => $enable_folder_organization,
-			'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
-			'page'                     => $screen ? $screen->id : '',
-			'userId'                   => $current_user_id,
-			'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
-			'canManageOptions'         => current_user_can( 'manage_options' ),
-			'canEditPages'             => current_user_can( 'edit_pages' ),
+			'ajaxUrl'                     => admin_url( 'admin-ajax.php' ),
+			'nonce'                       => wp_create_nonce( 'easydam_media_library' ),
+			'godamToolsNonce'             => wp_create_nonce( 'rtgodam_tools' ),
+			'enableFolderOrganization'    => $enable_folder_organization,
+			'isPollPluginActive'          => is_plugin_active( 'wp-polls/wp-polls.php' ),
+			'page'                        => $screen ? $screen->id : '',
+			'userId'                      => $current_user_id,
+			'canEditOthersMedia'          => current_user_can( 'edit_others_posts' ),
+			'canManageOptions'            => current_user_can( 'manage_options' ),
+			'canEditPages'                => current_user_can( 'edit_pages' ),
+			'videoThumbnailsGuideMessage' => $media_library_video_thumbnails_guide_message,
 		);
 
 		/** This filter is documented in inc/classes/class-pages.php */

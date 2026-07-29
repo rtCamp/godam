@@ -590,6 +590,17 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		containerDiv.appendChild( heading );
 		div.appendChild( containerDiv );
 
+		// Optional guide message, supplied via the
+		// `rtgodam_media_library_video_thumbnails_guide_message` PHP filter
+		// (empty by default). Sanitized before rendering as it may carry markup.
+		const guideMessage = window.easydamMediaLibrary?.videoThumbnailsGuideMessage;
+		if ( guideMessage ) {
+			const guide = document.createElement( 'div' );
+			guide.className = 'attachment-video-thumbnails__guide';
+			guide.innerHTML = DOMPurify.sanitize( guideMessage );
+			div.appendChild( guide );
+		}
+
 		div.appendChild( ul );
 
 		// Remove old and append new
