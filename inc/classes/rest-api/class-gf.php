@@ -17,6 +17,27 @@ defined( 'ABSPATH' ) || exit;
 class GF extends Base {
 
 	/**
+	 * Fields the form collection is allowed to expose.
+	 *
+	 * A Gravity Forms form object also carries notifications, confirmations and
+	 * any settings an add-on has persisted into form meta. None of that may
+	 * reach the REST response, so the collection is narrowed to the three
+	 * fields the Video Editor's form picker actually renders.
+	 *
+	 * @var string[]
+	 */
+	public const ALLOWED_FORM_FIELDS = array( 'id', 'title', 'description' );
+
+	/**
+	 * Permission check — same capability the Video Editor page requires.
+	 *
+	 * @return bool
+	 */
+	public function forms_permissions_check() {
+		return current_user_can( 'upload_files' );
+	}
+
+	/**
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
@@ -28,7 +49,7 @@ class GF extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_gforms' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => $this->get_collection_params(),
 					),
 				),
@@ -40,7 +61,7 @@ class GF extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_gform' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
@@ -79,21 +100,36 @@ class GF extends Base {
 		// Get all forms.
 		$gforms = \GFAPI::get_forms();
 
-		// Get the output fields.
-		$fields = $request->get_param( 'fields' );
+		$fields = self::resolve_requested_fields( $request->get_param( 'fields' ) );
 
-		// Filter fields.
-		if ( ! empty( $fields ) ) {
-			$fields = explode( ',', $fields );
-			$gforms = array_map(
-				function ( $gform ) use ( $fields ) {
-					return array_intersect_key( $gform, array_flip( $fields ) );
-				},
-				$gforms
-			);
-		}
+		$gforms = array_map(
+			function ( $gform ) use ( $fields ) {
+				return array_intersect_key( $gform, array_flip( $fields ) );
+			},
+			$gforms
+		);
 
 		return rest_ensure_response( $gforms );
+	}
+
+	/**
+	 * Narrow a caller-supplied `fields` list to the allowlist.
+	 *
+	 * Applied unconditionally: an omitted or unrecognised `fields` value must
+	 * never widen the response, so the caller can only ever narrow what the
+	 * allowlist already permits.
+	 *
+	 * @param string|null $requested Comma-separated field list from the request.
+	 * @return string[]
+	 */
+	public static function resolve_requested_fields( $requested ) {
+		if ( empty( $requested ) || ! is_string( $requested ) ) {
+			return self::ALLOWED_FORM_FIELDS;
+		}
+
+		$fields = array_map( 'trim', explode( ',', $requested ) );
+
+		return array_values( array_intersect( $fields, self::ALLOWED_FORM_FIELDS ) );
 	}
 
 	/**

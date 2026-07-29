@@ -123,5 +123,6 @@ if ( ! class_exists( 'WP_REST_Controller' ) ) {
 require_once dirname( __DIR__ ) . '/inc/traits/trait-singleton.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-base.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
