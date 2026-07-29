@@ -3,16 +3,20 @@
  *
  * Reuses the shared `.godam-period-dropdown` toggle styling; adds the popover
  * body layout (custom calendar on the left, preset list on the right) matching
- * the Figma "Analytics Final" flow: two separate rounded panels side by side,
- * a 7 x 40px day grid, and a continuous shaded band across a selected range.
+ * the Figma "Analytics Final" flow: two separate rounded panels side by side, a
+ * 7 x 40px fixed-track day grid, and a continuous shaded band across a range.
  * Accent colour follows the WP admin scheme via `--wp-admin-theme-color`
  * (never a hard-coded brand value).
  */
 
-// Figma proportions: calendar panel ~312px, preset list ~188px, 8px apart.
+// Figma proportions: calendar panel ~314px, preset list ~188px, 8px apart. The
+// panels are border-box, so the calendar width has to carry its padding AND its
+// border for the seven columns to land on exact 40px pixel boundaries.
 $godam-daterange-cell: 40px;
 $godam-daterange-calendar-padding: 16px;
-$godam-daterange-calendar-width: ($godam-daterange-cell * 7) + ($godam-daterange-calendar-padding * 2);
+$godam-daterange-border-width: 1px;
+$godam-daterange-calendar-chrome: $godam-daterange-calendar-padding + $godam-daterange-border-width;
+$godam-daterange-calendar-width: ($godam-daterange-cell * 7) + ($godam-daterange-calendar-chrome * 2);
 $godam-daterange-presets-width: 188px;
 $godam-daterange-border: #e0e0e0;
 
@@ -42,7 +46,7 @@ $godam-daterange-border: #e0e0e0;
 		flex: 0 0 auto;
 		box-sizing: border-box;
 		background: #fff;
-		border: 1px solid $godam-daterange-border;
+		border: $godam-daterange-border-width solid $godam-daterange-border;
 		border-radius: 8px;
 		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 	}
@@ -92,9 +96,11 @@ $godam-daterange-border: #e0e0e0;
 		color: #1e1e1e;
 	}
 
+	// Same fixed track width as the day grid below, so each label sits dead
+	// centre over its column instead of drifting on fractional `1fr` tracks.
 	&__weekdays {
 		display: grid;
-		grid-template-columns: repeat(7, 1fr);
+		grid-template-columns: repeat(7, $godam-daterange-cell);
 		margin-bottom: 8px;
 
 		span {
@@ -105,11 +111,13 @@ $godam-daterange-border: #e0e0e0;
 		}
 	}
 
-	// No column gap: range days have to butt up against each other so the
-	// shaded band reads as one continuous run (Figma), like the row bands.
+	// Fixed 40px tracks, not `1fr`: fractional track widths put the shaded
+	// range band's edges on sub-pixel boundaries, which shows up as hairlines
+	// between adjacent days. No column gap either, so the band reads as one
+	// continuous run (Figma), like the row bands.
 	&__grid {
 		display: grid;
-		grid-template-columns: repeat(7, 1fr);
+		grid-template-columns: repeat(7, $godam-daterange-cell);
 		row-gap: 8px;
 	}
 
