@@ -312,15 +312,8 @@ if ( class_exists( 'GF_Field' ) ) {
 
 					// File type check.
 					$file_type = wp_check_filetype( $file_path );
-					$is_video  = strpos( $file_type['type'], 'video' ) !== false;
-					$is_audio  = strpos( $file_type['type'], 'audio' ) !== false;
-
-					// if webm file extension and mime type is not detected correctly then check by file name.
-					// The files created by uppy webcam, screen capture, and audio plugin are in same format so we are checking the filename to determine if it's an audio file.
-					if ( 'webm' === $file_type['ext'] && godam_is_audio_file_by_name( $file_path ) ) {
-						$is_video = false;
-						$is_audio = true;
-					}
+					$is_audio  = godam_is_audio_file( $file_path );
+					$is_video  = ! $is_audio && strpos( $file_type['type'], 'video' ) !== false;
 
 					if ( is_array( $file_path ) ) {
 						$basename  = rgar( $file_path, 'uploaded_name' );

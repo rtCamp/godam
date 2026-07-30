@@ -15,8 +15,8 @@ return array(
 	'record_button_text'           => array(
 		'name'  => 'record_button_text',
 		'type'  => 'textbox',
-		'value' => __( 'Record Video', 'godam' ),
-		'label' => __( 'Record Video Button Text', 'godam' ),
+		'value' => __( 'Start Recording', 'godam' ),
+		'label' => __( 'Start Recording Button Text', 'godam' ),
 		'group' => 'primary',
 		'width' => 'one-half',
 		'help'  => __( 'Button text for recording video.', 'godam' ),
