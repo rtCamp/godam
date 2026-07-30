@@ -722,7 +722,7 @@ function godam_is_audio_file( $file_path_or_url ) {
  * fallback, for GoDAM tab media whose id is not a local numeric attachment and for
  * documents added by URL alone.
  *
- * @since n.e.x.t
+ * @since 2.1.0
  *
  * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
  * @param string     $url           Document URL. Used when no local attachment is available.
@@ -1364,7 +1364,7 @@ function rtgodam_is_engagement_feature_enabled() {
  * shortcode; unknown contexts pass through as-is (the microservice normalizes
  * server-side and never rejects on this value).
  *
- * @since n.e.x.t
+ * @since 2.1.0
  *
  * @param string $context The godam_context attribute value.
  * @return string The block_source slug for analytics events.

@@ -29,7 +29,7 @@ class Seo {
 	 * Lets the render-time collector skip videos that were already output from
 	 * the queried post's content, avoiding duplicate JSON-LD.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.1.0
 	 *
 	 * @var array<string,bool>
 	 */
@@ -38,7 +38,7 @@ class Seo {
 	/**
 	 * Attachment IDs already emitted by the cached wp_head schema output.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.1.0
 	 *
 	 * @var array<int,bool>
 	 */
@@ -50,7 +50,7 @@ class Seo {
 	 * block without a media id). Lets the render-time collector de-duplicate
 	 * those entries too, which cannot be keyed by URL or attachment.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.1.0
 	 *
 	 * @var array<string,bool>
 	 */
@@ -62,7 +62,7 @@ class Seo {
 	 * queried post's own post_content). Keyed by contentUrl (or headline) for
 	 * de-duplication.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.1.0
 	 *
 	 * @var array<string,array>
 	 */
@@ -543,7 +543,7 @@ class Seo {
 	 * render-time output ({@see output_render_time_video_seo_schema}) so both
 	 * paths produce identical schema and fire the same per-entry filter.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.1.0
 	 *
 	 * @param array $video   Raw video SEO data (headline, contentUrl, etc.).
 	 * @param int   $post_id The current post ID for filter context. May be 0 on
@@ -607,7 +607,7 @@ class Seo {
 	 * scope further (e.g. suppress on archives to avoid repeating the same
 	 * schema across listing pages).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.1.0
 	 *
 	 * @return bool True on a front-end HTML page render, false otherwise.
 	 */
@@ -645,7 +645,7 @@ class Seo {
 		 * All conditional tags (is_singular(), is_archive(), is_front_page(),
 		 * is_search(), …) are available inside the callback.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.1.0
 		 *
 		 * @param bool $emit Whether to emit render-time video SEO on this view.
 		 *                    Defaults to true for every front-end view.
@@ -666,7 +666,7 @@ class Seo {
 	 *
 	 * This is a read-only pass; the block output is always returned unchanged.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.1.0
 	 *
 	 * @param string $block_content The rendered block HTML (returned unchanged).
 	 * @param array  $parsed_block  The parsed block array.
@@ -732,7 +732,7 @@ class Seo {
 	 * wp_head output has recorded which videos it already emitted, so the two
 	 * paths never duplicate a VideoObject.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.1.0
 	 *
 	 * @return void
 	 */
