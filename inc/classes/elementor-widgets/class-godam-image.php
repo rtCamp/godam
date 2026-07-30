@@ -28,7 +28,7 @@ class Godam_Image extends Base {
 	public function set_default_config() {
 		return array(
 			'name'            => 'godam-image',
-			'title'           => _x( 'GoDAM Image', 'Widget Title', 'godam' ),
+			'title'           => _x( 'Image', 'Widget Title', 'godam' ),
 			'icon'            => 'godam-eicon-image',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'image', 'hotspot', 'shoppable' ),

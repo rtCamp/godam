@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "godam/image",
-	"title": "GoDAM Image",
+	"title": "Image",
 	"category": "media",
 	"icon": "format-image",
 	"description": "Display an image with interactive GoDAM hotspot and product layers.",
