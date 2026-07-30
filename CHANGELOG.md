@@ -1,5 +1,22 @@
 # Changelog #
 
+## v2.1.0 (July 30, 2026) ##
+
+- Feat: Added an Image editor with support for Hotspot layers on image attachments, plus a new GoDAM Image block.
+- Feat: Added an Audio editor for managing audio attachments.
+- Feat: Expanded Elementor support with Video, Video Gallery, Audio, and Image blocks and a Document widget.
+- Feat: Expanded WPBakery Page Builder support with a Document block, an Image block, and updated GoDAM blocks.
+- Feat: Added render-time video SEO schema (JSON-LD) for block templates, template parts, and patterns.
+- Feat: Added a Viewer Retention Curve to analytics, replacing the per-video heatmap.
+- Feat: Added a date-range picker to the analytics dashboard with range plumbing across metrics.
+- Feat: Added a Placements report to analytics, showing where each video is embedded across the site.
+- Tweak: Made the Video Editor canvas responsive so the video scales to its wrapper width.
+- Fix: Restricted the Gravity Forms REST API to authenticated users and limited responses to safe fields, preventing unauthenticated disclosure of form configuration.
+- Fix: Resolved video transcript UI/UX issues.
+- Fix: Fixed the Elementor Select option colour and the media picker popup in Elementor.
+- Fix: Various QA fixes across the media/image editor, documents, and audio blocks.
+- Chore: Resolved open Dependabot npm security advisories.
+
 ## v2.0.0 (July 14, 2026) ##
 
 - Feat: GoDAM 2.0 brings a complete visual redesign across the admin and front end, with refreshed branding, new logos, and updated block icons.

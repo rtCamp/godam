@@ -233,7 +233,7 @@ class Godam_Document extends Base {
 	 * Only rendered while editing or previewing in Elementor: on the published page
 	 * the widget outputs nothing at all, so visitors never see this.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.1.0
 	 *
 	 * @access protected
 	 */
