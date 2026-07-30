@@ -226,19 +226,18 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v2.1.0 (July 30, 2026) =
 
-- Feat: Added an Image editor with support for Hotspot layers on image attachments, plus a new GoDAM Image block.
+- Feat: Interactive Image Hotspots — turn any image into an interactive, shoppable visual. The new Image editor lets you add clickable Hotspot layers to any image, then embed it anywhere with the new GoDAM Image block.
+- Feat: Viewer Retention Curve — a new analytics graph shows exactly where viewers drop off across a video, replacing the previous per-video heatmap.
+- Feat: Placements analytics — see everywhere a video is embedded across your site, with per-video breakdowns.
 - Feat: Added an Audio editor for managing audio attachments.
 - Feat: Expanded Elementor support with Video, Video Gallery, Audio, and Image blocks and a Document widget.
 - Feat: Expanded WPBakery Page Builder support with a Document block, an Image block, and updated GoDAM blocks.
 - Feat: Added render-time video SEO schema (JSON-LD) for block templates, template parts, and patterns.
-- Feat: Added a Viewer Retention Curve to analytics, replacing the per-video heatmap.
-- Feat: Added a date-range picker to the analytics dashboard with range plumbing across metrics.
-- Feat: Added a Placements report to analytics, showing where each video is embedded across the site.
+- Tweak: Added a date-range picker to the analytics dashboard, filtering metrics by period.
 - Tweak: Made the Video Editor canvas responsive so the video scales to its wrapper width.
-- Fix: Restricted the Gravity Forms REST API to authenticated users and limited responses to safe fields, preventing unauthenticated disclosure of form configuration.
+- Fix: Security fixes.
 - Fix: Resolved video transcript UI/UX issues.
 - Fix: Fixed the Elementor Select option colour and the media picker popup in Elementor.
-- Fix: Various QA fixes across the media/image editor, documents, and audio blocks.
 - Chore: Resolved open Dependabot npm security advisories.
 
 = v2.0.0 (July 14, 2026) =
@@ -259,10 +258,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: Automatically backfill media usage for existing content in the background, via the migration runner in Action Scheduler batches, on upgrade.
 - Tweak: Authenticate GoDAM Central media-usage logging and retry failed notifications with backoff so transient outages do not lose events.
 
-
-= v1.12.1 (June 12, 2026) =
-
-- Fix: Resolved security issues.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
