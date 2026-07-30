@@ -250,7 +250,7 @@ const DateRangePanel = ( { value, activeKey, testIdPrefix, onSelect } ) => {
 		if ( date > maxDate ) {
 			return; // no future dates
 		}
-		if ( ! pendingStart || ( pendingStart && pendingEnd ) ) {
+		if ( ! pendingStart || pendingEnd ) {
 			// Begin a new range.
 			setPendingStart( date );
 			setPendingEnd( null );

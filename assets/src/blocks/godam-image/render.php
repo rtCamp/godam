@@ -74,6 +74,7 @@ $godam_has_layers = ! empty( $godam_layers );
 if ( $godam_has_layers ) {
 	$godam_img_asset_path = RTGODAM_PATH . 'assets/build/js/godam-image-layers-frontend.min.asset.php';
 	$godam_img_asset      = file_exists( $godam_img_asset_path )
+		// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is a plugin constant + hardcoded build filename.
 		? include $godam_img_asset_path
 		: array(
 			'dependencies' => array(),
