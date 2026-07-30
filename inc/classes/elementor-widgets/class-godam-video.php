@@ -363,6 +363,19 @@ class GoDAM_Video extends Base {
 			)
 		);
 
+		$this->add_control(
+			'show_transcription',
+			array(
+				'label'       => esc_html__( 'Show Transcription', 'godam' ),
+				'type'        => Controls_Manager::SWITCHER,
+				'default'     => '',
+				'description' => esc_html__( 'Show the transcript panel toggle on the player (when a transcript is available).', 'godam' ),
+				'condition'   => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
 		if ( rtgodam_is_engagement_feature_enabled() ) {
 			$this->add_control(
 				'engagements',
@@ -474,23 +487,24 @@ class GoDAM_Video extends Base {
 	 * @access protected
 	 */
 	protected function render() {
-		$widget_video_file        = $this->get_settings_for_display( 'video-file' );
-		$widget_poster_file       = $this->get_settings_for_display( 'poster' );
-		$widget_autoplay          = 'yes' === $this->get_settings_for_display( 'autoplay' ) ? true : false;
-		$widget_controls          = 'yes' === $this->get_settings_for_display( 'controls' ) ? true : false;
-		$widget_muted             = 'yes' === $this->get_settings_for_display( 'muted' ) ? true : false;
-		$widget_loop              = 'yes' === $this->get_settings_for_display( 'loop' ) ? true : false;
-		$widget_show_caption      = 'yes' === $this->get_settings_for_display( 'enable_caption' );
-		$widget_caption           = $this->get_settings_for_display( 'caption' ) ?? '';
-		$widget_text_tracks       = $this->get_settings_for_display( 'text_tracks' ) ?? '';
-		$widget_performance_mode  = $this->get_settings_for_display( 'performance_mode' ) ?? 'balanced';
-		$widget_hover_select      = $this->get_settings_for_display( 'hover_select' ) ?? 'none';
-		$widget_show_share_button = 'yes' === $this->get_settings_for_display( 'show_share_button' );
-		$widget_engagements       = rtgodam_is_engagement_feature_enabled() && 'yes' === $this->get_settings_for_display( 'engagements' );
-		$widget_player_height     = $this->get_settings_for_display( 'player_height' ) ?? '';
-		$widget_aspect_ratio      = $this->get_settings_for_display( 'aspect_ratio' ) ?? 'responsive';
-		$widget_seo_override      = 'yes' === $this->get_settings_for_display( 'seo_override' );
-		$widget_seo               = array(
+		$widget_video_file         = $this->get_settings_for_display( 'video-file' );
+		$widget_poster_file        = $this->get_settings_for_display( 'poster' );
+		$widget_autoplay           = 'yes' === $this->get_settings_for_display( 'autoplay' ) ? true : false;
+		$widget_controls           = 'yes' === $this->get_settings_for_display( 'controls' ) ? true : false;
+		$widget_muted              = 'yes' === $this->get_settings_for_display( 'muted' ) ? true : false;
+		$widget_loop               = 'yes' === $this->get_settings_for_display( 'loop' ) ? true : false;
+		$widget_show_caption       = 'yes' === $this->get_settings_for_display( 'enable_caption' );
+		$widget_caption            = $this->get_settings_for_display( 'caption' ) ?? '';
+		$widget_text_tracks        = $this->get_settings_for_display( 'text_tracks' ) ?? '';
+		$widget_performance_mode   = $this->get_settings_for_display( 'performance_mode' ) ?? 'balanced';
+		$widget_hover_select       = $this->get_settings_for_display( 'hover_select' ) ?? 'none';
+		$widget_show_share_button  = 'yes' === $this->get_settings_for_display( 'show_share_button' );
+		$widget_show_transcription = 'yes' === $this->get_settings_for_display( 'show_transcription' );
+		$widget_engagements        = rtgodam_is_engagement_feature_enabled() && 'yes' === $this->get_settings_for_display( 'engagements' );
+		$widget_player_height      = $this->get_settings_for_display( 'player_height' ) ?? '';
+		$widget_aspect_ratio       = $this->get_settings_for_display( 'aspect_ratio' ) ?? 'responsive';
+		$widget_seo_override       = 'yes' === $this->get_settings_for_display( 'seo_override' );
+		$widget_seo                = array(
 			'contentUrl'       => $this->get_settings_for_display( 'seo_content_url' ) ?? '',
 			'headline'         => $this->get_settings_for_display( 'seo_content_headline' ) ?? '',
 			'description'      => $this->get_settings_for_display( 'seo_content_description' ) ?? '',
@@ -528,6 +542,7 @@ class GoDAM_Video extends Base {
 		}
 
 		if ( ! isset( $widget_video_file['url'] ) || empty( $widget_video_file['url'] ) ) {
+			$this->render_empty_state();
 			return;
 		}
 
@@ -537,29 +552,131 @@ class GoDAM_Video extends Base {
 		$widget_attachment_id = isset( $widget_video_file['id'] ) ? $widget_video_file['id'] : null;
 
 		$attributes = array(
-			'id'              => $widget_attachment_id,
-			'sources'         => isset( $widget_video_file['sources'] ) ? $widget_video_file['sources'] : array(),
-			'src'             => $widget_video_file['url'],
-			'transcoded_url'  => '',
-			'poster'          => $widget_poster_file['url'],
-			'aspectRatio'     => $widget_aspect_ratio,
-			'autoplay'        => $widget_autoplay,
-			'controls'        => $widget_controls,
-			'muted'           => $widget_muted,
-			'loop'            => $widget_loop,
-			'caption'         => $widget_caption,
-			'tracks'          => $formatted_tracks,
-			'performanceMode' => $widget_performance_mode,
-			'hoverSelect'     => $widget_hover_select,
-			'showShareButton' => $widget_show_share_button,
-			'engagements'     => $widget_engagements,
-			'playerHeight'    => $widget_player_height,
-			'seo'             => $widget_seo,
-			'seoOverride'     => $widget_seo_override,
+			'id'                => $widget_attachment_id,
+			'sources'           => isset( $widget_video_file['sources'] ) ? $widget_video_file['sources'] : array(),
+			'src'               => $widget_video_file['url'],
+			'transcoded_url'    => '',
+			'poster'            => isset( $widget_poster_file['url'] ) ? $widget_poster_file['url'] : '',
+			'aspectRatio'       => $widget_aspect_ratio,
+			'autoplay'          => $widget_autoplay,
+			'controls'          => $widget_controls,
+			'muted'             => $widget_muted,
+			'loop'              => $widget_loop,
+			'caption'           => $widget_caption,
+			'tracks'            => $formatted_tracks,
+			'performanceMode'   => $widget_performance_mode,
+			'hoverSelect'       => $widget_hover_select,
+			'showShareButton'   => $widget_show_share_button,
+			'showTranscription' => $widget_show_transcription,
+			'engagements'       => $widget_engagements,
+			'playerHeight'      => $widget_player_height,
+			'seo'               => $widget_seo,
+			'seoOverride'       => $widget_seo_override,
 		);
 
 		$is_elementor_widget = true;
 
+		// In the Elementor editor preview only, overlay static share / transcript
+		// indicators on top of the player so they read as persistent top-right
+		// icons — matching the Gutenberg block editor. The live player only adds
+		// these to the video.js control bar and gates the transcript button on an
+		// actual transcript, so they wouldn't reliably show while designing. The
+		// published front end is unaffected (this branch never runs there).
+		if ( $this->is_editor_preview() && ( $widget_show_share_button || $widget_show_transcription ) ) {
+			ob_start();
+			require RTGODAM_PATH . 'inc/templates/godam-player.php';
+			$godam_player_html = ob_get_clean();
+			$this->render_editor_button_overlay( $godam_player_html, $widget_show_share_button, $widget_show_transcription );
+			return;
+		}
+
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
+	}
+
+	/**
+	 * Whether we're rendering inside the Elementor editor or its preview iframe.
+	 *
+	 * @return bool
+	 */
+	protected function is_editor_preview() {
+		if ( ! class_exists( '\Elementor\Plugin' ) ) {
+			return false;
+		}
+		$plugin = \Elementor\Plugin::$instance;
+		return ( isset( $plugin->editor ) && $plugin->editor->is_edit_mode() )
+			|| ( isset( $plugin->preview ) && $plugin->preview->is_preview_mode() );
+	}
+
+	/**
+	 * Wrap the player markup with static top-right share / transcript icons for
+	 * the editor preview (mirrors the Gutenberg block editor). Uses the same
+	 * icons as the block; styling is self-contained (the preview iframe doesn't
+	 * load the plugin's editor stylesheet) and printed once per request. The
+	 * live player's own control-bar buttons are hidden within this wrapper so
+	 * the two never duplicate.
+	 *
+	 * @param string $player_html        The rendered player markup.
+	 * @param bool   $show_share         Whether the share indicator should show.
+	 * @param bool   $show_transcription Whether the transcript indicator should show.
+	 * @return void
+	 */
+	protected function render_editor_button_overlay( $player_html, $show_share, $show_transcription ) {
+		$share_svg      = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" focusable="false"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" /></svg>';
+		$transcript_svg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false"><path d="M5 3.5h14a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5Z" stroke="currentColor" stroke-width="1.6" /><path d="M7 8h10M7 12h10M7 16h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></svg>';
+
+		$overlay = '';
+		// Transcript sits on top; share moves below it when both are shown
+		// (mirrors the block editor's stacking order).
+		if ( $show_transcription ) {
+			$overlay .= '<span class="godam-elementor-video-overlay__btn godam-elementor-video-overlay__btn--transcript" aria-hidden="true">' . $transcript_svg . '</span>';
+		}
+		if ( $show_share ) {
+			$below    = $show_transcription ? ' godam-elementor-video-overlay__btn--below' : '';
+			$overlay .= '<span class="godam-elementor-video-overlay__btn godam-elementor-video-overlay__btn--share' . $below . '" aria-hidden="true">' . $share_svg . '</span>';
+		}
+
+		// Styling lives in the enqueued preview stylesheet
+		// (assets/src/css/godam-elementor-preview.scss).
+		echo '<div class="godam-elementor-video-overlay">' . $player_html . $overlay . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $player_html is plugin-generated escaped markup; $overlay is static plugin markup.
+	}
+
+	/**
+	 * Editor-only empty-state placeholder.
+	 *
+	 * Mirrors the Gutenberg block's empty state (a dummy video preview + prompt)
+	 * so a video-less widget reads clearly in the editor instead of showing a
+	 * bare, confusing box — consistent with the GoDAM Image / Audio / Gallery
+	 * widgets. Styling is enqueued into the preview iframe (see
+	 * Elementor_Widgets::enqueue_preview_styles / godam-elementor-preview.scss);
+	 * only the dynamic icon URL is passed inline via a CSS custom property.
+	 * Nothing renders on the front end.
+	 *
+	 * @access protected
+	 * @return void
+	 */
+	protected function render_empty_state() {
+		if ( ! class_exists( '\Elementor\Plugin' ) ) {
+			return;
+		}
+
+		$plugin        = \Elementor\Plugin::$instance;
+		$is_editing    = isset( $plugin->editor ) && $plugin->editor->is_edit_mode();
+		$is_previewing = isset( $plugin->preview ) && $plugin->preview->is_preview_mode();
+		if ( ! $is_editing && ! $is_previewing ) {
+			return;
+		}
+
+		$icon_style = '--godam-preview-icon:url(' . esc_url( RTGODAM_URL . 'assets/images/godam-video-filled.svg' ) . ');';
+		?>
+		<div class="godam-video-elementor-empty" data-test-id="godam-video-elementor-empty">
+			<div class="godam-video-elementor-empty__preview" aria-hidden="true" style="<?php echo esc_attr( $icon_style ); ?>"></div>
+			<h3 class="godam-video-elementor-empty__title">
+				<?php esc_html_e( 'Add Video Here', 'godam' ); ?>
+			</h3>
+			<p class="godam-video-elementor-empty__desc">
+				<?php esc_html_e( 'Select a video in the Player Settings panel to get started.', 'godam' ); ?>
+			</p>
+		</div>
+		<?php
 	}
 }

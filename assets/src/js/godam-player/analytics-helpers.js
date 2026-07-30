@@ -157,10 +157,43 @@ export function getUserAgent( userAgent ) {
  * @param {number} [opts.videoLength]      Duration in seconds (type 2).
  * @param {Array}  [opts.layers]           Array of layer interaction event objects (type 3). Each entry must include layer_id, layer_type, action_type, layer_timestamp. Optional: layer_name, page_url, layer_metadata.
  * @param {number} [opts.reelPopId]        Reel Pop CPT post ID (when event originates from a reel-pop modal).
+ * @param {string} [opts.blockSource]      Placement slug for the surface rendering the video (e.g. 'video-block', 'video-gallery').
+ * @param {number} [opts.hostPostId]       Post ID of the page hosting an embed iframe; when > 0 it overrides post_id so plays attribute to the host page.
  * @return {{ endpoint: string|null, body: Object|null }} Object with `endpoint` (the base
  * API URL) and `body` (the request payload). Both are `null` when the plugin token is
  * missing or unverified — callers must check `endpoint` before sending.
  */
+/**
+ * Split a page_load batch into one group per host post ID.
+ *
+ * `post_id` is a single top-level field per request, so entries carrying
+ * different host attributions cannot share one send. Host attribution is
+ * per-element (`data-host-post-id` comes from the `host_post_id` shortcode att
+ * as well as the embed page), so reading it once per page would let a single
+ * stamped player re-attribute every other video's page_load on that page.
+ *
+ * @param {Array} batch Queue entries ({ videoId, jobId, blockSource, hostPostId }).
+ * @return {Map<number, Array>} hostPostId (0 = none) -> array of wire triples.
+ */
+export function groupBatchByHostPostId( batch ) {
+	const groups = new Map();
+
+	( Array.isArray( batch ) ? batch : [] ).forEach( ( entry ) => {
+		const parsed = parseInt( entry?.hostPostId, 10 );
+		const key = parsed > 0 ? parsed : 0;
+		if ( ! groups.has( key ) ) {
+			groups.set( key, [] );
+		}
+		groups.get( key ).push( [
+			entry?.videoId,
+			entry?.jobId || '',
+			entry?.blockSource || '',
+		] );
+	} );
+
+	return groups;
+}
+
 export function buildAnalyticsRequestBody( {
 	type,
 	userToken = '',
@@ -172,6 +205,8 @@ export function buildAnalyticsRequestBody( {
 	videoLength = 0,
 	layers = [],
 	reelPopId = 0,
+	blockSource = '',
+	hostPostId = 0,
 } ) {
 	const {
 		endpoint,
@@ -243,7 +278,15 @@ export function buildAnalyticsRequestBody( {
 		ranges,
 		video_length: videoLength || 0,
 		page_load_session_id: getPageLoadSessionId(),
+		block_source: blockSource || '',
 	};
+
+	// Embed-iframe attribution: when the render carries the host page's post
+	// ID, plays count against that page rather than the embed page itself.
+	const hostPostIdInt = parseInt( hostPostId, 10 );
+	if ( hostPostIdInt > 0 ) {
+		body.post_id = hostPostIdInt;
+	}
 
 	// Only include job_id when it has a value — an empty string triggers
 	// server-side validation that returns HTTP 400.

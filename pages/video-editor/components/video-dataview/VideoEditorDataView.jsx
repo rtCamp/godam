@@ -41,6 +41,7 @@ import {
 	search as searchIcon,
 	edit as editIcon,
 	video as videoIcon,
+	audio as audioIcon,
 	copy as copyIcon,
 	chartBar as analyticsIcon,
 	media as mediaIcon,
@@ -63,15 +64,49 @@ import './video-dataview.scss';
 const PER_PAGE = 20;
 
 /**
- * "All Videos" filter options. `key` is sent to the REST endpoint as `filter`.
+ * Media-type options for the primary filter. `key` is sent to the REST endpoint
+ * as `media_type`; Videos is the default.
  */
-const FILTER_OPTIONS = [
-	{ key: 'all', label: __( 'All Videos', 'godam' ) },
-	{ key: 'edited', label: __( 'Edited Videos', 'godam' ) },
-	{ key: 'unedited', label: __( 'Unedited Videos', 'godam' ) },
-	{ key: 'transcoded', label: __( 'Transcoded videos', 'godam' ) },
-	{ key: 'non_transcoded', label: __( 'Non Transcoded', 'godam' ) },
+const MEDIA_TYPE_OPTIONS = [
+	{ key: 'video', label: __( 'Videos', 'godam' ) },
+	{ key: 'image', label: __( 'Images', 'godam' ) },
+	{ key: 'audio', label: __( 'Audio', 'godam' ) },
 ];
+
+/**
+ * Secondary filter options, narrowed to those meaningful for the current media
+ * type: transcode filters apply to video/audio (images are never transcoded);
+ * edited/unedited (authored layers) apply to video/image (audio has no layers).
+ * `key` is sent to the REST endpoint as `filter`.
+ *
+ * @param {string} mediaType video|image|audio.
+ * @return {Array} `{ key, label }` options.
+ */
+const getFilterOptions = ( mediaType ) => {
+	const allLabel = {
+		video: __( 'All Videos', 'godam' ),
+		image: __( 'All Images', 'godam' ),
+		audio: __( 'All Audio', 'godam' ),
+	}[ mediaType ] || __( 'All', 'godam' );
+
+	const options = [ { key: 'all', label: allLabel } ];
+
+	if ( 'audio' !== mediaType ) {
+		options.push(
+			{ key: 'edited', label: __( 'Edited', 'godam' ) },
+			{ key: 'unedited', label: __( 'Unedited', 'godam' ) },
+		);
+	}
+
+	if ( 'image' !== mediaType ) {
+		options.push(
+			{ key: 'transcoded', label: __( 'Transcoded', 'godam' ) },
+			{ key: 'non_transcoded', label: __( 'Non Transcoded', 'godam' ) },
+		);
+	}
+
+	return options;
+};
 
 /**
  * "Recently Edited" sort options, mapped to REST `orderby` / `order`.
@@ -83,6 +118,56 @@ const SORT_OPTIONS = [
 	{ key: 'name_asc', label: __( 'Name A-Z', 'godam' ), orderby: 'title', order: 'asc' },
 	{ key: 'name_desc', label: __( 'Name Z-A', 'godam' ), orderby: 'title', order: 'desc' },
 ];
+
+/**
+ * URL query-param names for the shareable list-view state. Kept distinct from
+ * the admin `page` / `id` / `tab` params (owned by App.js) so the filtered view
+ * can be bookmarked, shared, and restored on back/forward navigation.
+ */
+const QUERY_PARAM = {
+	mediaType: 'media_type',
+	filter: 'filter',
+	sort: 'sort',
+	search: 'search',
+};
+
+const DEFAULT_QUERY = {
+	mediaType: 'video',
+	filter: 'all',
+	sortKey: 'newest',
+	search: '',
+};
+
+/**
+ * Read the shareable list-view query state from the current URL. Unknown or
+ * inapplicable values (e.g. a transcode filter under Images, a stale/hand-edited
+ * link) fall back to the defaults so the view can't wedge. `filter` is validated
+ * against the options for the resolved media type, mirroring handleMediaTypeChange.
+ *
+ * @return {{mediaType: string, filter: string, sortKey: string, search: string}} Query state.
+ */
+const readQueryFromUrl = () => {
+	const params = new URLSearchParams( window.location.search );
+
+	const rawMediaType = params.get( QUERY_PARAM.mediaType );
+	const mediaType = MEDIA_TYPE_OPTIONS.some( ( o ) => o.key === rawMediaType )
+		? rawMediaType
+		: DEFAULT_QUERY.mediaType;
+
+	const rawFilter = params.get( QUERY_PARAM.filter );
+	const filter = getFilterOptions( mediaType ).some( ( o ) => o.key === rawFilter )
+		? rawFilter
+		: DEFAULT_QUERY.filter;
+
+	const rawSort = params.get( QUERY_PARAM.sort );
+	const sortKey = SORT_OPTIONS.some( ( o ) => o.key === rawSort )
+		? rawSort
+		: DEFAULT_QUERY.sortKey;
+
+	const search = params.get( QUERY_PARAM.search ) || DEFAULT_QUERY.search;
+
+	return { mediaType, filter, sortKey, search };
+};
 
 const DEFAULT_VIEW = {
 	type: 'grid',
@@ -203,7 +288,7 @@ const CardActionsMenu = ( { item, onCopy } ) => {
 								onClose();
 							} }
 						>
-							{ __( 'Preview Video', 'godam' ) }
+							{ __( 'Preview', 'godam' ) }
 						</MenuItem>
 						<MenuItem
 							role="menuitem"
@@ -213,18 +298,21 @@ const CardActionsMenu = ( { item, onCopy } ) => {
 								onClose();
 							} }
 						>
-							{ __( 'Copy Video', 'godam' ) }
+							{ __( 'Copy block', 'godam' ) }
 						</MenuItem>
-						<MenuItem
-							role="menuitem"
-							icon={ analyticsIcon }
-							onClick={ () => {
-								window.open( `${ adminUrl }admin.php?page=rtgodam_analytics&id=${ item.id }`, '_blank' );
-								onClose();
-							} }
-						>
-							{ __( 'View Analytics', 'godam' ) }
-						</MenuItem>
+						{ /* Analytics is a video-only feature (see capability showStats). */ }
+						{ 'video' === item.type && (
+							<MenuItem
+								role="menuitem"
+								icon={ analyticsIcon }
+								onClick={ () => {
+									window.open( `${ adminUrl }admin.php?page=rtgodam_analytics&id=${ item.id }`, '_blank' );
+									onClose();
+								} }
+							>
+								{ __( 'View Analytics', 'godam' ) }
+							</MenuItem>
+						) }
 					</MenuGroup>
 				</NavigableMenu>
 			) }
@@ -237,10 +325,14 @@ const VideoEditorDataView = ( { onEdit } ) => {
 	const [ view, setView ] = useState( DEFAULT_VIEW );
 
 	// Query state (drives the REST request, independent of DataViews' hidden
-	// built-in controls).
-	const [ search, setSearch ] = useState( '' );
-	const [ filter, setFilter ] = useState( 'all' );
-	const [ sortKey, setSortKey ] = useState( 'newest' );
+	// built-in controls). Seeded from the URL (lazy initializers run once) so a
+	// shared/bookmarked filtered view — and back/forward navigation out of the
+	// editor — restores the same list.
+	const [ search, setSearch ] = useState( () => readQueryFromUrl().search );
+	const [ filter, setFilter ] = useState( () => readQueryFromUrl().filter );
+	const [ sortKey, setSortKey ] = useState( () => readQueryFromUrl().sortKey );
+	// Primary media-type filter — Videos by default (historic behaviour).
+	const [ mediaType, setMediaType ] = useState( () => readQueryFromUrl().mediaType );
 
 	// Attachment id the onboarding tour wants pinned first (the demo video).
 	const [ prioritizeId, setPrioritizeId ] = useState( getTourPrioritizeId() );
@@ -265,6 +357,9 @@ const VideoEditorDataView = ( { onEdit } ) => {
 		() => SORT_OPTIONS.find( ( o ) => o.key === sortKey ) || SORT_OPTIONS[ 0 ],
 		[ sortKey ],
 	);
+
+	// Secondary filter options depend on the selected media type.
+	const filterOptions = useMemo( () => getFilterOptions( mediaType ), [ mediaType ] );
 
 	// Reset accumulation whenever the query parameters change.
 	const resetCollection = useCallback( () => {
@@ -295,6 +390,35 @@ const VideoEditorDataView = ( { onEdit } ) => {
 		resetCollection();
 	};
 
+	const handleMediaTypeChange = ( key ) => {
+		setMediaType( key );
+		// The applicable secondary filters differ per media type, so reset it.
+		setFilter( 'all' );
+		resetCollection();
+	};
+
+	// Mirror the active query into the URL so the filtered list view can be
+	// bookmarked/shared and is restored on back/forward navigation (App.js owns
+	// the `id` param separately, and preserves these across the list⇄editor
+	// switch). replaceState — not push — so filter tweaks and per-keystroke
+	// search edits don't flood the browser history; only non-default values are
+	// written, keeping the base URL clean.
+	useEffect( () => {
+		const url = new URL( window.location );
+		const sync = ( key, value, defaultValue ) => {
+			if ( value && value !== defaultValue ) {
+				url.searchParams.set( key, value );
+			} else {
+				url.searchParams.delete( key );
+			}
+		};
+		sync( QUERY_PARAM.mediaType, mediaType, DEFAULT_QUERY.mediaType );
+		sync( QUERY_PARAM.filter, filter, DEFAULT_QUERY.filter );
+		sync( QUERY_PARAM.sort, sortKey, DEFAULT_QUERY.sortKey );
+		sync( QUERY_PARAM.search, search, DEFAULT_QUERY.search );
+		window.history.replaceState( {}, '', url );
+	}, [ mediaType, filter, sortKey, search ] );
+
 	// Fetch the current page directly via the REST endpoint. Modelled on the
 	// legacy MediaGrid effect: debounce, stale-request guard, append on
 	// subsequent pages and replace on page 1.
@@ -310,6 +434,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 				orderby: sortOption.orderby,
 				order: sortOption.order,
 				filter,
+				mediaType,
 				prioritizeId,
 			} );
 
@@ -348,7 +473,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 
 		const debounce = setTimeout( run, search ? 400 : 0 );
 		return () => clearTimeout( debounce );
-	}, [ getVideos, search, filter, sortOption.orderby, sortOption.order, page, prioritizeId ] );
+	}, [ getVideos, search, filter, mediaType, sortOption.orderby, sortOption.order, page, prioritizeId ] );
 
 	// Load the next page on demand (manual "Load more" button).
 	const loadMore = useCallback( () => {
@@ -359,8 +484,8 @@ const VideoEditorDataView = ( { onEdit } ) => {
 		const result = await copyGoDAMVideoBlock( item.id );
 		setSnackbarMessage(
 			result
-				? __( 'GoDAM Video Block copied to clipboard', 'godam' )
-				: __( 'Failed to copy GoDAM Video Block', 'godam' ),
+				? __( 'GoDAM block copied to clipboard', 'godam' )
+				: __( 'Failed to copy GoDAM block', 'godam' ),
 		);
 		setShowSnackbar( true );
 	}, [] );
@@ -385,17 +510,27 @@ const VideoEditorDataView = ( { onEdit } ) => {
 						item.thumbnail.includes( 'no-thumbnail' ) ||
 						item.thumbnail.includes( 'default' );
 
+					// Audio shows its cover art when it has one; otherwise an audio
+					// icon tile stands in for the missing poster.
+					const showAudioIcon = 'audio' === item.type && isFallback;
+
 					return (
 						<>
 							<div
 								className="godam-ve-card__media-frame"
 								data-test-id={ `godam-video-editor-element-card-${ item.id }` }
 							>
-								<img
-									src={ isFallback ? NoThumbnailImage : item.thumbnail }
-									alt={ item.title || '' }
-									className={ `godam-ve-card__thumb ${ isFallback ? 'is-fallback' : '' }` }
-								/>
+								{ showAudioIcon ? (
+									<div className="godam-ve-card__thumb godam-ve-card__thumb--audio is-fallback">
+										<Icon icon={ audioIcon } size={ 48 } />
+									</div>
+								) : (
+									<img
+										src={ isFallback ? NoThumbnailImage : item.thumbnail }
+										alt={ item.title || '' }
+										className={ `godam-ve-card__thumb ${ isFallback ? 'is-fallback' : '' }` }
+									/>
+								) }
 
 								{ item.fileLength && (
 									<span className="godam-ve-card__duration">{ item.fileLength }</span>
@@ -434,7 +569,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 			},
 			{
 				id: 'title',
-				label: __( 'Video name', 'godam' ),
+				label: __( 'Media name', 'godam' ),
 				enableGlobalSearch: true,
 				getValue: ( { item } ) => item.title || '',
 				render: ( { item } ) => (
@@ -461,11 +596,15 @@ const VideoEditorDataView = ( { onEdit } ) => {
 							) }
 						</span>
 						<div className="godam-ve-card__stats">
-							<span className="godam-ve-card__layers" title={ __( 'Layers', 'godam' ) }>
-								<LayersTabIcon />
-								{ item.layersCount || 0 }
-							</span>
-							{ item.transcodeStatus !== 'transcoded' && (
+							{ /* Audio has no spatial/timeline layers, so omit the count. */ }
+							{ 'audio' !== item.type && (
+								<span className="godam-ve-card__layers" title={ __( 'Layers', 'godam' ) }>
+									<LayersTabIcon />
+									{ item.layersCount || 0 }
+								</span>
+							) }
+							{ /* Images are never transcoded — only flag video/audio. */ }
+							{ 'image' !== item.type && item.transcodeStatus !== 'transcoded' && (
 								<span className="godam-ve-card__badge godam-ve-card__badge--warning">
 									<Icon icon={ info } size={ 16 } />
 									{ __( 'Non Transcoded', 'godam' ) }
@@ -506,9 +645,9 @@ const VideoEditorDataView = ( { onEdit } ) => {
 		<div className="godam-ve-list">
 			<div className="godam-ve-list__header">
 				<div className="godam-ve-list__heading">
-					<h1 className="godam-ve-list__title">{ __( 'Video Editor', 'godam' ) }</h1>
+					<h1 className="godam-ve-list__title">{ __( 'Media Editor', 'godam' ) }</h1>
 					<p className="godam-ve-list__subtitle">
-						{ __( 'Upload videos to WordPress Media Library, GoDAM auto-syncs them here.', 'godam' ) }
+						{ __( 'Upload media to the WordPress Media Library, GoDAM auto-syncs it here.', 'godam' ) }
 					</p>
 				</div>
 				<Button
@@ -530,21 +669,29 @@ const VideoEditorDataView = ( { onEdit } ) => {
 						value={ search }
 						placeholder={ __( 'Search', 'godam' ) }
 						onChange={ handleSearchChange }
-						aria-label={ __( 'Search videos', 'godam' ) }
+						aria-label={ __( 'Search media', 'godam' ) }
 					/>
 				</div>
 
 				<div className="godam-ve-toolbar__filters">
 					<ToolbarDropdown
-						label={ __( 'Filter videos', 'godam' ) }
-						options={ FILTER_OPTIONS }
+						label={ __( 'Filter by media type', 'godam' ) }
+						options={ MEDIA_TYPE_OPTIONS }
+						value={ mediaType }
+						onChange={ handleMediaTypeChange }
+						toggleTestId="godam-video-editor-button-media-type"
+						itemTestIdPrefix="godam-video-editor-control-media-type-"
+					/>
+					<ToolbarDropdown
+						label={ __( 'Filter media', 'godam' ) }
+						options={ filterOptions }
 						value={ filter }
 						onChange={ handleFilterChange }
 						toggleTestId="godam-video-editor-button-filter"
 						itemTestIdPrefix="godam-video-editor-control-filter-"
 					/>
 					<ToolbarDropdown
-						label={ __( 'Sort videos', 'godam' ) }
+						label={ __( 'Sort media', 'godam' ) }
 						options={ SORT_OPTIONS }
 						value={ sortKey }
 						onChange={ handleSortChange }
@@ -559,7 +706,7 @@ const VideoEditorDataView = ( { onEdit } ) => {
 					<Icon icon={ mediaIcon } size={ 120 } />
 					<h2>{ __( 'You have no media yet!', 'godam' ) }</h2>
 					<p>
-						{ __( 'Upload videos to the', 'godam' ) }{ ' ' }
+						{ __( 'Upload media to the', 'godam' ) }{ ' ' }
 						<a
 							href={ `${ window?.videoData?.adminUrl || '/wp-admin/' }upload.php` }
 							target="_blank"

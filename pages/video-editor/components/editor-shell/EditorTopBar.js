@@ -114,7 +114,7 @@ const EditableTitle = ( { title, onSave } ) => {
 				onChange={ ( event ) => setDraft( event.target.value ) }
 				onBlur={ handleBlur }
 				onKeyDown={ handleKeyDown }
-				aria-label={ __( 'Video title', 'godam' ) }
+				aria-label={ __( 'Title', 'godam' ) }
 				data-test-id="godam-video-editor-title-input"
 			/>
 		);
@@ -144,17 +144,18 @@ const EditableTitle = ( { title, onSave } ) => {
  * Analytics). All handlers are passed in from `VideoEditor`.
  *
  * @param {Object}   props
- * @param {string}   props.title             Video title.
+ * @param {string}   props.title             Media title.
  * @param {number}   props.layerCount        Number of layers.
  * @param {number}   props.attachmentID      Attachment ID for Preview/Analytics links.
  * @param {boolean}  props.isChanged         Whether there are unsaved changes.
  * @param {boolean}  props.isSaving          Whether a save is in progress.
+ * @param {Object}   props.capability        Active media-type capability descriptor.
  * @param {Function} props.onBack            Back-to-picker handler.
  * @param {Function} props.onSave            Save handler.
  * @param {Function} props.onCopy            Copy-block handler.
  * @param {Function} props.onEditMetadata    Opens the attachment details popup.
  * @param {string}   props.editMetadataLabel Label for the "Edit metadata" menu item.
- * @param {Function} props.onSaveTitle       Persists an edited video title.
+ * @param {Function} props.onSaveTitle       Persists an edited media title.
  * @return {JSX.Element} The top bar.
  */
 const EditorTopBar = ( {
@@ -163,6 +164,7 @@ const EditorTopBar = ( {
 	attachmentID,
 	isChanged,
 	isSaving,
+	capability = {},
 	onBack,
 	onSave,
 	onCopy,
@@ -172,7 +174,23 @@ const EditorTopBar = ( {
 } ) => {
 	const homeUrl = window?.godamRestRoute?.homeUrl || '';
 	const hasValidApiKey = Boolean( window?.userData?.validApiKey );
-	const previewUrl = `${ homeUrl }?godam_page=video-preview&id=${ attachmentID }`;
+	const previewPage = capability.previewPage || 'video-preview';
+	// Media types without a front-end preview page (e.g. audio) hide the button.
+	const showPreview = capability.showPreview !== false;
+	// Copy emits a `copyBlockName` block. Defaults on and mirrors the other
+	// `show*` seams: a media type sets `showCopy: false` when it has no Gutenberg
+	// block to copy into. All current types (video/audio/image) ship a block, so
+	// none opts out today.
+	const showCopy = capability.showCopy !== false;
+	// Analytics is tied to stats support — audio has neither.
+	const showAnalytics = hasValidApiKey && capability.showStats !== false;
+	// Only media types with a Layers tab show the layer count subtitle.
+	const showLayerCount = Array.isArray( capability.tabs ) ? capability.tabs.includes( 'layers' ) : true;
+	// Video keeps its historic "Save Video" label; other media types use "Save".
+	const saveLabel = capability.mediaType === 'audio' || capability.mediaType === 'image'
+		? __( 'Save', 'godam' )
+		: __( 'Save Video', 'godam' );
+	const previewUrl = `${ homeUrl }?godam_page=${ previewPage }&id=${ attachmentID }`;
 	const analyticsUrl = `${ homeUrl }/wp-admin/admin.php?page=rtgodam_analytics&id=${ attachmentID }`;
 
 	/**
@@ -208,13 +226,15 @@ const EditorTopBar = ( {
 				</FlexItem>
 				<FlexItem>
 					<EditableTitle title={ title } onSave={ onSaveTitle } />
-					<p className="godam-video-editor__subtitle">
-						{ sprintf(
-							// translators: %d is the number of layers.
-							_n( '%d layer', '%d layers', layerCount, 'godam' ),
-							layerCount,
-						) }
-					</p>
+					{ showLayerCount && (
+						<p className="godam-video-editor__subtitle">
+							{ sprintf(
+								// translators: %d is the number of layers.
+								_n( '%d layer', '%d layers', layerCount, 'godam' ),
+								layerCount,
+							) }
+						</p>
+					) }
 				</FlexItem>
 			</Flex>
 
@@ -225,44 +245,48 @@ const EditorTopBar = ( {
 				gap={ 2 }
 				expanded={ false }
 			>
-				<FlexItem>
-					<Tooltip
-						text={
-							<p>
-								{ __( 'You can copy the block into one of the two options:', 'godam' ) }
-								<br />
-								{ __( '1. Insert as a block in the Block editor.', 'godam' ) }
-								<br />
-								{ __( '2. Insert as HTML content in the Block editor.', 'godam' ) }
-							</p>
-						}
-					>
+				{ showCopy && (
+					<FlexItem>
+						<Tooltip
+							text={
+								<p>
+									{ __( 'You can copy the block into one of the two options:', 'godam' ) }
+									<br />
+									{ __( '1. Insert as a block in the Block editor.', 'godam' ) }
+									<br />
+									{ __( '2. Insert as HTML content in the Block editor.', 'godam' ) }
+								</p>
+							}
+						>
+							<Button
+								variant="tertiary"
+								icon={ copy }
+								onClick={ () => {
+									onCopy();
+									// Final product-guide step: copying completes the tour
+									// and prompts to drop the video into a new page.
+									notifyGuide( 'copy' );
+								} }
+								data-test-id="godam-video-editor-button-copy-block"
+							>
+								{ __( 'Copy', 'godam' ) }
+							</Button>
+						</Tooltip>
+					</FlexItem>
+				) }
+				{ showPreview && (
+					<FlexItem>
 						<Button
 							variant="tertiary"
-							icon={ copy }
-							onClick={ () => {
-								onCopy();
-								// Final product-guide step: copying completes the tour
-								// and prompts to drop the video into a new page.
-								notifyGuide( 'copy' );
-							} }
-							data-test-id="godam-video-editor-button-copy-block"
+							icon={ seen }
+							href={ previewUrl }
+							target="_blank"
+							data-test-id="godam-video-editor-button-preview"
 						>
-							{ __( 'Copy', 'godam' ) }
+							{ __( 'Preview', 'godam' ) }
 						</Button>
-					</Tooltip>
-				</FlexItem>
-				<FlexItem>
-					<Button
-						variant="tertiary"
-						icon={ seen }
-						href={ previewUrl }
-						target="_blank"
-						data-test-id="godam-video-editor-button-preview"
-					>
-						{ __( 'Preview', 'godam' ) }
-					</Button>
-				</FlexItem>
+					</FlexItem>
+				) }
 				<FlexItem>
 					<Button
 						variant="primary"
@@ -275,7 +299,7 @@ const EditorTopBar = ( {
 						disabled={ ! isChanged }
 						data-test-id="godam-video-editor-button-save"
 					>
-						{ isSaving ? __( 'Saving…', 'godam' ) : __( 'Save Video', 'godam' ) }
+						{ isSaving ? __( 'Saving…', 'godam' ) : saveLabel }
 					</Button>
 				</FlexItem>
 				<FlexItem>
@@ -286,7 +310,7 @@ const EditorTopBar = ( {
 					>
 						{ ( { onClose } ) => (
 							<MenuGroup>
-								{ hasValidApiKey && (
+								{ showAnalytics && (
 									<MenuItem
 										icon={ chartBar }
 										href={ analyticsUrl }

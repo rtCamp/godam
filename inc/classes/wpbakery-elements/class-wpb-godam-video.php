@@ -252,6 +252,44 @@ class WPB_GoDAM_Video {
 					),
 				),
 					
+				// Show Transcription.
+				array(
+					'type'        => 'dropdown',
+					'heading'     => esc_html__( 'Show Transcription', 'godam' ),
+					'param_name'  => 'show_transcription',
+					'value'       => array(
+						esc_html__( 'Default (from media)', 'godam' ) => '',
+						esc_html__( 'Yes', 'godam' ) => '1',
+						esc_html__( 'No', 'godam' )  => '0',
+					),
+					'std'         => '',
+					'description' => esc_html__( 'Show the transcript button/panel. "Default" follows the media/block setting.', 'godam' ),
+					'save_always' => true,
+					'dependency'  => array(
+						'element'   => 'id',
+						'not_empty' => true,
+					),
+				),
+
+				// Show Caption.
+				array(
+					'type'        => 'dropdown',
+					'heading'     => esc_html__( 'Show Caption', 'godam' ),
+					'param_name'  => 'show_caption',
+					'value'       => array(
+						esc_html__( 'Default (from media)', 'godam' ) => '',
+						esc_html__( 'Yes', 'godam' ) => '1',
+						esc_html__( 'No', 'godam' )  => '0',
+					),
+					'std'         => '',
+					'description' => esc_html__( 'Show the subtitles/captions button. "Default" follows the media caption setting.', 'godam' ),
+					'save_always' => true,
+					'dependency'  => array(
+						'element'   => 'id',
+						'not_empty' => true,
+					),
+				),
+
 				// Caption Settings.
 				array(
 					'type'        => 'textfield',

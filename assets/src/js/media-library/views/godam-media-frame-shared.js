@@ -252,6 +252,7 @@ const GoDAMMediaFrameShared = {
 					video_duration: data.video_duration || 0,
 					width: data.width || 0,
 					height: data.height || 0,
+					chapters: data.chapters || [],
 				},
 			} );
 

@@ -36,7 +36,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from './LayersHeader';
 import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
-import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
+import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR, DEFAULT_HOTSPOT_ICON_COLOR, DEFAULT_HOTSPOT_CUSTOM_ICON_BG } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
 import { VeSection, VeColorList, VeSegmented, VeTextInput, VeToggle } from '../controls';
 
 /**
@@ -69,6 +69,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
+	// Images have no timeline, so the Start Time / Layer Duration controls are
+	// hidden and layers are always visible (displayTime defaults to 0).
+	const mediaType = useSelector( ( state ) => state.videoReducer.mediaType );
 
 	const hotspots = layer?.hotspots || [];
 	// Track expanded hotspot
@@ -94,16 +97,16 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	}, [ dispatch, layer?.id ] );
 
 	const styleType = layer?.styleType || 'pulse';
-	const sharedColor = styleType === 'icon'
-		? ( layer?.iconColor || DEFAULT_HOTSPOT_COLOR )
-		: ( layer?.pulseColor || DEFAULT_HOTSPOT_COLOR );
 
 	/**
 	 * Migrate legacy layers (saved with per-hotspot style and no `styleType`)
 	 * to the shared style model on open: seed the shared Style controls from the
-	 * first hotspot's icon/colour so the new UI is populated. The frontend still
-	 * renders legacy layers correctly until they are re-saved (see
-	 * resolveHotspotStyle); after a save they use the shared model.
+	 * first hotspot so the new UI is populated. Mirrors the WooCommerce hotspot
+	 * layer's migration exactly — only `styleType` + `backgroundColor` are
+	 * seeded; `pulseColor` / `iconColor` are left unset so their pickers show the
+	 * default swatch, while resolveHotspotStyle still falls back to each
+	 * hotspot's own `backgroundColor` for the rendered colour. The frontend
+	 * renders legacy layers correctly until they are re-saved.
 	 */
 	useEffect( () => {
 		if ( ! layer || layer.styleType ) {
@@ -111,11 +114,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		}
 		const first = layer.hotspots?.[ 0 ] || {};
 		const hasIcon = !! ( first.icon || first.customIconUrl );
-		const seededColor = first.backgroundColor || DEFAULT_HOTSPOT_COLOR;
 
 		dispatch( updateLayerField( { id: layer.id, field: 'styleType', value: hasIcon ? 'icon' : 'pulse' } ) );
-		dispatch( updateLayerField( { id: layer.id, field: 'pulseColor', value: seededColor } ) );
-		dispatch( updateLayerField( { id: layer.id, field: 'iconColor', value: seededColor } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'backgroundColor', value: first.backgroundColor || DEFAULT_HOTSPOT_COLOR } ) );
 		dispatch( updateLayerField( { id: layer.id, field: 'icon', value: first.icon || '' } ) );
 		dispatch( updateLayerField( { id: layer.id, field: 'customIconUrl', value: first.customIconUrl || null } ) );
 		dispatch( updateLayerField( { id: layer.id, field: 'customIconId', value: first.customIconId || null } ) );
@@ -261,16 +262,20 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	const computeContentRect = () => {
-		const videoEl = document.querySelector( 'video' );
+		// Resolve the media element generically: video for the player stage,
+		// img for the image editor stage. `videoWidth`/`naturalWidth` give the
+		// intrinsic size in each case so the aspect math below is shared.
+		const mediaEl = document.querySelector( '#easydam-video-player video' ) ||
+			document.querySelector( '#easydam-video-player img' );
 		const containerEl = document.getElementById( 'easydam-video-player' );
 
-		if ( ! videoEl || ! containerEl ) {
+		if ( ! mediaEl || ! containerEl ) {
 			setContentRect( null );
 			return;
 		}
 
-		const nativeW = videoEl.videoWidth || 0;
-		const nativeH = videoEl.videoHeight || 0;
+		const nativeW = mediaEl.videoWidth || mediaEl.naturalWidth || 0;
+		const nativeH = mediaEl.videoHeight || mediaEl.naturalHeight || 0;
 
 		const elW = containerEl.offsetWidth;
 		const elH = containerEl.offsetHeight;
@@ -316,23 +321,74 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	useEffect( () => {
-		computeContentRect();
+		let resizeObserver = null;
+		let rafId = null;
+		let cancelled = false;
+		let stageWaitFrames = 0;
+
+		// Cap the wait for the stage container so a layer selected while the
+		// preview never mounts can't spin requestAnimationFrame for the
+		// component's whole lifetime. ~300 frames (~5s at 60fps) is far beyond
+		// the frame-or-two the normal path needs; past that the stage isn't
+		// coming and there is nothing to position against.
+		const MAX_STAGE_WAIT_FRAMES = 300;
+
+		// The stage preview may not be in the DOM yet when this layer mounts (a
+		// layer can be selected before the attachment finishes loading). A one-shot
+		// computeContentRect() would then find no media element, set contentRect to
+		// null and never recover, collapsing hotspots to 0x0 at (0,0). So retry
+		// until the stage container exists, then observe it: ResizeObserver fires on
+		// observe and whenever the media box gets/changes a laid-out size (0 -> WxH
+		// on image load), reliably (re)computing contentRect regardless of mount
+		// order.
+		const start = () => {
+			if ( cancelled ) {
+				return;
+			}
+
+			const containerEl = document.getElementById( 'easydam-video-player' );
+			if ( ! containerEl ) {
+				if ( stageWaitFrames++ < MAX_STAGE_WAIT_FRAMES ) {
+					rafId = requestAnimationFrame( start );
+				}
+				return;
+			}
+
+			computeContentRect();
+
+			resizeObserver = new ResizeObserver( computeContentRect );
+			resizeObserver.observe( containerEl );
+
+			// `loadedmetadata` for a video, `load` for an image; cached images may
+			// already be complete (no future load event), so compute now too.
+			const mediaEl = containerEl.querySelector( 'video, img' );
+			if ( mediaEl ) {
+				videoRef.current = mediaEl;
+				const loadEvent = mediaEl.tagName === 'IMG' ? 'load' : 'loadedmetadata';
+				mediaEl.addEventListener( loadEvent, computeContentRect );
+				if ( 'IMG' === mediaEl.tagName && mediaEl.complete ) {
+					computeContentRect();
+				}
+			}
+		};
+
+		start();
 		window.addEventListener( 'resize', computeContentRect );
 		document.addEventListener( 'fullscreenchange', computeContentRect );
 
-		// Also listen for video metadata loaded
-		const videoEl = document.querySelector( 'video' );
-		videoRef.current = videoEl;
-
-		if ( videoEl ) {
-			videoEl.addEventListener( 'loadedmetadata', computeContentRect );
-		}
-
 		return () => {
+			cancelled = true;
+			if ( rafId ) {
+				cancelAnimationFrame( rafId );
+			}
+			if ( resizeObserver ) {
+				resizeObserver.disconnect();
+			}
 			window.removeEventListener( 'resize', computeContentRect );
 			document.removeEventListener( 'fullscreenchange', computeContentRect );
 			if ( videoRef.current ) {
-				videoRef.current.removeEventListener( 'loadedmetadata', computeContentRect );
+				const loadEvent = videoRef.current.tagName === 'IMG' ? 'load' : 'loadedmetadata';
+				videoRef.current.removeEventListener( loadEvent, computeContentRect );
 			}
 		};
 	}, [] );
@@ -448,26 +504,28 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					</div>
 				</VeSection>
 
-				{ /* Duration: shared Start Time + Layer Duration. */ }
-				<VeSection title={ __( 'Duration', 'godam' ) }>
-					<VeTextInput
-						label={ __( 'Start Time', 'godam' ) }
-						value={ formatClock( layer?.displayTime ) }
-						onChange={ handleStartTimeChange }
-						placeholder="0:00"
-					/>
-					<VeTextInput
-						data-test-id="godam-hotspot-control-duration"
-						label={ __( 'Layer Duration (seconds)', 'godam' ) }
-						type="number"
-						min="1"
-						max="36000"
-						value={ durationInput }
-						onChange={ handleDurationInputChange }
-						onBlur={ validateDuration }
-						help={ __( 'Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)', 'godam' ) }
-					/>
-				</VeSection>
+				{ /* Duration: shared Start Time + Layer Duration. Timeline-only; hidden for images. */ }
+				{ mediaType !== 'image' && (
+					<VeSection title={ __( 'Duration', 'godam' ) }>
+						<VeTextInput
+							label={ __( 'Start Time', 'godam' ) }
+							value={ formatClock( layer?.displayTime ) }
+							onChange={ handleStartTimeChange }
+							placeholder="0:00"
+						/>
+						<VeTextInput
+							data-test-id="godam-hotspot-control-duration"
+							label={ __( 'Layer Duration (seconds)', 'godam' ) }
+							type="number"
+							min="1"
+							max="36000"
+							value={ durationInput }
+							onChange={ handleDurationInputChange }
+							onBlur={ validateDuration }
+							help={ __( 'Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)', 'godam' ) }
+						/>
+					</VeSection>
+				) }
 
 				{ /* Style: shared across all hotspot points. */ }
 				<VeSection title={ __( 'Style', 'godam' ) }>
@@ -490,27 +548,56 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 						/>
 					) }
 
-					<VeColorList>
-						<ColorPickerButton
-							value={ sharedColor }
-							label={ styleType === 'icon' ? __( 'Colour', 'godam' ) : __( 'Pulse colour', 'godam' ) }
-							enableAlpha={ true }
-							onChange={ ( value ) => updateField( styleType === 'icon' ? 'iconColor' : 'pulseColor', value ) }
-						/>
-					</VeColorList>
+					{ styleType === 'pulse' && (
+						<VeColorList>
+							<ColorPickerButton
+								value={ layer?.pulseColor || DEFAULT_HOTSPOT_COLOR }
+								label={ __( 'Pulse colour', 'godam' ) }
+								enableAlpha={ true }
+								onChange={ ( value ) => updateField( 'pulseColor', value ) }
+							/>
+						</VeColorList>
+					) }
+
+					{ /* Icon-mode colours mirror the WooCommerce hotspot layer: a
+					     glyph "Icon" colour (library icons only — a custom uploaded
+					     image can't be recoloured) plus a circle "Background". The
+					     Background picker is always shown in icon mode — even before
+					     an icon is chosen — so the circle colour is never stuck at an
+					     unchangeable (and, on light content, invisible) default. */ }
+					{ styleType === 'icon' && (
+						<VeColorList>
+							{ layer?.icon && (
+								<ColorPickerButton
+									value={ layer?.iconColor || DEFAULT_HOTSPOT_ICON_COLOR }
+									label={ __( 'Icon', 'godam' ) }
+									enableAlpha={ true }
+									onChange={ ( value ) => updateField( 'iconColor', value ) }
+								/>
+							) }
+							<ColorPickerButton
+								value={ layer?.backgroundColor || ( layer?.customIconUrl ? DEFAULT_HOTSPOT_CUSTOM_ICON_BG : DEFAULT_HOTSPOT_COLOR ) }
+								label={ __( 'Background', 'godam' ) }
+								enableAlpha={ true }
+								onChange={ ( value ) => updateField( 'backgroundColor', value ) }
+							/>
+						</VeColorList>
+					) }
 				</VeSection>
 
-				{ /* Behaviour. */ }
-				<VeSection title={ __( 'Behaviour', 'godam' ) }>
-					<div data-test-id="godam-hotspot-control-pause-on-hover">
-						<VeToggle
-							label={ __( 'Pause video when hotspot is hovered', 'godam' ) }
-							checked={ layer?.pauseOnHover || false }
-							onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
-							help={ __( 'Player will pause the video while the layer is displayed and users hover over the hotspots.', 'godam' ) }
-						/>
-					</div>
-				</VeSection>
+				{ /* Behaviour: pause-on-hover is video-only, so hidden for images. */ }
+				{ mediaType !== 'image' && (
+					<VeSection title={ __( 'Behaviour', 'godam' ) }>
+						<div data-test-id="godam-hotspot-control-pause-on-hover">
+							<VeToggle
+								label={ __( 'Pause video when hotspot is hovered', 'godam' ) }
+								checked={ layer?.pauseOnHover || false }
+								onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
+								help={ __( 'Player will pause the video while the layer is displayed and users hover over the hotspots.', 'godam' ) }
+							/>
+						</div>
+					</VeSection>
+				) }
 			</div>
 
 			<LayerControls>
@@ -661,7 +748,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								onClick={ () => setExpandedHotspotIndex( index ) }
 								className="hotspot circle"
 								style={ {
-									backgroundColor: hasIcon ? 'white' : ( effective.color || DEFAULT_HOTSPOT_COLOR ),
+									backgroundColor: effective.color || DEFAULT_HOTSPOT_COLOR,
 								} }
 							>
 								<div className={ `hotspot-content flex items-center justify-center ${ ! hasIcon ? 'no-icon' : '' }` }>
@@ -673,7 +760,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											style={ {
 												width: '50%',
 												height: '50%',
-												color: '#000',
+												color: effective.iconColor,
 											} }
 										/>
 									) : effective.customIconUrl ? (

@@ -124,3 +124,22 @@
 		}
 	}
 }
+
+// ── Unsupported-format notice ───────────────────────────────────────────────
+// Shown only inside WPBakery's front-end editor (see GoDAM_Document::render()).
+// The published page renders nothing at all for a non-PDF, so visitors never
+// see this.
+.godam-document-unsupported {
+	padding: 16px 20px;
+	border: 1px dashed #c3c4c7;
+	border-radius: 8px;
+	background: #f6f7f7;
+	text-align: center;
+
+	p {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.5;
+		color: #646970;
+	}
+}

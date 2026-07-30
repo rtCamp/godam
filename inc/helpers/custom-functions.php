@@ -707,6 +707,64 @@ function godam_is_audio_file( $file_path_or_url ) {
 }
 
 /**
+ * Check whether a document can be embedded by the Document block.
+ *
+ * PDF is the only format the block supports. It embeds through
+ * `<object type="application/pdf">`, so pointing that at anything else gives the
+ * browser a type it cannot display: it paints an empty box (and suppresses the
+ * `<object>` fallback content, so nothing at all is shown) or hands the file to
+ * the download manager, which starts a download on every page load.
+ *
+ * Callers use this to skip front-end output entirely and to show an "unsupported
+ * format" notice in the editors instead.
+ *
+ * The attachment's stored MIME type is authoritative. The URL extension is only a
+ * fallback, for GoDAM tab media whose id is not a local numeric attachment and for
+ * documents added by URL alone.
+ *
+ * @since 2.1.0
+ *
+ * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
+ * @param string     $url           Document URL. Used when no local attachment is available.
+ *
+ * @return bool True when the document is a PDF and can be embedded, false otherwise.
+ */
+function godam_is_supported_document( $attachment_id = 0, $url = '' ) {
+	// Attachment IDs are positive integers, so require digits rather than any
+	// numeric-looking value. is_numeric() would also accept floats and scientific
+	// notation ('12.5', '1e3'), which absint() then silently turns into a
+	// DIFFERENT id, and a mistyped shortcode would resolve somebody else's
+	// attachment and answer for that instead. Anything else falls through to the
+	// URL check below, which is the safe direction.
+	$godam_post_id = 0;
+	if ( is_int( $attachment_id ) && $attachment_id > 0 ) {
+		$godam_post_id = $attachment_id;
+	} elseif ( is_string( $attachment_id ) && ctype_digit( trim( $attachment_id ) ) ) {
+		$godam_post_id = absint( trim( $attachment_id ) );
+	}
+
+	if ( $godam_post_id ) {
+		$mime_type = get_post_mime_type( $godam_post_id );
+
+		if ( ! empty( $mime_type ) ) {
+			return 'application/pdf' === $mime_type;
+		}
+
+		// Attachment no longer exists; fall through to the URL check so content
+		// that still carries a valid PDF URL keeps rendering.
+	}
+
+	if ( empty( $url ) || ! is_string( $url ) ) {
+		return false;
+	}
+
+	// Drop any query string / fragment before reading the extension.
+	$path = wp_parse_url( $url, PHP_URL_PATH );
+
+	return 'pdf' === strtolower( pathinfo( ! empty( $path ) ? $path : $url, PATHINFO_EXTENSION ) );
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.
@@ -1166,13 +1224,15 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 }
 
 /**
- * Generate the HTML content for the video preview page.
+ * Generate the HTML content for the preview page.
  *
- * This function constructs the HTML structure for a video preview page based on the provided video ID.
- * It checks if the video exists and displays either the video player or an error message accordingly.
+ * Constructs the HTML for the shared front-end preview page based on the given
+ * attachment ID. It checks that the attachment exists and renders the markup for
+ * its media type — video player, audio player, or the image block (with hotspot /
+ * product layers) — or an error message when the attachment is missing.
  *
- * @param int $video_id The ID of the video attachment to preview.
- * @return string The generated HTML content for the video preview page.
+ * @param int $video_id The ID of the attachment to preview (video, audio or image).
+ * @return string The generated HTML content for the preview page.
  */
 function godam_preview_page_content( $video_id ) {
 	ob_start();
@@ -1194,16 +1254,49 @@ function godam_preview_page_content( $video_id ) {
 		</div>
 		<?php
 	} else {
-		// Display video content.
+		// Render the markup appropriate to the attachment's media type: audio
+		// attachments use the audio shortcode, image attachments the image block
+		// (hotspot / product layers), everything else the video player.
+		$godam_mime     = (string) get_post_mime_type( $video_id );
+		$godam_is_audio = 0 === strpos( $godam_mime, 'audio/' );
+		$godam_is_image = 0 === strpos( $godam_mime, 'image/' );
+
+		if ( $godam_is_image ) {
+			$godam_notice = __( 'Note: This is a simple image preview. The image and its layers may display differently when added to a page based on theme styles.', 'godam' );
+		} elseif ( $godam_is_audio ) {
+			$godam_notice = __( 'Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles.', 'godam' );
+		} else {
+			$godam_notice = __( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' );
+		}
+
+		// The image block is dynamic and has no shortcode, so render it directly
+		// via do_blocks(); audio and video reuse their registered shortcodes. This
+		// runs before wp_head() in the template, so the block's lazily-enqueued
+		// styles / scripts are still printed.
+		if ( $godam_is_image ) {
+			$godam_media_output = do_blocks(
+				'<!-- wp:godam/image ' . wp_json_encode(
+					array(
+						'id'              => $video_id,
+						'showImageLayers' => true,
+					)
+				) . ' /-->'
+			);
+		} else {
+			$godam_shortcode    = $godam_is_audio
+				? '[godam_audio id="' . $video_id . '"]'
+				: '[godam_video id="' . $video_id . '"]';
+			$godam_media_output = do_shortcode( $godam_shortcode );
+		}
 		?>
 		<div class="godam-video-preview--notice">
-			<?php esc_html_e( 'Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles.', 'godam' ); ?>
+			<?php echo esc_html( $godam_notice ); ?>
 		</div>
 		<div class="godam-video-preview">
 			<h1 class="godam-video-preview--title">
 				<?php echo esc_html( get_the_title( $video_id ) ); ?>
 			</h1>
-			<?php echo do_shortcode( '[godam_video id="' . $video_id . '"]' ); ?>
+			<?php echo $godam_media_output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped inside the block / shortcode render templates. ?>
 		</div>
 		<?php
 	}
@@ -1264,6 +1357,36 @@ function rtgodam_is_engagement_feature_enabled() {
 }
 
 /**
+ * Map a player context (godam_context) to its analytics block_source slug.
+ *
+ * The placement taxonomy the analytics microservice groups by. Known contexts
+ * map to their canonical slug; an empty context means the plain video block /
+ * shortcode; unknown contexts pass through as-is (the microservice normalizes
+ * server-side and never rejects on this value).
+ *
+ * @since 2.1.0
+ *
+ * @param string $context The godam_context attribute value.
+ * @return string The block_source slug for analytics events.
+ */
+function rtgodam_get_block_source_from_context( $context ) {
+	$context = (string) $context;
+
+	if ( '' === $context ) {
+		return 'video-block';
+	}
+
+	$map = array(
+		'godam-video-product-gallery'      => 'shoppable-video',
+		'godam-featured-video-gallery'     => 'wc-product-gallery',
+		'godam-for-woo-product-page-reels' => 'product-reels',
+		'godam-reel-pop-widget'            => 'reel-pop',
+	);
+
+	return isset( $map[ $context ] ) ? $map[ $context ] : $context;
+}
+
+/**
  * Generate HTML content for the video embed page.
  *
  * This function produces the HTML markup for embedding a single video.
@@ -1274,12 +1397,14 @@ function rtgodam_is_engagement_feature_enabled() {
  * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only').
  * @param string $bg_color      Optional. Hex background color applied as --godam-video-bg-color CSS variable on the wrapper.
  * @param bool   $show_engagements Optional. Whether to show engagements in the embed. Default false (no engagements shown).
+ * @param string $block_source  Optional. Analytics placement slug forwarded to the player (e.g. 'video-gallery' for gallery iframes).
+ * @param int    $host_post_id  Optional. Post ID of the page embedding this iframe, so analytics attribute to the host page.
  *
  * @since 1.5.0
  *
  * @return string The generated HTML content for the video embed page.
  */
-function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '', $show_engagements = false ) {
+function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '', $show_engagements = false, $block_source = '', $host_post_id = 0 ) {
 	ob_start();
 	// Check if video ID is provided and if video attachment exists.
 	$video_attachment  = null;
@@ -1307,6 +1432,12 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		}
 		if ( ! empty( $engagements_value ) ) {
 			$godam_shortcode .= ' engagements="' . esc_attr( $engagements_value ) . '"';
+		}
+		if ( ! empty( $block_source ) ) {
+			$godam_shortcode .= ' block_source="' . esc_attr( $block_source ) . '"';
+		}
+		if ( ! empty( $host_post_id ) ) {
+			$godam_shortcode .= ' host_post_id="' . absint( $host_post_id ) . '"';
 		}
 		$godam_shortcode .= ']';
 
@@ -1402,7 +1533,7 @@ function godam_should_load_auth_detector_script( $screen ) {
 	// Check if on GoDAM admin pages (where media library/modal can be opened).
 	$godam_pages = array(
 		'toplevel_page_godam',             // Dashboard page.
-		'godam_page_rtgodam_video_editor', // Video Editor page.
+		'godam_page_rtgodam_media_editor', // Media Editor page.
 	);
 
 	if ( in_array( $screen->id, $godam_pages, true ) ) {

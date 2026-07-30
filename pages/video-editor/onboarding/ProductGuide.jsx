@@ -227,7 +227,7 @@ const ProductGuide = ( { attachmentID } ) => {
 				onCancel={ handleEndCancel }
 				data-test-id="godam-product-guide-button-end"
 			>
-				{ __( 'You can start it anytime using the “See how it works” button on the Video Editor.', 'godam' ) }
+				{ __( 'You can start it anytime using the “See how it works” button on the Media Editor.', 'godam' ) }
 			</ConfirmModal>
 
 			<ConfirmModal

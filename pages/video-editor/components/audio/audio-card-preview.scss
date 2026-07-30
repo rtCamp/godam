@@ -1,0 +1,17 @@
+/**
+ * Customization editor audio preview.
+ *
+ * The card / player / Chapters+Transcript panel styles are shared with the
+ * block editor and front end so all three look identical — see
+ * assets/src/css/_godam-audio-card.scss. This file only centers the shared
+ * card within the editor stage.
+ */
+
+@import "../../../../assets/src/css/godam-audio-card";
+
+.godam-audio-preview {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	padding: 24px;
+}

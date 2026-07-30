@@ -16,10 +16,6 @@
 			"type": "string",
 			"role": "content"
 		},
-		"caption": {
-			"type": "string",
-			"role": "content"
-		},
 		"id": {
 			"type": "number",
 			"role": "content"
@@ -54,6 +50,14 @@
 		"thumbnailId": {
 			"type": "number",
 			"role": "content"
+		},
+		"showTranscript": {
+			"type": "boolean",
+			"default": true
+		},
+		"showChapters": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"supports": {
@@ -70,5 +74,6 @@
 	"editorStyle": [ "file:./index.css" ],
 	"style": [ "file:./style-index.css" ],
 	"editorScript": [ "file:./index.js" ],
+	"viewScript": [ "file:./view.js" ],
 	"render": "file:./render.php"
 }

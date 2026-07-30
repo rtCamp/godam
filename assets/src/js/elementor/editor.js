@@ -43,7 +43,7 @@ window.addEventListener( 'load', function() {
 		'panel/open_editor/widget/godam-video',
 		function( panel, model, view ) {
 			setTimeout( makeFieldsReadonly, 100 );
-			hydrateWidget( model, view );
+			hydrateWidget( model, view, panel );
 		},
 	);
 
@@ -53,6 +53,15 @@ window.addEventListener( 'load', function() {
 			setTimeout( makeFieldsReadonly, 200 );
 		}
 	} );
+
+	// GoDAM Audio: auto-fill the title/description from the selected attachment,
+	// mirroring the Gutenberg block (which populates them on selection).
+	window?.elementor.hooks.addAction(
+		'panel/open_editor/widget/godam-audio',
+		function( panel, model, view ) {
+			hydrateAudioWidget( model, view );
+		},
+	);
 } );
 
 /**
@@ -85,6 +94,16 @@ let activeFetchToken = 0;
 let renderedAttachmentId = null;
 
 /**
+ * Cached tiles markup for `renderedAttachmentId`. Elementor rebuilds the panel
+ * control DOM on every re-render (e.g. the GoDAM Video widget's SEO auto-sync
+ * calls panel.currentPageView.render() right after a video is picked), which
+ * wipes the freshly-populated grid. Caching lets us restore the tiles on the
+ * next render without another REST round-trip. `null` = not fetched yet;
+ * `''` = fetched, no thumbnails available.
+ */
+let renderedTilesHtml = null;
+
+/**
  * Re-render the thumbnail grid for the currently active widget settings.
  */
 function renderThumbnailPicker() {
@@ -100,28 +119,44 @@ function renderThumbnailPicker() {
 	}
 
 	const grid = container.querySelector( '[data-godam-thumbnail-grid]' );
-	const emptyState = container.querySelector( '[data-godam-thumbnail-empty]' );
 	if ( ! grid ) {
 		return;
 	}
+
+	const emptyState = container.querySelector( '[data-godam-thumbnail-empty]' );
 
 	const videoFile = settings.get( 'video-file' );
 	const attachmentId = videoFile?.id;
 	if ( ! attachmentId ) {
 		grid.innerHTML = '';
 		renderedAttachmentId = null;
+		renderedTilesHtml = null;
 		if ( emptyState ) {
 			emptyState.hidden = true;
 		}
 		return;
 	}
 
-	// Same video as last render — skip the REST round-trip and just repaint
-	// the selection ring on the existing tiles. Triggered when the user
-	// clicks a tile (poster changed, video did not).
+	// Same video as last render — no REST round-trip needed.
 	if ( renderedAttachmentId === attachmentId ) {
-		updateSelectionRing( settings, grid );
-		return;
+		// Tiles are still in the DOM: just repaint the selection ring (e.g. the
+		// user clicked a tile, changing only the poster).
+		if ( grid.children.length > 0 ) {
+			updateSelectionRing( settings, grid );
+			return;
+		}
+		// The grid was wiped by a panel re-render (Elementor rebuilds the RAW_HTML
+		// control DOM — notably the SEO auto-sync re-renders the panel right after
+		// a video is picked). Restore the cached tiles instead of refetching.
+		if ( null !== renderedTilesHtml ) {
+			grid.innerHTML = renderedTilesHtml;
+			if ( emptyState ) {
+				emptyState.hidden = grid.children.length > 0;
+			}
+			updateSelectionRing( settings, grid );
+			return;
+		}
+		// Otherwise a fetch is still in flight — fall through and (re)issue it.
 	}
 
 	const token = ++activeFetchToken;
@@ -150,6 +185,7 @@ function renderThumbnailPicker() {
 
 			if ( ! tiles.length ) {
 				grid.innerHTML = '';
+				renderedTilesHtml = ''; // Fetched: no thumbnails for this video.
 				if ( emptyState ) {
 					emptyState.hidden = false;
 				}
@@ -168,6 +204,9 @@ function renderThumbnailPicker() {
 					);
 				} )
 				.join( '' );
+
+			// Cache so a subsequent panel re-render can restore without refetching.
+			renderedTilesHtml = grid.innerHTML;
 		} )
 		.catch( () => {
 			if ( token !== activeFetchToken ) {
@@ -233,23 +272,55 @@ function updateSelectionRing( settings, grid ) {
 }
 
 /**
+ * Render the thumbnail picker once its container is present in the panel DOM.
+ *
+ * The picker is a conditional RAW_HTML control Elementor injects asynchronously
+ * — and only once a video with an id is selected. So on first add (select a
+ * video, which reveals the control) or a passive panel open, the container may
+ * not exist yet at the moment we want to render, and renderThumbnailPicker()
+ * would bail with nothing to re-trigger it (the grid then only fills after a
+ * reload). Poll (bounded, ~2s) until the container appears, then render once;
+ * bail if the panel has since switched to a different widget.
+ */
+function scheduleThumbnailPickerRender() {
+	const settings = activeWidgetSettings;
+	let attempts = 0;
+	const attempt = () => {
+		if ( activeWidgetSettings !== settings ) {
+			return;
+		}
+		if ( document.querySelector( '[data-godam-thumbnail-picker]' ) ) {
+			renderThumbnailPicker();
+			return;
+		}
+		if ( attempts < 20 ) {
+			attempts++;
+			setTimeout( attempt, 100 );
+		}
+	};
+	attempt();
+}
+
+/**
  * Wildcard `change` handler used to refresh the thumbnail grid when the
  * underlying video changes. Elementor's BaseMultiple controls (godam-media
  * included) update sub-keys via paths and emit `change:video-file.id` /
  * `change:video-file.url` — NOT `change:video-file`. Listening to the
  * generic 'change' event and inspecting `model.changed` is the only way to
  * catch both shapes reliably across Elementor versions.
- * @param changedModel
+ * @param {any} changedModel
  */
 function onSettingsChange( changedModel ) {
 	const changed = changedModel?.changed || {};
 	const keys = Object.keys( changed );
 	if ( keys.some( ( key ) => key === 'video-file' || key.indexOf( 'video-file' ) === 0 ) ) {
-		renderThumbnailPicker();
+		// Selecting a video reveals the (conditional) picker control, which
+		// Elementor mounts asynchronously — wait for it before rendering.
+		scheduleThumbnailPickerRender();
 	} else if ( keys.indexOf( 'poster' ) !== -1 ) {
 		// Selection ring follows the poster, even when the user uploads via
 		// the godam-media tile above the grid.
-		renderThumbnailPicker();
+		scheduleThumbnailPickerRender();
 	} else if ( keys.indexOf( 'autoplay' ) !== -1 ) {
 		applyAutoplayLock( !! changed.autoplay && 'yes' === changed.autoplay );
 	}
@@ -278,12 +349,11 @@ function applyAutoplayLock( locked ) {
  * Also wires the autoplay → disabled state for the muted / hover_select
  * controls (these stay visible but go non-interactive when autoplay is on).
  *
- * @param {Object} model Backbone model of the widget element (the `model`
- *                       arg from the `panel/open_editor/widget/X` hook).
- * @param {Object} view  Editor view for the widget — used to resolve the
- *                       Elementor container for $e.run() preview updates.
+ * @param {Object} model Backbone model of the widget element (the `model` arg from the `panel/open_editor/widget/X` hook).
+ * @param {Object} view  Editor view for the widget — used to resolve the Elementor container for $e.run() preview updates.
+ * @param {Object} panel Elementor panel object (the `panel` arg from the hook), used to re-populate the picker after panel re-renders.
  */
-function hydrateWidget( model, view ) {
+function hydrateWidget( model, view, panel ) {
 	const settings = model?.get?.( 'settings' );
 	if ( ! settings ) {
 		return;
@@ -299,21 +369,29 @@ function hydrateWidget( model, view ) {
 	activeWidgetSettings = settings;
 	activeWidgetContainer = view?.getContainer?.() || view?.container || null;
 
-	// Each panel open replaces the picker's DOM. Invalidate the
-	// "same attachment, skip refetch" cache so the first render after
-	// hydration always rebuilds the grid (otherwise the cached id would
-	// match and we'd be left with an empty grid container).
+	// Each panel open replaces the picker's DOM. Invalidate the caches so the
+	// first render after hydration always rebuilds the grid (otherwise the
+	// cached id would match and we'd be left with an empty grid container).
 	renderedAttachmentId = null;
+	renderedTilesHtml = null;
 
 	settings.off( 'change', onSettingsChange );
 	settings.on( 'change', onSettingsChange );
 
-	// Initial render + autoplay-lock application once Elementor finishes
-	// injecting the control DOM for this panel open.
-	setTimeout( () => {
-		renderThumbnailPicker();
-		applyAutoplayLock( 'yes' === settings.get( 'autoplay' ) );
-	}, 100 );
+	// Elementor rebuilds the panel control DOM on every re-render (e.g. the SEO
+	// auto-sync calls panel.currentPageView.render() right after a video is
+	// picked), which wipes the freshly-populated picker grid. Re-populate on each
+	// render — renderThumbnailPicker() restores cached tiles without refetching.
+	if ( panel && panel.currentPageView && panel.currentPageView.on ) {
+		panel.currentPageView.off( 'render', scheduleThumbnailPickerRender );
+		panel.currentPageView.on( 'render', scheduleThumbnailPickerRender );
+	}
+
+	// Autoplay-lock doesn't depend on the picker DOM, so apply it on a short delay.
+	setTimeout( () => applyAutoplayLock( 'yes' === settings.get( 'autoplay' ) ), 100 );
+
+	// Render the picker once Elementor has mounted its (conditional) control.
+	scheduleThumbnailPickerRender();
 }
 
 /**
@@ -328,4 +406,205 @@ function escapeAttr( value ) {
 		.replace( /"/g, '&quot;' )
 		.replace( /</g, '&lt;' )
 		.replace( />/g, '&gt;' );
+}
+
+/* ── GoDAM Audio: auto-populate title / description ────────────────────────── */
+
+/**
+ * Settings model + container of the currently-edited godam-audio widget.
+ */
+let activeAudioSettings = null;
+let activeAudioContainer = null;
+
+/**
+ * Monotonic token so a stale description fetch (user swapped the audio before
+ * the previous request resolved) is discarded.
+ */
+let audioFetchToken = 0;
+
+/**
+ * Strip tags from a rendered HTML string and collapse whitespace. Used for the
+ * attachment description, whose REST `rendered` form is wrapped in markup.
+ *
+ * @param {string} html Rendered HTML.
+ * @return {string} Plain text.
+ */
+function stripHtml( html ) {
+	const tmp = document.createElement( 'div' );
+	tmp.innerHTML = String( html || '' );
+	return ( tmp.textContent || tmp.innerText || '' ).replace( /\s+/g, ' ' ).trim();
+}
+
+/**
+ * Re-render the given controls in the currently open panel so their inputs
+ * reflect the model. Elementor text/textarea controls read the model only on
+ * render and deliberately don't sync external model changes back into the input
+ * (to avoid cursor jumps while typing), so a programmatic value change leaves
+ * the visible field stale until we force a re-render. No-op when the panel
+ * isn't showing a widget with these controls.
+ *
+ * @param {string[]} names Control names to refresh.
+ */
+function refreshPanelControls( names ) {
+	try {
+		const page = window.elementor?.getPanelView?.()?.getCurrentPageView?.();
+		if ( ! page || ! page.children || ! page.children.each ) {
+			return;
+		}
+		page.children.each( ( view ) => {
+			const name = view?.model?.get?.( 'name' );
+			if ( name && names.indexOf( name ) !== -1 && 'function' === typeof view.render ) {
+				view.render();
+			}
+		} );
+	} catch ( e ) {}
+}
+
+/**
+ * Push settings onto the active audio widget so the canvas preview re-renders
+ * (a bare Backbone .set() updates the model but not the preview node), then
+ * refresh the matching panel inputs so the field values are visible immediately.
+ *
+ * @param {Object} values Map of setting keys to values.
+ */
+function applyAudioSettings( values ) {
+	// The container ref is captured at hydrate; if Elementor rebuilt the element
+	// it can go stale and $e.run() may throw. Guard it (this runs from a fetch
+	// .then()/.catch(), so an unguarded throw would surface as an unhandled
+	// rejection) and fall back to a direct model update.
+	try {
+		if ( activeAudioContainer && window.$e?.run ) {
+			window.$e.run( 'document/elements/settings', {
+				container: activeAudioContainer,
+				settings: values,
+			} );
+		} else if ( activeAudioSettings ) {
+			Object.keys( values ).forEach( ( key ) => activeAudioSettings.set( key, values[ key ] ) );
+		}
+	} catch ( e ) {
+		try {
+			if ( activeAudioSettings ) {
+				Object.keys( values ).forEach( ( key ) => activeAudioSettings.set( key, values[ key ] ) );
+			}
+		} catch ( e2 ) {}
+	}
+
+	refreshPanelControls( Object.keys( values ) );
+}
+
+/**
+ * Apply only the fields the user has NOT edited since `snapshot` was captured,
+ * so a late REST populate never clobbers an in-progress Title / Description edit
+ * (the user may select an audio and immediately start typing an override).
+ *
+ * @param {Object} values   Proposed setting values.
+ * @param {Object} snapshot Field values captured when the populate started.
+ */
+function applyAudioSettingsIfUntouched( values, snapshot ) {
+	const settings = activeAudioSettings;
+	if ( ! settings ) {
+		return;
+	}
+	const toApply = {};
+	Object.keys( values ).forEach( ( key ) => {
+		if ( settings.get( key ) === snapshot[ key ] ) {
+			toApply[ key ] = values[ key ];
+		}
+	} );
+	if ( Object.keys( toApply ).length ) {
+		applyAudioSettings( toApply );
+	}
+}
+
+/**
+ * Fill the Audio Title + Description controls from the selected attachment.
+ * Title is already carried on the godam-media control value; the description is
+ * fetched from the REST API. Mirrors the block: a new selection overwrites both,
+ * clearing the audio empties them — but an edit the user makes after selecting
+ * is preserved (see applyAudioSettingsIfUntouched). Only runs on an audio-file
+ * change, never on panel open, so existing widgets keep their saved values and
+ * render.php's "leave empty → attachment title" fallback stays intact.
+ */
+function populateAudioMeta() {
+	const settings = activeAudioSettings;
+	if ( ! settings ) {
+		return;
+	}
+
+	const audioFile = settings.get( 'audio-file' ) || {};
+	const id = audioFile.id;
+
+	// Snapshot current field values so a late apply only writes fields the user
+	// hasn't touched since this populate started.
+	const snapshot = {
+		audio_title: settings.get( 'audio_title' ),
+		description: settings.get( 'description' ),
+	};
+
+	// Audio removed — clear the auto-filled fields (matches the block).
+	if ( ! id ) {
+		applyAudioSettingsIfUntouched( { audio_title: '', description: '' }, snapshot );
+		return;
+	}
+
+	const controlTitle = 'string' === typeof audioFile.title ? audioFile.title : '';
+	const token = ++audioFetchToken;
+
+	apiFetch( { path: '/wp/v2/media/' + encodeURIComponent( id ) + '?context=edit' } )
+		.then( ( media ) => {
+			if ( token !== audioFetchToken ) {
+				return; // A newer selection is in flight.
+			}
+			const title = media?.title?.raw ?? media?.title?.rendered ?? controlTitle;
+			const description = media?.description?.raw ?? stripHtml( media?.description?.rendered );
+			applyAudioSettingsIfUntouched( {
+				audio_title: title || controlTitle,
+				description: ( description || '' ).trim(),
+			}, snapshot );
+		} )
+		.catch( () => {
+			if ( token !== audioFetchToken ) {
+				return;
+			}
+			// Fall back to the title already on the control value.
+			applyAudioSettingsIfUntouched( { audio_title: controlTitle }, snapshot );
+		} );
+}
+
+/**
+ * Change handler for the audio widget. The godam-media control emits sub-key
+ * changes (`change:audio-file.id` / `.url` / `.title`), so inspect model.changed
+ * and react to any `audio-file*` key.
+ *
+ * @param {Object} changedModel Backbone model that changed.
+ */
+function onAudioSettingsChange( changedModel ) {
+	const changed = changedModel?.changed || {};
+	const keys = Object.keys( changed );
+	if ( keys.some( ( key ) => key === 'audio-file' || key.indexOf( 'audio-file' ) === 0 ) ) {
+		populateAudioMeta();
+	}
+}
+
+/**
+ * Track the currently-edited godam-audio widget and wire the change listener.
+ *
+ * @param {Object} model Backbone model of the widget element.
+ * @param {Object} view  Editor view (used to resolve the $e.run container).
+ */
+function hydrateAudioWidget( model, view ) {
+	const settings = model?.get?.( 'settings' );
+	if ( ! settings ) {
+		return;
+	}
+
+	if ( activeAudioSettings && activeAudioSettings !== settings ) {
+		activeAudioSettings.off( 'change', onAudioSettingsChange );
+	}
+
+	activeAudioSettings = settings;
+	activeAudioContainer = view?.getContainer?.() || view?.container || null;
+
+	settings.off( 'change', onAudioSettingsChange );
+	settings.on( 'change', onAudioSettingsChange );
 }

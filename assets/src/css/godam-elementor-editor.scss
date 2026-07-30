@@ -16,8 +16,12 @@
 
 		.select2-results__options {
 
+			// Use the theme TEXT token, not a background token — SELECT2 dropdowns
+			// are appended to <body>, so this top-level rule is the one that
+			// actually applies. `--e-a-bg-default` here rendered options dark-on-dark
+			// (unreadable) in the GoDAM widget product/folder pickers.
 			.select2-results__option {
-				color: var(--e-a-bg-default, #565656);
+				color: var(--e-a-color-txt, #1e1e1e);
 			}
 		}
 	}

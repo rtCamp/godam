@@ -290,11 +290,23 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
+	// Media-type gate: `'*'` (video) allows every layer type; a restricted media
+	// type (e.g. a future image editor with `[ 'hotspot' ]`) narrows the add menu
+	// and the rendered list.
+	const allowedLayerTypes = useSelector( ( state ) => state.videoReducer.allowedLayerTypes );
+	const isLayerTypeAllowed = useCallback(
+		( type ) => allowedLayerTypes === '*' || ! Array.isArray( allowedLayerTypes ) || allowedLayerTypes.includes( type ),
+		[ allowedLayerTypes ],
+	);
+	// Timeline-based media (video) gate the add flow on a playhead position;
+	// images have no timeline, so layers are added freely and land at 0:00.
+	const mediaType = useSelector( ( state ) => state.videoReducer.mediaType );
+	const isTimelineMedia = mediaType !== 'image';
 	const adServer = videoConfig?.adServer ?? 'self-hosted';
 
-	// Sort the array (ascending order), excluding layers with unknown types.
+	// Sort the array (ascending order), excluding unknown and disallowed types.
 	const sortedLayers = [ ...layers ]
-		.filter( ( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ) )
+		.filter( ( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ) && isLayerTypeAllowed( layer.type ) )
 		.sort( ( a, b ) => a.displayTime - b.displayTime );
 
 	const addNewLayer = ( type, formType ) => {
@@ -340,16 +352,18 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						duration: 5,
 						pauseOnHover: false,
 						hotspots: [],
-						// Shared style for all hotspot points (new model). The
-						// presence of `styleType` marks a layer as using the
-						// shared style; legacy layers without it fall back to
-						// per-hotspot style on the player.
+						// `styleType` marks the layer as using the shared-style
+						// model (and keeps the legacy-migration effect from running
+						// on this fresh layer). Colours are intentionally NOT seeded
+						// here: the Style pickers and resolveHotspotStyle supply the
+						// conditional defaults (pulse / library-icon background
+						// #0c80dfa6, library glyph #fff, custom-icon background #fff).
+						// Hardcoding them overrode those defaults — e.g. a seeded
+						// blue `iconColor` made the glyph render blue, not white.
 						styleType: 'pulse',
-						pulseColor: '#0c80dfa6',
 						icon: '',
 						customIconUrl: null,
 						customIconId: null,
-						iconColor: '#0c80dfa6',
 						isNew: true,
 					} ),
 				);
@@ -431,7 +445,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	};
 
 	const hasLayerAtCurrentTime = Boolean( layers.find( ( l ) => l.displayTime === currentTime ) );
-	const isAddDisabled = ! currentTime || hasLayerAtCurrentTime;
+	const isAddDisabled = isTimelineMedia && ( ! currentTime || hasLayerAtCurrentTime );
 
 	// Colored layer-type icons (from design) used in the list rows + add menu.
 	const layerTypeIcons = {
@@ -516,7 +530,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				} );
 			} );
 
-		return options;
+		// Restrict to the layer types the current media type allows.
+		return options.filter( ( opt ) => isLayerTypeAllowed( opt.key ) );
 	};
 	const addOptions = buildAddOptions();
 
@@ -611,7 +626,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					) }
 				/>
 
-				{ ! currentTime && ! hasLayerAtCurrentTime && (
+				{ isTimelineMedia && ! currentTime && ! hasLayerAtCurrentTime && (
 					<p className="godam-ve-layers__hint">
 						<Icon icon={ info } size={ 24 } />
 						{ __( 'To add a layer, pick a spot on the timeline where you want the layer.', 'godam' ) }
@@ -700,7 +715,10 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 													) }
 												</span>
 												<span className="godam-ve-layer-row__meta">
-													{ layerText } • { formatTime( layer.displayTime ) }
+													{ /* Images have no timeline — every layer renders at 0:00, so drop the timestamp. */ }
+													{ isTimelineMedia
+														? `${ layerText } • ${ formatTime( layer.displayTime ) }`
+														: layerText }
 												</span>
 											</span>
 										</Button>

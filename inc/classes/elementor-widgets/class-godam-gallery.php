@@ -299,6 +299,7 @@ class Godam_Gallery extends Base {
 				'default' => 'grid',
 				'options' => array(
 					'grid'     => esc_html__( 'Grid', 'godam' ),
+					'list'     => esc_html__( 'List', 'godam' ),
 					'carousel' => esc_html__( 'Carousel', 'godam' ),
 				),
 			)
@@ -340,6 +341,33 @@ class Godam_Gallery extends Base {
 				'label'   => esc_html__( 'Show Video Titles and Dates', 'godam' ),
 				'type'    => Controls_Manager::SWITCHER,
 				'default' => 'yes',
+			)
+		);
+
+		$this->add_control(
+			'interaction',
+			array(
+				'label'       => esc_html__( 'Interaction', 'godam' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'hover',
+				'options'     => array(
+					'hover'    => esc_html__( 'Play on hover', 'godam' ),
+					'autoplay' => esc_html__( 'Autoplay all videos', 'godam' ),
+				),
+				'description' => esc_html__( 'Play on hover: videos play when hovered. Autoplay: visible videos autoplay one at a time.', 'godam' ),
+			)
+		);
+
+		$this->add_control(
+			'show_play_button',
+			array(
+				'label'        => esc_html__( 'Show Play Button', 'godam' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => 'yes',
+				// Be explicit about the stored value rather than relying on the
+				// implicit Elementor default, so render() reads a stable 'yes'/''.
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'Show the play button overlay on each tile.', 'godam' ),
 			)
 		);
 
@@ -401,7 +429,11 @@ class Godam_Gallery extends Base {
 		$view_ratio       = $this->get_settings_for_display( 'view_ratio' );
 		$show_title       = 'yes' === $this->get_settings_for_display( 'show_title' );
 		$performance_mode = $this->get_settings_for_display( 'performance_mode' );
-		$engagements      = rtgodam_is_engagement_feature_enabled()
+		$show_play_button = 'yes' === $this->get_settings_for_display( 'show_play_button' );
+		// 'autoplay' or 'hover'; the shortcode maps this to the block's
+		// mutually-exclusive autoplay / playOnHover booleans.
+		$interaction = 'autoplay' === $this->get_settings_for_display( 'interaction' ) ? 'autoplay' : 'hover';
+		$engagements = rtgodam_is_engagement_feature_enabled()
 			&& 'yes' === $this->get_settings_for_display( 'engagements' );
 
 		// Attributes shared by both modes.
@@ -411,6 +443,8 @@ class Godam_Gallery extends Base {
 			'item_width'       => $item_width,
 			'view_ratio'       => $view_ratio,
 			'show_title'       => $show_title ? 'true' : 'false',
+			'interaction'      => $interaction,
+			'show_play_button' => $show_play_button ? 'true' : 'false',
 			'performance_mode' => $performance_mode,
 			'engagements'      => $engagements ? 'true' : 'false',
 		);
@@ -426,6 +460,16 @@ class Godam_Gallery extends Base {
 						$ids[] = $row_id;
 					}
 				}
+			}
+
+			// No videos picked yet: show the editor placeholder (mirrors the
+			// block's empty state) instead of an empty widget box. On the front
+			// end this returns before the shortcode runs, so no gallery markup is
+			// emitted (the shortcode would otherwise output an empty
+			// `.godam-gallery-v2__item-list` wrapper).
+			if ( empty( $ids ) ) {
+				$this->render_empty_state();
+				return;
 			}
 
 			$shortcode_atts['ids'] = implode( ',', $ids );
@@ -464,5 +508,46 @@ class Godam_Gallery extends Base {
 		}
 
 		echo do_shortcode( '[godam_video_gallery' . $shortcode_atts_string . ']' );
+	}
+
+	/**
+	 * Editor-only empty-state placeholder for handpicked mode with no videos.
+	 *
+	 * Mirrors the Gutenberg block's empty state (faux tiles + prompt) so the
+	 * widget reads clearly in the editor instead of showing a bare, confusing
+	 * box. Styling is enqueued into the preview iframe (see
+	 * Elementor_Widgets::enqueue_preview_styles / godam-elementor-preview.scss).
+	 * Nothing renders on the front end.
+	 *
+	 * @access protected
+	 * @return void
+	 */
+	protected function render_empty_state() {
+		if ( ! class_exists( '\Elementor\Plugin' ) ) {
+			return;
+		}
+
+		$plugin        = \Elementor\Plugin::$instance;
+		$is_editing    = isset( $plugin->editor ) && $plugin->editor->is_edit_mode();
+		$is_previewing = isset( $plugin->preview ) && $plugin->preview->is_preview_mode();
+		if ( ! $is_editing && ! $is_previewing ) {
+			return;
+		}
+
+		?>
+		<div class="godam-gallery-elementor-empty" data-test-id="godam-gallery-elementor-empty">
+			<div class="godam-gallery-elementor-empty__tiles" aria-hidden="true">
+				<?php for ( $i = 0; $i < 4; $i++ ) : ?>
+					<span class="godam-gallery-elementor-empty__tile"></span>
+				<?php endfor; ?>
+			</div>
+			<h3 class="godam-gallery-elementor-empty__title">
+				<?php esc_html_e( 'Create your media gallery', 'godam' ); ?>
+			</h3>
+			<p class="godam-gallery-elementor-empty__desc">
+				<?php esc_html_e( 'Add videos under "Videos" in the Gallery Settings panel to build your gallery.', 'godam' ); ?>
+			</p>
+		</div>
+		<?php
 	}
 }

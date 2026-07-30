@@ -8,6 +8,11 @@ import videojs from 'video.js';
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import { setupFullscreenReparenting } from '../utils/fullscreenReparent.js';
+
 // Minimum container width (px) at which the Bubble skin routes the button into
 // the control bar instead of overlaying it — matches ShareManager.
 const MIN_BUBBLE_WIDTH = 480;
@@ -17,6 +22,9 @@ const COPY_ICON_SVG = `<svg class="godam-transcript-panel__copy-icon" viewBox="0
 
 // WordPress "check" icon, shown briefly after a successful copy.
 const CHECK_ICON_SVG = `<svg class="godam-transcript-panel__copy-icon" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z" fill="currentColor"/></svg>`;
+
+// WordPress "close" icon (matches @wordpress/icons `close`).
+const CLOSE_ICON_SVG = `<svg class="godam-transcript-panel__close-icon" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" fill="currentColor"/></svg>`;
 
 // Transcript button icon (a document with text lines).
 const TRANSCRIPT_ICON_SVG = `<svg class="godam-transcript-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -30,6 +38,9 @@ const PANEL_CLASS = 'godam-transcript-panel';
 const CUE_CLASS = 'godam-transcript-cue';
 // Added to the video wrapper so the video + panel share the block width.
 const OPEN_CLASS = 'godam-transcript-open';
+// Added to the wrapper while a panel is present so its overflow/shadow can be
+// clipped without relying on `:has()` (unsupported in some browsers).
+const HAS_PANEL_CLASS = 'godam-has-transcript-panel';
 const ACTIVE_CUE_CLASS = 'godam-transcript-cue--active';
 
 // Copy feedback duration in ms.
@@ -64,6 +75,7 @@ export default class TranscriptPanelManager {
 		this.container = null;
 		this.wrapper = null;
 		this.button = null;
+		this.buttonInControlBar = false;
 		this.panel = null;
 		this.bodyEl = null;
 		this.cues = [];
@@ -73,7 +85,6 @@ export default class TranscriptPanelManager {
 		this.isOpen = false;
 
 		this.handleTimeUpdate = this.handleTimeUpdate.bind( this );
-		this.syncPanelHeight = this.syncPanelHeight.bind( this );
 
 		this.init();
 	}
@@ -96,8 +107,9 @@ export default class TranscriptPanelManager {
 		if ( ! this.container ) {
 			return;
 		}
-		// The panel is a flex sibling of the video container so the two can
-		// share the block's width; the wrapper is the flex parent we toggle.
+		// The panel overlays the video (absolutely positioned inside the
+		// wrapper) so the video keeps its full width when the transcript opens;
+		// the wrapper is the positioned parent and the element we toggle.
 		this.wrapper = this.container.closest( '.godam-video-wrapper' ) || this.container.parentElement;
 
 		// Resolve the transcript and only render the UI once we know cues exist.
@@ -236,29 +248,9 @@ export default class TranscriptPanelManager {
 		this.registerButtonComponent();
 		this.addToggleButton();
 		this.createPanel();
+		this.setupFullscreenReparenting();
 		this.player.on( 'timeupdate', this.handleTimeUpdate );
-		// Re-match the panel height to the video when the player is resized
-		// (e.g. window resize, fullscreen, responsive breakpoints).
-		this.player.on( 'playerresize', this.syncPanelHeight );
-		window.addEventListener( 'resize', this.syncPanelHeight );
 		this.player.one( 'dispose', () => this.destroy() );
-	}
-
-	/**
-	 * Match the panel's height to the video when they sit side by side, so the
-	 * panel scrolls internally instead of stretching the video. When stacked
-	 * (narrow container) the inline height is cleared and CSS drives the size.
-	 */
-	syncPanelHeight() {
-		if ( ! this.isOpen || ! this.panel || ! this.container ) {
-			return;
-		}
-		const containerRect = this.container.getBoundingClientRect();
-		const panelRect = this.panel.getBoundingClientRect();
-		// Side by side when the panel starts at (roughly) the container's right edge.
-		const sideBySide = panelRect.left >= containerRect.right - 2;
-
-		this.panel.style.height = sideBySide ? `${ Math.round( containerRect.height ) }px` : '';
 	}
 
 	/**
@@ -315,6 +307,7 @@ export default class TranscriptPanelManager {
 		if ( this.shouldAddToControlBar() ) {
 			const child = this.player.controlBar.addChild( 'GodamTranscriptButton', {} );
 			this.button = child.el();
+			this.buttonInControlBar = true;
 			return;
 		}
 
@@ -324,6 +317,7 @@ export default class TranscriptPanelManager {
 		element.addEventListener( 'click', instance.handleClick.bind( instance ) );
 		this.container.appendChild( element );
 		this.button = element;
+		this.buttonInControlBar = false;
 	}
 
 	/**
@@ -372,7 +366,7 @@ export default class TranscriptPanelManager {
 		closeButton.setAttribute( 'aria-label', __( 'Close transcript', 'godam' ) );
 		closeButton.setAttribute( 'data-test-id', 'godam-video-transcript-close' );
 		closeButton.title = __( 'Close transcript', 'godam' );
-		closeButton.innerHTML = '&times;';
+		closeButton.innerHTML = CLOSE_ICON_SVG;
 		closeButton.addEventListener( 'click', () => this.close() );
 
 		actions.appendChild( copyButton );
@@ -409,10 +403,42 @@ export default class TranscriptPanelManager {
 		panel.appendChild( header );
 		panel.appendChild( body );
 
-		// Append beside the video container (flex sibling) so they share width.
+		// Append inside the wrapper as an overlay so it sits above the video
+		// without taking layout space (the video keeps its full width).
 		this.wrapper.appendChild( panel );
+		// Flag the wrapper so its overflow/shadow clip can be scoped with a plain
+		// class selector instead of `:has()` (which some browsers lack).
+		this.wrapper.classList.add( HAS_PANEL_CLASS );
 		this.panel = panel;
 		this.bodyEl = body;
+	}
+
+	/**
+	 * Keep the button and panel visible in fullscreen.
+	 *
+	 * Video.js requests fullscreen on the player element (`.video-js`), and only
+	 * that element's subtree renders in the fullscreen top layer. The overlay
+	 * button lives in `.easydam-video-container` and the panel in the wrapper —
+	 * both ancestors of `.video-js` — so they vanish in fullscreen unless moved
+	 * inside it. Reparent on enter and restore on exit (the same approach the
+	 * layer managers use). Listens to the native `fullscreenchange` and the
+	 * iOS custom `customfullscreenchange` events; the `.vjs-fullscreen` class on
+	 * the player element is set for both.
+	 */
+	setupFullscreenReparenting() {
+		// The panel restores into the wrapper; the overlay button into the
+		// container. The control-bar button (Bubble skin) is already inside
+		// `.video-js`, so it is skipped by returning null from its getter.
+		setupFullscreenReparenting( {
+			player: this.player,
+			getElement: () => this.panel,
+			getRestoreParent: () => this.wrapper,
+		} );
+		setupFullscreenReparenting( {
+			player: this.player,
+			getElement: () => ( this.buttonInControlBar ? null : this.button ),
+			getRestoreParent: () => this.container,
+		} );
 	}
 
 	/**
@@ -437,8 +463,7 @@ export default class TranscriptPanelManager {
 		this.wrapper.classList.add( OPEN_CLASS );
 		this.button?.setAttribute( 'aria-expanded', 'true' );
 		this.button?.classList.add( `${ BUTTON_CLASS }--active` );
-		// Match the panel height to the video and sync the active-cue highlight.
-		this.syncPanelHeight();
+		// Sync the active-cue highlight to the current playhead.
 		this.handleTimeUpdate();
 	}
 
@@ -537,9 +562,10 @@ export default class TranscriptPanelManager {
 	destroy() {
 		clearTimeout( this.copyResetTimeout );
 		this.player.off( 'timeupdate', this.handleTimeUpdate );
-		this.player.off( 'playerresize', this.syncPanelHeight );
-		window.removeEventListener( 'resize', this.syncPanelHeight );
+		// Fullscreen listeners are removed by the reparenting helper on player
+		// `dispose`; nothing to detach here.
 		this.wrapper?.classList.remove( OPEN_CLASS );
+		this.wrapper?.classList.remove( HAS_PANEL_CLASS );
 		this.container?.classList.remove( 'godam-has-transcript' );
 		this.button?.remove();
 		this.panel?.remove();

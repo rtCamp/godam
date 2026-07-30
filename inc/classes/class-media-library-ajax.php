@@ -108,6 +108,29 @@ class Media_Library_Ajax {
 		// Round video duration to integer seconds.
 		$video_duration = is_numeric( $video_duration ) ? (int) round( $video_duration ) : 0;
 
+		// Normalize chapters (mainly for audio). GoDAM Central stores them as a
+		// JSON string, but tolerate an already-decoded array/object too. Each
+		// chapter is reduced to the fields the audio block and its render
+		// template consume (`startTime`/`text`), keeping `id`/`originalTime`
+		// so the customization editor can round-trip them.
+		$chapters = array();
+		if ( ! empty( $item['chapters'] ) ) {
+			$raw_chapters = $item['chapters'];
+			if ( is_string( $raw_chapters ) ) {
+				$decoded      = json_decode( $raw_chapters, true );
+				$raw_chapters = is_array( $decoded ) ? $decoded : array();
+			}
+			foreach ( (array) $raw_chapters as $chapter ) {
+				$chapter    = (array) $chapter;
+				$chapters[] = array(
+					'id'           => isset( $chapter['id'] ) ? (string) $chapter['id'] : '',
+					'text'         => isset( $chapter['text'] ) ? (string) $chapter['text'] : '',
+					'originalTime' => isset( $chapter['originalTime'] ) ? (string) $chapter['originalTime'] : '',
+					'startTime'    => isset( $chapter['startTime'] ) ? (string) $chapter['startTime'] : '0',
+				);
+			}
+		}
+
 		$result = array(
 			'id'                    => $item['name'],
 			'title'                 => $title,
@@ -132,6 +155,7 @@ class Media_Library_Ajax {
 			'video_duration'        => $video_duration ?? 0,
 			'width'                 => $item['width'] ?? 0,
 			'height'                => $item['height'] ?? 0,
+			'chapters'              => $chapters,
 		);
 
 		// Set icon with fallback to default mime type icon for audio and PDF.

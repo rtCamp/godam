@@ -1,0 +1,148 @@
+/**
+ * GoDAM Image block — editor-only styles (empty state placeholder).
+ *
+ * Mirrors the GoDAM Video block's "Add Video Here" placeholder so the two
+ * blocks share the same authoring UI (see godam-player/editor.scss).
+ */
+.godam-image-add-placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 16px;
+	padding: 24px;
+	background-color: #f2f2ff;
+	border: 2px dashed #5a13d51a;
+	border-radius: 6px;
+
+	&__preview {
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		background-color: #fff;
+		border-radius: 4px;
+		box-shadow: 0 6px 6px 0 #94a3b81f;
+	}
+
+	&__title {
+		margin: 0;
+		font-size: 18px;
+		font-weight: 500;
+		color: #111;
+		line-height: 1.33;
+	}
+
+	&__description {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.38;
+		color: #646970;
+		max-width: 400px;
+	}
+
+	&__btn.components-button.is-primary {
+		border-radius: 2px;
+		background-color: var(--wp-admin-theme-color, #3858e9);
+		border-color: var(--wp-admin-theme-color, #3858e9);
+
+		&:hover:not(:disabled) {
+			background-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+			border-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+		}
+	}
+}
+
+/**
+ * Inspector "Image Selection" panel — mirrors the GoDAM Video block's
+ * "Video Selection" panel (see godam-player/editor.scss).
+ */
+.godam-image-selection {
+
+	&__description {
+		font-size: 12px;
+		color: #646970;
+		margin: 0 0 16px;
+		line-height: 1.33;
+	}
+
+	&__add-btn.components-button,
+	&__customize-btn.components-button {
+		width: 100%;
+		justify-content: center;
+		border-radius: 2px;
+		padding: 8px;
+		font-size: 13px;
+		line-height: 1.15;
+		font-weight: 500;
+	}
+
+	&__add-btn.components-button {
+		border: 1px solid var(--wp-admin-theme-color, #3858e9);
+		color: var(--wp-admin-theme-color, #3858e9);
+		background: transparent;
+
+		&:hover:not(:disabled) {
+			background: color-mix(in srgb, var(--wp-admin-theme-color, #3858e9) 5%, transparent);
+			border-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+			color: var(--wp-admin-theme-color-darker-10, #2145e6);
+		}
+	}
+
+	&__customize-btn.components-button {
+		margin-bottom: 10px;
+		background-color: var(--wp-admin-theme-color, #3858e9);
+		border-color: var(--wp-admin-theme-color, #3858e9);
+		color: #fff;
+
+		&:hover:not(:disabled) {
+			background-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+			border-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+			color: #fff;
+		}
+	}
+
+	&__item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+	}
+
+	&__item-thumbnail {
+		width: 40px;
+		height: 40px !important; // To override default height: auto css.
+		object-fit: cover;
+		border-radius: 2px;
+
+		&--placeholder {
+			background: #ddd;
+			display: block;
+		}
+	}
+
+	&__item-title {
+		flex: 1;
+		font-size: 13px;
+		line-height: 1.15;
+		font-weight: 400;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: #061014;
+	}
+
+	&__item-delete.components-button {
+		color: #061014;
+		padding: 0;
+		min-width: unset;
+
+		&:hover {
+			color: #cc1818;
+		}
+	}
+
+	&__toggle {
+		margin-top: 16px;
+	}
+}

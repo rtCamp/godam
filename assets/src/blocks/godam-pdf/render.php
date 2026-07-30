@@ -51,10 +51,40 @@ if ( empty( $godam_sources ) ) {
 	return;
 }
 
+/*
+ * PDF is the only supported format. Rendering a non-PDF would emit an
+ * <object type="application/pdf"> pointing at a file the browser cannot display,
+ * which either paints an empty box (the <object> fallback is suppressed, so the
+ * visitor sees nothing) or starts a file download on every page load. Emit
+ * nothing instead; the editors surface an "unsupported format" notice so the
+ * author can see and fix it.
+ *
+ * Checked against the original attachment id / src rather than $godam_sources[0],
+ * because that may be a transcoded URL whose extension no longer reflects the
+ * source file. A numeric id resolves via its stored MIME type, so $godam_src is
+ * only consulted for GoDAM tab media and URL-only documents, exactly the cases
+ * where $godam_src is guaranteed set (see the source-building block above).
+ */
+if ( ! godam_is_supported_document( $godam_attachment_id, $godam_src ) ) {
+	return;
+}
+
 $godam_file_name = basename( $godam_sources[0] );
 
+// Root wrapper: in block context merge WordPress' block-support attributes
+// (align/spacing/etc.). The [godam_document] shortcode (used by the WPBakery
+// element) sets $godam_is_shortcode and runs outside a block, where
+// get_block_wrapper_attributes() would raise a warning, so it instead applies
+// any WPBakery Design Options CSS class passed in via $godam_css_class.
+if ( empty( $godam_is_shortcode ) ) {
+	$godam_wrapper_attributes = get_block_wrapper_attributes();
+} else {
+	$godam_shortcode_class    = trim( 'wp-block-godam-pdf ' . ( isset( $godam_css_class ) ? $godam_css_class : '' ) );
+	$godam_wrapper_attributes = 'class="' . esc_attr( $godam_shortcode_class ) . '"';
+}
+
 ?>
-<figure <?php echo wp_kses_data( get_block_wrapper_attributes() ); ?>>
+<figure <?php echo wp_kses_data( $godam_wrapper_attributes ); ?>>
 
 	<?php if ( 'card' === $godam_preview_mode ) : ?>
 
@@ -151,7 +181,7 @@ $godam_file_name = basename( $godam_sources[0] );
 			style="height: <?php echo esc_attr( $godam_height ); ?>px;"
 		>
 			<object
-				id="pdfObject"
+				id="<?php echo esc_attr( wp_unique_id( 'godam-pdf-object-' ) ); ?>"
 				type="application/pdf"
 				width="100%"
 				height="100%"
