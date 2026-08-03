@@ -92,6 +92,10 @@ function initializeMediaLibrarySidebar( frame ) {
 				menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
 				const div = document.createElement( 'div' );
 				div.id = 'rt-transcoder-media-library-root';
+				// Keep a per-frame reference to the wp.media frame on its own root,
+				// so the React sidebar can filter THIS frame's collection directly
+				// (via Backbone props) instead of poking shared grid-only DOM.
+				div._godamFrame = frame;
 				// Append into the menu's first element child (the .media-menu
 				// container). firstChild could be a whitespace text node, which
 				// cannot take children and would throw a HierarchyRequestError.
@@ -137,6 +141,10 @@ function initializeMediaLibrarySidebar( frame ) {
 			} );
 			const div = document.createElement( 'div' );
 			div.id = 'rt-transcoder-media-library-root';
+			// Keep a per-frame reference to the wp.media frame on its own root, so
+			// the React sidebar can filter THIS frame's collection directly (via
+			// Backbone props) instead of poking shared grid-only DOM.
+			div._godamFrame = frame;
 			menu.appendChild( div );
 			// Pass the exact root so the React app renders into THIS frame's sidebar
 			// instead of guessing which frame is active.
