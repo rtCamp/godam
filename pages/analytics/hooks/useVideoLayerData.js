@@ -12,10 +12,12 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import {
+	useFetchAnalyticsDataQuery,
 	useFetchProcessedLayerAnalyticsQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
 } from '../redux/api/analyticsApi';
 import { LAYER_TYPE_BY_ID, FORM_TYPE_LABELS } from '../constants/layerTypes';
+import { parseRetentionArray } from '../timeline/reach';
 
 /**
  * Parse layer_metadata which the microservice returns as a JSON string
@@ -210,7 +212,7 @@ function resolveLayerName( rawName, meta, timestamp, formType ) {
  *
  * @return {Array<{id:string,type:string,subIds?:string[]}>|null} Layer config or null.
  */
-function readActiveLayerConfig() {
+export function readActiveLayerConfig() {
 	if (
 		typeof window === 'undefined' ||
 		! window.godamAnalyticsConfig ||
@@ -227,12 +229,13 @@ function readActiveLayerConfig() {
  * @param {Array|null} config readActiveLayerConfig() result.
  * @return {{activeParentIds:Set<string>|null, activeSubIdsByParent:Map<string,Set<string>>}} Lookup helpers.
  */
-function indexActiveConfig( config ) {
+export function indexActiveConfig( config ) {
 	if ( ! config ) {
 		return {
 			activeParentIds: null,
 			activeSubIdsByParent: new Map(),
 			entriesUrlByParent: new Map(),
+			pollIdByParent: new Map(),
 		};
 	}
 	const activeParentIds = new Set();
@@ -241,6 +244,10 @@ function indexActiveConfig( config ) {
 	// PHP builds the URL (admin_url + the saved integration id); we just carry
 	// it through to the detail panel.
 	const entriesUrlByParent = new Map();
+	// parent layer id -> wp-polls poll id (poll layers only). The answer
+	// distribution lives in the wp-polls tables, so this id is the panel's only
+	// handle on it.
+	const pollIdByParent = new Map();
 	config.forEach( ( entry ) => {
 		if ( ! entry?.id ) {
 			return;
@@ -252,8 +259,11 @@ function indexActiveConfig( config ) {
 		if ( entry.entries_url ) {
 			entriesUrlByParent.set( entry.id, entry.entries_url );
 		}
+		if ( entry.pollId ) {
+			pollIdByParent.set( entry.id, Number( entry.pollId ) );
+		}
 	} );
-	return { activeParentIds, activeSubIdsByParent, entriesUrlByParent };
+	return { activeParentIds, activeSubIdsByParent, entriesUrlByParent, pollIdByParent };
 }
 
 /**
@@ -511,6 +521,7 @@ export function groupRows( rows, layerType, configIndex ) {
 			// wp-admin link to this form's entries / poll's results, when the
 			// integration has one (empty string otherwise → link hidden).
 			entries_url: configIndex.entriesUrlByParent?.get( parentId ) || '',
+			poll_id: configIndex.pollIdByParent?.get( parentId ) || null,
 		} );
 	} );
 
@@ -532,7 +543,7 @@ export function groupRows( rows, layerType, configIndex ) {
  * @param {string}        params.siteUrl   site_url query param.
  * @param {?string}       params.startDate ISO start date (null = All Time).
  * @param {?string}       params.endDate   ISO end date (null = All Time).
- * @return {Object} { parents, isLoading, errorType, errorMessage }.
+ * @return {Object} { parents, isLoading, errorType, errorMessage, videoConversion, retentionArray }.
  */
 export function useVideoLayerData( { videoId, siteUrl, startDate, endDate } ) {
 	// One RTK Query hook per layer type. React's rules-of-hooks forbid
@@ -568,6 +579,30 @@ export function useVideoLayerData( { videoId, siteUrl, startDate, endDate } ) {
 	const history = useFetchProcessedAnalyticsHistoryQuery(
 		{ startDate, endDate, videoId, siteUrl },
 		{ skip: ! videoId },
+	);
+
+	// Per-second retention for the SAME range as the layer data above, which is
+	// where Viewer Reach comes from (see timeline/reach.js). The microservice
+	// sums the per-day heatmaps server-side in range mode (godam-analytics #235),
+	// so this is the identical array the Viewer Retention Curve draws and the
+	// reach tile can never disagree with the chart on the same page.
+	//
+	// At All Time the date args are omitted, so RTK shares Analytics.js's
+	// all-time cache key and this costs no extra request; a bounded range forks
+	// into one request of its own per range change.
+	const rangedAnalytics = useFetchAnalyticsDataQuery(
+		{
+			videoId,
+			siteUrl,
+			...( startDate ? { startDate } : {} ),
+			...( endDate ? { endDate } : {} ),
+		},
+		{ skip: ! videoId },
+	);
+
+	const retentionArray = useMemo(
+		() => parseRetentionArray( rangedAnalytics.data?.all_time_heatmap ),
+		[ rangedAnalytics.data ],
 	);
 
 	const videoConversion = useMemo( () => {
@@ -673,5 +708,6 @@ export function useVideoLayerData( { videoId, siteUrl, startDate, endDate } ) {
 		errorType: allErrored ? firstErrorPayload?.errorType : null,
 		errorMessage: allErrored ? firstErrorPayload?.message : null,
 		videoConversion,
+		retentionArray,
 	};
 }
