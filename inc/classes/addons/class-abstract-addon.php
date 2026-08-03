@@ -92,7 +92,7 @@ abstract class Abstract_Addon {
 	 */
 	public function dependencies_met() {
 		foreach ( $this->get_dependencies() as $dep ) {
-			if ( is_callable( $dep['check'] ) && ! call_user_func( $dep['check'] ) ) {
+			if ( is_callable( $dep['check'] ) && ! $dep['check']() ) {
 				return false;
 			}
 		}
@@ -111,9 +111,19 @@ abstract class Abstract_Addon {
 		$messages = array();
 
 		foreach ( $this->get_dependencies() as $dep ) {
-			if ( is_callable( $dep['check'] ) && ! call_user_func( $dep['check'] ) ) {
-				$messages[] = is_callable( $dep['message'] ) ? call_user_func( $dep['message'] ) : $dep['message'];
+			if ( ! is_callable( $dep['check'] ) || $dep['check']() ) {
+				continue;
 			}
+
+			$message = $dep['message'] ?? '';
+
+			// A message string is never invoked, even when it happens to match a
+			// function name: only a closure or other non-string callable is.
+			if ( ! is_string( $message ) && is_callable( $message ) ) {
+				$message = $message();
+			}
+
+			$messages[] = (string) $message;
 		}
 
 		return $messages;

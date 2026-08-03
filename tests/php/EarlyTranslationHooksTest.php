@@ -36,14 +36,39 @@ class EarlyTranslationHooksTest extends TestCase {
 	}
 
 	/**
+	 * Pattern matching `add_action( '<hook>', … '<callback>' … )`, tolerating
+	 * whitespace, short array syntax and extra arguments, so that a harmless
+	 * reformat does not fail the guard.
+	 *
+	 * @param string $hook     Hook name.
+	 * @param string $callback Method name.
+	 *
+	 * @return string
+	 */
+	private function registration_pattern( $hook, $callback ) {
+		return '/add_action\(\s*[\'"]' . preg_quote( $hook, '/' ) . '[\'"][^)]*[\'"]' . preg_quote( $callback, '/' ) . '[\'"]/';
+	}
+
+	/**
+	 * Pattern matching any registration on the given hook, whatever the callback.
+	 *
+	 * @param string $hook Hook name.
+	 *
+	 * @return string
+	 */
+	private function hook_pattern( $hook ) {
+		return '/add_action\(\s*[\'"]' . preg_quote( $hook, '/' ) . '[\'"]/';
+	}
+
+	/**
 	 * The WPForms field translates its labels in the constructor, so it must not
 	 * be built on `wpforms_loaded` (which fires during `plugins_loaded`).
 	 */
 	public function test_wpforms_field_is_registered_on_init() {
 		$source = $this->source( 'inc/classes/wpforms/class-wpforms-integration.php' );
 
-		$this->assertStringNotContainsString( "add_action( 'wpforms_loaded'", $source );
-		$this->assertStringContainsString( "add_action( 'init', array( \$this, 'init_godam_video_field' ) )", $source );
+		$this->assertDoesNotMatchRegularExpression( $this->hook_pattern( 'wpforms_loaded' ), $source );
+		$this->assertMatchesRegularExpression( $this->registration_pattern( 'init', 'init_godam_video_field' ), $source );
 	}
 
 	/**
@@ -53,8 +78,8 @@ class EarlyTranslationHooksTest extends TestCase {
 	public function test_fluentforms_field_is_registered_on_init() {
 		$source = $this->source( 'inc/classes/fluentforms/class-init.php' );
 
-		$this->assertStringNotContainsString( "add_action( 'fluentform/loaded'", $source );
-		$this->assertStringContainsString( "add_action( 'init', array( \$this, 'on_fluentforms_loaded' ) )", $source );
+		$this->assertDoesNotMatchRegularExpression( $this->hook_pattern( 'fluentform/loaded' ), $source );
+		$this->assertMatchesRegularExpression( $this->registration_pattern( 'init', 'on_fluentforms_loaded' ), $source );
 	}
 
 	/**
@@ -64,8 +89,8 @@ class EarlyTranslationHooksTest extends TestCase {
 	public function test_addon_compatibility_warning_runs_on_admin_init() {
 		$source = $this->source( 'inc/classes/addons/class-addon-registry.php' );
 
-		$this->assertStringNotContainsString( '$this->warn_incompatible_addons();', $source );
-		$this->assertStringContainsString( "add_action( 'admin_init', array( \$this, 'warn_incompatible_addons' ) )", $source );
+		$this->assertDoesNotMatchRegularExpression( '/\$this->warn_incompatible_addons\(\s*\)\s*;/', $source );
+		$this->assertMatchesRegularExpression( $this->registration_pattern( 'admin_init', 'warn_incompatible_addons' ), $source );
 	}
 
 	/**
@@ -75,6 +100,9 @@ class EarlyTranslationHooksTest extends TestCase {
 	public function test_addon_boot_notices_are_deferred() {
 		$source = $this->source( 'inc/classes/addons/class-addon-registry.php' );
 
-		$this->assertStringContainsString( 'private function show_admin_notice( callable $message_callback )', $source );
+		$this->assertMatchesRegularExpression(
+			'/function\s+show_admin_notice\(\s*callable\s+\$\w+\s*\)/',
+			$source
+		);
 	}
 }

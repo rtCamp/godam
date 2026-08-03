@@ -307,10 +307,16 @@ class Addon_Registry {
 	 * @return void
 	 */
 	private function show_admin_notice( callable $message_callback ) {
+		// `boot_addons()` runs on every request type. Front-end, REST and cron
+		// requests never fire `admin_notices`, so don't queue a callback there.
+		if ( ! is_admin() ) {
+			return;
+		}
+
 		add_action(
 			'admin_notices',
 			static function () use ( $message_callback ) {
-				$message = $message_callback();
+				$message = (string) $message_callback();
 
 				if ( '' === $message ) {
 					return;

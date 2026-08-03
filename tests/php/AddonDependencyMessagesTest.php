@@ -119,6 +119,17 @@ class AddonDependencyMessagesTest extends TestCase {
 	}
 
 	/**
+	 * A message string is returned as-is even when a function of that name
+	 * exists, so `is_callable()` on a string can never turn a message into a
+	 * function call.
+	 */
+	public function test_string_message_matching_a_function_name_is_not_invoked() {
+		$addon = $this->make_addon( $this->dependency( false, 'phpversion' ) );
+
+		$this->assertSame( array( 'phpversion' ), $addon->get_missing_dependency_messages() );
+	}
+
+	/**
 	 * The dependency check itself must never build the message. This is the
 	 * actual #465 regression: `dependencies_met()` runs on every request, so a
 	 * message built there translates on every request.
