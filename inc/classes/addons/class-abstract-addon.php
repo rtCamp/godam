@@ -69,9 +69,17 @@ abstract class Abstract_Addon {
 	 * Each entry is an associative array:
 	 *   'name'      => (string) Human-readable dependency name.
 	 *   'check'     => (callable) Returns true when the dependency is satisfied.
-	 *   'message'   => (string) Admin notice text when the dependency is missing.
+	 *   'message'   => (string|callable) Admin notice text when the dependency is
+	 *                  missing, or a callback returning it.
 	 *
-	 * @return array<int, array{name: string, check: callable, message: string}>
+	 * This runs during `plugins_loaded`, before any text domain is loaded, so an
+	 * add-on must NOT translate here: pass a callback as 'message' and translate
+	 * inside it. Translating directly makes WordPress 6.7+ report
+	 * `_load_textdomain_just_in_time was called incorrectly` on every request.
+	 *
+	 * @see https://github.com/rtCamp/godam/issues/465
+	 *
+	 * @return array<int, array{name: string, check: callable, message: string|callable}>
 	 */
 	public function get_dependencies() {
 		return array();
@@ -94,6 +102,9 @@ abstract class Abstract_Addon {
 	/**
 	 * Get missing dependency messages.
 	 *
+	 * A 'message' may be a callback so the add-on can translate it here, when the
+	 * notice is rendered, instead of during `plugins_loaded`.
+	 *
 	 * @return string[]
 	 */
 	public function get_missing_dependency_messages() {
@@ -101,7 +112,7 @@ abstract class Abstract_Addon {
 
 		foreach ( $this->get_dependencies() as $dep ) {
 			if ( is_callable( $dep['check'] ) && ! call_user_func( $dep['check'] ) ) {
-				$messages[] = $dep['message'];
+				$messages[] = is_callable( $dep['message'] ) ? call_user_func( $dep['message'] ) : $dep['message'];
 			}
 		}
 
