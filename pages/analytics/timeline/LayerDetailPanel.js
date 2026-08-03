@@ -267,7 +267,7 @@ const LayerDetailPanel = ( {
 				<div className="grid gap-4 px-6 pt-5 grid-cols-1 md:grid-cols-[minmax(200px,260px)_minmax(0,1fr)] md:items-center">
 					<LayerReachDonut
 						reach={ kpis.donut.reach }
-						arcAction={ kpis.donut.arcAction }
+						arcLabel={ kpis.donut.arcLabel }
 						arcValue={ kpis.donut.arcValue }
 						arcShare={ kpis.donut.arcShare }
 						delta={ reachDelta }

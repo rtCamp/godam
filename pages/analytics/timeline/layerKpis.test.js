@@ -39,6 +39,14 @@ describe( 'LAYER_KPI_SPEC', () => {
 		} );
 	} );
 
+	it( 'gives every donut arc a display label', () => {
+		Object.keys( LAYER_KPI_SPEC ).forEach( ( id ) => {
+			const kpis = buildLayerKpis( { layerType: id, counts: { viewed: 10 } } );
+			expect( kpis.donut.arcLabel ).toBeTruthy();
+			expect( kpis.donut.arcLabel ).not.toBe( kpis.donut.arcAction );
+		} );
+	} );
+
 	it( 'only fills the donut arc with an action the type\'s funnel tracks', () => {
 		Object.entries( LAYER_KPI_SPEC ).forEach( ( [ id, spec ] ) => {
 			const funnel = LAYER_TYPES.find( ( t ) => t.id === id ).funnel;
@@ -103,6 +111,7 @@ describe( 'buildLayerKpis', () => {
 
 		expect( kpis.donut.reach ).toBe( 60 );
 		expect( kpis.donut.arcAction ).toBe( 'clicked' );
+		expect( kpis.donut.arcLabel ).toBe( 'Clicked' );
 		expect( kpis.donut.arcValue ).toBe( 50 );
 		expect( kpis.donut.arcShare ).toBe( 25 );
 	} );
@@ -126,9 +135,12 @@ describe( 'buildLayerKpis', () => {
 		expect(
 			byId[ 'submission-rate' ] + byId[ 'abandon-rate' ] + byId[ 'skip-rate' ],
 		).toBe( 100 );
-		// The Form donut ring is the abandoned share, per the Figma tooltip.
+		// The Form donut ring is the abandoned share, per the Figma tooltip, and
+		// it says "Abandoned" rather than the generic "No Action" so the ring and
+		// the Abandon Rate tile use one word for one thing.
 		expect( kpis.donut.arcAction ).toBe( 'no_action' );
 		expect( kpis.donut.arcValue ).toBe( 60 );
+		expect( kpis.donut.arcLabel ).toBe( 'Abandoned' );
 	} );
 
 	it( 'reports unknown reach as null so the donut can hide instead of showing 0', () => {

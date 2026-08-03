@@ -11,7 +11,6 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { actionLabel } from '../constants/layerTypes';
 import InfoTooltip from './InfoTooltip';
 import TrendBadge from './TrendBadge';
 
@@ -40,7 +39,7 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
  *
  * @param {Object}      props
  * @param {number|null} props.reach      Viewers at the layer's second, or null.
- * @param {string}      props.arcAction  Action filling the ring, e.g. 'clicked'.
+ * @param {string}      props.arcLabel   Display label for the ring's action.
  * @param {number}      props.arcValue   That action's count.
  * @param {number|null} props.arcShare   That action as a percentage of impressions.
  * @param {number|null} [props.delta]    Reach change vs the previous equal window.
@@ -49,7 +48,7 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
  */
 const LayerReachDonut = ( {
 	reach,
-	arcAction,
+	arcLabel,
 	arcValue,
 	arcShare,
 	delta = null,
@@ -81,7 +80,7 @@ const LayerReachDonut = ( {
 						/* translators: 1: viewer reach count, 2: action label, 3: action count. */
 						__( 'Viewer reach %1$s, %2$s %3$s', 'godam' ),
 						Number( reach ).toLocaleString(),
-						actionLabel( arcAction ),
+						arcLabel,
 						Number( arcValue || 0 ).toLocaleString(),
 					) }
 				>
@@ -140,7 +139,7 @@ const LayerReachDonut = ( {
 						background: 'var(--wp-admin-theme-color, #ab3a6c)',
 					} }
 				/>
-				<span>{ actionLabel( arcAction ) }</span>
+				<span>{ arcLabel }</span>
 				<span className="font-medium text-zinc-900 tabular-nums">
 					{ Number( arcValue || 0 ).toLocaleString() }
 				</span>

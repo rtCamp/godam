@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { actionLabel } from '../constants/layerTypes';
 import { reachAt, reachRateAt } from './reach';
 
 /**
@@ -50,6 +51,7 @@ const REACH_RATE_TOOLTIP = __(
  * KPI descriptor per layer type.
  *
  * - `donutArc` — which action fills the ring around the Viewer Reach centre.
+ * - `donutArcLabel` — optional override for that action's display label.
  * - `primary` — the wide tile, the one that carries a trend badge.
  * - `secondary` — the two tiles below it.
  *
@@ -88,6 +90,10 @@ export const LAYER_KPI_SPEC = {
 	},
 	form: {
 		donutArc: 'no_action',
+		// The generic action label for this bucket is "No Action", but on a form
+		// the panel already calls it Abandon Rate, so the ring says the same
+		// thing (and matches the Figma segment label).
+		donutArcLabel: __( 'Abandoned', 'godam' ),
 		primary: {
 			id: 'submission-rate',
 			kind: 'rate',
@@ -311,6 +317,7 @@ export function buildLayerKpis( {
 			// than drawing an empty ring that reads as zero viewers.
 			reach,
 			arcAction: spec.donutArc,
+			arcLabel: spec.donutArcLabel || actionLabel( spec.donutArc ),
 			arcValue,
 			// The ring is the arc action as a share of impressions, which keeps
 			// it in one unit. Reach is the centre label, not the denominator:

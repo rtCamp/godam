@@ -6,7 +6,7 @@ import React from 'react';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -122,7 +122,11 @@ const PollAnswerDistribution = ( { answers, totalVotes = 0, isLoading = false } 
 
 			<p className="text-[11px] text-zinc-400 m-0 mt-1.5">
 				{ __( 'Poll-wide totals from WP Polls, all videos and all dates.', 'godam' ) }
-				{ totalVotes > 0 && ` ${ totalVotes.toLocaleString() } ${ __( 'votes', 'godam' ) }.` }
+				{ totalVotes > 0 && ` ${ sprintf(
+					/* translators: %s: formatted total number of votes. */
+					_n( '%s vote.', '%s votes.', totalVotes, 'godam' ),
+					totalVotes.toLocaleString(),
+				) }` }
 			</p>
 		</div>
 	);

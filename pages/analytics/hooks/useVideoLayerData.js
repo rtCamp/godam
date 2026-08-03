@@ -581,6 +581,13 @@ export function useVideoLayerData( { videoId, siteUrl, startDate, endDate } ) {
 		{ skip: ! videoId },
 	);
 
+	const isLoading =
+		cta.isLoading || cta.isFetching ||
+		form.isLoading || form.isFetching ||
+		hotspot.isLoading || hotspot.isFetching ||
+		poll.isLoading || poll.isFetching ||
+		woo.isLoading || woo.isFetching;
+
 	// Per-second retention for the SAME range as the layer data above, which is
 	// where Viewer Reach comes from (see timeline/reach.js). The microservice
 	// sums the per-day heatmaps server-side in range mode (godam-analytics #235),
@@ -590,6 +597,16 @@ export function useVideoLayerData( { videoId, siteUrl, startDate, endDate } ) {
 	// At All Time the date args are omitted, so RTK shares Analytics.js's
 	// all-time cache key and this costs no extra request; a bounded range forks
 	// into one request of its own per range change.
+	//
+	// Deliberately queued BEHIND the layer reads rather than fired alongside
+	// them. Each of these REST calls occupies a PHP worker for the whole
+	// microservice round-trip, and this page already fires five layer reads plus
+	// history plus the all-time payload on mount. Adding a further concurrent
+	// request tips a small FPM pool (a stock Local install, or a modest shared
+	// host) into queueing, and then nothing on the page resolves at all.
+	//
+	// Nothing is lost by waiting: reach is only rendered inside the detail
+	// panel, which itself cannot appear until the layer reads have landed.
 	const rangedAnalytics = useFetchAnalyticsDataQuery(
 		{
 			videoId,
@@ -597,7 +614,7 @@ export function useVideoLayerData( { videoId, siteUrl, startDate, endDate } ) {
 			...( startDate ? { startDate } : {} ),
 			...( endDate ? { endDate } : {} ),
 		},
-		{ skip: ! videoId },
+		{ skip: ! videoId || isLoading },
 	);
 
 	const retentionArray = useMemo(
@@ -625,13 +642,6 @@ export function useVideoLayerData( { videoId, siteUrl, startDate, endDate } ) {
 			converting: totals.converting,
 		};
 	}, [ history.data ] );
-
-	const isLoading =
-		cta.isLoading || cta.isFetching ||
-		form.isLoading || form.isFetching ||
-		hotspot.isLoading || hotspot.isFetching ||
-		poll.isLoading || poll.isFetching ||
-		woo.isLoading || woo.isFetching;
 
 	// Soft errors come back as { errorType, message } from the proxy
 	// transformResponse. Per layer type — if all five are errored we
