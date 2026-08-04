@@ -247,8 +247,11 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'download_folder' ),
+					// Requires upload_files (Author+): generating a ZIP aggregates an entire
+					// folder's media into a downloadable archive, so Contributors (edit_posts
+					// only) must not be able to trigger it.
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return current_user_can( 'upload_files' );
 					},
 					'args'                => array(
 						'folder_id' => array(
@@ -1242,7 +1245,12 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_folder', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$result = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, 'media-folder-' . $term->slug . '.zip' );
+		// Append an unguessable token so the resulting file lives at an unpredictable
+		// URL. The ZIP is a world-readable static file under uploads/godam/ for 24h, so
+		// a predictable name (slug only) let anyone who knew the slug fetch it directly.
+		$zip_name = 'media-folder-' . $term->slug . '-' . wp_generate_password( 20, false ) . '.zip';
+
+		$result = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, $zip_name );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
