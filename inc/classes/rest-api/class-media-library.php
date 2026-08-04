@@ -676,6 +676,30 @@ class Media_Library extends Base {
 		$attachment_ids = $request->get_param( 'attachment_ids' );
 		$folder_term_id = $request->get_param( 'folder_term_id' );
 
+		// IDOR guard: this route is gated only by the broad `edit_posts` capability, which
+		// does NOT prove the caller may edit these specific objects. Before touching any
+		// terms — in either the assign or the remove-from-folder path — verify every ID is
+		// genuinely an attachment and that the current user can edit that object. Without
+		// this, a user could move (or strip folders from) media they do not own, and the
+		// remove path would act on raw IDs of arbitrary post types.
+		if ( empty( $attachment_ids ) || ! is_array( $attachment_ids ) ) {
+			return new \WP_Error( 'invalid_attachment', __( 'No attachment IDs provided.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		foreach ( $attachment_ids as $attachment_id ) {
+			if ( 'attachment' !== get_post_type( $attachment_id ) ) {
+				return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
+			}
+
+			if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
+				return new \WP_Error(
+					'rest_forbidden',
+					__( 'You are not allowed to modify one or more of these attachments.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+		}
+
 		// if folder id is 0, remove the folder from the attachments.
 		if ( 0 === $folder_term_id ) {
 			// Removing an attachment out of a locked folder mutates that folder's
