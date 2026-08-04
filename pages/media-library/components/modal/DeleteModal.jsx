@@ -50,10 +50,16 @@ const DeleteModal = () => {
 		setIsLoading( true );
 
 		try {
+			// `.unwrap()` is required: RTK Query mutations RESOLVE (do not throw) on
+			// HTTP 4xx/5xx, so without it a server rejection would fall through to the
+			// success path below — showing "deleted successfully" and dropping the
+			// folder from the tree even though it still exists on the server. unwrap()
+			// re-throws the error payload so failures reach the catch (matching how
+			// Rename/Create already handle their mutations).
 			if ( ! isMultiSelecting ) {
-				await deleteFolderMutation( selectedFolder.id );
+				await deleteFolderMutation( selectedFolder.id ).unwrap();
 			} else if ( multiSelectedFolderIds && multiSelectedFolderIds.length ) {
-				await bulkDeleteFoldersMutation( multiSelectedFolderIds );
+				await bulkDeleteFoldersMutation( multiSelectedFolderIds ).unwrap();
 			}
 
 			dispatch( deleteFolder() );
