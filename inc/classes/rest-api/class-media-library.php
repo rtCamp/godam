@@ -27,6 +27,80 @@ class Media_Library extends Base {
 	protected $rest_base = 'media-library';
 
 	/**
+	 * Setup hooks.
+	 *
+	 * Adds the base REST-route registration plus a server-side guard that enforces
+	 * folder "locked" state on the NATIVE wp/v2/media-folder term endpoints (rename,
+	 * delete, re-parent, create-under). Locking was previously enforced only in React,
+	 * so a direct REST call could still mutate a locked folder.
+	 *
+	 * @return void
+	 */
+	protected function setup_hooks() {
+		parent::setup_hooks();
+
+		add_filter( 'rest_pre_dispatch', array( $this, 'enforce_locked_media_folder' ), 10, 3 );
+	}
+
+	/**
+	 * Reject mutating REST requests against locked media-folder terms.
+	 *
+	 * Runs before dispatch on the native taxonomy routes:
+	 *   - POST/PUT/PATCH /wp/v2/media-folder/{id}  → rename / re-parent an existing folder
+	 *   - DELETE         /wp/v2/media-folder/{id}  → delete an existing folder
+	 *   - POST           /wp/v2/media-folder       → create a folder (blocked only when the
+	 *                                                target parent is locked, i.e. populating it)
+	 * Reads (GET) are always allowed — locking protects against modification, not viewing.
+	 *
+	 * @param mixed            $result  Pre-dispatch result (non-null short-circuits the request).
+	 * @param \WP_REST_Server  $server  Server instance (unused).
+	 * @param \WP_REST_Request $request The request being dispatched.
+	 * @return mixed Original $result, or a 403 WP_Error when the target folder is locked.
+	 */
+	public function enforce_locked_media_folder( $result, $server, $request ) {
+		// Let an already short-circuited result (e.g. another plugin's error) stand.
+		if ( null !== $result ) {
+			return $result;
+		}
+
+		// Only guard the native media-folder collection or a single term.
+		if ( ! preg_match( '#^/wp/v2/media-folder(?:/(\d+))?$#', $request->get_route(), $matches ) ) {
+			return $result;
+		}
+
+		// Only mutating verbs.
+		if ( ! in_array( $request->get_method(), array( 'POST', 'PUT', 'PATCH', 'DELETE' ), true ) ) {
+			return $result;
+		}
+
+		$term_id = isset( $matches[1] ) ? (int) $matches[1] : 0;
+
+		// Renaming / re-parenting / deleting a locked folder (or a child of one).
+		if ( $term_id > 0 && $this->is_folder_locked( $term_id ) ) {
+			return new \WP_Error(
+				'godam_folder_locked',
+				__( 'This folder is locked and cannot be modified.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// Creating or moving a folder INTO a locked destination (populating it).
+		if ( 'DELETE' !== $request->get_method() ) {
+			$new_parent = $request->get_param( 'parent' );
+
+			if ( ! is_null( $new_parent ) && (int) $new_parent > 0 && $this->is_folder_locked( (int) $new_parent ) ) {
+				return new \WP_Error(
+					'godam_folder_locked',
+					__( 'The destination folder is locked and cannot be modified.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Register custom REST API routes for Settings Pages.
 	 *
 	 * @return array Array of registered REST API routes
@@ -601,6 +675,24 @@ class Media_Library extends Base {
 
 		// if folder id is 0, remove the folder from the attachments.
 		if ( 0 === $folder_term_id ) {
+			// Removing an attachment out of a locked folder mutates that folder's
+			// contents — reject if any attachment currently sits in a locked folder.
+			foreach ( $attachment_ids as $attachment_id ) {
+				$current_folders = wp_get_object_terms( $attachment_id, 'media-folder', array( 'fields' => 'ids' ) );
+
+				if ( is_array( $current_folders ) ) {
+					foreach ( $current_folders as $current_folder_id ) {
+						if ( $this->is_folder_locked( $current_folder_id ) ) {
+							return new \WP_Error(
+								'godam_folder_locked',
+								__( 'One or more attachments belong to a locked folder and cannot be moved.', 'godam' ),
+								array( 'status' => 403 )
+							);
+						}
+					}
+				}
+			}
+
 			foreach ( $attachment_ids as $attachment_id ) {
 
 				$return = $this->remove_all_terms_from_id( $attachment_id, 'media-folder' );
@@ -622,6 +714,15 @@ class Media_Library extends Base {
 
 		if ( ! $term || is_wp_error( $term ) ) {
 			return new \WP_Error( 'invalid_term', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Assigning attachments into a locked folder (or a child of one) populates it — reject.
+		if ( $this->is_folder_locked( $folder_term_id ) ) {
+			return new \WP_Error(
+				'godam_folder_locked',
+				__( 'This folder is locked and cannot be modified.', 'godam' ),
+				array( 'status' => 403 )
+			);
 		}
 
 		foreach ( $attachment_ids as $attachment_id ) {
@@ -1179,6 +1280,18 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_ids', __( 'No folder IDs provided or invalid format.', 'godam' ), array( 'status' => 400 ) );
 		}
 
+		// Reject the whole request if any target is locked (or a child of a locked folder),
+		// so a direct API call can't delete a protected folder — and we never partially delete.
+		foreach ( $folder_ids as $folder_id ) {
+			if ( is_numeric( $folder_id ) && (int) $folder_id > 0 && $this->is_folder_locked( $folder_id ) ) {
+				return new \WP_Error(
+					'godam_folder_locked',
+					__( 'One or more selected folders are locked and cannot be deleted.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+		}
+
 		$deleted_count = 0;
 		$errors        = array();
 
@@ -1235,6 +1348,43 @@ class Media_Library extends Base {
 		} else {
 			return new \WP_Error( 'bulk_delete_failed', __( 'No folders were deleted.', 'godam' ) . ' Errors: ' . implode( ', ', $errors ), array( 'status' => 500 ) );
 		}
+	}
+
+	/**
+	 * Whether a media-folder term is locked, directly or through an ancestor.
+	 *
+	 * Folder locking is protective: a locked folder shields itself AND all of its
+	 * descendants from mutation. So a folder counts as locked if its own `locked`
+	 * term-meta is truthy or if any of its ancestors' is. Client-side gating (React)
+	 * is UX only; this is the authoritative server-side check.
+	 *
+	 * @param int $term_id Media-folder term ID.
+	 * @return bool True if the folder or one of its ancestors is locked.
+	 */
+	private function is_folder_locked( $term_id ) {
+		$term_id = (int) $term_id;
+
+		if ( $term_id <= 0 ) {
+			return false;
+		}
+
+		// The term itself plus every ancestor — a locked ancestor locks the branch.
+		$ids       = array( $term_id );
+		$ancestors = get_ancestors( $term_id, 'media-folder', 'taxonomy' );
+
+		if ( is_array( $ancestors ) ) {
+			$ids = array_merge( $ids, $ancestors );
+		}
+
+		foreach ( $ids as $id ) {
+			$locked_raw = get_term_meta( $id, 'locked', true );
+
+			if ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
