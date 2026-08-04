@@ -145,6 +145,12 @@ class GoDAM_Video_Gallery {
 
 		// Enqueue the block's frontend assets so the shortcode reuses the same
 		// view.js / style-index.css as the godam/gallery-v2 block.
+		//
+		// The lightbox is enqueued explicitly here as well: this path does not go
+		// through the block's block.json, so it does not inherit the viewScript
+		// list, and view.js needs window.GodamLightbox to open a video.
+		wp_enqueue_script( 'godam-lightbox-script' );
+		wp_enqueue_style( 'godam-lightbox-style' );
 		wp_enqueue_script( 'godam-gallery-v2-view-script' );
 		wp_enqueue_style( 'godam-gallery-v2-style' );
 

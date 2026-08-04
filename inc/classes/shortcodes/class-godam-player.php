@@ -154,6 +154,48 @@ class GoDAM_Player {
 			);
 		}
 
+		/**
+		 * Shared lightbox service.
+		 *
+		 * Registered as its own handle, not bundled into each caller, so any
+		 * surface that can enqueue a script can drive the same modal — including
+		 * other plugins. The Gallery block's private modal could not be reached
+		 * from outside its own bundle, which is why a second lightbox was written
+		 * in godam-for-woo rather than this one being reused.
+		 */
+		$lightbox_path       = RTGODAM_PATH . 'assets/build/js/godam-lightbox.min.js';
+		$lightbox_asset_path = RTGODAM_PATH . 'assets/build/js/godam-lightbox.min.asset.php';
+
+		if ( file_exists( $lightbox_path ) ) {
+			$lightbox_assets = file_exists( $lightbox_asset_path )
+				? include $lightbox_asset_path
+				: array(
+					'dependencies' => array( 'wp-i18n' ),
+					'version'      => RTGODAM_VERSION,
+				);
+
+			wp_register_script(
+				'godam-lightbox-script',
+				RTGODAM_URL . 'assets/build/js/godam-lightbox.min.js',
+				$lightbox_assets['dependencies'],
+				$lightbox_assets['version'],
+				true
+			);
+
+			wp_set_script_translations( 'godam-lightbox-script', 'godam' );
+		}
+
+		$lightbox_style_path = RTGODAM_PATH . 'assets/build/css/godam-lightbox.css';
+
+		if ( file_exists( $lightbox_style_path ) ) {
+			wp_register_style(
+				'godam-lightbox-style',
+				RTGODAM_URL . 'assets/build/css/godam-lightbox.css',
+				array(),
+				filemtime( $lightbox_style_path )
+			);
+		}
+
 		wp_register_style(
 			'godam-player-style',
 			RTGODAM_URL . 'assets/build/css/godam-player.css',
