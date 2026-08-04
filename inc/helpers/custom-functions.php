@@ -1485,6 +1485,59 @@ function godam_should_load_auth_detector_script( $screen ) {
 	return false;
 }
 
+/**
+ * Whether the (heavy) GoDAM media-library JS bundles should load on the current screen.
+ *
+ * The media-library.min.js (~2.6 MB, bundles video.js) and pages/media-library.min.js
+ * (React/Redux folder sidebar, ~1.1 MB) were enqueued on EVERY admin screen via a global
+ * admin_enqueue_scripts hook. They are only needed where the WordPress media library /
+ * wp.media modal is actually used: the Media grid, the post/page/attachment editors
+ * (which also covers the Elementor and WPBakery editors, both post.php screens), and
+ * GoDAM's own admin pages. Everywhere else the payload is pure overhead. Integrations
+ * that open wp.media on other screens can opt in via the filter below.
+ *
+ * @param WP_Screen|null $screen Current screen object.
+ * @return bool True if the media-library bundles should be enqueued.
+ */
+function godam_should_load_media_library_assets( $screen ) {
+	$should_load = false;
+
+	if ( $screen ) {
+		// Core screens where the media library / wp.media modal is available.
+		$media_screens = array(
+			'upload',     // Media Library (grid & list views).
+			'post',       // Add/Edit Post (any post type; also Elementor/WPBakery editors).
+			'page',       // Add/Edit Page.
+			'attachment', // Edit Media.
+		);
+
+		if ( in_array( $screen->base, $media_screens, true ) || in_array( $screen->id, $media_screens, true ) ) {
+			$should_load = true;
+		}
+
+		// GoDAM's own admin pages, which can open the media library / modal.
+		$godam_pages = array(
+			'toplevel_page_godam',
+			'godam_page_rtgodam_media_editor',
+		);
+
+		if ( in_array( $screen->id, $godam_pages, true ) ) {
+			$should_load = true;
+		}
+	}
+
+	/**
+	 * Filters whether the GoDAM media-library JS bundles load on the current screen.
+	 *
+	 * Use this to force-load the bundles on custom screens that open wp.media (e.g.
+	 * classic widgets, term-edit screens with media fields).
+	 *
+	 * @param bool           $should_load Whether to enqueue the media-library bundles.
+	 * @param WP_Screen|null $screen      Current screen object.
+	 */
+	return (bool) apply_filters( 'godam_should_load_media_library_assets', $should_load, $screen );
+}
+
 // ---------------------------------------------------------------------------
 // Work-cache helpers
 // ---------------------------------------------------------------------------

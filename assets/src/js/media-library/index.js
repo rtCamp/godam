@@ -4,13 +4,9 @@
 import { __ } from '@wordpress/i18n';
 
 /**
- * External dependencies
- */
-import videojs from 'video.js';
-
-/**
  * Internal dependencies
  */
+import { getLoadedVideoJs } from './videojs-loader.js';
 import '../../libs/jquery-ui-1.14.2.draggable/jquery-ui';
 import './transcoding-status';
 
@@ -36,6 +32,10 @@ import { isFolderOrgDisabled, isUploadPage, addManageMediaButton } from './utili
  * @param {HTMLElement} container - The DOM element to search for Video.js players.
  */
 function destroyVideoJSPlayersInContainer( container ) {
+	// Only relevant if Video.js was actually loaded (i.e. a player was created this
+	// session). If it was never loaded there are no Video.js players to dispose.
+	const videojs = getLoadedVideoJs();
+
 	if ( ! container || ! videojs ) {
 		return;
 	}

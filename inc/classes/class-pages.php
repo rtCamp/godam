@@ -1227,6 +1227,13 @@ class Pages {
 
 		wp_enqueue_style( 'wp-components' );
 
+		// The media-library React sidebar bundle (~1.1 MB) is the remaining work in this
+		// method; skip it on screens that never open the media library / wp.media modal.
+		// It was previously enqueued on every admin screen.
+		if ( ! godam_should_load_media_library_assets( $screen ) ) {
+			return;
+		}
+
 		// The bundle externalizes several @wordpress packages to wp.* globals
 		// (see the `pages` externals in webpack.config.js). On WP admin / the
 		// block editor these globals are already present, but in other contexts
