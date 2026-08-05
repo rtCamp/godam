@@ -18,10 +18,14 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      # 8.4, not the plugin's minimum of 7.4: composer.lock pins dev tools that
+      # require PHP ^8.4 (doctrine/instantiator, symfony/finder), so
+      # `composer install` fails its platform check on anything older. This
+      # constrains the test toolchain only — runtime PHP support is unaffected.
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.4'
           coverage: none
           tools: composer
 
