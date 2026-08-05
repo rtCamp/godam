@@ -63,6 +63,12 @@ export const folderApi = createApi( {
 						per_page: 1,
 						...mimeTypeParams,
 					},
+					// Send the REST nonce so the count runs as the current user (matching the
+					// grid). Without it the request is anonymous and only counts public media,
+					// undercounting when private/pending attachments exist.
+					headers: {
+						'X-WP-Nonce': window.MediaLibrary.nonce,
+					},
 				} );
 
 				if ( result.error ) {
@@ -224,7 +230,10 @@ export const folderApi = createApi( {
 						search: searchTerm,
 						page,
 						per_page: perPage,
-						_fields: 'id,name',
+						// Include parent + meta so a folder selected from search keeps its
+						// lock/bookmark state. With only id,name the selected folder lost its
+						// meta, defeating the locked-folder checks downstream.
+						_fields: 'id,name,parent,meta',
 					},
 					headers: {
 						'X-WP-Nonce': window.MediaLibrary.nonce,

@@ -1587,10 +1587,23 @@ class Media_Library extends Base {
 				continue;
 			}
 
+			// update_term_meta() returns false BOTH on a genuine failure and when the value
+			// is already what we're setting. Treat "already at the desired value" as success
+			// (a no-op), so re-locking an already-locked folder isn't a "failure"; only a real
+			// write failure (value differs but the update returned false) is recorded.
+			$current = get_term_meta( $folder_id, $meta_key, true );
+
+			if ( (string) $current === (string) $value ) {
+				++$updated_count;
+				continue;
+			}
+
 			$result = update_term_meta( $folder_id, $meta_key, $value );
 
 			if ( false === $result ) {
-				++$updated_count;
+				$failed_ids[] = $folder_id;
+				// translators: %s is the folder ID whose meta update failed.
+				$errors[] = sprintf( __( 'Failed to update folder %s.', 'godam' ), $folder_id );
 			} else {
 				++$updated_count;
 			}
