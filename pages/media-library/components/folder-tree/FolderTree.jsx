@@ -167,7 +167,19 @@ const FolderTree = ( { handleContextMenu } ) => {
 			const activeIndex = clonedItems.findIndex( ( { id } ) => id === active.id );
 			const activeTreeItem = clonedItems[ activeIndex ];
 
-			await updateFolderMutation( { ...activeTreeItem, parent } );
+			// Persist the move first and only commit it to the local tree on success.
+			// Without .unwrap() a server rejection (e.g. locked destination, permission)
+			// resolved silently and the tree kept the optimistic move even though the
+			// server never applied it.
+			try {
+				await updateFolderMutation( { ...activeTreeItem, parent } ).unwrap();
+			} catch ( moveError ) {
+				dispatch( updateSnackbar( {
+					message: moveError?.data?.message || __( 'Failed to move folder', 'godam' ),
+					type: 'fail',
+				} ) );
+				return;
+			}
 
 			clonedItems[ activeIndex ] = { ...activeTreeItem, depth, parent };
 

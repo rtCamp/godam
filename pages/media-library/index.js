@@ -84,116 +84,56 @@ function resetSidebarIfAllModalsClosed() {
  * and reset the React state to ensure fresh UI state for new modal instances
  */
 function setupMediaModalCloseDetection() {
-	// Track active media modal instances to detect when they close
-	let lastModalCount = 0;
+	// The authoritative "modal closed" signal is wp.media's own Modal.close(). The
+	// previous implementation ALSO ran a document.body subtree MutationObserver and a
+	// 500ms setInterval for the entire page lifetime — neither was ever disconnected/
+	// cleared — purely as fallbacks. That is needlessly chatty (especially in the block
+	// editor, where document.body mutates constantly). Rely on the single frame event.
+	if ( typeof wp === 'undefined' || ! wp.media || ! wp.media.view || ! wp.media.view.Modal ) {
+		return;
+	}
 
-	// Use MutationObserver to detect when modal elements are removed from DOM
-	const observer = new MutationObserver( ( mutations ) => {
-		mutations.forEach( ( mutation ) => {
-			if ( mutation.type === 'childList' ) {
-				// Check if any media modal elements were removed
-				mutation.removedNodes.forEach( ( node ) => {
-					if ( node.nodeType === Node.ELEMENT_NODE ) {
-						// Check if this is a media modal that was removed
-						if ( node.classList && node.classList.contains( 'media-modal' ) ) {
-							// Clean up React roots before resetting state
-							const rootElements = node.querySelectorAll( '#rt-transcoder-media-library-root' );
-							rootElements.forEach( ( element ) => {
-								if ( element._reactRoot ) {
-									try {
-										element._reactRoot.unmount();
-									} catch ( e ) {
-										// Ignore unmounting errors
-									}
-									element._reactRoot = null;
-								}
-							} );
+	// Guard against double-wrapping if this bundle is evaluated more than once.
+	if ( wp.media.view.Modal.prototype._godamClosePatched ) {
+		return;
+	}
+	wp.media.view.Modal.prototype._godamClosePatched = true;
 
-							// Media modal removed — reset only if no modal remains open.
-							resetSidebarIfAllModalsClosed();
-						// Also check if it contains media modal children
-						} else if ( node.querySelector && node.querySelector( '.media-modal' ) ) {
-							// Clean up any React roots in child modals
-							const rootElements = node.querySelectorAll( '#rt-transcoder-media-library-root' );
-							rootElements.forEach( ( element ) => {
-								if ( element._reactRoot ) {
-									try {
-										element._reactRoot.unmount();
-									} catch ( e ) {
-										// Ignore unmounting errors
-									}
-									element._reactRoot = null;
-								}
-							} );
+	const originalClose = wp.media.view.Modal.prototype.close;
+	wp.media.view.Modal.prototype.close = function( ...args ) {
+		// Capture the closing modal's element before the async cleanup runs.
+		const modalEl = this.el;
 
-							// Nested media modal removed — reset only if no modal remains open.
-							resetSidebarIfAllModalsClosed();
+		// Call original close method
+		const result = originalClose.apply( this, args );
+
+		// Clean up the React root in THIS closing modal before it is hidden/removed.
+		// Scoped to the closing modal so closing one frame never tears down a sibling
+		// frame's still-visible sidebar.
+		setTimeout( () => {
+			// Skip cleanup if the modal was reopened within this delay (still visible) —
+			// otherwise we would unmount a freshly-mounted sidebar.
+			const modalHidden = ! modalEl || ! modalEl.isConnected || getComputedStyle( modalEl ).display === 'none';
+
+			if ( modalHidden && modalEl ) {
+				modalEl.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( element ) => {
+					if ( element._reactRoot ) {
+						try {
+							element._reactRoot.unmount();
+						} catch ( e ) {
+							// Ignore unmounting errors
 						}
+						element._reactRoot = null;
 					}
 				} );
 			}
-		} );
-	} );
 
-	// Observe changes to the document body
-	observer.observe( document.body, {
-		childList: true,
-		subtree: true,
-	} );
-
-	// Also detect modal state changes by checking visibility periodically
-	// This is a fallback for cases where DOM removal isn't detected
-	setInterval( () => {
-		const currentModalCount = document.querySelectorAll( '.media-modal:not([style*="display: none"])' ).length;
-
-		// If modal count decreased a modal was closed — reset only once the last one
-		// is gone so closing a nested modal doesn't clobber the picker in use.
-		if ( currentModalCount < lastModalCount ) {
+			// Reset React state only once the last media modal has closed.
 			resetSidebarIfAllModalsClosed();
-		}
+		}, 100 ); // Small delay to ensure modal is fully closed
 
-		lastModalCount = currentModalCount;
-	}, 500 ); // Check every 500ms
-
-	// Listen for WordPress media frame close events if available
-	if ( typeof wp !== 'undefined' && wp.media ) {
-		// Hook into wp.media to detect when frames are closed
-		const originalClose = wp.media.view.Modal.prototype.close;
-		wp.media.view.Modal.prototype.close = function( ...args ) {
-			// Capture the closing modal's element before the async cleanup runs.
-			const modalEl = this.el;
-
-			// Call original close method
-			const result = originalClose.apply( this, args );
-
-			// Clean up the React root in THIS closing modal before it is hidden/removed.
-			// Scoped to the closing modal so closing one frame never tears down a sibling
-			// frame's still-visible sidebar.
-			setTimeout( () => {
-				// Skip cleanup if the modal was reopened within this delay (still visible) —
-				// otherwise we would unmount a freshly-mounted sidebar.
-				const modalHidden = ! modalEl || ! modalEl.isConnected || getComputedStyle( modalEl ).display === 'none';
-
-				if ( modalHidden && modalEl ) {
-					modalEl.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( element ) => {
-						if ( element._reactRoot ) {
-							try {
-								element._reactRoot.unmount();
-							} catch ( e ) {
-								// Ignore unmounting errors
-							}
-							element._reactRoot = null;
-						}
-					} );
-				}
-
-				// Reset React state only once the last media modal has closed.
-				resetSidebarIfAllModalsClosed();
-			}, 100 ); // Small delay to ensure modal is fully closed
-
-			return result;
-		};
-	}
+		return result;
+	};
 }
 
 /**

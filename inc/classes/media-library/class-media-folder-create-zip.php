@@ -161,6 +161,9 @@ class Media_Folder_Create_Zip {
 			}
 		}
 
+		// Harden the directory: prevent listing/enumeration of the generated archives.
+		$this->protect_godam_dir( $godam_dir );
+
 		// Full path to the ZIP file.
 		$zip_path = $godam_dir . '/' . $zip_name;
 
@@ -353,14 +356,57 @@ class Media_Folder_Create_Zip {
 			gc_collect_cycles();
 		}
 
-		if ( function_exists( 'wp_cache_flush' ) ) {
-			wp_cache_flush();
+		// Free only the in-memory (runtime) object cache that accumulates while iterating
+		// attachments — NOT the entire persistent site cache. The previous wp_cache_flush()
+		// flushed every group in the object cache (hurting every other request on the site)
+		// just to reclaim memory for one download. wp_cache_flush_runtime() (WP 6.0+) drops
+		// the runtime cache without touching the persistent backend; on older WP we rely on
+		// gc_collect_cycles() plus the memory-threshold guard in the batch loop.
+		if ( function_exists( 'wp_cache_flush_runtime' ) ) {
+			wp_cache_flush_runtime();
+		}
+	}
+
+	/**
+	 * Harden the uploads/godam directory against enumeration.
+	 *
+	 * The generated ZIPs are static files served from this directory. Writing an
+	 * index.php (blank) and an .htaccess that disables auto-indexing prevents a
+	 * visitor from listing the directory to discover archive filenames. Combined
+	 * with the random token in each ZIP name, direct guessing becomes infeasible.
+	 * Both files are only written when missing, so this is cheap to call repeatedly.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param string $dir Absolute path to the godam upload directory.
+	 * @return void
+	 */
+	private function protect_godam_dir( $dir ) {
+		global $wp_filesystem;
+
+		if ( empty( $wp_filesystem ) || ! is_a( $wp_filesystem, 'WP_Filesystem_Base' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			WP_Filesystem();
+		}
+
+		if ( empty( $wp_filesystem ) ) {
+			return;
+		}
+
+		$index = trailingslashit( $dir ) . 'index.php';
+		if ( ! $wp_filesystem->exists( $index ) ) {
+			$wp_filesystem->put_contents( $index, "<?php\n// Silence is golden.\n", FS_CHMOD_FILE );
+		}
+
+		$htaccess = trailingslashit( $dir ) . '.htaccess';
+		if ( ! $wp_filesystem->exists( $htaccess ) ) {
+			$wp_filesystem->put_contents( $htaccess, "Options -Indexes\n", FS_CHMOD_FILE );
 		}
 	}
 
 	/**
 	 * Cleanup the ZIP file after a scheduled time.
-	 * 
+	 *
 	 * @since 1.3.0
 	 *
 	 * @param string $zip_path The path to the ZIP file to be cleaned up.

@@ -4,7 +4,6 @@
  * External dependencies
  */
 import DOMPurify from 'isomorphic-dompurify';
-import videojs from 'video.js';
 /**
  * WordPress dependencies
  */
@@ -15,6 +14,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { addIcon, trashIcon, editIcon, barChartIcon } from '../media-library-icons';
 import { canManageAttachment } from '../utility';
+import { loadVideoJs, getLoadedVideoJs } from '../videojs-loader.js';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -536,8 +536,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const virtual = this.model.get( 'virtual' );
 
 		// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
-		if ( undefined !== virtual && virtual ) {
-			const videoPlayer = videojs( 'videojs-player-' + this.model.get( 'id' ) );
+		// The player was created earlier, so Video.js is already loaded and cached here.
+		const posterVideojs = getLoadedVideoJs();
+		if ( undefined !== virtual && virtual && posterVideojs ) {
+			const videoPlayer = posterVideojs( 'videojs-player-' + this.model.get( 'id' ) );
 			videoPlayer.poster( selected );
 		}
 
@@ -709,8 +711,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				const virtual = model.get( 'virtual' );
 
 				// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
-				if ( undefined !== virtual && virtual ) {
-					const videoPlayer = videojs( 'videojs-player-' + model.get( 'id' ) );
+				// The player was created earlier, so Video.js is already loaded and cached here.
+				const posterVideojs = getLoadedVideoJs();
+				if ( undefined !== virtual && virtual && posterVideojs ) {
+					const videoPlayer = posterVideojs( 'videojs-player-' + model.get( 'id' ) );
 					videoPlayer.poster( thumbnailURL );
 				}
 
@@ -1002,9 +1006,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				` );
 
 				// Wait for DOM to fully render the core preview container.
-				setTimeout( () => {
+				setTimeout( async () => {
 					const videoElement = document.getElementById( videoId );
-					if ( videoElement && typeof videojs !== 'undefined' ) {
+					// Lazy-load Video.js only now that a video player is actually needed.
+					const videojs = videoElement ? await loadVideoJs() : null;
+					if ( videoElement && videojs ) {
 						// Calculate initial dimensions using 16:9 aspect ratio as default
 						const viewContainer = this.$el.closest( '.media-modal-content' ).find( '.attachment-media-view' );
 						const availableWidth = viewContainer.length ? viewContainer.width() : window.innerWidth * 0.65;

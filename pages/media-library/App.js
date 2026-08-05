@@ -166,7 +166,14 @@ const App = () => {
 						variant="primary"
 						text={ __( 'New Folder', 'godam' ) }
 						className="button--full mb-spacing new-folder-button"
-						onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
+						onClick={ () => {
+							// Create at the ROOT from the top-level button. FolderCreationModal
+							// derives the new folder's parent from currentContextMenuFolder, which
+							// a prior right-click leaves set — without this clear, the top button
+							// would nest the folder under the last right-clicked folder.
+							dispatch( setCurrentContextMenuFolder( null ) );
+							dispatch( openModal( 'folderCreation' ) );
+						} }
 						disabled={ selectedFolder?.meta?.locked || currentFolder?.meta?.locked || contextSelectedFolder?.meta?.locked }
 					/>
 				</div>

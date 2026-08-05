@@ -27,6 +27,84 @@ class Media_Library extends Base {
 	protected $rest_base = 'media-library';
 
 	/**
+	 * Setup hooks.
+	 *
+	 * Adds the base REST-route registration plus a server-side guard that enforces
+	 * folder "locked" state on the NATIVE wp/v2/media-folder term endpoints (rename,
+	 * delete, re-parent, create-under). Locking was previously enforced only in React,
+	 * so a direct REST call could still mutate a locked folder.
+	 *
+	 * @return void
+	 */
+	protected function setup_hooks() {
+		parent::setup_hooks();
+
+		add_filter( 'rest_pre_dispatch', array( $this, 'enforce_locked_media_folder' ), 10, 3 );
+
+		// Background builder for folder-ZIP downloads (see download_folder()). Runs via
+		// Action Scheduler when available, otherwise WP-Cron — both invoke this hook.
+		add_action( 'godam_build_folder_zip', array( $this, 'run_folder_zip_job' ), 10, 1 );
+	}
+
+	/**
+	 * Reject mutating REST requests against locked media-folder terms.
+	 *
+	 * Runs before dispatch on the native taxonomy routes:
+	 *   - POST/PUT/PATCH /wp/v2/media-folder/{id}  → rename / re-parent an existing folder
+	 *   - DELETE         /wp/v2/media-folder/{id}  → delete an existing folder
+	 *   - POST           /wp/v2/media-folder       → create a folder (blocked only when the
+	 *                                                target parent is locked, i.e. populating it)
+	 * Reads (GET) are always allowed — locking protects against modification, not viewing.
+	 *
+	 * @param mixed            $result  Pre-dispatch result (non-null short-circuits the request).
+	 * @param \WP_REST_Server  $server  Server instance (unused).
+	 * @param \WP_REST_Request $request The request being dispatched.
+	 * @return mixed Original $result, or a 403 WP_Error when the target folder is locked.
+	 */
+	public function enforce_locked_media_folder( $result, $server, $request ) {
+		// Let an already short-circuited result (e.g. another plugin's error) stand.
+		if ( null !== $result ) {
+			return $result;
+		}
+
+		// Only guard the native media-folder collection or a single term.
+		if ( ! preg_match( '#^/wp/v2/media-folder(?:/(\d+))?$#', $request->get_route(), $matches ) ) {
+			return $result;
+		}
+
+		// Only mutating verbs.
+		if ( ! in_array( $request->get_method(), array( 'POST', 'PUT', 'PATCH', 'DELETE' ), true ) ) {
+			return $result;
+		}
+
+		$term_id = isset( $matches[1] ) ? (int) $matches[1] : 0;
+
+		// Renaming / re-parenting / deleting a locked folder (or a child of one).
+		if ( $term_id > 0 && $this->is_folder_locked( $term_id ) ) {
+			return new \WP_Error(
+				'godam_folder_locked',
+				__( 'This folder is locked and cannot be modified.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// Creating or moving a folder INTO a locked destination (populating it).
+		if ( 'DELETE' !== $request->get_method() ) {
+			$new_parent = $request->get_param( 'parent' );
+
+			if ( ! is_null( $new_parent ) && (int) $new_parent > 0 && $this->is_folder_locked( (int) $new_parent ) ) {
+				return new \WP_Error(
+					'godam_folder_locked',
+					__( 'The destination folder is locked and cannot be modified.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Register custom REST API routes for Settings Pages.
 	 *
 	 * @return array Array of registered REST API routes
@@ -173,14 +251,35 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'download_folder' ),
+					// Requires upload_files (Author+): generating a ZIP aggregates an entire
+					// folder's media into a downloadable archive, so Contributors (edit_posts
+					// only) must not be able to trigger it.
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return current_user_can( 'upload_files' );
 					},
 					'args'                => array(
 						'folder_id' => array(
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'ID of the folder to create a ZIP file for.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/download-folder-status/(?P<job_id>[A-Za-z0-9]+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_folder_zip_status' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'job_id' => array(
+							'required'    => true,
+							'type'        => 'string',
+							'description' => __( 'ID of the ZIP build job to poll.', 'godam' ),
 						),
 					),
 				),
@@ -599,8 +698,50 @@ class Media_Library extends Base {
 		$attachment_ids = $request->get_param( 'attachment_ids' );
 		$folder_term_id = $request->get_param( 'folder_term_id' );
 
+		// IDOR guard: this route is gated only by the broad `edit_posts` capability, which
+		// does NOT prove the caller may edit these specific objects. Before touching any
+		// terms — in either the assign or the remove-from-folder path — verify every ID is
+		// genuinely an attachment and that the current user can edit that object. Without
+		// this, a user could move (or strip folders from) media they do not own, and the
+		// remove path would act on raw IDs of arbitrary post types.
+		if ( empty( $attachment_ids ) || ! is_array( $attachment_ids ) ) {
+			return new \WP_Error( 'invalid_attachment', __( 'No attachment IDs provided.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		foreach ( $attachment_ids as $attachment_id ) {
+			if ( 'attachment' !== get_post_type( $attachment_id ) ) {
+				return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
+			}
+
+			if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
+				return new \WP_Error(
+					'rest_forbidden',
+					__( 'You are not allowed to modify one or more of these attachments.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+		}
+
 		// if folder id is 0, remove the folder from the attachments.
 		if ( 0 === $folder_term_id ) {
+			// Removing an attachment out of a locked folder mutates that folder's
+			// contents — reject if any attachment currently sits in a locked folder.
+			foreach ( $attachment_ids as $attachment_id ) {
+				$current_folders = wp_get_object_terms( $attachment_id, 'media-folder', array( 'fields' => 'ids' ) );
+
+				if ( is_array( $current_folders ) ) {
+					foreach ( $current_folders as $current_folder_id ) {
+						if ( $this->is_folder_locked( $current_folder_id ) ) {
+							return new \WP_Error(
+								'godam_folder_locked',
+								__( 'One or more attachments belong to a locked folder and cannot be moved.', 'godam' ),
+								array( 'status' => 403 )
+							);
+						}
+					}
+				}
+			}
+
 			foreach ( $attachment_ids as $attachment_id ) {
 
 				$return = $this->remove_all_terms_from_id( $attachment_id, 'media-folder' );
@@ -622,6 +763,15 @@ class Media_Library extends Base {
 
 		if ( ! $term || is_wp_error( $term ) ) {
 			return new \WP_Error( 'invalid_term', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Assigning attachments into a locked folder (or a child of one) populates it — reject.
+		if ( $this->is_folder_locked( $folder_term_id ) ) {
+			return new \WP_Error(
+				'godam_folder_locked',
+				__( 'This folder is locked and cannot be modified.', 'godam' ),
+				array( 'status' => 403 )
+			);
 		}
 
 		foreach ( $attachment_ids as $attachment_id ) {
@@ -1141,17 +1291,139 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_folder', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$result = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, 'media-folder-' . $term->slug . '.zip' );
+		// The archive is built asynchronously. Building it in-request meant a folder with
+		// many/large files (batches of 50, files up to 500 MB) could exceed the PHP/web
+		// server time limit and fail the request. Instead we register a job, kick off a
+		// background build, and hand the client a job id to poll (get_folder_zip_status()).
+		$job_id = wp_generate_password( 32, false );
 
-		if ( is_wp_error( $result ) ) {
-			return $result;
+		$job = array(
+			'status'    => 'queued',
+			'folder_id' => (int) $folder_id,
+			'user_id'   => get_current_user_id(),
+			'zip_url'   => '',
+			'zip_name'  => '',
+			'message'   => '',
+			'created'   => time(),
+			'updated'   => time(),
+		);
+
+		set_transient( $this->zip_job_transient_key( $job_id ), $job, HOUR_IN_SECONDS );
+
+		// Prefer Action Scheduler (bundled with WooCommerce and many plugins) for reliable
+		// async execution; fall back to WP-Cron nudged with spawn_cron(). Both paths invoke
+		// the `godam_build_folder_zip` hook with the job id (see setup_hooks()).
+		if ( function_exists( 'as_enqueue_async_action' ) ) {
+			as_enqueue_async_action( 'godam_build_folder_zip', array( $job_id ), 'godam' );
+		} else {
+			wp_schedule_single_event( time(), 'godam_build_folder_zip', array( $job_id ) );
+
+			if ( function_exists( 'spawn_cron' ) ) {
+				spawn_cron();
+			}
 		}
 
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'message' => __( 'ZIP file created successfully.', 'godam' ),
-				'data'    => $result,
+				'message' => __( 'Preparing ZIP file…', 'godam' ),
+				'data'    => array(
+					'job_id' => $job_id,
+					'status' => 'queued',
+				),
+			)
+		);
+	}
+
+	/**
+	 * Transient key for a folder-ZIP build job.
+	 *
+	 * @param string $job_id Job identifier.
+	 * @return string Transient key.
+	 */
+	private function zip_job_transient_key( $job_id ) {
+		return 'godam_zip_job_' . $job_id;
+	}
+
+	/**
+	 * Background handler that builds a folder's ZIP and records the outcome on the job.
+	 *
+	 * Invoked via `godam_build_folder_zip` (Action Scheduler or WP-Cron). The client
+	 * discovers success/failure by polling get_folder_zip_status().
+	 *
+	 * @param string $job_id Job identifier.
+	 * @return void
+	 */
+	public function run_folder_zip_job( $job_id ) {
+		$key = $this->zip_job_transient_key( $job_id );
+		$job = get_transient( $key );
+
+		if ( ! is_array( $job ) ) {
+			return; // Unknown or expired job.
+		}
+
+		$job['status']  = 'processing';
+		$job['updated'] = time();
+		set_transient( $key, $job, HOUR_IN_SECONDS );
+
+		$folder_id = isset( $job['folder_id'] ) ? (int) $job['folder_id'] : 0;
+		$term      = $folder_id ? get_term( $folder_id, 'media-folder' ) : null;
+
+		if ( ! $term || is_wp_error( $term ) ) {
+			$job['status']  = 'failed';
+			$job['message'] = __( 'Invalid folder term ID.', 'godam' );
+			$job['updated'] = time();
+			set_transient( $key, $job, HOUR_IN_SECONDS );
+			return;
+		}
+
+		// Unguessable filename (see the ZIP hardening in Media_Folder_Create_Zip).
+		$zip_name = 'media-folder-' . $term->slug . '-' . wp_generate_password( 20, false ) . '.zip';
+		$result   = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, $zip_name );
+
+		if ( is_wp_error( $result ) ) {
+			$job['status']  = 'failed';
+			$job['message'] = $result->get_error_message();
+		} else {
+			$job['status']   = 'completed';
+			$job['zip_url']  = isset( $result['zip_url'] ) ? $result['zip_url'] : '';
+			$job['zip_name'] = isset( $result['zip_name'] ) ? $result['zip_name'] : $zip_name;
+			$job['message']  = isset( $result['message'] ) ? $result['message'] : __( 'ZIP file created successfully.', 'godam' );
+		}
+
+		$job['updated'] = time();
+		set_transient( $key, $job, HOUR_IN_SECONDS );
+	}
+
+	/**
+	 * Poll the status of a folder-ZIP build job.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_folder_zip_status( $request ) {
+		$job_id = (string) $request->get_param( 'job_id' );
+		$job    = get_transient( $this->zip_job_transient_key( $job_id ) );
+
+		if ( ! is_array( $job ) ) {
+			return new \WP_Error( 'invalid_job', __( 'Unknown or expired download job.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// A job may only be polled by the user who started it (admins excepted), so one
+		// user cannot read another's generated ZIP URL.
+		if ( isset( $job['user_id'] ) && get_current_user_id() !== (int) $job['user_id'] && ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error( 'rest_forbidden', __( 'You are not allowed to access this download job.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'data'    => array(
+					'status'   => isset( $job['status'] ) ? $job['status'] : 'queued',
+					'zip_url'  => isset( $job['zip_url'] ) ? $job['zip_url'] : '',
+					'zip_name' => isset( $job['zip_name'] ) ? $job['zip_name'] : '',
+					'message'  => isset( $job['message'] ) ? $job['message'] : '',
+				),
 			)
 		);
 	}
@@ -1177,6 +1449,18 @@ class Media_Library extends Base {
 
 		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
 			return new \WP_Error( 'invalid_ids', __( 'No folder IDs provided or invalid format.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Reject the whole request if any target is locked (or a child of a locked folder),
+		// so a direct API call can't delete a protected folder — and we never partially delete.
+		foreach ( $folder_ids as $folder_id ) {
+			if ( is_numeric( $folder_id ) && (int) $folder_id > 0 && $this->is_folder_locked( $folder_id ) ) {
+				return new \WP_Error(
+					'godam_folder_locked',
+					__( 'One or more selected folders are locked and cannot be deleted.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
 		}
 
 		$deleted_count = 0;
@@ -1238,6 +1522,43 @@ class Media_Library extends Base {
 	}
 
 	/**
+	 * Whether a media-folder term is locked, directly or through an ancestor.
+	 *
+	 * Folder locking is protective: a locked folder shields itself AND all of its
+	 * descendants from mutation. So a folder counts as locked if its own `locked`
+	 * term-meta is truthy or if any of its ancestors' is. Client-side gating (React)
+	 * is UX only; this is the authoritative server-side check.
+	 *
+	 * @param int $term_id Media-folder term ID.
+	 * @return bool True if the folder or one of its ancestors is locked.
+	 */
+	private function is_folder_locked( $term_id ) {
+		$term_id = (int) $term_id;
+
+		if ( $term_id <= 0 ) {
+			return false;
+		}
+
+		// The term itself plus every ancestor — a locked ancestor locks the branch.
+		$ids       = array( $term_id );
+		$ancestors = get_ancestors( $term_id, 'media-folder', 'taxonomy' );
+
+		if ( is_array( $ancestors ) ) {
+			$ids = array_merge( $ids, $ancestors );
+		}
+
+		foreach ( $ids as $id ) {
+			$locked_raw = get_term_meta( $id, 'locked', true );
+
+			if ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Update meta status for multiple folders.
 	 * This is a helper method used by bulk_update_folder_lock_status and bulk_update_folder_bookmark_status.
 	 *
@@ -1266,10 +1587,23 @@ class Media_Library extends Base {
 				continue;
 			}
 
+			// update_term_meta() returns false BOTH on a genuine failure and when the value
+			// is already what we're setting. Treat "already at the desired value" as success
+			// (a no-op), so re-locking an already-locked folder isn't a "failure"; only a real
+			// write failure (value differs but the update returned false) is recorded.
+			$current = get_term_meta( $folder_id, $meta_key, true );
+
+			if ( (string) $current === (string) $value ) {
+				++$updated_count;
+				continue;
+			}
+
 			$result = update_term_meta( $folder_id, $meta_key, $value );
 
 			if ( false === $result ) {
-				++$updated_count;
+				$failed_ids[] = $folder_id;
+				// translators: %s is the folder ID whose meta update failed.
+				$errors[] = sprintf( __( 'Failed to update folder %s.', 'godam' ), $folder_id );
 			} else {
 				++$updated_count;
 			}
