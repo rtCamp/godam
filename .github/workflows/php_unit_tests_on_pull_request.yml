@@ -1,0 +1,41 @@
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+
+name: PHP Unit Tests
+
+permissions:
+  contents: read
+
+jobs:
+  runPHPUnitTests:
+    name: Run PHP unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      # 8.4, not the plugin's minimum of 7.4: composer.lock pins dev tools that
+      # require PHP ^8.4 (doctrine/instantiator, symfony/finder), so
+      # `composer install` fails its platform check on anything older. This
+      # constrains the test toolchain only — runtime PHP support is unaffected.
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer
+
+      # Dev dependencies are required here: the deploy and plugin-check
+      # workflows install with --no-dev, so phpunit is absent in those.
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      # Pure unit tests via tests/bootstrap.php stubs — no WordPress install and
+      # no database, so no service containers are needed. Includes the #465
+      # hook-timing guards, which only prevent a regression if CI runs them.
+      - name: Run PHP unit tests
+        run: composer phpunit
