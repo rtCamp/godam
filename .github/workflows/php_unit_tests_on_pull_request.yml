@@ -14,6 +14,11 @@ jobs:
     name: Run PHP unit tests
     runs-on: ubuntu-latest
     steps:
+      # The branch as pushed, not checkout's default `refs/pull/N/merge`. This
+      # matches js_unit_tests_on_pull_request.yml, so both report on the same
+      # commit. The trade-off is real: a change on the base branch that breaks
+      # this one is not caught until after merge. The release PR (develop -> main)
+      # runs these same tests, which is where that would surface.
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}

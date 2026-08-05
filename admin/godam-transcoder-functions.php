@@ -282,6 +282,11 @@ function rtgodam_get_remote_ip_address() {
 /**
  * Set status column head in media admin page
  *
+ * Whether the column applies at all is decided here rather than at registration
+ * time. `rtgodam_is_api_key_valid()` can re-verify the key over HTTP once the
+ * cached data is an hour old, and this filter only runs while the media list
+ * table is being built — so no other admin screen pays for that call.
+ *
  * @since 1.2
  *
  * @param array $defaults columns list.
@@ -289,6 +294,10 @@ function rtgodam_get_remote_ip_address() {
  * @return array columns list
  */
 function rtgodam_add_status_columns_head( $defaults ) {
+
+	if ( ! rtgodam_is_api_key_valid() ) {
+		return $defaults;
+	}
 
 	$defaults['convert_status'] = __( 'Transcode Status', 'godam' );
 	return $defaults;
@@ -381,8 +390,11 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
  * because the key is only re-verified once the cached user data is older than an
  * hour, so most requests never reach the translation.
  *
- * Running here also keeps that remote call off front-end, REST and cron
- * requests, for a column that only ever renders in wp-admin.
+ * Registering all three hooks together keeps them consistent: each one only ever
+ * fires while the media list table is being built, and each defers to
+ * `rtgodam_is_api_key_valid()` there. Deciding it here instead would resolve the
+ * key on every admin request — including `admin-ajax.php` — for a column that
+ * renders on one screen.
  *
  * @since 2.1.1
  *
@@ -391,18 +403,19 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
  * @return void
  */
 function rtgodam_register_media_status_columns() {
-	if ( ! rtgodam_is_api_key_valid() ) {
-		return;
-	}
-
 	add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
 	add_action( 'manage_media_custom_column', 'rtgodam_add_status_columns_content', 10, 2 );
+	add_filter( 'manage_upload_sortable_columns', 'rtgodam_status_column_register_sortable' );
 }
 
 add_action( 'admin_init', 'rtgodam_register_media_status_columns' );
 
 /**
  * Set sortable status column in media admin page
+ *
+ * Registered by `rtgodam_register_media_status_columns()`, and gated on the same
+ * condition as the column itself so it cannot advertise a column that
+ * `rtgodam_add_status_columns_head()` declined to add.
  *
  * @since 1.2
  *
@@ -412,11 +425,13 @@ add_action( 'admin_init', 'rtgodam_register_media_status_columns' );
  */
 function rtgodam_status_column_register_sortable( $columns ) {
 
+	if ( ! rtgodam_is_api_key_valid() ) {
+		return $columns;
+	}
+
 	$columns['convert_status'] = 'convert_status';
 	return $columns;
 }
-
-add_filter( 'manage_upload_sortable_columns', 'rtgodam_status_column_register_sortable' );
 
 /**
  * To get sanitized server variables.

@@ -88,11 +88,18 @@ abstract class Abstract_Addon {
 	/**
 	 * Check whether all dependencies are satisfied.
 	 *
+	 * An entry without a usable 'check' counts as satisfied — the same result as
+	 * before, but reached without reading a missing key. This runs on every
+	 * `plugins_loaded`, so an `Undefined array key "check"` warning here would
+	 * print into the page under WP_DEBUG_DISPLAY: the symptom #465 was about.
+	 *
 	 * @return bool
 	 */
 	public function dependencies_met() {
 		foreach ( $this->get_dependencies() as $dep ) {
-			if ( is_callable( $dep['check'] ) && ! $dep['check']() ) {
+			$check = $dep['check'] ?? null;
+
+			if ( is_callable( $check ) && ! $check() ) {
 				return false;
 			}
 		}
@@ -111,7 +118,9 @@ abstract class Abstract_Addon {
 		$messages = array();
 
 		foreach ( $this->get_dependencies() as $dep ) {
-			if ( ! is_callable( $dep['check'] ) || $dep['check']() ) {
+			$check = $dep['check'] ?? null;
+
+			if ( ! is_callable( $check ) || $check() ) {
 				continue;
 			}
 
