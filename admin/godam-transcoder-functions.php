@@ -371,13 +371,35 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	}
 }
 
-$godam_user_data           = rtgodam_get_user_data();
-$godam_is_api_key_verified = isset( $godam_user_data['valid_api_key'] ) ? $godam_user_data['valid_api_key'] : false;
+/**
+ * Register the transcode status column on the media list table.
+ *
+ * Hooked to `admin_init` instead of running at file load. Resolving the API key
+ * can call `rtgodam_verify_api_key()`, which translates, and at file load that
+ * happens before `init` — which WordPress 6.7+ reports as
+ * `_load_textdomain_just_in_time was called incorrectly`. It is easy to miss
+ * because the key is only re-verified once the cached user data is older than an
+ * hour, so most requests never reach the translation.
+ *
+ * Running here also keeps that remote call off front-end, REST and cron
+ * requests, for a column that only ever renders in wp-admin.
+ *
+ * @since 2.1.1
+ *
+ * @see https://github.com/rtCamp/godam/issues/465
+ *
+ * @return void
+ */
+function rtgodam_register_media_status_columns() {
+	if ( ! rtgodam_is_api_key_valid() ) {
+		return;
+	}
 
-if ( $godam_is_api_key_verified ) {
 	add_filter( 'manage_media_columns', 'rtgodam_add_status_columns_head' );
 	add_action( 'manage_media_custom_column', 'rtgodam_add_status_columns_content', 10, 2 );
 }
+
+add_action( 'admin_init', 'rtgodam_register_media_status_columns' );
 
 /**
  * Set sortable status column in media admin page

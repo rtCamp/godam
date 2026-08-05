@@ -2,11 +2,16 @@
 /**
  * Guard against reintroducing #465.
  *
- * Three GoDAM call sites used to translate during `plugins_loaded`, which makes
- * WordPress 6.7+ log `_load_textdomain_just_in_time was called incorrectly` and,
- * with WP_DEBUG_DISPLAY on, print that notice into the page. Core reports only
- * the first such call per text domain per request, so a regression in any one of
- * these is easy to miss by eye. These assertions read the source directly.
+ * Four GoDAM call sites used to translate before `init` — three during
+ * `plugins_loaded`, one at plugin file load — which makes WordPress 6.7+ log
+ * `_load_textdomain_just_in_time was called incorrectly` and, with
+ * WP_DEBUG_DISPLAY on, print that notice into the page.
+ *
+ * Core reports only the first such call per text domain per request, so a
+ * regression in any one of these is easy to miss by eye. The media-column site
+ * is worse still: it only translates once the cached API key data is over an
+ * hour old, so it reads as clean on almost every request even with a `gettext`
+ * filter attached. These assertions read the source directly instead.
  *
  * @package GoDAM
  */
@@ -102,6 +107,27 @@ class EarlyTranslationHooksTest extends TestCase {
 
 		$this->assertMatchesRegularExpression(
 			'/function\s+show_admin_notice\(\s*callable\s+\$\w+\s*\)/',
+			$source
+		);
+	}
+
+	/**
+	 * The media list table column is registered on `admin_init`, not at file
+	 * load. Deciding whether to register it resolves the API key, which can call
+	 * `rtgodam_verify_api_key()` and translate, so a file-scope call translated
+	 * before `init`.
+	 */
+	public function test_media_status_columns_are_registered_on_admin_init() {
+		$source = $this->source( 'admin/godam-transcoder-functions.php' );
+
+		// File scope, not a call inside a function: those are always indented.
+		$this->assertDoesNotMatchRegularExpression(
+			'/^\$\w+\s*=\s*rtgodam_get_user_data\(/m',
+			$source
+		);
+
+		$this->assertMatchesRegularExpression(
+			$this->registration_pattern( 'admin_init', 'rtgodam_register_media_status_columns' ),
 			$source
 		);
 	}
