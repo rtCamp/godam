@@ -10,6 +10,44 @@ import { getCurrentMimeTypeFilter } from '../../data/utilities';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
+/**
+ * Poll a folder-ZIP build job until it finishes.
+ *
+ * The download endpoint now returns a job id immediately and builds the archive in the
+ * background (so large folders no longer time out the request). This polls the status
+ * endpoint until the job is `completed` or `failed`, or the timeout is reached.
+ *
+ * @param {string} jobId                      The job id returned by the downloadZip mutation.
+ * @param {Object} [options]                  Polling options.
+ * @param {number} [options.intervalMs=2000]  Delay between polls.
+ * @param {number} [options.timeoutMs=180000] Give up after this long.
+ * @return {Promise<Object>} Resolves with { status, zip_url, zip_name, message }.
+ */
+export async function pollZipJobStatus( jobId, { intervalMs = 2000, timeoutMs = 180000 } = {} ) {
+	const url = `${ restURL }godam/v1/media-library/download-folder-status/${ jobId }`;
+	const start = Date.now();
+
+	while ( Date.now() - start < timeoutMs ) {
+		try {
+			const res = await fetch( url, {
+				headers: { 'X-WP-Nonce': window.MediaLibrary.nonce },
+			} );
+			const json = await res.json();
+			const data = json?.data || {};
+
+			if ( data.status === 'completed' || data.status === 'failed' ) {
+				return data;
+			}
+		} catch ( e ) {
+			// Transient network error — keep polling until the timeout.
+		}
+
+		await new Promise( ( resolve ) => setTimeout( resolve, intervalMs ) );
+	}
+
+	return { status: 'failed', message: 'Timed out while preparing the ZIP file.' };
+}
+
 export const folderApi = createApi( {
 	reducerPath: 'folderApi',
 	baseQuery: fetchBaseQuery( { baseUrl: restURL } ),

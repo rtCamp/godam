@@ -40,6 +40,10 @@ class Media_Library extends Base {
 		parent::setup_hooks();
 
 		add_filter( 'rest_pre_dispatch', array( $this, 'enforce_locked_media_folder' ), 10, 3 );
+
+		// Background builder for folder-ZIP downloads (see download_folder()). Runs via
+		// Action Scheduler when available, otherwise WP-Cron — both invoke this hook.
+		add_action( 'godam_build_folder_zip', array( $this, 'run_folder_zip_job' ), 10, 1 );
 	}
 
 	/**
@@ -258,6 +262,24 @@ class Media_Library extends Base {
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'ID of the folder to create a ZIP file for.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/download-folder-status/(?P<job_id>[A-Za-z0-9]+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_folder_zip_status' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'job_id' => array(
+							'required'    => true,
+							'type'        => 'string',
+							'description' => __( 'ID of the ZIP build job to poll.', 'godam' ),
 						),
 					),
 				),
@@ -1269,22 +1291,139 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_folder', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		// Append an unguessable token so the resulting file lives at an unpredictable
-		// URL. The ZIP is a world-readable static file under uploads/godam/ for 24h, so
-		// a predictable name (slug only) let anyone who knew the slug fetch it directly.
-		$zip_name = 'media-folder-' . $term->slug . '-' . wp_generate_password( 20, false ) . '.zip';
+		// The archive is built asynchronously. Building it in-request meant a folder with
+		// many/large files (batches of 50, files up to 500 MB) could exceed the PHP/web
+		// server time limit and fail the request. Instead we register a job, kick off a
+		// background build, and hand the client a job id to poll (get_folder_zip_status()).
+		$job_id = wp_generate_password( 32, false );
 
-		$result = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, $zip_name );
+		$job = array(
+			'status'    => 'queued',
+			'folder_id' => (int) $folder_id,
+			'user_id'   => get_current_user_id(),
+			'zip_url'   => '',
+			'zip_name'  => '',
+			'message'   => '',
+			'created'   => time(),
+			'updated'   => time(),
+		);
 
-		if ( is_wp_error( $result ) ) {
-			return $result;
+		set_transient( $this->zip_job_transient_key( $job_id ), $job, HOUR_IN_SECONDS );
+
+		// Prefer Action Scheduler (bundled with WooCommerce and many plugins) for reliable
+		// async execution; fall back to WP-Cron nudged with spawn_cron(). Both paths invoke
+		// the `godam_build_folder_zip` hook with the job id (see setup_hooks()).
+		if ( function_exists( 'as_enqueue_async_action' ) ) {
+			as_enqueue_async_action( 'godam_build_folder_zip', array( $job_id ), 'godam' );
+		} else {
+			wp_schedule_single_event( time(), 'godam_build_folder_zip', array( $job_id ) );
+
+			if ( function_exists( 'spawn_cron' ) ) {
+				spawn_cron();
+			}
 		}
 
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'message' => __( 'ZIP file created successfully.', 'godam' ),
-				'data'    => $result,
+				'message' => __( 'Preparing ZIP file…', 'godam' ),
+				'data'    => array(
+					'job_id' => $job_id,
+					'status' => 'queued',
+				),
+			)
+		);
+	}
+
+	/**
+	 * Transient key for a folder-ZIP build job.
+	 *
+	 * @param string $job_id Job identifier.
+	 * @return string Transient key.
+	 */
+	private function zip_job_transient_key( $job_id ) {
+		return 'godam_zip_job_' . $job_id;
+	}
+
+	/**
+	 * Background handler that builds a folder's ZIP and records the outcome on the job.
+	 *
+	 * Invoked via `godam_build_folder_zip` (Action Scheduler or WP-Cron). The client
+	 * discovers success/failure by polling get_folder_zip_status().
+	 *
+	 * @param string $job_id Job identifier.
+	 * @return void
+	 */
+	public function run_folder_zip_job( $job_id ) {
+		$key = $this->zip_job_transient_key( $job_id );
+		$job = get_transient( $key );
+
+		if ( ! is_array( $job ) ) {
+			return; // Unknown or expired job.
+		}
+
+		$job['status']  = 'processing';
+		$job['updated'] = time();
+		set_transient( $key, $job, HOUR_IN_SECONDS );
+
+		$folder_id = isset( $job['folder_id'] ) ? (int) $job['folder_id'] : 0;
+		$term      = $folder_id ? get_term( $folder_id, 'media-folder' ) : null;
+
+		if ( ! $term || is_wp_error( $term ) ) {
+			$job['status']  = 'failed';
+			$job['message'] = __( 'Invalid folder term ID.', 'godam' );
+			$job['updated'] = time();
+			set_transient( $key, $job, HOUR_IN_SECONDS );
+			return;
+		}
+
+		// Unguessable filename (see the ZIP hardening in Media_Folder_Create_Zip).
+		$zip_name = 'media-folder-' . $term->slug . '-' . wp_generate_password( 20, false ) . '.zip';
+		$result   = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, $zip_name );
+
+		if ( is_wp_error( $result ) ) {
+			$job['status']  = 'failed';
+			$job['message'] = $result->get_error_message();
+		} else {
+			$job['status']   = 'completed';
+			$job['zip_url']  = isset( $result['zip_url'] ) ? $result['zip_url'] : '';
+			$job['zip_name'] = isset( $result['zip_name'] ) ? $result['zip_name'] : $zip_name;
+			$job['message']  = isset( $result['message'] ) ? $result['message'] : __( 'ZIP file created successfully.', 'godam' );
+		}
+
+		$job['updated'] = time();
+		set_transient( $key, $job, HOUR_IN_SECONDS );
+	}
+
+	/**
+	 * Poll the status of a folder-ZIP build job.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_folder_zip_status( $request ) {
+		$job_id = (string) $request->get_param( 'job_id' );
+		$job    = get_transient( $this->zip_job_transient_key( $job_id ) );
+
+		if ( ! is_array( $job ) ) {
+			return new \WP_Error( 'invalid_job', __( 'Unknown or expired download job.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// A job may only be polled by the user who started it (admins excepted), so one
+		// user cannot read another's generated ZIP URL.
+		if ( isset( $job['user_id'] ) && get_current_user_id() !== (int) $job['user_id'] && ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error( 'rest_forbidden', __( 'You are not allowed to access this download job.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'data'    => array(
+					'status'   => isset( $job['status'] ) ? $job['status'] : 'queued',
+					'zip_url'  => isset( $job['zip_url'] ) ? $job['zip_url'] : '',
+					'zip_name' => isset( $job['zip_name'] ) ? $job['zip_name'] : '',
+					'message'  => isset( $job['message'] ) ? $job['message'] : '',
+				),
 			)
 		);
 	}
