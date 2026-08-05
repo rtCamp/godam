@@ -356,8 +356,14 @@ class Media_Folder_Create_Zip {
 			gc_collect_cycles();
 		}
 
-		if ( function_exists( 'wp_cache_flush' ) ) {
-			wp_cache_flush();
+		// Free only the in-memory (runtime) object cache that accumulates while iterating
+		// attachments — NOT the entire persistent site cache. The previous wp_cache_flush()
+		// flushed every group in the object cache (hurting every other request on the site)
+		// just to reclaim memory for one download. wp_cache_flush_runtime() (WP 6.0+) drops
+		// the runtime cache without touching the persistent backend; on older WP we rely on
+		// gc_collect_cycles() plus the memory-threshold guard in the batch loop.
+		if ( function_exists( 'wp_cache_flush_runtime' ) ) {
+			wp_cache_flush_runtime();
 		}
 	}
 
