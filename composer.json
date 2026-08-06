@@ -21,10 +21,13 @@
 		"npm run lint:staged"
 		],
 		"phpunit": "phpunit",
-		"pot": "bin/make-pot.sh ./languages/godam.pot"
+		"pot": [
+			"WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --include=\"assets/build\" --exclude=\"assets/node_modules,node_modules,tests,vendor\" \"${TMPDIR:-/tmp}/godam-build-refs.pot\"",
+			"WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --exclude=\"assets/node_modules,node_modules,tests,vendor\" --merge=\"${TMPDIR:-/tmp}/godam-build-refs.pot\" ./languages/godam.pot"
+		]
 	},
 	"scripts-descriptions": {
-		"pot": "Regenerate languages/godam.pot. Needs a fresh assets/build first: WordPress resolves JS translations by md5 of the enqueued script path, so every JS string needs a reference to the built file it ships in. See the comment block in bin/make-pot.sh."
+		"pot": "Regenerate languages/godam.pot. Run 'npm run build:prod' first. Two passes: the first scans assets/build only, because '*.min.js' is in make-pot's built-in exclude list and needs an explicit --include to outrank it; the second scans everything else and merges, so each entry carries both a built reference (which is what WordPress hashes to find JS translations at runtime) and a source reference (which is what translators read)."
 	},
 	"require": {
 		"woocommerce/action-scheduler": "^3.9"
