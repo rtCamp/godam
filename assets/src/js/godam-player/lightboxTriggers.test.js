@@ -66,6 +66,38 @@ describe( 'lightbox triggers', () => {
 		expect( openLightboxForId ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	it.each( [
+		[ 'Cmd/Ctrl', { metaKey: true } ],
+		[ 'Ctrl', { ctrlKey: true } ],
+		[ 'Shift', { shiftKey: true } ],
+		[ 'Alt', { altKey: true } ],
+	] )( 'leaves a %s+click to the browser so the link can open in a new tab', ( _label, modifier ) => {
+		const trigger = render( '<a href="/?godam_page=video-embed&id=4595" data-godam-lightbox="4595">W</a>' );
+		const event = new MouseEvent( 'click', { bubbles: true, cancelable: true, ...modifier } );
+		trigger.dispatchEvent( event );
+
+		expect( event.defaultPrevented ).toBe( false );
+		expect( openLightboxForId ).not.toHaveBeenCalled();
+	} );
+
+	it( 'leaves a non-primary click alone', () => {
+		const trigger = render( '<a href="/x" data-godam-lightbox="4595">W</a>' );
+		const event = new MouseEvent( 'click', { bubbles: true, cancelable: true, button: 2 } );
+		trigger.dispatchEvent( event );
+
+		expect( event.defaultPrevented ).toBe( false );
+		expect( openLightboxForId ).not.toHaveBeenCalled();
+	} );
+
+	it( 'still opens on a plain left click', () => {
+		const trigger = render( '<a href="/x" data-godam-lightbox="4595">W</a>' );
+		const event = new MouseEvent( 'click', { bubbles: true, cancelable: true, button: 0 } );
+		trigger.dispatchEvent( event );
+
+		expect( event.defaultPrevented ).toBe( true );
+		expect( openLightboxForId ).toHaveBeenCalledTimes( 1 );
+	} );
+
 	it( 'works when the click lands on a child of the trigger', () => {
 		render( '<button data-godam-lightbox="4595"><span id="label">Watch</span></button>' );
 		click( document.getElementById( 'label' ) );

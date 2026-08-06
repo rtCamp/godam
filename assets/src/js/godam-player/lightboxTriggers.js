@@ -107,6 +107,14 @@ export function initLightboxTriggers() {
 				return;
 			}
 
+			// Leave modified and non-primary clicks to the browser. An `<a href>`
+			// trigger is a real link to the embed page, so Cmd/Ctrl+click must still
+			// open it in a new tab and Shift+click in a new window. (Middle-click
+			// needs no handling — it fires `auxclick`, which never reaches here.)
+			if ( event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0 ) {
+				return;
+			}
+
 			// Stop an `<a href="{embedUrl}">` fallback from navigating away.
 			event.preventDefault();
 			event.stopPropagation();

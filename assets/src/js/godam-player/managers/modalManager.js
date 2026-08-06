@@ -25,6 +25,21 @@ import {
 import { seekPlayer } from '../utils/seekPlayer.js';
 
 /**
+ * Attributes that turn the inline poster into a button.
+ *
+ * Applied while it is a click-to-open poster and taken away again while the
+ * player is live inside the lightbox. Values are lazy so the label is translated
+ * at call time rather than module load.
+ *
+ * @type {Array<{attribute: string, value: Function}>}
+ */
+const POSTER_SEMANTICS = [
+	{ attribute: 'role', value: () => 'button' },
+	{ attribute: 'tabindex', value: () => '0' },
+	{ attribute: 'aria-label', value: () => __( 'Play video in a lightbox', 'godam' ) },
+];
+
+/**
  * "Show in lightbox" — open a GoDAM player inside a lightbox.
  *
  * Inspired by the GoDAM-for-Woo shoppable video modal: the already-initialised
@@ -65,17 +80,7 @@ export class ModalManager {
 		}
 		playerRoot.dataset.godamModalBound = '1';
 
-		// The poster is the click target, so give it button semantics. Without
-		// these the only way to open an inline lightbox player is a mouse.
-		if ( ! playerRoot.hasAttribute( 'role' ) ) {
-			playerRoot.setAttribute( 'role', 'button' );
-		}
-		if ( ! playerRoot.hasAttribute( 'tabindex' ) ) {
-			playerRoot.setAttribute( 'tabindex', '0' );
-		}
-		if ( ! playerRoot.hasAttribute( 'aria-label' ) ) {
-			playerRoot.setAttribute( 'aria-label', __( 'Play video in a lightbox', 'godam' ) );
-		}
+		this.applyPosterSemantics( playerRoot );
 
 		/**
 		 * Whether this event should open the lightbox rather than be left alone.
@@ -136,6 +141,71 @@ export class ModalManager {
 			},
 			true,
 		);
+	}
+
+	/**
+	 * Give the inline poster button semantics, so it can be opened by keyboard.
+	 *
+	 * Records which attributes were actually added, so an author's own `role` or
+	 * `aria-label` is never clobbered — and, more importantly, never removed again
+	 * by {@link ModalManager#suspendPosterSemantics}.
+	 *
+	 * @param {HTMLElement} playerRoot - The movable player root.
+	 */
+	applyPosterSemantics( playerRoot ) {
+		const added = [];
+
+		POSTER_SEMANTICS.forEach( ( { attribute, value } ) => {
+			if ( ! playerRoot.hasAttribute( attribute ) ) {
+				playerRoot.setAttribute( attribute, value() );
+				added.push( attribute );
+			}
+		} );
+
+		if ( added.length ) {
+			playerRoot.dataset.godamPosterSemantics = added.join( ' ' );
+		}
+	}
+
+	/**
+	 * Drop the poster's button semantics while it is open in the lightbox.
+	 *
+	 * `role="button"` is wrong once the player is on screen: it labels an action
+	 * that has already happened, it is a Tab stop that does nothing (the open
+	 * handlers bail while this video is active), and it wraps the whole control bar
+	 * in a button — interactive descendants inside a `button` are invalid ARIA, and
+	 * a conforming accessibility tree treats a button's children as presentational.
+	 *
+	 * @param {HTMLElement} playerRoot - The movable player root.
+	 * @return {boolean} True when semantics were removed and must be restored later.
+	 */
+	suspendPosterSemantics( playerRoot ) {
+		const added = playerRoot?.dataset?.godamPosterSemantics;
+		if ( ! added ) {
+			return false;
+		}
+
+		added.split( ' ' ).forEach( ( attribute ) => playerRoot.removeAttribute( attribute ) );
+		return true;
+	}
+
+	/**
+	 * Put the poster's button semantics back after the lightbox closes.
+	 *
+	 * @param {HTMLElement} playerRoot - The movable player root.
+	 */
+	resumePosterSemantics( playerRoot ) {
+		const added = playerRoot?.dataset?.godamPosterSemantics;
+		if ( ! added ) {
+			return;
+		}
+
+		const owned = added.split( ' ' );
+		POSTER_SEMANTICS.forEach( ( { attribute, value } ) => {
+			if ( owned.includes( attribute ) ) {
+				playerRoot.setAttribute( attribute, value() );
+			}
+		} );
 	}
 
 	/**
@@ -265,6 +335,8 @@ export class ModalManager {
 			iframe: null,
 			hash: null,
 			requestedId: requestedId === null ? null : String( requestedId ),
+			// The poster is no longer a button once it is the open player.
+			posterSemanticsSuspended: this.suspendPosterSemantics( playerRoot ),
 		};
 
 		this.applyContentRatio( modal, playerRoot );
@@ -510,6 +582,11 @@ export class ModalManager {
 			if ( anchor && anchor.parentNode ) {
 				anchor.parentNode.insertBefore( playerRoot, anchor );
 				anchor.parentNode.removeChild( anchor );
+			}
+
+			// Back to being a click-to-open poster, so the button semantics apply again.
+			if ( entry.posterSemanticsSuspended ) {
+				this.resumePosterSemantics( playerRoot );
 			}
 		} else if ( 'iframe' === mode ) {
 			// Removing the iframe is what stops playback.

@@ -400,6 +400,64 @@ describe( 'ModalManager', () => {
 			expect( playerRoot.getAttribute( 'aria-label' ) ).toBeTruthy();
 		} );
 
+		it( 'drops the button semantics while the player is open, and restores them on close', () => {
+			// Left in place they would label an action that already happened, add a
+			// Tab stop that does nothing, and wrap the whole control bar in a button.
+			const { playerRoot, video } = renderPlayer();
+			lightbox.register( video );
+
+			lightbox.openElement( playerRoot, { video } );
+
+			expect( playerRoot.hasAttribute( 'role' ) ).toBe( false );
+			expect( playerRoot.hasAttribute( 'tabindex' ) ).toBe( false );
+			expect( playerRoot.hasAttribute( 'aria-label' ) ).toBe( false );
+
+			lightbox.close();
+
+			expect( playerRoot.getAttribute( 'role' ) ).toBe( 'button' );
+			expect( playerRoot.getAttribute( 'tabindex' ) ).toBe( '0' );
+			expect( playerRoot.getAttribute( 'aria-label' ) ).toBeTruthy();
+		} );
+
+		it( 'never removes semantics the author set themselves', () => {
+			document.body.innerHTML = `
+				<div id="root" role="region" aria-label="Author label">
+					<figure><div class="godam-video-wrapper">
+						<video id="v" data-id="4595" data-job_id="job-1" data-show-in-lightbox="true"></video>
+					</div></figure>
+				</div>
+			`;
+			const playerRoot = document.getElementById( 'root' );
+			const video = document.getElementById( 'v' );
+
+			lightbox.register( video );
+			// Only tabindex was missing, so only tabindex is ours to manage.
+			expect( playerRoot.getAttribute( 'role' ) ).toBe( 'region' );
+			expect( playerRoot.getAttribute( 'aria-label' ) ).toBe( 'Author label' );
+
+			lightbox.openElement( playerRoot, { video } );
+
+			expect( playerRoot.getAttribute( 'role' ) ).toBe( 'region' );
+			expect( playerRoot.getAttribute( 'aria-label' ) ).toBe( 'Author label' );
+			expect( playerRoot.hasAttribute( 'tabindex' ) ).toBe( false );
+
+			lightbox.close();
+
+			expect( playerRoot.getAttribute( 'tabindex' ) ).toBe( '0' );
+		} );
+
+		it( 'leaves an unregistered root alone on open', () => {
+			// A root that never got poster semantics must not have attributes
+			// invented for it when the lightbox closes.
+			const { playerRoot, video } = renderPlayer();
+
+			lightbox.openElement( playerRoot, { video } );
+			lightbox.close();
+
+			expect( playerRoot.hasAttribute( 'role' ) ).toBe( false );
+			expect( playerRoot.hasAttribute( 'tabindex' ) ).toBe( false );
+		} );
+
 		it.each( [ 'Enter', ' ' ] )( 'opens on %s', ( key ) => {
 			const { playerRoot, video } = renderPlayer();
 			lightbox.register( video );
