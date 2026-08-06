@@ -2507,12 +2507,12 @@ body.godam-share-modal-open {
 }
 
 /* ---------------------------------------------------------------------------
- * "Play on modal" — click the inline player to open it in a lightbox.
+ * "Show in lightbox" — click the inline player to open it in a lightbox.
  * Modal structure/behaviour is inspired by the GoDAM-for-Woo shoppable video
  * modal. See assets/src/js/godam-player/managers/modalManager.js.
  * ------------------------------------------------------------------------- */
 
-.godam-video-wrapper.godam-play-on-modal {
+.godam-video-wrapper.godam-show-in-lightbox {
 	cursor: pointer;
 }
 
@@ -2600,4 +2600,28 @@ body.godam-player-modal-open {
 	width: 100% !important;
 	max-width: 100% !important;
 	margin: 0 !important;
+}
+
+/* Iframe mode: a trigger whose video is not rendered on the page shows the
+ * embed page instead of moving a player in. See modalManager.js openIframe(). */
+.godam-player-modal-iframe {
+	display: block;
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	max-height: 90dvh;
+	border: 0;
+	background: #000;
+}
+
+/* The share modal is a body-level dialog at z-index 9999, which sits *below*
+ * the lightbox overlay (100000+). Sharing from inside the lightbox is a
+ * first-class flow — it is what deep links are for — so lift it above while the
+ * lightbox is open, and only then. */
+body.godam-player-modal-open .share-modal-container {
+	z-index: 100003;
+}
+
+/* Triggers are clickable, whatever element the author used. */
+[data-godam-lightbox] {
+	cursor: pointer;
 }

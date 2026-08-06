@@ -138,14 +138,14 @@ class WPB_GoDAM_Video {
 			),
 			array(
 				'type'        => 'dropdown',
-				'heading'     => esc_html__( 'Play on Modal', 'godam' ),
-				'param_name'  => 'play_on_modal',
+				'heading'     => esc_html__( 'Show in Lightbox', 'godam' ),
+				'param_name'  => 'show_in_lightbox',
 				'value'       => array(
 					esc_html__( 'No', 'godam' )  => '0',
 					esc_html__( 'Yes', 'godam' ) => '1',
 				),
 				'std'         => '0',
-				'description' => esc_html__( 'Play video in a popup modal when clicked.', 'godam' ),
+				'description' => esc_html__( 'Open the video in a lightbox when clicked.', 'godam' ),
 				'save_always' => true,
 				'dependency'  => array(
 					'element'   => 'id',

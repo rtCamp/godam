@@ -271,16 +271,25 @@ class ShareManager {
 			return null;
 		}
 
+		// The GoDAM Central and embed links are SaaS routes keyed on the transcoding
+		// job, so they always use the job ID — the SaaS knows nothing of WordPress
+		// attachment IDs.
 		const videoLink = `${ baseUrl }/web/video/${ jobId }`;
 		const embedUrl = `${ baseUrl }/web/embed/${ jobId }`;
 		const embedCode = `<iframe src="${ embedUrl }"></iframe>`;
 		const encodedLink = encodeURI( videoLink );
 		const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
-		// Build page link: current WP page URL with an anchor pointing to this video block.
-		// Use URL API to preserve any existing query params while replacing only the hash.
+		// The WP page link is resolved by this site, so prefer the WordPress
+		// attachment ID: it is the ID authors recognise and the one they write into
+		// triggers. Fall back to the job ID for virtual media, which has no local
+		// attachment. Either spelling resolves — see findVideoById().
+		const pageId = this.video?.dataset?.id || jobId;
+
+		// Current WP page URL with an anchor pointing at this video. Use the URL API
+		// so existing query params survive and only the hash is replaced.
 		const pageUrl = new URL( window.location.href );
-		pageUrl.hash = `godam-video-${ jobId }`;
+		pageUrl.hash = `godam-video-${ pageId }`;
 		const pageLink = pageUrl.toString();
 
 		return { videoLink, embedUrl, embedCode, encodedLink, message, pageLink };

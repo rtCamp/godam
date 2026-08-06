@@ -25,6 +25,8 @@ class GoDAM_Player {
 	final protected function __construct() {
 		add_shortcode( 'godam_video', array( $this, 'render' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
+		// Priority 20: must run after register_scripts() above has registered the handles.
+		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue_lightbox_runtime' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'godam_skin_styles_enqueue' ) );
@@ -194,6 +196,10 @@ class GoDAM_Player {
 			'godamData',
 			array(
 				'apiBase'                 => RTGODAM_API_BASE,
+				// Used by lightbox element triggers to build the embed-page URL when
+				// the requested video is not rendered on the page.
+				'embedBaseUrl'            => home_url( '/' ),
+				'hostPostId'              => get_the_ID() ? get_the_ID() : '',
 				'currentLoggedInUserData' => rtgodam_get_current_logged_in_user_data(),
 				'loginUrl'                => apply_filters( 'rtgodam_site_login_url', wp_login_url() . '?redirect_to=' . rawurlencode( get_permalink() ) ),
 				'registrationUrl'         => apply_filters( 'rtgodam_site_registration_url', wp_registration_url() . '&redirect_to=' . rawurlencode( get_permalink() ) ),
@@ -201,6 +207,60 @@ class GoDAM_Player {
 				'nonce'                   => wp_create_nonce( 'wp_rest' ),
 			)
 		);
+	}
+
+	/**
+	 * Load the player runtime on pages that only contain a lightbox trigger.
+	 *
+	 * A rendered player (block, shortcode, gallery, widget) enqueues the runtime
+	 * itself. A trigger is markup only — a `data-godam-lightbox` element or an
+	 * `<a href="#godam-video-{id}">` — so a page whose sole GoDAM content is a
+	 * trigger would otherwise ship no JavaScript and the trigger would do nothing.
+	 *
+	 * Only singular views are sniffed, since that is where the content is cheaply
+	 * available. Triggers placed in a theme template, a widget or a nav menu are
+	 * invisible here; use the `rtgodam_enqueue_lightbox_runtime` filter for those.
+	 *
+	 * @return void
+	 */
+	public function maybe_enqueue_lightbox_runtime() {
+		// Already on its way in — a player on the page did it.
+		if ( wp_script_is( 'godam-player-frontend-script', 'enqueued' ) ) {
+			return;
+		}
+
+		$godam_needs_runtime = false;
+
+		if ( is_singular() ) {
+			$godam_post = get_post();
+
+			if ( $godam_post instanceof \WP_Post ) {
+				// Elementor keeps its layout in post meta rather than post_content.
+				$godam_haystack = $godam_post->post_content . (string) get_post_meta( $godam_post->ID, '_elementor_data', true );
+
+				$godam_needs_runtime = false !== strpos( $godam_haystack, 'data-godam-lightbox' )
+					|| false !== strpos( $godam_haystack, '#godam-video-' );
+			}
+		}
+
+		/**
+		 * Filters whether to load the lightbox runtime on the current request.
+		 *
+		 * Use this when a trigger lives somewhere the content sniff cannot see, such
+		 * as a theme template, a sidebar widget or a nav-menu item.
+		 *
+		 * @since 2.0.1
+		 *
+		 * @param bool $godam_needs_runtime Whether the runtime is needed.
+		 */
+		$godam_needs_runtime = apply_filters( 'rtgodam_enqueue_lightbox_runtime', $godam_needs_runtime );
+
+		if ( ! $godam_needs_runtime ) {
+			return;
+		}
+
+		wp_enqueue_script( 'godam-player-frontend-script' );
+		wp_enqueue_style( 'godam-player-style' );
 	}
 
 	/**
@@ -267,8 +327,8 @@ class GoDAM_Player {
 				'preview'            => false,
 				'showShareButton'    => false,
 				'show_share_button'  => false, // WPBakery format (lowercase with underscore).
-				'playOnModal'        => false,
-				'play_on_modal'      => false, // WPBakery format (lowercase with underscore).
+				'showInLightbox'     => false,
+				'show_in_lightbox'   => false, // WPBakery format (lowercase with underscore).
 				'playerHeight'       => '',
 				'player_height'      => '', // WPBakery format (lowercase with underscore).
 				'show_transcription' => '', // WPBakery toggle → maps to showTranscription.
@@ -283,7 +343,7 @@ class GoDAM_Player {
 		);
 
 		// Handle boolean attributes passed as strings (do this before mapping).
-		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'preview', 'showShareButton', 'show_share_button', 'playOnModal', 'play_on_modal' );
+		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'preview', 'showShareButton', 'show_share_button', 'showInLightbox', 'show_in_lightbox' );
 		foreach ( $boolean_attributes as $bool_attr ) {
 			if ( isset( $attributes[ $bool_attr ] ) ) {
 				$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
@@ -310,8 +370,8 @@ class GoDAM_Player {
 		if ( isset( $attributes['show_share_button'] ) && '' !== $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
 			$attributes['showShareButton'] = $attributes['show_share_button'];
 		}
-		if ( isset( $attributes['play_on_modal'] ) && '' !== $attributes['play_on_modal'] && ( ! isset( $attributes['playOnModal'] ) || false === $attributes['playOnModal'] ) ) {
-			$attributes['playOnModal'] = $attributes['play_on_modal'];
+		if ( isset( $attributes['show_in_lightbox'] ) && '' !== $attributes['show_in_lightbox'] && ( ! isset( $attributes['showInLightbox'] ) || false === $attributes['showInLightbox'] ) ) {
+			$attributes['showInLightbox'] = $attributes['show_in_lightbox'];
 		}
 		if ( isset( $attributes['player_height'] ) && '' !== $attributes['player_height'] && ( ! isset( $attributes['playerHeight'] ) || '' === $attributes['playerHeight'] ) ) {
 			$attributes['playerHeight'] = $attributes['player_height'];

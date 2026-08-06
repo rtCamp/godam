@@ -128,7 +128,7 @@
 			"type": "boolean",
 			"default": false
 		},
-		"playOnModal": {
+		"showInLightbox": {
 			"type": "boolean",
 			"default": false
 		}
