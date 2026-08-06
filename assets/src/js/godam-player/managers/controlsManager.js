@@ -14,6 +14,12 @@ import { __ } from '@wordpress/i18n';
 import GoDAM from '../../../../../assets/src/images/godam-branding.svg';
 import SettingsButton from '../masterSettings.js';
 import { PLAYER_SKINS } from '../utils/constants.js';
+import {
+	CUSTOM_FULLSCREEN_CONTAINER_CLASS,
+	CUSTOM_FULLSCREEN_PLAYER_CLASS,
+	lockBodyScroll,
+	unlockBodyScroll,
+} from '../utils/customFullscreen.js';
 import MenuButtonHoverManager from './menuButtonHover.js';
 
 /**
@@ -103,46 +109,25 @@ export default class ControlsManager {
 
 					// Remove fullscreen CSS classes from video containers
 					if ( videoContainer ) {
-						videoContainer.classList.remove( 'vjs-fullscreen' );
+						videoContainer.classList.remove( CUSTOM_FULLSCREEN_PLAYER_CLASS );
 					}
 					if ( godamVideoContainer ) {
-						godamVideoContainer.classList.remove( 'godam-video-fullscreen' );
+						godamVideoContainer.classList.remove( CUSTOM_FULLSCREEN_CONTAINER_CLASS );
 					}
 
-					// RESTORE BACKGROUND SCROLLING (iOS-compatible method)
-					// Step 1: Get the saved scroll position from body's top style
-					const scrollY = document.body.style.top;
-					// Step 2: Reset all scroll-prevention styles
-					document.body.style.overflow = '';
-					document.body.style.position = '';
-					document.body.style.top = '';
-					document.body.style.width = '';
-					document.documentElement.style.overflow = '';
-					// Step 3: Restore the original scroll position (multiply by -1 because it was stored as negative)
-					if ( scrollY ) {
-						window.scrollTo( 0, parseInt( scrollY || '0' ) * -1 );
-					}
+					unlockBodyScroll();
 				} else {
 					// ENTER FULLSCREEN MODE
 
 					// Add fullscreen CSS classes to video containers
 					if ( videoContainer ) {
-						videoContainer.classList.add( 'vjs-fullscreen' );
+						videoContainer.classList.add( CUSTOM_FULLSCREEN_PLAYER_CLASS );
 					}
 					if ( godamVideoContainer ) {
-						godamVideoContainer.classList.add( 'godam-video-fullscreen' );
+						godamVideoContainer.classList.add( CUSTOM_FULLSCREEN_CONTAINER_CLASS );
 					}
 
-					// PREVENT BACKGROUND SCROLLING (robust iOS method)
-					// iOS Safari doesn't respect overflow: hidden alone, so we use position: fixed
-					// Step 1: Save current scroll position
-					const scrollY = window.scrollY;
-					// Step 2: Prevent scrolling by fixing body position and offsetting it
-					document.body.style.overflow = 'hidden';
-					document.documentElement.style.overflow = 'hidden';
-					document.body.style.position = 'fixed';
-					document.body.style.top = `-${ scrollY }px`; // Negative offset to keep content in place
-					document.body.style.width = '100%'; // Prevent horizontal scrollbar
+					lockBodyScroll();
 				}
 
 				// Notify other components about fullscreen state change
@@ -181,25 +166,13 @@ export default class ControlsManager {
 
 				// Remove fullscreen CSS classes from video containers
 				if ( videoContainer ) {
-					videoContainer.classList.remove( 'vjs-fullscreen' );
+					videoContainer.classList.remove( CUSTOM_FULLSCREEN_PLAYER_CLASS );
 				}
 				if ( godamVideoContainer ) {
-					godamVideoContainer.classList.remove( 'godam-video-fullscreen' );
+					godamVideoContainer.classList.remove( CUSTOM_FULLSCREEN_CONTAINER_CLASS );
 				}
 
-				// RESTORE BACKGROUND SCROLLING (iOS-compatible method)
-				// Step 1: Get the saved scroll position from body's top style
-				const scrollY = document.body.style.top;
-				// Step 2: Reset all scroll-prevention styles
-				document.body.style.overflow = '';
-				document.body.style.position = '';
-				document.body.style.top = '';
-				document.body.style.width = '';
-				document.documentElement.style.overflow = '';
-				// Step 3: Restore the original scroll position (multiply by -1 because it was stored as negative)
-				if ( scrollY ) {
-					window.scrollTo( 0, parseInt( scrollY || '0' ) * -1 );
-				}
+				unlockBodyScroll();
 
 				// Notify other components about fullscreen state change
 				this.player().trigger( 'customfullscreenchange' );

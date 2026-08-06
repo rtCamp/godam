@@ -22,6 +22,8 @@ import {
 	parseLightboxHash,
 	parseStartTime,
 } from '../utils/lightboxTargets.js';
+import { exitCustomFullscreen } from '../utils/customFullscreen.js';
+import { isPlayerFullscreen } from '../utils/fullscreenReparent.js';
 import { seekPlayer } from '../utils/seekPlayer.js';
 
 /**
@@ -38,6 +40,41 @@ const POSTER_SEMANTICS = [
 	{ attribute: 'tabindex', value: () => '0' },
 	{ attribute: 'aria-label', value: () => __( 'Play video in a lightbox', 'godam' ) },
 ];
+
+/**
+ * How far a finger may travel and still count as a tap, in pixels.
+ *
+ * Matches Video.js's own tap detection, so a swipe that starts on the video
+ * scrolls the page instead of opening the lightbox.
+ *
+ * @type {number}
+ */
+const TAP_MOVEMENT_THRESHOLD = 10;
+
+/**
+ * How long a touch may last and still count as a tap, in milliseconds.
+ *
+ * Also matches Video.js, so a long press is left alone.
+ *
+ * @type {number}
+ */
+const TAP_MAX_DURATION = 200;
+
+/**
+ * Whether a completed touch was a tap rather than a swipe or a long press.
+ *
+ * @param {Object} start    - Where and when the touch began.
+ * @param {number} start.x  - Start screenX.
+ * @param {number} start.y  - Start screenY.
+ * @param {number} start.at - Start timestamp.
+ * @param {Touch}  touch    - The touch that ended.
+ * @return {boolean} True when the gesture was a tap.
+ */
+function isTap( start, touch ) {
+	return Math.abs( touch.screenX - start.x ) <= TAP_MOVEMENT_THRESHOLD &&
+		Math.abs( touch.screenY - start.y ) <= TAP_MOVEMENT_THRESHOLD &&
+		Date.now() - start.at <= TAP_MAX_DURATION;
+}
 
 /**
  * "Show in lightbox" — open a GoDAM player inside a lightbox.
@@ -116,6 +153,48 @@ export class ModalManager {
 					return;
 				}
 				event.preventDefault();
+				event.stopPropagation();
+				openLightbox();
+			},
+			true,
+		);
+
+		// Taps need handling of their own. Video.js cancels `touchend` on the tech
+		// ("stop the mouse events from also happening"), and a cancelled `touchend`
+		// means the browser never synthesizes the `click` the handler above waits
+		// for — so on a touch device, tapping the video did nothing at all.
+		let touchStart = null;
+
+		playerRoot.addEventListener(
+			'touchstart',
+			( event ) => {
+				// Ignore multi-touch: a pinch or two-finger gesture is not a tap.
+				const touch = 1 === event.touches?.length ? event.touches[ 0 ] : null;
+				touchStart = touch ? { x: touch.screenX, y: touch.screenY, at: Date.now() } : null;
+			},
+			{ capture: true, passive: true },
+		);
+
+		playerRoot.addEventListener(
+			'touchend',
+			( event ) => {
+				const start = touchStart;
+				touchStart = null;
+
+				if ( ! start || ! shouldOpen( event ) ) {
+					return;
+				}
+
+				const touch = event.changedTouches?.[ 0 ];
+				if ( ! touch || ! isTap( start, touch ) ) {
+					return;
+				}
+
+				// Cancelling here is also what stops the browser synthesizing a click
+				// afterwards, so the lightbox cannot be opened twice by one tap.
+				if ( event.cancelable ) {
+					event.preventDefault();
+				}
 				event.stopPropagation();
 				openLightbox();
 			},
@@ -337,6 +416,7 @@ export class ModalManager {
 			requestedId: requestedId === null ? null : String( requestedId ),
 			// The poster is no longer a button once it is the open player.
 			posterSemanticsSuspended: this.suspendPosterSemantics( playerRoot ),
+			disposeFullscreenWatch: this.watchFullscreen( modal, video ),
 		};
 
 		this.applyContentRatio( modal, playerRoot );
@@ -412,6 +492,42 @@ export class ModalManager {
 		this.applyHistory( historyId, pushHistory );
 
 		iframe.focus?.( { preventScroll: true } );
+	}
+
+	/**
+	 * Keep the wrapper out of the way while the player is fullscreen.
+	 *
+	 * iOS Safari cannot put an arbitrary element into real fullscreen, so the
+	 * player fakes it with `position: fixed; inset: 0`. That resolves against the
+	 * nearest transformed ancestor rather than the viewport — and this wrapper is
+	 * transformed for centring, so a "fullscreen" video ends up pinned inside the
+	 * lightbox box instead of filling the screen. Dropping the transform for the
+	 * duration hands the viewport back. The lightbox's own close button is hidden
+	 * too, since fullscreen brings its own exit control.
+	 *
+	 * @param {Object}      modal - The cached modal elements.
+	 * @param {HTMLElement} video - The video element, or null in iframe mode.
+	 * @return {Function|null} Disposer, or null when there is no player to watch.
+	 */
+	watchFullscreen( modal, video ) {
+		const player = video ? videojs.getPlayer( video ) : null;
+		if ( ! player ) {
+			return null;
+		}
+
+		const sync = () => {
+			modal.wrapper.classList.toggle( 'godam-lightbox-fullscreen', isPlayerFullscreen( player ) );
+		};
+
+		player.on( 'fullscreenchange', sync );
+		player.on( 'customfullscreenchange', sync );
+		sync();
+
+		return () => {
+			player.off( 'fullscreenchange', sync );
+			player.off( 'customfullscreenchange', sync );
+			modal.wrapper.classList.remove( 'godam-lightbox-fullscreen' );
+		};
 	}
 
 	/**
@@ -573,9 +689,16 @@ export class ModalManager {
 		// close(), and an already-null entry makes that a no-op.
 		this.activeEntry = null;
 
+		entry.disposeFullscreenWatch?.();
+
 		if ( 'element' === mode ) {
 			const player = video ? videojs.getPlayer( video ) : null;
 			player?.pause();
+
+			// Closing out of a custom fullscreen — Back, Escape, a trigger for another
+			// video — would otherwise leave the body pinned `position: fixed` and the
+			// page unscrollable, because only the exit button releases that lock.
+			exitCustomFullscreen( player?.el?.() );
 
 			playerRoot.classList.remove( 'godam-player-modal-item' );
 
@@ -618,6 +741,14 @@ export class ModalManager {
 	 */
 	handleKeydown( event ) {
 		if ( 'Escape' === event.key ) {
+			// Unwind one layer at a time. Escape out of a fullscreen video should
+			// land back in the lightbox, not dismiss the whole thing — that is what
+			// native fullscreen does, and the iOS shim has no browser behaviour of
+			// its own to match it. A second Escape then closes the lightbox.
+			if ( this.exitFullscreenIfActive() ) {
+				return;
+			}
+
 			this.close();
 			return;
 		}
@@ -625,6 +756,33 @@ export class ModalManager {
 		if ( 'Tab' === event.key ) {
 			this.trapFocus( event );
 		}
+	}
+
+	/**
+	 * Leave fullscreen, if the open player is in it.
+	 *
+	 * The iOS shim is only CSS classes, so nothing exits it on Escape unless we
+	 * do it here. Native fullscreen is handed back to the browser.
+	 *
+	 * @return {boolean} True when fullscreen was active, so the caller should stop.
+	 */
+	exitFullscreenIfActive() {
+		const video = this.activeEntry?.video;
+		const player = video ? videojs.getPlayer( video ) : null;
+
+		if ( ! player || ! isPlayerFullscreen( player ) ) {
+			return false;
+		}
+
+		if ( exitCustomFullscreen( player.el?.() ) ) {
+			// Class-based, so nothing else knows it changed: the wrapper's transform,
+			// the transcript panel and the share modal all key off this event.
+			player.trigger( 'customfullscreenchange' );
+			return true;
+		}
+
+		player.exitFullscreen?.();
+		return true;
 	}
 
 	/**

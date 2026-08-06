@@ -2629,6 +2629,26 @@ body.godam-player-modal-open {
 		opacity: 1;
 		pointer-events: auto;
 	}
+
+	/* While the player is fullscreen, get out of its way.
+	 *
+	 * iOS Safari refuses real fullscreen for anything but a bare <video>, so the
+	 * player fakes it with `position: fixed; inset: 0`. Fixed positioning resolves
+	 * against the nearest transformed ancestor, and the centring transform above
+	 * makes that this wrapper — which pins the "fullscreen" video inside the
+	 * lightbox instead of filling the screen. Dropping the transform gives the
+	 * viewport back. Toggled by modalManager.js on (custom)fullscreenchange. */
+	&.godam-lightbox-fullscreen {
+		inset: 0;
+		width: 100%;
+		max-height: none;
+		transform: none;
+
+		/* Fullscreen has its own exit control; two close buttons is one too many. */
+		.godam-player-modal-close {
+			display: none;
+		}
+	}
 }
 
 .godam-player-modal-video {

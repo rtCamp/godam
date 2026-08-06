@@ -10,8 +10,14 @@ import {
 	openLightboxForId,
 } from './modalManager';
 
+/**
+ * External dependencies
+ */
+import videojs from 'video.js';
+
 // The lightbox only calls videojs.getPlayer(); a null return is the "not yet
-// initialised" path, which these tests exercise deliberately.
+// initialised" path, which most of these tests exercise deliberately. The
+// fullscreen suite swaps in a stand-in player.
 jest.mock( 'video.js', () => ( {
 	__esModule: true,
 	default: { getPlayer: jest.fn( () => null ) },
@@ -73,6 +79,10 @@ describe( 'ModalManager', () => {
 	} );
 
 	afterEach( () => {
+		// Close before tearing down the DOM: an open manager leaves a document-level
+		// keydown listener behind, and a later Escape would then reach two managers.
+		lightbox.historyPushed = false; // Skip the history.back() during teardown.
+		lightbox.close();
 		document.body.innerHTML = '';
 		document.body.className = '';
 	} );
@@ -385,6 +395,101 @@ describe( 'ModalManager', () => {
 			expect( event.defaultPrevented ).toBe( false );
 		} );
 
+		/**
+		 * Fire a touch gesture at an element.
+		 *
+		 * @param {HTMLElement} target            - Element to touch.
+		 * @param {Object}      opts              - Gesture shape.
+		 * @param {number[]}    [opts.from]       - Start [screenX, screenY].
+		 * @param {number[]}    [opts.to]         - End [screenX, screenY].
+		 * @param {number}      [opts.fingers]    - Number of touch points.
+		 * @param {boolean}     [opts.cancelable] - Whether touchend is cancelable.
+		 * @return {Event} The dispatched touchend, for defaultPrevented checks.
+		 */
+		const touchGesture = ( target, { from = [ 10, 10 ], to = [ 10, 10 ], fingers = 1, cancelable = true } = {} ) => {
+			const mk = ( x, y ) => ( { screenX: x, screenY: y, clientX: x, clientY: y, target } );
+			const touches = Array.from( { length: fingers }, () => mk( ...from ) );
+
+			const startEv = new Event( 'touchstart', { bubbles: true, cancelable: true } );
+			startEv.touches = touches;
+			target.dispatchEvent( startEv );
+
+			const endEv = new Event( 'touchend', { bubbles: true, cancelable } );
+			endEv.touches = [];
+			endEv.changedTouches = [ mk( ...to ) ];
+			target.dispatchEvent( endEv );
+			return endEv;
+		};
+
+		it( 'opens on a tap, which Video.js otherwise leaves without a click', () => {
+			// Video.js cancels touchend on the tech to suppress synthesized mouse
+			// events, so the click handler never fires on a touch device.
+			const { playerRoot, video } = renderPlayer();
+			lightbox.register( video );
+
+			const end = touchGesture( video );
+
+			expect( lightbox.isOpen() ).toBe( true );
+			expect( document.querySelector( '.godam-player-modal-video video' ) ).toBe( video );
+			// Cancelling the touchend is what stops a second, synthesized click.
+			expect( end.defaultPrevented ).toBe( true );
+			expect( playerRoot.parentElement.className ).toBe( 'godam-player-modal-video' );
+		} );
+
+		it( 'ignores a swipe so the page can still be scrolled from the video', () => {
+			const { video } = renderPlayer();
+			lightbox.register( video );
+
+			touchGesture( video, { from: [ 10, 10 ], to: [ 10, 90 ] } );
+
+			expect( lightbox.isOpen() ).toBe( false );
+		} );
+
+		it( 'ignores a multi-touch gesture', () => {
+			const { video } = renderPlayer();
+			lightbox.register( video );
+
+			touchGesture( video, { fingers: 2 } );
+
+			expect( lightbox.isOpen() ).toBe( false );
+		} );
+
+		it( 'ignores a touchend with no matching touchstart', () => {
+			const { video } = renderPlayer();
+			lightbox.register( video );
+
+			const endEv = new Event( 'touchend', { bubbles: true, cancelable: true } );
+			endEv.changedTouches = [ { screenX: 10, screenY: 10 } ];
+			video.dispatchEvent( endEv );
+
+			expect( lightbox.isOpen() ).toBe( false );
+		} );
+
+		it( 'leaves taps on video-overlay inner blocks alone', () => {
+			const { playerRoot, video } = renderPlayer();
+			playerRoot.querySelector( '.godam-video-wrapper' ).insertAdjacentHTML(
+				'afterbegin',
+				'<div class="godam-video-overlay-container"><a id="cta" href="/shop">Buy now</a></div>',
+			);
+			lightbox.register( video );
+
+			const end = touchGesture( document.getElementById( 'cta' ) );
+
+			expect( lightbox.isOpen() ).toBe( false );
+			expect( end.defaultPrevented ).toBe( false );
+		} );
+
+		it( 'lets taps through to the controls once the player is in the lightbox', () => {
+			const { playerRoot, video } = renderPlayer();
+			lightbox.register( video );
+			lightbox.openElement( playerRoot, { video } );
+
+			const end = touchGesture( video );
+
+			// Not swallowed — Video.js needs to see it to toggle playback.
+			expect( end.defaultPrevented ).toBe( false );
+		} );
+
 		it( 'ignores a video with no movable root', () => {
 			document.body.innerHTML = '<video id="v" data-show-in-lightbox="true"></video>';
 			expect( () => lightbox.register( document.getElementById( 'v' ) ) ).not.toThrow();
@@ -518,6 +623,190 @@ describe( 'ModalManager', () => {
 			expect( () => lightbox.openElement( orphan, { video } ) ).not.toThrow();
 			expect( lightbox.isOpen() ).toBe( false );
 		} );
+	} );
+} );
+
+describe( 'fullscreen inside the lightbox', () => {
+	let lightbox;
+	let player;
+	let playerEl;
+
+	/**
+	 * A player stand-in with just the surface ModalManager touches.
+	 *
+	 * @param {HTMLElement} el - The `.video-js` element it reports.
+	 * @return {Object} Fake Video.js player.
+	 */
+	const fakePlayer = ( el ) => {
+		const handlers = {};
+		return {
+			el: () => el,
+			on: ( ev, fn ) => {
+				handlers[ ev ] = handlers[ ev ] || [];
+				handlers[ ev ].push( fn );
+			},
+			off: ( ev, fn ) => {
+				handlers[ ev ] = ( handlers[ ev ] || [] ).filter( ( f ) => f !== fn );
+			},
+			trigger: ( ev ) => ( handlers[ ev ] || [] ).forEach( ( f ) => f() ),
+			isFullscreen: () => false,
+			play: () => Promise.resolve(),
+			pause: () => {},
+			readyState: () => 4,
+			one: () => {},
+			currentTime: () => 0,
+		};
+	};
+
+	beforeEach( () => {
+		window.history.replaceState( {}, '', '/my-page/' );
+		document.body.innerHTML = `
+			<div id="root">
+				<figure><div class="godam-video-wrapper">
+					<div class="easydam-video-container">
+						<div class="video-js" id="playerEl">
+							<video id="v" data-id="4595" data-job_id="job-1" data-show-in-lightbox="true"></video>
+						</div>
+					</div>
+				</div></figure>
+			</div>
+		`;
+		playerEl = document.getElementById( 'playerEl' );
+		player = fakePlayer( playerEl );
+		videojs.getPlayer.mockReturnValue( player );
+		// jsdom has no scrollTo, and releasing the iOS lock restores scroll position.
+		window.scrollTo = jest.fn();
+		lightbox = new ModalManager();
+	} );
+
+	afterEach( () => {
+		lightbox.historyPushed = false;
+		lightbox.close();
+		videojs.getPlayer.mockReturnValue( null );
+		document.body.innerHTML = '';
+		document.body.style.cssText = '';
+		document.documentElement.style.cssText = '';
+	} );
+
+	/**
+	 * Do what the iOS custom fullscreen button does.
+	 */
+	const enterCustomFullscreen = () => {
+		playerEl.classList.add( 'vjs-fullscreen' );
+		playerEl.closest( '.easydam-video-container' ).classList.add( 'godam-video-fullscreen' );
+		document.body.style.position = 'fixed';
+		document.body.style.top = '-120px';
+		document.body.style.overflow = 'hidden';
+		player.trigger( 'customfullscreenchange' );
+	};
+
+	it( 'drops the wrapper transform so a fullscreen player can fill the viewport', () => {
+		// The wrapper is transformed for centring, which would otherwise make it the
+		// containing block for the fullscreen player's `position: fixed`.
+		lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+		const wrapper = document.querySelector( '.godam-player-modal-wrapper' );
+
+		expect( wrapper.classList.contains( 'godam-lightbox-fullscreen' ) ).toBe( false );
+
+		enterCustomFullscreen();
+
+		expect( wrapper.classList.contains( 'godam-lightbox-fullscreen' ) ).toBe( true );
+	} );
+
+	it( 'restores the wrapper when fullscreen exits', () => {
+		lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+		const wrapper = document.querySelector( '.godam-player-modal-wrapper' );
+
+		enterCustomFullscreen();
+		playerEl.classList.remove( 'vjs-fullscreen' );
+		player.trigger( 'customfullscreenchange' );
+
+		expect( wrapper.classList.contains( 'godam-lightbox-fullscreen' ) ).toBe( false );
+	} );
+
+	it( 'releases the body scroll lock when the lightbox closes mid-fullscreen', () => {
+		// Only the exit button undoes the iOS lock, so closing around it — Back,
+		// Escape, a trigger for another video — used to leave the page pinned.
+		lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+		enterCustomFullscreen();
+
+		lightbox.close();
+
+		expect( document.body.style.position ).toBe( '' );
+		expect( document.body.style.top ).toBe( '' );
+		expect( document.body.style.overflow ).toBe( '' );
+		expect( playerEl.classList.contains( 'vjs-fullscreen' ) ).toBe( false );
+		expect(
+			playerEl.closest( '.easydam-video-container' ).classList.contains( 'godam-video-fullscreen' ),
+		).toBe( false );
+	} );
+
+	it( 'leaves the body alone when closing without fullscreen', () => {
+		lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+		document.body.style.top = '-40px'; // Set by something else entirely.
+
+		lightbox.close();
+
+		expect( document.body.style.top ).toBe( '-40px' );
+	} );
+
+	it( 'Escape exits fullscreen first and leaves the lightbox open', () => {
+		lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+		const wrapper = document.querySelector( '.godam-player-modal-wrapper' );
+		enterCustomFullscreen();
+
+		document.dispatchEvent( new KeyboardEvent( 'keydown', { key: 'Escape' } ) );
+
+		expect( lightbox.isOpen() ).toBe( true );
+		expect( playerEl.classList.contains( 'vjs-fullscreen' ) ).toBe( false );
+		expect(
+			playerEl.closest( '.easydam-video-container' ).classList.contains( 'godam-video-fullscreen' ),
+		).toBe( false );
+		// The wrapper's centring transform comes back with it.
+		expect( wrapper.classList.contains( 'godam-lightbox-fullscreen' ) ).toBe( false );
+		// And the page is scrollable again.
+		expect( document.body.style.position ).toBe( '' );
+	} );
+
+	it( 'a second Escape then closes the lightbox', () => {
+		lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+		enterCustomFullscreen();
+
+		document.dispatchEvent( new KeyboardEvent( 'keydown', { key: 'Escape' } ) );
+		expect( lightbox.isOpen() ).toBe( true );
+
+		document.dispatchEvent( new KeyboardEvent( 'keydown', { key: 'Escape' } ) );
+		expect( lightbox.isOpen() ).toBe( false );
+	} );
+
+	it( 'Escape closes straight away when not fullscreen', () => {
+		lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+
+		document.dispatchEvent( new KeyboardEvent( 'keydown', { key: 'Escape' } ) );
+
+		expect( lightbox.isOpen() ).toBe( false );
+	} );
+
+	it( 'hands native fullscreen back to the browser rather than closing', () => {
+		lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+		player.isFullscreen = () => true;
+		player.exitFullscreen = jest.fn();
+
+		document.dispatchEvent( new KeyboardEvent( 'keydown', { key: 'Escape' } ) );
+
+		expect( player.exitFullscreen ).toHaveBeenCalledTimes( 1 );
+		expect( lightbox.isOpen() ).toBe( true );
+	} );
+
+	it( 'stops tracking fullscreen once closed', () => {
+		lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+		const wrapper = document.querySelector( '.godam-player-modal-wrapper' );
+
+		lightbox.close();
+		playerEl.classList.add( 'vjs-fullscreen' );
+		player.trigger( 'customfullscreenchange' );
+
+		expect( wrapper.classList.contains( 'godam-lightbox-fullscreen' ) ).toBe( false );
 	} );
 } );
 
