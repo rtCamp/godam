@@ -88,9 +88,19 @@ class Init {
 	/**
 	 * Add functionality on loaded.
 	 *
+	 * `Recorder_Field extends BaseFieldManager` unconditionally, so loading it
+	 * before FluentForms has declared that class is a fatal. On
+	 * `fluentform/loaded` that could not happen. On `init` it can: the constructor
+	 * only checked that the plugin is in `active_plugins`, which stays true when
+	 * FluentForms aborts its own bootstrap.
+	 *
 	 * @return void
 	 */
 	public function on_fluentforms_loaded() {
+
+		if ( ! class_exists( 'FluentForm\App\Services\FormBuilder\BaseFieldManager' ) ) {
+			return;
+		}
 
 		/**
 		 * Add recorder field.

@@ -152,11 +152,24 @@ class WPForms_Integration {
 	/**
 	 * Initialize godam field video.
 	 *
+	 * `class-wpforms-field-godam-video.php` declares the class only inside
+	 * `if ( class_exists( 'WPForms_Field' ) )`, so the parent has to be present
+	 * before this runs. On `wpforms_loaded` that was guaranteed — WPForms fired
+	 * the hook, so its includes had run. On `init` it is not: `is_plugin_active()`
+	 * is true whenever the plugin file is listed in `active_plugins`, even when
+	 * WPForms aborted its own bootstrap (requirements check, license bail,
+	 * fatal-recovery mode). Without this guard that state is a fatal on every
+	 * request, front end included.
+	 *
 	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
 	public function init_godam_video_field() {
+		if ( ! class_exists( 'WPForms_Field' ) ) {
+			return;
+		}
+
 		new \RTGODAM\Inc\WPForms\WPForms_Field_GoDAM_Video();
 	}
 

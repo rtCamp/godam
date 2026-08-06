@@ -157,7 +157,25 @@ if ( ! class_exists( 'WP_REST_Controller' ) ) {
 	class WP_REST_Controller {} // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
 }
 
+/*
+ * Hook registry and translation-recording stubs. These let the #465 guards
+ * assert behaviour — which hook a callback lands on, and whether anything
+ * translates while an early hook runs — rather than the shape of the source.
+ */
+require_once __DIR__ . '/stubs/hooks.php';
+require_once __DIR__ . '/stubs/i18n.php';
+
+// Version-compatibility checks read this. High enough that any add-on minimum
+// passes, so tests exercising the incompatible branch raise their own minimum.
+if ( ! defined( 'RTGODAM_VERSION' ) ) {
+	define( 'RTGODAM_VERSION', '99.0.0' );
+}
+
 require_once dirname( __DIR__ ) . '/inc/traits/trait-singleton.php';
+require_once dirname( __DIR__ ) . '/inc/classes/addons/class-abstract-addon.php';
+require_once dirname( __DIR__ ) . '/inc/classes/addons/class-addon-registry.php';
+require_once dirname( __DIR__ ) . '/inc/classes/wpforms/class-wpforms-integration.php';
+require_once dirname( __DIR__ ) . '/inc/classes/fluentforms/class-init.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-base.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';

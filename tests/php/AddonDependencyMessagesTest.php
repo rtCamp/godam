@@ -15,8 +15,6 @@ namespace RTGODAM\Tests;
 use PHPUnit\Framework\TestCase;
 use RTGODAM\Inc\Addons\Abstract_Addon;
 
-require_once __DIR__ . '/../../inc/classes/addons/class-abstract-addon.php';
-
 /**
  * @covers \RTGODAM\Inc\Addons\Abstract_Addon::get_missing_dependency_messages
  * @covers \RTGODAM\Inc\Addons\Abstract_Addon::dependencies_met
@@ -163,6 +161,50 @@ class AddonDependencyMessagesTest extends TestCase {
 				static function () {
 					return 'WooCommerce is required.';
 				}
+			)
+		);
+
+		$this->assertTrue( $addon->dependencies_met() );
+		$this->assertSame( array(), $addon->get_missing_dependency_messages() );
+	}
+
+	/**
+	 * A dependency entry without a 'check' must not emit a warning.
+	 *
+	 * `'message'` is optional, so assuming `'check'` is too is an easy mistake to
+	 * make. Reading a missing key raises `Undefined array key "check"` from every
+	 * `plugins_loaded` — which, with WP_DEBUG_DISPLAY on, prints into the page:
+	 * the same class of symptom #465 was about.
+	 *
+	 * phpunit.xml.dist sets convertWarningsToExceptions, so an unguarded read
+	 * fails this test rather than passing quietly.
+	 */
+	public function test_dependency_without_a_check_is_not_a_warning() {
+		$addon = $this->make_addon(
+			array(
+				array(
+					'name'    => 'WooCommerce',
+					'message' => 'WooCommerce is required.',
+				),
+			)
+		);
+
+		$this->assertTrue(
+			$addon->dependencies_met(),
+			'An entry with no usable check counts as satisfied.'
+		);
+		$this->assertSame( array(), $addon->get_missing_dependency_messages() );
+	}
+
+	/** Same for a 'check' that is present but not callable. */
+	public function test_non_callable_check_is_not_a_warning() {
+		$addon = $this->make_addon(
+			array(
+				array(
+					'name'    => 'WooCommerce',
+					'check'   => 'not_a_real_function_hopefully',
+					'message' => 'WooCommerce is required.',
+				),
 			)
 		);
 
