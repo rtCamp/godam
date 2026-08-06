@@ -12,6 +12,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import {
+	ACTIVATION_KEYS,
 	buildEmbedUrl,
 	buildLightboxHash,
 	findVideoById,
@@ -64,23 +65,74 @@ export class ModalManager {
 		}
 		playerRoot.dataset.godamModalBound = '1';
 
+		// The poster is the click target, so give it button semantics. Without
+		// these the only way to open an inline lightbox player is a mouse.
+		if ( ! playerRoot.hasAttribute( 'role' ) ) {
+			playerRoot.setAttribute( 'role', 'button' );
+		}
+		if ( ! playerRoot.hasAttribute( 'tabindex' ) ) {
+			playerRoot.setAttribute( 'tabindex', '0' );
+		}
+		if ( ! playerRoot.hasAttribute( 'aria-label' ) ) {
+			playerRoot.setAttribute( 'aria-label', __( 'Play video in a lightbox', 'godam' ) );
+		}
+
+		/**
+		 * Whether this event should open the lightbox rather than be left alone.
+		 *
+		 * @param {Event} event - The originating event.
+		 * @return {boolean} True when the lightbox should take the event.
+		 */
+		const shouldOpen = ( event ) => {
+			// Once the player is live inside the modal, let events through to the
+			// Video.js controls.
+			if ( this.activeEntry && this.activeEntry.video === video ) {
+				return false;
+			}
+
+			// Authors can drop their own blocks — a "Buy now" button, a link — into
+			// the video overlay. Swallowing those would silently break them, so the
+			// overlay keeps its own behaviour and only the player opens the lightbox.
+			return ! event.target?.closest?.( '.godam-video-overlay-container' );
+		};
+
+		const openLightbox = () => this.open( video, playerRoot, {
+			// Make an inline-opened lightbox addressable too, so Back closes it and
+			// the share button's page link matches what is on screen.
+			historyId: getLightboxId( video ),
+		} );
+
 		// Intercept clicks in the capture phase — before Video.js handles them —
 		// so an inline click opens the modal instead of playing inline.
 		playerRoot.addEventListener(
 			'click',
 			( event ) => {
-				// Once the player is live inside the modal, let clicks through to
-				// the Video.js controls.
-				if ( this.activeEntry && this.activeEntry.video === video ) {
+				if ( ! shouldOpen( event ) ) {
 					return;
 				}
 				event.preventDefault();
 				event.stopPropagation();
-				this.open( video, playerRoot, {
-					// Make an inline-opened lightbox addressable too, so Back closes
-					// it and the share button's page link matches what is on screen.
-					historyId: getLightboxId( video ),
-				} );
+				openLightbox();
+			},
+			true,
+		);
+
+		playerRoot.addEventListener(
+			'keydown',
+			( event ) => {
+				if ( ! ACTIVATION_KEYS.includes( event.key ) ) {
+					return;
+				}
+
+				// Only the root itself: a key pressed on a control inside the overlay
+				// (or on a Video.js button) belongs to that control.
+				if ( event.target !== playerRoot || ! shouldOpen( event ) ) {
+					return;
+				}
+
+				event.preventDefault();
+				event.stopPropagation();
+				openLightbox();
 			},
 			true,
 		);
@@ -107,27 +159,39 @@ export class ModalManager {
 
 		const overlay = document.createElement( 'div' );
 		overlay.className = 'godam-player-modal-overlay';
+		overlay.dataset.testId = 'godam-lightbox-overlay';
 		overlay.addEventListener( 'click', () => this.close() );
 
 		const closeBtn = document.createElement( 'button' );
 		closeBtn.type = 'button';
 		closeBtn.className = 'godam-player-modal-close';
+		closeBtn.dataset.testId = 'godam-lightbox-close';
 		closeBtn.setAttribute( 'aria-label', __( 'Close', 'godam' ) );
 		closeBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
 		closeBtn.addEventListener( 'click', () => this.close() );
 
 		const wrapper = document.createElement( 'div' );
 		wrapper.className = 'godam-player-modal-wrapper';
+		wrapper.dataset.testId = 'godam-lightbox-wrapper';
 		wrapper.setAttribute( 'role', 'dialog' );
 		wrapper.setAttribute( 'aria-modal', 'true' );
+		// Without a name the dialog is announced as just "dialog".
+		wrapper.setAttribute( 'aria-label', __( 'Video player', 'godam' ) );
 		wrapper.setAttribute( 'tabindex', '-1' );
 
 		const content = document.createElement( 'div' );
 		content.className = 'godam-player-modal-video';
+		content.dataset.testId = 'godam-lightbox-content';
+
+		// The close button sits inside the dialog, pinned to the top-right of the
+		// video rather than the top-right of the screen. Nesting it is also what
+		// `aria-modal="true"` needs: anything left outside the dialog is hidden from
+		// the accessibility tree, which previously left assistive tech no exit but
+		// Escape.
+		wrapper.appendChild( closeBtn );
 		wrapper.appendChild( content );
 
 		document.body.appendChild( overlay );
-		document.body.appendChild( closeBtn );
 		document.body.appendChild( wrapper );
 
 		this.modal = { overlay, closeBtn, wrapper, content };
@@ -171,7 +235,10 @@ export class ModalManager {
 		pushHistory = true,
 		requestedId = null,
 	} = {} ) {
-		if ( ! playerRoot ) {
+		// A detached root has nowhere to put the anchor, so there would be no way
+		// back to its original position. Bail rather than throw — a re-render can
+		// legitimately detach it between resolving and opening.
+		if ( ! playerRoot || ! playerRoot.parentNode ) {
 			return;
 		}
 
@@ -200,6 +267,7 @@ export class ModalManager {
 			requestedId: requestedId === null ? null : String( requestedId ),
 		};
 
+		this.applyContentRatio( modal, playerRoot );
 		this.showModal( modal );
 		this.applyHistory( historyId, pushHistory );
 
@@ -267,10 +335,35 @@ export class ModalManager {
 			requestedId: requestedId === null ? null : String( requestedId ),
 		};
 
+		this.applyContentRatio( modal, null );
 		this.showModal( modal );
 		this.applyHistory( historyId, pushHistory );
 
 		iframe.focus?.( { preventScroll: true } );
+	}
+
+	/**
+	 * Tell the wrapper what shape the content is.
+	 *
+	 * The close button sits just outside the video's top-right corner, and works
+	 * out where that corner is from the aspect ratio (see the CSS). The ratio lives
+	 * on the moved player root, which is a *descendant* of the wrapper, so it has
+	 * to be copied up — inheritance only goes the other way.
+	 *
+	 * @param {Object}           modal      - The cached modal elements.
+	 * @param {HTMLElement|null} playerRoot - Moved player root, or null for iframe mode.
+	 */
+	applyContentRatio( modal, playerRoot ) {
+		// The iframe has a fixed 16/9 box, which is also the CSS fallback.
+		const ratio = playerRoot
+			? getComputedStyle( playerRoot ).getPropertyValue( '--rtgodam-video-aspect-ratio' ).trim()
+			: '';
+
+		if ( ratio ) {
+			modal.wrapper.style.setProperty( '--godam-lightbox-ratio', ratio );
+		} else {
+			modal.wrapper.style.removeProperty( '--godam-lightbox-ratio' );
+		}
 	}
 
 	/**
@@ -458,10 +551,10 @@ export class ModalManager {
 	}
 
 	/**
-	 * Cycle Tab within the overlay so focus cannot reach the page behind it.
+	 * Cycle Tab within the dialog so focus cannot reach the page behind it.
 	 *
-	 * The close button lives outside the wrapper (both are direct children of
-	 * `<body>`), so it has to be folded into the list explicitly.
+	 * Everything focusable — including the close button — lives inside the
+	 * wrapper, so one query covers the whole dialog.
 	 *
 	 * @param {KeyboardEvent} event - The Tab keydown event.
 	 */
@@ -481,10 +574,7 @@ export class ModalManager {
 			'true' !== node.getAttribute( 'aria-hidden' ) &&
 			! node.classList.contains( 'vjs-hidden' );
 
-		const focusable = [
-			...this.modal.wrapper.querySelectorAll( FOCUSABLE ),
-			this.modal.closeBtn,
-		].filter( isAvailable );
+		const focusable = [ ...this.modal.wrapper.querySelectorAll( FOCUSABLE ) ].filter( isAvailable );
 
 		if ( focusable.length === 0 ) {
 			return;

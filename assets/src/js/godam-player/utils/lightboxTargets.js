@@ -22,6 +22,13 @@ export const LIGHTBOX_HASH_PREFIX = '#godam-video-';
 export const TRIGGER_ATTRIBUTE = 'data-godam-lightbox';
 
 /**
+ * Keys that activate a click target that is not natively a button.
+ *
+ * `Spacebar` is the legacy spelling some older browsers still report.
+ */
+export const ACTIVATION_KEYS = [ 'Enter', ' ', 'Spacebar' ];
+
+/**
  * Read the video ID out of a `#godam-video-{id}` hash.
  *
  * @param {string} hash - A location hash, with or without the leading `#`.

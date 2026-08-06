@@ -402,7 +402,10 @@ class GoDAM_Player {
 		}
 
 		// If autoplay is true, muted must be true for most browsers to allow autoplay.
-		if ( $attributes['autoplay'] ) {
+		// Skipped for "Show in lightbox", which suppresses inline autoplay (see the
+		// template): forcing a mute there would carry into the lightbox and play the
+		// video silently, which is not what the author asked for.
+		if ( $attributes['autoplay'] && empty( $attributes['showInLightbox'] ) ) {
 			$attributes['muted'] = true;
 		}
 

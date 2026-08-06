@@ -135,8 +135,9 @@ export default function ThumbnailPanel( {
 	}
 
 	// Optional guide message, supplied via the
-	// `rtgodam_video_block_video_thumbnails_guide_message` PHP filter
-	// (empty by default). Sanitized before rendering as it may carry markup.
+	// `rtgodam_video_thumbnails_guide_message` PHP filter with a 'block-editor'
+	// context (empty by default). Sanitized server-side too, but sanitized again
+	// here because it may carry markup.
 	const guideMessage = window.pluginInfo?.videoThumbnailsGuideMessage;
 
 	return (

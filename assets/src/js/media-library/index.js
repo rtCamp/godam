@@ -25,7 +25,7 @@ import GoDAMMediaFrameShared from './views/godam-media-frame-shared.js';
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 import MediaListViewTableDragHandler from './views/attachment-list.js';
 
-import { isFolderOrgDisabled, isMediaTranscodingUIEnabled, isUploadPage, addManageMediaButton } from './utility.js';
+import { isFolderOrgDisabled, shouldReplaceAttachmentsViews, isUploadPage, addManageMediaButton } from './utility.js';
 
 const $ = jQuery;
 
@@ -248,7 +248,7 @@ class MediaLibrary {
 		// retranscode bulk action are core GoDAM features that live on these browser/grid views, so
 		// keep the custom views there even in additive mode. Their folder-only behaviour (drag to
 		// folder, folder/date toolbar filters) is separately gated on isFolderOrgDisabled().
-		if ( isMediaTranscodingUIEnabled() ) {
+		if ( shouldReplaceAttachmentsViews() ) {
 			if ( wp?.media?.view?.AttachmentsBrowser && AttachmentsBrowser ) {
 				wp.media.view.AttachmentsBrowser = AttachmentsBrowser;
 			}

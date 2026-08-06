@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { openLightboxForId } from './managers/modalManager.js';
-import { TRIGGER_ATTRIBUTE, parseStartTime } from './utils/lightboxTargets.js';
+import { ACTIVATION_KEYS, TRIGGER_ATTRIBUTE, parseStartTime } from './utils/lightboxTargets.js';
 
 /**
  * Element triggers — let any button, image or link open the lightbox.
@@ -17,11 +17,6 @@ import { TRIGGER_ATTRIBUTE, parseStartTime } from './utils/lightboxTargets.js';
  */
 
 const TRIGGER_SELECTOR = `[${ TRIGGER_ATTRIBUTE }]`;
-
-/**
- * Keys that activate a trigger that is not natively clickable.
- */
-const ACTIVATION_KEYS = [ 'Enter', ' ', 'Spacebar' ];
 
 /**
  * Read the video ID off a trigger element.

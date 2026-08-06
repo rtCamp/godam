@@ -273,31 +273,45 @@ describe( 'ModalManager', () => {
 			document.dispatchEvent( event );
 
 			expect( event.defaultPrevented ).toBe( true );
-			expect( document.activeElement ).toBe( document.querySelector( '.godam-player-modal-iframe' ) );
+			expect( document.activeElement ).toBe( document.querySelector( '.godam-player-modal-close' ) );
 		} );
 
 		it( 'wraps from the last focusable back to the first', () => {
 			lightbox.openIframe( '/embed/1' );
 
-			// The close button is last; Tab from there must not escape the overlay.
-			document.querySelector( '.godam-player-modal-close' ).focus();
+			// The iframe is last; Tab from there must not escape the overlay.
+			document.querySelector( '.godam-player-modal-iframe' ).focus();
 
 			const event = new KeyboardEvent( 'keydown', { key: 'Tab', cancelable: true } );
+			document.dispatchEvent( event );
+
+			expect( event.defaultPrevented ).toBe( true );
+			expect( document.activeElement ).toBe( document.querySelector( '.godam-player-modal-close' ) );
+		} );
+
+		it( 'wraps backwards from the first focusable to the last', () => {
+			lightbox.openIframe( '/embed/1' );
+			document.querySelector( '.godam-player-modal-close' ).focus();
+
+			const event = new KeyboardEvent( 'keydown', { key: 'Tab', shiftKey: true, cancelable: true } );
 			document.dispatchEvent( event );
 
 			expect( event.defaultPrevented ).toBe( true );
 			expect( document.activeElement ).toBe( document.querySelector( '.godam-player-modal-iframe' ) );
 		} );
 
-		it( 'wraps backwards from the first focusable to the last', () => {
+		it( 'pins the close button inside the dialog, not the screen corner', () => {
 			lightbox.openIframe( '/embed/1' );
-			document.querySelector( '.godam-player-modal-iframe' ).focus();
 
-			const event = new KeyboardEvent( 'keydown', { key: 'Tab', shiftKey: true, cancelable: true } );
-			document.dispatchEvent( event );
+			const wrapper = document.querySelector( '.godam-player-modal-wrapper' );
+			const closeBtn = document.querySelector( '.godam-player-modal-close' );
 
-			expect( event.defaultPrevented ).toBe( true );
-			expect( document.activeElement ).toBe( document.querySelector( '.godam-player-modal-close' ) );
+			// Inside the dialog so it reads as part of the video, and so
+			// `aria-modal="true"` does not hide it from assistive tech.
+			expect( wrapper.contains( closeBtn ) ).toBe( true );
+			expect( wrapper.getAttribute( 'aria-modal' ) ).toBe( 'true' );
+			// A dialog with no name is announced as just "dialog".
+			expect( wrapper.getAttribute( 'aria-label' ) ).toBeTruthy();
 		} );
 
 		it( 'lets Tab move naturally between items in the middle of the list', () => {
@@ -374,6 +388,77 @@ describe( 'ModalManager', () => {
 		it( 'ignores a video with no movable root', () => {
 			document.body.innerHTML = '<video id="v" data-show-in-lightbox="true"></video>';
 			expect( () => lightbox.register( document.getElementById( 'v' ) ) ).not.toThrow();
+		} );
+
+		it( 'gives the poster button semantics so it is keyboard-reachable', () => {
+			const { playerRoot, video } = renderPlayer();
+
+			lightbox.register( video );
+
+			expect( playerRoot.getAttribute( 'role' ) ).toBe( 'button' );
+			expect( playerRoot.getAttribute( 'tabindex' ) ).toBe( '0' );
+			expect( playerRoot.getAttribute( 'aria-label' ) ).toBeTruthy();
+		} );
+
+		it.each( [ 'Enter', ' ' ] )( 'opens on %s', ( key ) => {
+			const { playerRoot, video } = renderPlayer();
+			lightbox.register( video );
+
+			playerRoot.dispatchEvent( new KeyboardEvent( 'keydown', { key, bubbles: true, cancelable: true } ) );
+
+			expect( lightbox.isOpen() ).toBe( true );
+		} );
+
+		it( 'ignores other keys', () => {
+			const { playerRoot, video } = renderPlayer();
+			lightbox.register( video );
+
+			playerRoot.dispatchEvent( new KeyboardEvent( 'keydown', { key: 'a', bubbles: true, cancelable: true } ) );
+
+			expect( lightbox.isOpen() ).toBe( false );
+		} );
+
+		it( 'leaves clicks on video-overlay inner blocks alone', () => {
+			// Authors drop their own buttons and links into the video overlay.
+			// Swallowing those would silently break them.
+			const { playerRoot, video } = renderPlayer();
+			playerRoot.querySelector( '.godam-video-wrapper' ).insertAdjacentHTML(
+				'afterbegin',
+				'<div class="godam-video-overlay-container"><a id="cta" href="/shop">Buy now</a></div>',
+			);
+			lightbox.register( video );
+
+			const event = new MouseEvent( 'click', { bubbles: true, cancelable: true } );
+			document.getElementById( 'cta' ).dispatchEvent( event );
+
+			expect( lightbox.isOpen() ).toBe( false );
+			expect( event.defaultPrevented ).toBe( false );
+		} );
+
+		it( 'still opens on a click on the player itself', () => {
+			const { playerRoot, video } = renderPlayer();
+			playerRoot.querySelector( '.godam-video-wrapper' ).insertAdjacentHTML(
+				'afterbegin',
+				'<div class="godam-video-overlay-container"><a id="cta" href="/shop">Buy now</a></div>',
+			);
+			lightbox.register( video );
+
+			playerRoot.querySelector( '.godam-video-wrapper' ).dispatchEvent(
+				new MouseEvent( 'click', { bubbles: true, cancelable: true } ),
+			);
+
+			expect( lightbox.isOpen() ).toBe( true );
+		} );
+	} );
+
+	describe( 'detached root', () => {
+		it( 'bails instead of throwing when the player root has no parent', () => {
+			const { video } = renderPlayer();
+			const orphan = document.getElementById( 'root' );
+			orphan.remove();
+
+			expect( () => lightbox.openElement( orphan, { video } ) ).not.toThrow();
+			expect( lightbox.isOpen() ).toBe( false );
 		} );
 	} );
 } );

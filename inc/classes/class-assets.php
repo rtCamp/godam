@@ -166,6 +166,40 @@ class Assets {
 	}
 
 	/**
+	 * Get the guide message to show alongside video thumbnails, for a given screen.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $context Where the message will render. One of 'block-editor'
+	 *                        (the godam/video block Inspector's "Video Thumbnail"
+	 *                        panel) or 'media-library' (the attachment-details popup).
+	 * @return string Sanitized guide message HTML, or an empty string.
+	 */
+	private function get_video_thumbnails_guide_message( $context ) {
+		/**
+		 * Filter the guide message shown alongside video thumbnails.
+		 *
+		 * Empty by default. Add-ons/extensions can hook in to surface guidance about
+		 * video thumbnails (how they are generated, links to docs, upgrade prompts,
+		 * etc.). Return an empty string to show nothing.
+		 *
+		 * The message renders in more than one place; switch on `$context` to vary
+		 * the copy, or ignore it to use the same message everywhere.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param string $message Guide message HTML. Default empty string.
+		 * @param string $context Where the message will render: 'block-editor' or
+		 *                        'media-library'.
+		 */
+		$message = apply_filters( 'rtgodam_video_thumbnails_guide_message', '', $context );
+
+		// The client sanitizes again before rendering, but doing it here means the
+		// trust boundary does not rest entirely on JavaScript.
+		return wp_kses_post( $message );
+	}
+
+	/**
 	 * To enqueue scripts and styles. in admin.
 	 *
 	 * @return void
@@ -187,20 +221,7 @@ class Assets {
 			true
 		);
 
-		/**
-		 * Filter the guide message shown in the "Video Thumbnail" panel of the
-		 * godam/video block Inspector (block editor).
-		 *
-		 * Empty by default. Add-ons/extensions can hook in to surface guidance about
-		 * video thumbnails (how they are generated, links to docs, upgrade prompts,
-		 * etc.). The returned HTML is sanitized client-side before it is rendered, so
-		 * only a safe subset of markup survives. Return an empty string to show nothing.
-		 *
-		 * @since n.e.x.t
-		 *
-		 * @param string $message Guide message HTML. Default empty string.
-		 */
-		$block_video_thumbnails_guide_message = apply_filters( 'rtgodam_video_block_video_thumbnails_guide_message', '' );
+		$block_video_thumbnails_guide_message = $this->get_video_thumbnails_guide_message( 'block-editor' );
 
 		wp_localize_script(
 			'rtgodam-script',
@@ -307,20 +328,7 @@ class Assets {
 
 		$current_user_id = get_current_user_id();
 
-		/**
-		 * Filter the guide message shown in the "Video Thumbnails" section of the
-		 * media-library attachment-details popup.
-		 *
-		 * Empty by default. Add-ons/extensions can hook in to surface guidance about
-		 * video thumbnails (how they are generated, links to docs, upgrade prompts,
-		 * etc.). The returned HTML is sanitized client-side before it is rendered, so
-		 * only a safe subset of markup survives. Return an empty string to show nothing.
-		 *
-		 * @since n.e.x.t
-		 *
-		 * @param string $message Guide message HTML. Default empty string.
-		 */
-		$media_library_video_thumbnails_guide_message = apply_filters( 'rtgodam_media_library_video_thumbnails_guide_message', '' );
+		$media_library_video_thumbnails_guide_message = $this->get_video_thumbnails_guide_message( 'media-library' );
 
 		$easydam_media_library_data = array(
 			'ajaxUrl'                     => admin_url( 'admin-ajax.php' ),

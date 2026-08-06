@@ -93,6 +93,16 @@ if ( $godam_autoplay ) {
 // plays the video inside a lightbox (see godam-player/managers/modalManager.js).
 // The inline render itself is left untouched.
 $godam_show_in_lightbox = ! empty( $attributes['showInLightbox'] );
+
+// Autoplay and "Show in lightbox" are mutually exclusive, the same way autoplay
+// and hover are above: the inline render is a click-to-open poster, so playing it
+// where it stands both defeats the point and double-plays the video (once inline,
+// again on opening). The lightbox wins because it is the more specific intent, and
+// the author still gets autoplay where it counts — opening the lightbox starts
+// playback.
+if ( $godam_show_in_lightbox ) {
+	$godam_autoplay = false;
+}
 // Raw "Show caption" block attribute: true/false when explicitly set, null when
 // unset (inherit from the attachment's Display-captions setting — resolved into
 // $godam_show_caption once the attachment meta is loaded, further below).
