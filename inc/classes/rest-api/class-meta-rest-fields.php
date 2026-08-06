@@ -161,18 +161,24 @@ class Meta_Rest_Fields {
 
 		// The authoritative existing map is read from storage, never trusted
 		// from the incoming $value (the editor does not manage this field).
-		$lifetimes = ( is_array( $old_meta ) && ! empty( $old_meta['layer_lifetimes'] ) && is_array( $old_meta['layer_lifetimes'] ) )
-			? $old_meta['layer_lifetimes']
-			: array();
+		$stored_lifetimes = is_array( $old_meta ) ? ( $old_meta['layer_lifetimes'] ?? null ) : null;
+		$lifetimes        = is_array( $stored_lifetimes ) ? $stored_lifetimes : array();
 
 		$old_ids = $this->collect_subhotspot_ids( is_array( $old_meta ) ? ( $old_meta['layers'] ?? array() ) : array() );
 		$new_ids = $this->collect_subhotspot_ids( $value['layers'] ?? array() );
+
+		// Membership sets so the two diff loops below stay O(n) rather than
+		// O(n²). collect_subhotspot_ids() already dedupes, so flipping is
+		// lossless, and every id contains '::' so none can be cast to an
+		// integer key.
+		$old_set = array_flip( $old_ids );
+		$new_set = array_flip( $new_ids );
 
 		$today = gmdate( 'Y-m-d' );
 
 		// Appeared this save (new or re-added) -> start a fresh live window.
 		foreach ( $new_ids as $id ) {
-			if ( ! in_array( $id, $old_ids, true ) ) {
+			if ( ! isset( $old_set[ $id ] ) ) {
 				$lifetimes[ $id ] = array(
 					'added_at'   => $today,
 					'deleted_at' => null,
@@ -182,7 +188,7 @@ class Meta_Rest_Fields {
 
 		// Disappeared this save -> stamp deleted_at once, keep the row.
 		foreach ( $old_ids as $id ) {
-			if ( ! in_array( $id, $new_ids, true ) && empty( $lifetimes[ $id ]['deleted_at'] ) ) {
+			if ( ! isset( $new_set[ $id ] ) && empty( $lifetimes[ $id ]['deleted_at'] ) ) {
 				if ( empty( $lifetimes[ $id ] ) ) {
 					$lifetimes[ $id ] = array( 'added_at' => null );
 				}

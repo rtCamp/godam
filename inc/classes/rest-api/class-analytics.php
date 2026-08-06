@@ -360,9 +360,16 @@ class Analytics extends Base {
 
 		// #196: for layer types that have sub-hotspots, forward the per-sub
 		// lifetime map (added_at / deleted_at, recorded on save) so the service
-		// credits a sub's inherited `viewed` only for the days it existed. The
-		// endpoint accepts GET or POST and reads `layer_lifetimes` from the body;
-		// atomic layer types send nothing and keep the GET path. A sub absent
+		// credits a sub's inherited `viewed` only for the days it existed.
+		//
+		// The endpoint accepts GET or POST. On POST the map IS the JSON body
+		// root, not wrapped in a `layer_lifetimes` key — the body is
+		// `{ "<parent>::<sub>": { "added_at": "Y-m-d"|null, "deleted_at": ... } }`.
+		// The service's handler declares a single `layer_lifetimes` body
+		// parameter, which FastAPI binds to the whole body when it is the only
+		// one (no `embed`), so the bare map is what it expects.
+		//
+		// Atomic layer types send nothing and keep the GET path. A sub absent
 		// from the map is treated as full-history, so this is a no-op until the
 		// map is populated.
 		$layer_lifetimes = array();
