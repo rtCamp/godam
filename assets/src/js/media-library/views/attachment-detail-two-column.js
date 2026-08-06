@@ -188,6 +188,23 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Render media folder item name when image is selected in media library.
+	 */
+	renderFolderName() {
+		if ( ! this.model.get( 'id' ) ) {
+			return;
+		}
+
+		const data = this.model.get( 'media_folder' );
+
+		if ( ! data || ! data.name ) {
+			return;
+		}
+
+		this.$el.find( '.details' ).append( DOMPurify.sanitize( `<div class="media-folder-name"><strong>${ __( 'Media Folder:', 'godam' ) }</strong> ${ data.name }</div>` ) );
+	},
+
+	/**
 	 * Sets up click handlers for removing custom video thumbnails.
 	 */
 	setupThumbnailActions() {
@@ -1127,6 +1144,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				this.renderExifDetails,
 				'exif',
 			);
+			this.renderFolderName();
 		}
 
 		// Image attachments get an "Edit Image" button linking to the GoDAM editor,
