@@ -163,6 +163,13 @@ const godamGallery = {
 	},
 };
 
+const godamLightbox = {
+	...sharedConfig,
+	entry: {
+		'godam-lightbox': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-lightbox', 'index.js' ),
+	},
+};
+
 const godamVideoEmbed = {
 	...sharedConfig,
 	entry: {
@@ -414,6 +421,7 @@ module.exports = [
 	deactivationJS,
 	httpAuthDetector,
 	godamGallery,
+	godamLightbox,
 	godamVideoEmbed,
 	godamVideoPreview,
 	gfGodamRecorderEditorJS,

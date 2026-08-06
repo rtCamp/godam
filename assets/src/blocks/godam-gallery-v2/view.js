@@ -1,54 +1,32 @@
 /**
  * Frontend runtime for GoDAM Gallery V2.
+ *
+ * The modal this block used to build itself now lives in the shared lightbox
+ * service (`assets/src/js/godam-lightbox/`), reached through
+ * `window.GodamLightbox` off the `godam-lightbox-script` handle. The gallery
+ * still owns its playlist and its tile-preview side effects; the service owns
+ * the modal DOM, focus, keyboard handling, and the embed iframe.
  */
-
-/**
- * WordPress dependencies
- */
-const { __ } = require( '@wordpress/i18n' );
 
 ( function() {
 	'use strict';
 
-	let activeGallery = null;
-	let sharedModal = null;
-
-	/*
-	 * Pull pending heatmap payloads out of the iframe and POST them from
-	 * THIS context. Sending from the iframe right before teardown gets
-	 * cancelled by the browser; sending from here survives because the
-	 * parent window is not being destroyed. Caller is responsible for
-	 * tearing the iframe down after this returns.
-	 *
-	 * Same-origin direct call — no postMessage round-trip, fully synchronous.
-	 * Cross-origin or missing function: silently no-op.
-	 *
-	 * `keepalive: true` is defense-in-depth here, not the primary mechanism
-	 * (the parent isn't unloading). It only matters if the user closes the
-	 * entire tab during the close handler's brief window — in that case
-	 * keepalive lets the request still reach the wire.
+	/**
+	 * Class names the gallery's modal shipped with. Passed to the service so the
+	 * rendered DOM is unchanged for CSS and for the QA selectors that target
+	 * these names.
 	 */
-	function flushIframeAnalytics( iframe ) {
-		try {
-			const win = iframe?.contentWindow;
-			if ( ! win || typeof win.godamGalleryFlushPayloads !== 'function' ) {
-				return;
-			}
-			win.godamGalleryFlushPayloads().forEach( ( payload ) => {
-				if ( ! payload?.endpoint || ! payload?.body ) {
-					return;
-				}
-				fetch( `${ payload.endpoint }/analytics/`, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify( payload.body ),
-					keepalive: true,
-				} ).catch( () => {} );
-			} );
-		} catch ( e ) {
-			// Cross-origin access or function threw — silently no-op.
-		}
-	}
+	const LEGACY_MODAL_CLASSES = {
+		overlay: 'godam-gallery-v2-modal-overlay',
+		dialog: 'godam-gallery-v2-modal',
+		close: 'godam-gallery-v2-modal__close',
+		nav: 'godam-gallery-v2-modal__nav',
+		navPrev: 'godam-gallery-v2-modal__nav--prev',
+		navNext: 'godam-gallery-v2-modal__nav--next',
+		bodyOpen: 'godam-gallery-v2-modal-open',
+	};
+
+	const LEGACY_IFRAME_CLASS = 'godam-gallery-v2-modal__iframe';
 
 	function initBlurUpPlaceholders( root = document ) {
 		root.querySelectorAll( '.godam-gallery-blurred-img' ).forEach( ( div ) => {
@@ -77,124 +55,6 @@ const { __ } = require( '@wordpress/i18n' );
 		} );
 	}
 
-	function handleModalKeydown( event ) {
-		if ( ! activeGallery ) {
-			return;
-		}
-
-		if ( event.key === 'Escape' ) {
-			activeGallery.closeModal();
-		} else if ( event.key === 'ArrowLeft' ) {
-			activeGallery.navigateModal( -1 );
-		} else if ( event.key === 'ArrowRight' ) {
-			activeGallery.navigateModal( 1 );
-		} else if ( event.key === 'Tab' ) {
-			const focusable = Array.from(
-				activeGallery.modal.modal.querySelectorAll(
-					'iframe, button.is-active',
-				),
-			);
-
-			if ( focusable.length === 0 ) {
-				return;
-			}
-
-			const first = focusable[ 0 ];
-			const last = focusable[ focusable.length - 1 ];
-			const active = activeGallery.modal.modal.ownerDocument.activeElement;
-
-			if ( event.shiftKey && active === first ) {
-				event.preventDefault();
-				last.focus();
-			} else if ( ! event.shiftKey && active === last ) {
-				event.preventDefault();
-				first.focus();
-			}
-		}
-	}
-
-	function getSharedModal() {
-		if ( sharedModal ) {
-			return sharedModal;
-		}
-
-		const overlay = document.createElement( 'div' );
-		overlay.className = 'godam-gallery-v2-modal-overlay';
-		document.body.appendChild( overlay );
-
-		const modal = document.createElement( 'div' );
-		modal.className = 'godam-gallery-v2-modal';
-		modal.setAttribute( 'role', 'dialog' );
-		modal.setAttribute( 'aria-modal', 'true' );
-		modal.setAttribute( 'aria-label', __( 'Video player', 'godam' ) );
-		document.body.appendChild( modal );
-
-		const iframe = document.createElement( 'iframe' );
-		iframe.className = 'godam-gallery-v2-modal__iframe';
-		iframe.setAttribute( 'allowfullscreen', 'allowfullscreen' );
-		iframe.setAttribute( 'loading', 'lazy' );
-		iframe.setAttribute( 'title', __( 'Video player', 'godam' ) );
-		modal.appendChild( iframe );
-
-		const closeButton = document.createElement( 'button' );
-		closeButton.type = 'button';
-		closeButton.className = 'godam-gallery-v2-modal__close';
-		closeButton.setAttribute( 'aria-label', __( 'Close', 'godam' ) );
-		closeButton.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
-		modal.appendChild( closeButton );
-
-		const prevButton = document.createElement( 'button' );
-		prevButton.type = 'button';
-		prevButton.className = 'godam-gallery-v2-modal__nav godam-gallery-v2-modal__nav--prev';
-		prevButton.setAttribute( 'aria-label', __( 'Previous video', 'godam' ) );
-		prevButton.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>';
-		modal.appendChild( prevButton );
-
-		const nextButton = document.createElement( 'button' );
-		nextButton.type = 'button';
-		nextButton.className = 'godam-gallery-v2-modal__nav godam-gallery-v2-modal__nav--next';
-		nextButton.setAttribute( 'aria-label', __( 'Next video', 'godam' ) );
-		nextButton.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
-		modal.appendChild( nextButton );
-
-		overlay.addEventListener( 'click', () => {
-			if ( activeGallery ) {
-				activeGallery.closeModal();
-			}
-		} );
-
-		closeButton.addEventListener( 'click', () => {
-			if ( activeGallery ) {
-				activeGallery.closeModal();
-			}
-		} );
-
-		prevButton.addEventListener( 'click', () => {
-			if ( activeGallery ) {
-				activeGallery.navigateModal( -1 );
-			}
-		} );
-
-		nextButton.addEventListener( 'click', () => {
-			if ( activeGallery ) {
-				activeGallery.navigateModal( 1 );
-			}
-		} );
-
-		document.addEventListener( 'keydown', handleModalKeydown );
-
-		sharedModal = {
-			overlay,
-			modal,
-			iframe,
-			closeButton,
-			prevButton,
-			nextButton,
-		};
-
-		return sharedModal;
-	}
-
 	const HOVER_INTENT_DELAY_MS = 200;
 
 	class GalleryV2 {
@@ -206,9 +66,8 @@ const { __ } = require( '@wordpress/i18n' );
 			this.autoplay = element.dataset.autoplay === 'true';
 			this.playOnHover = element.dataset.playOnHover !== 'false';
 			this.currentIndex = -1;
-			this.previouslyFocusedElement = null;
 			this.isLoading = false;
-			this.modal = getSharedModal();
+			this.renderer = null;
 			this.queryArea = element.querySelector( '.godam-gallery-v2__query-area' );
 			this.queryList = element.querySelector( '.godam-gallery-v2__query-list' );
 			this.loadMoreButton = element.querySelector( '.godam-gallery-v2__load-more' );
@@ -891,20 +750,46 @@ const { __ } = require( '@wordpress/i18n' );
 			this.playAutoplayItem( visibleItems[ 0 ], { restart: true } );
 		}
 
-		openModalByIndex( index ) {
-			this.refreshItems();
-			const item = this.items[ index ];
-			const videoId = item?.dataset?.videoId;
-
-			if ( ! videoId ) {
-				return;
+		/**
+		 * Renderer for this gallery's lightbox: the video plays in the site's
+		 * video-embed page, inside the shared modal.
+		 *
+		 * Built once and reused, so the service keeps a single iframe alive
+		 * across navigation instead of rebuilding one per video.
+		 *
+		 * @return {Object} The iframe renderer.
+		 */
+		getRenderer() {
+			if ( this.renderer ) {
+				return this.renderer;
 			}
 
-			if ( this.currentIndex === -1 ) {
-				this.previouslyFocusedElement = this.element.ownerDocument.activeElement;
-			}
+			this.renderer = window.GodamLightbox.createIframeRenderer( {
+				embedBaseUrl: this.embedBaseUrl,
+				// Placement attribution: the iframe's plays should count against
+				// the page hosting the gallery, tagged with the gallery slug.
+				blockSource: 'video-gallery',
+				extraParams: () => {
+					const params = { godam_gallery: '1' };
 
-			// Pause all preview videos when modal opens.
+					if ( this.engagements === 'show' ) {
+						params.engagements = 'show';
+					}
+
+					return params;
+				},
+				aliasClass: LEGACY_IFRAME_CLASS,
+			} );
+
+			return this.renderer;
+		}
+
+		/**
+		 * Quiet the grid down before a video plays in the lightbox.
+		 *
+		 * @param {number} index Index of the item about to play.
+		 */
+		prepareForModal( index ) {
 			this.modalOpen = true;
 			this.hoverIntentTimers.forEach( ( t ) => clearTimeout( t ) );
 			this.hoverIntentTimers.clear();
@@ -920,69 +805,45 @@ const { __ } = require( '@wordpress/i18n' );
 			}
 
 			this.currentIndex = index;
-			activeGallery = this;
-			const engagementsParam = this.engagements === 'show' ? '&engagements=show' : '';
-			// Placement attribution: the iframe's plays should count against the
-			// page hosting the gallery, tagged with the gallery placement slug.
-			const hostPostId = window.videoAnalyticsParams?.postId || 0;
-			const newIframeSrc = `${ this.embedBaseUrl }?godam_page=video-embed&id=${ encodeURIComponent( videoId ) }&godam_gallery=1${ engagementsParam }&host_post_id=${ hostPostId }&block_source=video-gallery`;
-
-			// Flush analytics from the previous video (navigation case) before
-			// the iframe navigates away. First-open is a no-op because the
-			// iframe is empty/about:blank — godamGalleryFlushPayloads is undefined.
-			flushIframeAnalytics( this.modal.iframe );
-			this.modal.iframe.src = newIframeSrc;
-
-			this.modal.overlay.classList.add( 'is-active' );
-			this.modal.modal.classList.add( 'is-active' );
-			this.modal.closeButton.classList.add( 'is-active' );
-			this.setModalNavState( this.items.length > 1 );
-			document.body.classList.add( 'godam-gallery-v2-modal-open' );
-			this.modal.closeButton.focus();
 		}
 
-		setModalNavState( isActive ) {
-			this.modal.prevButton.classList.toggle( 'is-active', isActive );
-			this.modal.nextButton.classList.toggle( 'is-active', isActive );
-		}
-
-		navigateModal( direction ) {
+		openModalByIndex( index ) {
 			this.refreshItems();
 
-			if ( this.items.length <= 1 ) {
+			if ( ! window.GodamLightbox ) {
 				return;
 			}
 
-			const total = this.items.length;
-			const nextIndex = ( this.currentIndex + direction + total ) % total;
-			this.openModalByIndex( nextIndex );
+			window.GodamLightbox.open( {
+				// A resolver, not a snapshot: load-more and infinite scroll can
+				// append tiles to the list the modal is navigating.
+				items: () => {
+					this.refreshItems();
+					return this.items.map( ( element ) => ( {
+						videoId: element?.dataset?.videoId,
+						element,
+					} ) );
+				},
+				index,
+				renderer: this.getRenderer(),
+				aliases: LEGACY_MODAL_CLASSES,
+				owner: this,
+				onShow: ( { index: shownIndex } ) => this.prepareForModal( shownIndex ),
+				onClose: () => this.handleModalClosed(),
+			} );
+		}
+
+		navigateModal( direction ) {
+			window.GodamLightbox?.navigate( direction );
 		}
 
 		closeModal() {
-			this.modal.overlay.classList.remove( 'is-active' );
-			this.modal.modal.classList.remove( 'is-active' );
-			this.modal.closeButton.classList.remove( 'is-active' );
-			this.modal.prevButton.classList.remove( 'is-active' );
-			this.modal.nextButton.classList.remove( 'is-active' );
+			window.GodamLightbox?.close();
+		}
 
-			// Ask the iframe for its pending heatmap payloads and fire them from
-			// here BEFORE resetting src. If we set src first the iframe is torn
-			// down and its in-flight analytics POST is cancelled by the browser.
-			flushIframeAnalytics( this.modal.iframe );
-			this.modal.iframe.src = 'about:blank';
-
-			document.body.classList.remove( 'godam-gallery-v2-modal-open' );
+		handleModalClosed() {
 			this.currentIndex = -1;
 			this.modalOpen = false;
-
-			if ( activeGallery === this ) {
-				activeGallery = null;
-			}
-
-			if ( this.previouslyFocusedElement ) {
-				this.previouslyFocusedElement.focus();
-				this.previouslyFocusedElement = null;
-			}
 
 			// Resume preview playback after modal closes.
 			if ( this.autoplay ) {
