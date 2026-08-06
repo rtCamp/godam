@@ -393,6 +393,17 @@ export function groupRows( rows, layerType, configIndex ) {
 			? configIndex.activeSubIdsByParent.get( parentId )
 			: null;
 
+		// The hotspot list is built from recorded activity in the selected date
+		// range, NOT from the layer's saved configuration. A hotspot with no
+		// activity in the range is therefore absent from this list rather than
+		// rendered with zeros.
+		//
+		// That is a deliberate product decision (2026-08-06), not an oversight:
+		// a hotspot that did not exist during the range has nothing to report,
+		// so showing it would invite the reader to compare it against hotspots
+		// that were actually live. It is a documented exception to the
+		// otherwise-general rule that a metric renders greyed rather than
+		// hidden. Do not "fix" it by enumerating from configIndex.
 		const subHotspots = bucket.subRows
 			.map( ( { row, md }, idx ) => {
 				const counts = pluckCounts( row );
