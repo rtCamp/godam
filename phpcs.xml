@@ -27,6 +27,12 @@
 				<element value="godam"/>
 			</property>
 		</properties>
+		<!--
+		tests/stubs/ stands in for core's own translation functions, so its calls
+		forward $text and $domain by variable. The sniff's requirement that they be
+		string literals applies to callers, not to the functions themselves.
+		-->
+		<exclude-pattern>tests/stubs/*</exclude-pattern>
 	</rule>
 
 	<rule ref="WordPress-VIP-Go">

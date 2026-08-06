@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -223,6 +223,12 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 27. Likes and Comments
 
 == Changelog ==
+
+= v2.1.1 (August 6, 2026) =
+
+- Fix: GoDAM no longer fills the debug log with `Function _load_textdomain_just_in_time was called incorrectly` on WordPress 6.7 and later. On sites that display errors, the warning could also appear on the page itself, in the admin and on the front end.
+- Fix: 34 more pieces of on-screen text can now be translated, covering the video player's transcript, chapters, comments, sharing and sign-in prompts, which no language pack could reach before.
+- Tweak: GoDAM no longer contacts the GoDAM service to re-check your API key during front-end page views, REST requests or scheduled tasks. That happens only on the Media Library screen, which is the one place the transcode status column needs it.
 
 = v2.1.0 (July 30, 2026) =
 
