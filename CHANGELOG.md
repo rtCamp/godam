@@ -1,10 +1,10 @@
 # Changelog #
 
-## v2.1.1 (August 5, 2026) ##
+## v2.1.1 (August 6, 2026) ##
 
 - Fix: Removed every GoDAM translation call that ran before the `init` action, so WordPress 6.7+ no longer reports `Function _load_textdomain_just_in_time was called incorrectly` for the `godam` text domain. Covers the WPForms and Fluent Forms field registrations, the add-on compatibility and dependency notices, and the media library transcode status column.
-- Tweak: The media library transcode status column no longer re-verifies the API key over HTTP on front-end, REST and cron requests.
-- Fix: The translation template is now built from source instead of compiled assets, adding 47 strings that could not previously be translated and dropping stale ones that no longer exist in the plugin.
+- Tweak: The media library transcode status column no longer re-verifies the API key over HTTP except on the media library screen itself.
+- Fix: The translation template now covers both the plugin source and the built assets it ships, adding 47 strings that could not previously be translated and dropping stale ones that no longer exist in the plugin.
 - Chore: PHP unit tests now run on every pull request.
 
 ## v2.1.0 (July 30, 2026) ##
