@@ -14,6 +14,7 @@ import {
 } from './analytics-helpers';
 import {
 	addLayerInteraction as bufferAddLayerInteraction,
+	addLayerInteractions as bufferAddLayerInteractions,
 	getLayerInteractions as bufferGetLayerInteractions,
 	clearLayerInteractions as bufferClearLayerInteractions,
 } from './utils/storage';
@@ -358,6 +359,7 @@ function observePageLoadForVideo( video ) {
 	// shared pagehide flush. Single source of truth for layer-action semantics
 	// lives in utils/layerActions.js.
 	window.GoDAM.addLayerInteraction = bufferAddLayerInteraction;
+	window.GoDAM.addLayerInteractions = bufferAddLayerInteractions;
 	window.GoDAM.getLayerInteractions = bufferGetLayerInteractions;
 	window.GoDAM.clearLayerInteractions = bufferClearLayerInteractions;
 	window.GoDAM.LAYER_ACTIONS = LAYER_ACTIONS;
