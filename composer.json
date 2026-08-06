@@ -23,7 +23,7 @@
 		"phpunit": "phpunit",
 		"pot": [
 			"WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --include=\"assets/build\" --exclude=\"assets/node_modules,node_modules,tests,vendor\" \"${TMPDIR:-/tmp}/godam-build-refs.pot\"",
-			"WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --exclude=\"assets/node_modules,node_modules,tests,vendor\" --merge=\"${TMPDIR:-/tmp}/godam-build-refs.pot\" ./languages/godam.pot"
+			"WP_CLI_PHP_ARGS='-d memory_limit=1024M' ./vendor/bin/wp i18n make-pot . --exclude=\"assets/build,assets/node_modules,node_modules,tests,vendor\" --merge=\"${TMPDIR:-/tmp}/godam-build-refs.pot\" ./languages/godam.pot"
 		]
 	},
 	"scripts-descriptions": {
