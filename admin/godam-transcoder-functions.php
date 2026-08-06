@@ -391,10 +391,12 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
  * hour, so most requests never reach the translation.
  *
  * Registering all three hooks together keeps them consistent: each one only ever
- * fires while the media list table is being built, and each defers to
- * `rtgodam_is_api_key_valid()` there. Deciding it here instead would resolve the
- * key on every admin request — including `admin-ajax.php` — for a column that
- * renders on one screen.
+ * fires while the media list table is being built. The two that decide whether
+ * the column exists check `rtgodam_is_api_key_valid()` there; the content
+ * callback does not need to, because `manage_media_custom_column` only fires for
+ * a column `manage_media_columns` returned. Deciding it here instead would
+ * resolve the key on every admin request — including `admin-ajax.php` — for a
+ * column that renders on one screen.
  *
  * @since 2.1.1
  *
