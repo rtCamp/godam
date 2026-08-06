@@ -15,8 +15,6 @@ namespace RTGODAM\Tests;
 use PHPUnit\Framework\TestCase;
 use RTGODAM\Inc\Addons\Abstract_Addon;
 
-require_once __DIR__ . '/../../inc/classes/addons/class-abstract-addon.php';
-
 /**
  * @covers \RTGODAM\Inc\Addons\Abstract_Addon::get_missing_dependency_messages
  * @covers \RTGODAM\Inc\Addons\Abstract_Addon::dependencies_met
