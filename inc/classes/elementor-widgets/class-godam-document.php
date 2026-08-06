@@ -189,6 +189,14 @@ class Godam_Document extends Base {
 			return;
 		}
 
+		// PDF is the only supported format. The shared render.php emits nothing for
+		// anything else, which would leave a silently empty widget, so flag it in
+		// the editor instead, where the author can act on it.
+		if ( ! godam_is_supported_document( isset( $document_file['id'] ) ? $document_file['id'] : 0, $document_file['url'] ) ) {
+			$this->render_unsupported_state();
+			return;
+		}
+
 		$doc_title    = $this->get_settings_for_display( 'doc_title' ) ?? '';
 		$description  = $this->get_settings_for_display( 'description' ) ?? '';
 		$preview_mode = $this->get_settings_for_display( 'preview_mode' ) ?? 'default';
@@ -217,5 +225,41 @@ class Godam_Document extends Base {
 		// shortcode, and double-encodes entities via esc_attr(). render() enqueues
 		// its own script/style and returns escaped HTML.
 		echo \RTGODAM\Inc\Shortcodes\GoDAM_Document::get_instance()->render( $shortcode_atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- render() returns escaped HTML.
+	}
+
+	/**
+	 * Show an "unsupported format" notice for a non-PDF document.
+	 *
+	 * Only rendered while editing or previewing in Elementor: on the published page
+	 * the widget outputs nothing at all, so visitors never see this.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @access protected
+	 */
+	protected function render_unsupported_state() {
+		if ( ! class_exists( '\Elementor\Plugin' ) ) {
+			return;
+		}
+
+		$plugin        = \Elementor\Plugin::$instance;
+		$is_editing    = isset( $plugin->editor ) && $plugin->editor->is_edit_mode();
+		$is_previewing = isset( $plugin->preview ) && $plugin->preview->is_preview_mode();
+		if ( ! $is_editing && ! $is_previewing ) {
+			return;
+		}
+
+		$icon_style = '--godam-preview-icon:url(' . esc_url( RTGODAM_URL . 'assets/images/godam-pdf.svg' ) . ');';
+		?>
+		<div class="godam-document-elementor-unsupported" data-test-id="godam-document-elementor-unsupported">
+			<span class="godam-document-elementor-unsupported__icon" aria-hidden="true" style="<?php echo esc_attr( $icon_style ); ?>"></span>
+			<h3 class="godam-document-elementor-unsupported__title">
+				<?php esc_html_e( 'Unsupported file format', 'godam' ); ?>
+			</h3>
+			<p class="godam-document-elementor-unsupported__desc">
+				<?php esc_html_e( 'Only PDF files are supported. Select a PDF in the Document Settings panel; the current file will not be shown on your page.', 'godam' ); ?>
+			</p>
+		</div>
+		<?php
 	}
 }

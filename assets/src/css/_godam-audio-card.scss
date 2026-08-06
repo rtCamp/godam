@@ -27,6 +27,11 @@
 	border: 1px solid #e0e0e0;
 	border-radius: 12px;
 	padding: 20px 24px;
+	// Makes the card queryable by its own width, so the narrow layout below can
+	// key off how wide the CARD is rather than how wide the viewport is. A card in
+	// a 3-column layout, or in the block editor canvas, is narrow while the
+	// viewport is not.
+	container-type: inline-size;
 
 	*,
 	*::before,
@@ -96,7 +101,16 @@
 	width: 100%;
 	margin: 16px 0 0;
 
-	&__play {
+	// Qualified with the element tag on purpose. Theme button resets commonly use
+	// `[type="button"]`, an attribute selector carrying the same (0,1,0) specificity
+	// as a class, and the theme stylesheet loads after ours, so on a plain
+	// `.godam-audio-player__play` selector source order hands the theme the win:
+	// its display/padding/border/width replace ours, `display:inline-block`
+	// blockifies to `block` on this flex item, align-items/justify-content go inert,
+	// and the 22px glyph drops onto the text baseline and overflows the 24px box.
+	// `button.godam-audio-player__play` is (0,1,1), so these hold. Matches how
+	// .vjs-button.godam-share-button and .button.godam-button do it elsewhere.
+	button#{&}__play {
 		flex: 0 0 auto;
 		width: 24px;
 		height: 24px;
@@ -109,6 +123,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		// Keep the glyph on the box's own centre line rather than a theme-inherited
+		// text baseline, so centring does not depend on the inherited line-height.
+		line-height: 0;
 
 		&:hover:not( :disabled ) {
 			color: #000;
@@ -116,6 +133,7 @@
 		}
 
 		svg {
+			display: block;
 			width: 22px;
 			height: 22px;
 			fill: currentcolor;
@@ -124,6 +142,15 @@
 
 	&__scrubber {
 		flex: 1 1 auto;
+		// input[type=range] carries an intrinsic min-content width (~129px in
+		// Chrome), and the flex default of min-width:auto pins the track to it. In a
+		// narrow card, such as a 3-column layout, play + track + duration then need
+		// more room than the row has, and the non-shrinking duration label is pushed
+		// outside the card and the column. Allow the track to shrink so the row
+		// always fits. Genuinely narrow cards are handled by the container query at
+		// the end of this file, which gives the player its own full-width row, so
+		// the track no longer has to shrink to nothing to make space.
+		min-width: 0;
 		appearance: none;
 		-webkit-appearance: none;
 		padding: 0;
@@ -362,16 +389,18 @@
 	}
 }
 
-// ── Mobile: shrink cover, drop the player onto its own full-width row ───────────
+// ── Narrow layout: shrink cover, drop the player onto its own full-width row ────
 // The player is markup-nested inside .godam-audio-card__body (alongside the title
 // and description). `display: contents` on the body dissolves its box so those
 // children become grid items of __head, letting the player span the full width
 // beneath the [cover][title / description] row without any markup change. Applies
 // identically on the block editor, the front end and the customization preview.
-@media ( max-width: 480px ) {
+// Only descendant selectors live here, so the same block can be applied from a
+// container query: an element cannot be styled by its own container query, and
+// .godam-audio-card is the container.
+@mixin godam-audio-card-narrow-layout {
 
 	.godam-audio-card {
-		padding: 16px;
 
 		&__head {
 			display: grid;
@@ -408,4 +437,29 @@
 		grid-area: player;
 		margin-top: 12px;
 	}
+}
+
+// Small viewport: the whole page is narrow, so tighten the card padding too.
+@media ( max-width: 480px ) {
+
+	.godam-audio-card {
+		padding: 16px;
+	}
+
+	@include godam-audio-card-narrow-layout;
+}
+
+// Narrow CARD on a wide viewport. A 96px non-shrinking cover leaves almost
+// nothing for the body once the card itself is small: in the block editor canvas
+// a 3-column card measures 185px, so the body gets 23px, the title wraps one
+// letter per line and the duration escapes the card. The viewport media query
+// above cannot catch this, because the viewport is wide while the card is not.
+// The query measures the card's content box, so this 260px maps to a card of
+// roughly 308px. The default row layout stays usable down to about a 280px card
+// (below that the track drops under 40px), and front-end 3-column cards measure
+// ~364px, so this threshold clears both with room to spare rather than sitting a
+// few pixels off the widths that must not change.
+@container ( max-width: 260px ) {
+
+	@include godam-audio-card-narrow-layout;
 }

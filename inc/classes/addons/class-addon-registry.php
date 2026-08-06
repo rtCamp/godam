@@ -61,7 +61,19 @@ class Addon_Registry {
 		do_action( 'godam_register_addons', $this );
 
 		$this->boot_addons();
-		$this->warn_incompatible_addons();
+
+		/**
+		 * The compatibility check builds translated notice text, so it has to run
+		 * after translations are available. Running it here (plugins_loaded) makes
+		 * every `__()` below a just-in-time text domain load, which WordPress 6.7+
+		 * reports as `_load_textdomain_just_in_time was called incorrectly`.
+		 *
+		 * `admin_init` runs after `init` and only on admin requests, which is the
+		 * only place the notice can render anyway.
+		 *
+		 * @see https://github.com/rtCamp/godam/issues/465
+		 */
+		add_action( 'admin_init', array( $this, 'warn_incompatible_addons' ) );
 	}
 
 	/**
@@ -74,15 +86,12 @@ class Addon_Registry {
 	 * surface a dismissible admin notice pointing the user at the update. The
 	 * minimum-version map is filterable so future add-ons can declare their own.
 	 *
+	 * Hooked to `admin_init`, so it is admin-only by construction and runs late
+	 * enough to translate safely.
+	 *
 	 * @return void
 	 */
-	private function warn_incompatible_addons() {
-		// The notice only ever renders in wp-admin, so skip the whole check on
-		// front-end / REST / cron requests instead of running it every load.
-		if ( ! is_admin() ) {
-			return;
-		}
-
+	public function warn_incompatible_addons() {
 		/**
 		 * Minimum add-on version compatible with the current GoDAM version,
 		 * keyed by the slug the add-on registers under.
@@ -150,7 +159,7 @@ class Addon_Registry {
 	 * admin_notices hook intact (Pages::handle_admin_head only strips it on
 	 * GoDAM's own screens), so a plain admin_notices callback is enough.
 	 *
-	 * The screen is not known yet when this runs (plugins_loaded), so the screen
+	 * The screen is not known yet when this runs (admin_init), so the screen
 	 * check happens inside the admin_notices callback, by which point
 	 * get_current_screen() is populated.
 	 *
@@ -214,21 +223,27 @@ class Addon_Registry {
 			// Check GoDAM version compatibility.
 			if ( ! $addon->is_godam_version_compatible() ) {
 				$this->show_admin_notice(
-					sprintf(
-						/* translators: 1: Add-on name, 2: Required GoDAM version */
-						esc_html__( '%1$s requires GoDAM %2$s or higher. Please update the GoDAM plugin.', 'godam' ),
-						'<strong>' . esc_html( $addon->get_name() ) . '</strong>',
-						esc_html( $addon->get_minimum_godam_version() )
-					)
+					static function () use ( $addon ) {
+						return sprintf(
+							/* translators: 1: Add-on name, 2: Required GoDAM version */
+							esc_html__( '%1$s requires GoDAM %2$s or higher. Please update the GoDAM plugin.', 'godam' ),
+							'<strong>' . esc_html( $addon->get_name() ) . '</strong>',
+							esc_html( $addon->get_minimum_godam_version() )
+						);
+					}
 				);
 				continue;
 			}
 
 			// Check add-on-specific dependencies (e.g. WooCommerce active).
 			if ( ! $addon->dependencies_met() ) {
-				foreach ( $addon->get_missing_dependency_messages() as $msg ) {
-					$this->show_admin_notice( $msg );
-				}
+				// One notice per add-on: asking for the messages here, just to
+				// count them, would translate them during `plugins_loaded`.
+				$this->show_admin_notice(
+					static function () use ( $addon ) {
+						return implode( '<br />', $addon->get_missing_dependency_messages() );
+					}
+				);
 				continue;
 			}
 
@@ -281,14 +296,32 @@ class Addon_Registry {
 	/**
 	 * Helper: queue an admin notice.
 	 *
-	 * @param string $message HTML notice content.
+	 * Callers run during `plugins_loaded`, where translation functions are not
+	 * safe to call yet, so the message is passed as a callback and built when the
+	 * notice actually renders.
+	 *
+	 * @see https://github.com/rtCamp/godam/issues/465
+	 *
+	 * @param callable $message_callback Returns the HTML notice content.
 	 *
 	 * @return void
 	 */
-	private function show_admin_notice( $message ) {
+	private function show_admin_notice( callable $message_callback ) {
+		// `boot_addons()` runs on every request type. Front-end, REST and cron
+		// requests never fire `admin_notices`, so don't queue a callback there.
+		if ( ! is_admin() ) {
+			return;
+		}
+
 		add_action(
 			'admin_notices',
-			function () use ( $message ) {
+			static function () use ( $message_callback ) {
+				$message = (string) $message_callback();
+
+				if ( '' === $message ) {
+					return;
+				}
+
 				printf( '<div class="notice notice-error"><p>%s</p></div>', wp_kses_post( $message ) );
 			}
 		);

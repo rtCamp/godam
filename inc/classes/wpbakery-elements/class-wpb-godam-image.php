@@ -63,7 +63,7 @@ class WPB_GoDAM_Image {
 
 		vc_map(
 			array(
-				'name'        => esc_html__( 'GoDAM Image', 'godam' ),
+				'name'        => esc_html__( 'Image', 'godam' ),
 				'base'        => 'godam_image',
 				'category'    => esc_html__( 'GoDAM', 'godam' ),
 				'description' => esc_html__( 'Image with interactive GoDAM hotspot & product layers', 'godam' ),

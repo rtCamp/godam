@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,11 @@ Organize your media library for better workflow efficiency with:
 ✓ Image, video, audio, and PDF are supported
 
 Check full description [here](https://godam.io/features/wordpress-advanced-media-management/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=advanced-media-management)
+
+📌 **Image & Audio Editors**
+✓ Image editor – add clickable, interactive hotspot layers directly to your images
+✓ GoDAM Image block – embed interactive images in the block editor, Elementor, and WPBakery
+✓ Audio editor – manage and customize audio attachments from a dedicated editor, paired with the GoDAM Audio block
 
 📌 **GoDAM Central (Digital Asset Management for WordPress) [Paid]**
 ✓ Centralized media library with unified cloud storage & CDN delivery
@@ -219,6 +224,28 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.1.1 (August 6, 2026) =
+
+- Fix: GoDAM no longer fills the debug log with `Function _load_textdomain_just_in_time was called incorrectly` on WordPress 6.7 and later. On sites that display errors, the warning could also appear on the page itself, in the admin and on the front end.
+- Fix: 34 more pieces of on-screen text can now be translated, covering the video player's transcript, chapters, comments, sharing and sign-in prompts, which no language pack could reach before.
+- Tweak: GoDAM no longer contacts the GoDAM service to re-check your API key during front-end page views, REST requests or scheduled tasks. That happens only on the Media Library screen, which is the one place the transcode status column needs it.
+
+= v2.1.0 (July 30, 2026) =
+
+- Feat: Interactive Image Hotspots — turn any image into an interactive, shoppable visual. The new Image editor lets you add clickable Hotspot layers to any image, then embed it anywhere with the new GoDAM Image block.
+- Feat: Viewer Retention Curve — a new analytics graph shows exactly where viewers drop off across a video, replacing the previous per-video heatmap.
+- Feat: Placements analytics — see everywhere a video is embedded across your site, with per-video breakdowns.
+- Feat: Added an Audio editor for managing audio attachments.
+- Feat: Expanded Elementor support with Video, Video Gallery, Audio, and Image blocks and a Document widget.
+- Feat: Expanded WPBakery Page Builder support with a Document block, an Image block, and updated GoDAM blocks.
+- Feat: Added render-time video SEO schema (JSON-LD) for block templates, template parts, and patterns.
+- Tweak: Added a date-range picker to the analytics dashboard, filtering metrics by period.
+- Tweak: Made the Video Editor canvas responsive so the video scales to its wrapper width.
+- Fix: Security fixes.
+- Fix: Resolved video transcript UI/UX issues.
+- Fix: Fixed the Elementor Select option colour and the media picker popup in Elementor.
+- Chore: Resolved open Dependabot npm security advisories.
+
 = v2.0.0 (July 14, 2026) =
 
 - Feat: GoDAM 2.0 brings a complete visual redesign across the admin and front end, with refreshed branding, new logos, and updated block icons.
@@ -237,19 +264,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: Automatically backfill media usage for existing content in the background, via the migration runner in Action Scheduler batches, on upgrade.
 - Tweak: Authenticate GoDAM Central media-usage logging and retry failed notifications with backoff so transient outages do not lose events.
 
-= v1.12.2 (June 16, 2026) =
-
-- Tweak: Aligned `[godam_video]` and `[godam_video_gallery]` shortcode attributes with responsive block attributes.
-- Tweak: Refactored GoDAM Video and GoDAM Video Gallery widgets for both Elementor and WPBakery.
-- Fix: Resolved hotspot layer popup overlapping issues.
-- Fix: Added validation to prevent non-video file selections in the GoDAM Video block.
-- Fix: Added validation to prevent non-audio file selections in the GoDAM Audio block.
-- Fix: Restored vertical spacing for toggle controls in the block inspector across audio, gallery, and player blocks.
-- Fix: Resolved style and spacing issues in the video editor.
-
-= v1.12.1 (June 12, 2026) =
-
-- Fix: Resolved security issues.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

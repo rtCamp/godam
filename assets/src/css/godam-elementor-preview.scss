@@ -16,12 +16,13 @@
  * the relevant element.
  */
 
-/* ── Empty-state placeholders ─────────────────────────────────────────────── */
+/* ── Empty-state / unsupported-state placeholders ─────────────────────────── */
 
 .godam-image-elementor-empty,
 .godam-video-elementor-empty,
 .godam-audio-elementor-empty,
-.godam-gallery-elementor-empty {
+.godam-gallery-elementor-empty,
+.godam-document-elementor-unsupported {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -42,7 +43,8 @@
 .godam-image-elementor-empty__title,
 .godam-video-elementor-empty__title,
 .godam-audio-elementor-empty__title,
-.godam-gallery-elementor-empty__title {
+.godam-gallery-elementor-empty__title,
+.godam-document-elementor-unsupported__title {
 	margin: 0;
 	font-size: 15px;
 	font-weight: 600;
@@ -52,7 +54,8 @@
 .godam-image-elementor-empty__desc,
 .godam-video-elementor-empty__desc,
 .godam-audio-elementor-empty__desc,
-.godam-gallery-elementor-empty__desc {
+.godam-gallery-elementor-empty__desc,
+.godam-document-elementor-unsupported__desc {
 	margin: 0;
 	max-width: 340px;
 	font-size: 13px;
@@ -84,8 +87,9 @@
 	aspect-ratio: 16 / 9;
 }
 
-/* Audio: a small glyph (no framed box). */
-.godam-audio-elementor-empty__icon {
+/* Audio / Document: a small glyph (no framed box). */
+.godam-audio-elementor-empty__icon,
+.godam-document-elementor-unsupported__icon {
 	width: 40px;
 	height: 40px;
 	margin-bottom: 4px;

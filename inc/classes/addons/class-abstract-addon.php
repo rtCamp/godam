@@ -69,9 +69,17 @@ abstract class Abstract_Addon {
 	 * Each entry is an associative array:
 	 *   'name'      => (string) Human-readable dependency name.
 	 *   'check'     => (callable) Returns true when the dependency is satisfied.
-	 *   'message'   => (string) Admin notice text when the dependency is missing.
+	 *   'message'   => (string|callable) Admin notice text when the dependency is
+	 *                  missing, or a callback returning it.
 	 *
-	 * @return array<int, array{name: string, check: callable, message: string}>
+	 * This runs during `plugins_loaded`, before any text domain is loaded, so an
+	 * add-on must NOT translate here: pass a callback as 'message' and translate
+	 * inside it. Translating directly makes WordPress 6.7+ report
+	 * `_load_textdomain_just_in_time was called incorrectly` on every request.
+	 *
+	 * @see https://github.com/rtCamp/godam/issues/465
+	 *
+	 * @return array<int, array{name: string, check: callable, message: string|callable}>
 	 */
 	public function get_dependencies() {
 		return array();
@@ -80,11 +88,18 @@ abstract class Abstract_Addon {
 	/**
 	 * Check whether all dependencies are satisfied.
 	 *
+	 * An entry without a usable 'check' counts as satisfied — the same result as
+	 * before, but reached without reading a missing key. This runs on every
+	 * `plugins_loaded`, so an `Undefined array key "check"` warning here would
+	 * print into the page under WP_DEBUG_DISPLAY: the symptom #465 was about.
+	 *
 	 * @return bool
 	 */
 	public function dependencies_met() {
 		foreach ( $this->get_dependencies() as $dep ) {
-			if ( is_callable( $dep['check'] ) && ! call_user_func( $dep['check'] ) ) {
+			$check = $dep['check'] ?? null;
+
+			if ( is_callable( $check ) && ! $check() ) {
 				return false;
 			}
 		}
@@ -94,15 +109,30 @@ abstract class Abstract_Addon {
 	/**
 	 * Get missing dependency messages.
 	 *
+	 * A 'message' may be a callback so the add-on can translate it here, when the
+	 * notice is rendered, instead of during `plugins_loaded`.
+	 *
 	 * @return string[]
 	 */
 	public function get_missing_dependency_messages() {
 		$messages = array();
 
 		foreach ( $this->get_dependencies() as $dep ) {
-			if ( is_callable( $dep['check'] ) && ! call_user_func( $dep['check'] ) ) {
-				$messages[] = $dep['message'];
+			$check = $dep['check'] ?? null;
+
+			if ( ! is_callable( $check ) || $check() ) {
+				continue;
 			}
+
+			$message = $dep['message'] ?? '';
+
+			// A message string is never invoked, even when it happens to match a
+			// function name: only a closure or other non-string callable is.
+			if ( ! is_string( $message ) && is_callable( $message ) ) {
+				$message = $message();
+			}
+
+			$messages[] = (string) $message;
 		}
 
 		return $messages;

@@ -148,7 +148,13 @@ function monthGrid( viewDate ) {
 	const month = viewDate.getMonth();
 	const first = new Date( year, month, 1 );
 	const gridStartDay = 1 - first.getDay();
-	return Array.from( { length: 42 }, ( _, i ) => {
+	// Only the weeks the month actually touches (Figma). A fixed six-row grid
+	// renders a trailing row of next-month days on most months, which is dead
+	// space: e.g. July 2026 needs five rows and got a greyed-out "2..8" sixth.
+	// Day 0 of the next month is the last day of this one.
+	const daysInMonth = new Date( year, month + 1, 0 ).getDate();
+	const weeks = Math.ceil( ( first.getDay() + daysInMonth ) / 7 );
+	return Array.from( { length: weeks * 7 }, ( _, i ) => {
 		// Calendar arithmetic (not fixed-ms): keeps every cell at local
 		// midnight so a DST fall-back in the month can't drift later cells to
 		// 23:00 of the prior day (which would duplicate a day number and
@@ -175,7 +181,10 @@ const DateRangePicker = ( { value = {}, onChange, testIdPrefix = 'godam-analytic
 	return (
 		<Dropdown
 			className="godam-daterange-dropdown godam-period-dropdown"
-			popoverProps={ { placement: 'bottom-end' } }
+			// The class has to travel to the popover (portaled out of this
+			// subtree) so its default single-card chrome can be swapped for the
+			// two-panel Figma layout.
+			popoverProps={ { placement: 'bottom-end', className: 'godam-daterange-popover' } }
 			renderToggle={ ( { isOpen, onToggle } ) => (
 				<Button
 					variant="secondary"
@@ -241,7 +250,7 @@ const DateRangePanel = ( { value, activeKey, testIdPrefix, onSelect } ) => {
 		if ( date > maxDate ) {
 			return; // no future dates
 		}
-		if ( ! pendingStart || ( pendingStart && pendingEnd ) ) {
+		if ( ! pendingStart || pendingEnd ) {
 			// Begin a new range.
 			setPendingStart( date );
 			setPendingEnd( null );
@@ -365,6 +374,7 @@ const DateRangePanel = ( { value, activeKey, testIdPrefix, onSelect } ) => {
 					className="godam-daterange__custom-toggle"
 					isSelected={ showCalendar }
 					icon={ calendar }
+					iconPosition="left"
 					onClick={ () => setShowCalendar( true ) }
 					data-test-id={ `${ testIdPrefix }-custom` }
 				>
@@ -376,4 +386,4 @@ const DateRangePanel = ( { value, activeKey, testIdPrefix, onSelect } ) => {
 };
 
 export default DateRangePicker;
-export { PRESETS, spanDays, matchPreset, triggerLabelFor, toISO, fromISO };
+export { PRESETS, spanDays, matchPreset, triggerLabelFor, toISO, fromISO, monthGrid };

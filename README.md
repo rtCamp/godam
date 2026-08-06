@@ -10,7 +10,7 @@ Tested up to: 7.0
 
 Requires PHP: 7.4
 
-Stable tag: 2.0.0
+Stable tag: 2.1.1
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -50,6 +50,11 @@ Organize your media library for better workflow efficiency with:
 - Image, video, audio, and PDF are supported
 
 Check full description [here](https://godam.io/features/wordpress-advanced-media-management/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=advanced-media-management)
+
+#### 📌 Image & Audio Editors
+- Image editor – add clickable, interactive hotspot & product hotspot layers directly to your images
+- GoDAM Image block – embed interactive images in the block editor, Elementor, and WPBakery
+- Audio editor – manage and customize audio attachments from a dedicated editor, paired with the GoDAM Audio block
 
 #### 📌 GoDAM Central (Digital Asset Management for WordPress) [Paid]
 - Centralized media library with unified cloud storage & CDN delivery

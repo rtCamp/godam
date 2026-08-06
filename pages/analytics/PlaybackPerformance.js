@@ -165,12 +165,12 @@ export default function PlaybackPerformanceDashboard( {
 		if ( rangeActive ) {
 			startDate = fromISO( range.startDate );
 			endDate = fromISO( range.endDate );
-			filteredData = ( parsedData || [] ).filter( ( d ) => {
+			filteredData = parsedData.filter( ( d ) => {
 				const t = new Date( d.date );
 				return t >= startDate && t <= endDate;
 			} );
 		} else {
-			filteredData = parsedData || [];
+			filteredData = parsedData;
 			startDate =
 				filteredData.length > 0
 					? d3.min( filteredData, ( d ) => d.date )
