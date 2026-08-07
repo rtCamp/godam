@@ -95,9 +95,12 @@ export function getLayerInteractions() {
  * pays it once regardless of batch size.
  *
  * @param {string}        videoKey data-id or job_id of the video. Required and non-empty.
- * @param {Array<Object>} events   Event objects. Each must include layer_id,
- *                                 layer_type, action_type, layer_timestamp.
- *                                 Malformed entries are skipped, not fatal.
+ * @param {Array<Object>} events   Event objects. An entry is kept only if it has
+ *                                 a truthy layer_id, layer_type and action_type
+ *                                 (the fields the server requires); other entries
+ *                                 are skipped, not fatal. layer_timestamp is
+ *                                 expected downstream but not enforced here, since
+ *                                 0 (a layer at t=0) is a valid value.
  */
 export function addLayerInteractions( videoKey, events ) {
 	if ( ! videoKey || typeof videoKey !== 'string' ) {

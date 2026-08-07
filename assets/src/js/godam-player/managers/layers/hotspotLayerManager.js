@@ -122,7 +122,14 @@ export default class HotspotLayerManager {
 	 *                            instead of written, so a caller can batch.
 	 */
 	emitHotspotEvent( parentLayer, hotspot, index, actionType, metadata, collector ) {
-		if ( ! window.GoDAM || typeof window.GoDAM.addLayerInteraction !== 'function' ) {
+		// Build-only mode (a collector array is supplied) pushes the event for a
+		// later batched write, so it does not need the immediate writer. Only the
+		// direct-write path requires window.GoDAM.addLayerInteraction.
+		if (
+			! Array.isArray( collector ) &&
+			( ! window.GoDAM ||
+				typeof window.GoDAM.addLayerInteraction !== 'function' )
+		) {
 			return;
 		}
 
@@ -264,7 +271,13 @@ export default class HotspotLayerManager {
 	 *                            instead of written, so a caller can batch.
 	 */
 	emitParentLayerEvent( parentLayer, actionType, metadata, collector ) {
-		if ( ! window.GoDAM || typeof window.GoDAM.addLayerInteraction !== 'function' ) {
+		// Build-only mode (a collector array is supplied) only needs to push the
+		// event; the immediate writer is required just for the direct-write path.
+		if (
+			! Array.isArray( collector ) &&
+			( ! window.GoDAM ||
+				typeof window.GoDAM.addLayerInteraction !== 'function' )
+		) {
 			return;
 		}
 
@@ -404,7 +417,9 @@ export default class HotspotLayerManager {
 		}
 
 		// Older bundle without the batch writer — still correct, just N writes.
-		batch.forEach( ( event ) => window.GoDAM.addLayerInteraction( videoKey, event ) );
+		if ( typeof window.GoDAM?.addLayerInteraction === 'function' ) {
+			batch.forEach( ( event ) => window.GoDAM.addLayerInteraction( videoKey, event ) );
+		}
 	}
 
 	/**

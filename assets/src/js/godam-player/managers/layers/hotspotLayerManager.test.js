@@ -105,4 +105,25 @@ describe( 'HotspotLayerManager.emitLayerVisible', () => {
 		expect( single.map( ( e ) => e.action_type ) ).toEqual( [ 'clicked' ] );
 		expect( batched ).toHaveLength( 0 );
 	} );
+
+	it( 'batches even when only the batch writer is present (no single writer)', () => {
+		delete window.GoDAM.addLayerInteraction;
+		manager.emitLayerVisible( {
+			id: 'l1', type: 'hotspot', displayTime: 1, hotspots: [ { id: 'A' } ],
+		} );
+		expect( batched ).toHaveLength( 1 );
+		expect( batched[ 0 ].map( ( e ) => e.layer_id ) ).toEqual( [ 'l1', 'l1::A' ] );
+	} );
+
+	it( 'does not throw when no writer is available at all', () => {
+		delete window.GoDAM.addLayerInteraction;
+		delete window.GoDAM.addLayerInteractions;
+		expect( () =>
+			manager.emitLayerVisible( {
+				id: 'l1', type: 'hotspot', displayTime: 1, hotspots: [ { id: 'A' } ],
+			} ),
+		).not.toThrow();
+		expect( batched ).toHaveLength( 0 );
+		expect( single ).toHaveLength( 0 );
+	} );
 } );
