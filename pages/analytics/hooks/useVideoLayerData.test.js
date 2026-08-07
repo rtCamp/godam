@@ -140,4 +140,28 @@ describe( 'groupRows — a hotspot reports its own viewed, never the layer\'s', 
 		expect( parent.counts.viewed ).toBe( 9 );
 		expect( parent.no_action ).toBe( 4 );
 	} );
+
+	// Woo product hotspots go through this same code path, and the two types
+	// must behave identically. Asserted separately because `layerType` selects
+	// the No Action formula, so a woo-only regression would not be caught above.
+	it( 'treats a Woo product hotspot exactly the same way', () => {
+		const wooRows = rows.map( ( r ) => ( {
+			...r,
+			layer_type: 'woo',
+			layer_id: r.layer_id.replace( '::a', '::p1' ).replace( '::b', '::p2' ),
+			layer_metadata: r.layer_id.includes( '::' )
+				? JSON.stringify( {
+					parent_layer_id: 'h-1',
+					product_id: r.layer_id.endsWith( 'a' ) ? 1 : 2,
+					product_name: r.layer_id.endsWith( 'a' ) ? 'Established product' : 'Added yesterday',
+				} )
+				: '{"parent_layer_id":"h-1"}',
+		} ) );
+		const [ parent ] = groupRows( wooRows, 'woo', OPEN_CONFIG );
+		const byName = Object.fromEntries(
+			parent.sub_hotspots.map( ( s ) => [ s.name, [ s.counts.viewed, s.no_action ] ] ),
+		);
+		expect( byName[ 'Established product' ] ).toEqual( [ 7, 4 ] );
+		expect( byName[ 'Added yesterday' ] ).toEqual( [ 1, 1 ] );
+	} );
 } );
