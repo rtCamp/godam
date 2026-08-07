@@ -93,13 +93,16 @@ export default class HotspotLayerManager {
 	/**
 	 * Emit a sub-hotspot interaction event into the sessionStorage buffer.
 	 *
-	 * Sub-hotspots emit engagement events only — `hovered` and `clicked`.
-	 * Parent-level `viewed` is the layer-wide visibility signal and is
-	 * emitted separately via emitParentLayerEvent. All sub-hotspots in one
-	 * parent layer become visible at the same moment, so per-sub `viewed`
-	 * counts would be N redundant copies of the parent's visibility count;
-	 * the backend's per-parent aggregation pass derives "All Hotspots
-	 * (Cumulative)" engagement by grouping sub events by `parent_layer_id`.
+	 * Hotspots emit `viewed` (via emitLayerVisible when the layer becomes
+	 * visible) as well as the engagement actions `hovered` and `clicked`.
+	 * The layer also emits its own `viewed` via emitParentLayerEvent, which
+	 * remains the layer-wide impression the backend aggregates for "All
+	 * Hotspots (Cumulative)" by grouping on `parent_layer_id`.
+	 *
+	 * The per-hotspot `viewed` is what makes a hotspot's numbers correct when
+	 * hotspots are added or removed over time: only an impression row recorded
+	 * against the hotspot itself knows whether it existed when a viewer
+	 * watched.
 	 *
 	 * All actions deduped per (composite layer_id, action_type, page-session)
 	 * — one clicked, one hovered per sub-hotspot per session at most.
@@ -115,9 +118,18 @@ export default class HotspotLayerManager {
 	 * @param {number} index       Hotspot's position in parentLayer.hotspots.
 	 * @param {string} actionType  e.g. 'clicked', 'hovered'.
 	 * @param {Object} [metadata]  Extra fields merged into layer_metadata.
+	 * @param {Array}  [collector] When given, the built event is pushed here
+	 *                            instead of written, so a caller can batch.
 	 */
-	emitHotspotEvent( parentLayer, hotspot, index, actionType, metadata ) {
-		if ( ! window.GoDAM || typeof window.GoDAM.addLayerInteraction !== 'function' ) {
+	emitHotspotEvent( parentLayer, hotspot, index, actionType, metadata, collector ) {
+		// Build-only mode (a collector array is supplied) pushes the event for a
+		// later batched write, so it does not need the immediate writer. Only the
+		// direct-write path requires window.GoDAM.addLayerInteraction.
+		if (
+			! Array.isArray( collector ) &&
+			( ! window.GoDAM ||
+				typeof window.GoDAM.addLayerInteraction !== 'function' )
+		) {
 			return;
 		}
 
@@ -214,7 +226,7 @@ export default class HotspotLayerManager {
 			...( metadata || {} ),
 		};
 
-		window.GoDAM.addLayerInteraction( videoKey, {
+		const event = {
 			layer_id: compositeLayerId,
 			layer_type: parentLayer?.type || 'hotspot',
 			action_type: actionType,
@@ -222,7 +234,17 @@ export default class HotspotLayerManager {
 			layer_name: compositeName,
 			page_url: window.location.href,
 			layer_metadata: enrichedMetadata,
-		} );
+		};
+
+		// When a collector array is supplied the caller is batching several
+		// events into one storage write (see emitLayerVisible) — hand it over
+		// instead of paying a full read/parse/stringify/write cycle here.
+		if ( Array.isArray( collector ) ) {
+			collector.push( event );
+			return;
+		}
+
+		window.GoDAM.addLayerInteraction( videoKey, event );
 	}
 
 	/**
@@ -245,9 +267,17 @@ export default class HotspotLayerManager {
 	 * @param {Object} parentLayer Parent layer config (.id required; .name / .displayTime / .type preferred).
 	 * @param {string} actionType  e.g. 'viewed'.
 	 * @param {Object} [metadata]  Extra fields merged into layer_metadata.
+	 * @param {Array}  [collector] When given, the built event is pushed here
+	 *                            instead of written, so a caller can batch.
 	 */
-	emitParentLayerEvent( parentLayer, actionType, metadata ) {
-		if ( ! window.GoDAM || typeof window.GoDAM.addLayerInteraction !== 'function' ) {
+	emitParentLayerEvent( parentLayer, actionType, metadata, collector ) {
+		// Build-only mode (a collector array is supplied) only needs to push the
+		// event; the immediate writer is required just for the direct-write path.
+		if (
+			! Array.isArray( collector ) &&
+			( ! window.GoDAM ||
+				typeof window.GoDAM.addLayerInteraction !== 'function' )
+		) {
 			return;
 		}
 
@@ -325,7 +355,7 @@ export default class HotspotLayerManager {
 			...( metadata || {} ),
 		};
 
-		window.GoDAM.addLayerInteraction( videoKey, {
+		const event = {
 			layer_id: parentLayerId,
 			layer_type: parentLayer?.type || 'hotspot',
 			action_type: actionType,
@@ -333,7 +363,63 @@ export default class HotspotLayerManager {
 			layer_name: parentLayerName,
 			page_url: window.location.href,
 			layer_metadata: enrichedMetadata,
+		};
+
+		if ( Array.isArray( collector ) ) {
+			collector.push( event );
+			return;
+		}
+
+		window.GoDAM.addLayerInteraction( videoKey, event );
+	}
+
+	/**
+	 * Emit every impression event for a layer that has just become visible:
+	 * the layer-wide `viewed` plus one `viewed` per hotspot.
+	 *
+	 * A per-hotspot `viewed` is NOT redundant with the layer's, even though all
+	 * hotspots in a layer appear at the same instant. The *set* of hotspots
+	 * changes as the video is edited, so a per-hotspot impression row is the
+	 * only record of which hotspots actually existed when a viewer saw the
+	 * layer. Reconstructing that afterwards from saved config dates cannot
+	 * resolve an edit made the same day, because the analytics rollup buckets
+	 * by day.
+	 *
+	 * All events go into one array and are written in a single storage
+	 * operation, so an impression costs the same as it did when only the
+	 * layer-level event fired.
+	 *
+	 * @param {Object} parentLayer Layer config (.id, .hotspots).
+	 */
+	emitLayerVisible( parentLayer ) {
+		const videoKey = getVideoKey( this.player );
+		if ( ! videoKey ) {
+			return;
+		}
+
+		const batch = [];
+		this.emitParentLayerEvent( parentLayer, 'viewed', undefined, batch );
+
+		const hotspots = Array.isArray( parentLayer?.hotspots )
+			? parentLayer.hotspots
+			: [];
+		hotspots.forEach( ( hotspot, index ) => {
+			this.emitHotspotEvent( parentLayer, hotspot, index, 'viewed', undefined, batch );
 		} );
+
+		if ( ! batch.length ) {
+			return;
+		}
+
+		if ( typeof window.GoDAM?.addLayerInteractions === 'function' ) {
+			window.GoDAM.addLayerInteractions( videoKey, batch );
+			return;
+		}
+
+		// Older bundle without the batch writer — still correct, just N writes.
+		if ( typeof window.GoDAM?.addLayerInteraction === 'function' ) {
+			batch.forEach( ( event ) => window.GoDAM.addLayerInteraction( videoKey, event ) );
+		}
 	}
 
 	/**
@@ -384,15 +470,9 @@ export default class HotspotLayerManager {
 			if ( isActive ) {
 				if ( layerObj.layerElement.classList.contains( 'hidden' ) ) {
 					layerObj.layerElement.classList.remove( 'hidden' );
-					// Parent-level `viewed` fires once per session when the
-					// layer first becomes visible. Sub-hotspots don't emit
-					// their own `viewed` — every hotspot inside one parent
-					// layer becomes visible at the same moment, so per-sub
-					// `viewed` counts would all be identical to this one.
-					// Engagement (hovered / clicked) is still emitted per
-					// sub-hotspot; the backend aggregates those by
-					// parent_layer_id for the "All Hotspots" funnel.
-					this.emitParentLayerEvent( layerObj.layer, 'viewed' );
+					// One impression for the layer plus one per hotspot,
+					// written in a single storage operation.
+					this.emitLayerVisible( layerObj.layer );
 					if ( ! layerObj.layerElement.dataset?.hotspotsInitialized ) {
 						this.createHotspots( layerObj );
 						layerObj.layerElement.dataset.hotspotsInitialized = true;
