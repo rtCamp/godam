@@ -77,3 +77,67 @@ describe( 'groupRows — conversion comes from the server, not a client recomput
 		expect( parent.conversion_rate ).toBe( 100 );
 	} );
 } );
+
+describe( 'groupRows — a hotspot reports its own viewed, never the layer\'s', () => {
+	// The layer was seen 9 times. Hotspot A has been there throughout and was
+	// seen 7 of those times; hotspot B was added late and has been seen once.
+	// Substituting the layer's 9 onto either of them is the bug: it charges B
+	// with 9 impressions it was never present for, all landing in "No Action".
+	const base = {
+		layer_type: 'hotspot',
+		page_url: 'https://example.com',
+		timestamp: 4.59,
+	};
+	const rows = [
+		{
+			...base,
+			layer_id: 'h-1',
+			layer_name: 'Hotspot layer at 4.59s',
+			viewed: 9, clicked: 2, hovered: 5,
+			conversion_rate: 22.2,
+			layer_metadata: '{"parent_layer_id":"h-1"}',
+		},
+		{
+			...base,
+			layer_id: 'h-1::a',
+			layer_name: 'Long-standing hotspot',
+			viewed: 7, clicked: 1, hovered: 3,
+			conversion_rate: 14.3,
+			layer_metadata: '{"parent_layer_id":"h-1"}',
+		},
+		{
+			...base,
+			layer_id: 'h-1::b',
+			layer_name: 'Added yesterday',
+			viewed: 1, clicked: 0, hovered: 0,
+			conversion_rate: 0,
+			layer_metadata: '{"parent_layer_id":"h-1"}',
+		},
+	];
+
+	it( 'keeps each hotspot\'s own viewed instead of the parent\'s', () => {
+		const [ parent ] = groupRows( rows, 'hotspot', OPEN_CONFIG );
+		const byName = Object.fromEntries(
+			parent.sub_hotspots.map( ( s ) => [ s.name, s.counts.viewed ] ),
+		);
+		expect( byName[ 'Long-standing hotspot' ] ).toBe( 7 );
+		expect( byName[ 'Added yesterday' ] ).toBe( 1 );
+	} );
+
+	it( 'computes No Action against the hotspot\'s own viewed', () => {
+		const [ parent ] = groupRows( rows, 'hotspot', OPEN_CONFIG );
+		const byName = Object.fromEntries(
+			parent.sub_hotspots.map( ( s ) => [ s.name, s.no_action ] ),
+		);
+		// 7 - 3, not the parent's 9 - 3 = 6.
+		expect( byName[ 'Long-standing hotspot' ] ).toBe( 4 );
+		// 1 - 0, not the parent's 9 - 0 = 9. This is the reported bug.
+		expect( byName[ 'Added yesterday' ] ).toBe( 1 );
+	} );
+
+	it( 'leaves the layer row itself on its own aggregate', () => {
+		const [ parent ] = groupRows( rows, 'hotspot', OPEN_CONFIG );
+		expect( parent.counts.viewed ).toBe( 9 );
+		expect( parent.no_action ).toBe( 4 );
+	} );
+} );

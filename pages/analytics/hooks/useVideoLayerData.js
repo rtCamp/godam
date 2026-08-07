@@ -407,17 +407,18 @@ export function groupRows( rows, layerType, configIndex ) {
 		const subHotspots = bucket.subRows
 			.map( ( { row, md }, idx ) => {
 				const counts = pluckCounts( row );
-				const noAction = computeNoAction( layerType, {
-					...counts,
-					// Sub-hotspots inherit viewed from the parent (all sub-
-					// hotspots in one layer become visible together).
-					viewed: parentCounts.viewed,
-				} );
-				// Per-sub conversion comes from the server: the sub's converting
-				// sessions over the PARENT's viewed (subs don't emit their own
-				// viewed), a UNION over the layer type's conversion actions — so
-				// Woo counts cart-adds too — and already bounded ≤ 100%. Don't
-				// recompute from a single action.
+				// Each hotspot carries its own `viewed`: the player emits one
+				// impression per hotspot, and for days before that shipped the
+				// server substitutes the layer's count only for hotspots it can
+				// prove already existed. Either way `row.viewed` is the right
+				// denominator, so do NOT substitute the parent's here: that is
+				// what charged a newly added hotspot with the layer's whole
+				// history as "No Action".
+				const noAction = computeNoAction( layerType, counts );
+				// Per-hotspot conversion comes from the server: the hotspot's
+				// converting sessions over its own viewed, a UNION over the layer
+				// type's conversion actions — so Woo counts cart-adds too — and
+				// already bounded ≤ 100%. Don't recompute from a single action.
 				const conversion = Math.min(
 					100,
 					Math.max( 0, Number( row.conversion_rate ) || 0 ),
@@ -459,11 +460,7 @@ export function groupRows( rows, layerType, configIndex ) {
 				return {
 					id: subId,
 					name: subName,
-					counts: {
-						...counts,
-						// Inherit viewed; per-sub viewed isn't emitted anymore.
-						viewed: parentCounts.viewed,
-					},
+					counts,
 					no_action: noAction,
 					conversion_rate: conversion,
 					product_id: md.product_id || null,
