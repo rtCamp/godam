@@ -88,6 +88,21 @@ $godam_hover_select = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSe
 if ( $godam_autoplay ) {
 	$godam_hover_select = 'none';
 }
+
+// "Show in lightbox": the inline player becomes a click-to-open trigger that
+// plays the video inside a lightbox (see godam-player/managers/modalManager.js).
+// The inline render itself is left untouched.
+$godam_show_in_lightbox = ! empty( $attributes['showInLightbox'] );
+
+// Autoplay and "Show in lightbox" are mutually exclusive, the same way autoplay
+// and hover are above: the inline render is a click-to-open poster, so playing it
+// where it stands both defeats the point and double-plays the video (once inline,
+// again on opening). The lightbox wins because it is the more specific intent, and
+// the author still gets autoplay where it counts — opening the lightbox starts
+// playback.
+if ( $godam_show_in_lightbox ) {
+	$godam_autoplay = false;
+}
 // Raw "Show caption" block attribute: true/false when explicitly set, null when
 // unset (inherit from the attachment's Display-captions setting — resolved into
 // $godam_show_caption once the attachment meta is loaded, further below).
@@ -663,7 +678,7 @@ if ( empty( $godam_attachment_title ) ) {
 <?php if ( ! empty( $godam_sources ) ) : ?>
 	<div <?php echo wp_kses_data( $godam_figure_attributes ); ?>>
 		<figure id="godam-player-container-<?php echo esc_attr( $godam_instance_id ); ?>">
-			<div class="godam-video-wrapper">
+			<div class="godam-video-wrapper<?php echo $godam_show_in_lightbox ? ' godam-show-in-lightbox' : ''; ?>">
 				<?php if ( $godam_show_overlay && ! empty( $godam_inner_blocks_content ) ) : ?>
 					<div
 						class="godam-video-overlay-container godam-overlay-alignment-<?php echo esc_attr( $godam_vertical_alignment ); ?>"
@@ -749,6 +764,7 @@ if ( empty( $godam_attachment_title ) ) {
 							data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
 							data-autoplay-on-view="<?php echo esc_attr( ( $godam_autoplay && 'auto' !== $godam_preload ) ? 'true' : 'false' ); ?>"
 							data-disable-transcript="<?php echo esc_attr( $godam_disable_subtitles_and_transcript ? 'true' : 'false' ); ?>"
+							data-show-in-lightbox="<?php echo esc_attr( $godam_show_in_lightbox ? 'true' : 'false' ); ?>"
 						>
 							<?php
 

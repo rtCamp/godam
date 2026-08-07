@@ -127,6 +127,21 @@
 		margin: 0 0 8px;
 	}
 
+	&__guide {
+		font-size: 12px;
+		line-height: 1.5;
+		color: #757575;
+		margin: 0 0 8px;
+
+		a {
+			color: #2271b1;
+		}
+
+		p {
+			margin: 0 0 4px;
+		}
+	}
+
 	&__spinner {
 		display: flex;
 		justify-content: center;

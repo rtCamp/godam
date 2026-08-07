@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import DOMPurify from 'isomorphic-dompurify';
+
+/**
  * WordPress dependencies
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
@@ -129,11 +134,25 @@ export default function ThumbnailPanel( {
 		return null;
 	}
 
+	// Optional guide message, supplied via the
+	// `rtgodam_video_thumbnails_guide_message` PHP filter with a 'block-editor'
+	// context (empty by default). Sanitized server-side too, but sanitized again
+	// here because it may carry markup.
+	const guideMessage = window.pluginInfo?.videoThumbnailsGuideMessage;
+
 	return (
 		<div className="godam-thumbnail-panel">
 			<p className="godam-thumbnail-panel__label">
 				{ __( 'Video Thumbnail', 'godam' ) }
 			</p>
+
+			{ guideMessage && (
+				<div
+					className="godam-thumbnail-panel__guide"
+					// eslint-disable-next-line react/no-danger
+					dangerouslySetInnerHTML={ { __html: DOMPurify.sanitize( guideMessage ) } }
+				/>
+			) }
 
 			{ isLoading ? (
 				<div className="godam-thumbnail-panel__spinner">

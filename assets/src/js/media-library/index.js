@@ -25,7 +25,7 @@ import GoDAMMediaFrameShared from './views/godam-media-frame-shared.js';
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 import MediaListViewTableDragHandler from './views/attachment-list.js';
 
-import { isFolderOrgDisabled, isUploadPage, addManageMediaButton } from './utility.js';
+import { isFolderOrgDisabled, shouldReplaceAttachmentsViews, isUploadPage, addManageMediaButton } from './utility.js';
 
 const $ = jQuery;
 
@@ -243,7 +243,12 @@ class MediaLibrary {
 		// plugin's directory UI. The detail-pane views and the GoDAM media-modal tab (below) are
 		// kept — they don't conflict with a folder plugin and preserve transcoding info + the cloud
 		// picker, which render on the native browser/grid.
-		if ( ! isFolderOrgDisabled() ) {
+		//
+		// Exception: the media library grid page (upload.php). Transcoding status badges and the
+		// retranscode bulk action are core GoDAM features that live on these browser/grid views, so
+		// keep the custom views there even in additive mode. Their folder-only behaviour (drag to
+		// folder, folder/date toolbar filters) is separately gated on isFolderOrgDisabled().
+		if ( shouldReplaceAttachmentsViews() ) {
 			if ( wp?.media?.view?.AttachmentsBrowser && AttachmentsBrowser ) {
 				wp.media.view.AttachmentsBrowser = AttachmentsBrowser;
 			}

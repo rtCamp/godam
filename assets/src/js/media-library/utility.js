@@ -59,6 +59,28 @@ function isFolderOrgDisabled() {
 	return ! window.easydamMediaLibrary?.enableFolderOrganization || false;
 }
 
+/**
+ * Whether GoDAM should replace WordPress's attachment browser and grid views
+ * (`wp.media.view.AttachmentsBrowser` and `wp.media.view.Attachments`).
+ *
+ * Those replacements are what carry the grid-view transcoding UI — the status
+ * badges and the "Transcode Media" (retranscode) bulk action — but they also bring
+ * GoDAM's column-width logic and custom attachment view, so this gates more than
+ * transcoding alone.
+ *
+ * Transcoding is a core GoDAM feature, not a folder-organization one, so the
+ * replacements stay in place on the media library grid page (upload.php) even in
+ * additive mode (folder organization disabled). Everywhere else in additive mode
+ * (e.g. the media modal opened from a post) they are suppressed, since the browser
+ * and grid views are the main clash surface with another media/DAM plugin. The
+ * folder-only behaviour they contain is separately gated on `isFolderOrgDisabled()`.
+ *
+ * @return {boolean} True if GoDAM's browser/grid views should replace the native ones.
+ */
+function shouldReplaceAttachmentsViews() {
+	return ! isFolderOrgDisabled() || isUploadPage();
+}
+
 async function addManageMediaButton() {
 	const referenceElement = document.querySelector( '.wrap .page-title-action' );
 
@@ -173,4 +195,4 @@ function canEditPages() {
 	return _canEditPages;
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };
+export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, shouldReplaceAttachmentsViews, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };

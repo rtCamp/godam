@@ -1143,6 +1143,7 @@ body.godam-share-modal-open {
 	z-index: 8;
 }
 
+/* stylelint-disable-next-line no-descending-specificity -- hover-effect rule kept in this section; sets different properties than the earlier .vjs-control rule, so order is harmless. */
 .vjs-control:hover {
 	color: var(--rtgodam-control-hover-color) !important;
 	transform: scale(var(--rtgodam-control-hover-zoom));
@@ -1746,6 +1747,26 @@ body.godam-share-modal-open {
 .godam-video-wrapper {
 	position: relative;
 	width: 100%;
+
+	// Size container for the transcript panel: the panel overlays the right side
+	// of the video, and below a container-query threshold it instead drops beneath
+	// and stacks full width. That query lives with the transcript panel styles
+	// further down; only the container declaration belongs here, with the rest of
+	// the wrapper's base layout.
+	container-type: inline-size;
+	container-name: godam-video-wrapper;
+
+	// While a transcript panel is present it is parked (slid) off the right edge
+	// when closed, so clip the wrapper to keep it from widening the block or
+	// spawning a horizontal scrollbar. The clip would cut the inner container's
+	// drop shadow, so re-apply the same shadow on the wrapper (an element's own
+	// box-shadow is not affected by its overflow). The `godam-has-transcript-panel`
+	// class is toggled by TranscriptPanelManager — a plain class avoids `:has()`,
+	// which some browsers do not support.
+	&.godam-has-transcript-panel {
+		overflow: hidden;
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	}
 }
 
 /* Ensure Elementor widget wrapper maintains proper dimensions */
@@ -2319,22 +2340,10 @@ body.godam-share-modal-open {
 // right for a smooth transition. The wrapper is a size container, so below a
 // container-query threshold the panel instead drops beneath the video and
 // stacks full width (see the container query at the end of this section).
-.godam-video-wrapper {
-	container-type: inline-size;
-	container-name: godam-video-wrapper;
-
-	// While a transcript panel is present it is parked (slid) off the right
-	// edge when closed, so clip the wrapper to keep it from widening the block
-	// or spawning a horizontal scrollbar. The clip would cut the inner
-	// container's drop shadow, so re-apply the same shadow on the wrapper (an
-	// element's own box-shadow is not affected by its overflow). The
-	// `godam-has-transcript-panel` class is toggled by TranscriptPanelManager —
-	// a plain class avoids `:has()`, which some browsers do not support.
-	&.godam-has-transcript-panel {
-		overflow: hidden;
-		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-	}
-}
+// The `container-type` / `container-name` declarations that make that work, and
+// the `.godam-has-transcript-panel` clipping rule, live with the base
+// `.godam-video-wrapper` rule earlier in this file so the selector has a single
+// definition.
 
 .godam-transcript-panel {
 	position: absolute;
@@ -2502,4 +2511,190 @@ body.godam-share-modal-open {
 	opacity: 1;
 	visibility: visible;
 	pointer-events: auto;
+}
+
+/* ---------------------------------------------------------------------------
+ * "Show in lightbox" — click the inline player to open it in a lightbox.
+ * Modal structure/behaviour is inspired by the GoDAM-for-Woo shoppable video
+ * modal. See assets/src/js/godam-player/managers/modalManager.js.
+ * ------------------------------------------------------------------------- */
+
+.godam-video-wrapper.godam-show-in-lightbox {
+	cursor: pointer;
+}
+
+/* Prevent the page from scrolling behind an open modal. */
+body.godam-player-modal-open {
+	overflow: hidden;
+}
+
+/* Dark backdrop. */
+.godam-player-modal-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	background: rgba(0, 0, 0, 0.8);
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transition: opacity 0.3s ease, visibility 0.3s ease;
+
+	&.is-active {
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+	}
+}
+
+/* Close button, sitting just outside the video's top-right corner rather than in
+ * the screen corner, which reads as unrelated to the video on a large display.
+ *
+ * `absolute` against the wrapper, which is its containing block (the wrapper is
+ * `fixed`). The wrapper spans the full dialog width, but a video capped by height
+ * — a vertical reel, or anything tall on a short viewport — is narrower than that
+ * and centred, so `right: 0` would strand the button out to its right. Instead the
+ * offset re-derives the video's own width from the same two inputs the video uses,
+ * the height cap and the aspect ratio, and halves the leftover to find the centred
+ * video's right edge. `--godam-lightbox-ratio` is copied onto the wrapper by
+ * modalManager.js, since the ratio itself lives on the moved player root, which is
+ * a descendant this element cannot inherit from. */
+.godam-player-modal-close {
+	position: absolute;
+	bottom: calc(100% + 10px);
+	right: calc((100% - min(100%, var(--godam-lightbox-max-h) * (var(--godam-lightbox-ratio, 16 / 9)))) / 2);
+	z-index: 100002;
+	width: 40px;
+	height: 40px;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	color: #fff;
+	background: rgba(0, 0, 0, 0.4);
+	border: 0;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: background 0.2s ease;
+
+	&.is-active {
+		display: flex;
+	}
+
+	&:hover {
+		background: rgba(255, 255, 255, 0.2);
+	}
+
+	/* Keep a real focus ring: the background change alone is too low-contrast to
+	 * be a reliable keyboard focus indicator against the dark backdrop. */
+	&:focus-visible {
+		background: rgba(255, 255, 255, 0.2);
+		outline: 2px solid #fff;
+		outline-offset: 2px;
+	}
+}
+
+/* Centered wrapper holding the moved player. */
+.godam-player-modal-wrapper {
+
+	/* Vertical room reserved above the video for the close button, which sits
+	 * outside it: the button's own height plus the gap beneath it. Without this
+	 * the video could take the full 90vh and push the button off screen. */
+	--godam-lightbox-close-gap: 50px;
+	--godam-lightbox-max-h: calc(90vh - var(--godam-lightbox-close-gap));
+
+	position: fixed;
+	top: 50%;
+	left: 50%;
+
+	/* Nudge down by half the reserved strip. Centring the wrapper alone would
+	 * centre the *video*, splitting the leftover space evenly above and below and
+	 * leaving too little on top for the button on a short viewport. Offsetting by
+	 * half instead centres the button-plus-video as one unit, which keeps the
+	 * button on screen at any height. */
+	transform: translate(-50%, calc(-50% + var(--godam-lightbox-close-gap) / 2));
+	z-index: 100001;
+	width: min(1000px, 92vw);
+	max-height: var(--godam-lightbox-max-h);
+	opacity: 0;
+	pointer-events: none;
+	outline: none;
+	transition: opacity 0.3s ease;
+
+	/* dvh accounts for mobile browser chrome; vh above is the fallback. */
+	@supports (max-height: 90dvh) {
+		--godam-lightbox-max-h: calc(90dvh - var(--godam-lightbox-close-gap));
+	}
+
+	&.is-active {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	/* While the player is fullscreen, get out of its way.
+	 *
+	 * iOS Safari refuses real fullscreen for anything but a bare <video>, so the
+	 * player fakes it with `position: fixed; inset: 0`. Fixed positioning resolves
+	 * against the nearest transformed ancestor, and the centring transform above
+	 * makes that this wrapper — which pins the "fullscreen" video inside the
+	 * lightbox instead of filling the screen. Dropping the transform gives the
+	 * viewport back. Toggled by modalManager.js on (custom)fullscreenchange. */
+	&.godam-lightbox-fullscreen {
+		inset: 0;
+		width: 100%;
+		max-height: none;
+		transform: none;
+
+		/* Fullscreen has its own exit control; two close buttons is one too many. */
+		.godam-player-modal-close {
+			display: none;
+		}
+	}
+}
+
+.godam-player-modal-video {
+	width: 100%;
+}
+
+/* The moved player root carries its own inline max-width (from Player Height);
+ * neutralise it so the modal, not the inline layout, sizes the player. The class
+ * is added to the player root by modalManager.js while it lives inside the modal.
+ *
+ * `width: auto` rather than `100%` is what keeps a tall video on screen: pinning
+ * the width leaves height to come from aspect-ratio alone, so a 9:16 reel renders
+ * ~1778px tall and its control bar lands far below the fold. With an explicit
+ * ratio and a height cap, the width resolves from whichever constraint binds
+ * first — the wrapper width for wide videos, the height cap for tall ones. */
+.godam-player-modal-item {
+	width: auto !important;
+	max-width: 100% !important;
+
+	/* Shared with the wrapper, so the close button's offset maths (which uses the
+	 * same value) always matches the video actually rendered. */
+	max-height: var(--godam-lightbox-max-h, 90vh);
+	margin: 0 auto !important;
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+}
+
+/* Iframe mode: a trigger whose video is not rendered on the page shows the
+ * embed page instead of moving a player in. See modalManager.js openIframe(). */
+.godam-player-modal-iframe {
+	display: block;
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	max-height: 90dvh;
+	border: 0;
+	background: #000;
+}
+
+/* The share modal is a body-level dialog at z-index 9999, which sits *below*
+ * the lightbox overlay (100000+). Sharing from inside the lightbox is a
+ * first-class flow — it is what deep links are for — so lift it above while the
+ * lightbox is open, and only then. */
+body.godam-player-modal-open .share-modal-container {
+	z-index: 100003;
+}
+
+/* Triggers are clickable, whatever element the author used. */
+[data-godam-lightbox] {
+	cursor: pointer;
 }

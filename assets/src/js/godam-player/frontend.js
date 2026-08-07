@@ -18,6 +18,16 @@
  * Internal dependencies
  */
 import PlayerManager from './managers/playerManager.js';
+import { getLightbox, initLightboxUrlSync } from './managers/modalManager.js';
+import { initLightboxTriggers, prepareTriggers } from './lightboxTriggers.js';
+import {
+	findVideoById,
+	getLightboxRoot,
+	isLightboxVideo,
+	parseLightboxHash,
+	parseStartTime,
+} from './utils/lightboxTargets.js';
+import { seekPlayer } from './utils/seekPlayer.js';
 
 import './api/godam-api.js';
 
@@ -35,66 +45,81 @@ const initGodamPlayers = () => {
 		godamPlayerManager = new PlayerManager();
 	}
 
-	// Scroll to a specific video and optionally seek to a timestamp when the URL
-	// hash matches #godam-video-{jobId} and an optional ?t={seconds} query param is present.
-	const hash = window.location.hash;
-	if ( hash && hash.startsWith( '#godam-video-' ) ) {
-		const jobId = hash.replace( '#godam-video-', '' );
-		const searchParams = new URLSearchParams( window.location.search );
-		const startTime = parseFloat( searchParams.get( 't' ) );
+	initLightboxTriggers();
+	initLightboxUrlSync();
+	applyDeepLink();
+};
 
-		const scrollToVideo = () => {
-			const videoEl = document.querySelector( `video[data-job_id="${ CSS.escape( jobId ) }"]` );
-			const container = videoEl?.closest( '.godam-video-wrapper' ) || videoEl?.closest( 'figure' );
-			if ( container ) {
-				container.scrollIntoView( { behavior: 'smooth', block: 'center' } );
-			}
-		};
-
-		// Wait for player initialization and layout to complete before scrolling.
-		setTimeout( scrollToVideo, 500 );
-
-		// Seek to the timestamp when the specific player is fully ready.
-		// We use 'godamPlayerReady' (fires per-player from within player.ready()) rather than
-		// 'godamAllPlayersReady' because the latter can fire before Video.js has initialised
-		// the player instance, causing getPlayer() to return null and the seek to be lost.
-		if ( ! isNaN( startTime ) && startTime > 0 ) {
-			const onPlayerReady = ( event ) => {
-				const { videoElement, player } = event.detail;
-
-				// Only act on the specific video targeted by the URL hash.
-				if ( ! videoElement || videoElement.dataset.job_id !== jobId ) {
-					return;
-				}
-
-				// This is our player – remove the listener so it only runs once.
-				document.removeEventListener( 'godamPlayerReady', onPlayerReady );
-
-				const seekToTime = () => player.currentTime( startTime );
-
-				// If media metadata is already loaded, seek immediately.
-				if ( player.readyState() >= 1 ) {
-					seekToTime();
-					return;
-				}
-
-				// For media not yet loaded: seek as soon as metadata is available.
-				player.one( 'loadedmetadata', seekToTime );
-
-				// Also seek on the first play event to cover the race where
-				// loadedmetadata fires before our listener above is bound,
-				// or for HLS streams where currentTime must be set after play starts.
-				player.one( 'play', () => {
-					if ( player.currentTime() < startTime ) {
-						seekToTime();
-					}
-					player.off( 'loadedmetadata', seekToTime );
-				} );
-			};
-
-			document.addEventListener( 'godamPlayerReady', onPlayerReady );
-		}
+/**
+ * Open (or scroll to) the video a `#godam-video-{id}` URL points at.
+ *
+ * The hash is what the share modal's "WP page link" emits. For a *lightbox*
+ * video, scrolling is not enough: its inline render is only a poster, so a
+ * recipient sent a link to watch the video would land on the page with it
+ * closed. Those open in the lightbox; every other video keeps the original
+ * scroll-and-seek behaviour.
+ *
+ * The ID is resolved as a job ID first and an attachment ID second — see
+ * `findVideoById()`.
+ */
+const applyDeepLink = () => {
+	const targetId = parseLightboxHash( window.location.hash );
+	if ( ! targetId ) {
+		return;
 	}
+
+	const searchParams = new URLSearchParams( window.location.search );
+	const startTime = parseStartTime( searchParams.get( 't' ) );
+
+	// Match on either ID, so a link built from an attachment ID works too.
+	const isTarget = ( videoElement ) =>
+		videoElement?.dataset?.job_id === targetId || videoElement?.dataset?.id === targetId;
+
+	// Act on 'godamPlayerReady' (fires per-player from inside player.ready())
+	// rather than 'godamAllPlayersReady', which can fire before Video.js has
+	// created the instance — leaving getPlayer() null and the seek/open lost.
+	const onPlayerReady = ( event ) => {
+		const { videoElement, player } = event.detail;
+		if ( ! isTarget( videoElement ) ) {
+			return;
+		}
+
+		// This is our player – remove the listener so it only runs once.
+		document.removeEventListener( 'godamPlayerReady', onPlayerReady );
+
+		if ( isLightboxVideo( videoElement ) ) {
+			const playerRoot = getLightboxRoot( videoElement );
+			if ( playerRoot ) {
+				// The hash is already in the address bar, so opening must not push
+				// a duplicate history entry.
+				getLightbox().openElement( playerRoot, {
+					video: videoElement,
+					startTime,
+					historyId: targetId,
+					pushHistory: false,
+				} );
+				return;
+			}
+		}
+
+		if ( startTime !== null ) {
+			seekPlayer( player, startTime );
+		}
+	};
+
+	document.addEventListener( 'godamPlayerReady', onPlayerReady );
+
+	// Inline videos are brought into view once player init and layout have
+	// settled. Lightbox videos are excluded: they get an overlay instead, and
+	// scrolling the page underneath it is just noise.
+	setTimeout( () => {
+		const videoEl = findVideoById( targetId );
+		if ( ! videoEl || isLightboxVideo( videoEl ) ) {
+			return;
+		}
+		const container = videoEl.closest( '.godam-video-wrapper' ) || videoEl.closest( 'figure' );
+		container?.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+	}, 500 );
 };
 
 // Run on DOMContentLoaded, or immediately if the DOM is already parsed. Page
@@ -119,6 +144,10 @@ if ( document.readyState === 'loading' ) {
  * `initializePendingVideos()`), so it never duplicates global listeners.
  */
 const reinitPendingPlayers = () => {
+	// Triggers are bound by delegation, so injected markup needs no re-binding —
+	// but a non-interactive trigger still needs its role/tabindex.
+	prepareTriggers();
+
 	if ( ! document.querySelector( '.easydam-player.video-js:not([data-godam-initialized])' ) ) {
 		return;
 	}

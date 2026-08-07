@@ -37,33 +37,32 @@ export default AttachmentsBrowser?.extend( {
 		// Make sure to load the original toolbar
 		AttachmentsBrowser.prototype.createToolbar.call( this );
 
-		// Additive mode (folder organization off): skip GoDAM's folder/date/retranscode toolbar
-		// filters so the toolbar stays native. Applies to both the native Browse tab and the
-		// GoDAM tab's browser.
-		if ( isFolderOrgDisabled() ) {
-			return;
-		}
+		// Additive mode (folder organization off): skip GoDAM's folder/date toolbar filters so the
+		// toolbar stays native. The retranscode bulk action below is intentionally NOT skipped —
+		// transcoding is a core feature, so it stays available on the media grid page (upload.php)
+		// regardless of folder organization.
+		if ( ! isFolderOrgDisabled() ) {
+			if ( MediaLibraryTaxonomyFilter ) {
+				this.toolbar.set(
+					'MediaLibraryTaxonomyFilter',
+					new MediaLibraryTaxonomyFilter( {
+						controller: this.controller,
+						model: this.collection.props,
+						priority: -75,
+					} ).render(),
+				);
+			}
 
-		if ( MediaLibraryTaxonomyFilter ) {
-			this.toolbar.set(
-				'MediaLibraryTaxonomyFilter',
-				new MediaLibraryTaxonomyFilter( {
-					controller: this.controller,
-					model: this.collection.props,
-					priority: -75,
-				} ).render(),
-			);
-		}
-
-		if ( MediaDateRangeFilter ) {
-			this.toolbar.set(
-				'MediaDateRangeFilter',
-				new MediaDateRangeFilter( {
-					controller: this.controller,
-					model: this.collection.props,
-					priority: -80,
-				} ).render(),
-			);
+			if ( MediaDateRangeFilter ) {
+				this.toolbar.set(
+					'MediaDateRangeFilter',
+					new MediaDateRangeFilter( {
+						controller: this.controller,
+						model: this.collection.props,
+						priority: -80,
+					} ).render(),
+				);
+			}
 		}
 
 		if ( isAPIKeyValid() && isUploadPage() ) {
