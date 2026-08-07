@@ -103,13 +103,19 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 	const [ range, setRange ] = useState( () => spanDays( 7 ) );
 	const siteUrl = window.location.origin;
 
-	const { parents, isLoading, errorType, errorMessage, videoConversion } =
-		useVideoLayerData( {
-			videoId: attachmentID,
-			siteUrl,
-			startDate: range.startDate,
-			endDate: range.endDate,
-		} );
+	const {
+		parents,
+		isLoading,
+		errorType,
+		errorMessage,
+		videoConversion,
+		retentionArray,
+	} = useVideoLayerData( {
+		videoId: attachmentID,
+		siteUrl,
+		startDate: range.startDate,
+		endDate: range.endDate,
+	} );
 
 	// Cumulative video conversion — same metric as the Dashboard's per-video
 	// column, scoped to this video and the selected range. Hidden when there
@@ -239,6 +245,9 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 							<LayerDetailPanel
 								parent={ selectedParent }
 								attachmentID={ attachmentID }
+								retentionArray={ retentionArray }
+								range={ range }
+								siteUrl={ siteUrl }
 							/>
 						</div>
 					) }

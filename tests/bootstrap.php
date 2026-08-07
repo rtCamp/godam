@@ -179,6 +179,9 @@ require_once dirname( __DIR__ ) . '/inc/classes/fluentforms/class-init.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-base.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';
+// Polls::shape_poll_answers is static and pure; loading the class needs only the
+// REST base above plus the wp_strip_all_tags / absint stubs.
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-polls.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
 

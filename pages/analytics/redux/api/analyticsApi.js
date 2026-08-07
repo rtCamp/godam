@@ -114,6 +114,20 @@ export const analyticsApi = createApi( {
 				};
 			},
 		} ),
+		fetchPollResults: builder.query( {
+			query: ( { pollId } ) => ( {
+				url: `godam/v1/poll/${ encodeURIComponent( pollId ) }/results`,
+			} ),
+			transformResponse: ( response ) => ( {
+				answers: Array.isArray( response?.answers ) ? response.answers : [],
+				totalVotes: Number( response?.total_votes ) || 0,
+				question: response?.question || '',
+			} ),
+			// wp-polls being inactive, or the poll having been deleted, is a
+			// normal state rather than a failure: the panel just hides the
+			// distribution. Swallow the 404 so it never surfaces as an error.
+			transformErrorResponse: () => ( { answers: [], totalVotes: 0, question: '' } ),
+		} ),
 	} ),
 } );
 
@@ -121,4 +135,5 @@ export const {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
 	useFetchProcessedLayerAnalyticsQuery,
+	useFetchPollResultsQuery,
 } = analyticsApi;

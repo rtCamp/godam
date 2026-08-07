@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 /**
  * WordPress dependencies
@@ -17,8 +17,15 @@ import {
 	LAYER_TYPE_BY_ID,
 	withAlpha,
 } from '../constants/layerTypes';
+import { useFetchPollResultsQuery } from '../redux/api/analyticsApi';
+import { useLayerKpiComparison } from '../hooks/useLayerKpiComparison';
+import { buildLayerKpis } from './layerKpis';
 import LayerIcon from './LayerIcon';
 import LayerInteractionFunnel from './LayerInteractionFunnel';
+import LayerKpiTiles from './LayerKpiTiles';
+import LayerReachDonut from './LayerReachDonut';
+import LinkedProducts from './LinkedProducts';
+import PollAnswerDistribution from './PollAnswerDistribution';
 import SubHotspotRail from './SubHotspotRail';
 import LayerModifiedNotice from './LayerModifiedNotice';
 
@@ -71,13 +78,58 @@ function formatTimestamp( seconds ) {
  * Sub-hotspot selection state is owned here — selecting a sub from the
  * rail swaps the funnel data but leaves the rest of the panel intact.
  *
+ * The Viewer Reach donut and the KPI tiles stay at PARENT level even while a
+ * sub-hotspot is selected: reach is a property of the layer's position in the
+ * video, which every sub of a layer shares, and the Figma panels show one set of
+ * headline numbers per layer rather than per sub.
+ *
  * @param {Object}        props
- * @param {Object|null}   props.parent       Currently selected parent layer entry, or null.
- * @param {number|string} props.attachmentID WP attachment ID for the Edit Layer link.
+ * @param {Object|null}   props.parent           Currently selected parent layer entry, or null.
+ * @param {number|string} props.attachmentID     WP attachment ID for the Edit Layer link.
+ * @param {number[]}      [props.retentionArray] Per-second view counts for the selected range.
+ * @param {Object}        [props.range]          Selected range: { startDate, endDate }.
+ * @param {string}        [props.siteUrl]        site_url query param, for the comparison fetch.
  * @return {JSX.Element|null} The detail card, or null when no layer is selected.
  */
-const LayerDetailPanel = ( { parent, attachmentID } ) => {
+const LayerDetailPanel = ( {
+	parent,
+	attachmentID,
+	retentionArray = [],
+	range = {},
+	siteUrl = '',
+} ) => {
 	const [ selectedSubId, setSelectedSubId ] = useState( null );
+
+	// Headline KPIs for the parent layer. Computed before the early returns
+	// below so the hook order stays stable across renders.
+	const kpis = useMemo(
+		() =>
+			parent
+				? buildLayerKpis( {
+					layerType: parent.layer_type,
+					counts: parent.counts,
+					noAction: parent.no_action,
+					retentionArray,
+					timestamp: parent.timestamp,
+				} )
+				: null,
+		[ parent, retentionArray ],
+	);
+
+	const { reachDelta, primaryDelta, spanDays } = useLayerKpiComparison( {
+		videoId: attachmentID,
+		siteUrl,
+		layer: parent,
+		range,
+		currentKpis: kpis,
+	} );
+
+	// Poll answer distribution comes from wp-polls, not from analytics. Skipped
+	// for every other layer type and for poll layers with no saved poll id.
+	const pollResults = useFetchPollResultsQuery(
+		{ pollId: parent?.poll_id },
+		{ skip: parent?.layer_type !== 'poll' || ! parent?.poll_id },
+	);
 
 	// Whenever the selected parent changes, reset to the aggregate view.
 	useEffect( () => {
@@ -202,6 +254,33 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 				/>
 			) }
 
+			{ /* Linked Products (Woo only) — the products this layer points at,
+			    named and thumbnailed from the event metadata the Woo player
+			    already emits. Sits above the metrics, matching Figma W11. */ }
+			{ parent.layer_type === 'woo' && (
+				<LinkedProducts subHotspots={ parent.sub_hotspots } />
+			) }
+
+			{ /* Headline metrics: Viewer Reach donut beside the KPI tiles.
+			    Both are parent-level even when a sub-hotspot is selected. */ }
+			{ kpis && (
+				<div className="grid gap-4 px-6 pt-5 grid-cols-1 md:grid-cols-[minmax(200px,260px)_minmax(0,1fr)] md:items-center">
+					<LayerReachDonut
+						reach={ kpis.donut.reach }
+						arcLabel={ kpis.donut.arcLabel }
+						arcValue={ kpis.donut.arcValue }
+						arcShare={ kpis.donut.arcShare }
+						delta={ reachDelta }
+						spanDays={ spanDays }
+					/>
+					<LayerKpiTiles
+						kpis={ kpis }
+						primaryDelta={ primaryDelta }
+						spanDays={ spanDays }
+					/>
+				</div>
+			) }
+
 			{ /* Body. Single column on mobile (the sub-hotspot rail stacks
 			    above the funnel); two columns from md up. Avoids the rail +
 			    funnel overflowing on narrow screens. */ }
@@ -226,6 +305,17 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 					noAction={ funnelNoAction }
 				/>
 			</div>
+
+			{ /* Poll answer distribution, from the wp-polls tables. */ }
+			{ parent.layer_type === 'poll' && !! parent.poll_id && (
+				<div className="px-6 pb-6">
+					<PollAnswerDistribution
+						answers={ pollResults.data?.answers }
+						totalVotes={ pollResults.data?.totalVotes }
+						isLoading={ pollResults.isLoading }
+					/>
+				</div>
+			) }
 		</section>
 	);
 };

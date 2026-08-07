@@ -1013,6 +1013,14 @@ class Pages {
 						$entry['entries_url'] = $entries_url;
 					}
 
+					// Poll layers additionally carry the wp-polls id so the
+					// analytics panel can fetch that poll's answer distribution.
+					// The votes live in wp-polls' own tables, so this id is the
+					// only handle the React side has on them.
+					if ( 'poll' === $saved_layer['type'] && ! empty( $saved_layer['poll_id'] ) ) {
+						$entry['pollId'] = absint( $saved_layer['poll_id'] );
+					}
+
 					$active_layer_config[] = $entry;
 				}
 			}
