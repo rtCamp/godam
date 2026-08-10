@@ -342,14 +342,6 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 		color: $ve-muted;
 	}
 
-	// ---------------------------------------------------------
-	// Video stage player: hide native control bar, keep the
-	// centered big-play button as the play affordance.
-	// ---------------------------------------------------------
-	#easydam-video-player {
-
-		.vjs-control-bar {
-			display: none;
-		}
-	}
+	// Video stage player controls (the reel progress stripe and the front-end
+	// control-bar preview) live in `_player-controls.scss`.
 }

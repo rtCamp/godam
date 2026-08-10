@@ -1,0 +1,146 @@
+// =============================================================
+// Video Editor — stage player controls. Two affordances live on the stage
+// preview:
+// 1. `.godam-ve-stripe` — a reel-style progress stripe pinned to the bottom
+//    edge of the video. It is the default control on every tab (the Video.js
+//    control bar is hidden there so the preview stays clean and the docked
+//    Timeline owns layer/chapter scrubbing).
+// 2. The real Video.js control bar, revealed on the Settings tab as a live
+//    preview of the front-end player. `App.js` already loads the front-end
+//    stylesheet (`assets/src/css/godam-player.scss`), so the bar picks up the
+//    front-end look from the same `--rtgodam-*` custom properties the block
+//    template sets — `VideoJSPlayer` just has to supply their values.
+// =============================================================
+
+#easydam-video-player {
+
+	// Visibility is owned by `VideoJSPlayer` via `--is-controls-visible`: the
+	// bar shows on the Settings tab (as the front-end preview) and stays hidden
+	// everywhere else, including while a layer is selected.
+	.vjs-control-bar {
+		display: var(--is-controls-visible, none);
+	}
+
+	// Mirrors the front end, where the big play button takes the player
+	// appearance colour (that rule is scoped to the block container, so it
+	// can't reach the editor preview).
+	.vjs-big-play-button {
+		background-color: var(--rtgodam-control-bar-color, #2b333fb3);
+	}
+
+	// "Display captions" off: hide the button outright, as the front end does
+	// (there it is never built).
+	&:not(.is-captions-visible) .vjs-subs-caps-button {
+		display: none !important;
+	}
+
+	// "Display captions" on: force the button visible. Video.js hides it on its
+	// own whenever the source carries no text tracks, but the toggle still has to
+	// show an effect on videos whose captions haven't been generated yet — hence
+	// `!important`, to beat `.vjs-hidden`.
+	&.is-captions-visible .vjs-subs-caps-button.vjs-hidden {
+		display: flex !important;
+	}
+
+	// ---------------------------------------------------------
+	// Reel-style progress stripe: a 3px bar with an 18px grab zone above it —
+	// thin enough to stay out of the way, easy enough to hit. Hovering (or
+	// scrubbing) thickens the bar and reveals the handle. Colours are fixed
+	// white-on-translucent rather than the player's appearance colour, so the
+	// stripe stays legible over any frame.
+	// ---------------------------------------------------------
+	.godam-ve-stripe {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 9;
+		height: 18px;
+
+		&__track {
+			position: absolute;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			height: 3px;
+			background: rgb(255 255 255 / 25%);
+			transition: height 0.12s ease;
+		}
+
+		&__buffer,
+		&__fill {
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+		}
+
+		&__buffer {
+			background: rgb(255 255 255 / 35%);
+		}
+
+		&__fill {
+			background: #fff;
+		}
+
+		&__handle {
+			position: absolute;
+			bottom: 50%;
+			width: 11px;
+			height: 11px;
+			background: #fff;
+			border-radius: 50%;
+			box-shadow: 0 0 3px rgb(0 0 0 / 40%);
+			opacity: 0;
+			transform: translate(-50%, 50%);
+			transition: opacity 0.12s ease;
+			pointer-events: none;
+		}
+
+		// The native range input drives dragging and keyboard seeking; it is
+		// transparent and stretched over the whole grab zone, and the painted
+		// track / fill / handle above are what the user actually sees.
+		// Sits inside the 3px track but grows upward to cover the 18px grab zone.
+		&__range {
+			position: absolute;
+			top: -15px;
+			left: 0;
+			width: 100%;
+			height: 18px;
+			min-height: 0;
+			margin: 0;
+			padding: 0;
+			cursor: pointer;
+			background: transparent;
+			border: 0;
+			opacity: 0;
+			appearance: none;
+		}
+
+		&__bubble {
+			position: absolute;
+			bottom: 14px;
+			padding: 2px 6px;
+			font-size: 0.6875rem;
+			line-height: 1.4;
+			color: #fff;
+			white-space: nowrap;
+			background: rgb(0 0 0 / 75%);
+			border-radius: 3px;
+			transform: translateX(-50%);
+			pointer-events: none;
+		}
+
+		&:hover,
+		&.is-scrubbing {
+
+			.godam-ve-stripe__track {
+				height: 5px;
+			}
+
+			.godam-ve-stripe__handle {
+				opacity: 1;
+			}
+		}
+	}
+}
