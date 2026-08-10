@@ -154,11 +154,12 @@ export default class HotspotLayerManager {
 		}
 		firedActions.add( actionType );
 
-		// Dwell measures consideration time — gap between parent visibility
-		// and this sub-hotspot interaction, minus time the tab was hidden
-		// during that window. Sub-hotspots no longer emit `viewed` themselves,
-		// so we fall back to the parent's first-visible timestamp keyed on
-		// parentLayer.id (seeded by emitParentLayerEvent).
+		// Dwell measures consideration time: the gap between parent visibility
+		// and this hotspot interaction, minus time the tab was hidden during
+		// that window. The per-hotspot `viewed` (emitted via emitLayerVisible)
+		// does not seed a first-visible timestamp of its own, so dwell keys off
+		// the parent's first-visible timestamp, seeded by emitParentLayerEvent
+		// on parentLayer.id.
 		const parentLayerId = parentLayer?.id ? String( parentLayer.id ) : '';
 		let firstVisibleAt = this._firstVisibleAt.get( compositeLayerId );
 		let hiddenAtStart = this._hiddenAtFirstVisible.get( compositeLayerId );
