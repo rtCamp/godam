@@ -17,7 +17,7 @@ if ( folderId ) {
 			selectedFolderId = 0;
 			break;
 		default:
-			selectedFolderId = parseInt( folderId );
+			selectedFolderId = parseInt( folderId, 10 );
 			break;
 	}
 }
@@ -101,10 +101,34 @@ const slice = createSlice( {
 				return;
 			}
 
-			const folder = state.folders.find( ( item ) => item.id === state.currentContextMenuFolder.id );
+			const id = state.currentContextMenuFolder.id;
+			const name = action.payload.name;
+
+			const folder = state.folders.find( ( item ) => item.id === id );
 
 			if ( folder ) {
-				folder.name = action.payload.name;
+				folder.name = name;
+			}
+
+			// The Bookmark/Locked tabs and the current selection hold separate copies of the
+			// folder, so update them too — otherwise a rename shows stale names in those views.
+			const bookmarked = state.bookmarks.find( ( item ) => item.id === id );
+			if ( bookmarked ) {
+				bookmarked.name = name;
+			}
+
+			const locked = state.lockedFolders.find( ( item ) => item.id === id );
+			if ( locked ) {
+				locked.name = name;
+			}
+
+			if ( state.selectedFolder && state.selectedFolder.id === id ) {
+				state.selectedFolder.name = name;
+			}
+
+			// The rename modal renders currentContextMenuFolder.name, so keep it current too.
+			if ( state.currentContextMenuFolder && state.currentContextMenuFolder.id === id ) {
+				state.currentContextMenuFolder.name = name;
 			}
 		},
 		deleteFolder: ( state ) => {
@@ -132,6 +156,22 @@ const slice = createSlice( {
 			}
 
 			state.folders = state.folders.filter( ( item ) => ! idsToDelete.has( item.id ) );
+
+			// Keep the bookmark/locked tab lists in sync so deleted folders don't linger there.
+			state.bookmarks = state.bookmarks.filter( ( item ) => ! idsToDelete.has( item.id ) );
+			state.lockedFolders = state.lockedFolders.filter( ( item ) => ! idsToDelete.has( item.id ) );
+
+			// If the selected folder was deleted (or was a descendant of a deleted folder),
+			// reset the selection to "All" — otherwise the grid keeps filtering by a folder
+			// that no longer exists.
+			if ( state.selectedFolder && idsToDelete.has( state.selectedFolder.id ) ) {
+				state.selectedFolder = { id: -1 };
+
+				// Mirror to the global the way changeSelectedFolder does, creating it if
+				// it doesn't exist yet so the reset isn't silently dropped.
+				window.godam = window.godam || {};
+				window.godam.selectedFolder = state.selectedFolder;
+			}
 
 			state.currentContextMenuFolder = {
 				id: -1,

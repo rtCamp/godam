@@ -318,7 +318,14 @@ class Assets {
 		}
 
 		wp_set_script_translations( 'easydam-media-library', 'godam', RTGODAM_PATH . 'languages' );
-		wp_enqueue_script( 'easydam-media-library' );
+
+		// Only load the heavy media-library bundle (~2.65 MB, bundles video.js) where the
+		// media library / wp.media modal is actually used. It was previously enqueued on
+		// every admin screen. Registration + localization above stay unconditional (cheap,
+		// and inert unless the handle is enqueued).
+		if ( godam_should_load_media_library_assets( $screen ) ) {
+			wp_enqueue_script( 'easydam-media-library' );
+		}
 
 		/**
 		 * Dependency library for the date range picker. Its only consumers (the media-library

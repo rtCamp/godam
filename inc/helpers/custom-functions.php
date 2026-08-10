@@ -1448,6 +1448,52 @@ function rtgodam_convert_to_https_url( $urls ) {
 }
 
 /**
+ * Whether the current admin screen hosts the WordPress media library / a wp.media modal
+ * and therefore needs GoDAM's media-library integration.
+ *
+ * Single source of truth for the enqueue gates below. Covers the core screens that host
+ * the media grid or open a wp.media modal, plus every GoDAM admin page (all of them call
+ * wp_enqueue_media() and may open the modal — dashboard, media editor, analytics,
+ * settings, tools, help, what's-new).
+ *
+ * @param WP_Screen|null $screen Current screen object.
+ * @return bool True if the screen uses the media library / wp.media.
+ */
+function godam_is_media_library_screen( $screen ) {
+	if ( ! $screen ) {
+		return false;
+	}
+
+	// Core screens that host the media grid or a wp.media modal. `post`/`page` (as bases)
+	// also cover the Elementor and WPBakery editors, which run on post.php.
+	$media_bases = array(
+		'upload',      // Media Library (grid & list views).
+		'post',        // Add/Edit any post type.
+		'page',        // Add/Edit Page.
+		'attachment',  // Edit Media.
+		'widgets',     // Classic widgets (image widget uses wp.media).
+		'site-editor', // FSE.
+	);
+
+	if ( in_array( $screen->base, $media_bases, true ) || in_array( $screen->id, $media_bases, true ) ) {
+		return true;
+	}
+
+	// GoDAM's own admin pages (screen ids derive from the `rtgodam` menu slug).
+	$godam_pages = array(
+		'toplevel_page_rtgodam',
+		'godam_page_rtgodam_media_editor',
+		'godam_page_rtgodam_analytics',
+		'godam_page_rtgodam_settings',
+		'godam_page_rtgodam_tools',
+		'godam_page_rtgodam_help',
+		'godam_page_rtgodam_whats_new',
+	);
+
+	return in_array( $screen->id, $godam_pages, true );
+}
+
+/**
  * Check if auth detector scripts should be loaded on current screen.
  *
  * @param WP_Screen|null $screen Current screen object.
@@ -1455,34 +1501,32 @@ function rtgodam_convert_to_https_url( $urls ) {
  * @return bool True if auth detector scripts should load.
  */
 function godam_should_load_auth_detector_script( $screen ) {
-	if ( ! $screen ) {
-		return false;
-	}
+	return godam_is_media_library_screen( $screen );
+}
 
-	// Pages where media library/modal is directly accessible.
-	$media_screens = array(
-		'upload',     // Media Library page (grid & list views).
-		'post',       // Add/Edit Post.
-		'page',       // Add/Edit Page.
-		'attachment', // Edit Media page.
-	);
-
-	// Check if current screen is in the list.
-	if ( in_array( $screen->base, $media_screens, true ) || in_array( $screen->id, $media_screens, true ) ) {
-		return true;
-	}
-
-	// Check if on GoDAM admin pages (where media library/modal can be opened).
-	$godam_pages = array(
-		'toplevel_page_godam',             // Dashboard page.
-		'godam_page_rtgodam_media_editor', // Media Editor page.
-	);
-
-	if ( in_array( $screen->id, $godam_pages, true ) ) {
-		return true;
-	}
-
-	return false;
+/**
+ * Whether the (heavy) GoDAM media-library JS bundles should load on the current screen.
+ *
+ * The media-library.min.js (bundles video.js) and pages/media-library.min.js (React/Redux
+ * folder sidebar) were enqueued on EVERY admin screen via a global admin_enqueue_scripts
+ * hook. They are only needed where the media library / wp.media modal is actually used
+ * (see godam_is_media_library_screen()). Everywhere else the payload is pure overhead.
+ * Integrations that open wp.media on other screens can opt in via the filter below.
+ *
+ * @param WP_Screen|null $screen Current screen object.
+ * @return bool True if the media-library bundles should be enqueued.
+ */
+function godam_should_load_media_library_assets( $screen ) {
+	/**
+	 * Filters whether the GoDAM media-library JS bundles load on the current screen.
+	 *
+	 * Use this to force-load the bundles on custom screens that open wp.media (e.g.
+	 * term-edit screens with media fields).
+	 *
+	 * @param bool           $should_load Whether to enqueue the media-library bundles.
+	 * @param WP_Screen|null $screen      Current screen object.
+	 */
+	return (bool) apply_filters( 'godam_should_load_media_library_assets', godam_is_media_library_screen( $screen ), $screen );
 }
 
 // ---------------------------------------------------------------------------

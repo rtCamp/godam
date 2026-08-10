@@ -50,10 +50,24 @@ const DeleteModal = () => {
 		setIsLoading( true );
 
 		try {
+			// `.unwrap()` is required: RTK Query mutations RESOLVE (do not throw) on
+			// HTTP 4xx/5xx, so without it a server rejection would fall through to the
+			// success path below — showing "deleted successfully" and dropping the
+			// folder from the tree even though it still exists on the server. unwrap()
+			// re-throws the error payload so failures reach the catch (matching how
+			// Rename/Create already handle their mutations).
 			if ( ! isMultiSelecting ) {
-				await deleteFolderMutation( selectedFolder.id );
+				await deleteFolderMutation( selectedFolder.id ).unwrap();
 			} else if ( multiSelectedFolderIds && multiSelectedFolderIds.length ) {
-				await bulkDeleteFoldersMutation( multiSelectedFolderIds );
+				// The bulk endpoint returns HTTP 200 with `errors` on *partial* failure, so
+				// .unwrap() alone won't throw — inspect the payload and surface it as a
+				// failure rather than reporting "deleted successfully" and dropping every
+				// selected folder from the tree.
+				const bulkResult = await bulkDeleteFoldersMutation( multiSelectedFolderIds ).unwrap();
+
+				if ( bulkResult?.errors?.length ) {
+					throw new Error( bulkResult.message || __( 'Some folders could not be deleted', 'godam' ) );
+				}
 			}
 
 			dispatch( deleteFolder() );
@@ -69,7 +83,7 @@ const DeleteModal = () => {
 		} catch ( error ) {
 			dispatch( updateSnackbar(
 				{
-					message: __( 'Failed to delete folder', 'godam' ),
+					message: error?.message || error?.data?.message || __( 'Failed to delete folder', 'godam' ),
 					type: 'fail',
 				},
 			) );
