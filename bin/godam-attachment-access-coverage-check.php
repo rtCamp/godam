@@ -5,51 +5,57 @@
  * that has no rtgodam_before_attachment_lookup bracket open at that exact
  * point — one candidate per call site, not per file.
  *
- * The other two scripts in this directory only catch a wrap *regressing*
- * (godam-wp-dam-hook-check.php) or a wrap that exists but doesn't cover a
- * follow-up read at the call site (godam-interprocedural-leak-check.php).
+ * The sibling godam-wp-dam-hook-check.php's own checks only catch a wrap
+ * *regressing* (a per-file call count dropping) or an existing pair being
+ * unbalanced.
  * Neither answers "does every attachment-touching call site have a wrap at
  * all" — which matters because wp-dam (or any similar multisite media
  * centralization plugin) has no way to know GoDAM is about to read/write
  * attachment data unless GoDAM fires this hook pair around it; a single
  * missed spot is a live bug on a site using it, not just a lint nit.
  *
- * Reuses the same token-walking approach as the other two scripts:
+ * This also fully covers a narrower shape a separate, now-retired script
+ * (godam-interprocedural-leak-check.php) used to check on its own: a
+ * function that wraps its own attachment access correctly, called from
+ * somewhere that then reads the result unwrapped. That's just one specific
+ * way an access call can end up uncovered — this script catches it as a
+ * natural side effect of checking *every* access call's coverage directly,
+ * without needing to first match a call site back to a specific named
+ * function the way the retired script had to (which is also why that
+ * script needed class-resolution logic — Foo::method() vs $this->method()
+ * — that has no equivalent problem to solve here at all).
  *
- *  - Function/top-level-scope boundaries and parameter names: same
- *    approach as godam-interprocedural-leak-check.php's
- *    godam_leak_find_functions() (a parameter is needed here for the same
- *    reason it's needed there — see the exclusion note below).
- *  - The branch-aware before/after balance walk (checkpoint-per-'{',
- *    rewind-on-return/throw): identical algorithm to
- *    godam-wp-dam-hook-check.php's godam_check_hook_balance_in_range(),
- *    because "is a before open right here" needs the exact same guard-clause
- *    handling that check already solved — a before opened at the top of a
- *    function, closed early in one guard clause and again at the normal
- *    exit, must still read as "open" for an access call that sits between
- *    the guard clauses and the final close, on the path where neither guard
- *    fired.
+ * Reuses the same token-walking approach as godam-wp-dam-hook-check.php:
+ * function/top-level-scope boundaries and parameter names, and the
+ * branch-aware before/after balance walk (checkpoint-per-'{',
+ * rewind-on-return/throw) from that script's own
+ * godam_check_hook_balance_in_range() — "is a before open right here" needs
+ * the exact same guard-clause handling that check already solved: a before
+ * opened at the top of a function, closed early in one guard clause and
+ * again at the normal exit, must still read as "open" for an access call
+ * that sits between the guard clauses and the final close, on the path
+ * where neither guard fired.
  *
  * On top of that walk, this script also watches every real access-function
  * call: if nothing is open at that point, it's a candidate — unless the
- * call's first argument is one of the enclosing function's own parameters.
- * That exclusion is deliberately permissive, same reasoning
- * godam-interprocedural-leak-check.php already uses for its own
- * parameter-based exclusion: a parameter's value predates anything this
- * function itself did, so it might already have been centralized by
- * whichever caller passed it in, or it might genuinely not be an attachment
- * ID at all — this script can't tell locally, so it excludes rather than
- * over-flags. That's a real false-negative source (a caller that does NOT
- * wrap the call, passing a genuine attachment ID straight through, would be
- * wrongly excluded here) — the same tradeoff already accepted for the leak
- * checker, not a new one introduced by this script.
+ * call's first argument is provably safe (godam_coverage_assignment_at()):
+ * one of the enclosing function's own parameters, a plain unmodified alias
+ * of one, or a cast/single-argument sanitizing call of one that hasn't since
+ * been reassigned to anything else. That exclusion is deliberately
+ * permissive: a safe value's data predates anything this function itself
+ * did, so it might already have been centralized by whichever caller passed
+ * it in, or it might genuinely not be an attachment ID at all — this script
+ * can't tell locally, so it excludes rather than over-flags. That's a real
+ * false-negative source (a caller that does NOT wrap the call, passing a
+ * genuine attachment ID straight through, would be wrongly excluded here) —
+ * an accepted tradeoff, not an oversight.
  *
  * A clean run means "no new uncovered call sites since the last accepted
  * baseline" — not "every access here is correctly centralized." Every
  * candidate needs a human to read the surrounding code and either add the
  * hook or record why it's fine as-is.
  *
- * Two modes, same convention as the other two scripts:
+ * Two modes, same convention as godam-wp-dam-hook-check.php:
  *   php bin/godam-attachment-access-coverage-check.php check
  *   php bin/godam-attachment-access-coverage-check.php update-baseline
  *
@@ -277,9 +283,9 @@ function godam_coverage_access_call_at( $tokens, $i, $count ) {
 
 /**
  * Finds named function/method declarations in a token stream: name,
- * parameter names, and body token range. Identical approach to
- * godam-interprocedural-leak-check.php's godam_leak_find_functions() —
- * params are needed here for the same reason they're needed there.
+ * parameter names, and body token range — a superset of
+ * godam-wp-dam-hook-check.php's own function-finder, which doesn't need
+ * parameter names for its own purposes.
  *
  * @param array[] $tokens Normalized tokens from godam_coverage_tokenize().
  * @return array[] Each: name, params (string[]), body_start, body_end.
@@ -361,11 +367,127 @@ function godam_coverage_find_functions( $tokens ) {
 }
 
 /**
+ * If the T_VARIABLE token at $i is immediately followed by a bare '=' (a
+ * real assignment — '==', '+=', etc. are their own distinct multi-character
+ * tokens, never text "="), returns ['target' => name, 'safe_copy_of' =>
+ * name|null]. 'safe_copy_of' is a name currently in the caller's safe set
+ * only for two shapes, both immediately followed by ';' with nothing else:
+ * a bare copy of another variable ($x = $y;), or $target reassigned to a
+ * cast or single-argument function call of *itself* ($id = absint($id);,
+ * $id = (int) $id;) — sanitizing or casting a value doesn't introduce new,
+ * external data, so it shouldn't cost the value its safety. That second
+ * shape was added only after the first version (bare-copy detection only)
+ * ran against the real codebase (not just planted cases): 22+ instances of
+ * exactly this self-sanitizing pattern turned into false positives the
+ * narrower version didn't handle — the same "test before trusting
+ * it" step this whole project has relied on throughout. Anything else on
+ * the right gets 'safe_copy_of' => null. Returns null entirely if $i isn't
+ * an assignment target at all.
+ *
+ * @param array[] $tokens Token list.
+ * @param int     $i      Index of a token to check (only meaningful for a T_VARIABLE).
+ * @param int     $count  Token count.
+ * @return array|null
+ */
+function godam_coverage_assignment_at( $tokens, $i, $count ) {
+	if ( T_VARIABLE !== ( $tokens[ $i ]['id'] ?? null ) ) {
+		return null;
+	}
+
+	$eq = godam_coverage_skip_forward( $tokens, $i + 1, $count );
+	if ( $eq >= $count || '=' !== $tokens[ $eq ]['text'] ) {
+		return null;
+	}
+
+	$target = ltrim( $tokens[ $i ]['text'], '$' );
+	$rhs    = godam_coverage_skip_forward( $tokens, $eq + 1, $count );
+
+	// Shape 1: a bare copy, e.g. $target = $other.
+	if ( $rhs < $count && T_VARIABLE === ( $tokens[ $rhs ]['id'] ?? null ) ) {
+		$after_rhs = godam_coverage_skip_forward( $tokens, $rhs + 1, $count );
+		if ( $after_rhs < $count && ';' === $tokens[ $after_rhs ]['text'] ) {
+			return array(
+				'target'       => $target,
+				'safe_copy_of' => ltrim( $tokens[ $rhs ]['text'], '$' ),
+			);
+		}
+		return array(
+			'target'       => $target,
+			'safe_copy_of' => null,
+		); // e.g. $x = $y->prop or $x = $y . 'z' — more than a bare copy.
+	}
+
+	// Shape 2: a cast of itself, e.g. $target = (int) $target.
+	$cast_tokens = array( T_INT_CAST, T_DOUBLE_CAST, T_STRING_CAST, T_ARRAY_CAST, T_BOOL_CAST, T_UNSET_CAST );
+	if ( $rhs < $count && in_array( $tokens[ $rhs ]['id'] ?? null, $cast_tokens, true ) ) {
+		$var = godam_coverage_skip_forward( $tokens, $rhs + 1, $count );
+		if ( $var < $count && T_VARIABLE === ( $tokens[ $var ]['id'] ?? null ) && ltrim( $tokens[ $var ]['text'], '$' ) === $target ) {
+			$after = godam_coverage_skip_forward( $tokens, $var + 1, $count );
+			if ( $after < $count && ';' === $tokens[ $after ]['text'] ) {
+				return array(
+					'target'       => $target,
+					'safe_copy_of' => $target,
+				); // Casting itself preserves whatever safety it already had.
+			}
+		}
+		return array(
+			'target'       => $target,
+			'safe_copy_of' => null,
+		);
+	}
+
+	// Shape 3: a single-argument function call of itself, e.g. $target = absint( $target ).
+	if ( $rhs < $count && T_STRING === ( $tokens[ $rhs ]['id'] ?? null ) ) {
+		$open = godam_coverage_skip_forward( $tokens, $rhs + 1, $count );
+		if ( $open < $count && '(' === $tokens[ $open ]['text'] ) {
+			$arg = godam_coverage_skip_forward( $tokens, $open + 1, $count );
+			if ( $arg < $count && T_VARIABLE === ( $tokens[ $arg ]['id'] ?? null ) && ltrim( $tokens[ $arg ]['text'], '$' ) === $target ) {
+				$close = godam_coverage_skip_forward( $tokens, $arg + 1, $count );
+				if ( $close < $count && ')' === $tokens[ $close ]['text'] ) {
+					$after = godam_coverage_skip_forward( $tokens, $close + 1, $count );
+					if ( $after < $count && ';' === $tokens[ $after ]['text'] ) {
+						return array(
+							'target'       => $target,
+							'safe_copy_of' => $target,
+						); // Single-arg self-transform (sanitize/format-style) preserves safety.
+					}
+				}
+			}
+		}
+		return array(
+			'target'       => $target,
+			'safe_copy_of' => null,
+		);
+	}
+
+	// Anything else on the right — a literal, array(), a property access,
+	// a `new` expression, a multi-argument or chained call — isn't one of
+	// the recognized safety-preserving shapes above.
+	return array(
+		'target'       => $target,
+		'safe_copy_of' => null,
+	);
+}
+
+/**
  * Walks a token range tracking before/after balance exactly like
  * godam-wp-dam-hook-check.php's godam_check_hook_balance_in_range() (same
  * checkpoint-per-'{', rewind-on-return/throw algorithm — see this file's own
  * top-of-file comment for why that's required here too), and additionally
  * records every access-function call found with nothing open at that point.
+ *
+ * The set of "safe" variable names starts from the enclosing scope's own
+ * parameters and evolves alongside the scan: a plain, unmodified copy of a
+ * currently-safe variable ($new = $existing_safe_var;) extends safety to
+ * the new name; any other reassignment of a currently-safe variable
+ * (including one holding an access-call's fresh result) revokes it. This is
+ * a simple linear scan with no branch-awareness — a variable's safety isn't
+ * reset or restored per if/else branch — a deliberate simplification, not
+ * an oversight: adding that would mean tracking a separate safe-set per
+ * branch and merging them back at each join point, real complexity for a
+ * pattern (a value's safety differing across branches at the exact point of
+ * an access call) that hasn't shown up as a real false positive or false
+ * negative in this codebase.
  *
  * @param array[] $tokens      Full token list for the file.
  * @param int     $range_start Token index to start at (inclusive).
@@ -378,6 +500,7 @@ function godam_coverage_check_range( $tokens, $range_start, $range_end, $params 
 	$checkpoints       = array();
 	$count             = count( $tokens );
 	$uncovered         = array();
+	$safe_vars         = $params;
 
 	for ( $i = $range_start; $i <= $range_end; $i++ ) {
 		$text = $tokens[ $i ]['text'];
@@ -416,6 +539,15 @@ function godam_coverage_check_range( $tokens, $range_start, $range_end, $params 
 			continue;
 		}
 
+		$assignment = godam_coverage_assignment_at( $tokens, $i, $count );
+		if ( null !== $assignment ) {
+			if ( null !== $assignment['safe_copy_of'] && in_array( $assignment['safe_copy_of'], $safe_vars, true ) ) {
+				$safe_vars[] = $assignment['target'];
+			} else {
+				$safe_vars = array_values( array_diff( $safe_vars, array( $assignment['target'] ) ) );
+			}
+		}
+
 		$access = godam_coverage_access_call_at( $tokens, $i, $count );
 		if ( null === $access ) {
 			continue;
@@ -425,8 +557,8 @@ function godam_coverage_check_range( $tokens, $range_start, $range_end, $params 
 			continue; // Covered.
 		}
 
-		if ( '' !== $access['arg'] && in_array( $access['arg'], $params, true ) ) {
-			continue; // First argument is one of this scope's own parameters — see top-of-file comment for why this is excluded.
+		if ( '' !== $access['arg'] && in_array( $access['arg'], $safe_vars, true ) ) {
+			continue; // First argument is a parameter, or a traceable, un-reassigned alias of one — see top-of-file comment.
 		}
 
 		$uncovered[] = array(

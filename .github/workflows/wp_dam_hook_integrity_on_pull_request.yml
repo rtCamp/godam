@@ -6,8 +6,6 @@ on:
       - 'assets/src/blocks/**'
       - 'bin/godam-wp-dam-hook-check.php'
       - 'bin/godam-wp-dam-hook-baseline.json'
-      - 'bin/godam-interprocedural-leak-check.php'
-      - 'bin/godam-interprocedural-leak-baseline.json'
       - 'bin/godam-attachment-access-coverage-check.php'
       - 'bin/godam-attachment-access-coverage-baseline.json'
 
@@ -31,9 +29,6 @@ jobs:
         coverage: none
     - name: Run hook integrity check
       run: php bin/godam-wp-dam-hook-check.php check
-    - name: Run interprocedural-leak check
-      if: always()
-      run: php bin/godam-interprocedural-leak-check.php check
     - name: Run attachment-access coverage check
       if: always()
       run: php bin/godam-attachment-access-coverage-check.php check

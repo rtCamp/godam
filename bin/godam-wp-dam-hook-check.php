@@ -145,9 +145,9 @@ function godam_check_list_php_files( $dir ) {
 /**
  * Tokenizes a file into a flat list of ['id' => int|null, 'text' => string,
  * 'line' => int], normalizing token_get_all()'s mix of arrays (named tokens)
- * and bare strings (single-char tokens) into one consistent shape. Identical
- * to bin/godam-interprocedural-leak-check.php's version — duplicated
- * deliberately so these two scripts stay independently readable.
+ * and bare strings (single-char tokens) into one consistent shape. Nearly
+ * identical to bin/godam-attachment-access-coverage-check.php's own version —
+ * duplicated deliberately so these two scripts stay independently readable.
  *
  * @param string $file Absolute file path.
  * @return array[]
@@ -294,9 +294,9 @@ function godam_check_count_hook_calls( $tokens, $hook_name, $outer_functions = H
 /**
  * Finds named function/method declarations in a token stream: name and
  * body token range, by tracking brace depth rather than assuming a fixed
- * shape. Simplified from bin/godam-interprocedural-leak-check.php's own
- * godam_leak_find_functions() — this check only needs body boundaries and a
- * name for error messages, not parameter names — kept separate rather than
+ * shape. A simpler cousin of bin/godam-attachment-access-coverage-check.php's
+ * own function-finder — this check only needs body boundaries and a name
+ * for error messages, not parameter names — kept separate rather than
  * shared, same reasoning as that script's own top-of-file comment.
  *
  * @param array[] $tokens Normalized tokens from godam_check_tokenize().

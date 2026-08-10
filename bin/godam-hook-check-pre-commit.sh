@@ -4,7 +4,7 @@
 # keeping the rtgodam_before_attachment_lookup / rtgodam_after_attachment_lookup
 # hook pair intact and balanced.
 #
-# Runs the same three checks as
+# Runs the same two checks as
 # .github/workflows/wp_dam_hook_integrity_on_pull_request.yml — see that
 # workflow and each check script's own top-of-file comment for what they can
 # and can't catch. Scoped to the same paths that workflow watches; anything
@@ -14,7 +14,7 @@
 
 STAGED_FILES=$(git diff --cached --name-only)
 
-if ! echo "$STAGED_FILES" | grep -Eq '^(inc/|admin/|assets/src/blocks/|bin/godam-wp-dam-hook-check\.php$|bin/godam-wp-dam-hook-baseline\.json$|bin/godam-interprocedural-leak-check\.php$|bin/godam-interprocedural-leak-baseline\.json$|bin/godam-attachment-access-coverage-check\.php$|bin/godam-attachment-access-coverage-baseline\.json$)'; then
+if ! echo "$STAGED_FILES" | grep -Eq '^(inc/|admin/|assets/src/blocks/|bin/godam-wp-dam-hook-check\.php$|bin/godam-wp-dam-hook-baseline\.json$|bin/godam-attachment-access-coverage-check\.php$|bin/godam-attachment-access-coverage-baseline\.json$)'; then
 	exit 0
 fi
 
@@ -34,7 +34,6 @@ echo ""
 
 status=0
 php bin/godam-wp-dam-hook-check.php check || status=1
-php bin/godam-interprocedural-leak-check.php check || status=1
 php bin/godam-attachment-access-coverage-check.php check || status=1
 
 if [ "$status" -ne 0 ]; then
@@ -43,7 +42,6 @@ if [ "$status" -ne 0 ]; then
 	echo "If this is a reviewed, intentional change (not a missed or malformed"
 	echo "hook), run:"
 	echo "  php bin/godam-wp-dam-hook-check.php update-baseline"
-	echo "  php bin/godam-interprocedural-leak-check.php update-baseline"
 	echo "  php bin/godam-attachment-access-coverage-check.php update-baseline"
 	echo "then stage the updated bin/*-baseline.json file(s) and commit again."
 	echo ""
