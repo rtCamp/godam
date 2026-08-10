@@ -4,6 +4,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { getCurrentMimeTypeFilter } from '../../data/utilities';
@@ -33,6 +38,14 @@ export async function pollZipJobStatus( jobId, { intervalMs = 2000, timeoutMs = 
 				headers: { 'X-WP-Nonce': window.MediaLibrary.nonce },
 			} );
 			const json = await res.json();
+
+			// A WP_Error (e.g. 404 unknown/expired job, 403 not-owner) serialises as
+			// { code, message, data: { status: <httpCode> } } — so `res.ok` is the reliable
+			// signal, not `data.status` (which would be the HTTP code, not the job status).
+			if ( ! res.ok ) {
+				return { status: 'failed', message: json?.message || __( 'Failed to prepare the ZIP file.', 'godam' ) };
+			}
+
 			const data = json?.data || {};
 
 			if ( data.status === 'completed' || data.status === 'failed' ) {
@@ -45,7 +58,7 @@ export async function pollZipJobStatus( jobId, { intervalMs = 2000, timeoutMs = 
 		await new Promise( ( resolve ) => setTimeout( resolve, intervalMs ) );
 	}
 
-	return { status: 'failed', message: 'Timed out while preparing the ZIP file.' };
+	return { status: 'failed', message: __( 'Timed out while preparing the ZIP file.', 'godam' ) };
 }
 
 export const folderApi = createApi( {

@@ -59,7 +59,15 @@ const DeleteModal = () => {
 			if ( ! isMultiSelecting ) {
 				await deleteFolderMutation( selectedFolder.id ).unwrap();
 			} else if ( multiSelectedFolderIds && multiSelectedFolderIds.length ) {
-				await bulkDeleteFoldersMutation( multiSelectedFolderIds ).unwrap();
+				// The bulk endpoint returns HTTP 200 with `errors` on *partial* failure, so
+				// .unwrap() alone won't throw — inspect the payload and surface it as a
+				// failure rather than reporting "deleted successfully" and dropping every
+				// selected folder from the tree.
+				const bulkResult = await bulkDeleteFoldersMutation( multiSelectedFolderIds ).unwrap();
+
+				if ( bulkResult?.errors?.length ) {
+					throw new Error( bulkResult.message || __( 'Some folders could not be deleted', 'godam' ) );
+				}
 			}
 
 			dispatch( deleteFolder() );
@@ -75,7 +83,7 @@ const DeleteModal = () => {
 		} catch ( error ) {
 			dispatch( updateSnackbar(
 				{
-					message: __( 'Failed to delete folder', 'godam' ),
+					message: error?.message || error?.data?.message || __( 'Failed to delete folder', 'godam' ),
 					type: 'fail',
 				},
 			) );

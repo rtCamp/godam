@@ -125,6 +125,11 @@ const slice = createSlice( {
 			if ( state.selectedFolder && state.selectedFolder.id === id ) {
 				state.selectedFolder.name = name;
 			}
+
+			// The rename modal renders currentContextMenuFolder.name, so keep it current too.
+			if ( state.currentContextMenuFolder && state.currentContextMenuFolder.id === id ) {
+				state.currentContextMenuFolder.name = name;
+			}
 		},
 		deleteFolder: ( state ) => {
 			if ( ! state.currentContextMenuFolder && ! state.isMultiSelecting ) {
@@ -162,9 +167,10 @@ const slice = createSlice( {
 			if ( state.selectedFolder && idsToDelete.has( state.selectedFolder.id ) ) {
 				state.selectedFolder = { id: -1 };
 
-				if ( window.godam ) {
-					window.godam.selectedFolder = state.selectedFolder;
-				}
+				// Mirror to the global the way changeSelectedFolder does, creating it if
+				// it doesn't exist yet so the reset isn't silently dropped.
+				window.godam = window.godam || {};
+				window.godam.selectedFolder = state.selectedFolder;
 			}
 
 			state.currentContextMenuFolder = {

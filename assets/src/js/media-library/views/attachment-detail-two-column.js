@@ -1008,9 +1008,23 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				// Wait for DOM to fully render the core preview container.
 				setTimeout( async () => {
 					const videoElement = document.getElementById( videoId );
+					if ( ! videoElement ) {
+						return;
+					}
+
 					// Lazy-load Video.js only now that a video player is actually needed.
-					const videojs = videoElement ? await loadVideoJs() : null;
-					if ( videoElement && videojs ) {
+					// Guard the async import: if the chunk fails to load (stale cache after an
+					// update, network hiccup) don't leave an unhandled rejection.
+					let videojs = null;
+					try {
+						videojs = await loadVideoJs();
+					} catch ( e ) {
+						return;
+					}
+
+					// The modal may have closed while the chunk was loading — re-check the
+					// element is still attached before initialising a player on it.
+					if ( videojs && videoElement.isConnected ) {
 						// Calculate initial dimensions using 16:9 aspect ratio as default
 						const viewContainer = this.$el.closest( '.media-modal-content' ).find( '.attachment-media-view' );
 						const availableWidth = viewContainer.length ? viewContainer.width() : window.innerWidth * 0.65;

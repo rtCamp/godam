@@ -370,11 +370,13 @@ class Media_Folder_Create_Zip {
 	/**
 	 * Harden the uploads/godam directory against enumeration.
 	 *
-	 * The generated ZIPs are static files served from this directory. Writing an
-	 * index.php (blank) and an .htaccess that disables auto-indexing prevents a
-	 * visitor from listing the directory to discover archive filenames. Combined
-	 * with the random token in each ZIP name, direct guessing becomes infeasible.
-	 * Both files are only written when missing, so this is cheap to call repeatedly.
+	 * The generated ZIPs are static files served from this directory. A blank index.php
+	 * stops a visitor from listing the directory to discover archive filenames on both
+	 * Apache and nginx; combined with the random token in each ZIP name, direct guessing
+	 * becomes infeasible. (We deliberately do NOT write an `.htaccess` with
+	 * `Options -Indexes`: it's a no-op on nginx and, on Apache configs where AllowOverride
+	 * excludes Options, it 500s the whole directory — breaking the very downloads it would
+	 * protect. The index.php alone is enough.) The file is only written when missing.
 	 *
 	 * @since 1.3.0
 	 *
@@ -386,21 +388,22 @@ class Media_Folder_Create_Zip {
 
 		if ( empty( $wp_filesystem ) || ! is_a( $wp_filesystem, 'WP_Filesystem_Base' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/file.php';
-			WP_Filesystem();
+
+			// WP_Filesystem() returns false when a non-direct transport needs credentials —
+			// but can still leave a non-connected object in $wp_filesystem, so gate on its
+			// return value rather than on emptiness of the global.
+			if ( ! WP_Filesystem() ) {
+				return;
+			}
 		}
 
-		if ( empty( $wp_filesystem ) ) {
+		if ( empty( $wp_filesystem ) || ! is_a( $wp_filesystem, 'WP_Filesystem_Base' ) ) {
 			return;
 		}
 
 		$index = trailingslashit( $dir ) . 'index.php';
 		if ( ! $wp_filesystem->exists( $index ) ) {
 			$wp_filesystem->put_contents( $index, "<?php\n// Silence is golden.\n", FS_CHMOD_FILE );
-		}
-
-		$htaccess = trailingslashit( $dir ) . '.htaccess';
-		if ( ! $wp_filesystem->exists( $htaccess ) ) {
-			$wp_filesystem->put_contents( $htaccess, "Options -Indexes\n", FS_CHMOD_FILE );
 		}
 	}
 

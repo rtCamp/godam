@@ -79,8 +79,10 @@ class Media_Library extends Base {
 
 		$term_id = isset( $matches[1] ) ? (int) $matches[1] : 0;
 
-		// Renaming / re-parenting / deleting a locked folder (or a child of one).
-		if ( $term_id > 0 && $this->is_folder_locked( $term_id ) ) {
+		// Renaming / re-parenting / deleting a locked folder (or a child of one). A
+		// bookmark toggle is a personal flag rather than a modification of the folder's
+		// protected content, so it is still allowed on a locked folder.
+		if ( $term_id > 0 && $this->is_folder_locked( $term_id ) && ! $this->is_bookmark_only_folder_update( $request, $term_id ) ) {
 			return new \WP_Error(
 				'godam_folder_locked',
 				__( 'This folder is locked and cannot be modified.', 'godam' ),
@@ -102,6 +104,67 @@ class Media_Library extends Base {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Whether a native media-folder update request only toggles the `bookmark` meta and
+	 * changes nothing else (name, slug, description, parent, or the `locked` meta itself).
+	 *
+	 * Bookmarking is a per-user convenience flag, not a modification of the folder's
+	 * protected content, so it stays allowed on a locked folder — but this must NOT become
+	 * a hole through which a locked folder is renamed, re-parented, or unlocked.
+	 *
+	 * @param \WP_REST_Request $request The request being dispatched.
+	 * @param int              $term_id The media-folder term id.
+	 * @return bool True if the request only changes the bookmark meta.
+	 */
+	private function is_bookmark_only_folder_update( $request, $term_id ) {
+		if ( 'DELETE' === $request->get_method() ) {
+			return false;
+		}
+
+		$term = get_term( $term_id, 'media-folder' );
+
+		if ( ! $term || is_wp_error( $term ) ) {
+			return false;
+		}
+
+		// Any change to the folder's own fields disqualifies it.
+		$name = $request->get_param( 'name' );
+		if ( ! is_null( $name ) && (string) $name !== (string) $term->name ) {
+			return false;
+		}
+
+		$slug = $request->get_param( 'slug' );
+		if ( ! is_null( $slug ) && (string) $slug !== (string) $term->slug ) {
+			return false;
+		}
+
+		$description = $request->get_param( 'description' );
+		if ( ! is_null( $description ) && (string) $description !== (string) $term->description ) {
+			return false;
+		}
+
+		$parent = $request->get_param( 'parent' );
+		if ( ! is_null( $parent ) && (int) $parent !== (int) $term->parent ) {
+			return false;
+		}
+
+		// The lock state itself must not change through this path (unlocking is a
+		// capability-gated operation handled by the bulk-lock endpoint).
+		$meta = $request->get_param( 'meta' );
+		if ( is_array( $meta ) && array_key_exists( 'locked', $meta ) ) {
+			$current_locked = get_term_meta( $term_id, 'locked', true );
+			$current_bool   = ( '1' === (string) $current_locked || 1 === $current_locked || true === $current_locked || 'true' === $current_locked );
+			$requested      = $meta['locked'];
+			$requested_bool = ( true === $requested || 1 === $requested || '1' === (string) $requested || 'true' === $requested );
+
+			if ( $current_bool !== $requested_bool ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -708,6 +771,11 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_attachment', __( 'No attachment IDs provided.', 'godam' ), array( 'status' => 400 ) );
 		}
 
+		// Prime the post + object-term caches once so the per-id checks below don't each
+		// hit the database (a large drag-move otherwise fired hundreds of queries).
+		_prime_post_caches( $attachment_ids );
+		update_object_term_cache( $attachment_ids, 'attachment' );
+
 		foreach ( $attachment_ids as $attachment_id ) {
 			if ( 'attachment' !== get_post_type( $attachment_id ) ) {
 				return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
@@ -722,26 +790,28 @@ class Media_Library extends Base {
 			}
 		}
 
-		// if folder id is 0, remove the folder from the attachments.
-		if ( 0 === $folder_term_id ) {
-			// Removing an attachment out of a locked folder mutates that folder's
-			// contents — reject if any attachment currently sits in a locked folder.
-			foreach ( $attachment_ids as $attachment_id ) {
-				$current_folders = wp_get_object_terms( $attachment_id, 'media-folder', array( 'fields' => 'ids' ) );
+		// Moving an attachment OUT of a locked folder empties that (protected) folder —
+		// whether by removing it (folder 0) or by re-assigning it to a different folder,
+		// since wp_set_object_terms() replaces the assignment. Reject if any attachment
+		// currently lives in a locked folder other than the destination.
+		foreach ( $attachment_ids as $attachment_id ) {
+			$current_folders = wp_get_object_terms( $attachment_id, 'media-folder', array( 'fields' => 'ids' ) );
 
-				if ( is_array( $current_folders ) ) {
-					foreach ( $current_folders as $current_folder_id ) {
-						if ( $this->is_folder_locked( $current_folder_id ) ) {
-							return new \WP_Error(
-								'godam_folder_locked',
-								__( 'One or more attachments belong to a locked folder and cannot be moved.', 'godam' ),
-								array( 'status' => 403 )
-							);
-						}
+			if ( is_array( $current_folders ) ) {
+				foreach ( $current_folders as $current_folder_id ) {
+					if ( (int) $current_folder_id !== (int) $folder_term_id && $this->is_folder_locked( $current_folder_id ) ) {
+						return new \WP_Error(
+							'godam_folder_locked',
+							__( 'One or more attachments belong to a locked folder and cannot be moved.', 'godam' ),
+							array( 'status' => 403 )
+						);
 					}
 				}
 			}
+		}
 
+		// if folder id is 0, remove the folder from the attachments.
+		if ( 0 === $folder_term_id ) {
 			foreach ( $attachment_ids as $attachment_id ) {
 
 				$return = $this->remove_all_terms_from_id( $attachment_id, 'media-folder' );
@@ -775,10 +845,6 @@ class Media_Library extends Base {
 		}
 
 		foreach ( $attachment_ids as $attachment_id ) {
-			if ( get_post_type( $attachment_id ) !== 'attachment' ) {
-				return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
-			}
-
 			$return = wp_set_object_terms( $attachment_id, $folder_term_id, 'media-folder' );
 
 			if ( is_wp_error( $return ) ) {
