@@ -10,11 +10,17 @@
 # and can't catch. Scoped to the same paths that workflow watches; anything
 # else exits immediately without running PHP at all.
 #
-# Invoked from .husky/pre-commit via `npm run lint:godam-hooks`.
+# Invoked directly from .husky/pre-commit, after `npm run lint:staged`.
+#
+# Scoped to .php files specifically (not every path under inc/, admin/, and
+# assets/src/blocks/) — both check scripts only ever tokenize .php files
+# (see godam_shared_list_php_files() in godam-hook-check-shared.php), so a
+# commit touching only a block's .js/.scss/.json under assets/src/blocks/
+# can't contain anything either script would look at.
 
 STAGED_FILES=$(git diff --cached --name-only)
 
-if ! echo "$STAGED_FILES" | grep -Eq '^(inc/|admin/|assets/src/blocks/|bin/godam-wp-dam-hook-check\.php$|bin/godam-wp-dam-hook-baseline\.json$|bin/godam-attachment-access-coverage-check\.php$|bin/godam-attachment-access-coverage-baseline\.json$)'; then
+if ! echo "$STAGED_FILES" | grep -Eq '^(inc/.*\.php$|admin/.*\.php$|assets/src/blocks/.*\.php$|bin/godam-wp-dam-hook-check\.php$|bin/godam-hook-check-shared\.php$|bin/godam-wp-dam-hook-baseline\.json$|bin/godam-attachment-access-coverage-check\.php$|bin/godam-attachment-access-coverage-baseline\.json$)'; then
 	exit 0
 fi
 

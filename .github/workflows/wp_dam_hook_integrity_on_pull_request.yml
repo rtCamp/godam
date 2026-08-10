@@ -1,10 +1,11 @@
 on:
   pull_request:
     paths:
-      - 'inc/**'
-      - 'admin/**'
-      - 'assets/src/blocks/**'
+      - 'inc/**/*.php'
+      - 'admin/**/*.php'
+      - 'assets/src/blocks/**/*.php'
       - 'bin/godam-wp-dam-hook-check.php'
+      - 'bin/godam-hook-check-shared.php'
       - 'bin/godam-wp-dam-hook-baseline.json'
       - 'bin/godam-attachment-access-coverage-check.php'
       - 'bin/godam-attachment-access-coverage-baseline.json'
