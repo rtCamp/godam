@@ -1,0 +1,39 @@
+on:
+  pull_request:
+    paths:
+      - 'inc/**'
+      - 'admin/**'
+      - 'assets/src/blocks/**'
+      - 'bin/godam-wp-dam-hook-check.php'
+      - 'bin/godam-wp-dam-hook-baseline.json'
+      - 'bin/godam-interprocedural-leak-check.php'
+      - 'bin/godam-interprocedural-leak-baseline.json'
+      - 'bin/godam-attachment-access-coverage-check.php'
+      - 'bin/godam-attachment-access-coverage-baseline.json'
+
+name: wp-dam hook integrity
+
+permissions:
+  contents: read
+
+jobs:
+  checkHooks:
+    name: Check rtgodam_before/after_attachment_lookup hook integrity
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        coverage: none
+    - name: Run hook integrity check
+      run: php bin/godam-wp-dam-hook-check.php check
+    - name: Run interprocedural-leak check
+      if: always()
+      run: php bin/godam-interprocedural-leak-check.php check
+    - name: Run attachment-access coverage check
+      if: always()
+      run: php bin/godam-attachment-access-coverage-check.php check

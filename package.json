@@ -164,6 +164,7 @@
 		"lint:php": "vendor/bin/phpcs",
 		"lint:php:fix": "vendor/bin/phpcbf",
 		"lint:package-json": "wp-scripts lint-pkg-json --ignorePath .packagejsonignore",
+		"lint:godam-hooks": "php bin/godam-wp-dam-hook-check.php check && php bin/godam-interprocedural-leak-check.php check && php bin/godam-attachment-access-coverage-check.php check",
 		"lint:staged": "lint-staged",
 		"install:husky": "./bin/husky.sh --install",
 		"remove:husky": "./bin/husky.sh --remove",

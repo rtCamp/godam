@@ -7,3 +7,5 @@ assets/build/
 
 # PHPUnit
 .phpunit.result.cache
+
+.idea/
