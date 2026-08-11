@@ -398,6 +398,17 @@ export default class HotspotLayerManager {
 			return;
 		}
 
+		// A writer must exist before we build anything. emitParentLayerEvent /
+		// emitHotspotEvent mark the per-session dedupe as they build (even in
+		// collector mode), so building with no sink would burn the dedupe key
+		// and the next visibility transition would emit nothing. Bailing here
+		// leaves the dedupe untouched so a later transition still retries.
+		const hasBatchWriter = typeof window.GoDAM?.addLayerInteractions === 'function';
+		const hasSingleWriter = typeof window.GoDAM?.addLayerInteraction === 'function';
+		if ( ! hasBatchWriter && ! hasSingleWriter ) {
+			return;
+		}
+
 		const batch = [];
 		this.emitParentLayerEvent( parentLayer, 'viewed', undefined, batch );
 
@@ -405,6 +416,15 @@ export default class HotspotLayerManager {
 			? parentLayer.hotspots
 			: [];
 		hotspots.forEach( ( hotspot, index ) => {
+			// Skip the per-hotspot `viewed` for a hotspot with no stable id.
+			// buildCompositeLayerId would fall back to a positional `idx<n>`
+			// key, which re-attributes a deleted hotspot's history to whoever
+			// takes its index — unacceptable now that `viewed` is the
+			// conversion denominator. Such a hotspot keeps the layer-level
+			// impression only (the pre-per-hotspot behaviour).
+			if ( ! hotspot?.id ) {
+				return;
+			}
 			this.emitHotspotEvent( parentLayer, hotspot, index, 'viewed', undefined, batch );
 		} );
 
@@ -412,15 +432,13 @@ export default class HotspotLayerManager {
 			return;
 		}
 
-		if ( typeof window.GoDAM?.addLayerInteractions === 'function' ) {
+		if ( hasBatchWriter ) {
 			window.GoDAM.addLayerInteractions( videoKey, batch );
 			return;
 		}
 
 		// Older bundle without the batch writer — still correct, just N writes.
-		if ( typeof window.GoDAM?.addLayerInteraction === 'function' ) {
-			batch.forEach( ( event ) => window.GoDAM.addLayerInteraction( videoKey, event ) );
-		}
+		batch.forEach( ( event ) => window.GoDAM.addLayerInteraction( videoKey, event ) );
 	}
 
 	/**

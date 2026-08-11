@@ -126,4 +126,30 @@ describe( 'HotspotLayerManager.emitLayerVisible', () => {
 		expect( batched ).toHaveLength( 0 );
 		expect( single ).toHaveLength( 0 );
 	} );
+
+	it( 'does not burn the dedupe when no writer is present, so a later visibility retries', () => {
+		const layer = { id: 'l1', type: 'hotspot', displayTime: 1, hotspots: [ { id: 'A' } ] };
+		delete window.GoDAM.addLayerInteraction;
+		delete window.GoDAM.addLayerInteractions;
+		manager.emitLayerVisible( layer ); // no sink yet — must not mark dedupe
+		expect( batched ).toHaveLength( 0 );
+
+		// Core finishes initialising and the batch writer appears.
+		window.GoDAM.addLayerInteractions = ( key, events ) => batched.push( events );
+		manager.emitLayerVisible( layer ); // must now emit, not be deduped away
+		expect( batched ).toHaveLength( 1 );
+		expect( batched[ 0 ].map( ( e ) => e.layer_id ) ).toEqual( [ 'l1', 'l1::A' ] );
+	} );
+
+	it( 'skips the per-hotspot viewed for a hotspot with no stable id', () => {
+		// An id-less hotspot would key on a positional idx<n>, which
+		// re-attributes across a deletion; it keeps the layer impression only.
+		manager.emitLayerVisible( {
+			id: 'l1',
+			type: 'hotspot',
+			displayTime: 1,
+			hotspots: [ { id: 'A' }, {} ],
+		} );
+		expect( batched[ 0 ].map( ( e ) => e.layer_id ) ).toEqual( [ 'l1', 'l1::A' ] );
+	} );
 } );
