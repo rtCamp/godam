@@ -302,7 +302,11 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 											</a>
 											<div className="title-link">
 												<div className="w-full max-w-40 text-left flex-1">
-													<p className="font-semibold">{ item.title || `Product ID: ${ item.product_id }` }</p>
+													<p className="font-semibold">{ item.title || sprintf(
+														/* translators: %d: WooCommerce product ID, shown when the product name is unavailable. */
+														__( 'Product ID: %d', 'godam' ),
+														item.product_id,
+													) }</p>
 													<p className="text-xs text-zinc-400">{ reachLabel( item ) }</p>
 												</div>
 											</div>
