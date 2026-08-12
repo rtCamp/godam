@@ -98,6 +98,32 @@ export const dashboardAnalyticsApi = createApi( {
 				};
 			},
 		} ),
+		// Fetch Top Products
+		fetchTopProducts: builder.query( {
+			query: ( { siteUrl, page = 1, limit = 10, search = '', sortBy = 'product_views', order = 'desc', startDate, endDate } ) => ( {
+				url: 'godam/v1/analytics/top-products',
+				params: {
+					site_url: siteUrl,
+					page,
+					limit,
+					sort_by: sortBy,
+					order,
+					// Only send `search` when set so the proxy can skip the WP_Query.
+					...( search ? { search } : {} ),
+					...rangeParams( { startDate, endDate } ),
+				},
+			} ),
+			transformResponse: ( response ) => {
+				if ( response.status === 'error' ) {
+					throw new Error( response.message );
+				}
+				return {
+					products: response.top_products || [],
+					totalPages: response.total_pages || 1,
+					totalItems: response.total_items || 0,
+				};
+			},
+		} ),
 	} ),
 } );
 
@@ -106,4 +132,6 @@ export const {
 	useFetchDashboardMetricsHistoryQuery,
 	useFetchTopVideosQuery,
 	useLazyFetchTopVideosQuery,
+	useFetchTopProductsQuery,
+	useLazyFetchTopProductsQuery,
 } = dashboardAnalyticsApi;
