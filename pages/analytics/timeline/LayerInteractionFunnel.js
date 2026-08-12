@@ -143,7 +143,12 @@ const LayerInteractionFunnel = ( { layerType, counts, noAction } ) => {
 				action === 'no_action'
 					? Math.max( 0, Number( noAction ) || 0 )
 					: Math.max( 0, Number( counts?.[ action ] ) || 0 );
-			const pct = viewed > 0 ? ( value / viewed ) * 100 : 0;
+			// Clamp the share to 100%. A hotspot can now carry hovered > its own
+			// viewed (e.g. engagement recorded before per-hotspot `viewed` shipped,
+			// or a dropped view), which would otherwise render a bar overflowing
+			// its fixed-height track and a nonsensical ">100% of viewers" label.
+			// The counts row keeps the true raw numbers.
+			const pct = viewed > 0 ? Math.min( 100, ( value / viewed ) * 100 ) : 0;
 			return { action, value, pct };
 		} );
 	}, [ meta, counts, noAction ] );

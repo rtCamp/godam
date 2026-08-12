@@ -86,21 +86,41 @@ export function getLayerInteractions() {
 }
 
 /**
- * Append a layer interaction event to the buffer.
+ * Append many layer interaction events in ONE sessionStorage round trip.
  *
- * @param {string} videoKey data-id or job_id of the video. Required and non-empty.
- * @param {Object} event    Event object. Must include layer_id, layer_type, action_type, layer_timestamp.
+ * Reading, parsing, stringifying and writing the buffer is synchronous and
+ * costs O(buffer) every time. A layer becoming visible emits one event for the
+ * layer plus one per hotspot, so calling the single-event writer in a loop
+ * would repeat that whole cost N+1 times back to back, during playback. This
+ * pays it once regardless of batch size.
+ *
+ * @param {string}        videoKey data-id or job_id of the video. Required and non-empty.
+ * @param {Array<Object>} events   Event objects. An entry is kept only if it has
+ *                                 a truthy layer_id, layer_type and action_type
+ *                                 (the fields the server requires); other entries
+ *                                 are skipped, not fatal. layer_timestamp is
+ *                                 expected downstream but not enforced here, since
+ *                                 0 (a layer at t=0) is a valid value.
  */
-export function addLayerInteraction( videoKey, event ) {
+export function addLayerInteractions( videoKey, events ) {
 	if ( ! videoKey || typeof videoKey !== 'string' ) {
 		return;
 	}
-	if ( ! event || typeof event !== 'object' ) {
+	if ( ! Array.isArray( events ) || events.length === 0 ) {
 		return;
 	}
-	if ( ! event.layer_id || ! event.layer_type || ! event.action_type ) {
-		// Defensive — the manager classes set these, but if any caller forgets
-		// we silently drop rather than emit a malformed event the server will 4xx.
+
+	// Defensive — the manager classes set these, but if any caller forgets
+	// we silently drop rather than emit a malformed event the server will 4xx.
+	const valid = events.filter(
+		( event ) =>
+			event &&
+			typeof event === 'object' &&
+			event.layer_id &&
+			event.layer_type &&
+			event.action_type,
+	);
+	if ( valid.length === 0 ) {
 		return;
 	}
 
@@ -108,12 +128,25 @@ export function addLayerInteraction( videoKey, event ) {
 	if ( ! Array.isArray( buffer[ videoKey ] ) ) {
 		buffer[ videoKey ] = [];
 	}
+
 	// Drop new events past the cap rather than risk a quota-exceeded throw.
-	if ( buffer[ videoKey ].length >= MAX_EVENTS_PER_VIDEO ) {
+	const room = MAX_EVENTS_PER_VIDEO - buffer[ videoKey ].length;
+	if ( room <= 0 ) {
 		return;
 	}
-	buffer[ videoKey ].push( event );
+
+	buffer[ videoKey ].push( ...valid.slice( 0, room ) );
 	writeJSON( STORAGE_KEY, buffer );
+}
+
+/**
+ * Append a single layer interaction event to the buffer.
+ *
+ * @param {string} videoKey data-id or job_id of the video. Required and non-empty.
+ * @param {Object} event    Event object. Must include layer_id, layer_type, action_type, layer_timestamp.
+ */
+export function addLayerInteraction( videoKey, event ) {
+	addLayerInteractions( videoKey, [ event ] );
 }
 
 /**
