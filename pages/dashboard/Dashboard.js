@@ -23,6 +23,7 @@ import SingleMetrics from '../analytics/SingleMetrics';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
+import TopProductsTable from './components/TopProductsTable';
 import DateRangePicker, { triggerLabelFor, fromISO } from '../analytics/components/DateRangePicker';
 
 /**
@@ -165,6 +166,12 @@ const Dashboard = () => {
 	}, [] );
 
 	const siteUrl = window.location.origin;
+
+	// Top Products is a WooCommerce feature; show its tab only when WooCommerce is
+	// active (godam-for-woo supplies the product interactions it reads). Non-Woo
+	// sites keep the plain Top Videos table with no tab switcher.
+	const hasWooProducts = !! window.videoData?.isWoo;
+	const [ topTab, setTopTab ] = useState( 'videos' );
 
 	// Reel Pops live in the godam-for-woo add-on, which registers the
 	// "reel-pops-analytics" dashboard section. Only surface the link when it's
@@ -429,7 +436,37 @@ const Dashboard = () => {
 					</div>
 				</div>
 
-				<TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } />
+				{ hasWooProducts ? (
+					<div className="godam-top-tabs">
+						<div className="godam-top-tabs__nav" role="tablist" aria-label={ __( 'Top content', 'godam' ) }>
+							<button
+								type="button"
+								role="tab"
+								aria-selected={ topTab === 'videos' }
+								className={ `godam-top-tabs__tab${ topTab === 'videos' ? ' is-active' : '' }` }
+								data-test-id="godam-top-tab-videos"
+								onClick={ () => setTopTab( 'videos' ) }
+							>
+								{ __( 'Top Videos', 'godam' ) }
+							</button>
+							<button
+								type="button"
+								role="tab"
+								aria-selected={ topTab === 'products' }
+								className={ `godam-top-tabs__tab${ topTab === 'products' ? ' is-active' : '' }` }
+								data-test-id="godam-top-tab-products"
+								onClick={ () => setTopTab( 'products' ) }
+							>
+								{ __( 'Top Products', 'godam' ) }
+							</button>
+						</div>
+						{ topTab === 'videos'
+							? <TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } />
+							: <TopProductsTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } /> }
+					</div>
+				) : (
+					<TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } />
+				) }
 
 				{ extendedSections.map( ( { id, component: SectionComponent } ) => (
 					<SectionComponent key={ id } />

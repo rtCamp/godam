@@ -856,6 +856,9 @@ class Pages {
 					'adminUrl'              => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
 					'godamBaseUrl'          => RTGODAM_IO_API_BASE,
 					'showNewYearSaleBanner' => ( $current_time <= $end_time ),
+					// Top Products is a WooCommerce feature; the dashboard shows its
+					// tab only when WooCommerce is active.
+					'isWoo'                 => class_exists( 'WooCommerce' ),
 				)
 			);
 
