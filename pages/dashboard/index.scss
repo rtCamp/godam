@@ -722,3 +722,57 @@
 // (.godam-insights-card moved to pages/analytics/index.scss — shared by both surfaces.)
 
 // .godam-analytics-unavailable moved to pages/shared/analytics-unavailable.scss (shared via AnalyticsUnavailableNotice).
+
+/* Top Videos / Top Products segmented switcher (Woo-gated), and the Source chips
+   in the Top Products table. */
+.godam-top-tabs {
+
+	&__nav {
+		display: inline-flex;
+		gap: 4px;
+		padding: 4px;
+		margin-bottom: 12px;
+		background: #f0f0f1;
+		border-radius: 8px;
+	}
+
+	&__tab {
+		appearance: none;
+		border: 0;
+		background: transparent;
+		padding: 6px 14px;
+		font-size: 13px;
+		font-weight: 600;
+		color: #50575e;
+		border-radius: 6px;
+		cursor: pointer;
+
+		&.is-active {
+			background: #fff;
+			color: var(--wp-admin-theme-color, #ab3a6c);
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+		}
+	}
+}
+
+.godam-source-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.godam-chip {
+	display: inline-block;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	color: #50575e;
+	background: #f0f0f1;
+	border-radius: 4px;
+	white-space: nowrap;
+}
+
+.godam-pill--muted {
+	background: #f0f0f1;
+	color: #8c8f94;
+}
