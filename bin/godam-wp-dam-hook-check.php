@@ -35,13 +35,17 @@
  *   3. Before/after balance: every `rtgodam_before_attachment_lookup` in a
  *      function (or in top-level file code) must reach a matching
  *      `rtgodam_after_attachment_lookup` before that scope ends, and no
- *      `rtgodam_after_attachment_lookup` may fire with nothing open. Unlike
- *      the first two, this needs no baseline — a pair is either balanced or
- *      it isn't, so it fails unconditionally in both modes. Branch-aware
- *      around `return`/`throw`/`exit`/`die`/`wp_die()`-style early exits (see
- *      godam_check_hook_balance_in_range()'s own comment) — a guard clause
- *      that closes the wrap early and returns is a normal, correct pattern,
- *      not a bug.
+ *      `rtgodam_after_attachment_lookup` may fire with nothing open.
+ *      Branch-aware around `return`/`throw`/`exit`/`die`/`wp_die()`-style
+ *      early exits (see godam_check_hook_balance_in_range()'s own comment)
+ *      — a guard clause that closes the wrap early and returns is a normal,
+ *      correct pattern, not a bug. Fails unconditionally *unless* a specific
+ *      finding already has a reason on file in
+ *      godam_check_known_balance_exceptions() — reserved for pairings this
+ *      script genuinely can't trace (e.g. a before() whose matching after()
+ *      fires from a different function or callback entirely), not for
+ *      working around a real bug or a godam_shared_is_scope_terminator()
+ *      gap, which belong fixed in the code or the tool, not excepted here.
  *
  * Shares its tokenizer, function-boundary finder, and hook-fire detection
  * with the sibling godam-attachment-access-coverage-check.php via
@@ -52,7 +56,8 @@
  * Two modes:
  *   php bin/godam-wp-dam-hook-check.php check            (default; used in CI)
  *   php bin/godam-wp-dam-hook-check.php update-baseline   (run locally after
- *     manually auditing new/changed code, to accept the new counts)
+ *     manually auditing new/changed code, to accept the new counts, or a
+ *     specific balance exception already given a reason)
  *
  * @package GoDAM
  */
@@ -347,26 +352,66 @@ $access_counts = godam_check_build_counts(
 	}
 );
 
-// 3. Before/after hook balance — needs no baseline, since a wrap is always
-// supposed to net to zero regardless of how many legitimate wraps exist.
-// Computed in both modes; only used for reporting in 'check' mode below.
-$balance_failures = array();
+// 3. Before/after hook balance. Every finding is keyed the same way as
+// godam-attachment-access-coverage-check.php's own $findings ("{file}:
+// {line}"), so a specific one can be accepted into the baseline with a
+// reason via godam_check_known_balance_exceptions() below — same two-sided
+// contract as that script's known_reasons(): nothing is accepted without a
+// reason already on file, and update-baseline never reviews anything on its
+// own. Computed in both modes; filtered against accepted exceptions and
+// formatted into $balance_failures only in 'check' mode below.
+$balance_findings = array();
 foreach ( $scan_roots as $scan_root ) {
 	foreach ( godam_shared_list_php_files( $scan_root ) as $file ) {
 		$tokens    = godam_shared_tokenize( $file );
 		$functions = godam_shared_find_functions( $tokens );
+		$relative  = ltrim( str_replace( $root, '', $file ), DIRECTORY_SEPARATOR );
 
 		foreach ( godam_check_hook_balance_findings( $tokens, $functions ) as $finding ) {
-			$relative = ltrim( str_replace( $root, '', $file ), DIRECTORY_SEPARATOR );
+			$key = "{$relative}:{$finding['line']}";
 
-			if ( 'stray_after' === $finding['type'] ) {
-				$balance_failures[] = "{$relative}:{$finding['line']} — {$finding['scope']}: rtgodam_after_attachment_lookup fires with no matching rtgodam_before_attachment_lookup open at that point. A hook may have been added without its pairing before, or the before was removed while the after stayed.";
-			} else {
-				$plural             = 1 === $finding['open_count'] ? 'call' : 'calls';
-				$balance_failures[] = "{$relative}:{$finding['line']} — {$finding['scope']}: {$finding['open_count']} rtgodam_before_attachment_lookup {$plural} never reach a matching rtgodam_after_attachment_lookup before the end of this scope. The site context would stay switched to whatever site the before() call switched to for the rest of this request.";
-			}
+			$balance_findings[ $key ] = array(
+				'file'       => $relative,
+				'line'       => $finding['line'],
+				'type'       => $finding['type'],
+				'scope'      => $finding['scope'],
+				'open_count' => $finding['open_count'] ?? null,
+			);
 		}
 	}
+}
+
+ksort( $balance_findings );
+
+/**
+ * Human-reviewed reasons for balance findings accepted as-is, keyed the same
+ * way as $balance_findings ("{file}:{line}"). Merged into the baseline on
+ * every `update-baseline` run so the *why* survives regeneration. Add an
+ * entry here — not directly in the baseline JSON — only for a pairing this
+ * script genuinely can't trace on its own (see the comment above
+ * $balance_findings above); a real bug or an unrecognized scope-terminator
+ * shape belongs fixed in the code or in godam_shared_is_scope_terminator(),
+ * not excepted here.
+ *
+ * @return array<string, string>
+ */
+function godam_check_known_balance_exceptions() {
+	return array();
+}
+
+/**
+ * Builds one balance finding's own human-readable message.
+ *
+ * @param array $finding One of $balance_findings' own values.
+ * @return string
+ */
+function godam_check_format_balance_finding( $finding ) {
+	if ( 'stray_after' === $finding['type'] ) {
+		return "{$finding['file']}:{$finding['line']} — {$finding['scope']}: rtgodam_after_attachment_lookup fires with no matching rtgodam_before_attachment_lookup open at that point. A hook may have been added without its pairing before, or the before was removed while the after stayed.";
+	}
+
+	$plural = 1 === $finding['open_count'] ? 'call' : 'calls';
+	return "{$finding['file']}:{$finding['line']} — {$finding['scope']}: {$finding['open_count']} rtgodam_before_attachment_lookup {$plural} never reach a matching rtgodam_after_attachment_lookup before the end of this scope. The site context would stay switched to whatever site the before() call switched to for the rest of this request.";
 }
 
 /**
@@ -381,15 +426,42 @@ function godam_check_json_encode( $data ) {
 }
 
 if ( 'update-baseline' === $run_mode ) {
+	// Only a finding with an ACTUAL reviewed reason on file gets accepted —
+	// same rule as godam-attachment-access-coverage-check.php's own baseline:
+	// a finding with no reason must NOT appear in 'accepted_balance_exceptions'
+	// at all, so 'check' keeps failing on it until a human either fixes the
+	// code or adds a real reason here.
+	$balance_reasons              = godam_check_known_balance_exceptions();
+	$accepted_balance_exceptions  = array();
+	$unexplained_balance_findings = array();
+
+	foreach ( $balance_findings as $key => $finding ) {
+		if ( isset( $balance_reasons[ $key ] ) ) {
+			$finding['reason']                   = $balance_reasons[ $key ];
+			$accepted_balance_exceptions[ $key ] = $finding;
+		} else {
+			$unexplained_balance_findings[] = $key;
+		}
+	}
+
 	$baseline = array(
-		'generated_note' => 'Generated by bin/godam-wp-dam-hook-check.php update-baseline. Only run this after manually auditing what changed — it is the thing this check compares against, not a substitute for the audit.',
-		'wrap_counts'    => $wrap_counts,
-		'access_counts'  => $access_counts,
+		'generated_note'              => 'Generated by bin/godam-wp-dam-hook-check.php update-baseline. Only run this after manually auditing what changed — it is the thing this check compares against, not a substitute for the audit. A balance finding only enters "accepted_balance_exceptions" if godam_check_known_balance_exceptions() already has a reason for it — this command does not review anything on its own.',
+		'wrap_counts'                 => $wrap_counts,
+		'access_counts'               => $access_counts,
+		'accepted_balance_exceptions' => $accepted_balance_exceptions,
 	);
 
 	file_put_contents( $baseline_path, godam_check_json_encode( $baseline ) . "\n" );
 	echo "Baseline written to {$baseline_path}.\n";
 	echo 'Wrap-tracked files: ' . count( $wrap_counts ) . ', access-pattern files: ' . count( $access_counts ) . "\n";
+	echo 'Balance findings tracked: ' . count( $balance_findings ) . ', accepted (reviewed, with a reason on file): ' . count( $accepted_balance_exceptions ) . "\n";
+
+	if ( ! empty( $unexplained_balance_findings ) ) {
+		echo "\n" . count( $unexplained_balance_findings ) . " balance finding(s) have NO reason on file, so they were NOT accepted —\n";
+		echo "'check' will still report every one of them until you either fix the code or add a real\n";
+		echo "reason to godam_check_known_balance_exceptions() and re-run update-baseline.\n";
+	}
+
 	exit( 0 );
 }
 
@@ -405,11 +477,13 @@ if ( ! is_array( $baseline ) ) {
 	exit( 1 );
 }
 
-$baseline_wrap_counts   = $baseline['wrap_counts'] ?? array();
-$baseline_access_counts = $baseline['access_counts'] ?? array();
+$baseline_wrap_counts        = $baseline['wrap_counts'] ?? array();
+$baseline_access_counts      = $baseline['access_counts'] ?? array();
+$accepted_balance_exceptions = $baseline['accepted_balance_exceptions'] ?? array();
 
-$failures = array();
-$warnings = array();
+$failures         = array();
+$warnings         = array();
+$balance_failures = array_map( 'godam_check_format_balance_finding', array_diff_key( $balance_findings, $accepted_balance_exceptions ) );
 
 // 1. Per-file wrap count must never decrease from baseline.
 foreach ( $baseline_wrap_counts as $file => $expected_count ) {
@@ -432,7 +506,8 @@ foreach ( $access_counts as $file => $actual_count ) {
 	}
 }
 
-echo 'Checked ' . ( count( $wrap_counts ) + count( $access_counts ) ) . " files with attachment-related patterns.\n\n";
+echo 'Checked ' . ( count( $wrap_counts ) + count( $access_counts ) ) . " files with attachment-related patterns.\n";
+echo 'Balance findings tracked: ' . count( $balance_findings ) . ' (' . count( $accepted_balance_exceptions ) . " previously accepted)\n\n";
 
 if ( ! empty( $failures ) ) {
 	echo "FAILURES (hook removed or wrap count regressed):\n";
