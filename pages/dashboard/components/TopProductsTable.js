@@ -269,13 +269,14 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 							<th scope="col">{ __( 'Source', 'godam' ) }</th>
 							<th scope="col">{ __( 'Product Views', 'godam' ) }</th>
 							<th scope="col">{ __( 'Add to Cart', 'godam' ) }</th>
+							<th scope="col">{ __( 'Revenue', 'godam' ) }</th>
 						</tr>
 					</thead>
 					<tbody>
 
 						{ isFetching ? (
 							<tr>
-								<td colSpan="4">
+								<td colSpan="5">
 									<div className="space-y-4 mt-3">
 										<div className="skeleton h-4 w-full"></div>
 										<div className="skeleton h-4 w-full"></div>
@@ -341,13 +342,14 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 											) }
 										</p>
 									</td>
+									<td className="text-zinc-400">-</td>
 								</tr>
 							) )
 						) }
 
 						{ ! isFetching && products.length === 0 && (
 							<tr>
-								<td colSpan="4">
+								<td colSpan="5">
 									<div className="godam-empty-state">
 										<p className="godam-empty-state__title">
 											{ search
