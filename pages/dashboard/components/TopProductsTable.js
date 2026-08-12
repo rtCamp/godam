@@ -106,10 +106,11 @@ const reachLabel = ( item ) => {
  * `product_ids` include-filter, so server pagination stays correct.
  *
  * @param {Object}  props
- * @param {string}  props.siteUrl Current site URL.
- * @param {boolean} props.skip    Skip the query while the dashboard is gated.
+ * @param {string}  props.siteUrl       Current site URL.
+ * @param {boolean} props.skip          Skip the query while the dashboard is gated.
+ * @param {Object}  [props.tabSwitcher] Optional switcher node rendered in the table head in place of the title.
  */
-export default function TopProductsTable( { siteUrl, skip = false } ) {
+export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher = null } ) {
 	const [ page, setPage ] = useState( 1 );
 	const [ searchInput, setSearchInput ] = useState( '' );
 	const [ search, setSearch ] = useState( '' );
@@ -223,18 +224,20 @@ export default function TopProductsTable( { siteUrl, skip = false } ) {
 	return (
 		<div className="top-media-container top-products-container">
 			<div className="top-media-container__head">
-				<h2>
-					{ __( 'Top Products', 'godam' ) }
-					{ totalItems > 0 && (
-						<span className="ml-2 text-sm font-normal text-zinc-400">
-							{ sprintf(
-								/* translators: %s: number of products (already locale-formatted). */
-								_n( '%s product', '%s products', totalItems, 'godam' ),
-								totalItems.toLocaleString(),
-							) }
-						</span>
-					) }
-				</h2>
+				{ tabSwitcher || (
+					<h2>
+						{ __( 'Top Products', 'godam' ) }
+						{ totalItems > 0 && (
+							<span className="ml-2 text-sm font-normal text-zinc-400">
+								{ sprintf(
+									/* translators: %s: number of products (already locale-formatted). */
+									_n( '%s product', '%s products', totalItems, 'godam' ),
+									totalItems.toLocaleString(),
+								) }
+							</span>
+						) }
+					</h2>
+				) }
 				<div className="top-media-container__tools">
 					<SearchControl
 						__nextHasNoMarginBottom
@@ -266,17 +269,13 @@ export default function TopProductsTable( { siteUrl, skip = false } ) {
 							<th scope="col">{ __( 'Source', 'godam' ) }</th>
 							<th scope="col">{ __( 'Product Views', 'godam' ) }</th>
 							<th scope="col">{ __( 'Add to Cart', 'godam' ) }</th>
-							<th scope="col">
-								{ __( 'Revenue', 'godam' ) }
-								<span className="godam-pill godam-pill--muted ml-1">{ __( 'Phase 2', 'godam' ) }</span>
-							</th>
 						</tr>
 					</thead>
 					<tbody>
 
 						{ isFetching ? (
 							<tr>
-								<td colSpan="5">
+								<td colSpan="4">
 									<div className="space-y-4 mt-3">
 										<div className="skeleton h-4 w-full"></div>
 										<div className="skeleton h-4 w-full"></div>
@@ -342,14 +341,13 @@ export default function TopProductsTable( { siteUrl, skip = false } ) {
 											) }
 										</p>
 									</td>
-									<td className="text-zinc-400">{ '-' }</td>
 								</tr>
 							) )
 						) }
 
 						{ ! isFetching && products.length === 0 && (
 							<tr>
-								<td colSpan="5">
+								<td colSpan="4">
 									<div className="godam-empty-state">
 										<p className="godam-empty-state__title">
 											{ search

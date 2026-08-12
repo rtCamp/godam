@@ -173,6 +173,34 @@ const Dashboard = () => {
 	const hasWooProducts = !! window.videoData?.isWoo;
 	const [ topTab, setTopTab ] = useState( 'videos' );
 
+	// The switcher renders inside the active table's head (where its title would
+	// be), so there is no separate title bar and no duplicate heading. Null on
+	// non-Woo sites, where the table falls back to its own "Top Videos" heading.
+	const topTabSwitcher = hasWooProducts ? (
+		<div className="godam-top-tabs__nav" role="tablist" aria-label={ __( 'Top content', 'godam' ) }>
+			<button
+				type="button"
+				role="tab"
+				aria-selected={ topTab === 'videos' }
+				className={ `godam-top-tabs__tab${ topTab === 'videos' ? ' is-active' : '' }` }
+				data-test-id="godam-top-tab-videos"
+				onClick={ () => setTopTab( 'videos' ) }
+			>
+				{ __( 'Top Videos', 'godam' ) }
+			</button>
+			<button
+				type="button"
+				role="tab"
+				aria-selected={ topTab === 'products' }
+				className={ `godam-top-tabs__tab${ topTab === 'products' ? ' is-active' : '' }` }
+				data-test-id="godam-top-tab-products"
+				onClick={ () => setTopTab( 'products' ) }
+			>
+				{ __( 'Top Products', 'godam' ) }
+			</button>
+		</div>
+	) : null;
+
 	// Reel Pops live in the godam-for-woo add-on, which registers the
 	// "reel-pops-analytics" dashboard section. Only surface the link when it's
 	// available so the page exists to navigate to.
@@ -436,37 +464,9 @@ const Dashboard = () => {
 					</div>
 				</div>
 
-				{ hasWooProducts ? (
-					<div className="godam-top-tabs">
-						<div className="godam-top-tabs__nav" role="tablist" aria-label={ __( 'Top content', 'godam' ) }>
-							<button
-								type="button"
-								role="tab"
-								aria-selected={ topTab === 'videos' }
-								className={ `godam-top-tabs__tab${ topTab === 'videos' ? ' is-active' : '' }` }
-								data-test-id="godam-top-tab-videos"
-								onClick={ () => setTopTab( 'videos' ) }
-							>
-								{ __( 'Top Videos', 'godam' ) }
-							</button>
-							<button
-								type="button"
-								role="tab"
-								aria-selected={ topTab === 'products' }
-								className={ `godam-top-tabs__tab${ topTab === 'products' ? ' is-active' : '' }` }
-								data-test-id="godam-top-tab-products"
-								onClick={ () => setTopTab( 'products' ) }
-							>
-								{ __( 'Top Products', 'godam' ) }
-							</button>
-						</div>
-						{ topTab === 'videos'
-							? <TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } />
-							: <TopProductsTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } /> }
-					</div>
-				) : (
-					<TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } />
-				) }
+				{ hasWooProducts && topTab === 'products'
+					? <TopProductsTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } tabSwitcher={ topTabSwitcher } />
+					: <TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } tabSwitcher={ topTabSwitcher } /> }
 
 				{ extendedSections.map( ( { id, component: SectionComponent } ) => (
 					<SectionComponent key={ id } />
