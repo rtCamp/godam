@@ -169,6 +169,57 @@ class Analytics extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/top-products',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_top_products' ),
+					// Admin-dashboard read, gated like top-videos (authors and above);
+					// the search path resolves an uncached WP_Query, so this also
+					// closes the unauthenticated DB-amplification vector.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'page'     => array(
+							'required'          => false,
+							'type'              => 'integer',
+							'default'           => 1,
+							'sanitize_callback' => 'absint',
+						),
+						'limit'    => array(
+							'required'          => false,
+							'type'              => 'integer',
+							'default'           => 10,
+							'sanitize_callback' => 'absint',
+						),
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+						'search'   => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'sort_by'  => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => 'product_views',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'order'    => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => 'desc',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/layer-analytics',
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
@@ -237,6 +288,7 @@ class Analytics extends Base {
 			'/' . $this->rest_base . '/dashboard-history',
 			'/' . $this->rest_base . '/layer-analytics',
 			'/' . $this->rest_base . '/top-videos',
+			'/' . $this->rest_base . '/top-products',
 		);
 		foreach ( $routes as &$route ) {
 			if ( in_array( $route['route'], $range_routes, true ) ) {
@@ -1111,6 +1163,163 @@ class Analytics extends Base {
 		if ( $is_full_set ) {
 			set_transient( $cache_key, $ids, 5 * MINUTE_IN_SECONDS );
 		}
+
+		return $ids;
+	}
+
+	/**
+	 * Proxy /dashboard/top-products/ from the analytics microservice, then hydrate
+	 * each product row with its current WooCommerce name, image and permalink,
+	 * resolved from product_id. Display fields live in WooCommerce, not the
+	 * microservice, so a rename or a new image reflects immediately and no stale
+	 * copy is stored.
+	 *
+	 * Mirrors fetch_top_videos: a product-name search is a WordPress-only concern,
+	 * resolved to a product_ids include-filter and POSTed; otherwise a plain GET.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_top_products( WP_REST_Request $request ) {
+		$page          = $request->get_param( 'page' ) ?? 1;
+		$limit         = $request->get_param( 'limit' ) ?? 10;
+		$site_url      = $request->get_param( 'site_url' );
+		$search        = trim( (string) $request->get_param( 'search' ) );
+		$sort_by       = $request->get_param( 'sort_by' );
+		$order         = $request->get_param( 'order' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => __( 'Invalid or unverified API key.', 'godam' ),
+				),
+				200
+			);
+		}
+
+		// Product-name search lives in WooCommerce, not the microservice. Resolve
+		// it into the microservice's product_ids include-filter. null => no
+		// restriction; an array (including []) => restrict to that set.
+		$product_ids = $this->resolve_top_products_id_filter( $search );
+
+		$query = array(
+			'page'          => $page,
+			'limit'         => $limit,
+			'site_url'      => $site_url,
+			'account_token' => $account_token,
+			'api_key'       => $api_key,
+		);
+		if ( ! empty( $sort_by ) ) {
+			$query['sort_by'] = $sort_by;
+		}
+		if ( ! empty( $order ) ) {
+			$query['order'] = $order;
+		}
+
+		$endpoint = add_query_arg(
+			$this->append_range_params( $request, $query ),
+			RTGODAM_ANALYTICS_BASE . '/dashboard/top-products/'
+		);
+
+		// POST the product_ids filter when a search applies (the list can be
+		// large); otherwise a plain GET.
+		if ( is_array( $product_ids ) ) {
+			$response = wp_remote_post(
+				$endpoint,
+				array(
+					'timeout' => 3,
+					'headers' => array( 'Content-Type' => 'application/json' ),
+					'body'    => wp_json_encode( array( 'product_ids' => array_values( array_map( 'intval', $product_ids ) ) ) ),
+				)
+			);
+		} else {
+			$response = wp_remote_get( $endpoint, array( 'timeout' => 3 ) );
+		}
+
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$body         = json_decode( wp_remote_retrieve_body( $response ), true );
+		$top_products = $body['top_products'] ?? array();
+
+		foreach ( $top_products as &$product ) {
+			$product_id = intval( $product['product_id'] ?? 0 );
+			$wc_product = ( $product_id && function_exists( 'wc_get_product' ) ) ? wc_get_product( $product_id ) : false;
+
+			if ( $wc_product ) {
+				$image_id                 = $wc_product->get_image_id();
+				$product['title']         = $wc_product->get_name();
+				$product['permalink']     = get_permalink( $product_id );
+				$product['thumbnail_url'] = $image_id
+					? wp_get_attachment_image_url( $image_id, 'thumbnail' )
+					: ( function_exists( 'wc_placeholder_img_src' ) ? wc_placeholder_img_src( 'thumbnail' ) : null );
+				$product['exists']        = true;
+			} else {
+				$product['title'] = sprintf(
+					/* translators: %d: WooCommerce product ID. */
+					__( 'ID: %d (Deleted Product)', 'godam' ),
+					$product_id
+				);
+				$product['permalink']     = null;
+				$product['thumbnail_url'] = null;
+				$product['exists']        = false;
+			}
+		}
+		unset( $product );
+
+		return new WP_REST_Response(
+			array(
+				'status'       => 'success',
+				'top_products' => $top_products,
+				'total_pages'  => $body['total_pages'] ?? 1,
+				'total_items'  => $body['total_items'] ?? 0,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Resolve the product_ids include-filter for a product-name search.
+	 *
+	 * Product names live in WooCommerce, not the microservice, so a search term is
+	 * turned into an explicit list of matching product IDs for the microservice to
+	 * filter on. Returns null when no search is active (no restriction).
+	 *
+	 * @param string $search Search term, matched against the product title/content.
+	 * @return array|null Product IDs, or null when no search is active.
+	 */
+	private function resolve_top_products_id_filter( $search ) {
+		if ( '' === (string) $search ) {
+			return null;
+		}
+
+		// Existing published products matching the search term. Capped at the
+		// microservice's product_ids limit (10000).
+		$query_args = array(
+			'post_type'        => 'product',
+			'post_status'      => 'publish',
+			'fields'           => 'ids',
+			's'                => $search,
+			// phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- bounded by the microservice's 10000 product_ids cap; search results vary per term so are not cached.
+			'posts_per_page'   => 10000,
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+			'orderby'          => 'ID',
+			'order'            => 'ASC',
+		);
+
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- bounded and cacheable (suppress_filters => false); matches resolve_top_videos_id_filter in this class.
+		$ids = array_map( 'intval', (array) get_posts( $query_args ) );
 
 		return $ids;
 	}
