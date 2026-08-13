@@ -432,7 +432,24 @@ export function groupRows( rows, layerType, configIndex ) {
 				// path the parent uses so a raw composite UUID never reaches
 				// the rail. Falls back to a generic ordinal "<TypeLabel> #N"
 				// when nothing usable.
-				const rawSubName = md.product_name || row.layer_name || '';
+				let rawSubName = md.product_name || row.layer_name || '';
+				// The hotspot tracker packs the parent layer name, a separator
+				// dash, and "Hotspot N" into layer_name. The rail's card title
+				// already shows the parent, so that prefix is pure repetition
+				// and, once the row is truncated, it hides the "Hotspot N" that
+				// actually names the row. Drop the parent prefix (and the
+				// separator after it), keeping only the hotspot's own label.
+				// Woo rows carry a bare product_name and never match this, so
+				// they are left alone.
+				if (
+					! md.product_name &&
+					md.parent_layer_name &&
+					rawSubName.startsWith( md.parent_layer_name )
+				) {
+					rawSubName = rawSubName
+						.slice( md.parent_layer_name.length )
+						.replace( /^[\s\p{Pd}]+/u, '' );
+				}
 				let subName;
 				if (
 					rawSubName &&
