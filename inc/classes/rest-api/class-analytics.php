@@ -1264,6 +1264,15 @@ class Analytics extends Base {
 					? wp_get_attachment_image_url( $image_id, 'thumbnail' )
 					: ( function_exists( 'wc_placeholder_img_src' ) ? wc_placeholder_img_src( 'thumbnail' ) : null );
 				$product['exists']        = true;
+				// Whether the product can be added to cart from inside a video. Variable,
+				// grouped and external products cannot (they only convert on the product
+				// page), so their in-video/Direct count is always 0 and the UI greys it
+				// with a helper. Mirrors the shoppable template's own guard.
+				$product['supports_direct_add_to_cart'] = ! in_array(
+					$wc_product->get_type(),
+					array( 'variable', 'grouped', 'external' ),
+					true
+				);
 			} else {
 				$product['title'] = sprintf(
 					/* translators: %d: WooCommerce product ID. */
@@ -1273,6 +1282,8 @@ class Analytics extends Base {
 				$product['permalink']     = null;
 				$product['thumbnail_url'] = null;
 				$product['exists']        = false;
+				// Unknown for a deleted product; default to true so we don't grey it.
+				$product['supports_direct_add_to_cart'] = true;
 			}
 		}
 		unset( $product );

@@ -774,3 +774,13 @@
 	border-radius: 4px;
 	white-space: nowrap;
 }
+
+// In-video (Direct) add-to-cart that is structurally 0 (variable / grouped /
+// external products can't be added inside a video). Greyed with a dotted
+// underline + help cursor so the hover tooltip reads as an explanation.
+.godam-direct-na {
+	opacity: 0.6;
+	text-decoration: underline dotted;
+	text-underline-offset: 2px;
+	cursor: help;
+}

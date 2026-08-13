@@ -96,6 +96,12 @@ const reachLabel = ( item ) => {
 	return `${ layersText } · ${ videosText }`;
 };
 
+// Whether a product can be added to cart from inside a video. Variable, grouped
+// and external products cannot, so their in-video (Direct) count is always 0 and
+// the UI greys it with a helper. Defaults to true when the proxy did not say
+// (e.g. a deleted product), so nothing is greyed without cause.
+const supportsDirect = ( item ) => item.supports_direct_add_to_cart !== false;
+
 /**
  * Dashboard "Top Products" table.
  *
@@ -338,10 +344,22 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 										{ ' ' }
 										<span className="text-zinc-400">{ cartRate( item ).toFixed( 1 ) }%</span>
 										<p className="text-xs text-zinc-400">
+											<span
+												className={ supportsDirect( item ) ? undefined : 'godam-direct-na' }
+												title={ supportsDirect( item )
+													? undefined
+													: __( 'Variable, grouped and external products can’t be added to cart inside a video, so in-video (Direct) is always 0 — they convert on the product page (Assisted).', 'godam' ) }
+											>
+												{ sprintf(
+													/* translators: %s: in-video (Direct) add-to-cart count. */
+													__( '%s in-video', 'godam' ),
+													Number( item.added_to_cart_direct || 0 ).toLocaleString(),
+												) }
+											</span>
+											{ ' · ' }
 											{ sprintf(
-												/* translators: 1: in-video adds, 2: assisted adds. */
-												__( '%1$s in-video · %2$s via product page', 'godam' ),
-												Number( item.added_to_cart_direct || 0 ).toLocaleString(),
+												/* translators: %s: assisted (via product page) add-to-cart count. */
+												__( '%s via product page', 'godam' ),
 												Number( item.added_to_cart_assisted || 0 ).toLocaleString(),
 											) }
 										</p>
