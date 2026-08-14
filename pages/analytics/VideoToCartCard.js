@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import Tooltip from '../../analytics/Tooltip';
+import Tooltip from './Tooltip';
 
 /**
  * WordPress dependencies

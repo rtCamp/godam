@@ -26,6 +26,7 @@ import DateRangePicker, { triggerLabelFor } from './components/DateRangePicker';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
+import VideoToCartCard from './VideoToCartCard.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
@@ -629,6 +630,11 @@ const Analytics = ( { attachmentID } ) => {
 										) }
 										processedAnalyticsHistory={ processedAnalyticsHistory }
 										analyticsDataFetched={ rangedAnalyticsData }
+										dataLabel={ rangeLabel }
+									/>
+
+									<VideoToCartCard
+										videoToCart={ rangedAnalyticsData?.video_to_cart }
 										dataLabel={ rangeLabel }
 									/>
 

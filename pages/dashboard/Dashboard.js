@@ -20,7 +20,7 @@ import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery } f
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
-import VideoToCartCard from './components/VideoToCartCard';
+import VideoToCartCard from '../analytics/VideoToCartCard';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
