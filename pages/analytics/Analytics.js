@@ -607,7 +607,6 @@ const Analytics = ( { attachmentID } ) => {
 											'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)',
 											'godam',
 										) }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
 										analyticsDataFetched={ rangedAnalyticsData }
 										dataLabel={ rangeLabel }
 									/>
@@ -619,7 +618,6 @@ const Analytics = ( { attachmentID } ) => {
 											'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
 											'godam',
 										) }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
 										analyticsDataFetched={ rangedAnalyticsData }
 										dataLabel={ rangeLabel }
 									/>
@@ -631,7 +629,6 @@ const Analytics = ( { attachmentID } ) => {
 											'Total time the video has been watched, aggregated across all plays',
 											'godam',
 										) }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
 										analyticsDataFetched={ rangedAnalyticsData }
 										dataLabel={ rangeLabel }
 									/>
@@ -648,7 +645,7 @@ const Analytics = ( { attachmentID } ) => {
 										uniqueViewers={ rangedAnalyticsData?.unique_viewers ?? null }
 										showRatio={ true }
 										isLoading={ isAnalyticsDataLoading }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
+										dataLabel={ rangeLabel }
 									/>
 								</div>
 							</div>
