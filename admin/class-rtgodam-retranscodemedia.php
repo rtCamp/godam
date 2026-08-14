@@ -240,10 +240,15 @@ class RTGODAM_RetranscodeMedia {
 	 */
 	public function add_media_row_action( $actions, $post ) {
 
+		// Documents are included so files already in the library — which predate document
+		// support and so were never sent to GoDAM Central — can have a preview generated
+		// without re-uploading them. Tested against the attachment rather than its MIME alone,
+		// so the action is not offered on the .srt/.asc/.c/.h files that share text/plain and
+		// have no conversion path.
 		if ( (
 				'audio/' !== substr( $post->post_mime_type, 0, 6 ) &&
 				'video/' !== substr( $post->post_mime_type, 0, 6 ) &&
-				'application/pdf' !== $post->post_mime_type
+				! rtgodam_is_supported_document_attachment( $post->ID )
 			) ||
 			// Safe fallback via filter; PHPCS can't resolve dynamic capability.
 			// phpcs:ignore WordPress.WP.Capabilities.Undetermined

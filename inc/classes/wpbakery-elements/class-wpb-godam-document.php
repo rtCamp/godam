@@ -66,7 +66,7 @@ class WPB_GoDAM_Document {
 				'name'        => esc_html__( 'Document', 'godam' ),
 				'base'        => 'godam_document',
 				'category'    => esc_html__( 'GoDAM', 'godam' ),
-				'description' => esc_html__( 'Embed a PDF document from GoDAM Media Library', 'godam' ),
+				'description' => esc_html__( 'Embed a document from the GoDAM Media Library', 'godam' ),
 				'icon'        => RTGODAM_URL . 'assets/images/godam-pdf.svg',
 				'params'      => array(
 					// Document Selection.
@@ -75,7 +75,7 @@ class WPB_GoDAM_Document {
 						'heading'     => esc_html__( 'Select Document', 'godam' ),
 						'param_name'  => 'id',
 						'value'       => '',
-						'description' => esc_html__( 'Select a PDF document from the WordPress Media Library.', 'godam' ),
+						'description' => esc_html__( 'Select a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file from the WordPress Media Library.', 'godam' ),
 						'admin_label' => true,
 						'save_always' => true,
 					),
@@ -133,7 +133,7 @@ class WPB_GoDAM_Document {
 							esc_html__( 'Card View', 'godam' )    => 'card',
 						),
 						'std'         => 'default',
-						'description' => esc_html__( 'Choose how the document is displayed: an embedded PDF viewer or a card with a cover image.', 'godam' ),
+						'description' => esc_html__( 'Choose how the document is displayed: an embedded viewer or a card with a cover image.', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
 							'element'   => 'id',
@@ -147,7 +147,7 @@ class WPB_GoDAM_Document {
 						'heading'     => esc_html__( 'Height (px)', 'godam' ),
 						'param_name'  => 'height',
 						'value'       => '600',
-						'description' => esc_html__( 'Height of the embedded PDF viewer in pixels.', 'godam' ),
+						'description' => esc_html__( 'Height of the embedded viewer in pixels.', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
 							'element' => 'preview_mode',

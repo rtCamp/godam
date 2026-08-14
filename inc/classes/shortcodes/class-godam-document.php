@@ -61,10 +61,10 @@ class GoDAM_Document {
 			return '';
 		}
 
-		// PDF is the only supported format; render.php emits nothing for anything
-		// else. In WPBakery's front-end editor that would leave a silently empty
-		// element, so show the author why. Callers that own their own editor
-		// messaging (the Elementor widget) check before reaching this point.
+		// render.php emits nothing for an unsupported format. In WPBakery's front-end
+		// editor that would leave a silently empty element, so show the author why.
+		// Callers that own their own editor messaging (the Elementor widget) check
+		// before reaching this point.
 		if ( ! godam_is_supported_document( $atts['id'], $atts['src'] ) ) {
 			if ( function_exists( 'vc_is_inline' ) && vc_is_inline() ) {
 				// The notice is styled by the block's stylesheet, which is normally
@@ -72,7 +72,7 @@ class GoDAM_Document {
 				wp_enqueue_style( 'godam-pdf-style' );
 
 				return '<div class="godam-document-unsupported" data-test-id="godam-document-unsupported"><p>'
-					. esc_html__( 'Only PDF files are supported. This file will not be shown on your page.', 'godam' )
+					. esc_html__( 'That file type is not supported. This file will not be shown on your page.', 'godam' )
 					. '</p></div>';
 			}
 

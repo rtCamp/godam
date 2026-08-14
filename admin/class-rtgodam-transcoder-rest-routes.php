@@ -122,6 +122,33 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
+
+					/*
+					 * Machine-readable failure reason (DOCUMENT_TOO_LARGE,
+					 * DOCUMENT_UNSUPPORTED_TYPE, DOCUMENT_PROCESSING_FAILED, ...). Unlike
+					 * error_msg it is safe to surface, since it carries no file paths or
+					 * internal detail.
+					 */
+					'error_code'            => array(
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+
+					/*
+					 * The converted preview PDF for a `document` job. Read from the top-level
+					 * field rather than from files['preview_pdf']: the callback is form-encoded,
+					 * and a nested array does not survive that encoding reliably.
+					 *
+					 * Absent — not empty — for job types that have no conversion step, and
+					 * empty for a password protected document, which Central stores and
+					 * reports as Transcoded but deliberately generates no preview for.
+					 */
+					'preview_pdf_url'       => array(
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'esc_url_raw',
+					),
 					'job_manager_form'      => array(
 						'required'          => false,
 						'type'              => 'string',
@@ -227,6 +254,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		$job_id      = $request->get_param( 'job_id' );
 		$file_status = $request->get_param( 'file_status' );
 		$error_msg   = $request->get_param( 'error_msg' );
+		$error_code  = $request->get_param( 'error_code' );
 		$job_for     = $request->get_param( 'job_for' );
 		$thumbnail   = $request->get_param( 'thumbnail' );
 		$format      = $request->get_param( 'format' );
@@ -243,6 +271,16 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					// Use rtgodam_transcoding_error_msg so the REST status endpoint can surface it.
 					if ( ! empty( $error_msg ) ) {
 						update_post_meta( $failed_id, 'rtgodam_transcoding_error_msg', sanitize_textarea_field( $error_msg ) );
+					}
+
+					/*
+					 * The status callback stores this too, but a job that fails outright may
+					 * never send one, and the code is what distinguishes a retryable failure
+					 * (DOCUMENT_PROCESSING_FAILED) from a permanent one (DOCUMENT_TOO_LARGE,
+					 * DOCUMENT_UNSUPPORTED_TYPE) that should not offer a retry.
+					 */
+					if ( ! empty( $error_code ) ) {
+						update_post_meta( $failed_id, 'rtgodam_transcoding_error_code', sanitize_text_field( $error_code ) );
 					}
 				}
 			}
@@ -306,9 +344,36 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						}
 					}
 
-					if ( 'pdf' === $job_type && isset( $post_array['download_url'] ) && ! empty( $post_array['download_url'] ) ) {
-						// Setting the transcoded PDF URL.
+					/*
+					 * Documents. `pdf` is a file that needed no conversion; `document` is an
+					 * Office / OpenDocument / text file that GoDAM Central rendered to a preview
+					 * PDF. For both, `download_url` is the file the author uploaded, on the CDN.
+					 *
+					 * The two URLs are NOT interchangeable for a `document`: only the preview may
+					 * be rendered, and only the original may be offered as a download. Somebody
+					 * who uploads report.xlsx and downloads preview.pdf will think something broke.
+					 */
+					if ( in_array( $job_type, array( 'pdf', 'document' ), true ) && ! empty( $post_array['download_url'] ) ) {
 						update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
+					}
+
+					if ( 'document' === $job_type ) {
+						if ( ! empty( $post_array['preview_pdf_url'] ) ) {
+							update_post_meta( $attachment_id, 'rtgodam_preview_pdf_url', esc_url_raw( $post_array['preview_pdf_url'] ) );
+						} else {
+							/*
+							 * No preview: the document is password protected, so Central stored it
+							 * as-is and generated nothing to render. Deleting rather than skipping
+							 * matters — a retranscode or in-place replace reuses the same job row,
+							 * and leaving the key alone would keep serving the *previous* render's
+							 * preview for a file that no longer has one.
+							 */
+							delete_post_meta( $attachment_id, 'rtgodam_preview_pdf_url' );
+						}
+					} elseif ( 'pdf' === $job_type && ! empty( $post_array['download_url'] ) ) {
+						// A PDF is its own preview, so both keys point at the same file. Storing it
+						// here as well means every reader has a single key to consult.
+						update_post_meta( $attachment_id, 'rtgodam_preview_pdf_url', esc_url_raw( $post_array['download_url'] ) );
 					}
 
 					if ( 'image' === $job_type && isset( $post_array['download_url'] ) && ! empty( $post_array['download_url'] ) ) {

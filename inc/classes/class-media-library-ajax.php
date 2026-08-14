@@ -156,21 +156,30 @@ class Media_Library_Ajax {
 			'width'                 => $item['width'] ?? 0,
 			'height'                => $item['height'] ?? 0,
 			'chapters'              => $chapters,
+
+			/*
+			 * The preview PDF for a document. Distinct from `mpd_url` above, which for a
+			 * `document` job is the ORIGINAL .docx/.xlsx and cannot be rendered. Empty for a
+			 * password-protected document, which has no preview by design.
+			 */
+			'preview_pdf_url'       => $item['preview_pdf_url'] ?? '',
 		);
 
-		// Set icon with fallback to default mime type icon for audio and PDF.
+		// Set icon with fallback to default mime type icon for audio and documents.
 		$result['icon'] = $item['thumbnail_url'] ?? '';
 
-		// If no thumbnail URL, use WordPress default icons for audio and PDF.
+		// If no thumbnail URL, use WordPress default icons for audio and documents. Keyed off
+		// the job type rather than the MIME type: Central does not always send a MIME, and the
+		// document types span too many vendor prefixes to test individually here.
 		if ( empty( $result['icon'] ) ) {
-			if ( 'audio' === $item['job_type'] ) {
+			if ( 'audio' === $job_type ) {
 				$result['icon'] = includes_url( 'images/media/audio.png' );
-			} elseif ( 'application/pdf' === $item['mime_type'] ) {
+			} elseif ( in_array( $job_type, array( 'pdf', 'document' ), true ) || 'application/pdf' === $api_mime_type ) {
 				$result['icon'] = includes_url( 'images/media/document.png' );
 			}
 		}
 
-		if ( 'stream' === $item['job_type'] ) {
+		if ( 'stream' === $job_type ) {
 			$result['type'] = 'video';
 		}
 
@@ -192,6 +201,16 @@ class Media_Library_Ajax {
 				return ! empty( $mime_type ) ? $mime_type : 'audio/mpeg';
 			case 'image':
 				return ! empty( $mime_type ) ? $mime_type : 'image/jpeg';
+			case 'pdf':
+			case 'document':
+				/*
+				 * Documents used to fall through to the default below, which meant a job with
+				 * no MIME type was labelled application/dash+xml — then rejected outright by
+				 * create_media_entry()'s allowlist, so the item could not be imported at all.
+				 * PDF is the safe assumption for both job types: for 'pdf' it is exact, and for
+				 * 'document' the only thing WordPress can display is the preview PDF anyway.
+				 */
+				return ! empty( $mime_type ) ? $mime_type : 'application/pdf';
 			default:
 				return ! empty( $mime_type ) ? $mime_type : 'application/dash+xml';
 		}
@@ -434,12 +453,17 @@ class Media_Library_Ajax {
 	 * @return array $response Attachment response.
 	 */
 	public function add_media_transcoding_status_js( $response, $attachment ) {
-		// Check if attachment type is video, audio, PDF, or image.
+		// Check if attachment type is video, audio, document, or image.
 		$mime_type = $attachment->post_mime_type;
 		$is_video  = 'video' === substr( $mime_type, 0, 5 );
 		$is_audio  = 'audio' === substr( $mime_type, 0, 5 );
-		$is_pdf    = 'application/pdf' === $mime_type;
-		$is_image  = 'image' === substr( $mime_type, 0, 5 );
+		// Every convertible document type, not just PDF, so an Office upload also reports its
+		// transcoding progress in the media library grid. Tested against the attachment rather
+		// than its MIME type alone: text/plain covers .srt/.asc/.c/.cc/.h as well as .txt, and
+		// those are never transcoded, so a MIME-only test gave every subtitle and source file
+		// in the library a transcoding spinner that never resolved.
+		$is_pdf   = rtgodam_is_supported_document_attachment( $attachment->ID );
+		$is_image = 'image' === substr( $mime_type, 0, 5 );
 
 		// Only process supported attachment types.
 		if ( ! ( $is_video || $is_audio || $is_pdf || $is_image ) ) {

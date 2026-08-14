@@ -93,6 +93,20 @@ class RTGODAM_Transcoder_Handler {
 	public $other_extensions = ',pdf';
 
 	/**
+	 * Document extensions with comma separated.
+	 *
+	 * Office / OpenDocument / plain-text formats, which GoDAM Central converts to a preview
+	 * PDF. They are kept apart from $other_extensions because those map the extension
+	 * straight onto the job type ('pdf' => job_type 'pdf'), whereas every format here shares
+	 * the single job type 'document'.
+	 *
+	 * @since    2.2.0
+	 * @access   public
+	 * @var      string    $document_extensions    Document extensions with comma separated.
+	 */
+	public $document_extensions = ',docx,doc,xlsx,xls,pptx,ppt,odt,ods,odp,txt,csv';
+
+	/**
 	 * Allowed mimetypes.
 	 *
 	 * @since    1.5
@@ -101,7 +115,6 @@ class RTGODAM_Transcoder_Handler {
 	 */
 	public $allowed_mimetypes = array(
 		'application/ogg',
-		'application/pdf',
 	);
 
 	/**
@@ -124,6 +137,21 @@ class RTGODAM_Transcoder_Handler {
 
 		$this->api_key          = get_option( 'rtgodam-api-key' );
 		$this->easydam_settings = get_option( 'rtgodam-settings', array() );
+
+		/*
+		 * Document MIME types come from the shared helper rather than being duplicated in
+		 * the property default, so the transcoder and the Document block can never disagree
+		 * about which formats are supported. Anything not listed here is dropped by the
+		 * mime gate in wp_media_transcoding() and never reaches GoDAM Central.
+		 */
+		$this->allowed_mimetypes = array_values(
+			array_unique(
+				array_merge(
+					$this->allowed_mimetypes,
+					array_keys( rtgodam_get_supported_document_types() )
+				)
+			)
+		);
 
 		$default_settings = array(
 			'video' => array(
@@ -308,10 +336,30 @@ class RTGODAM_Transcoder_Handler {
 
 		$metadata = $wp_metadata;
 
-		$type_arry        = explode( '.', $url );
-		$type             = strtolower( $type_arry[ count( $type_arry ) - 1 ] );
-		$extension        = pathinfo( $path, PATHINFO_EXTENSION );
+		$type_arry = explode( '.', $url );
+		$type      = strtolower( $type_arry[ count( $type_arry ) - 1 ] );
+		// Lowercased because the extension lists below are all lowercase: an upload named
+		// REPORT.PDF would otherwise miss its branch and be sent as a video stream job.
+		$extension        = strtolower( pathinfo( $path, PATHINFO_EXTENSION ) );
 		$not_allowed_type = array();
+
+		/*
+		 * A document MIME type is not sufficient on its own, because several of them are
+		 * shared with formats that have no conversion path. WordPress maps .srt, .asc, .c,
+		 * .cc and .h to text/plain exactly as it maps .txt, so without this a subtitle file
+		 * would satisfy the MIME gate below, find no matching extension in any of the job
+		 * type branches, and fall through to the default 'stream' — dispatching every
+		 * caption upload to GoDAM Central as a video transcode that can only fail.
+		 *
+		 * Checked here rather than inside the gate so audio/video and application/ogg keep
+		 * matching on MIME alone, exactly as they did before documents were supported.
+		 */
+		if (
+			array_key_exists( $metadata['mime_type'], rtgodam_get_supported_document_types() )
+			&& ! in_array( $extension, rtgodam_get_supported_document_extensions(), true )
+		) {
+			return $wp_metadata;
+		}
 
 		if ( (
 				preg_match( '/video|audio/i', $metadata['mime_type'], $type_array ) ||
@@ -333,6 +381,20 @@ class RTGODAM_Transcoder_Handler {
 			} elseif ( in_array( $extension, explode( ',', $this->other_extensions ), true ) ) {
 				$job_type            = $extension;
 				$autoformat          = $extension;
+				$options_video_thumb = 0;
+			} elseif ( in_array( $extension, explode( ',', $this->document_extensions ), true ) ) {
+				/*
+				 * Office / OpenDocument / text files all share one job type. GoDAM Central
+				 * converts them to a preview PDF (job_type 'document' routes to its document
+				 * queue), and returns that PDF separately as `preview_pdf_url` — `download_url`
+				 * stays the original file. `formats` names the conversion target rather than
+				 * the source extension, unlike the 'pdf' branch above where the two coincide.
+				 *
+				 * Thumbnails are rasterised from page 0 of the preview by Central itself, so
+				 * no thumbnail count is requested here.
+				 */
+				$job_type            = 'document';
+				$autoformat          = 'pdf';
 				$options_video_thumb = 0;
 			}
 

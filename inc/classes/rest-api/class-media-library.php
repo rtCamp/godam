@@ -1454,8 +1454,14 @@ class Media_Library extends Base {
 			// For video, GoDAM expects `job_type=stream`.
 			if ( 'video' === $type ) {
 				$request_body['job_type'] = 'stream';
-			} elseif ( 'application/pdf' === $type ) { // For application/pdf, GoDAM expects `job_type=pdf`.
-				$request_body['job_type'] = 'pdf';
+			} elseif ( 'application/pdf' === $type ) {
+				/*
+				 * Documents span two job types on Central: `pdf` for a file that needed no
+				 * conversion, and `document` for a Word / Excel / PowerPoint / OpenDocument /
+				 * text file it rendered to a preview PDF. Both belong in the same tab, and
+				 * get_list_of_files accepts a comma-separated list for exactly this case.
+				 */
+				$request_body['job_type'] = 'pdf,document';
 			} elseif ( 'image-video' !== $type && 'all' !== $type ) { // TODO: For job type 'image-video', we need to add support on Central.
 				$request_body['job_type'] = $type;
 			}
@@ -1595,11 +1601,14 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
 		}
 
-		// Accepts video/*, audio/*, image/* plus the single PDF type — PDFs are
-		// handled by the 'pdf' branch below and otherwise can't form a virtual entry.
+		// Accepts video/*, audio/*, image/* plus the document types — documents are handled by
+		// the 'pdf'/'document' branch below and otherwise can't form a virtual entry. The
+		// document list is enumerated rather than pattern-matched because it spans several
+		// unrelated vendor prefixes, and because widening it to all of application/* would let
+		// through executables and archives.
 		if (
 			! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/', $mime )
-			&& 'application/pdf' !== $mime
+			&& ! array_key_exists( $mime, rtgodam_get_supported_document_types() )
 		) {
 			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
 		}
@@ -1786,7 +1795,9 @@ class Media_Library extends Base {
 			if ( ! empty( $audio_thumbnail ) ) {
 				update_post_meta( $attach_id, 'rtgodam_media_audio_thumbnail', esc_url_raw( $audio_thumbnail ) );
 			}
-		} elseif ( 'pdf' === $type ) {
+		} elseif ( 'pdf' === $type || 'document' === $type ) {
+			// 'pdf' is a file Central stored as-is; 'document' is one it rendered to a preview
+			// PDF. Identical here apart from where the previewable PDF comes from.
 			$wp_attachment_metadata = array(
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
@@ -1796,6 +1807,23 @@ class Media_Library extends Base {
 			// Set PDF thumbnail from icon URL if provided.
 			if ( ! empty( $data['icon'] ) ) {
 				update_post_meta( $attach_id, 'rtgodam_media_pdf_thumbnail', esc_url_raw( $data['icon'] ) );
+			}
+
+			/*
+			 * The PDF the Document block renders. For a converted document Central sends it as
+			 * a dedicated field, because `mpd_url` (stored above as rtgodam_transcoded_url)
+			 * points at the ORIGINAL .docx/.xlsx there and is not renderable. For a PDF the two
+			 * are the same file, so fall back to it and give readers one key for both cases.
+			 *
+			 * Deliberately not set when Central sent no preview — a password-protected document
+			 * has none, and the block falls back to offering the original as a download.
+			 */
+			$preview_pdf_url = ! empty( $data['preview_pdf_url'] )
+				? $data['preview_pdf_url']
+				: ( 'pdf' === $type ? ( $data['mpd_url'] ?? '' ) : '' );
+
+			if ( ! empty( $preview_pdf_url ) ) {
+				update_post_meta( $attach_id, 'rtgodam_preview_pdf_url', esc_url_raw( $preview_pdf_url ) );
 			}
 		}
 
