@@ -454,10 +454,15 @@ const Dashboard = () => {
 									analyticsDataFetched={ insightsMetrics }
 								/>
 
-								<VideoToCartCard
-									videoToCart={ insightsMetrics?.video_to_cart }
-									dataLabel={ insightsCardLabel }
-								/>
+								{ /* WooCommerce-only: Video-to-Cart has no meaning without a
+								    store, and the card would otherwise read a permanent,
+								    misleading "0" on non-Woo sites. */ }
+								{ hasWooProducts && (
+									<VideoToCartCard
+										videoToCart={ insightsMetrics?.video_to_cart }
+										dataLabel={ insightsCardLabel }
+									/>
+								) }
 							</div>
 						</div>
 

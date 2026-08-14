@@ -89,6 +89,9 @@ const Analytics = ( { attachmentID } ) => {
 
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
+	// Video-to-Cart is a WooCommerce feature; the card is shown only on Woo sites
+	// (otherwise it would read a permanent, misleading "0").
+	const isWoo = !! window.videoData?.isWoo;
 	const apiKeyError = getAPIKeyErrorInfo();
 	const apiKeyErrorType = apiKeyError?.type || null;
 
@@ -633,10 +636,12 @@ const Analytics = ( { attachmentID } ) => {
 										dataLabel={ rangeLabel }
 									/>
 
-									<VideoToCartCard
-										videoToCart={ rangedAnalyticsData?.video_to_cart }
-										dataLabel={ rangeLabel }
-									/>
+									{ isWoo && (
+										<VideoToCartCard
+											videoToCart={ rangedAnalyticsData?.video_to_cart }
+											dataLabel={ rangeLabel }
+										/>
+									) }
 
 									<PlaysVsViewers
 										plays={ rangedAnalyticsData?.plays ?? 0 }

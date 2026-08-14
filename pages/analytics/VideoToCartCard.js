@@ -20,6 +20,14 @@ import { __, sprintf } from '@wordpress/i18n';
  * @param {string} [props.dataLabel]   The active range label (e.g. "All time").
  */
 export default function VideoToCartCard( { videoToCart, dataLabel } ) {
+	// Render nothing when the payload is entirely absent (an analytics service that
+	// predates the video_to_cart roll-up), so the card never asserts a misleading
+	// "0 carts" for "metric unavailable". A present payload with zero carts is a
+	// real value and still renders.
+	if ( videoToCart === null || videoToCart === undefined ) {
+		return null;
+	}
+
 	const vtc = videoToCart || {};
 	const carts = Number( vtc.carts || 0 );
 	const rate = Number( vtc.rate || 0 );

@@ -921,6 +921,9 @@ class Pages {
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'adminUrl'         => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
 					'godamBaseUrl'     => RTGODAM_IO_API_BASE,
+					// Video-to-Cart is a WooCommerce feature; the per-video card shows
+					// only when WooCommerce is active (matches the dashboard gate).
+					'isWoo'            => class_exists( 'WooCommerce' ),
 				)
 			);
 
