@@ -27,11 +27,14 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 	const assisted = Number( vtc.assisted || 0 );
 
 	return (
-		<div className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full">
+		<div
+			className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full"
+			data-test-id="godam-video-to-cart-card"
+		>
 			<div className="analytics-single-info">
 				<div className="flex justify-between items-start flex-row w-full gap-2">
 					<div className="analytics-info-heading">
-						<p className="text-xs text-[#525252] whitespace-nowrap">{ __( 'Video to Cart', 'godam' ) }</p>
+						<p className="text-xs text-[#525252] whitespace-nowrap" data-test-id="godam-video-to-cart-label">{ __( 'Video to Cart', 'godam' ) }</p>
 						<Tooltip
 							text={ __(
 								'Distinct people who played a video and then added a product to cart — inside the video (in-video) or on the product page after clicking through (via product page).',
@@ -42,7 +45,7 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 				</div>
 				<div className="flex flex-row justify-between gap-2 items-end">
 					<div className="flex flex-col gap-3">
-						<p className="min-w-[90px] single-metrics-value">{ carts.toLocaleString() }</p>
+						<p className="min-w-[90px] single-metrics-value" data-test-id="godam-video-to-cart-value">{ carts.toLocaleString() }</p>
 						<div className="flex flex-col gap-1">
 							<span className="text-xs text-zinc-500">
 								{ sprintf(
