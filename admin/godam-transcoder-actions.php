@@ -158,8 +158,17 @@ if ( ! function_exists( 'rtgodam_save_transcoded_url_field' ) ) {
 			if ( ! current_user_can( 'edit_post', $post['ID'] ) ) {
 				return $post;
 			}
+			/**
+			 * Fires before writing this attachment's transcoded-url meta,
+			 * so integrations that centralize media on another site can
+			 * switch context first.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			// Update the post meta with the new value.
 			update_post_meta( $post['ID'], 'rtgodam_transcoded_url', esc_url_raw( $attachment['transcoded_url'] ) );
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		return $post;

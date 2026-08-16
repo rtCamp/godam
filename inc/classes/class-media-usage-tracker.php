@@ -424,7 +424,17 @@ class Media_Usage_Tracker {
 	 * @return int[]
 	 */
 	public function get_usage_post_ids( $attachment_id ) {
+		/**
+		 * Fires before reading this attachment's usage-index meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$ids = get_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, true );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		return is_array( $ids ) ? array_map( 'intval', $ids ) : array();
 	}
 
@@ -440,7 +450,16 @@ class Media_Usage_Tracker {
 	 * @return array<int, string[]> Map of post ID → source list.
 	 */
 	private function get_usage_sources( $attachment_id ) {
+		/**
+		 * Fires before reading this attachment's source-aware usage map, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$map = get_post_meta( $attachment_id, self::SOURCES_META_KEY, true );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		if ( is_array( $map ) ) {
 			$normalized = array();
@@ -475,25 +494,37 @@ class Media_Usage_Tracker {
 			}
 		}
 
-		if ( empty( $clean ) ) {
-			delete_post_meta( $attachment_id, self::SOURCES_META_KEY );
-			delete_post_meta( $attachment_id, self::ATTACHMENT_META_KEY );
-			return;
-		}
-
-		update_post_meta( $attachment_id, self::SOURCES_META_KEY, $clean );
-
-		// Derived public list holds real post IDs only — the synthetic anchor 0
-		// (block widgets, other non-post contexts) is recorded in the source map
-		// but never leaks into get_usage_post_ids().
-		$post_ids = array();
-		foreach ( array_keys( $clean ) as $post_id ) {
-			$post_id = (int) $post_id;
-			if ( $post_id > 0 ) {
-				$post_ids[] = $post_id;
+		/**
+		 * Fires before writing this attachment's usage-index meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			if ( empty( $clean ) ) {
+				delete_post_meta( $attachment_id, self::SOURCES_META_KEY );
+				delete_post_meta( $attachment_id, self::ATTACHMENT_META_KEY );
+				return;
 			}
+
+			update_post_meta( $attachment_id, self::SOURCES_META_KEY, $clean );
+
+			// Derived public list holds real post IDs only — the synthetic anchor 0
+			// (block widgets, other non-post contexts) is recorded in the source map
+			// but never leaks into get_usage_post_ids().
+			$post_ids = array();
+			foreach ( array_keys( $clean ) as $post_id ) {
+				$post_id = (int) $post_id;
+				if ( $post_id > 0 ) {
+					$post_ids[] = $post_id;
+				}
+			}
+			update_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, $post_ids );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-		update_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, $post_ids );
 	}
 
 	/**
@@ -1138,13 +1169,25 @@ class Media_Usage_Tracker {
 	 * @return string GoDAM Central ID, or '' if not a Central media item.
 	 */
 	private function get_godam_id_for_attachment( $attachment_id ) {
-		$godam_id = get_post_meta( $attachment_id, '_godam_original_id', true );
-		if ( ! empty( $godam_id ) ) {
-			return $godam_id;
-		}
+		/**
+		 * Fires before reading this attachment's GoDAM Central identifier
+		 * meta, so integrations that centralize media on another site can
+		 * switch context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$godam_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+			if ( ! empty( $godam_id ) ) {
+				return $godam_id;
+			}
 
-		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		return ! empty( $job_id ) ? $job_id : '';
+			$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+			return ! empty( $job_id ) ? $job_id : '';
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	/**

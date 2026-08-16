@@ -546,7 +546,7 @@ function godam_coverage_known_reasons() {
 	// defined anywhere) — dead code unless a site separately installs rtMedia, in
 	// which case rtmedia_type()/rtmedia_media_id() would already fatal before this
 	// line is reached. Same determination already made for vj-develop's copy of GoDAM.
-	$reasons['admin/godam-transcoder-actions.php:229'] = 'rtgodam_rtt_set_video_thumbnail(): dead code — rtMedia is not present in this codebase.';
+	$reasons['admin/godam-transcoder-actions.php:238'] = 'rtgodam_rtt_set_video_thumbnail(): dead code — rtMedia is not present in this codebase.';
 
 	// godam-player / godam-video-duration / godam-video-thumbnail render.php: this
 	// particular get_post_meta() reads '_godam_attachment_id' off the HOST post the

@@ -137,15 +137,26 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
 		return '';
 	}
 
-	$media = get_post( $media_id );
+	/**
+	 * Fires before resolving this attachment's URL, so integrations that
+	 * centralize media on another site can switch context first.
+	 *
+	 * @since 1.8.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$media = get_post( $media_id );
 
-	if ( ! $media || 'attachment' !== $media->post_type ) {
-		return '';
+		if ( ! $media || 'attachment' !== $media->post_type ) {
+			return '';
+		}
+
+		$media_url = wp_get_attachment_url( $media_id );
+
+		return $media_url ? $media_url : '';
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
-
-	$media_url = wp_get_attachment_url( $media_id );
-
-	return $media_url ? $media_url : '';
 }
 
 /**
@@ -1149,18 +1160,30 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 		return false;
 	}
 
-	// Check post meta first.
-	$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
-	if ( ! empty( $transcript_path ) ) {
-		return $transcript_path;
-	}
-
-	// Get job_id from parameter or post meta.
-	if ( empty( $job_id ) ) {
-		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		if ( empty( $job_id ) ) {
-			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+	/**
+	 * Fires before reading this attachment's transcript/job-id meta, so
+	 * integrations that centralize media on another site can switch
+	 * context first.
+	 *
+	 * @since 1.8.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		// Check post meta first.
+		$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+		if ( ! empty( $transcript_path ) ) {
+			return $transcript_path;
 		}
+
+		// Get job_id from parameter or post meta.
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+			if ( empty( $job_id ) ) {
+				$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+			}
+		}
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	if ( empty( $job_id ) ) {
@@ -1214,7 +1237,16 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 
 		// Save to post meta using the attachment ID.
 		if ( ! empty( $transcript_path ) ) {
+			/**
+			 * Fires before writing this attachment's transcript-path meta, so
+			 * integrations that centralize media on another site can switch
+			 * context first.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		return $transcript_path;
@@ -1242,8 +1274,17 @@ function godam_preview_page_content( $video_id ) {
 	$video_id         = intval( $video_id );
 
 	if ( ! empty( $video_id ) ) {
+		/**
+		 * Fires before resolving this attachment's post/mime data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
-		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type;
+		do_action( 'rtgodam_after_attachment_lookup' );
+		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type;
 	}
 
 	if ( ! $show_video ) {
@@ -1413,8 +1454,17 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 	$engagements_value = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
 
 	if ( ! empty( $video_id ) ) {
+		/**
+		 * Fires before resolving this attachment's post/mime data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
-		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 );
+		do_action( 'rtgodam_after_attachment_lookup' );
+		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 );
 	}
 
 	if ( ! $show_video ) {
@@ -1830,6 +1880,15 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 	$resolved_thumbnail   = '';
 	$resolved_placeholder = '';
 
+	/**
+	 * Fires before resolving this attachment's thumbnail/placeholder meta
+	 * and image URL, so integrations that centralize media on another site
+	 * can switch context first.
+	 *
+	 * @since 1.8.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+
 	if ( ! empty( $thumbnail_url ) && is_string( $thumbnail_url ) ) {
 		$resolved_thumbnail = esc_url_raw( rtgodam_convert_to_https_url( $thumbnail_url ) );
 	}
@@ -1876,6 +1935,15 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 	// When no real thumbnail is available, returning '' lets the gallery template
 	// emit a --pending sentinel instead, which the frontend JS replaces with the
 	// video's first frame via initFirstFrameThumbnails().
+
+	/**
+	 * Fires after resolving this attachment's thumbnail/placeholder data,
+	 * so integrations can restore the site context switched in
+	 * `rtgodam_before_attachment_lookup`.
+	 *
+	 * @since 1.8.0
+	 */
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	return array(
 		'thumbnail'   => $resolved_thumbnail,

@@ -127,9 +127,9 @@
             "scope": "RTGODAM_Transcoder_Rest_Routes::handle_wp_media_transcoding_callback()",
             "reason": "handle_wp_media_transcoding_callback(): covered transitively \u2014 caller (handle_callback) wraps the entire call in try/finally."
         },
-        "admin/godam-transcoder-actions.php:229": {
+        "admin/godam-transcoder-actions.php:238": {
             "file": "admin/godam-transcoder-actions.php",
-            "line": 229,
+            "line": 238,
             "call": "update_post_meta",
             "scope": "rtgodam_rtt_set_video_thumbnail()",
             "reason": "rtgodam_rtt_set_video_thumbnail(): dead code \u2014 rtMedia is not present in this codebase."

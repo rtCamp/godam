@@ -105,7 +105,15 @@ class WPB_GoDAM_Params {
 		
 		// If a video is selected, show preview and remove button.
 		if ( ! empty( $value ) && is_numeric( $value ) ) {
+			/**
+			 * Fires before resolving this attachment's URL, so integrations
+			 * that centralize media on another site can switch context first.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			$attachment = wp_get_attachment_url( $value );
+			do_action( 'rtgodam_after_attachment_lookup' );
 			if ( $attachment ) {
 				$preview_html  = '<div class="video-selector-preview" data-test-id="godam-wpb-preview-video" style="margin-top: 10px;">
 					<video width="100%" height="auto" controls style="max-width: 300px;">
@@ -144,7 +152,15 @@ class WPB_GoDAM_Params {
 		
 		// If an audio is selected, show preview and remove button.
 		if ( ! empty( $value ) && is_numeric( $value ) ) {
+			/**
+			 * Fires before resolving this attachment's URL, so integrations
+			 * that centralize media on another site can switch context first.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			$attachment = wp_get_attachment_url( $value );
+			do_action( 'rtgodam_after_attachment_lookup' );
 			if ( $attachment ) {
 				$preview_html  = '<div class="audio-selector-preview" data-test-id="godam-wpb-preview-audio" style="margin-top: 10px;">
 					<audio controls style="max-width: 300px; width: 100%;">
@@ -217,7 +233,15 @@ class WPB_GoDAM_Params {
 
 		// If a document is selected, show preview and remove button.
 		if ( ! empty( $value ) && is_numeric( $value ) ) {
+			/**
+			 * Fires before resolving this attachment's URL, so integrations
+			 * that centralize media on another site can switch context first.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			$attachment = wp_get_attachment_url( $value );
+			do_action( 'rtgodam_after_attachment_lookup' );
 			if ( $attachment ) {
 				$file_name     = basename( $attachment );
 				$preview_html  = '<div class="document-selector-preview" data-test-id="godam-wpb-preview-document" style="margin-top: 10px;">
@@ -289,7 +313,16 @@ class WPB_GoDAM_Params {
 
 		// If an image is selected, show preview and remove button.
 		if ( ! empty( $value ) && is_numeric( $value ) ) {
+			/**
+			 * Fires before resolving this attachment's image URL, so
+			 * integrations that centralize media on another site can switch
+			 * context first.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			$attachment = wp_get_attachment_image_url( $value, 'medium' );
+			do_action( 'rtgodam_after_attachment_lookup' );
 			if ( $attachment ) {
 				$preview_html  = '<div class="image-selector-preview" data-test-id="godam-wpb-preview-image-block" style="margin-top: 10px;">
 					<img src="' . esc_url( $attachment ) . '" alt="" style="max-width: 300px; height: auto;" />
