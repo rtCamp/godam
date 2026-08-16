@@ -517,7 +517,138 @@ function godam_coverage_file_findings( $tokens, $functions ) {
  * @return array<string, string>
  */
 function godam_coverage_known_reasons() {
-	return array();
+	$reasons = array();
+
+	// add_media_thumbnails(): sole caller is handle_wp_media_transcoding_callback()
+	// (admin/class-rtgodam-transcoder-rest-routes.php), which already runs entirely
+	// inside its own caller's rtgodam_before/after_attachment_lookup pair (see that
+	// method's own docblock). The checker has no interprocedural tracing, so it
+	// re-flags every access inside a callee whose coverage comes from its caller.
+	foreach ( array( 736, 737, 739, 740, 744, 746, 754, 761, 762, 767, 770, 772 ) as $line ) {
+		$reasons[ "admin/class-rtgodam-transcoder-handler.php:{$line}" ] = 'add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller\'s before/after pair.';
+	}
+
+	// handle_callback()'s 'sureforms-godam-recorder' branch: $form_id comes from
+	// SRFM\...\Entries::get( $entry_id )['form_id'] — a SureForms form ID used only
+	// as a postmeta key to stash the transcoded URL, mirroring the ninja-forms/
+	// sureforms Form_Submit pattern below. Never an attachment ID.
+	$reasons['admin/class-rtgodam-transcoder-rest-routes.php:337'] = 'handle_callback(): $form_id is a SureForms form ID used as a postmeta key (not an attachment ID) to stash the transcoded URL.';
+
+	// handle_wp_media_transcoding_callback(): the extracted body of handle_callback()'s
+	// 'wp-media' branch. Its own docblock records that it always runs with the
+	// centralized media site active — see the before/after pair in the caller.
+	foreach ( array( 449, 451, 457, 471, 476 ) as $line ) {
+		$reasons[ "admin/class-rtgodam-transcoder-rest-routes.php:{$line}" ] = 'handle_wp_media_transcoding_callback(): covered transitively — caller (handle_callback) wraps the entire call in try/finally.';
+	}
+
+	// rtgodam_rtt_set_video_thumbnail(): legacy rtMedia integration. rtMedia is not
+	// present in this codebase (no RTMediaModel / rtmedia_type() / rtmedia_media_id()
+	// defined anywhere) — dead code unless a site separately installs rtMedia, in
+	// which case rtmedia_type()/rtmedia_media_id() would already fatal before this
+	// line is reached. Same determination already made for vj-develop's copy of GoDAM.
+	$reasons['admin/godam-transcoder-actions.php:229'] = 'rtgodam_rtt_set_video_thumbnail(): dead code — rtMedia is not present in this codebase.';
+
+	// godam-player / godam-video-duration / godam-video-thumbnail render.php: this
+	// particular get_post_meta() reads '_godam_attachment_id' off the HOST post the
+	// block is embedded in (global $post / get_the_ID()), to discover which
+	// attachment the block refers to. That's host-post meta, not attachment data —
+	// the genuine attachment-scoped reads later in the video-duration/thumbnail
+	// files already have their own rtgodam_before/after_attachment_lookup pair.
+	$reasons['assets/src/blocks/godam-player/render.php:21']          = "Reads '_godam_attachment_id' off the host post (global \$post), not off the attachment — this is host-post meta, not attachment data.";
+	$reasons['assets/src/blocks/godam-video-duration/render.php:21']  = "Reads '_godam_attachment_id' off the host post (get_the_ID()), not off the attachment — the actual attachment meta read a few lines below already has its own before/after pair.";
+	$reasons['assets/src/blocks/godam-video-thumbnail/render.php:23'] = "Reads '_godam_attachment_id' off the host post (get_the_ID()), not off the attachment — the actual attachment meta read a few lines below already has its own before/after pair.";
+
+	// Media_Usage_Backfill::run_timed_batches(): $post is the host post/page being
+	// scanned for attachment references; Media_Usage_Tracker::POST_META_KEY
+	// ('_godam_tracked_media') is written onto that host post to mark it processed
+	// (mirrors Seo::update_attachment_post_mapping()'s already-established
+	// $post_id-scoped local read/write exclusion). Not attachment data.
+	$reasons['inc/classes/class-media-usage-backfill.php:396'] = "\$post is the host post being scanned; POST_META_KEY is a 'processed' marker written on that host post, not on any attachment.";
+
+	// Seo::sync_seo_for_attachment_posts(): get_post( $post_id ) here reads the HOST
+	// posts referencing the attachment (from the reverse-index meta read a few lines
+	// above, which already has its own before/after pair). Documented in-file as a
+	// known structural limitation, not a hook-fixable gap — the reverse-index meta
+	// stores bare post IDs with no blog_id, so a multi-site reference can only ever
+	// resolve against whichever site is currently active.
+	$reasons['inc/classes/class-seo.php:1141'] = 'sync_seo_for_attachment_posts(): reads HOST posts referencing the attachment (see the docblock note on this exact line) — documented structural limitation, not a hook-fixable gap.';
+
+	// Seo::add_video_seo_schema(): $post_id = get_queried_object_id() — the current
+	// page being viewed. Reads that page's OWN cached SEO schema meta (written by
+	// save_seo_data_as_postmeta against the host page). Not attachment data.
+	$reasons['inc/classes/class-seo.php:443'] = "add_video_seo_schema(): \$post_id is get_queried_object_id() (the current page); reads that page's own cached SEO meta, not attachment data.";
+
+	// Lifter_LMS::has_godam_video_block(): $post_id = get_the_ID() — the current post
+	// in the loop. Reads its own post_content for a godam/video block. Not attachment data.
+	$reasons['inc/classes/lifter-lms/class-lifter-lms.php:139'] = 'has_godam_video_block(): $post_id is get_the_ID() (the current post); reads its own post_content, not attachment data.';
+
+	// Elementor_Gallery_Widget_V1_To_V2::run(): reads/writes '_elementor_data' on
+	// regular Elementor-built pages/posts, prefiltered by a direct SQL LIKE on that
+	// meta key. Attachments are never edited with Elementor, so this key never
+	// appears on an attachment post. One-time migration, gated by its own option.
+	$reasons['inc/classes/migrations/class-elementor-gallery-widget-v1-to-v2.php:128'] = "run(): reads '_elementor_data' on Elementor-built posts/pages (prefiltered by SQL) — never an attachment post type.";
+	$reasons['inc/classes/migrations/class-elementor-gallery-widget-v1-to-v2.php:150'] = "run(): writes '_elementor_data' back to the same Elementor-built posts/pages — never an attachment post type.";
+
+	// Ninja_Forms_Field_Godam_Recorder::handle_transcoding_callback(): despite taking
+	// $attachment_id as its first parameter (unused in the body), the actual
+	// get_post_meta/update_post_meta calls use $entry_id — a Ninja Forms entry ID
+	// used as a postmeta key to stash the transcoded URL, mirroring the sureforms
+	// Form_Submit pattern. Never an attachment ID.
+	$reasons['inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:663'] = "handle_transcoding_callback(): \$entry_id is a Ninja Forms entry ID used as a postmeta key (not the function's own unused \$attachment_id parameter).";
+	$reasons['inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:672'] = "handle_transcoding_callback(): \$entry_id is a Ninja Forms entry ID used as a postmeta key (not the function's own unused \$attachment_id parameter).";
+
+	// Analytics::enrich_placements(): $placement_post_id is the HOST page a video was
+	// placed/embedded on (for the placements table's title/permalink/edit-link), not
+	// an attachment ID.
+	$reasons['inc/classes/rest-api/class-analytics.php:493'] = 'enrich_placements(): $placement_post_id is the host page a video was placed on, not an attachment ID.';
+
+	// Jetpack::get_jetpack_form() / get_rendered_form_html_static(): $post_id is the
+	// HOST post embedding the Jetpack contact-form block (parsed out of a
+	// "{post_id}-{form_number}" composite form ID). Reads $post->post_content for
+	// block parsing — not attachment data.
+	$reasons['inc/classes/rest-api/class-jetpack.php:304'] = 'get_jetpack_form(): $post_id is the host post embedding the Jetpack form block, not an attachment ID.';
+	$reasons['inc/classes/rest-api/class-jetpack.php:434'] = 'get_rendered_form_html_static(): $post_id is the host post embedding the Jetpack form block, not an attachment ID.';
+
+	// Media_Library::create_virtual_attachment_after_lookup(): extracted body of
+	// create_virtual_attachment(), called via try/finally from inside the caller's
+	// own before/after pair. Every line below uses this function's own $attachment_id
+	// parameter (or a value derived from it) — the checker's "own parameter is safe"
+	// exclusion doesn't reach across the extraction boundary into a differently-named
+	// callee, so it re-flags what the caller already covers.
+	foreach ( array( 1853, 1890, 1892, 1896, 1906, 1908, 1909, 1910, 1911, 1912, 1913, 1925, 1941, 1948, 1951, 1967, 1977, 1983, 1990, 1994, 2016, 2020 ) as $line ) {
+		$reasons[ "inc/classes/rest-api/class-media-library.php:{$line}" ] = 'create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.';
+	}
+
+	// Media_Library::update_image_attachment_meta_after_lookup(): same extract-and-wrap
+	// pattern as create_virtual_attachment_after_lookup() above.
+	foreach ( array( 428, 429, 560, 567, 568 ) as $line ) {
+		$reasons[ "inc/classes/rest-api/class-media-library.php:{$line}" ] = 'update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.';
+	}
+
+	// Video_Editor::prioritize_item(): private method, sole call site is inside
+	// get_videos()'s own rtgodam_before/after_attachment_lookup pair (wrapping the
+	// whole query + prepare + prioritize sequence, matching vj-develop's reference
+	// copy of this same file). Covered transitively.
+	$reasons['inc/classes/rest-api/class-video-editor.php:262'] = 'prioritize_item(): covered transitively — sole caller (get_videos) wraps the entire call in its own before/after pair.';
+
+	// GoDAM_Player::maybe_enqueue_lightbox_runtime() (shortcodes): bare get_post() —
+	// the current singular post — then reads that SAME post's own post_content and
+	// '_elementor_data' meta, sniffing for a lightbox trigger marker. Not attachment data.
+	$reasons['inc/classes/shortcodes/class-godam-player.php:235'] = 'maybe_enqueue_lightbox_runtime(): bare get_post() resolves to the current singular post, not an attachment.';
+	$reasons['inc/classes/shortcodes/class-godam-player.php:239'] = "maybe_enqueue_lightbox_runtime(): reads the current post's own '_elementor_data', not attachment data.";
+
+	// Sureforms\Assets::register_scripts(): bare get_post() — the current post being
+	// rendered — checked only for its post_type/post_content to decide whether to
+	// enqueue scripts. Not attachment data.
+	$reasons['inc/classes/sureforms/class-assets.php:53'] = 'register_scripts(): bare get_post() resolves to the current post being rendered, not an attachment.';
+
+	// Sureforms\Form_Submit::render_custom_field_markup(): $form_id is a SureForms
+	// form ID used as a postmeta key to stash/read the transcoded URL (mirrors the
+	// ninja-forms and handle_callback() sureforms-branch patterns above). Never an
+	// attachment ID.
+	$reasons['inc/classes/sureforms/class-form-submit.php:350'] = 'render_custom_field_markup(): $form_id is a SureForms form ID used as a postmeta key, not an attachment ID.';
+
+	return $reasons;
 }
 
 // --- Scan every file once, build the full findings list. ---

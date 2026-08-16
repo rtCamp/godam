@@ -112,6 +112,15 @@ class Retranscode_Failed_Media {
 			// If we have exhausted all retry attempts, mark the attachment as permanently
 			// failed and remove it from the retry queue — persist immediately.
 			if ( $retry_count >= self::MAX_RETRY_ATTEMPTS ) {
+				/**
+				 * Fires before touching this attachment's meta/transcoding
+				 * state, so integrations that centralize media on another
+				 * site can switch context first. $real_attachment_id is a
+				 * genuine attachment ID read from the stored retry queue.
+				 *
+				 * @since 1.8.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
 				update_post_meta( $real_attachment_id, 'rtgodam_transcoding_status', 'failed' );
 				update_post_meta(
 					$real_attachment_id,
@@ -119,6 +128,7 @@ class Retranscode_Failed_Media {
 					// translators: %d is the maximum number of retry attempts.
 					sprintf( __( 'Transcoding failed after %d retry attempts. GoDAM Central returned a server error on each attempt.', 'godam' ), self::MAX_RETRY_ATTEMPTS )
 				);
+				do_action( 'rtgodam_after_attachment_lookup' );
 				unset( $failed_transcoding_attachments[ $attachment_id ] );
 				update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
 				continue;
@@ -132,7 +142,23 @@ class Retranscode_Failed_Media {
 			update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
 
 			$transcoder_handler = new \RTGODAM_Transcoder_Handler();
-			$transcoder_handler->wp_media_transcoding( $attachment['wp_metadata'], $real_attachment_id, $attachment['autoformat'], true );
+
+			/**
+			 * Fires before wp_media_transcoding() reads/writes this
+			 * attachment's meta internally, so integrations that centralize
+			 * media on another site can switch context first — the
+			 * checker's own "parameter is safe" exclusion means this call
+			 * is invisible to it, since $real_attachment_id is a plain,
+			 * unmodified parameter to wp_media_transcoding().
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+			try {
+				$transcoder_handler->wp_media_transcoding( $attachment['wp_metadata'], $real_attachment_id, $attachment['autoformat'], true );
+			} finally {
+				do_action( 'rtgodam_after_attachment_lookup' );
+			}
 			// NOTE: No final update_option here — wp_media_transcoding persists its own
 			// changes (success → removes entry, failure → updates entry) independently.
 		}

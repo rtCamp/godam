@@ -152,9 +152,24 @@ class Transcoding extends Base {
 		$error_msg  = $request->get_param( 'error_msg' );
 		$error_code = $request->get_param( 'error_code' );
 
+		/**
+		 * Fires before resolving/mutating attachment data for this
+		 * transcoding status update, so integrations that centralize media
+		 * on another site can switch context first. The job-ID lookup
+		 * itself needs this too — it's a direct $wpdb->postmeta query, just
+		 * as site-scoped as get_post_meta(). wp_send_json_error()/
+		 * wp_send_json_success() below both terminate via wp_die(), which
+		 * bypasses try/finally, so the after() call is placed explicitly
+		 * right before each one instead of relying on one.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$attachment_id = $this->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 
 		if ( ! $attachment_id ) {
+			do_action( 'rtgodam_after_attachment_lookup' );
 			wp_send_json_error(
 				array(
 					'message' => __( 'Attachment not found.', 'godam' ),
@@ -173,6 +188,7 @@ class Transcoding extends Base {
 		update_post_meta( $attachment_id, 'rtgodam_transcoding_status', $status );
 		update_post_meta( $attachment_id, 'rtgodam_transcoding_progress', $progress );
 
+		do_action( 'rtgodam_after_attachment_lookup' );
 		wp_send_json_success(
 			array(
 				'message' => __( 'Transcoding status updated successfully.', 'godam' ),
@@ -468,6 +484,13 @@ class Transcoding extends Base {
 		$transcode_count   = 0;
 		$retranscode_count = 0;
 
+		/**
+		 * Fires before this per-ID attachment meta loop, so integrations
+		 * that centralize media on another site can switch context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		foreach ( $attachment_ids as $attachment_id ) {
 			$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 			// If transcoded, it should have URL.
@@ -477,6 +500,7 @@ class Transcoding extends Base {
 				++$transcode_count;
 			}
 		}
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return new \WP_REST_Response(
 			array(
@@ -509,6 +533,38 @@ class Transcoding extends Base {
 			);
 		}
 
+		/**
+		 * Fires before resolving/mutating this attachment's transcoding
+		 * state, so integrations that centralize media on another site can
+		 * switch context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->retranscode_media_centralized( $request, $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Does the actual work of retranscode_media(), always running with the
+	 * centralized media site active — see the before/after pair in the
+	 * caller.
+	 *
+	 * Split out (rather than duplicating after_attachment_lookup before each
+	 * of this method's ~7 early returns) so a try/finally in the thin public
+	 * wrapper can't leak a switched site context even if a future edit adds
+	 * more early returns to this body.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param \WP_REST_Request $request       REST request object.
+	 * @param int              $attachment_id Attachment ID.
+	 * @return \WP_REST_Response
+	 */
+	private function retranscode_media_centralized( \WP_REST_Request $request, $attachment_id ) {
 		$title = get_the_title( $attachment_id );
 
 		// Check if local development environment.

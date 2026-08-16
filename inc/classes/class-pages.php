@@ -967,7 +967,17 @@ class Pages {
 			$active_layer_config = array();
 			$analytics_video_id  = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( $analytics_video_id > 0 ) {
+				/**
+				 * Fires before reading this attachment's saved layer meta,
+				 * so integrations that centralize media on another site can
+				 * switch context first.
+				 *
+				 * @since 1.8.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
 				$rtgodam_meta = get_post_meta( $analytics_video_id, 'rtgodam_meta', true );
+				do_action( 'rtgodam_after_attachment_lookup' );
+
 				$saved_layers = is_array( $rtgodam_meta ) && ! empty( $rtgodam_meta['layers'] ) && is_array( $rtgodam_meta['layers'] )
 					? $rtgodam_meta['layers']
 					: array();

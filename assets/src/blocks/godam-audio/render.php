@@ -18,6 +18,18 @@ $godam_audio_title   = ! empty( $attributes['audioTitle'] ) ? $attributes['audio
 $godam_description   = ! empty( $attributes['description'] ) ? $attributes['description'] : '';
 $godam_thumbnail     = ! empty( $attributes['thumbnail'] ) ? esc_url( $attributes['thumbnail'] ) : '';
 
+/**
+ * Fires before reading this attachment's title/thumbnail/chapters/transcript
+ * meta and its audio source URLs (below), so integrations that centralize
+ * media on another site can switch context first. Closed explicitly before
+ * each of this template's early `return`s further down, and again after the
+ * final one, since a bare `return` at file scope doesn't unwind through a
+ * `finally` the way a function's would.
+ *
+ * @since 1.8.0
+ */
+do_action( 'rtgodam_before_attachment_lookup' );
+
 // The [godam_audio] shortcode only passes an id (no title/thumbnail block
 // attributes), so fall back to the attachment's own data — the title and the
 // GoDAM cover stored in rtgodam_media_audio_thumbnail — to match the block.
@@ -113,6 +125,7 @@ $godam_chapters_tabindex   = $godam_chapters_active ? '0' : '-1';
 $godam_transcript_tabindex = $godam_transcript_active ? '0' : '-1';
 
 if ( ! $godam_attachment_id && empty( $godam_src ) ) {
+	do_action( 'rtgodam_after_attachment_lookup' );
 	return;
 }
 
@@ -125,9 +138,12 @@ if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
 	$godam_backup_audio  = wp_get_attachment_url( $godam_attachment_id );
 
 	if ( empty( $godam_primary_audio ) && empty( $godam_backup_audio ) ) {
+		do_action( 'rtgodam_after_attachment_lookup' );
 		return;
 	}
 }
+
+do_action( 'rtgodam_after_attachment_lookup' );
 // Root wrapper: emit a stable `godam-audio` hook class that view.js targets on
 // both render paths. In block context also merge WordPress' block-support
 // attributes (align/spacing/etc.); the [godam_audio] shortcode sets

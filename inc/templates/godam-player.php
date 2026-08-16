@@ -226,6 +226,15 @@ if ( $godam_meta_cache_key && function_exists( 'rtgodam_work_cache_get' ) ) {
 }
 
 if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
+	/**
+	 * Fires before this cache-miss block collects every DB/meta call for
+	 * this attachment, so integrations that centralize media on another
+	 * site can switch context first.
+	 *
+	 * @since 1.8.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+
 	// Cache miss — collect every DB/meta call for this attachment in one pass.
 	$rtgodam_raw_transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $godam_numeric_id );
 	$rtgodam_raw_hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $godam_numeric_id );
@@ -251,6 +260,8 @@ if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
 		'placeholder_single' => get_post_meta( $godam_numeric_id, 'rtgodam_media_video_placeholder_thumbnail', true ),
 		'attachment_meta'    => wp_get_attachment_metadata( $godam_numeric_id ),
 	);
+
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	if ( function_exists( 'rtgodam_work_cache_set' ) && function_exists( 'rtgodam_work_cache_index_add' ) ) {
 		rtgodam_work_cache_set( $godam_meta_cache_key, $godam_attachment_data );
@@ -663,6 +674,14 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
 
 $godam_attachment_title = '';
 
+/**
+ * Fires before this title/filename fallback block, so integrations that
+ * centralize media on another site can switch context first.
+ *
+ * @since 1.8.0
+ */
+do_action( 'rtgodam_before_attachment_lookup' );
+
 if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
 	$godam_attachment_title = get_the_title( $godam_attachment_id );
 } elseif ( ! empty( $godam_original_id ) && is_numeric( $godam_original_id ) ) {
@@ -672,6 +691,8 @@ if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
 if ( empty( $godam_attachment_title ) ) {
 	$godam_attachment_title = basename( get_attached_file( $godam_attachment_id ) );
 }
+
+do_action( 'rtgodam_after_attachment_lookup' );
 
 ?>
 

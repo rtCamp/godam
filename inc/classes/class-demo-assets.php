@@ -217,7 +217,17 @@ class Demo_Assets {
 			return 0;
 		}
 
+		/**
+		 * Fires before writing this attachment's demo-asset marker, so
+		 * integrations that centralize media on another site can switch
+		 * context first — this runs after create_virtual_attachment()'s own
+		 * wrap has already restored.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		update_post_meta( $attach_id, self::KEY_META, $key );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return (int) $attach_id;
 	}

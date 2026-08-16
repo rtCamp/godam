@@ -179,19 +179,33 @@ class RTGODAM_Transcoder_Handler {
 	 * @param int $attachment_id    ID of attachment.
 	 */
 	public function send_transcoding_request( $attachment_id ) {
+		/**
+		 * Fires before reading this attachment's metadata and dispatching
+		 * its transcoding request, so integrations that centralize media on
+		 * another site can switch context first. Hooked to `add_attachment`,
+		 * which can fire synchronously from inside an already-open bracket
+		 * (e.g. create_virtual_attachment()) — this method's own attachment
+		 * reads, and wp_media_transcoding()'s internal ones, both need it.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$metadata = wp_get_attachment_metadata( $attachment_id );
 
-		$metadata = wp_get_attachment_metadata( $attachment_id );
+			$mime_type = get_post_mime_type( $attachment_id );
 
-		$mime_type = get_post_mime_type( $attachment_id );
+			if ( empty( $metadata ) ) {
+				$metadata = array( 'mime_type' => $mime_type );
+			} elseif ( empty( $metadata['mime_type'] ) ) {
+				$metadata['mime_type'] = $mime_type;
+			}
 
-		if ( empty( $metadata ) ) {
-			$metadata = array( 'mime_type' => $mime_type );
-		} elseif ( empty( $metadata['mime_type'] ) ) {
-			$metadata['mime_type'] = $mime_type;
+			// Send the transcoding request.
+			$this->wp_media_transcoding( $metadata, $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		// Send the transcoding request.
-		$this->wp_media_transcoding( $metadata, $attachment_id );
 	}
 
 	/**

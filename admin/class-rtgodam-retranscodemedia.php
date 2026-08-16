@@ -184,6 +184,17 @@ class RTGODAM_RetranscodeMedia {
 					return;
 				}
 
+				/**
+				 * Fires before this per-attachment get_attached_file()/
+				 * get_the_title() loop, so integrations that centralize
+				 * media on another site can switch context first. The
+				 * explicit-IDs branch above doesn't touch attachment data,
+				 * so it isn't wrapped.
+				 *
+				 * @since 1.8.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
+
 				// Generate the list of IDs.
 				$ids = array();
 				foreach ( $media as $i => $each ) {
@@ -198,6 +209,8 @@ class RTGODAM_RetranscodeMedia {
 						);
 					}
 				}
+
+				do_action( 'rtgodam_after_attachment_lookup' );
 			}
 
 			$stopping_text = esc_html__( 'Stopping...', 'godam' );
@@ -370,6 +383,18 @@ class RTGODAM_RetranscodeMedia {
 				// Create the list of image IDs.
 				$usage_info = get_option( 'rtgodam-usage' );
 				$ids        = rtgodam_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+				/**
+				 * Fires before either branch below reads attachment data
+				 * (get_attached_file()/get_the_title(), explicit IDs or the
+				 * fallback WP_Query scan), so integrations that centralize
+				 * media on another site can switch context first. Unlike
+				 * admin_enqueues(), both branches here touch attachment
+				 * data, so both are wrapped.
+				 *
+				 * @since 1.8.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
 				if ( ! empty( $ids ) ) {
 					$media = array_map( 'intval', explode( ',', trim( $ids, ',' ) ) );
 					$ids   = implode( ',', $media );
@@ -390,6 +415,7 @@ class RTGODAM_RetranscodeMedia {
 					$media = $query->get_posts();
 					remove_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
 					if ( empty( $media ) || is_wp_error( $media ) ) {
+						do_action( 'rtgodam_after_attachment_lookup' );
 
 						// translators: Link to the media page.
 						echo '	<p>' . sprintf( esc_html__( "Unable to find any media. Are you sure <a href='%s'>some exist</a>?", 'godam' ), esc_url( admin_url( 'upload.php' ) ) ) . '</p></div>';
@@ -412,6 +438,7 @@ class RTGODAM_RetranscodeMedia {
 					}
 					$ids = implode( ',', $ids );
 				}
+				do_action( 'rtgodam_after_attachment_lookup' );
 
 				if ( empty( $ids ) ) {
 					echo '	<p>' . esc_html__( 'There are no media available to send for transcoding.', 'godam' ) . '</p>';

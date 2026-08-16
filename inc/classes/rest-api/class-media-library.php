@@ -377,6 +377,40 @@ class Media_Library extends Base {
 			return false;
 		}
 
+		/**
+		 * Fires before resolving/mutating attachment data for this image
+		 * subsize update, so integrations that centralize media on another
+		 * site can switch context first. The job-ID fallback lookup below is
+		 * a direct $wpdb->postmeta query, just as site-scoped as
+		 * get_post_meta().
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->update_image_attachment_meta_after_lookup( $sizes, $job_id, $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Resolve the attachment ID (if not already known) and persist the
+	 * generated image subsizes to attachment meta.
+	 *
+	 * Split out of update_image_attachment_meta() so the wp-dam site-switch
+	 * bracket can wrap this entire body — including the job-ID fallback
+	 * lookup, which is itself a raw, site-scoped $wpdb->postmeta query.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param array $sizes         Array of sizes data.
+	 * @param int   $job_id        Job ID, used to resolve $attachment_id when it isn't already known.
+	 * @param int   $attachment_id Attachment ID, or 0/non-numeric to resolve via $job_id.
+	 *
+	 * @return bool True if successful, false otherwise.
+	 */
+	private function update_image_attachment_meta_after_lookup( $sizes, $job_id, $attachment_id ) {
 		if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
 			$attachment_id = rtgodam_get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 		}
@@ -678,8 +712,17 @@ class Media_Library extends Base {
 	public function get_exif_data( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 
+		/**
+		 * Fires before resolving this attachment's file path, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// Get the file path of the image.
 		$file_path = get_attached_file( $attachment_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		if ( ! file_exists( $file_path ) ) {
 			return new \WP_Error( 'image_not_found', __( 'Image file not found.', 'godam' ), array( 'status' => 404 ) );
@@ -751,6 +794,33 @@ class Media_Library extends Base {
 	public function get_video_thumbnails( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->get_video_thumbnails_after_lookup( $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Resolve and return this attachment's video thumbnail data.
+	 *
+	 * Split out of get_video_thumbnails() so the wp-dam site-switch bracket
+	 * can wrap this entire body.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function get_video_thumbnails_after_lookup( $attachment_id ) {
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
 
@@ -953,6 +1023,34 @@ class Media_Library extends Base {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->upload_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Validate and persist a custom video thumbnail for an attachment.
+	 *
+	 * Split out of upload_custom_video_thumbnail() so the wp-dam site-switch
+	 * bracket can wrap this entire body.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $thumbnail_url Thumbnail URL.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function upload_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url ) {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
@@ -1010,6 +1108,34 @@ class Media_Library extends Base {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->remove_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Validate and remove a custom video thumbnail from an attachment.
+	 *
+	 * Split out of remove_custom_video_thumbnail() so the wp-dam site-switch
+	 * bracket can wrap this entire body.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $thumbnail_url Thumbnail URL.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function remove_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url ) {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
@@ -1069,6 +1195,35 @@ class Media_Library extends Base {
 		$thumbnail_url             = $request->get_param( 'thumbnail_url' );
 		$placeholder_thumbnail_url = $request->get_param( 'placeholder_thumbnail_url' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->set_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url, $placeholder_thumbnail_url );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Validate and persist the selected video thumbnail for an attachment.
+	 *
+	 * Split out of set_video_thumbnail() so the wp-dam site-switch bracket
+	 * can wrap this entire body.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param int    $attachment_id             Attachment ID.
+	 * @param string $thumbnail_url             Thumbnail URL.
+	 * @param string $placeholder_thumbnail_url Optional placeholder thumbnail URL.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function set_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url, $placeholder_thumbnail_url ) {
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
 
@@ -1620,10 +1775,22 @@ class Media_Library extends Base {
 			);
 		}
 
+		/**
+		 * Fires before reading this attachment's JS-shaped data, so
+		 * integrations that centralize media on another site can switch
+		 * context first — runs after create_virtual_attachment()'s own wrap
+		 * has already restored.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$attachment_js_data = wp_prepare_attachment_for_js( $attach_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		return new \WP_REST_Response(
 			array(
 				'success'    => true,
-				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
+				'attachment' => $attachment_js_data,
 				'message'    => __( 'Attachment ready', 'godam' ),
 			),
 			200
@@ -1647,6 +1814,35 @@ class Media_Library extends Base {
 	 * @return int|\WP_Error Attachment ID, or WP_Error on failure.
 	 */
 	public function create_virtual_attachment( $data, $opts = array() ) {
+		/**
+		 * Fires before resolving/creating this virtual attachment, so
+		 * integrations that centralize media on another site can switch
+		 * context first — the dedupe lookups and the eventual
+		 * wp_insert_attachment() call all need to run against that site.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->create_virtual_attachment_after_lookup( $data, $opts );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Resolve or create the virtual attachment and populate its metadata.
+	 *
+	 * Split out of create_virtual_attachment() so a wp-dam-style site-switch
+	 * bracket can wrap this entire body.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param array $data GoDAM media data.
+	 * @param array $opts Options (e.g. 'is_demo').
+	 * @return int|\WP_Error Attachment ID, or WP_Error on insert failure.
+	 */
+	private function create_virtual_attachment_after_lookup( $data, $opts = array() ) {
 		$is_demo = ! empty( $opts['is_demo'] );
 
 		// Sanitize the GoDAM ID.

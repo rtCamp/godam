@@ -237,13 +237,28 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		// information in post meta so the site admin can see what went wrong.
 		if ( ! empty( $job_id ) && ! empty( $file_status ) && ( 'error' === $file_status ) ) {
 			if ( 'wp-media' === $job_for ) {
-				$failed_id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
-				if ( ! empty( $failed_id ) && is_numeric( $failed_id ) ) {
-					update_post_meta( $failed_id, 'rtgodam_transcoding_status', 'failed' );
-					// Use rtgodam_transcoding_error_msg so the REST status endpoint can surface it.
-					if ( ! empty( $error_msg ) ) {
-						update_post_meta( $failed_id, 'rtgodam_transcoding_error_msg', sanitize_textarea_field( $error_msg ) );
+				/**
+				 * Fires before resolving/mutating attachment data for a
+				 * failed transcoding job, so integrations that centralize
+				 * media on another site can switch context first. The
+				 * job-ID lookup itself needs this too — it's a direct
+				 * $wpdb->postmeta query, just as site-scoped as
+				 * get_post_meta().
+				 *
+				 * @since 1.8.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
+				try {
+					$failed_id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+					if ( ! empty( $failed_id ) && is_numeric( $failed_id ) ) {
+						update_post_meta( $failed_id, 'rtgodam_transcoding_status', 'failed' );
+						// Use rtgodam_transcoding_error_msg so the REST status endpoint can surface it.
+						if ( ! empty( $error_msg ) ) {
+							update_post_meta( $failed_id, 'rtgodam_transcoding_error_msg', sanitize_textarea_field( $error_msg ) );
+						}
 					}
+				} finally {
+					do_action( 'rtgodam_after_attachment_lookup' );
 				}
 			}
 			return new WP_REST_Response(
@@ -259,103 +274,30 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 		if ( isset( $job_for ) && ( 'wp-media' === $job_for ) ) {
 			if ( isset( $job_id ) ) {
-				$has_thumbs = isset( $thumbnail ) ? true : false;
-
-				$id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
-
-				if ( ! empty( $id ) && is_numeric( $id ) ) {
-					$attachment_id         = $id;
-					$post_array            = $request->get_params();
-					$post_array['post_id'] = $attachment_id;
-
-					// If thumbnail array is empty but thumbnail_url is provided, use it.
-					if ( empty( $post_array['thumbnail'] ) && ! empty( $post_array['thumbnail_url'] ) ) {
-						$post_array['thumbnail'] = array(
-							$post_array['thumbnail_url'],
-						);
-						$has_thumbs              = true;
-					}
-
-					if ( $has_thumbs && ! empty( $post_array['thumbnail'] ) ) {
-						$thumbnail = $this->rtgodam_transcoder_handler->add_media_thumbnails( $post_array );
-					}
-
-					if ( isset( $format ) && 'thumbnail' === $format ) {
-						return new WP_REST_Response( __( 'Thumbnail created successfully.', 'godam' ), 200 );
-					}
-
-					if ( ! empty( $post_array['files'] ) ) {
-						if ( ! empty( $post_array['files']['mpd'] ) ) {
-							update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] );
-
-							delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
-
-							$latest_attachment = get_option( 'rtgodam_new_attachment', false );
-
-							// Save hls url as well.
-							if ( isset( $post_array['hls_path'] ) && ! empty( trim( $post_array['hls_path'] ) ) ) {
-								update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', sanitize_url( $post_array['hls_path'] ) );
-							}
-
-							if ( ! empty( $latest_attachment ) && $latest_attachment['attachment_id'] === $attachment_id ) {
-								$latest_attachment['transcoding_status'] = 'success';
-								update_option( 'rtgodam_new_attachment', $latest_attachment, true );
-							}
-						} else {
-							$this->rtgodam_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
-						}
-					}
-
-					if ( 'pdf' === $job_type && isset( $post_array['download_url'] ) && ! empty( $post_array['download_url'] ) ) {
-						// Setting the transcoded PDF URL.
-						update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
-					}
-
-					if ( 'image' === $job_type && isset( $post_array['download_url'] ) && ! empty( $post_array['download_url'] ) ) {
-						// Setting the transcoded Image URL.
-						update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
-
-						// Request CDN image subsizes and store them in dedicated meta.
-						// This is a secondary async operation; a failure here must not cause a 500 response
-						// to GoDAM Central, which would mark the already-completed transcoding job as failed.
-						$subsize_result = \RTGODAM\Inc\REST_API\Media_Library::get_instance()->request_image_subsizes_for_attachment( $job_id, $attachment_id );
-
-						if ( is_wp_error( $subsize_result ) || empty( $subsize_result ) ) {
-							// translators: %s is replaced with the attachment ID for which subsizes generation failed.
-							error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging the error for debugging purposes.
-								// translators: %s is replaced with the attachment ID for which subsizes generation failed.
-								sprintf( __( 'GoDAM: Failed to request image subsizes for attachment ID %s. The transcoded image URL has been saved; subsizes may be retried separately.', 'godam' ), $attachment_id )
-							);
-
-							$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
-
-							return new WP_REST_Response(
-								array(
-									'success' => false,
-									'message' => __( 'Transcoded image URL saved, but failed to request subsizes.', 'godam' ),
-								),
-								200
-							);
-						}
-					}
-				} else {
-					// The attachment no longer exists (deleted between queuing and callback).
-					// Log for visibility but return 200 so GoDAM Central does not retry or mark
-					// the job as failed due to an error in the callback itself.
-					error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging the error for debugging purposes.
-						sprintf( 'GoDAM: Transcoder callback received for job %s but the corresponding attachment no longer exists. It may have been deleted.', sanitize_text_field( $job_id ) )
-					);
-					$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
-					return new WP_REST_Response(
-						array(
-							'success' => false,
-							'message' => __( 'Attachment not found; it may have been deleted.', 'godam' ),
-						),
-						200
-					);
+				/**
+				 * Fires before resolving/mutating attachment data for this
+				 * transcoding callback, so integrations that centralize
+				 * media on another site can switch context first. The
+				 * job-ID lookup inside handle_wp_media_transcoding_callback()
+				 * needs this too — it's a direct $wpdb->postmeta query, just
+				 * as site-scoped as get_post_meta(), even though it's
+				 * invisible to a checker that only looks for named WP API
+				 * calls.
+				 *
+				 * @since 1.8.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
+				try {
+					$wp_media_result = $this->handle_wp_media_transcoding_callback( $request, $job_id, $job_for, $job_type, $thumbnail, $format );
+				} finally {
+					do_action( 'rtgodam_after_attachment_lookup' );
 				}
 
-				$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
+				if ( $wp_media_result instanceof WP_REST_Response ) {
+					return $wp_media_result;
+				}
+
+				$attachment_id = $wp_media_result;
 			}
 		}
 
@@ -461,6 +403,124 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	}
 
 	/**
+	 * Does the actual work for handle_callback()'s 'wp-media' job_for branch.
+	 * Always runs with the centralized media site active — see the
+	 * before/after pair in the caller.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param \WP_REST_Request $request  The incoming request.
+	 * @param string           $job_id   The transcoding job ID.
+	 * @param string           $job_for  The 'job_for' request param — always 'wp-media' here, passed through unchanged to add_transcoded_files() for parity with the original inline code.
+	 * @param string           $job_type The 'job_type' request param (e.g. 'pdf', 'image').
+	 * @param mixed            $thumbnail The 'thumbnail' request param.
+	 * @param string           $format   The 'format' request param.
+	 * @return WP_REST_Response|string|int A response to return immediately, or the resolved attachment ID (possibly empty) for the caller to continue with.
+	 */
+	private function handle_wp_media_transcoding_callback( \WP_REST_Request $request, $job_id, $job_for, $job_type, $thumbnail, $format ) {
+		$attachment_id = '';
+		$has_thumbs    = isset( $thumbnail ) ? true : false;
+
+		$id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+
+		if ( ! empty( $id ) && is_numeric( $id ) ) {
+			$attachment_id         = $id;
+			$post_array            = $request->get_params();
+			$post_array['post_id'] = $attachment_id;
+
+			// If thumbnail array is empty but thumbnail_url is provided, use it.
+			if ( empty( $post_array['thumbnail'] ) && ! empty( $post_array['thumbnail_url'] ) ) {
+				$post_array['thumbnail'] = array(
+					$post_array['thumbnail_url'],
+				);
+				$has_thumbs              = true;
+			}
+
+			if ( $has_thumbs && ! empty( $post_array['thumbnail'] ) ) {
+				$thumbnail = $this->rtgodam_transcoder_handler->add_media_thumbnails( $post_array );
+			}
+
+			if ( isset( $format ) && 'thumbnail' === $format ) {
+				return new WP_REST_Response( __( 'Thumbnail created successfully.', 'godam' ), 200 );
+			}
+
+			if ( ! empty( $post_array['files'] ) ) {
+				if ( ! empty( $post_array['files']['mpd'] ) ) {
+					update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] );
+
+					delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
+
+					$latest_attachment = get_option( 'rtgodam_new_attachment', false );
+
+					// Save hls url as well.
+					if ( isset( $post_array['hls_path'] ) && ! empty( trim( $post_array['hls_path'] ) ) ) {
+						update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', sanitize_url( $post_array['hls_path'] ) );
+					}
+
+					if ( ! empty( $latest_attachment ) && $latest_attachment['attachment_id'] === $attachment_id ) {
+						$latest_attachment['transcoding_status'] = 'success';
+						update_option( 'rtgodam_new_attachment', $latest_attachment, true );
+					}
+				} else {
+					$this->rtgodam_transcoder_handler->add_transcoded_files( $post_array['files'], $attachment_id, $job_for );
+				}
+			}
+
+			if ( 'pdf' === $job_type && isset( $post_array['download_url'] ) && ! empty( $post_array['download_url'] ) ) {
+				// Setting the transcoded PDF URL.
+				update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
+			}
+
+			if ( 'image' === $job_type && isset( $post_array['download_url'] ) && ! empty( $post_array['download_url'] ) ) {
+				// Setting the transcoded Image URL.
+				update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
+
+				// Request CDN image subsizes and store them in dedicated meta.
+				// This is a secondary async operation; a failure here must not cause a 500 response
+				// to GoDAM Central, which would mark the already-completed transcoding job as failed.
+				$subsize_result = \RTGODAM\Inc\REST_API\Media_Library::get_instance()->request_image_subsizes_for_attachment( $job_id, $attachment_id );
+
+				if ( is_wp_error( $subsize_result ) || empty( $subsize_result ) ) {
+					// translators: %s is replaced with the attachment ID for which subsizes generation failed.
+					error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging the error for debugging purposes.
+						// translators: %s is replaced with the attachment ID for which subsizes generation failed.
+						sprintf( __( 'GoDAM: Failed to request image subsizes for attachment ID %s. The transcoded image URL has been saved; subsizes may be retried separately.', 'godam' ), $attachment_id )
+					);
+
+					$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
+
+					return new WP_REST_Response(
+						array(
+							'success' => false,
+							'message' => __( 'Transcoded image URL saved, but failed to request subsizes.', 'godam' ),
+						),
+						200
+					);
+				}
+			}
+		} else {
+			// The attachment no longer exists (deleted between queuing and callback).
+			// Log for visibility but return 200 so GoDAM Central does not retry or mark
+			// the job as failed due to an error in the callback itself.
+			error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging the error for debugging purposes.
+				sprintf( 'GoDAM: Transcoder callback received for job %s but the corresponding attachment no longer exists. It may have been deleted.', sanitize_text_field( $job_id ) )
+			);
+			$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => __( 'Attachment not found; it may have been deleted.', 'godam' ),
+				),
+				200
+			);
+		}
+
+		$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
+
+		return $attachment_id;
+	}
+
+	/**
 	 * Function to handle the transcription callback request.
 	 *
 	 * @param WP_REST_Request $request Object of WP_REST_Request.
@@ -487,36 +547,50 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			return new WP_Error( 'rtgodam_transcription_error', __( 'Transcript path is required.', 'godam' ), array( 'status' => 400 ) );
 		}
 
-		// Find video attachment by job ID.
-		$attachment_id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+		/**
+		 * Fires before resolving/mutating attachment data for this
+		 * transcription callback, so integrations that centralize media on
+		 * another site can switch context first. The job-ID lookup itself
+		 * needs this too — it's a direct $wpdb->postmeta query, just as
+		 * site-scoped as get_post_meta().
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Find video attachment by job ID.
+			$attachment_id = $this->rtgodam_transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 
-		if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
-			return new WP_Error( 'rtgodam_transcription_error', __( 'Video attachment not found for the provided job ID.', 'godam' ), array( 'status' => 404 ) );
-		}
+			if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
+				return new WP_Error( 'rtgodam_transcription_error', __( 'Video attachment not found for the provided job ID.', 'godam' ), array( 'status' => 404 ) );
+			}
 
-		// If status is "Transcribed", save the transcript path.
-		if ( 'Transcribed' === $transcription_status ) {
-			// Save transcript path as post meta.
-			// The transcript_path parameter is already sanitized by the REST API framework via esc_url_raw sanitize_callback.
-			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+			// If status is "Transcribed", save the transcript path.
+			if ( 'Transcribed' === $transcription_status ) {
+				// Save transcript path as post meta.
+				// The transcript_path parameter is already sanitized by the REST API framework via esc_url_raw sanitize_callback.
+				update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
 
+				return new WP_REST_Response(
+					array(
+						'success' => true,
+						'message' => __( 'Transcript path saved successfully.', 'godam' ),
+					),
+					200
+				);
+			}
+
+			// Return success response even if status is not "Transcribed" (e.g., "Processing", "Failed", etc.).
 			return new WP_REST_Response(
 				array(
 					'success' => true,
-					'message' => __( 'Transcript path saved successfully.', 'godam' ),
+					'message' => __( 'Transcription callback received.', 'godam' ),
 				),
 				200
 			);
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		// Return success response even if status is not "Transcribed" (e.g., "Processing", "Failed", etc.).
-		return new WP_REST_Response(
-			array(
-				'success' => true,
-				'message' => __( 'Transcription callback received.', 'godam' ),
-			),
-			200
-		);
 	}
 
 	/**

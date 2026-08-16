@@ -22,8 +22,17 @@ if ( $godam_video_post_id ) {
 	// Get attachment ID from post meta.
 	$godam_attachment_id = get_post_meta( $godam_video_post_id, '_godam_attachment_id', true );
 
+	/**
+	 * Fires before reading this attachment's thumbnail meta, so
+	 * integrations that centralize media on another site can switch context
+	 * first.
+	 *
+	 * @since 1.8.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
 	// Get thumbnail URL directly from attachment's meta.
 	$godam_thumbnail_url = get_post_meta( $godam_attachment_id, 'rtgodam_media_video_thumbnail', true );
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	// Set alt text to the post title.
 	$godam_alt_text = get_the_title();

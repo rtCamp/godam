@@ -677,6 +677,16 @@ class Video_Migration extends Base {
 			if ( 'core/video' === $block_name ) {
 				$attrs         = $block['attrs'] ?? array();
 				$attachment_id = isset( $attrs['id'] ) ? (int) $attrs['id'] : 0;
+
+				/**
+				 * Fires before reading this attachment's URL/sources/SEO
+				 * data, so integrations that centralize media on another
+				 * site can switch context first.
+				 *
+				 * @since 1.8.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
+
 				if ( $attachment_id ) {
 					$attrs['src'] = wp_get_attachment_url( $attachment_id );
 				}
@@ -685,6 +695,15 @@ class Video_Migration extends Base {
 
 				// Build default SEO data so the migrated block has SEO populated.
 				$seo_data = $this->build_default_seo_data( $attachment_id, $attrs, $sources );
+
+				/**
+				 * Fires after reading this attachment's data, so
+				 * integrations can restore the site context switched in
+				 * `rtgodam_before_attachment_lookup`.
+				 *
+				 * @since 1.8.0
+				 */
+				do_action( 'rtgodam_after_attachment_lookup' );
 
 				// Transform to custom block with attributes.
 				$block = array(
@@ -782,13 +801,43 @@ class Video_Migration extends Base {
 						$attachment_id = $this->create_attachment_from_vimeo_video( $vimeo_url );
 
 						if ( ! is_wp_error( $attachment_id ) ) {
+							/**
+							 * Fires before reading the migrated attachment's
+							 * URL/sources/SEO data, so integrations that
+							 * centralize media on another site can switch
+							 * context first — this runs after
+							 * create_attachment_from_vimeo_video()'s own
+							 * wrap has already restored.
+							 *
+							 * @since 1.8.0
+							 */
+							do_action( 'rtgodam_before_attachment_lookup' );
 							$video_url = wp_get_attachment_url( $attachment_id );
+							$sources   = array();
+							$seo_data  = array();
+
 							if ( ! empty( $video_url ) ) {
 								$sources = $this->build_video_sources_array( $attachment_id );
 
 								// Build default SEO data so the migrated block has SEO populated.
 								$seo_data = $this->build_default_seo_data( $attachment_id, $attrs, $sources );
+							}
 
+							/**
+							 * Fires after reading the migrated attachment's
+							 * data, so integrations can restore the site
+							 * context switched in
+							 * `rtgodam_before_attachment_lookup`. Fired
+							 * unconditionally — unlike the block-building
+							 * below, which only runs when $video_url
+							 * resolved — so the switch is always restored
+							 * regardless of that outcome.
+							 *
+							 * @since 1.8.0
+							 */
+							do_action( 'rtgodam_after_attachment_lookup' );
+
+							if ( ! empty( $video_url ) ) {
 								$block = array(
 									'blockName'    => 'godam/video',
 									'attrs'        => array(
@@ -1171,41 +1220,54 @@ class Video_Migration extends Base {
 		// Check if job ID exists in the response and look for existing attachment.
 		$job_id = $video_info['name'] ?? null;
 
-		if ( ! empty( $job_id ) ) {
-			// Check if attachment with this job ID already exists.
-			if ( class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
-				$transcoder_handler = new \RTGODAM_Transcoder_Handler();
-				if ( method_exists( $transcoder_handler, 'get_post_id_by_meta_key_and_value' ) ) {
-					$existing_attachment_id = $transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+		/**
+		 * Fires before the dedupe lookup and the eventual wp_insert_attachment()
+		 * call, so integrations that centralize media on another site can
+		 * switch context first — deliberately fired only after the SaaS
+		 * HTTP call above returns, so the switch isn't held open across it.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			if ( ! empty( $job_id ) ) {
+				// Check if attachment with this job ID already exists.
+				if ( class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
+					$transcoder_handler = new \RTGODAM_Transcoder_Handler();
+					if ( method_exists( $transcoder_handler, 'get_post_id_by_meta_key_and_value' ) ) {
+						$existing_attachment_id = $transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 
-					if ( $existing_attachment_id ) {
-						// Replace all video metadata for existing attachment when JOB ID is present.
-						$this->update_video_metadata_from_vimeo_info( $existing_attachment_id, $video_info, $job_id );
-						return $existing_attachment_id;
+						if ( $existing_attachment_id ) {
+							// Replace all video metadata for existing attachment when JOB ID is present.
+							$this->update_video_metadata_from_vimeo_info( $existing_attachment_id, $video_info, $job_id );
+							return $existing_attachment_id;
+						}
 					}
 				}
 			}
-		}
 
-		// Prepare attachment data for new attachment.
-		$attachment = array(
-			'post_mime_type' => 'video/mp4',
-			'post_title'     => $video_info['title'] ?? $video_info['orignal_file_name'] ?? '',
-			'post_content'   => $video_info['description'] ?? '',
-			'post_status'    => 'inherit',
-		);
+			// Prepare attachment data for new attachment.
+			$attachment = array(
+				'post_mime_type' => 'video/mp4',
+				'post_title'     => $video_info['title'] ?? $video_info['orignal_file_name'] ?? '',
+				'post_content'   => $video_info['description'] ?? '',
+				'post_status'    => 'inherit',
+			);
 
-		// Insert the attachment.
-		$attachment_id = wp_insert_attachment( $attachment );
+			// Insert the attachment.
+			$attachment_id = wp_insert_attachment( $attachment );
 
-		if ( is_wp_error( $attachment_id ) ) {
+			if ( is_wp_error( $attachment_id ) ) {
+				return $attachment_id;
+			}
+
+			// Update video metadata using the new reusable function.
+			$this->update_video_metadata_from_vimeo_info( $attachment_id, $video_info, $job_id );
+
 			return $attachment_id;
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		// Update video metadata using the new reusable function.
-		$this->update_video_metadata_from_vimeo_info( $attachment_id, $video_info, $job_id );
-
-		return $attachment_id;
 	}
 
 	/**

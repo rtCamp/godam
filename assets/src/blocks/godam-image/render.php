@@ -25,6 +25,16 @@ $godam_height        = ! empty( $attributes['height'] ) ? intval( $attributes['h
 // The toggle defaults to on when the attribute is absent.
 $godam_show_layers = ! array_key_exists( 'showImageLayers', $attributes ) || ! empty( $attributes['showImageLayers'] );
 
+/**
+ * Fires before reading this attachment's URL/alt/dimensions, so integrations
+ * that centralize media on another site can switch context first. Closed
+ * explicitly before the early `return` just below (a bare `return` at file
+ * scope doesn't unwind through a `finally`), not held open across it.
+ *
+ * @since 1.8.0
+ */
+do_action( 'rtgodam_before_attachment_lookup' );
+
 // Fall back to the attachment's own URL / alt / dimensions when not stored on
 // the block (e.g. a copied block that carries only the id).
 if ( $godam_attachment_id ) {
@@ -43,6 +53,8 @@ if ( $godam_attachment_id ) {
 	}
 }
 
+do_action( 'rtgodam_after_attachment_lookup' );
+
 if ( empty( $godam_src ) ) {
 	return '';
 }
@@ -51,8 +63,16 @@ if ( empty( $godam_src ) ) {
 // timeline, so all layers are always visible.
 $godam_layers = array();
 if ( $godam_show_layers && $godam_attachment_id ) {
+	/**
+	 * Fires before reading this attachment's layer meta, so integrations
+	 * that centralize media on another site can switch context first.
+	 *
+	 * @since 1.8.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
 	$godam_meta       = get_post_meta( $godam_attachment_id, 'rtgodam_meta', true );
 	$godam_all_layers = ( is_array( $godam_meta ) && ! empty( $godam_meta['layers'] ) ) ? $godam_meta['layers'] : array();
+	do_action( 'rtgodam_after_attachment_lookup' );
 	foreach ( $godam_all_layers as $godam_layer ) {
 		if ( ! is_array( $godam_layer ) || empty( $godam_layer['type'] ) ) {
 			continue;

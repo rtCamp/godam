@@ -233,6 +233,16 @@ class Media_Library_Ajax {
 			}
 		}
 
+		/**
+		 * Fires before reading this attachment's transcoding/virtual-media
+		 * meta, so integrations that centralize media on another site can
+		 * switch context first. Hooked to `add_attachment`, which can fire
+		 * synchronously from inside an already-open bracket (e.g.
+		 * create_virtual_attachment()).
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 
 		// Check virtual media status for transcoding requests.
@@ -241,14 +251,17 @@ class Media_Library_Ajax {
 
 		// Skip transcoding for virtual media.
 		if ( $is_virtual_media ) {
+			do_action( 'rtgodam_after_attachment_lookup' );
 			return;
 		}
 
 		// Only if attachment type is image.
 		$mime_type = get_post_mime_type( $attachment_id );
 		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
+			do_action( 'rtgodam_after_attachment_lookup' );
 			return;
 		}
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Check if HTTP auth is enabled.
 		if ( rtgodam_has_http_auth() ) {
@@ -264,9 +277,11 @@ class Media_Library_Ajax {
 			}
 
 			// Update status to failed.
+			do_action( 'rtgodam_before_attachment_lookup' );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', __( 'HTTP authentication is enabled on your site, preventing transcoding.', 'godam' ) );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', 'http_auth_enabled' );
+			do_action( 'rtgodam_after_attachment_lookup' );
 
 			return;
 		}
@@ -279,6 +294,14 @@ class Media_Library_Ajax {
 
 		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
 
+		/**
+		 * Fires before reading this attachment's URL/title/author, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$attachment_url = wp_get_attachment_url( $attachment_id );
 
 		$file_title = get_the_title( $attachment_id );
@@ -304,6 +327,7 @@ class Media_Library_Ajax {
 				$author_first_name = $attachment_author->user_login ?? '';
 			}
 		}
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
 			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant

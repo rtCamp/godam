@@ -121,7 +121,19 @@ class Transcription extends Base {
 		if ( empty( $attachment_id ) ) {
 			return current_user_can( 'upload_files' );
 		}
-		return current_user_can( 'edit_post', $attachment_id );
+
+		/**
+		 * Fires before this attachment-specific capability check, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$can_edit = current_user_can( 'edit_post', $attachment_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		return $can_edit;
 	}
 
 	/**
@@ -132,6 +144,15 @@ class Transcription extends Base {
 	 */
 	public function get_transcription( \WP_REST_Request $request ) {
 		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
+
+		/**
+		 * Fires before reading this attachment's transcript meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 
 		// Locally-stored transcript takes precedence.
 		$path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
@@ -144,6 +165,8 @@ class Transcription extends Base {
 		}
 
 		$status = $path ? 'Transcribed' : (string) get_post_meta( $attachment_id, self::STATUS_META, true );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return rest_ensure_response( $this->shape( $path, $status ) );
 	}
@@ -158,10 +181,21 @@ class Transcription extends Base {
 	public function generate_transcription( \WP_REST_Request $request ) {
 		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
 
+		/**
+		 * Fires before reading this attachment's job-ID meta, so integrations
+		 * that centralize media on another site can switch context first.
+		 * Closed immediately after (not held open across the SaaS HTTP call
+		 * below) — see the second, separate pair around the meta writes
+		 * further down.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 		if ( empty( $job_id ) ) {
 			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
 		}
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		if ( empty( $job_id ) ) {
 			return new \WP_Error(
@@ -208,6 +242,15 @@ class Transcription extends Base {
 		$status         = isset( $payload['status'] ) ? sanitize_text_field( $payload['status'] ) : '';
 		$current_status = isset( $payload['current_status'] ) ? sanitize_text_field( $payload['current_status'] ) : '';
 
+		/**
+		 * Fires before writing this attachment's transcript/status meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first — a second, separate pair from the one above, so
+		 * the switch isn't held open across the SaaS HTTP call in between.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		if ( ! empty( $path ) ) {
 			// A (re)generated transcript supersedes any prior delete.
 			delete_post_meta( $attachment_id, self::DELETED_META );
@@ -221,6 +264,7 @@ class Transcription extends Base {
 			$track = $current_status ? $current_status : $status;
 			update_post_meta( $attachment_id, self::STATUS_META, $track );
 		}
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return rest_ensure_response(
 			array(
@@ -253,10 +297,19 @@ class Transcription extends Base {
 			);
 		}
 
+		/**
+		 * Fires before writing this attachment's transcript meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// An uploaded transcript supersedes any prior delete.
 		delete_post_meta( $attachment_id, self::DELETED_META );
 		update_post_meta( $attachment_id, 'rtgodam_transcript_path', $url );
 		update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return rest_ensure_response( $this->shape( $url, 'Transcribed' ) );
 	}
@@ -270,10 +323,19 @@ class Transcription extends Base {
 	public function delete_transcription( \WP_REST_Request $request ) {
 		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
 
+		/**
+		 * Fires before deleting/writing this attachment's transcript meta,
+		 * so integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcript_path' );
 		delete_post_meta( $attachment_id, self::STATUS_META );
 		// Mark as deleted so GET won't auto-resurrect it from the SaaS.
 		update_post_meta( $attachment_id, self::DELETED_META, '1' );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return rest_ensure_response( $this->shape( '', '' ) );
 	}

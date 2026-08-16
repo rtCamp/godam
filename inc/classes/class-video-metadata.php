@@ -229,14 +229,30 @@ class Video_Metadata {
 		add_filter(
 			'wp_get_attachment_url',
 			function ( $url, $post_id ) {
-				$is_vimeo_migrated = get_post_meta( $post_id, 'rtgodam_is_migrated_vimeo_video', true );
-				if ( $is_vimeo_migrated ) {
-					$remote_url = get_post_meta( $post_id, '_wp_attached_file', true );
-					if ( ! empty( $remote_url ) ) {
-						return $remote_url;
+				/**
+				 * Fires before reading this attachment's meta, so
+				 * integrations that centralize media on another site can
+				 * switch context first. This filter runs on every
+				 * wp_get_attachment_url() call plugin-wide, including ones
+				 * GoDAM doesn't control (WP core, other plugins) —
+				 * self-wrapped so it's correct regardless of who triggered
+				 * it.
+				 *
+				 * @since 1.8.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
+				try {
+					$is_vimeo_migrated = get_post_meta( $post_id, 'rtgodam_is_migrated_vimeo_video', true );
+					if ( $is_vimeo_migrated ) {
+						$remote_url = get_post_meta( $post_id, '_wp_attached_file', true );
+						if ( ! empty( $remote_url ) ) {
+							return $remote_url;
+						}
 					}
+					return $url;
+				} finally {
+					do_action( 'rtgodam_after_attachment_lookup' );
 				}
-				return $url;
 			},
 			10,
 			2

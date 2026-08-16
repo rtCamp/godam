@@ -1037,6 +1037,18 @@ class Seo {
 		$previous_attachments = get_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, true );
 		$previous_attachments = is_array( $previous_attachments ) ? $previous_attachments : array();
 
+		/**
+		 * Fires before touching any attachment's reverse-index meta below,
+		 * so integrations that centralize media on another site can switch
+		 * context first. Deliberately does NOT wrap this method's own
+		 * $post_id reads/writes (POST_ATTACHMENTS_META_KEY, above and
+		 * below) — that's the current post being saved, not attachment
+		 * data, and stays local.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		// Remove post from old attachments' mapping.
 		$removed_attachments = array_diff( $previous_attachments, $attachments );
 		foreach ( $removed_attachments as $attachment_id ) {
@@ -1060,6 +1072,8 @@ class Seo {
 				update_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, $posts_using );
 			}
 		}
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Update post's attachment list.
 		if ( ! empty( $attachments ) ) {
@@ -1101,7 +1115,23 @@ class Seo {
 	 * @param int $attachment_id The attachment ID.
 	 */
 	public function sync_seo_for_attachment_posts( $attachment_id ) {
+		/**
+		 * Fires before reading this attachment's reverse-index meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * NOTE: $posts_using is a flat list of post IDs with no blog_id
+		 * recorded alongside them, so if this attachment is referenced from
+		 * more than one site in the network, get_post() below only ever
+		 * resolves against whichever site is currently active — not a
+		 * hook-fixable gap; would need this meta to store [blog_id, post_id]
+		 * pairs instead of bare IDs.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		if ( empty( $posts_using ) || ! is_array( $posts_using ) ) {
 			return;

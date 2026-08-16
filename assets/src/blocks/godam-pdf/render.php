@@ -26,6 +26,15 @@ if ( ! $godam_attachment_id && empty( $godam_src ) ) {
 	return;
 }
 
+/**
+ * Fires before reading this attachment's URL/transcoded-URL/title, so
+ * integrations that centralize media on another site can switch context
+ * first.
+ *
+ * @since 1.8.0
+ */
+do_action( 'rtgodam_before_attachment_lookup' );
+
 // Build the list of PDF sources (transcoded first, then original).
 $godam_sources = array();
 if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
@@ -46,6 +55,8 @@ if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
 } else {
 	$godam_sources[] = $godam_src;
 }
+
+do_action( 'rtgodam_after_attachment_lookup' );
 
 if ( empty( $godam_sources ) ) {
 	return;
@@ -95,12 +106,14 @@ if ( empty( $godam_is_shortcode ) ) {
 			if ( $godam_custom_cover ) {
 				$godam_cover_url = $godam_custom_cover;
 			} elseif ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
+				do_action( 'rtgodam_before_attachment_lookup' );
 				// Mirror set_media_library_thumbnail(): video thumbnail (transcoding callback)
 				// takes priority over pdf-specific key (GoDAM tab import).
 				$godam_thumb = get_post_meta( $godam_attachment_id, 'rtgodam_media_video_thumbnail', true );
 				if ( empty( $godam_thumb ) ) {
 					$godam_thumb = get_post_meta( $godam_attachment_id, 'rtgodam_media_pdf_thumbnail', true );
 				}
+				do_action( 'rtgodam_after_attachment_lookup' );
 				if ( $godam_thumb ) {
 					$godam_cover_url = $godam_thumb; // escaped at output below.
 				}
@@ -149,6 +162,7 @@ if ( empty( $godam_is_shortcode ) ) {
 							$godam_meta_parts[] = sprintf( _n( '%d page', '%d pages', $godam_page_count, 'godam' ), $godam_page_count );
 						}
 						if ( $godam_attachment_id ) {
+							do_action( 'rtgodam_before_attachment_lookup' );
 							// wp_get_attachment_metadata() stores filesize in the DB —
 							// works even when files are on S3 / CDN (no local file needed).
 							$godam_att_meta = wp_get_attachment_metadata( $godam_attachment_id );
@@ -160,6 +174,7 @@ if ( empty( $godam_is_shortcode ) ) {
 									$godam_filesize = filesize( $godam_local );
 								}
 							}
+							do_action( 'rtgodam_after_attachment_lookup' );
 							if ( $godam_filesize ) {
 								$godam_meta_parts[] = $godam_filesize < 1048576
 									? round( $godam_filesize / 1024 ) . ' KB'
