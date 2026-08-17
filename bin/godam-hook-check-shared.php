@@ -300,6 +300,28 @@ function godam_shared_unqualified_name( $text ) {
  * (`function \Foo\bar()` isn't valid PHP), so this also can't newly
  * misidentify a declaration as a call.
  *
+ * Also excludes a `new ClassName(` instantiation (bare or qualified — the
+ * exclusion checks the PRECEDING token, T_NEW, regardless of the class
+ * name's own token type): a class and a free function can share the exact
+ * same bare name (they live in separate PHP symbol tables even without
+ * namespaces), so without this, `new Helper()` was indistinguishable from a
+ * genuine call to a function ALSO named Helper. Every one of this file's
+ * fixed tracked-name lists built on this function (GODAM_HOOK_FIRE_FUNCTIONS,
+ * GODAM_TERMINATOR_FUNCTIONS, GODAM_DEFERRED_CALLBACK_FUNCTIONS, get_posts()/
+ * get_children(), the coverage-checker's ACCESS_FUNCTIONS) shares this exact
+ * risk — confirmed via a synthetic fixture before this exclusion was added:
+ * `new do_action( 'rtgodam_before_attachment_lookup' )` fooled
+ * godam_shared_is_hook_fire_at() into treating a bracket as open, silently
+ * hiding an otherwise-genuinely-uncovered get_post_meta() call right after
+ * it — total disappearance, not a misclassification. No class in this
+ * codebase collides with any of these WP-core names today (verified via
+ * grep), but unlike that check, excluding `new` here costs nothing for any
+ * real, legitimate call — a genuine call to any of these functions is never
+ * preceded by `new` — so there's no tradeoff to weigh the way there was for
+ * the (deliberately un-widened) known_call_targets checks elsewhere, which
+ * track arbitrary codebase-defined names a real class could far more
+ * plausibly share.
+ *
  * @param array[] $tokens Full token list for the file.
  * @param int     $i      Index to check.
  * @param array   $names  Function names to match.
@@ -318,7 +340,12 @@ function godam_shared_is_call_to( $tokens, $i, $names, $count ) {
 	}
 
 	$n = godam_shared_skip_forward( $tokens, $i + 1, $count );
-	return $n < $count && '(' === $tokens[ $n ]['text'];
+	if ( $n >= $count || '(' !== $tokens[ $n ]['text'] ) {
+		return false;
+	}
+
+	$p = godam_shared_skip_backward( $tokens, $i - 1 );
+	return ! ( $p >= 0 && T_NEW === ( $tokens[ $p ]['id'] ?? null ) );
 }
 
 /**
