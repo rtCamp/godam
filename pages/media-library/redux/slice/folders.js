@@ -193,7 +193,19 @@ const slice = createSlice( {
 			const replace = ! Array.isArray( payload ) && Boolean( payload?.replace );
 
 			if ( replace || state.folders.length === 0 ) {
-				state.folders = newFolders;
+				// Sort a mutable copy: `newFolders` comes straight from the RTK Query cache,
+				// which is frozen (read-only), so sorting it in place throws. The server
+				// always returns name ASC; re-applying the active sort keeps a "By Name (Z-A)"
+				// selection from silently resetting to A-Z when the list is replaced.
+				const sorted = [ ...newFolders ];
+
+				if ( 'name-desc' === state.sortOrder ) {
+					sorted.sort( ( a, b ) => a.name.localeCompare( b.name ) * -1 );
+				} else if ( 'name-asc' === state.sortOrder ) {
+					sorted.sort( ( a, b ) => a.name.localeCompare( b.name ) );
+				}
+
+				state.folders = sorted;
 				return;
 			}
 
@@ -405,11 +417,11 @@ const slice = createSlice( {
 				type: 'success',
 			};
 
-			// Reset page to first page
-			state.page.current = 1;
-
-			// Note: We preserve folders, bookmarks, lockedFolders, and sortOrder
-			// for performance and user experience
+			// NOTE: page.current is intentionally NOT reset here. We preserve the loaded
+			// folders (and bookmarks/lockedFolders/sortOrder) across modal open/close for
+			// performance and UX — resetting the page to 1 while keeping those folders made
+			// the sync effect re-fetch page 1 and REPLACE the tree with just the first page,
+			// collapsing everything the user had loaded via "Load more".
 		},
 	},
 } );

@@ -153,9 +153,10 @@ export const folderApi = createApi( {
 					'X-WP-Nonce': window.MediaLibrary.nonce,
 				},
 			} ),
-			// Refetch the authoritative folder list after list-changing mutations so the
-			// tree reconciles (create adds, delete removes) instead of drifting from cache.
-			invalidatesTags: [ 'Folder' ],
+			// NOTE: intentionally NOT invalidating 'Folder' here. The createFolder reducer
+			// pushes the new folder optimistically; a refetch would replace page 1 with the
+			// server's first 20 (name ASC) and drop a freshly-created folder that sorts onto
+			// a later page until Load More / reload.
 		} ),
 		updateFolder: builder.mutation( {
 			query: ( data ) => ( {

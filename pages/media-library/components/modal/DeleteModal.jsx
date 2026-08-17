@@ -56,17 +56,21 @@ const DeleteModal = () => {
 			// folder from the tree even though it still exists on the server. unwrap()
 			// re-throws the error payload so failures reach the catch (matching how
 			// Rename/Create already handle their mutations).
+			let partialMessage = null;
+
 			if ( ! isMultiSelecting ) {
 				await deleteFolderMutation( selectedFolder.id ).unwrap();
 			} else if ( multiSelectedFolderIds && multiSelectedFolderIds.length ) {
 				// The bulk endpoint returns HTTP 200 with `errors` on *partial* failure, so
-				// .unwrap() alone won't throw — inspect the payload and surface it as a
-				// failure rather than reporting "deleted successfully" and dropping every
-				// selected folder from the tree.
+				// .unwrap() alone won't throw. On a partial failure we still remove the whole
+				// selection optimistically and surface a WARNING (not "deleted successfully");
+				// the invalidation refetch below re-adds any folder that wasn't actually
+				// deleted, so successfully-deleted folders don't linger (even on load-more
+				// pages, where the reducer removes them from the flat list).
 				const bulkResult = await bulkDeleteFoldersMutation( multiSelectedFolderIds ).unwrap();
 
 				if ( bulkResult?.errors?.length ) {
-					throw new Error( bulkResult.message || __( 'Some folders could not be deleted', 'godam' ) );
+					partialMessage = bulkResult.message || __( 'Some folders could not be deleted', 'godam' );
 				}
 			}
 
@@ -74,8 +78,8 @@ const DeleteModal = () => {
 
 			dispatch( updateSnackbar(
 				{
-					message: isMultiSelecting ? __( 'Folders deleted successfully', 'godam' ) : __( 'Folder deleted successfully', 'godam' ),
-					type: 'success',
+					message: partialMessage || ( isMultiSelecting ? __( 'Folders deleted successfully', 'godam' ) : __( 'Folder deleted successfully', 'godam' ) ),
+					type: partialMessage ? 'fail' : 'success',
 				},
 			) );
 
