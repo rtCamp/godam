@@ -24,6 +24,35 @@ class Transcoding extends Base {
 	protected $rest_base = 'transcoding';
 
 	/**
+	 * Media types that can be fetched for transcoding, mapped to the MIME types they cover.
+	 *
+	 * The keys are the accepted values of the `media_type` parameter on the
+	 * `not-transcoded` route. `all` covers only the types the retranscode trigger
+	 * actually supports, not every MIME type in the media library: handing an
+	 * unsupported type to the transcoder is a no-op that surfaces as an unknown error.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @var array<string, string[]>
+	 */
+	const MEDIA_TYPE_MIME_MAP = array(
+		'all'   => array( 'video', 'audio', 'application/pdf', 'image' ),
+		'video' => array( 'video' ),
+		'audio' => array( 'audio' ),
+		'pdf'   => array( 'application/pdf' ),
+		'image' => array( 'image' ),
+	);
+
+	/**
+	 * Default media type used when none is provided.
+	 *
+	 * @since 2.1.2
+	 *
+	 * @var string
+	 */
+	const DEFAULT_MEDIA_TYPE = 'video';
+
+	/**
 	 * Register custom REST API.
 	 *
 	 * @return array Array of registered REST API routes
@@ -104,6 +133,16 @@ class Transcoding extends Base {
 					'permission_callback' => function () {
 						return current_user_can( 'edit_others_posts' );
 					},
+					'args'                => array(
+						'media_type' => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => self::DEFAULT_MEDIA_TYPE,
+							'enum'              => array_keys( self::MEDIA_TYPE_MIME_MAP ),
+							'description'       => __( 'The type of media to fetch for transcoding.', 'godam' ),
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
 				),
 			),
 			array(
@@ -353,6 +392,15 @@ class Transcoding extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function get_media_require_retranscoding( $request ) {
+		$media_type = $request->get_param( 'media_type' );
+
+		// The route validates against MEDIA_TYPE_MIME_MAP, but stay safe for direct calls.
+		if ( ! isset( self::MEDIA_TYPE_MIME_MAP[ $media_type ] ) ) {
+			$media_type = self::DEFAULT_MEDIA_TYPE;
+		}
+
+		$mime_types = self::MEDIA_TYPE_MIME_MAP[ $media_type ];
+
 		// Check if storage limits are exceeded (only storage blocks transcoding).
 		$user_data = rtgodam_get_user_data();
 		if ( ! empty( $user_data ) && isset( $user_data['storage_used'], $user_data['total_storage'] ) ) {
@@ -362,7 +410,8 @@ class Transcoding extends Base {
 				return new \WP_REST_Response(
 					array(
 						'data'              => array(),
-						'total_media_count' => array_sum( (array) wp_count_attachments( 'video' ) ),
+						'total_media_count' => array_sum( (array) wp_count_attachments( $mime_types ) ),
+						'media_type'        => $media_type,
 						'storage_exceeded'  => true,
 						'message'           => sprintf(
 							// translators: %s is the storage usage percentage.
@@ -384,7 +433,7 @@ class Transcoding extends Base {
 		do {
 			$args = array(
 				'post_type'      => 'attachment',
-				'post_mime_type' => 'video',
+				'post_mime_type' => $mime_types,
 				'post_status'    => 'any',
 				'posts_per_page' => $per_page,
 				'paged'          => $paged,
@@ -397,7 +446,7 @@ class Transcoding extends Base {
 				),
 			);
 
-			// If force is set, fetch all video regardless of transcoded_url.
+			// If force is set, fetch all media of the selected type regardless of transcoded_url.
 			if ( $force ) {
 				// remove the meta query condition.
 				$args['meta_query'] = null; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- False positive check for meta query.
@@ -414,12 +463,12 @@ class Transcoding extends Base {
 		} while ( true );
 
 		// Get counts for transcoded and untranscoded media.
-		$total_video_count = array_sum( (array) wp_count_attachments( 'video' ) );
+		$total_media_count = array_sum( (array) wp_count_attachments( $mime_types ) );
 
 		// Count transcoded media (have rtgodam_transcoded_url meta).
 		$transcoded_args  = array(
 			'post_type'      => 'attachment',
-			'post_mime_type' => 'video',
+			'post_mime_type' => $mime_types,
 			'post_status'    => 'any',
 			'posts_per_page' => 1,
 			'fields'         => 'ids',
@@ -435,14 +484,15 @@ class Transcoding extends Base {
 		$transcoded_count = $transcoded_query->found_posts; // This will return the number of posts that have the rtgodam_transcoded_url meta.
 
 		// Count untranscoded media (don't have rtgodam_transcoded_url meta).
-		$untranscoded_count = $total_video_count - $transcoded_count;
+		$untranscoded_count = $total_media_count - $transcoded_count;
 
 		return new \WP_REST_Response(
 			array(
 				'data'              => $all_posts,
-				'total_media_count' => $total_video_count,
+				'total_media_count' => $total_media_count,
 				'transcode_count'   => $untranscoded_count,
 				'retranscode_count' => $transcoded_count,
+				'media_type'        => $media_type,
 			),
 			200
 		);

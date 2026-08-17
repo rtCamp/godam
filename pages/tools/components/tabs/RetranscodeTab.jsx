@@ -11,6 +11,7 @@ import {
 	Panel,
 	PanelBody,
 	Notice,
+	SelectControl,
 } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useRef, useEffect, useMemo } from '@wordpress/element';
@@ -19,6 +20,31 @@ import { useState, useRef, useEffect, useMemo } from '@wordpress/element';
  */
 import ProgressBar from '../ProgressBar.jsx';
 import { scrollToTop } from '../../../godam/utils';
+
+const DEFAULT_MEDIA_TYPE = 'video';
+
+/**
+ * Media types that can be sent for transcoding.
+ *
+ * Keep the values in sync with the `media_type` enum on the
+ * `godam/v1/transcoding/not-transcoded` REST route.
+ */
+const MEDIA_TYPE_OPTIONS = [
+	{ value: 'all', label: __( 'All media', 'godam' ) },
+	{ value: 'video', label: __( 'Video', 'godam' ) },
+	{ value: 'audio', label: __( 'Audio', 'godam' ) },
+	{ value: 'pdf', label: __( 'PDF', 'godam' ) },
+	{ value: 'image', label: __( 'Image', 'godam' ) },
+];
+
+/**
+ * Get the translated label for a media type value.
+ *
+ * @param {string} value Media type value.
+ * @return {string} Translated label, or the raw value if it is not a known type.
+ */
+const getMediaTypeLabel = ( value ) =>
+	MEDIA_TYPE_OPTIONS.find( ( option ) => option.value === value )?.label ?? value;
 
 const RetranscodeTab = () => {
 	const [ fetchingMedia, setFetchingMedia ] = useState( false );
@@ -29,6 +55,7 @@ const RetranscodeTab = () => {
 	const [ logs, setLogs ] = useState( [] );
 	const [ done, setDone ] = useState( false );
 	const [ forceRetranscode, setForceRetranscode ] = useState( false );
+	const [ mediaType, setMediaType ] = useState( DEFAULT_MEDIA_TYPE );
 	const [ selectedIds, setSelectedIds ] = useState( null );
 	const [ successCount, setSuccessCount ] = useState( 0 );
 	const [ failureCount, setFailureCount ] = useState( 0 );
@@ -37,6 +64,12 @@ const RetranscodeTab = () => {
 	const [ selectedTranscodeCount, setSelectedTranscodeCount ] = useState( 0 );
 	const [ selectedRetranscodeCount, setSelectedRetranscodeCount ] = useState( 0 );
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
+
+	/*
+	 * The fetch options only apply to fetching media by type. They are irrelevant once
+	 * media has been fetched, and when specific IDs arrive from the Media Library.
+	 */
+	const showFetchOptions = ! ( selectedIds?.length > 0 ) && attachments.length === 0;
 
 	// Calculate storage exceeded status reactively
 	const storageExceeded = useMemo( () => {
@@ -132,8 +165,14 @@ const RetranscodeTab = () => {
 	const fetchRetranscodeMedia = () => {
 		setFetchingMedia( true );
 
+		const params = new URLSearchParams( { media_type: mediaType } );
+
 		// Add force param if checkbox is checked
-		const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/not-transcoded${ forceRetranscode ? '?force=1' : '' }`;
+		if ( forceRetranscode ) {
+			params.set( 'force', '1' );
+		}
+
+		const url = `${ window.godamRestRoute?.url }godam/v1/transcoding/not-transcoded?${ params.toString() }`;
 
 		axios.get( url, {
 			headers: {
@@ -142,15 +181,27 @@ const RetranscodeTab = () => {
 			},
 		} )
 			.then( ( response ) => {
+				// The type the server actually queried, which may differ if it fell back to the default.
+				const fetchedMediaType = response.data?.media_type ?? mediaType;
+
 				if ( response.data?.storage_exceeded ) {
 					showNotice( response.data.message, 'error' );
-				} else if ( response.data?.data && Array.isArray( response.data.data ) && response.data.data.length > 0 ) {
+				} else if ( Array.isArray( response.data?.data ) && response.data.data.length > 0 ) {
 					setAttachments( response.data.data );
 					if ( response.data?.total_media_count ) {
 						setTotalMediaCount( response.data.total_media_count );
 					}
-				} else {
+				} else if ( 'all' === fetchedMediaType ) {
 					showNotice( __( 'No media files found for retranscoding. Please ensure you have media files that require retranscoding.', 'godam' ), 'info' );
+				} else {
+					showNotice(
+						sprintf(
+							// translators: %s is the selected media type label, e.g. Video.
+							__( 'No media files of the selected type (%s) found for retranscoding. Please ensure you have media files of this type that require retranscoding.', 'godam' ),
+							getMediaTypeLabel( fetchedMediaType ),
+						),
+						'info',
+					);
 				}
 			} )
 			.catch( ( err ) => {
@@ -254,6 +305,7 @@ const RetranscodeTab = () => {
 		setLogs( [] );
 		setDone( false );
 		setForceRetranscode( false );
+		setMediaType( DEFAULT_MEDIA_TYPE );
 		setSelectedIds( null );
 		setVirtualMediaCount( 0 );
 		abortRef.current = false;
@@ -354,7 +406,7 @@ const RetranscodeTab = () => {
 				<PanelBody opened>
 					<p>
 						{ __(
-							'This tool allows you to retranscode your media files. You can either retranscode specific files selected from the Media Library, or those that are not yet transcoded.',
+							'This tool allows you to retranscode your media files. You can either retranscode specific files selected from the Media Library, or pick a media type below and fetch the files of that type that are not yet transcoded.',
 							'godam',
 						) }
 					</p>
@@ -388,17 +440,29 @@ const RetranscodeTab = () => {
 					}
 
 					{
-						/* Force retranscode checkbox */
-						! ( selectedIds && selectedIds.length > 0 ) &&
-						( attachments.length === 0 ) &&
-						<div style={ { marginBottom: '1em' } }>
+						/* Media type selector and force retranscode option. */
+						showFetchOptions &&
+						<div className="godam-retranscode-options">
+							<div className="godam-retranscode-options__media-type">
+								<SelectControl
+									__next40pxDefaultSize
+									__nextHasNoMarginBottom
+									label={ __( 'Media type', 'godam' ) }
+									help={ __( 'Choose which type of media to fetch for transcoding.', 'godam' ) }
+									value={ mediaType }
+									options={ MEDIA_TYPE_OPTIONS }
+									onChange={ setMediaType }
+									disabled={ fetchingMedia }
+								/>
+							</div>
+
 							{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
-							<label>
+							<label className="godam-retranscode-options__force">
 								<input
 									type="checkbox"
 									checked={ forceRetranscode }
 									onChange={ ( e ) => setForceRetranscode( e.target.checked ) }
-									style={ { marginRight: '0.5em' } }
+									disabled={ fetchingMedia }
 								/>
 								{ __( 'Force retranscode (even if already transcoded)', 'godam' ) }
 							</label>
