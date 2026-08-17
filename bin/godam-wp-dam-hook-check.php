@@ -3,66 +3,47 @@
  * Guards GoDAM's own `rtgodam_before_attachment_lookup` /
  * `rtgodam_after_attachment_lookup` hook pair against silent regression.
  *
- * These two hooks exist so that a plugin centralizing media on a multisite
- * network (wp-dam, or anything with a similar "all real attachments live on
- * one site" design) can switch site context immediately around a local
- * attachment read/write GoDAM performs, then switch back. GoDAM itself has
- * no listener for them — it only *fires* them, at every place its own code
- * touches attachment data directly (`get_post()`, `get_post_meta()`,
- * `wp_get_attachment_url()`, etc.). This script exists to keep that promise
- * true as the codebase changes: it can catch a hook being *removed*, or a
- * pair being *added wrong*, but it cannot prove a brand-new attachment-access
- * call site is safe on its own — a human still has to look at anything it
- * flags. A clean run means "nothing obviously regressed, and no new
- * attachment-touching code appeared unreviewed" — not "this change is
- * definitely centralization-safe."
+ * These two hooks let a plugin centralizing media on a multisite network
+ * (wp-dam, or anything with a similar "all real attachments live on one
+ * site" design) switch site context around a local attachment read/write
+ * GoDAM performs, then switch back. GoDAM only *fires* them, at every place
+ * its own code touches attachment data directly. This script keeps that
+ * promise true as the codebase changes: it can catch a hook being
+ * *removed*, or a pair *added wrong*, but it cannot prove a brand-new
+ * attachment-access call site is safe on its own — a human still has to
+ * look at anything it flags.
  *
- * Uses PHP's own token_get_all() (no new dependency) rather than raw text
- * matching, specifically so a hook name mentioned in a comment or docblock
- * cross-reference can't inflate a count — PHP's tokenizer never emits a
- * T_STRING/T_CONSTANT_ENCAPSED_STRING for text inside a
- * T_COMMENT/T_DOC_COMMENT; the whole comment is one token. A raw
- * `grep`/`preg_match_all` equivalent would count both a real call and a
- * docblock mention as the same "occurrence," which silently hides a real
- * removal offset by an unrelated stray comment elsewhere in the same file.
+ * Uses PHP's own token_get_all() rather than raw text matching, so a hook
+ * name mentioned in a comment or docblock can't inflate a count — the
+ * tokenizer never emits a T_STRING/T_CONSTANT_ENCAPSED_STRING for text
+ * inside a T_COMMENT/T_DOC_COMMENT.
  *
  * Three checks, all against a per-function token count or a structural walk
  * — see each one's own comment below for what it catches and why:
  *   1. Per-function (not per-file — see godam_check_build_counts()'s own
- *      comment for why that distinction matters) `rtgodam_before_attachment_lookup`
- *      call count must never decrease from the last accepted baseline.
+ *      comment for why) `rtgodam_before_attachment_lookup` call count must
+ *      never decrease from the last accepted baseline.
  *   2. Per-function attachment-access-pattern count increasing (or a new
  *      function/file appearing) is a review signal, not an automatic
- *      failure. "Attachment-access-pattern" now covers more than a plain
- *      ACCESS_FUNCTIONS name match: a `new WP_Query()`/`get_posts()`/$wpdb
- *      query-method call that's attachment-shaped counts too — see
- *      godam_shared_query_pattern_at() in the shared file for why those
- *      needed their own detection (two real, previously-invisible gaps in
- *      this exact codebase, 2026-08, were exactly this shape).
+ *      failure. "Attachment-access-pattern" also covers an
+ *      attachment-shaped `new WP_Query()`/`get_posts()`/$wpdb query-method
+ *      call — see godam_shared_query_pattern_at() in the shared file.
  *   3. Before/after balance: every `rtgodam_before_attachment_lookup` in a
- *      function (or in top-level file code, or inside a deferred
- *      add_action()/add_filter() closure — see godam_shared_find_deferred_closures()
- *      for why a closure like that needs its own independent check rather
- *      than being folded into whichever function merely defines it) must
- *      reach a matching `rtgodam_after_attachment_lookup` before that scope
- *      ends, and no `rtgodam_after_attachment_lookup` may fire with nothing
- *      open. Branch-aware around `return`/`throw`/`exit`/`die`/`wp_die()`-style
- *      early exits (see godam_check_hook_balance_in_range()'s own comment)
- *      — a guard clause that closes the wrap early and returns is a normal,
- *      correct pattern, not a bug. Fails unconditionally *unless* a specific
- *      finding already has a reason on file in
- *      godam_check_known_balance_exceptions() — reserved for pairings this
- *      script genuinely can't trace (e.g. a before() whose matching after()
- *      fires from a different function or callback entirely), not for
- *      working around a real bug or a godam_shared_is_scope_terminator()
- *      gap, which belong fixed in the code or the tool, not excepted here.
+ *      scope must reach a matching `rtgodam_after_attachment_lookup` before
+ *      that scope ends, and no `rtgodam_after_attachment_lookup` may fire
+ *      with nothing open. Branch-aware around `return`/`throw`/`exit`/
+ *      `die`/`wp_die()`-style early exits (see
+ *      godam_check_hook_balance_in_range()'s own comment) — a guard clause
+ *      that closes the wrap early and returns is a normal, correct pattern,
+ *      not a bug. Fails unconditionally *unless* a finding already has a
+ *      reason on file in godam_check_known_balance_exceptions() — reserved
+ *      for pairings this script genuinely can't trace, not for working
+ *      around a real bug or a scope-terminator gap.
  *
  * Shares its tokenizer, function-boundary finder, hook-fire detection,
  * query-pattern detection, and deferred-closure detection with the sibling
  * godam-attachment-access-coverage-check.php via godam-hook-check-shared.php
- * — see that file's own top-of-file comment for why (a real
- * HOOK_FIRE_FUNCTIONS drift bug between the two scripts, found during
- * review, is what prompted extracting it).
+ * (see that file's own header for why).
  *
  * Two modes:
  *   php bin/godam-wp-dam-hook-check.php check            (default; used in CI)
@@ -81,15 +62,11 @@ $root          = dirname( __DIR__ ); // Plugin root.
 $baseline_path = __DIR__ . '/godam-wp-dam-hook-baseline.json';
 $run_mode      = $argv[1] ?? 'check';
 
-// Whole-plugin-root scan (deny-list, not an explicit directory allow-list) —
-// see GODAM_EXCLUDED_ROOT_DIRS's own comment in godam-hook-check-shared.php
-// for why: the sibling godam-attachment-access-coverage-check.php used to
-// scan the same 3-directory allow-list this script did, and a full manual
-// recursive audit (2026-08) found real, unreviewed attachment-access code in
-// directories neither script's allow-list ever named (lib/, the plugin-root
-// files). Fixed identically here so both scripts stay in sync — a file
-// visible to one hook-coverage check but not the other would be a confusing,
-// silent inconsistency.
+// Whole-plugin-root scan (deny-list, not an allow-list) — see
+// GODAM_EXCLUDED_ROOT_DIRS's own comment in godam-hook-check-shared.php. A
+// prior 3-directory allow-list here missed real, unreviewed
+// attachment-access code in lib/ and the plugin-root files — fixed
+// identically to the sibling coverage-check.php so both stay in sync.
 $files = godam_shared_list_all_php_files( $root );
 
 /**
@@ -131,17 +108,13 @@ const ACCESS_FUNCTIONS = array(
 );
 
 /**
- * Counts real, BARE (not method-style, not a same-named declaration —
- * godam_shared_is_bare_call_to()) calls to any of $function_names, plus any
+ * Counts real, bare calls to any of $function_names, plus any
  * attachment-shaped query-pattern call (new WP_Query()/get_posts()/$wpdb
- * query method — see godam_shared_query_pattern_at() in the shared file for
- * why these need their own detection, not just a name match), within
- * [$range_start, $range_end]. The only caller passes ACCESS_FUNCTIONS —
- * bare-call matching here for the same reason
- * godam_shared_is_hook_fire_at()/godam_shared_is_scope_terminator() switched
- * to it: every one of those names is a WordPress core global, never
- * legitimately called via ->/::, so this only excludes the pathological case
- * of a same-named user-defined method or declaration.
+ * query method — see godam_shared_query_pattern_at()), within
+ * [$range_start, $range_end]. Bare-call matching for the same reason
+ * godam_shared_is_hook_fire_at()/godam_shared_is_scope_terminator() use it:
+ * the only caller passes ACCESS_FUNCTIONS, all WordPress core globals,
+ * never legitimately called via ->/::.
  *
  * @param array[] $tokens         Full token list for the file (or a range
  *                                 within it — $range_start/$range_end bound
@@ -153,13 +126,8 @@ const ACCESS_FUNCTIONS = array(
  * @param array   $function_names Function names to match.
  * @param array[] $skip_ranges    Each [start, end] (inclusive) to jump straight past — a
  *                                 deferred closure nested directly inside this range, counted
- *                                 separately under its own scope by godam_check_build_counts()
- *                                 instead. Without this, a closure's own calls would be counted
- *                                 twice: once here, folded into the enclosing function's total,
- *                                 and again under the closure's own separate entry — confirmed as
- *                                 a real double-count via a synthetic fixture (an enclosing
- *                                 function's own wrap count came back inflated by exactly the
- *                                 closure's own wrap) before this parameter was added.
+ *                                 separately under its own scope, so it isn't double-counted
+ *                                 here too (confirmed via fixture before this was added).
  * @return int
  */
 function godam_check_count_calls( $tokens, $range_start, $range_end, $function_names, $skip_ranges = array() ) {
@@ -233,51 +201,39 @@ function godam_check_count_hook_calls( $tokens, $range_start, $range_end, $hook_
 }
 
 /**
- * Walks a token range in file order, treating a real before-hook fire as an
- * opened bracket and a real after-hook fire as its close — same idea as
- * matching parentheses, applied to the two hook names instead of '(' / ')'.
+ * Walks a token range in file order, treating a real before-hook fire as
+ * an opened bracket and a real after-hook fire as its close — same idea as
+ * matching parentheses, applied to the two hook names instead of '('/')'.
  *
- * Branch-aware specifically around scope-terminating statements: a guard
- * clause like
+ * Branch-aware around scope-terminating statements: a guard clause like
  *   before(); if ( $bad ) { after(); return; } ...more work...; after();
- * is a normal, correct pattern — exactly one of the two after() calls runs
- * on any given call, and whichever one does correctly closes the same
- * before(). A plain linear counter can't tell that apart from a real bug,
- * because lexically both after() calls look like they happen in sequence.
+ * is normal and correct — exactly one of the two after() calls runs on any
+ * given call, and whichever one does correctly closes the same before(). A
+ * plain linear counter can't tell that apart from a real bug.
  * "Scope-terminating" isn't just `return`/`throw` — see
  * godam_shared_is_scope_terminator()'s own comment for why `exit`/`die`/
- * `wp_die()`-style calls need the exact same treatment. Not hypothetical:
- * class-transcoding.php's update_transcoding_status() calls
- * wp_send_json_error() as a bare statement (no `return` in front of it) to
- * end its own guard clause — one of 14 files across inc/, admin/, and
- * assets/src/blocks/ that call wp_die()/exit()/die()/wp_send_json*() at all.
+ * `wp_die()`-style calls need the same treatment; not hypothetical —
+ * class-transcoding.php's update_transcoding_status() ends a guard clause
+ * with a bare wp_send_json_error(), no `return` in front of it.
  *
- * The fix: track a stack of snapshots, one pushed per '{' (what
- * $open_before_lines looked like at that exact point) and discarded per
- * '}'. At a scope-terminator, compare the current snapshot against the
- * innermost one still on the stack (i.e. the state when the block
- * containing it was entered) — if this path closed something opened
- * *before* that block started (the guard-clause shape above), that's fine:
- * code physically after the block is only reachable by NOT taking this
- * path, so it needs to see the pre-block state, not whatever this specific
- * path did — rewind to it and keep scanning. If this path instead leaves
- * something open that it itself opened after the block started, that's a
- * real bug, reported immediately rather than rewound past.
+ * The fix: track a stack of snapshots, one pushed per '{' and discarded per
+ * '}'. At a scope-terminator, compare the current state against the
+ * innermost snapshot still on the stack (the state when that block was
+ * entered) — if this path closed something opened *before* the block
+ * started (the guard-clause shape above), rewind to the pre-block state
+ * and keep scanning, since code after the block is only reachable by NOT
+ * taking this path. If this path instead leaves something open that it
+ * itself opened after the block started, that's a real bug, reported
+ * immediately rather than rewound past.
  *
  * @param array[] $tokens      Full token list for the file.
  * @param int     $range_start Token index to start at (inclusive).
  * @param int     $range_end   Token index to end at (inclusive).
  * @param array[] $skip_ranges Each [start, end] (inclusive) to jump straight past — deferred
- *                             closures (add_action()/add_filter() callbacks) nested directly
- *                             inside this range, walked independently by
- *                             godam_check_hook_balance_findings() instead. Without this, a
- *                             closure's own before()/after() pair (or lack of one) is
- *                             evaluated as if it ran inline, synchronously, as part of the
- *                             enclosing function — but a deferred callback can run at a
- *                             completely different time, so e.g. an unclosed before() inside
- *                             it could be wrongly "closed" by the enclosing function's own,
- *                               unrelated after() purely because the two happen to nest like
- *                             matched parentheses lexically.
+ *                             closures nested directly inside this range, walked independently
+ *                             by godam_check_hook_balance_findings() instead — a deferred
+ *                             callback can run at a completely different time, so its own
+ *                             before()/after() pair must not be evaluated as if inline.
  * @return array|null ['type' => 'unclosed_before'|'stray_after', 'line' => int, 'open_count' => int] or null if balanced.
  */
 function godam_check_hook_balance_in_range( $tokens, $range_start, $range_end, $skip_ranges = array() ) {
@@ -354,21 +310,13 @@ function godam_check_hook_balance_in_range( $tokens, $range_start, $range_end, $
 
 /**
  * Runs godam_check_hook_balance_in_range() across an entire file: once per
- * named function body, once per deferred closure (add_action()/add_filter()
- * callback — see godam_shared_find_deferred_closures()), plus once more
- * across whatever top-level code (file scope, outside any function or
- * deferred closure) remains — concatenated in file order, since top-level
- * statements all run sequentially at include-time regardless of function
- * declarations interspersed between them.
+ * named function body, once per deferred closure, plus once more across
+ * whatever top-level code remains — concatenated in file order, since
+ * top-level statements all run sequentially at include-time.
  *
- * A deferred closure is excluded from whichever named function or top-level
- * range would otherwise physically contain it, and checked as its own
- * independent scope instead — see godam_check_hook_balance_in_range()'s own
- * $skip_ranges parameter for why: without this, an unclosed before() inside
- * the closure could be wrongly seen as "closed" by the enclosing function's
- * own, completely unrelated after(), purely because they happen to nest
- * lexically like matched parentheses, even though the closure actually runs
- * at a different time entirely.
+ * A deferred closure is excluded from whichever range would otherwise
+ * contain it, and checked as its own independent scope instead — see
+ * godam_check_hook_balance_in_range()'s own $skip_ranges parameter for why.
  *
  * @param array[] $tokens    Full token list for the file.
  * @param array[] $functions This file's own godam_shared_find_functions() result.
@@ -381,19 +329,14 @@ function godam_check_hook_balance_findings( $tokens, $functions ) {
 	$top_level_indexes = array();
 	$deferred_closures = godam_shared_find_deferred_closures( $tokens, $functions );
 
-	// Combines two independent exclusions into one $skip_ranges list: any
-	// deferred closure nested inside the queried range (walked separately
-	// below), and any OTHER named function/method nested inside it (also
-	// walked separately, in its own foreach below) — the latter matters now
-	// that function ranges can genuinely nest (a method inside a
-	// function-scoped anonymous class sits inside its enclosing function's
-	// own range — see godam_shared_find_functions()'s own comment). Without
-	// excluding it here, the outer function's own balance walk would also
-	// see the nested method's own before()/after() calls, potentially
-	// treating an imbalance inside the nested method as if it happened
-	// inline in the outer function (or vice versa) purely because their
-	// ranges happen to overlap, not because either one's code actually runs
-	// that way.
+	// Combines two independent exclusions: any deferred closure nested
+	// inside the queried range, and any OTHER named function/method nested
+	// inside it — the latter matters now that function ranges can genuinely
+	// nest (a method inside a function-scoped anonymous class sits inside
+	// its enclosing function's own range). Without excluding it, the outer
+	// function's balance walk would also see the nested method's own
+	// before()/after() calls, wrongly attributing an imbalance to whichever
+	// scope isn't the real one.
 	$skip_ranges_for = function ( $range_start, $range_end ) use ( $deferred_closures, $functions ) {
 		return array_merge(
 			godam_shared_ranges_nested_in( $range_start, $range_end, $deferred_closures ),
@@ -464,28 +407,20 @@ function godam_check_hook_balance_findings( $tokens, $functions ) {
 
 /**
  * Builds { "{relative_path}::{scope}" => count }, one entry per named
- * function (its own parameter-list range plus its body — see below), per
- * deferred closure (add_action()/add_filter() callback), and per file's
- * remaining top-level code — wherever $counter( $tokens, $range_start,
- * $range_end ) returns > 0.
+ * function (its own parameter-list range plus its body), per deferred
+ * closure, and per file's remaining top-level code — wherever $counter(
+ * $tokens, $range_start, $range_end ) returns > 0.
  *
  * Per-function (and per-closure), not per-file: a hook removed from one
  * function while an unrelated one is added to a different function in the
  * SAME file would net to an unchanged file-level total under a per-file
- * count — exactly the blind spot a full manual audit (2026-08) found this
- * check would have had: the regressed function and the added function
- * canceling out, so the real removal is never caught. Scoping counts to the
- * function/closure/top-level-code they actually occurred in closes that.
+ * count, exactly the blind spot a full manual audit found this check
+ * would have had — the regressed and added functions canceling out.
  *
- * A function's own parameter-list range is counted SEPARATELY from its body
- * (own $counter call, own skip_ranges, summed into the same scope key) for
- * the same reason godam_coverage_file_findings() in the sibling
- * coverage-check.php walks the two independently — see that function's own
- * comment for the full "new in initializers" reasoning. This counter has no
- * per-variable safe-tracking to corrupt the way the coverage-checker's walk
- * does, so summing two separate calls under one key here is purely about
- * scope-label consistency with the coverage-checker, not a safety
- * requirement of this specific function.
+ * A function's own parameter-list range is counted SEPARATELY from its
+ * body (summed into the same scope key), for the same "new in
+ * initializers" reason godam_coverage_file_findings() in the sibling
+ * coverage-check.php walks the two independently.
  *
  * @param string[] $files   Absolute file paths to scan.
  * @param string   $root    Repo root, for making paths relative/portable.
@@ -505,13 +440,9 @@ function godam_check_build_counts( $files, $root, $counter ) {
 		$top_level_indexes = array();
 
 		// Every function's own parameter-list range, plus every bodyless
-		// (interface/abstract) declaration's own parameter-list range (see
-		// godam_shared_find_functions()'s own docblock on why those are
-		// tracked separately from $functions), represented the same way
-		// $functions/$deferred_closures entries are (body_start/body_end) so
-		// godam_shared_ranges_nested_in() can treat them identically — see
-		// this function's own docblock for why this range is counted
-		// separately.
+		// declaration's, represented the same way $functions/$deferred_closures
+		// entries are so godam_shared_ranges_nested_in() can treat them
+		// identically.
 		$param_list_ranges = array();
 		foreach ( $functions as $function ) {
 			$param_list_ranges[] = array(
@@ -526,21 +457,14 @@ function godam_check_build_counts( $files, $root, $counter ) {
 			);
 		}
 
-		// Combines three independent exclusions: any deferred closure nested
-		// inside the queried range (counted separately below), any OTHER
-		// named function/method nested inside it (also counted separately,
-		// in its own foreach below), and any function's own parameter-list
-		// range nested inside it (also counted separately below) — the
-		// latter two matter now that function ranges can genuinely nest (a
-		// method inside a function-scoped anonymous class sits inside its
-		// enclosing function's own range — see
-		// godam_shared_find_functions()'s own comment). Without excluding
-		// them here, the outer function's own count would double-count the
-		// nested method's calls (and, separately, the nested method's own
-		// parameter-list default value) on top of their own separate
-		// entries — the exact same double-count shape already fixed below
-		// for deferred closures, just for nested named functions/parameter
-		// lists instead.
+		// Combines three independent exclusions: any deferred closure, any
+		// OTHER named function/method, and any function's own parameter-list
+		// range, each nested inside the queried range and counted separately
+		// elsewhere. The latter two matter now that function ranges can
+		// genuinely nest (a method inside a function-scoped anonymous class
+		// sits inside its enclosing function's own range) — without excluding
+		// them, the outer function's count would double-count the nested
+		// scope's calls on top of its own separate entry.
 		$skip_ranges_for = function ( $range_start, $range_end ) use ( $deferred_closures, $functions, $param_list_ranges ) {
 			return array_merge(
 				godam_shared_ranges_nested_in( $range_start, $range_end, $deferred_closures ),
@@ -586,12 +510,8 @@ function godam_check_build_counts( $files, $root, $counter ) {
 
 		foreach ( $functions as $function ) {
 			$scope = null !== $function['class'] ? "{$function['class']}::{$function['name']}()" : "{$function['name']}()";
-			// A deferred closure nested inside this function must be
-			// excluded here — it's counted separately, under its own scope,
-			// a few lines below. Without this, its own calls would be
-			// counted twice: once folded into this function's total, and
-			// again under the closure's own entry — confirmed as a real
-			// double-count via a synthetic fixture before this was added.
+			// A deferred closure nested inside this function is excluded here
+			// (counted separately below) so its calls aren't double-counted.
 			$n       = $counter( $tokens, $function['body_start'], $function['body_end'], $skip_ranges_for( $function['body_start'], $function['body_end'] ) );
 			$param_n = $counter( $tokens, $function['params_open'], $function['params_close'], $skip_ranges_for( $function['params_open'], $function['params_close'] ) );
 			$total   = $n + $param_n;
@@ -601,12 +521,9 @@ function godam_check_build_counts( $files, $root, $counter ) {
 			}
 		}
 
-		// Every bodyless (interface/abstract) declaration's own parameter
-		// list, counted the same independent way a regular function's
-		// parameter list is above, for the identical "new in initializers"
-		// reason (see this function's own docblock and
-		// godam_shared_find_functions()'s own docblock on why these are
-		// tracked separately from $functions).
+		// Every bodyless declaration's own parameter list, counted the same
+		// independent way a regular function's is above, for the same "new in
+		// initializers" reason.
 		foreach ( $bodyless as $bodyless_fn ) {
 			$scope   = null !== $bodyless_fn['class'] ? "{$bodyless_fn['class']}::{$bodyless_fn['name']}()" : "{$bodyless_fn['name']}()";
 			$param_n = $counter( $tokens, $bodyless_fn['params_open'], $bodyless_fn['params_close'], $skip_ranges_for( $bodyless_fn['params_open'], $bodyless_fn['params_close'] ) );
@@ -661,13 +578,9 @@ $access_counts = godam_check_build_counts(
 );
 
 // 3. Before/after hook balance. Every finding is keyed the same way as
-// godam-attachment-access-coverage-check.php's own $findings ("{file}:
-// {line}"), so a specific one can be accepted into the baseline with a
-// reason via godam_check_known_balance_exceptions() below — same two-sided
-// contract as that script's known_reasons(): nothing is accepted without a
-// reason already on file, and update-baseline never reviews anything on its
-// own. Computed in both modes; filtered against accepted exceptions and
-// formatted into $balance_failures only in 'check' mode below.
+// godam-attachment-access-coverage-check.php's own $findings
+// ("{file}:{line}"), so a specific one can be accepted into the baseline
+// with a reason via godam_check_known_balance_exceptions() below.
 $balance_findings = array();
 foreach ( $files as $file ) {
 	$tokens    = godam_shared_tokenize( $file );
