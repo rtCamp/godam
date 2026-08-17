@@ -64,6 +64,7 @@ export async function pollZipJobStatus( jobId, { intervalMs = 2000, timeoutMs = 
 export const folderApi = createApi( {
 	reducerPath: 'folderApi',
 	baseQuery: fetchBaseQuery( { baseUrl: restURL } ),
+	tagTypes: [ 'Folder' ],
 	endpoints: ( builder ) => ( {
 		getAllMediaCount: builder.query( {
 			async queryFn( arg, api, extraOptions, baseQuery ) {
@@ -141,6 +142,7 @@ export const folderApi = createApi( {
 					totalPages: totalPages ? parseInt( totalPages, 10 ) : 0,
 				};
 			},
+			providesTags: [ 'Folder' ],
 		} ),
 		createFolder: builder.mutation( {
 			query: ( data ) => ( {
@@ -151,6 +153,9 @@ export const folderApi = createApi( {
 					'X-WP-Nonce': window.MediaLibrary.nonce,
 				},
 			} ),
+			// Refetch the authoritative folder list after list-changing mutations so the
+			// tree reconciles (create adds, delete removes) instead of drifting from cache.
+			invalidatesTags: [ 'Folder' ],
 		} ),
 		updateFolder: builder.mutation( {
 			query: ( data ) => ( {
@@ -173,6 +178,7 @@ export const folderApi = createApi( {
 					'X-WP-Nonce': window.MediaLibrary.nonce,
 				},
 			} ),
+			invalidatesTags: [ 'Folder' ],
 		} ),
 		bulkDeleteFolders: builder.mutation( {
 			query: ( folderIds ) => ( {
@@ -184,6 +190,7 @@ export const folderApi = createApi( {
 					'Content-Type': 'application/json',
 				},
 			} ),
+			invalidatesTags: [ 'Folder' ],
 		} ),
 		bulkLockFolders: builder.mutation( {
 			query: ( { folderIds, lockedStatus } ) => ( {

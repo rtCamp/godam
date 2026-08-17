@@ -181,24 +181,33 @@ const slice = createSlice( {
 			state.multiSelectedFolderIds = [];
 		},
 		setTree: ( state, action ) => {
-			const newFolders = action.payload;
+			const payload = action.payload;
 
-			if ( state.folders.length > 0 ) {
-				const folderMap = new Map( state.folders.map( ( folder ) => [ folder.id, folder ] ) );
+			// Backward compatible: an array payload keeps the legacy merge/append behavior
+			// (drag-reorder / count updates always pass the full current list). An object
+			// payload `{ folders, replace }` lets callers REPLACE the list so removals are
+			// reflected. The merge branch can only add/update — it never removes — so a
+			// deleted folder used to reappear (whenever this ran with the still-cached query
+			// data) and only cleared on a hard refresh, where state started empty.
+			const newFolders = Array.isArray( payload ) ? payload : ( payload?.folders || [] );
+			const replace = ! Array.isArray( payload ) && Boolean( payload?.replace );
 
-				newFolders.forEach( ( folder ) => {
-					if ( folderMap.has( folder.id ) ) {
-						// Update existing folder
-						Object.assign( folderMap.get( folder.id ), folder );
-					} else {
-						// Add new folder
-						state.folders.push( folder );
-					}
-				} );
-			} else {
-				// No existing folders, just set
+			if ( replace || state.folders.length === 0 ) {
 				state.folders = newFolders;
+				return;
 			}
+
+			const folderMap = new Map( state.folders.map( ( folder ) => [ folder.id, folder ] ) );
+
+			newFolders.forEach( ( folder ) => {
+				if ( folderMap.has( folder.id ) ) {
+					// Update existing folder
+					Object.assign( folderMap.get( folder.id ), folder );
+				} else {
+					// Add new folder
+					state.folders.push( folder );
+				}
+			} );
 		},
 
 		toggleMultiSelectMode: ( state ) => {

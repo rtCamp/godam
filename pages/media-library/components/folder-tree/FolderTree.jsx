@@ -67,10 +67,17 @@ const FolderTree = ( { handleContextMenu } ) => {
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 
 	useEffect( () => {
-		if ( folders ) {
-			dispatch( setTree( openLocalStorageItem( folders?.data ) ) );
+		// Only sync once the query has settled — syncing an in-flight (stale) response
+		// could momentarily re-introduce a just-deleted folder. On the first page we
+		// REPLACE the list so server-side removals (deletes) are reflected; on load-more
+		// pages we append, preserving the already-loaded pages.
+		if ( folders && ! isFetching ) {
+			dispatch( setTree( {
+				folders: openLocalStorageItem( folders?.data ),
+				replace: currentPage === 1,
+			} ) );
 
-			if ( Array.isArray( folders?.data ) && ! isFetching ) {
+			if ( Array.isArray( folders?.data ) ) {
 				// If no folders are returned, reset to the first page
 				dispatch( updatePage( { totalPages: folders.totalPages } ) );
 			}
