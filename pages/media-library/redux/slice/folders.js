@@ -181,24 +181,45 @@ const slice = createSlice( {
 			state.multiSelectedFolderIds = [];
 		},
 		setTree: ( state, action ) => {
-			const newFolders = action.payload;
+			const payload = action.payload;
 
-			if ( state.folders.length > 0 ) {
-				const folderMap = new Map( state.folders.map( ( folder ) => [ folder.id, folder ] ) );
+			// Backward compatible: an array payload keeps the legacy merge/append behavior
+			// (drag-reorder / count updates always pass the full current list). An object
+			// payload `{ folders, replace }` lets callers REPLACE the list so removals are
+			// reflected. The merge branch can only add/update — it never removes — so a
+			// deleted folder used to reappear (whenever this ran with the still-cached query
+			// data) and only cleared on a hard refresh, where state started empty.
+			const newFolders = Array.isArray( payload ) ? payload : ( payload?.folders || [] );
+			const replace = ! Array.isArray( payload ) && Boolean( payload?.replace );
 
-				newFolders.forEach( ( folder ) => {
-					if ( folderMap.has( folder.id ) ) {
-						// Update existing folder
-						Object.assign( folderMap.get( folder.id ), folder );
-					} else {
-						// Add new folder
-						state.folders.push( folder );
-					}
-				} );
-			} else {
-				// No existing folders, just set
-				state.folders = newFolders;
+			if ( replace || state.folders.length === 0 ) {
+				// Sort a mutable copy: `newFolders` comes straight from the RTK Query cache,
+				// which is frozen (read-only), so sorting it in place throws. The server
+				// always returns name ASC; re-applying the active sort keeps a "By Name (Z-A)"
+				// selection from silently resetting to A-Z when the list is replaced.
+				const sorted = [ ...newFolders ];
+
+				if ( 'name-desc' === state.sortOrder ) {
+					sorted.sort( ( a, b ) => a.name.localeCompare( b.name ) * -1 );
+				} else if ( 'name-asc' === state.sortOrder ) {
+					sorted.sort( ( a, b ) => a.name.localeCompare( b.name ) );
+				}
+
+				state.folders = sorted;
+				return;
 			}
+
+			const folderMap = new Map( state.folders.map( ( folder ) => [ folder.id, folder ] ) );
+
+			newFolders.forEach( ( folder ) => {
+				if ( folderMap.has( folder.id ) ) {
+					// Update existing folder
+					Object.assign( folderMap.get( folder.id ), folder );
+				} else {
+					// Add new folder
+					state.folders.push( folder );
+				}
+			} );
 		},
 
 		toggleMultiSelectMode: ( state ) => {
@@ -396,11 +417,11 @@ const slice = createSlice( {
 				type: 'success',
 			};
 
-			// Reset page to first page
-			state.page.current = 1;
-
-			// Note: We preserve folders, bookmarks, lockedFolders, and sortOrder
-			// for performance and user experience
+			// NOTE: page.current is intentionally NOT reset here. We preserve the loaded
+			// folders (and bookmarks/lockedFolders/sortOrder) across modal open/close for
+			// performance and UX — resetting the page to 1 while keeping those folders made
+			// the sync effect re-fetch page 1 and REPLACE the tree with just the first page,
+			// collapsing everything the user had loaded via "Load more".
 		},
 	},
 } );
