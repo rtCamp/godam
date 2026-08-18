@@ -35,25 +35,43 @@ const MAX_PAGE_WIDTH = 1000;
 const HORIZONTAL_PADDING = 24;
 
 /*
- * How many pages to mount at a time.
+ * How far outside the scroll container a page is still worth having rendered.
  *
- * Every mounted Page is a canvas the size of the rendered page, at the device pixel ratio —
- * several megabytes each on a retina screen. Mounting all of them at once, which is what
- * react-pdf does if you hand it the whole range, means a 300-page report allocates hundreds
- * of those before the visitor has scrolled anywhere, and blocks the main thread rasterising
- * pages nobody is looking at. A batch at a time keeps the cost proportional to how far the
- * visitor actually reads.
+ * Every mounted page is a canvas the size of the rendered page, at the device pixel ratio.
+ * Measured on a 1000px-wide viewer at DPR 2, that is ~20 MB per page — so mounting a whole
+ * document at once cost 3.1 GB of canvas backing store for a 160-page file, and rasterised
+ * 160 pages nobody had scrolled to yet. Only the pages near the viewport are mounted; the
+ * rest are placeholders of exactly the right height (see pageRatios), so the scrollbar and
+ * every scroll position behave as though the whole document were rendered.
  *
- * Pages already mounted are deliberately NOT released on the way back up: re-rasterising on
- * every scroll reversal is its own kind of bad, and the batch cap is what bounds the damage.
+ * Generous enough that scrolling at a normal reading pace, or a page-down, lands on a page
+ * that is already drawn rather than on a blank placeholder.
  */
-const PAGES_PER_BATCH = 5;
+const RENDER_MARGIN_PX = 1500;
 
 /*
- * How far below the last mounted page to start the next batch. Larger than a page is tall,
- * so scrolling at a normal reading pace finds the next page already rendered.
+ * Placeholder shape for pages whose real dimensions are not known yet: ISO A4 portrait,
+ * which is what LibreOffice gives every preview PDF Central generates. Only ever visible for
+ * the moment between the document loading and its page sizes arriving.
  */
-const PRELOAD_MARGIN = '1500px';
+const DEFAULT_PAGE_RATIO = 297 / 210;
+
+/*
+ * Pages mounted before the observer has said anything.
+ *
+ * IntersectionObserver reports nothing at all while a document is hidden — a background tab,
+ * or a viewer inside a collapsed panel — so without a floor the reader could arrive at a
+ * document of blank placeholders. These pages are handed to the observer like any other once
+ * it does report, so they are released if they turn out to be off-screen.
+ */
+const INITIAL_PAGES = 2;
+
+/*
+ * Whether pages can be mounted on demand at all. Without IntersectionObserver there is no way
+ * to know what is on screen, so every page is rendered as it was before — heavy for a long
+ * document, but a rendered document beats an empty one.
+ */
+const CAN_OBSERVE = 'undefined' !== typeof IntersectionObserver;
 
 /**
  * Renders a PDF as a plain scrollable stack of pages, deliberately with no viewer chrome.
@@ -93,10 +111,15 @@ export default function DocumentViewer( {
 	renderTextLayer = true,
 } ) {
 	const [ numPages, setNumPages ] = useState( 0 );
-	const [ mountedPages, setMountedPages ] = useState( PAGES_PER_BATCH );
+	// height/width of each page, so an unmounted page still occupies its real space.
+	const [ pageRatios, setPageRatios ] = useState( [] );
+	// Indices currently close enough to the viewport to be worth rendering.
+	const [ pagesInView, setPagesInView ] = useState( () => new Set() );
 	const [ hasError, setHasError ] = useState( false );
 	const containerRef = useRef( null );
-	const sentinelRef = useRef( null );
+	const slotRefs = useRef( new Map() );
+	// The file whose geometry is wanted, for discarding a previous document's late reply.
+	const currentUrlRef = useRef( url );
 	const [ width, setWidth ] = useState( 0 );
 	const [ ownerDocument, setOwnerDocument ] = useState( null );
 
@@ -122,43 +145,98 @@ export default function DocumentViewer( {
 		return () => observer.disconnect();
 	}, [] );
 
-	// A new file is a fresh attempt: clear the previous document's error and page count, and
-	// go back to rendering a single batch.
+	// A new file is a fresh attempt: clear the previous document's error, page count and
+	// geometry. Slot refs go too, or the observer below would watch elements React has dropped.
 	useEffect( () => {
+		currentUrlRef.current = url;
 		setHasError( false );
 		setNumPages( 0 );
-		setMountedPages( PAGES_PER_BATCH );
+		setPageRatios( [] );
+		setPagesInView( new Set() );
+		slotRefs.current.clear();
 	}, [ url ] );
 
-	const pagesToRender = Math.min( numPages, mountedPages );
+	/**
+	 * Read every page's aspect ratio off the document.
+	 *
+	 * Done up front, in one pass, because a placeholder is only safe if it is exactly as tall
+	 * as the page it stands in for: guessing would make the scrollbar lie, and would shift the
+	 * document under the reader each time a page mounted or was released. These are metadata
+	 * reads — pdf.js parses the page dictionary, not its content — so the cost is small next to
+	 * rendering even one page.
+	 *
+	 * @param {Object} pdf pdf.js document proxy.
+	 * @return {void}
+	 */
+	function readPageRatios( pdf ) {
+		const requestedUrl = url;
+
+		Promise.all(
+			Array.from( { length: pdf.numPages }, ( _, index ) =>
+				pdf.getPage( index + 1 ).then( ( page ) => {
+					const viewport = page.getViewport( { scale: 1 } );
+
+					return viewport.width > 0
+						? viewport.height / viewport.width
+						: DEFAULT_PAGE_RATIO;
+				} ),
+			),
+		)
+			.then( ( ratios ) => {
+				// react-pdf destroys the document when the file changes; a reply that arrives
+				// after that belongs to a file nobody is looking at any more, and applying its
+				// page heights would missize every placeholder in the current one.
+				if ( currentUrlRef.current === requestedUrl ) {
+					setPageRatios( ratios );
+				}
+			} )
+			.catch( () => {
+				// Sizes are an optimisation, not a requirement: without them every placeholder
+				// keeps the A4 default, which is right for generated previews anyway.
+			} );
+	}
 
 	/*
-	 * Mount the next batch when the end of the rendered stack comes into view.
+	 * Track which pages are near the viewport.
 	 *
-	 * Observed against the scroll container rather than the viewport, because that is what
-	 * scrolls — in the editor the whole viewer is a fixed-height box, so a viewport-rooted
-	 * observer would never fire again after the first batch.
+	 * Rooted on the scroll container rather than the viewport, because that is the element that
+	 * scrolls — on the editor canvas the viewer is a fixed-height box, so a viewport-rooted
+	 * observer would report every page as visible and mount the entire document.
 	 */
 	useEffect( () => {
-		const sentinel = sentinelRef.current;
+		const container = containerRef.current;
 
-		if ( ! sentinel || pagesToRender >= numPages ) {
+		if ( ! CAN_OBSERVE || ! container || ! numPages ) {
 			return;
 		}
 
 		const observer = new IntersectionObserver(
 			( entries ) => {
-				if ( entries.some( ( entry ) => entry.isIntersecting ) ) {
-					setMountedPages( ( current ) => current + PAGES_PER_BATCH );
-				}
+				setPagesInView( ( previous ) => {
+					const next = new Set( previous );
+
+					entries.forEach( ( entry ) => {
+						const index = Number( entry.target.dataset.pageIndex );
+
+						if ( entry.isIntersecting ) {
+							next.add( index );
+						} else {
+							next.delete( index );
+						}
+					} );
+
+					return next;
+				} );
 			},
-			{ root: containerRef.current, rootMargin: PRELOAD_MARGIN },
+			{ root: container, rootMargin: `${ RENDER_MARGIN_PX }px 0px` },
 		);
 
-		observer.observe( sentinel );
+		slotRefs.current.forEach( ( slot ) => slot && observer.observe( slot ) );
 
 		return () => observer.disconnect();
-	}, [ pagesToRender, numPages ] );
+		// Re-observes when the page count changes, which is when the slots themselves are
+		// replaced. Page width is deliberately not a dependency: a resize moves the same slots.
+	}, [ numPages ] );
 
 	/*
 	 * `worker`: the page-wide pdf.js worker, handed over explicitly. It must NOT be left to
@@ -216,10 +294,11 @@ export default function DocumentViewer( {
 
 	return (
 		/*
-		 * This is the scroll container, so it has to be reachable from the keyboard: without a
-		 * tabindex a keyboard-only visitor can never put focus inside it, and arrow / Page Down
-		 * would scroll the page past the document instead of through it. Labelled as a region so
-		 * screen-reader users know what they have landed in.
+		 * The scroll container has to be reachable from the keyboard: without a tabindex a
+		 * keyboard-only visitor can never move focus into it, so arrow / Page Down scroll the
+		 * page past the document instead of through it. Named as a region so a screen-reader
+		 * user knows what they have landed in — the aria-label on <Document> below cannot do
+		 * that job, since react-pdf does not forward unknown props to its wrapper element.
 		 */
 		<div
 			className="godam-pdf-viewer"
@@ -241,6 +320,15 @@ export default function DocumentViewer( {
 					error={ errorView }
 					onLoadSuccess={ ( pdf ) => {
 						setNumPages( pdf.numPages );
+						setPagesInView(
+							new Set(
+								Array.from(
+									{ length: Math.min( INITIAL_PAGES, pdf.numPages ) },
+									( _, index ) => index,
+								),
+							),
+						);
+						readPageRatios( pdf );
 						onLoadSuccess?.( pdf );
 					} }
 					onLoadError={ handleError }
@@ -253,25 +341,44 @@ export default function DocumentViewer( {
 						handleError( new Error( 'Password required' ) );
 					} }
 					className="godam-pdf-viewer__doc"
+					aria-label={ title || __( 'Document preview', 'godam' ) }
 				>
 					{ pageWidth > 0 &&
-						Array.from( { length: pagesToRender }, ( _, index ) => (
-							<Page
+						Array.from( { length: numPages }, ( _, index ) => (
+							/*
+							 * One slot per page, always present and always the height of its page,
+							 * whether or not the page itself is currently rendered. That is what
+							 * keeps the scroll height honest while the pages inside come and go.
+							 */
+							<div
 								key={ index }
-								pageNumber={ index + 1 }
-								width={ pageWidth }
-								className="godam-pdf-viewer__page"
-								renderAnnotationLayer={ false }
-								renderTextLayer={ renderTextLayer }
-							/>
+								className="godam-pdf-viewer__slot"
+								data-page-index={ index }
+								ref={ ( element ) => {
+									if ( element ) {
+										slotRefs.current.set( index, element );
+									} else {
+										slotRefs.current.delete( index );
+									}
+								} }
+								style={ {
+									width: `${ pageWidth }px`,
+									height: `${ Math.round(
+										pageWidth * ( pageRatios[ index ] || DEFAULT_PAGE_RATIO ),
+									) }px`,
+								} }
+							>
+								{ ( ! CAN_OBSERVE || pagesInView.has( index ) ) && (
+									<Page
+										pageNumber={ index + 1 }
+										width={ pageWidth }
+										className="godam-pdf-viewer__page"
+										renderAnnotationLayer={ false }
+										renderTextLayer={ renderTextLayer }
+									/>
+								) }
+							</div>
 						) ) }
-					{ /* Watched by the effect above to mount the next batch. Zero-height and
-					     aria-hidden: it is a scroll marker, not content. */ }
-					<div
-						ref={ sentinelRef }
-						className="godam-pdf-viewer__sentinel"
-						aria-hidden="true"
-					/>
 				</Document>
 			) }
 		</div>

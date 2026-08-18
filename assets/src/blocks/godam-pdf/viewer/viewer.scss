@@ -9,6 +9,18 @@
 	overflow-x: hidden;
 	background: #f0f0f1;
 
+	// One per page, always laid out at the page's real size so the scrollbar stays honest
+	// while the pages inside are mounted and released. See RENDER_MARGIN_PX in viewer/index.js.
+	&__slot {
+		flex: 0 0 auto;
+	}
+
+	// The container is focusable (it is the scroll container), so it needs a visible ring.
+	&:focus-visible {
+		outline: 2px solid #3858e9;
+		outline-offset: -2px;
+	}
+
 	&__doc {
 		display: flex;
 		flex-direction: column;
@@ -42,13 +54,4 @@
 		font-size: 13px;
 		color: #646970;
 	}
-}
-
-/*
- * Scroll marker for the incremental page loader in viewer/index.js — never visible, but it
- * has to be laid out (not display: none) for the IntersectionObserver to see it.
- */
-.godam-pdf-viewer__sentinel {
-	width: 100%;
-	height: 1px;
 }

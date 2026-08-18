@@ -104,6 +104,14 @@ async function mountViewer( wrapper ) {
 
 	const root = createRoot( wrapper );
 
+	/*
+	 * One failure can be reported more than once: react-pdf routes onLoadError, onSourceError
+	 * and onPassword to the viewer's error handler, which calls this back each time. Without
+	 * the guard a second call unmounts an already-unmounted root and appends a second
+	 * <object>, showing the visitor the document twice.
+	 */
+	let handledError = false;
+
 	root.render(
 		createElement( DocumentViewer, {
 			url: previewUrl,
@@ -112,6 +120,12 @@ async function mountViewer( wrapper ) {
 				// pdf.js loaded but could not render this file — most often a CORS failure on
 				// the CDN, since pdf.js fetches over XHR where an <object> did not. Hand it to
 				// the native viewer, which is not subject to CORS.
+				if ( handledError ) {
+					return;
+				}
+
+				handledError = true;
+
 				root.unmount();
 				wrapper.textContent = '';
 
