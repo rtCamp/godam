@@ -93,7 +93,7 @@ class Media_Library_Ajax {
 
 		$job_type      = $item['job_type'] ?? '';
 		$api_mime_type = $item['mime_type'] ?? '';
-		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
+		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type, $item['orignal_file_name'] ?? '' );
 		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
 		// trim the extension from title if present.
 		$title = preg_replace( '/\.[^.]+$/', '', $title );
@@ -189,11 +189,12 @@ class Media_Library_Ajax {
 	/**
 	 * Get appropriate MIME type based on job type.
 	 *
-	 * @param string $job_type Job type from GoDAM API.
+	 * @param string $job_type  Job type from GoDAM API.
 	 * @param string $mime_type Original MIME type from API.
+	 * @param string $filename  Original file name from API, used to infer a missing MIME type.
 	 * @return string Appropriate MIME type.
 	 */
-	private function get_mime_type_for_job_type( $job_type, $mime_type ) {
+	private function get_mime_type_for_job_type( $job_type, $mime_type, $filename = '' ) {
 		switch ( $job_type ) {
 			case 'stream':
 				return 'application/dash+xml';
@@ -207,10 +208,34 @@ class Media_Library_Ajax {
 				 * Documents used to fall through to the default below, which meant a job with
 				 * no MIME type was labelled application/dash+xml — then rejected outright by
 				 * create_media_entry()'s allowlist, so the item could not be imported at all.
-				 * PDF is the safe assumption for both job types: for 'pdf' it is exact, and for
-				 * 'document' the only thing WordPress can display is the preview PDF anyway.
+				 *
+				 * When Central sends no MIME type, the original file name is asked next rather
+				 * than defaulting straight to PDF. Labelling a converted document
+				 * application/pdf is not harmless: rtgodam_get_document_preview_url() trusts
+				 * rtgodam_transcoded_url for a PDF, and for a `document` that key holds the
+				 * ORIGINAL .docx — so a document with no preview (a password-protected one, say)
+				 * would hand the .docx itself to pdf.js. PDF remains the last resort, which is
+				 * exact for job type 'pdf' and keeps unnamed items importable.
 				 */
-				return ! empty( $mime_type ) ? $mime_type : 'application/pdf';
+				if ( ! empty( $mime_type ) ) {
+					return $mime_type;
+				}
+
+				$extension = rtgodam_get_extension_from_path( $filename );
+
+				if ( ! empty( $extension ) ) {
+					$mime_for_extension = array_search(
+						$extension,
+						rtgodam_get_supported_document_types(),
+						true
+					);
+
+					if ( ! empty( $mime_for_extension ) ) {
+						return $mime_for_extension;
+					}
+				}
+
+				return 'application/pdf';
 			default:
 				return ! empty( $mime_type ) ? $mime_type : 'application/dash+xml';
 		}

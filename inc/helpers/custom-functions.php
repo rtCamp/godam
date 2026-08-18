@@ -718,7 +718,7 @@ function godam_is_audio_file( $file_path_or_url ) {
  * assets/src/blocks/godam-pdf/constants.js and the two are asserted equal by
  * tests/php/DocumentSupportTest.php.
  *
- * @since 2.2.0
+ * @since n.e.x.t
  *
  * @return array<string, string> MIME type => primary file extension.
  */
@@ -748,12 +748,63 @@ function rtgodam_get_supported_document_types() {
  * narrower than the MIME list: several extensions share a MIME type, and only the
  * ones named here are recognised when no attachment is available to ask.
  *
- * @since 2.2.0
+ * @since n.e.x.t
  *
  * @return string[] Lowercase extensions, without the leading dot.
  */
 function rtgodam_get_supported_document_extensions() {
 	return array_values( array_unique( rtgodam_get_supported_document_types() ) );
+}
+
+/**
+ * Read the file extension out of a path or URL.
+ *
+ * Query strings and fragments are dropped first: CDN URLs routinely carry `?v=2` or
+ * `#page=3`, and reading the extension off the raw string would see "pdf?v=2".
+ *
+ * @since n.e.x.t
+ *
+ * @param string $path_or_url File path or URL.
+ *
+ * @return string Lowercase extension without the leading dot, or an empty string.
+ */
+function rtgodam_get_extension_from_path( $path_or_url ) {
+	if ( empty( $path_or_url ) || ! is_string( $path_or_url ) ) {
+		return '';
+	}
+
+	$path = wp_parse_url( $path_or_url, PHP_URL_PATH );
+
+	return strtolower( pathinfo( ! empty( $path ) ? $path : $path_or_url, PATHINFO_EXTENSION ) );
+}
+
+/**
+ * The extension of the file an attachment actually points at.
+ *
+ * The stored path is preferred over the URL: it is what the file is called on disk, and it
+ * avoids a second query for attachments whose URL is filtered to a CDN.
+ *
+ * @since n.e.x.t
+ *
+ * @param int $attachment_id Attachment ID.
+ *
+ * @return string Lowercase extension without the leading dot, or an empty string when the
+ *                attachment has no resolvable file.
+ */
+function rtgodam_get_attachment_extension( $attachment_id ) {
+	$attachment_id = absint( $attachment_id );
+
+	if ( ! $attachment_id ) {
+		return '';
+	}
+
+	$file = get_post_meta( $attachment_id, '_wp_attached_file', true );
+
+	if ( empty( $file ) ) {
+		$file = wp_get_attachment_url( $attachment_id );
+	}
+
+	return rtgodam_get_extension_from_path( $file );
 }
 
 /**
@@ -768,14 +819,15 @@ function rtgodam_get_supported_document_extensions() {
  * fallback, for GoDAM tab media whose id is not a local numeric attachment and for
  * documents added by URL alone.
  *
- * Note that WordPress maps .asc/.c/.h/.srt to text/plain as well, so an attachment with
- * one of those extensions passes the MIME check. That is deliberate: Central re-sniffs the
- * file by content and fails anything it cannot convert with DOCUMENT_UNSUPPORTED_TYPE, and
- * the block then falls back to its download-only panel. The URL-extension branch below
- * stays restricted to the real extension list, since nothing there can be re-checked.
+ * WordPress maps .asc/.c/.h/.srt to text/plain exactly as it maps .txt, so the MIME type
+ * alone would class every subtitle and source file in the library as a document. Those have
+ * no conversion path — rtgodam_is_supported_document_attachment() keeps the transcoder from
+ * dispatching them at all — so the extension has to agree with the MIME type whenever the
+ * attachment's own file can be resolved. When it cannot (a deleted or virtual attachment),
+ * the MIME type stands on its own rather than rejecting content that still renders.
  *
  * @since 2.1.0
- * @since 2.2.0 Widened beyond PDF to the formats in rtgodam_get_supported_document_types().
+ * @since n.e.x.t Widened beyond PDF to the formats in rtgodam_get_supported_document_types().
  *
  * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
  * @param string     $url           Document URL. Used when no local attachment is available.
@@ -791,7 +843,16 @@ function godam_is_supported_document( $attachment_id = 0, $url = '' ) {
 		$mime_type = get_post_mime_type( $godam_post_id );
 
 		if ( ! empty( $mime_type ) ) {
-			return array_key_exists( $mime_type, rtgodam_get_supported_document_types() );
+			if ( ! array_key_exists( $mime_type, rtgodam_get_supported_document_types() ) ) {
+				return false;
+			}
+
+			$extension = rtgodam_get_attachment_extension( $godam_post_id );
+
+			// No resolvable file (virtual GoDAM media, or a file already removed from disk):
+			// there is no extension to confirm, so the MIME type is all there is to go on.
+			return '' === $extension
+				|| in_array( $extension, rtgodam_get_supported_document_extensions(), true );
 		}
 
 		// Attachment no longer exists; fall through to the URL check so content
@@ -802,12 +863,7 @@ function godam_is_supported_document( $attachment_id = 0, $url = '' ) {
 		return false;
 	}
 
-	// Drop any query string / fragment before reading the extension.
-	$path = wp_parse_url( $url, PHP_URL_PATH );
-
-	$extension = strtolower( pathinfo( ! empty( $path ) ? $path : $url, PATHINFO_EXTENSION ) );
-
-	return in_array( $extension, rtgodam_get_supported_document_extensions(), true );
+	return in_array( rtgodam_get_extension_from_path( $url ), rtgodam_get_supported_document_extensions(), true );
 }
 
 /**
@@ -821,7 +877,7 @@ function godam_is_supported_document( $attachment_id = 0, $url = '' ) {
  * Anything else returns 0, which callers treat as "no local attachment" and fall back to the
  * URL they were given. That is the safe direction.
  *
- * @since 2.2.0
+ * @since n.e.x.t
  *
  * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
  *
@@ -851,7 +907,7 @@ function rtgodam_normalize_attachment_id( $attachment_id ) {
  * Requiring the extension to match as well costs nothing for the real formats, since each
  * one carries its own extension anyway.
  *
- * @since 2.2.0
+ * @since n.e.x.t
  *
  * @param int $attachment_id Attachment ID.
  *
@@ -870,22 +926,7 @@ function rtgodam_is_supported_document_attachment( $attachment_id ) {
 		return false;
 	}
 
-	// The stored path is preferred over the URL: it is what the file is actually called on
-	// disk, and it avoids a second query for attachments whose URL is filtered to a CDN.
-	$file = get_post_meta( $attachment_id, '_wp_attached_file', true );
-
-	if ( empty( $file ) ) {
-		$file = wp_get_attachment_url( $attachment_id );
-	}
-
-	if ( empty( $file ) || ! is_string( $file ) ) {
-		return false;
-	}
-
-	$path      = wp_parse_url( $file, PHP_URL_PATH );
-	$extension = strtolower( pathinfo( ! empty( $path ) ? $path : $file, PATHINFO_EXTENSION ) );
-
-	return in_array( $extension, rtgodam_get_supported_document_extensions(), true );
+	return in_array( rtgodam_get_attachment_extension( $attachment_id ), rtgodam_get_supported_document_extensions(), true );
 }
 
 /**
@@ -896,8 +937,8 @@ function rtgodam_is_supported_document_attachment( $attachment_id ) {
  * 1. `rtgodam_preview_pdf_url` — set by the transcoder callback for every transcoded
  *    document (for a PDF it is the CDN copy; for anything else it is the preview PDF
  *    Central generated). This is the normal path.
- * 2. `rtgodam_transcoded_url` — the pre-2.2.0 key. Only trusted for PDFs, because for a
- *    document it holds the *original* file, which is not renderable.
+ * 2. `rtgodam_transcoded_url` — the key used before document support landed. Only trusted for
+ *    PDFs, because for a document it holds the *original* file, which is not renderable.
  * 3. The local attachment URL, again only for PDFs.
  *
  * Steps 2 and 3 are what keep already-published PDF blocks rendering without a migration.
@@ -905,7 +946,7 @@ function rtgodam_is_supported_document_attachment( $attachment_id ) {
  * An empty return means "no preview available" — either transcoding has not finished or
  * the file is password protected, and the caller should show its download-only panel.
  *
- * @since 2.2.0
+ * @since n.e.x.t
  *
  * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
  * @param string     $fallback_src  URL to fall back to when there is no local attachment.
@@ -945,11 +986,7 @@ function rtgodam_get_document_preview_url( $attachment_id = 0, $fallback_src = '
 		return '';
 	}
 
-	$path = wp_parse_url( $fallback_src, PHP_URL_PATH );
-
-	return 'pdf' === strtolower( pathinfo( ! empty( $path ) ? $path : $fallback_src, PATHINFO_EXTENSION ) )
-		? $fallback_src
-		: '';
+	return 'pdf' === rtgodam_get_extension_from_path( $fallback_src ) ? $fallback_src : '';
 }
 
 /**
@@ -962,7 +999,7 @@ function rtgodam_get_document_preview_url( $attachment_id = 0, $fallback_src = '
  * Media_Library_Ajax::filter_attachment_url_for_virtual_media(), so local and GoDAM-tab
  * attachments are both handled here.
  *
- * @since 2.2.0
+ * @since n.e.x.t
  *
  * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
  * @param string     $fallback_src  URL to fall back to when there is no local attachment.

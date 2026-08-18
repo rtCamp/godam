@@ -29,17 +29,19 @@ import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { store as noticesStore } from '@wordpress/notices';
 import { store as coreStore } from '@wordpress/core-data';
-import { useState, lazy, Suspense } from '@wordpress/element';
+import { useState, useEffect, useMemo, lazy, Suspense } from '@wordpress/element';
 import { trash } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
 import { Caption } from './caption';
+import PreviewErrorBoundary from './preview-error-boundary';
 import {
 	ALLOWED_MEDIA_TYPES,
 	DOCUMENT_ACCEPT,
 	IN_PROGRESS_TRANSCODING_STATUSES,
+	hasUnsupportedDocumentExtension,
 	isSupportedDocument,
 	isSupportedDocumentUrl,
 } from './constants';
@@ -104,6 +106,12 @@ function PdfEdit( {
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	// Track file info during upload so we can display a nice progress UI.
 	const [ uploadingFile, setUploadingFile ] = useState( null );
+	// What pdf.js last reported for the rendered document, committed to the `pageCount`
+	// attribute by the effect below once the block is selected. See onPreviewLoaded().
+	const [ loadedPageCount, setLoadedPageCount ] = useState( 0 );
+	// Preview URLs pdf.js could not render, so the canvas can try the next candidate and
+	// ultimately fall back to the download-only panel. See previewCandidates below.
+	const [ failedPreviewUrls, setFailedPreviewUrls ] = useState( [] );
 	const { createErrorNotice, createWarningNotice } = useDispatch( noticesStore );
 
 	// Fetch attachment metadata: auto-generated cover, file size, MIME type, and the
@@ -174,8 +182,61 @@ function PdfEdit( {
 	 */
 	const isPdfSource = mimeType
 		? 'application/pdf' === mimeType
-		: /\.pdf(?:[?#]|$)/i.test( src || '' );
-	const resolvedPreviewUrl = previewPdfUrl || ( isPdfSource ? src : '' );
+		: /\.pdf(?:[?#]|$)/i.test( sourceUrl || src || '' );
+
+	/*
+	 * Every PDF this document could be rendered from, best first.
+	 *
+	 * A list rather than one URL because the editor can only find out whether pdf.js is able
+	 * to read a URL by trying it. pdf.js fetches over XHR, where the front end's `<object>`
+	 * fallback does not, so a CDN that serves the file happily to visitors but sends no
+	 * Access-Control-Allow-Origin fails here and nowhere else. Giving up on the first failure
+	 * meant an author saw "no preview available" for a document their visitors can read.
+	 *
+	 * Order mirrors rtgodam_get_document_preview_url() — the generated preview, then the
+	 * attachment's current URL, which is what a visitor is actually served — and only then
+	 * falls back to the block's insertion-time `src`, which may be the same file on the local
+	 * site and therefore same-origin. Non-PDF sources contribute nothing: only a preview PDF
+	 * can represent them.
+	 */
+	const previewCandidates = useMemo( () => {
+		const candidates = [ previewPdfUrl ];
+
+		if ( isPdfSource ) {
+			candidates.push( sourceUrl, src );
+		}
+
+		return [ ...new Set( candidates.filter( Boolean ) ) ];
+	}, [ previewPdfUrl, isPdfSource, sourceUrl, src ] );
+
+	// The first candidate that has not already failed. Empty once they all have, which the
+	// states below read as "no preview", the same as having none to begin with.
+	const resolvedPreviewUrl =
+		previewCandidates.find( ( url ) => ! failedPreviewUrls.includes( url ) ) || '';
+
+	// A different file — or a newly generated preview — is a fresh attempt.
+	const candidateKey = previewCandidates.join( '|' );
+	useEffect( () => {
+		setFailedPreviewUrls( [] );
+	}, [ candidateKey ] );
+
+	/**
+	 * Record that the current candidate cannot be rendered, so the next one is tried.
+	 *
+	 * Reached both from the viewer's own error callback and from the error boundary around it.
+	 * Guarded against duplicates because react-pdf can report one failure more than once.
+	 */
+	function onPreviewFailed() {
+		if ( ! resolvedPreviewUrl ) {
+			return;
+		}
+
+		setFailedPreviewUrls( ( previous ) =>
+			previous.includes( resolvedPreviewUrl )
+				? previous
+				: [ ...previous, resolvedPreviewUrl ],
+		);
+	}
 
 	/*
 	 * The file to offer for download, mirroring rtgodam_get_document_download_url(). Always
@@ -203,20 +264,30 @@ function PdfEdit( {
 	 * pageCount: 0 — the old counter could not read cross-origin files — so without the
 	 * selection guard every one of them would rewrite itself on open.
 	 *
-	 * The count is therefore refreshed the moment the author touches the block, which is also
-	 * the only point at which they could act on it.
+	 * The number itself is therefore held in component state, not dropped: pdf.js reports it
+	 * once per load, and a block that was already on the canvas when it loaded never gets a
+	 * second callback when the author selects it later. The effect below commits it as soon as
+	 * the block is selected, so the count really is refreshed the moment the author touches
+	 * the block — which is also the only point at which they could act on it.
 	 *
 	 * @param {Object} pdf pdf.js document proxy.
 	 */
 	function onPreviewLoaded( pdf ) {
-		if ( ! isSingleSelected ) {
+		if ( pdf?.numPages > 0 ) {
+			setLoadedPageCount( pdf.numPages );
+		}
+	}
+
+	useEffect( () => {
+		if ( ! isSingleSelected || ! loadedPageCount ) {
 			return;
 		}
 
-		if ( pdf?.numPages > 0 && pdf.numPages !== pageCount ) {
-			setAttributes( { pageCount: pdf.numPages } );
+		if ( loadedPageCount !== pageCount ) {
+			setAttributes( { pageCount: loadedPageCount } );
 		}
-	}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ isSingleSelected, loadedPageCount, pageCount ] );
 
 	function onUploadError( message ) {
 		createErrorNotice( message, { type: 'snackbar' } );
@@ -275,7 +346,7 @@ function PdfEdit( {
 			caption: media.caption,
 			docTitle: media.title || '',
 			description: mediaDescription,
-			pageCount: 0, // Reset so useEffect re-counts pages for the new file.
+			pageCount: 0, // Reset so onPreviewLoaded re-counts pages for the new file.
 		} );
 		setTemporaryURL();
 		setUploadingFile( null );
@@ -331,20 +402,44 @@ function PdfEdit( {
 	const isCardView = previewMode === 'card';
 	const hasDocument = !! ( src || temporaryURL );
 
+	/*
+	 * Nothing about the document can be judged until its attachment record has arrived: every
+	 * field read from it is empty until then, which is indistinguishable from a document that
+	 * has no preview and no transcoding job.
+	 *
+	 * This gates the states below rather than only the download-only panel, because guessing
+	 * early is not merely a wrong answer shown briefly — the guess feeds the viewer's `file`
+	 * prop, and correcting it makes react-pdf destroy the in-flight load and start another.
+	 * Every such destroy is a chance to take the whole block down (see viewer/worker.js), and
+	 * it re-fetches the PDF for nothing. Mounting the viewer once, on the final URL, avoids
+	 * both.
+	 *
+	 * A document added by URL alone has no record to wait for.
+	 */
+	const isResolvingMedia = hasDocument && ! temporaryURL && !! id && ! hasResolvedMedia;
+
 	// Content saved before the format was validated (or added by URL) can still hold an
 	// unsupported file. The front end renders nothing for those, so flag it here rather than
 	// showing an empty frame.
 	//
-	// Decided from the stored URL first, because that is the only signal available on the
-	// very first render; the attachment's MIME type arrives asynchronously and overrides it
-	// once present, since it is the authoritative answer.
+	// The attachment's MIME type is the authoritative answer, so this waits for it; only a
+	// document with no attachment at all is judged from its URL.
 	//
 	// Trade-off: a supported file served from an extension-less URL is flagged until its MIME
 	// arrives. Erring that way is deliberate — the opposite error would show the author a
 	// broken preview and imply the page is fine.
-	const isUnsupported = hasDocument && ! temporaryURL && (
+	//
+	// A supported MIME type is not enough on its own, for the same reason the server's
+	// godam_is_supported_document() is not satisfied by one: text/plain covers .srt/.asc/.c/
+	// .cc/.h as well as .txt, and those render nothing on the page. Only an extension that is
+	// present AND unsupported counts against the MIME type, so a CDN URL with no extension at
+	// all still goes by MIME.
+	const isUnsupported = hasDocument && ! temporaryURL && ! isResolvingMedia && (
 		mimeType
-			? ! ALLOWED_MEDIA_TYPES.includes( mimeType )
+			? (
+				! ALLOWED_MEDIA_TYPES.includes( mimeType ) ||
+				hasUnsupportedDocumentExtension( sourceUrl || src || '' )
+			)
 			: ! isSupportedDocumentUrl( src || '' )
 	);
 
@@ -365,19 +460,11 @@ function PdfEdit( {
 	 * unrecognised land in the second bucket rather than promising a preview forever.
 	 */
 	const missingPreview =
-		hasDocument && ! temporaryURL && ! isUnsupported && ! resolvedPreviewUrl;
-	/*
-	 * Nothing can be classified until the attachment record has been fetched: until then every
-	 * field reads empty, which is indistinguishable from a document that genuinely has no
-	 * preview. Judging it early made the block open on the download-only panel and then swap to
-	 * the document a moment later. Show the same "Loading preview…" the viewer itself uses, so
-	 * the wait reads as one continuous load rather than a wrong answer being corrected.
-	 */
-	const isResolvingMedia = missingPreview && ! hasResolvedMedia;
+		hasDocument && ! temporaryURL && ! isResolvingMedia && ! isUnsupported &&
+		! resolvedPreviewUrl;
 	const isAwaitingPreview =
-		missingPreview && ! isResolvingMedia &&
-		IN_PROGRESS_TRANSCODING_STATUSES.includes( transcodingStatus );
-	const hasNoPreview = missingPreview && ! isResolvingMedia && ! isAwaitingPreview;
+		missingPreview && IN_PROGRESS_TRANSCODING_STATUSES.includes( transcodingStatus );
+	const hasNoPreview = missingPreview && ! isAwaitingPreview;
 
 	const classes = clsx( className, {
 		'is-transient': !! temporaryURL,
@@ -590,15 +677,30 @@ function PdfEdit( {
 					</p>
 				}
 			>
-				<DocumentViewer
-					url={ resolvedPreviewUrl }
-					title={ docTitle || fileName }
-					onLoadSuccess={ onPreviewLoaded }
-					// The text layer exists so visitors can select, copy and find text. In the
-					// editor it would only intercept clicks meant to select the block, and it is
-					// invisible either way, so the rendering is identical without it.
-					renderTextLayer={ false }
-				/>
+				{ /* Keyed on the URL so a different file gets a fresh boundary rather than
+				     inheriting the previous file's caught state. */ }
+				<PreviewErrorBoundary
+					key={ resolvedPreviewUrl }
+					onError={ onPreviewFailed }
+				>
+					<DocumentViewer
+						url={ resolvedPreviewUrl }
+						title={ docTitle || fileName }
+						onLoadSuccess={ onPreviewLoaded }
+						/*
+						 * Move on to the next candidate URL, and to the download-only panel once
+						 * they are exhausted. The canvas cannot use view.js's native-<object>
+						 * fallback (it would draw the toolbar this viewer exists to avoid), so the
+						 * panel is what the author gets — with the download link, so they can still
+						 * check the file itself.
+						 */
+						onError={ onPreviewFailed }
+						// The text layer exists so visitors can select, copy and find text. In the
+						// editor it would only intercept clicks meant to select the block, and it is
+						// invisible either way, so the rendering is identical without it.
+						renderTextLayer={ false }
+					/>
+				</PreviewErrorBoundary>
 			</Suspense>
 		</div>
 	);
@@ -652,13 +754,18 @@ function PdfEdit( {
 	if ( isUnsupported ) {
 		canvasContent = UnsupportedCanvas;
 	} else if ( isCardView ) {
+		// Card view needs no preview URL — it shows a cover — so it does not wait for the record.
 		canvasContent = CardViewCanvas;
 	} else if ( isResolvingMedia ) {
-		// Ahead of the two states below: neither can be judged until the record has arrived.
+		// Ahead of every preview state: none of them can be judged, and the viewer must not be
+		// mounted on a URL that is about to be corrected, until the record has arrived.
 		canvasContent = LoadingPreviewCanvas;
 	} else if ( isAwaitingPreview ) {
 		canvasContent = ProcessingCanvas;
 	} else if ( hasNoPreview ) {
+		// Either there is no preview to show, or every candidate URL failed to render. The same
+		// panel serves both: what the author can do about it is the same, and it keeps the
+		// download link a visitor would get.
 		canvasContent = UnavailableCanvas;
 	}
 

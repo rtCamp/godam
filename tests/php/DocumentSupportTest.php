@@ -213,7 +213,7 @@ class DocumentSupportTest extends TestCase {
 		$this->stub_mime( 'application/pdf' );
 		$this->assertTrue(
 			godam_is_supported_document( 201, 'https://example.com/report.zip' ),
-			'A PDF attachment should be supported whatever its URL suggests.'
+			'A PDF attachment should be supported whatever the passed-in URL suggests.'
 		);
 
 		// A .pdf URL must not rescue an attachment that is genuinely unsupported.
@@ -221,6 +221,56 @@ class DocumentSupportTest extends TestCase {
 		$this->assertFalse(
 			godam_is_supported_document( 405, 'https://example.com/looks-like.pdf' ),
 			'A ZIP attachment must be rejected even when the URL ends in .pdf.'
+		);
+	}
+
+	/**
+	 * ...but a MIME type shared with an unconvertible format does not carry an attachment
+	 * on its own.
+	 *
+	 * The library picker filters by MIME, so every .srt/.asc/.c/.cc/.h in the library is
+	 * offered alongside real documents. Nothing will ever convert those — the transcoder skips
+	 * them — so the block could only show its "no preview" panel forever. The stored file has
+	 * to agree with the MIME type, exactly as rtgodam_is_supported_document_attachment()
+	 * requires before dispatching a job.
+	 *
+	 * @return void
+	 */
+	public function test_text_plain_lookalike_attachments_are_not_supported_documents() {
+		$this->stub_mime( 'text/plain' );
+
+		foreach ( array( 'captions.srt', 'notes.asc', 'main.c', 'lib.cc', 'header.h' ) as $file ) {
+			$this->stub_meta( array( '_wp_attached_file' => '2026/08/' . $file ) );
+			$this->assertFalse(
+				godam_is_supported_document( 201, '' ),
+				$file . ' shares text/plain but cannot be previewed, so it must not be offered as a document.'
+			);
+		}
+
+		$this->stub_meta( array( '_wp_attached_file' => '2026/08/readme.txt' ) );
+		$this->assertTrue(
+			godam_is_supported_document( 201, '' ),
+			'A .txt attachment is still supported, so the guard discriminates by extension.'
+		);
+	}
+
+	/**
+	 * When the attachment has no resolvable file, the MIME type answers alone.
+	 *
+	 * Virtual GoDAM-tab media carries no `_wp_attached_file`, and a file already removed from
+	 * disk carries no URL either. Rejecting those would stop published content rendering for
+	 * a check that cannot be performed, so the MIME type stands.
+	 *
+	 * @return void
+	 */
+	public function test_supported_mime_stands_when_no_file_can_be_resolved() {
+		$this->stub_mime( 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' );
+		$this->stub_meta( array() );
+		$this->stub_attachment_url( '' );
+
+		$this->assertTrue(
+			godam_is_supported_document( 201, '' ),
+			'With no file to cross-check, a supported MIME type should be accepted.'
 		);
 	}
 
@@ -489,7 +539,7 @@ class DocumentSupportTest extends TestCase {
 	}
 
 	/**
-	 * A PDF falls back through the pre-2.2.0 key and then the local file, so blocks
+	 * A PDF falls back through the pre-document-support key and then the local file, so blocks
 	 * published before preview URLs existed keep rendering with no migration.
 	 *
 	 * @return void

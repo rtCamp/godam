@@ -75,9 +75,16 @@ export const DOCUMENT_ACCEPT = SUPPORTED_DOCUMENT_EXTENSIONS.map(
 /**
  * Whether a media object selected in the editor is a format the block can display.
  *
- * The MIME type is authoritative when present. Uploads in flight and some library
- * selections have no MIME yet, so the extension is the fallback — the same order of
- * preference as godam_is_supported_document() on the server.
+ * The MIME type is authoritative when present, but it is not sufficient on its own:
+ * WordPress maps .srt, .asc, .c, .cc and .h to text/plain exactly as it maps .txt, and the
+ * library picker filters by MIME, so every subtitle and source file in the library is
+ * offered alongside real documents. Those have no conversion path — the transcoder skips
+ * them, and the block could only ever show its "no preview" panel — so the file name has to
+ * agree with the MIME type whenever there is one to read. Same rule as
+ * rtgodam_is_supported_document_attachment() on the server.
+ *
+ * Uploads in flight and some library selections have no MIME yet, in which case the
+ * extension answers alone.
  *
  * @param {Object} media Media object from MediaUpload / MediaReplaceFlow.
  * @return {boolean} True when the format is supported.
@@ -91,11 +98,35 @@ export function isSupportedDocument( media ) {
 	// REST post type ("attachment") for uploads, so it must not be consulted here.
 	const mime = media.mime || media.mime_type || '';
 
+	// `filename` is what the library reports; `url` covers uploads and URL-only selections.
+	const name = media.filename || media.url || '';
+
 	if ( mime ) {
-		return Object.prototype.hasOwnProperty.call( SUPPORTED_DOCUMENT_TYPES, mime );
+		return (
+			Object.prototype.hasOwnProperty.call( SUPPORTED_DOCUMENT_TYPES, mime ) &&
+			! hasUnsupportedDocumentExtension( name )
+		);
 	}
 
 	return isSupportedDocumentUrl( media.url || '' );
+}
+
+/**
+ * Whether a path or URL carries an extension that is known NOT to be a document.
+ *
+ * The inverse of isSupportedDocumentUrl() only for names that HAVE an extension: a name with
+ * none (a CDN URL ending in an id, a library item with no file name) yields false, because
+ * "cannot tell" must not read as "unsupported". That is what makes this safe to combine with
+ * a supported MIME type, and it matches how godam_is_supported_document() treats an
+ * attachment whose file cannot be resolved.
+ *
+ * @param {string} pathOrUrl File name, path or URL.
+ * @return {boolean} True only when an extension is present and unsupported.
+ */
+export function hasUnsupportedDocumentExtension( pathOrUrl ) {
+	const extension = getExtension( pathOrUrl );
+
+	return !! extension && ! SUPPORTED_DOCUMENT_EXTENSIONS.includes( extension );
 }
 
 /**
@@ -105,13 +136,28 @@ export function isSupportedDocument( media ) {
  * @return {boolean} True when the extension is supported.
  */
 export function isSupportedDocumentUrl( url ) {
-	if ( ! url || typeof url !== 'string' ) {
-		return false;
+	return SUPPORTED_DOCUMENT_EXTENSIONS.includes( getExtension( url ) );
+}
+
+/**
+ * Read the extension out of a file name, path or URL.
+ *
+ * @param {string} pathOrUrl File name, path or URL.
+ * @return {string} Lowercase extension without the leading dot, empty when there is none.
+ */
+function getExtension( pathOrUrl ) {
+	if ( ! pathOrUrl || typeof pathOrUrl !== 'string' ) {
+		return '';
 	}
 
-	// Strip the query string / fragment before reading the extension.
-	const path = url.split( /[?#]/ )[ 0 ];
-	const extension = path.split( '.' ).pop().toLowerCase();
+	// Strip the query string / fragment before reading the extension: CDN URLs routinely
+	// carry `?v=2` or `#page=3`.
+	const path = pathOrUrl.split( /[?#]/ )[ 0 ];
+	const name = path.split( '/' ).pop();
 
-	return SUPPORTED_DOCUMENT_EXTENSIONS.includes( extension );
+	if ( ! name.includes( '.' ) ) {
+		return '';
+	}
+
+	return name.split( '.' ).pop().toLowerCase();
 }

@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import './worker';
+import { pdfWorker } from './worker';
 
 /*
  * The viewer's styles — ours plus react-pdf's TextLayer/AnnotationLayer sheets — are
@@ -33,6 +33,27 @@ import './worker';
 
 const MAX_PAGE_WIDTH = 1000;
 const HORIZONTAL_PADDING = 24;
+
+/*
+ * How many pages to mount at a time.
+ *
+ * Every mounted Page is a canvas the size of the rendered page, at the device pixel ratio —
+ * several megabytes each on a retina screen. Mounting all of them at once, which is what
+ * react-pdf does if you hand it the whole range, means a 300-page report allocates hundreds
+ * of those before the visitor has scrolled anywhere, and blocks the main thread rasterising
+ * pages nobody is looking at. A batch at a time keeps the cost proportional to how far the
+ * visitor actually reads.
+ *
+ * Pages already mounted are deliberately NOT released on the way back up: re-rasterising on
+ * every scroll reversal is its own kind of bad, and the batch cap is what bounds the damage.
+ */
+const PAGES_PER_BATCH = 5;
+
+/*
+ * How far below the last mounted page to start the next batch. Larger than a page is tall,
+ * so scrolling at a normal reading pace finds the next page already rendered.
+ */
+const PRELOAD_MARGIN = '1500px';
 
 /**
  * Renders a PDF as a plain scrollable stack of pages, deliberately with no viewer chrome.
@@ -72,8 +93,10 @@ export default function DocumentViewer( {
 	renderTextLayer = true,
 } ) {
 	const [ numPages, setNumPages ] = useState( 0 );
+	const [ mountedPages, setMountedPages ] = useState( PAGES_PER_BATCH );
 	const [ hasError, setHasError ] = useState( false );
 	const containerRef = useRef( null );
+	const sentinelRef = useRef( null );
 	const [ width, setWidth ] = useState( 0 );
 	const [ ownerDocument, setOwnerDocument ] = useState( null );
 
@@ -99,13 +122,49 @@ export default function DocumentViewer( {
 		return () => observer.disconnect();
 	}, [] );
 
-	// A new file is a fresh attempt: clear the previous document's error and page count.
+	// A new file is a fresh attempt: clear the previous document's error and page count, and
+	// go back to rendering a single batch.
 	useEffect( () => {
 		setHasError( false );
 		setNumPages( 0 );
+		setMountedPages( PAGES_PER_BATCH );
 	}, [ url ] );
 
+	const pagesToRender = Math.min( numPages, mountedPages );
+
 	/*
+	 * Mount the next batch when the end of the rendered stack comes into view.
+	 *
+	 * Observed against the scroll container rather than the viewport, because that is what
+	 * scrolls — in the editor the whole viewer is a fixed-height box, so a viewport-rooted
+	 * observer would never fire again after the first batch.
+	 */
+	useEffect( () => {
+		const sentinel = sentinelRef.current;
+
+		if ( ! sentinel || pagesToRender >= numPages ) {
+			return;
+		}
+
+		const observer = new IntersectionObserver(
+			( entries ) => {
+				if ( entries.some( ( entry ) => entry.isIntersecting ) ) {
+					setMountedPages( ( current ) => current + PAGES_PER_BATCH );
+				}
+			},
+			{ root: containerRef.current, rootMargin: PRELOAD_MARGIN },
+		);
+
+		observer.observe( sentinel );
+
+		return () => observer.disconnect();
+	}, [ pagesToRender, numPages ] );
+
+	/*
+	 * `worker`: the page-wide pdf.js worker, handed over explicitly. It must NOT be left to
+	 * GlobalWorkerOptions.workerPort — see viewer/worker.js for why that made one document
+	 * unmounting break every other document on the page.
+	 *
 	 * `ownerDocument` tells pdf.js which document to register the PDF's fonts in. It defaults
 	 * to `globalThis.document`, and getting it wrong is not a subtle failure: pdf.js converts
 	 * each embedded font and installs it with `document.fonts.add()` plus an injected
@@ -121,7 +180,12 @@ export default function DocumentViewer( {
 	 * react-pdf reloads the document whenever `options` changes identity, so this must stay
 	 * memoized — an inline object literal would restart the load on every render.
 	 */
-	const options = useMemo( () => ( { ownerDocument } ), [ ownerDocument ] );
+	const options = useMemo(
+		// Spread so the key is absent, not undefined, when no worker could be started: pdf.js
+		// only skips its own worker setup for an actual PDFWorker instance.
+		() => ( { ownerDocument, ...( pdfWorker ? { worker: pdfWorker } : {} ) } ),
+		[ ownerDocument ],
+	);
 
 	const pageWidth = Math.min( width - HORIZONTAL_PADDING, MAX_PAGE_WIDTH );
 
@@ -151,10 +215,19 @@ export default function DocumentViewer( {
 	}
 
 	return (
+		/*
+		 * This is the scroll container, so it has to be reachable from the keyboard: without a
+		 * tabindex a keyboard-only visitor can never put focus inside it, and arrow / Page Down
+		 * would scroll the page past the document instead of through it. Labelled as a region so
+		 * screen-reader users know what they have landed in.
+		 */
 		<div
 			className="godam-pdf-viewer"
 			ref={ containerRef }
 			data-test-id="godam-pdf-viewer"
+			role="region"
+			aria-label={ title || __( 'Document preview', 'godam' ) }
+			tabIndex={ 0 }
 		>
 			{ /* Nothing is loaded until the container is mounted and its document is known:
 			     starting earlier would register the fonts against globalThis.document, and the
@@ -180,10 +253,9 @@ export default function DocumentViewer( {
 						handleError( new Error( 'Password required' ) );
 					} }
 					className="godam-pdf-viewer__doc"
-					aria-label={ title || __( 'Document preview', 'godam' ) }
 				>
 					{ pageWidth > 0 &&
-						Array.from( { length: numPages }, ( _, index ) => (
+						Array.from( { length: pagesToRender }, ( _, index ) => (
 							<Page
 								key={ index }
 								pageNumber={ index + 1 }
@@ -193,6 +265,13 @@ export default function DocumentViewer( {
 								renderTextLayer={ renderTextLayer }
 							/>
 						) ) }
+					{ /* Watched by the effect above to mount the next batch. Zero-height and
+					     aria-hidden: it is a scroll marker, not content. */ }
+					<div
+						ref={ sentinelRef }
+						className="godam-pdf-viewer__sentinel"
+						aria-hidden="true"
+					/>
 				</Document>
 			) }
 		</div>

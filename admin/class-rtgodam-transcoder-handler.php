@@ -100,11 +100,14 @@ class RTGODAM_Transcoder_Handler {
 	 * straight onto the job type ('pdf' => job_type 'pdf'), whereas every format here shares
 	 * the single job type 'document'.
 	 *
-	 * @since    2.2.0
+	 * No leading comma, unlike $audio_extensions and $other_extensions: exploding those yields
+	 * an empty first entry, which then matches a file with no extension at all.
+	 *
+	 * @since    n.e.x.t
 	 * @access   public
 	 * @var      string    $document_extensions    Document extensions with comma separated.
 	 */
-	public $document_extensions = ',docx,doc,xlsx,xls,pptx,ppt,odt,ods,odp,txt,csv';
+	public $document_extensions = 'docx,doc,xlsx,xls,pptx,ppt,odt,ods,odp,txt,csv';
 
 	/**
 	 * Allowed mimetypes.
@@ -382,7 +385,7 @@ class RTGODAM_Transcoder_Handler {
 				$job_type            = $extension;
 				$autoformat          = $extension;
 				$options_video_thumb = 0;
-			} elseif ( in_array( $extension, explode( ',', $this->document_extensions ), true ) ) {
+			} elseif ( '' !== $extension && in_array( $extension, explode( ',', $this->document_extensions ), true ) ) {
 				/*
 				 * Office / OpenDocument / text files all share one job type. GoDAM Central
 				 * converts them to a preview PDF (job_type 'document' routes to its document
@@ -506,6 +509,19 @@ class RTGODAM_Transcoder_Handler {
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'Queued' );
 					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+
+					if ( 'document' === $job_type ) {
+						/*
+						 * Drop any preview from a previous render of this attachment. The job row
+						 * is reused for a retranscode or an in-place replacement, so the stored
+						 * preview belongs to the file that WAS here — leaving it in place would
+						 * keep serving the old document's contents until the callback arrives, and
+						 * forever if the job fails, since the error path never reaches the
+						 * callback's cleanup. A document with no preview shows the download-only
+						 * panel, and 'Queued' above makes the block show progress meanwhile.
+						 */
+						delete_post_meta( $attachment_id, 'rtgodam_preview_pdf_url' );
+					}
 
 					if ( $manual_retranscode ) {
 						$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
