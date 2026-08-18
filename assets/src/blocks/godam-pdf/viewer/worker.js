@@ -12,18 +12,24 @@
 import { pdfjs } from 'react-pdf';
 
 /**
+ * Internal dependencies
+ */
+import './promise-with-resolvers';
+
+/**
  * The shared worker, or null when the browser refused to create one.
  *
  * `new Worker( new URL( …, import.meta.url ) )` is webpack 5's own worker syntax: it
- * compiles the worker into a separate CLASSIC .js chunk emitted alongside this bundle,
- * and hands us a same-origin URL for it.
+ * compiles ./pdf-worker.js — the polyfill plus pdfjs-dist's worker — into a separate
+ * CLASSIC .js chunk emitted alongside this bundle, and hands us a same-origin URL for it.
  *
  * That indirection is the point. Referencing pdfjs-dist's `.mjs` worker by URL directly
  * would need the web server to serve `.mjs` with a JavaScript MIME type, which plenty of
  * Apache and nginx installs do not — the browser then refuses the module worker and pdf.js
  * silently falls back to running on the main thread, janking the whole page while it
  * parses. Letting webpack own the file also means the plugin ships no non-JS runtime asset
- * and needs no CopyWebpackPlugin.
+ * and needs no CopyWebpackPlugin, and it is what makes it possible to run anything at all
+ * before pdf.js inside the worker.
  *
  * Wrapped because a strict Content-Security-Policy can refuse the worker outright. Failing
  * soft leaves `worker` undefined in the options, and pdf.js then sets up its own in-process
@@ -34,9 +40,7 @@ let pdfWorker = null;
 try {
 	pdfWorker = new pdfjs.PDFWorker( {
 		name: 'godam-pdf-worker',
-		port: new Worker(
-			new URL( 'pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url ),
-		),
+		port: new Worker( new URL( './pdf-worker.js', import.meta.url ) ),
 	} );
 } catch ( error ) {
 	global.console?.warn( 'GoDAM: could not start the pdf.js worker; rendering on the main thread instead', error );

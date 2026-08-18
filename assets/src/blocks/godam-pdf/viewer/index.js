@@ -1,4 +1,9 @@
 /**
+ * Internal dependencies
+ */
+import './promise-with-resolvers';
+
+/**
  * External dependencies
  */
 import { Document, Page } from 'react-pdf';
