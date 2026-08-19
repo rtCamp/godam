@@ -179,6 +179,7 @@ require_once dirname( __DIR__ ) . '/inc/classes/fluentforms/class-init.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-base.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
 

@@ -41,7 +41,7 @@ const sourceLabel = ( value ) => SOURCE_LABELS[ value ] || value;
  * @param {*} value Raw cell value.
  * @return {string} CSV-safe field.
  */
-function escapeCsvCell( value ) {
+export function escapeCsvCell( value ) {
 	let str = String( value );
 	if ( /^[=+\-@\t\r]/.test( str ) ) {
 		str = `'${ str }`;
