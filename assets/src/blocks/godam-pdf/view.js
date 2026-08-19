@@ -74,6 +74,15 @@ async function mountViewer( wrapper ) {
 		return;
 	}
 
+	// Claimed before the first await: mounting is triggered from more than one place now
+	// (page load and, in Elementor, each widget render), and two passes reaching the same
+	// wrapper would put a second React root over a live one.
+	if ( wrapper.dataset.godamMounted ) {
+		return;
+	}
+
+	wrapper.dataset.godamMounted = 'true';
+
 	/*
 	 * render.php's fallback paragraph, kept aside before React takes the container over.
 	 *
@@ -143,10 +152,15 @@ async function mountViewer( wrapper ) {
 	);
 }
 
-document.addEventListener( 'DOMContentLoaded', function() {
-	const wrappers = document.querySelectorAll(
-		'.godam-pdf-wrapper[data-godam-preview]',
-	);
+/**
+ * Mount every document in a subtree, once it scrolls into view.
+ *
+ * @param {Element|Document} root Element (or document) to search for document wrappers.
+ */
+function mountViewersIn( root ) {
+	const wrappers = Array.from(
+		root.querySelectorAll( '.godam-pdf-wrapper[data-godam-preview]' ),
+	).filter( ( wrapper ) => ! wrapper.dataset.godamMounted );
 
 	if ( ! wrappers.length ) {
 		return;
@@ -176,4 +190,133 @@ document.addEventListener( 'DOMContentLoaded', function() {
 	);
 
 	wrappers.forEach( ( wrapper ) => observer.observe( wrapper ) );
+}
+
+/*
+ * Waiting for DOMContentLoaded is not enough on its own: this script can be enqueued late
+ * enough that the event has already fired (Elementor's editor preview loads widget assets
+ * dynamically), and then nothing would ever mount.
+ */
+if ( 'loading' === document.readyState ) {
+	document.addEventListener( 'DOMContentLoaded', () => mountViewersIn( document ) );
+} else {
+	mountViewersIn( document );
+}
+
+/*
+ * Elementor renders a widget's markup over AJAX every time it is added or edited, long after
+ * DOMContentLoaded, so a document dropped into the editor kept showing render.php's
+ * no-JavaScript fallback ("This document cannot be displayed here") while the published page
+ * was fine. `frontend/element_ready` is Elementor's own signal that a widget's DOM is in
+ * place; it also fires for the initial render, and mountViewer() ignores wrappers it has
+ * already claimed, so the two entry points cannot collide.
+ *
+ * Registered defensively: this same script runs on plain WordPress pages, where none of these
+ * globals exist and the event never fires.
+ */
+window.addEventListener( 'elementor/frontend/init', () => {
+	const hooks = window.elementorFrontend?.hooks;
+
+	if ( ! hooks ) {
+		return;
+	}
+
+	hooks.addAction(
+		'frontend/element_ready/godam-document.default',
+		// Elementor hands the widget over as a jQuery object.
+		( element ) => mountViewersIn( element?.[ 0 ] || document ),
+	);
 } );
+
+/**
+ * Detect a page-builder editor preview (WPBakery's inline editor, or Elementor's).
+ *
+ * Both re-render element markup into the preview after this script has run, and again on
+ * every edit. WPBakery offers no per-element "rendered" signal to hook the way Elementor's
+ * `element_ready` does, so the preview is watched instead — see below.
+ *
+ * Same detection as godam-image-layers/frontend.js and godam-player/frontend.js, which solve
+ * this for the hotspot layers and the player.
+ *
+ * @return {boolean} True when running inside a builder's editor preview.
+ */
+function isBuilderPreview() {
+	try {
+		const frame = window.frameElement;
+
+		// WPBakery inline editor iframe ids/classes, and Elementor's preview iframe id.
+		if (
+			frame &&
+			/vc[-_]inline-frame|vc_editor|elementor-preview-iframe/i.test(
+				`${ frame.id || '' } ${ frame.className || '' }`,
+			)
+		) {
+			return true;
+		}
+	} catch ( e ) {
+		// Cross-origin frameElement access: not a builder preview we can serve anyway.
+	}
+
+	try {
+		const classes = document.body?.classList;
+
+		return !! (
+			classes &&
+			( classes.contains( 'vc_editor' ) ||
+				classes.contains( 'elementor-editor-active' ) )
+		);
+	} catch ( e ) {
+		return false;
+	}
+}
+
+/*
+ * Editor preview only: watch for element markup arriving.
+ *
+ * WPBakery's inline editor re-renders a shortcode over AJAX on every edit, exactly as
+ * Elementor does, but publishes no equivalent of `element_ready` — so newly rendered
+ * documents sat on the "cannot be displayed here" fallback until the page was reloaded. The
+ * deferred passes cover markup that lands while the editor is still starting up; the observer
+ * covers every edit after that. mountViewer() claims each wrapper, so repeated passes are
+ * free.
+ *
+ * Nothing here is scheduled on a published page.
+ */
+if ( isBuilderPreview() ) {
+	[ 300, 1200, 3000 ].forEach( ( delay ) =>
+		setTimeout( () => mountViewersIn( document ), delay ),
+	);
+
+	if ( 'MutationObserver' in window ) {
+		let scheduled = false;
+
+		const observer = new MutationObserver( () => {
+			// Coalesced into one pass: a single edit replaces a whole subtree, which would
+			// otherwise mean a scan per added node.
+			//
+			// A timer rather than requestAnimationFrame, which does not run while a document is
+			// hidden — and a builder hides its preview frame often enough (panel transitions, a
+			// backgrounded editor tab) that the pass could be deferred indefinitely, leaving the
+			// author looking at the fallback text when the frame came back.
+			if ( scheduled ) {
+				return;
+			}
+
+			scheduled = true;
+
+			setTimeout( () => {
+				scheduled = false;
+				mountViewersIn( document );
+			}, 50 );
+		} );
+
+		const startObserving = () =>
+			observer.observe( document.body, { childList: true, subtree: true } );
+
+		if ( document.body ) {
+			startObserving();
+		} else {
+			document.addEventListener( 'DOMContentLoaded', startObserving );
+		}
+	}
+}
