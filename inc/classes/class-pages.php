@@ -856,9 +856,13 @@ class Pages {
 					'adminUrl'              => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
 					'godamBaseUrl'          => RTGODAM_IO_API_BASE,
 					'showNewYearSaleBanner' => ( $current_time <= $end_time ),
-					// Top Products is a WooCommerce feature; the dashboard shows its
-					// tab only when WooCommerce is active.
-					'isWoo'                 => class_exists( 'WooCommerce' ),
+					// Top Products and Video to Cart are paid GoDAM for Woo add-on
+					// features. Gate them on the same check the add-on uses for its
+					// own Pro blocks: the add-on active (function_exists) plus a
+					// valid GoDAM license (godam_woo_should_show_premium_blocks).
+					// A plain WooCommerce store without the paid add-on does not
+					// see them.
+					'isWoo'                 => function_exists( 'godam_woo_should_show_premium_blocks' ) && godam_woo_should_show_premium_blocks(),
 				)
 			);
 
@@ -921,9 +925,10 @@ class Pages {
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'adminUrl'         => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
 					'godamBaseUrl'     => RTGODAM_IO_API_BASE,
-					// Video-to-Cart is a WooCommerce feature; the per-video card shows
-					// only when WooCommerce is active (matches the dashboard gate).
-					'isWoo'            => class_exists( 'WooCommerce' ),
+					// Video to Cart is a paid GoDAM for Woo add-on feature; show the
+					// per-video card on the same gate as the dashboard: the add-on
+					// active plus a valid GoDAM license.
+					'isWoo'            => function_exists( 'godam_woo_should_show_premium_blocks' ) && godam_woo_should_show_premium_blocks(),
 				)
 			);
 
