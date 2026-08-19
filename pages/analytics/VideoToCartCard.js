@@ -60,31 +60,27 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 					</div>
 				</div>
 				<div className="flex flex-row justify-between gap-2 items-end">
-					<div className="flex flex-col gap-3">
-						<p className="min-w-[90px] single-metrics-value" data-test-id="godam-video-to-cart-value">{ carts.toLocaleString() }</p>
-						<div className="flex flex-col gap-1">
-							<span className="text-xs text-zinc-500">
+					<div className="flex flex-col gap-2">
+						{ /* Count + rate on one row, and the direct/assisted split on one
+						    line: keeps the card as short as the sibling cards now that the
+						    four-card row is wide enough for it (was stacked to avoid a clip
+						    in the older five-card row). */ }
+						<div className="flex flex-row items-baseline gap-2">
+							<p className="single-metrics-value" data-test-id="godam-video-to-cart-value">{ carts.toLocaleString() }</p>
+							<span className="text-xs text-zinc-500 whitespace-nowrap">
 								{ sprintf(
 									/* translators: %s: percentage of viewers who added to cart. */
 									__( '%s%% of viewers', 'godam' ),
 									rate.toFixed( 1 ),
 								) }
 							</span>
-							{ /* Two stacked lines rather than one nowrap line: the combined
-							    "N in-video · M via product page" overflowed and clipped in
-							    the narrow Insights card. Each line is short, so it never
-							    clips at any card width. */ }
+						</div>
+						<div className="flex flex-col gap-1">
 							<span className="text-[11px] text-zinc-400">
 								{ sprintf(
-									/* translators: %s: in-video (Direct) add-to-cart count. */
-									__( '%s in-video', 'godam' ),
+									/* translators: 1: in-video (Direct) adds, 2: via-product-page (Assisted) adds. */
+									__( '%1$s in-video · %2$s via product page', 'godam' ),
 									direct.toLocaleString(),
-								) }
-							</span>
-							<span className="text-[11px] text-zinc-400">
-								{ sprintf(
-									/* translators: %s: via-product-page (Assisted) add-to-cart count. */
-									__( '%s via product page', 'godam' ),
 									assisted.toLocaleString(),
 								) }
 							</span>
