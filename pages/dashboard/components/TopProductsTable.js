@@ -358,7 +358,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 												className={ supportsDirect( item ) ? undefined : 'godam-direct-na' }
 												title={ supportsDirect( item )
 													? undefined
-													: __( 'Variable, grouped and external products can’t be added to cart inside a video, so in-video (Direct) is always 0 — they convert on the product page (Assisted).', 'godam' ) }
+													: __( 'Variable, grouped and external products cannot be added to cart inside a video, so in-video (Direct) is always 0; they convert on the product page (Assisted).', 'godam' ) }
 											>
 												{ sprintf(
 													/* translators: %s: in-video (Direct) add-to-cart count. */

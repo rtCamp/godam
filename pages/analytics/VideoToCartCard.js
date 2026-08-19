@@ -11,12 +11,13 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Video-to-Cart KPI card for the dashboard Insights row.
  *
- * The count leads (distinct people who played a video and then added a product to
- * cart); the rate (share of viewers) and the Direct/Assisted split support it —
- * mirroring the Top Products "Add to Cart" column.
+ * Shows the count of distinct people who played a video and then added a product
+ * to cart, plus the rate (share of viewers). Each person is counted once. The
+ * in-video vs via-product-page split lives in the Top Products table, where those
+ * counts add up cleanly.
  *
  * @param {Object} props
- * @param {Object} [props.videoToCart] The video_to_cart payload { carts, rate, direct, assisted, played }.
+ * @param {Object} [props.videoToCart] The video_to_cart payload (uses carts + rate).
  * @param {string} [props.dataLabel]   The active range label (e.g. "All time").
  */
 export default function VideoToCartCard( { videoToCart, dataLabel } ) {
@@ -31,8 +32,6 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 	const vtc = videoToCart || {};
 	const carts = Number( vtc.carts || 0 );
 	const rate = Number( vtc.rate || 0 );
-	const direct = Number( vtc.direct || 0 );
-	const assisted = Number( vtc.assisted || 0 );
 
 	return (
 		<div
@@ -53,7 +52,7 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 						</span>
 						<Tooltip
 							text={ __(
-								'Distinct people who played a video and then added a product to cart — inside the video (in-video) or on the product page after clicking through (via product page).',
+								'Distinct people who played a video and then added a product to cart. Each person is counted once.',
 								'godam',
 							) }
 						/>
@@ -61,10 +60,11 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 				</div>
 				<div className="flex flex-row justify-between gap-2 items-end">
 					<div className="flex flex-col gap-2">
-						{ /* Count + rate on one row, and the direct/assisted split on one
-						    line: keeps the card as short as the sibling cards now that the
-						    four-card row is wide enough for it (was stacked to avoid a clip
-						    in the older five-card row). */ }
+						{ /* Count + rate only. The in-video vs via-product-page split is
+						    intentionally not shown here: the count is deduped per person, so
+						    a buyer who added both ways would make the split read higher than
+						    the count. That split lives in the Top Products table, where the
+						    numbers sum. */ }
 						<div className="flex flex-row items-baseline gap-2">
 							<p className="single-metrics-value" data-test-id="godam-video-to-cart-value">{ carts.toLocaleString() }</p>
 							<span className="text-xs text-zinc-500 whitespace-nowrap">
@@ -75,17 +75,7 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 								) }
 							</span>
 						</div>
-						<div className="flex flex-col gap-1">
-							<span className="text-[11px] text-zinc-400">
-								{ sprintf(
-									/* translators: 1: in-video (Direct) adds, 2: via-product-page (Assisted) adds. */
-									__( '%1$s in-video · %2$s via product page', 'godam' ),
-									direct.toLocaleString(),
-									assisted.toLocaleString(),
-								) }
-							</span>
-							<span className="text-[11px] text-zinc-400">{ dataLabel || __( 'All time', 'godam' ) }</span>
-						</div>
+						<span className="text-[11px] text-zinc-400">{ dataLabel || __( 'All time', 'godam' ) }</span>
 					</div>
 				</div>
 			</div>
