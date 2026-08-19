@@ -43,6 +43,14 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 				<div className="flex justify-between items-start flex-row w-full gap-2">
 					<div className="analytics-info-heading">
 						<p className="text-xs text-[#525252] whitespace-nowrap" data-test-id="godam-video-to-cart-label">{ __( 'Video to Cart', 'godam' ) }</p>
+						{ /* WooCommerce badge (per Figma): signals the metric comes from
+						    the WooCommerce add-on / store data. */ }
+						<span
+							className="text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]"
+							data-test-id="godam-video-to-cart-woo-tag"
+						>
+							Woo
+						</span>
 						<Tooltip
 							text={ __(
 								'Distinct people who played a video and then added a product to cart — inside the video (in-video) or on the product page after clicking through (via product page).',

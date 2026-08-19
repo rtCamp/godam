@@ -112,9 +112,9 @@ const SingleMetrics = ( {
 						    matching Figma, for both dashboard and per-video. Falls back
 						    to the range sub-label when there is no delta to show. */ }
 						{ showDelta ? (
-							<div className="flex items-center gap-1.5">
-								<span className={ `text-xs font-semibold ${ deltaValue >= 0 ? 'text-[#15803D]' : 'text-[#B91C1C]' }` }>
-									{ `${ deltaValue >= 0 ? '↑' : '↓' } ${ Math.abs( deltaValue ).toFixed( 2 ) }%` }
+							<div className="flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+								<span className={ `text-xs font-semibold whitespace-nowrap ${ deltaValue >= 0 ? 'text-[#15803D]' : 'text-[#B91C1C]' }` }>
+									{ `${ deltaValue >= 0 ? '↗' : '↘' } ${ Math.abs( deltaValue ).toFixed( 2 ) }%` }
 								</span>
 								<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ deltaText }</span>
 							</div>

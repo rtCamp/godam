@@ -440,19 +440,11 @@ const Dashboard = () => {
 									analyticsDataFetched={ insightsMetrics }
 								/>
 
-								<SingleMetrics
-									mode="dashboard"
-									metricType={ 'engagement-rate' }
-									label={ __( 'Engagement Rate', 'godam' ) }
-									tooltipText={ __(
-										'Average share of each video that viewers watched, across all plays.',
-										'godam',
-									) }
-									rangeActive={ insightsRangeActive }
-									deltaLabel={ insightsDeltaLabel }
-									dataLabel={ insightsCardLabel }
-									analyticsDataFetched={ insightsMetrics }
-								/>
+								{ /* Engagement Rate is intentionally not shown on the dashboard
+								    (it keeps the row to four cards on Woo / three on non-Woo,
+								    matching the design and avoiding a cramped, clipping row).
+								    Average Engagement still appears on each video's own
+								    analytics page. */ }
 
 								{ /* WooCommerce-only: Video-to-Cart has no meaning without a
 								    store, and the card would otherwise read a permanent,
