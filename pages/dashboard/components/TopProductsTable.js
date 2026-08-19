@@ -32,7 +32,7 @@ const SOURCE_LABELS = {
 	'godam-image': __( 'Image', 'godam' ),
 };
 
-const sourceLabel = ( value ) => SOURCE_LABELS[ value ] || value;
+export const sourceLabel = ( value ) => SOURCE_LABELS[ value ] || value;
 
 /**
  * Escape a value for a CSV cell (guards against CSV formula injection; product

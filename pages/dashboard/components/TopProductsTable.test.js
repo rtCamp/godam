@@ -14,7 +14,7 @@
 /**
  * Internal dependencies
  */
-import { escapeCsvCell } from './TopProductsTable';
+import { escapeCsvCell, sourceLabel } from './TopProductsTable';
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
 	// A value whose FIRST character is one of these is what a spreadsheet would
@@ -74,5 +74,19 @@ describe( 'escapeCsvCell — formula-injection guard', () => {
 		it( 'doubles embedded quotes in a plain value', () => {
 			expect( escapeCsvCell( '7" Pan' ) ).toBe( '"7"" Pan"' );
 		} );
+	} );
+} );
+
+describe( 'sourceLabel — Source chip label mapping', () => {
+	it( 'maps each implemented/known block_source to its human label', () => {
+		expect( sourceLabel( 'woo-layer' ) ).toBe( 'Woo Layer' );
+		expect( sourceLabel( 'shoppable-video' ) ).toBe( 'Shoppable Video' );
+		expect( sourceLabel( 'reel-pop' ) ).toBe( 'Reel Pop' );
+		expect( sourceLabel( 'wc-product-gallery' ) ).toBe( 'Product Gallery' );
+		expect( sourceLabel( 'godam-image' ) ).toBe( 'Image' );
+	} );
+
+	it( 'falls back to the raw value for an unknown source', () => {
+		expect( sourceLabel( 'something-new' ) ).toBe( 'something-new' );
 	} );
 } );
