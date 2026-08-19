@@ -79,9 +79,18 @@ $godam_show_in_lightbox = ! empty( $attributes['showInLightbox'] );
 // again on opening). The lightbox wins because it is the more specific intent, and
 // the author still gets autoplay where it counts — opening the lightbox starts
 // playback.
+//
+// Hover modes are excluded for the same reason, and because the closed poster
+// shows nothing but the play icon: previewing (or revealing controls) in place
+// competes with the lightbox and re-introduces the very controls it hides. The
+// reset happens here as well as in the editors, so a value stored on existing
+// content — block, shortcode, Elementor or WPBakery — can never reach the
+// frontend player.
 if ( $godam_show_in_lightbox ) {
-	$godam_autoplay = false;
+	$godam_autoplay     = false;
+	$godam_hover_select = 'none';
 }
+
 // Raw "Show caption" block attribute: true/false when explicitly set, null when
 // unset (inherit from the attachment's Display-captions setting — resolved into
 // $godam_show_caption once the attachment meta is loaded, further below).

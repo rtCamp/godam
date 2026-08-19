@@ -9,6 +9,13 @@ import apiFetch from '@wordpress/api-fetch';
 import './controls/godam-media';
 
 /**
+ * Controls that another setting can take over, flagged server-side by the widget.
+ *
+ * @type {string}
+ */
+const LOCKED_CONTROL_SELECTOR = '.elementor-control.godam-elementor-autoplay-locked, .elementor-control.godam-elementor-lightbox-locked';
+
+/**
  * Make specific SEO fields read-only in the GoDAM Video widget.
  */
 window.addEventListener( 'load', function() {
@@ -321,20 +328,29 @@ function onSettingsChange( changedModel ) {
 		// Selection ring follows the poster, even when the user uploads via
 		// the godam-media tile above the grid.
 		scheduleThumbnailPickerRender();
-	} else if ( keys.indexOf( 'autoplay' ) !== -1 ) {
-		applyAutoplayLock( !! changed.autoplay && 'yes' === changed.autoplay );
+	} else if ( keys.indexOf( 'autoplay' ) !== -1 || keys.indexOf( 'show_in_lightbox' ) !== -1 ) {
+		applyControlLocks( changedModel );
 	}
 }
 
 /**
- * Toggle a visual "disabled" state on controls flagged with the
- * `godam-elementor-autoplay-locked` class (Muted + Hover Option), mirroring
- * the block which disables them when Autoplay is on.
+ * Toggle a visual "disabled" state on controls another setting has taken over.
  *
- * @param {boolean} locked Whether autoplay is currently on.
+ * Two independent locks, so each control is matched against the one that owns it
+ * rather than a single flag: Autoplay locks Muted + Hover Option, and "Show in
+ * lightbox" locks Hover Option (its inline render is a click-to-open poster, so
+ * there is nothing left to hover). Mirrors the block, which disables these
+ * controls rather than hiding them.
+ *
+ * @param {Object} settings Backbone settings model of the widget.
  */
-function applyAutoplayLock( locked ) {
-	document.querySelectorAll( '.elementor-control.godam-elementor-autoplay-locked' ).forEach( ( el ) => {
+function applyControlLocks( settings ) {
+	const autoplayOn = 'yes' === settings?.get?.( 'autoplay' );
+	const lightboxOn = 'yes' === settings?.get?.( 'show_in_lightbox' );
+
+	document.querySelectorAll( LOCKED_CONTROL_SELECTOR ).forEach( ( el ) => {
+		const locked = ( autoplayOn && el.classList.contains( 'godam-elementor-autoplay-locked' ) ) ||
+			( lightboxOn && el.classList.contains( 'godam-elementor-lightbox-locked' ) );
 		el.classList.toggle( 'godam-control-is-disabled', locked );
 	} );
 }
@@ -387,8 +403,8 @@ function hydrateWidget( model, view, panel ) {
 		panel.currentPageView.on( 'render', scheduleThumbnailPickerRender );
 	}
 
-	// Autoplay-lock doesn't depend on the picker DOM, so apply it on a short delay.
-	setTimeout( () => applyAutoplayLock( 'yes' === settings.get( 'autoplay' ) ), 100 );
+	// The control locks don't depend on the picker DOM, so apply them on a short delay.
+	setTimeout( () => applyControlLocks( settings ), 100 );
 
 	// Render the picker once Elementor has mounted its (conditional) control.
 	scheduleThumbnailPickerRender();
