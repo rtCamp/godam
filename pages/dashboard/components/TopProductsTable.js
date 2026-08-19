@@ -308,11 +308,21 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 											</a>
 											<div className="title-link">
 												<div className="w-full max-w-40 text-left flex-1">
-													<p className="font-semibold">{ item.title || sprintf(
-														/* translators: %d: WooCommerce product ID, shown when the product name is unavailable. */
-														__( 'Product ID: %d', 'godam' ),
-														item.product_id,
-													) }</p>
+													<p className="font-semibold">
+														<a
+															className="product-title-link text-inherit no-underline hover:underline"
+															href={ item.permalink || undefined }
+															target={ item.permalink ? '_blank' : undefined }
+															rel={ item.permalink ? 'noreferrer' : undefined }
+															data-test-id="godam-top-products-title-link"
+														>
+															{ item.title || sprintf(
+																/* translators: %d: WooCommerce product ID, shown when the product name is unavailable. */
+																__( 'Product ID: %d', 'godam' ),
+																item.product_id,
+															) }
+														</a>
+													</p>
 													<p className="text-xs text-zinc-400">{ reachLabel( item ) }</p>
 												</div>
 											</div>
