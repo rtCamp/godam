@@ -62,11 +62,21 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 									rate.toFixed( 1 ),
 								) }
 							</span>
-							<span className="text-[11px] text-zinc-400 whitespace-nowrap">
+							{ /* Two stacked lines rather than one nowrap line: the combined
+							    "N in-video · M via product page" overflowed and clipped in
+							    the narrow Insights card. Each line is short, so it never
+							    clips at any card width. */ }
+							<span className="text-[11px] text-zinc-400">
 								{ sprintf(
-									/* translators: 1: in-video (Direct) adds, 2: via-product-page (Assisted) adds. */
-									__( '%1$s in-video · %2$s via product page', 'godam' ),
+									/* translators: %s: in-video (Direct) add-to-cart count. */
+									__( '%s in-video', 'godam' ),
 									direct.toLocaleString(),
+								) }
+							</span>
+							<span className="text-[11px] text-zinc-400">
+								{ sprintf(
+									/* translators: %s: via-product-page (Assisted) add-to-cart count. */
+									__( '%s via product page', 'godam' ),
 									assisted.toLocaleString(),
 								) }
 							</span>
