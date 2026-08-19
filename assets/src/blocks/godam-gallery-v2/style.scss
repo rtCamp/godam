@@ -508,14 +508,23 @@
 }
 
 .godam-gallery-v2-modal {
+
+	/* Vertical room reserved above the iframe for the close button, which sits
+	 * outside it (button height plus the gap beneath it) — mirrors the
+	 * godam/video lightbox. Without it the iframe could take the full 86vh and
+	 * push the button off screen. */
+	--godam-gallery-v2-close-gap: 54px;
+
 	position: fixed;
 	inset: 50% auto auto 50%;
-	transform: translate(-50%, -50%) scale(0.96);
+
+	/* Nudge down by half the reserved strip so the button-plus-iframe is centred
+	 * as one unit, which keeps the button on screen at any viewport height. */
+	transform: translate(-50%, calc(-50% + var(--godam-gallery-v2-close-gap) / 2)) scale(0.96);
 	width: min(92vw, 960px);
-	height: min(86vh, 720px);
+	height: min(calc(86vh - var(--godam-gallery-v2-close-gap)), 720px);
 	background: #111;
 	border-radius: 16px;
-	overflow: hidden;
 	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 	opacity: 0;
 	visibility: hidden;
@@ -523,10 +532,15 @@
 	transition: opacity 0.2s ease, transform 0.2s ease;
 	z-index: 999999;
 
+	/* dvh accounts for mobile browser chrome; vh above is the fallback. */
+	@supports (height: 86dvh) {
+		height: min(calc(86dvh - var(--godam-gallery-v2-close-gap)), 720px);
+	}
+
 	&.is-active {
 		opacity: 1;
 		visibility: visible;
-		transform: translate(-50%, -50%) scale(1);
+		transform: translate(-50%, calc(-50% + var(--godam-gallery-v2-close-gap) / 2)) scale(1);
 		pointer-events: auto;
 	}
 }
@@ -536,13 +550,21 @@
 	width: 100%;
 	height: 100%;
 	border: 0;
+
+	/* The modal itself can no longer clip (the close button lives outside its
+	 * top edge), so the iframe rounds its own corners. */
+	border-radius: inherit;
 	background: #111;
 }
 
+/* Sits above the iframe, aligned to its right edge — outside the video area so
+ * it can never collide with the player's own transcript / share buttons, which
+ * live in the top-right corner of the video. Same placement as the
+ * godam/video lightbox close button. */
 .godam-gallery-v2-modal__close {
-	position: fixed;
-	top: max(24px, env(safe-area-inset-top, 0px) + 16px);
-	right: max(24px, env(safe-area-inset-right, 0px) + 16px);
+	position: absolute;
+	bottom: calc(100% + 10px);
+	right: 0;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -644,9 +666,29 @@ body.godam-gallery-v2-modal-open {
 	}
 
 	.godam-gallery-v2-modal {
+
+		/* Full-screen modal: nothing to reserve above the iframe. The unit is
+		 * required — a unitless 0 would make the `calc()` that mixes it with a
+		 * percentage invalid, dropping the centring transform. */
+		/* stylelint-disable-next-line length-zero-no-unit */
+		--godam-gallery-v2-close-gap: 0px;
+
 		width: 100vw;
 		height: 100vh;
 		border-radius: 0;
+	}
+
+	/* No room above a full-screen iframe, so the button stays overlaid on it as
+	 * before — just moved to the left, clear of the player's transcript / share
+	 * buttons in the top-right corner. (`absolute` rather than the old `fixed`:
+	 * the modal's transform makes it the containing block for both, so the two
+	 * resolve identically here, and `absolute` says so plainly.) */
+	.godam-gallery-v2-modal__close {
+		position: absolute;
+		top: max(24px, env(safe-area-inset-top, 0px) + 16px);
+		right: auto;
+		bottom: auto;
+		left: max(24px, env(safe-area-inset-left, 0px) + 16px);
 	}
 
 	.godam-gallery-v2-modal__nav--prev {
