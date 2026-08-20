@@ -25,6 +25,7 @@ import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
 import TopProductsTable from './components/TopProductsTable';
+import GA4ConnectionWidget from './components/GA4ConnectionWidget';
 import DateRangePicker, { triggerLabelFor, fromISO } from '../analytics/components/DateRangePicker';
 
 /**
@@ -455,6 +456,12 @@ const Dashboard = () => {
 										dataLabel={ insightsCardLabel }
 									/>
 								) }
+
+								{ /* GA4 output is a godam-for-woo feature (it pushes the
+								    add_to_cart/purchase events into the store's own
+								    dataLayer), so it's gated the same as Top Products /
+								    Video-to-Cart: the add-on active + a valid license. */ }
+								{ hasWooProducts && <GA4ConnectionWidget /> }
 							</div>
 						</div>
 
