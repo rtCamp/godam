@@ -79,9 +79,18 @@ $godam_show_in_lightbox = ! empty( $attributes['showInLightbox'] );
 // again on opening). The lightbox wins because it is the more specific intent, and
 // the author still gets autoplay where it counts — opening the lightbox starts
 // playback.
+//
+// Hover modes are excluded for the same reason, and because the closed poster
+// shows nothing but the play icon: previewing (or revealing controls) in place
+// competes with the lightbox and re-introduces the very controls it hides. The
+// reset happens here as well as in the editors, so a value stored on existing
+// content — block, shortcode, Elementor or WPBakery — can never reach the
+// frontend player.
 if ( $godam_show_in_lightbox ) {
-	$godam_autoplay = false;
+	$godam_autoplay     = false;
+	$godam_hover_select = 'none';
 }
+
 // Raw "Show caption" block attribute: true/false when explicitly set, null when
 // unset (inherit from the attachment's Display-captions setting — resolved into
 // $godam_show_caption once the attachment meta is loaded, further below).
@@ -226,6 +235,12 @@ if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
 		'video_src'          => $rtgodam_raw_video_src,
 		'video_src_type'     => $rtgodam_raw_video_src_type,
 		'job_id'             => $rtgodam_raw_job_id,
+		// Transcript resolved in the authenticated editor and cached on the
+		// attachment. Read only — never call godam_get_transcript_path() here:
+		// on a miss it makes a blocking SaaS request on public page loads and
+		// re-caches without the delete guard. Same rule as the audio block.
+		'transcript_path'    => get_post_meta( $godam_numeric_id, 'rtgodam_transcript_path', true ),
+		'transcript_deleted' => get_post_meta( $godam_numeric_id, 'rtgodam_transcript_deleted', true ),
 		'placeholder_map'    => get_post_meta( $godam_numeric_id, 'rtgodam_media_placeholder_thumbnails', true ),
 		'placeholder_single' => get_post_meta( $godam_numeric_id, 'rtgodam_media_video_placeholder_thumbnail', true ),
 		'attachment_meta'    => wp_get_attachment_metadata( $godam_numeric_id ),
@@ -630,15 +645,23 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
 }
 
 /**
- * AI Generated video tracks (transcription) are now loaded dynamically from the frontend.
- * The frontend JavaScript will fetch the transcript URL using the job_id via the API endpoint:
- * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
+ * Transcription resolution order on the front end:
  *
- * This approach provides:
- * - Better caching with ETag/Cache-Control headers
- * - Reduced server-side processing on page load
- * - Automatic cache invalidation when transcription is updated
+ * 1. `data-transcript-url` — the transcript stored on the attachment
+ *    (`rtgodam_transcript_path`), i.e. whatever the Transcription tab of the
+ *    media editor last generated or the user uploaded. This wins so a
+ *    hand-uploaded .vtt/.srt is what visitors actually get.
+ * 2. `data-transcript-deleted` — set when the user deleted the transcript in
+ *    the editor. The player then shows nothing instead of resurrecting the
+ *    SaaS copy.
+ * 3. Otherwise the frontend JavaScript falls back to fetching the transcript
+ *    URL by job_id via the public API endpoint:
+ *    GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
+ *    which keeps ETag/Cache-Control caching for attachments that were never
+ *    opened in the editor (and for virtual media with no local meta).
  */
+$godam_transcript_url     = (string) ( $godam_attachment_data['transcript_path'] ?? '' );
+$godam_transcript_deleted = ! empty( $godam_attachment_data['transcript_deleted'] );
 
 $godam_attachment_title = '';
 
@@ -743,6 +766,8 @@ if ( empty( $godam_attachment_title ) ) {
 							data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
 							data-autoplay-on-view="<?php echo esc_attr( ( $godam_autoplay && 'auto' !== $godam_preload ) ? 'true' : 'false' ); ?>"
 							data-disable-transcript="<?php echo esc_attr( $godam_disable_subtitles_and_transcript ? 'true' : 'false' ); ?>"
+							data-transcript-url="<?php echo esc_url( $godam_transcript_url ); ?>"
+							data-transcript-deleted="<?php echo esc_attr( $godam_transcript_deleted ? 'true' : 'false' ); ?>"
 							data-show-in-lightbox="<?php echo esc_attr( $godam_show_in_lightbox ? 'true' : 'false' ); ?>"
 						>
 							<?php

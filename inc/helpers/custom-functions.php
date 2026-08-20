@@ -1598,7 +1598,8 @@ if ( ! defined( 'RTGODAM_WORK_CACHE_GROUP' ) ) {
 
 /** Cache version — bump to globally invalidate all work-cache entries. */
 if ( ! defined( 'RTGODAM_WORK_CACHE_VERSION' ) ) {
-	define( 'RTGODAM_WORK_CACHE_VERSION', 'v1' );
+	// v2: the cached attachment payload gained the transcript path/deleted keys.
+	define( 'RTGODAM_WORK_CACHE_VERSION', 'v2' );
 }
 
 /** Default TTL (seconds) used as hard-expiry fallback: 30 minutes. */
