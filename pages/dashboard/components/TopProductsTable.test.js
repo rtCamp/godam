@@ -14,7 +14,7 @@
 /**
  * Internal dependencies
  */
-import { escapeCsvCell, sourceLabel } from './TopProductsTable';
+import { escapeCsvCell, sourceLabel, formatRevenue } from './TopProductsTable';
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
 	// A value whose FIRST character is one of these is what a spreadsheet would
@@ -88,5 +88,23 @@ describe( 'sourceLabel — Source chip label mapping', () => {
 
 	it( 'falls back to the raw value for an unknown source', () => {
 		expect( sourceLabel( 'something-new' ) ).toBe( 'something-new' );
+	} );
+} );
+
+describe( 'formatRevenue — revenue_minor -> currency amount', () => {
+	it( 'divides minor units by 100 and formats with the currency symbol', () => {
+		expect( formatRevenue( 1234, 'GBP' ) ).toBe( '£12.34' );
+	} );
+
+	it( 'formats a different ISO currency correctly', () => {
+		expect( formatRevenue( 500, 'USD' ) ).toBe( '$5.00' );
+	} );
+
+	it( 'treats a missing amount as zero rather than throwing', () => {
+		expect( formatRevenue( undefined, 'GBP' ) ).toBe( '£0.00' );
+	} );
+
+	it( 'falls back to a plain number when the currency code is invalid', () => {
+		expect( formatRevenue( 1234, 'NOT-A-CODE' ) ).toBe( '12.34 NOT-A-CODE' );
 	} );
 } );

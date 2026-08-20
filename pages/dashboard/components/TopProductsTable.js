@@ -102,6 +102,45 @@ const reachLabel = ( item ) => {
 // (e.g. a deleted product), so nothing is greyed without cause.
 const supportsDirect = ( item ) => item.supports_direct_add_to_cart !== false;
 
+// Whether this row carries real revenue data. `revenue_minor` (and its sibling
+// `orders`/`currency`) are only present once the analytics microservice has
+// shipped order-attribution; an older service build simply omits them. Treated
+// as absent rather than zero so a not-yet-instrumented row never shows a
+// misleading "£0" - it keeps the pre-existing empty placeholder instead.
+const hasRevenue = ( item ) => item.revenue_minor !== undefined && item.revenue_minor !== null;
+
+/**
+ * Format `revenue_minor` (integer minor currency units, e.g. pence) as a
+ * currency amount using the row's own ISO 4217 `currency` code. Assumes a
+ * single currency per response - no conversion is attempted; multi-currency
+ * handling is out of scope.
+ *
+ * @param {number} minor    Integer minor currency units.
+ * @param {string} currency ISO 4217 currency code (e.g. 'GBP', 'USD').
+ * @return {string} Formatted amount, e.g. "£12.34".
+ */
+export function formatRevenue( minor, currency ) {
+	const amount = Number( minor || 0 ) / 100;
+	try {
+		return new Intl.NumberFormat( undefined, {
+			style: 'currency',
+			currency,
+		} ).format( amount );
+	} catch ( e ) {
+		// Missing/invalid ISO code (or no Intl currency support) - fall back to a
+		// plain number so the cell never throws.
+		return currency ? `${ amount.toFixed( 2 ) } ${ currency }` : amount.toFixed( 2 );
+	}
+}
+
+// "N orders" secondary label for the Revenue cell, mirroring how
+// product_views_ctr is shown as secondary text next to product_views.
+const ordersLabel = ( item ) => {
+	const orders = Number( item.orders || 0 );
+	/* translators: %d: number of distinct orders contributing to this product's revenue. */
+	return sprintf( _n( '%d order', '%d orders', orders, 'godam' ), orders );
+};
+
 /**
  * Dashboard "Top Products" table.
  *
@@ -177,6 +216,8 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 		Number( item.added_to_cart || 0 ),
 		Number( item.added_to_cart_direct || 0 ),
 		Number( item.added_to_cart_assisted || 0 ),
+		hasRevenue( item ) ? formatRevenue( item.revenue_minor, item.currency ) : '',
+		hasRevenue( item ) ? Number( item.orders || 0 ) : '',
 	];
 
 	const handleExportCSV = async () => {
@@ -207,6 +248,8 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 			__( 'Add to Cart', 'godam' ),
 			__( 'Add to Cart (in-video)', 'godam' ),
 			__( 'Add to Cart (assisted)', 'godam' ),
+			__( 'Revenue', 'godam' ),
+			__( 'Orders', 'godam' ),
 		];
 
 		const csvContent = [ headers, ...exportProducts.map( buildCsvRow ) ]
@@ -374,7 +417,17 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 											) }
 										</p>
 									</td>
-									<td className="text-zinc-400">-</td>
+									<td data-test-id="godam-top-products-revenue">
+										{ hasRevenue( item ) ? (
+											<>
+												<span className="font-semibold">{ formatRevenue( item.revenue_minor, item.currency ) }</span>
+												{ ' ' }
+												<span className="text-zinc-400">{ ordersLabel( item ) }</span>
+											</>
+										) : (
+											<span className="text-zinc-400">-</span>
+										) }
+									</td>
 								</tr>
 							) )
 						) }
