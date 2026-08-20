@@ -29,11 +29,13 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $post->ID );
 
+		// The document test goes through the attachment, not the MIME alone: text/plain also
+		// covers .srt/.asc/.c/.h, which are never transcoded and so have no CDN URL to show.
 		$is_allowed = (
 			str_starts_with( $mime_type, 'video/' ) ||
 			str_starts_with( $mime_type, 'audio/' ) ||
 			str_starts_with( $mime_type, 'image/' ) ||
-			'application/pdf' === $mime_type
+			rtgodam_is_supported_document_attachment( $post->ID )
 		);
 
 		if ( ! $is_allowed ) {

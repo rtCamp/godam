@@ -93,7 +93,7 @@ class Media_Library_Ajax {
 
 		$job_type      = $item['job_type'] ?? '';
 		$api_mime_type = $item['mime_type'] ?? '';
-		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
+		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type, $item['orignal_file_name'] ?? '' );
 		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
 		// trim the extension from title if present.
 		$title = preg_replace( '/\.[^.]+$/', '', $title );
@@ -156,21 +156,30 @@ class Media_Library_Ajax {
 			'width'                 => $item['width'] ?? 0,
 			'height'                => $item['height'] ?? 0,
 			'chapters'              => $chapters,
+
+			/*
+			 * The preview PDF for a document. Distinct from `mpd_url` above, which for a
+			 * `document` job is the ORIGINAL .docx/.xlsx and cannot be rendered. Empty for a
+			 * password-protected document, which has no preview by design.
+			 */
+			'preview_pdf_url'       => $item['preview_pdf_url'] ?? '',
 		);
 
-		// Set icon with fallback to default mime type icon for audio and PDF.
+		// Set icon with fallback to default mime type icon for audio and documents.
 		$result['icon'] = $item['thumbnail_url'] ?? '';
 
-		// If no thumbnail URL, use WordPress default icons for audio and PDF.
+		// If no thumbnail URL, use WordPress default icons for audio and documents. Keyed off
+		// the job type rather than the MIME type: Central does not always send a MIME, and the
+		// document types span too many vendor prefixes to test individually here.
 		if ( empty( $result['icon'] ) ) {
-			if ( 'audio' === $item['job_type'] ) {
+			if ( 'audio' === $job_type ) {
 				$result['icon'] = includes_url( 'images/media/audio.png' );
-			} elseif ( 'application/pdf' === $item['mime_type'] ) {
+			} elseif ( in_array( $job_type, array( 'pdf', 'document' ), true ) || 'application/pdf' === $api_mime_type ) {
 				$result['icon'] = includes_url( 'images/media/document.png' );
 			}
 		}
 
-		if ( 'stream' === $item['job_type'] ) {
+		if ( 'stream' === $job_type ) {
 			$result['type'] = 'video';
 		}
 
@@ -180,11 +189,12 @@ class Media_Library_Ajax {
 	/**
 	 * Get appropriate MIME type based on job type.
 	 *
-	 * @param string $job_type Job type from GoDAM API.
+	 * @param string $job_type  Job type from GoDAM API.
 	 * @param string $mime_type Original MIME type from API.
+	 * @param string $filename  Original file name from API, used to infer a missing MIME type.
 	 * @return string Appropriate MIME type.
 	 */
-	private function get_mime_type_for_job_type( $job_type, $mime_type ) {
+	private function get_mime_type_for_job_type( $job_type, $mime_type, $filename = '' ) {
 		switch ( $job_type ) {
 			case 'stream':
 				return 'application/dash+xml';
@@ -192,6 +202,40 @@ class Media_Library_Ajax {
 				return ! empty( $mime_type ) ? $mime_type : 'audio/mpeg';
 			case 'image':
 				return ! empty( $mime_type ) ? $mime_type : 'image/jpeg';
+			case 'pdf':
+			case 'document':
+				/*
+				 * Documents used to fall through to the default below, which meant a job with
+				 * no MIME type was labelled application/dash+xml — then rejected outright by
+				 * create_media_entry()'s allowlist, so the item could not be imported at all.
+				 *
+				 * When Central sends no MIME type, the original file name is asked next rather
+				 * than defaulting straight to PDF. Labelling a converted document
+				 * application/pdf is not harmless: rtgodam_get_document_preview_url() trusts
+				 * rtgodam_transcoded_url for a PDF, and for a `document` that key holds the
+				 * ORIGINAL .docx — so a document with no preview (a password-protected one, say)
+				 * would hand the .docx itself to pdf.js. PDF remains the last resort, which is
+				 * exact for job type 'pdf' and keeps unnamed items importable.
+				 */
+				if ( ! empty( $mime_type ) ) {
+					return $mime_type;
+				}
+
+				$extension = rtgodam_get_extension_from_path( $filename );
+
+				if ( ! empty( $extension ) ) {
+					$mime_for_extension = array_search(
+						$extension,
+						rtgodam_get_supported_document_types(),
+						true
+					);
+
+					if ( ! empty( $mime_for_extension ) ) {
+						return $mime_for_extension;
+					}
+				}
+
+				return 'application/pdf';
 			default:
 				return ! empty( $mime_type ) ? $mime_type : 'application/dash+xml';
 		}
@@ -434,12 +478,17 @@ class Media_Library_Ajax {
 	 * @return array $response Attachment response.
 	 */
 	public function add_media_transcoding_status_js( $response, $attachment ) {
-		// Check if attachment type is video, audio, PDF, or image.
+		// Check if attachment type is video, audio, document, or image.
 		$mime_type = $attachment->post_mime_type;
 		$is_video  = 'video' === substr( $mime_type, 0, 5 );
 		$is_audio  = 'audio' === substr( $mime_type, 0, 5 );
-		$is_pdf    = 'application/pdf' === $mime_type;
-		$is_image  = 'image' === substr( $mime_type, 0, 5 );
+		// Every convertible document type, not just PDF, so an Office upload also reports its
+		// transcoding progress in the media library grid. Tested against the attachment rather
+		// than its MIME type alone: text/plain covers .srt/.asc/.c/.cc/.h as well as .txt, and
+		// those are never transcoded, so a MIME-only test gave every subtitle and source file
+		// in the library a transcoding spinner that never resolved.
+		$is_pdf   = rtgodam_is_supported_document_attachment( $attachment->ID );
+		$is_image = 'image' === substr( $mime_type, 0, 5 );
 
 		// Only process supported attachment types.
 		if ( ! ( $is_video || $is_audio || $is_pdf || $is_image ) ) {

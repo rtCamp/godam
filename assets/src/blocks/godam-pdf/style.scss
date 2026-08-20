@@ -1,3 +1,21 @@
+// The pdf.js viewer's styles belong here, in the block's `style`, rather than alongside the
+// component in the lazily-imported viewer chunk
+// WordPress renders the block editor canvas in an iframe and injects the registered block
+// styles into it when it mounts. A stylesheet that webpack's chunk runtime appends to
+// document.head later lands in the OUTER admin page instead and never reaches the canvas, so
+// the editor rendered the viewer completely unstyled while the front end — which has no
+// iframe — looked correct. `style` is loaded in both places, which is exactly what the viewer
+// needs, and it is in place before React mounts rather than racing the chunk.
+// react-pdf's two sheets are reached by relative path, and without the .css extension, for
+// two separate reasons: the package's `exports` map has no extensionless subpath so a bare
+// `react-pdf/...` specifier fails to resolve, and Dart Sass compiles an `@import` that ends
+// in .css to a passthrough `@import url(...)` rule rather than inlining the file. Naming the
+// file directly and dropping the extension sidesteps both, so the rules are compiled into
+// style-index.css.
+@import "../../../../node_modules/react-pdf/dist/esm/Page/TextLayer";
+@import "../../../../node_modules/react-pdf/dist/esm/Page/AnnotationLayer";
+@import "./viewer/viewer";
+
 .wp-block-godam-pdf {
 	box-sizing: border-box;
 
@@ -20,6 +38,61 @@
 		object,
 		iframe {
 			display: block;
+		}
+
+		// Server-rendered download link. It is the no-JavaScript fallback and the
+		// <object> fallback, so it must stay visible until the viewer replaces it.
+		&__fallback {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100%;
+			min-height: 300px;
+			margin: 0;
+			padding: 16px;
+			text-align: center;
+			font-size: 13px;
+			line-height: 1.5;
+			color: #646970;
+		}
+	}
+
+	// ── No preview available ─────────────────────────────────────────────────
+	// Password-protected documents, and documents still being transcoded. Central
+	// stores protected files as-is and reports success, so this is a normal state
+	// rather than an error — the copy stays matter-of-fact.
+	.godam-pdf-unavailable {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		gap: 8px;
+		width: 100%;
+		min-height: 200px;
+		padding: 24px;
+		border: 1px dashed #c3c4c7;
+		border-radius: 8px;
+		background: #f6f7f7;
+		text-align: center;
+
+		.dashicons {
+			font-size: 32px;
+			width: 32px;
+			height: 32px;
+			color: #9ca3af;
+		}
+
+		&__text {
+			margin: 0;
+			font-size: 13px;
+			line-height: 1.5;
+			color: #646970;
+		}
+
+		&__download {
+			font-size: 13px;
+			font-weight: 600;
 		}
 	}
 

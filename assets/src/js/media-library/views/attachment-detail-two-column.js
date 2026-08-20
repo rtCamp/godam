@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { addIcon, trashIcon, editIcon, barChartIcon } from '../media-library-icons';
-import { canManageAttachment } from '../utility';
+import { canManageAttachment, isDocumentModel } from '../utility';
 import { loadVideoJs, getLoadedVideoJs } from '../videojs-loader.js';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
@@ -1175,7 +1175,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			this.renderAudioActions();
 		}
 
-		if ( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' ) {
+		// Any convertible document, not just PDF: Central rasterises page 0 of the preview for
+		// all of them, and set_media_library_thumbnail() puts it on `image`, so an .xlsx has a
+		// real preview to show here instead of the generic document icon.
+		if ( isDocumentModel( this.model ) ) {
 			const imagePreview = this.model.get( 'image' );
 
 			if ( imagePreview && imagePreview.src ) {
@@ -1187,7 +1190,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 						<img
 							class="details-image"
 							src="${ DOMPurify.sanitize( imagePreview.src ) }"
-							alt="PDF Preview"
+							alt="${ __( 'Document preview', 'godam' ) }"
 						/>
 					` );
 				}
