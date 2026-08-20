@@ -313,25 +313,42 @@ class Seo {
 	 * @return array The SEO data from the attachment.
 	 */
 	public function get_seo_from_attachment( $attachment_id ) {
-		$attachment = get_post( $attachment_id );
+		/**
+		 * Fires before resolving/reading this attachment's post object,
+		 * postmeta, canonical URL and video metadata for SEO schema
+		 * generation, so integrations that centralize media on another site
+		 * can switch context first. Every read below (the attachment post
+		 * itself, its rtgodam_transcoded_url/rtgodam_media_video_thumbnail
+		 * postmeta, its attachment URL, and its video metadata) is scoped to
+		 * this single attachment.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$attachment = get_post( $attachment_id );
 
-		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
-			return array();
+			if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+				return array();
+			}
+
+			$meta = get_post_meta( $attachment_id );
+
+			// Get transcoded URL or fallback to attachment URL.
+			$content_url = '';
+			if ( ! empty( $meta['rtgodam_transcoded_url'][0] ) ) {
+				$content_url = $meta['rtgodam_transcoded_url'][0];
+			} else {
+				$content_url = wp_get_attachment_url( $attachment_id );
+			}
+
+			// Get video duration in ISO 8601 format.
+			$attachment_meta = wp_get_attachment_metadata( $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
-		$meta = get_post_meta( $attachment_id );
-
-		// Get transcoded URL or fallback to attachment URL.
-		$content_url = '';
-		if ( ! empty( $meta['rtgodam_transcoded_url'][0] ) ) {
-			$content_url = $meta['rtgodam_transcoded_url'][0];
-		} else {
-			$content_url = wp_get_attachment_url( $attachment_id );
-		}
-
-		// Get video duration in ISO 8601 format.
-		$duration        = '';
-		$attachment_meta = wp_get_attachment_metadata( $attachment_id );
+		$duration = '';
 		if ( ! empty( $attachment_meta['length'] ) && is_numeric( $attachment_meta['length'] ) ) {
 			$duration = $this->seconds_to_iso8601( (int) $attachment_meta['length'] );
 		}
@@ -406,7 +423,18 @@ class Seo {
 	 */
 	public function add_video_duration_for_video_seo( $response, $post ) {
 		if ( 'video' === $post->post_mime_type || str_starts_with( $post->post_mime_type, 'video/' ) ) {
+			/**
+			 * Fires before reading this attachment's video metadata (duration)
+			 * for the REST API response, so integrations that centralize media
+			 * on another site can switch context first. $post is the
+			 * attachment being serialized by the `rest_prepare_attachment`
+			 * filter, so this is genuinely attachment-scoped.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			$meta = wp_get_attachment_metadata( $post->ID );
+			do_action( 'rtgodam_after_attachment_lookup' );
 
 			if ( ! empty( $meta['length'] ) && is_numeric( $meta['length'] ) ) {
 				$response->data['video_duration_iso8601'] = $this->seconds_to_iso8601( (int) $meta['length'] );
@@ -1089,15 +1117,31 @@ class Seo {
 	 * @param int $attachment_id The attachment ID.
 	 */
 	public function schedule_seo_sync_for_attachment( $attachment_id ) {
-		$attachment = get_post( $attachment_id );
+		/**
+		 * Fires before resolving this attachment's post object and its
+		 * reverse-index meta (which posts use it), so integrations that
+		 * centralize media on another site can switch context first.
+		 * $attachment_id arrives directly from WordPress core's
+		 * `edit_attachment` action (fired with the attachment's own post ID),
+		 * so it is genuinely an attachment ID here.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$attachment = get_post( $attachment_id );
 
-		// Only process video attachments.
-		if ( ! $attachment || strpos( $attachment->post_mime_type, 'video/' ) !== 0 ) {
-			return;
+			// Only process video attachments.
+			if ( ! $attachment || strpos( $attachment->post_mime_type, 'video/' ) !== 0 ) {
+				return;
+			}
+
+			// Check if any posts are using this attachment.
+			$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
-		// Check if any posts are using this attachment.
-		$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
 		if ( empty( $posts_using ) || ! is_array( $posts_using ) ) {
 			return;
 		}

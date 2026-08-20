@@ -166,6 +166,18 @@ if ( $godam_is_virtual ) {
 	if ( false !== $godam_cached_wp_id ) {
 		$godam_original_id = $godam_cached_wp_id;
 	} else {
+		/**
+		 * Fires before resolving/reading attachment data for a virtual GoDAM
+		 * media reference, so integrations that centralize media on another
+		 * site can switch context first. Queries the `attachment` post type
+		 * for whichever attachment carries this virtual ID in its
+		 * `_godam_original_id` meta, to translate it into a real WordPress
+		 * attachment ID.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$godam_query = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
@@ -176,6 +188,9 @@ if ( $godam_is_virtual ) {
 				'fields'         => 'ids',
 			)
 		);
+
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		if ( $godam_query->have_posts() ) {
 			$godam_original_id = $godam_query->posts[0];
 			// Only cache a successful resolution — never cache a miss, so a

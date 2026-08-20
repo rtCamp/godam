@@ -225,83 +225,98 @@ class Transcoding extends Base {
 	 * @return string
 	 */
 	private function get_status_object_from_attachment( int $attachment_id ) {
-		// Check if video has a transcoding job ID.
-		$job_id = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) );
+		/**
+		 * Fires before reading/writing this attachment's transcoding-status
+		 * metadata (job ID, status, error code/message, progress, thumbnail
+		 * ID, and the thumbnail-retry counter), so integrations that
+		 * centralize media on another site can switch context first. Wrapped
+		 * in try/finally because this method returns early from several
+		 * branches below.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Check if video has a transcoding job ID.
+			$job_id = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) );
 
-		// Get and sanitize the transcoding status.
-		$status = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
+			// Get and sanitize the transcoding status.
+			$status = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
 
-		// Handle failure even if job id is missing.
-		if ( ! empty( $status ) && 'failed' === strtolower( $status ) ) {
-			$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
-			$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
+			// Handle failure even if job id is missing.
+			if ( ! empty( $status ) && 'failed' === strtolower( $status ) ) {
+				$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
+				$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
 
-			return array(
-				'status'     => 'failed',
-				'progress'   => 0,
-				'error_code' => $error_code,
-				'error_msg'  => $error_msg,
-			);
-		}
-
-		if ( empty( $job_id ) ) {
-			return array(
-				'status'  => 'not_transcoding',
-				'message' => __( 'Media has not been transcoded.', 'godam' ),
-			);
-		}
-
-		if ( empty( $status ) ) {
-			return array(
-				'status'  => 'not_started',
-				'message' => __( 'Transcoding has not started.', 'godam' ),
-			);
-		}
-
-		// Get and sanitize transcoding progress.
-		$progress = intval( get_post_meta( $attachment_id, 'rtgodam_transcoding_progress', true ) );
-
-		// Define status messages.
-		$status_messages = array(
-			'Queued'      => __( 'Media is queued for transcoding.', 'godam' ),
-			'Downloading' => __( 'Media is downloading for transcoding.', 'godam' ),
-			'Downloaded'  => __( 'Media is downloaded for transcoding.', 'godam' ),
-			'Transcoding' => __( 'Media is transcoding.', 'godam' ),
-			'Transcoded'  => __( 'Media is transcoded.', 'godam' ),
-		);
-
-		// Set default message for unknown status.
-		$message = isset( $status_messages[ $status ] ) ? $status_messages[ $status ] : __( 'Unknown transcoding status.', 'godam' );
-
-		// Check if media has thumbnail generated after transcoding.
-		$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
-
-		// Handle retry logic for missing thumbnails when transcoding is complete.
-		if ( 'transcoded' === strtolower( $status ) && empty( $thumbnail_id ) ) {
-			$retry_count = intval( get_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', true ) );
-			$max_retries = 3;
-
-			if ( $retry_count < $max_retries ) {
-				// Increment retry count.
-				update_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', $retry_count + 1 );
-
-				// Return transcoding status with 95% progress to indicate waiting for thumbnail.
 				return array(
-					'status'    => 'transcoding',
-					'progress'  => 95,
-					'message'   => __( 'Transcoding complete, generating thumbnail...', 'godam' ),
-					'thumbnail' => '',
+					'status'     => 'failed',
+					'progress'   => 0,
+					'error_code' => $error_code,
+					'error_msg'  => $error_msg,
 				);
 			}
-			// If max retries reached, continue with normal flow (return transcoded status without thumbnail).
-		}
 
-		return array(
-			'status'    => strtolower( $status ),
-			'progress'  => $progress,
-			'message'   => $message,
-			'thumbnail' => ! empty( $thumbnail_id ) ? $thumbnail_id : '',
-		);
+			if ( empty( $job_id ) ) {
+				return array(
+					'status'  => 'not_transcoding',
+					'message' => __( 'Media has not been transcoded.', 'godam' ),
+				);
+			}
+
+			if ( empty( $status ) ) {
+				return array(
+					'status'  => 'not_started',
+					'message' => __( 'Transcoding has not started.', 'godam' ),
+				);
+			}
+
+			// Get and sanitize transcoding progress.
+			$progress = intval( get_post_meta( $attachment_id, 'rtgodam_transcoding_progress', true ) );
+
+			// Define status messages.
+			$status_messages = array(
+				'Queued'      => __( 'Media is queued for transcoding.', 'godam' ),
+				'Downloading' => __( 'Media is downloading for transcoding.', 'godam' ),
+				'Downloaded'  => __( 'Media is downloaded for transcoding.', 'godam' ),
+				'Transcoding' => __( 'Media is transcoding.', 'godam' ),
+				'Transcoded'  => __( 'Media is transcoded.', 'godam' ),
+			);
+
+			// Set default message for unknown status.
+			$message = isset( $status_messages[ $status ] ) ? $status_messages[ $status ] : __( 'Unknown transcoding status.', 'godam' );
+
+			// Check if media has thumbnail generated after transcoding.
+			$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+
+			// Handle retry logic for missing thumbnails when transcoding is complete.
+			if ( 'transcoded' === strtolower( $status ) && empty( $thumbnail_id ) ) {
+				$retry_count = intval( get_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', true ) );
+				$max_retries = 3;
+
+				if ( $retry_count < $max_retries ) {
+					// Increment retry count.
+					update_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', $retry_count + 1 );
+
+					// Return transcoding status with 95% progress to indicate waiting for thumbnail.
+					return array(
+						'status'    => 'transcoding',
+						'progress'  => 95,
+						'message'   => __( 'Transcoding complete, generating thumbnail...', 'godam' ),
+						'thumbnail' => '',
+					);
+				}
+				// If max retries reached, continue with normal flow (return transcoded status without thumbnail).
+			}
+
+			return array(
+				'status'    => strtolower( $status ),
+				'progress'  => $progress,
+				'message'   => $message,
+				'thumbnail' => ! empty( $thumbnail_id ) ? $thumbnail_id : '',
+			);
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	/**
@@ -397,6 +412,18 @@ class Transcoding extends Base {
 
 		$force = $request->get_param( 'force' );
 
+		/**
+		 * Fires before querying attachment posts to find videos still
+		 * requiring transcoding, so integrations that centralize media on
+		 * another site can switch context first. Spans both the paginated
+		 * 'attachment'/video query below and the follow-up query counting
+		 * already-transcoded video attachments, since both scan the same
+		 * attachment-scoped data.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		do {
 			$args = array(
 				'post_type'      => 'attachment',
@@ -449,6 +476,15 @@ class Transcoding extends Base {
 		);
 		$transcoded_query = new \WP_Query( $transcoded_args );
 		$transcoded_count = $transcoded_query->found_posts; // This will return the number of posts that have the rtgodam_transcoded_url meta.
+
+		/**
+		 * Fires after the attachment queries above, so integrations can
+		 * restore the site context switched in
+		 * `rtgodam_before_attachment_lookup`.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Count untranscoded media (don't have rtgodam_transcoded_url meta).
 		$untranscoded_count = $total_video_count - $transcoded_count;

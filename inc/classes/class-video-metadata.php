@@ -87,6 +87,18 @@ class Video_Metadata {
 	 * @return void
 	 */
 	private function process_video_metadata( $attachment_id ) {
+		/**
+		 * Fires before reading/writing this attachment's video-duration and
+		 * file-size meta, so integrations that centralize media on another
+		 * site can switch context first. Reads the attachment's file path
+		 * and existing `_video_duration`/`_video_file_size` postmeta, then
+		 * writes back freshly probed values for whichever one is still
+		 * missing.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$file_path = get_attached_file( $attachment_id );
 
 		if ( $this->is_video_attachment( $attachment_id ) && file_exists( $file_path ) ) {
@@ -113,6 +125,8 @@ class Video_Metadata {
 				}
 			}
 		}
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	/**
@@ -137,6 +151,17 @@ class Video_Metadata {
 		$has_more_videos = true;
 
 		while ( $has_more_videos ) {
+			/**
+			 * Fires before querying for video attachments still missing
+			 * duration/file-size meta, so integrations that centralize
+			 * media on another site can switch context first. This
+			 * get_posts() call reads directly from the attachment post
+			 * type (post_type => attachment), batched across every
+			 * matching video on the site.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			// Get a batch of video attachments without metadata.
 			//phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 			$videos = get_posts(
@@ -159,6 +184,7 @@ class Video_Metadata {
 					),
 				)
 			);
+			do_action( 'rtgodam_after_attachment_lookup' );
 
 			if ( ! empty( $videos ) ) {
 				// Process this batch.
@@ -192,6 +218,19 @@ class Video_Metadata {
 		$mime          = isset( $response['mime'] ) ? $response['mime'] : '';
 		$thumbnail_url = '';
 
+		/**
+		 * Fires before reading this attachment's video/PDF/audio-thumbnail
+		 * and `_wp_attachment_metadata` postmeta, so integrations that
+		 * centralize media on another site can switch context first. This
+		 * filter runs on every wp_prepare_attachment_for_js() call
+		 * plugin-wide, including ones GoDAM doesn't control (WP core's
+		 * media modal, REST responses) — self-wrapped so it's correct
+		 * regardless of who triggered it.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		if ( 0 === strpos( $mime, 'video/' ) || 'application/pdf' === $mime ) {
 			$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
 
@@ -213,6 +252,8 @@ class Video_Metadata {
 			$response['image']['width']  = $attachment_meta['width'] ?? self::DEFAULT_THUMBNAIL_WIDTH;
 			$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 		}
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return $response;
 	}
@@ -275,6 +316,21 @@ class Video_Metadata {
 	public function set_media_library_list_thumbnail( $html, $attachment_id, $size, $icon ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- We dont use icon param.
 		if ( is_admin() && 'upload' === get_current_screen()->id && array( 60, 60 ) === $size ) {
 
+			/**
+			 * Fires before reading this attachment's video/audio-thumbnail,
+			 * `_godam_icon`, and `_wp_attachment_metadata` postmeta, so
+			 * integrations that centralize media on another site can
+			 * switch context first. This filter runs on every
+			 * wp_get_attachment_image() call plugin-wide, including ones
+			 * GoDAM doesn't control — self-wrapped so it's correct
+			 * regardless of who triggered it. Scoped to the admin
+			 * upload-list-view branch, the only branch that touches
+			 * attachment postmeta.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+
 			$thumbnail_url = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 			// Virtual GoDAM audio stores its cover in dedicated meta.
@@ -294,6 +350,8 @@ class Video_Metadata {
 				$height = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 				$html   = sprintf( '<img width="%s" height="%s" src="%s" style="object-fit: cover; height: 60px;" decoding="async" loading="lazy" />', esc_attr( $width ), esc_attr( $height ), esc_url( rtgodam_convert_to_https_url( $thumbnail_url ) ) );
 			}
+
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		return $html;

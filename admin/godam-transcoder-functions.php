@@ -122,7 +122,19 @@ function rtgodam_is_file_being_transcoded( $attachment_id ) {
  *                     not allow an editing UI.
  */
 function rtgodam_get_edit_post_link( $id = 0, $context = 'display' ) {
+	/**
+	 * Fires before resolving this post by ID, so integrations that
+	 * centralize media on another site can switch context first. $id can be
+	 * an attachment ID — this function's own docblock documents attachments
+	 * as a supported input alongside posts/pages/revisions, and no caller
+	 * currently wraps this lookup.
+	 *
+	 * @since 1.8.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
 	$_post = get_post( $id );
+	do_action( 'rtgodam_after_attachment_lookup' );
+
 	if ( empty( $_post ) ) {
 		return;
 	}

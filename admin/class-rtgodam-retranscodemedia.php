@@ -696,6 +696,20 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
+		/**
+		 * Fires before reading/clearing this attachment's retranscoding-sent
+		 * flag, so integrations that centralize media on another site can
+		 * switch context first. Unlike this class's other transcoder-pipeline
+		 * hook handlers, the 'rtgodam_handle_callback_finished' action fires
+		 * unconditionally at the end of handle_callback()
+		 * (admin/class-rtgodam-transcoder-rest-routes.php), outside of any of
+		 * that method's own per-branch before/after pairs, so this postmeta
+		 * access has no coverage from its caller.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$is_retranscoding_job = get_post_meta( $attachment_id, 'rtgodam_retranscoding_sent', true );
 
 		if ( $is_retranscoding_job ) {
@@ -703,6 +717,8 @@ class RTGODAM_RetranscodeMedia {
 			delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
 
 		}
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	/**

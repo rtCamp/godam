@@ -1562,6 +1562,18 @@ class Media_Usage_Tracker {
 
 		global $wpdb;
 
+		/**
+		 * Fires before resolving a WP attachment post ID from its GoDAM
+		 * Central identifier, so integrations that centralize media on
+		 * another site can switch context first. This is a direct
+		 * $wpdb->postmeta query for the attachment carrying this
+		 * _godam_original_id value — the same attachment-scoped lookup
+		 * get_post_meta() would do, just expressed as raw SQL for
+		 * performance.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$post_id = (int) $wpdb->get_var(
 			$wpdb->prepare(
@@ -1569,6 +1581,7 @@ class Media_Usage_Tracker {
 				$godam_id
 			)
 		);
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		$this->godam_id_cache[ $godam_id ] = $post_id;
 		return $post_id;

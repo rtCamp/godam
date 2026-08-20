@@ -2043,6 +2043,17 @@ class Media_Library extends Base {
 		// Sanitize the GoDAM media ID from the request.
 		$godam_id = sanitize_text_field( $request['id'] );
 
+		/**
+		 * Fires before resolving/reading attachment data for a GoDAM-original-ID
+		 * lookup, so integrations that centralize media on another site can
+		 * switch context first. This covers both the WP_Query match on
+		 * '_godam_original_id' and the internal core media request that follows,
+		 * since both resolve the same attachment.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		// Try to find an attachment that matches the GoDAM original ID.
 		$query = new \WP_Query(
 			array(
@@ -2068,6 +2079,8 @@ class Media_Library extends Base {
 		$internal_request = new \WP_REST_Request( 'GET', '/wp/v2/media/' . $attachment_id );
 		// Execute the request and capture the response.
 		$response = rest_do_request( $internal_request );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Return the full media object (or WP_Error if not found).
 		return $response;
@@ -2127,7 +2140,17 @@ class Media_Library extends Base {
 			}
 		}
 
+		/**
+		 * Fires before counting attachments in this media folder, so
+		 * integrations that centralize media on another site can switch
+		 * context first. The WP_Query below counts attachment posts
+		 * (post_type 'attachment') tagged with this media-folder term.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$query = new \WP_Query( $args );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return rest_ensure_response(
 			array(

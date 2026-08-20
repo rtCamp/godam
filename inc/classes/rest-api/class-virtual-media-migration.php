@@ -103,6 +103,16 @@ class Virtual_Media_Migration extends Base {
 
 		if ( false === $job_ids ) {
 			global $wpdb;
+
+			/**
+			 * Fires before querying attachment posts for their virtual-media job
+			 * IDs, so integrations that centralize media on another site can
+			 * switch context first. Reads postmeta joined to the posts table,
+			 * filtered to post_type 'attachment' — squarely attachment-scoped.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			$job_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 				$wpdb->prepare(
 					"SELECT DISTINCT meta_value FROM {$wpdb->postmeta} pm
@@ -112,6 +122,8 @@ class Virtual_Media_Migration extends Base {
 					Virtual_Media_Registrar::META_ORIGINAL_ID,
 				)
 			);
+			do_action( 'rtgodam_after_attachment_lookup' );
+
 			set_transient( 'rtgodam_virtual_media_job_ids', $job_ids, HOUR_IN_SECONDS );
 		}
 
