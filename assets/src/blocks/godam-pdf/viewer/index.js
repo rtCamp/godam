@@ -123,6 +123,8 @@ export default function DocumentViewer( {
 	const [ hasError, setHasError ] = useState( false );
 	const containerRef = useRef( null );
 	const slotRefs = useRef( new Map() );
+	// Reachable from the slot ref callback, so a slot can be observed the moment it mounts.
+	const observerRef = useRef( null );
 	// The file whose geometry is wanted, for discarding a previous document's late reply.
 	const currentUrlRef = useRef( url );
 	const [ width, setWidth ] = useState( 0 );
@@ -207,6 +209,15 @@ export default function DocumentViewer( {
 	 * Rooted on the scroll container rather than the viewport, because that is the element that
 	 * scrolls — on the editor canvas the viewer is a fixed-height box, so a viewport-rooted
 	 * observer would report every page as visible and mount the entire document.
+	 *
+	 * The observer is stashed in a ref so each slot can be handed to it from the slot's own ref
+	 * callback. Observing only from in here would miss every slot that appears later: slots
+	 * render only once pageWidth > 0, so a viewer that loads at zero width — a Document block in
+	 * a collapsed tab or accordion, the hidden case INITIAL_PAGES is about — has none of them
+	 * yet when this runs, and nothing brings the effect back when the panel is opened and they
+	 * finally mount. The observer would then watch nothing for the life of the mount, leaving a
+	 * correctly-sized, correctly-scrolling document of blank placeholders behind the two seed
+	 * pages, whatever the reader scrolled to.
 	 */
 	useEffect( () => {
 		const container = containerRef.current;
@@ -236,11 +247,19 @@ export default function DocumentViewer( {
 			{ root: container, rootMargin: `${ RENDER_MARGIN_PX }px 0px` },
 		);
 
+		observerRef.current = observer;
+
+		// Slots already mounted: ref callbacks run during the commit, ahead of effects, so any
+		// slot that rendered in the same pass that set numPages is here waiting.
 		slotRefs.current.forEach( ( slot ) => slot && observer.observe( slot ) );
 
-		return () => observer.disconnect();
-		// Re-observes when the page count changes, which is when the slots themselves are
-		// replaced. Page width is deliberately not a dependency: a resize moves the same slots.
+		return () => {
+			observer.disconnect();
+			observerRef.current = null;
+		};
+		// Rebuilt when the page count changes, which is when the slots themselves are replaced.
+		// Page width is deliberately not a dependency: a resize moves the same slots, and slots
+		// brought into existence by a first non-zero width observe themselves on mount.
 	}, [ numPages ] );
 
 	/*
@@ -360,10 +379,26 @@ export default function DocumentViewer( {
 								className="godam-pdf-viewer__slot"
 								data-page-index={ index }
 								ref={ ( element ) => {
+									/*
+									 * Registration and observation are the same event, so a slot
+									 * cannot end up watched by nobody — including the slots that
+									 * only appear when a zero-width viewer is finally revealed,
+									 * long after the effect above ran.
+									 */
+									const observer = observerRef.current;
+									const previous = slotRefs.current.get( index );
+
+									if ( previous && previous !== element ) {
+										// The observer holds its targets, so a released slot has
+										// to be dropped explicitly or it stays watched as a
+										// detached node.
+										observer?.unobserve( previous );
+										slotRefs.current.delete( index );
+									}
+
 									if ( element ) {
 										slotRefs.current.set( index, element );
-									} else {
-										slotRefs.current.delete( index );
+										observer?.observe( element );
 									}
 								} }
 								style={ {
