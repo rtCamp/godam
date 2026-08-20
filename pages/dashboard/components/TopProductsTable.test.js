@@ -14,7 +14,7 @@
 /**
  * Internal dependencies
  */
-import { escapeCsvCell, sourceLabel } from './TopProductsTable';
+import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric } from './TopProductsTable';
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
 	// A value whose FIRST character is one of these is what a spreadsheet would
@@ -88,5 +88,51 @@ describe( 'sourceLabel — Source chip label mapping', () => {
 
 	it( 'falls back to the raw value for an unknown source', () => {
 		expect( sourceLabel( 'something-new' ) ).toBe( 'something-new' );
+	} );
+} );
+
+describe( 'formatRevenue — revenue_minor -> currency amount', () => {
+	it( 'scales minor units by the currency fraction digits and formats with the symbol', () => {
+		expect( formatRevenue( 1234, 'GBP' ) ).toBe( '£12.34' );
+	} );
+
+	it( 'formats a different ISO currency correctly', () => {
+		expect( formatRevenue( 500, 'USD' ) ).toBe( '$5.00' );
+	} );
+
+	it( 'uses 0 fraction digits for a zero-decimal currency (JPY)', () => {
+		const formatted = formatRevenue( 1234, 'JPY' );
+		// 1234 minor units of a 0-decimal currency is 1,234 major units, not 12.34.
+		expect( formatted ).toContain( '1,234' );
+		expect( formatted ).not.toContain( '.' );
+	} );
+
+	it( 'uses 3 fraction digits for a three-decimal currency (KWD)', () => {
+		// 1234 minor units of a 3-decimal currency is 1.234 major units.
+		expect( formatRevenue( 1234, 'KWD' ) ).toContain( '1.234' );
+	} );
+
+	it( 'treats a missing amount as zero rather than throwing', () => {
+		expect( formatRevenue( undefined, 'GBP' ) ).toBe( '£0.00' );
+	} );
+
+	it( 'falls back to a plain number when the currency code is invalid', () => {
+		expect( formatRevenue( 1234, 'NOT-A-CODE' ) ).toBe( '12.34 NOT-A-CODE' );
+	} );
+} );
+
+describe( 'formatRevenueNumeric — CSV plain-number revenue', () => {
+	it( 'renders a dot-decimal number with no symbol for a 2-decimal currency', () => {
+		expect( formatRevenueNumeric( 1234, 'GBP' ) ).toBe( '12.34' );
+		expect( formatRevenueNumeric( 500, 'USD' ) ).toBe( '5.00' );
+	} );
+
+	it( 'uses the currency fraction digits (0 for JPY, 3 for KWD)', () => {
+		expect( formatRevenueNumeric( 1234, 'JPY' ) ).toBe( '1234' );
+		expect( formatRevenueNumeric( 1234, 'KWD' ) ).toBe( '1.234' );
+	} );
+
+	it( 'treats a missing amount as zero', () => {
+		expect( formatRevenueNumeric( undefined, 'GBP' ) ).toBe( '0.00' );
 	} );
 } );

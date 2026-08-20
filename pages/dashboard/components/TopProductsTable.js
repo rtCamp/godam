@@ -102,6 +102,93 @@ const reachLabel = ( item ) => {
 // (e.g. a deleted product), so nothing is greyed without cause.
 const supportsDirect = ( item ) => item.supports_direct_add_to_cart !== false;
 
+// Whether this row carries real revenue data. `revenue_minor` (and its sibling
+// `orders`/`currency`) are only present once the analytics microservice has
+// shipped order-attribution; an older service build simply omits them. Treated
+// as absent rather than zero so a not-yet-instrumented row never shows a
+// misleading "£0" - it keeps the pre-existing empty placeholder instead.
+const hasRevenue = ( item ) => item.revenue_minor !== undefined && item.revenue_minor !== null;
+
+/**
+ * Number of minor-unit digits for an ISO 4217 currency, taken from Intl itself
+ * rather than assumed. Most currencies use 2 (GBP, USD), but JPY uses 0 and KWD
+ * uses 3, so a hardcoded /100 would misplace the decimal for those. Falls back
+ * to 2 when the code is unknown or Intl has no currency data.
+ *
+ * @param {string} currency ISO 4217 currency code.
+ * @return {number} Fraction digits for the currency (e.g. 2 for GBP, 0 for JPY, 3 for KWD).
+ */
+function currencyFractionDigits( currency ) {
+	try {
+		return new Intl.NumberFormat( undefined, {
+			style: 'currency',
+			currency,
+		} ).resolvedOptions().maximumFractionDigits;
+	} catch ( e ) {
+		return 2;
+	}
+}
+
+/**
+ * Convert integer minor currency units to a major-unit amount using the
+ * currency's own fraction digits (10 ** digits), so 1234 is 12.34 for GBP,
+ * 1234 for JPY, and 1.234 for KWD.
+ *
+ * @param {number} minor    Integer minor currency units.
+ * @param {string} currency ISO 4217 currency code.
+ * @return {number} Amount in major units.
+ */
+function revenueMajorUnits( minor, currency ) {
+	return Number( minor || 0 ) / ( 10 ** currencyFractionDigits( currency ) );
+}
+
+/**
+ * Format `revenue_minor` (integer minor currency units, e.g. pence) as a
+ * currency amount using the row's own ISO 4217 `currency` code. The minor units
+ * are scaled by the currency's own fraction digits (not a fixed /100), so JPY
+ * (0 digits) and KWD (3 digits) render correctly. Assumes a single currency per
+ * response - no conversion is attempted; multi-currency handling is out of scope.
+ *
+ * @param {number} minor    Integer minor currency units.
+ * @param {string} currency ISO 4217 currency code (e.g. 'GBP', 'USD').
+ * @return {string} Formatted amount, e.g. "£12.34".
+ */
+export function formatRevenue( minor, currency ) {
+	const amount = revenueMajorUnits( minor, currency );
+	try {
+		return new Intl.NumberFormat( undefined, {
+			style: 'currency',
+			currency,
+		} ).format( amount );
+	} catch ( e ) {
+		// Missing/invalid ISO code (or no Intl currency support) - fall back to a
+		// plain number so the cell never throws.
+		return currency ? `${ amount.toFixed( 2 ) } ${ currency }` : amount.toFixed( 2 );
+	}
+}
+
+/**
+ * Revenue as a plain, locale-independent number in major units for CSV export:
+ * a dot decimal separator, no thousands grouping, no currency symbol (the
+ * currency code travels in its own column). Uses the currency's own fraction
+ * digits so JPY has none and KWD has three.
+ *
+ * @param {number} minor    Integer minor currency units.
+ * @param {string} currency ISO 4217 currency code.
+ * @return {string} Plain number string, e.g. "12.34".
+ */
+export function formatRevenueNumeric( minor, currency ) {
+	return revenueMajorUnits( minor, currency ).toFixed( currencyFractionDigits( currency ) );
+}
+
+// "N orders" secondary label for the Revenue cell, mirroring how
+// product_views_ctr is shown as secondary text next to product_views.
+const ordersLabel = ( item ) => {
+	const orders = Number( item.orders || 0 );
+	/* translators: %d: number of distinct orders contributing to this product's revenue. */
+	return sprintf( _n( '%d order', '%d orders', orders, 'godam' ), orders );
+};
+
 /**
  * Dashboard "Top Products" table.
  *
@@ -177,6 +264,9 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 		Number( item.added_to_cart || 0 ),
 		Number( item.added_to_cart_direct || 0 ),
 		Number( item.added_to_cart_assisted || 0 ),
+		hasRevenue( item ) ? formatRevenueNumeric( item.revenue_minor, item.currency ) : '',
+		hasRevenue( item ) ? ( item.currency || '' ) : '',
+		hasRevenue( item ) ? Number( item.orders || 0 ) : '',
 	];
 
 	const handleExportCSV = async () => {
@@ -207,6 +297,9 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 			__( 'Add to Cart', 'godam' ),
 			__( 'Add to Cart (in-video)', 'godam' ),
 			__( 'Add to Cart (assisted)', 'godam' ),
+			__( 'Revenue', 'godam' ),
+			__( 'Currency', 'godam' ),
+			__( 'Orders', 'godam' ),
 		];
 
 		const csvContent = [ headers, ...exportProducts.map( buildCsvRow ) ]
@@ -374,7 +467,17 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 											) }
 										</p>
 									</td>
-									<td className="text-zinc-400">-</td>
+									<td data-test-id="godam-top-products-revenue">
+										{ hasRevenue( item ) ? (
+											<>
+												<span className="font-semibold">{ formatRevenue( item.revenue_minor, item.currency ) }</span>
+												{ ' ' }
+												<span className="text-zinc-400">{ ordersLabel( item ) }</span>
+											</>
+										) : (
+											<span className="text-zinc-400">-</span>
+										) }
+									</td>
 								</tr>
 							) )
 						) }
