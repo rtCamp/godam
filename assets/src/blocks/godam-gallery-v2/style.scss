@@ -564,7 +564,12 @@
 .godam-gallery-v2-modal__close {
 	position: absolute;
 	bottom: calc(100% + 10px);
-	right: 0;
+
+	/* Aligned to the iframe's right edge, except on a notched device held in
+	 * landscape: there the cutout can reach past the modal's own side margin
+	 * (at least 4vw, since the modal is min(92vw, 960px) wide), so pull the
+	 * button inward by whatever the margin does not already clear. */
+	right: max(0px, env(safe-area-inset-right, 0px) - 4vw);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -676,6 +681,13 @@ body.godam-gallery-v2-modal-open {
 		width: 100vw;
 		height: 100vh;
 		border-radius: 0;
+
+		/* dvh keeps the full-screen modal — and so the close button, its only
+		 * exit control — clear of the mobile browser chrome that 100vh sits
+		 * behind. vh above is the fallback. */
+		@supports (height: 100dvh) {
+			height: 100dvh;
+		}
 	}
 
 	/* No room above a full-screen iframe, so the button stays overlaid on it as
