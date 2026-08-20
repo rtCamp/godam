@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { addIcon, trashIcon, editIcon, barChartIcon } from '../media-library-icons';
-import { canManageAttachment } from '../utility';
+import { canManageAttachment, isDocumentModel } from '../utility';
 import { loadVideoJs, getLoadedVideoJs } from '../videojs-loader.js';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
