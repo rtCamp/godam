@@ -4,15 +4,67 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { getCurrentMimeTypeFilter } from '../../data/utilities';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
+/**
+ * Poll a folder-ZIP build job until it finishes.
+ *
+ * The download endpoint now returns a job id immediately and builds the archive in the
+ * background (so large folders no longer time out the request). This polls the status
+ * endpoint until the job is `completed` or `failed`, or the timeout is reached.
+ *
+ * @param {string} jobId                      The job id returned by the downloadZip mutation.
+ * @param {Object} [options]                  Polling options.
+ * @param {number} [options.intervalMs=2000]  Delay between polls.
+ * @param {number} [options.timeoutMs=180000] Give up after this long.
+ * @return {Promise<Object>} Resolves with { status, zip_url, zip_name, message }.
+ */
+export async function pollZipJobStatus( jobId, { intervalMs = 2000, timeoutMs = 180000 } = {} ) {
+	const url = `${ restURL }godam/v1/media-library/download-folder-status/${ jobId }`;
+	const start = Date.now();
+
+	while ( Date.now() - start < timeoutMs ) {
+		try {
+			const res = await fetch( url, {
+				headers: { 'X-WP-Nonce': window.MediaLibrary.nonce },
+			} );
+			const json = await res.json();
+
+			// A WP_Error (e.g. 404 unknown/expired job, 403 not-owner) serialises as
+			// { code, message, data: { status: <httpCode> } } — so `res.ok` is the reliable
+			// signal, not `data.status` (which would be the HTTP code, not the job status).
+			if ( ! res.ok ) {
+				return { status: 'failed', message: json?.message || __( 'Failed to prepare the ZIP file.', 'godam' ) };
+			}
+
+			const data = json?.data || {};
+
+			if ( data.status === 'completed' || data.status === 'failed' ) {
+				return data;
+			}
+		} catch ( e ) {
+			// Transient network error — keep polling until the timeout.
+		}
+
+		await new Promise( ( resolve ) => setTimeout( resolve, intervalMs ) );
+	}
+
+	return { status: 'failed', message: __( 'Timed out while preparing the ZIP file.', 'godam' ) };
+}
+
 export const folderApi = createApi( {
 	reducerPath: 'folderApi',
 	baseQuery: fetchBaseQuery( { baseUrl: restURL } ),
+	tagTypes: [ 'Folder' ],
 	endpoints: ( builder ) => ( {
 		getAllMediaCount: builder.query( {
 			async queryFn( arg, api, extraOptions, baseQuery ) {
@@ -24,6 +76,12 @@ export const folderApi = createApi( {
 						_fields: 'id',
 						per_page: 1,
 						...mimeTypeParams,
+					},
+					// Send the REST nonce so the count runs as the current user (matching the
+					// grid). Without it the request is anonymous and only counts public media,
+					// undercounting when private/pending attachments exist.
+					headers: {
+						'X-WP-Nonce': window.MediaLibrary.nonce,
 					},
 				} );
 
@@ -84,6 +142,7 @@ export const folderApi = createApi( {
 					totalPages: totalPages ? parseInt( totalPages, 10 ) : 0,
 				};
 			},
+			providesTags: [ 'Folder' ],
 		} ),
 		createFolder: builder.mutation( {
 			query: ( data ) => ( {
@@ -94,6 +153,10 @@ export const folderApi = createApi( {
 					'X-WP-Nonce': window.MediaLibrary.nonce,
 				},
 			} ),
+			// NOTE: intentionally NOT invalidating 'Folder' here. The createFolder reducer
+			// pushes the new folder optimistically; a refetch would replace page 1 with the
+			// server's first 20 (name ASC) and drop a freshly-created folder that sorts onto
+			// a later page until Load More / reload.
 		} ),
 		updateFolder: builder.mutation( {
 			query: ( data ) => ( {
@@ -116,6 +179,7 @@ export const folderApi = createApi( {
 					'X-WP-Nonce': window.MediaLibrary.nonce,
 				},
 			} ),
+			invalidatesTags: [ 'Folder' ],
 		} ),
 		bulkDeleteFolders: builder.mutation( {
 			query: ( folderIds ) => ( {
@@ -127,6 +191,7 @@ export const folderApi = createApi( {
 					'Content-Type': 'application/json',
 				},
 			} ),
+			invalidatesTags: [ 'Folder' ],
 		} ),
 		bulkLockFolders: builder.mutation( {
 			query: ( { folderIds, lockedStatus } ) => ( {
@@ -186,7 +251,10 @@ export const folderApi = createApi( {
 						search: searchTerm,
 						page,
 						per_page: perPage,
-						_fields: 'id,name',
+						// Include parent + meta so a folder selected from search keeps its
+						// lock/bookmark state. With only id,name the selected folder lost its
+						// meta, defeating the locked-folder checks downstream.
+						_fields: 'id,name,parent,meta',
 					},
 					headers: {
 						'X-WP-Nonce': window.MediaLibrary.nonce,

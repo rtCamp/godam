@@ -14,6 +14,7 @@ import {
 } from './analytics-helpers';
 import {
 	addLayerInteraction as bufferAddLayerInteraction,
+	addLayerInteractions as bufferAddLayerInteractions,
 	getLayerInteractions as bufferGetLayerInteractions,
 	clearLayerInteractions as bufferClearLayerInteractions,
 } from './utils/storage';
@@ -358,6 +359,7 @@ function observePageLoadForVideo( video ) {
 	// shared pagehide flush. Single source of truth for layer-action semantics
 	// lives in utils/layerActions.js.
 	window.GoDAM.addLayerInteraction = bufferAddLayerInteraction;
+	window.GoDAM.addLayerInteractions = bufferAddLayerInteractions;
 	window.GoDAM.getLayerInteractions = bufferGetLayerInteractions;
 	window.GoDAM.clearLayerInteractions = bufferClearLayerInteractions;
 	window.GoDAM.LAYER_ACTIONS = LAYER_ACTIONS;
@@ -419,6 +421,17 @@ function observePageLoadForVideo( video ) {
 		// chunk so the back-half doesn't get rejected with 400.
 		const MAX_PER_REQUEST = 100;
 
+		// keepalive requests share a per-page ~64 KiB in-flight body budget
+		// (Fetch spec); once the aggregate crosses it the browser rejects the
+		// request outright with a network error. These type=3 flushes fire
+		// during pagehide alongside the type=1 and type=2 keepalive POSTs and
+		// share that budget, and per-hotspot `viewed` raises per-impression
+		// volume to 1 + hotspots, so a 100-entry chunk (~70 KB at a ~700-byte
+		// metadata blob) routinely overflows. Cap each chunk well under 64 KiB
+		// by serialized size, not just entry count, leaving room for the
+		// sibling flushes.
+		const MAX_BYTES_PER_REQUEST = 32 * 1024;
+
 		for ( const videoKey of videoKeys ) {
 			const events = Array.isArray( buffer[ videoKey ] ) ? buffer[ videoKey ] : [];
 			if ( events.length === 0 ) {
@@ -436,14 +449,37 @@ function observePageLoadForVideo( video ) {
 				? findVideoElementById( numericId )
 				: document.querySelector( `.video-js[data-job_id="${ videoKey }"]` );
 
-			for ( let i = 0; i < events.length; i += MAX_PER_REQUEST ) {
-				const chunk = events.slice( i, i + MAX_PER_REQUEST );
+			// Group events into chunks bounded by BOTH the 100-entry server
+			// limit and the byte budget above. A single oversized event still
+			// goes alone rather than looping forever.
+			const chunks = [];
+			let chunk = [];
+			let chunkBytes = 0;
+			for ( const event of events ) {
+				const eventBytes = JSON.stringify( event ).length + 1;
+				if (
+					chunk.length > 0 &&
+					( chunk.length >= MAX_PER_REQUEST ||
+						chunkBytes + eventBytes > MAX_BYTES_PER_REQUEST )
+				) {
+					chunks.push( chunk );
+					chunk = [];
+					chunkBytes = 0;
+				}
+				chunk.push( event );
+				chunkBytes += eventBytes;
+			}
+			if ( chunk.length ) {
+				chunks.push( chunk );
+			}
+
+			for ( const layers of chunks ) {
 				const { endpoint, body } = buildAnalyticsRequestBody( {
 					type: 3,
 					userToken: window.analytics?.user?.()?.anonymousId || '',
 					videoId: isNumeric ? numericId : 0,
 					jobId: isNumeric ? '' : videoKey,
-					layers: chunk,
+					layers,
 					blockSource: flushVideoEl?.dataset?.blockSource || '',
 					// From this video's own element, not a page-level lookup: a
 					// single host-stamped player must not re-attribute the rest.
@@ -454,12 +490,16 @@ function observePageLoadForVideo( video ) {
 					continue;
 				}
 
+				// keepalive can reject during pagehide; swallow so it does not
+				// surface as an unhandled rejection. The buffer is still cleared
+				// below by design (re-sending on a later flush would double-count
+				// composite rows, which aggregate with COUNT(*), not uniqExact).
 				fetch( endpoint + '/analytics/', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify( body ),
 					keepalive: true,
-				} );
+				} ).catch( () => {} );
 			}
 		}
 

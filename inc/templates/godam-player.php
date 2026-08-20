@@ -14,38 +14,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Output player wrapper styles inline at render time. We deliberately do NOT
-// defer to wp_head/admin_head: those hooks never fire in some render paths
-// (Elementor editor preview, Elementor Pro REST-based widget refresh, custom
-// REST renders), so deferring would drop the styles on the editor canvas.
-// Inline <style> in body is valid HTML5 and applies document-wide in every
-// browser. The global flag guarantees it's emitted at most once per request.
-global $godam_player_wrapper_inline_css_added, $wp_filesystem;
-if ( empty( $godam_player_wrapper_inline_css_added ) ) {
-	$godam_player_wrapper_inline_css_added = true;
-	$godam_player_wrapper_css_path         = RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css';
-	$godam_player_wrapper_css_key          = 'godam_player_wrapper_css';
-
-	if ( file_exists( $godam_player_wrapper_css_path ) ) {
-		$godam_player_wrapper_css = get_transient( $godam_player_wrapper_css_key );
-
-		if ( false === $godam_player_wrapper_css ) {
-			// Initialize WP_Filesystem if not already done.
-			if ( empty( $wp_filesystem ) ) {
-				require_once ABSPATH . 'wp-admin/includes/file.php';
-				WP_Filesystem();
-			}
-
-			if ( ! empty( $wp_filesystem ) ) {
-				$godam_player_wrapper_css = $wp_filesystem->get_contents( $godam_player_wrapper_css_path );
-				set_transient( $godam_player_wrapper_css_key, $godam_player_wrapper_css, HOUR_IN_SECONDS );
-			}
-		}
-
-		if ( ! empty( $godam_player_wrapper_css ) ) {
-			echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
-		}
-	}
+// Player wrapper styles (placeholder / poster / loading states) ship as a real
+// stylesheet, not an inline <style>. An inline tag here rendered as a sibling of
+// the player markup, so inside a flow-layout container (core/column, core/group)
+// the player became the second child and inherited the container's blockGap
+// `margin-block-start`, adding phantom space above the video.
+//
+// `godam-player-wrapper-style` is a registered dependency of `godam-player-style`,
+// so every render path that enqueues the player CSS already pulls it in; this call
+// covers direct `require` of this template and is a no-op otherwise.
+if ( wp_style_is( 'godam-player-wrapper-style', 'registered' ) ) {
+	wp_enqueue_style( 'godam-player-wrapper-style' );
 }
 
 $godam_is_shortcode = false;

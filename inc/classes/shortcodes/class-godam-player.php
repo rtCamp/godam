@@ -156,10 +156,31 @@ class GoDAM_Player {
 			);
 		}
 
+		/**
+		 * Player wrapper styles (placeholder / poster / loading states).
+		 *
+		 * Shipped as a real stylesheet rather than an inline <style> emitted by
+		 * inc/templates/godam-player.php: the style tag rendered as a sibling of
+		 * the player markup, so in a flow-layout container (core/column, core/group)
+		 * the player became the second child and picked up the container's
+		 * `margin-block-start` blockGap rule, adding phantom spacing above the video.
+		 * The CSS is static — nothing per-video — so there is nothing to inline.
+		 *
+		 * Registered as a dependency of `godam-player-style` so every existing
+		 * enqueue point (block.json `style`, shortcodes, Elementor `depended_styles`,
+		 * gallery) pulls it in with no further changes.
+		 */
+		wp_register_style(
+			'godam-player-wrapper-style',
+			RTGODAM_URL . 'assets/build/css/godam-player-wrapper.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css' )
+		);
+
 		wp_register_style(
 			'godam-player-style',
 			RTGODAM_URL . 'assets/build/css/godam-player.css',
-			array(),
+			array( 'godam-player-wrapper-style' ),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
 		);
 
@@ -286,7 +307,7 @@ class GoDAM_Player {
 	 *
 	 * HTML output is NOT cached here by design.  Caching the full rendered blob
 	 * would suppress per-request side effects that the template performs on every
-	 * call: adding wrapper CSS to wp_head, suppressing Gravity Forms autoscroll,
+	 * call: enqueueing the player wrapper stylesheet, suppressing Gravity Forms autoscroll,
 	 * conditionally initialising the IMA SDK for ad-enabled videos, and generating
 	 * a unique per-render $godam_instance_id used in DOM IDs.
 	 *
