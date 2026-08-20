@@ -113,7 +113,7 @@
 	},
 	"editorScript": [ "file:./index.js" ],
 	"editorStyle": [ "file:./index.css" ],
-	"style": [ "file:./style-index.css" ],
-	"viewScript": [ "file:./view.js" ],
+	"style": [ "file:./style-index.css", "godam-lightbox-style" ],
+	"viewScript": [ "godam-lightbox-script", "file:./view.js" ],
 	"render": "file:./render.php"
 }

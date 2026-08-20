@@ -32,8 +32,11 @@ class Godam_Gallery extends Base {
 			'icon'            => 'godam-eicon-gallery',
 			'categories'      => array( 'godam' ),
 			'keywords'        => array( 'godam', 'gallery', 'video' ),
-			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-gallery-v2-view-script', 'godam-elementor-frontend' ),
-			'depended_styles' => array( 'godam-player-style', 'godam-gallery-v2-style' ),
+			// godam-lightbox-script must be listed before godam-gallery-v2-view-script:
+			// this path bypasses the block's block.json, so it does not inherit the
+			// viewScript list, and view.js needs window.GodamLightbox to open a video.
+			'depended_script' => array( 'godam-player-frontend-script', 'godam-player-analytics-script', 'godam-lightbox-script', 'godam-gallery-v2-view-script', 'godam-elementor-frontend' ),
+			'depended_styles' => array( 'godam-player-style', 'godam-lightbox-style', 'godam-gallery-v2-style' ),
 		);
 	}
 
