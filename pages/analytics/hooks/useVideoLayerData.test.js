@@ -77,3 +77,73 @@ describe( 'groupRows — conversion comes from the server, not a client recomput
 		expect( parent.conversion_rate ).toBe( 100 );
 	} );
 } );
+
+describe( 'groupRows — per-hotspot Direct revenue (single store currency)', () => {
+	const baseRow = {
+		layer_type: 'woo',
+		page_url: 'https://shop.example.com',
+		timestamp: 17,
+	};
+	// The endpoint attaches revenue_minor/orders/currency to each Woo row.
+	// Base currency is INR; a non-base (USD) order is excluded server-side, so
+	// its row arrives as revenue_minor 0 / orders 0 — never blended.
+	const rows = [
+		{
+			...baseRow,
+			layer_id: 'woo-9', layer_name: 'Deals',
+			viewed: 10, clicked: 4, hovered: 10, conversion_rate: 40,
+			layer_metadata: '{"parent_layer_id":"woo-9"}',
+		},
+		{
+			...baseRow,
+			layer_id: 'woo-9::p101', layer_name: 'Hoodie',
+			viewed: 0, clicked: 3, conversion_rate: 30,
+			revenue_minor: 120000, orders: 1, currency: 'INR',
+			layer_metadata: '{"parent_layer_id":"woo-9","product_id":101}',
+		},
+		{
+			...baseRow,
+			layer_id: 'woo-9::p102', layer_name: 'Cap',
+			viewed: 0, clicked: 1, conversion_rate: 10,
+			revenue_minor: 0, orders: 0, currency: '',
+			layer_metadata: '{"parent_layer_id":"woo-9","product_id":102}',
+		},
+		{
+			...baseRow,
+			layer_id: 'woo-9::p103', layer_name: 'Mug',
+			viewed: 0, clicked: 2, conversion_rate: 20,
+			revenue_minor: 30000, orders: 1, currency: 'INR',
+			layer_metadata: '{"parent_layer_id":"woo-9","product_id":103}',
+		},
+	];
+
+	it( 'maps each hotspot revenue/orders/currency from its endpoint row', () => {
+		const [ parent ] = groupRows( rows, 'woo', OPEN_CONFIG );
+		const byPid = Object.fromEntries(
+			parent.sub_hotspots.map( ( s ) => [ s.product_id, s ] ),
+		);
+		expect( byPid[ 101 ] ).toMatchObject( { revenue_minor: 120000, orders: 1, currency: 'INR' } );
+		expect( byPid[ 103 ] ).toMatchObject( { revenue_minor: 30000, orders: 1, currency: 'INR' } );
+		// Server-excluded non-base order arrives as 0; the panel hides it (orders 0).
+		expect( byPid[ 102 ] ).toMatchObject( { revenue_minor: 0, orders: 0 } );
+	} );
+
+	it( 'parent revenue is the sum of its hotspots, currency from a base-currency child', () => {
+		const [ parent ] = groupRows( rows, 'woo', OPEN_CONFIG );
+		expect( parent.revenue_minor ).toBe( 150000 ); // 120000 + 30000
+		expect( parent.orders ).toBe( 2 );
+		expect( parent.currency ).toBe( 'INR' );
+	} );
+
+	it( 'defaults revenue fields to 0/empty when the endpoint sends none', () => {
+		const plain = rows.map( ( { revenue_minor, orders, currency, ...rest } ) => rest );
+		const [ parent ] = groupRows( plain, 'woo', OPEN_CONFIG );
+		expect( parent.revenue_minor ).toBe( 0 );
+		expect( parent.orders ).toBe( 0 );
+		expect(
+			parent.sub_hotspots.every(
+				( s ) => s.revenue_minor === 0 && s.orders === 0 && s.currency === '',
+			),
+		).toBe( true );
+	} );
+} );
