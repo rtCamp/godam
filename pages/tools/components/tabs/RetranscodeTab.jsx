@@ -20,6 +20,7 @@ import { useState, useRef, useEffect, useMemo } from '@wordpress/element';
  */
 import ProgressBar from '../ProgressBar.jsx';
 import { scrollToTop } from '../../../godam/utils';
+import { SUPPORTED_DOCUMENT_EXTENSIONS } from '../../../../assets/src/blocks/godam-pdf/constants';
 
 const DEFAULT_MEDIA_TYPE = 'video';
 
@@ -33,9 +34,20 @@ const MEDIA_TYPE_OPTIONS = [
 	{ value: 'all', label: __( 'All media', 'godam' ) },
 	{ value: 'video', label: __( 'Video', 'godam' ) },
 	{ value: 'audio', label: __( 'Audio', 'godam' ) },
-	{ value: 'pdf', label: __( 'PDF', 'godam' ) },
+	{ value: 'document', label: __( 'Document', 'godam' ) },
 	{ value: 'image', label: __( 'Image', 'godam' ) },
 ];
+
+/**
+ * Human-readable list of the formats the Document option covers.
+ *
+ * Read from the block's shared constants rather than spelled out here: nothing about the
+ * label "Document" tells you it also means .txt and .csv, and a hardcoded list would be a
+ * third copy to keep in step with rtgodam_get_supported_document_types().
+ */
+const DOCUMENT_FORMAT_LIST = SUPPORTED_DOCUMENT_EXTENSIONS
+	.map( ( extension ) => extension.toUpperCase() )
+	.join( ', ' );
 
 /**
  * Get the translated label for a media type value.
@@ -70,6 +82,15 @@ const RetranscodeTab = () => {
 	 * media has been fetched, and when specific IDs arrive from the Media Library.
 	 */
 	const showFetchOptions = ! ( selectedIds?.length > 0 ) && attachments.length === 0;
+
+	// Documents get their format list spelled out; the other types are self-explanatory.
+	const mediaTypeHelp = 'document' === mediaType
+		? sprintf(
+			// translators: %s is a comma-separated list of file extensions, e.g. "PDF, DOCX".
+			__( 'Fetches %s files. GoDAM converts each one to a preview PDF.', 'godam' ),
+			DOCUMENT_FORMAT_LIST,
+		)
+		: __( 'Choose which type of media to fetch for transcoding.', 'godam' );
 
 	// Calculate storage exceeded status reactively
 	const storageExceeded = useMemo( () => {
@@ -448,7 +469,7 @@ const RetranscodeTab = () => {
 									__next40pxDefaultSize
 									__nextHasNoMarginBottom
 									label={ __( 'Media type', 'godam' ) }
-									help={ __( 'Choose which type of media to fetch for transcoding.', 'godam' ) }
+									help={ mediaTypeHelp }
 									value={ mediaType }
 									options={ MEDIA_TYPE_OPTIONS }
 									onChange={ setMediaType }
