@@ -408,6 +408,13 @@ class Analytics extends Base {
 		if ( ! empty( $job_id ) ) {
 			$query_params['job_id'] = $job_id;
 		}
+		// Single store currency: the service returns per-hotspot Direct revenue in
+		// this currency (Woo layers only); other currencies are excluded, not
+		// converted. Empty when WooCommerce is inactive, so the service omits it.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$query_params['base_currency'] = $base_currency;
+		}
 		$query_params = $this->append_range_params( $request, $query_params );
 
 		$endpoint = add_query_arg( $query_params, RTGODAM_ANALYTICS_BASE . '/processed-layer-analytics/' );
