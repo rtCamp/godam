@@ -143,6 +143,17 @@ const TRACKER_AUTO_NAME_RE = new RegExp(
 );
 
 /**
+ * Exact separator the hotspot tracker puts between the parent layer name
+ * and the hotspot's own label when it composes `layer_name`. It builds
+ * `<parentLayerName> — <subLabel>` (space, em dash, space) in
+ * `hotspotLayerManager.js`; keep this in sync with that string. Matching
+ * the full separator — rather than just the parent name — is what lets us
+ * strip the prefix without touching a hotspot label that legitimately
+ * begins with a dash.
+ */
+const HOTSPOT_NAME_SEPARATOR = ' — ';
+
+/**
  * Whether a server-delivered layer_name is missing, a bare UUID, or a
  * tracker-side auto-generated name — i.e. anything we should replace with
  * a locally generated (localized) fallback. Also drives the `name_is_auto`
@@ -433,22 +444,26 @@ export function groupRows( rows, layerType, configIndex ) {
 				// the rail. Falls back to a generic ordinal "<TypeLabel> #N"
 				// when nothing usable.
 				let rawSubName = md.product_name || row.layer_name || '';
-				// The hotspot tracker packs the parent layer name, a separator
-				// dash, and "Hotspot N" into layer_name. The rail's card title
-				// already shows the parent, so that prefix is pure repetition
-				// and, once the row is truncated, it hides the "Hotspot N" that
-				// actually names the row. Drop the parent prefix (and the
-				// separator after it), keeping only the hotspot's own label.
+				// The hotspot tracker packs the parent layer name, the
+				// `HOTSPOT_NAME_SEPARATOR`, and "Hotspot N" into layer_name. The
+				// rail's card title already shows the parent, so that prefix is
+				// pure repetition and, once the row is truncated, it hides the
+				// "Hotspot N" that actually names the row. Drop the exact
+				// "<parent> — " prefix, keeping only the hotspot's own label.
+				// Matching the full separator (not just the parent name) means:
+				// - a custom label that merely begins with the parent name
+				//   (parent "Sale", label "Sale special") is left intact, and
+				// - a label that itself starts with a dash (parent "Summer
+				//   sale", label "-50% off") keeps its leading dash instead of
+				//   having it eaten as part of the separator.
 				// Woo rows carry a bare product_name and never match this, so
 				// they are left alone.
-				if (
-					! md.product_name &&
-					md.parent_layer_name &&
-					rawSubName.startsWith( md.parent_layer_name )
-				) {
-					rawSubName = rawSubName
-						.slice( md.parent_layer_name.length )
-						.replace( /^[\s\p{Pd}]+/u, '' );
+				if ( ! md.product_name && md.parent_layer_name ) {
+					const parentPrefix =
+						md.parent_layer_name + HOTSPOT_NAME_SEPARATOR;
+					if ( rawSubName.startsWith( parentPrefix ) ) {
+						rawSubName = rawSubName.slice( parentPrefix.length );
+					}
 				}
 				let subName;
 				if (

@@ -231,4 +231,51 @@ describe( 'groupRows — hotspot sub-name drops the redundant parent prefix', ()
 		const [ parent ] = groupRows( [ parentRow, custom ], 'hotspot', OPEN_CONFIG );
 		expect( parent.sub_hotspots.map( ( s ) => s.name ) ).toContain( 'Buy now' );
 	} );
+
+	// A custom label that merely begins with the parent name but is not the
+	// tracker composite (no separator). Stripping on the bare parent name
+	// would leave "special"; matching the full "<parent> — " separator keeps
+	// the label whole.
+	it( 'leaves a custom label that only shares the parent name as a prefix', () => {
+		const collidingParent = 'Sale';
+		const parentSale = {
+			...base,
+			layer_id: 'h-2',
+			layer_name: collidingParent,
+			viewed: 2, clicked: 1, hovered: 2, conversion_rate: 50,
+			layer_metadata: JSON.stringify( { parent_layer_id: 'h-2', parent_layer_name: collidingParent } ),
+		};
+		const sub = {
+			...base,
+			layer_id: 'h-2::a',
+			layer_name: 'Sale special',
+			viewed: 1, clicked: 0, hovered: 0, conversion_rate: 0,
+			layer_metadata: JSON.stringify( { parent_layer_id: 'h-2', parent_layer_name: collidingParent } ),
+		};
+		const [ parent ] = groupRows( [ parentSale, sub ], 'hotspot', OPEN_CONFIG );
+		expect( parent.sub_hotspots.map( ( s ) => s.name ) ).toEqual( [ 'Sale special' ] );
+	} );
+
+	// A hotspot whose own label starts with a dash. Only the single separator
+	// is the prefix; the label's leading dash must survive so "-50% off" does
+	// not become "50% off" (the opposite meaning).
+	it( 'keeps a hotspot label that itself begins with a dash', () => {
+		const dashParent = 'Summer sale';
+		const parentSummer = {
+			...base,
+			layer_id: 'h-3',
+			layer_name: dashParent,
+			viewed: 2, clicked: 1, hovered: 2, conversion_rate: 50,
+			layer_metadata: JSON.stringify( { parent_layer_id: 'h-3', parent_layer_name: dashParent } ),
+		};
+		const sub = {
+			...base,
+			layer_id: 'h-3::a',
+			layer_name: `${ dashParent }${ SEP }-50% off`,
+			viewed: 1, clicked: 0, hovered: 0, conversion_rate: 0,
+			layer_metadata: JSON.stringify( { parent_layer_id: 'h-3', parent_layer_name: dashParent } ),
+		};
+		const [ parent ] = groupRows( [ parentSummer, sub ], 'hotspot', OPEN_CONFIG );
+		expect( parent.sub_hotspots.map( ( s ) => s.name ) ).toEqual( [ '-50% off' ] );
+	} );
 } );
