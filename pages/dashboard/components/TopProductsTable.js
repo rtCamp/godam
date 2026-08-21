@@ -189,6 +189,22 @@ const ordersLabel = ( item ) => {
 	return sprintf( _n( '%d order', '%d orders', orders, 'godam' ), orders );
 };
 
+// Whether this row carries a real Influenced-revenue match (the third tier:
+// a product-page play matched to a later purchase of the same product). Shown
+// only when > 0 - an absent or zero match renders nothing, never a misleading
+// "£0", and Influenced is never folded into the product's own revenue total.
+export const hasInfluenced = ( item ) =>
+	item.influenced_revenue_minor !== undefined &&
+	item.influenced_revenue_minor !== null &&
+	Number( item.influenced_revenue_minor ) > 0;
+
+// "N orders" label for the Influenced sub-line.
+export const influencedOrdersLabel = ( item ) => {
+	const orders = Number( item.influenced_orders || 0 );
+	/* translators: %d: number of distinct orders influenced by a product-page view of a video. */
+	return sprintf( _n( '%d order', '%d orders', orders, 'godam' ), orders );
+};
+
 /**
  * Dashboard "Top Products" table.
  *
@@ -476,6 +492,28 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 											</>
 										) : (
 											<span className="text-zinc-400">-</span>
+										) }
+										{ /* Influenced revenue (third tier): a separate sub-line,
+										    shown only when there is a real match, never added into
+										    the product's own revenue above. */ }
+										{ hasInfluenced( item ) && (
+											<div
+												className="mt-1 text-xs text-zinc-500"
+												data-test-id="godam-top-products-influenced"
+											>
+												{ sprintf(
+													/* translators: 1: formatted influenced revenue amount, 2: order count phrase (e.g. "3 orders"). */
+													__( 'Influenced %1$s · %2$s', 'godam' ),
+													formatRevenue( item.influenced_revenue_minor, item.influenced_currency ),
+													influencedOrdersLabel( item ),
+												) }
+												{ item.influenced_provisional && (
+													<span className="text-zinc-400">
+														{ ' ' }
+														{ __( '(provisional)', 'godam' ) }
+													</span>
+												) }
+											</div>
 										) }
 									</td>
 								</tr>
