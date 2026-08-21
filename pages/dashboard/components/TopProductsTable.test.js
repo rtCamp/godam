@@ -14,7 +14,7 @@
 /**
  * Internal dependencies
  */
-import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric } from './TopProductsTable';
+import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel } from './TopProductsTable';
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
 	// A value whose FIRST character is one of these is what a spreadsheet would
@@ -118,6 +118,40 @@ describe( 'formatRevenue — revenue_minor -> currency amount', () => {
 
 	it( 'falls back to a plain number when the currency code is invalid', () => {
 		expect( formatRevenue( 1234, 'NOT-A-CODE' ) ).toBe( '12.34 NOT-A-CODE' );
+	} );
+} );
+
+describe( 'hasInfluenced — Influenced sub-line gate (third tier)', () => {
+	it( 'is true only when influenced_revenue_minor is a positive number', () => {
+		expect( hasInfluenced( { influenced_revenue_minor: 250000 } ) ).toBe( true );
+	} );
+
+	it( 'is false when there is no match (0), so no misleading £0 renders', () => {
+		expect( hasInfluenced( { influenced_revenue_minor: 0 } ) ).toBe( false );
+	} );
+
+	it( 'is false when the service omitted the field (older build / no match)', () => {
+		expect( hasInfluenced( {} ) ).toBe( false );
+		expect( hasInfluenced( { influenced_revenue_minor: null } ) ).toBe( false );
+	} );
+
+	it( 'renders its amount via the shipped formatRevenue (no new formatter)', () => {
+		// The sub-line uses the SAME formatRevenue as the Revenue cell, keyed on
+		// the separate influenced_currency: JPY has no decimals, USD has two.
+		expect( formatRevenue( 250000, 'INR' ) ).toContain( '2,500' );
+		expect( formatRevenue( 1234, 'JPY' ) ).not.toContain( '.' );
+		expect( formatRevenue( 500, 'USD' ) ).toBe( '$5.00' );
+	} );
+} );
+
+describe( 'influencedOrdersLabel — singular/plural order count', () => {
+	it( 'renders singular for one order', () => {
+		expect( influencedOrdersLabel( { influenced_orders: 1 } ) ).toBe( '1 order' );
+	} );
+
+	it( 'renders plural for several, and zero when absent', () => {
+		expect( influencedOrdersLabel( { influenced_orders: 3 } ) ).toBe( '3 orders' );
+		expect( influencedOrdersLabel( {} ) ).toBe( '0 orders' );
 	} );
 } );
 
