@@ -1227,6 +1227,13 @@ class Pages {
 
 		wp_enqueue_style( 'wp-components' );
 
+		// The media-library React sidebar bundle (~1.1 MB) is the remaining work in this
+		// method; skip it on screens that never open the media library / wp.media modal.
+		// It was previously enqueued on every admin screen.
+		if ( ! godam_should_load_media_library_assets( $screen ) ) {
+			return;
+		}
+
 		// The bundle externalizes several @wordpress packages to wp.* globals
 		// (see the `pages` externals in webpack.config.js). On WP admin / the
 		// block editor these globals are already present, but in other contexts
@@ -1236,9 +1243,13 @@ class Pages {
 		// only the handles actually registered in the current context: a handle
 		// missing on older WP / non-standard admin screens would otherwise block
 		// the enqueue entirely.
+		// `media-views` is included so the bundle's modal-close hook (which patches
+		// wp.media.view.Modal in pages/media-library/index.js) has wp.media defined by the
+		// time it runs — otherwise the ordering is incidental and the hook can silently
+		// no-op, leaving React roots unmounted and UI state un-reset.
 		$media_library_deps = array_values(
 			array_filter(
-				array( 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch', 'wp-primitives', 'wp-data', 'wp-notices' ),
+				array( 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch', 'wp-primitives', 'wp-data', 'wp-notices', 'media-views' ),
 				static function ( $handle ) {
 					return wp_script_is( $handle, 'registered' );
 				}

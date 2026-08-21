@@ -42,6 +42,33 @@ const POSTER_SEMANTICS = [
 ];
 
 /**
+ * Marks the video wrapper of the player currently inside the lightbox.
+ *
+ * The closed poster hides every control but the play icon (see
+ * `.godam-show-in-lightbox:not(.godam-lightbox-open)` in godam-player.scss);
+ * this class is what tells that rule to step aside while the player is on
+ * screen in the modal, where the controls belong.
+ *
+ * @type {string}
+ */
+const OPEN_WRAPPER_CLASS = 'godam-lightbox-open';
+
+/**
+ * The video wrapper inside a movable player root, when the player is a
+ * click-to-open poster.
+ *
+ * The wrapper is a grandchild of the root (root > figure > .godam-video-wrapper,
+ * see inc/templates/godam-player.php), so it cannot inherit a class set on the
+ * root and has to be resolved on its own.
+ *
+ * @param {HTMLElement} playerRoot - The movable player root.
+ * @return {HTMLElement|null} The wrapper, or null for a non-lightbox player.
+ */
+function getLightboxWrapper( playerRoot ) {
+	return playerRoot?.querySelector?.( '.godam-video-wrapper.godam-show-in-lightbox' ) || null;
+}
+
+/**
  * How far a finger may travel and still count as a tap, in pixels.
  *
  * Matches Video.js's own tap detection, so a swipe that starts on the video
@@ -406,10 +433,16 @@ export class ModalManager {
 		modal.content.appendChild( playerRoot );
 		playerRoot.classList.add( 'godam-player-modal-item' );
 
+		// The poster's controls are hidden by CSS while it is closed; the player is
+		// on screen now, so let them back in.
+		const wrapper = getLightboxWrapper( playerRoot );
+		wrapper?.classList.add( OPEN_WRAPPER_CLASS );
+
 		this.activeEntry = {
 			mode: 'element',
 			video,
 			playerRoot,
+			wrapper,
 			anchor,
 			iframe: null,
 			hash: null,
@@ -683,7 +716,7 @@ export class ModalManager {
 			return;
 		}
 		const entry = this.activeEntry;
-		const { mode, video, playerRoot, anchor, iframe } = entry;
+		const { mode, video, playerRoot, wrapper, anchor, iframe } = entry;
 
 		// Clear first: `restoreHistory()` can trigger a popstate that re-enters
 		// close(), and an already-null entry makes that a no-op.
@@ -700,7 +733,23 @@ export class ModalManager {
 			// page unscrollable, because only the exit button releases that lock.
 			exitCustomFullscreen( player?.el?.() );
 
+			// Closing hands the poster its job back. Video.js sets `vjs-has-started`
+			// on the first play and never clears it, which hides the poster and the
+			// big play button and shows the control bar — the opposite of a
+			// click-to-open poster. Clearing it restores both and lets Video.js's own
+			// `display: none` hide the bar again. `currentTime` is left alone, so
+			// reopening resumes where the viewer stopped, and the next play() sets the
+			// flag again by itself.
+			//
+			// Only for players whose inline render *is* a poster: a trigger or deep
+			// link can open an ordinary inline player, and that one should keep its
+			// normal played-and-paused state.
+			if ( isLightboxVideo( video ) ) {
+				player?.hasStarted?.( false );
+			}
+
 			playerRoot.classList.remove( 'godam-player-modal-item' );
+			wrapper?.classList.remove( OPEN_WRAPPER_CLASS );
 
 			if ( anchor && anchor.parentNode ) {
 				anchor.parentNode.insertBefore( playerRoot, anchor );

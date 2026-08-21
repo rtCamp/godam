@@ -191,8 +191,11 @@ class WPB_GoDAM_Video {
 					esc_html__( 'Start Preview', 'godam' ) => 'start-preview',
 				),
 				'std'         => 'none',
-				'description' => esc_html__( 'Choose the action to perform on video hover.', 'godam' ),
+				'description' => esc_html__( 'Choose the action to perform on video hover. Ignored when Show in Lightbox is on.', 'godam' ),
 				'save_always' => true,
+				// WPBakery allows a single dependency per param, spent here on `id`, so
+				// the "Show in Lightbox" exclusivity cannot be expressed in the UI. It
+				// is enforced at render time in inc/templates/godam-player.php instead.
 				'dependency'  => array(
 					'element'   => 'id',
 					'not_empty' => true,

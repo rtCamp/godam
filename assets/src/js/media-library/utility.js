@@ -8,6 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import Attachments from './models/attachments';
+import { isSupportedDocument } from '../../blocks/godam-pdf/constants.js';
 
 /* global _ */
 
@@ -195,4 +196,27 @@ function canEditPages() {
 	return _canEditPages;
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, shouldReplaceAttachmentsViews, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };
+/**
+ * Whether a media-library model is a document GoDAM converts to a previewable PDF.
+ *
+ * The model's `type` is only the first half of the MIME type — 'application' for a .docx,
+ * 'text' for a .txt — so it has to be recombined with `subtype` before it says anything. The
+ * file name is checked as well, because text/plain covers .srt/.asc/.c/.cc/.h alongside .txt
+ * and those are never transcoded; that is the same pair of conditions
+ * rtgodam_is_supported_document_attachment() applies server-side.
+ *
+ * @param {Object} model Backbone attachment model.
+ * @return {boolean} True when the attachment is a convertible document.
+ */
+function isDocumentModel( model ) {
+	if ( ! model ) {
+		return false;
+	}
+
+	return isSupportedDocument( {
+		mime: `${ model.get( 'type' ) }/${ model.get( 'subtype' ) }`,
+		filename: model.get( 'filename' ) || '',
+	} );
+}
+
+export { isAPIKeyValid, isDocumentModel, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, shouldReplaceAttachmentsViews, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };

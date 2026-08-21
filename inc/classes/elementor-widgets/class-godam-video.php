@@ -354,10 +354,12 @@ class GoDAM_Video extends Base {
 					'show-player-controls' => esc_html__( 'Show Player Controls', 'godam' ),
 					'start-preview'        => esc_html__( 'Start Preview', 'godam' ),
 				),
-				'description' => esc_html__( 'Choose the action to perform on video hover. Disabled when Autoplay is on.', 'godam' ),
-				// Visual disable when autoplay is on is applied by editor.js
-				// (mirrors the block, which disables rather than hides).
-				'classes'     => 'godam-elementor-autoplay-locked',
+				'description' => esc_html__( 'Choose the action to perform on video hover. Disabled when Autoplay or Show in lightbox is on.', 'godam' ),
+				// Visual disable is applied by editor.js (mirrors the block, which
+				// disables rather than hides). Two classes because the locks have
+				// different inputs: autoplay also locks Muted, while Show in lightbox
+				// locks only this control.
+				'classes'     => 'godam-elementor-autoplay-locked godam-elementor-lightbox-locked',
 				'condition'   => array(
 					'video-file[url]!' => '',
 				),
@@ -528,8 +530,10 @@ class GoDAM_Video extends Base {
 			'isFamilyFriendly' => 'yes' === ( $this->get_settings_for_display( 'seo_content_family_friendly' ) ?? 'yes' ),
 		);
 
-		// Mirror the block: hoverSelect is mutually exclusive with autoplay.
-		if ( $widget_autoplay ) {
+		// Mirror the block: hoverSelect is mutually exclusive with autoplay, and with
+		// "Show in lightbox" — whose inline render is a click-to-open poster showing
+		// nothing but the play icon.
+		if ( $widget_autoplay || $widget_show_in_lightbox ) {
 			$widget_hover_select = 'none';
 		}
 

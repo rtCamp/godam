@@ -47,6 +47,40 @@ class WPB_GoDAM_Document {
 	 */
 	protected function setup_hooks() {
 		add_action( 'vc_before_init', array( $this, 'godam_document' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_inline_editor_assets' ) );
+	}
+
+	/**
+	 * Load the document viewer's assets in WPBakery's inline editor.
+	 *
+	 * The shortcode enqueues them itself when it renders, which covers the published page and
+	 * any element already saved in the content. It does not cover an element the author has
+	 * just dragged in: WPBakery renders that over AJAX, where enqueuing reaches nothing,
+	 * leaving the new element with no script to mount its preview and only render.php's
+	 * "cannot be displayed here" fallback to show. Loading them up front in the editor frame
+	 * means the viewer is always there for whatever the author adds next.
+	 *
+	 * Editor frame only — a published page is untouched, and still pays for these only when a
+	 * document is actually on it.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function enqueue_inline_editor_assets() {
+		if ( ! function_exists( 'vc_is_inline' ) || ! vc_is_inline() ) {
+			return;
+		}
+
+		// Registered by register_block_type() (see class-blocks.php), so guard against a
+		// build where the block's assets are missing rather than warning.
+		if ( wp_script_is( 'godam-pdf-view-script', 'registered' ) ) {
+			wp_enqueue_script( 'godam-pdf-view-script' );
+		}
+
+		if ( wp_style_is( 'godam-pdf-style', 'registered' ) ) {
+			wp_enqueue_style( 'godam-pdf-style' );
+		}
 	}
 
 	/**
@@ -66,7 +100,7 @@ class WPB_GoDAM_Document {
 				'name'        => esc_html__( 'Document', 'godam' ),
 				'base'        => 'godam_document',
 				'category'    => esc_html__( 'GoDAM', 'godam' ),
-				'description' => esc_html__( 'Embed a PDF document from GoDAM Media Library', 'godam' ),
+				'description' => esc_html__( 'Embed a document from the GoDAM Media Library', 'godam' ),
 				'icon'        => RTGODAM_URL . 'assets/images/godam-pdf.svg',
 				'params'      => array(
 					// Document Selection.
@@ -75,7 +109,7 @@ class WPB_GoDAM_Document {
 						'heading'     => esc_html__( 'Select Document', 'godam' ),
 						'param_name'  => 'id',
 						'value'       => '',
-						'description' => esc_html__( 'Select a PDF document from the WordPress Media Library.', 'godam' ),
+						'description' => esc_html__( 'Select a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file from the WordPress Media Library.', 'godam' ),
 						'admin_label' => true,
 						'save_always' => true,
 					),
@@ -133,7 +167,7 @@ class WPB_GoDAM_Document {
 							esc_html__( 'Card View', 'godam' )    => 'card',
 						),
 						'std'         => 'default',
-						'description' => esc_html__( 'Choose how the document is displayed: an embedded PDF viewer or a card with a cover image.', 'godam' ),
+						'description' => esc_html__( 'Choose how the document is displayed: an embedded viewer or a card with a cover image.', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
 							'element'   => 'id',
@@ -147,7 +181,7 @@ class WPB_GoDAM_Document {
 						'heading'     => esc_html__( 'Height (px)', 'godam' ),
 						'param_name'  => 'height',
 						'value'       => '600',
-						'description' => esc_html__( 'Height of the embedded PDF viewer in pixels.', 'godam' ),
+						'description' => esc_html__( 'Height of the embedded viewer in pixels.', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
 							'element' => 'preview_mode',

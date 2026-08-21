@@ -1129,10 +1129,13 @@ to ensure proper responsiveness and avoid layout issues.
 	}
 }
 
-// Visual "disabled" state for Elementor controls that are locked while
-// autoplay is on (Muted + Hover Option). Mirrors the block's disabled
-// SelectControl: visible, low-contrast, non-interactive.
-.elementor-control.godam-elementor-autoplay-locked.godam-control-is-disabled {
+// Visual "disabled" state for Elementor controls another setting has taken over
+// — autoplay locks Muted + Hover Option, "Show in lightbox" locks Hover Option.
+// editor.js decides which lock owns which control and adds
+// `godam-control-is-disabled`. Mirrors the block's disabled SelectControl:
+// visible, low-contrast, non-interactive.
+.elementor-control.godam-elementor-autoplay-locked.godam-control-is-disabled,
+.elementor-control.godam-elementor-lightbox-locked.godam-control-is-disabled {
 	opacity: 0.5;
 	pointer-events: none;
 

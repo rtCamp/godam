@@ -192,10 +192,16 @@ class Video_Metadata {
 		$mime          = isset( $response['mime'] ) ? $response['mime'] : '';
 		$thumbnail_url = '';
 
-		if ( 0 === strpos( $mime, 'video/' ) || 'application/pdf' === $mime ) {
+		// Documents cover every convertible type, not just PDF: GoDAM Central rasterises page 0
+		// of the preview for all of them, so an .xlsx gets a real thumbnail too. Keyed off the
+		// attachment rather than the MIME alone, since text/plain also covers .srt/.asc/.c/.h,
+		// which are never transcoded and so never have a thumbnail to find.
+		$is_document = rtgodam_is_supported_document_attachment( $response['id'] );
+
+		if ( 0 === strpos( $mime, 'video/' ) || $is_document ) {
 			$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
 
-			// Check for icon if it is a virtual media (for PDFs imported from GoDAM).
+			// Check for icon if it is a virtual media (for documents imported from GoDAM).
 			if ( empty( $thumbnail_url ) ) {
 				$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_pdf_thumbnail', true );
 			}
