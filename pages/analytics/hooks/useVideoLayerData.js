@@ -459,6 +459,12 @@ export function groupRows( rows, layerType, configIndex ) {
 					product_image: md.product_image || '',
 					product_price: md.product_price || null,
 					timestamp: Number( row.timestamp || 0 ),
+					// Per-hotspot Direct revenue (Woo layers), in the store's base
+					// currency; other currencies are excluded server-side, not
+					// converted. orders is exact for a single hotspot.
+					revenue_minor: Number( row.revenue_minor ) || 0,
+					orders: Number( row.orders ) || 0,
+					currency: row.currency || '',
 					isActive: subIsActive,
 				};
 			} )
@@ -506,6 +512,19 @@ export function groupRows( rows, layerType, configIndex ) {
 			no_action: parentNoAction,
 			conversion_rate: parentConversion,
 			sub_hotspots: subHotspots,
+			// Parent Direct revenue = sum of its hotspots' revenue (base currency).
+			// The order count is the summed children's, which can overcount an
+			// order that bought two products via two hotspots; the panel presents
+			// the parent figure as an aggregate, not an exact distinct-order total.
+			revenue_minor: subHotspots.reduce(
+				( sum, h ) => sum + ( Number( h.revenue_minor ) || 0 ),
+				0,
+			),
+			orders: subHotspots.reduce(
+				( sum, h ) => sum + ( Number( h.orders ) || 0 ),
+				0,
+			),
+			currency: ( subHotspots.find( ( h ) => h.currency )?.currency ) || '',
 			isActive: parentIsActive,
 			historical_positions: historicalPositions,
 			// wp-admin link to this form's entries / poll's results, when the
