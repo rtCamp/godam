@@ -851,6 +851,14 @@ class Analytics extends Base {
 				'api_key'       => $api_key,
 			)
 		);
+		// Single store currency: pass the store base currency so the service returns
+		// base-currency revenue plus a count of orders in other currencies (not
+		// converted). Only meaningful when WooCommerce is active; when absent the
+		// service simply omits the `revenue` object.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$params['base_currency'] = $base_currency;
+		}
 		$endpoint = add_query_arg(
 			$params,
 			RTGODAM_ANALYTICS_BASE . '/dashboard/metrics/fetch/'
@@ -1217,6 +1225,11 @@ class Analytics extends Base {
 		}
 		if ( ! empty( $order ) ) {
 			$query['order'] = $order;
+		}
+		// Single store currency: revenue/orders sum only the base currency.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$query['base_currency'] = $base_currency;
 		}
 
 		$endpoint = add_query_arg(

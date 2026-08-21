@@ -21,6 +21,7 @@ import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
 import VideoToCartCard from '../analytics/VideoToCartCard';
+import RevenueCard from '../analytics/RevenueCard';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
@@ -452,6 +453,16 @@ const Dashboard = () => {
 								{ hasWooProducts && (
 									<VideoToCartCard
 										videoToCart={ insightsMetrics?.video_to_cart }
+										dataLabel={ insightsCardLabel }
+									/>
+								) }
+
+								{ /* WooCommerce-only: video-attributed revenue in the store's
+								    base currency (single store currency; other currencies are
+								    counted, not converted). */ }
+								{ hasWooProducts && (
+									<RevenueCard
+										revenue={ insightsMetrics?.revenue }
 										dataLabel={ insightsCardLabel }
 									/>
 								) }
