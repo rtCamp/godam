@@ -540,7 +540,7 @@ class Media_Usage_Backfill {
 	 * @return \WP_Post[]
 	 */
 	private function fetch_pending_posts( $limit ) {
-		$query = new \WP_Query(
+		$query = new \WP_Query( // godam-coverage-ignore -- fetch_pending_posts(): queries HOST posts pending the backfill scan; build_wp_query_args()'s post_type comes from get_post_types(), which explicitly excludes 'attachment' via array_diff(), so this never touches attachment data.
 			array_merge(
 				$this->build_wp_query_args(),
 				array(
