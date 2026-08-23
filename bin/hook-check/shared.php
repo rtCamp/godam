@@ -1,16 +1,13 @@
 <?php
 /**
- * Token-walking primitives shared by godam-wp-dam-hook-check.php and
- * godam-attachment-access-coverage-check.php.
- *
- * Extracted so the two scripts can't drift to different definitions of
- * "what counts as firing a hook" the way they once did (one included
- * add_action(), which registers a listener but fires nothing).
+ * Token-walking primitives shared by balance.php and coverage.php, so the
+ * two scripts can't drift to
+ * different definitions of "what counts as firing a hook."
  *
  * Shared: file listing, tokenizing, token navigation, call/hook-fire/
  * scope-terminator detection, function-boundary finding. NOT shared: each
  * script's own balance/coverage walk — their control flow genuinely
- * diverges, so merging them would cost readability for no drift-safety gain.
+ * diverges there.
  *
  * @package GoDAM
  */
@@ -78,10 +75,7 @@ function godam_shared_list_php_files( $dir ) {
 /**
  * Top-level directories (root only, not matched deeper) that never hold
  * hand-hookable plugin code — a deny-list, not an include-list, so a new
- * top-level directory is scanned by default instead of staying invisible
- * until someone remembers to add it (how `lib/` and `godam.php` were missed
- * by both scripts before this existed).
- *
+ * top-level directory is scanned by default rather than staying invisible.
  * `build`/`vendor` are already excluded at any depth; these are root-only
  * since they're not expected to recur as nested directory names.
  *
@@ -205,14 +199,157 @@ function godam_shared_skip_backward( $tokens, $i ) {
 }
 
 /**
+ * Recognizes one of the four godam-coverage-* directive comments — mirrors
+ * phpcs:ignore/disable/enable/ignoreFile, minus a rule-code argument (each
+ * checker here only ever checks one thing). Checked in this order so
+ * "godam-coverage-ignore-file" is never misidentified as a plain "ignore".
+ *
+ * @param array[] $tokens Full token list for the file.
+ * @param int     $i      Index to check.
+ * @return array{directive: string, reason: string}|null One of
+ *         'ignore-file'/'disable'/'enable'/'ignore', or null if this token
+ *         isn't a comment or doesn't contain a directive.
+ */
+function godam_shared_coverage_directive_at( $tokens, $i ) {
+	$id = $tokens[ $i ]['id'] ?? null;
+	if ( T_COMMENT !== $id && T_DOC_COMMENT !== $id ) {
+		return null;
+	}
+
+	$text = $tokens[ $i ]['text'];
+
+	$patterns = array(
+		'ignore-file' => '/godam-coverage-ignore-file\b\s*(?:--\s*(.*))?/',
+		'disable'     => '/godam-coverage-disable\b\s*(?:--\s*(.*))?/',
+		'enable'      => '/godam-coverage-enable\b\s*(?:--\s*(.*))?/',
+		'ignore'      => '/godam-coverage-ignore\b\s*(?:--\s*(.*))?/',
+	);
+
+	foreach ( $patterns as $directive => $pattern ) {
+		if ( preg_match( $pattern, $text, $m ) ) {
+			$reason = trim( $m[1] ?? '' );
+			return array(
+				'directive' => $directive,
+				'reason'    => '' !== $reason ? $reason : '(no reason given)',
+			);
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Scans a file's tokens for godam-coverage-ignore/disable/enable/ignore-file
+ * comments and returns what they cover. Shared by both checker scripts so
+ * one comment suppresses both.
+ *
+ * `godam-coverage-ignore` follows phpcs:ignore's own placement rule: as a
+ * trailing comment it covers that same line; alone on its own line, it
+ * covers the line after. `godam-coverage-disable`/`-enable` bracket a
+ * range exclusive of both endpoints; multiple pairs per file are tracked.
+ *
+ * A disable with no matching enable before end of file is a hard error
+ * (see 'dangling_disable') rather than silently suppressing the rest of
+ * the file — the same footgun a forgotten phpcs:enable has in real phpcs.
+ *
+ * @param array[] $tokens Full token list for the file.
+ * @return array{
+ *     ignore_file: string|null,
+ *     ignore_lines: array<int, string>,
+ *     disabled_ranges: array<int, array{start:int, end:int, reason:string}>,
+ *     dangling_disable: array{line:int, reason:string}|null,
+ * }
+ */
+function godam_shared_coverage_directives( $tokens ) {
+	$ignore_file     = null;
+	$ignore_lines    = array();
+	$disabled_ranges = array();
+	$open_disable    = null;
+
+	$count = count( $tokens );
+
+	for ( $i = 0; $i < $count; $i++ ) {
+		$directive = godam_shared_coverage_directive_at( $tokens, $i );
+		if ( null === $directive ) {
+			continue;
+		}
+
+		$line = $tokens[ $i ]['line'];
+
+		switch ( $directive['directive'] ) {
+			case 'ignore-file':
+				$ignore_file = $directive['reason'];
+				break;
+
+			case 'disable':
+				// A later, still-unclosed disable simply replaces the
+				// tracked start — only the last one can end up dangling.
+				$open_disable = array(
+					'line'   => $line,
+					'reason' => $directive['reason'],
+				);
+				break;
+
+			case 'enable':
+				if ( null !== $open_disable ) {
+					$disabled_ranges[] = array(
+						'start'  => $open_disable['line'],
+						'end'    => $line,
+						'reason' => $open_disable['reason'],
+					);
+					$open_disable      = null;
+				}
+				break;
+
+			case 'ignore':
+				$prev        = godam_shared_skip_backward( $tokens, $i - 1 );
+				$same_line   = $prev >= 0 && $tokens[ $prev ]['line'] === $line;
+				$target_line = $same_line ? $line : $line + 1;
+
+				$ignore_lines[ $target_line ] = $directive['reason'];
+				break;
+		}
+	}
+
+	return array(
+		'ignore_file'      => $ignore_file,
+		'ignore_lines'     => $ignore_lines,
+		'disabled_ranges'  => $disabled_ranges,
+		'dangling_disable' => $open_disable,
+	);
+}
+
+/**
+ * Whether $line is covered by an ignore/disable directive already parsed
+ * into $directives (see godam_shared_coverage_directives()) — checks
+ * ignore_lines and disabled_ranges, NOT ignore_file (a whole-file ignore is
+ * cheaper to check once per file than once per line; callers already do).
+ *
+ * @param array $directives Result of godam_shared_coverage_directives().
+ * @param int   $line       Line to check.
+ * @return string|null The reason text if covered, null otherwise.
+ */
+function godam_shared_coverage_directive_covers( $directives, $line ) {
+	if ( isset( $directives['ignore_lines'][ $line ] ) ) {
+		return $directives['ignore_lines'][ $line ];
+	}
+
+	foreach ( $directives['disabled_ranges'] as $range ) {
+		if ( $line > $range['start'] && $line < $range['end'] ) {
+			return $range['reason'];
+		}
+	}
+
+	return null;
+}
+
+/**
  * Strips namespace qualification from $text, returning its final segment —
  * "get_post_meta" from "\get_post_meta" or "Foo\Bar\get_post_meta" alike.
  *
  * PHP 8 tokenizes an entire qualified name as one T_NAME_FULLY_QUALIFIED/
  * T_NAME_QUALIFIED token, so a plain `ltrim( $text, '\\' )` only strips a
- * leading backslash and still gets "Foo\get_post_meta" wrong. Shared by
- * godam_shared_is_call_to(), godam_shared_find_trait_uses(), and
- * godam_shared_is_new_wp_query_at() so all three stay in sync.
+ * leading backslash and still gets "Foo\get_post_meta" wrong.
  *
  * @param string $text Token text (already namespace-qualified or not).
  * @return string
@@ -227,18 +364,13 @@ function godam_shared_unqualified_name( $text ) {
  * godam_shared_unqualified_name()) matching one of $names, immediately
  * followed by '(', and NOT preceded by `new`.
  *
- * Recognizing qualified names matters because every check built on this
- * (hook-fire, scope-terminator, deferred-callback, ACCESS_FUNCTIONS,
- * get_posts()/get_children()) would otherwise be blind to a leading-backslash
- * call like `\get_post_meta(...)`, a deliberate style for forcing
- * global-namespace resolution from inside a namespaced file.
- *
- * The `new` exclusion exists because a class and a free function can share a
- * bare name in PHP's separate symbol tables, so `new Helper()` would
- * otherwise be indistinguishable from a call to a function also named
- * Helper — confirmed via fixture: `new do_action(...)` used to fool
- * hook-fire detection into silently hiding a genuinely uncovered call right
- * after it, not just misclassifying it.
+ * Qualified names matter so a leading-backslash call like
+ * `\get_post_meta(...)` (forcing global-namespace resolution from inside a
+ * namespaced file) isn't invisible to every check built on this. The `new`
+ * exclusion matters because a class and a free function can share a bare
+ * name — without it, `new Helper()` is indistinguishable from a call to a
+ * function also named Helper (e.g. `new do_action(...)` would otherwise
+ * fool hook-fire detection).
  *
  * @param array[] $tokens Full token list for the file.
  * @param int     $i      Index to check.
@@ -273,10 +405,9 @@ function godam_shared_is_call_to( $tokens, $i, $names, $count ) {
  * anything matching by name+"(" needs this check wherever the matched set
  * could include a real, user-defined function/method name.
  *
- * Needed specifically by godam_shared_is_bare_call_to(): without it, a
- * user-defined method named get_children() or get_posts() would have its
- * own declaration misread as a call to the global function of the same name
- * (confirmed via fixture).
+ * Needed by godam_shared_is_bare_call_to(): without it, a user-defined
+ * method named get_children() or get_posts() would have its own
+ * declaration misread as a call to the global function of the same name.
  *
  * @param array[] $tokens Full token list for the file.
  * @param int     $i      Index to check.
@@ -305,13 +436,10 @@ function godam_shared_is_function_declaration_at( $tokens, $i ) {
  *
  * Needed because a name match alone can't tell a global call apart from an
  * unrelated class's own same-named method — e.g. $query->get_posts() reads
- * an already-run WP_Query's cached results, not a fresh query, but tokenizes
- * identically to the global get_posts() call. Confirmed as a live false
- * positive: admin/class-rtgodam-retranscodemedia.php calls
- * $query->get_posts() twice, both previously misread as fresh queries.
- * Used for get_posts()/get_children(); not needed for $wpdb calls (already
- * gated on `$wpdb->`) or the coverage-checker's ACCESS_FUNCTIONS (no
- * confirmed collision today).
+ * an already-run WP_Query's cached results, not a fresh query, but
+ * tokenizes identically to the global get_posts() call. Used for
+ * get_posts()/get_children(); not needed for $wpdb calls (already gated on
+ * `$wpdb->`) or ACCESS_FUNCTIONS (no confirmed collision today).
  *
  * @param array[] $tokens Full token list for the file.
  * @param int     $i      Index to check.
@@ -339,10 +467,8 @@ function godam_shared_is_bare_call_to( $tokens, $i, $names, $count ) {
  *
  * Uses godam_shared_is_bare_call_to() so a class with its own do_action()
  * method can't fake a hook fire (e.g. $logger->do_action(...), an unrelated
- * logging call) — confirmed via fixture that this previously let a fake
- * "before" hide a genuinely uncovered call entirely, not just misclassify
- * it. Safe: do_action()/wp_die()/wp_send_json*() are core globals, never
- * legitimately called via ->/::.
+ * logging call). Safe: do_action()/wp_die()/wp_send_json*() are core
+ * globals, never legitimately called via ->/::.
  *
  * @param array[] $tokens          Full token list for the file.
  * @param int     $i               Index of the string token to check.
@@ -374,10 +500,8 @@ function godam_shared_is_hook_fire_at( $tokens, $i, $hook_name, $outer_functions
 
 /**
  * $wpdb methods that execute a real, potentially attachment-touching query.
- * Tracked separately from ACCESS_FUNCTIONS because these are only ever
- * invoked as a method on the $wpdb global — a manual audit found two live
- * gaps this way: a raw $wpdb->get_results() query and a new WP_Query() call,
- * both reading the same postmeta/posts data get_post_meta() does.
+ * Tracked separately from ACCESS_FUNCTIONS since these are only ever
+ * invoked as a method on the $wpdb global.
  *
  * @var string[]
  */
@@ -523,13 +647,11 @@ function godam_shared_ranges_nested_in( $range_start, $range_end, $candidates ) 
  * Whether [$range_start, $range_end] contains a `'post_type' =>
  * 'attachment'/'any'` pair, or a `post_type => array(...)`/`[...]` value
  * mentioning either string anywhere inside it (a common way to query more
- * than one post type — confirmed via fixture that the bare-string-only
- * check missed this).
+ * than one post type).
  *
  * The bare-string branch deliberately scans the WHOLE range rather than
- * tracing the query's own $args variable — real query args in this codebase
- * are built incrementally across several statements, and precise data-flow
- * tracing isn't something this tool does anywhere else. This is a
+ * tracing the query's own $args variable — real query args in this
+ * codebase are built incrementally across several statements. This is a
  * permissive heuristic: a false positive here just means one more finding
  * for a human to dismiss, not a missed real gap.
  *
@@ -598,14 +720,10 @@ function godam_shared_range_targets_attachment_post_type( $tokens, $range_start,
  * godam_shared_range_targets_attachment_post_type().
  *
  * Also catches `$wpdb->posts`/`$wpdb->postmeta` referenced via string
- * interpolation (`"...{$wpdb->posts}..."` or the brace-less
- * `"...$wpdb->posts..."`) — PHP's tokenizer parses both exactly like code
- * outside a string, landing $wpdb/->/posts as three separate tokens, so
- * none of them contains "wp_posts" as its own text and the plain substring
- * check above never sees it. Confirmed via token_get_all(): this was a
- * real gap — get_attachment_count() in class-media-folder-utils.php builds
- * its query with `FROM {$wpdb->posts} p` and went undetected as
- * attachment-shaped until this check was added.
+ * interpolation (braced or not) — PHP's tokenizer parses both exactly like
+ * code outside a string, landing $wpdb/->/posts as three separate tokens
+ * that never contain "wp_posts" as their own text, so the plain substring
+ * check above would otherwise miss e.g. `FROM {$wpdb->posts} p`.
  *
  * @param array[] $tokens      Full token list for the file.
  * @param int     $range_start Token index to start at (inclusive).
@@ -649,13 +767,12 @@ function godam_shared_range_mentions_post_tables( $tokens, $range_start, $range_
  *
  * get_children()'s attachment-shaped check only catches an explicit
  * post_type — a bare `get_children( $post_id )` also returns attachments by
- * WP's own default, but that has no 'post_type' string to find, so it's a
- * documented, accepted gap rather than modeling core's default-argument
- * behavior.
+ * WP's own default, but that has no 'post_type' string to find, so it's an
+ * accepted gap rather than modeling core's default-argument behavior.
  *
  * get_posts()/get_children() use godam_shared_is_bare_call_to() to exclude
  * method-style calls like `$query->get_posts()` (cached results, not a
- * fresh query) — see that function's own comment for a confirmed collision.
+ * fresh query — see that function's own comment).
  *
  * Always a "direct" finding, never parameter-sourced: unlike
  * get_post_meta( $id, ... ), none of these take a single attachment-ID
@@ -714,8 +831,8 @@ function godam_shared_query_pattern_at( $tokens, $i, $range_start, $range_end, $
  *
  * Uses godam_shared_is_bare_call_to() for the same reason
  * godam_shared_is_hook_fire_at() does — a class with its own wp_die()-named
- * method would otherwise wrongly end a scope early, potentially masking a
- * real gap. Safe: all four names are core globals, never called via ->/::.
+ * method would otherwise wrongly end a scope early. Safe: all four names
+ * are core globals, never called via ->/::.
  *
  * @param array[] $tokens Full token list for the file.
  * @param int     $i      Index to check.
@@ -734,12 +851,10 @@ function godam_shared_is_scope_terminator( $tokens, $i, $count ) {
  * Finds named class/interface/trait declarations: name, whether it's a
  * trait (T_TRAIT), and body token range, by tracking brace depth.
  *
- * The trait flag lets godam_shared_find_trait_uses() and, downstream, the
+ * The trait flag lets godam_shared_find_trait_uses() and the
  * coverage-checker's caller trace widen a private trait method's search to
- * every file that `use`s the trait, not just the trait's own file. The name
- * lets godam_shared_find_functions() class-qualify each method
- * (`Foo::render()` instead of a bare `render()`) so a finding's scope label
- * alone tells a reader which class it's in.
+ * every file that `use`s the trait. The name lets godam_shared_find_functions()
+ * class-qualify each method (`Foo::render()`, not a bare `render()`).
  *
  * @param array[] $tokens Normalized tokens from godam_shared_tokenize().
  * @return array[] Each: name, is_trait (bool), body_start, body_end (token indexes).
@@ -763,12 +878,10 @@ function godam_shared_find_classes( $tokens ) {
 		if ( T_STRING === ( $tokens[ $j ]['id'] ?? null ) ) {
 			$name = $tokens[ $j ]['text'];
 		} else {
-			// Anonymous class — no declared name, but still a real class
-			// (a method inside one is only callable via ->, never as a
-			// bare name). A synthetic name keyed by token index lets
-			// godam_shared_find_functions() still class-qualify its
-			// methods correctly, instead of leaving class = null and
-			// letting one match a bare `name(` call site by mistake.
+			// Anonymous class — a synthetic name keyed by token index lets
+			// godam_shared_find_functions() still class-qualify its methods,
+			// instead of leaving class = null and matching a bare `name(`
+			// call site by mistake.
 			$name = "class@anonymous:{$i}";
 		}
 
@@ -802,11 +915,9 @@ function godam_shared_find_classes( $tokens ) {
 		// Deliberately NOT jumping past this class's own body: an anonymous
 		// class can appear inside a method of an already-recorded outer
 		// class, and jumping past it would skip the anonymous class's own
-		// T_CLASS token, leaving every method inside it wrongly class-
-		// qualified as the OUTER class (confirmed via fixture: two same-named
-		// methods collided on one scope key downstream, silently losing one's
-		// counts). The outer class's own token index has already been passed
-		// by the time its body is scanned linearly, so it's never re-found.
+		// T_CLASS token, wrongly class-qualifying every method inside it as
+		// the OUTER class. The outer class's own token index has already
+		// been passed by the time its body is scanned, so it's never re-found.
 	}
 
 	return $classes;
@@ -814,16 +925,14 @@ function godam_shared_find_classes( $tokens ) {
 
 /**
  * Finds every `use TraitName[, ...];` statement inside a class body,
- * returning which trait names each class imports. Scoped to strictly
- * between a class's own body_start/body_end (from
- * godam_shared_find_classes()) — a class body can't have a namespace-
- * import `use`, so this can't be confused with that.
+ * returning which trait names each class imports. Scoped strictly between
+ * a class's own body_start/body_end — a class body can't have a
+ * namespace-import `use`, so this can't be confused with that.
  *
  * Excludes any OTHER class nested inside the one being scanned
- * (godam_shared_ranges_nested_in()) — otherwise a `use` statement that's
- * really only inside an inner (often anonymous) class also sits within
- * the outer class's range, and gets wrongly recorded as the outer
- * class's own import too (confirmed via fixture).
+ * (godam_shared_ranges_nested_in()) — otherwise a `use` statement really
+ * only inside an inner (often anonymous) class would also be recorded as
+ * the outer class's own import.
  *
  * Trait names are normalized via godam_shared_unqualified_name() so a
  * qualified `use \Foo\Bar\SomeTrait;` still matches a plain `trait
@@ -879,14 +988,13 @@ function godam_shared_find_trait_uses( $tokens, $classes ) {
 /**
  * Function names whose typical call shape passes a callback (directly, or
  * nested in an args array) that WordPress stores and invokes later,
- * potentially on a different request than the one that registered it — the
- * same isolation shape godam_shared_find_deferred_closures() needs.
+ * potentially on a different request than the one that registered it.
  *
  * Two of these, register_activation_hook()/register_deactivation_hook(),
  * take __FILE__ (not a string) as their first argument, so hook_name comes
- * back null for those. register_rest_route()'s callback is nested in its
- * 'callback' => ... args entry — already handled since the search scans
- * every token in the call's parens regardless of argument position.
+ * back null for those. register_rest_route()'s callback, nested in its
+ * 'callback' => ... entry, is already handled since the search scans every
+ * token in the call's parens regardless of argument position.
  *
  * @var string[]
  */
@@ -904,9 +1012,7 @@ const GODAM_DEFERRED_CALLBACK_FUNCTIONS = array(
  * extracts its parameter names and body token range by tracking
  * paren/brace depth. Returns null if $j isn't an anonymous closure, or if
  * $count is reached before a body is found (unbalanced — bail rather than
- * guess).
- *
- * Shared by both ways godam_shared_find_deferred_closures() finds a
+ * guess). Shared by both ways godam_shared_find_deferred_closures() finds a
  * deferred closure: passed inline, or assigned to a variable first.
  *
  * @param array[] $tokens Full token list for the file.
@@ -930,9 +1036,8 @@ function godam_shared_extract_closure_at( $tokens, $j, $count ) {
 		return null;
 	}
 
-		// Closure's own parameter list, extracted the same way
-		// godam_shared_find_functions() does for named functions, so it can
-		// be walked as its own scope with its own safe-parameter set.
+	// Parameter list, extracted the same way godam_shared_find_functions()
+	// does, so it can be walked as its own scope with its own params.
 	$params      = array();
 	$paren_depth = 1;
 	++$k;
@@ -980,10 +1085,9 @@ function godam_shared_extract_closure_at( $tokens, $j, $count ) {
 
 /**
  * Finds every `$var = function(...) {...};` assignment anywhere in the
- * token stream (regardless of what encloses it) — a closure assigned to a
- * variable first, rather than passed inline. Used only so
- * godam_shared_find_deferred_closures() can also recognize the "assign,
- * then register by variable" shape — see that function's own comment.
+ * token stream — a closure assigned to a variable first, rather than
+ * passed inline. Used so godam_shared_find_deferred_closures() can also
+ * recognize the "assign, then register by variable" shape.
  *
  * @param array[] $tokens Full token list for the file.
  * @return array[] Each: var_name (unprefixed), params, body_start, body_end.
@@ -1030,36 +1134,28 @@ function godam_shared_find_closure_assignments( $tokens ) {
  * variable passed later. Returns each closure's hook name (when the
  * registration call's first argument is a plain string) and body range.
  *
- * This lets a deferred callback NOT inherit whatever before/after bracket
- * happens to be open where it's merely DEFINED — it really runs later,
- * whenever the hook fires, possibly on a different request entirely.
- * Without this, a closure lexically sitting between a before()/after() pair
- * would be wrongly treated as covered by coincidence of source position.
+ * A deferred callback does NOT inherit whatever before/after bracket
+ * happens to be open where it's merely DEFINED — it runs later, whenever
+ * the hook fires, possibly on a different request. Scoped to
+ * GODAM_DEFERRED_CALLBACK_FUNCTIONS specifically, not every closure —
+ * array_map()/usort()/an IIFE all run their closure synchronously inline,
+ * genuinely inheriting the surrounding bracket correctly.
  *
- * Scoped to GODAM_DEFERRED_CALLBACK_FUNCTIONS specifically, not every
- * closure — array_map()/usort()/an IIFE all run their closure synchronously
- * inline, genuinely inheriting the surrounding bracket correctly.
- *
- * Only matches T_FUNCTION, not T_FN (arrow functions) — this codebase's
- * registration calls never use one today (verified via grep); a narrow,
- * currently-moot gap.
+ * Only matches T_FUNCTION, not T_FN (arrow functions) — unused by any
+ * registration call in this codebase today, a narrow accepted gap.
  *
  * The variable-mediated shape requires the assignment and the registration
  * call to share the same enclosing function
- * (godam_shared_same_enclosing_function()) before matching by variable name
- * — otherwise two unrelated functions each assigning their own closure to a
- * same-named local (e.g. both calling it `$cb`) could cross-match.
+ * (godam_shared_same_enclosing_function()) before matching by variable
+ * name, so two unrelated functions each using a same-named local (e.g.
+ * `$cb`) can't cross-match.
  *
  * Both registration-call scans use plain godam_shared_is_call_to(), not
- * godam_shared_is_bare_call_to() — unlike do_action()/wp_die(), add_action()/
- * add_filter() have a genuine OOP equivalent (the WordPress "Plugin
- * Boilerplate" Loader pattern: `$this->loader->add_action(...)`). Switching
- * to bare-call was tried for consistency and confirmed via fixture to break
- * that pattern — a closure passed through it silently stopped being
- * isolated, producing zero findings for a genuinely uncovered call inside
- * it. Reverted; a class with an unrelated, non-wrapper add_action()-named
- * method now produces a false positive instead, the safe direction to be
- * wrong in.
+ * godam_shared_is_bare_call_to(): unlike do_action()/wp_die(), add_action()/
+ * add_filter() have a genuine OOP equivalent (e.g. a Loader's
+ * `$this->loader->add_action(...)`) that must still be recognized here. A
+ * class with an unrelated, non-wrapper add_action()-named method produces a
+ * false positive instead — the safe direction to be wrong in.
  *
  * @param array[] $tokens    Full token list for the file.
  * @param array[] $functions This file's own godam_shared_find_functions() result — used only to scope the variable-mediated shape above.
@@ -1120,8 +1216,7 @@ function godam_shared_find_deferred_closures( $tokens, $functions ) {
 
 	$assignments_by_var = array();
 	foreach ( $assignments as $assignment ) {
-			// Stand-in for the assignment's own position — always textually
-			// adjacent to its closure's body_start.
+		// Uses the closure's own body_start as a stand-in for the assignment's position.
 		$assignment['enclosing']                         = godam_shared_enclosing_function_at( $assignment['body_start'], $functions );
 		$assignments_by_var[ $assignment['var_name'] ][] = $assignment;
 	}
@@ -1187,11 +1282,10 @@ function godam_shared_find_deferred_closures( $tokens, $functions ) {
  * `function` keyword is at $i, scanning backward over visibility/static/
  * abstract/final modifiers in any order.
  *
- * Used to scope the coverage-checker's one-hop call-site search: a
- * `private` method can only be called from within its own class, so a
- * same-file-only search suffices and sidesteps same-name-in-a-different-
- * class collisions a codebase-wide search can't rule out without real type
- * resolution.
+ * Used to scope the coverage-checker's call-site search: a `private`
+ * method can only be called from within its own class, so a same-file-only
+ * search suffices and sidesteps a same-name-in-a-different-class collision
+ * a codebase-wide search can't rule out without real type resolution.
  *
  * @param array[] $tokens Full token list.
  * @param int     $i      Index of the T_FUNCTION token.
@@ -1221,18 +1315,16 @@ function godam_shared_function_visibility_at( $tokens, $i ) {
  *
  * `params_open`/`params_close` are recorded separately from body_start/
  * body_end so a PHP 8.1+ "new in initializers" default (`function search(
- * $query = new WP_Query(...) )`) can be attributed to this function
- * without being walked as part of the same range as the body — see
- * godam_coverage_file_findings()'s comment for why they're walked
- * independently rather than merged.
+ * $query = new WP_Query(...) )`) can be attributed to this function without
+ * being walked as part of the body range — see godam_coverage_file_findings()
+ * for why they're walked independently rather than merged.
  *
  * An interface/abstract declaration can have this same shape in its
  * parameter list, but is deliberately NOT added to $functions — doing so
  * would give a name a second "definition," breaking
- * godam_coverage_resolve_coverage()'s codebase-wide-uniqueness check for
- * the common one-interface-one-implementation case. Its parameter-list
- * range is still tracked, via the optional $bodyless_declarations output
- * parameter.
+ * godam_coverage_resolve_coverage()'s codebase-wide-uniqueness check. Its
+ * parameter-list range is still tracked, via the optional
+ * $bodyless_declarations output parameter.
  *
  * @param array[] $tokens                 Normalized tokens from godam_shared_tokenize().
  * @param array[] &$bodyless_declarations Output: each interface/abstract method
@@ -1339,12 +1431,10 @@ function godam_shared_find_functions( $tokens, &$bodyless_declarations = array()
 		$body_end = $j - 1;
 
 		// Picks the SMALLEST (innermost) containing class, not the first
-		// match — a class's range can now nest inside another class's range
-		// (an anonymous class inside an outer class's method), so a
-		// function's body_start can fall within both at once. Taking the
-		// first match would wrongly class-qualify a method that's really on
-		// the inner class (confirmed via fixture: two same-named methods
-		// collided on one scope key downstream).
+		// match — class ranges can nest (an anonymous class inside an outer
+		// class's method), so body_start can fall within both at once, and
+		// the first match would wrongly class-qualify a method that's
+		// really on the inner class.
 		$class_name      = null;
 		$class_name_span = null;
 		foreach ( $classes as $class ) {
@@ -1372,11 +1462,9 @@ function godam_shared_find_functions( $tokens, &$bodyless_declarations = array()
 		// Deliberately NOT jumping past body_end: this function's body can
 		// contain another named function/method (e.g. inside a `new class
 		// {...}` expression), and jumping past it would skip that T_FUNCTION
-		// token entirely (confirmed via fixture — a method inside `return new
-		// class {...}` was never found at all). A genuinely anonymous closure
-		// is already excluded above without advancing $i, and this
-		// function's own token index is never revisited, so scanning through
-		// linearly can't re-record anything.
+		// token entirely. A genuinely anonymous closure is already excluded
+		// above without advancing $i, so scanning through linearly can't
+		// re-record anything.
 	}
 
 	return $functions;
@@ -1386,9 +1474,9 @@ function godam_shared_find_functions( $tokens, &$bodyless_declarations = array()
  * Returns the INNERMOST (smallest-range) entry in $functions whose
  * [body_start, body_end] contains $index, or null if none do.
  *
- * "Innermost" matters because function ranges can now nest — a method
- * inside a function-scoped anonymous class sits inside its enclosing
- * function's range too, and is the more specific, correct answer.
+ * "Innermost" matters because function ranges can nest — a method inside a
+ * function-scoped anonymous class sits inside its enclosing function's
+ * range too, and is the more specific, correct answer.
  *
  * @param int     $index     Token index to check.
  * @param array[] $functions godam_shared_find_functions() result.

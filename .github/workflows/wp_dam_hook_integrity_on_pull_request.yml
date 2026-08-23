@@ -4,11 +4,9 @@ on:
       - 'inc/**/*.php'
       - 'admin/**/*.php'
       - 'assets/src/blocks/**/*.php'
-      - 'bin/godam-wp-dam-hook-check.php'
-      - 'bin/godam-hook-check-shared.php'
-      - 'bin/godam-wp-dam-hook-baseline.json'
-      - 'bin/godam-attachment-access-coverage-check.php'
-      - 'bin/godam-attachment-access-coverage-baseline.json'
+      - 'bin/hook-check/balance.php'
+      - 'bin/hook-check/shared.php'
+      - 'bin/hook-check/coverage.php'
 
 name: wp-dam hook integrity
 
@@ -29,7 +27,7 @@ jobs:
         php-version: '8.4'
         coverage: none
     - name: Run hook integrity check
-      run: php bin/godam-wp-dam-hook-check.php check
+      run: php bin/hook-check/balance.php check
     - name: Run attachment-access coverage check
       if: always()
-      run: php bin/godam-attachment-access-coverage-check.php check
+      run: php bin/hook-check/coverage.php check
