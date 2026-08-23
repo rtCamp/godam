@@ -359,7 +359,7 @@ if ( $godam_is_shortcode ) {
 $godam_items = array();
 
 if ( 'query' === $godam_gallery_mode ) {
-	$godam_rest_query_args   = array(
+	$godam_rest_query_args = array(
 		'offset'            => 0,
 		'columns'           => 1,
 		'count'             => isset( $attributes['count'] ) ? max( 1, absint( $attributes['count'] ) ) : 6,
@@ -376,6 +376,18 @@ if ( 'query' === $godam_gallery_mode ) {
 		'view_ratio'        => $godam_view_ratio,
 		'performance_mode'  => $godam_performance_mode,
 	);
+	/**
+	 * Fires before querying and resolving "query" mode gallery items, so
+	 * integrations that centralize media on another site can switch context
+	 * first. Without this, the query below runs against the local site and
+	 * finds nothing when the real attachments live elsewhere — the per-item
+	 * rtgodam_gallery_v2_get_video_data() bracket alone can't help, since it
+	 * would never even be called.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+
 	$godam_query             = new WP_Query( rtgodam_gallery_v2_build_query_args( $attributes, 1 ) );
 	$godam_total_query_items = (int) $godam_query->found_posts;
 
@@ -388,6 +400,8 @@ if ( 'query' === $godam_gallery_mode ) {
 			}
 		}
 	}
+
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	wp_reset_postdata();
 } elseif ( ! empty( $inner_block_video_ids ) && is_array( $inner_block_video_ids ) ) {
