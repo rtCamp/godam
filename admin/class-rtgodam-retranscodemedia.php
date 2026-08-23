@@ -173,27 +173,26 @@ class RTGODAM_RetranscodeMedia {
 			if ( ! empty( $ids ) ) {
 				$ids = explode( ',', $ids );
 			} else {
+				/**
+				 * Fires before this fallback "no explicit IDs" scan reads any
+				 * attachment data, so integrations that centralize media on another
+				 * site can switch context first.
+				 *
+				 * @since 1.8.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
+
 				add_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
-				$query = new WP_Query( array( 'post_type' => 'attachments' ) );
+				$query = new WP_Query( array( 'post_type' => 'attachment' ) );
 				$media = $query->get_posts();
 				remove_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
 				if ( empty( $media ) || is_wp_error( $media ) ) {
+					do_action( 'rtgodam_after_attachment_lookup' );
 
 					// translators: Link to the media page.
 					echo '	<p>' . sprintf( esc_html__( "Unable to find any media. Are you sure <a href='%s'>some exist</a>?", 'godam' ), esc_url( admin_url( 'upload.php' ) ) ) . '</p></div>';
 					return;
 				}
-
-				/**
-				 * Fires before this per-attachment get_attached_file()/
-				 * get_the_title() loop, so integrations that centralize
-				 * media on another site can switch context first. The
-				 * explicit-IDs branch above doesn't touch attachment data,
-				 * so it isn't wrapped.
-				 *
-				 * @since 1.8.0
-				 */
-				do_action( 'rtgodam_before_attachment_lookup' );
 
 				// Generate the list of IDs.
 				$ids = array();
@@ -411,7 +410,7 @@ class RTGODAM_RetranscodeMedia {
 					}
 				} else {
 					add_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
-					$query = new WP_Query( array( 'post_type' => 'attachments' ) );
+					$query = new WP_Query( array( 'post_type' => 'attachment' ) );
 					$media = $query->get_posts();
 					remove_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
 					if ( empty( $media ) || is_wp_error( $media ) ) {

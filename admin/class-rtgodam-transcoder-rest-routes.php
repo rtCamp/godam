@@ -37,10 +37,6 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	 */
 	public function __construct() {
 		$this->rtgodam_transcoder_handler = new RTGODAM_Transcoder_Handler( true );
-
-		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
-			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', self::get_callback_url() );
-		}
 	}
 
 	/**
@@ -171,12 +167,38 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	}
 
 	/**
-	 * Return the callback URL for the transcoder.
+	 * REST paths (relative to this namespace, each with a leading slash) that
+	 * get_callback_url() ever builds a URL for — keyed by a short,
+	 * referenceable name. The one canonical list backing that accessor, so
+	 * any other code that needs the *complete* set of callback paths (e.g. an
+	 * integration wrapping every centralized-media callback in a site switch)
+	 * has one place to read it from, instead of a hand-maintained shadow list
+	 * that can silently miss a newly added one.
 	 *
+	 * @var array<string, string>
+	 */
+	const CALLBACK_PATHS = array(
+		'transcoder' => '/transcoder-callback',
+		'status'     => '/transcoding/transcoding-status',
+	);
+
+	/**
+	 * Return a transcoder callback URL for the *current* site.
+	 *
+	 * The single, authoritative accessor for every callback URL this class
+	 * constructs — call this directly at the point of use rather than caching
+	 * the result in a define()'d constant. A constant, once defined, can't be
+	 * recomputed if site context (e.g. a multisite switch_to_blog()) changes
+	 * later in the same request; this way every caller always gets the URL for
+	 * whichever site is current when it actually asks.
+	 *
+	 * @param string $type One of the keys in self::CALLBACK_PATHS. Defaults to
+	 *                      'transcoder', the original/most common callback.
 	 * @return string
 	 */
-	public static function get_callback_url() {
-		return rest_url( self::$namespace_prefix . '/transcoder-callback' );
+	public static function get_callback_url( $type = 'transcoder' ) {
+		$path = isset( self::CALLBACK_PATHS[ $type ] ) ? self::CALLBACK_PATHS[ $type ] : self::CALLBACK_PATHS['transcoder'];
+		return rest_url( self::$namespace_prefix . $path );
 	}
 
 	/**

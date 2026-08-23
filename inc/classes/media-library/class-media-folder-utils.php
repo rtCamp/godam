@@ -57,80 +57,96 @@ class Media_Folder_Utils {
 		$mime_type_key = $mime_type ? md5( is_array( $mime_type ) ? implode( '|', $mime_type ) : $mime_type ) : 'all';
 		$cache_key     = 'attachment_count_' . $folder_id . '_' . $mime_type_key;
 
-		// Try to get cached count first (unless force refresh is requested).
-		if ( ! $force_refresh ) {
-			$cached_count = get_transient( $cache_key );
+		/**
+		 * Fires before counting attachments in a folder, so integrations that
+		 * centralize media on another site can switch context first — the
+		 * folder taxonomy terms, the attachments assigned to them, and the
+		 * cached count itself (the transient below) all belong wherever media
+		 * is centralized, not necessarily the site issuing this call. Without
+		 * this covering the transient too, each site would cache its own
+		 * possibly-stale copy of what's supposed to be one shared count.
+		 *
+		 * @since 1.8.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Try to get cached count first (unless force refresh is requested).
+			if ( ! $force_refresh ) {
+				$cached_count = get_transient( $cache_key );
 
-			if ( false !== $cached_count ) {
-				return absint( $cached_count );
+				if ( false !== $cached_count ) {
+					return absint( $cached_count );
+				}
 			}
+
+			global $wpdb;
+
+			// Build query based on mime type filtering.
+			if ( empty( $mime_type ) ) {
+				// No mime type filter.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$count = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT COUNT(DISTINCT p.ID)
+						FROM {$wpdb->posts} p
+						INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
+						INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+						WHERE p.post_type = 'attachment'
+						AND p.post_status = 'inherit'
+						AND tt.taxonomy = 'media-folder'
+						AND tt.term_id = %d",
+						$folder_id
+					)
+				);
+			} elseif ( is_array( $mime_type ) ) {
+				// Array of mime types - use IN clause.
+				$placeholders = implode( ', ', array_fill( 0, count( $mime_type ), '%s' ) );
+				$query_params = array_merge( array( $folder_id ), $mime_type );
+
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$count = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT COUNT(DISTINCT p.ID)
+						FROM {$wpdb->posts} p
+						INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
+						INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+						WHERE p.post_type = 'attachment'
+						AND p.post_status = 'inherit'
+						AND tt.taxonomy = 'media-folder'
+						AND tt.term_id = %d
+						AND p.post_mime_type IN ($placeholders)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+						$query_params
+					)
+				);
+			} else {
+				// Single mime type - use LIKE.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$count = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT COUNT(DISTINCT p.ID)
+						FROM {$wpdb->posts} p
+						INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
+						INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+						WHERE p.post_type = 'attachment'
+						AND p.post_status = 'inherit'
+						AND tt.taxonomy = 'media-folder'
+						AND tt.term_id = %d
+						AND p.post_mime_type LIKE %s",
+						$folder_id,
+						$wpdb->esc_like( $mime_type ) . '%'
+					)
+				);
+			}
+
+			$count = absint( $count );
+
+			// Cache the result.
+			set_transient( $cache_key, $count, self::CACHE_EXPIRATION );
+
+			return $count;
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		global $wpdb;
-
-		// Build query based on mime type filtering.
-		if ( empty( $mime_type ) ) {
-			// No mime type filter.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$count = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(DISTINCT p.ID)
-					FROM {$wpdb->posts} p
-					INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
-					INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-					WHERE p.post_type = 'attachment' 
-					AND p.post_status = 'inherit' 
-					AND tt.taxonomy = 'media-folder' 
-					AND tt.term_id = %d",
-					$folder_id
-				)
-			);
-		} elseif ( is_array( $mime_type ) ) {
-			// Array of mime types - use IN clause.
-			$placeholders = implode( ', ', array_fill( 0, count( $mime_type ), '%s' ) );
-			$query_params = array_merge( array( $folder_id ), $mime_type );
-
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$count = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(DISTINCT p.ID)
-					FROM {$wpdb->posts} p
-					INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
-					INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-					WHERE p.post_type = 'attachment' 
-					AND p.post_status = 'inherit' 
-					AND tt.taxonomy = 'media-folder' 
-					AND tt.term_id = %d 
-					AND p.post_mime_type IN ($placeholders)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$query_params
-				)
-			);
-		} else {
-			// Single mime type - use LIKE.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$count = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(DISTINCT p.ID)
-					FROM {$wpdb->posts} p
-					INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
-					INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-					WHERE p.post_type = 'attachment' 
-					AND p.post_status = 'inherit' 
-					AND tt.taxonomy = 'media-folder' 
-					AND tt.term_id = %d 
-					AND p.post_mime_type LIKE %s",
-					$folder_id,
-					$wpdb->esc_like( $mime_type ) . '%'
-				)
-			);
-		}
-
-		$count = absint( $count );
-
-		// Cache the result.
-		set_transient( $cache_key, $count, self::CACHE_EXPIRATION );
-
-		return $count;
 	}
 
 	/**

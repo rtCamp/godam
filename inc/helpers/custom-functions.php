@@ -869,15 +869,14 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 		}
 	}
 
+	include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php';
+
 	/**
 	 * Callback URL from CMM to plugin for transcoding.
 	 */
-	$callback_url = rest_url( 'godam/v1/transcoder-callback' );
+	$callback_url = \RTGODAM_Transcoder_Rest_Routes::get_callback_url();
 
-	/**
-	 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
-	 */
-	$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+	$status_callback_url = \RTGODAM_Transcoder_Rest_Routes::get_callback_url( 'status' );
 
 	/**
 	 * Prepare data to send as post request to CMM.
@@ -1273,16 +1272,25 @@ function godam_preview_page_content( $video_id ) {
 	$show_video       = false;
 	$video_id         = intval( $video_id );
 
+	$godam_video_title = '';
+	$godam_mime        = '';
+
 	if ( ! empty( $video_id ) ) {
 		/**
-		 * Fires before resolving this attachment's post/mime data, so
+		 * Fires before resolving this attachment's post/mime/title data, so
 		 * integrations that centralize media on another site can switch
-		 * context first.
+		 * context first. Title and mime type are captured into variables here
+		 * (not re-read later) since the shortcode/block render further down
+		 * must run on the *current* site, after this bracket has closed.
 		 *
 		 * @since 1.8.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
+		if ( $video_attachment && 'attachment' === $video_attachment->post_type ) {
+			$godam_video_title = get_the_title( $video_id );
+			$godam_mime        = (string) get_post_mime_type( $video_id );
+		}
 		do_action( 'rtgodam_after_attachment_lookup' );
 		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type;
 	}
@@ -1298,7 +1306,6 @@ function godam_preview_page_content( $video_id ) {
 		// Render the markup appropriate to the attachment's media type: audio
 		// attachments use the audio shortcode, image attachments the image block
 		// (hotspot / product layers), everything else the video player.
-		$godam_mime     = (string) get_post_mime_type( $video_id );
 		$godam_is_audio = 0 === strpos( $godam_mime, 'audio/' );
 		$godam_is_image = 0 === strpos( $godam_mime, 'image/' );
 
@@ -1335,7 +1342,7 @@ function godam_preview_page_content( $video_id ) {
 		</div>
 		<div class="godam-video-preview">
 			<h1 class="godam-video-preview--title">
-				<?php echo esc_html( get_the_title( $video_id ) ); ?>
+				<?php echo esc_html( $godam_video_title ); ?>
 			</h1>
 			<?php echo $godam_media_output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped inside the block / shortcode render templates. ?>
 		</div>

@@ -88,45 +88,46 @@ class Video_Metadata {
 	 */
 	private function process_video_metadata( $attachment_id ) {
 		/**
-		 * Fires before reading/writing this attachment's video-duration and
-		 * file-size meta, so integrations that centralize media on another
-		 * site can switch context first. Reads the attachment's file path
-		 * and existing `_video_duration`/`_video_file_size` postmeta, then
-		 * writes back freshly probed values for whichever one is still
-		 * missing.
+		 * Fires before reading/writing this attachment's file path and video
+		 * duration/size meta, so integrations that centralize media on
+		 * another site can switch context first. Hooked to `add_attachment`,
+		 * which fires on every insert regardless of caller — some callers
+		 * already switch before triggering it (safe, this just no-ops
+		 * nested), but nothing guarantees all of them do.
 		 *
 		 * @since 1.8.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$file_path = get_attached_file( $attachment_id );
 
-		$file_path = get_attached_file( $attachment_id );
+			if ( $this->is_video_attachment( $attachment_id ) && file_exists( $file_path ) ) {
+				// Check if metadata already exists to avoid unnecessary processing.
+				$existing_duration = get_post_meta( $attachment_id, '_video_duration', true );
+				$existing_size     = get_post_meta( $attachment_id, '_video_file_size', true );
 
-		if ( $this->is_video_attachment( $attachment_id ) && file_exists( $file_path ) ) {
-			// Check if metadata already exists to avoid unnecessary processing.
-			$existing_duration = get_post_meta( $attachment_id, '_video_duration', true );
-			$existing_size     = get_post_meta( $attachment_id, '_video_file_size', true );
+				if ( empty( $existing_duration ) || empty( $existing_size ) ) {
+					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+						require_once ABSPATH . 'wp-admin/includes/media.php';
+					}
 
-			if ( empty( $existing_duration ) || empty( $existing_size ) ) {
-				if ( ! function_exists( 'wp_read_video_metadata' ) ) {
-					require_once ABSPATH . 'wp-admin/includes/media.php';
-				}
+					$metadata = wp_read_video_metadata( $file_path );
 
-				$metadata = wp_read_video_metadata( $file_path );
+					// Save duration.
+					if ( ! empty( $metadata['length'] ) ) {
+						update_post_meta( $attachment_id, '_video_duration', intval( $metadata['length'] ) );
+					}
 
-				// Save duration.
-				if ( ! empty( $metadata['length'] ) ) {
-					update_post_meta( $attachment_id, '_video_duration', intval( $metadata['length'] ) );
-				}
-
-				// Save file size.
-				$file_size = filesize( $file_path );
-				if ( $file_size ) {
-					update_post_meta( $attachment_id, '_video_file_size', $file_size );
+					// Save file size.
+					$file_size = filesize( $file_path );
+					if ( $file_size ) {
+						update_post_meta( $attachment_id, '_video_file_size', $file_size );
+					}
 				}
 			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	/**

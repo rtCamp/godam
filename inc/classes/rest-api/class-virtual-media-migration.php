@@ -73,13 +73,8 @@ class Virtual_Media_Migration extends Base {
 	 * @return \WP_REST_Response
 	 */
 	public function migrate_virtual_media( $request ) {
-		// Ensure the transcoder callback URL is defined.
-		if ( defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) && ! empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
-			$transcoder_callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
-		} else {
-			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-			$transcoder_callback_url = \RTGODAM_Transcoder_Rest_Routes::get_callback_url();
-		}
+		include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php';
+		$transcoder_callback_url = \RTGODAM_Transcoder_Rest_Routes::get_callback_url();
 
 		return new \WP_REST_Response(
 			array(

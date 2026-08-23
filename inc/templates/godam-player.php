@@ -515,7 +515,7 @@ $godam_video_setup = array(
 			'forward'  => 10,
 			'backward' => 10,
 		),
-		'brandingIcon' => true, // provide default value for brand logo. 
+		'brandingIcon' => true, // provide default value for brand logo.
 	),
 );
 if ( ! empty( $godam_control_bar_settings ) ) {
@@ -549,6 +549,21 @@ if ( isset( $attributes['godam_context'] ) && in_array( $attributes['godam_conte
 $godam_video_setup = wp_json_encode( $godam_video_setup );
 
 $godam_frontend_layers = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array();
+
+// Strip the layer-manager JS's own rich-content fields (html/text) from the
+// player's JSON config before encoding: it doesn't need them there (it reads
+// the already-rendered HTML from the DOM separately), and leaving them out
+// avoids duplicating potentially large freeform content into data-options.
+// `rtgodam_video_layers_for_js` remains as an optional override point.
+$godam_frontend_layers = apply_filters(
+	'rtgodam_video_layers_for_js',
+	array_map(
+		function ( $godam_frontend_layer ) {
+			return is_array( $godam_frontend_layer ) ? array_diff_key( $godam_frontend_layer, array_flip( array( 'html', 'text' ) ) ) : $godam_frontend_layer;
+		},
+		$godam_frontend_layers
+	)
+);
 
 $godam_video_config = wp_json_encode(
 	array(
@@ -1030,7 +1045,13 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 										<?php if ( $godam_render_html_cta ) : ?>
 											<div class="easydam-layer--cta-html">
-												<?php echo wp_kses_post( $godam_layer['html'] ); ?>
+												<?php
+												// Run shortcodes in CTA HTML by default (e.g. a Marketo form
+												// shortcode) rather than requiring an extension-side filter
+												// listener to enable it; `rtgodam_cta_html_content` remains as
+												// an optional override point.
+												echo apply_filters( 'rtgodam_cta_html_content', do_shortcode( wp_kses_post( $godam_layer['html'] ) ), $godam_layer ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_kses_post() already sanitizes; do_shortcode()/the filter run after, same pattern as godam_preview_page_content().
+												?>
 											</div>
 										<?php else : ?>
 											<?php echo wp_kses_post( rtgodam_image_cta_html( $godam_layer ) ); ?>

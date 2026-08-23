@@ -1052,6 +1052,69 @@ class Seo {
 	}
 
 	/**
+	 * Build a stable identity string for a [blog_id, post_id] pair, used only to
+	 * compare/dedupe entries in memory — never persisted or parsed back apart.
+	 *
+	 * @param int $blog_id Blog ID the post belongs to.
+	 * @param int $post_id Post ID, local to that blog.
+	 * @return string
+	 */
+	private function make_post_ref_key( $blog_id, $post_id ) {
+		return ( (int) $blog_id ) . ':' . ( (int) $post_id );
+	}
+
+	/**
+	 * Read the [blog_id, post_id] reference list for an attachment.
+	 *
+	 * Legacy entries (a bare post ID, from before blog_id qualification) are
+	 * attributed to the *current* blog — the same assumption every older version
+	 * of this code already made, since that shape never recorded a site. This is
+	 * necessarily a best-effort guess for pre-existing data, but every write from
+	 * here on is unambiguous.
+	 *
+	 * @param int $attachment_id Attachment WP post ID.
+	 * @return array<string, array{blog_id:int, post_id:int}> Keyed by make_post_ref_key().
+	 */
+	private function get_attachment_post_refs( $attachment_id ) {
+		$raw = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
+		$raw = is_array( $raw ) ? $raw : array();
+
+		$refs = array();
+		foreach ( $raw as $entry ) {
+			if ( is_array( $entry ) && isset( $entry['post_id'] ) ) {
+				$blog_id = isset( $entry['blog_id'] ) ? (int) $entry['blog_id'] : get_current_blog_id();
+				$post_id = (int) $entry['post_id'];
+			} else {
+				$blog_id = get_current_blog_id();
+				$post_id = (int) $entry;
+			}
+			if ( $post_id <= 0 ) {
+				continue;
+			}
+			$refs[ $this->make_post_ref_key( $blog_id, $post_id ) ] = array(
+				'blog_id' => $blog_id,
+				'post_id' => $post_id,
+			);
+		}
+		return $refs;
+	}
+
+	/**
+	 * Persist the [blog_id, post_id] reference list for an attachment.
+	 *
+	 * @param int                                            $attachment_id Attachment WP post ID.
+	 * @param array<string, array{blog_id:int, post_id:int}> $refs          Keyed by make_post_ref_key().
+	 * @return void
+	 */
+	private function save_attachment_post_refs( $attachment_id, array $refs ) {
+		if ( empty( $refs ) ) {
+			delete_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY );
+			return;
+		}
+		update_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, array_values( $refs ) );
+	}
+
+	/**
 	 * Update the mapping of which posts use a specific attachment for SEO schema generation.
 	 *
 	 * @param int   $post_id     The post ID.
@@ -1064,6 +1127,11 @@ class Seo {
 		// Get current attachments this post was using.
 		$previous_attachments = get_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, true );
 		$previous_attachments = is_array( $previous_attachments ) ? $previous_attachments : array();
+
+		// Captured before the switch below, so this is always the site $post_id
+		// actually belongs to (the one currently active), not the media site.
+		$blog_id  = get_current_blog_id();
+		$post_ref = $this->make_post_ref_key( $blog_id, $post_id );
 
 		/**
 		 * Fires before touching any attachment's reverse-index meta below,
@@ -1080,24 +1148,21 @@ class Seo {
 		// Remove post from old attachments' mapping.
 		$removed_attachments = array_diff( $previous_attachments, $attachments );
 		foreach ( $removed_attachments as $attachment_id ) {
-			$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
-			$posts_using = is_array( $posts_using ) ? $posts_using : array();
-			$posts_using = array_diff( $posts_using, array( $post_id ) );
-			if ( ! empty( $posts_using ) ) {
-				update_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, array_values( $posts_using ) );
-			} else {
-				delete_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY );
-			}
+			$posts_using = $this->get_attachment_post_refs( $attachment_id );
+			unset( $posts_using[ $post_ref ] );
+			$this->save_attachment_post_refs( $attachment_id, $posts_using );
 		}
 
 		// Add post to new attachments' mapping.
 		$new_attachments = array_diff( $attachments, $previous_attachments );
 		foreach ( $new_attachments as $attachment_id ) {
-			$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
-			$posts_using = is_array( $posts_using ) ? $posts_using : array();
-			if ( ! in_array( $post_id, $posts_using, true ) ) {
-				$posts_using[] = $post_id;
-				update_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, $posts_using );
+			$posts_using = $this->get_attachment_post_refs( $attachment_id );
+			if ( ! isset( $posts_using[ $post_ref ] ) ) {
+				$posts_using[ $post_ref ] = array(
+					'blog_id' => $blog_id,
+					'post_id' => $post_id,
+				);
+				$this->save_attachment_post_refs( $attachment_id, $posts_using );
 			}
 		}
 
@@ -1128,21 +1193,21 @@ class Seo {
 		 * @since 1.8.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
-		try {
-			$attachment = get_post( $attachment_id );
 
-			// Only process video attachments.
-			if ( ! $attachment || strpos( $attachment->post_mime_type, 'video/' ) !== 0 ) {
-				return;
-			}
+		$attachment = get_post( $attachment_id );
 
-			// Check if any posts are using this attachment.
-			$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
-		} finally {
+		// Only process video attachments.
+		if ( ! $attachment || strpos( $attachment->post_mime_type, 'video/' ) !== 0 ) {
 			do_action( 'rtgodam_after_attachment_lookup' );
+			return;
 		}
 
-		if ( empty( $posts_using ) || ! is_array( $posts_using ) ) {
+		// Check if any posts are using this attachment.
+		$posts_using = $this->get_attachment_post_refs( $attachment_id );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( empty( $posts_using ) ) {
 			return;
 		}
 
@@ -1156,6 +1221,11 @@ class Seo {
 	 * Sync SEO for all posts using a specific attachment.
 	 * This runs as a background task when an attachment is updated.
 	 *
+	 * Each referencing post is resolved on its own originating site — not
+	 * necessarily the site this background job happens to run on, and not the
+	 * media site either — since ATTACHMENT_POSTS_MAP_META_KEY now records
+	 * blog_id alongside each post ID.
+	 *
 	 * @param int $attachment_id The attachment ID.
 	 */
 	public function sync_seo_for_attachment_posts( $attachment_id ) {
@@ -1164,36 +1234,45 @@ class Seo {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * NOTE: $posts_using is a flat list of post IDs with no blog_id
-		 * recorded alongside them, so if this attachment is referenced from
-		 * more than one site in the network, get_post() below only ever
-		 * resolves against whichever site is currently active — not a
-		 * hook-fixable gap; would need this meta to store [blog_id, post_id]
-		 * pairs instead of bare IDs.
-		 *
 		 * @since 1.8.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
-		$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
+		$posts_using = $this->get_attachment_post_refs( $attachment_id );
 		do_action( 'rtgodam_after_attachment_lookup' );
 
-		if ( empty( $posts_using ) || ! is_array( $posts_using ) ) {
+		if ( empty( $posts_using ) ) {
 			return;
 		}
 
-		foreach ( $posts_using as $post_id ) {
-			$post = get_post( $post_id );
-			if ( ! $post ) {
-				continue;
+		$is_multisite = is_multisite();
+
+		foreach ( $posts_using as $ref ) {
+			$blog_id = $ref['blog_id'];
+			$post_id = $ref['post_id'];
+
+			$switched = $is_multisite && $blog_id > 0 && get_current_blog_id() !== $blog_id;
+			if ( $switched ) {
+				switch_to_blog( $blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
 			}
 
-			// Check if it's an Elementor post.
-			$is_elementor = $this->is_elementor_post( $post_id );
+			try {
+				$post = get_post( $post_id );
+				if ( ! $post ) {
+					continue;
+				}
 
-			if ( $is_elementor ) {
-				$this->elementor_save_seo_data_as_postmeta( $post_id );
-			} else {
-				$this->save_seo_data_as_postmeta( $post_id, $post );
+				// Check if it's an Elementor post.
+				$is_elementor = $this->is_elementor_post( $post_id );
+
+				if ( $is_elementor ) {
+					$this->elementor_save_seo_data_as_postmeta( $post_id );
+				} else {
+					$this->save_seo_data_as_postmeta( $post_id, $post );
+				}
+			} finally {
+				if ( $switched ) {
+					restore_current_blog();
+				}
 			}
 		}
 	}

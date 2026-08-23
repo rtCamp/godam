@@ -1,4 +1,4 @@
-<?php
+git add <?php
 /**
  * Coverage audit: finds every real call to one of the 12 tracked
  * attachment-access functions (get_post_meta, wp_get_attachment_url, etc.)
@@ -1104,7 +1104,7 @@ function godam_coverage_known_reasons() {
 	// inside its own caller's rtgodam_before/after_attachment_lookup pair (see that
 	// method's own docblock). The checker has no interprocedural tracing, so it
 	// re-flags every access inside a callee whose coverage comes from its caller.
-	foreach ( array( 736, 737, 739, 740, 744, 746, 754, 761, 762, 767, 770, 772 ) as $line ) {
+	foreach ( array( 728, 729, 731, 732, 736, 738, 746, 753, 754, 759, 762, 764 ) as $line ) {
 		$reasons[ "admin/class-rtgodam-transcoder-handler.php:{$line}" ] = 'add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller\'s before/after pair.';
 	}
 
@@ -1117,7 +1117,7 @@ function godam_coverage_known_reasons() {
 	// wraps that entire call in try/finally (see the reason below); and
 	// inc/classes/rest-api/class-video-migration.php:1238 calls it inside its own
 	// pair too.
-	$reasons['admin/class-rtgodam-transcoder-handler.php:912'] = 'get_post_id_by_meta_key_and_value(): covered transitively — every real call site (rest-routes.php:252, :424 via handle_wp_media_transcoding_callback, :562, and class-video-migration.php:1238) already runs inside its own before/after pair.';
+	$reasons['admin/class-rtgodam-transcoder-handler.php:904'] = 'get_post_id_by_meta_key_and_value(): covered transitively — every real call site (rest-routes.php, including via handle_wp_media_transcoding_callback, and class-video-migration.php) already runs inside its own before/after pair.';
 
 	// RTGODAM_RetranscodeMedia's transcoder-pipeline hook handlers: each is
 	// registered (admin/class-rtgodam-retranscodemedia.php's constructor) as the
@@ -1133,11 +1133,11 @@ function godam_coverage_known_reasons() {
 	// handle_wp_media_transcoding_callback() — covered transitively by
 	// handle_callback()'s own before/after pair, per the reasons already on file
 	// above for that method's own findings.
-	$reasons['admin/class-rtgodam-retranscodemedia.php:620'] = "rtgodam_before_thumbnail_store(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_before_thumbnail_store' ), which always fires from inside handle_callback()'s before/after pair.";
-	foreach ( array( 634, 643 ) as $line ) {
+	$reasons['admin/class-rtgodam-retranscodemedia.php:619'] = "rtgodam_before_thumbnail_store(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_before_thumbnail_store' ), which always fires from inside handle_callback()'s before/after pair.";
+	foreach ( array( 633, 642 ) as $line ) {
 		$reasons[ "admin/class-rtgodam-retranscodemedia.php:{$line}" ] = "rtgodam_before_transcoded_media_store(): covered transitively — sole trigger is add_transcoded_files()'s do_action( 'rtgodam_before_transcoded_media_store' ), which always fires from inside handle_callback()'s before/after pair.";
 	}
-	foreach ( array( 656, 657, 665, 669, 672, 678, 680, 682 ) as $line ) {
+	foreach ( array( 655, 656, 664, 668, 671, 677, 679, 681 ) as $line ) {
 		$reasons[ "admin/class-rtgodam-retranscodemedia.php:{$line}" ] = "transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.";
 	}
 
@@ -1145,12 +1145,12 @@ function godam_coverage_known_reasons() {
 	// SRFM\...\Entries::get( $entry_id )['form_id'] — a SureForms form ID used only
 	// as a postmeta key to stash the transcoded URL, mirroring the ninja-forms/
 	// sureforms Form_Submit pattern below. Never an attachment ID.
-	$reasons['admin/class-rtgodam-transcoder-rest-routes.php:337'] = 'handle_callback(): $form_id is a SureForms form ID used as a postmeta key (not an attachment ID) to stash the transcoded URL.';
+	$reasons['admin/class-rtgodam-transcoder-rest-routes.php:359'] = 'handle_callback(): $form_id is a SureForms form ID used as a postmeta key (not an attachment ID) to stash the transcoded URL.';
 
 	// handle_wp_media_transcoding_callback(): the extracted body of handle_callback()'s
 	// 'wp-media' branch. Its own docblock records that it always runs with the
 	// centralized media site active — see the before/after pair in the caller.
-	foreach ( array( 449, 451, 457, 471, 476 ) as $line ) {
+	foreach ( array( 471, 473, 479, 493, 498 ) as $line ) {
 		$reasons[ "admin/class-rtgodam-transcoder-rest-routes.php:{$line}" ] = 'handle_wp_media_transcoding_callback(): covered transitively — caller (handle_callback) wraps the entire call in try/finally.';
 	}
 
@@ -1217,7 +1217,7 @@ function godam_coverage_known_reasons() {
 	// write at line 311 above. Its only two callers (on_before_delete_post() and
 	// sync_post_attachments()) both guarantee $post_id is the host post, never an
 	// attachment. Reads that host post's own POST_META_KEY marker.
-	$reasons['inc/classes/class-media-usage-tracker.php:537'] = "get_tracked_attachment_ids(): \$post_id is always the host post (both callers guarantee non-attachment); reads that post's own POST_META_KEY marker, not attachment data.";
+	$reasons['inc/classes/class-media-usage-tracker.php:626'] = "get_tracked_attachment_ids(): \$post_id is always the host post (both callers guarantee non-attachment); reads that post's own POST_META_KEY marker, not attachment data.";
 
 	// Media_Usage_Tracker::extract_ids_from_elementor(): sole caller is
 	// sync_post_attachments(), so $post_id is the same guaranteed-host-post value
@@ -1225,7 +1225,7 @@ function godam_coverage_known_reasons() {
 	// Elementor widget tree — the same meta key already established as
 	// host-post-only in class-elementor-gallery-widget-v1-to-v2.php (attachments
 	// are never built with Elementor).
-	$reasons['inc/classes/class-media-usage-tracker.php:688'] = "extract_ids_from_elementor(): \$post_id is the host post (sole caller is sync_post_attachments()); reads that post's own '_elementor_data' (never present on an attachment, per the elementor-gallery-widget-v1-to-v2 precedent).";
+	$reasons['inc/classes/class-media-usage-tracker.php:777'] = "extract_ids_from_elementor(): \$post_id is the host post (sole caller is sync_post_attachments()); reads that post's own '_elementor_data' (never present on an attachment, per the elementor-gallery-widget-v1-to-v2 precedent).";
 
 	// Seo::sync_seo_for_attachment_posts(): get_post( $post_id ) here reads the HOST
 	// posts referencing the attachment (from the reverse-index meta read a few lines
@@ -1233,16 +1233,17 @@ function godam_coverage_known_reasons() {
 	// known structural limitation, not a hook-fixable gap — the reverse-index meta
 	// stores bare post IDs with no blog_id, so a multi-site reference can only ever
 	// resolve against whichever site is currently active.
-	// Line number shifted from 1141 to 1185 by the rtgodam_before/after_attachment_lookup
-	// wraps added around get_seo_from_attachment(), add_video_duration_for_video_seo()
-	// and schedule_seo_sync_for_attachment() earlier in the same file.
-	$reasons['inc/classes/class-seo.php:1185'] = 'sync_seo_for_attachment_posts(): reads HOST posts referencing the attachment (see the docblock note on this exact line) — documented structural limitation, not a hook-fixable gap.';
+	// Line number has shifted repeatedly (1141 → 1185 → 1270) as rtgodam_before/after_
+	// attachment_lookup wraps and the Core-1 blog_id/composite-key changes were added
+	// earlier in the same file — this reads HOST posts, so it always needed a reason
+	// here rather than a hook, and just needs its key kept current.
+	$reasons['inc/classes/class-seo.php:1259'] = 'sync_seo_for_attachment_posts(): reads HOST posts referencing the attachment (see the docblock note on this exact line) — documented structural limitation, not a hook-fixable gap.';
 
 	// Seo::add_video_seo_schema(): $post_id = get_queried_object_id() — the current
 	// page being viewed. Reads that page's OWN cached SEO schema meta (written by
 	// save_seo_data_as_postmeta against the host page). Not attachment data.
-	// Line number shifted from 443 to 471 by the rtgodam_before/after_attachment_lookup
-	// wrap added around get_seo_from_attachment() earlier in the same file.
+	// Line number has shifted repeatedly (443 → 471 → 482) as rtgodam_before/after_
+	// attachment_lookup wraps and other fixes were added earlier in the same file.
 	$reasons['inc/classes/class-seo.php:471'] = "add_video_seo_schema(): \$post_id is get_queried_object_id() (the current page); reads that page's own cached SEO meta, not attachment data.";
 
 	// Seo::save_seo_data_as_postmeta(): $post_ID is the host post being saved,
@@ -1291,9 +1292,9 @@ function godam_coverage_known_reasons() {
 	// is the exact exclusion already documented in the docblock a few lines below
 	// (immediately above this method's own before/after pair) — mirrored by
 	// Media_Usage_Backfill::run_timed_batches() above.
-	$reasons['inc/classes/class-seo.php:1065'] = 'update_attachment_post_mapping(): $post_id is the post being saved; reads its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock a few lines below).';
-	$reasons['inc/classes/class-seo.php:1108'] = 'update_attachment_post_mapping(): $post_id is the post being saved; writes its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock above).';
-	$reasons['inc/classes/class-seo.php:1110'] = 'update_attachment_post_mapping(): $post_id is the post being saved; clears its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock above).';
+	$reasons['inc/classes/class-seo.php:1128'] = 'update_attachment_post_mapping(): $post_id is the post being saved; reads its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock a few lines below).';
+	$reasons['inc/classes/class-seo.php:1173'] = 'update_attachment_post_mapping(): $post_id is the post being saved; writes its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock above).';
+	$reasons['inc/classes/class-seo.php:1175'] = 'update_attachment_post_mapping(): $post_id is the post being saved; clears its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock above).';
 
 	// Lifter_LMS::has_godam_video_block(): $post_id = get_the_ID() — the current post
 	// in the loop. Reads its own post_content for a godam/video block. Not attachment data.
@@ -1379,8 +1380,12 @@ function godam_coverage_known_reasons() {
 	// inside that same wrap — the checker's "own parameter is safe" exclusion
 	// doesn't reach across the extraction boundary into a differently-named
 	// callee, so it re-flags what the caller already covers.
-	foreach ( array( 1853, 1860, 1890, 1892, 1896, 1906, 1908, 1909, 1910, 1911, 1912, 1913, 1925, 1941, 1948, 1951, 1967, 1977, 1983, 1990, 1994, 2016, 2020 ) as $line ) {
+	foreach ( array( 1853, 1860, 1896, 1906, 1908, 1909, 1910, 1911, 1912, 1913, 1925, 1941, 1948, 1951, 1967, 1977, 1983, 1990, 1994, 2016, 2020 ) as $line ) {
 		$reasons[ "inc/classes/rest-api/class-media-library.php:{$line}" ] = 'create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.';
+	}
+
+	foreach ( array( 1890, 1892 ) as $line ) {
+		$reasons[ "inc/classes/rest-api/class-media-library.php:{$line}" ] = "create_virtual_attachment_after_lookup(): \$pre_setter closure — covered transitively, since it's registered on 'add_attachment' immediately before (and removed immediately after) the wp_insert_attachment() call a few lines above, which fires that hook synchronously on the same call stack.";
 	}
 
 	// Media_Library::update_image_attachment_meta_after_lookup(): same extract-and-wrap
@@ -1444,7 +1449,7 @@ function godam_coverage_known_reasons() {
 	// $wpdb->postmeta query — one hop further down that same already-covered call
 	// chain — is covered too. A query-pattern call is never traced through callers
 	// by this checker, so it can't see this on its own.
-	$reasons['inc/helpers/custom-functions.php:1363'] = "rtgodam_get_post_id_by_meta_key_and_value(): covered transitively — sole real caller (Media_Library::update_image_attachment_meta_after_lookup(), looking up 'rtgodam_transcoding_job_id') already runs inside its caller's try/finally before/after pair.";
+	$reasons['inc/helpers/custom-functions.php:1370'] = "rtgodam_get_post_id_by_meta_key_and_value(): covered transitively — sole real caller (Media_Library::update_image_attachment_meta_after_lookup(), looking up 'rtgodam_transcoding_job_id') already runs inside its caller's try/finally before/after pair.";
 
 	return $reasons;
 }
@@ -1655,13 +1660,13 @@ $new_direct     = array_filter(
 	$new_findings,
 	function ( $f ) {
 		return FINDING_KIND_UNVERIFIED !== $f['kind'];
-	} 
+	}
 );
 $new_unverified = array_filter(
 	$new_findings,
 	function ( $f ) {
 		return FINDING_KIND_UNVERIFIED === $f['kind'];
-	} 
+	}
 );
 
 echo 'Uncovered/unverified call sites tracked: ' . count( $findings ) . ' (' . count( $accepted_findings ) . " previously accepted)\n";
