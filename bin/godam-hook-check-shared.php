@@ -597,15 +597,41 @@ function godam_shared_range_targets_attachment_post_type( $tokens, $range_start,
  * (both tables hold every post type) — the same permissive tradeoff as
  * godam_shared_range_targets_attachment_post_type().
  *
+ * Also catches `$wpdb->posts`/`$wpdb->postmeta` referenced via string
+ * interpolation (`"...{$wpdb->posts}..."` or the brace-less
+ * `"...$wpdb->posts..."`) — PHP's tokenizer parses both exactly like code
+ * outside a string, landing $wpdb/->/posts as three separate tokens, so
+ * none of them contains "wp_posts" as its own text and the plain substring
+ * check above never sees it. Confirmed via token_get_all(): this was a
+ * real gap — get_attachment_count() in class-media-folder-utils.php builds
+ * its query with `FROM {$wpdb->posts} p` and went undetected as
+ * attachment-shaped until this check was added.
+ *
  * @param array[] $tokens      Full token list for the file.
  * @param int     $range_start Token index to start at (inclusive).
  * @param int     $range_end   Token index to end at (inclusive).
  * @return bool
  */
 function godam_shared_range_mentions_post_tables( $tokens, $range_start, $range_end ) {
+	$count = count( $tokens );
+
 	for ( $i = $range_start; $i <= $range_end; $i++ ) {
 		$text = strtolower( $tokens[ $i ]['text'] );
 		if ( false !== strpos( $text, 'postmeta' ) || false !== strpos( $text, 'wp_posts' ) ) {
+			return true;
+		}
+
+		if ( '$wpdb' !== $tokens[ $i ]['text'] ) {
+			continue;
+		}
+
+		$arrow = godam_shared_skip_forward( $tokens, $i + 1, $count );
+		if ( $arrow >= $count || '->' !== $tokens[ $arrow ]['text'] ) {
+			continue;
+		}
+
+		$prop = godam_shared_skip_forward( $tokens, $arrow + 1, $count );
+		if ( $prop < $count && in_array( strtolower( $tokens[ $prop ]['text'] ), array( 'posts', 'postmeta' ), true ) ) {
 			return true;
 		}
 	}
