@@ -1367,7 +1367,7 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
 
 	$meta = rtgodam_cache_get( $cache_key );
 	if ( empty( $meta ) ) {
-		$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, godam-coverage-ignore -- rtgodam_get_post_id_by_meta_key_and_value(): covered transitively — sole real caller (Media_Library::update_image_attachment_meta_after_lookup(), looking up 'rtgodam_transcoding_job_id') already runs inside its caller's try/finally before/after pair.
 		rtgodam_cache_set( $cache_key, $meta, HOUR_IN_SECONDS );
 	}
 

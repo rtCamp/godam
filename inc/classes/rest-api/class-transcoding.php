@@ -336,7 +336,7 @@ class Transcoding extends Base {
 		$meta = wp_cache_get( $cache_key, 'godam' );
 
 		if ( empty( $meta ) ) {
-			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, godam-coverage-ignore -- get_post_id_by_meta_key_and_value(): covered transitively — sole caller (update_transcoding_status) already wraps this call in its own before/after pair.
 			wp_cache_set( $cache_key, $meta, 'godam', 3600 );
 		}
 

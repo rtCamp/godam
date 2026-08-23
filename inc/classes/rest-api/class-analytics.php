@@ -490,7 +490,7 @@ class Analytics extends Base {
 				continue;
 			}
 
-			$placement_post = $placement_post_id ? get_post( $placement_post_id ) : null;
+			$placement_post = $placement_post_id ? get_post( $placement_post_id ) : null; // godam-coverage-ignore -- enrich_placements(): $placement_post_id is the host page a video was placed on, not an attachment ID.
 
 			// A trashed post is treated as gone even for users who can edit it:
 			// WordPress maps edit_post on a trashed post to its pre-trash status
@@ -654,7 +654,7 @@ class Analytics extends Base {
 
 			if ( ! empty( $post_ids ) ) {
 				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
-				$posts = get_posts(
+				$posts = get_posts( // godam-coverage-ignore -- fetch_analytics_data(): $post_ids are HOST post IDs (post_type "any") from the external microservice's per-page view-count data, not attachment IDs — same host-page pattern as enrich_placements() above.
 					array(
 						'post__in'         => $post_ids,
 						'post_type'        => 'any',

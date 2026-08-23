@@ -205,8 +205,8 @@ class Seo {
 			 */
 			$video_seo_schema = apply_filters( 'godam_video_seo_cache_data', $video_seo_schema, $post_ID );
 
-			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
-			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); writes its own cached video SEO schema meta, not attachment data.
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); writes its own cached-schema-updated timestamp meta, not attachment data.
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
 
 			/**
@@ -222,8 +222,8 @@ class Seo {
 			 */
 			do_action( 'godam_video_seo_schema_saved', $post_ID, $video_seo_schema );
 		} else {
-			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
-			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
+			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); clears its own cached video SEO schema meta, not attachment data.
+			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); clears its own cached-schema-updated timestamp meta, not attachment data.
 			$this->update_attachment_post_mapping( $post_ID, array() );
 
 			/**
@@ -411,7 +411,7 @@ class Seo {
 	 * @return bool True if it's an Elementor post, false otherwise.
 	 */
 	public function is_elementor_post( $post_id ) {
-		return 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true );
+		return 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true ); // godam-coverage-ignore -- is_elementor_post(): $post_id is always a host post/page ID at every call site (never an attachment ID); reads that post's own '_elementor_edit_mode' flag.
 	}
 
 	/**
@@ -468,7 +468,7 @@ class Seo {
 		}
 
 		// Read cached SEO schema from post meta (fast!).
-		$cached_schemas = get_post_meta( $post_id, self::VIDEO_SEO_SCHEMA_META_KEY, true );
+		$cached_schemas = get_post_meta( $post_id, self::VIDEO_SEO_SCHEMA_META_KEY, true ); // godam-coverage-ignore -- add_video_seo_schema(): $post_id is get_queried_object_id() (the current page); reads that page's own cached SEO meta, not attachment data.
 
 		if ( empty( $cached_schemas ) || ! is_array( $cached_schemas ) ) {
 			return;
@@ -854,7 +854,7 @@ class Seo {
 		}
 
 		// Get the raw Elementor data.
-		$data = get_post_meta( $post_id, '_elementor_data', true );
+		$data = get_post_meta( $post_id, '_elementor_data', true ); // godam-coverage-ignore -- godam_get_video_seo_data_from_elementor(): $post_id is the host post being saved (sole caller passes save_post's $post_ID); reads that post's own '_elementor_data', not attachment data.
 		if ( empty( $data ) ) {
 			return $empty_result;
 		}
@@ -948,7 +948,7 @@ class Seo {
 			return;
 		}
 
-		$edit_mode = get_post_meta( $post_ID, '_elementor_edit_mode', true );
+		$edit_mode = get_post_meta( $post_ID, '_elementor_edit_mode', true ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; reads its own '_elementor_edit_mode' flag, not attachment data.
 		if ( 'builder' !== $edit_mode ) {
 			return;
 		}
@@ -961,13 +961,13 @@ class Seo {
 			/** This filter is documented in inc/classes/class-seo.php */
 			$video_seo_schema = apply_filters( 'godam_video_seo_cache_data', $video_seo_schema, $post_ID );
 
-			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
-			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; writes its own cached video SEO schema meta, not attachment data.
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; writes its own cached-schema-updated timestamp meta, not attachment data.
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
 			do_action( 'godam_video_seo_schema_saved', $post_ID, $video_seo_schema );
 		} else {
-			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
-			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
+			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; clears its own cached video SEO schema meta, not attachment data.
+			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; clears its own cached-schema-updated timestamp meta, not attachment data.
 			$this->update_attachment_post_mapping( $post_ID, array() );
 			do_action( 'godam_video_seo_schema_cleared', $post_ID );
 		}
@@ -1125,7 +1125,7 @@ class Seo {
 		$attachments = array_values( array_unique( array_filter( array_map( 'absint', $attachments ) ) ) );
 
 		// Get current attachments this post was using.
-		$previous_attachments = get_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, true );
+		$previous_attachments = get_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, true ); // godam-coverage-ignore -- update_attachment_post_mapping(): $post_id is the post being saved; reads its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock a few lines below).
 		$previous_attachments = is_array( $previous_attachments ) ? $previous_attachments : array();
 
 		// Captured before the switch below, so this is always the site $post_id
@@ -1170,9 +1170,9 @@ class Seo {
 
 		// Update post's attachment list.
 		if ( ! empty( $attachments ) ) {
-			update_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, $attachments );
+			update_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, $attachments ); // godam-coverage-ignore -- update_attachment_post_mapping(): $post_id is the post being saved; writes its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock above).
 		} else {
-			delete_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY );
+			delete_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY ); // godam-coverage-ignore -- update_attachment_post_mapping(): $post_id is the post being saved; clears its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock above).
 		}
 	}
 
@@ -1256,7 +1256,7 @@ class Seo {
 			}
 
 			try {
-				$post = get_post( $post_id );
+				$post = get_post( $post_id ); // godam-coverage-ignore -- sync_seo_for_attachment_posts(): reads HOST posts referencing the attachment (see the docblock note on this exact line) — documented structural limitation, not a hook-fixable gap.
 				if ( ! $post ) {
 					continue;
 				}

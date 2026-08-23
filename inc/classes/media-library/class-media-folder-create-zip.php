@@ -120,7 +120,7 @@ class Media_Folder_Create_Zip {
 			'update_post_term_cache' => false,
 		);
 
-		$query          = new \WP_Query( $args );
+		$query          = new \WP_Query( $args ); // godam-coverage-ignore -- get_taxonomy_attachments_batch(): covered transitively — sole caller (create_zip_file_batched) wraps the entire batching loop, including this call, in its own before/after pair.
 		$attachment_ids = $query->posts;
 
 		// Clean up.

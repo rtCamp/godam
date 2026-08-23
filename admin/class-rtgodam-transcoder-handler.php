@@ -725,17 +725,17 @@ class RTGODAM_Transcoder_Handler {
 		}
 
 		// rtMedia support.
-		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] );
-		update_post_meta( $post_id, '_rt_media_thumbnails', $thumbnail_urls );
+		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
+		update_post_meta( $post_id, '_rt_media_thumbnails', $thumbnail_urls ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 
-		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] );
-		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $thumbnail_urls );
+		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
+		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $thumbnail_urls ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 
 		// Store thumbnail → placeholder mapping, or clear stale meta when no valid placeholders.
 		if ( ! empty( $placeholder_map ) ) {
-			update_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails', $placeholder_map );
+			update_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails', $placeholder_map ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 		} else {
-			delete_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails' );
+			delete_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails' ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 		}
 
 		do_action( 'rtgodam_transcoded_thumbnails_added', $post_id );
@@ -743,25 +743,25 @@ class RTGODAM_Transcoder_Handler {
 		if ( $first_thumbnail_url ) {
 
 			// rtMedia support.
-			update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
+			update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 
 			if ( class_exists( 'RTMediaModel' ) && ! empty( $media_id ) ) {
 				$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
 				update_activity_after_thumb_set( $media_id );
 			}
 
-			$current_thumbnail = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
-			$custom_thumbnails = get_post_meta( $post_id, 'rtgodam_custom_media_thumbnails', true );
+			$current_thumbnail = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
+			$custom_thumbnails = get_post_meta( $post_id, 'rtgodam_custom_media_thumbnails', true ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 			$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
 
 			// If the current selected thumbnail is NOT one of the custom uploaded thumbnails, overwrite it.
 			if ( empty( $current_thumbnail ) || ! in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
-				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $first_thumbnail_url );
+				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $first_thumbnail_url ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 				// Sync placeholder for the newly set primary thumbnail using the verified map.
 				if ( isset( $placeholder_map[ $first_thumbnail_url ] ) ) {
-					update_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail', $placeholder_map[ $first_thumbnail_url ] );
+					update_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail', $placeholder_map[ $first_thumbnail_url ] ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 				} else {
-					delete_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail' );
+					delete_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail' ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 				}
 			}
 
@@ -901,7 +901,7 @@ class RTGODAM_Transcoder_Handler {
 
 		$meta = wp_cache_get( $cache_key, 'godam' );
 		if ( empty( $meta ) ) {
-			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, godam-coverage-ignore -- get_post_id_by_meta_key_and_value(): covered transitively — every real call site (rest-routes.php, including via handle_wp_media_transcoding_callback, and class-video-migration.php) already runs inside its own before/after pair.
 			wp_cache_set( $cache_key, $meta, 'godam', HOUR_IN_SECONDS );
 		}
 

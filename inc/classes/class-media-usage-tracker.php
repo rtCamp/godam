@@ -264,7 +264,7 @@ class Media_Usage_Tracker {
 			$this->unregister_media_usage( $attachment_id, $post_id, 'content' );
 		}
 
-		delete_post_meta( $post_id, self::POST_META_KEY );
+		delete_post_meta( $post_id, self::POST_META_KEY ); // godam-coverage-ignore -- on_before_delete_post(): $post_id is guaranteed non-attachment (the function's own post_type guard returns early otherwise); deletes that host post's own POST_META_KEY tracking marker, not attachment data.
 	}
 
 	// -------------------------------------------------------------------------
@@ -284,7 +284,7 @@ class Media_Usage_Tracker {
 		$new_ids = $this->extract_attachment_ids( $post_content );
 
 		// Featured image lives outside post_content — add it separately.
-		$thumbnail_id = (int) get_post_meta( $post_id, '_thumbnail_id', true );
+		$thumbnail_id = (int) get_post_meta( $post_id, '_thumbnail_id', true ); // godam-coverage-ignore -- sync_post_attachments(): $post_id is always the host post being scanned (both callers exclude 'attachment'); reads that post's own '_thumbnail_id' pointer, not attachment data.
 		if ( $thumbnail_id > 0 ) {
 			$new_ids = array_values( array_unique( array_merge( $new_ids, array( $thumbnail_id ) ) ) );
 		}
@@ -308,7 +308,7 @@ class Media_Usage_Tracker {
 		}
 
 		// Persist the new set so the next save can diff cheaply.
-		update_post_meta( $post_id, self::POST_META_KEY, array_values( $new_ids ) );
+		update_post_meta( $post_id, self::POST_META_KEY, array_values( $new_ids ) ); // godam-coverage-ignore -- sync_post_attachments(): $post_id is always the host post being scanned; writes that post's own POST_META_KEY 'processed' marker (mirrors class-media-usage-backfill.php:396), not attachment data.
 	}
 
 	// -------------------------------------------------------------------------
@@ -623,7 +623,7 @@ class Media_Usage_Tracker {
 	 * @return int[]
 	 */
 	private function get_tracked_attachment_ids( $post_id ) {
-		$ids = get_post_meta( $post_id, self::POST_META_KEY, true );
+		$ids = get_post_meta( $post_id, self::POST_META_KEY, true ); // godam-coverage-ignore -- get_tracked_attachment_ids(): $post_id is always the host post (both callers guarantee non-attachment); reads that post's own POST_META_KEY marker, not attachment data.
 		return is_array( $ids ) ? array_map( 'intval', $ids ) : array();
 	}
 
@@ -774,7 +774,7 @@ class Media_Usage_Tracker {
 			return array();
 		}
 
-		$data = get_post_meta( $post_id, '_elementor_data', true );
+		$data = get_post_meta( $post_id, '_elementor_data', true ); // godam-coverage-ignore -- extract_ids_from_elementor(): $post_id is the host post (sole caller is sync_post_attachments()); reads that post's own '_elementor_data' (never present on an attachment, per the elementor-gallery-widget-v1-to-v2 precedent).
 		if ( empty( $data ) || ! is_string( $data ) ) {
 			return array();
 		}

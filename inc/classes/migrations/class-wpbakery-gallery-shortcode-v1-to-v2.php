@@ -119,7 +119,7 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 			// prefilter; precise confirmation runs inside the loop before
 			// any write.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
+			$rows = $wpdb->get_results( // godam-coverage-ignore -- run(): post_status NOT IN (...,'inherit') excludes attachments by construction — scans HOST posts/pages for a legacy shortcode in their own post_content, not attachment data.
 				$wpdb->prepare(
 					"SELECT ID, post_content
 					 FROM {$wpdb->posts}

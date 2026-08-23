@@ -616,7 +616,7 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		delete_post_meta( $media_id, 'rtgodam_media_thumbnails' );
+		delete_post_meta( $media_id, 'rtgodam_media_thumbnails' ); // godam-coverage-ignore -- rtgodam_before_thumbnail_store(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_before_thumbnail_store' ), which always fires from inside handle_callback()'s before/after pair.
 	}
 
 	/**
@@ -630,7 +630,7 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$current_files = get_post_meta( $media_id, 'rtgodam_media_transcoded_files', true );
+		$current_files = get_post_meta( $media_id, 'rtgodam_media_transcoded_files', true ); // godam-coverage-ignore -- rtgodam_before_transcoded_media_store(): covered transitively — sole trigger is add_transcoded_files()'s do_action( 'rtgodam_before_transcoded_media_store' ), which always fires from inside handle_callback()'s before/after pair.
 
 		if ( ! empty( $current_files ) && is_array( $current_files ) ) {
 			foreach ( $current_files as $files ) {
@@ -639,7 +639,7 @@ class RTGODAM_RetranscodeMedia {
 				}
 			}
 		}
-		delete_post_meta( $media_id, 'rtgodam_media_transcoded_files' );
+		delete_post_meta( $media_id, 'rtgodam_media_transcoded_files' ); // godam-coverage-ignore -- rtgodam_before_transcoded_media_store(): covered transitively — sole trigger is add_transcoded_files()'s do_action( 'rtgodam_before_transcoded_media_store' ), which always fires from inside handle_callback()'s before/after pair.
 	}
 
 	/**
@@ -652,8 +652,8 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$current_thumbnail = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
-		$custom_thumbnails = get_post_meta( $media_id, 'rtgodam_custom_media_thumbnails', true );
+		$current_thumbnail = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
+		$custom_thumbnails = get_post_meta( $media_id, 'rtgodam_custom_media_thumbnails', true ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
 		$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
 
 		// If the current selected thumbnail is one of the custom uploaded thumbnails, do not overwrite it.
@@ -661,24 +661,24 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
+		$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
 		$new_thumbs = is_array( $new_thumbs ) ? $new_thumbs : array();
 
 		if ( ! empty( $new_thumbs ) ) {
-			update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] );
+			update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
 		}
 
-		$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
+		$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
 
 		if ( ! empty( $primary_remote_thumbnail_url ) ) {
 			do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
 
 			// Sync placeholder thumbnail for the newly set primary thumbnail.
-			$godam_placeholder_map = get_post_meta( $media_id, 'rtgodam_media_placeholder_thumbnails', true );
+			$godam_placeholder_map = get_post_meta( $media_id, 'rtgodam_media_placeholder_thumbnails', true ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
 			if ( is_array( $godam_placeholder_map ) && isset( $godam_placeholder_map[ $primary_remote_thumbnail_url ] ) ) {
-				update_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail', $godam_placeholder_map[ $primary_remote_thumbnail_url ] );
+				update_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail', $godam_placeholder_map[ $primary_remote_thumbnail_url ] ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
 			} else {
-				delete_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail' );
+				delete_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail' ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
 			}
 		}
 	}

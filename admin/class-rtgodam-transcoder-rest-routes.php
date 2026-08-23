@@ -356,7 +356,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 				if ( ! empty( $entry_data ) && ! empty( $entry_data['form_id'] ) ) {
 					$form_id = $entry_data['form_id'];
-					update_post_meta(
+					update_post_meta( // godam-coverage-ignore -- handle_callback(): $form_id is a SureForms form ID used as a postmeta key (not an attachment ID) to stash the transcoded URL.
 						$form_id,
 						'rtgodam_transcoded_url_sureforms_' . $form_id . '_' . $entry_id,
 						$post_array['download_url']
@@ -468,15 +468,15 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 			if ( ! empty( $post_array['files'] ) ) {
 				if ( ! empty( $post_array['files']['mpd'] ) ) {
-					update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] );
+					update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $post_array['download_url'] ); // godam-coverage-ignore -- handle_wp_media_transcoding_callback(): covered transitively — caller (handle_callback) wraps the entire call in try/finally.
 
-					delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
+					delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' ); // godam-coverage-ignore -- handle_wp_media_transcoding_callback(): covered transitively — caller (handle_callback) wraps the entire call in try/finally.
 
 					$latest_attachment = get_option( 'rtgodam_new_attachment', false );
 
 					// Save hls url as well.
 					if ( isset( $post_array['hls_path'] ) && ! empty( trim( $post_array['hls_path'] ) ) ) {
-						update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', sanitize_url( $post_array['hls_path'] ) );
+						update_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', sanitize_url( $post_array['hls_path'] ) ); // godam-coverage-ignore -- handle_wp_media_transcoding_callback(): covered transitively — caller (handle_callback) wraps the entire call in try/finally.
 					}
 
 					if ( ! empty( $latest_attachment ) && $latest_attachment['attachment_id'] === $attachment_id ) {
@@ -490,12 +490,12 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 			if ( 'pdf' === $job_type && isset( $post_array['download_url'] ) && ! empty( $post_array['download_url'] ) ) {
 				// Setting the transcoded PDF URL.
-				update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
+				update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) ); // godam-coverage-ignore -- handle_wp_media_transcoding_callback(): covered transitively — caller (handle_callback) wraps the entire call in try/finally.
 			}
 
 			if ( 'image' === $job_type && isset( $post_array['download_url'] ) && ! empty( $post_array['download_url'] ) ) {
 				// Setting the transcoded Image URL.
-				update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) );
+				update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) ); // godam-coverage-ignore -- handle_wp_media_transcoding_callback(): covered transitively — caller (handle_callback) wraps the entire call in try/finally.
 
 				// Request CDN image subsizes and store them in dedicated meta.
 				// This is a secondary async operation; a failure here must not cause a 500 response

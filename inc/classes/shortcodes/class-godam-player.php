@@ -232,11 +232,11 @@ class GoDAM_Player {
 		$godam_needs_runtime = false;
 
 		if ( is_singular() ) {
-			$godam_post = get_post();
+			$godam_post = get_post(); // godam-coverage-ignore -- maybe_enqueue_lightbox_runtime(): bare get_post() resolves to the current singular post, not an attachment.
 
 			if ( $godam_post instanceof \WP_Post ) {
 				// Elementor keeps its layout in post meta rather than post_content.
-				$godam_haystack = $godam_post->post_content . (string) get_post_meta( $godam_post->ID, '_elementor_data', true );
+				$godam_haystack = $godam_post->post_content . (string) get_post_meta( $godam_post->ID, '_elementor_data', true ); // godam-coverage-ignore -- maybe_enqueue_lightbox_runtime(): reads the current post's own '_elementor_data', not attachment data.
 
 				$godam_needs_runtime = false !== strpos( $godam_haystack, 'data-godam-lightbox' )
 					|| false !== strpos( $godam_haystack, '#godam-video-' );

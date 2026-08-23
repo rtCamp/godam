@@ -393,7 +393,7 @@ class Media_Usage_Backfill {
 				} catch ( \Throwable $e ) {
 					// Mark the post as processed so a single poisoned post cannot
 					// stall the backfill in an infinite retry loop.
-					update_post_meta( (int) $post->ID, Media_Usage_Tracker::POST_META_KEY, array() );
+					update_post_meta( (int) $post->ID, Media_Usage_Tracker::POST_META_KEY, array() ); // godam-coverage-ignore -- $post is the host post being scanned; POST_META_KEY is a 'processed' marker written on that host post, not on any attachment.
 					if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 						error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 							sprintf(
@@ -510,7 +510,7 @@ class Media_Usage_Backfill {
 		$params = array_merge( $post_types, $statuses, array( Media_Usage_Tracker::POST_META_KEY ) );
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$count = (int) $wpdb->get_var(
+		$count = (int) $wpdb->get_var( // godam-coverage-ignore -- count_pending_posts(): counts pending HOST posts lacking POST_META_KEY (get_post_types() excludes 'attachment' from the query) — same host-post-scoped query as run_timed_batches(), never an attachment.
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM {$wpdb->posts} p
 				WHERE p.post_type IN ( {$type_placeholders} )

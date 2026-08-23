@@ -18,7 +18,7 @@ $godam_video_post_id = get_the_ID();
 if ( $godam_video_post_id ) {
 
 	// Get attachment ID from post meta.
-	$godam_attachment_id = get_post_meta( $godam_video_post_id, '_godam_attachment_id', true );
+	$godam_attachment_id = get_post_meta( $godam_video_post_id, '_godam_attachment_id', true ); // godam-coverage-ignore -- Reads '_godam_attachment_id' off the host post (get_the_ID()), not off the attachment — the actual attachment meta read a few lines below already has its own before/after pair.
 
 	/**
 	 * Fires before reading this attachment's duration meta, so integrations

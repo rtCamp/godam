@@ -636,7 +636,7 @@ class Video_Migration extends Base {
 	 * @return bool True if post content was changed, false otherwise.
 	 */
 	private function migrate_single_post_video_blocks( $post_id ) {
-		$post = get_post( $post_id );
+		$post = get_post( $post_id ); // godam-coverage-ignore -- migrate_single_post_video_blocks(): $post_id is the HOST post being scanned for an embedded core/video block, not an attachment — the attachment ID parsed from the block is already wrapped in traverse_and_migrate_core_video_blocks_recursive().
 
 		if ( ! $post || ! has_blocks( $post->post_content ) ) {
 			return false;
@@ -743,7 +743,7 @@ class Video_Migration extends Base {
 	 */
 	private function migrate_single_post_vimeo_blocks( $post_id ) {
 
-		$post = get_post( $post_id );
+		$post = get_post( $post_id ); // godam-coverage-ignore -- migrate_single_post_vimeo_blocks(): $post_id is the HOST post being scanned for an embedded Vimeo block, not an attachment — the attachment ID resolved from the embed is already wrapped in traverse_and_migrate_vimeo_blocks_recursive().
 
 		if ( ! $post || ! has_blocks( $post->post_content ) ) {
 			return false;
@@ -1128,7 +1128,7 @@ class Video_Migration extends Base {
 		// Change the guid of the attachment to the transcoded file path.
 		global $wpdb;
 		//phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update(
+		$wpdb->update( // godam-coverage-ignore -- update_video_metadata_from_vimeo_info(): covered transitively — both call sites run inside create_attachment_from_vimeo_video()'s own before/after try/finally pair.
 			$wpdb->posts,
 			array(
 				'guid' => ! empty( $video_info['transcoded_mp4_url'] ) ? $video_info['transcoded_mp4_url'] : $video_info['transcoded_file_path'],
