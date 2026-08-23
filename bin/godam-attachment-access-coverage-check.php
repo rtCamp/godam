@@ -1451,6 +1451,45 @@ function godam_coverage_known_reasons() {
 	// by this checker, so it can't see this on its own.
 	$reasons['inc/helpers/custom-functions.php:1370'] = "rtgodam_get_post_id_by_meta_key_and_value(): covered transitively — sole real caller (Media_Library::update_image_attachment_meta_after_lookup(), looking up 'rtgodam_transcoding_job_id') already runs inside its caller's try/finally before/after pair.";
 
+	// Gallery_V1_To_V2::run(): a one-time migration scanning HOST posts/pages for
+	// legacy godam/gallery block markup in their own post_content, rewriting it
+	// in place via wp_update_post(). `post_status NOT IN (..., 'inherit')`
+	// explicitly excludes attachments (always 'inherit') from the result set —
+	// this query can never return an attachment row.
+	$reasons['inc/classes/migrations/class-gallery-v1-to-v2.php:158'] = "run(): post_status NOT IN (...,'inherit') excludes attachments by construction — scans HOST posts/pages for legacy block markup in their own post_content, not attachment data.";
+
+	// Godam_Cpt_Cleanup::run()/process_batch(): a one-time migration permanently
+	// deleting the discontinued `godam-video` CPT. All three queries filter
+	// strictly on `post_type = self::POST_TYPE` ('godam-video') — never
+	// 'attachment'. process_batch() already has its own is_multisite()-guarded
+	// switch_to_blog() (scoped to running each batch against the subsite that
+	// queued it), which is about targeting the correct site's godam-video CPT
+	// rows, not about attachment centralization.
+	$reasons['inc/classes/migrations/class-godam-cpt-cleanup.php:266'] = "run(): post_type = self::POST_TYPE ('godam-video') — a discontinued CPT being permanently deleted, never 'attachment'.";
+	$reasons['inc/classes/migrations/class-godam-cpt-cleanup.php:351'] = "process_batch(): post_type = self::POST_TYPE ('godam-video'); same discontinued-CPT deletion as run(), not attachment data.";
+	$reasons['inc/classes/migrations/class-godam-cpt-cleanup.php:395'] = "process_batch(): post_type = self::POST_TYPE ('godam-video'); the remaining-count check for the same discontinued-CPT deletion, not attachment data.";
+
+	// WPBakery_Gallery_Shortcode_V1_To_V2::run(): same shape and same exclusion
+	// as Gallery_V1_To_V2::run() above — a one-time migration scanning HOST
+	// posts/pages for a legacy [godam_video_gallery shortcode in their own
+	// post_content; 'inherit' is excluded, so no attachment row can match.
+	$reasons['inc/classes/migrations/class-wpbakery-gallery-shortcode-v1-to-v2.php:122'] = "run(): post_status NOT IN (...,'inherit') excludes attachments by construction — scans HOST posts/pages for a legacy shortcode in their own post_content, not attachment data.";
+
+	// Jetpack::get_jetpack_forms(): post_type IN ('page','post') is an explicit
+	// allow-list — even stricter than an exclusion — scanning ordinary content
+	// pages/posts for embedded Jetpack contact-form blocks. Never attachment.
+	$reasons['inc/classes/rest-api/class-jetpack.php:167'] = "get_jetpack_forms(): post_type IN ('page','post') is an explicit allow-list; scans ordinary content pages/posts for embedded Jetpack form blocks, never attachment.";
+
+	// Video_Migration::update_video_metadata_from_vimeo_info(): private helper,
+	// both of its call sites (existing-attachment and newly-inserted-attachment
+	// branches) sit inside create_attachment_from_vimeo_video()'s own
+	// rtgodam_before/after_attachment_lookup try/finally pair — deliberately
+	// fired only after the SaaS HTTP call returns, per that method's own
+	// docblock. Two call sites from the same enclosing bracket, not two
+	// separate callers, so the checker's caller-tracing doesn't resolve it
+	// automatically.
+	$reasons['inc/classes/rest-api/class-video-migration.php:1131'] = 'update_video_metadata_from_vimeo_info(): covered transitively — both call sites run inside create_attachment_from_vimeo_video()\'s own before/after try/finally pair.';
+
 	return $reasons;
 }
 

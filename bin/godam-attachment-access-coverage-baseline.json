@@ -257,6 +257,46 @@
             "kind": "direct",
             "reason": "run(): writes '_elementor_data' back to the same Elementor-built posts/pages \u2014 never an attachment post type."
         },
+        "inc/classes/migrations/class-gallery-v1-to-v2.php:158": {
+            "file": "inc/classes/migrations/class-gallery-v1-to-v2.php",
+            "line": 158,
+            "call": "$wpdb->get_results",
+            "scope": "Gallery_V1_To_V2::run()",
+            "kind": "direct",
+            "reason": "run(): post_status NOT IN (...,'inherit') excludes attachments by construction \u2014 scans HOST posts/pages for legacy block markup in their own post_content, not attachment data."
+        },
+        "inc/classes/migrations/class-godam-cpt-cleanup.php:266": {
+            "file": "inc/classes/migrations/class-godam-cpt-cleanup.php",
+            "line": 266,
+            "call": "$wpdb->get_var",
+            "scope": "Godam_Cpt_Cleanup::run()",
+            "kind": "direct",
+            "reason": "run(): post_type = self::POST_TYPE ('godam-video') \u2014 a discontinued CPT being permanently deleted, never 'attachment'."
+        },
+        "inc/classes/migrations/class-godam-cpt-cleanup.php:351": {
+            "file": "inc/classes/migrations/class-godam-cpt-cleanup.php",
+            "line": 351,
+            "call": "$wpdb->get_col",
+            "scope": "Godam_Cpt_Cleanup::process_batch()",
+            "kind": "direct",
+            "reason": "process_batch(): post_type = self::POST_TYPE ('godam-video'); same discontinued-CPT deletion as run(), not attachment data."
+        },
+        "inc/classes/migrations/class-godam-cpt-cleanup.php:395": {
+            "file": "inc/classes/migrations/class-godam-cpt-cleanup.php",
+            "line": 395,
+            "call": "$wpdb->get_var",
+            "scope": "Godam_Cpt_Cleanup::process_batch()",
+            "kind": "direct",
+            "reason": "process_batch(): post_type = self::POST_TYPE ('godam-video'); the remaining-count check for the same discontinued-CPT deletion, not attachment data."
+        },
+        "inc/classes/migrations/class-wpbakery-gallery-shortcode-v1-to-v2.php:122": {
+            "file": "inc/classes/migrations/class-wpbakery-gallery-shortcode-v1-to-v2.php",
+            "line": 122,
+            "call": "$wpdb->get_results",
+            "scope": "WPBakery_Gallery_Shortcode_V1_To_V2::run()",
+            "kind": "direct",
+            "reason": "run(): post_status NOT IN (...,'inherit') excludes attachments by construction \u2014 scans HOST posts/pages for a legacy shortcode in their own post_content, not attachment data."
+        },
         "inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:663": {
             "file": "inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php",
             "line": 663,
@@ -288,6 +328,14 @@
             "scope": "Analytics::fetch_analytics_data()",
             "kind": "direct",
             "reason": "fetch_analytics_data(): $post_ids are HOST post IDs (post_type \"any\") from the external microservice's per-page view-count data, not attachment IDs \u2014 same host-page pattern as enrich_placements() above."
+        },
+        "inc/classes/rest-api/class-jetpack.php:167": {
+            "file": "inc/classes/rest-api/class-jetpack.php",
+            "line": 167,
+            "call": "$wpdb->get_results",
+            "scope": "Jetpack::get_jetpack_forms()",
+            "kind": "direct",
+            "reason": "get_jetpack_forms(): post_type IN ('page','post') is an explicit allow-list; scans ordinary content pages/posts for embedded Jetpack form blocks, never attachment."
         },
         "inc/classes/rest-api/class-jetpack.php:304": {
             "file": "inc/classes/rest-api/class-jetpack.php",
@@ -539,6 +587,14 @@
             "scope": "Video_Editor::prioritize_item()",
             "kind": "direct",
             "reason": "prioritize_item(): covered transitively \u2014 sole caller (get_videos) wraps the entire call in its own before/after pair."
+        },
+        "inc/classes/rest-api/class-video-migration.php:1131": {
+            "file": "inc/classes/rest-api/class-video-migration.php",
+            "line": 1131,
+            "call": "$wpdb->update",
+            "scope": "Video_Migration::update_video_metadata_from_vimeo_info()",
+            "kind": "direct",
+            "reason": "update_video_metadata_from_vimeo_info(): covered transitively \u2014 both call sites run inside create_attachment_from_vimeo_video()'s own before/after try/finally pair."
         },
         "inc/classes/shortcodes/class-godam-player.php:235": {
             "file": "inc/classes/shortcodes/class-godam-player.php",
