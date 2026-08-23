@@ -31,7 +31,7 @@ $godam_show_layers = ! array_key_exists( 'showImageLayers', $attributes ) || ! e
  * explicitly before the early `return` just below (a bare `return` at file
  * scope doesn't unwind through a `finally`), not held open across it.
  *
- * @since 1.8.0
+ * @since 2.2.0
  */
 do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -67,7 +67,7 @@ if ( $godam_show_layers && $godam_attachment_id ) {
 	 * Fires before reading this attachment's layer meta, so integrations
 	 * that centralize media on another site can switch context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	$godam_meta       = get_post_meta( $godam_attachment_id, 'rtgodam_meta', true );

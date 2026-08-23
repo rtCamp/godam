@@ -47,7 +47,7 @@ class Meta_Rest_Fields {
 					 * route) — self-wrapped so it's correct regardless of
 					 * which route triggered it.
 					 *
-					 * @since 1.8.0
+					 * @since 2.2.0
 					 */
 					do_action( 'rtgodam_before_attachment_lookup' );
 					$value = get_post_meta( $post['id'], 'rtgodam_meta', true );

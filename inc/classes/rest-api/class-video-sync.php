@@ -97,7 +97,7 @@ class Video_Sync extends Base {
 		 * site-scoped as get_post_meta() — so integrations that centralize
 		 * media on another site can switch context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching

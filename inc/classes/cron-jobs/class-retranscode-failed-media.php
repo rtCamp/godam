@@ -118,7 +118,7 @@ class Retranscode_Failed_Media {
 				 * site can switch context first. $real_attachment_id is a
 				 * genuine attachment ID read from the stored retry queue.
 				 *
-				 * @since 1.8.0
+				 * @since 2.2.0
 				 */
 				do_action( 'rtgodam_before_attachment_lookup' );
 				update_post_meta( $real_attachment_id, 'rtgodam_transcoding_status', 'failed' );
@@ -151,7 +151,7 @@ class Retranscode_Failed_Media {
 			 * is invisible to it, since $real_attachment_id is a plain,
 			 * unmodified parameter to wp_media_transcoding().
 			 *
-			 * @since 1.8.0
+			 * @since 2.2.0
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
 			try {

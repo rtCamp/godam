@@ -322,7 +322,7 @@ class Seo {
 		 * postmeta, its attachment URL, and its video metadata) is scoped to
 		 * this single attachment.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -430,7 +430,7 @@ class Seo {
 			 * attachment being serialized by the `rest_prepare_attachment`
 			 * filter, so this is genuinely attachment-scoped.
 			 *
-			 * @since 1.8.0
+			 * @since 2.2.0
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
 			$meta = wp_get_attachment_metadata( $post->ID );
@@ -1141,7 +1141,7 @@ class Seo {
 		 * below) — that's the current post being saved, not attachment
 		 * data, and stays local.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -1190,7 +1190,7 @@ class Seo {
 		 * `edit_attachment` action (fired with the attachment's own post ID),
 		 * so it is genuinely an attachment ID here.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -1234,7 +1234,7 @@ class Seo {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$posts_using = $this->get_attachment_post_refs( $attachment_id );

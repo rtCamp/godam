@@ -267,7 +267,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				 * $wpdb->postmeta query, just as site-scoped as
 				 * get_post_meta().
 				 *
-				 * @since 1.8.0
+				 * @since 2.2.0
 				 */
 				do_action( 'rtgodam_before_attachment_lookup' );
 				try {
@@ -306,7 +306,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				 * invisible to a checker that only looks for named WP API
 				 * calls.
 				 *
-				 * @since 1.8.0
+				 * @since 2.2.0
 				 */
 				do_action( 'rtgodam_before_attachment_lookup' );
 				try {
@@ -429,7 +429,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	 * Always runs with the centralized media site active — see the
 	 * before/after pair in the caller.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 *
 	 * @param \WP_REST_Request $request  The incoming request.
 	 * @param string           $job_id   The transcoding job ID.
@@ -576,7 +576,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		 * needs this too — it's a direct $wpdb->postmeta query, just as
 		 * site-scoped as get_post_meta().
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {

@@ -178,7 +178,7 @@ class RTGODAM_RetranscodeMedia {
 				 * attachment data, so integrations that centralize media on another
 				 * site can switch context first.
 				 *
-				 * @since 1.8.0
+				 * @since 2.2.0
 				 */
 				do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -391,7 +391,7 @@ class RTGODAM_RetranscodeMedia {
 				 * admin_enqueues(), both branches here touch attachment
 				 * data, so both are wrapped.
 				 *
-				 * @since 1.8.0
+				 * @since 2.2.0
 				 */
 				do_action( 'rtgodam_before_attachment_lookup' );
 				if ( ! empty( $ids ) ) {
@@ -705,7 +705,7 @@ class RTGODAM_RetranscodeMedia {
 		 * that method's own per-branch before/after pairs, so this postmeta
 		 * access has no coverage from its caller.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 

@@ -240,7 +240,7 @@ class Media_Library_Ajax {
 		 * synchronously from inside an already-open bracket (e.g.
 		 * create_virtual_attachment()).
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
@@ -299,7 +299,7 @@ class Media_Library_Ajax {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$attachment_url = wp_get_attachment_url( $attachment_id );
@@ -470,7 +470,7 @@ class Media_Library_Ajax {
 		 * rtgodam_* postmeta keys plus the _godam_original_id marker, all
 		 * keyed on $attachment->ID.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -941,7 +941,7 @@ class Media_Library_Ajax {
 		 * because this method returns early when the ID doesn't resolve to
 		 * an attachment.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -1008,7 +1008,7 @@ class Media_Library_Ajax {
 		 * attachment, so integrations that centralize media on another
 		 * site can switch context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		wp_update_attachment_metadata( $attachment_id, $metadata );
@@ -1076,7 +1076,7 @@ class Media_Library_Ajax {
 		 * this method returns from several points once it determines which
 		 * URL to use.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -1159,7 +1159,7 @@ class Media_Library_Ajax {
 		 * because this method returns early once it determines no CDN data
 		 * exists for the attachment.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -1219,7 +1219,7 @@ class Media_Library_Ajax {
 		 * try/finally because this method returns early when neither meta
 		 * key indicates a GoDAM-managed image.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -1380,7 +1380,7 @@ class Media_Library_Ajax {
 		 * Wrapped in try/finally because this method returns from several
 		 * points while deciding whether to rewrite the rendered <img> src.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {

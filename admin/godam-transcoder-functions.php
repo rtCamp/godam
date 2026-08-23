@@ -90,7 +90,7 @@ function rtgodam_is_file_being_transcoded( $attachment_id ) {
 	 * integrations that centralize media on another site can switch
 	 * context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	try {
@@ -129,7 +129,7 @@ function rtgodam_get_edit_post_link( $id = 0, $context = 'display' ) {
 	 * as a supported input alongside posts/pages/revisions, and no caller
 	 * currently wraps this lookup.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	$_post = get_post( $id );
@@ -181,7 +181,7 @@ function rtgodam_get_job_id_by_attachment_id( $attachment_id ) {
 	 * integrations that centralize media on another site can switch
 	 * context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
@@ -224,7 +224,7 @@ function rtgodam_delete_related_transcoded_files( $post_id ) {
 	 * transcoded-file meta, so integrations that centralize media on
 	 * another site can switch context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -365,7 +365,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 	 * integrations that centralize media on another site can switch
 	 * context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	try {
@@ -821,7 +821,7 @@ function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
 	 * so integrations that centralize media on another site can switch
 	 * context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	try {
@@ -868,7 +868,7 @@ function rtgodam_get_hls_transcoded_url_from_attachment( $attachment ) {
 	 * meta, so integrations that centralize media on another site can
 	 * switch context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	try {
@@ -915,7 +915,7 @@ function rtgodam_get_transcoded_status_from_attachment( $attachment ) {
 	 * meta, so integrations that centralize media on another site can
 	 * switch context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	try {
@@ -962,7 +962,7 @@ function rtgodam_get_transcoded_error_message_from_attachment( $attachment ) {
 	 * meta, so integrations that centralize media on another site can
 	 * switch context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	try {

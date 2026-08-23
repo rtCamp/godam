@@ -26,7 +26,7 @@ $godam_thumbnail     = ! empty( $attributes['thumbnail'] ) ? esc_url( $attribute
  * final one, since a bare `return` at file scope doesn't unwind through a
  * `finally` the way a function's would.
  *
- * @since 1.8.0
+ * @since 2.2.0
  */
 do_action( 'rtgodam_before_attachment_lookup' );
 

@@ -174,7 +174,7 @@ if ( $godam_is_virtual ) {
 		 * `_godam_original_id` meta, to translate it into a real WordPress
 		 * attachment ID.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -246,7 +246,7 @@ if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
 	 * this attachment, so integrations that centralize media on another
 	 * site can switch context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -708,7 +708,7 @@ $godam_attachment_title = '';
  * Fires before this title/filename fallback block, so integrations that
  * centralize media on another site can switch context first.
  *
- * @since 1.8.0
+ * @since 2.2.0
  */
 do_action( 'rtgodam_before_attachment_lookup' );
 

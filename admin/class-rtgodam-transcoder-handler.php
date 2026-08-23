@@ -187,7 +187,7 @@ class RTGODAM_Transcoder_Handler {
 		 * (e.g. create_virtual_attachment()) — this method's own attachment
 		 * reads, and wp_media_transcoding()'s internal ones, both need it.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {

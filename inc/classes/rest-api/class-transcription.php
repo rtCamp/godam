@@ -127,7 +127,7 @@ class Transcription extends Base {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$can_edit = current_user_can( 'edit_post', $attachment_id );
@@ -150,7 +150,7 @@ class Transcription extends Base {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -188,7 +188,7 @@ class Transcription extends Base {
 		 * below) — see the second, separate pair around the meta writes
 		 * further down.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
@@ -248,7 +248,7 @@ class Transcription extends Base {
 		 * context first — a second, separate pair from the one above, so
 		 * the switch isn't held open across the SaaS HTTP call in between.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		if ( ! empty( $path ) ) {
@@ -302,7 +302,7 @@ class Transcription extends Base {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		// An uploaded transcript supersedes any prior delete.
@@ -328,7 +328,7 @@ class Transcription extends Base {
 		 * so integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcript_path' );

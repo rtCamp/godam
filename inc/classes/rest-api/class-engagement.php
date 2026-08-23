@@ -939,7 +939,7 @@ class Engagement extends Base {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$transcoder_job_id = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );

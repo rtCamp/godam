@@ -49,7 +49,7 @@ class Video_Engagement {
 		 * reads site-specific settings options, which must not be read from
 		 * the media site.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$rtgodam_transcoding_status = ! empty( $attachment_id ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) : '';
@@ -75,7 +75,7 @@ class Video_Engagement {
 		 * Fires before this get_the_title() fallback, so integrations that
 		 * centralize media on another site can switch context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$title = ! empty( $attributes['title'] ) ? $attributes['title'] : get_the_title( $attachment_id );

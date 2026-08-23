@@ -112,7 +112,7 @@ class Demo_Assets {
 		 * confirm the tracked id still points at a live (non-trashed)
 		 * attachment.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$post = get_post( $attachment_id );
@@ -137,7 +137,7 @@ class Demo_Assets {
 		 * (post_type => 'attachment') keyed on the KEY_META marker this
 		 * class itself writes on every demo attachment it creates.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
@@ -246,7 +246,7 @@ class Demo_Assets {
 		 * context first — this runs after create_virtual_attachment()'s own
 		 * wrap has already restored.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		update_post_meta( $attach_id, self::KEY_META, $key );

@@ -683,7 +683,7 @@ class Video_Migration extends Base {
 				 * data, so integrations that centralize media on another
 				 * site can switch context first.
 				 *
-				 * @since 1.8.0
+				 * @since 2.2.0
 				 */
 				do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -701,7 +701,7 @@ class Video_Migration extends Base {
 				 * integrations can restore the site context switched in
 				 * `rtgodam_before_attachment_lookup`.
 				 *
-				 * @since 1.8.0
+				 * @since 2.2.0
 				 */
 				do_action( 'rtgodam_after_attachment_lookup' );
 
@@ -809,7 +809,7 @@ class Video_Migration extends Base {
 							 * create_attachment_from_vimeo_video()'s own
 							 * wrap has already restored.
 							 *
-							 * @since 1.8.0
+							 * @since 2.2.0
 							 */
 							do_action( 'rtgodam_before_attachment_lookup' );
 							$video_url = wp_get_attachment_url( $attachment_id );
@@ -833,7 +833,7 @@ class Video_Migration extends Base {
 							 * resolved — so the switch is always restored
 							 * regardless of that outcome.
 							 *
-							 * @since 1.8.0
+							 * @since 2.2.0
 							 */
 							do_action( 'rtgodam_after_attachment_lookup' );
 
@@ -1226,7 +1226,7 @@ class Video_Migration extends Base {
 		 * switch context first — deliberately fired only after the SaaS
 		 * HTTP call above returns, so the switch isn't held open across it.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {

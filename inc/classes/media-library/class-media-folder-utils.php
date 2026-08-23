@@ -66,7 +66,7 @@ class Media_Folder_Utils {
 		 * this covering the transient too, each site would cache its own
 		 * possibly-stale copy of what's supposed to be one shared count.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {

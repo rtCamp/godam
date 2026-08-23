@@ -337,7 +337,7 @@ class Analytics extends Base {
 			 * integrations that centralize media on another site can switch
 			 * context first.
 			 *
-			 * @since 1.8.0
+			 * @since 2.2.0
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -1014,7 +1014,7 @@ class Analytics extends Base {
 		 * data, so integrations that centralize media on another site can
 		 * switch context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -1063,7 +1063,7 @@ class Analytics extends Base {
 		 * Fires after enriching top-video rows, so integrations can restore
 		 * the site context switched in `rtgodam_before_attachment_lookup`.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_after_attachment_lookup' );
 

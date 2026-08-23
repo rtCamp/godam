@@ -384,7 +384,7 @@ class Media_Library extends Base {
 		 * a direct $wpdb->postmeta query, just as site-scoped as
 		 * get_post_meta().
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -402,7 +402,7 @@ class Media_Library extends Base {
 	 * bracket can wrap this entire body — including the job-ID fallback
 	 * lookup, which is itself a raw, site-scoped $wpdb->postmeta query.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 *
 	 * @param array $sizes         Array of sizes data.
 	 * @param int   $job_id        Job ID, used to resolve $attachment_id when it isn't already known.
@@ -717,7 +717,7 @@ class Media_Library extends Base {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		// Get the file path of the image.
@@ -799,7 +799,7 @@ class Media_Library extends Base {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -815,7 +815,7 @@ class Media_Library extends Base {
 	 * Split out of get_video_thumbnails() so the wp-dam site-switch bracket
 	 * can wrap this entire body.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @return \WP_REST_Response|\WP_Error
@@ -1028,7 +1028,7 @@ class Media_Library extends Base {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -1044,7 +1044,7 @@ class Media_Library extends Base {
 	 * Split out of upload_custom_video_thumbnail() so the wp-dam site-switch
 	 * bracket can wrap this entire body.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 *
 	 * @param int    $attachment_id Attachment ID.
 	 * @param string $thumbnail_url Thumbnail URL.
@@ -1113,7 +1113,7 @@ class Media_Library extends Base {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -1129,7 +1129,7 @@ class Media_Library extends Base {
 	 * Split out of remove_custom_video_thumbnail() so the wp-dam site-switch
 	 * bracket can wrap this entire body.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 *
 	 * @param int    $attachment_id Attachment ID.
 	 * @param string $thumbnail_url Thumbnail URL.
@@ -1200,7 +1200,7 @@ class Media_Library extends Base {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -1216,7 +1216,7 @@ class Media_Library extends Base {
 	 * Split out of set_video_thumbnail() so the wp-dam site-switch bracket
 	 * can wrap this entire body.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 *
 	 * @param int    $attachment_id             Attachment ID.
 	 * @param string $thumbnail_url             Thumbnail URL.
@@ -1781,7 +1781,7 @@ class Media_Library extends Base {
 		 * context first — runs after create_virtual_attachment()'s own wrap
 		 * has already restored.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$attachment_js_data = wp_prepare_attachment_for_js( $attach_id );
@@ -1820,7 +1820,7 @@ class Media_Library extends Base {
 		 * context first — the dedupe lookups and the eventual
 		 * wp_insert_attachment() call all need to run against that site.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -1836,7 +1836,7 @@ class Media_Library extends Base {
 	 * Split out of create_virtual_attachment() so a wp-dam-style site-switch
 	 * bracket can wrap this entire body.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 *
 	 * @param array $data GoDAM media data.
 	 * @param array $opts Options (e.g. 'is_demo').
@@ -2050,7 +2050,7 @@ class Media_Library extends Base {
 		 * '_godam_original_id' and the internal core media request that follows,
 		 * since both resolve the same attachment.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -2146,7 +2146,7 @@ class Media_Library extends Base {
 		 * context first. The WP_Query below counts attachment posts
 		 * (post_type 'attachment') tagged with this media-folder term.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$query = new \WP_Query( $args );

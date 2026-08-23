@@ -357,7 +357,7 @@ class Media_Usage_Tracker {
 		 * the attachment-meta calls below and is always restored before
 		 * get_post_type( $post_id ) or schedule_log_media_view() run.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -468,7 +468,7 @@ class Media_Usage_Tracker {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$ids = get_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, true );
@@ -510,7 +510,7 @@ class Media_Usage_Tracker {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$map = get_post_meta( $attachment_id, self::SOURCES_META_KEY, true );
@@ -583,7 +583,7 @@ class Media_Usage_Tracker {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -1263,7 +1263,7 @@ class Media_Usage_Tracker {
 		 * meta, so integrations that centralize media on another site can
 		 * switch context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -1660,7 +1660,7 @@ class Media_Usage_Tracker {
 		 * get_post_meta() would do, just expressed as raw SQL for
 		 * performance.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching

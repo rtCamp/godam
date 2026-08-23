@@ -89,7 +89,7 @@ class Virtual_Media_Registrar {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -224,7 +224,7 @@ class Virtual_Media_Registrar {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		update_post_meta( $attachment_id, self::META_REGISTERED, 1 );
@@ -251,7 +251,7 @@ class Virtual_Media_Registrar {
 		 * original-id meta, so integrations that centralize media on
 		 * another site can switch context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		// Only for virtual media attachments.

@@ -114,7 +114,7 @@ class Godam_Image extends Base {
 		 * Fires before reading this attachment's alt text, so integrations
 		 * that centralize media on another site can switch context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		// Mirror the block: alt comes from the attachment's stored alt text.

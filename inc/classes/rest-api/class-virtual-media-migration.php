@@ -105,7 +105,7 @@ class Virtual_Media_Migration extends Base {
 			 * switch context first. Reads postmeta joined to the posts table,
 			 * filtered to post_type 'attachment' — squarely attachment-scoped.
 			 *
-			 * @since 1.8.0
+			 * @since 2.2.0
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
 			$job_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching

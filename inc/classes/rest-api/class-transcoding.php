@@ -162,7 +162,7 @@ class Transcoding extends Base {
 		 * bypasses try/finally, so the after() call is placed explicitly
 		 * right before each one instead of relying on one.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -233,7 +233,7 @@ class Transcoding extends Base {
 		 * in try/finally because this method returns early from several
 		 * branches below.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -420,7 +420,7 @@ class Transcoding extends Base {
 		 * already-transcoded video attachments, since both scan the same
 		 * attachment-scoped data.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -482,7 +482,7 @@ class Transcoding extends Base {
 		 * restore the site context switched in
 		 * `rtgodam_before_attachment_lookup`.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_after_attachment_lookup' );
 
@@ -524,7 +524,7 @@ class Transcoding extends Base {
 		 * Fires before this per-ID attachment meta loop, so integrations
 		 * that centralize media on another site can switch context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		foreach ( $attachment_ids as $attachment_id ) {
@@ -574,7 +574,7 @@ class Transcoding extends Base {
 		 * state, so integrations that centralize media on another site can
 		 * switch context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -594,7 +594,7 @@ class Transcoding extends Base {
 	 * wrapper can't leak a switched site context even if a future edit adds
 	 * more early returns to this body.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 *
 	 * @param \WP_REST_Request $request       REST request object.
 	 * @param int              $attachment_id Attachment ID.

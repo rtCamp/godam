@@ -141,7 +141,7 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
 	 * Fires before resolving this attachment's URL, so integrations that
 	 * centralize media on another site can switch context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	try {
@@ -1164,7 +1164,7 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 	 * integrations that centralize media on another site can switch
 	 * context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 	try {
@@ -1241,7 +1241,7 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 			 * integrations that centralize media on another site can switch
 			 * context first.
 			 *
-			 * @since 1.8.0
+			 * @since 2.2.0
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
 			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
@@ -1283,7 +1283,7 @@ function godam_preview_page_content( $video_id ) {
 		 * (not re-read later) since the shortcode/block render further down
 		 * must run on the *current* site, after this bracket has closed.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
@@ -1466,7 +1466,7 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
@@ -1892,7 +1892,7 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 	 * and image URL, so integrations that centralize media on another site
 	 * can switch context first.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -1948,7 +1948,7 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 	 * so integrations can restore the site context switched in
 	 * `rtgodam_before_attachment_lookup`.
 	 *
-	 * @since 1.8.0
+	 * @since 2.2.0
 	 */
 	do_action( 'rtgodam_after_attachment_lookup' );
 

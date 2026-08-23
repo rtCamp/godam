@@ -95,7 +95,7 @@ class Video_Metadata {
 		 * already switch before triggering it (safe, this just no-ops
 		 * nested), but nothing guarantees all of them do.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
@@ -160,7 +160,7 @@ class Video_Metadata {
 			 * type (post_type => attachment), batched across every
 			 * matching video on the site.
 			 *
-			 * @since 1.8.0
+			 * @since 2.2.0
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
 			// Get a batch of video attachments without metadata.
@@ -228,7 +228,7 @@ class Video_Metadata {
 		 * media modal, REST responses) — self-wrapped so it's correct
 		 * regardless of who triggered it.
 		 *
-		 * @since 1.8.0
+		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
@@ -280,7 +280,7 @@ class Video_Metadata {
 				 * self-wrapped so it's correct regardless of who triggered
 				 * it.
 				 *
-				 * @since 1.8.0
+				 * @since 2.2.0
 				 */
 				do_action( 'rtgodam_before_attachment_lookup' );
 				try {
@@ -328,7 +328,7 @@ class Video_Metadata {
 			 * upload-list-view branch, the only branch that touches
 			 * attachment postmeta.
 			 *
-			 * @since 1.8.0
+			 * @since 2.2.0
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
 
