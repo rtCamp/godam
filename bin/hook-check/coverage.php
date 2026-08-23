@@ -5,53 +5,61 @@
  * that has no rtgodam_before_attachment_lookup bracket open at that exact
  * point — one candidate per call site, not per file.
  *
- * The sibling godam-wp-dam-hook-check.php only catches a wrap *regressing*
- * or an existing pair being unbalanced — neither answers "does every
+ * The sibling balance.php only catches a wrap regressing or
+ * an existing pair being unbalanced — neither answers "does every
  * attachment-touching call site have a wrap at all," which matters because
- * wp-dam (or any similar multisite media centralization plugin) has no way
- * to know GoDAM is about to read/write attachment data unless GoDAM fires
- * this hook pair around it.
+ * a centralizing plugin like wp-dam has no way to know GoDAM is about to
+ * touch attachment data unless GoDAM fires this hook pair around it.
  *
- * Shares its tokenizer, function-boundary finder, and hook-fire/
- * scope-terminator detection with the sibling script via
- * godam-hook-check-shared.php (see that file's own header for why). The
- * branch-aware before/after balance walk it provides (checkpoint-per-'{',
- * rewind-on-scope-terminator) is exactly what "is a before open right here"
- * needs.
- *
- * On top of that walk, this script watches every real access-function call:
- * if nothing is open at that point, it's a candidate — unless the call's
- * first argument is provably safe (godam_coverage_assignment_at()): one of
- * the enclosing function's own parameters, a plain unmodified alias of one,
- * or a cast/single-argument sanitizing call of one that hasn't since been
- * reassigned (reassigned including via `list()`/`[...]` destructuring —
- * godam_coverage_destructuring_targets_at() — which always revokes safety).
+ * Shares its tokenizer and hook-fire/scope-terminator detection with the
+ * sibling script via shared.php. On top of the same
+ * branch-aware before/after balance walk, this script watches every real
+ * access-function call: if nothing is open at that point, it's a
+ * candidate — unless the call's first argument is provably safe
+ * (godam_coverage_assignment_at()): one of the enclosing function's own
+ * parameters, a plain unmodified alias of one, or a cast/single-argument
+ * sanitizing call of one that hasn't since been reassigned (including via
+ * `list()`/`[...]` destructuring, which always revokes safety).
  *
  * A parameter-sourced call is reported under its own PARAMETER_SOURCED kind
  * (see FINDING_KIND_* below) unless godam_coverage_trace_callers() can
- * already resolve it automatically by recursively tracing whether the
+ * already resolve it automatically, by recursively tracing whether the
  * enclosing function is itself always invoked under a bracket, arbitrarily
- * many hops deep — see godam_coverage_resolve_coverage()'s own comment.
+ * many hops deep (see godam_coverage_resolve_coverage()).
  *
- * A clean run means "no new uncovered or unverified-parameter-sourced call
- * sites since the last accepted baseline" — not "every access here is
- * correctly centralized." Every candidate needs a human to read the
- * surrounding code and either add the hook, or record why it's fine as-is.
+ * A clean run means "every candidate call site is either wrapped, or
+ * explicitly justified in place" — not "every access here is correctly
+ * centralized." There is no baseline file: a human reads the surrounding
+ * code and either adds the hook, or records why it's fine as-is with one
+ * of four comments at the call site (see godam_shared_coverage_directives()
+ * in shared.php) — mirroring phpcs:ignore/disable/enable/
+ * ignoreFile minus a rule-code argument (this script only checks one thing):
  *
- * Scans the entire plugin root (godam_shared_list_all_php_files()) rather
- * than an explicit list of directories — see GODAM_EXCLUDED_ROOT_DIRS's own
- * comment in godam-hook-check-shared.php for why.
+ *   get_post_meta( $id, 'x', true ); // godam-coverage-ignore -- not attachment data, see docblock above
  *
- * Two modes, same convention as godam-wp-dam-hook-check.php:
- *   php bin/godam-attachment-access-coverage-check.php check
- *   php bin/godam-attachment-access-coverage-check.php update-baseline
+ *   // godam-coverage-disable -- whole migration is host-post-scoped, see class docblock
+ *   ...several lines...
+ *   // godam-coverage-enable
+ *
+ *   // godam-coverage-ignore-file -- entire file operates on the 'godam-video' CPT, never 'attachment'
+ *
+ * A godam-coverage-disable with no matching godam-coverage-enable before
+ * end of file is a hard error, not a silent "rest of the file is fine."
+ *
+ * Scans the entire plugin root (godam_shared_list_all_php_files()), a
+ * deny-list rather than an explicit directory list — see
+ * GODAM_EXCLUDED_ROOT_DIRS in shared.php.
+ *
+ * One mode — the code itself (hooks plus inline comments) is the complete
+ * source of truth, nothing to update:
+ *   php bin/hook-check/coverage.php
  *
  * @package GoDAM
  */
 
-// phpcs:disable WordPress.WP.AlternativeFunctions, WordPress.Security.EscapeOutput, WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents, WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_fwrite -- CLI script, no WP bootstrap, no browser output, no VIP filesystem restrictions (reads/writes its own baseline file and STDERR only).
+// phpcs:disable WordPress.WP.AlternativeFunctions, WordPress.Security.EscapeOutput, WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_fwrite -- CLI script, no WP bootstrap, no browser output, no VIP filesystem restrictions (writes to STDERR only).
 
-require_once __DIR__ . '/godam-hook-check-shared.php';
+require_once __DIR__ . '/shared.php';
 
 const BEFORE_HOOK = 'rtgodam_before_attachment_lookup';
 const AFTER_HOOK  = 'rtgodam_after_attachment_lookup';
@@ -71,18 +79,21 @@ const ACCESS_FUNCTIONS = array(
 	'get_post',
 );
 
-/**
- * Finding kinds, in the exact order the "why does this need a reason" story
- * gets harder to argue with — used both for the printed report's grouping
- * and as the 'kind' field persisted into the baseline.
- */
-const FINDING_KIND_DIRECT           = 'direct'; // No open bracket, non-parameter argument. The original, unambiguous case.
-const FINDING_KIND_CALLER_CONFIRMED = 'caller_confirmed'; // Parameter-sourced, but a real caller of the enclosing function is itself uncovered — see godam_coverage_trace_callers().
-const FINDING_KIND_UNVERIFIED       = 'unverified'; // Parameter-sourced; tracing couldn't prove it either way (no caller found, or the name isn't unique enough to trust).
+// Finding kinds, in the order the "why does this need a reason" story gets
+// harder to argue with — used for the printed report's own grouping.
+const FINDING_KIND_DIRECT           = 'direct'; // No open bracket, non-parameter argument.
+const FINDING_KIND_CALLER_CONFIRMED = 'caller_confirmed'; // Parameter-sourced, but a real caller is itself uncovered — see godam_coverage_trace_callers().
+const FINDING_KIND_UNVERIFIED       = 'unverified'; // Parameter-sourced; tracing couldn't prove it either way.
 
-$root          = dirname( __DIR__ ); // Plugin root.
-$baseline_path = __DIR__ . '/godam-attachment-access-coverage-baseline.json';
-$run_mode      = $argv[1] ?? 'check';
+// No baseline file anymore — error instead of silently ignoring a stale
+// 'update-baseline' call from CI config or muscle memory.
+if ( isset( $argv[1] ) && 'update-baseline' === $argv[1] ) {
+	fwrite( STDERR, "'update-baseline' no longer exists — this script has no baseline file to\n" );
+	fwrite( STDERR, "write. Add a // godam-coverage-ignore/-disable/-enable/-ignore-file comment\n" );
+	fwrite( STDERR, "at the call site instead (see this script's own top-of-file comment for\n" );
+	fwrite( STDERR, "the exact syntax), then re-run with no arguments.\n" );
+	exit( 1 );
+}
 
 /**
  * If the token at $i starts a real, bare call to one of ACCESS_FUNCTIONS,
@@ -96,7 +107,7 @@ $run_mode      = $argv[1] ?? 'check';
  * via ->/::, so this only excludes a same-named user-defined method or
  * declaration. 'name' is run through godam_shared_unqualified_name() so a
  * qualified call reports as "get_post_meta()", not leaking its leading
- * backslash — cosmetic only, baseline matching keys on file:line.
+ * backslash — cosmetic only, findings are keyed on file:line.
  *
  * @param array[] $tokens Token list.
  * @param int     $i      Index to check.
@@ -131,7 +142,7 @@ function godam_coverage_access_call_at( $tokens, $i, $count ) {
  * returns ['target' => name, 'safe_copy_of' => name|null]. 'safe_copy_of'
  * is set only for two shapes, both immediately followed by ';' with
  * nothing else: a bare copy of another variable ($x = $y;), or $target
- * reassigned to a cast or single-argument call of *itself* ($id =
+ * reassigned to a cast or single-argument call of itself ($id =
  * absint($id);, $id = (int) $id;) — sanitizing/casting doesn't introduce
  * new external data, so it shouldn't cost the value its safety. Anything
  * else on the right gets 'safe_copy_of' => null. Returns null entirely if
@@ -139,9 +150,8 @@ function godam_coverage_access_call_at( $tokens, $i, $count ) {
  *
  * Deliberately does NOT handle `list( $target, ... ) = ...` or
  * `[ $target, ... ] = ...` — detected separately by
- * godam_coverage_destructuring_targets_at(), because a destructured value
- * is never a "bare copy": it's always freshly derived from the right-hand
- * side, so it should always revoke safety, never preserve it.
+ * godam_coverage_destructuring_targets_at(), since a destructured value is
+ * never a "bare copy" and should always revoke safety, never preserve it.
  *
  * @param array[] $tokens Token list.
  * @param int     $i      Index of a token to check (only meaningful for a T_VARIABLE).
@@ -198,10 +208,7 @@ function godam_coverage_assignment_at( $tokens, $i, $count ) {
 	// Shape 3: a single-argument self-call, e.g. $target = absint( $target )
 	// — bare or qualified (matching godam_shared_is_call_to()'s own
 	// qualified-name widening; no name list to check against here, so only
-	// the token types need accepting). A qualified self-cast used to fall
-	// through to "anything else" and wrongly revoke safety (confirmed via
-	// fixture: `$id = \absint( $id );` landed as a hard gap while the
-	// byte-identical bare-call version correctly stayed "unverified").
+	// the token types need accepting).
 	if ( $rhs < $count && in_array( $tokens[ $rhs ]['id'] ?? null, array( T_STRING, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED ), true ) ) {
 		$open = godam_shared_skip_forward( $tokens, $rhs + 1, $count );
 		if ( $open < $count && '(' === $tokens[ $open ]['text'] ) {
@@ -245,16 +252,11 @@ function godam_coverage_assignment_at( $tokens, $i, $count ) {
  * `;`, `{`, `}`) so an ordinary array literal or a `$arr[0]` subscript
  * isn't mistaken for a destructuring target. Nested destructuring
  * (`list( $a, list( $b, $c ) ) = ...`) only recognizes the outer level's
- * own variables — a narrow, accepted gap for a rare shape.
- *
- * The statement-start check for `[` can misfire in one place:
- * godam_coverage_file_findings()'s top-level-code pass builds a separate,
- * reindexed token list with every function/method body cut out, so a
- * `[...] = ` that's the first top-level statement after a function
- * definition sees whatever token preceded that definition (e.g. `)`)
- * rather than a `}`, and is wrongly read as not statement-start. Narrow
- * and unlikely in a WordPress plugin (real top-level code here is almost
- * always add_action()/require calls, not destructuring).
+ * own variables — a narrow, accepted gap for a rare shape. The
+ * statement-start check can also misfire on a `[...] =` that's the first
+ * top-level statement right after a function definition, since
+ * godam_coverage_file_findings()'s reindexed top-level token list cuts
+ * function bodies out — narrow and unlikely in a WordPress plugin.
  *
  * @param array[] $tokens Token list.
  * @param int     $i      Index to check.
@@ -318,10 +320,9 @@ function godam_coverage_destructuring_targets_at( $tokens, $i, $count ) {
 }
 
 /**
- * Finds named function/method declarations plus parameter names — thin
- * wrapper around the shared finder for naming continuity with this file's
- * own history; kept as its own function in case coverage-specific function
- * metadata is ever needed here without affecting the sibling script.
+ * Thin wrapper around godam_shared_find_functions() — kept as its own
+ * function in case coverage-specific metadata is ever needed here without
+ * touching the sibling script.
  *
  * @param array[] $tokens                 Normalized tokens from godam_shared_tokenize().
  * @param array[] &$bodyless_declarations Output — see godam_shared_find_functions()'s own docblock.
@@ -333,44 +334,36 @@ function godam_coverage_find_functions( $tokens, &$bodyless_declarations = array
 
 /**
  * Walks a token range tracking before/after balance exactly like
- * godam-wp-dam-hook-check.php's godam_check_hook_balance_in_range() (same
- * checkpoint-per-'{', rewind-on-scope-terminator algorithm), and
- * additionally records every access-function call found with nothing open
- * at that point, split into 'uncovered' (a non-parameter argument) and
- * 'parameter_sourced' (the argument is one of the enclosing scope's own
- * parameters, or a traceable alias of one — see
- * godam_coverage_assignment_at()'s docblock).
+ * godam_check_hook_balance_in_range() (same checkpoint-per-'{',
+ * rewind-on-scope-terminator algorithm), and additionally records every
+ * access-function call found with nothing open at that point, split into
+ * 'uncovered' (a non-parameter argument) and 'parameter_sourced' (the
+ * argument is one of the enclosing scope's own parameters, or a traceable
+ * alias of one — see godam_coverage_assignment_at()).
  *
- * Also records, in 'call_sites', every real call to a name present in
+ * Also records, in 'call_sites', every real call to a name in
  * $known_call_targets (the codebase-wide set godam_coverage_trace_callers()
  * might need to trace a parameter_sourced finding back to its callers),
- * together with whether a before/after bracket was open at that call site —
- * reusing this same walk rather than re-tokenizing the file a second time.
+ * with whether a before/after bracket was open there — reusing this same
+ * walk rather than re-tokenizing the file a second time.
  *
  * The set of "safe" variable names starts from the enclosing scope's own
  * parameters and evolves alongside the scan: a plain, unmodified copy of a
  * currently-safe variable extends safety to the new name; any other
- * reassignment (including via `list()`/`[...]` destructuring) revokes it.
- * This tracking has no branch-awareness (unlike the before/after balance
- * tracking above, which is branch-aware) — a deliberate simplification,
- * since a value's safety differing across branches at the exact point of
- * an access call hasn't shown up as a real false positive or negative.
+ * reassignment (including destructuring) revokes it. This tracking has no
+ * branch-awareness, unlike the before/after balance tracking above — a
+ * deliberate simplification; safety differing across branches at an access
+ * call hasn't shown up as a real false positive or negative.
  *
  * @param array[] $tokens             Full token list for the file.
  * @param int     $range_start        Token index to start at (inclusive).
  * @param int     $range_end          Token index to end at (inclusive).
  * @param array   $params             Enclosing function's own parameter names (empty for top-level code).
  * @param array   $known_call_targets Set (name => true) of function/method names worth recording call sites for.
- * @param array[] $skip_ranges        Each [start, end] (inclusive token indexes) to jump straight
- *                                    past rather than walk — deferred closures (add_action()/
- *                                    add_filter() callbacks) nested directly inside this range, which
- *                                    godam_coverage_file_findings() walks separately, as their own
- *                                    independent scope with their own params and a fresh bracket
- *                                    state, precisely so they do NOT inherit whatever before/after
- *                                    state happens to be open in the function that merely DEFINES
- *                                    them — see godam_shared_find_deferred_closures()'s own comment
- *                                    for why a closure registered this way can run at a completely
- *                                    different time than its defining function.
+ * @param array[] $skip_ranges        Each [start, end] to jump past — deferred closures nested in this
+ *                                    range, walked independently by godam_coverage_file_findings()
+ *                                    with a fresh bracket state, since they can run at a different
+ *                                    time than the function that merely defines them.
  * @return array{uncovered: array[], parameter_sourced: array[], call_sites: array[]}
  *               uncovered/parameter_sourced entries: line, call.
  *               call_sites entries: name, line, covered (bool), method_style (bool — preceded by -> or ::).
@@ -411,12 +404,10 @@ function godam_coverage_check_range( $tokens, $range_start, $range_end, $params,
 
 		if ( godam_shared_is_scope_terminator( $tokens, $i, $count ) ) {
 			// Rewind to the state when the innermost enclosing block was
-			// entered — see godam_check_hook_balance_in_range()'s docblock
-			// for the full reasoning (guard clauses closing an outer before()
-			// early). That script is the one responsible for flagging an
-			// actual imbalance; this one only cares whether access calls are
-			// covered, so it always rewinds unconditionally rather than also
-			// checking for the over-open case.
+			// entered — see godam_check_hook_balance_in_range() for the full
+			// reasoning. That script flags an actual imbalance; this one only
+			// cares whether access calls are covered, so it always rewinds
+			// unconditionally rather than also checking the over-open case.
 			$open_before_lines = empty( $checkpoints ) ? array() : end( $checkpoints );
 			continue;
 		}
@@ -452,25 +443,16 @@ function godam_coverage_check_range( $tokens, $range_start, $range_end, $params,
 			if ( $n < $count && '(' === $tokens[ $n ]['text'] ) {
 				$p = godam_shared_skip_backward( $tokens, $i - 1 );
 
-				// A function's own declaration tokenizes identically to a call to
-				// a same-named function (T_STRING followed by '('). Harmless for
-				// a method (a declaration is never preceded by ->/::, so it fails
-				// the method_style check below already), but a FREE function's
-				// own declaration line would otherwise be recorded as a fake call
-				// site to itself, always resolving as an unrecoverable gap
-				// (confirmed via fixture: a free function correctly wrapped by
-				// its only real caller was still reported as a confirmed gap
-				// "via" its own declaration). Uses the shared
-				// godam_shared_is_function_declaration_at() so this can't drift
-				// from godam_shared_is_bare_call_to()'s identical need.
-				//
-				// Also excludes `new ClassName(`: a class and a free function can
-				// share a bare name, and `known_call_targets` is keyed purely by
-				// text, so `new Helper()` was indistinguishable from a call to a
-				// free function also named Helper (confirmed via fixture: this
-				// silently resolved Helper()'s own real, untraceable finding as
-				// "transitively covered" through a caller relationship that was
-				// never real).
+				// A function's own declaration tokenizes identically to a call
+				// to a same-named function (T_STRING followed by '('). Harmless
+				// for a method (already excluded by the method_style check
+				// below), but a FREE function's own declaration line would
+				// otherwise be recorded as a fake call site to itself, always
+				// resolving as an unrecoverable gap. Also excludes `new
+				// ClassName(`: a class and a free function can share a bare
+				// name, and `known_call_targets` is keyed purely by text, so
+				// `new Helper()` would otherwise be indistinguishable from a
+				// call to a free function also named Helper.
 				$preceded_by_new = $p >= 0 && T_NEW === ( $tokens[ $p ]['id'] ?? null );
 
 				if ( ! $preceded_by_new && ! godam_shared_is_function_declaration_at( $tokens, $i ) ) {
@@ -538,40 +520,34 @@ function godam_coverage_check_range( $tokens, $range_start, $range_end, $params,
  * deferred closure (add_action()/add_filter() callback), plus once more
  * across whatever top-level code remains — concatenated in file order.
  *
- * A deferred closure is excluded from whichever range would otherwise
- * contain it, and walked as its own independent scope instead (empty
- * bracket state, its own parameters) — it can run at a completely
- * different time than the function that merely defines it, so treating it
- * as covered by lexical position would be wrong. Its parameter-sourced
- * findings get fn_name = null: an anonymous closure has no name anything
- * else could call it by, so there's nothing to trace.
+ * A deferred closure is excluded from its enclosing range and walked as its
+ * own independent scope (empty bracket state, its own parameters) — it can
+ * run at a completely different time than the function that defines it.
+ * Its parameter-sourced findings get fn_name = null: nothing else can call
+ * an anonymous closure by name, so there's nothing to trace.
  *
  * A function's own parameter list is walked as a SEPARATE range from its
  * body, for a PHP 8.1+ "new in initializers" default value (`function
  * search( $query = new WP_Query(...) )`), which sits before body_start and
- * would otherwise be mislabeled as top-level code. Widening body_start to
- * cover the parameter list in one walk was tried and confirmed unsafe via
- * fixture: `$query = new WP_Query(...)` looks like a real assignment, so
- * godam_coverage_assignment_at() wrongly revokes $query's safety for the
- * rest of the function. Two independent calls (this one starting from
- * empty params, since a default value can't reference any variable) share
- * no mutable state, so they can't interfere; findings from both are
+ * would otherwise be mislabeled as top-level code. Merging the two ranges
+ * into one walk is unsafe: `$query = new WP_Query(...)` looks like a real
+ * assignment, so godam_coverage_assignment_at() would wrongly revoke
+ * $query's safety for the rest of the function. The two independent calls
+ * share no mutable state, so they can't interfere; findings from both are
  * merged under the same scope label.
  *
- * Every parameter-list finding carries 'from_param_list' => true, because
- * findings are keyed by "{file}:{line}" for baseline acceptance, and a
- * compact one-liner can put a parameter-list default and a body call on
- * the same physical line — confirmed via fixture that this silently
- * dropped one of two genuinely distinct findings before the flag existed.
- * The flag lets the caller disambiguate without changing the key format
- * for every other finding.
+ * Every parameter-list finding carries 'from_param_list' => true: findings
+ * are keyed by "{file}:{line}", and a compact one-liner can put a
+ * parameter-list default and a body call on the same physical line, so the
+ * flag lets the caller disambiguate without changing the key format for
+ * every other finding.
  *
  * $bodyless_declarations gets the same parameter-list treatment as
  * $functions, for the same "new in initializers" reason on an
  * interface/abstract method's default value. Its findings get fn_name =
  * null too: a bodyless declaration is deliberately never added to
- * $definitions_by_name (see godam_shared_find_functions()'s own docblock),
- * so there's no safe way to trace it as a caller/callee.
+ * $definitions_by_name (see godam_shared_find_functions()), so there's no
+ * safe way to trace it as a caller/callee.
  *
  * @param array[] $tokens                Full token list for the file.
  * @param array[] $functions             This file's own godam_coverage_find_functions() result.
@@ -611,21 +587,14 @@ function godam_coverage_file_findings( $tokens, $functions, $known_call_targets,
 		);
 	}
 
-	// Combines three independent exclusions into one $skip_ranges list for a
-	// given range's own walk: (a) any deferred closure nested inside it, (b)
-	// any OTHER named function/method nested inside it, and (c) any
-	// function's own parameter-list range nested inside it — each walked
-	// separately below with its own state. (b) and (c) matter now that
-	// function ranges can genuinely nest (a method inside a function-scoped
-	// anonymous class sits inside its enclosing function's own range) —
-	// without excluding them, the outer function's walk would re-scan the
-	// nested scope's tokens a second time under the OUTER function's
-	// params/bracket state (confirmed via fixture for (b): a get_post_meta()
-	// call inside a nested method was reported twice, and the wrong one
-	// silently won the file:line-keyed merge, masking the nested method's
-	// own correct resolution). godam_shared_ranges_nested_in() already
-	// carries the self-match exclusion this needs (a range in its own
-	// candidate list would otherwise trivially match itself).
+	// Combines three independent exclusions into one $skip_ranges list, each
+	// walked separately below with its own state: (a) any deferred closure
+	// nested inside the range, (b) any OTHER named function/method nested
+	// inside it, and (c) any function's own parameter-list range nested
+	// inside it. (b) and (c) matter because function ranges can genuinely
+	// nest (a method inside a function-scoped anonymous class) — without
+	// excluding them, the outer walk would re-scan the nested scope's
+	// tokens under the OUTER function's params/bracket state.
 	$skip_ranges_for = function ( $range_start, $range_end ) use ( $deferred_closures, $functions, $param_list_ranges ) {
 		return array_merge(
 			godam_shared_ranges_nested_in( $range_start, $range_end, $deferred_closures ),
@@ -691,10 +660,9 @@ function godam_coverage_file_findings( $tokens, $functions, $known_call_targets,
 		}
 
 		// The function's own parameter list, walked independently (empty
-		// params/safe_vars — see this function's own docblock) so a "new in
-		// initializers" default value is found and attributed to this same
-		// scope, without the walk sharing any mutable state with the body
-		// walk above.
+		// params/safe_vars, see this function's own docblock) so a "new in
+		// initializers" default value is found without sharing mutable
+		// state with the body walk above.
 		$param_result = godam_coverage_check_range( $tokens, $function['params_open'], $function['params_close'], array(), $known_call_targets, $skip_ranges_for( $function['params_open'], $function['params_close'] ) );
 
 		foreach ( $param_result['uncovered'] as $finding ) {
@@ -806,15 +774,10 @@ function godam_coverage_file_findings( $tokens, $functions, $known_call_targets,
  *
  * Correct for an ARBITRARY number of hops because the recursion only asks
  * "how is this function invoked," never "does this function touch
- * attachment data." An earlier iterative version asked the latter, so a
- * PURE forwarding function (no access call of its own) could never resolve
- * as "itself always covered," and any deeper call reached through it was
- * wrongly reported as a confirmed gap — confirmed via a synthetic 3-hop
- * fixture before the recursive version replaced it. This also naturally
- * covers the 2-hop real false positive that first motivated going beyond
- * one hop (RTGODAM_Transcoder_Handler::wp_media_transcoding(), covered
- * only by its caller's caller's bracket) as just one more instance of the
- * same recursion, not a special case.
+ * attachment data." A fixed-depth or iterative version asking the latter
+ * would fail on a PURE forwarding function (no access call of its own): it
+ * could never resolve as "itself always covered," so any deeper call
+ * reached through it would be wrongly reported as a confirmed gap.
  *
  * Deliberately conservative regardless of chain depth: a name is only
  * ever resolved automatically when it's unique across the entire
@@ -822,8 +785,7 @@ function godam_coverage_file_findings( $tokens, $functions, $known_call_targets,
  * WordPress plugin (render(), get_instance(), setup_hooks() all recur
  * here), and a text-level search can't tell "a call to ClassA::render()"
  * from "a call to ClassB::render()" — so an ambiguous name resolves to
- * 'unknown' for a human to check, confirmed via fixture that this refuses
- * to resolve either of two same-named methods rather than conflate them.
+ * 'unknown' for a human to check.
  *
  * For a unique name, call sites are filtered to the shape its definition
  * could actually be called through:
@@ -981,16 +943,14 @@ function godam_coverage_resolve_coverage( $name, $definitions_by_name, $call_sit
  * trait A, and class C can `use` trait B. A private method in A is
  * reachable from C, but C's file never appears in A's own direct
  * $trait_consumers entry — only B's file does. Resolving only one level
- * would miss C's file entirely — the same class of gap 'allowed_files'
- * exists to close for the single-level case. No multi-level trait usage
- * exists in this codebase today (verified via grep) — this only guards
- * against a future one.
+ * would miss C's file entirely, the same gap 'allowed_files' exists to
+ * close for the single-level case. No multi-level trait usage exists in
+ * this codebase today — this only guards against a future one.
  *
  * Same recursive/memoized/cycle-breaking shape as
  * godam_coverage_resolve_coverage() above (a different graph — trait-uses-
- * trait, not caller-calls-callee — same reason a fixed-depth check isn't
- * enough). A cycle breaks via $visiting, contributing no further files for
- * that edge, without infinite recursion.
+ * trait, not caller-calls-callee). A cycle breaks via $visiting,
+ * contributing no further files for that edge, without infinite recursion.
  *
  * @param string $trait_name       Bare trait name to resolve.
  * @param array  $trait_consumers  Trait name => list of {class, file} — every file's own, direct (one-hop) consumers.
@@ -1084,33 +1044,16 @@ function godam_coverage_trace_callers( $parameter_sourced, $call_sites, $definit
 	);
 }
 
-/**
- * Human-reviewed reasons for findings accepted into the baseline, keyed the
- * same way as $findings. Merged into the baseline on every
- * `update-baseline` run so the *why* survives regeneration. Add an entry
- * here — not directly in the baseline JSON — when accepting a new finding
- * as reviewed-and-fine. Applies to every finding kind (direct,
- * caller_confirmed, unverified) — a transitively_covered resolution is the
- * one kind that never needs an entry here, since the tool proved it safe on
- * its own.
- *
- * @return array<string, string>
- */
-function godam_coverage_known_reasons() {
-	return array();
-}
-
 // --- Pass 1: tokenize every file once, find every function/method definition. ---
 //
-// 1a walks every file first to build two codebase-wide, cross-file maps
-// before any per-function work starts: which class/trait names are
-// actually traits (godam_shared_find_classes()'s 'is_trait'), and which
-// files `use` each trait. Needed up front because a trait's consumers can
-// be discovered in a file scanned AFTER the trait's own definition — 1b
-// can't know a private trait method's real allowed files until every file
-// has been looked at once.
+// 1a walks every file first to build two codebase-wide maps before any
+// per-function work starts: which class/trait names are actually traits,
+// and which files `use` each trait. Needed up front because a trait's
+// consumers can be discovered in a file scanned AFTER the trait's own
+// definition — 1b can't know a private trait method's real allowed files
+// until every file has been looked at once.
 
-$root  = dirname( __DIR__ );
+$root  = dirname( __DIR__, 2 ); // Plugin root — this file lives two levels under it, in bin/hook-check/.
 $files = godam_shared_list_all_php_files( $root );
 
 $file_tokens            = array();
@@ -1191,8 +1134,7 @@ foreach ( $file_tokens as $relative => $tokens ) {
 		// A parameter-list finding gets a distinct ":params" key suffix so it
 		// can't collide with a body-level finding on the same physical line —
 		// routine for a compact one-liner like `function search( $query = new
-		// WP_Query(...) ) { get_post_meta(...); }` (confirmed via fixture that
-		// this used to silently drop one of the two distinct findings).
+		// WP_Query(...) ) { get_post_meta(...); }`.
 		$key                        = ! empty( $finding['from_param_list'] ) ? "{$relative}:{$finding['line']}:params" : "{$relative}:{$finding['line']}";
 		$uncovered_findings[ $key ] = array(
 			'file'  => $relative,
@@ -1256,74 +1198,80 @@ ksort( $unverified_findings );
 // union keeps both without a collision risk to reason about.
 $findings = $uncovered_findings + $unverified_findings;
 
-if ( 'update-baseline' === $run_mode ) {
-	// Only a finding with an ACTUAL reviewed reason on file gets accepted —
-	// this is the whole point of the baseline: a finding with no reason must
-	// NOT appear in 'accepted' at all, so 'check' keeps failing on it until a
-	// human either fixes the code or adds a real reason here.
-	$reasons     = godam_coverage_known_reasons();
-	$accepted    = array();
-	$unexplained = array();
+// --- Pass 4: apply inline godam-coverage-ignore/disable/enable/ignore-file
+// comments — checked once per file so a finding's own line is looked up in
+// O(1) instead of re-scanning every file per finding. This is the *only*
+// acceptance mechanism — there is no baseline file to fall back to. ---
 
-	foreach ( $findings as $key => $finding ) {
-		if ( isset( $reasons[ $key ] ) ) {
-			$finding['reason'] = $reasons[ $key ];
-			$accepted[ $key ]  = $finding;
-		} else {
-			$unexplained[] = $key;
-		}
-	}
-
-	$baseline = array(
-		'generated_note' => 'Generated by bin/godam-attachment-access-coverage-check.php update-baseline. A finding only enters "accepted" if godam_coverage_known_reasons() already has a reason for it — this command does not review anything on its own. Findings with no reason stay failing in "check" mode. transitively_covered resolutions never appear here at all — see godam_coverage_trace_callers()\'s own comment.',
-		'accepted'       => $accepted,
-	);
-
-	file_put_contents( $baseline_path, json_encode( $baseline, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) . "\n" );
-	echo "Baseline written to {$baseline_path}.\n";
-	echo 'Uncovered/unverified call sites found: ' . count( $findings ) . ', accepted (reviewed, with a reason on file): ' . count( $accepted ) . "\n";
-	echo 'Auto-resolved as transitively covered (no reason needed): ' . count( $traced['transitively_covered'] ) . "\n";
-
-	if ( ! empty( $unexplained ) ) {
-		echo "\n" . count( $unexplained ) . " finding(s) have NO reason on file, so they were NOT accepted —\n";
-		echo "'check' will still report every one of them until you either fix the code or add a real\n";
-		echo "reason to godam_coverage_known_reasons() and re-run update-baseline.\n";
-	}
-
-	exit( 0 );
+$directives_by_file = array();
+foreach ( $file_tokens as $relative => $tokens ) {
+	$directives_by_file[ $relative ] = godam_shared_coverage_directives( $tokens );
 }
 
-if ( ! file_exists( $baseline_path ) ) {
-	fwrite( STDERR, "No baseline found at {$baseline_path}.\nRun: php bin/godam-attachment-access-coverage-check.php update-baseline\n" );
+// A disable with no matching enable is a hard error: left alone, it would
+// silently suppress every finding for the rest of the file with no
+// human-reviewed reason at all.
+$dangling_disables = array();
+foreach ( $directives_by_file as $relative => $directives ) {
+	if ( null !== $directives['dangling_disable'] ) {
+		$dangling_disables[ $relative ] = $directives['dangling_disable'];
+	}
+}
+
+$directive_covered = array();
+foreach ( $findings as $key => $finding ) {
+	$directives = $directives_by_file[ $finding['file'] ] ?? null;
+	if ( null === $directives ) {
+		continue;
+	}
+
+	if ( null !== $directives['ignore_file'] ) {
+		$directive_covered[ $key ] = $directives['ignore_file'];
+		continue;
+	}
+
+	$reason = godam_shared_coverage_directive_covers( $directives, $finding['line'] );
+	if ( null !== $reason ) {
+		$directive_covered[ $key ] = $reason;
+	}
+}
+
+$findings = array_diff_key( $findings, $directive_covered );
+
+if ( ! empty( $dangling_disables ) ) {
+	fwrite( STDERR, "DANGLING godam-coverage-disable — no matching godam-coverage-enable found\n" );
+	fwrite( STDERR, "before end of file. This would otherwise silently suppress every finding\n" );
+	fwrite( STDERR, "for the rest of the file with no reviewed reason at all:\n\n" );
+	foreach ( $dangling_disables as $relative => $disable ) {
+		fwrite( STDERR, " - {$relative}:{$disable['line']} -- {$disable['reason']}\n" );
+	}
+	fwrite( STDERR, "\nAdd a matching // godam-coverage-enable comment, or remove the disable if it's no longer needed.\n" );
 	exit( 1 );
 }
 
-$baseline          = json_decode( file_get_contents( $baseline_path ), true );
-$accepted_findings = is_array( $baseline ) ? ( $baseline['accepted'] ?? array() ) : array();
-
-$new_findings   = array_diff_key( $findings, $accepted_findings );
-$new_direct     = array_filter(
-	$new_findings,
+$direct     = array_filter(
+	$findings,
 	function ( $f ) {
 		return FINDING_KIND_UNVERIFIED !== $f['kind'];
-	} 
+	}
 );
-$new_unverified = array_filter(
-	$new_findings,
+$unverified = array_filter(
+	$findings,
 	function ( $f ) {
 		return FINDING_KIND_UNVERIFIED === $f['kind'];
-	} 
+	}
 );
 
-echo 'Uncovered/unverified call sites tracked: ' . count( $findings ) . ' (' . count( $accepted_findings ) . " previously accepted)\n";
-echo 'Auto-resolved as transitively covered this run (no action needed): ' . count( $traced['transitively_covered'] ) . "\n\n";
+echo 'Uncovered/unverified call sites: ' . count( $findings ) . "\n";
+echo 'Auto-resolved as transitively covered (no action needed): ' . count( $traced['transitively_covered'] ) . "\n";
+echo 'Suppressed via inline godam-coverage-ignore/disable/ignore-file comments: ' . count( $directive_covered ) . "\n\n";
 
 $exit_code = 0;
 
-if ( ! empty( $new_direct ) ) {
+if ( ! empty( $direct ) ) {
 	$exit_code = 1;
-	echo "NEW CONFIRMED UNCOVERED ACCESS CALLS (not in the accepted baseline):\n";
-	foreach ( $new_direct as $key => $finding ) {
+	echo "CONFIRMED UNCOVERED ACCESS CALLS:\n";
+	foreach ( $direct as $key => $finding ) {
 		echo " - {$finding['file']}:{$finding['line']} in {$finding['scope']}: {$finding['call']}() runs with no\n";
 		echo '   rtgodam_before_attachment_lookup open.';
 		if ( FINDING_KIND_CALLER_CONFIRMED === $finding['kind'] ) {
@@ -1331,16 +1279,16 @@ if ( ! empty( $new_direct ) ) {
 			echo "   doesn't wrap this call either" . ( $finding['caller_count'] > 1 ? " ({$finding['caller_count']} uncovered callers total)" : '' ) . '.';
 		}
 		echo "\n   Add the hook pair around it, or if this call genuinely isn't attachment data\n";
-		echo "   needing centralization, run 'update-baseline' after confirming why (see this\n";
-		echo "   script's own top-of-file comment for the exclusion rules).\n\n";
+		echo "   needing centralization, add a // godam-coverage-ignore -- reason comment (see\n";
+		echo "   this script's own top-of-file comment for the exact syntax).\n\n";
 	}
 }
 
-if ( ! empty( $new_unverified ) ) {
+if ( ! empty( $unverified ) ) {
 	$exit_code = 1;
-	echo "NEW UNVERIFIED PARAMETER-SOURCED CALLS (coverage depends on a caller this script\n";
+	echo "UNVERIFIED PARAMETER-SOURCED CALLS (coverage depends on a caller this script\n";
 	echo "couldn't confirm — needs a human to check, not a proven gap):\n";
-	foreach ( $new_unverified as $key => $finding ) {
+	foreach ( $unverified as $key => $finding ) {
 		echo " - {$finding['file']}:{$finding['line']} in {$finding['scope']}: {$finding['call']}() — {$finding['detail']}\n\n";
 	}
 }
@@ -1352,5 +1300,5 @@ if ( 0 !== $exit_code ) {
 	exit( $exit_code );
 }
 
-echo "No new uncovered or unverified attachment-access call sites since the last accepted baseline.\n";
+echo "No uncovered or unverified attachment-access call sites found.\n";
 exit( 0 );

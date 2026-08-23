@@ -14,13 +14,13 @@
 #
 # Scoped to .php files specifically (not every path under inc/, admin/, and
 # assets/src/blocks/) — both check scripts only ever tokenize .php files
-# (see godam_shared_list_php_files() in godam-hook-check-shared.php), so a
+# (see godam_shared_list_php_files() in shared.php), so a
 # commit touching only a block's .js/.scss/.json under assets/src/blocks/
 # can't contain anything either script would look at.
 
 STAGED_FILES=$(git diff --cached --name-only)
 
-if ! echo "$STAGED_FILES" | grep -Eq '^(inc/.*\.php$|admin/.*\.php$|assets/src/blocks/.*\.php$|bin/godam-wp-dam-hook-check\.php$|bin/godam-hook-check-shared\.php$|bin/godam-wp-dam-hook-baseline\.json$|bin/godam-attachment-access-coverage-check\.php$|bin/godam-attachment-access-coverage-baseline\.json$)'; then
+if ! echo "$STAGED_FILES" | grep -Eq '^(inc/.*\.php$|admin/.*\.php$|assets/src/blocks/.*\.php$|bin/hook-check/balance\.php$|bin/hook-check/shared\.php$|bin/hook-check/coverage\.php$)'; then
 	exit 0
 fi
 
@@ -39,17 +39,16 @@ echo "Running wp-dam hook-integrity checks (staged changes touch tracked paths).
 echo ""
 
 status=0
-php bin/godam-wp-dam-hook-check.php check || status=1
-php bin/godam-attachment-access-coverage-check.php check || status=1
+php bin/hook-check/balance.php check || status=1
+php bin/hook-check/coverage.php check || status=1
 
 if [ "$status" -ne 0 ]; then
 	echo ""
-	echo "godam-hook-check: commit blocked by the failure(s)/warning(s) above."
+	echo "godam-hook-check: commit blocked by the failure(s) above."
 	echo "If this is a reviewed, intentional change (not a missed or malformed"
-	echo "hook), run:"
-	echo "  php bin/godam-wp-dam-hook-check.php update-baseline"
-	echo "  php bin/godam-attachment-access-coverage-check.php update-baseline"
-	echo "then stage the updated bin/*-baseline.json file(s) and commit again."
+	echo "hook), add a // godam-coverage-ignore/-disable/-enable/-ignore-file"
+	echo "comment at the call site (see either script's own top-of-file comment"
+	echo "for the exact syntax), stage the change, and commit again."
 	echo ""
 	exit 1
 fi
