@@ -758,6 +758,36 @@ function godam_shared_range_mentions_post_tables( $tokens, $range_start, $range_
 }
 
 /**
+ * Whether the argument starting at the call's own opening '(' (index
+ * $open_index) is itself a bare call to another named function — e.g. the
+ * `helper()` in `new WP_Query( helper() )` — rather than an inline
+ * array/array literal or a variable built in the same scope.
+ *
+ * Used to widen godam_shared_query_pattern_at()'s attachment-shaped default
+ * for exactly this shape: godam_shared_range_targets_attachment_post_type()
+ * scans the calling scope's own tokens, so it can't see a 'post_type'
+ * literal that genuinely lives inside a callee it never looks into. A real
+ * gap this caught: a gallery template's query-mode WP_Query took its args
+ * from a helper that sets post_type => 'attachment' internally — the scan
+ * found nothing in the caller's own scope and the query was never flagged
+ * at all, despite running fully unwrapped.
+ *
+ * @param array[] $tokens     Full token list for the file.
+ * @param int     $open_index Index of the call's own opening '('.
+ * @param int     $count      Token count.
+ * @return bool
+ */
+function godam_shared_first_arg_is_function_call( $tokens, $open_index, $count ) {
+	$first = godam_shared_skip_forward( $tokens, $open_index + 1, $count );
+	if ( $first >= $count || ! in_array( $tokens[ $first ]['id'] ?? null, array( T_STRING, T_NAME_FULLY_QUALIFIED, T_NAME_QUALIFIED ), true ) ) {
+		return false;
+	}
+
+	$next = godam_shared_skip_forward( $tokens, $first + 1, $count );
+	return $next < $count && '(' === $tokens[ $next ]['text'];
+}
+
+/**
  * If the token at $i starts a WP_Query/get_posts()/get_children()/$wpdb
  * query-method call, returns ['kind' => ..., 'name' => ...,
  * 'is_attachment_shaped' => bool]. Returns null otherwise.
@@ -787,26 +817,36 @@ function godam_shared_range_mentions_post_tables( $tokens, $range_start, $range_
  */
 function godam_shared_query_pattern_at( $tokens, $i, $range_start, $range_end, $count ) {
 	if ( godam_shared_is_new_wp_query_at( $tokens, $i, $count ) ) {
+		$class_name_index = godam_shared_skip_forward( $tokens, $i + 1, $count );
+		$open             = godam_shared_skip_forward( $tokens, $class_name_index + 1, $count );
+
 		return array(
 			'kind'                 => 'wp_query',
 			'name'                 => 'new WP_Query',
-			'is_attachment_shaped' => godam_shared_range_targets_attachment_post_type( $tokens, $range_start, $range_end, $count ),
+			'is_attachment_shaped' => godam_shared_range_targets_attachment_post_type( $tokens, $range_start, $range_end, $count )
+				|| godam_shared_first_arg_is_function_call( $tokens, $open, $count ),
 		);
 	}
 
 	if ( godam_shared_is_bare_call_to( $tokens, $i, array( 'get_posts' ), $count ) ) {
+		$open = godam_shared_skip_forward( $tokens, $i + 1, $count );
+
 		return array(
 			'kind'                 => 'get_posts',
 			'name'                 => 'get_posts',
-			'is_attachment_shaped' => godam_shared_range_targets_attachment_post_type( $tokens, $range_start, $range_end, $count ),
+			'is_attachment_shaped' => godam_shared_range_targets_attachment_post_type( $tokens, $range_start, $range_end, $count )
+				|| godam_shared_first_arg_is_function_call( $tokens, $open, $count ),
 		);
 	}
 
 	if ( godam_shared_is_bare_call_to( $tokens, $i, array( 'get_children' ), $count ) ) {
+		$open = godam_shared_skip_forward( $tokens, $i + 1, $count );
+
 		return array(
 			'kind'                 => 'get_children',
 			'name'                 => 'get_children',
-			'is_attachment_shaped' => godam_shared_range_targets_attachment_post_type( $tokens, $range_start, $range_end, $count ),
+			'is_attachment_shaped' => godam_shared_range_targets_attachment_post_type( $tokens, $range_start, $range_end, $count )
+				|| godam_shared_first_arg_is_function_call( $tokens, $open, $count ),
 		);
 	}
 
