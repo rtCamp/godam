@@ -28,6 +28,7 @@ import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
 import VideoToCartCard from './VideoToCartCard.js';
 import RevenueCard from './RevenueCard.js';
+import RevenueTips from './RevenueTips.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
@@ -666,6 +667,13 @@ const Analytics = ( { attachmentID } ) => {
 									/>
 								</div>
 							</div>
+
+							{ /* Comparative revenue tips (EASY WIN B), Woo-gated. The
+							    component renders only the favourable comparisons and
+							    nothing when there is nothing worth saying. */ }
+							{ isWoo && rangedAnalyticsData?.revenue_tips && (
+								<RevenueTips tips={ rangedAnalyticsData.revenue_tips } />
+							) }
 
 							{ /* Viewer Retention Curve — standalone chart of per-second
 							    viewer counts across the video timeline (converted from
