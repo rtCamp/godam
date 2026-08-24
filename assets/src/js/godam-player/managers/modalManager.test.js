@@ -26,12 +26,16 @@ jest.mock( 'video.js', () => ( {
 /**
  * Render a lightbox player and return the pieces the manager works with.
  *
- * @param {Object} attrs       - Video data attributes.
- * @param {string} attrs.id    - Attachment ID.
- * @param {string} attrs.jobId - Transcoding job ID.
- * @return {Object} The video element and its movable root.
+ * Pass `lightbox: false` for an ordinary inline player — one a trigger or a deep
+ * link can still open, but whose inline render is not a click-to-open poster.
+ *
+ * @param {Object}  attrs          - Video data attributes.
+ * @param {string}  attrs.id       - Attachment ID.
+ * @param {string}  attrs.jobId    - Transcoding job ID.
+ * @param {boolean} attrs.lightbox - Whether "Show in lightbox" is on.
+ * @return {Object} The video element, its movable root and its wrapper.
  */
-function renderPlayer( { id = '4595', jobId = 'job-1' } = {} ) {
+function renderPlayer( { id = '4595', jobId = 'job-1', lightbox = true } = {} ) {
 	// Mirrors inc/templates/godam-player.php: an outer div carrying the
 	// aspect-ratio / brand-colour custom properties, then <figure>, then
 	// .godam-video-wrapper. The outer div is the movable root.
@@ -40,8 +44,8 @@ function renderPlayer( { id = '4595', jobId = 'job-1' } = {} ) {
 			<p id="before">before</p>
 			<div id="root" style="max-width:600px">
 				<figure id="godam-player-container-x">
-					<div class="godam-video-wrapper godam-show-in-lightbox">
-						<video id="v" data-id="${ id }" data-job_id="${ jobId }" data-show-in-lightbox="true"></video>
+					<div class="godam-video-wrapper${ lightbox ? ' godam-show-in-lightbox' : '' }">
+						<video id="v" data-id="${ id }" data-job_id="${ jobId }" data-show-in-lightbox="${ lightbox }"></video>
 					</div>
 				</figure>
 			</div>
@@ -52,6 +56,7 @@ function renderPlayer( { id = '4595', jobId = 'job-1' } = {} ) {
 	return {
 		video: document.getElementById( 'v' ),
 		playerRoot: document.getElementById( 'root' ),
+		wrapper: document.querySelector( '.godam-video-wrapper' ),
 	};
 }
 
@@ -137,6 +142,71 @@ describe( 'ModalManager', () => {
 
 			lightbox.close();
 			expect( document.activeElement ).toBe( trigger );
+		} );
+	} );
+
+	describe( 'closed poster', () => {
+		/**
+		 * A player stand-in with the surface close() touches.
+		 *
+		 * @return {Object} Fake Video.js player.
+		 */
+		const fakePlayer = () => ( {
+			pause: jest.fn(),
+			play: jest.fn( () => Promise.resolve() ),
+			hasStarted: jest.fn(),
+			currentTime: jest.fn( () => 12 ),
+			el: () => null,
+			isFullscreen: () => false,
+			on: () => {},
+			off: () => {},
+		} );
+
+		afterEach( () => {
+			videojs.getPlayer.mockReturnValue( null );
+		} );
+
+		it( 'flags the wrapper while open, so the closed-state rule steps aside', () => {
+			const { video, playerRoot, wrapper } = renderPlayer();
+
+			lightbox.openElement( playerRoot, { video } );
+			expect( wrapper.classList.contains( 'godam-lightbox-open' ) ).toBe( true );
+
+			lightbox.close();
+			expect( wrapper.classList.contains( 'godam-lightbox-open' ) ).toBe( false );
+		} );
+
+		it( 'clears the started flag on close, bringing the poster and play icon back', () => {
+			const { video, playerRoot } = renderPlayer();
+			const player = fakePlayer();
+			videojs.getPlayer.mockReturnValue( player );
+
+			lightbox.openElement( playerRoot, { video } );
+			lightbox.close();
+
+			expect( player.pause ).toHaveBeenCalled();
+			expect( player.hasStarted ).toHaveBeenCalledWith( false );
+			// Never rewound: reopening resumes where the viewer stopped.
+			expect( player.currentTime ).not.toHaveBeenCalledWith( expect.anything() );
+		} );
+
+		it( 'leaves an ordinary inline player opened by a trigger in its played state', () => {
+			const { video, playerRoot } = renderPlayer( { lightbox: false } );
+			const player = fakePlayer();
+			videojs.getPlayer.mockReturnValue( player );
+
+			lightbox.openElement( playerRoot, { video } );
+			lightbox.close();
+
+			expect( player.pause ).toHaveBeenCalled();
+			expect( player.hasStarted ).not.toHaveBeenCalled();
+		} );
+
+		it( 'has no wrapper to flag for an ordinary inline player', () => {
+			const { video, playerRoot, wrapper } = renderPlayer( { lightbox: false } );
+
+			lightbox.openElement( playerRoot, { video } );
+			expect( wrapper.classList.contains( 'godam-lightbox-open' ) ).toBe( false );
 		} );
 	} );
 
@@ -655,6 +725,7 @@ describe( 'fullscreen inside the lightbox', () => {
 			readyState: () => 4,
 			one: () => {},
 			currentTime: () => 0,
+			hasStarted: jest.fn(),
 		};
 	};
 

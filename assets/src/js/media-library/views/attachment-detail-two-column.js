@@ -4,7 +4,6 @@
  * External dependencies
  */
 import DOMPurify from 'isomorphic-dompurify';
-import videojs from 'video.js';
 /**
  * WordPress dependencies
  */
@@ -14,7 +13,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { addIcon, trashIcon, editIcon, barChartIcon } from '../media-library-icons';
-import { canManageAttachment } from '../utility';
+import { canManageAttachment, isDocumentModel } from '../utility';
+import { loadVideoJs, getLoadedVideoJs } from '../videojs-loader.js';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -536,8 +536,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const virtual = this.model.get( 'virtual' );
 
 		// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
-		if ( undefined !== virtual && virtual ) {
-			const videoPlayer = videojs( 'videojs-player-' + this.model.get( 'id' ) );
+		// The player was created earlier, so Video.js is already loaded and cached here.
+		const posterVideojs = getLoadedVideoJs();
+		if ( undefined !== virtual && virtual && posterVideojs ) {
+			const videoPlayer = posterVideojs( 'videojs-player-' + this.model.get( 'id' ) );
 			videoPlayer.poster( selected );
 		}
 
@@ -721,8 +723,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				const virtual = model.get( 'virtual' );
 
 				// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
-				if ( undefined !== virtual && virtual ) {
-					const videoPlayer = videojs( 'videojs-player-' + model.get( 'id' ) );
+				// The player was created earlier, so Video.js is already loaded and cached here.
+				const posterVideojs = getLoadedVideoJs();
+				if ( undefined !== virtual && virtual && posterVideojs ) {
+					const videoPlayer = posterVideojs( 'videojs-player-' + model.get( 'id' ) );
 					videoPlayer.poster( thumbnailURL );
 				}
 
@@ -1014,9 +1018,25 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				` );
 
 				// Wait for DOM to fully render the core preview container.
-				setTimeout( () => {
+				setTimeout( async () => {
 					const videoElement = document.getElementById( videoId );
-					if ( videoElement && typeof videojs !== 'undefined' ) {
+					if ( ! videoElement ) {
+						return;
+					}
+
+					// Lazy-load Video.js only now that a video player is actually needed.
+					// Guard the async import: if the chunk fails to load (stale cache after an
+					// update, network hiccup) don't leave an unhandled rejection.
+					let videojs = null;
+					try {
+						videojs = await loadVideoJs();
+					} catch ( e ) {
+						return;
+					}
+
+					// The modal may have closed while the chunk was loading — re-check the
+					// element is still attached before initialising a player on it.
+					if ( videojs && videoElement.isConnected ) {
 						// Calculate initial dimensions using 16:9 aspect ratio as default
 						const viewContainer = this.$el.closest( '.media-modal-content' ).find( '.attachment-media-view' );
 						const availableWidth = viewContainer.length ? viewContainer.width() : window.innerWidth * 0.65;
@@ -1155,7 +1175,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			this.renderAudioActions();
 		}
 
-		if ( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' ) {
+		// Any convertible document, not just PDF: Central rasterises page 0 of the preview for
+		// all of them, and set_media_library_thumbnail() puts it on `image`, so an .xlsx has a
+		// real preview to show here instead of the generic document icon.
+		if ( isDocumentModel( this.model ) ) {
 			const imagePreview = this.model.get( 'image' );
 
 			if ( imagePreview && imagePreview.src ) {
@@ -1167,7 +1190,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 						<img
 							class="details-image"
 							src="${ DOMPurify.sanitize( imagePreview.src ) }"
-							alt="PDF Preview"
+							alt="${ __( 'Document preview', 'godam' ) }"
 						/>
 					` );
 				}

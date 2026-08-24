@@ -1,8 +1,13 @@
 /**
  * Transcript Manager
- * Handles fetching and loading AI-generated transcription tracks from the GoDAM API.
+ * Handles loading transcription tracks for the player.
  *
- * Uses the public API endpoint with ETag/Cache-Control support:
+ * Resolution order (see the matching comment in inc/templates/godam-player.php):
+ * `data-transcript-url` (the transcript stored on the attachment by the media
+ * editor's Transcription tab, generated or user-uploaded) wins;
+ * `data-transcript-deleted` means the user deleted it, so show nothing;
+ * otherwise fall back to the public API endpoint, which supports
+ * ETag/Cache-Control:
  * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
  */
 export default class TranscriptManager {
@@ -18,6 +23,9 @@ export default class TranscriptManager {
 		this.video = video;
 		this.configManager = configManager;
 		this.jobId = video.dataset.job_id || '';
+		// Transcript cached on the attachment and printed by the server.
+		this.localTranscriptUrl = video.dataset.transcriptUrl || '';
+		this.transcriptDeleted = video.dataset.transcriptDeleted === 'true';
 		this.etag = null;
 		this.transcriptUrl = null;
 	}
@@ -48,16 +56,25 @@ export default class TranscriptManager {
 	 * @return {Promise<void>}
 	 */
 	async initialize() {
-		if ( ! this.jobId ) {
-			return;
-		}
-
 		if ( this.video.dataset.disableTranscript === 'true' ) {
 			return;
 		}
 
 		// Check if captions/subtitles are enabled in the player configuration
 		if ( ! this.isCaptionsEnabled() ) {
+			return;
+		}
+
+		// The transcript stored on the attachment wins over the SaaS copy, so an
+		// uploaded caption file is what visitors get.
+		if ( this.localTranscriptUrl ) {
+			this.transcriptUrl = this.localTranscriptUrl;
+			this.addTextTrack( this.localTranscriptUrl );
+			return;
+		}
+
+		// Deleted in the editor — don't resurrect it from the SaaS.
+		if ( this.transcriptDeleted || ! this.jobId ) {
 			return;
 		}
 
