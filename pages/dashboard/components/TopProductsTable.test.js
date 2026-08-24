@@ -14,7 +14,7 @@
 /**
  * Internal dependencies
  */
-import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel } from './TopProductsTable';
+import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements } from './TopProductsTable';
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
 	// A value whose FIRST character is one of these is what a spreadsheet would
@@ -141,6 +141,34 @@ describe( 'hasInfluenced — Influenced sub-line gate (third tier)', () => {
 		expect( formatRevenue( 250000, 'INR' ) ).toContain( '2,500' );
 		expect( formatRevenue( 1234, 'JPY' ) ).not.toContain( '.' );
 		expect( formatRevenue( 500, 'USD' ) ).toBe( '$5.00' );
+	} );
+} );
+
+describe( 'revenuePlacements — per-placement revenue split (EASY WIN A)', () => {
+	it( 'returns placements with revenue, sorted high-to-low', () => {
+		const out = revenuePlacements( {
+			revenue_by_placement: {
+				'reel-pop': { revenue_minor: 400, orders: 1 },
+				'woo-layer': { revenue_minor: 600, orders: 1 },
+			},
+		} );
+		expect( out.map( ( p ) => p.source ) ).toEqual( [ 'woo-layer', 'reel-pop' ] );
+		expect( out[ 0 ].revenue_minor ).toBe( 600 );
+	} );
+
+	it( 'drops placements with zero revenue', () => {
+		const out = revenuePlacements( {
+			revenue_by_placement: {
+				'woo-layer': { revenue_minor: 600, orders: 1 },
+				'reel-pop': { revenue_minor: 0, orders: 0 },
+			},
+		} );
+		expect( out.map( ( p ) => p.source ) ).toEqual( [ 'woo-layer' ] );
+	} );
+
+	it( 'is empty when there is no split', () => {
+		expect( revenuePlacements( {} ) ).toEqual( [] );
+		expect( revenuePlacements( { revenue_by_placement: {} } ) ).toEqual( [] );
 	} );
 } );
 

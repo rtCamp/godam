@@ -205,6 +205,15 @@ export const influencedOrdersLabel = ( item ) => {
 	return sprintf( _n( '%d order', '%d orders', orders, 'godam' ), orders );
 };
 
+// Per-placement revenue breakdown (EASY WIN A): the placements (block_source)
+// that drove this product's revenue, high-to-low, with revenue > 0. The service
+// splits revenue by the block_source it already stores.
+export const revenuePlacements = ( item ) =>
+	Object.entries( item.revenue_by_placement || {} )
+		.map( ( [ source, v ] ) => ( { source, revenue_minor: Number( v?.revenue_minor || 0 ) } ) )
+		.filter( ( p ) => p.revenue_minor > 0 )
+		.sort( ( a, b ) => b.revenue_minor - a.revenue_minor );
+
 /**
  * Dashboard "Top Products" table.
  *
@@ -515,6 +524,23 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 														{ __( '(provisional)', 'godam' ) }
 													</span>
 												) }
+											</div>
+										) }
+										{ /* Per-placement revenue split — only when 2+ surfaces
+										    drove revenue (a single placement just repeats the
+										    total above). */ }
+										{ hasRevenue( item ) && revenuePlacements( item ).length >= 2 && (
+											<div
+												className="mt-1 text-xs text-zinc-400"
+												data-test-id="godam-top-products-placement-split"
+											>
+												{ revenuePlacements( item ).map( ( p, i ) => (
+													<span key={ p.source }>
+														{ i > 0 && ' · ' }
+														{ sourceLabel( p.source ) }{ ' ' }
+														{ formatRevenue( p.revenue_minor, item.currency ) }
+													</span>
+												) ) }
 											</div>
 										) }
 									</td>
