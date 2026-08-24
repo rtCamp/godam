@@ -27,6 +27,7 @@ import { __, sprintf, _n } from '@wordpress/i18n';
 import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
 import VideoToCartCard from './VideoToCartCard.js';
+import RevenueCard from './RevenueCard.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
@@ -636,6 +637,22 @@ const Analytics = ( { attachmentID } ) => {
 									{ isWoo && (
 										<VideoToCartCard
 											videoToCart={ rangedAnalyticsData?.video_to_cart }
+											dataLabel={ rangeLabel }
+										/>
+									) }
+
+									{ /* Per-video revenue (single store currency). The
+									    record carries flat revenue/revenue_currency/
+									    revenue_excluded_orders keys; map them to the
+									    payload RevenueCard reads. Woo-gated; RevenueCard
+									    renders nothing when the keys are absent. */ }
+									{ isWoo && rangedAnalyticsData?.revenue !== undefined && (
+										<RevenueCard
+											revenue={ {
+												revenue_minor: rangedAnalyticsData.revenue,
+												currency: rangedAnalyticsData.revenue_currency,
+												excluded_orders: rangedAnalyticsData.revenue_excluded_orders,
+											} }
 											dataLabel={ rangeLabel }
 										/>
 									) }

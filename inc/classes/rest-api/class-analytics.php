@@ -639,6 +639,15 @@ class Analytics extends Base {
 		);
 		$query_params = $this->append_range_params( $request, $query_params );
 
+		// Single store currency: pass the store base currency so the per-video
+		// record carries base-currency revenue (and a count of orders in other
+		// currencies). Only when WooCommerce is active; otherwise the service
+		// returns revenue 0 / '' and the card stays hidden.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$query_params['base_currency'] = $base_currency;
+		}
+
 		$analytics_url = add_query_arg( $query_params, $analytics_endpoint );
 
 		// Send request to analytics microservice.
