@@ -19,7 +19,7 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 	 * @param object $post The attachment post object.
 	 * @return array The modified array of attachment form fields.
 	 */
-	function rtgodam_add_transcoded_url_field( $form_fields, $post ) { // phpcs:ignore WordPressVIPMinimum.Hooks.AlwaysReturnInFilter.MissingReturnStatement -- every path returns a value (one direct return, plus two more inside the try block below); this sniff doesn't trace returns through try/finally.
+	function rtgodam_add_transcoded_url_field( $form_fields, $post ) {
 
 		// Check if post is of type attachment.
 		if ( 'attachment' !== $post->post_type ) {
@@ -36,114 +36,112 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
-		try {
-			// Check if attachment is of type video.
-			$mime_type = get_post_mime_type( $post->ID );
+		// Check if attachment is of type video.
+		$mime_type = get_post_mime_type( $post->ID );
 
-			// The document test goes through the attachment, not the MIME alone: text/plain also
-			// covers .srt/.asc/.c/.h, which are never transcoded and so have no CDN URL to show.
-			$is_allowed = (
+		// The document test goes through the attachment, not the MIME alone: text/plain also
+		// covers .srt/.asc/.c/.h, which are never transcoded and so have no CDN URL to show.
+		$is_supported_document = rtgodam_is_supported_document_attachment( $post->ID );
+
+		$transcoded_url = rtgodam_get_transcoded_url_from_attachment( $post->ID );
+		$job_id         = rtgodam_get_job_id_by_attachment_id( $post->ID );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		$is_allowed = (
 			str_starts_with( $mime_type, 'video/' ) ||
 			str_starts_with( $mime_type, 'audio/' ) ||
 			str_starts_with( $mime_type, 'image/' ) ||
-			rtgodam_is_supported_document_attachment( $post->ID )
+			$is_supported_document
+		);
+
+		if ( ! $is_allowed ) {
+			return $form_fields;
+		}
+
+		// Determine if the site has a valid API key (i.e., Premium user).
+		$api_key = get_option( 'rtgodam-api-key', '' );
+
+		if ( ! empty( $api_key ) ) {
+
+			// If $job_id is present then show the oEmbed URL field for video files.
+			if ( ! empty( $job_id ) && 0 === strpos( $mime_type, 'video/' ) ) {
+				$oembed_url = RTGODAM_API_BASE . '/web/video/' . $job_id;
+
+				$form_fields['oembed_url'] = array(
+					'label' => __( 'oEmbed URL', 'godam' ),
+					'input' => 'html',
+					'html'  => sprintf(
+						'<input type="text" class="widefat" name="attachments[%d][oembed_url]" id="attachments-%d-oembed_url" value="%s" readonly>',
+						(int) $post->ID,
+						(int) $post->ID,
+						esc_url( $oembed_url )
+					),
+					'value' => esc_url( $oembed_url ),
+					'helps' => __( 'The oEmbed URL of the file is generated automatically and cannot be edited.', 'godam' ),
+				);
+			}
+
+			$transcoded_url_label = __( 'Transcoded CDN URL', 'godam' );
+			if ( 0 === strpos( $mime_type, 'video/' ) ) {
+				$transcoded_url_label = __( 'Transcoded CDN URL (MPD)', 'godam' );
+			}
+
+			// Add the transcoded URL field.
+			$form_fields['transcoded_url'] = array(
+				'label' => $transcoded_url_label,
+				'input' => 'html',
+				'html'  => sprintf(
+					'<input type="text" class="widefat" name="attachments[%d][transcoded_url]" id="attachments-%d-transcoded_url" value="%s" readonly>',
+					(int) $post->ID,
+					(int) $post->ID,
+					esc_url( $transcoded_url )
+				),
+				'value' => esc_url( $transcoded_url ),
+				'helps' => __( 'The URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 			);
 
-			if ( ! $is_allowed ) {
-				return $form_fields;
-			}
+			// Show the HLS transcoded URL field only for video files.
+			if ( strpos( $mime_type, 'video/' ) === 0 ) {
+				$hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $post->ID );
 
-			$transcoded_url = rtgodam_get_transcoded_url_from_attachment( $post->ID );
-			$job_id         = rtgodam_get_job_id_by_attachment_id( $post->ID );
-
-			$easydam_settings = get_option( 'rtgodam-settings', array() );
-
-			// Determine if the site has a valid API key (i.e., Premium user).
-			$api_key = get_option( 'rtgodam-api-key', '' );
-
-			if ( ! empty( $api_key ) ) {
-
-				// If $job_id is present then show the oEmbed URL field for video files.
-				if ( ! empty( $job_id ) && 0 === strpos( $mime_type, 'video/' ) ) {
-					$oembed_url = RTGODAM_API_BASE . '/web/video/' . $job_id;
-
-					$form_fields['oembed_url'] = array(
-						'label' => __( 'oEmbed URL', 'godam' ),
-						'input' => 'html',
-						'html'  => sprintf(
-							'<input type="text" class="widefat" name="attachments[%d][oembed_url]" id="attachments-%d-oembed_url" value="%s" readonly>',
-							(int) $post->ID,
-							(int) $post->ID,
-							esc_url( $oembed_url )
-						),
-						'value' => esc_url( $oembed_url ),
-						'helps' => __( 'The oEmbed URL of the file is generated automatically and cannot be edited.', 'godam' ),
-					);
-				}
-
-				$transcoded_url_label = __( 'Transcoded CDN URL', 'godam' );
-				if ( 0 === strpos( $mime_type, 'video/' ) ) {
-					$transcoded_url_label = __( 'Transcoded CDN URL (MPD)', 'godam' );
-				}
-
-				// Add the transcoded URL field.
-				$form_fields['transcoded_url'] = array(
-					'label' => $transcoded_url_label,
+				$form_fields['hls_transcoded_url'] = array(
+					'label' => __( 'Transcoded CDN URL (HLS)', 'godam' ),
 					'input' => 'html',
 					'html'  => sprintf(
-						'<input type="text" class="widefat" name="attachments[%d][transcoded_url]" id="attachments-%d-transcoded_url" value="%s" readonly>',
+						'<input type="text" class="widefat" name="attachments[%d][hls_transcoded_url]" id="attachments-%d-hls-transcoded_url" value="%s" readonly>',
 						(int) $post->ID,
 						(int) $post->ID,
-						esc_url( $transcoded_url )
+						esc_url( $hls_transcoded_url )
 					),
-					'value' => esc_url( $transcoded_url ),
-					'helps' => __( 'The URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
-				);
-
-				// Show the HLS transcoded URL field only for video files.
-				if ( strpos( $mime_type, 'video/' ) === 0 ) {
-					$hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $post->ID );
-
-					$form_fields['hls_transcoded_url'] = array(
-						'label' => __( 'Transcoded CDN URL (HLS)', 'godam' ),
-						'input' => 'html',
-						'html'  => sprintf(
-							'<input type="text" class="widefat" name="attachments[%d][hls_transcoded_url]" id="attachments-%d-hls-transcoded_url" value="%s" readonly>',
-							(int) $post->ID,
-							(int) $post->ID,
-							esc_url( $hls_transcoded_url )
-						),
-						'value' => esc_url( $hls_transcoded_url ),
-						'helps' => __( 'The HLS URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
-					);
-				}
-			} else {
-				// Display locked field with upsell message for free users.
-				$form_fields['transcoded_url'] = array(
-					'label' => __( 'Transcoded CDN URL ', 'godam' ),
-					'input' => 'html',
-					'html'  => sprintf(
-						// translators: %s Message for the locked field.
-						'<div class="godam-locked-input-wrapper">
-							<input id="attachments-transcoded-url" type="text" value="%s" readonly disabled>
-							<span class="godam-lock-icon dashicons dashicons-lock"></span>
-						</div>',
-						esc_attr__( 'Available in Premium version', 'godam' )
-					),
-					'value' => '',
-					'helps' => sprintf(
-						// translators: %1$s URL to the settings page, %2$s API key label.
-						__( 'Activate the <a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a> to enable transcoding and adaptive bitrate streaming.', 'godam' ),
-						esc_url( admin_url( 'admin.php?page=rtgodam_settings#video-settings' ) ),
-						esc_html__( 'API key', 'godam' )
-					),
+					'value' => esc_url( $hls_transcoded_url ),
+					'helps' => __( 'The HLS URL of the transcoded file is generated automatically and cannot be edited.', 'godam' ),
 				);
 			}
-
-			return $form_fields;
-		} finally {
-			do_action( 'rtgodam_after_attachment_lookup' );
+		} else {
+			// Display locked field with upsell message for free users.
+			$form_fields['transcoded_url'] = array(
+				'label' => __( 'Transcoded CDN URL ', 'godam' ),
+				'input' => 'html',
+				'html'  => sprintf(
+					// translators: %s Message for the locked field.
+					'<div class="godam-locked-input-wrapper">
+						<input id="attachments-transcoded-url" type="text" value="%s" readonly disabled>
+						<span class="godam-lock-icon dashicons dashicons-lock"></span>
+					</div>',
+					esc_attr__( 'Available in Premium version', 'godam' )
+				),
+				'value' => '',
+				'helps' => sprintf(
+					// translators: %1$s URL to the settings page, %2$s API key label.
+					__( 'Activate the <a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a> to enable transcoding and adaptive bitrate streaming.', 'godam' ),
+					esc_url( admin_url( 'admin.php?page=rtgodam_settings#video-settings' ) ),
+					esc_html__( 'API key', 'godam' )
+				),
+			);
 		}
+
+		return $form_fields;
 	}
 }
 
@@ -170,21 +168,25 @@ if ( ! function_exists( 'rtgodam_save_transcoded_url_field' ) ) {
 		}
 
 		if ( isset( $attachment['transcoded_url'] ) ) {
-			// Check the user's permissions.
-			if ( ! current_user_can( 'edit_post', $post['ID'] ) ) {
-				return $post;
-			}
 			/**
-			 * Fires before writing this attachment's transcoded-url meta,
-			 * so integrations that centralize media on another site can
-			 * switch context first.
+			 * Fires before checking this attachment's edit capability and
+			 * writing its transcoded-url meta, so integrations that
+			 * centralize media on another site can switch context first.
 			 *
 			 * @since 2.2.0
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
-			// Update the post meta with the new value.
-			update_post_meta( $post['ID'], 'rtgodam_transcoded_url', esc_url_raw( $attachment['transcoded_url'] ) );
-			do_action( 'rtgodam_after_attachment_lookup' );
+			try {
+				// Check the user's permissions.
+				if ( ! current_user_can( 'edit_post', $post['ID'] ) ) {
+					return $post;
+				}
+
+				// Update the post meta with the new value.
+				update_post_meta( $post['ID'], 'rtgodam_transcoded_url', esc_url_raw( $attachment['transcoded_url'] ) );
+			} finally {
+				do_action( 'rtgodam_after_attachment_lookup' );
+			}
 		}
 
 		return $post;

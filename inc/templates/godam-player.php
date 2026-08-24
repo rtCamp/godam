@@ -548,7 +548,13 @@ $godam_frontend_layers = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_dat
 // player's JSON config before encoding: it doesn't need them there (it reads
 // the already-rendered HTML from the DOM separately), and leaving them out
 // avoids duplicating potentially large freeform content into data-options.
-// `rtgodam_video_layers_for_js` remains as an optional override point.
+/**
+ * Filters the video layer config array sent to the frontend player JS.
+ *
+ * @since 2.2.0
+ *
+ * @param array $godam_frontend_layers Layer configs with 'html'/'text' fields stripped.
+ */
 $godam_frontend_layers = apply_filters(
 	'rtgodam_video_layers_for_js',
 	array_map(
@@ -1050,11 +1056,21 @@ do_action( 'rtgodam_after_attachment_lookup' );
 										<?php if ( $godam_render_html_cta ) : ?>
 											<div class="easydam-layer--cta-html">
 												<?php
-												// Run shortcodes in CTA HTML by default (e.g. a Marketo form
-												// shortcode) rather than requiring an extension-side filter
-												// listener to enable it; `rtgodam_cta_html_content` remains as
-												// an optional override point.
-												echo apply_filters( 'rtgodam_cta_html_content', do_shortcode( wp_kses_post( $godam_layer['html'] ) ), $godam_layer ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_kses_post() already sanitizes; do_shortcode()/the filter run after, same pattern as godam_preview_page_content().
+												$godam_cta_html = $godam_layer['html'];
+												$godam_cta_html = do_shortcode( $godam_cta_html );
+
+												/**
+												 * Filters the rendered CTA HTML content for a video layer, after
+												 * shortcode expansion and before final sanitization.
+												 *
+												 * @since 2.2.0
+												 *
+												 * @param string $godam_cta_html The CTA HTML content after shortcode expansion.
+												 * @param array  $godam_layer    The layer configuration array.
+												 */
+												$godam_cta_html = apply_filters( 'rtgodam_cta_html_content', $godam_cta_html, $godam_layer );
+
+												echo wp_kses_post( $godam_cta_html );
 												?>
 											</div>
 										<?php else : ?>

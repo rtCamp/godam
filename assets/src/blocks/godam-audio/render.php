@@ -21,129 +21,127 @@ $godam_thumbnail     = ! empty( $attributes['thumbnail'] ) ? esc_url( $attribute
 /**
  * Fires before reading this attachment's title/thumbnail/chapters/transcript
  * meta and its audio source URLs (below), so integrations that centralize
- * media on another site can switch context first. Closed explicitly before
- * each of this template's early `return`s further down, and again after the
- * final one, since a bare `return` at file scope doesn't unwind through a
- * `finally` the way a function's would.
+ * media on another site can switch context first.
  *
  * @since 2.2.0
  */
 do_action( 'rtgodam_before_attachment_lookup' );
 
-// The [godam_audio] shortcode only passes an id (no title/thumbnail block
-// attributes), so fall back to the attachment's own data — the title and the
-// GoDAM cover stored in rtgodam_media_audio_thumbnail — to match the block.
-if ( $godam_attachment_id ) {
-	if ( '' === $godam_audio_title ) {
-		$godam_audio_title = get_the_title( $godam_attachment_id );
-	}
-	if ( '' === $godam_thumbnail ) {
-		$godam_meta_thumbnail = get_post_meta( $godam_attachment_id, 'rtgodam_media_audio_thumbnail', true );
-		if ( ! empty( $godam_meta_thumbnail ) ) {
-			$godam_thumbnail = esc_url( $godam_meta_thumbnail );
+try {
+	// The [godam_audio] shortcode only passes an id (no title/thumbnail block
+	// attributes), so fall back to the attachment's own data — the title and the
+	// GoDAM cover stored in rtgodam_media_audio_thumbnail — to match the block.
+	if ( $godam_attachment_id ) {
+		if ( '' === $godam_audio_title ) {
+			$godam_audio_title = get_the_title( $godam_attachment_id );
+		}
+		if ( '' === $godam_thumbnail ) {
+			$godam_meta_thumbnail = get_post_meta( $godam_attachment_id, 'rtgodam_media_audio_thumbnail', true );
+			if ( ! empty( $godam_meta_thumbnail ) ) {
+				$godam_thumbnail = esc_url( $godam_meta_thumbnail );
+			}
 		}
 	}
-}
 
-// The transcript toggle defaults to on when the attribute is absent.
-$godam_show_transcript = ! array_key_exists( 'showTranscript', $attributes ) || ! empty( $attributes['showTranscript'] );
-$godam_show_chapters   = ! array_key_exists( 'showChapters', $attributes ) || ! empty( $attributes['showChapters'] );
+	// The transcript toggle defaults to on when the attribute is absent.
+	$godam_show_transcript = ! array_key_exists( 'showTranscript', $attributes ) || ! empty( $attributes['showTranscript'] );
+	$godam_show_chapters   = ! array_key_exists( 'showChapters', $attributes ) || ! empty( $attributes['showChapters'] );
 
-// Chapters live on the attachment's rtgodam_meta; the transcript is a caption
-// file URL cached in the rtgodam_transcript_path meta.
-$godam_meta_all     = $godam_attachment_id ? get_post_meta( $godam_attachment_id, 'rtgodam_meta', true ) : array();
-$godam_chapters_raw = ( is_array( $godam_meta_all ) && ! empty( $godam_meta_all['chapters'] ) ) ? $godam_meta_all['chapters'] : array();
+	// Chapters live on the attachment's rtgodam_meta; the transcript is a caption
+	// file URL cached in the rtgodam_transcript_path meta.
+	$godam_meta_all     = $godam_attachment_id ? get_post_meta( $godam_attachment_id, 'rtgodam_meta', true ) : array();
+	$godam_chapters_raw = ( is_array( $godam_meta_all ) && ! empty( $godam_meta_all['chapters'] ) ) ? $godam_meta_all['chapters'] : array();
 
-// Read ONLY the cached transcript path, and only when the toggle is on. Never
-// call godam_get_transcript_path() at render time: on a cache miss it makes a
-// blocking wp_remote_post() to the SaaS (on public, unauthenticated page loads)
-// and re-caches the path without the delete guard, which would resurrect a
-// transcript the user deleted. Discovery + caching happen in the authenticated
-// editor (block canvas + customization editor) via the /godam/v1/transcription
-// route, which applies that guard.
-$godam_transcript_url = ( $godam_attachment_id && $godam_show_transcript )
-	? (string) get_post_meta( $godam_attachment_id, 'rtgodam_transcript_path', true )
-	: '';
+	// Read ONLY the cached transcript path, and only when the toggle is on. Never
+	// call godam_get_transcript_path() at render time: on a cache miss it makes a
+	// blocking wp_remote_post() to the SaaS (on public, unauthenticated page loads)
+	// and re-caches the path without the delete guard, which would resurrect a
+	// transcript the user deleted. Discovery + caching happen in the authenticated
+	// editor (block canvas + customization editor) via the /godam/v1/transcription
+	// route, which applies that guard.
+	$godam_transcript_url = ( $godam_attachment_id && $godam_show_transcript )
+		? (string) get_post_meta( $godam_attachment_id, 'rtgodam_transcript_path', true )
+		: '';
 
-// Chapters are normally stored as an array, but tolerate a JSON string (old
-// installs / external sources) so the foreach below never warns.
-if ( is_string( $godam_chapters_raw ) ) {
-	$godam_decoded_chapters = json_decode( $godam_chapters_raw, true );
-	$godam_chapters_raw     = is_array( $godam_decoded_chapters ) ? $godam_decoded_chapters : array();
-} elseif ( ! is_array( $godam_chapters_raw ) ) {
-	$godam_chapters_raw = array();
-}
-
-// Normalise chapters for both server rendering and the front-end script.
-$godam_chapters = array();
-foreach ( $godam_chapters_raw as $godam_chapter ) {
-	$godam_chapters[] = array(
-		'start' => isset( $godam_chapter['startTime'] ) ? floatval( $godam_chapter['startTime'] ) : 0,
-		'text'  => isset( $godam_chapter['text'] ) ? (string) $godam_chapter['text'] : '',
-	);
-}
-
-// Sort by start time. Chapters are stored in authoring order (not necessarily
-// chronological), but the rendered list and the front-end active-line logic
-// (which derives each chapter's window from the next row) both assume ascending
-// order — matching how the editor preview sorts via getChapterRows().
-usort(
-	$godam_chapters,
-	static function ( $a, $b ) {
-		return $a['start'] <=> $b['start'];
+	// Chapters are normally stored as an array, but tolerate a JSON string (old
+	// installs / external sources) so the foreach below never warns.
+	if ( is_string( $godam_chapters_raw ) ) {
+		$godam_decoded_chapters = json_decode( $godam_chapters_raw, true );
+		$godam_chapters_raw     = is_array( $godam_decoded_chapters ) ? $godam_decoded_chapters : array();
+	} elseif ( ! is_array( $godam_chapters_raw ) ) {
+		$godam_chapters_raw = array();
 	}
-);
 
-// Each tab shows only when its own toggle is on and it has content; the panel
-// appears when at least one tab is visible.
-$godam_chapters_visible   = $godam_show_chapters && ! empty( $godam_chapters );
-$godam_transcript_visible = $godam_show_transcript && ! empty( $godam_transcript_url );
-$godam_has_panel          = $godam_chapters_visible || $godam_transcript_visible;
+	// Normalise chapters for both server rendering and the front-end script.
+	$godam_chapters = array();
+	foreach ( $godam_chapters_raw as $godam_chapter ) {
+		$godam_chapters[] = array(
+			'start' => isset( $godam_chapter['startTime'] ) ? floatval( $godam_chapter['startTime'] ) : 0,
+			'text'  => isset( $godam_chapter['text'] ) ? (string) $godam_chapter['text'] : '',
+		);
+	}
 
-// Chapters is the first tab, so it is active when visible; the transcript is
-// active only when chapters is hidden. Pre-build class / aria / hidden strings
-// so the markup only echoes escaped values.
-$godam_chapters_active      = $godam_chapters_visible;
-$godam_transcript_active    = $godam_transcript_visible && ! $godam_chapters_visible;
-$godam_chapters_tab_class   = 'godam-audio-tabs__tab' . ( $godam_chapters_active ? ' is-active' : '' );
-$godam_transcript_tab_class = 'godam-audio-tabs__tab' . ( $godam_transcript_active ? ' is-active' : '' );
-$godam_chapters_aria        = $godam_chapters_active ? 'true' : 'false';
-$godam_transcript_aria      = $godam_transcript_active ? 'true' : 'false';
-$godam_chapters_hidden      = $godam_chapters_active ? '' : 'hidden';
-$godam_transcript_hidden    = $godam_transcript_active ? '' : 'hidden';
+	// Sort by start time. Chapters are stored in authoring order (not necessarily
+	// chronological), but the rendered list and the front-end active-line logic
+	// (which derives each chapter's window from the next row) both assume ascending
+	// order — matching how the editor preview sorts via getChapterRows().
+	usort(
+		$godam_chapters,
+		static function ( $a, $b ) {
+			return $a['start'] <=> $b['start'];
+		}
+	);
 
-// Unique IDs to wire the ARIA tab pattern (role="tab" <-> role="tabpanel") so
-// screen readers announce which panel each tab controls. wp_unique_id() keeps
-// them unique even with multiple audio blocks on one page. Roving tabindex:
-// only the active tab is in the tab order.
-$godam_tabs_uid            = wp_unique_id( 'godam-audio-tabs-' );
-$godam_chapters_tab_id     = $godam_tabs_uid . '-tab-chapters';
-$godam_chapters_panel_id   = $godam_tabs_uid . '-panel-chapters';
-$godam_transcript_tab_id   = $godam_tabs_uid . '-tab-transcript';
-$godam_transcript_panel_id = $godam_tabs_uid . '-panel-transcript';
-$godam_chapters_tabindex   = $godam_chapters_active ? '0' : '-1';
-$godam_transcript_tabindex = $godam_transcript_active ? '0' : '-1';
+	// Each tab shows only when its own toggle is on and it has content; the panel
+	// appears when at least one tab is visible.
+	$godam_chapters_visible   = $godam_show_chapters && ! empty( $godam_chapters );
+	$godam_transcript_visible = $godam_show_transcript && ! empty( $godam_transcript_url );
+	$godam_has_panel          = $godam_chapters_visible || $godam_transcript_visible;
 
-if ( ! $godam_attachment_id && empty( $godam_src ) ) {
-	do_action( 'rtgodam_after_attachment_lookup' );
-	return;
-}
+	// Chapters is the first tab, so it is active when visible; the transcript is
+	// active only when chapters is hidden. Pre-build class / aria / hidden strings
+	// so the markup only echoes escaped values.
+	$godam_chapters_active      = $godam_chapters_visible;
+	$godam_transcript_active    = $godam_transcript_visible && ! $godam_chapters_visible;
+	$godam_chapters_tab_class   = 'godam-audio-tabs__tab' . ( $godam_chapters_active ? ' is-active' : '' );
+	$godam_transcript_tab_class = 'godam-audio-tabs__tab' . ( $godam_transcript_active ? ' is-active' : '' );
+	$godam_chapters_aria        = $godam_chapters_active ? 'true' : 'false';
+	$godam_transcript_aria      = $godam_transcript_active ? 'true' : 'false';
+	$godam_chapters_hidden      = $godam_chapters_active ? '' : 'hidden';
+	$godam_transcript_hidden    = $godam_transcript_active ? '' : 'hidden';
 
-if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
-	// Virtual attachment scenario.
-	$godam_primary_audio = $godam_src;
-	$godam_backup_audio  = '';
-} else {
-	$godam_primary_audio = get_post_meta( $godam_attachment_id, 'rtgodam_transcoded_url', true );
-	$godam_backup_audio  = wp_get_attachment_url( $godam_attachment_id );
+	// Unique IDs to wire the ARIA tab pattern (role="tab" <-> role="tabpanel") so
+	// screen readers announce which panel each tab controls. wp_unique_id() keeps
+	// them unique even with multiple audio blocks on one page. Roving tabindex:
+	// only the active tab is in the tab order.
+	$godam_tabs_uid            = wp_unique_id( 'godam-audio-tabs-' );
+	$godam_chapters_tab_id     = $godam_tabs_uid . '-tab-chapters';
+	$godam_chapters_panel_id   = $godam_tabs_uid . '-panel-chapters';
+	$godam_transcript_tab_id   = $godam_tabs_uid . '-tab-transcript';
+	$godam_transcript_panel_id = $godam_tabs_uid . '-panel-transcript';
+	$godam_chapters_tabindex   = $godam_chapters_active ? '0' : '-1';
+	$godam_transcript_tabindex = $godam_transcript_active ? '0' : '-1';
 
-	if ( empty( $godam_primary_audio ) && empty( $godam_backup_audio ) ) {
-		do_action( 'rtgodam_after_attachment_lookup' );
+	if ( ! $godam_attachment_id && empty( $godam_src ) ) {
 		return;
 	}
+
+	if ( ! $godam_attachment_id && ! empty( $godam_src ) ) {
+		// Virtual attachment scenario.
+		$godam_primary_audio = $godam_src;
+		$godam_backup_audio  = '';
+	} else {
+		$godam_primary_audio = get_post_meta( $godam_attachment_id, 'rtgodam_transcoded_url', true );
+		$godam_backup_audio  = wp_get_attachment_url( $godam_attachment_id );
+
+		if ( empty( $godam_primary_audio ) && empty( $godam_backup_audio ) ) {
+			return;
+		}
+	}
+} finally {
+	do_action( 'rtgodam_after_attachment_lookup' );
 }
 
-do_action( 'rtgodam_after_attachment_lookup' );
 // Root wrapper: emit a stable `godam-audio` hook class that view.js targets on
 // both render paths. In block context also merge WordPress' block-support
 // attributes (align/spacing/etc.); the [godam_audio] shortcode sets

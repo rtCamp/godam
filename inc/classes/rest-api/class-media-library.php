@@ -805,23 +805,38 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_attachment', __( 'No attachment IDs provided.', 'godam' ), array( 'status' => 400 ) );
 		}
 
-		// Prime the post + object-term caches once so the per-id checks below don't each
-		// hit the database (a large drag-move otherwise fired hundreds of queries).
-		_prime_post_caches( $attachment_ids );
-		update_object_term_cache( $attachment_ids, 'attachment' );
+		/**
+		 * Fires before resolving these attachments' post types and edit
+		 * capabilities, so integrations that centralize media on another
+		 * site can switch context first. Wraps the cache-priming calls
+		 * too, since they resolve this same site-scoped post/term data for
+		 * every ID in this request, and the loop below can return early
+		 * per-attachment.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Prime the post + object-term caches once so the per-id checks below don't each
+			// hit the database (a large drag-move otherwise fired hundreds of queries).
+			_prime_post_caches( $attachment_ids );
+			update_object_term_cache( $attachment_ids, 'attachment' );
 
-		foreach ( $attachment_ids as $attachment_id ) {
-			if ( 'attachment' !== get_post_type( $attachment_id ) ) {
-				return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
-			}
+			foreach ( $attachment_ids as $attachment_id ) {
+				if ( 'attachment' !== get_post_type( $attachment_id ) ) {
+					return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
+				}
 
-			if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
-				return new \WP_Error(
-					'rest_forbidden',
-					__( 'You are not allowed to modify one or more of these attachments.', 'godam' ),
-					array( 'status' => 403 )
-				);
+				if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
+					return new \WP_Error(
+						'rest_forbidden',
+						__( 'You are not allowed to modify one or more of these attachments.', 'godam' ),
+						array( 'status' => 403 )
+					);
+				}
 			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		// Moving an attachment OUT of a locked folder empties that (protected) folder —

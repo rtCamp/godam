@@ -57,28 +57,38 @@ class Media_Folder_Utils {
 		$mime_type_key = $mime_type ? md5( is_array( $mime_type ) ? implode( '|', $mime_type ) : $mime_type ) : 'all';
 		$cache_key     = 'attachment_count_' . $folder_id . '_' . $mime_type_key;
 
+		// Try to get cached count first (unless force refresh is requested).
+		// This fast path must run before the rtgodam_before_attachment_lookup
+		// switch below: transients are per-blog options keyed off this site's
+		// own $folder_id term, so the cache check (and the write near the end
+		// of this method) has to stay against this site's own storage instead
+		// of resolving against whatever site gets switched to.
+		if ( ! $force_refresh ) {
+			$cached_count = get_transient( $cache_key );
+
+			if ( false !== $cached_count ) {
+				return absint( $cached_count );
+			}
+		}
+
 		/**
 		 * Fires before counting attachments in a folder, so integrations that
 		 * centralize media on another site can switch context first — the
-		 * folder taxonomy terms, the attachments assigned to them, and the
-		 * cached count itself (the transient below) all belong wherever media
-		 * is centralized, not necessarily the site issuing this call. Without
-		 * this covering the transient too, each site would cache its own
-		 * possibly-stale copy of what's supposed to be one shared count.
+		 * folder taxonomy terms and the attachments assigned to them live
+		 * wherever media is centralized, not necessarily the site issuing
+		 * this call.
+		 *
+		 * This deliberately does not cover the transient cache above/below:
+		 * transients are per-blog options (and go through the per-blog
+		 * object-cache prefix), so caching must stay keyed to and stored on
+		 * the calling site rather than the site this switches to — otherwise
+		 * sites that happen to share a folder term ID would collide on the
+		 * same cached count.
 		 *
 		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
-			// Try to get cached count first (unless force refresh is requested).
-			if ( ! $force_refresh ) {
-				$cached_count = get_transient( $cache_key );
-
-				if ( false !== $cached_count ) {
-					return absint( $cached_count );
-				}
-			}
-
 			global $wpdb;
 
 			// Build query based on mime type filtering.
@@ -139,14 +149,16 @@ class Media_Folder_Utils {
 			}
 
 			$count = absint( $count );
-
-			// Cache the result.
-			set_transient( $cache_key, $count, self::CACHE_EXPIRATION );
-
-			return $count;
 		} finally {
 			do_action( 'rtgodam_after_attachment_lookup' );
 		}
+
+		// Cache the result. This runs after the switch above has been unwound,
+		// so it's stored on the calling site's own options table under this
+		// site's own $cache_key rather than whatever site was switched to.
+		set_transient( $cache_key, $count, self::CACHE_EXPIRATION );
+
+		return $count;
 	}
 
 	/**

@@ -632,7 +632,24 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		delete_post_meta( $media_id, 'rtgodam_media_thumbnails' ); // godam-coverage-ignore -- rtgodam_before_thumbnail_store(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_before_thumbnail_store' ), which always fires from inside handle_callback()'s before/after pair.
+		/**
+		 * Fires before this listener's own postmeta delete.
+		 *
+		 * 'rtgodam_before_thumbnail_store' is a public, third-party-triggerable
+		 * extension point, not a private implementation detail — any code that
+		 * fires it directly (a third-party plugin, WP-CLI, or a future GoDAM
+		 * code path) would otherwise run this delete completely unwrapped.
+		 * Wrapped here defensively rather than relying on
+		 * add_media_thumbnails()'s own before/after pair to always be the one
+		 * true caller.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
+		delete_post_meta( $media_id, 'rtgodam_media_thumbnails' );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	/**
@@ -646,7 +663,22 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$current_files = get_post_meta( $media_id, 'rtgodam_media_transcoded_files', true ); // godam-coverage-ignore -- rtgodam_before_transcoded_media_store(): covered transitively — sole trigger is add_transcoded_files()'s do_action( 'rtgodam_before_transcoded_media_store' ), which always fires from inside handle_callback()'s before/after pair.
+		/**
+		 * Fires before this listener's own postmeta read/delete.
+		 *
+		 * 'rtgodam_before_transcoded_media_store' is a public,
+		 * third-party-triggerable extension point, not a private
+		 * implementation detail — any code that fires it directly (a
+		 * third-party plugin, WP-CLI, or a future GoDAM code path) would
+		 * otherwise run this read/delete completely unwrapped. Wrapped here
+		 * defensively rather than relying on add_transcoded_files()'s own
+		 * before/after pair to always be the one true caller.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
+		$current_files = get_post_meta( $media_id, 'rtgodam_media_transcoded_files', true );
 
 		if ( ! empty( $current_files ) && is_array( $current_files ) ) {
 			foreach ( $current_files as $files ) {
@@ -655,7 +687,9 @@ class RTGODAM_RetranscodeMedia {
 				}
 			}
 		}
-		delete_post_meta( $media_id, 'rtgodam_media_transcoded_files' ); // godam-coverage-ignore -- rtgodam_before_transcoded_media_store(): covered transitively — sole trigger is add_transcoded_files()'s do_action( 'rtgodam_before_transcoded_media_store' ), which always fires from inside handle_callback()'s before/after pair.
+		delete_post_meta( $media_id, 'rtgodam_media_transcoded_files' );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	/**
@@ -668,34 +702,55 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$current_thumbnail = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
-		$custom_thumbnails = get_post_meta( $media_id, 'rtgodam_custom_media_thumbnails', true ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
-		$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
+		/**
+		 * Fires before this listener's own postmeta reads/writes.
+		 *
+		 * 'rtgodam_transcoded_thumbnails_added' is a public,
+		 * third-party-triggerable extension point, not a private
+		 * implementation detail — any code that fires it directly (a
+		 * third-party plugin, WP-CLI, or a future GoDAM code path) would
+		 * otherwise run this method's postmeta access completely unwrapped.
+		 * Wrapped here defensively — in a try/finally, since this method has
+		 * its own early return below — rather than relying on
+		 * add_media_thumbnails()'s own before/after pair to always be the one
+		 * true caller.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 
-		// If the current selected thumbnail is one of the custom uploaded thumbnails, do not overwrite it.
-		if ( ! empty( $current_thumbnail ) && in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
-			return;
-		}
+		try {
+			$current_thumbnail = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
+			$custom_thumbnails = get_post_meta( $media_id, 'rtgodam_custom_media_thumbnails', true );
+			$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
 
-		$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
-		$new_thumbs = is_array( $new_thumbs ) ? $new_thumbs : array();
-
-		if ( ! empty( $new_thumbs ) ) {
-			update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
-		}
-
-		$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
-
-		if ( ! empty( $primary_remote_thumbnail_url ) ) {
-			do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
-
-			// Sync placeholder thumbnail for the newly set primary thumbnail.
-			$godam_placeholder_map = get_post_meta( $media_id, 'rtgodam_media_placeholder_thumbnails', true ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
-			if ( is_array( $godam_placeholder_map ) && isset( $godam_placeholder_map[ $primary_remote_thumbnail_url ] ) ) {
-				update_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail', $godam_placeholder_map[ $primary_remote_thumbnail_url ] ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
-			} else {
-				delete_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail' ); // godam-coverage-ignore -- transcoded_thumbnails_added(): covered transitively — sole trigger is add_media_thumbnails()'s do_action( 'rtgodam_transcoded_thumbnails_added' ), which always fires from inside handle_callback()'s before/after pair.
+			// If the current selected thumbnail is one of the custom uploaded thumbnails, do not overwrite it.
+			if ( ! empty( $current_thumbnail ) && in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
+				return;
 			}
+
+			$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
+			$new_thumbs = is_array( $new_thumbs ) ? $new_thumbs : array();
+
+			if ( ! empty( $new_thumbs ) ) {
+				update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] );
+			}
+
+			$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
+
+			if ( ! empty( $primary_remote_thumbnail_url ) ) {
+				do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
+
+				// Sync placeholder thumbnail for the newly set primary thumbnail.
+				$godam_placeholder_map = get_post_meta( $media_id, 'rtgodam_media_placeholder_thumbnails', true );
+				if ( is_array( $godam_placeholder_map ) && isset( $godam_placeholder_map[ $primary_remote_thumbnail_url ] ) ) {
+					update_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail', $godam_placeholder_map[ $primary_remote_thumbnail_url ] );
+				} else {
+					delete_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail' );
+				}
+			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 	}
 

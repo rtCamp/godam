@@ -20,13 +20,13 @@ const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 export default AttachmentsBrowser?.extend( {
 
 	initialize() {
-		// Initialize the parent class. Its own initialize() already calls
-		// this.bindEvents() (dispatched through the prototype chain, so it
-		// runs the override below) — calling it again here would double-bind
-		// every listener it registers.
+		// Initialize the parent class. AttachmentsBrowser's own initialize()
+		// does NOT call bindEvents() (that belongs to wp.media.view.Attachments,
+		// a different view), so the override below has to be invoked explicitly.
 		AttachmentsBrowser.prototype.initialize.apply( this, arguments );
 
 		this.updateCollectionObserve();
+		this.bindEvents();
 		this.addUploadParam();
 	},
 
