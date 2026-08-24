@@ -12,15 +12,24 @@
 #
 # Invoked directly from .husky/pre-commit, after `npm run lint:staged`.
 #
-# Scoped to .php files specifically (not every path under inc/, admin/, and
-# assets/src/blocks/) — both check scripts only ever tokenize .php files
-# (see godam_shared_list_php_files() in shared.php), so a
-# commit touching only a block's .js/.scss/.json under assets/src/blocks/
-# can't contain anything either script would look at.
+# Scoped to .php files specifically — both check scripts only ever tokenize
+# .php files (see godam_shared_list_php_files() in shared.php), so a commit
+# touching only a block's .js/.scss/.json can't contain anything either
+# script would look at.
+#
+# Deny-list, mirroring GODAM_EXCLUDED_ROOT_DIRS in shared.php and the
+# workflow's own path filter — an allow-list of specific directories here
+# previously meant a commit touching godam.php, lib/, or any new top-level
+# directory would silently skip this check entirely. Two grep passes
+# (rather than one regex with a negative lookahead) so this stays portable
+# to macOS's BSD grep, which has no -P/PCRE support.
 
 STAGED_FILES=$(git diff --cached --name-only)
 
-if ! echo "$STAGED_FILES" | grep -Eq '^(inc/.*\.php$|admin/.*\.php$|assets/src/blocks/.*\.php$|bin/hook-check/balance\.php$|bin/hook-check/shared\.php$|bin/hook-check/coverage\.php$)'; then
+STAGED_PHP_FILES=$(echo "$STAGED_FILES" | grep -E '\.php$' | grep -Ev '^(\.git|\.github|\.husky|\.idea|node_modules|tests|languages|bin)/')
+STAGED_HOOK_CHECK_FILES=$(echo "$STAGED_FILES" | grep -E '^bin/hook-check/.*\.php$')
+
+if [ -z "$STAGED_PHP_FILES" ] && [ -z "$STAGED_HOOK_CHECK_FILES" ]; then
 	exit 0
 fi
 

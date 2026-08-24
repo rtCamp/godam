@@ -67,11 +67,11 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				'type' => true,
 			);
 
-			// The GoDAM player template emits its wrapper styles as an inline
-			// <style id="godam-player-wrapper-inline-css"> block. wp_kses_post()
-			// strips <style> by default (keeping only its CSS text, which then
-			// leaks onto the page as a raw string), so it must be whitelisted for
-			// the rendered player to be styled on the entry view page.
+			// Player wrapper styles are enqueued as a stylesheet, so the player
+			// markup no longer carries an inline <style>. The allowance stays for
+			// player variants that still emit one (e.g. the audio no-JS block):
+			// wp_kses_post() strips <style> by default while keeping its CSS text,
+			// which then leaks onto the page as a raw string.
 			$allowed_tags['style'] = array(
 				'id'    => true,
 				'type'  => true,

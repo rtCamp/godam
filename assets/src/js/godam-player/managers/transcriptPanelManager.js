@@ -54,8 +54,9 @@ const COPY_FEEDBACK_DELAY = 2000;
  * timestamped, clickable cues. Clicking a cue seeks the player; the cue under
  * the playhead is highlighted as the video plays.
  *
- * The transcript text reuses the same public API the TranscriptManager
- * uses to resolve the VTT URL, then loads the cues through a hidden Video.js
+ * The transcript text is resolved the same way TranscriptManager resolves it —
+ * the attachment's stored transcript first, the public API by job id as a
+ * fallback — then the cues are loaded through a hidden Video.js
  * `metadata` text track so the browser handles all WebVTT parsing (and so the
  * VTT is fetched by the media element, sidestepping cross-origin fetch issues).
  *
@@ -70,6 +71,9 @@ export default class TranscriptPanelManager {
 		this.video = video;
 		this.videoSetupOptions = videoSetupOptions;
 		this.jobId = video.dataset.job_id || '';
+		// Transcript cached on the attachment and printed by the server.
+		this.localTranscriptUrl = video.dataset.transcriptUrl || '';
+		this.transcriptDeleted = video.dataset.transcriptDeleted === 'true';
 		this.Button = videojs.getComponent( 'Button' );
 
 		this.container = null;
@@ -99,7 +103,13 @@ export default class TranscriptPanelManager {
 			return;
 		}
 
-		if ( ! this.jobId || this.video.dataset.disableTranscript === 'true' ) {
+		if ( this.video.dataset.disableTranscript === 'true' ) {
+			return;
+		}
+
+		// Nothing to show: deleted in the editor, or no stored transcript and no
+		// job id to look one up with.
+		if ( this.transcriptDeleted || ( ! this.jobId && ! this.localTranscriptUrl ) ) {
 			return;
 		}
 
@@ -133,6 +143,12 @@ export default class TranscriptPanelManager {
 	 * @return {Promise<string|null>} The VTT URL, or null when none exists.
 	 */
 	async resolveTranscriptUrl() {
+		// The transcript stored on the attachment (generated or uploaded in the
+		// media editor's Transcription tab) takes precedence.
+		if ( this.localTranscriptUrl ) {
+			return this.localTranscriptUrl;
+		}
+
 		const endpoint = `${ this.getApiBase() }/api/method/godam_core.api.process.get_public_transcription_path`;
 		const url = `${ endpoint }?job_name=${ encodeURIComponent( this.jobId ) }`;
 

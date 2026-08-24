@@ -57,12 +57,13 @@ class Godam_Document extends Base {
 				'label'       => esc_html__( 'Select Document', 'godam' ),
 				'type'        => 'godam-media',
 				// `media_type` (singular) is what godam-media.js reads to set the
-				// WP Media Library `library.type` filter — restricting selection to
-				// PDF files only. The control's file-picker branch renders for any
-				// non-image/video type, so PDFs need no control changes.
-				'media_type'  => 'application/pdf',
+				// WP Media Library `library.type` filter. It accepts a comma-separated
+				// list, so the picker offers every format the block can display. The
+				// control's file-picker branch renders for any non-image/video type,
+				// so documents need no control changes.
+				'media_type'  => implode( ',', array_keys( rtgodam_get_supported_document_types() ) ),
 				'label_block' => true,
-				'description' => esc_html__( 'Select a PDF document from the media library.', 'godam' ),
+				'description' => esc_html__( 'Select a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file from the media library.', 'godam' ),
 			)
 		);
 
@@ -189,9 +190,9 @@ class Godam_Document extends Base {
 			return;
 		}
 
-		// PDF is the only supported format. The shared render.php emits nothing for
-		// anything else, which would leave a silently empty widget, so flag it in
-		// the editor instead, where the author can act on it.
+		// The shared render.php emits nothing for an unsupported format, which would leave
+		// a silently empty widget, so flag it in the editor instead, where the author can
+		// act on it.
 		if ( ! godam_is_supported_document( isset( $document_file['id'] ) ? $document_file['id'] : 0, $document_file['url'] ) ) {
 			$this->render_unsupported_state();
 			return;
@@ -257,7 +258,7 @@ class Godam_Document extends Base {
 				<?php esc_html_e( 'Unsupported file format', 'godam' ); ?>
 			</h3>
 			<p class="godam-document-elementor-unsupported__desc">
-				<?php esc_html_e( 'Only PDF files are supported. Select a PDF in the Document Settings panel; the current file will not be shown on your page.', 'godam' ); ?>
+				<?php esc_html_e( 'That file type is not supported. Select a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file in the Document Settings panel; the current file will not be shown on your page.', 'godam' ); ?>
 			</p>
 		</div>
 		<?php

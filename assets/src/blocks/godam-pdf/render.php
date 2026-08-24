@@ -35,52 +35,53 @@ if ( ! $godam_attachment_id && empty( $godam_src ) ) {
  */
 do_action( 'rtgodam_before_attachment_lookup' );
 
-// Build the list of PDF sources (transcoded first, then original).
-$godam_sources = array();
-if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
-	$godam_pdf_url            = wp_get_attachment_url( $godam_attachment_id );
-	$godam_pdf_transcoded_url = get_post_meta( $godam_attachment_id, 'rtgodam_transcoded_url', true );
-	if ( ! empty( $godam_pdf_transcoded_url ) ) {
-		$godam_sources[] = $godam_pdf_transcoded_url;
-	}
-	if ( ! empty( $godam_pdf_url ) ) {
-		$godam_sources[] = $godam_pdf_url;
+try {
+	/*
+	 * Two URLs, and they are not interchangeable.
+	 *
+	 * $godam_preview_url is always a PDF: either the file itself, or the preview PDF GoDAM
+	 * Central rendered from a Word / Excel / PowerPoint / OpenDocument / text upload. It is the
+	 * only thing that may be handed to the viewer.
+	 *
+	 * $godam_download_url is always the file the author uploaded. It is the only thing that may
+	 * be offered as a download — somebody who uploads report.xlsx and gets preview.pdf back
+	 * will think something broke.
+	 */
+	$godam_preview_url  = rtgodam_get_document_preview_url( $godam_attachment_id, $godam_src );
+	$godam_download_url = rtgodam_get_document_download_url( $godam_attachment_id, $godam_src );
+
+	if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
+		// Fall back to attachment title for doc title if editor left it empty.
+		if ( empty( $godam_doc_title ) ) {
+			$godam_post      = get_post( $godam_attachment_id );
+			$godam_doc_title = $godam_post ? get_the_title( $godam_post ) : '';
+		}
 	}
 
-	// Fall back to attachment title for doc title if editor left it empty.
-	if ( empty( $godam_doc_title ) ) {
-		$godam_post      = get_post( $godam_attachment_id );
-		$godam_doc_title = $godam_post ? get_the_title( $godam_post ) : '';
+	if ( empty( $godam_preview_url ) && empty( $godam_download_url ) ) {
+		return;
 	}
-} else {
-	$godam_sources[] = $godam_src;
+
+	/*
+	 * Formats outside rtgodam_get_supported_document_types() have no preview to show, so emit
+	 * nothing rather than an empty frame; the editors surface an "unsupported format" notice so
+	 * the author can see and fix it.
+	 *
+	 * Checked against the original attachment id / src rather than the resolved URLs above,
+	 * because a preview URL's extension no longer reflects the source file. A numeric id
+	 * resolves via its stored MIME type, so $godam_src is only consulted for GoDAM tab media
+	 * and URL-only documents, exactly the cases where $godam_src is guaranteed set.
+	 */
+	if ( ! godam_is_supported_document( $godam_attachment_id, $godam_src ) ) {
+		return;
+	}
+} finally {
+	do_action( 'rtgodam_after_attachment_lookup' );
 }
 
-do_action( 'rtgodam_after_attachment_lookup' );
-
-if ( empty( $godam_sources ) ) {
-	return;
-}
-
-/*
- * PDF is the only supported format. Rendering a non-PDF would emit an
- * <object type="application/pdf"> pointing at a file the browser cannot display,
- * which either paints an empty box (the <object> fallback is suppressed, so the
- * visitor sees nothing) or starts a file download on every page load. Emit
- * nothing instead; the editors surface an "unsupported format" notice so the
- * author can see and fix it.
- *
- * Checked against the original attachment id / src rather than $godam_sources[0],
- * because that may be a transcoded URL whose extension no longer reflects the
- * source file. A numeric id resolves via its stored MIME type, so $godam_src is
- * only consulted for GoDAM tab media and URL-only documents, exactly the cases
- * where $godam_src is guaranteed set (see the source-building block above).
- */
-if ( ! godam_is_supported_document( $godam_attachment_id, $godam_src ) ) {
-	return;
-}
-
-$godam_file_name = basename( $godam_sources[0] );
+// Named from the original, not the preview, so the card's fallback label reads
+// "quarterly-report.xlsx" rather than "preview.pdf".
+$godam_file_name = basename( ! empty( $godam_download_url ) ? $godam_download_url : $godam_preview_url );
 
 // Root wrapper: in block context merge WordPress' block-support attributes
 // (align/spacing/etc.). The [godam_document] shortcode (used by the WPBakery
@@ -124,7 +125,7 @@ if ( empty( $godam_is_shortcode ) ) {
 		<div class="godam-pdf-card-wrapper" data-test-id="godam-pdf-render-card">
 			<a
 				class="godam-pdf-card"
-				href="<?php echo esc_url( $godam_sources[0] ); ?>"
+				href="<?php echo esc_url( $godam_download_url ? $godam_download_url : $godam_preview_url ); ?>"
 				target="_blank"
 				rel="noopener noreferrer"
 			>
@@ -190,32 +191,70 @@ if ( empty( $godam_is_shortcode ) ) {
 
 	<?php else : ?>
 
-		<div
-			class="godam-pdf-wrapper"
-			data-test-id="godam-pdf-render"
-			style="height: <?php echo esc_attr( $godam_height ); ?>px;"
-		>
-			<object
-				id="<?php echo esc_attr( wp_unique_id( 'godam-pdf-object-' ) ); ?>"
-				type="application/pdf"
-				width="100%"
-				height="100%"
-				data="<?php echo esc_url( $godam_sources[0] ); ?>"
-				data-sources="<?php echo esc_attr( wp_json_encode( $godam_sources ) ); ?>"
+		<?php if ( empty( $godam_preview_url ) ) : ?>
+
+			<?php
+			/*
+			 * No preview exists. Either transcoding has not finished, or the file is
+			 * password protected — GoDAM Central stores those as-is and reports them as
+			 * successfully transcoded, but cannot convert a file it cannot open, so no
+			 * preview is ever coming. The original is still downloadable either way.
+			 *
+			 * Rendered server-side so it works with JavaScript disabled.
+			 */
+			?>
+			<div class="godam-pdf-unavailable" data-test-id="godam-pdf-render-unavailable">
+				<span class="dashicons dashicons-media-document" aria-hidden="true"></span>
+				<p class="godam-pdf-unavailable__text">
+					<?php esc_html_e( 'A preview is not available for this document.', 'godam' ); ?>
+				</p>
+				<?php if ( ! empty( $godam_download_url ) ) : ?>
+					<a
+						class="godam-pdf-unavailable__download"
+						href="<?php echo esc_url( $godam_download_url ); ?>"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<?php esc_html_e( 'Download original', 'godam' ); ?>
+					</a>
+				<?php endif; ?>
+			</div>
+
+		<?php else : ?>
+
+			<?php
+			/*
+			 * The viewer is mounted by view.js, which renders the PDF page by page with
+			 * pdf.js. No <object>/<iframe> here on purpose: those use the browser's own PDF
+			 * viewer, whose toolbar shows the file name — and for a .docx upload a toolbar
+			 * reading "preview.pdf" reads as a bug. view.js falls back to an <object> only
+			 * if pdf.js itself fails to load.
+			 *
+			 * The download link inside doubles as the no-JavaScript fallback.
+			 */
+			?>
+			<div
+				class="godam-pdf-wrapper"
+				data-test-id="godam-pdf-render"
+				style="height: <?php echo esc_attr( $godam_height ); ?>px;"
+				data-godam-preview="<?php echo esc_url( $godam_preview_url ); ?>"
+				data-godam-download="<?php echo esc_url( $godam_download_url ); ?>"
+				data-godam-title="<?php echo esc_attr( $godam_doc_title ? $godam_doc_title : $godam_file_name ); ?>"
 			>
-				<p>
+				<p class="godam-pdf-wrapper__fallback">
 					<?php
 					echo wp_kses_post(
 						sprintf(
-							/* translators: %s: PDF download URL */
-							__( 'Your browser does not support PDFs. <a href="%s">Download the PDF</a>.', 'godam' ),
-							esc_url( $godam_sources[0] )
+							/* translators: %s: original document download URL */
+							__( 'This document cannot be displayed here. <a href="%s">Download it instead</a>.', 'godam' ),
+							esc_url( $godam_download_url ? $godam_download_url : $godam_preview_url )
 						)
 					);
 					?>
 				</p>
-			</object>
-		</div>
+			</div>
+
+		<?php endif; ?>
 
 	<?php endif; ?>
 

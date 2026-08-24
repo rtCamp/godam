@@ -121,6 +121,58 @@ class Meta_Rest_Fields {
 			)
 		);
 
+		/*
+		 * The preview PDF GoDAM Central renders for a document. For a PDF upload this is
+		 * the CDN copy of the file itself; for Word/Excel/PowerPoint/OpenDocument/text it
+		 * is the converted preview. Exposed to REST so the Document block's editor canvas
+		 * can render the same PDF the front end will.
+		 */
+		register_post_meta(
+			'attachment',
+			'rtgodam_preview_pdf_url',
+			array(
+				'type'          => 'string',
+				'single'        => true,
+				'show_in_rest'  => true,
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		/*
+		 * Transcoding state. Both keys have been written for a long time but were never
+		 * exposed to REST, which left blocks unable to tell "still transcoding" from
+		 * "failed" from "finished, but there is deliberately no preview" (a password
+		 * protected document). The Document block needs that distinction to pick between
+		 * its progress placeholder and its download-only panel.
+		 */
+		register_post_meta(
+			'attachment',
+			'rtgodam_transcoding_status',
+			array(
+				'type'          => 'string',
+				'single'        => true,
+				'show_in_rest'  => true,
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
+		register_post_meta(
+			'attachment',
+			'rtgodam_transcoding_error_code',
+			array(
+				'type'          => 'string',
+				'single'        => true,
+				'show_in_rest'  => true,
+				'auth_callback' => function () {
+					return current_user_can( 'edit_posts' );
+				},
+			)
+		);
+
 		register_post_meta(
 			'attachment',
 			'rtgodam_media_audio_thumbnail',

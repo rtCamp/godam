@@ -36,6 +36,7 @@ import {
 	MediaReplaceFlow,
 	useBlockProps,
 	InnerBlocks,
+	// eslint-disable-next-line import/no-unresolved -- resolver false positive: package resolves fine at build time, eslint-plugin-import can't parse @wordpress/block-editor's exports map.
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -131,6 +132,7 @@ function VideoEdit( {
 		playerHeight,
 		showShareButton,
 		showTranscription,
+		showInLightbox,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
@@ -429,22 +431,26 @@ function VideoEdit( {
 		}
 	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
 
-	// When autoplay is enabled, hoverSelect is incompatible — reset it to 'none'.
-	// Only apply this when autoplay is toggled on after mount so older content
+	// hoverSelect is incompatible with both autoplay and "Show in lightbox" (the
+	// lightbox poster shows nothing but the play icon) — reset it to 'none'.
+	// Only apply this when one of them is toggled on after mount so older content
 	// is not rewritten as a side effect of opening the editor.
-	const previousAutoplayRef = useRef( autoplay );
+	const previousHoverBlockersRef = useRef( { autoplay, showInLightbox } );
 
 	useEffect( () => {
-		const previousAutoplay = previousAutoplayRef.current;
-		if ( previousAutoplay === autoplay ) {
+		const previous = previousHoverBlockersRef.current;
+		if ( previous.autoplay === autoplay && previous.showInLightbox === showInLightbox ) {
 			return;
 		}
-		previousAutoplayRef.current = autoplay;
+		previousHoverBlockersRef.current = { autoplay, showInLightbox };
 
-		if ( autoplay && attributes.hoverSelect !== 'none' ) {
+		const turnedOn = ( ! previous.autoplay && autoplay ) ||
+			( ! previous.showInLightbox && showInLightbox );
+
+		if ( turnedOn && attributes.hoverSelect !== 'none' ) {
 			setAttributes( { hoverSelect: 'none' } );
 		}
-	}, [ autoplay ] ); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [ autoplay, showInLightbox ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Keep overridden SEO thumbnail synced with block poster.
 	useEffect( () => {
@@ -843,6 +849,19 @@ function VideoEdit( {
 		</>
 	);
 
+	// Autoplay plays the video where it stands and the lightbox turns it into a
+	// click-to-open poster; either way hovering has nothing left to do. Mirrors
+	// the frontend guard in inc/templates/godam-player.php.
+	const hoverOptionsLockedReason = ( () => {
+		if ( autoplay ) {
+			return __( 'Hover option is disabled when autoplay is on.', 'godam' );
+		}
+		if ( showInLightbox ) {
+			return __( 'Hover option is disabled when the video opens in a lightbox.', 'godam' );
+		}
+		return null;
+	} )();
+
 	const hoverOptionsPanelContent = (
 		<ToggleGroupControl
 			__nextHasNoMarginBottom
@@ -851,9 +870,7 @@ function VideoEdit( {
 			data-test-id="godam-video-control-hover-select"
 			value={ attributes.hoverSelect || 'none' }
 			onChange={ ( value ) => setAttributes( { hoverSelect: value ?? 'none' } ) }
-			help={ autoplay
-				? __( 'Hover option is disabled when autoplay is on.', 'godam' )
-				: __( 'Choose the action to perform on video hover.', 'godam' ) }
+			help={ hoverOptionsLockedReason ?? __( 'Choose the action to perform on video hover.', 'godam' ) }
 		>
 			<ToggleGroupControlOption value="show-player-controls" label={ __( 'Show player', 'godam' ) } />
 			<ToggleGroupControlOption value="start-preview" label={ __( 'Start Preview', 'godam' ) } />
@@ -1042,8 +1059,8 @@ function VideoEdit( {
 				) }
 				{ ! isInsideQueryLoop && (
 					<PanelBody title={ __( 'Hover Options', 'godam' ) } data-test-id="godam-video-panel-hover-options">
-						{ /* Hover Options are disabled when autoplay is enabled or API key is invalid */ }
-						{ ( ! window.pluginInfo?.validApiKey || autoplay )
+						{ /* Hover Options are disabled when autoplay or "Show in lightbox" is enabled, or the API key is invalid */ }
+						{ ( ! window.pluginInfo?.validApiKey || hoverOptionsLockedReason )
 							? <div className="godam-components-disabled"><Disabled>{ hoverOptionsPanelContent }</Disabled></div>
 							: hoverOptionsPanelContent
 						}
