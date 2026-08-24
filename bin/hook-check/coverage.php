@@ -77,6 +77,29 @@ const ACCESS_FUNCTIONS = array(
 	'wp_insert_attachment',
 	'wp_update_attachment_metadata',
 	'get_post',
+	'get_post_mime_type',
+	'get_post_type',
+	'update_attached_file',
+	'wp_update_post',
+	'get_the_title',
+	'get_post_field',
+);
+
+// Meta capabilities that WordPress's map_meta_cap() resolves against a
+// specific post object -- get_post( $object_id ) internally -- for the
+// 'post' object type. current_user_can() isn't in ACCESS_FUNCTIONS above
+// because most of its real calls (current_user_can('manage_options'),
+// current_user_can('upload_files'), ...) are primitive capabilities that
+// take no object id and never touch attachment data; treating the bare
+// function name as an access call would make this list mostly noise.
+// Instead current_user_can() gets its own shape check --
+// godam_coverage_current_user_can_at() below -- that only counts a call as
+// attachment access when its first argument is literally one of these
+// strings and a second (object id) argument follows.
+const CURRENT_USER_CAN_META_CAPS = array(
+	'edit_post',
+	'delete_post',
+	'read_post',
 );
 
 // Finding kinds, in the order the "why does this need a reason" story gets
@@ -132,6 +155,66 @@ function godam_coverage_access_call_at( $tokens, $i, $count ) {
 
 	return array(
 		'name' => $name,
+		'arg'  => '',
+	);
+}
+
+/**
+ * If the token at $i starts a real, bare call to current_user_can() whose
+ * first argument is a literal string naming one of
+ * CURRENT_USER_CAN_META_CAPS and whose second argument (the object id) is
+ * present, returns ['name' => 'current_user_can', 'arg' => unprefixed
+ * second-argument variable name, or '' if it isn't a plain variable].
+ * Returns null for every other current_user_can() shape -- a primitive
+ * capability, a meta cap called with no object id (current_user_can(
+ * 'edit_post' ) alone resolves against no specific post and never reaches
+ * get_post()), or a non-literal first argument this script can't resolve --
+ * and for calls to any other function.
+ *
+ * Deliberately its own check rather than an ACCESS_FUNCTIONS entry: unlike
+ * every name in that list, most real current_user_can() calls
+ * (current_user_can( 'manage_options' ), current_user_can( 'upload_files' ))
+ * take no object argument at all, so matching on the bare function name
+ * would flag them as unresolvable "direct" findings and bury the real ones
+ * in noise.
+ *
+ * @param array[] $tokens Token list.
+ * @param int     $i      Index to check.
+ * @param int     $count  Token count.
+ * @return array|null
+ */
+function godam_coverage_current_user_can_at( $tokens, $i, $count ) {
+	if ( ! godam_shared_is_bare_call_to( $tokens, $i, array( 'current_user_can' ), $count ) ) {
+		return null;
+	}
+
+	$open = godam_shared_skip_forward( $tokens, $i + 1, $count ); // The '(' itself.
+	$cap  = godam_shared_skip_forward( $tokens, $open + 1, $count );
+
+	if ( $cap >= $count || T_CONSTANT_ENCAPSED_STRING !== ( $tokens[ $cap ]['id'] ?? null ) ) {
+		return null;
+	}
+
+	if ( ! in_array( substr( $tokens[ $cap ]['text'], 1, -1 ), CURRENT_USER_CAN_META_CAPS, true ) ) {
+		return null;
+	}
+
+	$comma = godam_shared_skip_forward( $tokens, $cap + 1, $count );
+	if ( $comma >= $count || ',' !== $tokens[ $comma ]['text'] ) {
+		return null; // No second argument -- a primitive check, not object-scoped.
+	}
+
+	$arg = godam_shared_skip_forward( $tokens, $comma + 1, $count );
+
+	if ( $arg < $count && T_VARIABLE === ( $tokens[ $arg ]['id'] ?? null ) ) {
+		return array(
+			'name' => 'current_user_can',
+			'arg'  => ltrim( $tokens[ $arg ]['text'], '$' ),
+		);
+	}
+
+	return array(
+		'name' => 'current_user_can',
 		'arg'  => '',
 	);
 }
@@ -485,6 +568,9 @@ function godam_coverage_check_range( $tokens, $range_start, $range_end, $params,
 		}
 
 		$access = godam_coverage_access_call_at( $tokens, $i, $count );
+		if ( null === $access ) {
+			$access = godam_coverage_current_user_can_at( $tokens, $i, $count );
+		}
 		if ( null === $access ) {
 			continue;
 		}
