@@ -593,8 +593,23 @@ class RTGODAM_RetranscodeMedia {
 	 * @param string $message Error message.
 	 */
 	public function die_json_error_msg( $id, $message ) {
+		/**
+		 * Fires before reading this attachment's title for the error payload below.
+		 *
+		 * No caller currently reaches this method (kept as a public JSON-error
+		 * helper), but the read is wrapped defensively rather than relying on
+		 * every future caller to remember to. die()/exit() never run a
+		 * try/finally's finally block, so the after-hook fires here — before
+		 * die() — rather than wrapping the die() call itself.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$title = get_the_title( $id );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		// translators: Media name, Media ID and message for failed transcode.
-		die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to send. The error message was: %3$s', 'godam' ), esc_html( get_the_title( $id ) ), $id, $message ) ) ) );
+		die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to send. The error message was: %3$s', 'godam' ), esc_html( $title ), $id, $message ) ) ) );
 	}
 
 	/**

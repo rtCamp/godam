@@ -649,7 +649,7 @@ class Video_Migration extends Base {
 
 		if ( $changed ) {
 			$new_content = serialize_blocks( $blocks );
-			wp_update_post(
+			wp_update_post( // godam-coverage-ignore -- migrate_single_post_video_blocks(): rewrites the HOST post's own post_content after migrating its embedded core/video block, not attachment data — see the get_post( $post_id ) call above.
 				array(
 					'ID'           => $post_id,
 					'post_content' => $new_content,
@@ -758,7 +758,7 @@ class Video_Migration extends Base {
 
 		if ( $changed ) {
 			$new_content = serialize_blocks( $blocks );
-			wp_update_post(
+			wp_update_post( // godam-coverage-ignore -- migrate_single_post_vimeo_blocks(): rewrites the HOST post's own post_content after migrating its embedded Vimeo block, not attachment data — see the get_post( $post_id ) call above.
 				array(
 					'ID'           => $post_id,
 					'post_content' => $new_content,
@@ -1005,9 +1005,26 @@ class Video_Migration extends Base {
 			}
 		}
 
-		$headline    = $attachment instanceof \WP_Post ? get_the_title( $attachment_id ) : '';
+		$headline = $attachment instanceof \WP_Post ? get_the_title( $attachment_id ) : '';
+
+		/**
+		 * Fires before reading this attachment's excerpt/content for the
+		 * SEO description fallback, so integrations that centralize media
+		 * on another site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$desc_field  = $attachment instanceof \WP_Post ? get_post_field( 'post_excerpt', $attachment_id ) : '';
 		$description = ! empty( $desc_field ) ? $desc_field : ( $attachment instanceof \WP_Post ? get_post_field( 'post_content', $attachment_id ) : '' );
+		/**
+		 * Fires after reading this attachment's data, so integrations can
+		 * restore the site context switched in
+		 * `rtgodam_before_attachment_lookup`.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return array(
 			'contentUrl'       => $content_url,
@@ -1065,7 +1082,7 @@ class Video_Migration extends Base {
 			'post_title'   => $video_info['title'] ?? $video_info['orignal_file_name'] ?? '',
 			'post_content' => $video_info['description'] ?? '',
 		);
-		wp_update_post( $attachment_data );
+		wp_update_post( $attachment_data ); // godam-coverage-ignore -- update_video_metadata_from_vimeo_info(): covered transitively — both call sites run inside create_attachment_from_vimeo_video()'s own before/after try/finally pair, same as the $wpdb->update() call below.
 
 		// Update attachment metadata with dimensions.
 		$metadata = array(

@@ -499,7 +499,7 @@ class Analytics extends Base {
 			// 409). Surfacing an Edit link would be a dead end, and the page is
 			// unreachable for visitors, so it belongs in the deleted state.
 			$is_trashed  = $placement_post && 'trash' === $placement_post->post_status;
-			$can_edit    = $placement_post && ! $is_trashed && current_user_can( 'edit_post', $placement_post_id );
+			$can_edit    = $placement_post && ! $is_trashed && current_user_can( 'edit_post', $placement_post_id ); // godam-coverage-ignore -- enrich_placements(): checks edit capability on $placement_post_id, the host page a video was placed on, not an attachment ID (see get_post() above).
 			$is_viewable = $placement_post && ! $is_trashed && is_post_publicly_viewable( $placement_post );
 			$edit_url    = $can_edit ? get_edit_post_link( $placement_post_id, 'raw' ) : null;
 
@@ -507,14 +507,14 @@ class Analytics extends Base {
 				// Public page: reveal title, permalink and (if capable) an edit link.
 				$permalink = get_permalink( $placement_post );
 
-				$placements[ $index ]['title']      = get_the_title( $placement_post );
+				$placements[ $index ]['title']      = get_the_title( $placement_post ); // godam-coverage-ignore -- enrich_placements(): $placement_post is the host page a video was placed on, not an attachment (see get_post() above).
 				$placements[ $index ]['permalink']  = $permalink ? $permalink : null;
 				$placements[ $index ]['edit_url']   = $edit_url ? $edit_url : null;
 				$placements[ $index ]['is_deleted'] = false;
 			} elseif ( $can_edit ) {
 				// Not public (private/draft/pending), but this user may edit it:
 				// show the real title + an Edit link, without a public permalink.
-				$placements[ $index ]['title']      = get_the_title( $placement_post );
+				$placements[ $index ]['title']      = get_the_title( $placement_post ); // godam-coverage-ignore -- enrich_placements(): $placement_post is the host page a video was placed on, not an attachment (see get_post() above).
 				$placements[ $index ]['permalink']  = null;
 				$placements[ $index ]['edit_url']   = $edit_url ? $edit_url : null;
 				$placements[ $index ]['is_deleted'] = false;
@@ -668,7 +668,7 @@ class Analytics extends Base {
 					if ( isset( $post_views[ $post->ID ] ) ) {
 						$post_details[] = array(
 							'id'    => $post->ID,
-							'title' => get_the_title( $post ),
+							'title' => get_the_title( $post ), // godam-coverage-ignore -- fetch_analytics_data(): $post comes from $post_ids above, HOST post IDs (post_type "any"), not attachment IDs (see get_posts() above).
 							'url'   => get_permalink( $post ),
 							'views' => $post_views[ $post->ID ],
 						);

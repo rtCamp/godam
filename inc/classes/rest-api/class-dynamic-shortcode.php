@@ -136,8 +136,25 @@ class Dynamic_Shortcode extends Base {
 		do_action( 'rtgodam_shortcode_before_render', $id );
 
 		// Get the video title and date.
+		/**
+		 * Fires before reading this attachment's title/date, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_title = get_the_title( $id );
 		$video_date  = get_the_date( 'F j, Y', $id );
+
+		/**
+		 * Fires after reading this attachment's title/date, so
+		 * integrations can restore the site context switched in
+		 * `rtgodam_before_attachment_lookup`.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Add filters for title and date.
 		$video_title = apply_filters( 'rtgodam_shortcode_video_title', $video_title, $id );

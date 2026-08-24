@@ -35,7 +35,7 @@ if ( $godam_video_post_id ) {
 	do_action( 'rtgodam_after_attachment_lookup' );
 
 	// Set alt text to the post title.
-	$godam_alt_text = get_the_title();
+	$godam_alt_text = get_the_title(); // godam-coverage-ignore -- No argument: reads the title of the host post ($godam_video_post_id above), the same host-post distinction as the _godam_attachment_id read above — not the attachment.
 }
 
 $godam_wrapper_classes = 'godam-video-thumbnail__container';

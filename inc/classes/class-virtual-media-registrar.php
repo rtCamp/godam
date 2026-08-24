@@ -68,7 +68,7 @@ class Virtual_Media_Registrar {
 			return;
 		}
 
-		if ( 'attachment' !== get_post_type( $post_id ) ) {
+		if ( 'attachment' !== get_post_type( $post_id ) ) { // godam-coverage-ignore -- maybe_register_from_meta_change(): added_post_meta/updated_post_meta fire for every post type; this is the type-routing check that filters down to attachments before schedule_register_virtual_media_site() (which wraps its own attachment-meta reads below) — not attachment data access itself.
 			return;
 		}
 

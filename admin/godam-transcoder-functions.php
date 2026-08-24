@@ -725,7 +725,7 @@ function rtgodam_get_localize_array() {
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
-	$localize_array['postTitle']  = get_the_title();
+	$localize_array['postTitle']  = get_the_title(); // godam-coverage-ignore -- No argument: reads the title of whatever post/page the current front-end request is viewing (this fn runs unconditionally on every page load via Assets::enqueue_scripts()), not an explicit attachment lookup.
 	$localize_array['locationIP'] = rtgodam_get_user_ip();
 
 	/**
@@ -744,9 +744,9 @@ function rtgodam_get_localize_array() {
 
 	$localize_array['siteId'] = get_current_blog_id();
 
-	if ( get_post_type() ) {
+	if ( get_post_type() ) { // godam-coverage-ignore -- No argument: same current-page-type check as postTitle above, not an explicit attachment lookup.
 
-		$localize_array['postType'] = get_post_type();
+		$localize_array['postType'] = get_post_type(); // godam-coverage-ignore -- Same call as the `if` check above; not an explicit attachment lookup.
 	}
 
 	$post_id = get_the_ID();

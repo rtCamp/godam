@@ -146,7 +146,7 @@ class WPBakery_Gallery_Shortcode_V1_To_V2 {
 					continue;
 				}
 
-				$result = wp_update_post(
+				$result = wp_update_post( // godam-coverage-ignore -- run(): updates the HOST post/page fetched by the SELECT above, whose post_status NOT IN (...,'inherit') excludes attachments by construction — rewrites a legacy shortcode in that post's own post_content, never attachment data.
 					array(
 						'ID'           => (int) $row->ID,
 						'post_content' => $new_content,

@@ -253,7 +253,7 @@ class Media_Usage_Tracker {
 	 * @return void
 	 */
 	public function on_before_delete_post( $post_id ) {
-		if ( 'attachment' === get_post_type( $post_id ) ) {
+		if ( 'attachment' === get_post_type( $post_id ) ) { // godam-coverage-ignore -- on_before_delete_post(): before_delete_post fires for every post type being permanently deleted; this is the type-routing check that filters out attachments (their own usage cleanup happens elsewhere) so the rest of this method can treat $post_id as a host post — not attachment data access.
 			return;
 		}
 
@@ -398,7 +398,7 @@ class Media_Usage_Tracker {
 		// async payload) must run against the post's own site, not the attachment's —
 		// hence running this after the lookup above has already been restored.
 		if ( $godam_id ) {
-			$type = '' !== $post_type ? $post_type : (string) get_post_type( $post_id );
+			$type = '' !== $post_type ? $post_type : (string) get_post_type( $post_id ); // godam-coverage-ignore -- register_media_usage(): $post_id is the referencing HOST post (never the attachment — that's $attachment_id, already wrapped above via get_usage_sources()/save_usage_sources()); deliberately read only after that attachment-scoped lookup is restored, per the docblock above.
 			$this->schedule_log_media_view( $godam_id, $post_id, $this->get_wp_site(), $type );
 		}
 	}

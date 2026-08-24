@@ -343,8 +343,8 @@ class Media_Library_Ajax {
 		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
 
 		/**
-		 * Fires before reading this attachment's URL/title/author, so
-		 * integrations that centralize media on another site can switch
+		 * Fires before reading this attachment's URL/title/author/content,
+		 * so integrations that centralize media on another site can switch
 		 * context first.
 		 *
 		 * @since 2.2.0
@@ -358,6 +358,9 @@ class Media_Library_Ajax {
 		// Get attachment author information.
 		$attachment_author_id = get_post_field( 'post_author', $attachment_id );
 		$attachment_author    = get_user_by( 'id', $attachment_author_id );
+
+		// Get attachment content, used as the transcoding request description below.
+		$attachment_content = get_post_field( 'post_content', $attachment_id );
 
 		// Get author name with fallback to username.
 		$author_first_name = '';
@@ -390,7 +393,7 @@ class Media_Library_Ajax {
 			'orignal_file_name'    => $file_name ?? $file_title,
 			'mime_type'            => $mime_type,
 			'title'                => sanitize_text_field( $file_title ),
-			'description'          => sanitize_textarea_field( (string) get_post_field( 'post_content', $attachment_id ) ),
+			'description'          => sanitize_textarea_field( (string) $attachment_content ),
 			'callback_url'         => rawurlencode( $callback_url ),
 			'status_callback'      => rawurlencode( $status_callback_url ),
 			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
@@ -1086,28 +1089,50 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		// Check if video attachment.
-		$attachment_mime_type = get_post_mime_type( $attachment_id );
+		/**
+		 * Fires before reading/mutating this attachment's data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * 'rtgodam_handle_callback_finished' is a public, third-party-
+		 * triggerable extension point (see its docblock in
+		 * class-rtgodam-transcoder-rest-routes.php) — and even for its own
+		 * built-in caller, handle_callback()'s before/after bracket around
+		 * the 'wp-media' branch has already closed by the time this fires,
+		 * several lines later in that method. Wrapped here defensively, in
+		 * a try/finally since this method returns early from several
+		 * points, rather than relying on an already-open bracket from
+		 * whichever caller triggered the hook.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Check if video attachment.
+			$attachment_mime_type = get_post_mime_type( $attachment_id );
 
-		if ( 'video' !== substr( $attachment_mime_type, 0, 5 ) ) {
-			return;
-		}
-
-		// Check if mp4_url is provided in the request.
-		$transcoded_mp4_url = esc_url( $request->get_param( 'mp4_url' ) );
-
-		if ( empty( $transcoded_mp4_url ) ) {
-			return;
-		}
-
-		// Replace the existing attachment file with the transcoded MP4.
-		$attachment_id = $this->godam_replace_attachment_with_external_file( $attachment_id, $transcoded_mp4_url );
-
-		if ( is_wp_error( $attachment_id ) ) {
-			// Log the error for debugging purposes.
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'MP4 video replacement failed: ' . $attachment_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging for debugging.
+			if ( 'video' !== substr( $attachment_mime_type, 0, 5 ) ) {
+				return;
 			}
+
+			// Check if mp4_url is provided in the request.
+			$transcoded_mp4_url = esc_url( $request->get_param( 'mp4_url' ) );
+
+			if ( empty( $transcoded_mp4_url ) ) {
+				return;
+			}
+
+			// Replace the existing attachment file with the transcoded MP4.
+			$attachment_id = $this->godam_replace_attachment_with_external_file( $attachment_id, $transcoded_mp4_url );
+
+			if ( is_wp_error( $attachment_id ) ) {
+				// Log the error for debugging purposes.
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'MP4 video replacement failed: ' . $attachment_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging for debugging.
+				}
+			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 	}
 

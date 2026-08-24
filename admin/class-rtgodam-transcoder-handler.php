@@ -441,7 +441,7 @@ class RTGODAM_Transcoder_Handler {
 			$status_callback_url = RTGODAM_Transcoder_Rest_Routes::get_callback_url( 'status' );
 
 			// Get attachment author information.
-			$attachment_author_id = get_post_field( 'post_author', $attachment_id );
+			$attachment_author_id = get_post_field( 'post_author', $attachment_id ); // godam-coverage-ignore -- wp_media_transcoding(): covered transitively — every real call site (send_transcoding_request() here, Retranscode_Failed_Media::retranscode_failed_media(), and class-transcoding.php's retranscode_media() via retranscode_media_centralized()) already wraps the call in its own before/after pair.
 			$attachment_author    = get_user_by( 'id', $attachment_author_id );
 			$site_url             = get_site_url();
 
@@ -483,7 +483,7 @@ class RTGODAM_Transcoder_Handler {
 						'video_quality'        => $rtgodam_video_compress_quality,
 						'mime_type'            => $metadata['mime_type'],
 						'title'                => sanitize_text_field( get_the_title( $attachment_id ) ),
-						'description'          => sanitize_textarea_field( (string) get_post_field( 'post_content', $attachment_id ) ),
+						'description'          => sanitize_textarea_field( (string) get_post_field( 'post_content', $attachment_id ) ), // godam-coverage-ignore -- wp_media_transcoding(): covered transitively — every real call site (send_transcoding_request() here, Retranscode_Failed_Media::retranscode_failed_media(), and class-transcoding.php's retranscode_media() via retranscode_media_centralized()) already wraps the call in its own before/after pair.
 						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
 						'wp_site'              => $site_url,
 						'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
@@ -936,14 +936,14 @@ class RTGODAM_Transcoder_Handler {
 									$mime_type = get_post_mime_type( $attachment_id );
 
 									if ( strpos( $mime_type, 'audio' ) !== false ) {
-										wp_update_post(
+										wp_update_post( // godam-coverage-ignore -- add_transcoded_files(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 											array(
 												'ID' => $attachment_id,
 												'post_mime_type' => 'audio/mp3',
 											)
 										);
 									} else {
-										wp_update_post(
+										wp_update_post( // godam-coverage-ignore -- add_transcoded_files(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 											array(
 												'ID' => $attachment_id,
 												'post_mime_type' => 'video/mp4',

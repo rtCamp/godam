@@ -848,17 +848,17 @@ function rtgodam_get_attachment_extension( $attachment_id ) {
 function godam_is_supported_document( $attachment_id = 0, $url = '' ) {
 	// 0 for anything that cannot be an attachment id, which falls through to the URL check
 	// below. See rtgodam_normalize_attachment_id() for why that is stricter than is_numeric().
-	$godam_post_id = rtgodam_normalize_attachment_id( $attachment_id );
+	$attachment_id = rtgodam_normalize_attachment_id( $attachment_id );
 
-	if ( $godam_post_id ) {
-		$mime_type = get_post_mime_type( $godam_post_id );
+	if ( $attachment_id ) {
+		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! empty( $mime_type ) ) {
 			if ( ! array_key_exists( $mime_type, rtgodam_get_supported_document_types() ) ) {
 				return false;
 			}
 
-			$extension = rtgodam_get_attachment_extension( $godam_post_id );
+			$extension = rtgodam_get_attachment_extension( $attachment_id );
 
 			// No resolvable file (virtual GoDAM media, or a file already removed from disk):
 			// there is no extension to confirm, so the MIME type is all there is to go on.
@@ -965,23 +965,23 @@ function rtgodam_is_supported_document_attachment( $attachment_id ) {
  * @return string Preview PDF URL, or an empty string when none is available.
  */
 function rtgodam_get_document_preview_url( $attachment_id = 0, $fallback_src = '' ) {
-	$godam_post_id = rtgodam_normalize_attachment_id( $attachment_id );
+	$attachment_id = rtgodam_normalize_attachment_id( $attachment_id );
 
-	if ( $godam_post_id ) {
-		$preview_url = get_post_meta( $godam_post_id, 'rtgodam_preview_pdf_url', true ); // godam-coverage-ignore -- rtgodam_get_document_preview_url(): covered transitively — sole caller (assets/src/blocks/godam-pdf/render.php) wraps the entire call in try/finally.
+	if ( $attachment_id ) {
+		$preview_url = get_post_meta( $attachment_id, 'rtgodam_preview_pdf_url', true );
 
 		if ( ! empty( $preview_url ) ) {
 			return $preview_url;
 		}
 
-		if ( 'application/pdf' === get_post_mime_type( $godam_post_id ) ) {
-			$transcoded_url = get_post_meta( $godam_post_id, 'rtgodam_transcoded_url', true ); // godam-coverage-ignore -- rtgodam_get_document_preview_url(): covered transitively — sole caller (assets/src/blocks/godam-pdf/render.php) wraps the entire call in try/finally.
+		if ( 'application/pdf' === get_post_mime_type( $attachment_id ) ) {
+			$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 
 			if ( ! empty( $transcoded_url ) ) {
 				return $transcoded_url;
 			}
 
-			$attachment_url = wp_get_attachment_url( $godam_post_id ); // godam-coverage-ignore -- rtgodam_get_document_preview_url(): covered transitively — sole caller (assets/src/blocks/godam-pdf/render.php) wraps the entire call in try/finally.
+			$attachment_url = wp_get_attachment_url( $attachment_id );
 
 			if ( ! empty( $attachment_url ) ) {
 				return $attachment_url;

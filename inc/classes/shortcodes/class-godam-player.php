@@ -64,7 +64,7 @@ class GoDAM_Player {
 	 */
 	public function invalidate_video_cache_on_meta_change( $meta_id, $object_id, $meta_key ) {
 		// Only invalidate for attachment posts (GoDAM videos are stored as attachments).
-		if ( 'attachment' !== get_post_type( $object_id ) ) {
+		if ( 'attachment' !== get_post_type( $object_id ) ) { // godam-coverage-ignore -- invalidate_video_cache_on_meta_change(): updated_post_meta/added_post_meta/deleted_post_meta fire for every post type; this is the type-routing check that filters down to attachments — the actual work (invalidate_video_cache_for_post()) only clears a private cache key, not attachment data.
 			return;
 		}
 
@@ -97,7 +97,7 @@ class GoDAM_Player {
 	 * @param int $post_id Post ID.
 	 */
 	public function invalidate_video_cache_for_post( $post_id ) {
-		if ( 'attachment' !== get_post_type( $post_id ) ) {
+		if ( 'attachment' !== get_post_type( $post_id ) ) { // godam-coverage-ignore -- invalidate_video_cache_for_post(): type-routing check (also reachable directly via edit_attachment/delete_attachment, which only ever fire for attachments); rtgodam_work_cache_index_clear() below only clears a private cache key, not attachment data.
 			return;
 		}
 
