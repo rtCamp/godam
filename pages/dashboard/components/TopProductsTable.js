@@ -491,7 +491,9 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 												<span className="text-zinc-400">{ ordersLabel( item ) }</span>
 											</>
 										) : (
-											<span className="text-zinc-400">-</span>
+											// null-not-zero: the service sends null revenue for a
+											// product with no orders yet; say so rather than "0".
+											<span className="text-zinc-400" data-test-id="godam-top-products-revenue-empty">{ __( 'No data', 'godam' ) }</span>
 										) }
 										{ /* Influenced revenue (third tier): a separate sub-line,
 										    shown only when there is a real match, never added into
