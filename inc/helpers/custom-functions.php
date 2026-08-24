@@ -809,10 +809,10 @@ function rtgodam_get_attachment_extension( $attachment_id ) {
 		return '';
 	}
 
-	$file = get_post_meta( $attachment_id, '_wp_attached_file', true ); // godam-coverage-ignore -- rtgodam_get_attachment_extension(): covered transitively — every real caller (godam_is_supported_document(), rtgodam_is_supported_document_attachment()) is itself only ever called from a wrapped call site.
+	$file = get_post_meta( $attachment_id, '_wp_attached_file', true );
 
 	if ( empty( $file ) ) {
-		$file = wp_get_attachment_url( $attachment_id ); // godam-coverage-ignore -- rtgodam_get_attachment_extension(): covered transitively — every real caller (godam_is_supported_document(), rtgodam_is_supported_document_attachment()) is itself only ever called from a wrapped call site.
+		$file = wp_get_attachment_url( $attachment_id );
 	}
 
 	return rtgodam_get_extension_from_path( $file );
