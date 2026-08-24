@@ -26,7 +26,7 @@ class Transcoding extends Base {
 	/**
 	 * Default media type used when none is provided.
 	 *
-	 * @since 2.1.2
+	 * @since n.e.x.t
 	 *
 	 * @var string
 	 */
@@ -48,7 +48,13 @@ class Transcoding extends Base {
 	 * Central job types a file ends up on ('pdf' or 'document') is decided per extension by
 	 * RTGODAM_Transcoder_Handler, and is not a distinction anyone picking media here cares about.
 	 *
-	 * @since 2.1.2
+	 * `application/ogg` rides alongside the bare `audio` top-level type: the transcoder lists it
+	 * among its supported types (RTGODAM_Transcoder_Handler::$allowed_mimetypes), but WordPress
+	 * stores such files with an `application/` prefix that the `audio` match never covers. Normal
+	 * .ogg uploads are stored as `audio/ogg` and matched already; this only reaches the ones a
+	 * migration or custom MIME filter typed as `application/ogg`.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return array<string, string[]> Media type => MIME types (or bare top-level types).
 	 */
@@ -56,9 +62,9 @@ class Transcoding extends Base {
 		$document_mime_types = self::get_document_mime_types();
 
 		return array(
-			'all'      => array_merge( array( 'video', 'audio', 'image' ), $document_mime_types ),
+			'all'      => array_merge( array( 'video', 'audio', 'application/ogg', 'image' ), $document_mime_types ),
 			'video'    => array( 'video' ),
-			'audio'    => array( 'audio' ),
+			'audio'    => array( 'audio', 'application/ogg' ),
 			'document' => $document_mime_types,
 			'image'    => array( 'image' ),
 		);
@@ -67,7 +73,7 @@ class Transcoding extends Base {
 	/**
 	 * MIME types the Document pipeline covers.
 	 *
-	 * @since 2.1.2
+	 * @since n.e.x.t
 	 *
 	 * @return string[] Document MIME types.
 	 */
@@ -454,11 +460,10 @@ class Transcoding extends Base {
 			: $this->get_document_attachments( $document_mimes );
 
 		/*
-		 * Totals. The document half is counted from the scan above rather than from
+		 * Total. The document half is counted from the scan above rather than from
 		 * wp_count_attachments(), which counts by MIME and cannot express the extension rule.
 		 */
 		$total_media_count = count( $documents['eligible'] );
-		$transcoded_count  = $total_media_count - count( $documents['untranscoded'] );
 
 		if ( ! empty( $plain_mimes ) ) {
 			$attachment_counts = (array) wp_count_attachments( $plain_mimes );
@@ -467,12 +472,11 @@ class Transcoding extends Base {
 			 * wp_count_attachments() reports trashed attachments under a separate `trash` key
 			 * while its per-MIME rows exclude them. Every query here uses post_status 'any',
 			 * which excludes trash too, so adding them back double-counts and leaves
-			 * transcode_count overshooting by the number of trashed attachments.
+			 * total_media_count overshooting by the number of trashed attachments.
 			 */
 			unset( $attachment_counts['trash'] );
 
 			$total_media_count += array_sum( $attachment_counts );
-			$transcoded_count  += $this->count_transcoded_attachments( $plain_mimes );
 		}
 
 		// Check if storage limits are exceeded (only storage blocks transcoding).
@@ -540,15 +544,10 @@ class Transcoding extends Base {
 			} while ( true );
 		}
 
-		// Count untranscoded media (don't have rtgodam_transcoded_url meta).
-		$untranscoded_count = $total_media_count - $transcoded_count;
-
 		return new \WP_REST_Response(
 			array(
 				'data'              => $all_posts,
 				'total_media_count' => $total_media_count,
-				'transcode_count'   => $untranscoded_count,
-				'retranscode_count' => $transcoded_count,
 				'media_type'        => $media_type,
 			),
 			200
@@ -558,13 +557,13 @@ class Transcoding extends Base {
 	/**
 	 * Document attachments the transcoder can actually convert, split by transcoding state.
 	 *
-	 * One paged scan answers three questions at once — which documents to send, how many there
-	 * are in total, and how many Central has already processed — because none of them can be
+	 * One paged scan answers two questions at once — which documents to send (the ones Central
+	 * has not seen yet) and how many convertible ones there are in total — because neither can be
 	 * answered by SQL alone. rtgodam_is_supported_document_attachment() has to read each
 	 * attachment's extension as well as its MIME type, and neither wp_count_attachments() nor
 	 * a meta query can express that.
 	 *
-	 * @since 2.1.2
+	 * @since n.e.x.t
 	 *
 	 * @param string[] $mime_types Document MIME types to scan. Must not be empty.
 	 *
@@ -621,36 +620,6 @@ class Transcoding extends Base {
 			'eligible'     => $eligible,
 			'untranscoded' => $untranscoded,
 		);
-	}
-
-	/**
-	 * Count attachments that already carry a transcoded URL.
-	 *
-	 * @since 2.1.2
-	 *
-	 * @param string[] $mime_types MIME types (or bare top-level types) to count. Must not be empty.
-	 *
-	 * @return int Number of matching attachments.
-	 */
-	private function count_transcoded_attachments( array $mime_types ) {
-		$transcoded_query = new \WP_Query(
-			array(
-				'post_type'      => 'attachment',
-				'post_mime_type' => $mime_types,
-				'post_status'    => 'any',
-				'posts_per_page' => 1,
-				'fields'         => 'ids',
-				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- This is a necessary query to find posts that have the rtgodam_transcoded_url meta.
-				'meta_query'     => array(
-					array(
-						'key'     => 'rtgodam_transcoded_url',
-						'compare' => 'EXISTS',
-					),
-				),
-			)
-		);
-
-		return (int) $transcoded_query->found_posts;
 	}
 
 	/**

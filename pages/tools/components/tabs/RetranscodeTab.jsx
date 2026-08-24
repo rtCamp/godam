@@ -72,6 +72,7 @@ const RetranscodeTab = () => {
 	const [ successCount, setSuccessCount ] = useState( 0 );
 	const [ failureCount, setFailureCount ] = useState( 0 );
 	const [ virtualMediaCount, setVirtualMediaCount ] = useState( 0 );
+	const [ skippedCount, setSkippedCount ] = useState( 0 );
 	const [ totalMediaCount, setTotalMediaCount ] = useState( 0 );
 	const [ selectedTranscodeCount, setSelectedTranscodeCount ] = useState( 0 );
 	const [ selectedRetranscodeCount, setSelectedRetranscodeCount ] = useState( 0 );
@@ -260,6 +261,7 @@ const RetranscodeTab = () => {
 			setSuccessCount( 0 );
 			setFailureCount( 0 );
 			setVirtualMediaCount( 0 );
+			setSkippedCount( 0 );
 
 			for ( let i = 0; i < attachments.length; i++ ) {
 				// Check if abort was requested.
@@ -291,16 +293,24 @@ const RetranscodeTab = () => {
 						if ( data.skipped === true ) {
 							if ( data.reason === 'virtual_media' || data.reason === 'migrated_vimeo' ) {
 								setVirtualMediaCount( ( prevCount ) => prevCount + 1 );
+							} else {
+								// Every other skip reason (unsupported_document, local_environment,
+								// storage_exceeded, http_auth_enabled) is still a file that was not
+								// sent, so tally it or the final summary undercounts the batch.
+								setSkippedCount( ( prevCount ) => prevCount + 1 );
 							}
 						} else if ( data.skipped === false && data.sent === true ) {
 							setSuccessCount( ( prevCount ) => prevCount + 1 );
 						}
 					}
 				} catch ( err ) {
-					const data = err.response.data;
-					if ( data?.message ) {
+					// A dropped connection or restarted server rejects with no `err.response`;
+					// reading `.data` off that would throw inside the catch and strand the loop
+					// with its finishing setters unrun. Fall back to the transport-level message.
+					const message = err.response?.data?.message ?? err.message;
+					if ( message ) {
 						// Log the error message
-						setLogs( ( prevLogs ) => [ ...prevLogs, data.message ] );
+						setLogs( ( prevLogs ) => [ ...prevLogs, message ] );
 					}
 					setFailureCount( ( prevCount ) => prevCount + 1 );
 				} finally {
@@ -329,6 +339,7 @@ const RetranscodeTab = () => {
 		setMediaType( DEFAULT_MEDIA_TYPE );
 		setSelectedIds( null );
 		setVirtualMediaCount( 0 );
+		setSkippedCount( 0 );
 		abortRef.current = false;
 
 		// Reset the URL to remove media_ids, goback and nonce
@@ -391,23 +402,41 @@ const RetranscodeTab = () => {
 				}
 			}
 
+			// Add skipped message for files the server declined to send (unsupported document
+			// formats, local environment, storage limits, HTTP auth). Without this a batch made
+			// up entirely of skipped files falls through to the "nothing to retranscode" default,
+			// which contradicts the per-file log.
+			if ( skippedCount > 0 ) {
+				const skippedMessage = sprintf(
+					// translators: %d is the number of media files that were skipped.
+					__( '%d media file(s) were skipped and not sent for retranscoding.', 'godam' ),
+					skippedCount,
+				);
+
+				if ( message ) {
+					message += ' ' + skippedMessage;
+				} else {
+					message = skippedMessage;
+				}
+			}
+
 			// If no specific messages, show default
 			if ( ! message ) {
 				message = __( 'Operation completed without any media files to retranscode.', 'godam' );
 			}
 
 			// Determine notice type based on what happened
-			if ( virtualMediaCount > 0 && failureCount === 0 ) {
-				noticeType = 'warning';
-			} else if ( successCount > 0 && failureCount === 0 ) {
-				noticeType = 'success';
-			} else if ( failureCount > 0 ) {
+			if ( failureCount > 0 ) {
 				noticeType = 'error';
+			} else if ( virtualMediaCount > 0 || skippedCount > 0 ) {
+				noticeType = 'warning';
+			} else if ( successCount > 0 ) {
+				noticeType = 'success';
 			}
 
 			showNotice( message, noticeType );
 		}
-	}, [ done, aborted, successCount, failureCount, virtualMediaCount ] );
+	}, [ done, aborted, successCount, failureCount, virtualMediaCount, skippedCount ] );
 
 	return (
 		<>
