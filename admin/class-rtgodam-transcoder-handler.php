@@ -210,19 +210,33 @@ class RTGODAM_Transcoder_Handler {
 	 * @param int $attachment_id    ID of attachment.
 	 */
 	public function send_transcoding_request( $attachment_id ) {
+		/**
+		 * Fires before reading this attachment's metadata and dispatching
+		 * its transcoding request, so integrations that centralize media on
+		 * another site can switch context first. Hooked to `add_attachment`,
+		 * which can fire synchronously from inside an already-open bracket
+		 * (e.g. create_virtual_attachment()) — this method's own attachment
+		 * reads, and wp_media_transcoding()'s internal ones, both need it.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$metadata = wp_get_attachment_metadata( $attachment_id );
 
-		$metadata = wp_get_attachment_metadata( $attachment_id );
+			$mime_type = get_post_mime_type( $attachment_id );
 
-		$mime_type = get_post_mime_type( $attachment_id );
+			if ( empty( $metadata ) ) {
+				$metadata = array( 'mime_type' => $mime_type );
+			} elseif ( empty( $metadata['mime_type'] ) ) {
+				$metadata['mime_type'] = $mime_type;
+			}
 
-		if ( empty( $metadata ) ) {
-			$metadata = array( 'mime_type' => $mime_type );
-		} elseif ( empty( $metadata['mime_type'] ) ) {
-			$metadata['mime_type'] = $mime_type;
+			// Send the transcoding request.
+			$this->wp_media_transcoding( $metadata, $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		// Send the transcoding request.
-		$this->wp_media_transcoding( $metadata, $attachment_id );
 	}
 
 	/**
@@ -422,20 +436,12 @@ class RTGODAM_Transcoder_Handler {
 				}
 			}
 
-			if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) || empty( RTGODAM_TRANSCODER_CALLBACK_URL ) ) {
-				include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-				define( 'RTGODAM_TRANSCODER_CALLBACK_URL', RTGODAM_Transcoder_Rest_Routes::get_callback_url() );
-			}
-
-			$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
-
-			/**
-			 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
-			 */
-			$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php';
+			$callback_url        = RTGODAM_Transcoder_Rest_Routes::get_callback_url();
+			$status_callback_url = RTGODAM_Transcoder_Rest_Routes::get_callback_url( 'status' );
 
 			// Get attachment author information.
-			$attachment_author_id = get_post_field( 'post_author', $attachment_id );
+			$attachment_author_id = get_post_field( 'post_author', $attachment_id ); // godam-coverage-ignore -- wp_media_transcoding(): covered transitively — every real call site (send_transcoding_request() here, Retranscode_Failed_Media::retranscode_failed_media(), and class-transcoding.php's retranscode_media() via retranscode_media_centralized()) already wraps the call in its own before/after pair.
 			$attachment_author    = get_user_by( 'id', $attachment_author_id );
 			$site_url             = get_site_url();
 
@@ -477,7 +483,7 @@ class RTGODAM_Transcoder_Handler {
 						'video_quality'        => $rtgodam_video_compress_quality,
 						'mime_type'            => $metadata['mime_type'],
 						'title'                => sanitize_text_field( get_the_title( $attachment_id ) ),
-						'description'          => sanitize_textarea_field( (string) get_post_field( 'post_content', $attachment_id ) ),
+						'description'          => sanitize_textarea_field( (string) get_post_field( 'post_content', $attachment_id ) ), // godam-coverage-ignore -- wp_media_transcoding(): covered transitively — every real call site (send_transcoding_request() here, Retranscode_Failed_Media::retranscode_failed_media(), and class-transcoding.php's retranscode_media() via retranscode_media_centralized()) already wraps the call in its own before/after pair.
 						'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
 						'wp_site'              => $site_url,
 						'wp_author_first_name' => apply_filters( 'godam_author_first_name_to_send', $author_first_name, $attachment_id ),
@@ -797,17 +803,17 @@ class RTGODAM_Transcoder_Handler {
 		}
 
 		// rtMedia support.
-		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] );
-		update_post_meta( $post_id, '_rt_media_thumbnails', $thumbnail_urls );
+		update_post_meta( $post_id, '_rt_media_source', $post_thumbs_array['job_for'] ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
+		update_post_meta( $post_id, '_rt_media_thumbnails', $thumbnail_urls ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 
-		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] );
-		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $thumbnail_urls );
+		update_post_meta( $post_id, 'rtgodam_media_source', $post_thumbs_array['job_for'] ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
+		update_post_meta( $post_id, 'rtgodam_media_thumbnails', $thumbnail_urls ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 
 		// Store thumbnail → placeholder mapping, or clear stale meta when no valid placeholders.
 		if ( ! empty( $placeholder_map ) ) {
-			update_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails', $placeholder_map );
+			update_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails', $placeholder_map ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 		} else {
-			delete_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails' );
+			delete_post_meta( $post_id, 'rtgodam_media_placeholder_thumbnails' ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 		}
 
 		do_action( 'rtgodam_transcoded_thumbnails_added', $post_id );
@@ -815,25 +821,25 @@ class RTGODAM_Transcoder_Handler {
 		if ( $first_thumbnail_url ) {
 
 			// rtMedia support.
-			update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url );
+			update_post_meta( $post_id, '_rt_media_video_thumbnail', $first_thumbnail_url ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 
 			if ( class_exists( 'RTMediaModel' ) && ! empty( $media_id ) ) {
 				$model->update( array( 'cover_art' => $first_thumbnail_url ), array( 'media_id' => $post_id ) );
 				update_activity_after_thumb_set( $media_id );
 			}
 
-			$current_thumbnail = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true );
-			$custom_thumbnails = get_post_meta( $post_id, 'rtgodam_custom_media_thumbnails', true );
+			$current_thumbnail = get_post_meta( $post_id, 'rtgodam_media_video_thumbnail', true ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
+			$custom_thumbnails = get_post_meta( $post_id, 'rtgodam_custom_media_thumbnails', true ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 			$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
 
 			// If the current selected thumbnail is NOT one of the custom uploaded thumbnails, overwrite it.
 			if ( empty( $current_thumbnail ) || ! in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
-				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $first_thumbnail_url );
+				update_post_meta( $post_id, 'rtgodam_media_video_thumbnail', $first_thumbnail_url ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 				// Sync placeholder for the newly set primary thumbnail using the verified map.
 				if ( isset( $placeholder_map[ $first_thumbnail_url ] ) ) {
-					update_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail', $placeholder_map[ $first_thumbnail_url ] );
+					update_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail', $placeholder_map[ $first_thumbnail_url ] ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 				} else {
-					delete_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail' );
+					delete_post_meta( $post_id, 'rtgodam_media_video_placeholder_thumbnail' ); // godam-coverage-ignore -- add_media_thumbnails(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 				}
 			}
 
@@ -930,14 +936,14 @@ class RTGODAM_Transcoder_Handler {
 									$mime_type = get_post_mime_type( $attachment_id );
 
 									if ( strpos( $mime_type, 'audio' ) !== false ) {
-										wp_update_post(
+										wp_update_post( // godam-coverage-ignore -- add_transcoded_files(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 											array(
 												'ID' => $attachment_id,
 												'post_mime_type' => 'audio/mp3',
 											)
 										);
 									} else {
-										wp_update_post(
+										wp_update_post( // godam-coverage-ignore -- add_transcoded_files(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 											array(
 												'ID' => $attachment_id,
 												'post_mime_type' => 'video/mp4',
@@ -973,7 +979,7 @@ class RTGODAM_Transcoder_Handler {
 
 		$meta = wp_cache_get( $cache_key, 'godam' );
 		if ( empty( $meta ) ) {
-			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, godam-coverage-ignore -- get_post_id_by_meta_key_and_value(): covered transitively — every real call site (rest-routes.php, including via handle_wp_media_transcoding_callback, and class-video-migration.php) already runs inside its own before/after pair.
 			wp_cache_set( $cache_key, $meta, 'godam', HOUR_IN_SECONDS );
 		}
 

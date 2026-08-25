@@ -37,10 +37,28 @@ class Meta_Rest_Fields {
 			'rtgodam_meta',
 			array(
 				'get_callback'    => function ( $post ) {
-					return get_post_meta( $post['id'], 'rtgodam_meta', true );
+					/**
+					 * Fires before reading/mutating this attachment's meta,
+					 * so integrations that centralize media on another site
+					 * can switch context first. These get/update callbacks
+					 * fire whenever WP core's own REST machinery serves or
+					 * updates this attachment field — including from routes
+					 * other than /wp/v2/media (e.g. `_embed` on another
+					 * route) — self-wrapped so it's correct regardless of
+					 * which route triggered it.
+					 *
+					 * @since 2.2.0
+					 */
+					do_action( 'rtgodam_before_attachment_lookup' );
+					$value = get_post_meta( $post['id'], 'rtgodam_meta', true );
+					do_action( 'rtgodam_after_attachment_lookup' );
+					return $value;
 				},
 				'update_callback' => function ( $value, $post ) {
-					return update_post_meta( $post->ID, 'rtgodam_meta', $value );
+					do_action( 'rtgodam_before_attachment_lookup' );
+					$result = update_post_meta( $post->ID, 'rtgodam_meta', $value );
+					do_action( 'rtgodam_after_attachment_lookup' );
+					return $result;
 				},
 			)
 		);
@@ -50,10 +68,16 @@ class Meta_Rest_Fields {
 			'rtgodam_analytics',
 			array(
 				'get_callback'    => function ( $post ) {
-					return get_post_meta( $post['id'], 'rtgodam_analytics', true );
+					do_action( 'rtgodam_before_attachment_lookup' );
+					$value = get_post_meta( $post['id'], 'rtgodam_analytics', true );
+					do_action( 'rtgodam_after_attachment_lookup' );
+					return $value;
 				},
 				'update_callback' => function ( $value, $post ) {
-					return update_post_meta( $post->ID, 'rtgodam_analytics', $value );
+					do_action( 'rtgodam_before_attachment_lookup' );
+					$result = update_post_meta( $post->ID, 'rtgodam_analytics', $value );
+					do_action( 'rtgodam_after_attachment_lookup' );
+					return $result;
 				},
 			)
 		);
@@ -173,7 +197,10 @@ class Meta_Rest_Fields {
 					return current_user_can( 'edit_posts' );
 				},
 				'get_callback'  => function ( $post ) {
-					return rtgodam_get_hls_transcoded_url_from_attachment( $post->ID );
+					do_action( 'rtgodam_before_attachment_lookup' );
+					$value = rtgodam_get_hls_transcoded_url_from_attachment( $post->ID );
+					do_action( 'rtgodam_after_attachment_lookup' );
+					return $value;
 				},
 			)
 		);

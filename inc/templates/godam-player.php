@@ -154,6 +154,18 @@ if ( $godam_is_virtual ) {
 	if ( false !== $godam_cached_wp_id ) {
 		$godam_original_id = $godam_cached_wp_id;
 	} else {
+		/**
+		 * Fires before resolving/reading attachment data for a virtual GoDAM
+		 * media reference, so integrations that centralize media on another
+		 * site can switch context first. Queries the `attachment` post type
+		 * for whichever attachment carries this virtual ID in its
+		 * `_godam_original_id` meta, to translate it into a real WordPress
+		 * attachment ID.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$godam_query = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
@@ -164,6 +176,9 @@ if ( $godam_is_virtual ) {
 				'fields'         => 'ids',
 			)
 		);
+
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		if ( $godam_query->have_posts() ) {
 			$godam_original_id = $godam_query->posts[0];
 			// Only cache a successful resolution — never cache a miss, so a
@@ -214,6 +229,15 @@ if ( $godam_meta_cache_key && function_exists( 'rtgodam_work_cache_get' ) ) {
 }
 
 if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
+	/**
+	 * Fires before this cache-miss block collects every DB/meta call for
+	 * this attachment, so integrations that centralize media on another
+	 * site can switch context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+
 	// Cache miss — collect every DB/meta call for this attachment in one pass.
 	$rtgodam_raw_transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $godam_numeric_id );
 	$rtgodam_raw_hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $godam_numeric_id );
@@ -245,6 +269,8 @@ if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
 		'placeholder_single' => get_post_meta( $godam_numeric_id, 'rtgodam_media_video_placeholder_thumbnail', true ),
 		'attachment_meta'    => wp_get_attachment_metadata( $godam_numeric_id ),
 	);
+
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	if ( function_exists( 'rtgodam_work_cache_set' ) && function_exists( 'rtgodam_work_cache_index_add' ) ) {
 		rtgodam_work_cache_set( $godam_meta_cache_key, $godam_attachment_data );
@@ -483,7 +509,7 @@ $godam_video_setup = array(
 			'forward'  => 10,
 			'backward' => 10,
 		),
-		'brandingIcon' => true, // provide default value for brand logo. 
+		'brandingIcon' => true, // provide default value for brand logo.
 	),
 );
 if ( ! empty( $godam_control_bar_settings ) ) {
@@ -517,6 +543,27 @@ if ( isset( $attributes['godam_context'] ) && in_array( $attributes['godam_conte
 $godam_video_setup = wp_json_encode( $godam_video_setup );
 
 $godam_frontend_layers = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array();
+
+// Strip the layer-manager JS's own rich-content fields (html/text) from the
+// player's JSON config before encoding: it doesn't need them there (it reads
+// the already-rendered HTML from the DOM separately), and leaving them out
+// avoids duplicating potentially large freeform content into data-options.
+/**
+ * Filters the video layer config array sent to the frontend player JS.
+ *
+ * @since 2.2.0
+ *
+ * @param array $godam_frontend_layers Layer configs with 'html'/'text' fields stripped.
+ */
+$godam_frontend_layers = apply_filters(
+	'rtgodam_video_layers_for_js',
+	array_map(
+		function ( $godam_frontend_layer ) {
+			return is_array( $godam_frontend_layer ) ? array_diff_key( $godam_frontend_layer, array_flip( array( 'html', 'text' ) ) ) : $godam_frontend_layer;
+		},
+		$godam_frontend_layers
+	)
+);
 
 $godam_video_config = wp_json_encode(
 	array(
@@ -665,6 +712,14 @@ $godam_transcript_deleted = ! empty( $godam_attachment_data['transcript_deleted'
 
 $godam_attachment_title = '';
 
+/**
+ * Fires before this title/filename fallback block, so integrations that
+ * centralize media on another site can switch context first.
+ *
+ * @since 2.2.0
+ */
+do_action( 'rtgodam_before_attachment_lookup' );
+
 if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
 	$godam_attachment_title = get_the_title( $godam_attachment_id );
 } elseif ( ! empty( $godam_original_id ) && is_numeric( $godam_original_id ) ) {
@@ -674,6 +729,8 @@ if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
 if ( empty( $godam_attachment_title ) ) {
 	$godam_attachment_title = basename( get_attached_file( $godam_attachment_id ) );
 }
+
+do_action( 'rtgodam_after_attachment_lookup' );
 
 ?>
 
@@ -998,7 +1055,23 @@ if ( empty( $godam_attachment_title ) ) {
 									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 										<?php if ( $godam_render_html_cta ) : ?>
 											<div class="easydam-layer--cta-html">
-												<?php echo wp_kses_post( $godam_layer['html'] ); ?>
+												<?php
+												$godam_cta_html = $godam_layer['html'];
+												$godam_cta_html = do_shortcode( $godam_cta_html );
+
+												/**
+												 * Filters the rendered CTA HTML content for a video layer, after
+												 * shortcode expansion and before final sanitization.
+												 *
+												 * @since 2.2.0
+												 *
+												 * @param string $godam_cta_html The CTA HTML content after shortcode expansion.
+												 * @param array  $godam_layer    The layer configuration array.
+												 */
+												$godam_cta_html = apply_filters( 'rtgodam_cta_html_content', $godam_cta_html, $godam_layer );
+
+												echo wp_kses_post( $godam_cta_html );
+												?>
 											</div>
 										<?php else : ?>
 											<?php echo wp_kses_post( rtgodam_image_cta_html( $godam_layer ) ); ?>

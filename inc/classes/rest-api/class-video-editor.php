@@ -175,6 +175,15 @@ class Video_Editor extends Base {
 			$args['meta_query'] = $meta_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		}
 
+		/**
+		 * Fires before the video-editor's attachment listing query, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$query = new WP_Query( $args );
 
 		$items = array();
@@ -193,17 +202,29 @@ class Video_Editor extends Base {
 			$items = $this->prioritize_item( $items, $prioritize_id, $per_page );
 		}
 
+		$found_posts   = (int) $query->found_posts;
+		$max_num_pages = (int) $query->max_num_pages;
+
+		/**
+		 * Fires after the video-editor's attachment listing query, so
+		 * integrations can restore the site context switched in
+		 * `rtgodam_before_attachment_lookup`.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		$response = new WP_REST_Response(
 			array(
 				'items'      => $items,
-				'total'      => (int) $query->found_posts,
-				'totalPages' => (int) $query->max_num_pages,
+				'total'      => $found_posts,
+				'totalPages' => $max_num_pages,
 			),
 			200
 		);
 
-		$response->header( 'X-WP-Total', (int) $query->found_posts );
-		$response->header( 'X-WP-TotalPages', (int) $query->max_num_pages );
+		$response->header( 'X-WP-Total', $found_posts );
+		$response->header( 'X-WP-TotalPages', $max_num_pages );
 
 		return $response;
 	}
@@ -238,8 +259,8 @@ class Video_Editor extends Base {
 			// Enforce the same author scoping as the list query: users who can't
 			// edit others' content may only surface their own uploads, otherwise
 			// this becomes an IDOR that leaks other users' private video metadata.
-			$owned = $post && ( current_user_can( 'edit_others_posts' ) || get_current_user_id() === (int) $post->post_author || 1 === (int) get_post_meta( $post->ID, 'rtgodam_is_demo_attachment', true ) );
-			if ( $owned && 'attachment' === $post->post_type && 0 === strpos( (string) get_post_mime_type( $post ), 'video/' ) ) {
+			$owned = $post && ( current_user_can( 'edit_others_posts' ) || get_current_user_id() === (int) $post->post_author || 1 === (int) get_post_meta( $post->ID, 'rtgodam_is_demo_attachment', true ) ); // godam-coverage-ignore -- prioritize_item(): covered transitively — sole caller (get_videos) wraps the entire call in its own before/after pair.
+			if ( $owned && 'attachment' === $post->post_type && 0 === strpos( (string) get_post_mime_type( $post ), 'video/' ) ) { // godam-coverage-ignore -- prioritize_item(): covered transitively — sole caller (get_videos) wraps the entire call in its own before/after pair.
 				$pinned = $this->prepare_video_item( $post );
 			}
 		}

@@ -36,6 +36,7 @@ import {
 	MediaReplaceFlow,
 	useBlockProps,
 	InnerBlocks,
+	// eslint-disable-next-line import/no-unresolved -- resolver false positive: package resolves fine at build time, eslint-plugin-import can't parse @wordpress/block-editor's exports map.
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';

@@ -223,37 +223,50 @@ if ( ! function_exists( 'rtgodam_gallery_v2_get_video_data' ) ) {
 	 */
 	function rtgodam_gallery_v2_get_video_data( $attachment_id ) {
 		$attachment_id = absint( $attachment_id );
-		$post          = $attachment_id ? get_post( $attachment_id ) : null;
 
-		if ( ! $post || 'attachment' !== $post->post_type ) {
-			return null;
+		/**
+		 * Fires before resolving this attachment's post/mime/URL/thumbnail
+		 * data, so integrations that centralize media on another site can
+		 * switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$post = $attachment_id ? get_post( $attachment_id ) : null;
+
+			if ( ! $post || 'attachment' !== $post->post_type ) {
+				return null;
+			}
+
+			// Defensive: drop non-video attachments. The block's MediaUpload, the
+			// Elementor godam-media frame filter, and the shortcode's ids= attribute
+			// can all in principle pass any attachment ID (manual JSON edit,
+			// hand-written shortcode, third-party integration). Skip silently so
+			// the rest of the picked list still renders.
+			$mime = get_post_mime_type( $post );
+			if ( ! is_string( $mime ) || 0 !== strpos( $mime, 'video/' ) ) {
+				return null;
+			}
+
+			// Use the original attachment URL for the silent preview video.
+			// rtgodam_transcoded_url stores an MPEG-DASH (.mpd) manifest which cannot
+			// be played by a plain <video> element — only video.js can decode it.
+			// The source MP4 is always browser-playable and is good enough for the
+			// muted hover-preview thumbnail.
+			$godam_video_url = wp_get_attachment_url( $attachment_id );
+
+			return array(
+				'id'          => $attachment_id,
+				'title'       => get_the_title( $attachment_id ) ?: __( 'Untitled video', 'godam' ),
+				'date'        => rtgodam_gallery_v2_format_display_date( $post->post_date ),
+				'thumbnail'   => rtgodam_gallery_v2_get_thumbnail_url( $attachment_id ),
+				'placeholder' => rtgodam_gallery_v2_get_placeholder_thumbnail_url( $attachment_id ),
+				'video_url'   => $godam_video_url ?: '',
+			);
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		// Defensive: drop non-video attachments. The block's MediaUpload, the
-		// Elementor godam-media frame filter, and the shortcode's ids= attribute
-		// can all in principle pass any attachment ID (manual JSON edit,
-		// hand-written shortcode, third-party integration). Skip silently so
-		// the rest of the picked list still renders.
-		$mime = get_post_mime_type( $post );
-		if ( ! is_string( $mime ) || 0 !== strpos( $mime, 'video/' ) ) {
-			return null;
-		}
-
-		// Use the original attachment URL for the silent preview video.
-		// rtgodam_transcoded_url stores an MPEG-DASH (.mpd) manifest which cannot
-		// be played by a plain <video> element — only video.js can decode it.
-		// The source MP4 is always browser-playable and is good enough for the
-		// muted hover-preview thumbnail.
-		$godam_video_url = wp_get_attachment_url( $attachment_id );
-
-		return array(
-			'id'          => $attachment_id,
-			'title'       => get_the_title( $attachment_id ) ?: __( 'Untitled video', 'godam' ),
-			'date'        => rtgodam_gallery_v2_format_display_date( $post->post_date ),
-			'thumbnail'   => rtgodam_gallery_v2_get_thumbnail_url( $attachment_id ),
-			'placeholder' => rtgodam_gallery_v2_get_placeholder_thumbnail_url( $attachment_id ),
-			'video_url'   => $godam_video_url ?: '',
-		);
 	}
 }
 
@@ -346,7 +359,7 @@ if ( $godam_is_shortcode ) {
 $godam_items = array();
 
 if ( 'query' === $godam_gallery_mode ) {
-	$godam_rest_query_args   = array(
+	$godam_rest_query_args = array(
 		'offset'            => 0,
 		'columns'           => 1,
 		'count'             => isset( $attributes['count'] ) ? max( 1, absint( $attributes['count'] ) ) : 6,
@@ -363,6 +376,18 @@ if ( 'query' === $godam_gallery_mode ) {
 		'view_ratio'        => $godam_view_ratio,
 		'performance_mode'  => $godam_performance_mode,
 	);
+	/**
+	 * Fires before querying and resolving "query" mode gallery items, so
+	 * integrations that centralize media on another site can switch context
+	 * first. Without this, the query below runs against the local site and
+	 * finds nothing when the real attachments live elsewhere — the per-item
+	 * rtgodam_gallery_v2_get_video_data() bracket alone can't help, since it
+	 * would never even be called.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+
 	$godam_query             = new WP_Query( rtgodam_gallery_v2_build_query_args( $attributes, 1 ) );
 	$godam_total_query_items = (int) $godam_query->found_posts;
 
@@ -375,6 +400,8 @@ if ( 'query' === $godam_gallery_mode ) {
 			}
 		}
 	}
+
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	wp_reset_postdata();
 } elseif ( ! empty( $inner_block_video_ids ) && is_array( $inner_block_video_ids ) ) {

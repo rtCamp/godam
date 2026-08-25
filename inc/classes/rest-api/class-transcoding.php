@@ -224,9 +224,24 @@ class Transcoding extends Base {
 		$error_msg  = $request->get_param( 'error_msg' );
 		$error_code = $request->get_param( 'error_code' );
 
+		/**
+		 * Fires before resolving/mutating attachment data for this
+		 * transcoding status update, so integrations that centralize media
+		 * on another site can switch context first. The job-ID lookup
+		 * itself needs this too — it's a direct $wpdb->postmeta query, just
+		 * as site-scoped as get_post_meta(). wp_send_json_error()/
+		 * wp_send_json_success() below both terminate via wp_die(), which
+		 * bypasses try/finally, so the after() call is placed explicitly
+		 * right before each one instead of relying on one.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$attachment_id = $this->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 
 		if ( ! $attachment_id ) {
+			do_action( 'rtgodam_after_attachment_lookup' );
 			wp_send_json_error(
 				array(
 					'message' => __( 'Attachment not found.', 'godam' ),
@@ -245,6 +260,7 @@ class Transcoding extends Base {
 		update_post_meta( $attachment_id, 'rtgodam_transcoding_status', $status );
 		update_post_meta( $attachment_id, 'rtgodam_transcoding_progress', $progress );
 
+		do_action( 'rtgodam_after_attachment_lookup' );
 		wp_send_json_success(
 			array(
 				'message' => __( 'Transcoding status updated successfully.', 'godam' ),
@@ -281,83 +297,98 @@ class Transcoding extends Base {
 	 * @return string
 	 */
 	private function get_status_object_from_attachment( int $attachment_id ) {
-		// Check if video has a transcoding job ID.
-		$job_id = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) );
+		/**
+		 * Fires before reading/writing this attachment's transcoding-status
+		 * metadata (job ID, status, error code/message, progress, thumbnail
+		 * ID, and the thumbnail-retry counter), so integrations that
+		 * centralize media on another site can switch context first. Wrapped
+		 * in try/finally because this method returns early from several
+		 * branches below.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Check if video has a transcoding job ID.
+			$job_id = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) );
 
-		// Get and sanitize the transcoding status.
-		$status = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
+			// Get and sanitize the transcoding status.
+			$status = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
 
-		// Handle failure even if job id is missing.
-		if ( ! empty( $status ) && 'failed' === strtolower( $status ) ) {
-			$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
-			$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
+			// Handle failure even if job id is missing.
+			if ( ! empty( $status ) && 'failed' === strtolower( $status ) ) {
+				$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
+				$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
 
-			return array(
-				'status'     => 'failed',
-				'progress'   => 0,
-				'error_code' => $error_code,
-				'error_msg'  => $error_msg,
-			);
-		}
-
-		if ( empty( $job_id ) ) {
-			return array(
-				'status'  => 'not_transcoding',
-				'message' => __( 'Media has not been transcoded.', 'godam' ),
-			);
-		}
-
-		if ( empty( $status ) ) {
-			return array(
-				'status'  => 'not_started',
-				'message' => __( 'Transcoding has not started.', 'godam' ),
-			);
-		}
-
-		// Get and sanitize transcoding progress.
-		$progress = intval( get_post_meta( $attachment_id, 'rtgodam_transcoding_progress', true ) );
-
-		// Define status messages.
-		$status_messages = array(
-			'Queued'      => __( 'Media is queued for transcoding.', 'godam' ),
-			'Downloading' => __( 'Media is downloading for transcoding.', 'godam' ),
-			'Downloaded'  => __( 'Media is downloaded for transcoding.', 'godam' ),
-			'Transcoding' => __( 'Media is transcoding.', 'godam' ),
-			'Transcoded'  => __( 'Media is transcoded.', 'godam' ),
-		);
-
-		// Set default message for unknown status.
-		$message = isset( $status_messages[ $status ] ) ? $status_messages[ $status ] : __( 'Unknown transcoding status.', 'godam' );
-
-		// Check if media has thumbnail generated after transcoding.
-		$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
-
-		// Handle retry logic for missing thumbnails when transcoding is complete.
-		if ( 'transcoded' === strtolower( $status ) && empty( $thumbnail_id ) ) {
-			$retry_count = intval( get_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', true ) );
-			$max_retries = 3;
-
-			if ( $retry_count < $max_retries ) {
-				// Increment retry count.
-				update_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', $retry_count + 1 );
-
-				// Return transcoding status with 95% progress to indicate waiting for thumbnail.
 				return array(
-					'status'    => 'transcoding',
-					'progress'  => 95,
-					'message'   => __( 'Transcoding complete, generating thumbnail...', 'godam' ),
-					'thumbnail' => '',
+					'status'     => 'failed',
+					'progress'   => 0,
+					'error_code' => $error_code,
+					'error_msg'  => $error_msg,
 				);
 			}
-			// If max retries reached, continue with normal flow (return transcoded status without thumbnail).
-		}
 
-		return array(
-			'status'    => strtolower( $status ),
-			'progress'  => $progress,
-			'message'   => $message,
-			'thumbnail' => ! empty( $thumbnail_id ) ? $thumbnail_id : '',
-		);
+			if ( empty( $job_id ) ) {
+				return array(
+					'status'  => 'not_transcoding',
+					'message' => __( 'Media has not been transcoded.', 'godam' ),
+				);
+			}
+
+			if ( empty( $status ) ) {
+				return array(
+					'status'  => 'not_started',
+					'message' => __( 'Transcoding has not started.', 'godam' ),
+				);
+			}
+
+			// Get and sanitize transcoding progress.
+			$progress = intval( get_post_meta( $attachment_id, 'rtgodam_transcoding_progress', true ) );
+
+			// Define status messages.
+			$status_messages = array(
+				'Queued'      => __( 'Media is queued for transcoding.', 'godam' ),
+				'Downloading' => __( 'Media is downloading for transcoding.', 'godam' ),
+				'Downloaded'  => __( 'Media is downloaded for transcoding.', 'godam' ),
+				'Transcoding' => __( 'Media is transcoding.', 'godam' ),
+				'Transcoded'  => __( 'Media is transcoded.', 'godam' ),
+			);
+
+			// Set default message for unknown status.
+			$message = isset( $status_messages[ $status ] ) ? $status_messages[ $status ] : __( 'Unknown transcoding status.', 'godam' );
+
+			// Check if media has thumbnail generated after transcoding.
+			$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
+
+			// Handle retry logic for missing thumbnails when transcoding is complete.
+			if ( 'transcoded' === strtolower( $status ) && empty( $thumbnail_id ) ) {
+				$retry_count = intval( get_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', true ) );
+				$max_retries = 3;
+
+				if ( $retry_count < $max_retries ) {
+					// Increment retry count.
+					update_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', $retry_count + 1 );
+
+					// Return transcoding status with 95% progress to indicate waiting for thumbnail.
+					return array(
+						'status'    => 'transcoding',
+						'progress'  => 95,
+						'message'   => __( 'Transcoding complete, generating thumbnail...', 'godam' ),
+						'thumbnail' => '',
+					);
+				}
+				// If max retries reached, continue with normal flow (return transcoded status without thumbnail).
+			}
+
+			return array(
+				'status'    => strtolower( $status ),
+				'progress'  => $progress,
+				'message'   => $message,
+				'thumbnail' => ! empty( $thumbnail_id ) ? $thumbnail_id : '',
+			);
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	/**
@@ -377,7 +408,7 @@ class Transcoding extends Base {
 		$meta = wp_cache_get( $cache_key, 'godam' );
 
 		if ( empty( $meta ) ) {
-			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, godam-coverage-ignore -- get_post_id_by_meta_key_and_value(): covered transitively — sole caller (update_transcoding_status) already wraps this call in its own before/after pair.
 			wp_cache_set( $cache_key, $meta, 'godam', 3600 );
 		}
 
@@ -511,6 +542,15 @@ class Transcoding extends Base {
 			$paged    = 1;
 			$per_page = 200;
 
+			/**
+			 * Fires before querying attachment posts to find media still
+			 * requiring transcoding, so integrations that centralize media
+			 * on another site can switch context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+
 			do {
 				$args = array(
 					'post_type'      => 'attachment',
@@ -542,6 +582,15 @@ class Transcoding extends Base {
 					break;
 				}
 			} while ( true );
+
+			/**
+			 * Fires after the attachment query above, so integrations can
+			 * restore the site context switched in
+			 * `rtgodam_before_attachment_lookup`.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		return new \WP_REST_Response(
@@ -575,6 +624,15 @@ class Transcoding extends Base {
 		$untranscoded = array();
 		$paged        = 1;
 		$per_page     = 200;
+
+		/**
+		 * Fires before querying attachment posts to find convertible
+		 * documents, so integrations that centralize media on another
+		 * site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 
 		do {
 			$query = new \WP_Query(
@@ -616,6 +674,15 @@ class Transcoding extends Base {
 			++$paged;
 		} while ( true );
 
+		/**
+		 * Fires after the attachment query above, so integrations can
+		 * restore the site context switched in
+		 * `rtgodam_before_attachment_lookup`.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		return array(
 			'eligible'     => $eligible,
 			'untranscoded' => $untranscoded,
@@ -642,6 +709,13 @@ class Transcoding extends Base {
 		$transcode_count   = 0;
 		$retranscode_count = 0;
 
+		/**
+		 * Fires before this per-ID attachment meta loop, so integrations
+		 * that centralize media on another site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		foreach ( $attachment_ids as $attachment_id ) {
 			$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 			// If transcoded, it should have URL.
@@ -651,6 +725,7 @@ class Transcoding extends Base {
 				++$transcode_count;
 			}
 		}
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return new \WP_REST_Response(
 			array(
@@ -683,6 +758,38 @@ class Transcoding extends Base {
 			);
 		}
 
+		/**
+		 * Fires before resolving/mutating this attachment's transcoding
+		 * state, so integrations that centralize media on another site can
+		 * switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->retranscode_media_centralized( $request, $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Does the actual work of retranscode_media(), always running with the
+	 * centralized media site active — see the before/after pair in the
+	 * caller.
+	 *
+	 * Split out (rather than duplicating after_attachment_lookup before each
+	 * of this method's ~7 early returns) so a try/finally in the thin public
+	 * wrapper can't leak a switched site context even if a future edit adds
+	 * more early returns to this body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param \WP_REST_Request $request       REST request object.
+	 * @param int              $attachment_id Attachment ID.
+	 * @return \WP_REST_Response
+	 */
+	private function retranscode_media_centralized( \WP_REST_Request $request, $attachment_id ) {
 		$title = get_the_title( $attachment_id );
 
 		// Check if local development environment.

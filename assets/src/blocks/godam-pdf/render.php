@@ -26,44 +26,57 @@ if ( ! $godam_attachment_id && empty( $godam_src ) ) {
 	return;
 }
 
-/*
- * Two URLs, and they are not interchangeable.
+/**
+ * Fires before reading this attachment's URL/transcoded-URL/title, so
+ * integrations that centralize media on another site can switch context
+ * first.
  *
- * $godam_preview_url is always a PDF: either the file itself, or the preview PDF GoDAM
- * Central rendered from a Word / Excel / PowerPoint / OpenDocument / text upload. It is the
- * only thing that may be handed to the viewer.
- *
- * $godam_download_url is always the file the author uploaded. It is the only thing that may
- * be offered as a download — somebody who uploads report.xlsx and gets preview.pdf back
- * will think something broke.
+ * @since 2.2.0
  */
-$godam_preview_url  = rtgodam_get_document_preview_url( $godam_attachment_id, $godam_src );
-$godam_download_url = rtgodam_get_document_download_url( $godam_attachment_id, $godam_src );
+do_action( 'rtgodam_before_attachment_lookup' );
 
-if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
-	// Fall back to attachment title for doc title if editor left it empty.
-	if ( empty( $godam_doc_title ) ) {
-		$godam_post      = get_post( $godam_attachment_id );
-		$godam_doc_title = $godam_post ? get_the_title( $godam_post ) : '';
+try {
+	/*
+	 * Two URLs, and they are not interchangeable.
+	 *
+	 * $godam_preview_url is always a PDF: either the file itself, or the preview PDF GoDAM
+	 * Central rendered from a Word / Excel / PowerPoint / OpenDocument / text upload. It is the
+	 * only thing that may be handed to the viewer.
+	 *
+	 * $godam_download_url is always the file the author uploaded. It is the only thing that may
+	 * be offered as a download — somebody who uploads report.xlsx and gets preview.pdf back
+	 * will think something broke.
+	 */
+	$godam_preview_url  = rtgodam_get_document_preview_url( $godam_attachment_id, $godam_src );
+	$godam_download_url = rtgodam_get_document_download_url( $godam_attachment_id, $godam_src );
+
+	if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
+		// Fall back to attachment title for doc title if editor left it empty.
+		if ( empty( $godam_doc_title ) ) {
+			$godam_post      = get_post( $godam_attachment_id );
+			$godam_doc_title = $godam_post ? get_the_title( $godam_post ) : '';
+		}
 	}
-}
 
-if ( empty( $godam_preview_url ) && empty( $godam_download_url ) ) {
-	return;
-}
+	if ( empty( $godam_preview_url ) && empty( $godam_download_url ) ) {
+		return;
+	}
 
-/*
- * Formats outside rtgodam_get_supported_document_types() have no preview to show, so emit
- * nothing rather than an empty frame; the editors surface an "unsupported format" notice so
- * the author can see and fix it.
- *
- * Checked against the original attachment id / src rather than the resolved URLs above,
- * because a preview URL's extension no longer reflects the source file. A numeric id
- * resolves via its stored MIME type, so $godam_src is only consulted for GoDAM tab media
- * and URL-only documents, exactly the cases where $godam_src is guaranteed set.
- */
-if ( ! godam_is_supported_document( $godam_attachment_id, $godam_src ) ) {
-	return;
+	/*
+	 * Formats outside rtgodam_get_supported_document_types() have no preview to show, so emit
+	 * nothing rather than an empty frame; the editors surface an "unsupported format" notice so
+	 * the author can see and fix it.
+	 *
+	 * Checked against the original attachment id / src rather than the resolved URLs above,
+	 * because a preview URL's extension no longer reflects the source file. A numeric id
+	 * resolves via its stored MIME type, so $godam_src is only consulted for GoDAM tab media
+	 * and URL-only documents, exactly the cases where $godam_src is guaranteed set.
+	 */
+	if ( ! godam_is_supported_document( $godam_attachment_id, $godam_src ) ) {
+		return;
+	}
+} finally {
+	do_action( 'rtgodam_after_attachment_lookup' );
 }
 
 // Named from the original, not the preview, so the card's fallback label reads
@@ -94,12 +107,14 @@ if ( empty( $godam_is_shortcode ) ) {
 			if ( $godam_custom_cover ) {
 				$godam_cover_url = $godam_custom_cover;
 			} elseif ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
+				do_action( 'rtgodam_before_attachment_lookup' );
 				// Mirror set_media_library_thumbnail(): video thumbnail (transcoding callback)
 				// takes priority over pdf-specific key (GoDAM tab import).
 				$godam_thumb = get_post_meta( $godam_attachment_id, 'rtgodam_media_video_thumbnail', true );
 				if ( empty( $godam_thumb ) ) {
 					$godam_thumb = get_post_meta( $godam_attachment_id, 'rtgodam_media_pdf_thumbnail', true );
 				}
+				do_action( 'rtgodam_after_attachment_lookup' );
 				if ( $godam_thumb ) {
 					$godam_cover_url = $godam_thumb; // escaped at output below.
 				}
@@ -148,6 +163,7 @@ if ( empty( $godam_is_shortcode ) ) {
 							$godam_meta_parts[] = sprintf( _n( '%d page', '%d pages', $godam_page_count, 'godam' ), $godam_page_count );
 						}
 						if ( $godam_attachment_id ) {
+							do_action( 'rtgodam_before_attachment_lookup' );
 							// wp_get_attachment_metadata() stores filesize in the DB —
 							// works even when files are on S3 / CDN (no local file needed).
 							$godam_att_meta = wp_get_attachment_metadata( $godam_attachment_id );
@@ -159,6 +175,7 @@ if ( empty( $godam_is_shortcode ) ) {
 									$godam_filesize = filesize( $godam_local );
 								}
 							}
+							do_action( 'rtgodam_after_attachment_lookup' );
 							if ( $godam_filesize ) {
 								$godam_meta_parts[] = $godam_filesize < 1048576
 									? round( $godam_filesize / 1024 ) . ' KB'
