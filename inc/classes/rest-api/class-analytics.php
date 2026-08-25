@@ -207,13 +207,21 @@ class Analytics extends Base {
 							'required'          => false,
 							'type'              => 'string',
 							'default'           => 'product_views',
+							// Allowlist at the WP boundary (defense in depth): these are
+							// the analytics service's own TOP_PRODUCTS_METRIC_SQL keys, so
+							// a bad value 400s here with a clear message instead of being
+							// forwarded upstream.
+							'enum'              => array( 'product_views', 'add_to_cart', 'impressions', 'ctr' ),
 							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => 'rest_validate_request_arg',
 						),
 						'order'    => array(
 							'required'          => false,
 							'type'              => 'string',
 							'default'           => 'desc',
+							'enum'              => array( 'asc', 'desc' ),
 							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => 'rest_validate_request_arg',
 						),
 					),
 				),
@@ -1046,9 +1054,26 @@ class Analytics extends Base {
 			);
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$http_code = (int) wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
 
-		$top_videos = $body['top_videos'] ?? array();
+		if ( 200 !== $http_code ) {
+			// Surface a non-2xx / unparseable response as an error rather than an
+			// empty "no data" table (mirrors fetch_layer_analytics).
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) )
+				? $body['detail']
+				: __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 400 === $http_code ? 'bad_request' : 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$top_videos = is_array( $body ) ? ( $body['top_videos'] ?? array() ) : array();
 
 		foreach ( $top_videos as &$video ) {
 			if ( ! empty( $video['video_id'] ) ) {
@@ -1249,8 +1274,28 @@ class Analytics extends Base {
 			);
 		}
 
-		$body         = json_decode( wp_remote_retrieve_body( $response ), true );
-		$top_products = $body['top_products'] ?? array();
+		$http_code = (int) wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $http_code ) {
+			// A non-2xx (bad request, service down, HTML error page) or unparseable
+			// body must NOT be rendered as an empty "no product activity" table.
+			// Surface it as an error so the frontend RTK Query layer can show it,
+			// mirroring fetch_layer_analytics.
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) )
+				? $body['detail']
+				: __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 400 === $http_code ? 'bad_request' : 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$top_products = is_array( $body ) ? ( $body['top_products'] ?? array() ) : array();
 
 		foreach ( $top_products as &$product ) {
 			$product_id = intval( $product['product_id'] ?? 0 );
