@@ -24,6 +24,64 @@ class Transcoding extends Base {
 	protected $rest_base = 'transcoding';
 
 	/**
+	 * Default media type used when none is provided.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string
+	 */
+	const DEFAULT_MEDIA_TYPE = 'video';
+
+	/**
+	 * Media types that can be fetched for transcoding, mapped to the MIME types they cover.
+	 *
+	 * The keys are the accepted values of the `media_type` parameter on the
+	 * `not-transcoded` route. `all` covers only the types the retranscode trigger
+	 * actually supports, not every MIME type in the media library: handing an
+	 * unsupported type to the transcoder is a no-op that surfaces as an unknown error.
+	 *
+	 * A method rather than a constant because the document MIME types have to come from
+	 * rtgodam_get_supported_document_types(), and a constant expression cannot call it.
+	 * Restating the list here would be exactly the duplication that helper exists to prevent.
+	 *
+	 * `document` spans PDF and the Office / OpenDocument / text formats alike: which of the two
+	 * Central job types a file ends up on ('pdf' or 'document') is decided per extension by
+	 * RTGODAM_Transcoder_Handler, and is not a distinction anyone picking media here cares about.
+	 *
+	 * `application/ogg` rides alongside the bare `audio` top-level type: the transcoder lists it
+	 * among its supported types (RTGODAM_Transcoder_Handler::$allowed_mimetypes), but WordPress
+	 * stores such files with an `application/` prefix that the `audio` match never covers. Normal
+	 * .ogg uploads are stored as `audio/ogg` and matched already; this only reaches the ones a
+	 * migration or custom MIME filter typed as `application/ogg`.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array<string, string[]> Media type => MIME types (or bare top-level types).
+	 */
+	private static function get_media_type_mime_map() {
+		$document_mime_types = self::get_document_mime_types();
+
+		return array(
+			'all'      => array_merge( array( 'video', 'audio', 'application/ogg', 'image' ), $document_mime_types ),
+			'video'    => array( 'video' ),
+			'audio'    => array( 'audio', 'application/ogg' ),
+			'document' => $document_mime_types,
+			'image'    => array( 'image' ),
+		);
+	}
+
+	/**
+	 * MIME types the Document pipeline covers.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return string[] Document MIME types.
+	 */
+	private static function get_document_mime_types() {
+		return array_keys( rtgodam_get_supported_document_types() );
+	}
+
+	/**
 	 * Register custom REST API.
 	 *
 	 * @return array Array of registered REST API routes
@@ -104,6 +162,20 @@ class Transcoding extends Base {
 					'permission_callback' => function () {
 						return current_user_can( 'edit_others_posts' );
 					},
+					'args'                => array(
+						'media_type' => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => self::DEFAULT_MEDIA_TYPE,
+							'enum'              => array_keys( self::get_media_type_mime_map() ),
+							'description'       => __( 'The type of media to fetch for transcoding.', 'godam' ),
+							'sanitize_callback' => 'sanitize_text_field',
+							// WordPress only enforces `enum` when a validate_callback is present;
+							// without this the schema is decorative and an unrecognised value
+							// silently falls back to video rather than telling the caller.
+							'validate_callback' => 'rest_validate_request_arg',
+						),
+					),
 				),
 			),
 			array(
@@ -384,6 +456,60 @@ class Transcoding extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function get_media_require_retranscoding( $request ) {
+		$media_type    = $request->get_param( 'media_type' );
+		$mime_type_map = self::get_media_type_mime_map();
+
+		// The route validates against the map, but stay safe for direct calls.
+		if ( ! isset( $mime_type_map[ $media_type ] ) ) {
+			$media_type = self::DEFAULT_MEDIA_TYPE;
+		}
+
+		$mime_types = $mime_type_map[ $media_type ];
+		$force      = (bool) $request->get_param( 'force' );
+
+		/*
+		 * Documents are handled apart from audio/video/image because a MIME type is not enough
+		 * to identify one, and post_mime_type is all WP_Query can filter on. WordPress maps
+		 * .srt/.asc/.c/.cc/.h to text/plain exactly as it maps .txt, .xlt/.xlw/.xla to
+		 * application/vnd.ms-excel as it maps .xls, and .pot/.pps to
+		 * application/vnd.ms-powerpoint as it maps .ppt — none of which Central can convert.
+		 *
+		 * Left in, they would be dispatched, rejected by the extension gate in
+		 * wp_media_transcoding(), and reported to the user as "Unknown error" — and they would
+		 * inflate the media count shown beside the fetched list, which on a site with a few
+		 * hundred caption files is most of it.
+		 */
+		$document_mime_types = self::get_document_mime_types();
+		$document_mimes      = array_values( array_intersect( $mime_types, $document_mime_types ) );
+		$plain_mimes         = array_values( array_diff( $mime_types, $document_mime_types ) );
+
+		$documents = empty( $document_mimes )
+			? array(
+				'eligible'     => array(),
+				'untranscoded' => array(),
+			)
+			: $this->get_document_attachments( $document_mimes );
+
+		/*
+		 * Total. The document half is counted from the scan above rather than from
+		 * wp_count_attachments(), which counts by MIME and cannot express the extension rule.
+		 */
+		$total_media_count = count( $documents['eligible'] );
+
+		if ( ! empty( $plain_mimes ) ) {
+			$attachment_counts = (array) wp_count_attachments( $plain_mimes );
+
+			/*
+			 * wp_count_attachments() reports trashed attachments under a separate `trash` key
+			 * while its per-MIME rows exclude them. Every query here uses post_status 'any',
+			 * which excludes trash too, so adding them back double-counts and leaves
+			 * total_media_count overshooting by the number of trashed attachments.
+			 */
+			unset( $attachment_counts['trash'] );
+
+			$total_media_count += array_sum( $attachment_counts );
+		}
+
 		// Check if storage limits are exceeded (only storage blocks transcoding).
 		$user_data = rtgodam_get_user_data();
 		if ( ! empty( $user_data ) && isset( $user_data['storage_used'], $user_data['total_storage'] ) ) {
@@ -393,7 +519,8 @@ class Transcoding extends Base {
 				return new \WP_REST_Response(
 					array(
 						'data'              => array(),
-						'total_media_count' => array_sum( (array) wp_count_attachments( 'video' ) ),
+						'total_media_count' => $total_media_count,
+						'media_type'        => $media_type,
 						'storage_exceeded'  => true,
 						'message'           => sprintf(
 							// translators: %s is the storage usage percentage.
@@ -406,79 +533,149 @@ class Transcoding extends Base {
 			}
 		}
 
-		$all_posts = array();
-		$paged     = 1;
-		$per_page  = 200;
+		// Force fetches every eligible document; otherwise only the ones Central has not seen.
+		$all_posts = $force ? $documents['eligible'] : $documents['untranscoded'];
 
-		$force = $request->get_param( 'force' );
+		// Guarded: an empty post_mime_type is not a narrower filter, it is no filter at all,
+		// so an unguarded query would return the whole media library for media_type=document.
+		if ( ! empty( $plain_mimes ) ) {
+			$paged    = 1;
+			$per_page = 200;
+
+			/**
+			 * Fires before querying attachment posts to find media still
+			 * requiring transcoding, so integrations that centralize media
+			 * on another site can switch context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+
+			do {
+				$args = array(
+					'post_type'      => 'attachment',
+					'post_mime_type' => $plain_mimes,
+					'post_status'    => 'any',
+					'posts_per_page' => $per_page,
+					'paged'          => $paged,
+					'fields'         => 'ids',
+					'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- This is a necessary query to find posts that need retranscoding.
+						array(
+							'key'     => 'rtgodam_transcoded_url',
+							'compare' => 'NOT EXISTS',
+						),
+					),
+				);
+
+				// If force is set, fetch all media of the selected type regardless of transcoded_url.
+				if ( $force ) {
+					// remove the meta query condition.
+					$args['meta_query'] = null; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- False positive check for meta query.
+				}
+
+				$query = new \WP_Query( $args );
+
+				if ( $query->have_posts() ) {
+					$all_posts = array_merge( $all_posts, $query->posts );
+					++$paged;
+				} else {
+					break;
+				}
+			} while ( true );
+
+			/**
+			 * Fires after the attachment query above, so integrations can
+			 * restore the site context switched in
+			 * `rtgodam_before_attachment_lookup`.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+
+		return new \WP_REST_Response(
+			array(
+				'data'              => $all_posts,
+				'total_media_count' => $total_media_count,
+				'media_type'        => $media_type,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Document attachments the transcoder can actually convert, split by transcoding state.
+	 *
+	 * One paged scan answers two questions at once — which documents to send (the ones Central
+	 * has not seen yet) and how many convertible ones there are in total — because neither can be
+	 * answered by SQL alone. rtgodam_is_supported_document_attachment() has to read each
+	 * attachment's extension as well as its MIME type, and neither wp_count_attachments() nor
+	 * a meta query can express that.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string[] $mime_types Document MIME types to scan. Must not be empty.
+	 *
+	 * @return array{eligible: int[], untranscoded: int[]} Every convertible document, and the
+	 *                                                     subset with no transcoded URL yet.
+	 */
+	private function get_document_attachments( array $mime_types ) {
+		$eligible     = array();
+		$untranscoded = array();
+		$paged        = 1;
+		$per_page     = 200;
 
 		/**
-		 * Fires before querying attachment posts to find videos still
-		 * requiring transcoding, so integrations that centralize media on
-		 * another site can switch context first. Spans both the paginated
-		 * 'attachment'/video query below and the follow-up query counting
-		 * already-transcoded video attachments, since both scan the same
-		 * attachment-scoped data.
+		 * Fires before querying attachment posts to find convertible
+		 * documents, so integrations that centralize media on another
+		 * site can switch context first.
 		 *
 		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
 		do {
-			$args = array(
-				'post_type'      => 'attachment',
-				'post_mime_type' => 'video',
-				'post_status'    => 'any',
-				'posts_per_page' => $per_page,
-				'paged'          => $paged,
-				'fields'         => 'ids',
-				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- This is a necessary query to find posts that need retranscoding.
-					array(
-						'key'     => 'rtgodam_transcoded_url',
-						'compare' => 'NOT EXISTS',
-					),
-				),
+			$query = new \WP_Query(
+				array(
+					'post_type'      => 'attachment',
+					'post_mime_type' => $mime_types,
+					'post_status'    => 'any',
+					'posts_per_page' => $per_page,
+					'paged'          => $paged,
+					'fields'         => 'ids',
+				)
 			);
 
-			// If force is set, fetch all video regardless of transcoded_url.
-			if ( $force ) {
-				// remove the meta query condition.
-				$args['meta_query'] = null; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- False positive check for meta query.
-			}
-
-			$query = new \WP_Query( $args );
-
-			if ( $query->have_posts() ) {
-				$all_posts = array_merge( $all_posts, $query->posts );
-				++$paged;
-			} else {
+			if ( ! $query->have_posts() ) {
 				break;
 			}
+
+			/*
+			 * Two queries per page instead of two per attachment: the eligibility test reads
+			 * both the post row (for the MIME type) and _wp_attached_file, and a 'fields' => 'ids'
+			 * query primes neither.
+			 */
+			_prime_post_caches( $query->posts, false, true );
+
+			foreach ( $query->posts as $attachment_id ) {
+				if ( ! rtgodam_is_supported_document_attachment( $attachment_id ) ) {
+					continue;
+				}
+
+				$eligible[] = $attachment_id;
+
+				// metadata_exists() rather than an empty() check on the value, to match the
+				// NOT EXISTS meta query the audio/video/image half of the fetch uses.
+				if ( ! metadata_exists( 'post', $attachment_id, 'rtgodam_transcoded_url' ) ) {
+					$untranscoded[] = $attachment_id;
+				}
+			}
+
+			++$paged;
 		} while ( true );
 
-		// Get counts for transcoded and untranscoded media.
-		$total_video_count = array_sum( (array) wp_count_attachments( 'video' ) );
-
-		// Count transcoded media (have rtgodam_transcoded_url meta).
-		$transcoded_args  = array(
-			'post_type'      => 'attachment',
-			'post_mime_type' => 'video',
-			'post_status'    => 'any',
-			'posts_per_page' => 1,
-			'fields'         => 'ids',
-			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- This is a necessary query to find posts that have the rtgodam_transcoded_url meta.
-			'meta_query'     => array(
-				array(
-					'key'     => 'rtgodam_transcoded_url',
-					'compare' => 'EXISTS',
-				),
-			),
-		);
-		$transcoded_query = new \WP_Query( $transcoded_args );
-		$transcoded_count = $transcoded_query->found_posts; // This will return the number of posts that have the rtgodam_transcoded_url meta.
-
 		/**
-		 * Fires after the attachment queries above, so integrations can
+		 * Fires after the attachment query above, so integrations can
 		 * restore the site context switched in
 		 * `rtgodam_before_attachment_lookup`.
 		 *
@@ -486,17 +683,9 @@ class Transcoding extends Base {
 		 */
 		do_action( 'rtgodam_after_attachment_lookup' );
 
-		// Count untranscoded media (don't have rtgodam_transcoded_url meta).
-		$untranscoded_count = $total_video_count - $transcoded_count;
-
-		return new \WP_REST_Response(
-			array(
-				'data'              => $all_posts,
-				'total_media_count' => $total_video_count,
-				'transcode_count'   => $untranscoded_count,
-				'retranscode_count' => $transcoded_count,
-			),
-			200
+		return array(
+			'eligible'     => $eligible,
+			'untranscoded' => $untranscoded,
 		);
 	}
 
@@ -711,12 +900,42 @@ class Transcoding extends Base {
 			);
 		}
 
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		/*
+		 * A document MIME type whose extension disagrees with it — a .srt, .c or .h carrying
+		 * text/plain, a .xlt carrying application/vnd.ms-excel. Central has no conversion path
+		 * for these, so wp_media_transcoding() drops them without creating a job and this route
+		 * would otherwise report the empty job id below as a 500 "Unknown error".
+		 *
+		 * The Media Library row action already hides itself for these, but the bulk action does
+		 * not, so they can still arrive here by way of the media_ids handoff.
+		 */
+		if (
+			array_key_exists( $mime_type, rtgodam_get_supported_document_types() )
+			&& ! rtgodam_is_supported_document_attachment( $attachment_id )
+		) {
+			$message = sprintf(
+				// translators: 1: Attachment title, 2: Attachment ID.
+				__( '%1$s (ID %2$d) is not a document format GoDAM can convert, so it was skipped.', 'godam' ),
+				esc_html( $title ),
+				absint( $attachment_id )
+			);
+
+			return new \WP_REST_Response(
+				array(
+					'message' => $message,
+					'skipped' => true,
+					'reason'  => 'unsupported_document',
+				),
+				200
+			);
+		}
+
 		// Proceed with normal retranscoding for original media.
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_status' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
-
-		$mime_type = get_post_mime_type( $attachment_id );
 
 		$wp_metadata              = array();
 		$wp_metadata['mime_type'] = $mime_type;
