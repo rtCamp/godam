@@ -37,7 +37,7 @@ describe( 'PurchaseFunnelCard', () => {
 	it( 'renders the title, the three stages and their counts', () => {
 		const html = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } dataLabel="Last 30 days" /> );
 		expect( html ).toContain( 'godam-purchase-funnel-card' );
-		expect( html ).toContain( 'Play to Cart to Purchase' );
+		expect( html ).toContain( 'Purchase Funnel' );
 		expect( html ).toContain( 'Played a video' );
 		expect( html ).toContain( 'Added to cart' );
 		expect( html ).toContain( 'Purchased' );

@@ -132,7 +132,7 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 		<div className="godam-card godam-funnel-card" data-test-id="godam-purchase-funnel-card">
 			<div className="godam-card__head">
 				<div className="flex items-center gap-2.5">
-					<h2>{ __( 'Play to Cart to Purchase', 'godam' ) }</h2>
+					<h2>{ __( 'Purchase Funnel', 'godam' ) }</h2>
 					<span className="text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]">Woo</span>
 					<span className="text-[10px] font-bold leading-none px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#92400E] tracking-wide">{ __( 'NEW', 'godam' ) }</span>
 				</div>
