@@ -137,15 +137,26 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
 		return '';
 	}
 
-	$media = get_post( $media_id );
+	/**
+	 * Fires before resolving this attachment's URL, so integrations that
+	 * centralize media on another site can switch context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$media = get_post( $media_id );
 
-	if ( ! $media || 'attachment' !== $media->post_type ) {
-		return '';
+		if ( ! $media || 'attachment' !== $media->post_type ) {
+			return '';
+		}
+
+		$media_url = wp_get_attachment_url( $media_id );
+
+		return $media_url ? $media_url : '';
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
-
-	$media_url = wp_get_attachment_url( $media_id );
-
-	return $media_url ? $media_url : '';
 }
 
 /**
@@ -837,17 +848,17 @@ function rtgodam_get_attachment_extension( $attachment_id ) {
 function godam_is_supported_document( $attachment_id = 0, $url = '' ) {
 	// 0 for anything that cannot be an attachment id, which falls through to the URL check
 	// below. See rtgodam_normalize_attachment_id() for why that is stricter than is_numeric().
-	$godam_post_id = rtgodam_normalize_attachment_id( $attachment_id );
+	$attachment_id = rtgodam_normalize_attachment_id( $attachment_id );
 
-	if ( $godam_post_id ) {
-		$mime_type = get_post_mime_type( $godam_post_id );
+	if ( $attachment_id ) {
+		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! empty( $mime_type ) ) {
 			if ( ! array_key_exists( $mime_type, rtgodam_get_supported_document_types() ) ) {
 				return false;
 			}
 
-			$extension = rtgodam_get_attachment_extension( $godam_post_id );
+			$extension = rtgodam_get_attachment_extension( $attachment_id );
 
 			// No resolvable file (virtual GoDAM media, or a file already removed from disk):
 			// there is no extension to confirm, so the MIME type is all there is to go on.
@@ -954,23 +965,23 @@ function rtgodam_is_supported_document_attachment( $attachment_id ) {
  * @return string Preview PDF URL, or an empty string when none is available.
  */
 function rtgodam_get_document_preview_url( $attachment_id = 0, $fallback_src = '' ) {
-	$godam_post_id = rtgodam_normalize_attachment_id( $attachment_id );
+	$attachment_id = rtgodam_normalize_attachment_id( $attachment_id );
 
-	if ( $godam_post_id ) {
-		$preview_url = get_post_meta( $godam_post_id, 'rtgodam_preview_pdf_url', true );
+	if ( $attachment_id ) {
+		$preview_url = get_post_meta( $attachment_id, 'rtgodam_preview_pdf_url', true );
 
 		if ( ! empty( $preview_url ) ) {
 			return $preview_url;
 		}
 
-		if ( 'application/pdf' === get_post_mime_type( $godam_post_id ) ) {
-			$transcoded_url = get_post_meta( $godam_post_id, 'rtgodam_transcoded_url', true );
+		if ( 'application/pdf' === get_post_mime_type( $attachment_id ) ) {
+			$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 
 			if ( ! empty( $transcoded_url ) ) {
 				return $transcoded_url;
 			}
 
-			$attachment_url = wp_get_attachment_url( $godam_post_id );
+			$attachment_url = wp_get_attachment_url( $attachment_id );
 
 			if ( ! empty( $attachment_url ) ) {
 				return $attachment_url;
@@ -1010,7 +1021,7 @@ function rtgodam_get_document_download_url( $attachment_id = 0, $fallback_src = 
 	$godam_post_id = rtgodam_normalize_attachment_id( $attachment_id );
 
 	if ( $godam_post_id ) {
-		$attachment_url = wp_get_attachment_url( $godam_post_id );
+		$attachment_url = wp_get_attachment_url( $godam_post_id ); // godam-coverage-ignore -- rtgodam_get_document_download_url(): covered transitively — sole caller (assets/src/blocks/godam-pdf/render.php) wraps the entire call in try/finally.
 
 		if ( ! empty( $attachment_url ) ) {
 			return $attachment_url;
@@ -1114,15 +1125,14 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 		}
 	}
 
+	include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php';
+
 	/**
 	 * Callback URL from CMM to plugin for transcoding.
 	 */
-	$callback_url = rest_url( 'godam/v1/transcoder-callback' );
+	$callback_url = \RTGODAM_Transcoder_Rest_Routes::get_callback_url();
 
-	/**
-	 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
-	 */
-	$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+	$status_callback_url = \RTGODAM_Transcoder_Rest_Routes::get_callback_url( 'status' );
 
 	/**
 	 * Prepare data to send as post request to CMM.
@@ -1405,18 +1415,30 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 		return false;
 	}
 
-	// Check post meta first.
-	$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
-	if ( ! empty( $transcript_path ) ) {
-		return $transcript_path;
-	}
-
-	// Get job_id from parameter or post meta.
-	if ( empty( $job_id ) ) {
-		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		if ( empty( $job_id ) ) {
-			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+	/**
+	 * Fires before reading this attachment's transcript/job-id meta, so
+	 * integrations that centralize media on another site can switch
+	 * context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		// Check post meta first.
+		$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+		if ( ! empty( $transcript_path ) ) {
+			return $transcript_path;
 		}
+
+		// Get job_id from parameter or post meta.
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+			if ( empty( $job_id ) ) {
+				$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+			}
+		}
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	if ( empty( $job_id ) ) {
@@ -1470,7 +1492,16 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 
 		// Save to post meta using the attachment ID.
 		if ( ! empty( $transcript_path ) ) {
+			/**
+			 * Fires before writing this attachment's transcript-path meta, so
+			 * integrations that centralize media on another site can switch
+			 * context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		return $transcript_path;
@@ -1497,9 +1528,27 @@ function godam_preview_page_content( $video_id ) {
 	$show_video       = false;
 	$video_id         = intval( $video_id );
 
+	$godam_video_title = '';
+	$godam_mime        = '';
+
 	if ( ! empty( $video_id ) ) {
+		/**
+		 * Fires before resolving this attachment's post/mime/title data, so
+		 * integrations that centralize media on another site can switch
+		 * context first. Title and mime type are captured into variables here
+		 * (not re-read later) since the shortcode/block render further down
+		 * must run on the *current* site, after this bracket has closed.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
-		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type;
+		if ( $video_attachment && 'attachment' === $video_attachment->post_type ) {
+			$godam_video_title = get_the_title( $video_id );
+			$godam_mime        = (string) get_post_mime_type( $video_id );
+		}
+		do_action( 'rtgodam_after_attachment_lookup' );
+		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type;
 	}
 
 	if ( ! $show_video ) {
@@ -1513,7 +1562,6 @@ function godam_preview_page_content( $video_id ) {
 		// Render the markup appropriate to the attachment's media type: audio
 		// attachments use the audio shortcode, image attachments the image block
 		// (hotspot / product layers), everything else the video player.
-		$godam_mime     = (string) get_post_mime_type( $video_id );
 		$godam_is_audio = 0 === strpos( $godam_mime, 'audio/' );
 		$godam_is_image = 0 === strpos( $godam_mime, 'image/' );
 
@@ -1550,7 +1598,7 @@ function godam_preview_page_content( $video_id ) {
 		</div>
 		<div class="godam-video-preview">
 			<h1 class="godam-video-preview--title">
-				<?php echo esc_html( get_the_title( $video_id ) ); ?>
+				<?php echo esc_html( $godam_video_title ); ?>
 			</h1>
 			<?php echo $godam_media_output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped inside the block / shortcode render templates. ?>
 		</div>
@@ -1575,7 +1623,7 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
 
 	$meta = rtgodam_cache_get( $cache_key );
 	if ( empty( $meta ) ) {
-		$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, godam-coverage-ignore -- rtgodam_get_post_id_by_meta_key_and_value(): covered transitively — sole real caller (Media_Library::update_image_attachment_meta_after_lookup(), looking up 'rtgodam_transcoding_job_id') already runs inside its caller's try/finally before/after pair.
 		rtgodam_cache_set( $cache_key, $meta, HOUR_IN_SECONDS );
 	}
 
@@ -1669,8 +1717,17 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 	$engagements_value = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
 
 	if ( ! empty( $video_id ) ) {
+		/**
+		 * Fires before resolving this attachment's post/mime data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
-		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 );
+		do_action( 'rtgodam_after_attachment_lookup' );
+		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 );
 	}
 
 	if ( ! $show_video ) {
@@ -2131,6 +2188,15 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 	$resolved_thumbnail   = '';
 	$resolved_placeholder = '';
 
+	/**
+	 * Fires before resolving this attachment's thumbnail/placeholder meta
+	 * and image URL, so integrations that centralize media on another site
+	 * can switch context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+
 	if ( ! empty( $thumbnail_url ) && is_string( $thumbnail_url ) ) {
 		$resolved_thumbnail = esc_url_raw( rtgodam_convert_to_https_url( $thumbnail_url ) );
 	}
@@ -2177,6 +2243,15 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 	// When no real thumbnail is available, returning '' lets the gallery template
 	// emit a --pending sentinel instead, which the frontend JS replaces with the
 	// video's first frame via initFirstFrameThumbnails().
+
+	/**
+	 * Fires after resolving this attachment's thumbnail/placeholder data,
+	 * so integrations can restore the site context switched in
+	 * `rtgodam_before_attachment_lookup`.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	return array(
 		'thumbnail'   => $resolved_thumbnail,

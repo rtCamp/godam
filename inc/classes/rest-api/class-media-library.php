@@ -539,6 +539,40 @@ class Media_Library extends Base {
 			return false;
 		}
 
+		/**
+		 * Fires before resolving/mutating attachment data for this image
+		 * subsize update, so integrations that centralize media on another
+		 * site can switch context first. The job-ID fallback lookup below is
+		 * a direct $wpdb->postmeta query, just as site-scoped as
+		 * get_post_meta().
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->update_image_attachment_meta_after_lookup( $sizes, $job_id, $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Resolve the attachment ID (if not already known) and persist the
+	 * generated image subsizes to attachment meta.
+	 *
+	 * Split out of update_image_attachment_meta() so the wp-dam site-switch
+	 * bracket can wrap this entire body — including the job-ID fallback
+	 * lookup, which is itself a raw, site-scoped $wpdb->postmeta query.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param array $sizes         Array of sizes data.
+	 * @param int   $job_id        Job ID, used to resolve $attachment_id when it isn't already known.
+	 * @param int   $attachment_id Attachment ID, or 0/non-numeric to resolve via $job_id.
+	 *
+	 * @return bool True if successful, false otherwise.
+	 */
+	private function update_image_attachment_meta_after_lookup( $sizes, $job_id, $attachment_id ) {
 		if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
 			$attachment_id = rtgodam_get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 		}
@@ -553,8 +587,8 @@ class Media_Library extends Base {
 			);
 		}
 
-		$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
-		$is_virtual      = ! empty( get_post_meta( $attachment_id, '_godam_original_id', true ) );
+		$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true ); // godam-coverage-ignore -- update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.
+		$is_virtual      = ! empty( get_post_meta( $attachment_id, '_godam_original_id', true ) ); // godam-coverage-ignore -- update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.
 
 		// Normalize attachment meta to an array with a sizes key.
 		if ( ! is_array( $attachment_meta ) ) {
@@ -685,15 +719,15 @@ class Media_Library extends Base {
 
 		// Backfill the "file" key so WordPress does not bail early while building srcset.
 		if ( empty( $attachment_meta['file'] ) ) {
-			$full_url = wp_get_attachment_url( $attachment_id );
+			$full_url = wp_get_attachment_url( $attachment_id ); // godam-coverage-ignore -- update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.
 			if ( $full_url ) {
 				$path                    = wp_parse_url( $full_url, PHP_URL_PATH );
 				$attachment_meta['file'] = ltrim( wp_basename( $path ), '/' );
 			}
 		}
 
-		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachment_meta );
-		update_post_meta( $attachment_id, 'rtgodam_image_sizes', $rtgodam_image_sizes );
+		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachment_meta ); // godam-coverage-ignore -- update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.
+		update_post_meta( $attachment_id, 'rtgodam_image_sizes', $rtgodam_image_sizes ); // godam-coverage-ignore -- update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.
 		return true;
 	}
 
@@ -771,23 +805,38 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_attachment', __( 'No attachment IDs provided.', 'godam' ), array( 'status' => 400 ) );
 		}
 
-		// Prime the post + object-term caches once so the per-id checks below don't each
-		// hit the database (a large drag-move otherwise fired hundreds of queries).
-		_prime_post_caches( $attachment_ids );
-		update_object_term_cache( $attachment_ids, 'attachment' );
+		/**
+		 * Fires before resolving these attachments' post types and edit
+		 * capabilities, so integrations that centralize media on another
+		 * site can switch context first. Wraps the cache-priming calls
+		 * too, since they resolve this same site-scoped post/term data for
+		 * every ID in this request, and the loop below can return early
+		 * per-attachment.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Prime the post + object-term caches once so the per-id checks below don't each
+			// hit the database (a large drag-move otherwise fired hundreds of queries).
+			_prime_post_caches( $attachment_ids );
+			update_object_term_cache( $attachment_ids, 'attachment' );
 
-		foreach ( $attachment_ids as $attachment_id ) {
-			if ( 'attachment' !== get_post_type( $attachment_id ) ) {
-				return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
-			}
+			foreach ( $attachment_ids as $attachment_id ) {
+				if ( 'attachment' !== get_post_type( $attachment_id ) ) {
+					return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
+				}
 
-			if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
-				return new \WP_Error(
-					'rest_forbidden',
-					__( 'You are not allowed to modify one or more of these attachments.', 'godam' ),
-					array( 'status' => 403 )
-				);
+				if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
+					return new \WP_Error(
+						'rest_forbidden',
+						__( 'You are not allowed to modify one or more of these attachments.', 'godam' ),
+						array( 'status' => 403 )
+					);
+				}
 			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		// Moving an attachment OUT of a locked folder empties that (protected) folder —
@@ -894,8 +943,17 @@ class Media_Library extends Base {
 	public function get_exif_data( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 
+		/**
+		 * Fires before resolving this attachment's file path, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// Get the file path of the image.
 		$file_path = get_attached_file( $attachment_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		if ( ! file_exists( $file_path ) ) {
 			return new \WP_Error( 'image_not_found', __( 'Image file not found.', 'godam' ), array( 'status' => 404 ) );
@@ -967,6 +1025,33 @@ class Media_Library extends Base {
 	public function get_video_thumbnails( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->get_video_thumbnails_after_lookup( $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Resolve and return this attachment's video thumbnail data.
+	 *
+	 * Split out of get_video_thumbnails() so the wp-dam site-switch bracket
+	 * can wrap this entire body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function get_video_thumbnails_after_lookup( $attachment_id ) {
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
 
@@ -1169,6 +1254,34 @@ class Media_Library extends Base {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->upload_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Validate and persist a custom video thumbnail for an attachment.
+	 *
+	 * Split out of upload_custom_video_thumbnail() so the wp-dam site-switch
+	 * bracket can wrap this entire body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $thumbnail_url Thumbnail URL.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function upload_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url ) {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
@@ -1226,6 +1339,34 @@ class Media_Library extends Base {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->remove_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Validate and remove a custom video thumbnail from an attachment.
+	 *
+	 * Split out of remove_custom_video_thumbnail() so the wp-dam site-switch
+	 * bracket can wrap this entire body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $thumbnail_url Thumbnail URL.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function remove_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url ) {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
@@ -1285,6 +1426,35 @@ class Media_Library extends Base {
 		$thumbnail_url             = $request->get_param( 'thumbnail_url' );
 		$placeholder_thumbnail_url = $request->get_param( 'placeholder_thumbnail_url' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->set_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url, $placeholder_thumbnail_url );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Validate and persist the selected video thumbnail for an attachment.
+	 *
+	 * Split out of set_video_thumbnail() so the wp-dam site-switch bracket
+	 * can wrap this entire body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int    $attachment_id             Attachment ID.
+	 * @param string $thumbnail_url             Thumbnail URL.
+	 * @param string $placeholder_thumbnail_url Optional placeholder thumbnail URL.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function set_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url, $placeholder_thumbnail_url ) {
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
 
@@ -2029,10 +2199,22 @@ class Media_Library extends Base {
 			);
 		}
 
+		/**
+		 * Fires before reading this attachment's JS-shaped data, so
+		 * integrations that centralize media on another site can switch
+		 * context first — runs after create_virtual_attachment()'s own wrap
+		 * has already restored.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$attachment_js_data = wp_prepare_attachment_for_js( $attach_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		return new \WP_REST_Response(
 			array(
 				'success'    => true,
-				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
+				'attachment' => $attachment_js_data,
 				'message'    => __( 'Attachment ready', 'godam' ),
 			),
 			200
@@ -2056,6 +2238,35 @@ class Media_Library extends Base {
 	 * @return int|\WP_Error Attachment ID, or WP_Error on failure.
 	 */
 	public function create_virtual_attachment( $data, $opts = array() ) {
+		/**
+		 * Fires before resolving/creating this virtual attachment, so
+		 * integrations that centralize media on another site can switch
+		 * context first — the dedupe lookups and the eventual
+		 * wp_insert_attachment() call all need to run against that site.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->create_virtual_attachment_after_lookup( $data, $opts );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Resolve or create the virtual attachment and populate its metadata.
+	 *
+	 * Split out of create_virtual_attachment() so a wp-dam-style site-switch
+	 * bracket can wrap this entire body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param array $data GoDAM media data.
+	 * @param array $opts Options (e.g. 'is_demo').
+	 * @return int|\WP_Error Attachment ID, or WP_Error on insert failure.
+	 */
+	private function create_virtual_attachment_after_lookup( $data, $opts = array() ) {
 		$is_demo = ! empty( $opts['is_demo'] );
 
 		// Sanitize the GoDAM ID.
@@ -2063,14 +2274,14 @@ class Media_Library extends Base {
 
 		// If godam_id is numeric and already an attachment, reuse it.
 		if ( is_numeric( $godam_id ) ) {
-			$attachment_post = get_post( $godam_id );
+			$attachment_post = get_post( $godam_id ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			if ( $attachment_post && 'attachment' === $attachment_post->post_type ) {
 				return (int) $godam_id;
 			}
 		}
 
 		// Reuse an existing entry for this GoDAM id instead of duplicating.
-		$existing = new \WP_Query(
+		$existing = new \WP_Query( // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			array(
 				'post_type'      => 'attachment',
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by transcoding job ID.
@@ -2100,13 +2311,13 @@ class Media_Library extends Base {
 		// demo marker is set first so the virtual-media registrar can skip demos.
 		$pre_setter = function ( $new_id ) use ( $godam_id, $is_demo ) {
 			if ( $is_demo ) {
-				update_post_meta( $new_id, 'rtgodam_is_demo_attachment', 1 );
+				update_post_meta( $new_id, 'rtgodam_is_demo_attachment', 1 ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): $pre_setter closure — covered transitively, since it's registered on 'add_attachment' immediately before (and removed immediately after) the wp_insert_attachment() call a few lines above, which fires that hook synchronously on the same call stack.
 			}
-			update_post_meta( $new_id, '_godam_original_id', $godam_id );
+			update_post_meta( $new_id, '_godam_original_id', $godam_id ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): $pre_setter closure — covered transitively, since it's registered on 'add_attachment' immediately before (and removed immediately after) the wp_insert_attachment() call a few lines above, which fires that hook synchronously on the same call stack.
 		};
 		add_action( 'add_attachment', $pre_setter, 1, 1 );
 
-		$attach_id = wp_insert_attachment( $attachment, $data['title'] );
+		$attach_id = wp_insert_attachment( $attachment, $data['title'] ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 		remove_action( 'add_attachment', $pre_setter, 1 );
 
@@ -2116,14 +2327,14 @@ class Media_Library extends Base {
 
 		// Ensure markers are persisted (idempotent with the pre-setter).
 		if ( $is_demo ) {
-			update_post_meta( $attach_id, 'rtgodam_is_demo_attachment', 1 );
+			update_post_meta( $attach_id, 'rtgodam_is_demo_attachment', 1 ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 		}
-		update_post_meta( $attach_id, '_godam_original_id', $godam_id );
-		update_post_meta( $attach_id, '_owner_email', sanitize_email( $data['owner'] ?? '' ) );
-		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) );
-		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
-		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id );
-		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ?? '' ) ); // Virtual media path.
+		update_post_meta( $attach_id, '_godam_original_id', $godam_id ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		update_post_meta( $attach_id, '_owner_email', sanitize_email( $data['owner'] ?? '' ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ?? '' ) ); // Virtual media path. // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 		$video_duration_in_seconds = 0;
 		$video_duration_formatted  = '';
@@ -2135,7 +2346,7 @@ class Media_Library extends Base {
 		$type = $data['type'] ?? '';
 
 		if ( 'video' === $type ) {
-			update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
+			update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 			$wp_attachment_metadata = array(
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
@@ -2151,17 +2362,17 @@ class Media_Library extends Base {
 			}
 
 			if ( ! empty( $video_duration_in_seconds ) ) {
-				update_post_meta( $attach_id, '_video_duration', $video_duration_in_seconds );
+				update_post_meta( $attach_id, '_video_duration', $video_duration_in_seconds ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 				$wp_attachment_metadata['length']           = $video_duration_in_seconds;
 				$wp_attachment_metadata['length_formatted'] = $video_duration_formatted;
 			}
 
 			// Set Video thumbnail from icon URL if provided.
 			if ( ! empty( $data['icon'] ) ) {
-				update_post_meta( $attach_id, 'rtgodam_media_video_thumbnail', esc_url_raw( $data['icon'] ) );
+				update_post_meta( $attach_id, 'rtgodam_media_video_thumbnail', esc_url_raw( $data['icon'] ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			}
 
-			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 		} elseif ( 'image' === $type ) {
 			// Initialize metadata with basic info.
 			$wp_attachment_metadata = array(
@@ -2177,7 +2388,7 @@ class Media_Library extends Base {
 				$wp_attachment_metadata['height'] = $image_height;
 			}
 
-			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 			// Request image subsizes from GoDAM Central.
 			$this->request_image_subsizes_from_godam( $godam_id, $attach_id );
@@ -2187,13 +2398,13 @@ class Media_Library extends Base {
 				'mime_type' => $data['mime'],
 			);
 
-			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 			// Persist the audio thumbnail from GoDAM Central (falls back to the
 			// icon URL) so the block can surface it. Mirrors the video/PDF paths.
 			$audio_thumbnail = ! empty( $data['thumbnail_url'] ) ? $data['thumbnail_url'] : ( $data['icon'] ?? '' );
 			if ( ! empty( $audio_thumbnail ) ) {
-				update_post_meta( $attach_id, 'rtgodam_media_audio_thumbnail', esc_url_raw( $audio_thumbnail ) );
+				update_post_meta( $attach_id, 'rtgodam_media_audio_thumbnail', esc_url_raw( $audio_thumbnail ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			}
 		} elseif ( 'pdf' === $type || 'document' === $type ) {
 			// 'pdf' is a file Central stored as-is; 'document' is one it rendered to a preview
@@ -2202,11 +2413,11 @@ class Media_Library extends Base {
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
 
-			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 			// Set PDF thumbnail from icon URL if provided.
 			if ( ! empty( $data['icon'] ) ) {
-				update_post_meta( $attach_id, 'rtgodam_media_pdf_thumbnail', esc_url_raw( $data['icon'] ) );
+				update_post_meta( $attach_id, 'rtgodam_media_pdf_thumbnail', esc_url_raw( $data['icon'] ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			}
 
 			/*
@@ -2223,7 +2434,7 @@ class Media_Library extends Base {
 				: ( 'pdf' === $type ? ( $data['mpd_url'] ?? '' ) : '' );
 
 			if ( ! empty( $preview_pdf_url ) ) {
-				update_post_meta( $attach_id, 'rtgodam_preview_pdf_url', esc_url_raw( $preview_pdf_url ) );
+				update_post_meta( $attach_id, 'rtgodam_preview_pdf_url', esc_url_raw( $preview_pdf_url ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			}
 		}
 
@@ -2245,11 +2456,11 @@ class Media_Library extends Base {
 			}
 
 			if ( ! empty( $sanitized_chapters ) ) {
-				$rtgodam_meta = get_post_meta( $attach_id, 'rtgodam_meta', true );
+				$rtgodam_meta = get_post_meta( $attach_id, 'rtgodam_meta', true ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 				$rtgodam_meta = is_array( $rtgodam_meta ) ? $rtgodam_meta : array();
 
 				$rtgodam_meta['chapters'] = $sanitized_chapters;
-				update_post_meta( $attach_id, 'rtgodam_meta', $rtgodam_meta );
+				update_post_meta( $attach_id, 'rtgodam_meta', $rtgodam_meta ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			}
 		}
 
@@ -2274,6 +2485,17 @@ class Media_Library extends Base {
 	public function get_attachment_by_id( $request ) {
 		// Sanitize the GoDAM media ID from the request.
 		$godam_id = sanitize_text_field( $request['id'] );
+
+		/**
+		 * Fires before resolving/reading attachment data for a GoDAM-original-ID
+		 * lookup, so integrations that centralize media on another site can
+		 * switch context first. This covers both the WP_Query match on
+		 * '_godam_original_id' and the internal core media request that follows,
+		 * since both resolve the same attachment.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 
 		// Try to find an attachment that matches the GoDAM original ID.
 		$query = new \WP_Query(
@@ -2300,6 +2522,8 @@ class Media_Library extends Base {
 		$internal_request = new \WP_REST_Request( 'GET', '/wp/v2/media/' . $attachment_id );
 		// Execute the request and capture the response.
 		$response = rest_do_request( $internal_request );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Return the full media object (or WP_Error if not found).
 		return $response;
@@ -2359,7 +2583,17 @@ class Media_Library extends Base {
 			}
 		}
 
+		/**
+		 * Fires before counting attachments in this media folder, so
+		 * integrations that centralize media on another site can switch
+		 * context first. The WP_Query below counts attachment posts
+		 * (post_type 'attachment') tagged with this media-folder term.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$query = new \WP_Query( $args );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return rest_ensure_response(
 			array(

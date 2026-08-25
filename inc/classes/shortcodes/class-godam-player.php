@@ -64,7 +64,7 @@ class GoDAM_Player {
 	 */
 	public function invalidate_video_cache_on_meta_change( $meta_id, $object_id, $meta_key ) {
 		// Only invalidate for attachment posts (GoDAM videos are stored as attachments).
-		if ( 'attachment' !== get_post_type( $object_id ) ) {
+		if ( 'attachment' !== get_post_type( $object_id ) ) { // godam-coverage-ignore -- invalidate_video_cache_on_meta_change(): updated_post_meta/added_post_meta/deleted_post_meta fire for every post type; this is the type-routing check that filters down to attachments — the actual work (invalidate_video_cache_for_post()) only clears a private cache key, not attachment data.
 			return;
 		}
 
@@ -97,7 +97,7 @@ class GoDAM_Player {
 	 * @param int $post_id Post ID.
 	 */
 	public function invalidate_video_cache_for_post( $post_id ) {
-		if ( 'attachment' !== get_post_type( $post_id ) ) {
+		if ( 'attachment' !== get_post_type( $post_id ) ) { // godam-coverage-ignore -- invalidate_video_cache_for_post(): type-routing check (also reachable directly via edit_attachment/delete_attachment, which only ever fire for attachments); rtgodam_work_cache_index_clear() below only clears a private cache key, not attachment data.
 			return;
 		}
 
@@ -254,11 +254,11 @@ class GoDAM_Player {
 		$godam_needs_runtime = false;
 
 		if ( is_singular() ) {
-			$godam_post = get_post();
+			$godam_post = get_post(); // godam-coverage-ignore -- maybe_enqueue_lightbox_runtime(): bare get_post() resolves to the current singular post, not an attachment.
 
 			if ( $godam_post instanceof \WP_Post ) {
 				// Elementor keeps its layout in post meta rather than post_content.
-				$godam_haystack = $godam_post->post_content . (string) get_post_meta( $godam_post->ID, '_elementor_data', true );
+				$godam_haystack = $godam_post->post_content . (string) get_post_meta( $godam_post->ID, '_elementor_data', true ); // godam-coverage-ignore -- maybe_enqueue_lightbox_runtime(): reads the current post's own '_elementor_data', not attachment data.
 
 				$godam_needs_runtime = false !== strpos( $godam_haystack, 'data-godam-lightbox' )
 					|| false !== strpos( $godam_haystack, '#godam-video-' );

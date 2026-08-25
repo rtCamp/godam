@@ -207,14 +207,26 @@ class Ads extends Base {
 			return '';
 		}
 
-		// Check if the video exists.
-		$video = get_post( $video_id );
-		if ( empty( $video ) || 'attachment' !== $video->post_type ) {
-			return '';
-		}
+		/**
+		 * Fires before resolving this attachment's existence/meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Check if the video exists.
+			$video = get_post( $video_id );
+			if ( empty( $video ) || 'attachment' !== $video->post_type ) {
+				return '';
+			}
 
-		// Get easydam_meta data.
-		$easydam_meta = get_post_meta( $video_id, 'rtgodam_meta', true );
+			// Get easydam_meta data.
+			$easydam_meta = get_post_meta( $video_id, 'rtgodam_meta', true );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 
 		if ( empty( $easydam_meta ) ) {
 			return '';

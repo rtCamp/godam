@@ -65,7 +65,18 @@ class GoDAM_Document {
 		// editor that would leave a silently empty element, so show the author why.
 		// Callers that own their own editor messaging (the Elementor widget) check
 		// before reaching this point.
-		if ( ! godam_is_supported_document( $atts['id'], $atts['src'] ) ) {
+		/**
+		 * Fires before checking whether this attachment is a supported
+		 * document type, so integrations that centralize media on another
+		 * site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$is_supported_document = godam_is_supported_document( $atts['id'], $atts['src'] );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( ! $is_supported_document ) {
 			if ( function_exists( 'vc_is_inline' ) && vc_is_inline() ) {
 				// The notice is styled by the block's stylesheet, which is normally
 				// enqueued further down, so enqueue it here too since we return early.

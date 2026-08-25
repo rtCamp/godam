@@ -422,7 +422,22 @@ class Pages {
 		// Check if user can edit media with given id.
 		$attachment_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		if ( $attachment_id && ! current_user_can( 'edit_post', $attachment_id ) ) {
+		$can_edit = true;
+
+		if ( $attachment_id ) {
+			/**
+			 * Fires before this attachment-specific capability check, so
+			 * integrations that centralize media on another site can switch
+			 * context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+			$can_edit = current_user_can( 'edit_post', $attachment_id );
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+
+		if ( ! $can_edit ) {
 			?>
 			<p class="godam-page-error"><?php echo esc_html( __( 'Sorry, you are not allowed to edit this item.', 'godam' ) ); ?></p>
 			<?php
@@ -967,7 +982,17 @@ class Pages {
 			$active_layer_config = array();
 			$analytics_video_id  = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( $analytics_video_id > 0 ) {
+				/**
+				 * Fires before reading this attachment's saved layer meta,
+				 * so integrations that centralize media on another site can
+				 * switch context first.
+				 *
+				 * @since 2.2.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
 				$rtgodam_meta = get_post_meta( $analytics_video_id, 'rtgodam_meta', true );
+				do_action( 'rtgodam_after_attachment_lookup' );
+
 				$saved_layers = is_array( $rtgodam_meta ) && ! empty( $rtgodam_meta['layers'] ) && is_array( $rtgodam_meta['layers'] )
 					? $rtgodam_meta['layers']
 					: array();

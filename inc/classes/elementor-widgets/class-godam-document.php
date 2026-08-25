@@ -193,7 +193,18 @@ class Godam_Document extends Base {
 		// The shared render.php emits nothing for an unsupported format, which would leave
 		// a silently empty widget, so flag it in the editor instead, where the author can
 		// act on it.
-		if ( ! godam_is_supported_document( isset( $document_file['id'] ) ? $document_file['id'] : 0, $document_file['url'] ) ) {
+		/**
+		 * Fires before checking whether this attachment is a supported
+		 * document type, so integrations that centralize media on another
+		 * site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$is_supported_document = godam_is_supported_document( isset( $document_file['id'] ) ? $document_file['id'] : 0, $document_file['url'] );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( ! $is_supported_document ) {
 			$this->render_unsupported_state();
 			return;
 		}

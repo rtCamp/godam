@@ -933,7 +933,18 @@ class Engagement extends Base {
 		if ( 0 === strpos( $video_id, 'cmmid_' ) ) {
 			return preg_replace( '/^cmmid_/', '', $video_id );
 		}
+
+		/**
+		 * Fires before reading this attachment's transcoding job ID, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$transcoder_job_id = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		return ! empty( $transcoder_job_id ) ? $transcoder_job_id : null;
 	}
 
