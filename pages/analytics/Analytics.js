@@ -27,6 +27,7 @@ import { __, sprintf, _n } from '@wordpress/i18n';
 import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
 import VideoToCartCard from './VideoToCartCard.js';
+import VideoToPurchaseCard from './VideoToPurchaseCard.js';
 import RevenueCard from './RevenueCard.js';
 import RevenueTips from './RevenueTips.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
@@ -601,7 +602,7 @@ const Analytics = ( { attachmentID } ) => {
 										testIdPrefix="godam-video-insights-daterange"
 									/>
 								</div>
-								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
+								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-wrap lg:[&>*]:grow lg:[&>*]:basis-40">
 									<SingleMetrics
 										metricType={ 'engagement-rate' }
 										label={ __( 'Average Engagement', 'godam' ) }
@@ -638,6 +639,15 @@ const Analytics = ( { attachmentID } ) => {
 									{ isWoo && (
 										<VideoToCartCard
 											videoToCart={ rangedAnalyticsData?.video_to_cart }
+											dataLabel={ rangeLabel }
+										/>
+									) }
+
+									{ /* Video-to-Purchase: the purchase sibling of Video-to-Cart.
+									    Woo-gated; renders nothing when the payload is absent. */ }
+									{ isWoo && (
+										<VideoToPurchaseCard
+											videoToPurchase={ rangedAnalyticsData?.video_to_purchase }
 											dataLabel={ rangeLabel }
 										/>
 									) }

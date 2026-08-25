@@ -21,6 +21,7 @@ import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
 import VideoToCartCard from '../analytics/VideoToCartCard';
+import VideoToPurchaseCard from '../analytics/VideoToPurchaseCard';
 import RevenueCard from '../analytics/RevenueCard';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
@@ -395,7 +396,7 @@ const Dashboard = () => {
 									testIdPrefix="godam-dashboard-insights-daterange"
 								/>
 							</div>
-							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
+							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-wrap lg:[&>*]:grow lg:[&>*]:basis-40">
 
 								<SingleMetrics
 									mode="dashboard"
@@ -463,6 +464,15 @@ const Dashboard = () => {
 								{ hasWooProducts && (
 									<RevenueCard
 										revenue={ insightsMetrics?.revenue }
+										dataLabel={ insightsCardLabel }
+									/>
+								) }
+
+								{ /* WooCommerce-only: the purchase sibling of Video-to-Cart --
+								    distinct viewers who went on to buy an attributed product. */ }
+								{ hasWooProducts && (
+									<VideoToPurchaseCard
+										videoToPurchase={ insightsMetrics?.video_to_purchase }
 										dataLabel={ insightsCardLabel }
 									/>
 								) }
