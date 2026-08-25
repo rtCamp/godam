@@ -220,6 +220,24 @@ class Analytics extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/placement-funnels',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_placement_funnels' ),
+					// Account-scoped server-side (api_key / account_token injected,
+					// never client-supplied), like the sibling dashboard reads.
+					'permission_callback' => '__return_true',
+					'args'                => array(
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/layer-analytics',
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
@@ -859,7 +877,7 @@ class Analytics extends Base {
 			);
 		}
 
-		$params   = $this->append_range_params(
+		$params = $this->append_range_params(
 			$request,
 			array(
 				'site_url'      => $site_url,
@@ -1189,6 +1207,77 @@ class Analytics extends Base {
 		}
 
 		return $ids;
+	}
+
+	/**
+	 * Proxy the per-placement funnel (the "Funnel by placement" card) from the
+	 * analytics microservice. Account-scoped server-side (api_key / account_token
+	 * injected, never client-supplied); the selected date range is forwarded.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_placement_funnels( WP_REST_Request $request ) {
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
+		$params   = $this->append_range_params(
+			$request,
+			array(
+				'site_url'      => $site_url,
+				'account_token' => $account_token,
+				'api_key'       => $api_key,
+			)
+		);
+		$endpoint = add_query_arg(
+			$params,
+			RTGODAM_ANALYTICS_BASE . '/dashboard/placement-funnels/'
+		);
+
+		$response = wp_remote_get( $endpoint );
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) ) ? $body['detail'] : __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $detail,
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'placement_funnels' => $body['placement_funnels'] ?? array(),
+			),
+			200
+		);
 	}
 
 	/**

@@ -24,6 +24,7 @@ import VideoToCartCard from '../analytics/VideoToCartCard';
 import VideoToPurchaseCard from '../analytics/VideoToPurchaseCard';
 import RevenueCard from '../analytics/RevenueCard';
 import PurchaseFunnelCard from '../analytics/PurchaseFunnelCard';
+import PlacementFunnelCard from '../analytics/PlacementFunnelCard';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
@@ -495,6 +496,16 @@ const Dashboard = () => {
 						funnel={ insightsMetrics?.video_funnel }
 						dataLabel={ insightsCardLabel }
 						scope="account"
+					/>
+				) }
+
+				{ /* Funnel by placement (WooCommerce only) — fetches its own data. */ }
+				{ hasWooProducts && (
+					<PlacementFunnelCard
+						siteUrl={ siteUrl }
+						startDate={ insightsRange.startDate }
+						endDate={ insightsRange.endDate }
+						dataLabel={ insightsCardLabel }
 					/>
 				) }
 

@@ -52,6 +52,24 @@ export const dashboardAnalyticsApi = createApi( {
 				return response.dashboard_metrics || {};
 			},
 		} ),
+		// Per-placement funnel (the "Funnel by placement" card). Fetched
+		// separately from the main metrics so its heavier per-placement queries
+		// don't block the dashboard load.
+		fetchPlacementFunnels: builder.query( {
+			query: ( { siteUrl, startDate, endDate } ) => ( {
+				url: 'godam/v1/analytics/placement-funnels',
+				params: {
+					site_url: siteUrl,
+					...rangeParams( { startDate, endDate } ),
+				},
+			} ),
+			transformResponse: ( response ) => {
+				if ( response.status === 'error' ) {
+					return { error: true, message: response.message };
+				}
+				return response.placement_funnels || [];
+			},
+		} ),
 		// Fetch Dashboard Metrics History
 		fetchDashboardMetricsHistory: builder.query( {
 			query: ( { siteUrl, days, startDate, endDate } ) => ( {
@@ -134,4 +152,5 @@ export const {
 	useLazyFetchTopVideosQuery,
 	useFetchTopProductsQuery,
 	useLazyFetchTopProductsQuery,
+	useFetchPlacementFunnelsQuery,
 } = dashboardAnalyticsApi;
