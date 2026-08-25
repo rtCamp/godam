@@ -259,6 +259,23 @@ export function initImageFrame( frame ) {
 			// empty boxes; on the front end this is a harmless idempotent pass.
 			if ( hasHotspotsWithIcons( layers ) ) {
 				renderFontAwesomeIcons( frame );
+
+				// Woo markers are appended asynchronously (createProductHotspots
+				// resolves the products over REST first), so the pass above runs
+				// before their `<i class="fa-solid ...">` nodes even exist. On the
+				// front end FontAwesome's own dom.watch() observer catches them
+				// late; inside the editor iframe it never does, leaving Woo product
+				// hotspots as empty circles. Watch the overlay and re-run the
+				// conversion whenever unconverted icons show up. i2svg replaces the
+				// `<i>` with an `<svg>`, so the resulting mutation finds nothing
+				// left to convert and the loop settles immediately.
+				const iconObserver = new MutationObserver( () => {
+					if ( sharedEl.querySelector( 'i[class*="fa-"]' ) ) {
+						renderFontAwesomeIcons( frame );
+					}
+				} );
+				iconObserver.observe( sharedEl, { childList: true, subtree: true } );
+				cleanups.push( () => iconObserver.disconnect() );
 			}
 
 			// Mark rendered only after a fully successful pass. If any manager setup
