@@ -1,9 +1,9 @@
 /**
- * Unit tests for the per-video Purchase Funnel card.
+ * Unit tests for the Play-to-Cart-to-Purchase funnel card.
  *
- * Covers the null guard (absent payload -> renders nothing), the three stages
- * with their counts and shares, the drop-off between stages, and the
- * "still counting" note toggling purely on the backend flag.
+ * Covers the null guard, the three stages with counts and shares, the Direct/
+ * Assisted split bar, the drop-off annotations (advanced %, did-not-add, and the
+ * red "abandoned after adding" pill), the legend, and the "still counting" note.
  *
  * @package
  */
@@ -20,48 +20,69 @@ import PurchaseFunnelCard from './PurchaseFunnelCard';
 
 const FUNNEL = {
 	stages: [
-		{ key: 'viewers', count: 4, rate: 100 },
-		{ key: 'added_to_cart', count: 1, rate: 25 },
-		{ key: 'purchased', count: 1, rate: 25 },
+		{ key: 'played', count: 1412, rate: 100 },
+		{ key: 'added_to_cart', count: 64, direct: 27, assisted: 40, rate: 4.53 },
+		{ key: 'purchased', count: 27, rate: 1.91 },
 	],
 	still_counting: false,
 };
 
 describe( 'PurchaseFunnelCard', () => {
-	it( 'renders nothing when the payload is absent', () => {
+	it( 'renders nothing when the payload is absent or incomplete', () => {
 		expect( renderToString( <PurchaseFunnelCard funnel={ null } /> ) ).toBe( '' );
 		expect( renderToString( <PurchaseFunnelCard /> ) ).toBe( '' );
 		expect( renderToString( <PurchaseFunnelCard funnel={ { stages: [] } } /> ) ).toBe( '' );
 	} );
 
-	it( 'renders the three stages with counts and labels', () => {
-		const html = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } /> );
+	it( 'renders the title, the three stages and their counts', () => {
+		const html = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } dataLabel="Last 30 days" /> );
 		expect( html ).toContain( 'godam-purchase-funnel-card' );
-		expect( html ).toContain( 'Viewers' );
+		expect( html ).toContain( 'Play to Cart to Purchase' );
+		expect( html ).toContain( 'Played a video' );
 		expect( html ).toContain( 'Added to cart' );
 		expect( html ).toContain( 'Purchased' );
+		// Counts, thousands-formatted.
+		expect( html ).toContain( '1,412' );
+		expect( html ).toContain( '64' );
+		expect( html ).toContain( '27' );
+		// Range pill.
+		expect( html ).toContain( 'Last 30 days' );
 		// A bar per stage.
-		expect( html ).toContain( 'godam-purchase-funnel-bar-viewers' );
+		expect( html ).toContain( 'godam-purchase-funnel-bar-played' );
 		expect( html ).toContain( 'godam-purchase-funnel-bar-added_to_cart' );
 		expect( html ).toContain( 'godam-purchase-funnel-bar-purchased' );
-		// Counts and the share text.
-		expect( html ).toContain( '25% of viewers' );
 	} );
 
-	it( 'shows the drop-off between stages', () => {
+	it( 'renders the drop-off annotations, including the abandoned pill', () => {
 		const html = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } /> );
-		// Viewers 4 -> cart 1 is a 75% drop; cart 1 -> purchased 1 is none.
-		expect( html ).toContain( '75% drop-off' );
-		expect( html ).toContain( 'no drop-off' );
+		// 64 / 1412 = 4.5% advanced; 1348 did not add.
+		expect( html ).toContain( '4.5% advanced' );
+		expect( html ).toContain( '1,348 did not add to cart' );
+		// 27 / 64 = 42.2% advanced; 37 abandoned after adding.
+		expect( html ).toContain( '42.2% advanced' );
+		expect( html ).toContain( '37 abandoned after adding' );
+	} );
+
+	it( 'renders the legend', () => {
+		const html = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } /> );
+		expect( html ).toContain( 'Direct, added to cart in-video' );
+		expect( html ).toContain( 'Assisted, clicked out then bought' );
+		expect( html ).toContain( 'did not reach this stage' );
+	} );
+
+	it( 'uses the per-video descriptor when scope is "video"', () => {
+		const account = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } scope="account" /> );
+		const video = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } scope="video" /> );
+		expect( account ).toContain( 'any GoDAM video' );
+		expect( video ).toContain( 'this video' );
 	} );
 
 	it( 'shows the "still counting" note only when the flag is set', () => {
 		const withNote = renderToString(
-			<PurchaseFunnelCard funnel={ { ...FUNNEL, still_counting: true } } dataLabel="Last 7 days" />,
+			<PurchaseFunnelCard funnel={ { ...FUNNEL, still_counting: true } } dataLabel="Last 30 days" />,
 		);
 		expect( withNote ).toContain( 'godam-purchase-funnel-still-counting' );
 		expect( withNote ).toContain( 'Still counting' );
-		expect( withNote ).toContain( 'Last 7 days' );
 
 		const withoutNote = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } /> );
 		expect( withoutNote ).not.toContain( 'godam-purchase-funnel-still-counting' );

@@ -3,102 +3,199 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 
-const STAGE_LABELS = {
-	viewers: __( 'Viewers', 'godam' ),
-	added_to_cart: __( 'Added to cart', 'godam' ),
-	purchased: __( 'Purchased', 'godam' ),
-};
+// Direct = added in-video (dark blue); Assisted = clicked out then added (light
+// blue); the rest of each track stays grey ("did not reach this stage").
+const COLOR_DIRECT = '#2563eb';
+const COLOR_ASSISTED = '#93c5fd';
 
-// Woo purple at the top of the funnel, easing to GoDAM pink at the purchase end.
-const BAR_BACKGROUNDS = {
-	viewers: 'linear-gradient(90deg, #8b5fc0, #7f54b3)',
-	added_to_cart: 'linear-gradient(90deg, #9a6fca, #8a5cc0)',
-	purchased: 'linear-gradient(90deg, #ab3a6c, #95305d)',
-};
+const fmt = ( n ) => Number( n || 0 ).toLocaleString();
+const pct = ( n ) => `${ Number( n || 0 ).toFixed( 1 ) }%`;
 
 /**
- * Per-video Purchase Funnel.
+ * A single funnel row: label + descriptor on the left, a proportional bar in a
+ * grey track (split into coloured segments), and the count + sub-label on the right.
  *
- * The three distinct-visitor stages a shopper passes through — Viewers -> Added
- * to cart -> Purchased — each bar proportional to its share of viewers, with the
- * drop-off between stages called out. A "still counting" note appears when the
- * selected range is recent enough that purchase attribution is still settling
- * (the backend decides that; the card only toggles the note).
+ * @param {Object} props
+ * @param {string} props.label      Stage name.
+ * @param {string} props.descriptor Grey sub-label under the stage name.
+ * @param {Array}  props.segments   [{ color, frac }] left-aligned bar segments (frac of the track).
+ * @param {number} props.count      The stage count.
+ * @param {string} props.rightSub   The sub-label under the count (e.g. "4.5% of players").
+ * @param {string} props.testId     data-test-id for the bar.
+ */
+function FunnelRow( { label, descriptor, segments, count, rightSub, testId } ) {
+	return (
+		<div className="grid grid-cols-[minmax(150px,210px)_1fr_minmax(88px,auto)] items-center gap-x-5">
+			<div>
+				<div className="text-[15px] font-semibold text-[#1e1e1e] leading-tight">{ label }</div>
+				<div className="text-[13px] text-zinc-500 leading-tight">{ descriptor }</div>
+			</div>
+			<div className="h-14 rounded-md overflow-hidden flex" style={ { background: '#eef0f3' } } data-test-id={ testId }>
+				{ segments.map( ( seg, i ) => (
+					<div
+						key={ i }
+						style={ { width: `${ Math.max( 0, Math.min( 100, seg.frac * 100 ) ) }%`, background: seg.color } }
+					/>
+				) ) }
+			</div>
+			<div className="text-right">
+				<div className="text-[28px] font-bold text-[#1e1e1e] leading-none tabular-nums">{ fmt( count ) }</div>
+				<div className="text-[13px] text-zinc-500 mt-1">{ rightSub }</div>
+			</div>
+		</div>
+	);
+}
+
+/**
+ * The drop-off annotation between two stages: "X% advanced" plus how many were
+ * lost, indented to sit under the bar.
+ *
+ * @param {Object}  props
+ * @param {string}  props.advanced        The "X% advanced" percentage string.
+ * @param {string}  props.lostLabel       Text for how many were lost at this step.
+ * @param {boolean} [props.lostIsWarning] Render the lost label as a red pill.
+ */
+function DropRow( { advanced, lostLabel, lostIsWarning } ) {
+	return (
+		<div className="grid grid-cols-[minmax(150px,210px)_1fr_minmax(88px,auto)] gap-x-5">
+			<div />
+			<div className="flex items-center gap-3 py-2 text-[13px]">
+				<span className="font-semibold text-[#1e1e1e]">
+					{ sprintf(
+						/* translators: %s: percentage of visitors that advanced to the next stage. */
+						__( '↓ %s advanced', 'godam' ),
+						advanced,
+					) }
+				</span>
+				{ lostIsWarning ? (
+					<span className="text-[13px] font-semibold text-[#dc2626] bg-[#fef2f2] rounded-md px-2 py-0.5">{ lostLabel }</span>
+				) : (
+					<span className="text-zinc-500">{ lostLabel }</span>
+				) }
+			</div>
+			<div />
+		</div>
+	);
+}
+
+/**
+ * Play-to-Cart-to-Purchase funnel.
+ *
+ * Three distinct-visitor stages — Played a video -> Added to cart -> Purchased.
+ * Each bar is left-aligned in a grey track and sized to its share of players;
+ * the "Added to cart" bar is split into Direct (added in-video) and Assisted
+ * (clicked out then added). A "still counting" note appears when the backend
+ * flags the range as recent enough that purchase attribution is still settling.
  *
  * @param {Object} props
  * @param {Object} [props.funnel]    The video_funnel payload { stages, still_counting }.
- * @param {string} [props.dataLabel] The active range label (e.g. "Last 7 days").
+ * @param {string} [props.dataLabel] The active range label (e.g. "Last 30 days").
+ * @param {string} [props.scope]     'account' (default) or 'video' — sets the top descriptor + subtitle.
  */
-export default function PurchaseFunnelCard( { funnel, dataLabel } ) {
-	// Render nothing when the payload is absent (an analytics service that predates
-	// the funnel read), so the card never asserts a misleading empty funnel.
-	if ( ! funnel || ! Array.isArray( funnel.stages ) || funnel.stages.length === 0 ) {
+export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'account' } ) {
+	// Render nothing when the payload is absent, so the card never asserts an
+	// empty funnel for "metric unavailable".
+	if ( ! funnel || ! Array.isArray( funnel.stages ) || funnel.stages.length < 3 ) {
 		return null;
 	}
 
-	const { stages } = funnel;
+	const byKey = Object.fromEntries( funnel.stages.map( ( s ) => [ s.key, s ] ) );
+	const played = Number( byKey.played?.count || 0 );
+	const carts = Number( byKey.added_to_cart?.count || 0 );
+	const direct = Number( byKey.added_to_cart?.direct || 0 );
+	const purchased = Number( byKey.purchased?.count || 0 );
+
+	// Bar segments are fractions of the track, denominated by players (the top).
+	const frac = ( n ) => ( played > 0 ? n / played : 0 );
+	// Assisted-only = added but not in-video, so direct + assistedOnly = carts.
+	const assistedOnly = Math.max( 0, carts - direct );
+
+	const cartAdvanced = played > 0 ? pct( ( carts / played ) * 100 ) : pct( 0 );
+	const buyAdvanced = carts > 0 ? pct( ( purchased / carts ) * 100 ) : pct( 0 );
+	const didNotAdd = Math.max( 0, played - carts );
+	const abandoned = Math.max( 0, carts - purchased );
+
+	const topDescriptor = scope === 'video'
+		? __( 'this video', 'godam' )
+		: __( 'any GoDAM video', 'godam' );
+	const subtitle = scope === 'video'
+		? __( 'Distinct viewers of this video. Covers Direct and Assisted.', 'godam' )
+		: __( 'Distinct visitors, counted across page visits. Covers Direct and Assisted.', 'godam' );
 
 	return (
 		<div className="godam-card godam-funnel-card" data-test-id="godam-purchase-funnel-card">
 			<div className="godam-card__head">
-				<h2>{ __( 'Purchase Funnel', 'godam' ) }</h2>
-				<span className="text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]">Woo</span>
+				<div className="flex items-center gap-2.5">
+					<h2>{ __( 'Play to Cart to Purchase', 'godam' ) }</h2>
+					<span className="text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]">Woo</span>
+					<span className="text-[10px] font-bold leading-none px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#92400E] tracking-wide">{ __( 'NEW', 'godam' ) }</span>
+				</div>
+				{ dataLabel && (
+					<span className="text-[13px] text-[#50575e] border border-[#e2e4e7] rounded-md px-3 py-1">{ dataLabel }</span>
+				) }
 			</div>
 
-			<div className="godam-funnel flex flex-col" data-test-id="godam-purchase-funnel">
-				{ stages.map( ( stage, i ) => {
-					const count = Number( stage.count || 0 );
-					const rate = Math.max( 0, Math.min( 100, Number( stage.rate || 0 ) ) );
-					const prevCount = i > 0 ? Number( stages[ i - 1 ].count || 0 ) : null;
-					const drop = prevCount && prevCount > 0
-						? Math.round( ( 1 - ( count / prevCount ) ) * 100 )
-						: null;
-					// Keep a thin sliver visible so a 0% stage still reads as a bar.
-					const barWidth = Math.max( rate, count > 0 ? 6 : 2 );
+			<p className="text-[13px] text-zinc-500 -mt-1 mb-5">{ subtitle }</p>
 
-					return (
-						<div key={ stage.key } className="godam-funnel__stage">
-							{ i > 0 && (
-								<div
-									className="godam-funnel__drop text-[11px] text-zinc-400 text-center py-1.5"
-									data-test-id="godam-purchase-funnel-drop"
-								>
-									{ drop !== null && drop > 0
-										? sprintf(
-											/* translators: %d: drop-off percentage between funnel stages. */
-											__( '▼ %d%% drop-off', 'godam' ),
-											drop,
-										)
-										: __( 'no drop-off', 'godam' ) }
-								</div>
-							) }
+			<div className="flex flex-col gap-0.5" data-test-id="godam-purchase-funnel">
+				<FunnelRow
+					label={ __( 'Played a video', 'godam' ) }
+					descriptor={ topDescriptor }
+					segments={ played > 0 ? [ { color: COLOR_DIRECT, frac: 1 } ] : [] }
+					count={ played }
+					rightSub={ __( 'visitors', 'godam' ) }
+					testId="godam-purchase-funnel-bar-played"
+				/>
+				<DropRow
+					advanced={ cartAdvanced }
+					lostLabel={ sprintf(
+						/* translators: %s: number of visitors who did not add to cart. */
+						__( '%s did not add to cart', 'godam' ),
+						fmt( didNotAdd ),
+					) }
+				/>
+				<FunnelRow
+					label={ __( 'Added to cart', 'godam' ) }
+					descriptor={ __( 'in-video or after clicking out', 'godam' ) }
+					segments={ [
+						{ color: COLOR_DIRECT, frac: frac( direct ) },
+						{ color: COLOR_ASSISTED, frac: frac( assistedOnly ) },
+					] }
+					count={ carts }
+					rightSub={ sprintf(
+						/* translators: %s: percentage of players. */
+						__( '%s of players', 'godam' ),
+						cartAdvanced,
+					) }
+					testId="godam-purchase-funnel-bar-added_to_cart"
+				/>
+				<DropRow
+					advanced={ buyAdvanced }
+					lostIsWarning
+					lostLabel={ sprintf(
+						/* translators: %s: number of visitors who added to cart but did not buy. */
+						__( '%s abandoned after adding', 'godam' ),
+						fmt( abandoned ),
+					) }
+				/>
+				<FunnelRow
+					label={ __( 'Purchased', 'godam' ) }
+					descriptor={ __( 'net of refunds', 'godam' ) }
+					segments={ purchased > 0 ? [ { color: COLOR_DIRECT, frac: frac( purchased ) } ] : [] }
+					count={ purchased }
+					rightSub={ sprintf(
+						/* translators: %s: percentage of players. */
+						__( '%s of players', 'godam' ),
+						buyAdvanced,
+					) }
+					testId="godam-purchase-funnel-bar-purchased"
+				/>
+			</div>
 
-							<div className="flex items-baseline justify-between mb-1.5">
-								<span className="text-sm font-semibold text-[#1e1e1e]">
-									{ STAGE_LABELS[ stage.key ] || stage.key }
-								</span>
-								<span className="text-xs text-zinc-500" data-test-id={ `godam-purchase-funnel-share-${ stage.key }` }>
-									{ sprintf(
-										/* translators: 1: visitor count, 2: percentage of viewers. */
-										__( '%1$s · %2$s%% of viewers', 'godam' ),
-										count.toLocaleString(),
-										rate.toFixed( rate % 1 ? 1 : 0 ),
-									) }
-								</span>
-							</div>
-
-							<div className="godam-funnel__track w-full flex justify-center">
-								<div
-									className="godam-funnel__bar h-12 rounded-md flex items-center justify-center text-white font-bold text-lg"
-									style={ { width: `${ barWidth }%`, background: BAR_BACKGROUNDS[ stage.key ] || '#7f54b3' } }
-									data-test-id={ `godam-purchase-funnel-bar-${ stage.key }` }
-								>
-									{ count.toLocaleString() }
-								</div>
-							</div>
-						</div>
-					);
-				} ) }
+			<div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-6 pt-4 border-t border-[#eef0f3] text-[13px] text-zinc-600">
+				<span className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm" style={ { background: COLOR_DIRECT } } />{ __( 'Direct, added to cart in-video', 'godam' ) }</span>
+				<span className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm" style={ { background: COLOR_ASSISTED } } />{ __( 'Assisted, clicked out then bought', 'godam' ) }</span>
+				<span className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm border border-zinc-300" style={ { background: '#eef0f3' } } />{ __( 'did not reach this stage', 'godam' ) }</span>
 			</div>
 
 			{ funnel.still_counting && (

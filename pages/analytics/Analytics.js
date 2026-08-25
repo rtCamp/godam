@@ -693,6 +693,7 @@ const Analytics = ( { attachmentID } ) => {
 								<PurchaseFunnelCard
 									funnel={ rangedAnalyticsData?.video_funnel }
 									dataLabel={ rangeLabel }
+									scope="video"
 								/>
 							) }
 

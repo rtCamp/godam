@@ -23,6 +23,7 @@ import SingleMetrics from '../analytics/SingleMetrics';
 import VideoToCartCard from '../analytics/VideoToCartCard';
 import VideoToPurchaseCard from '../analytics/VideoToPurchaseCard';
 import RevenueCard from '../analytics/RevenueCard';
+import PurchaseFunnelCard from '../analytics/PurchaseFunnelCard';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
@@ -487,6 +488,15 @@ const Dashboard = () => {
 						</div>
 					</div>
 				</div>
+
+				{ /* Account-wide Play-to-Cart-to-Purchase funnel (WooCommerce only). */ }
+				{ hasWooProducts && (
+					<PurchaseFunnelCard
+						funnel={ insightsMetrics?.video_funnel }
+						dataLabel={ insightsCardLabel }
+						scope="account"
+					/>
+				) }
 
 				{ hasWooProducts && topTab === 'products'
 					? <TopProductsTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } tabSwitcher={ topTabSwitcher } />
