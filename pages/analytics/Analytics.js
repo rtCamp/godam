@@ -30,6 +30,7 @@ import VideoToCartCard from './VideoToCartCard.js';
 import VideoToPurchaseCard from './VideoToPurchaseCard.js';
 import RevenueCard from './RevenueCard.js';
 import RevenueTips from './RevenueTips.js';
+import PurchaseFunnelCard from './PurchaseFunnelCard.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
@@ -683,6 +684,16 @@ const Analytics = ( { attachmentID } ) => {
 							    nothing when there is nothing worth saying. */ }
 							{ isWoo && rangedAnalyticsData?.revenue_tips && (
 								<RevenueTips tips={ rangedAnalyticsData.revenue_tips } />
+							) }
+
+							{ /* Purchase Funnel — Viewers -> Added to cart -> Purchased,
+							    a re-plot of the Insights counts. Woo-gated; renders
+							    nothing when the funnel payload is absent. */ }
+							{ isWoo && (
+								<PurchaseFunnelCard
+									funnel={ rangedAnalyticsData?.video_funnel }
+									dataLabel={ rangeLabel }
+								/>
 							) }
 
 							{ /* Viewer Retention Curve — standalone chart of per-second
