@@ -239,14 +239,24 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 				{ showRevenue && (
 					<div className="mb-4 flex items-center gap-2 flex-wrap text-sm text-zinc-700">
 						<span>
-							{ sprintf(
-								/* translators: 1: formatted revenue amount, 2: order count phrase (e.g. "3 orders"). */
-								activeSub
-									? __( 'This hotspot drove %1$s across %2$s', 'godam' )
-									: __( 'This layer drove %1$s across %2$s', 'godam' ),
-								formatRevenue( revenueMinor, revenueEntity.currency ),
-								revenueOrdersPhrase,
-							) }
+							{ activeSub
+								// A single hotspot maps to one composite layer_id, so its
+								// order count is an exact distinct count.
+								? sprintf(
+									/* translators: 1: formatted revenue amount, 2: order count phrase (e.g. "3 orders"). */
+									__( 'This hotspot drove %1$s across %2$s', 'godam' ),
+									formatRevenue( revenueMinor, revenueEntity.currency ),
+									revenueOrdersPhrase,
+								)
+								// Parent aggregate: revenue only. Summing the hotspots'
+								// distinct order counts would overcount an order bought via two
+								// hotspots in this layer, so no parent order total is shown
+								// (order counts are not additive).
+								: sprintf(
+									/* translators: %s: formatted revenue amount. */
+									__( 'This layer drove %s', 'godam' ),
+									formatRevenue( revenueMinor, revenueEntity.currency ),
+								) }
 						</span>
 						<InfoTooltip
 							text={ __(

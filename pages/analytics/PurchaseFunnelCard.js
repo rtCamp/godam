@@ -106,12 +106,18 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 	const purchased = Number( byKey.purchased?.count || 0 );
 
 	// Bar segments are fractions of the track, denominated by players (the top).
-	const frac = ( n ) => ( played > 0 ? n / played : 0 );
+	// Clamp to [0,1] so a stale-service deploy skew can never invert the funnel
+	// (the backend range_video_funnel already guarantees purchased <= added <= played).
+	const frac = ( n ) => ( played > 0 ? Math.max( 0, Math.min( 1, n / played ) ) : 0 );
 	// Assisted-only = added but not in-video, so direct + assistedOnly = carts.
 	const assistedOnly = Math.max( 0, carts - direct );
 
 	const cartAdvanced = played > 0 ? pct( ( carts / played ) * 100 ) : pct( 0 );
-	const buyAdvanced = carts > 0 ? pct( ( purchased / carts ) * 100 ) : pct( 0 );
+	// cart -> purchase conversion, drop annotation only; clamp to 100%.
+	const buyAdvanced = carts > 0 ? pct( Math.min( ( purchased / carts ) * 100, 100 ) ) : pct( 0 );
+	// purchased as a share OF PLAYERS (bar + server stage rate denominator),
+	// for the Purchased row's "of players" subtitle — NOT purchased/carts.
+	const buyShare = played > 0 ? pct( ( purchased / played ) * 100 ) : pct( 0 );
 	const didNotAdd = Math.max( 0, played - carts );
 	const abandoned = Math.max( 0, carts - purchased );
 
@@ -180,13 +186,13 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 				/>
 				<FunnelRow
 					label={ __( 'Purchased', 'godam' ) }
-					descriptor={ __( 'net of refunds', 'godam' ) }
+					descriptor={ __( 'of those who added', 'godam' ) }
 					segments={ purchased > 0 ? [ { color: COLOR_DIRECT, frac: frac( purchased ) } ] : [] }
 					count={ purchased }
 					rightSub={ sprintf(
 						/* translators: %s: percentage of players. */
 						__( '%s of players', 'godam' ),
-						buyAdvanced,
+						buyShare,
 					) }
 					testId="godam-purchase-funnel-bar-purchased"
 				/>

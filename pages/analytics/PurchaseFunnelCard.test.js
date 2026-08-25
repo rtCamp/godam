@@ -77,6 +77,29 @@ describe( 'PurchaseFunnelCard', () => {
 		expect( video ).toContain( 'this video' );
 	} );
 
+	it( 'shows purchased as a share OF PLAYERS on the Purchased row, not of carts', () => {
+		const html = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } /> );
+		// 27 / 1412 = 1.9% of players (matches the bar and the server stage rate).
+		expect( html ).toContain( '1.9% of players' );
+		// The 42.2% (27/64) figure is the cart->purchase drop annotation only; it
+		// must never be shown as an "of players" share (the bug this fixes).
+		expect( html ).not.toContain( '42.2% of players' );
+	} );
+
+	it( 'clamps the advanced % so a stale purchased>carts payload cannot exceed 100%', () => {
+		const skew = {
+			stages: [
+				{ key: 'played', count: 100, rate: 100 },
+				{ key: 'added_to_cart', count: 10, direct: 6, assisted: 5, rate: 10 },
+				{ key: 'purchased', count: 15, rate: 15 },
+			],
+			still_counting: false,
+		};
+		const html = renderToString( <PurchaseFunnelCard funnel={ skew } /> );
+		expect( html ).toContain( '100.0% advanced' );
+		expect( html ).not.toContain( '150.0% advanced' );
+	} );
+
 	it( 'shows the "still counting" note only when the flag is set', () => {
 		const withNote = renderToString(
 			<PurchaseFunnelCard funnel={ { ...FUNNEL, still_counting: true } } dataLabel="Last 30 days" />,

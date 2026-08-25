@@ -512,10 +512,11 @@ export function groupRows( rows, layerType, configIndex ) {
 			no_action: parentNoAction,
 			conversion_rate: parentConversion,
 			sub_hotspots: subHotspots,
-			// Parent Direct revenue = sum of its hotspots' revenue (base currency).
-			// The order count is the summed children's, which can overcount an
-			// order that bought two products via two hotspots; the panel presents
-			// the parent figure as an aggregate, not an exact distinct-order total.
+			// Parent Direct revenue = sum of its hotspots' revenue (base currency),
+			// which is sum-safe. The summed `orders` below is NOT a distinct count
+			// (an order that bought via two hotspots is counted twice), so the panel
+			// shows the parent's revenue WITHOUT an order total; only a single
+			// hotspot (one composite layer_id) shows its exact distinct order count.
 			revenue_minor: subHotspots.reduce(
 				( sum, h ) => sum + ( Number( h.revenue_minor ) || 0 ),
 				0,
