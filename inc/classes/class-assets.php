@@ -168,7 +168,7 @@ class Assets {
 	/**
 	 * Get the guide message to show alongside video thumbnails, for a given screen.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.2.0
 	 *
 	 * @param string $context Where the message will render. One of 'block-editor'
 	 *                        (the godam/video block Inspector's "Video Thumbnail"
@@ -186,7 +186,7 @@ class Assets {
 		 * The message renders in more than one place; switch on `$context` to vary
 		 * the copy, or ignore it to use the same message everywhere.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.2.0
 		 *
 		 * @param string $message Guide message HTML. Default empty string.
 		 * @param string $context Where the message will render: 'block-editor' or

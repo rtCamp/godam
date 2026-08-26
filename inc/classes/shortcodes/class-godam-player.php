@@ -271,7 +271,7 @@ class GoDAM_Player {
 		 * Use this when a trigger lives somewhere the content sniff cannot see, such
 		 * as a theme template, a sidebar widget or a nav-menu item.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.2.0
 		 *
 		 * @param bool $godam_needs_runtime Whether the runtime is needed.
 		 */
