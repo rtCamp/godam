@@ -62,4 +62,36 @@ describe( 'RevenueCard — single store currency', () => {
 		expect( html ).toContain( 'godam-revenue-card' );
 		expect( html ).not.toBe( '' );
 	} );
+
+	it( 'renders the "Video-Attributed Revenue" title and the before-refunds label', () => {
+		const html = renderToString(
+			<RevenueCard revenue={ { revenue_minor: 324000, currency: 'GBP', excluded_orders: 0, direct_minor: 239800, assisted_minor: 84200, influenced_minor: 191000 } } />,
+		);
+		expect( html ).toContain( 'Video-Attributed Revenue' );
+		expect( html ).toContain( 'before refunds' );
+	} );
+
+	it( 'renders the Direct and Assisted split amounts', () => {
+		const html = renderToString(
+			<RevenueCard revenue={ { revenue_minor: 324000, currency: 'GBP', excluded_orders: 0, direct_minor: 239800, assisted_minor: 84200 } } />,
+		);
+		expect( html ).toContain( 'godam-revenue-direct' );
+		expect( html ).toContain( 'godam-revenue-assisted' );
+		expect( html ).toContain( '2,398' ); // direct: 239800 minor = 2,398.00
+		expect( html ).toContain( '842' ); // assisted: 84200 minor = 842.00
+	} );
+
+	it( 'shows the Influenced box only when influenced_minor is present (dashboard, not per-video)', () => {
+		const withInfluenced = renderToString(
+			<RevenueCard revenue={ { revenue_minor: 100, currency: 'GBP', direct_minor: 100, assisted_minor: 0, influenced_minor: 191000 } } />,
+		);
+		expect( withInfluenced ).toContain( 'godam-revenue-influenced' );
+		expect( withInfluenced ).toContain( '1,910' ); // 191000 minor = 1,910.00
+
+		// The per-video payload omits influenced_minor, so the box is hidden.
+		const perVideo = renderToString(
+			<RevenueCard revenue={ { revenue_minor: 100, currency: 'GBP', direct_minor: 100, assisted_minor: 0 } } />,
+		);
+		expect( perVideo ).not.toContain( 'godam-revenue-influenced' );
+	} );
 } );

@@ -653,22 +653,6 @@ const Analytics = ( { attachmentID } ) => {
 										/>
 									) }
 
-									{ /* Per-video revenue (single store currency). The
-									    record carries flat revenue/revenue_currency/
-									    revenue_excluded_orders keys; map them to the
-									    payload RevenueCard reads. Woo-gated; RevenueCard
-									    renders nothing when the keys are absent. */ }
-									{ isWoo && rangedAnalyticsData?.revenue !== undefined && (
-										<RevenueCard
-											revenue={ {
-												revenue_minor: rangedAnalyticsData.revenue,
-												currency: rangedAnalyticsData.revenue_currency,
-												excluded_orders: rangedAnalyticsData.revenue_excluded_orders,
-											} }
-											dataLabel={ rangeLabel }
-										/>
-									) }
-
 									<PlaysVsViewers
 										plays={ rangedAnalyticsData?.plays ?? 0 }
 										uniqueViewers={ rangedAnalyticsData?.unique_viewers ?? null }
@@ -678,6 +662,23 @@ const Analytics = ( { attachmentID } ) => {
 									/>
 								</div>
 							</div>
+
+							{ /* Per-video Video-Attributed Revenue (single store currency),
+							    split Direct/Assisted. Full-width card; Influenced is
+							    account-level so the per-video payload omits it and the
+							    card hides that box. Woo-gated. */ }
+							{ isWoo && rangedAnalyticsData?.revenue !== undefined && (
+								<RevenueCard
+									revenue={ {
+										revenue_minor: rangedAnalyticsData.revenue,
+										currency: rangedAnalyticsData.revenue_currency,
+										excluded_orders: rangedAnalyticsData.revenue_excluded_orders,
+										direct_minor: rangedAnalyticsData.revenue_direct_minor,
+										assisted_minor: rangedAnalyticsData.revenue_assisted_minor,
+									} }
+									dataLabel={ rangeLabel }
+								/>
+							) }
 
 							{ /* Comparative revenue tips (EASY WIN B), Woo-gated. The
 							    component renders only the favourable comparisons and

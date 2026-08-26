@@ -791,6 +791,7 @@
 // top-level sections use (matches .top-media-container). Scoped to the dashboard so
 // the per-video Analytics page, where the funnel card is a flex-column child, keeps
 // its own gap.
+.dashboard-container > .godam-revenue-card,
 .dashboard-container > .godam-funnel-card,
 .dashboard-container > .godam-placement-funnel-card {
 	margin-top: 1.5rem;

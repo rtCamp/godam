@@ -460,16 +460,6 @@ const Dashboard = () => {
 									/>
 								) }
 
-								{ /* WooCommerce-only: video-attributed revenue in the store's
-								    base currency (single store currency; other currencies are
-								    counted, not converted). */ }
-								{ hasWooProducts && (
-									<RevenueCard
-										revenue={ insightsMetrics?.revenue }
-										dataLabel={ insightsCardLabel }
-									/>
-								) }
-
 								{ /* WooCommerce-only: the purchase sibling of Video-to-Cart --
 								    distinct viewers who went on to buy an attributed product. */ }
 								{ hasWooProducts && (
@@ -489,6 +479,16 @@ const Dashboard = () => {
 						</div>
 					</div>
 				</div>
+
+				{ /* Video-Attributed Revenue (WooCommerce only): the headline revenue
+				    figure, split Direct/Assisted, with account-wide Influenced shown
+				    separately. Full-width card, single store currency. */ }
+				{ hasWooProducts && (
+					<RevenueCard
+						revenue={ insightsMetrics?.revenue }
+						dataLabel={ insightsCardLabel }
+					/>
+				) }
 
 				{ /* Account-wide Play-to-Cart-to-Purchase funnel (WooCommerce only). */ }
 				{ hasWooProducts && (
