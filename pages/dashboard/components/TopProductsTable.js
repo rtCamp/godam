@@ -21,16 +21,17 @@ const PER_PAGE = 10;
 // export pages through it 100 at a time rather than asking for everything at once.
 const EXPORT_PAGE_SIZE = 100;
 
-// block_source value -> human label for the Source chips. Phase 1 only ever emits
-// 'woo-layer' (and 'shoppable-video' once that emit ships); the rest are here so the
-// chips read correctly when later surfaces start contributing. Unknown values fall
-// back to the raw string.
+// block_source value -> human label for the Source chips. The Woo hotspot layer
+// ships on two media, so the labels name the medium ('Video Woo Layer' vs 'Image
+// Woo Layer') rather than a bare 'Woo Layer' / 'Image': an image can carry other
+// layer types later, so the label says which layer, not just which medium. Unknown
+// values fall back to the raw string.
 const SOURCE_LABELS = {
-	'woo-layer': __( 'Woo Layer', 'godam' ),
+	'woo-layer': __( 'Video Woo Layer', 'godam' ),
 	'shoppable-video': __( 'Shoppable Video', 'godam' ),
 	'reel-pop': __( 'Reel Pop', 'godam' ),
 	'wc-product-gallery': __( 'Product Gallery', 'godam' ),
-	'godam-image': __( 'Image', 'godam' ),
+	'godam-image': __( 'Image Woo Layer', 'godam' ),
 };
 
 export const sourceLabel = ( value ) => SOURCE_LABELS[ value ] || value;

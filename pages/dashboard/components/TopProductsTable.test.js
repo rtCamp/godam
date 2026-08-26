@@ -79,11 +79,11 @@ describe( 'escapeCsvCell — formula-injection guard', () => {
 
 describe( 'sourceLabel — Source chip label mapping', () => {
 	it( 'maps each implemented/known block_source to its human label', () => {
-		expect( sourceLabel( 'woo-layer' ) ).toBe( 'Woo Layer' );
+		expect( sourceLabel( 'woo-layer' ) ).toBe( 'Video Woo Layer' );
 		expect( sourceLabel( 'shoppable-video' ) ).toBe( 'Shoppable Video' );
 		expect( sourceLabel( 'reel-pop' ) ).toBe( 'Reel Pop' );
 		expect( sourceLabel( 'wc-product-gallery' ) ).toBe( 'Product Gallery' );
-		expect( sourceLabel( 'godam-image' ) ).toBe( 'Image' );
+		expect( sourceLabel( 'godam-image' ) ).toBe( 'Image Woo Layer' );
 	} );
 
 	it( 'falls back to the raw value for an unknown source', () => {
