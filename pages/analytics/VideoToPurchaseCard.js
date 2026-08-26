@@ -62,10 +62,10 @@ export default function VideoToPurchaseCard( { videoToPurchase, dataLabel } ) {
 					<div className="flex flex-col gap-2">
 						<div className="flex flex-row items-baseline gap-2">
 							<p className="single-metrics-value" data-test-id="godam-video-to-purchase-value">{ purchases.toLocaleString() }</p>
-							<span className="text-xs text-zinc-500 whitespace-nowrap">
+							<span className="text-xs text-zinc-500">
 								{ sprintf(
-									/* translators: %s: percentage of viewers who purchased. */
-									__( '%s%% of viewers', 'godam' ),
+									/* translators: %s: percentage of viewers who played and then purchased. */
+									__( 'orders from video, %s%% of viewers who played', 'godam' ),
 									rate.toFixed( 1 ),
 								) }
 							</span>

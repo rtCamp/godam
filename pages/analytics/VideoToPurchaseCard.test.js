@@ -38,6 +38,9 @@ describe( 'VideoToPurchaseCard — null vs zero', () => {
 		// The count leads the card.
 		expect( html ).toContain( '7' );
 		expect( html ).toContain( 'Video to Purchase' );
+		// Subtitle copy matches the design: what the number is + share of players.
+		expect( html ).toContain( 'orders from video' );
+		expect( html ).toContain( '17.5% of viewers who played' );
 	} );
 
 	it( 'still renders for a measured zero-purchases payload (0 is a real value, not "unavailable")', () => {

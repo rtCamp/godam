@@ -67,10 +67,10 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 						    numbers sum. */ }
 						<div className="flex flex-row items-baseline gap-2">
 							<p className="single-metrics-value" data-test-id="godam-video-to-cart-value">{ carts.toLocaleString() }</p>
-							<span className="text-xs text-zinc-500 whitespace-nowrap">
+							<span className="text-xs text-zinc-500">
 								{ sprintf(
-									/* translators: %s: percentage of viewers who added to cart. */
-									__( '%s%% of viewers', 'godam' ),
+									/* translators: %s: percentage of viewers who played and then added to cart. */
+									__( 'carts from video, %s%% of viewers who played', 'godam' ),
 									rate.toFixed( 1 ),
 								) }
 							</span>
