@@ -63,7 +63,7 @@ class WPB_GoDAM_Document {
 	 * Editor frame only — a published page is untouched, and still pays for these only when a
 	 * document is actually on it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.2.0
 	 *
 	 * @return void
 	 */

@@ -26,7 +26,7 @@ class Transcoding extends Base {
 	/**
 	 * Default media type used when none is provided.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.2.0
 	 *
 	 * @var string
 	 */
@@ -54,7 +54,7 @@ class Transcoding extends Base {
 	 * .ogg uploads are stored as `audio/ogg` and matched already; this only reaches the ones a
 	 * migration or custom MIME filter typed as `application/ogg`.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.2.0
 	 *
 	 * @return array<string, string[]> Media type => MIME types (or bare top-level types).
 	 */
@@ -73,7 +73,7 @@ class Transcoding extends Base {
 	/**
 	 * MIME types the Document pipeline covers.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.2.0
 	 *
 	 * @return string[] Document MIME types.
 	 */
@@ -612,7 +612,7 @@ class Transcoding extends Base {
 	 * attachment's extension as well as its MIME type, and neither wp_count_attachments() nor
 	 * a meta query can express that.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.2.0
 	 *
 	 * @param string[] $mime_types Document MIME types to scan. Must not be empty.
 	 *

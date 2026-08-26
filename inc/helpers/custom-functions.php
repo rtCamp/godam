@@ -729,7 +729,7 @@ function godam_is_audio_file( $file_path_or_url ) {
  * assets/src/blocks/godam-pdf/constants.js and the two are asserted equal by
  * tests/php/DocumentSupportTest.php.
  *
- * @since n.e.x.t
+ * @since 2.2.0
  *
  * @return array<string, string> MIME type => primary file extension.
  */
@@ -759,7 +759,7 @@ function rtgodam_get_supported_document_types() {
  * narrower than the MIME list: several extensions share a MIME type, and only the
  * ones named here are recognised when no attachment is available to ask.
  *
- * @since n.e.x.t
+ * @since 2.2.0
  *
  * @return string[] Lowercase extensions, without the leading dot.
  */
@@ -773,7 +773,7 @@ function rtgodam_get_supported_document_extensions() {
  * Query strings and fragments are dropped first: CDN URLs routinely carry `?v=2` or
  * `#page=3`, and reading the extension off the raw string would see "pdf?v=2".
  *
- * @since n.e.x.t
+ * @since 2.2.0
  *
  * @param string $path_or_url File path or URL.
  *
@@ -795,7 +795,7 @@ function rtgodam_get_extension_from_path( $path_or_url ) {
  * The stored path is preferred over the URL: it is what the file is called on disk, and it
  * avoids a second query for attachments whose URL is filtered to a CDN.
  *
- * @since n.e.x.t
+ * @since 2.2.0
  *
  * @param int $attachment_id Attachment ID.
  *
@@ -838,7 +838,7 @@ function rtgodam_get_attachment_extension( $attachment_id ) {
  * the MIME type stands on its own rather than rejecting content that still renders.
  *
  * @since 2.1.0
- * @since n.e.x.t Widened beyond PDF to the formats in rtgodam_get_supported_document_types().
+ * @since 2.2.0 Widened beyond PDF to the formats in rtgodam_get_supported_document_types().
  *
  * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
  * @param string     $url           Document URL. Used when no local attachment is available.
@@ -888,7 +888,7 @@ function godam_is_supported_document( $attachment_id = 0, $url = '' ) {
  * Anything else returns 0, which callers treat as "no local attachment" and fall back to the
  * URL they were given. That is the safe direction.
  *
- * @since n.e.x.t
+ * @since 2.2.0
  *
  * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
  *
@@ -918,7 +918,7 @@ function rtgodam_normalize_attachment_id( $attachment_id ) {
  * Requiring the extension to match as well costs nothing for the real formats, since each
  * one carries its own extension anyway.
  *
- * @since n.e.x.t
+ * @since 2.2.0
  *
  * @param int $attachment_id Attachment ID.
  *
@@ -957,7 +957,7 @@ function rtgodam_is_supported_document_attachment( $attachment_id ) {
  * An empty return means "no preview available" — either transcoding has not finished or
  * the file is password protected, and the caller should show its download-only panel.
  *
- * @since n.e.x.t
+ * @since 2.2.0
  *
  * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
  * @param string     $fallback_src  URL to fall back to when there is no local attachment.
@@ -1028,7 +1028,7 @@ function rtgodam_get_document_preview_url( $attachment_id = 0, $fallback_src = '
  * rtgodam_after_attachment_lookup, matching rtgodam_get_document_preview_url() above, so
  * neither resolver depends on its caller having opened the pair.
  *
- * @since n.e.x.t
+ * @since 2.2.0
  *
  * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
  * @param string     $fallback_src  URL to fall back to when there is no local attachment.

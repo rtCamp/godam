@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, joelabreo, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1, rudrakshigupta, sabbir1991, shreyasikhar26
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, joelabreo, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1, rudrakshigupta, sabbir1991, shreyasikhar26, akrocks
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.1.1
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -224,6 +224,16 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.2.0 (August 26, 2026) =
+
+- Feat: The Document block now handles far more than PDFs. You can embed and preview Word, Excel, PowerPoint, OpenDocument, and plain-text files.
+- Feat: Added the same document preview support to the Elementor and WPBakery GoDAM Document widgets.
+- Feat: Show in lightbox — a new option opens a video in a centered lightbox overlay when its poster is clicked, instead of playing it in place. Available in the GoDAM Video block, the Elementor widget, and the WPBakery element.
+- Tweak: The GoDAM media transcoding tool now supports bulk transcoding of all media types supported by GoDAM.
+- Fix: Resolved bugs in the GoDAM Media Library module.
+- Fix: Fixed the transcription source issue for GoDAM videos.
+- Fix: Layer analytics now records a view for each hotspot in its own right, so a hotspot's views, conversion, and "No Action" describe that hotspot rather than the whole layer. This stays correct even as hotspots are added or removed over time.
+
 = v2.1.1 (August 6, 2026) =
 
 - Fix: GoDAM no longer fills the debug log with `Function _load_textdomain_just_in_time was called incorrectly` on WordPress 6.7 and later. On sites that display errors, the warning could also appear on the page itself, in the admin and on the front end.
@@ -245,24 +255,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Resolved video transcript UI/UX issues.
 - Fix: Fixed the Elementor Select option colour and the media picker popup in Elementor.
 - Chore: Resolved open Dependabot npm security advisories.
-
-= v2.0.0 (July 14, 2026) =
-
-- Feat: GoDAM 2.0 brings a complete visual redesign across the admin and front end, with refreshed branding, new logos, and updated block icons.
-- Feat: Rebuilt the Video Editor with a streamlined layout for managing layers, hotspots, CTAs, and forms.
-- Feat: Added a guided onboarding experience, embedded in the plugin and integrated with GoDAM Central.
-- Feat: Redesigned the analytics dashboard with a cleaner layout, a Layer Timeline range control, and Top Videos improvements.
-- Feat: Redesigned the Video Player, Video Gallery, Audio, and Document blocks.
-- Tweak: The admin UI now follows the WordPress admin colour scheme, and the front end follows the configured brand colour.
-- Tweak: The Video Layer editor now warns before leaving with unsaved changes.
-- Tweak: The WooCommerce integration toggle is disabled when no valid API key is present, as it is a Pro feature.
-- Fix: Various QA fixes across blocks, the video editor, and the media gallery.
-
-= v1.13.0 (June 18, 2026) =
-
-- Feat: Track GoDAM media usage across post content, blocks, shortcodes, Elementor, block widgets, and featured images — recording where each asset is used and notifying GoDAM Central.
-- Feat: Automatically backfill media usage for existing content in the background, via the migration runner in Action Scheduler batches, on upgrade.
-- Tweak: Authenticate GoDAM Central media-usage logging and retry failed notifications with backoff so transient outages do not lose events.
 
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
