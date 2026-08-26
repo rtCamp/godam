@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import Tooltip from './Tooltip';
+import MetricTrend from './MetricTrend';
 import { formatRevenue } from '../dashboard/components/TopProductsTable';
 
 /**
@@ -28,10 +29,11 @@ const COLOR_ASSISTED = '#93c5fd';
  * shown per video (the payload omits it there).
  *
  * @param {Object} props
- * @param {Object} [props.revenue]   { revenue_minor, currency, excluded_orders, direct_minor, assisted_minor, influenced_minor }.
- * @param {string} [props.dataLabel] The active range label (e.g. "All time").
+ * @param {Object} [props.revenue]    { revenue_minor, currency, excluded_orders, direct_minor, assisted_minor, influenced_minor, change }.
+ * @param {string} [props.dataLabel]  The active range label (e.g. "All time").
+ * @param {string} [props.deltaLabel] Label for the trend badge, e.g. "vs previous 7 days".
  */
-export default function RevenueCard( { revenue, dataLabel } ) {
+export default function RevenueCard( { revenue, dataLabel, deltaLabel } ) {
 	// Absent payload (an analytics service that predates the revenue read, or a
 	// non-Woo store where no base currency is passed) -> render nothing, so the
 	// card never asserts a misleading "0" for "metric unavailable". A present
@@ -78,20 +80,26 @@ export default function RevenueCard( { revenue, dataLabel } ) {
 				{ /* Left: headline total + Direct/Assisted split. */ }
 				<div className="flex-1 min-w-0">
 					<p className="text-4xl font-bold text-[#1e1e1e] leading-none" data-test-id="godam-revenue-value">{ formatRevenue( total, currency ) }</p>
-					<p className="text-[13px] text-zinc-500 mt-2">
-						{ excluded > 0
-							? sprintf(
-								/* translators: %s: number of orders placed in other currencies, not included in the total. */
-								_n(
-									'before refunds · excluding %s order in other currencies',
-									'before refunds · excluding %s orders in other currencies',
-									excluded,
-									'godam',
-								),
-								excluded.toLocaleString(),
-							)
-							: __( 'before refunds', 'godam' ) }
-					</p>
+					<div className="flex items-center flex-wrap gap-x-1.5 mt-2 text-[13px] text-zinc-500">
+						<MetricTrend change={ revenue.change } deltaLabel={ deltaLabel } testId="godam-revenue-trend" />
+						{ revenue.change !== null && revenue.change !== undefined && (
+							<span className="text-zinc-400">·</span>
+						) }
+						<span>
+							{ excluded > 0
+								? sprintf(
+									/* translators: %s: number of orders placed in other currencies, not included in the total. */
+									_n(
+										'before refunds · excluding %s order in other currencies',
+										'before refunds · excluding %s orders in other currencies',
+										excluded,
+										'godam',
+									),
+									excluded.toLocaleString(),
+								)
+								: __( 'before refunds', 'godam' ) }
+						</span>
+					</div>
 
 					{ /* Split bar: Direct + Assisted, summing to the base total. */ }
 					<div className="flex h-2.5 w-full rounded-full overflow-hidden bg-zinc-100 mt-4" data-test-id="godam-revenue-split-bar">

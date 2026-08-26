@@ -444,31 +444,30 @@ const Dashboard = () => {
 									analyticsDataFetched={ insightsMetrics }
 								/>
 
-								{ /* Engagement Rate is intentionally not shown on the dashboard
-								    (it keeps the row to four cards on Woo / three on non-Woo,
-								    matching the design and avoiding a cramped, clipping row).
+								{ /* Engagement Rate is intentionally not shown on the dashboard;
 								    Average Engagement still appears on each video's own
 								    analytics page. */ }
+							</div>
 
-								{ /* WooCommerce-only: Video-to-Cart has no meaning without a
-								    store, and the card would otherwise read a permanent,
-								    misleading "0" on non-Woo sites. */ }
-								{ hasWooProducts && (
+							{ /* WooCommerce metrics on their own row below the core Insights:
+							    Video-to-Cart and Video-to-Purchase side by side (per the
+							    design), each with its range-aware trend badge. Woo-gated:
+							    both would otherwise read a permanent, misleading "0" on a
+							    non-Woo store. */ }
+							{ hasWooProducts && (
+								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-col items-stretch flex-wrap gap-4 mt-4 lg:[&>*]:grow lg:[&>*]:basis-40">
 									<VideoToCartCard
 										videoToCart={ insightsMetrics?.video_to_cart }
 										dataLabel={ insightsCardLabel }
+										deltaLabel={ insightsDeltaLabel }
 									/>
-								) }
-
-								{ /* WooCommerce-only: the purchase sibling of Video-to-Cart --
-								    distinct viewers who went on to buy an attributed product. */ }
-								{ hasWooProducts && (
 									<VideoToPurchaseCard
 										videoToPurchase={ insightsMetrics?.video_to_purchase }
 										dataLabel={ insightsCardLabel }
+										deltaLabel={ insightsDeltaLabel }
 									/>
-								) }
-							</div>
+								</div>
+							) }
 						</div>
 
 						<div className="playback-performance" id="global-analytics-container">
@@ -487,6 +486,7 @@ const Dashboard = () => {
 					<RevenueCard
 						revenue={ insightsMetrics?.revenue }
 						dataLabel={ insightsCardLabel }
+						deltaLabel={ insightsDeltaLabel }
 					/>
 				) }
 

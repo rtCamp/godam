@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import Tooltip from './Tooltip';
+import MetricTrend from './MetricTrend';
 
 /**
  * WordPress dependencies
@@ -17,10 +18,11 @@ import { __, sprintf } from '@wordpress/i18n';
  * to Cart and Revenue so the cart rate and the purchase rate read the same way.
  *
  * @param {Object} props
- * @param {Object} [props.videoToPurchase] The video_to_purchase payload (uses purchases + rate).
+ * @param {Object} [props.videoToPurchase] The video_to_purchase payload (uses purchases + rate + change).
  * @param {string} [props.dataLabel]       The active range label (e.g. "All time").
+ * @param {string} [props.deltaLabel]      Label for the trend badge, e.g. "vs previous 7 days".
  */
-export default function VideoToPurchaseCard( { videoToPurchase, dataLabel } ) {
+export default function VideoToPurchaseCard( { videoToPurchase, dataLabel, deltaLabel } ) {
 	// Render nothing when the payload is entirely absent (an analytics service that
 	// predates the video_to_purchase read), so the card never asserts a misleading
 	// "0 purchases" for "metric unavailable". A present payload with zero purchases
@@ -70,7 +72,7 @@ export default function VideoToPurchaseCard( { videoToPurchase, dataLabel } ) {
 								) }
 							</span>
 						</div>
-						<span className="text-[11px] text-zinc-400">{ dataLabel || __( 'All time', 'godam' ) }</span>
+						<MetricTrend change={ vtp.change } deltaLabel={ deltaLabel } dataLabel={ dataLabel } testId="godam-video-to-purchase-trend" />
 					</div>
 				</div>
 			</div>

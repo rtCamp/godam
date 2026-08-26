@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import Tooltip from './Tooltip';
+import MetricTrend from './MetricTrend';
 
 /**
  * WordPress dependencies
@@ -17,10 +18,11 @@ import { __, sprintf } from '@wordpress/i18n';
  * counts add up cleanly.
  *
  * @param {Object} props
- * @param {Object} [props.videoToCart] The video_to_cart payload (uses carts + rate).
+ * @param {Object} [props.videoToCart] The video_to_cart payload (uses carts + rate + change).
  * @param {string} [props.dataLabel]   The active range label (e.g. "All time").
+ * @param {string} [props.deltaLabel]  Label for the trend badge, e.g. "vs previous 7 days".
  */
-export default function VideoToCartCard( { videoToCart, dataLabel } ) {
+export default function VideoToCartCard( { videoToCart, dataLabel, deltaLabel } ) {
 	// Render nothing when the payload is entirely absent (an analytics service that
 	// predates the video_to_cart roll-up), so the card never asserts a misleading
 	// "0 carts" for "metric unavailable". A present payload with zero carts is a
@@ -75,7 +77,7 @@ export default function VideoToCartCard( { videoToCart, dataLabel } ) {
 								) }
 							</span>
 						</div>
-						<span className="text-[11px] text-zinc-400">{ dataLabel || __( 'All time', 'godam' ) }</span>
+						<MetricTrend change={ vtc.change } deltaLabel={ deltaLabel } dataLabel={ dataLabel } testId="godam-video-to-cart-trend" />
 					</div>
 				</div>
 			</div>
