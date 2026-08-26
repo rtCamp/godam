@@ -1008,7 +1008,11 @@ function rtgodam_get_document_preview_url( $attachment_id = 0, $fallback_src = '
  *
  * wp_get_attachment_url() already resolves virtual GoDAM media to its CDN URL via
  * Media_Library_Ajax::filter_attachment_url_for_virtual_media(), so local and GoDAM-tab
- * attachments are both handled here.
+ * attachments are both handled here — but see the note in the body on the one case where
+ * that resolution silently produces a path nothing serves.
+ *
+ * Attachment access is bracketed by rtgodam_before_attachment_lookup /
+ * rtgodam_after_attachment_lookup, as everywhere else that reads attachment data.
  *
  * @since n.e.x.t
  *
@@ -1021,10 +1025,57 @@ function rtgodam_get_document_download_url( $attachment_id = 0, $fallback_src = 
 	$godam_post_id = rtgodam_normalize_attachment_id( $attachment_id );
 
 	if ( $godam_post_id ) {
-		$attachment_url = wp_get_attachment_url( $godam_post_id ); // godam-coverage-ignore -- rtgodam_get_document_download_url(): covered transitively — sole caller (assets/src/blocks/godam-pdf/render.php) wraps the entire call in try/finally.
+		/**
+		 * Fires before reading this attachment's URL, its virtual-media marker and its
+		 * transcoded-URL meta, so integrations that centralize media on another site can
+		 * switch context first. Wrapped in try/finally because the block below returns from
+		 * several points once it determines which URL to offer.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$attachment_url = wp_get_attachment_url( $godam_post_id );
 
-		if ( ! empty( $attachment_url ) ) {
-			return $attachment_url;
+			/*
+			 * Virtual media — a GoDAM tab import, marked by _godam_original_id — has no local
+			 * file at all: `_wp_attached_file` holds a bare filename that stands for nothing
+			 * on disk.
+			 *
+			 * filter_attachment_url_for_virtual_media() normally redirects such an attachment
+			 * to the CDN, but it does so ONLY through the post guid, and returns WordPress's
+			 * own value untouched when that guid is empty. WordPress then joins the bare
+			 * filename onto the uploads base URL, so the caller gets a confident-looking
+			 * /wp-content/uploads/report.docx that 404s.
+			 *
+			 * rtgodam_transcoded_url is written for these attachments at import time and
+			 * points at the same file on the CDN, so it is the right answer whenever the
+			 * resolved URL turns out to be that local dead end. This matters most for a
+			 * document with no preview, where the download link is the only thing the block
+			 * can offer a visitor.
+			 */
+			$godam_original_id = get_post_meta( $godam_post_id, '_godam_original_id', true );
+
+			if ( ! empty( $godam_original_id ) ) {
+				$godam_uploads     = wp_get_upload_dir();
+				$godam_uploads_url = ! empty( $godam_uploads['baseurl'] ) ? $godam_uploads['baseurl'] : '';
+				$godam_is_local    = empty( $attachment_url )
+					|| ( ! empty( $godam_uploads_url ) && 0 === strpos( $attachment_url, $godam_uploads_url ) );
+
+				if ( $godam_is_local ) {
+					$godam_transcoded_url = get_post_meta( $godam_post_id, 'rtgodam_transcoded_url', true );
+
+					if ( ! empty( $godam_transcoded_url ) ) {
+						return $godam_transcoded_url;
+					}
+				}
+			}
+
+			if ( ! empty( $attachment_url ) ) {
+				return $attachment_url;
+			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 	}
 

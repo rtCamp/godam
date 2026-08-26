@@ -612,6 +612,84 @@ class DocumentSupportTest extends TestCase {
 	}
 
 	/**
+	 * Virtual media with no usable guid downloads from the CDN, not a local path.
+	 *
+	 * A GoDAM tab import has no file on disk. When its post guid is empty,
+	 * filter_attachment_url_for_virtual_media() leaves WordPress's own value alone and
+	 * WordPress joins the bare `_wp_attached_file` name onto the uploads base URL — a link
+	 * that looks right and 404s. rtgodam_transcoded_url is the same file on the CDN.
+	 *
+	 * @return void
+	 */
+	public function test_download_url_for_virtual_media_prefers_the_transcoded_url() {
+		$this->stub_mime( 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' );
+		$this->stub_meta(
+			array(
+				'_godam_original_id'     => 'md0r9phqa4',
+				'rtgodam_transcoded_url' => 'https://cdn.example.com/md0r9phqa4/report.docx',
+			)
+		);
+		// What WordPress builds for virtual media once the CDN lookup falls through.
+		$this->stub_attachment_url( 'https://example.com/wp-content/uploads/report.docx' );
+
+		$this->assertSame(
+			'https://cdn.example.com/md0r9phqa4/report.docx',
+			rtgodam_get_document_download_url( 90 ),
+			'Virtual media should download from the CDN, not a local uploads path with no file behind it.'
+		);
+
+		// Same attachment, nothing resolved at all.
+		$this->stub_attachment_url( '' );
+
+		$this->assertSame(
+			'https://cdn.example.com/md0r9phqa4/report.docx',
+			rtgodam_get_document_download_url( 90 ),
+			'An unresolved virtual attachment should still fall back to the transcoded URL.'
+		);
+	}
+
+	/**
+	 * A resolved CDN URL is left alone — the fallback must not override a good answer.
+	 *
+	 * @return void
+	 */
+	public function test_download_url_for_virtual_media_keeps_a_resolved_cdn_url() {
+		$this->stub_mime( 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' );
+		$this->stub_meta(
+			array(
+				'_godam_original_id'     => 'md0r9phqa4',
+				// Deliberately different, so preferring the wrong one would show up here.
+				'rtgodam_transcoded_url' => 'https://cdn.example.com/md0r9phqa4/stale.docx',
+			)
+		);
+		$this->stub_attachment_url( 'https://cdn.example.com/md0r9phqa4/report.docx' );
+
+		$this->assertSame(
+			'https://cdn.example.com/md0r9phqa4/report.docx',
+			rtgodam_get_document_download_url( 90 ),
+			'The guid-resolved CDN URL is authoritative when wp_get_attachment_url() supplies one.'
+		);
+	}
+
+	/**
+	 * An ordinary local upload is untouched: its uploads-directory URL is the real file.
+	 *
+	 * @return void
+	 */
+	public function test_download_url_for_local_uploads_is_untouched() {
+		$this->stub_mime( 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' );
+		// No _godam_original_id: transcoded by GoDAM, but the original still lives on disk.
+		$this->stub_meta( array( 'rtgodam_transcoded_url' => 'https://cdn.example.com/job_9/quarterly.xlsx' ) );
+		$this->stub_attachment_url( 'https://example.com/wp-content/uploads/quarterly.xlsx' );
+
+		$this->assertSame(
+			'https://example.com/wp-content/uploads/quarterly.xlsx',
+			rtgodam_get_document_download_url( 91 ),
+			'A real local upload downloads from the local file, transcoded copy or not.'
+		);
+	}
+
+	/**
 	 * With no attachment to resolve, the supplied source URL is used verbatim.
 	 *
 	 * @return void
