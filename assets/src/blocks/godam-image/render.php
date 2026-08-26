@@ -99,13 +99,31 @@ if ( $godam_has_layers ) {
 	// whenever the block renders (reliable on block themes / FSE, unlike a late
 	// wp_enqueue_style() here), so nothing else needs enqueuing here.
 	//
-	// Analytics is intentionally NOT enqueued for images: they have no analytics
-	// view (`image` capability sets `showStats: false`) and no transcoding job,
-	// so a beacon per hotspot interaction would only collect data nothing
-	// consumes. Without `godam-player-analytics-script`,
-	// `window.GoDAM.addLayerInteraction` is absent, so every emit in the shared
-	// managers / frontend.js is a guarded no-op. Re-enable here when an image
-	// analytics view ships.
+	// Layer analytics: enqueue the standalone runtime that registers
+	// `window.GoDAM.addLayerInteraction` + the page-hide flush WITHOUT the video
+	// player (image pages never load `godam-player-analytics.min.js`). Without it
+	// every emit in the shared hotspot managers is a guarded no-op. This is a small
+	// bundle built from `assets/src/js/godam-player/layer-analytics.js`.
+	$godam_la_asset_path = RTGODAM_PATH . 'assets/build/js/godam-layer-analytics.min.asset.php';
+	$godam_la_asset      = file_exists( $godam_la_asset_path )
+		// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is a plugin constant + hardcoded build filename.
+		? include $godam_la_asset_path
+		: array(
+			'dependencies' => array(),
+			'version'      => RTGODAM_VERSION,
+		);
+
+	if ( ! wp_script_is( 'godam-layer-analytics-script', 'registered' ) ) {
+		wp_register_script(
+			'godam-layer-analytics-script',
+			RTGODAM_URL . 'assets/build/js/godam-layer-analytics.min.js',
+			$godam_la_asset['dependencies'],
+			$godam_la_asset['version'],
+			true
+		);
+	}
+
+	wp_enqueue_script( 'godam-layer-analytics-script' );
 }
 
 $godam_instance_id = 'img_' . bin2hex( random_bytes( 8 ) );
@@ -137,6 +155,7 @@ if ( empty( $godam_is_shortcode ) ) {
 		<?php if ( $godam_has_layers ) : ?>
 			data-id="<?php echo esc_attr( (string) $godam_attachment_id ); ?>"
 			data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
+			data-block-source="godam-image"
 			data-godam-image-layers="<?php echo esc_attr( wp_json_encode( $godam_layers ) ); ?>"
 		<?php endif; ?>
 	>
