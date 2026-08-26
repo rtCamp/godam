@@ -104,6 +104,20 @@ if ( ! function_exists( 'wp_get_attachment_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_get_upload_dir' ) ) {
+
+	/**
+	 * @return array Uploads directory info; only `baseurl` is consumed.
+	 */
+	function wp_get_upload_dir() {
+		$baseurl = isset( $GLOBALS['rtgodam_stub']['uploads_baseurl'] )
+			? (string) $GLOBALS['rtgodam_stub']['uploads_baseurl']
+			: 'https://example.com/wp-content/uploads';
+
+		return array( 'baseurl' => $baseurl );
+	}
+}
+
 if ( ! function_exists( 'get_the_title' ) ) {
 
 	/**
