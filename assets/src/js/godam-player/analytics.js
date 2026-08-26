@@ -346,8 +346,15 @@ function observePageLoadForVideo( video ) {
 ( function() {
 	function findVideoElementById( videoId, root ) {
 		const ctx = root && root.querySelector ? root : document;
-		return ctx.querySelector(
-			`.easydam-player.video-js[data-id="${ videoId }"], .video-js[data-id="${ videoId }"]`,
+		// Image-block hotspot frames carry the same data-id (attachment id) but are
+		// not `.video-js`. The fallback lets the layer flush find an image frame and
+		// read its `data-block-source` ('godam-image'), so on a page that has BOTH a
+		// video and an image the tag is not dropped to ''. Attachment ids are unique,
+		// so a video and an image never share one; the video match always wins first.
+		return (
+			ctx.querySelector(
+				`.easydam-player.video-js[data-id="${ videoId }"], .video-js[data-id="${ videoId }"]`,
+			) || ctx.querySelector( `.godam-image__frame[data-id="${ videoId }"]` )
 		);
 	}
 	window.GoDAM = window.GoDAM || {};
