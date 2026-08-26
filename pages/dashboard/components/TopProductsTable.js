@@ -10,6 +10,7 @@ import { SearchControl } from '@wordpress/components';
  */
 import { useFetchTopProductsQuery, useLazyFetchTopProductsQuery } from '../redux/api/dashboardAnalyticsApi';
 import DateRangePicker from '../../analytics/components/DateRangePicker';
+import Tooltip from '../../analytics/Tooltip';
 import DefaultThumbnail from '../../../assets/src/images/video-thumbnail-default.png';
 import ExportBtn from '../../../assets/src/images/export.svg';
 import chevronLeft from '../../../assets/src/images/chevron-left.svg';
@@ -214,6 +215,18 @@ export const revenuePlacements = ( item ) =>
 		.filter( ( p ) => p.revenue_minor > 0 )
 		.sort( ( a, b ) => b.revenue_minor - a.revenue_minor );
 
+// Whether this row carries a Direct/Assisted revenue split. The service sends
+// `revenue_direct_minor` / `revenue_assisted_minor` only for a WooCommerce store
+// (a base currency) once a product has at least one attributed order line; an
+// older service build, or a product with no orders, omits both. Treated as
+// absent rather than zero so a row without the split shows nothing, never a
+// misleading "£0 direct · £0 assisted".
+export const hasRevenueTierSplit = ( item ) =>
+	item.revenue_direct_minor !== undefined &&
+	item.revenue_direct_minor !== null &&
+	item.revenue_assisted_minor !== undefined &&
+	item.revenue_assisted_minor !== null;
+
 /**
  * Dashboard "Top Products" table.
  *
@@ -290,6 +303,8 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 		Number( item.added_to_cart_direct || 0 ),
 		Number( item.added_to_cart_assisted || 0 ),
 		hasRevenue( item ) ? formatRevenueNumeric( item.revenue_minor, item.currency ) : '',
+		hasRevenueTierSplit( item ) ? formatRevenueNumeric( item.revenue_direct_minor, item.currency ) : '',
+		hasRevenueTierSplit( item ) ? formatRevenueNumeric( item.revenue_assisted_minor, item.currency ) : '',
 		hasRevenue( item ) ? ( item.currency || '' ) : '',
 		hasRevenue( item ) ? Number( item.orders || 0 ) : '',
 	];
@@ -323,6 +338,8 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 			__( 'Add to Cart (in-video)', 'godam' ),
 			__( 'Add to Cart (assisted)', 'godam' ),
 			__( 'Revenue', 'godam' ),
+			__( 'Revenue (direct)', 'godam' ),
+			__( 'Revenue (assisted)', 'godam' ),
 			__( 'Currency', 'godam' ),
 			__( 'Orders', 'godam' ),
 		];
@@ -390,10 +407,50 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 					<thead>
 						<tr>
 							<th scope="col">{ __( 'Product', 'godam' ) }</th>
-							<th scope="col">{ __( 'Source', 'godam' ) }</th>
-							<th scope="col">{ __( 'Product Views', 'godam' ) }</th>
-							<th scope="col">{ __( 'Add to Cart', 'godam' ) }</th>
-							<th scope="col">{ __( 'Revenue', 'godam' ) }</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Source', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'Where in your videos this product appeared: a Woo layer, a shoppable video, a reel pop, and so on.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Product Views', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'How many times shoppers opened this product from a video, with the click-through rate beside it (product opens / times the product was shown).',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Add to Cart', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'How many times the product was added to cart from a video, with the add-to-cart rate. In-video means added inside the player; via product page means added after clicking through.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Revenue', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'Order value traced to this product\'s videos, in the store\'s base currency, before refunds. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -503,6 +560,23 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 											// null-not-zero: the service sends null revenue for a
 											// product with no orders yet; say so rather than "0".
 											<span className="text-zinc-400" data-test-id="godam-top-products-revenue-empty">{ __( 'No data', 'godam' ) }</span>
+										) }
+										{ /* Direct/Assisted split of this product's revenue,
+										    mirroring the dashboard revenue card. Shown only when
+										    the service sent the split (WooCommerce store, product
+										    with orders); never a "£0 direct · £0 assisted". */ }
+										{ hasRevenue( item ) && hasRevenueTierSplit( item ) && (
+											<div
+												className="mt-1 text-xs text-zinc-500"
+												data-test-id="godam-top-products-tier-split"
+											>
+												{ sprintf(
+													/* translators: 1: direct (in-video) revenue amount, 2: assisted (via product page) revenue amount. */
+													__( '%1$s direct · %2$s assisted', 'godam' ),
+													formatRevenue( item.revenue_direct_minor, item.currency ),
+													formatRevenue( item.revenue_assisted_minor, item.currency ),
+												) }
+											</div>
 										) }
 										{ /* Influenced revenue (third tier): a separate sub-line,
 										    shown only when there is a real match, never added into

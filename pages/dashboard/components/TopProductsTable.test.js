@@ -14,7 +14,7 @@
 /**
  * Internal dependencies
  */
-import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements } from './TopProductsTable';
+import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements, hasRevenueTierSplit } from './TopProductsTable';
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
 	// A value whose FIRST character is one of these is what a spreadsheet would
@@ -141,6 +141,25 @@ describe( 'hasInfluenced — Influenced sub-line gate (third tier)', () => {
 		expect( formatRevenue( 250000, 'INR' ) ).toContain( '2,500' );
 		expect( formatRevenue( 1234, 'JPY' ) ).not.toContain( '.' );
 		expect( formatRevenue( 500, 'USD' ) ).toBe( '$5.00' );
+	} );
+} );
+
+describe( 'hasRevenueTierSplit — Direct/Assisted revenue sub-line gate', () => {
+	it( 'is true only when both tier amounts are present (Woo store, product with orders)', () => {
+		expect( hasRevenueTierSplit( { revenue_direct_minor: 1000, revenue_assisted_minor: 300 } ) ).toBe( true );
+		// A real zero on one side is still a present split (all revenue on one tier).
+		expect( hasRevenueTierSplit( { revenue_direct_minor: 0, revenue_assisted_minor: 800 } ) ).toBe( true );
+	} );
+
+	it( 'is false when the service omitted the split (older build / no base currency / no orders)', () => {
+		expect( hasRevenueTierSplit( {} ) ).toBe( false );
+		expect( hasRevenueTierSplit( { revenue_direct_minor: 1000 } ) ).toBe( false );
+		expect( hasRevenueTierSplit( { revenue_direct_minor: null, revenue_assisted_minor: null } ) ).toBe( false );
+	} );
+
+	it( 'renders both amounts via the shipped formatRevenue', () => {
+		expect( formatRevenue( 1000, 'GBP' ) ).toBe( '£10.00' );
+		expect( formatRevenue( 300, 'GBP' ) ).toBe( '£3.00' );
 	} );
 } );
 
