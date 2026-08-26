@@ -119,15 +119,26 @@ const hasRevenue = ( item ) => item.revenue_minor !== undefined && item.revenue_
  * @param {string} currency ISO 4217 currency code.
  * @return {number} Fraction digits for the currency (e.g. 2 for GBP, 0 for JPY, 3 for KWD).
  */
+// ISO 4217 minor-unit exponents, kept in lockstep with the EMIT side
+// (godam-for-woo Order_Revenue_Emission::currency_minor_unit_exponent). The store
+// encodes revenue_minor with THIS table, and the analytics service stores the
+// integer untouched, so the UI must decode with the SAME table. Intl/ICU's own
+// currency data disagrees for a handful of codes (e.g. IQD 3 vs 0, AFN/ALL/MGA 2
+// vs 0, CLF 2 vs 4), which would misplace the decimal by 10x-1000x.
+const ZERO_DECIMAL_CURRENCIES = new Set( [
+	'BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'JPY', 'KMF', 'KRW', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+] );
+const THREE_DECIMAL_CURRENCIES = new Set( [ 'BHD', 'IQD', 'JOD', 'KWD', 'LYD', 'OMR', 'TND' ] );
+
 function currencyFractionDigits( currency ) {
-	try {
-		return new Intl.NumberFormat( undefined, {
-			style: 'currency',
-			currency,
-		} ).resolvedOptions().maximumFractionDigits;
-	} catch ( e ) {
-		return 2;
+	const code = String( currency || '' ).toUpperCase();
+	if ( ZERO_DECIMAL_CURRENCIES.has( code ) ) {
+		return 0;
 	}
+	if ( THREE_DECIMAL_CURRENCIES.has( code ) ) {
+		return 3;
+	}
+	return 2;
 }
 
 /**
@@ -155,16 +166,21 @@ function revenueMajorUnits( minor, currency ) {
  * @return {string} Formatted amount, e.g. "£12.34".
  */
 export function formatRevenue( minor, currency ) {
+	const digits = currencyFractionDigits( currency );
 	const amount = revenueMajorUnits( minor, currency );
 	try {
+		// Force the fraction digits from our own table so the DISPLAY matches the
+		// SCALE we decoded with; Intl's default digits for a currency can differ.
 		return new Intl.NumberFormat( undefined, {
 			style: 'currency',
 			currency,
+			minimumFractionDigits: digits,
+			maximumFractionDigits: digits,
 		} ).format( amount );
 	} catch ( e ) {
 		// Missing/invalid ISO code (or no Intl currency support) - fall back to a
 		// plain number so the cell never throws.
-		return currency ? `${ amount.toFixed( 2 ) } ${ currency }` : amount.toFixed( 2 );
+		return currency ? `${ amount.toFixed( digits ) } ${ currency }` : amount.toFixed( digits );
 	}
 }
 
@@ -311,55 +327,93 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 
 	const handleExportCSV = async () => {
 		setIsExporting( true );
+		// try/finally so the button never sticks on "Exporting…" if anything below
+		// (a fetch, Blob/URL creation, DOM ops) throws.
+		try {
+			const pageCount = Math.max( 1, Math.ceil( ( totalItems || products.length ) / EXPORT_PAGE_SIZE ) );
 
-		const pageCount = Math.max( 1, Math.ceil( ( totalItems || products.length ) / EXPORT_PAGE_SIZE ) );
-		const results = await Promise.all(
-			Array.from( { length: pageCount }, ( _, i ) =>
-				fetchForExport( {
-					siteUrl,
-					page: i + 1,
-					limit: EXPORT_PAGE_SIZE,
-					search,
-					startDate: dateRange.startDate,
-					endDate: dateRange.endDate,
-				} ).unwrap().catch( () => ( { products: [] } ) ),
-			),
-		);
-		const fetched = results.flatMap( ( result ) => result?.products || [] );
-		const exportProducts = fetched.length ? fetched : products;
+			// Fetch export pages with a small, BOUNDED concurrency rather than one
+			// unbounded Promise.all: a large catalog (e.g. 50k products -> 500 pages)
+			// would otherwise fire hundreds of simultaneous /top-products requests,
+			// each opening an upstream HTTP call and risking a self-DoS of the proxy
+			// and analytics service.
+			const CONCURRENCY = 4;
+			const pageProducts = new Array( pageCount );
+			let failedPages = 0;
+			let cursor = 0;
+			const worker = async () => {
+				while ( cursor < pageCount ) {
+					const i = cursor++;
+					try {
+						const res = await fetchForExport( {
+							siteUrl,
+							page: i + 1,
+							limit: EXPORT_PAGE_SIZE,
+							search,
+							startDate: dateRange.startDate,
+							endDate: dateRange.endDate,
+						} ).unwrap();
+						pageProducts[ i ] = res?.products || [];
+					} catch ( e ) {
+						// Record the failure instead of silently dropping the page, so
+						// the user is told the CSV is incomplete rather than getting a
+						// short file with no indication.
+						failedPages++;
+						pageProducts[ i ] = [];
+					}
+				}
+			};
+			await Promise.all(
+				Array.from( { length: Math.min( CONCURRENCY, pageCount ) }, () => worker() ),
+			);
 
-		const headers = [
-			__( 'Product', 'godam' ),
-			__( 'Product ID', 'godam' ),
-			__( 'Source', 'godam' ),
-			__( 'Product Views', 'godam' ),
-			__( 'Product Views Rate', 'godam' ),
-			__( 'Add to Cart', 'godam' ),
-			__( 'Add to Cart (in-video)', 'godam' ),
-			__( 'Add to Cart (assisted)', 'godam' ),
-			__( 'Revenue', 'godam' ),
-			__( 'Revenue (direct)', 'godam' ),
-			__( 'Revenue (assisted)', 'godam' ),
-			__( 'Currency', 'godam' ),
-			__( 'Orders', 'godam' ),
-		];
+			const fetched = pageProducts.flat();
+			const exportProducts = fetched.length ? fetched : products;
 
-		const csvContent = [ headers, ...exportProducts.map( buildCsvRow ) ]
-			.map( ( row ) => row.map( escapeCsvCell ).join( ',' ) )
-			.join( '\n' );
+			const headers = [
+				__( 'Product', 'godam' ),
+				__( 'Product ID', 'godam' ),
+				__( 'Source', 'godam' ),
+				__( 'Product Views', 'godam' ),
+				__( 'Product Views Rate', 'godam' ),
+				__( 'Add to Cart', 'godam' ),
+				__( 'Add to Cart (in-video)', 'godam' ),
+				__( 'Add to Cart (assisted)', 'godam' ),
+				__( 'Revenue', 'godam' ),
+				__( 'Revenue (direct)', 'godam' ),
+				__( 'Revenue (assisted)', 'godam' ),
+				__( 'Currency', 'godam' ),
+				__( 'Orders', 'godam' ),
+			];
 
-		const blob = new Blob( [ csvContent ], { type: 'text/csv;charset=utf-8;' } );
-		const url = URL.createObjectURL( blob );
-		const link = document.createElement( 'a' );
-		link.setAttribute( 'href', url );
-		link.setAttribute( 'download', 'godam-top-products.csv' );
-		link.style.display = 'none';
-		document.body.appendChild( link );
-		link.click();
-		document.body.removeChild( link );
-		URL.revokeObjectURL( url );
+			const csvContent = [ headers, ...exportProducts.map( buildCsvRow ) ]
+				.map( ( row ) => row.map( escapeCsvCell ).join( ',' ) )
+				.join( '\n' );
 
-		setIsExporting( false );
+			const blob = new Blob( [ csvContent ], { type: 'text/csv;charset=utf-8;' } );
+			const url = URL.createObjectURL( blob );
+			const link = document.createElement( 'a' );
+			link.setAttribute( 'href', url );
+			link.setAttribute( 'download', 'godam-top-products.csv' );
+			link.style.display = 'none';
+			document.body.appendChild( link );
+			link.click();
+			document.body.removeChild( link );
+			URL.revokeObjectURL( url );
+
+			if ( failedPages > 0 ) {
+				// eslint-disable-next-line no-alert
+				window.alert(
+					sprintf(
+						/* translators: %d: number of export pages that failed to load. */
+						__( 'Export is incomplete: %d page(s) could not be loaded, so some products are missing from the CSV.', 'godam' ),
+						failedPages,
+					),
+				);
+			}
+		} finally {
+			setIsExporting( false );
+		}
 	};
 
 	return (

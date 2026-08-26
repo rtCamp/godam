@@ -112,6 +112,13 @@ describe( 'formatRevenue — revenue_minor -> currency amount', () => {
 		expect( formatRevenue( 1234, 'KWD' ) ).toContain( '1.234' );
 	} );
 
+	it( 'uses the emit-side ISO table, not Intl, for a divergent currency (IQD)', () => {
+		// Intl/ICU treats IQD as 0-decimal, but the store encodes it as 3-decimal
+		// (ISO 4217), so the UI must scale AND display with 3 digits or the amount
+		// is 1000x off.
+		expect( formatRevenue( 1234, 'IQD' ) ).toContain( '1.234' );
+	} );
+
 	it( 'treats a missing amount as zero rather than throwing', () => {
 		expect( formatRevenue( undefined, 'GBP' ) ).toBe( '£0.00' );
 	} );
@@ -211,6 +218,10 @@ describe( 'formatRevenueNumeric — CSV plain-number revenue', () => {
 	it( 'uses the currency fraction digits (0 for JPY, 3 for KWD)', () => {
 		expect( formatRevenueNumeric( 1234, 'JPY' ) ).toBe( '1234' );
 		expect( formatRevenueNumeric( 1234, 'KWD' ) ).toBe( '1.234' );
+	} );
+
+	it( 'uses the emit-side table for a currency Intl disagrees on (IQD -> 3 digits)', () => {
+		expect( formatRevenueNumeric( 1234, 'IQD' ) ).toBe( '1.234' );
 	} );
 
 	it( 'treats a missing amount as zero', () => {
