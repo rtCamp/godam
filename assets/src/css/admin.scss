@@ -125,6 +125,14 @@ $media-frame-width: calc(300px + 2 * 24px);
 			background-color: #fff;
 		}
 	}
+
+	// Safari never receives `.not-safari` (see admin.js), so it stays in normal
+	// flow and keeps the negative margin above. The Help page is full-bleed, so
+	// without this it slides 20px left and under the admin menu. Give the offset
+	// back only in that layout — the fixed `.not-safari` layout must stay flush.
+	&:not(.not-safari) #root-video-help {
+		margin-left: 20px;
+	}
 }
 
 // Analytics surface (dashboard + per-video analytics) opts back into the WP
@@ -164,6 +172,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 	.godam-admin-root {
 		margin-left: -10px;
+	}
+
+	// Mirrors the desktop compensation above against the -10px mobile pull.
+	.godam-admin-root:not(.not-safari) #root-video-help {
+		margin-left: 10px;
 	}
 
 	.auto-fold .godam-admin-root.not-safari {

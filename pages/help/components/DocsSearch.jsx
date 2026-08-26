@@ -7,8 +7,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { getDocsSearchUrl } from '../constants';
-import HubIcon from './HubIcon';
+import { getDocsSearchUrl } from '../constants.js';
+import HubIcon from './HubIcon.jsx';
 
 /**
  * Site-wide docs search.

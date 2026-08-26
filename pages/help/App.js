@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
+import { useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { ToggleControl } from '@wordpress/components';
 
@@ -16,9 +17,9 @@ import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import GoDAMFooter from '../godam/components/GoDAMFooter.jsx';
 import { useSaveMediaSettingsMutation, useGetMediaSettingsQuery } from '../godam/redux/api/media-settings.js';
 import { updateMediaSetting } from '../godam/redux/slice/media-settings.js';
-import { getHubSections } from './constants';
-import DocsSearch from './components/DocsSearch';
-import HubCard from './components/HubCard';
+import { getHubSections } from './constants.js';
+import DocsSearch from './components/DocsSearch.jsx';
+import HubCard from './components/HubCard.jsx';
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -45,7 +46,8 @@ const App = () => {
 		await saveMediaSettings( { settings: updatedSettings } );
 	};
 
-	const sections = getHubSections();
+	// Static data, but it runs a `__()` call per string — build it once.
+	const sections = useMemo( () => getHubSections(), [] );
 
 	return (
 		<div className="godam-help-container">
@@ -58,7 +60,7 @@ const App = () => {
 						{ __( 'What are you building with GoDAM?', 'godam' ) }
 					</h1>
 					<p className="godam-help-hero__subtitle">
-						{ __( 'Pick where you use GoDAM — or search across every hub.', 'godam' ) }
+						{ __( 'Pick where you use GoDAM or search across every hub.', 'godam' ) }
 					</p>
 					<DocsSearch />
 				</div>
@@ -67,7 +69,7 @@ const App = () => {
 			<div className="godam-help-sections">
 				{ sections.map( ( section ) => (
 					<section key={ section.id } className="godam-help-section">
-						<p className="godam-help-eyebrow">{ section.label }</p>
+						<h2 className="godam-help-eyebrow">{ section.label }</h2>
 						<p className="godam-help-section__description">{ section.description }</p>
 
 						<div className="godam-help-grid">

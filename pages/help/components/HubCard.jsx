@@ -6,15 +6,15 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { GODAM_DOCS_URL } from '../constants';
-import HubIcon from './HubIcon';
+import { GODAM_DOCS_URL } from '../constants.js';
+import HubIcon from './HubIcon.jsx';
 
 /**
  * A single documentation hub card.
  *
- * Hubs without a `slug` have no docs hub published yet — they keep the card
- * layout but render an inert action, so the status badge stays the only claim
- * the card makes.
+ * Hubs without a `slug` have no docs hub published yet, so the card omits the
+ * action entirely and lets the status badge be the only claim it makes. An
+ * "Open docs" button — even a greyed one — would imply docs already exist.
  *
  * @param {Object} props     Component props.
  * @param {Object} props.hub Hub definition from `getHubSections()`.
@@ -29,7 +29,7 @@ const HubCard = ( { hub } ) => {
 				<HubIcon name={ icon } />
 			</span>
 
-			<p className="godam-help-card__eyebrow">{ eyebrow }</p>
+			<p className="godam-help-eyebrow godam-help-card__eyebrow">{ eyebrow }</p>
 			<h3 className="godam-help-card__title">{ title }</h3>
 			<p className="godam-help-card__description">{ description }</p>
 
@@ -39,8 +39,8 @@ const HubCard = ( { hub } ) => {
 				</p>
 			) }
 
-			<div className="godam-help-card__action">
-				{ url ? (
+			{ url && (
+				<div className="godam-help-card__action">
 					<a
 						className="godam-help-button"
 						href={ url }
@@ -52,12 +52,8 @@ const HubCard = ( { hub } ) => {
 							{ __( '(opens in a new tab)', 'godam' ) }
 						</span>
 					</a>
-				) : (
-					<span className="godam-help-button godam-help-button--disabled" aria-disabled="true">
-						{ __( 'Open docs', 'godam' ) }
-					</span>
-				) }
-			</div>
+				</div>
+			) }
 		</article>
 	);
 };
