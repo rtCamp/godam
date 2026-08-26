@@ -968,27 +968,40 @@ function rtgodam_get_document_preview_url( $attachment_id = 0, $fallback_src = '
 	$attachment_id = rtgodam_normalize_attachment_id( $attachment_id );
 
 	if ( $attachment_id ) {
-		$preview_url = get_post_meta( $attachment_id, 'rtgodam_preview_pdf_url', true );
+		/**
+		 * Fires before reading this attachment's preview-PDF, MIME type, transcoded-URL and
+		 * URL, so integrations that centralize media on another site can switch context
+		 * first. Wrapped in try/finally because the block below returns from several points
+		 * once it determines which URL to offer.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$preview_url = get_post_meta( $attachment_id, 'rtgodam_preview_pdf_url', true );
 
-		if ( ! empty( $preview_url ) ) {
-			return $preview_url;
-		}
-
-		if ( 'application/pdf' === get_post_mime_type( $attachment_id ) ) {
-			$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-
-			if ( ! empty( $transcoded_url ) ) {
-				return $transcoded_url;
+			if ( ! empty( $preview_url ) ) {
+				return $preview_url;
 			}
 
-			$attachment_url = wp_get_attachment_url( $attachment_id );
+			if ( 'application/pdf' === get_post_mime_type( $attachment_id ) ) {
+				$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 
-			if ( ! empty( $attachment_url ) ) {
-				return $attachment_url;
+				if ( ! empty( $transcoded_url ) ) {
+					return $transcoded_url;
+				}
+
+				$attachment_url = wp_get_attachment_url( $attachment_id );
+
+				if ( ! empty( $attachment_url ) ) {
+					return $attachment_url;
+				}
 			}
-		}
 
-		return '';
+			return '';
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	// No local attachment: a URL-only document can only be previewed when it is
@@ -1012,7 +1025,8 @@ function rtgodam_get_document_preview_url( $attachment_id = 0, $fallback_src = '
  * that resolution silently produces a path nothing serves.
  *
  * Attachment access is bracketed by rtgodam_before_attachment_lookup /
- * rtgodam_after_attachment_lookup, as everywhere else that reads attachment data.
+ * rtgodam_after_attachment_lookup, matching rtgodam_get_document_preview_url() above, so
+ * neither resolver depends on its caller having opened the pair.
  *
  * @since n.e.x.t
  *
@@ -1059,8 +1073,28 @@ function rtgodam_get_document_download_url( $attachment_id = 0, $fallback_src = 
 			if ( ! empty( $godam_original_id ) ) {
 				$godam_uploads     = wp_get_upload_dir();
 				$godam_uploads_url = ! empty( $godam_uploads['baseurl'] ) ? $godam_uploads['baseurl'] : '';
-				$godam_is_local    = empty( $attachment_url )
-					|| ( ! empty( $godam_uploads_url ) && 0 === strpos( $attachment_url, $godam_uploads_url ) );
+
+				/*
+				 * Compared with the scheme stripped. SSL and CDN plugins routinely filter
+				 * wp_get_attachment_url() to https:// while wp_get_upload_dir() still reports
+				 * http:// (or the reverse); a raw prefix match fails on those sites, so
+				 * $godam_is_local would come out false and the 404ing local URL would be
+				 * returned — the exact bug this guards against, silently unfixed.
+				 *
+				 * The host is still part of the comparison, so a filter that moves attachment
+				 * URLs onto a different host is treated as NOT local. That is deliberate:
+				 * there is no way to tell a CDN mirror of the uploads directory from a
+				 * genuinely off-site copy, and honouring the URL the site itself advertises is
+				 * the safer of the two guesses.
+				 */
+				$godam_is_local = empty( $attachment_url )
+					|| (
+						! empty( $godam_uploads_url )
+						&& 0 === strpos(
+							preg_replace( '#^https?://#i', '', $attachment_url ),
+							preg_replace( '#^https?://#i', '', $godam_uploads_url )
+						)
+					);
 
 				if ( $godam_is_local ) {
 					$godam_transcoded_url = get_post_meta( $godam_post_id, 'rtgodam_transcoded_url', true );
