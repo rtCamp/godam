@@ -17,7 +17,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { pdfWorker } from './worker';
+import { pdfWorker, pdfWorkerReady } from './worker';
 
 /*
  * The viewer's styles — ours plus react-pdf's TextLayer/AnnotationLayer sheets — are
@@ -129,6 +129,24 @@ export default function DocumentViewer( {
 	const currentUrlRef = useRef( url );
 	const [ width, setWidth ] = useState( 0 );
 	const [ ownerDocument, setOwnerDocument ] = useState( null );
+	const [ workerReady, setWorkerReady ] = useState( false );
+
+	// Hold document loading until the pdf.js worker — or, under a worker-blocking CSP, its
+	// main-thread fallback — is in place. Without this the first getDocument() could run in the
+	// gap before the fallback handler is registered and error out. See viewer/worker.js.
+	useEffect( () => {
+		let active = true;
+
+		pdfWorkerReady.then( () => {
+			if ( active ) {
+				setWorkerReady( true );
+			}
+		} );
+
+		return () => {
+			active = false;
+		};
+	}, [] );
 
 	// Pages are rendered to a canvas at a fixed pixel width, so they have to be re-rendered
 	// when the container resizes — a CSS-scaled canvas just goes blurry.
@@ -336,7 +354,7 @@ export default function DocumentViewer( {
 			     starting earlier would register the fonts against globalThis.document, and the
 			     reload triggered by the corrected `options` would leave those stale rules
 			     behind in the wrong document. */ }
-			{ ! ownerDocument ? loadingView : (
+			{ ! ownerDocument || ! workerReady ? loadingView : (
 				<Document
 					file={ url }
 					options={ options }
