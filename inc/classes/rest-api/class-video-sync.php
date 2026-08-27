@@ -91,15 +91,25 @@ class Video_Sync extends Base {
 	public function check_videos( $request ) {
 		// Get all videos with job_id.
 		global $wpdb;
+
+		/**
+		 * Fires before this direct $wpdb->postmeta query — just as
+		 * site-scoped as get_post_meta() — so integrations that centralize
+		 * media on another site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$results = $wpdb->get_results(
 			"
-			SELECT post_id, meta_value 
-			FROM {$wpdb->postmeta} 
+			SELECT post_id, meta_value
+			FROM {$wpdb->postmeta}
 			WHERE meta_key = 'rtgodam_transcoding_job_id'
 			AND meta_value != ''
 			"
 		);
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		$tuples = array();
 		foreach ( $results as $row ) {

@@ -8,6 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import Attachments from './models/attachments';
+import { isSupportedDocument } from '../../blocks/godam-pdf/constants.js';
 
 /* global _ */
 
@@ -57,6 +58,28 @@ function isUploadPage() {
  */
 function isFolderOrgDisabled() {
 	return ! window.easydamMediaLibrary?.enableFolderOrganization || false;
+}
+
+/**
+ * Whether GoDAM should replace WordPress's attachment browser and grid views
+ * (`wp.media.view.AttachmentsBrowser` and `wp.media.view.Attachments`).
+ *
+ * Those replacements are what carry the grid-view transcoding UI — the status
+ * badges and the "Transcode Media" (retranscode) bulk action — but they also bring
+ * GoDAM's column-width logic and custom attachment view, so this gates more than
+ * transcoding alone.
+ *
+ * Transcoding is a core GoDAM feature, not a folder-organization one, so the
+ * replacements stay in place on the media library grid page (upload.php) even in
+ * additive mode (folder organization disabled). Everywhere else in additive mode
+ * (e.g. the media modal opened from a post) they are suppressed, since the browser
+ * and grid views are the main clash surface with another media/DAM plugin. The
+ * folder-only behaviour they contain is separately gated on `isFolderOrgDisabled()`.
+ *
+ * @return {boolean} True if GoDAM's browser/grid views should replace the native ones.
+ */
+function shouldReplaceAttachmentsViews() {
+	return ! isFolderOrgDisabled() || isUploadPage();
 }
 
 async function addManageMediaButton() {
@@ -173,4 +196,27 @@ function canEditPages() {
 	return _canEditPages;
 }
 
-export { isAPIKeyValid, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };
+/**
+ * Whether a media-library model is a document GoDAM converts to a previewable PDF.
+ *
+ * The model's `type` is only the first half of the MIME type — 'application' for a .docx,
+ * 'text' for a .txt — so it has to be recombined with `subtype` before it says anything. The
+ * file name is checked as well, because text/plain covers .srt/.asc/.c/.cc/.h alongside .txt
+ * and those are never transcoded; that is the same pair of conditions
+ * rtgodam_is_supported_document_attachment() applies server-side.
+ *
+ * @param {Object} model Backbone attachment model.
+ * @return {boolean} True when the attachment is a convertible document.
+ */
+function isDocumentModel( model ) {
+	if ( ! model ) {
+		return false;
+	}
+
+	return isSupportedDocument( {
+		mime: `${ model.get( 'type' ) }/${ model.get( 'subtype' ) }`,
+		filename: model.get( 'filename' ) || '',
+	} );
+}
+
+export { isAPIKeyValid, isDocumentModel, checkMediaLibraryView, isUploadPage, isFolderOrgDisabled, shouldReplaceAttachmentsViews, addManageMediaButton, getQuery, getGodamSettings, canManageAttachment, canManageOptions, canEditPages };

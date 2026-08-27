@@ -79,23 +79,35 @@ class Dynamic_Shortcode extends Base {
 
 		$godam_context = $request->get_param( 'godam_context' );
 
-		$attachment = get_post( $id );
+		/**
+		 * Fires before resolving this attachment's URL/meta/sources, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$attachment = get_post( $id );
 
-		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
-			return new WP_REST_Response(
-				array(
-					'status'  => 'error',
-					'message' => 'Video not found.',
-				),
-				404
-			);
+			if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+				return new WP_REST_Response(
+					array(
+						'status'  => 'error',
+						'message' => 'Video not found.',
+					),
+					404
+				);
+			}
+
+			$transcoded_url     = strval( rtgodam_get_transcoded_url_from_attachment( $id ) );
+			$hls_transcoded_url = strval( rtgodam_get_hls_transcoded_url_from_attachment( $id ) );
+			$video_src          = strval( wp_get_attachment_url( $id ) );
+			$video_src_type     = strval( get_post_mime_type( $id ) );
+			$sources            = array();
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		$transcoded_url     = strval( rtgodam_get_transcoded_url_from_attachment( $id ) );
-		$hls_transcoded_url = strval( rtgodam_get_hls_transcoded_url_from_attachment( $id ) );
-		$video_src          = strval( wp_get_attachment_url( $id ) );
-		$video_src_type     = strval( get_post_mime_type( $id ) );
-		$sources            = array();
 
 		if ( ! empty( $transcoded_url ) ) {
 			$sources[] = array(
@@ -124,8 +136,25 @@ class Dynamic_Shortcode extends Base {
 		do_action( 'rtgodam_shortcode_before_render', $id );
 
 		// Get the video title and date.
+		/**
+		 * Fires before reading this attachment's title/date, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_title = get_the_title( $id );
 		$video_date  = get_the_date( 'F j, Y', $id );
+
+		/**
+		 * Fires after reading this attachment's title/date, so
+		 * integrations can restore the site context switched in
+		 * `rtgodam_before_attachment_lookup`.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Add filters for title and date.
 		$video_title = apply_filters( 'rtgodam_shortcode_video_title', $video_title, $id );

@@ -18,9 +18,17 @@ $godam_video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0
 // The preview page is shared across media types. Its slug stays `video-preview`,
 // but the chrome (title, header label, edit button) adapts for images and audio,
 // both of which also skip the video-only Analytics link.
+/**
+ * Fires before reading this attachment's MIME type, so integrations that
+ * centralize media on another site can switch context first.
+ *
+ * @since 2.2.0
+ */
+do_action( 'rtgodam_before_attachment_lookup' );
 $godam_media_mime = $godam_video_id ? (string) get_post_mime_type( $godam_video_id ) : '';
-$godam_is_image   = 0 === strpos( $godam_media_mime, 'image/' );
-$godam_is_audio   = 0 === strpos( $godam_media_mime, 'audio/' );
+do_action( 'rtgodam_after_attachment_lookup' );
+$godam_is_image = 0 === strpos( $godam_media_mime, 'image/' );
+$godam_is_audio = 0 === strpos( $godam_media_mime, 'audio/' );
 
 if ( $godam_is_image ) {
 	$godam_media_label = __( 'Image Preview', 'godam' );

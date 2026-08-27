@@ -1,0 +1,1034 @@
+/**
+ * External dependencies
+ */
+import videojs from 'video.js';
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import {
+	ACTIVATION_KEYS,
+	buildEmbedUrl,
+	buildLightboxHash,
+	findVideoById,
+	getLightboxId,
+	getLightboxRoot,
+	isLightboxVideo,
+	parseLightboxHash,
+	parseStartTime,
+} from '../utils/lightboxTargets.js';
+import { exitCustomFullscreen } from '../utils/customFullscreen.js';
+import { isPlayerFullscreen } from '../utils/fullscreenReparent.js';
+import { seekPlayer } from '../utils/seekPlayer.js';
+
+/**
+ * Attributes that turn the inline poster into a button.
+ *
+ * Applied while it is a click-to-open poster and taken away again while the
+ * player is live inside the lightbox. Values are lazy so the label is translated
+ * at call time rather than module load.
+ *
+ * @type {Array<{attribute: string, value: Function}>}
+ */
+const POSTER_SEMANTICS = [
+	{ attribute: 'role', value: () => 'button' },
+	{ attribute: 'tabindex', value: () => '0' },
+	{ attribute: 'aria-label', value: () => __( 'Play video in a lightbox', 'godam' ) },
+];
+
+/**
+ * Marks the video wrapper of the player currently inside the lightbox.
+ *
+ * The closed poster hides every control but the play icon (see
+ * `.godam-show-in-lightbox:not(.godam-lightbox-open)` in godam-player.scss);
+ * this class is what tells that rule to step aside while the player is on
+ * screen in the modal, where the controls belong.
+ *
+ * @type {string}
+ */
+const OPEN_WRAPPER_CLASS = 'godam-lightbox-open';
+
+/**
+ * The video wrapper inside a movable player root, when the player is a
+ * click-to-open poster.
+ *
+ * The wrapper is a grandchild of the root (root > figure > .godam-video-wrapper,
+ * see inc/templates/godam-player.php), so it cannot inherit a class set on the
+ * root and has to be resolved on its own.
+ *
+ * @param {HTMLElement} playerRoot - The movable player root.
+ * @return {HTMLElement|null} The wrapper, or null for a non-lightbox player.
+ */
+function getLightboxWrapper( playerRoot ) {
+	return playerRoot?.querySelector?.( '.godam-video-wrapper.godam-show-in-lightbox' ) || null;
+}
+
+/**
+ * How far a finger may travel and still count as a tap, in pixels.
+ *
+ * Matches Video.js's own tap detection, so a swipe that starts on the video
+ * scrolls the page instead of opening the lightbox.
+ *
+ * @type {number}
+ */
+const TAP_MOVEMENT_THRESHOLD = 10;
+
+/**
+ * How long a touch may last and still count as a tap, in milliseconds.
+ *
+ * Also matches Video.js, so a long press is left alone.
+ *
+ * @type {number}
+ */
+const TAP_MAX_DURATION = 200;
+
+/**
+ * Whether a completed touch was a tap rather than a swipe or a long press.
+ *
+ * @param {Object} start    - Where and when the touch began.
+ * @param {number} start.x  - Start screenX.
+ * @param {number} start.y  - Start screenY.
+ * @param {number} start.at - Start timestamp.
+ * @param {Touch}  touch    - The touch that ended.
+ * @return {boolean} True when the gesture was a tap.
+ */
+function isTap( start, touch ) {
+	return Math.abs( touch.screenX - start.x ) <= TAP_MOVEMENT_THRESHOLD &&
+		Math.abs( touch.screenY - start.y ) <= TAP_MOVEMENT_THRESHOLD &&
+		Date.now() - start.at <= TAP_MAX_DURATION;
+}
+
+/**
+ * "Show in lightbox" — open a GoDAM player inside a lightbox.
+ *
+ * Inspired by the GoDAM-for-Woo shoppable video modal: the already-initialised
+ * inline player is simply moved into a shared, centered overlay on click and
+ * played there; closing moves it back and pauses it. The inline render (poster,
+ * player markup, etc.) is left completely untouched.
+ *
+ * Two content modes share one overlay. `element` moves an on-page player root
+ * in and puts it back on close — used by an inline click, by a trigger pointing
+ * at a lightbox player that is already rendered, and by the deep-link handler.
+ * `iframe` renders the embed page instead, for a trigger whose video is not on
+ * the page and so has no player to move.
+ *
+ * Use the module-level {@link getLightbox} singleton rather than constructing
+ * this directly: the overlay is appended to `<body>`, so a second instance
+ * means a second overlay.
+ */
+export class ModalManager {
+	constructor() {
+		this.modal = null; // { overlay, closeBtn, wrapper, content }, created on first open.
+		this.activeEntry = null; // { mode, video, playerRoot, anchor, iframe, hash }.
+		this.lastFocused = null;
+		// Whether a history entry we pushed is currently on top, so close() knows
+		// whether to pop one or merely strip the hash.
+		this.historyPushed = false;
+		this.handleKeydown = this.handleKeydown.bind( this );
+	}
+
+	/**
+	 * Turn an inline show-in-lightbox player into a click-to-open trigger.
+	 *
+	 * @param {HTMLElement} video - The `.easydam-player.video-js` element.
+	 */
+	register( video ) {
+		const playerRoot = getLightboxRoot( video );
+		if ( ! playerRoot || playerRoot.dataset.godamModalBound === '1' ) {
+			return;
+		}
+		playerRoot.dataset.godamModalBound = '1';
+
+		this.applyPosterSemantics( playerRoot );
+
+		/**
+		 * Whether this event should open the lightbox rather than be left alone.
+		 *
+		 * @param {Event} event - The originating event.
+		 * @return {boolean} True when the lightbox should take the event.
+		 */
+		const shouldOpen = ( event ) => {
+			// Once the player is live inside the modal, let events through to the
+			// Video.js controls.
+			if ( this.activeEntry && this.activeEntry.video === video ) {
+				return false;
+			}
+
+			// Authors can drop their own blocks — a "Buy now" button, a link — into
+			// the video overlay. Swallowing those would silently break them, so the
+			// overlay keeps its own behaviour and only the player opens the lightbox.
+			return ! event.target?.closest?.( '.godam-video-overlay-container' );
+		};
+
+		const openLightbox = () => this.open( video, playerRoot, {
+			// Make an inline-opened lightbox addressable too, so Back closes it and
+			// the share button's page link matches what is on screen.
+			historyId: getLightboxId( video ),
+		} );
+
+		// Intercept clicks in the capture phase — before Video.js handles them —
+		// so an inline click opens the modal instead of playing inline.
+		playerRoot.addEventListener(
+			'click',
+			( event ) => {
+				if ( ! shouldOpen( event ) ) {
+					return;
+				}
+				event.preventDefault();
+				event.stopPropagation();
+				openLightbox();
+			},
+			true,
+		);
+
+		// Taps need handling of their own. Video.js cancels `touchend` on the tech
+		// ("stop the mouse events from also happening"), and a cancelled `touchend`
+		// means the browser never synthesizes the `click` the handler above waits
+		// for — so on a touch device, tapping the video did nothing at all.
+		let touchStart = null;
+
+		playerRoot.addEventListener(
+			'touchstart',
+			( event ) => {
+				// Ignore multi-touch: a pinch or two-finger gesture is not a tap.
+				const touch = 1 === event.touches?.length ? event.touches[ 0 ] : null;
+				touchStart = touch ? { x: touch.screenX, y: touch.screenY, at: Date.now() } : null;
+			},
+			{ capture: true, passive: true },
+		);
+
+		playerRoot.addEventListener(
+			'touchend',
+			( event ) => {
+				const start = touchStart;
+				touchStart = null;
+
+				if ( ! start || ! shouldOpen( event ) ) {
+					return;
+				}
+
+				const touch = event.changedTouches?.[ 0 ];
+				if ( ! touch || ! isTap( start, touch ) ) {
+					return;
+				}
+
+				// Cancelling here is also what stops the browser synthesizing a click
+				// afterwards, so the lightbox cannot be opened twice by one tap.
+				if ( event.cancelable ) {
+					event.preventDefault();
+				}
+				event.stopPropagation();
+				openLightbox();
+			},
+			true,
+		);
+
+		playerRoot.addEventListener(
+			'keydown',
+			( event ) => {
+				if ( ! ACTIVATION_KEYS.includes( event.key ) ) {
+					return;
+				}
+
+				// Only the root itself: a key pressed on a control inside the overlay
+				// (or on a Video.js button) belongs to that control.
+				if ( event.target !== playerRoot || ! shouldOpen( event ) ) {
+					return;
+				}
+
+				event.preventDefault();
+				event.stopPropagation();
+				openLightbox();
+			},
+			true,
+		);
+	}
+
+	/**
+	 * Give the inline poster button semantics, so it can be opened by keyboard.
+	 *
+	 * Records which attributes were actually added, so an author's own `role` or
+	 * `aria-label` is never clobbered — and, more importantly, never removed again
+	 * by {@link ModalManager#suspendPosterSemantics}.
+	 *
+	 * @param {HTMLElement} playerRoot - The movable player root.
+	 */
+	applyPosterSemantics( playerRoot ) {
+		const added = [];
+
+		POSTER_SEMANTICS.forEach( ( { attribute, value } ) => {
+			if ( ! playerRoot.hasAttribute( attribute ) ) {
+				playerRoot.setAttribute( attribute, value() );
+				added.push( attribute );
+			}
+		} );
+
+		if ( added.length ) {
+			playerRoot.dataset.godamPosterSemantics = added.join( ' ' );
+		}
+	}
+
+	/**
+	 * Drop the poster's button semantics while it is open in the lightbox.
+	 *
+	 * `role="button"` is wrong once the player is on screen: it labels an action
+	 * that has already happened, it is a Tab stop that does nothing (the open
+	 * handlers bail while this video is active), and it wraps the whole control bar
+	 * in a button — interactive descendants inside a `button` are invalid ARIA, and
+	 * a conforming accessibility tree treats a button's children as presentational.
+	 *
+	 * @param {HTMLElement} playerRoot - The movable player root.
+	 * @return {boolean} True when semantics were removed and must be restored later.
+	 */
+	suspendPosterSemantics( playerRoot ) {
+		const added = playerRoot?.dataset?.godamPosterSemantics;
+		if ( ! added ) {
+			return false;
+		}
+
+		added.split( ' ' ).forEach( ( attribute ) => playerRoot.removeAttribute( attribute ) );
+		return true;
+	}
+
+	/**
+	 * Put the poster's button semantics back after the lightbox closes.
+	 *
+	 * @param {HTMLElement} playerRoot - The movable player root.
+	 */
+	resumePosterSemantics( playerRoot ) {
+		const added = playerRoot?.dataset?.godamPosterSemantics;
+		if ( ! added ) {
+			return;
+		}
+
+		const owned = added.split( ' ' );
+		POSTER_SEMANTICS.forEach( ( { attribute, value } ) => {
+			if ( owned.includes( attribute ) ) {
+				playerRoot.setAttribute( attribute, value() );
+			}
+		} );
+	}
+
+	/**
+	 * Whether the lightbox is currently showing something.
+	 *
+	 * @return {boolean} True when open.
+	 */
+	isOpen() {
+		return this.activeEntry !== null;
+	}
+
+	/**
+	 * Build the shared modal DOM once (overlay + close button + wrapper).
+	 *
+	 * @return {Object} The cached modal elements.
+	 */
+	ensureModal() {
+		if ( this.modal ) {
+			return this.modal;
+		}
+
+		const overlay = document.createElement( 'div' );
+		overlay.className = 'godam-player-modal-overlay';
+		overlay.dataset.testId = 'godam-lightbox-overlay';
+		overlay.addEventListener( 'click', () => this.close() );
+
+		const closeBtn = document.createElement( 'button' );
+		closeBtn.type = 'button';
+		closeBtn.className = 'godam-player-modal-close';
+		closeBtn.dataset.testId = 'godam-lightbox-close';
+		closeBtn.setAttribute( 'aria-label', __( 'Close', 'godam' ) );
+		closeBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+		closeBtn.addEventListener( 'click', () => this.close() );
+
+		const wrapper = document.createElement( 'div' );
+		wrapper.className = 'godam-player-modal-wrapper';
+		wrapper.dataset.testId = 'godam-lightbox-wrapper';
+		wrapper.setAttribute( 'role', 'dialog' );
+		wrapper.setAttribute( 'aria-modal', 'true' );
+		// Without a name the dialog is announced as just "dialog".
+		wrapper.setAttribute( 'aria-label', __( 'Video player', 'godam' ) );
+		wrapper.setAttribute( 'tabindex', '-1' );
+
+		const content = document.createElement( 'div' );
+		content.className = 'godam-player-modal-video';
+		content.dataset.testId = 'godam-lightbox-content';
+
+		// The close button sits inside the dialog, pinned to the top-right of the
+		// video rather than the top-right of the screen. Nesting it is also what
+		// `aria-modal="true"` needs: anything left outside the dialog is hidden from
+		// the accessibility tree, which previously left assistive tech no exit but
+		// Escape.
+		wrapper.appendChild( closeBtn );
+		wrapper.appendChild( content );
+
+		document.body.appendChild( overlay );
+		document.body.appendChild( wrapper );
+
+		this.modal = { overlay, closeBtn, wrapper, content };
+		return this.modal;
+	}
+
+	/**
+	 * Move the player into the modal and play it.
+	 *
+	 * Kept for the inline-click path and as the stable public signature; new
+	 * callers should prefer {@link ModalManager#openElement}.
+	 *
+	 * @param {HTMLElement} video      - The video element.
+	 * @param {HTMLElement} playerRoot - The outer element to move into the modal.
+	 * @param {Object}      options    - Passed through to `openElement`.
+	 */
+	open( video, playerRoot, options = {} ) {
+		this.openElement( playerRoot, { ...options, video } );
+	}
+
+	/**
+	 * Show an on-page element inside the lightbox.
+	 *
+	 * The node is physically moved, so a comment anchor is left behind to put it
+	 * back in its exact position on close.
+	 *
+	 * @param {HTMLElement} playerRoot            - Element to move into the modal.
+	 * @param {Object}      options               - Open options.
+	 * @param {HTMLElement} [options.video]       - The `<video>` inside `playerRoot`.
+	 * @param {number|null} [options.startTime]   - Seconds to seek to before playing.
+	 * @param {boolean}     [options.autoplay]    - Whether to start playback (default true).
+	 * @param {string}      [options.historyId]   - Push `#godam-video-{id}` when set.
+	 * @param {boolean}     [options.pushHistory] - Set false when the URL already carries the hash.
+	 * @param {string}      [options.requestedId] - The ID the caller asked for, for idempotence checks.
+	 */
+	openElement( playerRoot, {
+		video = null,
+		startTime = null,
+		autoplay = true,
+		historyId = null,
+		pushHistory = true,
+		requestedId = null,
+	} = {} ) {
+		// A detached root has nowhere to put the anchor, so there would be no way
+		// back to its original position. Bail rather than throw — a re-render can
+		// legitimately detach it between resolving and opening.
+		if ( ! playerRoot || ! playerRoot.parentNode ) {
+			return;
+		}
+
+		// Swapping content, not closing: hand the history entry over so the
+		// address bar tracks the new video without stacking another entry.
+		if ( this.activeEntry ) {
+			this.close( { keepHistory: true } );
+		}
+
+		const modal = this.ensureModal();
+		this.lastFocused = playerRoot.ownerDocument.activeElement;
+
+		// Leave an anchor so the player returns to its exact inline position.
+		const anchor = document.createComment( 'godam-modal-anchor' );
+		playerRoot.parentNode.insertBefore( anchor, playerRoot );
+		modal.content.appendChild( playerRoot );
+		playerRoot.classList.add( 'godam-player-modal-item' );
+
+		// The poster's controls are hidden by CSS while it is closed; the player is
+		// on screen now, so let them back in.
+		const wrapper = getLightboxWrapper( playerRoot );
+		wrapper?.classList.add( OPEN_WRAPPER_CLASS );
+
+		this.activeEntry = {
+			mode: 'element',
+			video,
+			playerRoot,
+			wrapper,
+			anchor,
+			iframe: null,
+			hash: null,
+			requestedId: requestedId === null ? null : String( requestedId ),
+			// The poster is no longer a button once it is the open player.
+			posterSemanticsSuspended: this.suspendPosterSemantics( playerRoot ),
+			disposeFullscreenWatch: this.watchFullscreen( modal, video ),
+		};
+
+		this.applyContentRatio( modal, playerRoot );
+		this.showModal( modal );
+		this.applyHistory( historyId, pushHistory );
+
+		const player = video ? videojs.getPlayer( video ) : null;
+		if ( player ) {
+			const seconds = parseStartTime( startTime );
+			if ( seconds !== null ) {
+				seekPlayer( player, seconds );
+			}
+
+			if ( autoplay ) {
+				const playPromise = player.play();
+				if ( playPromise && typeof playPromise.catch === 'function' ) {
+					// Autoplay policies can still reject; ignore — the user can press
+					// play in the modal.
+					playPromise.catch( () => {} );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Show the embed page inside the lightbox.
+	 *
+	 * Used when the requested video is not rendered on the page, so there is no
+	 * initialised player to move in.
+	 *
+	 * @param {string}  src                   - Embed URL.
+	 * @param {Object}  options               - Open options.
+	 * @param {string}  [options.title]       - Iframe title for assistive tech.
+	 * @param {string}  [options.historyId]   - Push `#godam-video-{id}` when set.
+	 * @param {boolean} [options.pushHistory] - Set false when the URL already carries the hash.
+	 * @param {string}  [options.requestedId] - The ID the caller asked for, for idempotence checks.
+	 */
+	openIframe( src, { title = '', historyId = null, pushHistory = true, requestedId = null } = {} ) {
+		if ( ! src ) {
+			return;
+		}
+
+		// Swapping content, not closing: hand the history entry over so the
+		// address bar tracks the new video without stacking another entry.
+		if ( this.activeEntry ) {
+			this.close( { keepHistory: true } );
+		}
+
+		const modal = this.ensureModal();
+		this.lastFocused = modal.wrapper.ownerDocument.activeElement;
+
+		const iframe = document.createElement( 'iframe' );
+		iframe.className = 'godam-player-modal-iframe';
+		iframe.setAttribute( 'src', src );
+		iframe.setAttribute( 'title', title || __( 'Video', 'godam' ) );
+		iframe.setAttribute( 'allow', 'autoplay; fullscreen; picture-in-picture; encrypted-media' );
+		iframe.setAttribute( 'allowfullscreen', 'true' );
+		iframe.setAttribute( 'frameborder', '0' );
+		modal.content.appendChild( iframe );
+
+		this.activeEntry = {
+			mode: 'iframe',
+			video: null,
+			playerRoot: null,
+			anchor: null,
+			iframe,
+			hash: null,
+			requestedId: requestedId === null ? null : String( requestedId ),
+		};
+
+		this.applyContentRatio( modal, null );
+		this.showModal( modal );
+		this.applyHistory( historyId, pushHistory );
+
+		iframe.focus?.( { preventScroll: true } );
+	}
+
+	/**
+	 * Keep the wrapper out of the way while the player is fullscreen.
+	 *
+	 * iOS Safari cannot put an arbitrary element into real fullscreen, so the
+	 * player fakes it with `position: fixed; inset: 0`. That resolves against the
+	 * nearest transformed ancestor rather than the viewport — and this wrapper is
+	 * transformed for centring, so a "fullscreen" video ends up pinned inside the
+	 * lightbox box instead of filling the screen. Dropping the transform for the
+	 * duration hands the viewport back. The lightbox's own close button is hidden
+	 * too, since fullscreen brings its own exit control.
+	 *
+	 * @param {Object}      modal - The cached modal elements.
+	 * @param {HTMLElement} video - The video element, or null in iframe mode.
+	 * @return {Function|null} Disposer, or null when there is no player to watch.
+	 */
+	watchFullscreen( modal, video ) {
+		const player = video ? videojs.getPlayer( video ) : null;
+		if ( ! player ) {
+			return null;
+		}
+
+		const sync = () => {
+			modal.wrapper.classList.toggle( 'godam-lightbox-fullscreen', isPlayerFullscreen( player ) );
+		};
+
+		player.on( 'fullscreenchange', sync );
+		player.on( 'customfullscreenchange', sync );
+		sync();
+
+		return () => {
+			player.off( 'fullscreenchange', sync );
+			player.off( 'customfullscreenchange', sync );
+			modal.wrapper.classList.remove( 'godam-lightbox-fullscreen' );
+		};
+	}
+
+	/**
+	 * Tell the wrapper what shape the content is.
+	 *
+	 * The close button sits just outside the video's top-right corner, and works
+	 * out where that corner is from the aspect ratio (see the CSS). The ratio lives
+	 * on the moved player root, which is a *descendant* of the wrapper, so it has
+	 * to be copied up — inheritance only goes the other way.
+	 *
+	 * @param {Object}           modal      - The cached modal elements.
+	 * @param {HTMLElement|null} playerRoot - Moved player root, or null for iframe mode.
+	 */
+	applyContentRatio( modal, playerRoot ) {
+		// The iframe has a fixed 16/9 box, which is also the CSS fallback.
+		const ratio = playerRoot
+			? getComputedStyle( playerRoot ).getPropertyValue( '--rtgodam-video-aspect-ratio' ).trim()
+			: '';
+
+		if ( ratio ) {
+			modal.wrapper.style.setProperty( '--godam-lightbox-ratio', ratio );
+		} else {
+			modal.wrapper.style.removeProperty( '--godam-lightbox-ratio' );
+		}
+	}
+
+	/**
+	 * Reveal the shared overlay and bind the while-open listeners.
+	 *
+	 * @param {Object} modal - The cached modal elements.
+	 */
+	showModal( modal ) {
+		modal.overlay.classList.add( 'is-active' );
+		modal.closeBtn.classList.add( 'is-active' );
+		modal.wrapper.classList.add( 'is-active' );
+		document.body.classList.add( 'godam-player-modal-open' );
+		document.addEventListener( 'keydown', this.handleKeydown );
+		modal.wrapper.focus( { preventScroll: true } );
+	}
+
+	/**
+	 * Put `#godam-video-{id}` in the address bar so the open lightbox is
+	 * shareable and Back closes it.
+	 *
+	 * Exactly one history entry ever represents "a lightbox is open". Switching
+	 * straight from one video to another therefore *replaces* the hash rather than
+	 * stacking a second entry — otherwise closing would need as many Backs as the
+	 * visitor had opened videos.
+	 *
+	 * Pass `pushHistory` false when the URL already carries the hash (a deep-link
+	 * entry), so Back is not turned into a no-op.
+	 *
+	 * @param {string|null} historyId   - Video ID to encode, or null to skip.
+	 * @param {boolean}     pushHistory - Whether to add a history entry.
+	 */
+	applyHistory( historyId, pushHistory ) {
+		if ( ! historyId || ! this.activeEntry ) {
+			return;
+		}
+
+		const hash = buildLightboxHash( historyId );
+		this.activeEntry.hash = hash;
+
+		if ( ! pushHistory || typeof window.history?.pushState !== 'function' ) {
+			return;
+		}
+
+		const state = { godamLightbox: String( historyId ) };
+
+		try {
+			if ( this.historyPushed || parseLightboxHash( window.location.hash ) ) {
+				// Already sitting on a lightbox URL — swap the ID in place.
+				window.history.replaceState( state, '', hash );
+				return;
+			}
+
+			window.history.pushState( state, '', hash );
+			this.historyPushed = true;
+		} catch ( error ) {
+			// Some environments (sandboxed iframes) reject history writes; the
+			// lightbox itself still works, it just is not addressable.
+		}
+	}
+
+	/**
+	 * Undo whatever `applyHistory` did, so a closed lightbox never leaves a
+	 * `#godam-video-{id}` behind — it would be a stale address for something no
+	 * longer on screen, and would re-open the lightbox on reload.
+	 *
+	 * @param {boolean} fromPopState - True when the browser already moved us.
+	 */
+	restoreHistory( fromPopState ) {
+		if ( fromPopState ) {
+			// The browser already left our entry; just drop our claim on it.
+			this.historyPushed = false;
+			return;
+		}
+
+		if ( this.historyPushed ) {
+			// Our own entry is on top — step off it so Back/Forward stay sane. That
+			// lands on the entry before the lightbox, which by definition has no
+			// lightbox hash.
+			this.historyPushed = false;
+			window.history.back();
+			return;
+		}
+
+		// The entry is the browser's, not ours: a deep-link arrival or an anchor
+		// click. Nothing to pop, so strip the hash in place.
+		this.stripLightboxHash();
+	}
+
+	/**
+	 * Drop a `#godam-video-{id}` from the address bar, keeping path and query.
+	 *
+	 * Deliberately matches *any* lightbox hash rather than the one this entry
+	 * recorded: the two differ whenever a visitor follows a link written with the
+	 * transcoding job ID, since the canonical hash uses the attachment ID.
+	 * Comparing them would leave the hash stranded.
+	 */
+	stripLightboxHash() {
+		if ( ! parseLightboxHash( window.location.hash ) ) {
+			return;
+		}
+
+		if ( typeof window.history?.replaceState !== 'function' ) {
+			return;
+		}
+
+		try {
+			window.history.replaceState(
+				window.history.state,
+				'',
+				window.location.pathname + window.location.search,
+			);
+		} catch ( error ) {
+			// Ignore — cosmetic only.
+		}
+	}
+
+	/**
+	 * Pause, restore the content to where it came from, and hide the modal.
+	 *
+	 * Pass `keepHistory` when another open follows immediately, so the history
+	 * entry is handed over to it rather than popped.
+	 *
+	 * @param {Object}  options                - Close options.
+	 * @param {boolean} [options.fromPopState] - True when triggered by Back.
+	 * @param {boolean} [options.keepHistory]  - True when swapping content.
+	 */
+	close( { fromPopState = false, keepHistory = false } = {} ) {
+		if ( ! this.activeEntry ) {
+			return;
+		}
+		const entry = this.activeEntry;
+		const { mode, video, playerRoot, wrapper, anchor, iframe } = entry;
+
+		// Clear first: `restoreHistory()` can trigger a popstate that re-enters
+		// close(), and an already-null entry makes that a no-op.
+		this.activeEntry = null;
+
+		entry.disposeFullscreenWatch?.();
+
+		if ( 'element' === mode ) {
+			const player = video ? videojs.getPlayer( video ) : null;
+			player?.pause();
+
+			// Closing out of a custom fullscreen — Back, Escape, a trigger for another
+			// video — would otherwise leave the body pinned `position: fixed` and the
+			// page unscrollable, because only the exit button releases that lock.
+			exitCustomFullscreen( player?.el?.() );
+
+			// Closing hands the poster its job back. Video.js sets `vjs-has-started`
+			// on the first play and never clears it, which hides the poster and the
+			// big play button and shows the control bar — the opposite of a
+			// click-to-open poster. Clearing it restores both and lets Video.js's own
+			// `display: none` hide the bar again. `currentTime` is left alone, so
+			// reopening resumes where the viewer stopped, and the next play() sets the
+			// flag again by itself.
+			//
+			// Only for players whose inline render *is* a poster: a trigger or deep
+			// link can open an ordinary inline player, and that one should keep its
+			// normal played-and-paused state.
+			if ( isLightboxVideo( video ) ) {
+				player?.hasStarted?.( false );
+			}
+
+			playerRoot.classList.remove( 'godam-player-modal-item' );
+			wrapper?.classList.remove( OPEN_WRAPPER_CLASS );
+
+			if ( anchor && anchor.parentNode ) {
+				anchor.parentNode.insertBefore( playerRoot, anchor );
+				anchor.parentNode.removeChild( anchor );
+			}
+
+			// Back to being a click-to-open poster, so the button semantics apply again.
+			if ( entry.posterSemanticsSuspended ) {
+				this.resumePosterSemantics( playerRoot );
+			}
+		} else if ( 'iframe' === mode ) {
+			// Removing the iframe is what stops playback.
+			iframe?.remove();
+		}
+
+		if ( this.modal ) {
+			this.modal.overlay.classList.remove( 'is-active' );
+			this.modal.closeBtn.classList.remove( 'is-active' );
+			this.modal.wrapper.classList.remove( 'is-active' );
+		}
+		document.body.classList.remove( 'godam-player-modal-open' );
+		document.removeEventListener( 'keydown', this.handleKeydown );
+
+		if ( ! keepHistory ) {
+			this.restoreHistory( fromPopState );
+		}
+
+		if ( this.lastFocused && typeof this.lastFocused.focus === 'function' ) {
+			this.lastFocused.focus();
+		}
+		this.lastFocused = null;
+	}
+
+	/**
+	 * Close on Escape, and keep Tab inside the dialog.
+	 *
+	 * @param {KeyboardEvent} event - Keydown event.
+	 */
+	handleKeydown( event ) {
+		if ( 'Escape' === event.key ) {
+			// Unwind one layer at a time. Escape out of a fullscreen video should
+			// land back in the lightbox, not dismiss the whole thing — that is what
+			// native fullscreen does, and the iOS shim has no browser behaviour of
+			// its own to match it. A second Escape then closes the lightbox.
+			if ( this.exitFullscreenIfActive() ) {
+				return;
+			}
+
+			this.close();
+			return;
+		}
+
+		if ( 'Tab' === event.key ) {
+			this.trapFocus( event );
+		}
+	}
+
+	/**
+	 * Leave fullscreen, if the open player is in it.
+	 *
+	 * The iOS shim is only CSS classes, so nothing exits it on Escape unless we
+	 * do it here. Native fullscreen is handed back to the browser.
+	 *
+	 * @return {boolean} True when fullscreen was active, so the caller should stop.
+	 */
+	exitFullscreenIfActive() {
+		const video = this.activeEntry?.video;
+		const player = video ? videojs.getPlayer( video ) : null;
+
+		if ( ! player || ! isPlayerFullscreen( player ) ) {
+			return false;
+		}
+
+		if ( exitCustomFullscreen( player.el?.() ) ) {
+			// Class-based, so nothing else knows it changed: the wrapper's transform,
+			// the transcript panel and the share modal all key off this event.
+			player.trigger( 'customfullscreenchange' );
+			return true;
+		}
+
+		player.exitFullscreen?.();
+		return true;
+	}
+
+	/**
+	 * Cycle Tab within the dialog so focus cannot reach the page behind it.
+	 *
+	 * Everything focusable — including the close button — lives inside the
+	 * wrapper, so one query covers the whole dialog.
+	 *
+	 * @param {KeyboardEvent} event - The Tab keydown event.
+	 */
+	trapFocus( event ) {
+		if ( ! this.modal ) {
+			return;
+		}
+
+		const FOCUSABLE = 'a[href], area[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe, object, embed, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
+
+		// Skip controls that are present but not currently offered — Video.js
+		// hides inapplicable control-bar buttons with `vjs-hidden` rather than
+		// removing them. Checked declaratively rather than via `offsetParent`, so
+		// this needs no layout and behaves the same under test.
+		const isAvailable = ( node ) =>
+			! node.hasAttribute( 'hidden' ) &&
+			'true' !== node.getAttribute( 'aria-hidden' ) &&
+			! node.classList.contains( 'vjs-hidden' );
+
+		const focusable = [ ...this.modal.wrapper.querySelectorAll( FOCUSABLE ) ].filter( isAvailable );
+
+		if ( focusable.length === 0 ) {
+			return;
+		}
+
+		const first = focusable[ 0 ];
+		const last = focusable[ focusable.length - 1 ];
+		const active = this.modal.wrapper.ownerDocument.activeElement;
+
+		// Focus sitting on the wrapper itself (its initial home) counts as
+		// "before the first item", so Tab moves into the dialog.
+		if ( ! event.shiftKey && ( active === last || active === this.modal.wrapper ) ) {
+			event.preventDefault();
+			first.focus();
+		} else if ( event.shiftKey && ( active === first || active === this.modal.wrapper ) ) {
+			event.preventDefault();
+			last.focus();
+		}
+	}
+}
+
+/**
+ * The one lightbox for the page.
+ *
+ * A module-level singleton rather than one per `PlayerManager`: the overlay is
+ * appended to `<body>`, triggers and the deep-link handler live outside
+ * `PlayerManager`, and the legacy `GODAMPlayer()` factory constructs extra
+ * managers — each of which used to mean another body-level overlay.
+ *
+ * @type {ModalManager|null}
+ */
+let lightbox = null;
+
+/**
+ * Get the shared lightbox, creating it on first use.
+ *
+ * @return {ModalManager} The singleton.
+ */
+export function getLightbox() {
+	if ( ! lightbox ) {
+		lightbox = new ModalManager();
+	}
+	return lightbox;
+}
+
+/**
+ * Open the lightbox for a video ID, whether or not it is rendered on the page.
+ *
+ * The one place that decides between the two content modes, shared by element
+ * triggers and by `GoDAMAPI.openLightbox()`. When the video is on the page as a
+ * lightbox player, that player is moved in, so layers, chapters, ads and
+ * analytics behave exactly as on an inline click. Anything else shows the embed
+ * page in an iframe: an ordinary *visible* inline player is deliberately not
+ * re-used, because opening moves the node out of the page, which would tear a
+ * hole in the layout and hijack a player the visitor may already be watching.
+ *
+ * @param {string|number} id                    - Job ID or attachment ID.
+ * @param {Object}        [options]             - Open options.
+ * @param {number|null}   [options.startTime]   - Seconds to seek to.
+ * @param {string}        [options.title]       - Iframe title, for iframe mode.
+ * @param {boolean}       [options.pushHistory] - Whether to add a history entry.
+ * @return {boolean} True when something was opened.
+ */
+export function openLightboxForId( id, { startTime = null, title = '', pushHistory = true } = {} ) {
+	if ( id === null || id === undefined || id === '' ) {
+		return false;
+	}
+
+	const instance = getLightbox();
+
+	// Resolve directly rather than via GoDAMAPI.getPlayer(), which throws when
+	// the video is absent — here that is the normal iframe-fallback case.
+	const video = findVideoById( id );
+	const playerRoot = isLightboxVideo( video ) ? getLightboxRoot( video ) : null;
+
+	if ( playerRoot ) {
+		instance.openElement( playerRoot, {
+			video,
+			startTime,
+			historyId: getLightboxId( video ) || id,
+			pushHistory,
+			requestedId: id,
+		} );
+		return true;
+	}
+
+	instance.openIframe(
+		buildEmbedUrl( {
+			embedBaseUrl: window.godamData?.embedBaseUrl,
+			id,
+			hostPostId: window.godamData?.hostPostId,
+			startTime,
+		} ),
+		{ title, historyId: id, pushHistory, requestedId: id },
+	);
+
+	return true;
+}
+
+/**
+ * Bring the lightbox in line with whatever the URL currently says.
+ *
+ * The URL is the source of truth, which keeps Back and Forward symmetric and
+ * makes a plain in-page `<a href="#godam-video-{id}">` work as a trigger.
+ *
+ * @param {Object} options             - Sync options.
+ * @param {number} [options.startTime] - Seconds to seek to.
+ */
+export function syncLightboxWithUrl( { startTime = null } = {} ) {
+	const instance = getLightbox();
+	const targetId = parseLightboxHash( window.location.hash );
+
+	if ( ! targetId ) {
+		// Navigated off a lightbox URL — `fromPopState` because the browser has
+		// already moved, so there is no entry of ours left to pop.
+		if ( instance.isOpen() ) {
+			instance.close( { fromPopState: true } );
+		}
+		return;
+	}
+
+	// Already showing exactly this video: nothing to do.
+	//
+	// Compare the ID that was *asked for*, not the resulting hash. A single anchor
+	// click can fire both `popstate` and `hashchange`, so this guard runs on a
+	// lightbox that is already open — and the hash it stored may be the video's job
+	// ID while the URL carries its attachment ID. Comparing hashes would call those
+	// different and needlessly tear the player down and rebuild it.
+	// Accept either spelling: the entry records the ID that was asked for *and* the
+	// canonical hash it produced, and those differ when a caller addresses a video
+	// by job ID while the hash uses its attachment ID.
+	const alreadyShowing = instance.activeEntry?.requestedId === String( targetId ) ||
+		instance.activeEntry?.hash === buildLightboxHash( targetId );
+
+	if ( instance.isOpen() && alreadyShowing ) {
+		return;
+	}
+
+	// The hash is already in the address bar, so opening must not add to history.
+	openLightboxForId( targetId, { startTime, pushHistory: false } );
+}
+
+/**
+ * Whether {@link initLightboxUrlSync} has already run for this page.
+ *
+ * @type {boolean}
+ */
+let urlSyncBound = false;
+
+/**
+ * Keep the lightbox and the URL in step for the life of the page.
+ *
+ * Bound once and never removed — unlike a while-open listener, this also has to
+ * catch the visitor arriving *at* a lightbox URL: pressing Forward after closing,
+ * or following an in-page anchor.
+ *
+ * `popstate` covers Back/Forward; `hashchange` covers anchor links, which push a
+ * history entry without firing `popstate`. Both land on the same idempotent
+ * reconcile, so the overlap is harmless.
+ */
+export function initLightboxUrlSync() {
+	if ( urlSyncBound ) {
+		return;
+	}
+	urlSyncBound = true;
+
+	const reconcile = () => syncLightboxWithUrl();
+
+	window.addEventListener( 'popstate', reconcile );
+	window.addEventListener( 'hashchange', reconcile );
+}
+
+export default ModalManager;

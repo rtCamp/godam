@@ -104,6 +104,20 @@ if ( ! function_exists( 'wp_get_attachment_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_get_upload_dir' ) ) {
+
+	/**
+	 * @return array Uploads directory info; only `baseurl` is consumed.
+	 */
+	function wp_get_upload_dir() {
+		$baseurl = isset( $GLOBALS['rtgodam_stub']['uploads_baseurl'] )
+			? (string) $GLOBALS['rtgodam_stub']['uploads_baseurl']
+			: 'https://example.com/wp-content/uploads';
+
+		return array( 'baseurl' => $baseurl );
+	}
+}
+
 if ( ! function_exists( 'get_the_title' ) ) {
 
 	/**
@@ -181,6 +195,11 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php'
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
+
+// Loaded for its media-type => MIME map, which RetranscodeMediaTypeMapTest reaches
+// through reflection. The class extends the stubbed Base above and touches WordPress
+// only inside its route callbacks, so requiring the file runs no WP code.
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-transcoding.php';
 
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.

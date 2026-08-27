@@ -127,6 +127,10 @@
 		"showTranscription": {
 			"type": "boolean",
 			"default": false
+		},
+		"showInLightbox": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

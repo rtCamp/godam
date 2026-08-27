@@ -1,5 +1,15 @@
 # Changelog #
 
+## v2.2.0 (August 27, 2026) ##
+
+- Feat: The Document block now handles far more than PDFs. You can embed and preview Word, Excel, PowerPoint, OpenDocument, and plain-text files.
+- Feat: Added the same document preview support to the Elementor and WPBakery GoDAM Document widgets.
+- Feat: Show in lightbox — a new option opens a video in a centered lightbox overlay when its poster is clicked, instead of playing it in place. Available in the GoDAM Video block, the Elementor widget, and the WPBakery element.
+- Tweak: The GoDAM media transcoding tool now supports bulk transcoding of all media types supported by GoDAM.
+- Fix: Resolved bugs in the GoDAM Media Library module.
+- Fix: Fixed the transcription source issue for GoDAM videos.
+- Fix: Layer analytics now records a view for each hotspot in its own right, so a hotspot's views, conversion, and "No Action" describe that hotspot rather than the whole layer. This stays correct even as hotspots are added or removed over time.
+
 ## v2.1.1 (August 6, 2026) ##
 
 - Fix: GoDAM no longer fills the debug log with `Function _load_textdomain_just_in_time was called incorrectly` on WordPress 6.7 and later. On sites that display errors, the warning could also appear on the page itself, in the admin and on the front end.

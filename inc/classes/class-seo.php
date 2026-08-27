@@ -205,8 +205,8 @@ class Seo {
 			 */
 			$video_seo_schema = apply_filters( 'godam_video_seo_cache_data', $video_seo_schema, $post_ID );
 
-			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
-			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); writes its own cached video SEO schema meta, not attachment data.
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); writes its own cached-schema-updated timestamp meta, not attachment data.
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
 
 			/**
@@ -222,8 +222,8 @@ class Seo {
 			 */
 			do_action( 'godam_video_seo_schema_saved', $post_ID, $video_seo_schema );
 		} else {
-			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
-			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
+			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); clears its own cached video SEO schema meta, not attachment data.
+			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); clears its own cached-schema-updated timestamp meta, not attachment data.
 			$this->update_attachment_post_mapping( $post_ID, array() );
 
 			/**
@@ -313,25 +313,42 @@ class Seo {
 	 * @return array The SEO data from the attachment.
 	 */
 	public function get_seo_from_attachment( $attachment_id ) {
-		$attachment = get_post( $attachment_id );
+		/**
+		 * Fires before resolving/reading this attachment's post object,
+		 * postmeta, canonical URL and video metadata for SEO schema
+		 * generation, so integrations that centralize media on another site
+		 * can switch context first. Every read below (the attachment post
+		 * itself, its rtgodam_transcoded_url/rtgodam_media_video_thumbnail
+		 * postmeta, its attachment URL, and its video metadata) is scoped to
+		 * this single attachment.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$attachment = get_post( $attachment_id );
 
-		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
-			return array();
+			if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+				return array();
+			}
+
+			$meta = get_post_meta( $attachment_id );
+
+			// Get transcoded URL or fallback to attachment URL.
+			$content_url = '';
+			if ( ! empty( $meta['rtgodam_transcoded_url'][0] ) ) {
+				$content_url = $meta['rtgodam_transcoded_url'][0];
+			} else {
+				$content_url = wp_get_attachment_url( $attachment_id );
+			}
+
+			// Get video duration in ISO 8601 format.
+			$attachment_meta = wp_get_attachment_metadata( $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
-		$meta = get_post_meta( $attachment_id );
-
-		// Get transcoded URL or fallback to attachment URL.
-		$content_url = '';
-		if ( ! empty( $meta['rtgodam_transcoded_url'][0] ) ) {
-			$content_url = $meta['rtgodam_transcoded_url'][0];
-		} else {
-			$content_url = wp_get_attachment_url( $attachment_id );
-		}
-
-		// Get video duration in ISO 8601 format.
-		$duration        = '';
-		$attachment_meta = wp_get_attachment_metadata( $attachment_id );
+		$duration = '';
 		if ( ! empty( $attachment_meta['length'] ) && is_numeric( $attachment_meta['length'] ) ) {
 			$duration = $this->seconds_to_iso8601( (int) $attachment_meta['length'] );
 		}
@@ -394,7 +411,7 @@ class Seo {
 	 * @return bool True if it's an Elementor post, false otherwise.
 	 */
 	public function is_elementor_post( $post_id ) {
-		return 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true );
+		return 'builder' === get_post_meta( $post_id, '_elementor_edit_mode', true ); // godam-coverage-ignore -- is_elementor_post(): $post_id is always a host post/page ID at every call site (never an attachment ID); reads that post's own '_elementor_edit_mode' flag.
 	}
 
 	/**
@@ -406,7 +423,18 @@ class Seo {
 	 */
 	public function add_video_duration_for_video_seo( $response, $post ) {
 		if ( 'video' === $post->post_mime_type || str_starts_with( $post->post_mime_type, 'video/' ) ) {
+			/**
+			 * Fires before reading this attachment's video metadata (duration)
+			 * for the REST API response, so integrations that centralize media
+			 * on another site can switch context first. $post is the
+			 * attachment being serialized by the `rest_prepare_attachment`
+			 * filter, so this is genuinely attachment-scoped.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			$meta = wp_get_attachment_metadata( $post->ID );
+			do_action( 'rtgodam_after_attachment_lookup' );
 
 			if ( ! empty( $meta['length'] ) && is_numeric( $meta['length'] ) ) {
 				$response->data['video_duration_iso8601'] = $this->seconds_to_iso8601( (int) $meta['length'] );
@@ -440,7 +468,7 @@ class Seo {
 		}
 
 		// Read cached SEO schema from post meta (fast!).
-		$cached_schemas = get_post_meta( $post_id, self::VIDEO_SEO_SCHEMA_META_KEY, true );
+		$cached_schemas = get_post_meta( $post_id, self::VIDEO_SEO_SCHEMA_META_KEY, true ); // godam-coverage-ignore -- add_video_seo_schema(): $post_id is get_queried_object_id() (the current page); reads that page's own cached SEO meta, not attachment data.
 
 		if ( empty( $cached_schemas ) || ! is_array( $cached_schemas ) ) {
 			return;
@@ -826,7 +854,7 @@ class Seo {
 		}
 
 		// Get the raw Elementor data.
-		$data = get_post_meta( $post_id, '_elementor_data', true );
+		$data = get_post_meta( $post_id, '_elementor_data', true ); // godam-coverage-ignore -- godam_get_video_seo_data_from_elementor(): $post_id is the host post being saved (sole caller passes save_post's $post_ID); reads that post's own '_elementor_data', not attachment data.
 		if ( empty( $data ) ) {
 			return $empty_result;
 		}
@@ -920,7 +948,7 @@ class Seo {
 			return;
 		}
 
-		$edit_mode = get_post_meta( $post_ID, '_elementor_edit_mode', true );
+		$edit_mode = get_post_meta( $post_ID, '_elementor_edit_mode', true ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; reads its own '_elementor_edit_mode' flag, not attachment data.
 		if ( 'builder' !== $edit_mode ) {
 			return;
 		}
@@ -933,13 +961,13 @@ class Seo {
 			/** This filter is documented in inc/classes/class-seo.php */
 			$video_seo_schema = apply_filters( 'godam_video_seo_cache_data', $video_seo_schema, $post_ID );
 
-			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema );
-			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() );
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY, $video_seo_schema ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; writes its own cached video SEO schema meta, not attachment data.
+			update_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY, time() ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; writes its own cached-schema-updated timestamp meta, not attachment data.
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
 			do_action( 'godam_video_seo_schema_saved', $post_ID, $video_seo_schema );
 		} else {
-			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
-			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY );
+			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; clears its own cached video SEO schema meta, not attachment data.
+			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; clears its own cached-schema-updated timestamp meta, not attachment data.
 			$this->update_attachment_post_mapping( $post_ID, array() );
 			do_action( 'godam_video_seo_schema_cleared', $post_ID );
 		}
@@ -1024,6 +1052,69 @@ class Seo {
 	}
 
 	/**
+	 * Build a stable identity string for a [blog_id, post_id] pair, used only to
+	 * compare/dedupe entries in memory — never persisted or parsed back apart.
+	 *
+	 * @param int $blog_id Blog ID the post belongs to.
+	 * @param int $post_id Post ID, local to that blog.
+	 * @return string
+	 */
+	private function make_post_ref_key( $blog_id, $post_id ) {
+		return ( (int) $blog_id ) . ':' . ( (int) $post_id );
+	}
+
+	/**
+	 * Read the [blog_id, post_id] reference list for an attachment.
+	 *
+	 * Legacy entries (a bare post ID, from before blog_id qualification) are
+	 * attributed to the *current* blog — the same assumption every older version
+	 * of this code already made, since that shape never recorded a site. This is
+	 * necessarily a best-effort guess for pre-existing data, but every write from
+	 * here on is unambiguous.
+	 *
+	 * @param int $attachment_id Attachment WP post ID.
+	 * @return array<string, array{blog_id:int, post_id:int}> Keyed by make_post_ref_key().
+	 */
+	private function get_attachment_post_refs( $attachment_id ) {
+		$raw = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
+		$raw = is_array( $raw ) ? $raw : array();
+
+		$refs = array();
+		foreach ( $raw as $entry ) {
+			if ( is_array( $entry ) && isset( $entry['post_id'] ) ) {
+				$blog_id = isset( $entry['blog_id'] ) ? (int) $entry['blog_id'] : get_current_blog_id();
+				$post_id = (int) $entry['post_id'];
+			} else {
+				$blog_id = get_current_blog_id();
+				$post_id = (int) $entry;
+			}
+			if ( $post_id <= 0 ) {
+				continue;
+			}
+			$refs[ $this->make_post_ref_key( $blog_id, $post_id ) ] = array(
+				'blog_id' => $blog_id,
+				'post_id' => $post_id,
+			);
+		}
+		return $refs;
+	}
+
+	/**
+	 * Persist the [blog_id, post_id] reference list for an attachment.
+	 *
+	 * @param int                                            $attachment_id Attachment WP post ID.
+	 * @param array<string, array{blog_id:int, post_id:int}> $refs          Keyed by make_post_ref_key().
+	 * @return void
+	 */
+	private function save_attachment_post_refs( $attachment_id, array $refs ) {
+		if ( empty( $refs ) ) {
+			delete_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY );
+			return;
+		}
+		update_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, array_values( $refs ) );
+	}
+
+	/**
 	 * Update the mapping of which posts use a specific attachment for SEO schema generation.
 	 *
 	 * @param int   $post_id     The post ID.
@@ -1034,38 +1125,54 @@ class Seo {
 		$attachments = array_values( array_unique( array_filter( array_map( 'absint', $attachments ) ) ) );
 
 		// Get current attachments this post was using.
-		$previous_attachments = get_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, true );
+		$previous_attachments = get_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, true ); // godam-coverage-ignore -- update_attachment_post_mapping(): $post_id is the post being saved; reads its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock a few lines below).
 		$previous_attachments = is_array( $previous_attachments ) ? $previous_attachments : array();
+
+		// Captured before the switch below, so this is always the site $post_id
+		// actually belongs to (the one currently active), not the media site.
+		$blog_id  = get_current_blog_id();
+		$post_ref = $this->make_post_ref_key( $blog_id, $post_id );
+
+		/**
+		 * Fires before touching any attachment's reverse-index meta below,
+		 * so integrations that centralize media on another site can switch
+		 * context first. Deliberately does NOT wrap this method's own
+		 * $post_id reads/writes (POST_ATTACHMENTS_META_KEY, above and
+		 * below) — that's the current post being saved, not attachment
+		 * data, and stays local.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 
 		// Remove post from old attachments' mapping.
 		$removed_attachments = array_diff( $previous_attachments, $attachments );
 		foreach ( $removed_attachments as $attachment_id ) {
-			$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
-			$posts_using = is_array( $posts_using ) ? $posts_using : array();
-			$posts_using = array_diff( $posts_using, array( $post_id ) );
-			if ( ! empty( $posts_using ) ) {
-				update_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, array_values( $posts_using ) );
-			} else {
-				delete_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY );
-			}
+			$posts_using = $this->get_attachment_post_refs( $attachment_id );
+			unset( $posts_using[ $post_ref ] );
+			$this->save_attachment_post_refs( $attachment_id, $posts_using );
 		}
 
 		// Add post to new attachments' mapping.
 		$new_attachments = array_diff( $attachments, $previous_attachments );
 		foreach ( $new_attachments as $attachment_id ) {
-			$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
-			$posts_using = is_array( $posts_using ) ? $posts_using : array();
-			if ( ! in_array( $post_id, $posts_using, true ) ) {
-				$posts_using[] = $post_id;
-				update_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, $posts_using );
+			$posts_using = $this->get_attachment_post_refs( $attachment_id );
+			if ( ! isset( $posts_using[ $post_ref ] ) ) {
+				$posts_using[ $post_ref ] = array(
+					'blog_id' => $blog_id,
+					'post_id' => $post_id,
+				);
+				$this->save_attachment_post_refs( $attachment_id, $posts_using );
 			}
 		}
 
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		// Update post's attachment list.
 		if ( ! empty( $attachments ) ) {
-			update_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, $attachments );
+			update_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY, $attachments ); // godam-coverage-ignore -- update_attachment_post_mapping(): $post_id is the post being saved; writes its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock above).
 		} else {
-			delete_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY );
+			delete_post_meta( $post_id, self::POST_ATTACHMENTS_META_KEY ); // godam-coverage-ignore -- update_attachment_post_mapping(): $post_id is the post being saved; clears its own local POST_ATTACHMENTS_META_KEY tracking meta, not attachment data (see docblock above).
 		}
 	}
 
@@ -1075,16 +1182,32 @@ class Seo {
 	 * @param int $attachment_id The attachment ID.
 	 */
 	public function schedule_seo_sync_for_attachment( $attachment_id ) {
+		/**
+		 * Fires before resolving this attachment's post object and its
+		 * reverse-index meta (which posts use it), so integrations that
+		 * centralize media on another site can switch context first.
+		 * $attachment_id arrives directly from WordPress core's
+		 * `edit_attachment` action (fired with the attachment's own post ID),
+		 * so it is genuinely an attachment ID here.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$attachment = get_post( $attachment_id );
 
 		// Only process video attachments.
 		if ( ! $attachment || strpos( $attachment->post_mime_type, 'video/' ) !== 0 ) {
+			do_action( 'rtgodam_after_attachment_lookup' );
 			return;
 		}
 
 		// Check if any posts are using this attachment.
-		$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
-		if ( empty( $posts_using ) || ! is_array( $posts_using ) ) {
+		$posts_using = $this->get_attachment_post_refs( $attachment_id );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( empty( $posts_using ) ) {
 			return;
 		}
 
@@ -1098,28 +1221,58 @@ class Seo {
 	 * Sync SEO for all posts using a specific attachment.
 	 * This runs as a background task when an attachment is updated.
 	 *
+	 * Each referencing post is resolved on its own originating site — not
+	 * necessarily the site this background job happens to run on, and not the
+	 * media site either — since ATTACHMENT_POSTS_MAP_META_KEY now records
+	 * blog_id alongside each post ID.
+	 *
 	 * @param int $attachment_id The attachment ID.
 	 */
 	public function sync_seo_for_attachment_posts( $attachment_id ) {
-		$posts_using = get_post_meta( $attachment_id, self::ATTACHMENT_POSTS_MAP_META_KEY, true );
+		/**
+		 * Fires before reading this attachment's reverse-index meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$posts_using = $this->get_attachment_post_refs( $attachment_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
-		if ( empty( $posts_using ) || ! is_array( $posts_using ) ) {
+		if ( empty( $posts_using ) ) {
 			return;
 		}
 
-		foreach ( $posts_using as $post_id ) {
-			$post = get_post( $post_id );
-			if ( ! $post ) {
-				continue;
+		$is_multisite = is_multisite();
+
+		foreach ( $posts_using as $ref ) {
+			$blog_id = $ref['blog_id'];
+			$post_id = $ref['post_id'];
+
+			$switched = $is_multisite && $blog_id > 0 && get_current_blog_id() !== $blog_id;
+			if ( $switched ) {
+				switch_to_blog( $blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
 			}
 
-			// Check if it's an Elementor post.
-			$is_elementor = $this->is_elementor_post( $post_id );
+			try {
+				$post = get_post( $post_id ); // godam-coverage-ignore -- sync_seo_for_attachment_posts(): reads HOST posts referencing the attachment (see the docblock note on this exact line) — documented structural limitation, not a hook-fixable gap.
+				if ( ! $post ) {
+					continue;
+				}
 
-			if ( $is_elementor ) {
-				$this->elementor_save_seo_data_as_postmeta( $post_id );
-			} else {
-				$this->save_seo_data_as_postmeta( $post_id, $post );
+				// Check if it's an Elementor post.
+				$is_elementor = $this->is_elementor_post( $post_id );
+
+				if ( $is_elementor ) {
+					$this->elementor_save_seo_data_as_postmeta( $post_id );
+				} else {
+					$this->save_seo_data_as_postmeta( $post_id, $post );
+				}
+			} finally {
+				if ( $switched ) {
+					restore_current_blog();
+				}
 			}
 		}
 	}

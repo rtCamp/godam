@@ -14,38 +14,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Output player wrapper styles inline at render time. We deliberately do NOT
-// defer to wp_head/admin_head: those hooks never fire in some render paths
-// (Elementor editor preview, Elementor Pro REST-based widget refresh, custom
-// REST renders), so deferring would drop the styles on the editor canvas.
-// Inline <style> in body is valid HTML5 and applies document-wide in every
-// browser. The global flag guarantees it's emitted at most once per request.
-global $godam_player_wrapper_inline_css_added, $wp_filesystem;
-if ( empty( $godam_player_wrapper_inline_css_added ) ) {
-	$godam_player_wrapper_inline_css_added = true;
-	$godam_player_wrapper_css_path         = RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css';
-	$godam_player_wrapper_css_key          = 'godam_player_wrapper_css';
-
-	if ( file_exists( $godam_player_wrapper_css_path ) ) {
-		$godam_player_wrapper_css = get_transient( $godam_player_wrapper_css_key );
-
-		if ( false === $godam_player_wrapper_css ) {
-			// Initialize WP_Filesystem if not already done.
-			if ( empty( $wp_filesystem ) ) {
-				require_once ABSPATH . 'wp-admin/includes/file.php';
-				WP_Filesystem();
-			}
-
-			if ( ! empty( $wp_filesystem ) ) {
-				$godam_player_wrapper_css = $wp_filesystem->get_contents( $godam_player_wrapper_css_path );
-				set_transient( $godam_player_wrapper_css_key, $godam_player_wrapper_css, HOUR_IN_SECONDS );
-			}
-		}
-
-		if ( ! empty( $godam_player_wrapper_css ) ) {
-			echo '<style id="godam-player-wrapper-inline-css">' . wp_strip_all_tags( $godam_player_wrapper_css ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is stripped to plain text before inline output.
-		}
-	}
+// Player wrapper styles (placeholder / poster / loading states) ship as a real
+// stylesheet, not an inline <style>. An inline tag here rendered as a sibling of
+// the player markup, so inside a flow-layout container (core/column, core/group)
+// the player became the second child and inherited the container's blockGap
+// `margin-block-start`, adding phantom space above the video.
+//
+// `godam-player-wrapper-style` is a registered dependency of `godam-player-style`,
+// so every render path that enqueues the player CSS already pulls it in; this call
+// covers direct `require` of this template and is a no-op otherwise.
+if ( wp_style_is( 'godam-player-wrapper-style', 'registered' ) ) {
+	wp_enqueue_style( 'godam-player-wrapper-style' );
 }
 
 $godam_is_shortcode = false;
@@ -88,6 +67,30 @@ $godam_hover_select = isset( $attributes['hoverSelect'] ) ? $attributes['hoverSe
 if ( $godam_autoplay ) {
 	$godam_hover_select = 'none';
 }
+
+// "Show in lightbox": the inline player becomes a click-to-open trigger that
+// plays the video inside a lightbox (see godam-player/managers/modalManager.js).
+// The inline render itself is left untouched.
+$godam_show_in_lightbox = ! empty( $attributes['showInLightbox'] );
+
+// Autoplay and "Show in lightbox" are mutually exclusive, the same way autoplay
+// and hover are above: the inline render is a click-to-open poster, so playing it
+// where it stands both defeats the point and double-plays the video (once inline,
+// again on opening). The lightbox wins because it is the more specific intent, and
+// the author still gets autoplay where it counts — opening the lightbox starts
+// playback.
+//
+// Hover modes are excluded for the same reason, and because the closed poster
+// shows nothing but the play icon: previewing (or revealing controls) in place
+// competes with the lightbox and re-introduces the very controls it hides. The
+// reset happens here as well as in the editors, so a value stored on existing
+// content — block, shortcode, Elementor or WPBakery — can never reach the
+// frontend player.
+if ( $godam_show_in_lightbox ) {
+	$godam_autoplay     = false;
+	$godam_hover_select = 'none';
+}
+
 // Raw "Show caption" block attribute: true/false when explicitly set, null when
 // unset (inherit from the attachment's Display-captions setting — resolved into
 // $godam_show_caption once the attachment meta is loaded, further below).
@@ -151,6 +154,18 @@ if ( $godam_is_virtual ) {
 	if ( false !== $godam_cached_wp_id ) {
 		$godam_original_id = $godam_cached_wp_id;
 	} else {
+		/**
+		 * Fires before resolving/reading attachment data for a virtual GoDAM
+		 * media reference, so integrations that centralize media on another
+		 * site can switch context first. Queries the `attachment` post type
+		 * for whichever attachment carries this virtual ID in its
+		 * `_godam_original_id` meta, to translate it into a real WordPress
+		 * attachment ID.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$godam_query = new \WP_Query(
 			array(
 				'post_type'      => 'attachment',
@@ -161,6 +176,9 @@ if ( $godam_is_virtual ) {
 				'fields'         => 'ids',
 			)
 		);
+
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		if ( $godam_query->have_posts() ) {
 			$godam_original_id = $godam_query->posts[0];
 			// Only cache a successful resolution — never cache a miss, so a
@@ -211,6 +229,15 @@ if ( $godam_meta_cache_key && function_exists( 'rtgodam_work_cache_get' ) ) {
 }
 
 if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
+	/**
+	 * Fires before this cache-miss block collects every DB/meta call for
+	 * this attachment, so integrations that centralize media on another
+	 * site can switch context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+
 	// Cache miss — collect every DB/meta call for this attachment in one pass.
 	$rtgodam_raw_transcoded_url     = rtgodam_get_transcoded_url_from_attachment( $godam_numeric_id );
 	$rtgodam_raw_hls_transcoded_url = rtgodam_get_hls_transcoded_url_from_attachment( $godam_numeric_id );
@@ -232,10 +259,18 @@ if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
 		'video_src'          => $rtgodam_raw_video_src,
 		'video_src_type'     => $rtgodam_raw_video_src_type,
 		'job_id'             => $rtgodam_raw_job_id,
+		// Transcript resolved in the authenticated editor and cached on the
+		// attachment. Read only — never call godam_get_transcript_path() here:
+		// on a miss it makes a blocking SaaS request on public page loads and
+		// re-caches without the delete guard. Same rule as the audio block.
+		'transcript_path'    => get_post_meta( $godam_numeric_id, 'rtgodam_transcript_path', true ),
+		'transcript_deleted' => get_post_meta( $godam_numeric_id, 'rtgodam_transcript_deleted', true ),
 		'placeholder_map'    => get_post_meta( $godam_numeric_id, 'rtgodam_media_placeholder_thumbnails', true ),
 		'placeholder_single' => get_post_meta( $godam_numeric_id, 'rtgodam_media_video_placeholder_thumbnail', true ),
 		'attachment_meta'    => wp_get_attachment_metadata( $godam_numeric_id ),
 	);
+
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	if ( function_exists( 'rtgodam_work_cache_set' ) && function_exists( 'rtgodam_work_cache_index_add' ) ) {
 		rtgodam_work_cache_set( $godam_meta_cache_key, $godam_attachment_data );
@@ -474,7 +509,7 @@ $godam_video_setup = array(
 			'forward'  => 10,
 			'backward' => 10,
 		),
-		'brandingIcon' => true, // provide default value for brand logo. 
+		'brandingIcon' => true, // provide default value for brand logo.
 	),
 );
 if ( ! empty( $godam_control_bar_settings ) ) {
@@ -508,6 +543,27 @@ if ( isset( $attributes['godam_context'] ) && in_array( $attributes['godam_conte
 $godam_video_setup = wp_json_encode( $godam_video_setup );
 
 $godam_frontend_layers = ! empty( $godam_meta_data['layers'] ) ? $godam_meta_data['layers'] : array();
+
+// Strip the layer-manager JS's own rich-content fields (html/text) from the
+// player's JSON config before encoding: it doesn't need them there (it reads
+// the already-rendered HTML from the DOM separately), and leaving them out
+// avoids duplicating potentially large freeform content into data-options.
+/**
+ * Filters the video layer config array sent to the frontend player JS.
+ *
+ * @since 2.2.0
+ *
+ * @param array $godam_frontend_layers Layer configs with 'html'/'text' fields stripped.
+ */
+$godam_frontend_layers = apply_filters(
+	'rtgodam_video_layers_for_js',
+	array_map(
+		function ( $godam_frontend_layer ) {
+			return is_array( $godam_frontend_layer ) ? array_diff_key( $godam_frontend_layer, array_flip( array( 'html', 'text' ) ) ) : $godam_frontend_layer;
+		},
+		$godam_frontend_layers
+	)
+);
 
 $godam_video_config = wp_json_encode(
 	array(
@@ -636,17 +692,33 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
 }
 
 /**
- * AI Generated video tracks (transcription) are now loaded dynamically from the frontend.
- * The frontend JavaScript will fetch the transcript URL using the job_id via the API endpoint:
- * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
+ * Transcription resolution order on the front end:
  *
- * This approach provides:
- * - Better caching with ETag/Cache-Control headers
- * - Reduced server-side processing on page load
- * - Automatic cache invalidation when transcription is updated
+ * 1. `data-transcript-url` — the transcript stored on the attachment
+ *    (`rtgodam_transcript_path`), i.e. whatever the Transcription tab of the
+ *    media editor last generated or the user uploaded. This wins so a
+ *    hand-uploaded .vtt/.srt is what visitors actually get.
+ * 2. `data-transcript-deleted` — set when the user deleted the transcript in
+ *    the editor. The player then shows nothing instead of resurrecting the
+ *    SaaS copy.
+ * 3. Otherwise the frontend JavaScript falls back to fetching the transcript
+ *    URL by job_id via the public API endpoint:
+ *    GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
+ *    which keeps ETag/Cache-Control caching for attachments that were never
+ *    opened in the editor (and for virtual media with no local meta).
  */
+$godam_transcript_url     = (string) ( $godam_attachment_data['transcript_path'] ?? '' );
+$godam_transcript_deleted = ! empty( $godam_attachment_data['transcript_deleted'] );
 
 $godam_attachment_title = '';
+
+/**
+ * Fires before this title/filename fallback block, so integrations that
+ * centralize media on another site can switch context first.
+ *
+ * @since 2.2.0
+ */
+do_action( 'rtgodam_before_attachment_lookup' );
 
 if ( ! empty( $godam_attachment_id ) && is_numeric( $godam_attachment_id ) ) {
 	$godam_attachment_title = get_the_title( $godam_attachment_id );
@@ -658,12 +730,14 @@ if ( empty( $godam_attachment_title ) ) {
 	$godam_attachment_title = basename( get_attached_file( $godam_attachment_id ) );
 }
 
+do_action( 'rtgodam_after_attachment_lookup' );
+
 ?>
 
 <?php if ( ! empty( $godam_sources ) ) : ?>
 	<div <?php echo wp_kses_data( $godam_figure_attributes ); ?>>
 		<figure id="godam-player-container-<?php echo esc_attr( $godam_instance_id ); ?>">
-			<div class="godam-video-wrapper">
+			<div class="godam-video-wrapper<?php echo $godam_show_in_lightbox ? ' godam-show-in-lightbox' : ''; ?>">
 				<?php if ( $godam_show_overlay && ! empty( $godam_inner_blocks_content ) ) : ?>
 					<div
 						class="godam-video-overlay-container godam-overlay-alignment-<?php echo esc_attr( $godam_vertical_alignment ); ?>"
@@ -749,6 +823,9 @@ if ( empty( $godam_attachment_title ) ) {
 							data-video-title="<?php echo esc_attr( $godam_attachment_title ); ?>"
 							data-autoplay-on-view="<?php echo esc_attr( ( $godam_autoplay && 'auto' !== $godam_preload ) ? 'true' : 'false' ); ?>"
 							data-disable-transcript="<?php echo esc_attr( $godam_disable_subtitles_and_transcript ? 'true' : 'false' ); ?>"
+							data-transcript-url="<?php echo esc_url( $godam_transcript_url ); ?>"
+							data-transcript-deleted="<?php echo esc_attr( $godam_transcript_deleted ? 'true' : 'false' ); ?>"
+							data-show-in-lightbox="<?php echo esc_attr( $godam_show_in_lightbox ? 'true' : 'false' ); ?>"
 						>
 							<?php
 
@@ -978,7 +1055,23 @@ if ( empty( $godam_attachment_title ) ) {
 									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 										<?php if ( $godam_render_html_cta ) : ?>
 											<div class="easydam-layer--cta-html">
-												<?php echo wp_kses_post( $godam_layer['html'] ); ?>
+												<?php
+												$godam_cta_html = $godam_layer['html'];
+												$godam_cta_html = do_shortcode( $godam_cta_html );
+
+												/**
+												 * Filters the rendered CTA HTML content for a video layer, after
+												 * shortcode expansion and before final sanitization.
+												 *
+												 * @since 2.2.0
+												 *
+												 * @param string $godam_cta_html The CTA HTML content after shortcode expansion.
+												 * @param array  $godam_layer    The layer configuration array.
+												 */
+												$godam_cta_html = apply_filters( 'rtgodam_cta_html_content', $godam_cta_html, $godam_layer );
+
+												echo wp_kses_post( $godam_cta_html );
+												?>
 											</div>
 										<?php else : ?>
 											<?php echo wp_kses_post( rtgodam_image_cta_html( $godam_layer ) ); ?>

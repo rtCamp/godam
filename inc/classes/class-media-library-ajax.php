@@ -93,7 +93,7 @@ class Media_Library_Ajax {
 
 		$job_type      = $item['job_type'] ?? '';
 		$api_mime_type = $item['mime_type'] ?? '';
-		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type );
+		$computed_mime = $this->get_mime_type_for_job_type( $job_type, $api_mime_type, $item['orignal_file_name'] ?? '' );
 		$title         = isset( $item['title'] ) ? $item['title'] : ( isset( $item['orignal_file_name'] ) ? pathinfo( $item['orignal_file_name'], PATHINFO_FILENAME ) : $item['name'] );
 		// trim the extension from title if present.
 		$title = preg_replace( '/\.[^.]+$/', '', $title );
@@ -156,21 +156,30 @@ class Media_Library_Ajax {
 			'width'                 => $item['width'] ?? 0,
 			'height'                => $item['height'] ?? 0,
 			'chapters'              => $chapters,
+
+			/*
+			 * The preview PDF for a document. Distinct from `mpd_url` above, which for a
+			 * `document` job is the ORIGINAL .docx/.xlsx and cannot be rendered. Empty for a
+			 * password-protected document, which has no preview by design.
+			 */
+			'preview_pdf_url'       => $item['preview_pdf_url'] ?? '',
 		);
 
-		// Set icon with fallback to default mime type icon for audio and PDF.
+		// Set icon with fallback to default mime type icon for audio and documents.
 		$result['icon'] = $item['thumbnail_url'] ?? '';
 
-		// If no thumbnail URL, use WordPress default icons for audio and PDF.
+		// If no thumbnail URL, use WordPress default icons for audio and documents. Keyed off
+		// the job type rather than the MIME type: Central does not always send a MIME, and the
+		// document types span too many vendor prefixes to test individually here.
 		if ( empty( $result['icon'] ) ) {
-			if ( 'audio' === $item['job_type'] ) {
+			if ( 'audio' === $job_type ) {
 				$result['icon'] = includes_url( 'images/media/audio.png' );
-			} elseif ( 'application/pdf' === $item['mime_type'] ) {
+			} elseif ( in_array( $job_type, array( 'pdf', 'document' ), true ) || 'application/pdf' === $api_mime_type ) {
 				$result['icon'] = includes_url( 'images/media/document.png' );
 			}
 		}
 
-		if ( 'stream' === $item['job_type'] ) {
+		if ( 'stream' === $job_type ) {
 			$result['type'] = 'video';
 		}
 
@@ -180,11 +189,12 @@ class Media_Library_Ajax {
 	/**
 	 * Get appropriate MIME type based on job type.
 	 *
-	 * @param string $job_type Job type from GoDAM API.
+	 * @param string $job_type  Job type from GoDAM API.
 	 * @param string $mime_type Original MIME type from API.
+	 * @param string $filename  Original file name from API, used to infer a missing MIME type.
 	 * @return string Appropriate MIME type.
 	 */
-	private function get_mime_type_for_job_type( $job_type, $mime_type ) {
+	private function get_mime_type_for_job_type( $job_type, $mime_type, $filename = '' ) {
 		switch ( $job_type ) {
 			case 'stream':
 				return 'application/dash+xml';
@@ -192,6 +202,40 @@ class Media_Library_Ajax {
 				return ! empty( $mime_type ) ? $mime_type : 'audio/mpeg';
 			case 'image':
 				return ! empty( $mime_type ) ? $mime_type : 'image/jpeg';
+			case 'pdf':
+			case 'document':
+				/*
+				 * Documents used to fall through to the default below, which meant a job with
+				 * no MIME type was labelled application/dash+xml — then rejected outright by
+				 * create_media_entry()'s allowlist, so the item could not be imported at all.
+				 *
+				 * When Central sends no MIME type, the original file name is asked next rather
+				 * than defaulting straight to PDF. Labelling a converted document
+				 * application/pdf is not harmless: rtgodam_get_document_preview_url() trusts
+				 * rtgodam_transcoded_url for a PDF, and for a `document` that key holds the
+				 * ORIGINAL .docx — so a document with no preview (a password-protected one, say)
+				 * would hand the .docx itself to pdf.js. PDF remains the last resort, which is
+				 * exact for job type 'pdf' and keeps unnamed items importable.
+				 */
+				if ( ! empty( $mime_type ) ) {
+					return $mime_type;
+				}
+
+				$extension = rtgodam_get_extension_from_path( $filename );
+
+				if ( ! empty( $extension ) ) {
+					$mime_for_extension = array_search(
+						$extension,
+						rtgodam_get_supported_document_types(),
+						true
+					);
+
+					if ( ! empty( $mime_for_extension ) ) {
+						return $mime_for_extension;
+					}
+				}
+
+				return 'application/pdf';
 			default:
 				return ! empty( $mime_type ) ? $mime_type : 'application/dash+xml';
 		}
@@ -233,6 +277,20 @@ class Media_Library_Ajax {
 			}
 		}
 
+		// Captured before the switch below, so this is always the site this
+		// upload belongs to (the one currently active), not the media site.
+		$site_url = get_site_url();
+
+		/**
+		 * Fires before reading this attachment's transcoding/virtual-media
+		 * meta, so integrations that centralize media on another site can
+		 * switch context first. Hooked to `add_attachment`, which can fire
+		 * synchronously from inside an already-open bracket (e.g.
+		 * create_virtual_attachment()).
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$transcoding_job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 
 		// Check virtual media status for transcoding requests.
@@ -241,14 +299,17 @@ class Media_Library_Ajax {
 
 		// Skip transcoding for virtual media.
 		if ( $is_virtual_media ) {
+			do_action( 'rtgodam_after_attachment_lookup' );
 			return;
 		}
 
 		// Only if attachment type is image.
 		$mime_type = get_post_mime_type( $attachment_id );
 		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
+			do_action( 'rtgodam_after_attachment_lookup' );
 			return;
 		}
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Check if HTTP auth is enabled.
 		if ( rtgodam_has_http_auth() ) {
@@ -264,9 +325,11 @@ class Media_Library_Ajax {
 			}
 
 			// Update status to failed.
+			do_action( 'rtgodam_before_attachment_lookup' );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', __( 'HTTP authentication is enabled on your site, preventing transcoding.', 'godam' ) );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', 'http_auth_enabled' );
+			do_action( 'rtgodam_after_attachment_lookup' );
 
 			return;
 		}
@@ -279,6 +342,14 @@ class Media_Library_Ajax {
 
 		$api_url = RTGODAM_API_BASE . '/api/resource/Transcoder Job' . ( empty( $transcoding_job_id ) ? '' : '/' . $transcoding_job_id );
 
+		/**
+		 * Fires before reading this attachment's URL/title/author/content,
+		 * so integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$attachment_url = wp_get_attachment_url( $attachment_id );
 
 		$file_title = get_the_title( $attachment_id );
@@ -287,7 +358,9 @@ class Media_Library_Ajax {
 		// Get attachment author information.
 		$attachment_author_id = get_post_field( 'post_author', $attachment_id );
 		$attachment_author    = get_user_by( 'id', $attachment_author_id );
-		$site_url             = get_site_url();
+
+		// Get attachment content, used as the transcoding request description below.
+		$attachment_content = get_post_field( 'post_content', $attachment_id );
 
 		// Get author name with fallback to username.
 		$author_first_name = '';
@@ -304,18 +377,11 @@ class Media_Library_Ajax {
 				$author_first_name = $attachment_author->user_login ?? '';
 			}
 		}
+		do_action( 'rtgodam_after_attachment_lookup' );
 
-		if ( ! defined( 'RTGODAM_TRANSCODER_CALLBACK_URL' ) ) {
-			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
-			define( 'RTGODAM_TRANSCODER_CALLBACK_URL', \RTGODAM_Transcoder_Rest_Routes::get_callback_url() );
-		}
-
-		$callback_url = RTGODAM_TRANSCODER_CALLBACK_URL;
-
-		/**
-		 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
-		 */
-		$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+		include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php';
+		$callback_url        = \RTGODAM_Transcoder_Rest_Routes::get_callback_url();
+		$status_callback_url = \RTGODAM_Transcoder_Rest_Routes::get_callback_url( 'status' );
 
 		// Request params.
 		$params = array(
@@ -327,7 +393,7 @@ class Media_Library_Ajax {
 			'orignal_file_name'    => $file_name ?? $file_title,
 			'mime_type'            => $mime_type,
 			'title'                => sanitize_text_field( $file_title ),
-			'description'          => sanitize_textarea_field( (string) get_post_field( 'post_content', $attachment_id ) ),
+			'description'          => sanitize_textarea_field( (string) $attachment_content ),
 			'callback_url'         => rawurlencode( $callback_url ),
 			'status_callback'      => rawurlencode( $status_callback_url ),
 			'wp_author_email'      => apply_filters( 'godam_author_email_to_send', $author_email, $attachment_id ),
@@ -434,17 +500,40 @@ class Media_Library_Ajax {
 	 * @return array $response Attachment response.
 	 */
 	public function add_media_transcoding_status_js( $response, $attachment ) {
-		// Check if attachment type is video, audio, PDF, or image.
+		// Check if attachment type is video, audio, document, or image.
 		$mime_type = $attachment->post_mime_type;
 		$is_video  = 'video' === substr( $mime_type, 0, 5 );
 		$is_audio  = 'audio' === substr( $mime_type, 0, 5 );
-		$is_pdf    = 'application/pdf' === $mime_type;
-		$is_image  = 'image' === substr( $mime_type, 0, 5 );
+		// Every convertible document type, not just PDF, so an Office upload also reports its
+		// transcoding progress in the media library grid. Tested against the attachment rather
+		// than its MIME type alone: text/plain covers .srt/.asc/.c/.cc/.h as well as .txt, and
+		// those are never transcoded, so a MIME-only test gave every subtitle and source file
+		// in the library a transcoding spinner that never resolved.
+		//
+		// Fires its own before/after pair, separate from the one further below: this call
+		// happens ahead of the early "supported type" return, so it cannot share that later
+		// bracket without extending it across the return too.
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$is_pdf = rtgodam_is_supported_document_attachment( $attachment->ID );
+		do_action( 'rtgodam_after_attachment_lookup' );
+		$is_image = 'image' === substr( $mime_type, 0, 5 );
 
 		// Only process supported attachment types.
 		if ( ! ( $is_video || $is_audio || $is_pdf || $is_image ) ) {
 			return $response;
 		}
+
+		/**
+		 * Fires before resolving/reading this attachment's transcoding,
+		 * virtual-media, and CDN image-size meta for the media library JS
+		 * response, so integrations that centralize media on another site
+		 * can switch context first. This reads and (re)writes several
+		 * rtgodam_* postmeta keys plus the _godam_original_id marker, all
+		 * keyed on $attachment->ID.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 
 		$transcoded_url     = get_post_meta( $attachment->ID, 'rtgodam_transcoded_url', true );
 		$transcoding_status = get_post_meta( $attachment->ID, 'rtgodam_transcoding_status', true );
@@ -566,6 +655,8 @@ class Media_Library_Ajax {
 				$response['image']['src'] = $icon_url;
 			}
 		}
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return $response;
 	}
@@ -904,61 +995,81 @@ class Media_Library_Ajax {
 			return new \WP_Error( 'invalid_input', __( 'Invalid attachment ID or URL.', 'godam' ) );
 		}
 
-		// Validate the attachment.
-		$attachment = get_post( $attachment_id );
-		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
-			return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ) );
+		/**
+		 * Fires before validating that $attachment_id resolves to a real
+		 * attachment post, and stays open through every subsequent read
+		 * and write on that same attachment below -- update_attached_file(),
+		 * wp_update_post()'s MIME-type update, and the final
+		 * wp_update_attachment_metadata() -- so integrations that centralize
+		 * media on another site can switch context once for this whole
+		 * read-modify-write sequence instead of losing it between separate
+		 * brackets. Wrapped in try/finally because this method returns
+		 * early from several points (invalid attachment, missing
+		 * filesystem, failed download, failed move).
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Validate the attachment.
+			$attachment = get_post( $attachment_id );
+			if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+				return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ) );
+			}
+
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+			require_once ABSPATH . 'wp-admin/includes/media.php';
+			require_once ABSPATH . 'wp-admin/includes/image.php';
+
+			global $wp_filesystem;
+
+			WP_Filesystem();
+
+			if ( ! $wp_filesystem ) {
+				return new \WP_Error( 'fs_unavailable', __( 'Could not initialize WordPress filesystem.', 'godam' ) );
+			}
+
+			// Download file to temporary location.
+			$temp_file = download_url( $file_url );
+
+			if ( is_wp_error( $temp_file ) ) {
+				return $temp_file;
+			}
+
+			// Prepare new file path in uploads.
+			$upload_dir   = wp_upload_dir();
+			$new_filename = wp_basename( wp_parse_url( $file_url, PHP_URL_PATH ) );
+			$new_filepath = trailingslashit( $upload_dir['path'] ) . $new_filename;
+
+			// Move temp file into uploads with WP_Filesystem.
+			$moved = $wp_filesystem->move( $temp_file, $new_filepath, true );
+
+			if ( ! $moved ) {
+				$wp_filesystem->delete( $temp_file );
+				return new \WP_Error( 'file_move_failed', __( 'Could not move file into uploads directory.', 'godam' ) );
+			}
+
+			// Update attachment file info.
+			update_attached_file( $attachment_id, $new_filepath );
+
+			// update mime type.
+			$filetype = wp_check_filetype( $new_filename, null );
+			if ( $filetype['type'] ) {
+				wp_update_post(
+					array(
+						'ID'             => $attachment_id,
+						'post_mime_type' => $filetype['type'],
+					)
+				);
+			}
+
+			// Regenerate metadata.
+			$metadata = wp_generate_attachment_metadata( $attachment_id, $new_filepath );
+
+			wp_update_attachment_metadata( $attachment_id, $metadata );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		require_once ABSPATH . 'wp-admin/includes/file.php';
-		require_once ABSPATH . 'wp-admin/includes/media.php';
-		require_once ABSPATH . 'wp-admin/includes/image.php';
-
-		global $wp_filesystem;
-
-		WP_Filesystem();
-
-		if ( ! $wp_filesystem ) {
-			return new \WP_Error( 'fs_unavailable', __( 'Could not initialize WordPress filesystem.', 'godam' ) );
-		}
-
-		// Download file to temporary location.
-		$temp_file = download_url( $file_url );
-
-		if ( is_wp_error( $temp_file ) ) {
-			return $temp_file;
-		}
-
-		// Prepare new file path in uploads.
-		$upload_dir   = wp_upload_dir();
-		$new_filename = wp_basename( wp_parse_url( $file_url, PHP_URL_PATH ) );
-		$new_filepath = trailingslashit( $upload_dir['path'] ) . $new_filename;
-
-		// Move temp file into uploads with WP_Filesystem.
-		$moved = $wp_filesystem->move( $temp_file, $new_filepath, true );
-
-		if ( ! $moved ) {
-			$wp_filesystem->delete( $temp_file );
-			return new \WP_Error( 'file_move_failed', __( 'Could not move file into uploads directory.', 'godam' ) );
-		}
-
-		// Update attachment file info.
-		update_attached_file( $attachment_id, $new_filepath );
-
-		// update mime type.
-		$filetype = wp_check_filetype( $new_filename, null );
-		if ( $filetype['type'] ) {
-			wp_update_post(
-				array(
-					'ID'             => $attachment_id,
-					'post_mime_type' => $filetype['type'],
-				)
-			);
-		}
-
-		// Regenerate metadata.
-		$metadata = wp_generate_attachment_metadata( $attachment_id, $new_filepath );
-		wp_update_attachment_metadata( $attachment_id, $metadata );
 
 		return $attachment_id;
 	}
@@ -978,28 +1089,50 @@ class Media_Library_Ajax {
 			return;
 		}
 
-		// Check if video attachment.
-		$attachment_mime_type = get_post_mime_type( $attachment_id );
+		/**
+		 * Fires before reading/mutating this attachment's data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * 'rtgodam_handle_callback_finished' is a public, third-party-
+		 * triggerable extension point (see its docblock in
+		 * class-rtgodam-transcoder-rest-routes.php) — and even for its own
+		 * built-in caller, handle_callback()'s before/after bracket around
+		 * the 'wp-media' branch has already closed by the time this fires,
+		 * several lines later in that method. Wrapped here defensively, in
+		 * a try/finally since this method returns early from several
+		 * points, rather than relying on an already-open bracket from
+		 * whichever caller triggered the hook.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Check if video attachment.
+			$attachment_mime_type = get_post_mime_type( $attachment_id );
 
-		if ( 'video' !== substr( $attachment_mime_type, 0, 5 ) ) {
-			return;
-		}
-
-		// Check if mp4_url is provided in the request.
-		$transcoded_mp4_url = esc_url( $request->get_param( 'mp4_url' ) );
-
-		if ( empty( $transcoded_mp4_url ) ) {
-			return;
-		}
-
-		// Replace the existing attachment file with the transcoded MP4.
-		$attachment_id = $this->godam_replace_attachment_with_external_file( $attachment_id, $transcoded_mp4_url );
-
-		if ( is_wp_error( $attachment_id ) ) {
-			// Log the error for debugging purposes.
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'MP4 video replacement failed: ' . $attachment_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging for debugging.
+			if ( 'video' !== substr( $attachment_mime_type, 0, 5 ) ) {
+				return;
 			}
+
+			// Check if mp4_url is provided in the request.
+			$transcoded_mp4_url = esc_url( $request->get_param( 'mp4_url' ) );
+
+			if ( empty( $transcoded_mp4_url ) ) {
+				return;
+			}
+
+			// Replace the existing attachment file with the transcoded MP4.
+			$attachment_id = $this->godam_replace_attachment_with_external_file( $attachment_id, $transcoded_mp4_url );
+
+			if ( is_wp_error( $attachment_id ) ) {
+				// Log the error for debugging purposes.
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log( 'MP4 video replacement failed: ' . $attachment_id->get_error_message() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging for debugging.
+				}
+			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 	}
 
@@ -1014,32 +1147,47 @@ class Media_Library_Ajax {
 	 * @return string The filtered attachment URL.
 	 */
 	public function filter_attachment_url_for_virtual_media( $url, $post_id ) {
-		$attachment_mime_type = get_post_mime_type( $post_id );
-		$godam_original_id    = get_post_meta( $post_id, '_godam_original_id', true );
+		/**
+		 * Fires before reading this attachment's mime type, GoDAM CDN
+		 * image-size map, transcoded-URL meta, and (for virtual media) its
+		 * post row/guid, so integrations that centralize media on another
+		 * site can switch context first. Wrapped in try/finally because
+		 * this method returns from several points once it determines which
+		 * URL to use.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$attachment_mime_type = get_post_mime_type( $post_id );
+			$godam_original_id    = get_post_meta( $post_id, '_godam_original_id', true );
 
-		// For WordPress-uploaded images, use CDN URL only when GoDAM sizes map exists.
-		// Otherwise WP may build thumbnail URLs using local metadata + CDN base path,
-		// which breaks old images (dimension mismatch like 350x263 vs 350x262).
-		if ( 'image' === substr( $attachment_mime_type, 0, 5 ) ) {
-			$rtgodam_image_sizes    = $this->get_rtgodam_image_sizes( $post_id );
-			$rtgodam_transcoded_url = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
-			$can_use_cdn_src        = ( ! empty( $godam_original_id ) || ! empty( $rtgodam_image_sizes ) );
+			// For WordPress-uploaded images, use CDN URL only when GoDAM sizes map exists.
+			// Otherwise WP may build thumbnail URLs using local metadata + CDN base path,
+			// which breaks old images (dimension mismatch like 350x263 vs 350x262).
+			if ( 'image' === substr( $attachment_mime_type, 0, 5 ) ) {
+				$rtgodam_image_sizes    = $this->get_rtgodam_image_sizes( $post_id );
+				$rtgodam_transcoded_url = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
+				$can_use_cdn_src        = ( ! empty( $godam_original_id ) || ! empty( $rtgodam_image_sizes ) );
 
-			if ( $can_use_cdn_src && ! empty( $rtgodam_transcoded_url ) ) {
-				return esc_url( $rtgodam_transcoded_url );
+				if ( $can_use_cdn_src && ! empty( $rtgodam_transcoded_url ) ) {
+					return esc_url( $rtgodam_transcoded_url );
+				}
 			}
-		}
 
-		if ( ! empty( $godam_original_id ) ) {
-			$attachment         = get_post( $post_id );
-			$transcoded_mp4_url = $attachment->guid; // For virtual media, we store the transcoded MP4 URL in the guid.
+			if ( ! empty( $godam_original_id ) ) {
+				$attachment         = get_post( $post_id );
+				$transcoded_mp4_url = $attachment->guid; // For virtual media, we store the transcoded MP4 URL in the guid.
 
-			if ( ! empty( $transcoded_mp4_url ) ) {
-				return esc_url( $transcoded_mp4_url );
+				if ( ! empty( $transcoded_mp4_url ) ) {
+					return esc_url( $transcoded_mp4_url );
+				}
 			}
-		}
 
-		return $url;
+			return $url;
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	/**
@@ -1083,26 +1231,40 @@ class Media_Library_Ajax {
 			return $image_meta;
 		}
 
-		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
-		if ( empty( $rtgodam_image_sizes ) ) {
+		/**
+		 * Fires before reading this attachment's GoDAM CDN image-size map
+		 * and transcoded-URL meta, so integrations that centralize media
+		 * on another site can switch context first. Wrapped in try/finally
+		 * because this method returns early once it determines no CDN data
+		 * exists for the attachment.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
+			if ( empty( $rtgodam_image_sizes ) ) {
+				return $image_meta;
+			}
+
+			$cdn_src = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+			if ( empty( $cdn_src ) ) {
+				return $image_meta;
+			}
+
+			$cdn_host = wp_parse_url( $cdn_src, PHP_URL_HOST );
+			$src_host = wp_parse_url( $image_src, PHP_URL_HOST );
+
+			// Only act when the src is already served from the CDN and the file path
+			// still carries a sub-directory prefix (i.e. hasn't been stripped yet).
+			if ( $cdn_host && $src_host && $cdn_host === $src_host && wp_basename( $image_meta['file'] ) !== $image_meta['file'] ) {
+				$image_meta['file'] = wp_basename( $image_meta['file'] );
+			}
+
 			return $image_meta;
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		$cdn_src = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-		if ( empty( $cdn_src ) ) {
-			return $image_meta;
-		}
-
-		$cdn_host = wp_parse_url( $cdn_src, PHP_URL_HOST );
-		$src_host = wp_parse_url( $image_src, PHP_URL_HOST );
-
-		// Only act when the src is already served from the CDN and the file path
-		// still carries a sub-directory prefix (i.e. hasn't been stripped yet).
-		if ( $cdn_host && $src_host && $cdn_host === $src_host && wp_basename( $image_meta['file'] ) !== $image_meta['file'] ) {
-			$image_meta['file'] = wp_basename( $image_meta['file'] );
-		}
-
-		return $image_meta;
 	}
 
 	/**
@@ -1119,68 +1281,82 @@ class Media_Library_Ajax {
 	 * @return array|false Filtered sources array or false.
 	 */
 	public function filter_virtual_media_srcset( $sources, $size_array, $image_src, $image_meta, $attachment_id ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Filter signature requires these params.
-		$attachment_mime_type = get_post_mime_type( $attachment_id );
-		if ( 'image' !== substr( $attachment_mime_type, 0, 5 ) ) {
-			return $sources;
-		}
-
-		// Rebuild sources array for virtual media.
-		if ( empty( $sources ) || ! is_array( $sources ) ) {
-			return $sources;
-		}
-
-		// Check if virtual media or if rtgodam_image_sizes meta exists (indicating GoDAM-managed image).
-		$godam_original_id   = get_post_meta( $attachment_id, '_godam_original_id', true );
-		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
-
-		if ( empty( $godam_original_id ) && empty( $rtgodam_image_sizes ) ) {
-			return $sources;
-		}
-
-		// If rtgodam_image_sizes meta exists, use it to build the srcset. 
-		// This is the case for GoDAM-managed images which may not be virtual but still need correct srcset URLs.
-		if ( ! empty( $rtgodam_image_sizes ) ) {
-
-			// Prepare new sources array based on rtgodam_image_sizes meta.
-			// Keyed by width to deduplicate and match WordPress's expected format.
-			$new_sources = array();
-			foreach ( $rtgodam_image_sizes as $image_size ) {
-				// Skip entries that do not have a valid URL or width to avoid invalid srcset entries.
-				if ( empty( $image_size['url'] ) || empty( $image_size['width'] ) ) {
-					continue;
-				}
-
-				$width                 = intval( $image_size['width'] );
-				$new_sources[ $width ] = array(
-					'url'        => esc_url( $image_size['url'] ),
-					'descriptor' => 'w',
-					'value'      => $width,
-				);
+		/**
+		 * Fires before reading this attachment's MIME type, virtual-media
+		 * original-ID, and GoDAM CDN image-size meta, so integrations that
+		 * centralize media on another site can switch context first.
+		 * Wrapped in try/finally because this method returns early from
+		 * several points while deciding whether/how to rebuild the srcset.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$attachment_mime_type = get_post_mime_type( $attachment_id );
+			if ( 'image' !== substr( $attachment_mime_type, 0, 5 ) ) {
+				return $sources;
 			}
-
-			$sources = $new_sources;
-		} elseif ( ! empty( $godam_original_id ) ) {
-			// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented. 
-			// In this case, we will reconstruct the URLs based on the original image URL and the file names in the sources array.
-
-			// Use the current image URL as the base for all subsizes.
-			$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
 
 			// Rebuild sources array for virtual media.
-			foreach ( $sources as &$source ) {
-
-				// Get last string after the last slash in the file url.
-				$file_basename = basename( $source['url'] );
-
-				// Rebuild the full URL using the base URL and the file basename.
-				$url = $base_url . ltrim( $file_basename, '/' );
-
-				$source['url'] = esc_url( $url );
+			if ( empty( $sources ) || ! is_array( $sources ) ) {
+				return $sources;
 			}
-			unset( $source ); // Break the reference.
-		}
 
-		return $sources;
+			// Check if virtual media or if rtgodam_image_sizes meta exists (indicating GoDAM-managed image).
+			$godam_original_id   = get_post_meta( $attachment_id, '_godam_original_id', true );
+			$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
+
+			if ( empty( $godam_original_id ) && empty( $rtgodam_image_sizes ) ) {
+				return $sources;
+			}
+
+			// If rtgodam_image_sizes meta exists, use it to build the srcset.
+			// This is the case for GoDAM-managed images which may not be virtual but still need correct srcset URLs.
+			if ( ! empty( $rtgodam_image_sizes ) ) {
+
+				// Prepare new sources array based on rtgodam_image_sizes meta.
+				// Keyed by width to deduplicate and match WordPress's expected format.
+				$new_sources = array();
+				foreach ( $rtgodam_image_sizes as $image_size ) {
+					// Skip entries that do not have a valid URL or width to avoid invalid srcset entries.
+					if ( empty( $image_size['url'] ) || empty( $image_size['width'] ) ) {
+						continue;
+					}
+
+					$width                 = intval( $image_size['width'] );
+					$new_sources[ $width ] = array(
+						'url'        => esc_url( $image_size['url'] ),
+						'descriptor' => 'w',
+						'value'      => $width,
+					);
+				}
+
+				$sources = $new_sources;
+			} elseif ( ! empty( $godam_original_id ) ) {
+				// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented.
+				// In this case, we will reconstruct the URLs based on the original image URL and the file names in the sources array.
+
+				// Use the current image URL as the base for all subsizes.
+				$base_url = trailingslashit( untrailingslashit( dirname( $image_src ) ) );
+
+				// Rebuild sources array for virtual media.
+				foreach ( $sources as &$source ) {
+
+					// Get last string after the last slash in the file url.
+					$file_basename = basename( $source['url'] );
+
+					// Rebuild the full URL using the base URL and the file basename.
+					$url = $base_url . ltrim( $file_basename, '/' );
+
+					$source['url'] = esc_url( $url );
+				}
+				unset( $source ); // Break the reference.
+			}
+
+			return $sources;
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	/**
@@ -1271,46 +1447,61 @@ class Media_Library_Ajax {
 			return $filtered_image;
 		}
 
-		$mime_type = get_post_mime_type( $attachment_id );
-		if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
-			return $filtered_image;
-		}
-
-		// Don't change the image src for virtual media as well.
-		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
-		if ( ! empty( $godam_original_id ) ) {
-			return $filtered_image;
-		}
-
-		// If rtgodam_image_sizes meta exists, it indicates this is a GoDAM-managed image and we should attempt to replace the src with the CDN URL if available.
-		$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
-		if ( empty( $rtgodam_image_sizes ) ) {
-			return $filtered_image;
-		}
-
-		$cdn_src = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-		if ( empty( $cdn_src ) ) {
-			return $filtered_image;
-		}
-
-		// If the current src is already on the same CDN host, it is already a correctly-sized
-		// CDN URL (e.g. a subsize chosen via the Image block). Don't overwrite it with the
-		// full-size CDN URL.
-		if ( preg_match( '/\bsrc="([^"]*)"/', $filtered_image, $src_match ) ) {
-			$cdn_host     = wp_parse_url( $cdn_src, PHP_URL_HOST );
-			$current_host = wp_parse_url( $src_match[1], PHP_URL_HOST );
-			if ( $cdn_host && $current_host && $cdn_host === $current_host ) {
+		/**
+		 * Fires before reading this attachment's MIME type, virtual-media
+		 * original-ID, and GoDAM CDN image-size/transcoded-URL meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first. Wrapped in try/finally because this method
+		 * returns from several points while deciding whether to rewrite
+		 * the rendered <img> src.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$mime_type = get_post_mime_type( $attachment_id );
+			if ( 'image' !== substr( $mime_type, 0, 5 ) ) {
 				return $filtered_image;
 			}
+
+			// Don't change the image src for virtual media as well.
+			$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+			if ( ! empty( $godam_original_id ) ) {
+				return $filtered_image;
+			}
+
+			// If rtgodam_image_sizes meta exists, it indicates this is a GoDAM-managed image and we should attempt to replace the src with the CDN URL if available.
+			$rtgodam_image_sizes = $this->get_rtgodam_image_sizes( $attachment_id );
+			if ( empty( $rtgodam_image_sizes ) ) {
+				return $filtered_image;
+			}
+
+			$cdn_src = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+			if ( empty( $cdn_src ) ) {
+				return $filtered_image;
+			}
+
+			// If the current src is already on the same CDN host, it is already a correctly-sized
+			// CDN URL (e.g. a subsize chosen via the Image block). Don't overwrite it with the
+			// full-size CDN URL.
+			if ( preg_match( '/\bsrc="([^"]*)"/', $filtered_image, $src_match ) ) {
+				$cdn_host     = wp_parse_url( $cdn_src, PHP_URL_HOST );
+				$current_host = wp_parse_url( $src_match[1], PHP_URL_HOST );
+				if ( $cdn_host && $current_host && $cdn_host === $current_host ) {
+					return $filtered_image;
+				}
+			}
+
+			$updated_image = preg_replace(
+				'/\bsrc="[^"]*"/',
+				' src="' . esc_url( $cdn_src ) . '"',
+				$filtered_image,
+				1
+			);
+
+			return is_string( $updated_image ) ? $updated_image : $filtered_image;
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		$updated_image = preg_replace(
-			'/\bsrc="[^"]*"/',
-			' src="' . esc_url( $cdn_src ) . '"',
-			$filtered_image,
-			1
-		);
-
-		return is_string( $updated_image ) ? $updated_image : $filtered_image;
 	}
 }

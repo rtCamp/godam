@@ -166,6 +166,40 @@ class Assets {
 	}
 
 	/**
+	 * Get the guide message to show alongside video thumbnails, for a given screen.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $context Where the message will render. One of 'block-editor'
+	 *                        (the godam/video block Inspector's "Video Thumbnail"
+	 *                        panel) or 'media-library' (the attachment-details popup).
+	 * @return string Sanitized guide message HTML, or an empty string.
+	 */
+	private function get_video_thumbnails_guide_message( $context ) {
+		/**
+		 * Filter the guide message shown alongside video thumbnails.
+		 *
+		 * Empty by default. Add-ons/extensions can hook in to surface guidance about
+		 * video thumbnails (how they are generated, links to docs, upgrade prompts,
+		 * etc.). Return an empty string to show nothing.
+		 *
+		 * The message renders in more than one place; switch on `$context` to vary
+		 * the copy, or ignore it to use the same message everywhere.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param string $message Guide message HTML. Default empty string.
+		 * @param string $context Where the message will render: 'block-editor' or
+		 *                        'media-library'.
+		 */
+		$message = apply_filters( 'rtgodam_video_thumbnails_guide_message', '', $context );
+
+		// The client sanitizes again before rendering, but doing it here means the
+		// trust boundary does not rest entirely on JavaScript.
+		return wp_kses_post( $message );
+	}
+
+	/**
 	 * To enqueue scripts and styles. in admin.
 	 *
 	 * @return void
@@ -187,14 +221,17 @@ class Assets {
 			true
 		);
 
+		$block_video_thumbnails_guide_message = $this->get_video_thumbnails_guide_message( 'block-editor' );
+
 		wp_localize_script(
 			'rtgodam-script',
 			'pluginInfo',
 			array(
-				'version'     => RTGODAM_VERSION,
-				'adminUrl'    => admin_url(),
-				'uploadUrl'   => wp_upload_dir()['baseurl'],
-				'validApiKey' => rtgodam_is_api_key_valid(),
+				'version'                     => RTGODAM_VERSION,
+				'adminUrl'                    => admin_url(),
+				'uploadUrl'                   => wp_upload_dir()['baseurl'],
+				'validApiKey'                 => rtgodam_is_api_key_valid(),
+				'videoThumbnailsGuideMessage' => $block_video_thumbnails_guide_message,
 			)
 		);
 
@@ -291,17 +328,20 @@ class Assets {
 
 		$current_user_id = get_current_user_id();
 
+		$media_library_video_thumbnails_guide_message = $this->get_video_thumbnails_guide_message( 'media-library' );
+
 		$easydam_media_library_data = array(
-			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
-			'nonce'                    => wp_create_nonce( 'easydam_media_library' ),
-			'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
-			'enableFolderOrganization' => $enable_folder_organization,
-			'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
-			'page'                     => $screen ? $screen->id : '',
-			'userId'                   => $current_user_id,
-			'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
-			'canManageOptions'         => current_user_can( 'manage_options' ),
-			'canEditPages'             => current_user_can( 'edit_pages' ),
+			'ajaxUrl'                     => admin_url( 'admin-ajax.php' ),
+			'nonce'                       => wp_create_nonce( 'easydam_media_library' ),
+			'godamToolsNonce'             => wp_create_nonce( 'rtgodam_tools' ),
+			'enableFolderOrganization'    => $enable_folder_organization,
+			'isPollPluginActive'          => is_plugin_active( 'wp-polls/wp-polls.php' ),
+			'page'                        => $screen ? $screen->id : '',
+			'userId'                      => $current_user_id,
+			'canEditOthersMedia'          => current_user_can( 'edit_others_posts' ),
+			'canManageOptions'            => current_user_can( 'manage_options' ),
+			'canEditPages'                => current_user_can( 'edit_pages' ),
+			'videoThumbnailsGuideMessage' => $media_library_video_thumbnails_guide_message,
 		);
 
 		/** This filter is documented in inc/classes/class-pages.php */
@@ -318,7 +358,14 @@ class Assets {
 		}
 
 		wp_set_script_translations( 'easydam-media-library', 'godam', RTGODAM_PATH . 'languages' );
-		wp_enqueue_script( 'easydam-media-library' );
+
+		// Only load the heavy media-library bundle (~2.65 MB, bundles video.js) where the
+		// media library / wp.media modal is actually used. It was previously enqueued on
+		// every admin screen. Registration + localization above stay unconditional (cheap,
+		// and inert unless the handle is enqueued).
+		if ( godam_should_load_media_library_assets( $screen ) ) {
+			wp_enqueue_script( 'easydam-media-library' );
+		}
 
 		/**
 		 * Dependency library for the date range picker. Its only consumers (the media-library

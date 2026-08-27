@@ -26,24 +26,38 @@ if ( ! function_exists( 'rtgodam_add_transcoded_url_field' ) ) {
 			return $form_fields;
 		}
 
+		/**
+		 * Fires before reading this attachment's MIME type, document-support
+		 * status, and transcoded-URL/job-ID meta for the attachment edit
+		 * screen, so integrations that centralize media on another site can
+		 * switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $post->ID );
+
+		// The document test goes through the attachment, not the MIME alone: text/plain also
+		// covers .srt/.asc/.c/.h, which are never transcoded and so have no CDN URL to show.
+		$is_supported_document = rtgodam_is_supported_document_attachment( $post->ID );
+
+		$transcoded_url = rtgodam_get_transcoded_url_from_attachment( $post->ID );
+		$job_id         = rtgodam_get_job_id_by_attachment_id( $post->ID );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		$is_allowed = (
 			str_starts_with( $mime_type, 'video/' ) ||
 			str_starts_with( $mime_type, 'audio/' ) ||
 			str_starts_with( $mime_type, 'image/' ) ||
-			'application/pdf' === $mime_type
+			$is_supported_document
 		);
 
 		if ( ! $is_allowed ) {
 			return $form_fields;
 		}
-
-		$transcoded_url = rtgodam_get_transcoded_url_from_attachment( $post->ID );
-		$job_id         = rtgodam_get_job_id_by_attachment_id( $post->ID );
-
-		$easydam_settings = get_option( 'rtgodam-settings', array() );
 
 		// Determine if the site has a valid API key (i.e., Premium user).
 		$api_key = get_option( 'rtgodam-api-key', '' );
@@ -154,12 +168,25 @@ if ( ! function_exists( 'rtgodam_save_transcoded_url_field' ) ) {
 		}
 
 		if ( isset( $attachment['transcoded_url'] ) ) {
-			// Check the user's permissions.
-			if ( ! current_user_can( 'edit_post', $post['ID'] ) ) {
-				return $post;
+			/**
+			 * Fires before checking this attachment's edit capability and
+			 * writing its transcoded-url meta, so integrations that
+			 * centralize media on another site can switch context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+			try {
+				// Check the user's permissions.
+				if ( ! current_user_can( 'edit_post', $post['ID'] ) ) {
+					return $post;
+				}
+
+				// Update the post meta with the new value.
+				update_post_meta( $post['ID'], 'rtgodam_transcoded_url', esc_url_raw( $attachment['transcoded_url'] ) );
+			} finally {
+				do_action( 'rtgodam_after_attachment_lookup' );
 			}
-			// Update the post meta with the new value.
-			update_post_meta( $post['ID'], 'rtgodam_transcoded_url', esc_url_raw( $attachment['transcoded_url'] ) );
 		}
 
 		return $post;
@@ -226,7 +253,7 @@ if ( ! function_exists( 'rtgodam_rtt_set_video_thumbnail' ) ) {
 				// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Legacy hook name kept for backward compatibility.
 				$final_file_url = apply_filters( 'transcoded_file_url', $final_file_url, $attachment_id );
 
-				update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail );
+				update_post_meta( $attachment_id, '_rt_media_video_thumbnail', $thumbnail ); // godam-coverage-ignore -- rtgodam_rtt_set_video_thumbnail(): dead code — rtMedia is not present in this codebase.
 			}
 
 			$model = new RTMediaModel();

@@ -422,7 +422,22 @@ class Pages {
 		// Check if user can edit media with given id.
 		$attachment_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		if ( $attachment_id && ! current_user_can( 'edit_post', $attachment_id ) ) {
+		$can_edit = true;
+
+		if ( $attachment_id ) {
+			/**
+			 * Fires before this attachment-specific capability check, so
+			 * integrations that centralize media on another site can switch
+			 * context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+			$can_edit = current_user_can( 'edit_post', $attachment_id );
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+
+		if ( ! $can_edit ) {
 			?>
 			<p class="godam-page-error"><?php echo esc_html( __( 'Sorry, you are not allowed to edit this item.', 'godam' ) ); ?></p>
 			<?php
@@ -967,7 +982,17 @@ class Pages {
 			$active_layer_config = array();
 			$analytics_video_id  = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( $analytics_video_id > 0 ) {
+				/**
+				 * Fires before reading this attachment's saved layer meta,
+				 * so integrations that centralize media on another site can
+				 * switch context first.
+				 *
+				 * @since 2.2.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
 				$rtgodam_meta = get_post_meta( $analytics_video_id, 'rtgodam_meta', true );
+				do_action( 'rtgodam_after_attachment_lookup' );
+
 				$saved_layers = is_array( $rtgodam_meta ) && ! empty( $rtgodam_meta['layers'] ) && is_array( $rtgodam_meta['layers'] )
 					? $rtgodam_meta['layers']
 					: array();
@@ -1227,6 +1252,13 @@ class Pages {
 
 		wp_enqueue_style( 'wp-components' );
 
+		// The media-library React sidebar bundle (~1.1 MB) is the remaining work in this
+		// method; skip it on screens that never open the media library / wp.media modal.
+		// It was previously enqueued on every admin screen.
+		if ( ! godam_should_load_media_library_assets( $screen ) ) {
+			return;
+		}
+
 		// The bundle externalizes several @wordpress packages to wp.* globals
 		// (see the `pages` externals in webpack.config.js). On WP admin / the
 		// block editor these globals are already present, but in other contexts
@@ -1236,9 +1268,13 @@ class Pages {
 		// only the handles actually registered in the current context: a handle
 		// missing on older WP / non-standard admin screens would otherwise block
 		// the enqueue entirely.
+		// `media-views` is included so the bundle's modal-close hook (which patches
+		// wp.media.view.Modal in pages/media-library/index.js) has wp.media defined by the
+		// time it runs — otherwise the ordering is incidental and the hook can silently
+		// no-op, leaving React roots unmounted and UI state un-reset.
 		$media_library_deps = array_values(
 			array_filter(
-				array( 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch', 'wp-primitives', 'wp-data', 'wp-notices' ),
+				array( 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch', 'wp-primitives', 'wp-data', 'wp-notices', 'media-views' ),
 				static function ( $handle ) {
 					return wp_script_is( $handle, 'registered' );
 				}

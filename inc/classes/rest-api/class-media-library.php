@@ -27,6 +27,147 @@ class Media_Library extends Base {
 	protected $rest_base = 'media-library';
 
 	/**
+	 * Setup hooks.
+	 *
+	 * Adds the base REST-route registration plus a server-side guard that enforces
+	 * folder "locked" state on the NATIVE wp/v2/media-folder term endpoints (rename,
+	 * delete, re-parent, create-under). Locking was previously enforced only in React,
+	 * so a direct REST call could still mutate a locked folder.
+	 *
+	 * @return void
+	 */
+	protected function setup_hooks() {
+		parent::setup_hooks();
+
+		add_filter( 'rest_pre_dispatch', array( $this, 'enforce_locked_media_folder' ), 10, 3 );
+
+		// Background builder for folder-ZIP downloads (see download_folder()). Runs via
+		// Action Scheduler when available, otherwise WP-Cron — both invoke this hook.
+		add_action( 'godam_build_folder_zip', array( $this, 'run_folder_zip_job' ), 10, 1 );
+	}
+
+	/**
+	 * Reject mutating REST requests against locked media-folder terms.
+	 *
+	 * Runs before dispatch on the native taxonomy routes:
+	 *   - POST/PUT/PATCH /wp/v2/media-folder/{id}  → rename / re-parent an existing folder
+	 *   - DELETE         /wp/v2/media-folder/{id}  → delete an existing folder
+	 *   - POST           /wp/v2/media-folder       → create a folder (blocked only when the
+	 *                                                target parent is locked, i.e. populating it)
+	 * Reads (GET) are always allowed — locking protects against modification, not viewing.
+	 *
+	 * @param mixed            $result  Pre-dispatch result (non-null short-circuits the request).
+	 * @param \WP_REST_Server  $server  Server instance (unused).
+	 * @param \WP_REST_Request $request The request being dispatched.
+	 * @return mixed Original $result, or a 403 WP_Error when the target folder is locked.
+	 */
+	public function enforce_locked_media_folder( $result, $server, $request ) {
+		// Let an already short-circuited result (e.g. another plugin's error) stand.
+		if ( null !== $result ) {
+			return $result;
+		}
+
+		// Only guard the native media-folder collection or a single term.
+		if ( ! preg_match( '#^/wp/v2/media-folder(?:/(\d+))?$#', $request->get_route(), $matches ) ) {
+			return $result;
+		}
+
+		// Only mutating verbs.
+		if ( ! in_array( $request->get_method(), array( 'POST', 'PUT', 'PATCH', 'DELETE' ), true ) ) {
+			return $result;
+		}
+
+		$term_id = isset( $matches[1] ) ? (int) $matches[1] : 0;
+
+		// Renaming / re-parenting / deleting a locked folder (or a child of one). A
+		// bookmark toggle is a personal flag rather than a modification of the folder's
+		// protected content, so it is still allowed on a locked folder.
+		if ( $term_id > 0 && $this->is_folder_locked( $term_id ) && ! $this->is_bookmark_only_folder_update( $request, $term_id ) ) {
+			return new \WP_Error(
+				'godam_folder_locked',
+				__( 'This folder is locked and cannot be modified.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// Creating or moving a folder INTO a locked destination (populating it).
+		if ( 'DELETE' !== $request->get_method() ) {
+			$new_parent = $request->get_param( 'parent' );
+
+			if ( ! is_null( $new_parent ) && (int) $new_parent > 0 && $this->is_folder_locked( (int) $new_parent ) ) {
+				return new \WP_Error(
+					'godam_folder_locked',
+					__( 'The destination folder is locked and cannot be modified.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Whether a native media-folder update request only toggles the `bookmark` meta and
+	 * changes nothing else (name, slug, description, parent, or the `locked` meta itself).
+	 *
+	 * Bookmarking is a per-user convenience flag, not a modification of the folder's
+	 * protected content, so it stays allowed on a locked folder — but this must NOT become
+	 * a hole through which a locked folder is renamed, re-parented, or unlocked.
+	 *
+	 * @param \WP_REST_Request $request The request being dispatched.
+	 * @param int              $term_id The media-folder term id.
+	 * @return bool True if the request only changes the bookmark meta.
+	 */
+	private function is_bookmark_only_folder_update( $request, $term_id ) {
+		if ( 'DELETE' === $request->get_method() ) {
+			return false;
+		}
+
+		$term = get_term( $term_id, 'media-folder' );
+
+		if ( ! $term || is_wp_error( $term ) ) {
+			return false;
+		}
+
+		// Any change to the folder's own fields disqualifies it.
+		$name = $request->get_param( 'name' );
+		if ( ! is_null( $name ) && (string) $name !== (string) $term->name ) {
+			return false;
+		}
+
+		$slug = $request->get_param( 'slug' );
+		if ( ! is_null( $slug ) && (string) $slug !== (string) $term->slug ) {
+			return false;
+		}
+
+		$description = $request->get_param( 'description' );
+		if ( ! is_null( $description ) && (string) $description !== (string) $term->description ) {
+			return false;
+		}
+
+		$parent = $request->get_param( 'parent' );
+		if ( ! is_null( $parent ) && (int) $parent !== (int) $term->parent ) {
+			return false;
+		}
+
+		// The lock state itself must not change through this path (unlocking is a
+		// capability-gated operation handled by the bulk-lock endpoint).
+		$meta = $request->get_param( 'meta' );
+		if ( is_array( $meta ) && array_key_exists( 'locked', $meta ) ) {
+			$current_locked = get_term_meta( $term_id, 'locked', true );
+			$current_bool   = ( '1' === (string) $current_locked || 1 === $current_locked || true === $current_locked || 'true' === $current_locked );
+			$requested      = $meta['locked'];
+			$requested_bool = ( true === $requested || 1 === $requested || '1' === (string) $requested || 'true' === $requested );
+
+			if ( $current_bool !== $requested_bool ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Register custom REST API routes for Settings Pages.
 	 *
 	 * @return array Array of registered REST API routes
@@ -173,14 +314,35 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'download_folder' ),
+					// Requires upload_files (Author+): generating a ZIP aggregates an entire
+					// folder's media into a downloadable archive, so Contributors (edit_posts
+					// only) must not be able to trigger it.
 					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
+						return current_user_can( 'upload_files' );
 					},
 					'args'                => array(
 						'folder_id' => array(
 							'required'    => true,
 							'type'        => 'integer',
 							'description' => __( 'ID of the folder to create a ZIP file for.', 'godam' ),
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/download-folder-status/(?P<job_id>[A-Za-z0-9]+)',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_folder_zip_status' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'job_id' => array(
+							'required'    => true,
+							'type'        => 'string',
+							'description' => __( 'ID of the ZIP build job to poll.', 'godam' ),
 						),
 					),
 				),
@@ -377,6 +539,40 @@ class Media_Library extends Base {
 			return false;
 		}
 
+		/**
+		 * Fires before resolving/mutating attachment data for this image
+		 * subsize update, so integrations that centralize media on another
+		 * site can switch context first. The job-ID fallback lookup below is
+		 * a direct $wpdb->postmeta query, just as site-scoped as
+		 * get_post_meta().
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->update_image_attachment_meta_after_lookup( $sizes, $job_id, $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Resolve the attachment ID (if not already known) and persist the
+	 * generated image subsizes to attachment meta.
+	 *
+	 * Split out of update_image_attachment_meta() so the wp-dam site-switch
+	 * bracket can wrap this entire body — including the job-ID fallback
+	 * lookup, which is itself a raw, site-scoped $wpdb->postmeta query.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param array $sizes         Array of sizes data.
+	 * @param int   $job_id        Job ID, used to resolve $attachment_id when it isn't already known.
+	 * @param int   $attachment_id Attachment ID, or 0/non-numeric to resolve via $job_id.
+	 *
+	 * @return bool True if successful, false otherwise.
+	 */
+	private function update_image_attachment_meta_after_lookup( $sizes, $job_id, $attachment_id ) {
 		if ( empty( $attachment_id ) || ! is_numeric( $attachment_id ) ) {
 			$attachment_id = rtgodam_get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 		}
@@ -391,8 +587,8 @@ class Media_Library extends Base {
 			);
 		}
 
-		$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
-		$is_virtual      = ! empty( get_post_meta( $attachment_id, '_godam_original_id', true ) );
+		$attachment_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true ); // godam-coverage-ignore -- update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.
+		$is_virtual      = ! empty( get_post_meta( $attachment_id, '_godam_original_id', true ) ); // godam-coverage-ignore -- update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.
 
 		// Normalize attachment meta to an array with a sizes key.
 		if ( ! is_array( $attachment_meta ) ) {
@@ -523,15 +719,15 @@ class Media_Library extends Base {
 
 		// Backfill the "file" key so WordPress does not bail early while building srcset.
 		if ( empty( $attachment_meta['file'] ) ) {
-			$full_url = wp_get_attachment_url( $attachment_id );
+			$full_url = wp_get_attachment_url( $attachment_id ); // godam-coverage-ignore -- update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.
 			if ( $full_url ) {
 				$path                    = wp_parse_url( $full_url, PHP_URL_PATH );
 				$attachment_meta['file'] = ltrim( wp_basename( $path ), '/' );
 			}
 		}
 
-		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachment_meta );
-		update_post_meta( $attachment_id, 'rtgodam_image_sizes', $rtgodam_image_sizes );
+		update_post_meta( $attachment_id, '_wp_attachment_metadata', $attachment_meta ); // godam-coverage-ignore -- update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.
+		update_post_meta( $attachment_id, 'rtgodam_image_sizes', $rtgodam_image_sizes ); // godam-coverage-ignore -- update_image_attachment_meta_after_lookup(): covered transitively — caller (update_image_attachment_meta) wraps the entire call in try/finally.
 		return true;
 	}
 
@@ -599,6 +795,70 @@ class Media_Library extends Base {
 		$attachment_ids = $request->get_param( 'attachment_ids' );
 		$folder_term_id = $request->get_param( 'folder_term_id' );
 
+		// IDOR guard: this route is gated only by the broad `edit_posts` capability, which
+		// does NOT prove the caller may edit these specific objects. Before touching any
+		// terms — in either the assign or the remove-from-folder path — verify every ID is
+		// genuinely an attachment and that the current user can edit that object. Without
+		// this, a user could move (or strip folders from) media they do not own, and the
+		// remove path would act on raw IDs of arbitrary post types.
+		if ( empty( $attachment_ids ) || ! is_array( $attachment_ids ) ) {
+			return new \WP_Error( 'invalid_attachment', __( 'No attachment IDs provided.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		/**
+		 * Fires before resolving these attachments' post types and edit
+		 * capabilities, so integrations that centralize media on another
+		 * site can switch context first. Wraps the cache-priming calls
+		 * too, since they resolve this same site-scoped post/term data for
+		 * every ID in this request, and the loop below can return early
+		 * per-attachment.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Prime the post + object-term caches once so the per-id checks below don't each
+			// hit the database (a large drag-move otherwise fired hundreds of queries).
+			_prime_post_caches( $attachment_ids );
+			update_object_term_cache( $attachment_ids, 'attachment' );
+
+			foreach ( $attachment_ids as $attachment_id ) {
+				if ( 'attachment' !== get_post_type( $attachment_id ) ) {
+					return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
+				}
+
+				if ( ! current_user_can( 'edit_post', $attachment_id ) ) {
+					return new \WP_Error(
+						'rest_forbidden',
+						__( 'You are not allowed to modify one or more of these attachments.', 'godam' ),
+						array( 'status' => 403 )
+					);
+				}
+			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+
+		// Moving an attachment OUT of a locked folder empties that (protected) folder —
+		// whether by removing it (folder 0) or by re-assigning it to a different folder,
+		// since wp_set_object_terms() replaces the assignment. Reject if any attachment
+		// currently lives in a locked folder other than the destination.
+		foreach ( $attachment_ids as $attachment_id ) {
+			$current_folders = wp_get_object_terms( $attachment_id, 'media-folder', array( 'fields' => 'ids' ) );
+
+			if ( is_array( $current_folders ) ) {
+				foreach ( $current_folders as $current_folder_id ) {
+					if ( (int) $current_folder_id !== (int) $folder_term_id && $this->is_folder_locked( $current_folder_id ) ) {
+						return new \WP_Error(
+							'godam_folder_locked',
+							__( 'One or more attachments belong to a locked folder and cannot be moved.', 'godam' ),
+							array( 'status' => 403 )
+						);
+					}
+				}
+			}
+		}
+
 		// if folder id is 0, remove the folder from the attachments.
 		if ( 0 === $folder_term_id ) {
 			foreach ( $attachment_ids as $attachment_id ) {
@@ -624,11 +884,16 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_term', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 400 ) );
 		}
 
-		foreach ( $attachment_ids as $attachment_id ) {
-			if ( get_post_type( $attachment_id ) !== 'attachment' ) {
-				return new \WP_Error( 'invalid_attachment', __( 'Invalid attachment ID.', 'godam' ), array( 'status' => 400 ) );
-			}
+		// Assigning attachments into a locked folder (or a child of one) populates it — reject.
+		if ( $this->is_folder_locked( $folder_term_id ) ) {
+			return new \WP_Error(
+				'godam_folder_locked',
+				__( 'This folder is locked and cannot be modified.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
 
+		foreach ( $attachment_ids as $attachment_id ) {
 			$return = wp_set_object_terms( $attachment_id, $folder_term_id, 'media-folder' );
 
 			if ( is_wp_error( $return ) ) {
@@ -678,8 +943,17 @@ class Media_Library extends Base {
 	public function get_exif_data( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 
+		/**
+		 * Fires before resolving this attachment's file path, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// Get the file path of the image.
 		$file_path = get_attached_file( $attachment_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		if ( ! file_exists( $file_path ) ) {
 			return new \WP_Error( 'image_not_found', __( 'Image file not found.', 'godam' ), array( 'status' => 404 ) );
@@ -751,6 +1025,33 @@ class Media_Library extends Base {
 	public function get_video_thumbnails( $request ) {
 		$attachment_id = $request->get_param( 'attachment_id' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->get_video_thumbnails_after_lookup( $attachment_id );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Resolve and return this attachment's video thumbnail data.
+	 *
+	 * Split out of get_video_thumbnails() so the wp-dam site-switch bracket
+	 * can wrap this entire body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function get_video_thumbnails_after_lookup( $attachment_id ) {
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
 
@@ -953,6 +1254,34 @@ class Media_Library extends Base {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->upload_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Validate and persist a custom video thumbnail for an attachment.
+	 *
+	 * Split out of upload_custom_video_thumbnail() so the wp-dam site-switch
+	 * bracket can wrap this entire body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $thumbnail_url Thumbnail URL.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function upload_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url ) {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
@@ -1010,6 +1339,34 @@ class Media_Library extends Base {
 		$attachment_id = $request->get_param( 'attachment_id' );
 		$thumbnail_url = $request->get_param( 'thumbnail_url' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->remove_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Validate and remove a custom video thumbnail from an attachment.
+	 *
+	 * Split out of remove_custom_video_thumbnail() so the wp-dam site-switch
+	 * bracket can wrap this entire body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $thumbnail_url Thumbnail URL.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function remove_custom_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url ) {
 		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
@@ -1069,6 +1426,35 @@ class Media_Library extends Base {
 		$thumbnail_url             = $request->get_param( 'thumbnail_url' );
 		$placeholder_thumbnail_url = $request->get_param( 'placeholder_thumbnail_url' );
 
+		/**
+		 * Fires before reading/mutating this attachment's thumbnail data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->set_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url, $placeholder_thumbnail_url );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Validate and persist the selected video thumbnail for an attachment.
+	 *
+	 * Split out of set_video_thumbnail() so the wp-dam site-switch bracket
+	 * can wrap this entire body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int    $attachment_id             Attachment ID.
+	 * @param string $thumbnail_url             Thumbnail URL.
+	 * @param string $placeholder_thumbnail_url Optional placeholder thumbnail URL.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function set_video_thumbnail_after_lookup( $attachment_id, $thumbnail_url, $placeholder_thumbnail_url ) {
 		// Check if attachment is of type video.
 		$mime_type = get_post_mime_type( $attachment_id );
 
@@ -1141,17 +1527,139 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_folder', __( 'Invalid folder term ID.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		$result = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, 'media-folder-' . $term->slug . '.zip' );
+		// The archive is built asynchronously. Building it in-request meant a folder with
+		// many/large files (batches of 50, files up to 500 MB) could exceed the PHP/web
+		// server time limit and fail the request. Instead we register a job, kick off a
+		// background build, and hand the client a job id to poll (get_folder_zip_status()).
+		$job_id = wp_generate_password( 32, false );
 
-		if ( is_wp_error( $result ) ) {
-			return $result;
+		$job = array(
+			'status'    => 'queued',
+			'folder_id' => (int) $folder_id,
+			'user_id'   => get_current_user_id(),
+			'zip_url'   => '',
+			'zip_name'  => '',
+			'message'   => '',
+			'created'   => time(),
+			'updated'   => time(),
+		);
+
+		set_transient( $this->zip_job_transient_key( $job_id ), $job, HOUR_IN_SECONDS );
+
+		// Prefer Action Scheduler (bundled with WooCommerce and many plugins) for reliable
+		// async execution; fall back to WP-Cron nudged with spawn_cron(). Both paths invoke
+		// the `godam_build_folder_zip` hook with the job id (see setup_hooks()).
+		if ( function_exists( 'as_enqueue_async_action' ) ) {
+			as_enqueue_async_action( 'godam_build_folder_zip', array( $job_id ), 'godam' );
+		} else {
+			wp_schedule_single_event( time(), 'godam_build_folder_zip', array( $job_id ) );
+
+			if ( function_exists( 'spawn_cron' ) ) {
+				spawn_cron();
+			}
 		}
 
 		return rest_ensure_response(
 			array(
 				'success' => true,
-				'message' => __( 'ZIP file created successfully.', 'godam' ),
-				'data'    => $result,
+				'message' => __( 'Preparing ZIP file…', 'godam' ),
+				'data'    => array(
+					'job_id' => $job_id,
+					'status' => 'queued',
+				),
+			)
+		);
+	}
+
+	/**
+	 * Transient key for a folder-ZIP build job.
+	 *
+	 * @param string $job_id Job identifier.
+	 * @return string Transient key.
+	 */
+	private function zip_job_transient_key( $job_id ) {
+		return 'godam_zip_job_' . $job_id;
+	}
+
+	/**
+	 * Background handler that builds a folder's ZIP and records the outcome on the job.
+	 *
+	 * Invoked via `godam_build_folder_zip` (Action Scheduler or WP-Cron). The client
+	 * discovers success/failure by polling get_folder_zip_status().
+	 *
+	 * @param string $job_id Job identifier.
+	 * @return void
+	 */
+	public function run_folder_zip_job( $job_id ) {
+		$key = $this->zip_job_transient_key( $job_id );
+		$job = get_transient( $key );
+
+		if ( ! is_array( $job ) ) {
+			return; // Unknown or expired job.
+		}
+
+		$job['status']  = 'processing';
+		$job['updated'] = time();
+		set_transient( $key, $job, HOUR_IN_SECONDS );
+
+		$folder_id = isset( $job['folder_id'] ) ? (int) $job['folder_id'] : 0;
+		$term      = $folder_id ? get_term( $folder_id, 'media-folder' ) : null;
+
+		if ( ! $term || is_wp_error( $term ) ) {
+			$job['status']  = 'failed';
+			$job['message'] = __( 'Invalid folder term ID.', 'godam' );
+			$job['updated'] = time();
+			set_transient( $key, $job, HOUR_IN_SECONDS );
+			return;
+		}
+
+		// Unguessable filename (see the ZIP hardening in Media_Folder_Create_Zip).
+		$zip_name = 'media-folder-' . $term->slug . '-' . wp_generate_password( 20, false ) . '.zip';
+		$result   = Media_Folder_Create_Zip::get_instance()->create_zip( $folder_id, $zip_name );
+
+		if ( is_wp_error( $result ) ) {
+			$job['status']  = 'failed';
+			$job['message'] = $result->get_error_message();
+		} else {
+			$job['status']   = 'completed';
+			$job['zip_url']  = isset( $result['zip_url'] ) ? $result['zip_url'] : '';
+			$job['zip_name'] = isset( $result['zip_name'] ) ? $result['zip_name'] : $zip_name;
+			$job['message']  = isset( $result['message'] ) ? $result['message'] : __( 'ZIP file created successfully.', 'godam' );
+		}
+
+		$job['updated'] = time();
+		set_transient( $key, $job, HOUR_IN_SECONDS );
+	}
+
+	/**
+	 * Poll the status of a folder-ZIP build job.
+	 *
+	 * @param \WP_REST_Request $request REST API request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_folder_zip_status( $request ) {
+		$job_id = (string) $request->get_param( 'job_id' );
+		$job    = get_transient( $this->zip_job_transient_key( $job_id ) );
+
+		if ( ! is_array( $job ) ) {
+			return new \WP_Error( 'invalid_job', __( 'Unknown or expired download job.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		// A job may only be polled by the user who started it (admins excepted), so one
+		// user cannot read another's generated ZIP URL.
+		if ( isset( $job['user_id'] ) && get_current_user_id() !== (int) $job['user_id'] && ! current_user_can( 'manage_options' ) ) {
+			return new \WP_Error( 'rest_forbidden', __( 'You are not allowed to access this download job.', 'godam' ), array( 'status' => 403 ) );
+		}
+
+		return rest_ensure_response(
+			array(
+				'success' => true,
+				'data'    => array(
+					'status'   => isset( $job['status'] ) ? $job['status'] : 'queued',
+					'zip_url'  => isset( $job['zip_url'] ) ? $job['zip_url'] : '',
+					'zip_name' => isset( $job['zip_name'] ) ? $job['zip_name'] : '',
+					'message'  => isset( $job['message'] ) ? $job['message'] : '',
+				),
 			)
 		);
 	}
@@ -1177,6 +1685,18 @@ class Media_Library extends Base {
 
 		if ( empty( $folder_ids ) || ! is_array( $folder_ids ) ) {
 			return new \WP_Error( 'invalid_ids', __( 'No folder IDs provided or invalid format.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Reject the whole request if any target is locked (or a child of a locked folder),
+		// so a direct API call can't delete a protected folder — and we never partially delete.
+		foreach ( $folder_ids as $folder_id ) {
+			if ( is_numeric( $folder_id ) && (int) $folder_id > 0 && $this->is_folder_locked( $folder_id ) ) {
+				return new \WP_Error(
+					'godam_folder_locked',
+					__( 'One or more selected folders are locked and cannot be deleted.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
 		}
 
 		$deleted_count = 0;
@@ -1238,6 +1758,43 @@ class Media_Library extends Base {
 	}
 
 	/**
+	 * Whether a media-folder term is locked, directly or through an ancestor.
+	 *
+	 * Folder locking is protective: a locked folder shields itself AND all of its
+	 * descendants from mutation. So a folder counts as locked if its own `locked`
+	 * term-meta is truthy or if any of its ancestors' is. Client-side gating (React)
+	 * is UX only; this is the authoritative server-side check.
+	 *
+	 * @param int $term_id Media-folder term ID.
+	 * @return bool True if the folder or one of its ancestors is locked.
+	 */
+	private function is_folder_locked( $term_id ) {
+		$term_id = (int) $term_id;
+
+		if ( $term_id <= 0 ) {
+			return false;
+		}
+
+		// The term itself plus every ancestor — a locked ancestor locks the branch.
+		$ids       = array( $term_id );
+		$ancestors = get_ancestors( $term_id, 'media-folder', 'taxonomy' );
+
+		if ( is_array( $ancestors ) ) {
+			$ids = array_merge( $ids, $ancestors );
+		}
+
+		foreach ( $ids as $id ) {
+			$locked_raw = get_term_meta( $id, 'locked', true );
+
+			if ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Update meta status for multiple folders.
 	 * This is a helper method used by bulk_update_folder_lock_status and bulk_update_folder_bookmark_status.
 	 *
@@ -1266,10 +1823,23 @@ class Media_Library extends Base {
 				continue;
 			}
 
+			// update_term_meta() returns false BOTH on a genuine failure and when the value
+			// is already what we're setting. Treat "already at the desired value" as success
+			// (a no-op), so re-locking an already-locked folder isn't a "failure"; only a real
+			// write failure (value differs but the update returned false) is recorded.
+			$current = get_term_meta( $folder_id, $meta_key, true );
+
+			if ( (string) $current === (string) $value ) {
+				++$updated_count;
+				continue;
+			}
+
 			$result = update_term_meta( $folder_id, $meta_key, $value );
 
 			if ( false === $result ) {
-				++$updated_count;
+				$failed_ids[] = $folder_id;
+				// translators: %s is the folder ID whose meta update failed.
+				$errors[] = sprintf( __( 'Failed to update folder %s.', 'godam' ), $folder_id );
 			} else {
 				++$updated_count;
 			}
@@ -1454,8 +2024,14 @@ class Media_Library extends Base {
 			// For video, GoDAM expects `job_type=stream`.
 			if ( 'video' === $type ) {
 				$request_body['job_type'] = 'stream';
-			} elseif ( 'application/pdf' === $type ) { // For application/pdf, GoDAM expects `job_type=pdf`.
-				$request_body['job_type'] = 'pdf';
+			} elseif ( 'application/pdf' === $type ) {
+				/*
+				 * Documents span two job types on Central: `pdf` for a file that needed no
+				 * conversion, and `document` for a Word / Excel / PowerPoint / OpenDocument /
+				 * text file it rendered to a preview PDF. Both belong in the same tab, and
+				 * get_list_of_files accepts a comma-separated list for exactly this case.
+				 */
+				$request_body['job_type'] = 'pdf,document';
 			} elseif ( 'image-video' !== $type && 'all' !== $type ) { // TODO: For job type 'image-video', we need to add support on Central.
 				$request_body['job_type'] = $type;
 			}
@@ -1595,11 +2171,14 @@ class Media_Library extends Base {
 			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
 		}
 
-		// Accepts video/*, audio/*, image/* plus the single PDF type — PDFs are
-		// handled by the 'pdf' branch below and otherwise can't form a virtual entry.
+		// Accepts video/*, audio/*, image/* plus the document types — documents are handled by
+		// the 'pdf'/'document' branch below and otherwise can't form a virtual entry. The
+		// document list is enumerated rather than pattern-matched because it spans several
+		// unrelated vendor prefixes, and because widening it to all of application/* would let
+		// through executables and archives.
 		if (
 			! preg_match( '/^(video|audio|image)\/[a-z0-9][a-z0-9!#$&\-^_.+]{0,126}$/', $mime )
-			&& 'application/pdf' !== $mime
+			&& ! array_key_exists( $mime, rtgodam_get_supported_document_types() )
 		) {
 			return new \WP_Error( 'invalid_mime', __( 'Invalid or disallowed MIME type.', 'godam' ), array( 'status' => 400 ) );
 		}
@@ -1620,10 +2199,22 @@ class Media_Library extends Base {
 			);
 		}
 
+		/**
+		 * Fires before reading this attachment's JS-shaped data, so
+		 * integrations that centralize media on another site can switch
+		 * context first — runs after create_virtual_attachment()'s own wrap
+		 * has already restored.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$attachment_js_data = wp_prepare_attachment_for_js( $attach_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		return new \WP_REST_Response(
 			array(
 				'success'    => true,
-				'attachment' => wp_prepare_attachment_for_js( $attach_id ),
+				'attachment' => $attachment_js_data,
 				'message'    => __( 'Attachment ready', 'godam' ),
 			),
 			200
@@ -1647,6 +2238,35 @@ class Media_Library extends Base {
 	 * @return int|\WP_Error Attachment ID, or WP_Error on failure.
 	 */
 	public function create_virtual_attachment( $data, $opts = array() ) {
+		/**
+		 * Fires before resolving/creating this virtual attachment, so
+		 * integrations that centralize media on another site can switch
+		 * context first — the dedupe lookups and the eventual
+		 * wp_insert_attachment() call all need to run against that site.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return $this->create_virtual_attachment_after_lookup( $data, $opts );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Resolve or create the virtual attachment and populate its metadata.
+	 *
+	 * Split out of create_virtual_attachment() so a wp-dam-style site-switch
+	 * bracket can wrap this entire body.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param array $data GoDAM media data.
+	 * @param array $opts Options (e.g. 'is_demo').
+	 * @return int|\WP_Error Attachment ID, or WP_Error on insert failure.
+	 */
+	private function create_virtual_attachment_after_lookup( $data, $opts = array() ) {
 		$is_demo = ! empty( $opts['is_demo'] );
 
 		// Sanitize the GoDAM ID.
@@ -1654,14 +2274,14 @@ class Media_Library extends Base {
 
 		// If godam_id is numeric and already an attachment, reuse it.
 		if ( is_numeric( $godam_id ) ) {
-			$attachment_post = get_post( $godam_id );
+			$attachment_post = get_post( $godam_id ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			if ( $attachment_post && 'attachment' === $attachment_post->post_type ) {
 				return (int) $godam_id;
 			}
 		}
 
 		// Reuse an existing entry for this GoDAM id instead of duplicating.
-		$existing = new \WP_Query(
+		$existing = new \WP_Query( // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			array(
 				'post_type'      => 'attachment',
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required for finding attachment by transcoding job ID.
@@ -1691,13 +2311,13 @@ class Media_Library extends Base {
 		// demo marker is set first so the virtual-media registrar can skip demos.
 		$pre_setter = function ( $new_id ) use ( $godam_id, $is_demo ) {
 			if ( $is_demo ) {
-				update_post_meta( $new_id, 'rtgodam_is_demo_attachment', 1 );
+				update_post_meta( $new_id, 'rtgodam_is_demo_attachment', 1 ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): $pre_setter closure — covered transitively, since it's registered on 'add_attachment' immediately before (and removed immediately after) the wp_insert_attachment() call a few lines above, which fires that hook synchronously on the same call stack.
 			}
-			update_post_meta( $new_id, '_godam_original_id', $godam_id );
+			update_post_meta( $new_id, '_godam_original_id', $godam_id ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): $pre_setter closure — covered transitively, since it's registered on 'add_attachment' immediately before (and removed immediately after) the wp_insert_attachment() call a few lines above, which fires that hook synchronously on the same call stack.
 		};
 		add_action( 'add_attachment', $pre_setter, 1, 1 );
 
-		$attach_id = wp_insert_attachment( $attachment, $data['title'] );
+		$attach_id = wp_insert_attachment( $attachment, $data['title'] ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 		remove_action( 'add_attachment', $pre_setter, 1 );
 
@@ -1707,14 +2327,14 @@ class Media_Library extends Base {
 
 		// Ensure markers are persisted (idempotent with the pre-setter).
 		if ( $is_demo ) {
-			update_post_meta( $attach_id, 'rtgodam_is_demo_attachment', 1 );
+			update_post_meta( $attach_id, 'rtgodam_is_demo_attachment', 1 ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 		}
-		update_post_meta( $attach_id, '_godam_original_id', $godam_id );
-		update_post_meta( $attach_id, '_owner_email', sanitize_email( $data['owner'] ?? '' ) );
-		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) );
-		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' );
-		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id );
-		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ?? '' ) ); // Virtual media path.
+		update_post_meta( $attach_id, '_godam_original_id', $godam_id ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		update_post_meta( $attach_id, '_owner_email', sanitize_email( $data['owner'] ?? '' ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ?? '' ) ); // Virtual media path. // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 		$video_duration_in_seconds = 0;
 		$video_duration_formatted  = '';
@@ -1726,7 +2346,7 @@ class Media_Library extends Base {
 		$type = $data['type'] ?? '';
 
 		if ( 'video' === $type ) {
-			update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) );
+			update_post_meta( $attach_id, 'rtgodam_hls_transcoded_url', esc_url_raw( $data['hls_url'] ?? '' ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 			$wp_attachment_metadata = array(
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
@@ -1742,17 +2362,17 @@ class Media_Library extends Base {
 			}
 
 			if ( ! empty( $video_duration_in_seconds ) ) {
-				update_post_meta( $attach_id, '_video_duration', $video_duration_in_seconds );
+				update_post_meta( $attach_id, '_video_duration', $video_duration_in_seconds ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 				$wp_attachment_metadata['length']           = $video_duration_in_seconds;
 				$wp_attachment_metadata['length_formatted'] = $video_duration_formatted;
 			}
 
 			// Set Video thumbnail from icon URL if provided.
 			if ( ! empty( $data['icon'] ) ) {
-				update_post_meta( $attach_id, 'rtgodam_media_video_thumbnail', esc_url_raw( $data['icon'] ) );
+				update_post_meta( $attach_id, 'rtgodam_media_video_thumbnail', esc_url_raw( $data['icon'] ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			}
 
-			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 		} elseif ( 'image' === $type ) {
 			// Initialize metadata with basic info.
 			$wp_attachment_metadata = array(
@@ -1768,7 +2388,7 @@ class Media_Library extends Base {
 				$wp_attachment_metadata['height'] = $image_height;
 			}
 
-			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 			// Request image subsizes from GoDAM Central.
 			$this->request_image_subsizes_from_godam( $godam_id, $attach_id );
@@ -1778,24 +2398,43 @@ class Media_Library extends Base {
 				'mime_type' => $data['mime'],
 			);
 
-			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 			// Persist the audio thumbnail from GoDAM Central (falls back to the
 			// icon URL) so the block can surface it. Mirrors the video/PDF paths.
 			$audio_thumbnail = ! empty( $data['thumbnail_url'] ) ? $data['thumbnail_url'] : ( $data['icon'] ?? '' );
 			if ( ! empty( $audio_thumbnail ) ) {
-				update_post_meta( $attach_id, 'rtgodam_media_audio_thumbnail', esc_url_raw( $audio_thumbnail ) );
+				update_post_meta( $attach_id, 'rtgodam_media_audio_thumbnail', esc_url_raw( $audio_thumbnail ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			}
-		} elseif ( 'pdf' === $type ) {
+		} elseif ( 'pdf' === $type || 'document' === $type ) {
+			// 'pdf' is a file Central stored as-is; 'document' is one it rendered to a preview
+			// PDF. Identical here apart from where the previewable PDF comes from.
 			$wp_attachment_metadata = array(
 				'filesize' => isset( $data['filesizeInBytes'] ) ? (int) $data['filesizeInBytes'] : 0,
 			);
 
-			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata );
+			update_post_meta( $attach_id, '_wp_attachment_metadata', $wp_attachment_metadata ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 			// Set PDF thumbnail from icon URL if provided.
 			if ( ! empty( $data['icon'] ) ) {
-				update_post_meta( $attach_id, 'rtgodam_media_pdf_thumbnail', esc_url_raw( $data['icon'] ) );
+				update_post_meta( $attach_id, 'rtgodam_media_pdf_thumbnail', esc_url_raw( $data['icon'] ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+			}
+
+			/*
+			 * The PDF the Document block renders. For a converted document Central sends it as
+			 * a dedicated field, because `mpd_url` (stored above as rtgodam_transcoded_url)
+			 * points at the ORIGINAL .docx/.xlsx there and is not renderable. For a PDF the two
+			 * are the same file, so fall back to it and give readers one key for both cases.
+			 *
+			 * Deliberately not set when Central sent no preview — a password-protected document
+			 * has none, and the block falls back to offering the original as a download.
+			 */
+			$preview_pdf_url = ! empty( $data['preview_pdf_url'] )
+				? $data['preview_pdf_url']
+				: ( 'pdf' === $type ? ( $data['mpd_url'] ?? '' ) : '' );
+
+			if ( ! empty( $preview_pdf_url ) ) {
+				update_post_meta( $attach_id, 'rtgodam_preview_pdf_url', esc_url_raw( $preview_pdf_url ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			}
 		}
 
@@ -1817,11 +2456,11 @@ class Media_Library extends Base {
 			}
 
 			if ( ! empty( $sanitized_chapters ) ) {
-				$rtgodam_meta = get_post_meta( $attach_id, 'rtgodam_meta', true );
+				$rtgodam_meta = get_post_meta( $attach_id, 'rtgodam_meta', true ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 				$rtgodam_meta = is_array( $rtgodam_meta ) ? $rtgodam_meta : array();
 
 				$rtgodam_meta['chapters'] = $sanitized_chapters;
-				update_post_meta( $attach_id, 'rtgodam_meta', $rtgodam_meta );
+				update_post_meta( $attach_id, 'rtgodam_meta', $rtgodam_meta ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 			}
 		}
 
@@ -1846,6 +2485,17 @@ class Media_Library extends Base {
 	public function get_attachment_by_id( $request ) {
 		// Sanitize the GoDAM media ID from the request.
 		$godam_id = sanitize_text_field( $request['id'] );
+
+		/**
+		 * Fires before resolving/reading attachment data for a GoDAM-original-ID
+		 * lookup, so integrations that centralize media on another site can
+		 * switch context first. This covers both the WP_Query match on
+		 * '_godam_original_id' and the internal core media request that follows,
+		 * since both resolve the same attachment.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 
 		// Try to find an attachment that matches the GoDAM original ID.
 		$query = new \WP_Query(
@@ -1872,6 +2522,8 @@ class Media_Library extends Base {
 		$internal_request = new \WP_REST_Request( 'GET', '/wp/v2/media/' . $attachment_id );
 		// Execute the request and capture the response.
 		$response = rest_do_request( $internal_request );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Return the full media object (or WP_Error if not found).
 		return $response;
@@ -1931,7 +2583,17 @@ class Media_Library extends Base {
 			}
 		}
 
+		/**
+		 * Fires before counting attachments in this media folder, so
+		 * integrations that centralize media on another site can switch
+		 * context first. The WP_Query below counts attachment posts
+		 * (post_type 'attachment') tagged with this media-folder term.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$query = new \WP_Query( $args );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return rest_ensure_response(
 			array(

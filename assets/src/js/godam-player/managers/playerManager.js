@@ -18,8 +18,10 @@ window.videojs = videojs; // Make videojs globally accessible.
  * Internal dependencies
  */
 import VideoPlayer from '../videoPlayer.js';
+import { getLightbox } from './modalManager.js';
 import { KEYBOARD_CONTROLS } from '../utils/constants.js';
 import { parseDataAttribute } from '../utils/dataHelpers.js';
+import { isLightboxVideo } from '../utils/lightboxTargets.js';
 import { engagement } from '../engagement';
 
 /**
@@ -37,7 +39,23 @@ export default class PlayerManager {
 		this.isDisplayingLayers = {};
 		this.keyboardHandlerInitialized = false;
 
+		// Handles "Show in lightbox" players: the inline player is opened inside a
+		// lightbox on click. Players still initialise normally inline. Shared
+		// page-wide, so extra PlayerManagers never create extra overlays.
+		this.modalManager = getLightbox();
+
 		this.init();
+	}
+
+	/**
+	 * Whether a video is a "Show in lightbox" player (opened in a lightbox on
+	 * click) rather than initialised inline.
+	 *
+	 * @param {HTMLElement} video - Video element to test.
+	 * @return {boolean} True when the video should play in a lightbox.
+	 */
+	isShowInLightbox( video ) {
+		return isLightboxVideo( video );
 	}
 
 	/**
@@ -61,6 +79,11 @@ export default class PlayerManager {
 		const initPromises = [];
 		this.videos.forEach( ( video ) => {
 			initPromises.push( this.initializeVideo( video ) );
+			// Show-in-lightbox players also initialise inline; a click just opens
+			// them in a lightbox instead of playing in place.
+			if ( this.isShowInLightbox( video ) ) {
+				this.modalManager.register( video );
+			}
 		} );
 
 		// Dispatch event when all players are initialized
@@ -142,6 +165,9 @@ export default class PlayerManager {
 				this.isDisplayingLayers[ instanceId ] = false;
 			}
 			this.initializeVideo( video );
+			if ( this.isShowInLightbox( video ) ) {
+				this.modalManager.register( video );
+			}
 		} );
 	}
 
