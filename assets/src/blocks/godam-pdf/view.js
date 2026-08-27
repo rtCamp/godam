@@ -23,14 +23,18 @@ import { createRoot, createElement } from '@wordpress/element';
  * @param {string}      previewUrl URL of the PDF to display.
  */
 function renderNativeFallback( wrapper, previewUrl ) {
+	if ( ! previewUrl || ! isSafeUrl( previewUrl ) ) {
+		return;
+	}
+
 	const object = document.createElement( 'object' );
 
 	object.type = 'application/pdf';
 	object.width = '100%';
 	object.height = '100%';
-	// Assigned as-is. The URL has already been through esc_url() server-side, and encodeURI()
-	// would escape its percent signs a second time — turning a legitimate "%20" into "%2520"
-	// and pointing the object at a path that does not exist.
+
+	// Assigned as-is after protocol validation. encodeURI() would escape existing percent
+	// signs a second time — turning a legitimate "%20" into "%2520" and breaking the URL.
 	object.setAttribute( 'data', previewUrl );
 
 	// Keep whatever fallback markup render.php emitted as the <object>'s own fallback, so a

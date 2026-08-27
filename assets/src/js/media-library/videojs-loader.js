@@ -26,6 +26,14 @@ export function loadVideoJs() {
 		loadingPromise = import( /* webpackChunkName: "videojs" */ 'video.js' ).then( ( mod ) => {
 			cachedVideojs = mod.default || mod;
 			return cachedVideojs;
+		} ).catch( ( error ) => {
+			// Do not cache a rejected import: leaving the failed promise in
+			// `loadingPromise` would make every later loadVideoJs() return that
+			// same rejection, so a single transient chunk/network failure would
+			// break previews until a full page reload. Clear it so the next open
+			// retries the import.
+			loadingPromise = null;
+			throw error;
 		} );
 	}
 
