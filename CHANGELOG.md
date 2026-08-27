@@ -1,6 +1,6 @@
 # Changelog #
 
-## v2.2.0 (August 26, 2026) ##
+## v2.2.0 (August 27, 2026) ##
 
 - Feat: The Document block now handles far more than PDFs. You can embed and preview Word, Excel, PowerPoint, OpenDocument, and plain-text files.
 - Feat: Added the same document preview support to the Elementor and WPBakery GoDAM Document widgets.
