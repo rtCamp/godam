@@ -42,6 +42,15 @@ export default function RevenueCard( { revenue, dataLabel, deltaLabel } ) {
 		return null;
 	}
 
+	// null-not-zero: a payload whose revenue_minor is null/undefined means "no
+	// revenue-bearing row" (the service's sentinel), so hide rather than render a
+	// misleading "0". A real measured 0 (numeric) still renders. This also guards
+	// the per-video page, which always builds the payload object inline and so
+	// cannot rely on the whole-prop null check above.
+	if ( revenue.revenue_minor === null || revenue.revenue_minor === undefined ) {
+		return null;
+	}
+
 	const total = Number( revenue.revenue_minor || 0 );
 	const currency = revenue.currency || '';
 	const excluded = Number( revenue.excluded_orders || 0 );

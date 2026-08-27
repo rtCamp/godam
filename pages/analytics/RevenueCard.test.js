@@ -63,6 +63,17 @@ describe( 'RevenueCard — single store currency', () => {
 		expect( html ).not.toBe( '' );
 	} );
 
+	it( 'renders nothing when revenue_minor is null (no revenue-bearing row)', () => {
+		// The per-video page always builds the payload object inline, so a service
+		// revenue:null arrives as { revenue_minor: null, ... } (a truthy object).
+		// The card must still hide it, not render a misleading "0".
+		expect(
+			renderToString(
+				<RevenueCard revenue={ { revenue_minor: null, currency: 'INR', excluded_orders: 0 } } />,
+			),
+		).toBe( '' );
+	} );
+
 	it( 'renders the "Video-Attributed Revenue" title and the before-refunds label', () => {
 		const html = renderToString(
 			<RevenueCard revenue={ { revenue_minor: 324000, currency: 'GBP', excluded_orders: 0, direct_minor: 239800, assisted_minor: 84200, influenced_minor: 191000 } } />,

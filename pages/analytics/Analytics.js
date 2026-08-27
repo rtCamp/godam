@@ -667,7 +667,7 @@ const Analytics = ( { attachmentID } ) => {
 							    split Direct/Assisted. Full-width card; Influenced is
 							    account-level so the per-video payload omits it and the
 							    card hides that box. Woo-gated. */ }
-							{ isWoo && rangedAnalyticsData?.revenue !== undefined && (
+							{ isWoo && rangedAnalyticsData?.revenue !== undefined && rangedAnalyticsData?.revenue !== null && (
 								<RevenueCard
 									revenue={ {
 										revenue_minor: rangedAnalyticsData.revenue,
