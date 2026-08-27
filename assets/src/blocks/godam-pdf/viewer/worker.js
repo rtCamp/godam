@@ -32,8 +32,10 @@ import './promise-with-resolvers';
  * before pdf.js inside the worker.
  *
  * Wrapped because a strict Content-Security-Policy can refuse the worker outright. Failing
- * soft leaves `worker` undefined in the options, and pdf.js then sets up its own in-process
- * fallback: slower, but the document still renders.
+ * soft leaves `worker` undefined in the options; pdf.js then falls back to its own in-process
+ * setup — but only if `GlobalWorkerOptions.workerSrc` is configured (see the catch below),
+ * otherwise pdfjs-dist 4.8.69 throws `No "GlobalWorkerOptions.workerSrc" specified` instead of
+ * degrading. With the fallback source set the document still renders, just more slowly.
  */
 let pdfWorker = null;
 
@@ -44,6 +46,16 @@ try {
 	} );
 } catch ( error ) {
 	global.console?.warn( 'GoDAM: could not start the pdf.js worker; rendering on the main thread instead', error );
+
+	// Main-thread fallback. Without a PDFWorker instance to hand <Document>, pdf.js needs
+	// GlobalWorkerOptions.workerSrc set or getDocument() throws instead of degrading. Point it
+	// at the same webpack-emitted CLASSIC worker chunk: pdf.js loads it in-process (no Worker
+	// is constructed, so a worker-blocking CSP does not stop it) and parses on the main thread.
+	try {
+		pdfjs.GlobalWorkerOptions.workerSrc = new URL( './pdf-worker.js', import.meta.url ).toString();
+	} catch ( fallbackError ) {
+		global.console?.warn( 'GoDAM: could not configure the pdf.js main-thread fallback source', fallbackError );
+	}
 }
 
 /*

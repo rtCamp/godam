@@ -38,8 +38,13 @@ export default AttachmentsBrowser?.extend( {
 			AttachmentsBrowser.prototype.bindEvents.apply( this, arguments );
 		}
 
-		this.collection.props.on( 'change', this.updateCollectionObserve, this );
-		this.collection.props.on( 'change', this.addUploadParam, this );
+		// listenTo (not .on): Backbone's View.remove() tears down listenTo
+		// subscriptions automatically, but not direct .on() handlers. Binding
+		// directly would retain this view whenever the media frame switches
+		// states and replaces the browser, since these are bound on the shared
+		// collection.props, which outlives the view.
+		this.listenTo( this.collection.props, 'change', this.updateCollectionObserve );
+		this.listenTo( this.collection.props, 'change', this.addUploadParam );
 	},
 
 	async createToolbar() {
