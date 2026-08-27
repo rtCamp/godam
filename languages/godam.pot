@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-26T12:00:40+00:00\n"
+"POT-Creation-Date: 2026-08-27T09:21:16+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: godam\n"
@@ -219,7 +219,7 @@ msgstr ""
 #: inc/templates/video-preview.php:71
 #: pages/godam/components/GoDAMHeader.jsx:74
 #: pages/whats-new/components/Header.js:19
-#: assets/build/js/media-library.min.js:3375
+#: assets/build/js/media-library.min.js:3388
 #: assets/build/pages/analytics.min.js:16391
 #: assets/build/pages/dashboard.min.js:4417
 #: assets/build/pages/godam.min.js:10393
@@ -529,22 +529,22 @@ msgid "Transcoded CDN URL"
 msgstr ""
 
 #: admin/godam-transcoder-actions.php:87
-#: assets/build/js/media-library.min.js:2920
+#: assets/build/js/media-library.min.js:2933
 msgid "Transcoded CDN URL (MPD)"
 msgstr ""
 
 #: admin/godam-transcoder-actions.php:101
-#: assets/build/js/media-library.min.js:2922
+#: assets/build/js/media-library.min.js:2935
 msgid "The URL of the transcoded file is generated automatically and cannot be edited."
 msgstr ""
 
 #: admin/godam-transcoder-actions.php:109
-#: assets/build/js/media-library.min.js:2932
+#: assets/build/js/media-library.min.js:2945
 msgid "Transcoded CDN URL (HLS)"
 msgstr ""
 
 #: admin/godam-transcoder-actions.php:118
-#: assets/build/js/media-library.min.js:2934
+#: assets/build/js/media-library.min.js:2947
 msgid "The HLS URL of the transcoded file is generated automatically and cannot be edited."
 msgstr ""
 
@@ -598,16 +598,14 @@ msgid "Unable to verify API key. Please try again later."
 msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:164
-#: assets/build/blocks/godam-audio/index.js:985
-#: assets/build/blocks/godam-audio/index.js:830
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Audio thumbnail"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:171
-#: assets/build/blocks/godam-audio/index.js:992
+#: assets/build/blocks/godam-audio/index.js:2
 #: pages/video-editor/components/audio/AudioCardPreview.js:70
 #: pages/video-editor/VideoEditor.js:649
-#: assets/build/blocks/godam-audio/index.js:836
 #: assets/build/pages/video-editor.min.js:17480
 #: assets/build/pages/video-editor.min.js:19541
 msgid "Untitled audio"
@@ -622,56 +620,49 @@ msgid "Your browser does not support the audio element."
 msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:205
-#: assets/build/blocks/godam-audio/index.js:1145
-#: assets/build/blocks/godam-audio/view.js:511
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-audio/view.js:1
 #: pages/video-editor/components/audio/AudioCardPreview.js:200
-#: assets/build/blocks/godam-audio/index.js:940
-#: assets/build/blocks/godam-audio/view.js:456
 #: assets/build/pages/video-editor.min.js:19671
 msgid "Play"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:216
-#: assets/build/blocks/godam-audio/index.js:1175
+#: assets/build/blocks/godam-audio/index.js:1
 #: pages/video-editor/components/audio/AudioCardPreview.js:217
-#: assets/build/blocks/godam-audio/index.js:962
 #: assets/build/pages/video-editor.min.js:19688
 msgid "Seek"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:256
 #: inc/classes/elementor-widgets/class-godam-video.php:110
-#: assets/build/blocks/godam-audio/index.js:1374
+#: assets/build/blocks/godam-audio/index.js:1
 #: pages/video-editor/components/audio/AudioCardPreview.js:244
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:21
-#: assets/build/blocks/godam-audio/index.js:1126
 #: assets/build/pages/video-editor.min.js:19715
 #: assets/build/pages/video-editor.min.js:21609
 msgid "Chapters"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:261
-#: assets/build/blocks/godam-audio/index.js:1381
+#: assets/build/blocks/godam-audio/index.js:1
 #: pages/video-editor/components/audio/AudioCardPreview.js:253
 #: pages/video-editor/components/transcription/Transcription.js:170
-#: assets/build/blocks/godam-audio/index.js:1137
 #: assets/build/pages/video-editor.min.js:19724
 #: assets/build/pages/video-editor.min.js:26289
 msgid "Transcript"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:265
-#: assets/build/blocks/godam-audio/index.js:1387
+#: assets/build/blocks/godam-audio/index.js:1
 #: pages/video-editor/components/audio/AudioCardPreview.js:260
-#: assets/build/blocks/godam-audio/index.js:1145
 #: assets/build/pages/video-editor.min.js:19731
 msgid "Toggle panel"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:291
-#: assets/build/blocks/godam-audio/index.js:1399
+#: assets/build/blocks/godam-audio/index.js:1
 #: pages/video-editor/components/audio/AudioCardPreview.js:272
-#: assets/build/blocks/godam-audio/index.js:1157
 #: assets/build/pages/video-editor.min.js:19743
 msgid "No chapters to show"
 msgstr ""
@@ -681,11 +672,9 @@ msgid "Loading transcript…"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:301
-#: assets/build/blocks/godam-audio/index.js:1419
-#: assets/build/blocks/godam-audio/view.js:385
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-audio/view.js:1
 #: pages/video-editor/components/audio/AudioCardPreview.js:297
-#: assets/build/blocks/godam-audio/index.js:1177
-#: assets/build/blocks/godam-audio/view.js:318
 #: assets/build/pages/video-editor.min.js:19768
 msgid "No transcript to show"
 msgstr ""
@@ -719,8 +708,7 @@ msgstr ""
 #: assets/build/blocks/sureforms/blocks/recorder/render.php:20
 #: inc/classes/fluentforms/fields/class-recorder-field.php:83
 #: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:121
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:178
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:165
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "GoDAM Recorder"
 msgstr ""
 
@@ -732,8 +720,7 @@ msgstr ""
 #: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:221
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:153
 #: inc/classes/wpforms/wpforms-field-godam-record-frontend.php:61
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:344
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:341
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 msgid "Start Recording"
 msgstr ""
 
@@ -750,10 +737,9 @@ msgstr ""
 #: godam.php:108
 #: inc/classes/class-pages.php:242
 #: inc/classes/class-pages.php:243
-#: assets/build/blocks/godam-audio/index.js:896
+#: assets/build/blocks/godam-audio/index.js:2
 #: pages/video-editor/components/appearance/Appearance.js:124
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:19
-#: assets/build/blocks/godam-audio/index.js:751
 #: assets/build/pages/video-editor.min.js:19170
 #: assets/build/pages/video-editor.min.js:21607
 msgid "Settings"
@@ -914,8 +900,8 @@ msgstr ""
 #: inc/classes/class-pages.php:220
 #: inc/templates/video-preview.php:82
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:320
-#: assets/build/js/media-library.min.js:2309
-#: assets/build/js/media-library.min.js:2316
+#: assets/build/js/media-library.min.js:2322
+#: assets/build/js/media-library.min.js:2329
 #: assets/build/pages/video-editor.min.js:21971
 msgid "Analytics"
 msgstr ""
@@ -1032,15 +1018,10 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:251
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:330
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-edit.php:70
-#: assets/build/blocks/godam-audio/index.js:860
-#: assets/build/blocks/godam-gallery-v2-item/index.js:342
-#: assets/build/blocks/godam-gallery-v2-item/index.js:384
-#: assets/build/blocks/godam-gallery-v2/index.js:5735
+#: assets/build/blocks/godam-audio/index.js:2
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:122
-#: assets/build/blocks/godam-audio/index.js:708
-#: assets/build/blocks/godam-gallery-v2-item/index.js:258
-#: assets/build/blocks/godam-gallery-v2-item/index.js:304
-#: assets/build/blocks/godam-gallery-v2/index.js:5498
 #: assets/build/js/wpbakery-document-selector-param.min.js:303
 #: assets/build/js/wpbakery-image-selector-param.min.js:67
 #: assets/build/js/wpbakery-video-selector-param.min.js:280
@@ -1089,8 +1070,7 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:70
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:101
-#: assets/build/blocks/godam-audio/index.js:726
-#: assets/build/blocks/godam-audio/index.js:560
+#: assets/build/blocks/godam-audio/index.js:1
 msgid "Audio Title"
 msgstr ""
 
@@ -1105,15 +1085,13 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:115
 #: inc/classes/wpbakery-elements/class-wpb-godam-document.php:149
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:366
-#: assets/build/blocks/godam-audio/index.js:735
+#: assets/build/blocks/godam-audio/index.js:1
 #: assets/build/blocks/godam-pdf/index.js:1215
 #: assets/build/blocks/godam-player/index.js:10089
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:195
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: pages/video-editor/components/cta/CardCTA.js:445
-#: assets/build/blocks/godam-audio/index.js:569
 #: assets/build/blocks/godam-pdf/index.js:1173
 #: assets/build/blocks/godam-player/index.js:9543
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:183
 #: assets/build/pages/video-editor.min.js:21110
 msgid "Description"
 msgstr ""
@@ -1125,11 +1103,10 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:95
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:129
-#: assets/build/blocks/godam-audio/index.js:808
+#: assets/build/blocks/godam-audio/index.js:1
 #: assets/build/blocks/godam-player/index.js:11483
 #: pages/video-editor/components/appearance/Appearance.js:241
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:503
-#: assets/build/blocks/godam-audio/index.js:647
 #: assets/build/blocks/godam-player/index.js:10929
 #: assets/build/pages/video-editor.min.js:19287
 #: assets/build/pages/video-editor.min.js:27061
@@ -1144,9 +1121,8 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:268
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:143
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:77
-#: assets/build/blocks/godam-audio/index.js:903
+#: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/blocks/godam-player/index.js:10265
-#: assets/build/blocks/godam-audio/index.js:755
 #: assets/build/blocks/godam-player/index.js:9690
 msgid "Autoplay"
 msgstr ""
@@ -1154,9 +1130,8 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-audio.php:112
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:150
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:84
-#: assets/build/blocks/godam-audio/index.js:446
+#: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/blocks/godam-player/index.js:10232
-#: assets/build/blocks/godam-audio/index.js:278
 #: assets/build/blocks/godam-player/index.js:9657
 msgid "Autoplay may cause usability issues for some users."
 msgstr ""
@@ -1165,8 +1140,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:280
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:159
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:93
-#: assets/build/blocks/godam-audio/index.js:912
-#: assets/build/blocks/godam-audio/index.js:764
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Loop"
 msgstr ""
 
@@ -1177,22 +1151,19 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:141
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:181
-#: assets/build/blocks/godam-audio/index.js:930
-#: assets/build/blocks/godam-audio/index.js:780
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Auto"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:142
 #: inc/classes/elementor-widgets/class-godam-video.php:111
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:179
-#: assets/build/blocks/godam-audio/index.js:933
-#: assets/build/blocks/godam-audio/index.js:781
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Metadata"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:143
-#: assets/build/blocks/godam-audio/index.js:936
-#: assets/build/blocks/godam-audio/index.js:782
+#: assets/build/blocks/godam-audio/index.js:2
 msgctxt "Preload value"
 msgid "None"
 msgstr ""
@@ -1218,8 +1189,7 @@ msgid "Show the chapters panel (when chapters are available)."
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:263
-#: assets/build/blocks/godam-audio/index.js:762
-#: assets/build/blocks/godam-audio/index.js:591
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Add an audio file"
 msgstr ""
 
@@ -1339,8 +1309,7 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:56
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:71
-#: assets/build/blocks/godam-gallery-v2/index.js:6194
-#: assets/build/blocks/godam-gallery-v2/index.js:6111
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Gallery Settings"
 msgstr ""
 
@@ -1368,10 +1337,9 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:103
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:399
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-view.php:30
-#: assets/build/blocks/godam-gallery-v2/index.js:6607
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:11552
 #: pages/tools/components/tabs/RetranscodeTab.jsx:35
-#: assets/build/blocks/godam-gallery-v2/index.js:6603
 #: assets/build/blocks/godam-player/index.js:11003
 #: assets/build/pages/tools.min.js:2631
 msgid "Video"
@@ -1393,8 +1361,7 @@ msgid "Add rows and pick a video for each. Order in the list determines display 
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:115
-#: assets/build/blocks/godam-gallery-v2/index.js:6373
-#: assets/build/blocks/godam-gallery-v2/index.js:6302
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Number of videos"
 msgstr ""
 
@@ -1405,17 +1372,15 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:141
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:126
-#: assets/build/blocks/godam-gallery-v2/index.js:6389
-#: assets/build/blocks/godam-gallery-v2/index.js:6315
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Date"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:142
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:127
-#: assets/build/blocks/godam-gallery-v2/index.js:6392
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: pages/dashboard/components/TopVideosTable.js:192
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:117
-#: assets/build/blocks/godam-gallery-v2/index.js:6316
 #: assets/build/pages/dashboard.min.js:3878
 #: assets/build/pages/video-editor.min.js:21768
 msgid "Title"
@@ -1445,29 +1410,25 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:155
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:141
-#: assets/build/blocks/godam-gallery-v2/index.js:6402
-#: assets/build/blocks/godam-gallery-v2/index.js:6325
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Order"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:159
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:144
-#: assets/build/blocks/godam-gallery-v2/index.js:6405
-#: assets/build/blocks/godam-gallery-v2/index.js:6329
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Descending"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:160
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:145
-#: assets/build/blocks/godam-gallery-v2/index.js:6408
-#: assets/build/blocks/godam-gallery-v2/index.js:6333
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Ascending"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:184
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:157
-#: assets/build/blocks/godam-gallery-v2/index.js:6418
-#: assets/build/blocks/godam-gallery-v2/index.js:6344
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Media Folder"
 msgstr ""
 
@@ -1477,16 +1438,14 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:206
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:170
-#: assets/build/blocks/godam-gallery-v2/index.js:6426
-#: assets/build/blocks/godam-gallery-v2/index.js:6354
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Author"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:220
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:183
-#: assets/build/blocks/godam-gallery-v2/index.js:6433
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: pages/analytics/components/DateRangePicker/index.js:381
-#: assets/build/blocks/godam-gallery-v2/index.js:6363
 #: assets/build/pages/analytics.min.js:11937
 #: assets/build/pages/dashboard.min.js:1935
 #: assets/build/pages/shared-components.min.js:437
@@ -1495,10 +1454,9 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:224
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:186
-#: assets/build/blocks/godam-gallery-v2/index.js:6436
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: pages/analytics/components/DateRangePicker/index.js:88
 #: pages/analytics/components/DateRangePicker/index.js:89
-#: assets/build/blocks/godam-gallery-v2/index.js:6366
 #: assets/build/pages/analytics.min.js:11644
 #: assets/build/pages/analytics.min.js:11645
 #: assets/build/pages/dashboard.min.js:1642
@@ -1510,41 +1468,35 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:225
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:187
-#: assets/build/blocks/godam-gallery-v2/index.js:6439
-#: assets/build/blocks/godam-gallery-v2/index.js:6367
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Last 7 Days"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:226
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:188
-#: assets/build/blocks/godam-gallery-v2/index.js:6442
-#: assets/build/blocks/godam-gallery-v2/index.js:6368
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Last 30 Days"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:227
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:189
-#: assets/build/blocks/godam-gallery-v2/index.js:6445
-#: assets/build/blocks/godam-gallery-v2/index.js:6369
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Last 90 Days"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:228
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:190
-#: assets/build/blocks/godam-gallery-v2/index.js:6448
-#: assets/build/blocks/godam-gallery-v2/index.js:6371
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Custom Range"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:239
-#: assets/build/blocks/godam-gallery-v2/index.js:6466
-#: assets/build/blocks/godam-gallery-v2/index.js:6394
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Start Date"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:254
-#: assets/build/blocks/godam-gallery-v2/index.js:6489
-#: assets/build/blocks/godam-gallery-v2/index.js:6424
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "End Date"
 msgstr ""
 
@@ -1559,9 +1511,8 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:337
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:227
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:160
-#: assets/build/blocks/godam-gallery-v2/index.js:6352
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:10389
-#: assets/build/blocks/godam-gallery-v2/index.js:6273
 #: assets/build/blocks/godam-player/index.js:9820
 msgid "Balanced"
 msgstr ""
@@ -1570,9 +1521,8 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:338
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:228
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:161
-#: assets/build/blocks/godam-gallery-v2/index.js:6349
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:10386
-#: assets/build/blocks/godam-gallery-v2/index.js:6269
 #: assets/build/blocks/godam-player/index.js:9819
 msgid "Priority"
 msgstr ""
@@ -1591,31 +1541,27 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:297
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:240
-#: assets/build/blocks/godam-gallery-v2/index.js:6200
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:11435
-#: assets/build/blocks/godam-gallery-v2/index.js:6118
 #: assets/build/blocks/godam-player/index.js:10896
 msgid "Layout"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:301
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:243
-#: assets/build/blocks/godam-gallery-v2/index.js:6225
-#: assets/build/blocks/godam-gallery-v2/index.js:6145
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Grid"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:302
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:245
-#: assets/build/blocks/godam-gallery-v2/index.js:6229
-#: assets/build/blocks/godam-gallery-v2/index.js:6150
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "List"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:303
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:244
-#: assets/build/blocks/godam-gallery-v2/index.js:6221
-#: assets/build/blocks/godam-gallery-v2/index.js:6140
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Carousel"
 msgstr ""
 
@@ -1641,8 +1587,7 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:325
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:266
-#: assets/build/blocks/godam-gallery-v2/index.js:6235
-#: assets/build/blocks/godam-gallery-v2/index.js:6158
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "View Ratio"
 msgstr ""
 
@@ -1675,24 +1620,19 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:350
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:290
-#: assets/build/blocks/godam-gallery-v2/index.js:6299
-#: assets/build/blocks/godam-gallery-v2/index.js:6306
-#: assets/build/blocks/godam-gallery-v2/index.js:6213
-#: assets/build/blocks/godam-gallery-v2/index.js:6217
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Interaction"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:354
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:293
-#: assets/build/blocks/godam-gallery-v2/index.js:6314
-#: assets/build/blocks/godam-gallery-v2/index.js:6227
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Play on hover"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:355
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:294
-#: assets/build/blocks/godam-gallery-v2/index.js:6310
-#: assets/build/blocks/godam-gallery-v2/index.js:6222
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Autoplay all videos"
 msgstr ""
 
@@ -1713,15 +1653,13 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:377
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:315
-#: assets/build/blocks/godam-gallery-v2/index.js:6512
-#: assets/build/blocks/godam-gallery-v2/index.js:6457
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Enable More Items"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:389
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:327
-#: assets/build/blocks/godam-gallery-v2/index.js:6517
-#: assets/build/blocks/godam-gallery-v2/index.js:6464
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "More Items Behavior"
 msgstr ""
 
@@ -1740,8 +1678,7 @@ msgid "Show Engagements"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:545
-#: assets/build/blocks/godam-gallery-v2/index.js:6548
-#: assets/build/blocks/godam-gallery-v2/index.js:6515
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Create your media gallery"
 msgstr ""
 
@@ -1833,8 +1770,7 @@ msgid "Text track file"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:90
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:180
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:167
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "Label"
 msgstr ""
 
@@ -2059,7 +1995,7 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:174
 #: assets/build/blocks/godam-player/index.js:9708
 #: assets/build/blocks/godam-player/index.js:9155
-#: assets/build/js/media-library.min.js:1937
+#: assets/build/js/media-library.min.js:1950
 msgid "Video Thumbnail"
 msgstr ""
 
@@ -2141,8 +2077,7 @@ msgstr ""
 #: inc/classes/fluentforms/fields/class-recorder-field.php:246
 #: inc/classes/gravity-forms/class-init.php:172
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:197
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:213
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:198
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "Choose file selector"
 msgstr ""
 
@@ -2162,8 +2097,7 @@ msgstr ""
 #: inc/classes/gravity-forms/class-init.php:188
 #: inc/classes/ninja-forms/config/field-settings.php:52
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:205
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:232
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:221
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "Webcam"
 msgstr ""
 
@@ -2171,8 +2105,7 @@ msgstr ""
 #: inc/classes/fluentforms/fields/class-recorder-field.php:258
 #: inc/classes/gravity-forms/class-init.php:195
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:206
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:238
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:228
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "Screencast"
 msgstr ""
 
@@ -2182,10 +2115,9 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:66
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:207
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-view.php:30
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:244
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 #: pages/tools/components/tabs/RetranscodeTab.jsx:36
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:73
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:235
 #: assets/build/pages/tools.min.js:2632
 #: assets/build/pages/video-editor.min.js:26631
 msgid "Audio"
@@ -2253,8 +2185,7 @@ msgstr ""
 #: inc/classes/everest-forms/everest-forms-field-godam-record-frontend.php:76
 #: inc/classes/fluentforms/fields/class-recorder-field.php:431
 #: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:259
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:260
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:254
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 msgid "Maximum allowed on this server: %s MB"
 msgstr ""
 
@@ -2271,8 +2202,7 @@ msgstr ""
 
 #: inc/classes/fluentforms/fields/class-recorder-field.php:250
 #: inc/classes/gravity-forms/class-init.php:181
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:226
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:214
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "Local files"
 msgstr ""
 
@@ -3733,8 +3663,7 @@ msgid "Loop the audio playback continuously."
 msgstr ""
 
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:178
-#: assets/build/blocks/godam-audio/index.js:927
-#: assets/build/blocks/godam-audio/index.js:779
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Browser default"
 msgstr ""
 
@@ -3839,13 +3768,9 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:196
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:230
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:310
-#: assets/build/blocks/godam-audio/index.js:846
-#: assets/build/blocks/godam-gallery-v2-item/index.js:330
-#: assets/build/blocks/godam-gallery-v2-item/index.js:371
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:112
-#: assets/build/blocks/godam-audio/index.js:687
-#: assets/build/blocks/godam-gallery-v2-item/index.js:243
-#: assets/build/blocks/godam-gallery-v2-item/index.js:288
 #: assets/build/js/wpbakery-document-selector-param.min.js:279
 #: assets/build/js/wpbakery-image-selector-param.min.js:49
 #: assets/build/js/wpbakery-video-selector-param.min.js:260
@@ -3956,9 +3881,8 @@ msgstr ""
 
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:349
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:238
-#: assets/build/blocks/godam-gallery-v2/index.js:6361
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:10416
-#: assets/build/blocks/godam-gallery-v2/index.js:6283
 #: assets/build/blocks/godam-player/index.js:9842
 msgid "Enable Likes & Comments"
 msgstr ""
@@ -3991,8 +3915,7 @@ msgid "All authors"
 msgstr ""
 
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:66
-#: assets/build/blocks/godam-gallery-v2-item/index.js:392
-#: assets/build/blocks/godam-gallery-v2-item/index.js:313
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
 #: assets/build/js/wpbakery-video-selector-param.min.js:251
 msgid "Select Video"
 msgstr ""
@@ -4036,9 +3959,8 @@ msgid "Choose the action to perform on video hover. Ignored when Show in Lightbo
 msgstr ""
 
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:245
-#: assets/build/blocks/godam-gallery-v2/index.js:6366
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:10419
-#: assets/build/blocks/godam-gallery-v2/index.js:6286
 #: assets/build/blocks/godam-player/index.js:9845
 msgid "Engagement will only be visible for transcoded videos"
 msgstr ""
@@ -4254,26 +4176,22 @@ msgid "Video not found"
 msgstr ""
 
 #: inc/templates/godam-video-gallery.php:261
-#: assets/build/blocks/godam-gallery-v2-item/index.js:292
-#: assets/build/blocks/godam-gallery-v2/index.js:6086
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: pages/analytics/Analytics.js:567
 #: pages/video-editor/VideoEditor.js:651
-#: assets/build/blocks/godam-gallery-v2-item/index.js:205
-#: assets/build/blocks/godam-gallery-v2/index.js:5967
 #: assets/build/pages/analytics.min.js:9731
 #: assets/build/pages/video-editor.min.js:17482
 msgid "Untitled video"
 msgstr ""
 
 #: inc/templates/godam-video-gallery.php:422
-#: assets/build/blocks/godam-gallery-v2/index.js:6591
-#: assets/build/blocks/godam-gallery-v2/index.js:6577
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "No videos found"
 msgstr ""
 
 #: inc/templates/godam-video-gallery.php:423
-#: assets/build/blocks/godam-gallery-v2/index.js:6593
-#: assets/build/blocks/godam-gallery-v2/index.js:6579
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Try changing the selected folder, author, or dates."
 msgstr ""
 
@@ -4314,20 +4232,20 @@ msgid "%1$s: Attachment(%2$s)"
 msgstr ""
 
 #: inc/templates/video-preview.php:90
-#: assets/build/js/media-library.min.js:2290
+#: assets/build/js/media-library.min.js:2303
 msgid "Edit Image"
 msgstr ""
 
 #: inc/templates/video-preview.php:92
-#: assets/build/js/media-library.min.js:2343
+#: assets/build/js/media-library.min.js:2356
 msgid "Edit Audio"
 msgstr ""
 
 #: inc/templates/video-preview.php:94
 #: assets/build/blocks/godam-player/index.js:11374
 #: assets/build/blocks/godam-player/index.js:10828
-#: assets/build/js/media-library.min.js:2307
-#: assets/build/js/media-library.min.js:2315
+#: assets/build/js/media-library.min.js:2320
+#: assets/build/js/media-library.min.js:2328
 msgid "Edit Video"
 msgstr ""
 
@@ -4381,440 +4299,343 @@ msgstr ""
 msgid "Upgrade to Pro"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:468
-#: assets/build/blocks/godam-audio/index.js:302
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-audio/view.js:1
+#: pages/video-editor/components/audio/AudioCardPreview.js:200
+#: assets/build/pages/video-editor.min.js:19671
+msgid "Pause"
+msgstr ""
+
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-audio/view.js:1
+#: pages/video-editor/components/audio/AudioCardPreview.js:304
+#: assets/build/pages/video-editor.min.js:19775
+msgid "Copied"
+msgstr ""
+
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-audio/view.js:1
+#: pages/video-editor/components/audio/AudioCardPreview.js:304
+#: assets/build/pages/video-editor.min.js:19775
+msgid "Copy transcript"
+msgstr ""
+
+#: assets/build/blocks/godam-audio/index.js:1
 msgid "Only audio files are allowed in the GoDAM Audio block."
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:551
-#: assets/build/blocks/godam-audio/index.js:396
+#: assets/build/blocks/godam-audio/index.js:1
 msgid "Only image files are allowed for the GoDAM Audio thumbnail."
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:666
-#: assets/build/blocks/godam-audio/index.js:499
-msgid "Add Audio File"
-msgstr ""
-
-#: assets/build/blocks/godam-audio/index.js:679
-#: assets/build/blocks/godam-audio/index.js:517
+#: assets/build/blocks/godam-audio/index.js:1
 msgid "Customize Audio"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:696
-#: assets/build/blocks/godam-audio/index.js:965
-#: assets/build/blocks/godam-audio/index.js:534
-#: assets/build/blocks/godam-audio/index.js:810
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Replace audio file"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:718
-#: assets/build/blocks/godam-audio/index.js:973
-#: assets/build/blocks/godam-audio/index.js:550
-#: assets/build/blocks/godam-audio/index.js:821
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Remove audio"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:727
-#: assets/build/blocks/godam-audio/index.js:561
+#: assets/build/blocks/godam-audio/index.js:1
 msgid "Add a title…"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:736
-#: assets/build/blocks/godam-audio/index.js:570
+#: assets/build/blocks/godam-audio/index.js:1
 msgid "Add a short description…"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:750
-#: assets/build/blocks/godam-audio/index.js:803
-#: assets/build/blocks/godam-audio/index.js:583
-#: assets/build/blocks/godam-audio/index.js:642
+#: assets/build/blocks/godam-audio/index.js:1
+msgid "Add Audio File"
+msgstr ""
+
+#: assets/build/blocks/godam-audio/index.js:1
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Audio Selection"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:765
-#: assets/build/blocks/godam-audio/index.js:594
-msgid "Upload an audio file to embed a player on your page or post."
-msgstr ""
-
-#: assets/build/blocks/godam-audio/index.js:779
-#: assets/build/blocks/godam-audio/index.js:609
-msgid "+ Upload Audio"
-msgstr ""
-
-#: assets/build/blocks/godam-audio/index.js:813
+#: assets/build/blocks/godam-audio/index.js:1
 #: pages/video-editor/components/appearance/ThumbnailSelector.jsx:126
-#: assets/build/blocks/godam-audio/index.js:650
 #: assets/build/pages/video-editor.min.js:19426
 msgid "Select thumbnail"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:825
-#: assets/build/blocks/godam-audio/index.js:661
+#: assets/build/blocks/godam-audio/index.js:1
 msgid "Edit or replace the thumbnail."
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:830
-#: assets/build/blocks/godam-audio/index.js:667
+#: assets/build/blocks/godam-audio/index.js:1
 msgid "Thumbnail preview"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:846
-#: assets/build/blocks/godam-audio/index.js:687
+#: assets/build/blocks/godam-audio/index.js:1
 msgid "Set thumbnail"
 msgstr ""
 
 #. translators: %s: thumbnail image URL.
-#: assets/build/blocks/godam-audio/index.js:851
-#: assets/build/blocks/godam-audio/index.js:693
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "The current thumbnail url is %s."
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:851
-#: assets/build/blocks/godam-audio/index.js:696
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "There is no thumbnail currently selected."
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:869
+#: assets/build/blocks/godam-audio/index.js:2
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:20
 #: pages/video-editor/components/transcription/Transcription.js:176
-#: assets/build/blocks/godam-audio/index.js:720
 #: assets/build/pages/video-editor.min.js:21608
 #: assets/build/pages/video-editor.min.js:26295
 msgid "Transcription"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:874
-#: assets/build/blocks/godam-audio/index.js:723
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Show transcript"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:880
-#: assets/build/blocks/godam-audio/index.js:730
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "Show chapters"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:893
+#: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/blocks/godam-player/index.js:9800
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:553
-#: assets/build/blocks/godam-audio/index.js:746
 #: assets/build/blocks/godam-player/index.js:9261
 #: assets/build/pages/video-editor.min.js:27111
 msgid "Edit"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:919
-#: assets/build/blocks/godam-audio/index.js:772
+#: assets/build/blocks/godam-audio/index.js:2
 msgctxt "noun; Audio block parameter"
 msgid "Preload"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:949
-#: assets/build/blocks/godam-audio/index.js:794
+#: assets/build/blocks/godam-audio/index.js:2
 msgid "The audio file for this block was deleted from the Media Library. Replace it with another file or remove the block."
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:1145
-#: assets/build/blocks/godam-audio/view.js:507
-#: pages/video-editor/components/audio/AudioCardPreview.js:200
-#: assets/build/blocks/godam-audio/index.js:940
-#: assets/build/blocks/godam-audio/view.js:452
-#: assets/build/pages/video-editor.min.js:19671
-msgid "Pause"
+#: assets/build/blocks/godam-audio/index.js:2
+msgid "Upload an audio file to embed a player on your page or post."
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:1424
-#: assets/build/blocks/godam-audio/view.js:403
-#: pages/video-editor/components/audio/AudioCardPreview.js:304
-#: assets/build/blocks/godam-audio/index.js:1184
-#: assets/build/blocks/godam-audio/view.js:337
-#: assets/build/pages/video-editor.min.js:19775
-msgid "Copied"
+#: assets/build/blocks/godam-audio/index.js:2
+msgid "+ Upload Audio"
 msgstr ""
 
-#: assets/build/blocks/godam-audio/index.js:1424
-#: assets/build/blocks/godam-audio/view.js:392
-#: assets/build/blocks/godam-audio/view.js:408
-#: pages/video-editor/components/audio/AudioCardPreview.js:304
-#: assets/build/blocks/godam-audio/index.js:1184
-#: assets/build/blocks/godam-audio/view.js:326
-#: assets/build/blocks/godam-audio/view.js:342
-#: assets/build/pages/video-editor.min.js:19775
-msgid "Copy transcript"
-msgstr ""
-
-#: assets/build/blocks/godam-gallery-v2-item/index.js:209
-#: assets/build/blocks/godam-gallery-v2/index.js:6000
-#: assets/build/blocks/godam-gallery-v2-item/index.js:120
-#: assets/build/blocks/godam-gallery-v2/index.js:5849
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Only video files can be added to the gallery."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2-item/index.js:227
-#: assets/build/blocks/godam-gallery-v2-item/index.js:259
-#: assets/build/blocks/godam-gallery-v2-item/index.js:137
-#: assets/build/blocks/godam-gallery-v2-item/index.js:167
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
 msgid "This video is already in the gallery."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2-item/index.js:452
-#: assets/build/blocks/godam-gallery-v2-item/index.js:372
+#: assets/build/blocks/godam-gallery-v2-item/index.js:1
 msgid "Choose a video to add this gallery item."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:5554
-#: assets/build/blocks/godam-gallery-v2/index.js:5313
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Recommended for most videos. Loads thumbnails as visitors scroll and prepares the video just before they reach it."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:5555
-#: assets/build/blocks/godam-gallery-v2/index.js:5314
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "For hero videos above the fold. Loads the thumbnail immediately and prepares the video for the fastest possible first play. Use sparingly."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:5668
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: pages/media-library/components/folder-tree/FolderTree.jsx:406
 #: pages/media-library/components/folder-tree/FolderTree.jsx:449
 #: pages/video-editor/components/cta/CardCTA.js:369
-#: assets/build/blocks/godam-gallery-v2/index.js:5458
 #: assets/build/pages/media-library.min.js:6872
 #: assets/build/pages/media-library.min.js:6915
 #: assets/build/pages/video-editor.min.js:21034
 msgid "Loading…"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:5793
-#: assets/build/blocks/godam-gallery-v2/index.js:5795
-#: assets/build/blocks/godam-gallery-v2/index.js:5550
-#: assets/build/blocks/godam-gallery-v2/index.js:5552
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Add New Video"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6006
-#: assets/build/blocks/godam-gallery-v2/index.js:6037
-#: assets/build/blocks/godam-gallery-v2/index.js:5857
-#: assets/build/blocks/godam-gallery-v2/index.js:5896
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Duplicate videos were skipped."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6107
-#: assets/build/blocks/godam-gallery-v2/index.js:5993
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Start date cannot be later than end date."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6111
-#: assets/build/blocks/godam-gallery-v2/index.js:5998
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "End date cannot be earlier than start date."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6124
-#: assets/build/blocks/godam-gallery-v2/index.js:6018
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Source"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6130
-#: assets/build/blocks/godam-gallery-v2/index.js:6025
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Gallery Source"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6142
-#: assets/build/blocks/godam-gallery-v2/index.js:6036
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Handpicked"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6145
-#: assets/build/blocks/godam-gallery-v2/index.js:6040
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Query"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6149
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:11426
-#: assets/build/blocks/godam-gallery-v2/index.js:6048
 #: assets/build/blocks/godam-player/index.js:10888
 msgid "Video Selection"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6154
-#: assets/build/blocks/godam-gallery-v2/index.js:6053
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Videos play on mute by default"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6189
-#: assets/build/blocks/godam-gallery-v2/index.js:6564
-#: assets/build/blocks/godam-gallery-v2/index.js:6101
-#: assets/build/blocks/godam-gallery-v2/index.js:6532
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "+ Add Video"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6260
-#: assets/build/blocks/godam-gallery-v2/index.js:6175
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Item Size"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6266
-#: assets/build/blocks/godam-gallery-v2/index.js:6181
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Size of each gallery item."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6268
-#: assets/build/blocks/godam-gallery-v2/index.js:6183
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "S"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6271
-#: assets/build/blocks/godam-gallery-v2/index.js:6184
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "M"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6274
-#: assets/build/blocks/godam-gallery-v2/index.js:6185
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "L"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6279
-#: assets/build/blocks/godam-gallery-v2/index.js:6283
-#: assets/build/blocks/godam-gallery-v2/index.js:6190
-#: assets/build/blocks/godam-gallery-v2/index.js:6192
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Info Display"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6287
-#: assets/build/blocks/godam-gallery-v2/index.js:6197
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Only Image"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6290
-#: assets/build/blocks/godam-gallery-v2/index.js:6201
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Show Video Title and Date"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6312
-#: assets/build/blocks/godam-gallery-v2/index.js:6224
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Visible videos autoplay one at a time and continue through the full video."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6316
-#: assets/build/blocks/godam-gallery-v2/index.js:6229
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Videos will play when hovered over"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6325
-#: assets/build/blocks/godam-gallery-v2/index.js:6243
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Show play button"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6331
-#: assets/build/blocks/godam-gallery-v2/index.js:6248
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Play button overlay is visible on each tile."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6331
-#: assets/build/blocks/godam-gallery-v2/index.js:6249
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Play button overlay is hidden."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6334
-#: assets/build/blocks/godam-gallery-v2/index.js:6340
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:11459
 #: pages/analytics/PlaybackPerformance.js:343
-#: assets/build/blocks/godam-gallery-v2/index.js:6255
-#: assets/build/blocks/godam-gallery-v2/index.js:6259
 #: assets/build/blocks/godam-player/index.js:10912
 #: assets/build/pages/analytics.min.js:10467
 #: assets/build/pages/dashboard.min.js:885
 msgid "Performance"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6357
-#: assets/build/blocks/godam-gallery-v2/index.js:6281
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Engagement"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6369
-#: assets/build/blocks/godam-gallery-v2/index.js:6297
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Query Settings"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6386
-#: assets/build/blocks/godam-gallery-v2/index.js:6312
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Order by"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6422
-#: assets/build/blocks/godam-gallery-v2/index.js:6348
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Search and select media folders"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6430
-#: assets/build/blocks/godam-gallery-v2/index.js:6358
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Search and select authors"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6472
-#: assets/build/blocks/godam-gallery-v2/index.js:6404
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Select Start Date"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6495
-#: assets/build/blocks/godam-gallery-v2/index.js:6434
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Select End Date"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6520
-#: assets/build/blocks/godam-gallery-v2/index.js:6468
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Load More Button"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6523
-#: assets/build/blocks/godam-gallery-v2/index.js:6472
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Infinite Scroll"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6527
-#: assets/build/blocks/godam-gallery-v2/index.js:6479
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Carousel layout always uses Infinite Scroll when more items are enabled."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6527
-#: assets/build/blocks/godam-gallery-v2/index.js:6480
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Choose how visitors load more videos in query galleries."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6551
-#: assets/build/blocks/godam-gallery-v2/index.js:6518
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Upload or select videos to add to your gallery."
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/index.js:6586
-#: assets/build/blocks/godam-gallery-v2/index.js:6570
+#: assets/build/blocks/godam-gallery-v2/index.js:1
 msgid "Loading matching videos…"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/view.js:172
-#: assets/build/blocks/godam-gallery-v2/view.js:178
-#: assets/build/blocks/godam-gallery-v2/view.js:161
-#: assets/build/blocks/godam-gallery-v2/view.js:168
+#: assets/build/blocks/godam-gallery-v2/view.js:1
 #: assets/build/js/godam-lightbox.min.js:189
 #: assets/build/js/godam-lightbox.min.js:542
 msgid "Video player"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/view.js:183
+#: assets/build/blocks/godam-gallery-v2/view.js:1
 #: pages/onboarding/components/screens/WorkspaceScreen.jsx:85
-#: assets/build/blocks/godam-gallery-v2/view.js:174
 #: assets/build/js/godam-lightbox.min.js:195
 #: assets/build/pages/onboarding.min.js:1389
 msgid "Close"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/view.js:189
-#: assets/build/blocks/godam-gallery-v2/view.js:181
+#: assets/build/blocks/godam-gallery-v2/view.js:1
 #: assets/build/js/godam-lightbox.min.js:202
 msgid "Previous video"
 msgstr ""
 
-#: assets/build/blocks/godam-gallery-v2/view.js:195
-#: assets/build/blocks/godam-gallery-v2/view.js:188
+#: assets/build/blocks/godam-gallery-v2/view.js:1
 #: assets/build/js/godam-lightbox.min.js:209
 msgid "Next video"
 msgstr ""
@@ -4863,25 +4684,25 @@ msgstr ""
 msgid "Hotspot %d"
 msgstr ""
 
-#: assets/build/blocks/godam-pdf-viewer.js:312
-#: assets/build/blocks/godam-pdf-viewer.js:305
+#: assets/build/blocks/godam-pdf-viewer.js:328
+#: assets/build/blocks/godam-pdf-viewer.js:323
 msgid "This preview could not be loaded."
 msgstr ""
 
-#: assets/build/blocks/godam-pdf-viewer.js:317
+#: assets/build/blocks/godam-pdf-viewer.js:333
 #: assets/build/blocks/godam-pdf/index.js:1051
 #: assets/build/blocks/godam-pdf/index.js:1080
-#: assets/build/blocks/godam-pdf-viewer.js:311
+#: assets/build/blocks/godam-pdf-viewer.js:329
 #: assets/build/blocks/godam-pdf/index.js:994
 #: assets/build/blocks/godam-pdf/index.js:1024
 msgid "Loading preview…"
 msgstr ""
 
-#: assets/build/blocks/godam-pdf-viewer.js:339
-#: assets/build/blocks/godam-pdf-viewer.js:364
-#: assets/build/blocks/godam-pdf-viewer.js:332
-#: assets/build/blocks/godam-pdf-viewer.js:368
-#: assets/build/js/media-library.min.js:2719
+#: assets/build/blocks/godam-pdf-viewer.js:355
+#: assets/build/blocks/godam-pdf-viewer.js:380
+#: assets/build/blocks/godam-pdf-viewer.js:350
+#: assets/build/blocks/godam-pdf-viewer.js:386
+#: assets/build/js/media-library.min.js:2732
 msgid "Document preview"
 msgstr ""
 
@@ -5049,8 +4870,8 @@ msgstr ""
 #: assets/build/blocks/godam-player/index.js:9789
 #: assets/build/blocks/godam-player/index.js:9177
 #: assets/build/blocks/godam-player/index.js:9250
-#: assets/build/js/media-library.min.js:1843
-#: assets/build/js/media-library.min.js:1844
+#: assets/build/js/media-library.min.js:1856
+#: assets/build/js/media-library.min.js:1857
 msgid "Upload Custom Thumbnail"
 msgstr ""
 
@@ -5426,159 +5247,127 @@ msgstr ""
 msgid "Premium Feature"
 msgstr ""
 
-#: assets/build/blocks/godam-video-duration/index.js:54
-#: assets/build/blocks/godam-video-duration/index.js:33
+#: assets/build/blocks/godam-video-duration/index.js:1
 msgid "Default (HH:MM:SS)"
 msgstr ""
 
-#: assets/build/blocks/godam-video-duration/index.js:55
-#: assets/build/blocks/godam-video-duration/index.js:84
-#: assets/build/blocks/godam-video-duration/index.js:34
-#: assets/build/blocks/godam-video-duration/index.js:63
+#: assets/build/blocks/godam-video-duration/index.js:1
 msgid "00:00:00"
 msgstr ""
 
-#: assets/build/blocks/godam-video-duration/index.js:58
-#: assets/build/blocks/godam-video-duration/index.js:38
+#: assets/build/blocks/godam-video-duration/index.js:1
 msgid "Minutes only (MM:SS)"
 msgstr ""
 
-#: assets/build/blocks/godam-video-duration/index.js:59
-#: assets/build/blocks/godam-video-duration/index.js:39
+#: assets/build/blocks/godam-video-duration/index.js:1
 msgid "00:00"
 msgstr ""
 
-#: assets/build/blocks/godam-video-duration/index.js:62
-#: assets/build/blocks/godam-video-duration/index.js:43
+#: assets/build/blocks/godam-video-duration/index.js:1
 msgid "Total Seconds"
 msgstr ""
 
-#: assets/build/blocks/godam-video-duration/index.js:63
-#: assets/build/blocks/godam-video-duration/index.js:44
+#: assets/build/blocks/godam-video-duration/index.js:1
 msgid "0s"
 msgstr ""
 
-#: assets/build/blocks/godam-video-duration/index.js:68
-#: assets/build/blocks/godam-video-duration/index.js:51
+#: assets/build/blocks/godam-video-duration/index.js:1
 msgid "Duration Settings"
 msgstr ""
 
-#: assets/build/blocks/godam-video-duration/index.js:70
-#: assets/build/blocks/godam-video-duration/index.js:53
+#: assets/build/blocks/godam-video-duration/index.js:1
 msgid "Duration Format"
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:92
-#: assets/build/blocks/godam-video-thumbnail/index.js:53
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "Thumbnail Settings"
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:97
-#: assets/build/blocks/godam-video-thumbnail/index.js:56
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "Show play button overlay"
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:102
-#: assets/build/blocks/godam-video-thumbnail/index.js:60
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "Play button will be displayed."
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:102
-#: assets/build/blocks/godam-video-thumbnail/index.js:61
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "No play button will be displayed."
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:107
-#: assets/build/blocks/godam-video-thumbnail/index.js:67
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "Link to post"
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:112
-#: assets/build/blocks/godam-video-thumbnail/index.js:71
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "Thumbnail will link to the video page."
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:112
-#: assets/build/blocks/godam-video-thumbnail/index.js:72
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "Thumbnail will not be linked."
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:117
-#: assets/build/blocks/godam-video-thumbnail/index.js:79
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "Open in new tab"
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:122
-#: assets/build/blocks/godam-video-thumbnail/index.js:83
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "Link will open in a new tab."
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:122
-#: assets/build/blocks/godam-video-thumbnail/index.js:84
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "Link will open in the same tab."
 msgstr ""
 
-#: assets/build/blocks/godam-video-thumbnail/index.js:134
-#: assets/build/blocks/godam-video-thumbnail/index.js:96
+#: assets/build/blocks/godam-video-thumbnail/index.js:1
 msgid "GoDAM Video Thumbnail"
 msgstr ""
 
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:181
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:168
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "Enter label for the field"
 msgstr ""
 
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:193
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:181
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "Enter description"
 msgstr ""
 
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:196
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:184
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "Enter description for the field"
 msgstr ""
 
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:255
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:249
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "100 MB"
 msgstr ""
 
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:256
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:250
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:1
 msgid "Maximum file size (in MB)"
 msgstr ""
 
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:277
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:273
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 msgid "Is recorder field required?"
 msgstr ""
 
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:286
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:283
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 msgid "Enter error message"
 msgstr ""
 
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:290
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:287
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 msgid "Enter the required error message"
 msgstr ""
 
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:307
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:303
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 msgid "Field settings"
 msgstr ""
 
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:314
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:4
 #: pages/analytics/charts.js:179
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:310
 #: assets/build/pages/analytics.min.js:11458
 #: assets/build/pages/dashboard.min.js:1456
 msgid "Untitled"
 msgstr ""
 
 #. Translators: %s will be replaced with the maximum file upload size allowed on the server (e.g., "300MB").
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:358
-#: assets/build/blocks/sureforms/blocks/recorder/index.js:353
+#: assets/build/blocks/sureforms/blocks/recorder/index.js:7
 msgid "Maximum allowed size: %s MB"
 msgstr ""
 
@@ -10857,50 +10646,50 @@ msgstr ""
 msgid "Transcoding…"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1634
+#: assets/build/js/media-library.min.js:1647
 msgid "No thumbnails found"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1791
+#: assets/build/js/media-library.min.js:1804
 msgid "Select Custom Thumbnail"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1792
+#: assets/build/js/media-library.min.js:1805
 msgid "Use this image"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1804
+#: assets/build/js/media-library.min.js:1817
 msgid "Please select a valid image file (JPEG, PNG, GIF, etc.)."
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1840
-#: assets/build/js/media-library.min.js:1841
+#: assets/build/js/media-library.min.js:1853
+#: assets/build/js/media-library.min.js:1854
 msgid "Only 3 custom thumbnails allowed"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1888
+#: assets/build/js/media-library.min.js:1901
 msgid "Custom Video Thumbnail"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1895
-#: assets/build/js/media-library.min.js:1899
+#: assets/build/js/media-library.min.js:1908
+#: assets/build/js/media-library.min.js:1912
 msgid "Remove Image"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:2116
-#: assets/build/js/media-library.min.js:2753
+#: assets/build/js/media-library.min.js:2129
+#: assets/build/js/media-library.min.js:2766
 msgid "Video Thumbnails"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:2908
+#: assets/build/js/media-library.min.js:2921
 msgid "oEmbed Video URL"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:2910
+#: assets/build/js/media-library.min.js:2923
 msgid "The oEmbed URL can be used to embed the video in other platforms that support oEmbed."
 msgstr ""
 
-#: assets/build/js/media-library.min.js:9715
+#: assets/build/js/media-library.min.js:9728
 msgid "Search Media"
 msgstr ""
 
