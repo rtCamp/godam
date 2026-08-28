@@ -51,12 +51,20 @@ export default function RevenueCard( { revenue, dataLabel, deltaLabel } ) {
 		return null;
 	}
 
-	const total = Number( revenue.revenue_minor || 0 );
 	const currency = revenue.currency || '';
 	const excluded = Number( revenue.excluded_orders || 0 );
 	const direct = Number( revenue.direct_minor || 0 );
 	const assisted = Number( revenue.assisted_minor || 0 );
 	const splitTotal = direct + assisted;
+	// When the Direct/Assisted split is present, the headline is their sum, so the
+	// total always equals the parts shown beneath it. Every paid order line carries
+	// a tier, so this can never hide revenue; without a split, use the service total.
+	const hasSplit =
+		revenue.direct_minor !== undefined &&
+		revenue.direct_minor !== null &&
+		revenue.assisted_minor !== undefined &&
+		revenue.assisted_minor !== null;
+	const total = hasSplit ? splitTotal : Number( revenue.revenue_minor || 0 );
 	const directFrac = splitTotal > 0 ? ( direct / splitTotal ) * 100 : 0;
 	const assistedFrac = splitTotal > 0 ? ( assisted / splitTotal ) * 100 : 0;
 

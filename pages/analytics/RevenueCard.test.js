@@ -92,6 +92,16 @@ describe( 'RevenueCard — single store currency', () => {
 		expect( html ).toContain( '842' ); // assisted: 84200 minor = 842.00
 	} );
 
+	it( 'headlines Direct + Assisted so the total equals the parts, even if the service total differs', () => {
+		// Service total (10000 -> 100.00) diverges from the split (4000 + 4000 ->
+		// 80.00). The headline shows the split sum so it matches the bar below.
+		const html = renderToString(
+			<RevenueCard revenue={ { revenue_minor: 10000, currency: 'INR', excluded_orders: 0, direct_minor: 4000, assisted_minor: 4000 } } />,
+		);
+		expect( html ).toContain( '80.00' ); // Direct + Assisted
+		expect( html ).not.toContain( '100.00' ); // not the diverging service total
+	} );
+
 	it( 'shows the Influenced box only when influenced_minor is present (dashboard, not per-video)', () => {
 		const withInfluenced = renderToString(
 			<RevenueCard revenue={ { revenue_minor: 100, currency: 'GBP', direct_minor: 100, assisted_minor: 0, influenced_minor: 191000 } } />,
