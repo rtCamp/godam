@@ -91,10 +91,10 @@ const cartRate = ( item ) => {
 const reachLabel = ( item ) => {
 	const layers = Number( item.layer_count || 0 );
 	const videos = Number( item.video_count || 0 );
-	/* translators: %d: number of layers the product appears in. */
-	const layersText = sprintf( _n( '%d layer', '%d layers', layers, 'godam' ), layers );
-	/* translators: %d: number of videos the product appears in. */
-	const videosText = sprintf( _n( '%d video', '%d videos', videos, 'godam' ), videos );
+	/* translators: %s: number of layers the product appears in. */
+	const layersText = sprintf( _n( '%s layer', '%s layers', layers, 'godam' ), layers.toLocaleString() );
+	/* translators: %s: number of videos the product appears in. */
+	const videosText = sprintf( _n( '%s video', '%s videos', videos, 'godam' ), videos.toLocaleString() );
 	return `${ layersText } · ${ videosText }`;
 };
 
@@ -203,8 +203,8 @@ export function formatRevenueNumeric( minor, currency ) {
 // product_views_ctr is shown as secondary text next to product_views.
 const ordersLabel = ( item ) => {
 	const orders = Number( item.orders || 0 );
-	/* translators: %d: number of distinct orders contributing to this product's revenue. */
-	return sprintf( _n( '%d order', '%d orders', orders, 'godam' ), orders );
+	/* translators: %s: number of distinct orders contributing to this product's revenue. */
+	return sprintf( _n( '%s order', '%s orders', orders, 'godam' ), orders.toLocaleString() );
 };
 
 // Whether this row carries a real Influenced-revenue match (the third tier:
@@ -219,8 +219,8 @@ export const hasInfluenced = ( item ) =>
 // "N orders" label for the Influenced sub-line.
 export const influencedOrdersLabel = ( item ) => {
 	const orders = Number( item.influenced_orders || 0 );
-	/* translators: %d: number of distinct orders influenced by a product-page view of a video. */
-	return sprintf( _n( '%d order', '%d orders', orders, 'godam' ), orders );
+	/* translators: %s: number of distinct orders influenced by a product-page view of a video. */
+	return sprintf( _n( '%s order', '%s orders', orders, 'godam' ), orders.toLocaleString() );
 };
 
 // Per-placement revenue breakdown (EASY WIN A): the placements (block_source)

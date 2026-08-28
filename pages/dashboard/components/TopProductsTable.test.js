@@ -290,3 +290,10 @@ describe( 'buildCsvRow — the CSV mirrors the on-screen table', () => {
 		expect( cell( row, 'Revenue by Placement' ) ).toBe( '' );
 	} );
 } );
+
+describe( 'order-count labels use grouped thousands', () => {
+	it( 'groups a 1,000+ order count and keeps the singular for one', () => {
+		expect( influencedOrdersLabel( { influenced_orders: 1234 } ) ).toBe( '1,234 orders' );
+		expect( influencedOrdersLabel( { influenced_orders: 1 } ) ).toBe( '1 order' );
+	} );
+} );
