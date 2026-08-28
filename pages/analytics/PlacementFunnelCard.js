@@ -93,10 +93,37 @@ function PlacementRow( { placement } ) {
 export default function PlacementFunnelCard( { siteUrl, startDate, endDate, dataLabel } ) {
 	const { data, isFetching } = useFetchPlacementFunnelsQuery( { siteUrl, startDate, endDate } );
 	const placements = Array.isArray( data ) ? data : [];
+	// A microservice error comes back as an { error, message } object, which is
+	// NOT the same as "no placement activity" -- surface it rather than hiding.
+	const isError = !! ( data && ! Array.isArray( data ) && data.error );
 
-	// Once loaded, a store with no placement activity shows nothing.
-	if ( ! isFetching && placements.length === 0 ) {
+	// Once loaded, a store with genuinely no placement activity shows nothing; an
+	// error is not "empty", so keep the card to show the message below.
+	if ( ! isFetching && ! isError && placements.length === 0 ) {
 		return null;
+	}
+
+	let body;
+	if ( isError ) {
+		body = (
+			<div className="text-[13px] text-[#B91C1C] py-6 text-center" data-test-id="godam-placement-funnel-error">
+				{ __( 'Could not load placement data. Please try again.', 'godam' ) }
+			</div>
+		);
+	} else if ( isFetching && placements.length === 0 ) {
+		body = (
+			<div className="text-[13px] text-zinc-400 py-6 text-center" data-test-id="godam-placement-funnel-loading">
+				{ __( 'Loading placements…', 'godam' ) }
+			</div>
+		);
+	} else {
+		body = (
+			<div className="flex flex-col gap-4">
+				{ placements.map( ( placement ) => (
+					<PlacementRow key={ placement.block_source } placement={ placement } />
+				) ) }
+			</div>
+		);
 	}
 
 	return (
@@ -116,17 +143,7 @@ export default function PlacementFunnelCard( { siteUrl, startDate, endDate, data
 				{ __( 'Different placements do different jobs, so averaging them hides both winners and losers.', 'godam' ) }
 			</p>
 
-			{ isFetching && placements.length === 0 ? (
-				<div className="text-[13px] text-zinc-400 py-6 text-center" data-test-id="godam-placement-funnel-loading">
-					{ __( 'Loading placements…', 'godam' ) }
-				</div>
-			) : (
-				<div className="flex flex-col gap-4">
-					{ placements.map( ( placement ) => (
-						<PlacementRow key={ placement.block_source } placement={ placement } />
-					) ) }
-				</div>
-			) }
+			{ body }
 		</div>
 	);
 }

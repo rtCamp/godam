@@ -132,8 +132,11 @@ function flushLayerInteractions() {
  * Register the layer buffer API and bind the page-hide flush listeners, once.
  *
  * Idempotent and non-destructive: an existing `window.GoDAM.addLayerInteraction`
- * (registered by the video bundle) is left in place, and the flush listeners bind
- * only once across all evaluations via `window.godamLayerFlushBound`.
+ * (registered by the video bundle) is left in place, and THIS module binds its
+ * flush listeners at most once, guarded by `window.godamLayerFlushBound`. On a
+ * mixed video+image page the video bundle (`analytics.js`) also flushes the buffer
+ * from its own unload handler; that is harmless because `flushLayerInteractions`
+ * clears the buffer after dispatch, so the later flush is a no-op.
  */
 export function initLayerAnalytics() {
 	window.GoDAM = window.GoDAM || {};

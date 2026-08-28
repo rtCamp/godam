@@ -34,6 +34,14 @@ describe( 'MetricTrend', () => {
 		expect( html ).toContain( '#B91C1C' ); // red
 	} );
 
+	it( 'shows a flat neutral badge for exactly 0%, not green growth', () => {
+		const html = renderToString( <MetricTrend change={ 0 } deltaLabel="vs previous 7 days" /> );
+		expect( html ).toContain( '→' ); // flat arrow
+		expect( html ).toContain( '0.00%' );
+		expect( html ).not.toContain( '↗' ); // not an up arrow
+		expect( html ).not.toContain( '#15803D' ); // not green
+	} );
+
 	it( 'falls back to the range label when there is no change (KPI tiles)', () => {
 		const html = renderToString( <MetricTrend change={ null } dataLabel="All time" /> );
 		expect( html ).toContain( 'All time' );

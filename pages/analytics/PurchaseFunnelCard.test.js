@@ -63,6 +63,21 @@ describe( 'PurchaseFunnelCard', () => {
 		expect( html ).toContain( '37 abandoned after adding' );
 	} );
 
+	it( 'clamps the cart-advanced annotation to 100% when a skewed payload has carts > played', () => {
+		// A stale/skewed service deploy could report added_to_cart > played; the
+		// "advanced" annotation must cap at 100.0%, never print an above-100% value.
+		const skewed = {
+			stages: [
+				{ key: 'played', count: 100, rate: 100 },
+				{ key: 'added_to_cart', count: 150, direct: 100, assisted: 50, rate: 150 },
+				{ key: 'purchased', count: 10, rate: 10 },
+			],
+		};
+		const html = renderToString( <PurchaseFunnelCard funnel={ skewed } /> );
+		expect( html ).toContain( '100.0% advanced' );
+		expect( html ).not.toContain( '150.0% advanced' );
+	} );
+
 	it( 'renders the legend', () => {
 		const html = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } /> );
 		expect( html ).toContain( 'Direct, added to cart in-video' );

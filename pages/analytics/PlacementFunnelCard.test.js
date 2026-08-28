@@ -62,4 +62,12 @@ describe( 'PlacementFunnelCard', () => {
 		const html = renderToString( <PlacementFunnelCard siteUrl="x" /> );
 		expect( html ).toContain( 'godam-placement-funnel-loading' );
 	} );
+
+	it( 'surfaces a service error instead of rendering it as an empty store', () => {
+		useFetchPlacementFunnelsQuery.mockReturnValue( { data: { error: true, message: 'boom' }, isFetching: false } );
+		const html = renderToString( <PlacementFunnelCard siteUrl="x" /> );
+		expect( html ).not.toBe( '' ); // not silently hidden like a store with no placements
+		expect( html ).toContain( 'godam-placement-funnel-error' );
+		expect( html ).toContain( 'Could not load placement data' );
+	} );
 } );

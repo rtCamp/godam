@@ -31,12 +31,22 @@ export default function MetricTrend( { change, deltaLabel, dataLabel, testId } )
 		) : null;
 	}
 
-	const positive = change >= 0;
+	// Exactly 0% is flat, not growth: render it neutral (grey, flat arrow) so a
+	// static metric is never shown as green upward movement.
+	let trendColor = 'text-zinc-500';
+	let trendArrow = '→';
+	if ( change > 0 ) {
+		trendColor = 'text-[#15803D]';
+		trendArrow = '↗';
+	} else if ( change < 0 ) {
+		trendColor = 'text-[#B91C1C]';
+		trendArrow = '↘';
+	}
 
 	return (
 		<div className="flex items-center flex-wrap gap-x-1.5 gap-y-0.5" data-test-id={ testId }>
-			<span className={ `text-xs font-semibold whitespace-nowrap ${ positive ? 'text-[#15803D]' : 'text-[#B91C1C]' }` }>
-				{ `${ positive ? '↗' : '↘' } ${ Math.abs( change ).toFixed( 2 ) }%` }
+			<span className={ `text-xs font-semibold whitespace-nowrap ${ trendColor }` }>
+				{ `${ trendArrow } ${ Math.abs( change ).toFixed( 2 ) }%` }
 			</span>
 			<span className="text-[11px] text-zinc-400 whitespace-nowrap">
 				{ deltaLabel || __( 'vs prev period', 'godam' ) }

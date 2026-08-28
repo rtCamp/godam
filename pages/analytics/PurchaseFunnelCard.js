@@ -112,7 +112,9 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 	// Assisted-only = added but not in-video, so direct + assistedOnly = carts.
 	const assistedOnly = Math.max( 0, carts - direct );
 
-	const cartAdvanced = played > 0 ? pct( ( carts / played ) * 100 ) : pct( 0 );
+	// Clamp to 100% like buyAdvanced below: a stale-service skew (carts > played)
+	// must not print an above-100% "advanced" annotation.
+	const cartAdvanced = played > 0 ? pct( Math.min( ( carts / played ) * 100, 100 ) ) : pct( 0 );
 	// cart -> purchase conversion, drop annotation only; clamp to 100%.
 	const buyAdvanced = carts > 0 ? pct( Math.min( ( purchased / carts ) * 100, 100 ) ) : pct( 0 );
 	// purchased as a share OF PLAYERS (bar + server stage rate denominator),
