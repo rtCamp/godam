@@ -258,6 +258,69 @@ export const hasRevenueTierSplit = ( item ) =>
  * @param {boolean} props.skip          Skip the query while the dashboard is gated.
  * @param {Object}  [props.tabSwitcher] Optional switcher node rendered in the table head in place of the title.
  */
+// Export column headers, matched 1:1 with buildCsvRow below, mirroring every
+// column and sub-line shown in the on-screen Top Products table.
+export const CSV_HEADERS = [
+	__( 'Product', 'godam' ),
+	__( 'Product ID', 'godam' ),
+	__( 'Layers', 'godam' ),
+	__( 'Videos', 'godam' ),
+	__( 'Source', 'godam' ),
+	__( 'Product Views', 'godam' ),
+	__( 'Product Views Rate', 'godam' ),
+	__( 'Add to Cart', 'godam' ),
+	__( 'Add to Cart (in-video)', 'godam' ),
+	__( 'Add to Cart (assisted)', 'godam' ),
+	__( 'Revenue', 'godam' ),
+	__( 'Revenue (direct)', 'godam' ),
+	__( 'Revenue (assisted)', 'godam' ),
+	__( 'Currency', 'godam' ),
+	__( 'Orders', 'godam' ),
+	__( 'Influenced Revenue', 'godam' ),
+	__( 'Influenced Currency', 'godam' ),
+	__( 'Influenced Orders', 'godam' ),
+	__( 'Influenced Provisional', 'godam' ),
+	__( 'Revenue by Placement', 'godam' ),
+];
+
+// One CSV cell per column, in CSV_HEADERS order. Mirrors every value the table
+// renders so an export reconciles cell-for-cell with what the merchant sees.
+export const buildCsvRow = ( item ) => {
+	const placements = revenuePlacements( item );
+	let influencedProvisional = '';
+	if ( hasInfluenced( item ) ) {
+		influencedProvisional = item.influenced_provisional ? __( 'Yes', 'godam' ) : __( 'No', 'godam' );
+	}
+	return [
+		item.title || item.product_id,
+		`ID: ${ item.product_id }`,
+		Number( item.layer_count || 0 ),
+		Number( item.video_count || 0 ),
+		( item.sources || [] ).map( sourceLabel ).join( ' | ' ),
+		Number( item.product_views || 0 ),
+		Number( item.product_views_ctr || 0 ).toFixed( 2 ) + '%',
+		Number( item.added_to_cart || 0 ),
+		Number( item.added_to_cart_direct || 0 ),
+		Number( item.added_to_cart_assisted || 0 ),
+		hasRevenue( item ) ? formatRevenueNumeric( item.revenue_minor, item.currency ) : '',
+		hasRevenueTierSplit( item ) ? formatRevenueNumeric( item.revenue_direct_minor, item.currency ) : '',
+		hasRevenueTierSplit( item ) ? formatRevenueNumeric( item.revenue_assisted_minor, item.currency ) : '',
+		hasRevenue( item ) ? ( item.currency || '' ) : '',
+		hasRevenue( item ) ? Number( item.orders || 0 ) : '',
+		hasInfluenced( item ) ? formatRevenueNumeric( item.influenced_revenue_minor, item.influenced_currency ) : '',
+		hasInfluenced( item ) ? ( item.influenced_currency || '' ) : '',
+		hasInfluenced( item ) ? Number( item.influenced_orders || 0 ) : '',
+		influencedProvisional,
+		// Per-placement split mirrors the on-screen sub-line: shown only when 2+
+		// surfaces drove revenue (a single placement just repeats the total).
+		placements.length >= 2
+			? placements
+				.map( ( pl ) => `${ sourceLabel( pl.source ) }: ${ formatRevenueNumeric( pl.revenue_minor, item.currency ) }` )
+				.join( ' | ' )
+			: '',
+	];
+};
+
 export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher = null } ) {
 	const [ page, setPage ] = useState( 1 );
 	const [ searchInput, setSearchInput ] = useState( '' );
@@ -310,22 +373,6 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 			?.scrollIntoView( { behavior: 'smooth' } );
 	}, [ page ] );
 
-	const buildCsvRow = ( item ) => [
-		item.title || item.product_id,
-		`ID: ${ item.product_id }`,
-		( item.sources || [] ).map( sourceLabel ).join( ' | ' ),
-		Number( item.product_views || 0 ),
-		Number( item.product_views_ctr || 0 ).toFixed( 2 ) + '%',
-		Number( item.added_to_cart || 0 ),
-		Number( item.added_to_cart_direct || 0 ),
-		Number( item.added_to_cart_assisted || 0 ),
-		hasRevenue( item ) ? formatRevenueNumeric( item.revenue_minor, item.currency ) : '',
-		hasRevenueTierSplit( item ) ? formatRevenueNumeric( item.revenue_direct_minor, item.currency ) : '',
-		hasRevenueTierSplit( item ) ? formatRevenueNumeric( item.revenue_assisted_minor, item.currency ) : '',
-		hasRevenue( item ) ? ( item.currency || '' ) : '',
-		hasRevenue( item ) ? Number( item.orders || 0 ) : '',
-	];
-
 	const handleExportCSV = async () => {
 		setIsExporting( true );
 		// try/finally so the button never sticks on "Exporting…" if anything below
@@ -371,23 +418,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 			const fetched = pageProducts.flat();
 			const exportProducts = fetched.length ? fetched : products;
 
-			const headers = [
-				__( 'Product', 'godam' ),
-				__( 'Product ID', 'godam' ),
-				__( 'Source', 'godam' ),
-				__( 'Product Views', 'godam' ),
-				__( 'Product Views Rate', 'godam' ),
-				__( 'Add to Cart', 'godam' ),
-				__( 'Add to Cart (in-video)', 'godam' ),
-				__( 'Add to Cart (assisted)', 'godam' ),
-				__( 'Revenue', 'godam' ),
-				__( 'Revenue (direct)', 'godam' ),
-				__( 'Revenue (assisted)', 'godam' ),
-				__( 'Currency', 'godam' ),
-				__( 'Orders', 'godam' ),
-			];
-
-			const csvContent = [ headers, ...exportProducts.map( buildCsvRow ) ]
+			const csvContent = [ CSV_HEADERS, ...exportProducts.map( buildCsvRow ) ]
 				.map( ( row ) => row.map( escapeCsvCell ).join( ',' ) )
 				.join( '\n' );
 

@@ -14,7 +14,7 @@
 /**
  * Internal dependencies
  */
-import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements, hasRevenueTierSplit } from './TopProductsTable';
+import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements, hasRevenueTierSplit, buildCsvRow, CSV_HEADERS } from './TopProductsTable';
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
 	// A value whose FIRST character is one of these is what a spreadsheet would
@@ -226,5 +226,67 @@ describe( 'formatRevenueNumeric — CSV plain-number revenue', () => {
 
 	it( 'treats a missing amount as zero', () => {
 		expect( formatRevenueNumeric( undefined, 'GBP' ) ).toBe( '0.00' );
+	} );
+} );
+
+describe( 'buildCsvRow — the CSV mirrors the on-screen table', () => {
+	const cell = ( row, header ) => row[ CSV_HEADERS.indexOf( header ) ];
+
+	it( 'emits exactly one cell per header, in order', () => {
+		const row = buildCsvRow( { product_id: 5, title: 'Sofa' } );
+		expect( row ).toHaveLength( CSV_HEADERS.length );
+	} );
+
+	it( 'carries reach, the Influenced tier and the per-placement split, matching the row on screen', () => {
+		const item = {
+			product_id: 5,
+			title: 'Sofa',
+			layer_count: 3,
+			video_count: 3,
+			sources: [ 'shoppable-video', 'woo-layer', 'reel-pop' ],
+			product_views: 9,
+			product_views_ctr: 50,
+			added_to_cart: 17,
+			added_to_cart_direct: 0,
+			added_to_cart_assisted: 17,
+			revenue_minor: 8000,
+			currency: 'INR',
+			orders: 2,
+			revenue_direct_minor: 0,
+			revenue_assisted_minor: 8000,
+			influenced_revenue_minor: 6000,
+			influenced_currency: 'INR',
+			influenced_orders: 1,
+			influenced_provisional: true,
+			revenue_by_placement: {
+				'shoppable-video': { revenue_minor: 5000 },
+				'woo-layer': { revenue_minor: 3000 },
+			},
+		};
+		const row = buildCsvRow( item );
+		expect( cell( row, 'Layers' ) ).toBe( 3 );
+		expect( cell( row, 'Videos' ) ).toBe( 3 );
+		expect( cell( row, 'Source' ) ).toContain( 'Shoppable Video' );
+		expect( cell( row, 'Revenue' ) ).toBe( '80.00' );
+		expect( cell( row, 'Revenue (assisted)' ) ).toBe( '80.00' );
+		expect( cell( row, 'Influenced Revenue' ) ).toBe( '60.00' );
+		expect( cell( row, 'Influenced Orders' ) ).toBe( 1 );
+		expect( cell( row, 'Influenced Provisional' ) ).toBe( 'Yes' );
+		expect( cell( row, 'Revenue by Placement' ) ).toContain( 'Shoppable Video: 50.00' );
+		expect( cell( row, 'Revenue by Placement' ) ).toContain( 'Video Woo Layer: 30.00' );
+	} );
+
+	it( 'leaves Influenced and the placement split empty when the row has neither (matches the table)', () => {
+		const item = {
+			product_id: 6,
+			title: 'Lamp',
+			revenue_minor: 1000,
+			currency: 'INR',
+			orders: 1,
+			revenue_by_placement: { 'woo-layer': { revenue_minor: 1000 } }, // single placement
+		};
+		const row = buildCsvRow( item );
+		expect( cell( row, 'Influenced Revenue' ) ).toBe( '' );
+		expect( cell( row, 'Revenue by Placement' ) ).toBe( '' );
 	} );
 } );
