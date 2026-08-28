@@ -118,6 +118,9 @@ export const dashboardAnalyticsApi = createApi( {
 		} ),
 		// Fetch Top Products
 		fetchTopProducts: builder.query( {
+			// sortBy/order are accepted by the endpoint and reserved for a later
+			// interactive column-sort feature; the table sends only the default
+			// (product_views, desc) for now.
 			query: ( { siteUrl, page = 1, limit = 10, search = '', sortBy = 'product_views', order = 'desc', startDate, endDate } ) => ( {
 				url: 'godam/v1/analytics/top-products',
 				params: {
