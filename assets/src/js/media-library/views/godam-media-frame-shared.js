@@ -104,6 +104,45 @@ function replaceVirtualIdInCoreImageBlocks( virtualMediaId, realId ) {
 }
 
 /**
+ * Repoints the post's featured image from the virtual GoDAM ID to the real WP
+ * attachment ID.
+ *
+ * The featured image is not a block attribute — `core/post-featured-image` (and the
+ * document sidebar's Featured image panel) writes it to the post entity's
+ * `featured_media` field. So the block-attribute swap performed by
+ * core-media-blocks-extension.js never reaches it: the field keeps the GoDAM job ID,
+ * `getEntityRecord( 'postType', 'attachment', <job id> )` 404s, and the block renders
+ * an empty placeholder with no preview.
+ *
+ * Core sets `featured_media` synchronously from the frame's `select` event, while the
+ * attachment is created asynchronously — so by the time this runs the field already
+ * holds the virtual ID and can simply be replaced.
+ *
+ * @param {string|number} virtualMediaId - The GoDAM item ID used as a placeholder.
+ * @param {number}        realId         - The newly created WP attachment ID.
+ */
+function replaceVirtualIdInFeaturedImage( virtualMediaId, realId ) {
+	let currentFeaturedMedia;
+
+	try {
+		// Undefined outside the post editor (media library screen, classic editor).
+		currentFeaturedMedia = select( 'core/editor' )?.getEditedPostAttribute?.( 'featured_media' );
+	} catch {
+		return;
+	}
+
+	if ( currentFeaturedMedia === undefined || currentFeaturedMedia === null ) {
+		return;
+	}
+
+	if ( String( currentFeaturedMedia ) !== String( virtualMediaId ) ) {
+		return;
+	}
+
+	dispatch( 'core/editor' ).editPost( { featured_media: realId } );
+}
+
+/**
  * Check if the current frame is a featured image context.
  *
  * Note: This will not cover the media modal opened from the core feature image block.
@@ -291,6 +330,10 @@ const GoDAMMediaFrameShared = {
 				// carry the virtual GoDAM ID. This runs synchronously before the custom event
 				// so that inner blocks are resolved without relying on React effect timing.
 				replaceVirtualIdInCoreImageBlocks( data.id, attachment.id );
+
+				// The featured image lives on the post entity rather than on block
+				// attributes, so it needs its own swap.
+				replaceVirtualIdInFeaturedImage( data.id, attachment.id );
 
 				// Trigger custom JS event godam-virtual-attachment-created
 				const event = new CustomEvent( 'godam-virtual-attachment-created', {
