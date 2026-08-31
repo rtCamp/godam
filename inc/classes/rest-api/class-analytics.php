@@ -38,7 +38,12 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_analytics_data' ),
-					'permission_callback' => '__return_true', // Publicly accessible.
+					// Admin-dashboard read; gated like top-products/top-videos: Phase 2 added
+					// revenue to this response (it was public for view/play analytics only).
+					// Only the admin apps call it, never the public front end.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'video_id' => array(
 							'required'          => true,
@@ -90,7 +95,11 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_dashboard_metrics' ),
-					'permission_callback' => '__return_true',
+					// Admin-dashboard read; gated like the sibling analytics routes (revenue is
+					// account-scoped and returned to the dashboard only).
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -234,7 +243,10 @@ class Analytics extends Base {
 					'callback'            => array( $this, 'fetch_placement_funnels' ),
 					// Account-scoped server-side (api_key / account_token injected,
 					// never client-supplied), like the sibling dashboard reads.
-					'permission_callback' => '__return_true',
+					// Admin-dashboard read; gated like the sibling analytics routes.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -256,7 +268,11 @@ class Analytics extends Base {
 					// return this site's own non-PII aggregate analytics. Locking down
 					// analytics reads, if ever wanted, should be done uniformly across
 					// all analytics routes rather than just this one.
-					'permission_callback' => '__return_true',
+					// Admin-dashboard read; gated uniformly with the sibling analytics routes
+					// (see note above): revenue must not be readable without auth.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'video_id'   => array(
 							'required'          => true,
@@ -514,10 +530,10 @@ class Analytics extends Base {
 	 * first 100 rows as a defensive bound on per-request DB work; rows past the
 	 * cap still get a constant-cost attributable label so none render blank.
 	 *
-	 * The /analytics/fetch route is public (permission_callback __return_true),
-	 * so this never leaks non-public pages (private, draft, pending, trashed) to
-	 * anonymous callers: the real title/permalink is revealed only when the page
-	 * is publicly viewable, or the current user can edit it.
+	 * The analytics read routes are gated on `upload_files` (authors and above),
+	 * but this still never leaks non-public pages (private, draft, pending,
+	 * trashed) beyond what the caller may see: the real title/permalink is
+	 * revealed only when the page is publicly viewable, or the caller can edit it.
 	 *
 	 * @param array $placements Placement rows from the microservice.
 	 * @return array Enriched placement rows.
