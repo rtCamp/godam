@@ -395,7 +395,13 @@ const Dashboard = () => {
 									testIdPrefix="godam-dashboard-insights-daterange"
 								/>
 							</div>
-							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
+							{ /* `lg:flex-nowrap` was sized for four cards (three metric tiles +
+							    Video-to-Cart); with the Woo add-on active, GA4ConnectionWidget
+							    makes it five, and forcing all five into one nowrap row right at
+							    the 1024px breakpoint squeezed each card too narrow to hold its
+							    labels + Manage link comfortably. Pushing the nowrap breakpoint to
+							    `xl` lets the row wrap onto two lines between lg and xl instead. */ }
+							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center xl:flex-nowrap">
 
 								<SingleMetrics
 									mode="dashboard"

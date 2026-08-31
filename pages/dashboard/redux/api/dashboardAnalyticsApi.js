@@ -129,6 +129,11 @@ export const dashboardAnalyticsApi = createApi( {
 		// `godam/v1`) since it owns the counting; this plugin only surfaces it. Only
 		// meaningful (and only called) once `enable_gtm_tracking` is on — see
 		// GA4ConnectionWidget.
+		//
+		// `source_active`/`source_type` report whether another GA4 integration on
+		// the store is already covering these events, in which case GoDAM stands
+		// down and pushes nothing even though the counters below keep incrementing
+		// (they document events "prepared to send", not delivered).
 		fetchGa4Counts: builder.query( {
 			query: () => ( {
 				url: 'godam-for-woo/v1/ga4-counts',
@@ -136,6 +141,8 @@ export const dashboardAnalyticsApi = createApi( {
 			transformResponse: ( response ) => ( {
 				addToCartCount: Number( response?.add_to_cart_count || 0 ),
 				purchaseCount: Number( response?.purchase_count || 0 ),
+				sourceActive: !! response?.source_active,
+				sourceType: response?.source_type || '',
 			} ),
 		} ),
 	} ),

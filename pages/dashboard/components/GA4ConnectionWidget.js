@@ -1,9 +1,9 @@
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
-import { check } from '@wordpress/icons';
+import { check, warning } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -27,6 +27,74 @@ const getGeneralSettingsUrl = () => {
 };
 
 /**
+ * Friendly names for `source_type` values the REST response may report, used
+ * when another GA4 integration is active and GoDAM is standing down. Falls
+ * back to a generic phrase for unrecognized or empty values.
+ */
+const KNOWN_SOURCE_LABELS = {
+	custom: __( 'a custom GA4 integration', 'godam' ),
+	manual: __( 'a manually configured GA4 integration', 'godam' ),
+};
+
+/**
+ * Human-readable label for a `source_type` value.
+ *
+ * @param {string} sourceType Raw `source_type` from the REST response.
+ * @return {string} Friendly description of the other GA4 source.
+ */
+const getSourceLabel = ( sourceType ) => {
+	if ( ! sourceType ) {
+		return __( 'another GA4 integration', 'godam' );
+	}
+
+	if ( KNOWN_SOURCE_LABELS[ sourceType ] ) {
+		return KNOWN_SOURCE_LABELS[ sourceType ];
+	}
+
+	return sourceType;
+};
+
+const tooltipText = __(
+	'add_to_cart and purchase are GA4’s default ecommerce events, already tracked by many stores.',
+	'godam',
+);
+
+/**
+ * Shared outer wrapper for every state of the widget.
+ *
+ * @param {Object} props          Props.
+ * @param {Object} props.children Widget content.
+ * @return {JSX.Element} Wrapper element.
+ */
+const WidgetShell = ( { children } ) => (
+	<div
+		className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full"
+		data-test-id="godam-ga4-connection-widget"
+	>
+		<div className="analytics-single-info w-full">
+			{ children }
+		</div>
+	</div>
+);
+
+/**
+ * "All time" caption shown next to the counts. The counters are lifetime WP
+ * options with no per-day breakdown, so — unlike the range-scoped KPI cards
+ * this widget sits alongside — they never reflect the dashboard's date-range
+ * picker. Called out explicitly so that isn't misread as range-scoped.
+ *
+ * @return {JSX.Element} Caption element.
+ */
+const AllTimeBadge = () => (
+	<span
+		className="text-[10px] uppercase tracking-wide text-zinc-400 whitespace-nowrap"
+		data-test-id="godam-ga4-connection-all-time-badge"
+	>
+		{ __( 'All time', 'godam' ) }
+	</span>
+);
+
+/**
  * GA4 connection widget for the dashboard.
  *
  * Confirms whether GoDAM is pushing `add_to_cart`/`purchase` GA4 ecommerce
@@ -35,82 +103,135 @@ const getGeneralSettingsUrl = () => {
  * surfaces the on/off state and, once on, the running counts.
  *
  * Reads `enable_gtm_tracking` directly off `window.godamSettings.enableGTMTracking`
- * (already localized to the page) rather than round-tripping through an API call.
+ * (already localized to the page) rather than round-tripping through an API call,
+ * but that toggle only says GoDAM is *prepared* to push events — the REST
+ * response's `source_active`/`source_type` say whether it actually is, or
+ * whether another GA4 integration on the store already covers this and GoDAM
+ * is standing down.
  */
 const GA4ConnectionWidget = () => {
 	const isConnected = !! window.godamSettings?.enableGTMTracking;
 
-	const { data } = useFetchGa4CountsQuery( undefined, { skip: ! isConnected } );
-
-	const tooltipText = __(
-		'add_to_cart and purchase are GA4’s default ecommerce events, already tracked by many stores.',
-		'godam',
-	);
+	const { data, isLoading, isError } = useFetchGa4CountsQuery( undefined, { skip: ! isConnected } );
 
 	if ( ! isConnected ) {
 		return (
-			<div
-				className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full"
-				data-test-id="godam-ga4-connection-widget"
-			>
-				<div className="analytics-single-info w-full">
-					<div className="flex justify-between items-start flex-row w-full gap-2">
-						<div className="analytics-info-heading">
-							<p className="text-xs text-[#525252] whitespace-nowrap" data-test-id="godam-ga4-connection-label">
-								{ __( 'Send add_to_cart and purchase to your GA4', 'godam' ) }
-							</p>
-							<Tooltip text={ tooltipText } />
-						</div>
-					</div>
-					<div className="flex flex-row justify-between gap-2 items-end">
-						<a
-							className="godam-button"
-							href={ getGeneralSettingsUrl() }
-							data-test-id="godam-ga4-connection-enable-link"
-						>
-							{ __( 'Enable', 'godam' ) }
-						</a>
+			<WidgetShell>
+				<div className="flex justify-between items-start flex-row w-full gap-2">
+					<div className="analytics-info-heading">
+						<p className="text-xs text-[#525252] whitespace-nowrap" data-test-id="godam-ga4-connection-label">
+							{ __( 'Send add_to_cart and purchase to your GA4', 'godam' ) }
+						</p>
+						<Tooltip text={ tooltipText } />
 					</div>
 				</div>
-			</div>
+				<div className="flex flex-row justify-between gap-2 items-end">
+					<a
+						className="godam-button"
+						href={ getGeneralSettingsUrl() }
+						data-test-id="godam-ga4-connection-enable-link"
+					>
+						{ __( 'Enable', 'godam' ) }
+					</a>
+				</div>
+			</WidgetShell>
+		);
+	}
+
+	if ( isLoading ) {
+		return (
+			<WidgetShell>
+				<div className="flex justify-between items-start flex-row w-full gap-2">
+					<div className="analytics-info-heading flex items-center gap-1">
+						<span
+							className="flex items-center gap-1 text-xs font-semibold text-zinc-500"
+							data-test-id="godam-ga4-connection-status"
+						>
+							{ __( 'Checking GA4 status…', 'godam' ) }
+						</span>
+					</div>
+				</div>
+			</WidgetShell>
+		);
+	}
+
+	if ( isError ) {
+		return (
+			<WidgetShell>
+				<div className="flex justify-between items-start flex-row w-full gap-2">
+					<div className="analytics-info-heading flex items-center gap-1">
+						<span
+							className="flex items-center gap-1 text-xs font-semibold text-zinc-500"
+							data-test-id="godam-ga4-connection-status"
+						>
+							<Icon icon={ warning } size={ 14 } />
+							{ __( 'GA4 connection status unavailable', 'godam' ) }
+						</span>
+						<Tooltip text={ __( 'Could not reach the GA4 status endpoint. This can happen right after an update — try refreshing in a moment.', 'godam' ) } />
+					</div>
+				</div>
+				<div className="flex flex-row justify-between gap-2 items-end">
+					<a
+						className="godam-button"
+						href={ getGeneralSettingsUrl() }
+						data-test-id="godam-ga4-connection-manage-link"
+					>
+						{ __( 'Manage', 'godam' ) }
+					</a>
+				</div>
+			</WidgetShell>
 		);
 	}
 
 	const addToCartCount = Number( data?.addToCartCount || 0 );
 	const purchaseCount = Number( data?.purchaseCount || 0 );
+	const isStandingDown = !! data?.sourceActive;
 
-	return (
-		<div
-			className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full"
-			data-test-id="godam-ga4-connection-widget"
-		>
-			<div className="analytics-single-info w-full">
+	if ( isStandingDown ) {
+		const sourceLabel = getSourceLabel( data?.sourceType );
+
+		return (
+			<WidgetShell>
 				<div className="flex justify-between items-start flex-row w-full gap-2">
 					<div className="analytics-info-heading flex items-center gap-1">
 						<span
-							className="flex items-center gap-1 text-xs font-semibold text-emerald-700"
+							className="flex items-center gap-1 text-xs font-semibold text-amber-700"
 							data-test-id="godam-ga4-connection-status"
 						>
-							<Icon icon={ check } size={ 14 } />
-							{ __( 'Sending to GA4', 'godam' ) }
+							<Icon icon={ warning } size={ 14 } />
+							{ __( 'GoDAM is standing down', 'godam' ) }
 						</span>
-						<Tooltip text={ tooltipText } />
+						<Tooltip
+							text={ sprintf(
+								/* translators: %s: name of the other active GA4 integration. */
+								__( '%s is already sending these events, so GoDAM is not pushing them to avoid duplicates.', 'godam' ),
+								sourceLabel,
+							) }
+						/>
 					</div>
 				</div>
+				<p className="text-xs text-zinc-500" data-test-id="godam-ga4-connection-standing-down-note">
+					{ sprintf(
+						/* translators: %s: name of the other active GA4 integration. */
+						__( '%s is active — GoDAM is not sending anything to avoid duplicate events.', 'godam' ),
+						sourceLabel,
+					) }
+				</p>
 				<div className="flex flex-row justify-between gap-4 items-end">
 					<div className="flex flex-row gap-6">
 						<div className="flex flex-col">
 							<p className="single-metrics-value" data-test-id="godam-ga4-connection-add-to-cart-count">
 								{ addToCartCount.toLocaleString() }
 							</p>
-							<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'add_to_cart', 'godam' ) }</span>
+							<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'add_to_cart prepared', 'godam' ) }</span>
 						</div>
 						<div className="flex flex-col">
 							<p className="single-metrics-value" data-test-id="godam-ga4-connection-purchase-count">
 								{ purchaseCount.toLocaleString() }
 							</p>
-							<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'purchase', 'godam' ) }</span>
+							<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'purchase prepared', 'godam' ) }</span>
 						</div>
+						<AllTimeBadge />
 					</div>
 					<a
 						className="godam-button"
@@ -120,8 +241,49 @@ const GA4ConnectionWidget = () => {
 						{ __( 'Manage', 'godam' ) }
 					</a>
 				</div>
+			</WidgetShell>
+		);
+	}
+
+	return (
+		<WidgetShell>
+			<div className="flex justify-between items-start flex-row w-full gap-2">
+				<div className="analytics-info-heading flex items-center gap-1">
+					<span
+						className="flex items-center gap-1 text-xs font-semibold text-emerald-700"
+						data-test-id="godam-ga4-connection-status"
+					>
+						<Icon icon={ check } size={ 14 } />
+						{ __( 'Sending to GA4', 'godam' ) }
+					</span>
+					<Tooltip text={ tooltipText } />
+				</div>
 			</div>
-		</div>
+			<div className="flex flex-row justify-between gap-4 items-end">
+				<div className="flex flex-row gap-6">
+					<div className="flex flex-col">
+						<p className="single-metrics-value" data-test-id="godam-ga4-connection-add-to-cart-count">
+							{ addToCartCount.toLocaleString() }
+						</p>
+						<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'add_to_cart', 'godam' ) }</span>
+					</div>
+					<div className="flex flex-col">
+						<p className="single-metrics-value" data-test-id="godam-ga4-connection-purchase-count">
+							{ purchaseCount.toLocaleString() }
+						</p>
+						<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'purchase', 'godam' ) }</span>
+					</div>
+					<AllTimeBadge />
+				</div>
+				<a
+					className="godam-button"
+					href={ getGeneralSettingsUrl() }
+					data-test-id="godam-ga4-connection-manage-link"
+				>
+					{ __( 'Manage', 'godam' ) }
+				</a>
+			</div>
+		</WidgetShell>
 	);
 };
 
