@@ -20,9 +20,11 @@ import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery } f
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
+import VideoToCartCard from '../analytics/VideoToCartCard';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
+import TopProductsTable from './components/TopProductsTable';
 import DateRangePicker, { triggerLabelFor, fromISO } from '../analytics/components/DateRangePicker';
 
 /**
@@ -165,6 +167,40 @@ const Dashboard = () => {
 	}, [] );
 
 	const siteUrl = window.location.origin;
+
+	// Top Products is a WooCommerce feature; show its tab only when WooCommerce is
+	// active (godam-for-woo supplies the product interactions it reads). Non-Woo
+	// sites keep the plain Top Videos table with no tab switcher.
+	const hasWooProducts = !! window.videoData?.isWoo;
+	const [ topTab, setTopTab ] = useState( 'videos' );
+
+	// The switcher renders inside the active table's head (where its title would
+	// be), so there is no separate title bar and no duplicate heading. Null on
+	// non-Woo sites, where the table falls back to its own "Top Videos" heading.
+	const topTabSwitcher = hasWooProducts ? (
+		<div className="godam-top-tabs__nav" role="tablist" aria-label={ __( 'Top content', 'godam' ) }>
+			<button
+				type="button"
+				role="tab"
+				aria-selected={ topTab === 'videos' }
+				className={ `godam-top-tabs__tab${ topTab === 'videos' ? ' is-active' : '' }` }
+				data-test-id="godam-top-tab-videos"
+				onClick={ () => setTopTab( 'videos' ) }
+			>
+				{ __( 'Top Videos', 'godam' ) }
+			</button>
+			<button
+				type="button"
+				role="tab"
+				aria-selected={ topTab === 'products' }
+				className={ `godam-top-tabs__tab${ topTab === 'products' ? ' is-active' : '' }` }
+				data-test-id="godam-top-tab-products"
+				onClick={ () => setTopTab( 'products' ) }
+			>
+				{ __( 'Top Products', 'godam' ) }
+			</button>
+		</div>
+	) : null;
 
 	// Reel Pops live in the godam-for-woo add-on, which registers the
 	// "reel-pops-analytics" dashboard section. Only surface the link when it's
@@ -404,19 +440,21 @@ const Dashboard = () => {
 									analyticsDataFetched={ insightsMetrics }
 								/>
 
-								<SingleMetrics
-									mode="dashboard"
-									metricType={ 'engagement-rate' }
-									label={ __( 'Engagement Rate', 'godam' ) }
-									tooltipText={ __(
-										'Average share of each video that viewers watched, across all plays.',
-										'godam',
-									) }
-									rangeActive={ insightsRangeActive }
-									deltaLabel={ insightsDeltaLabel }
-									dataLabel={ insightsCardLabel }
-									analyticsDataFetched={ insightsMetrics }
-								/>
+								{ /* Engagement Rate is intentionally not shown on the dashboard
+								    (it keeps the row to four cards on Woo / three on non-Woo,
+								    matching the design and avoiding a cramped, clipping row).
+								    Average Engagement still appears on each video's own
+								    analytics page. */ }
+
+								{ /* WooCommerce-only: Video-to-Cart has no meaning without a
+								    store, and the card would otherwise read a permanent,
+								    misleading "0" on non-Woo sites. */ }
+								{ hasWooProducts && (
+									<VideoToCartCard
+										videoToCart={ insightsMetrics?.video_to_cart }
+										dataLabel={ insightsCardLabel }
+									/>
+								) }
 							</div>
 						</div>
 
@@ -429,7 +467,9 @@ const Dashboard = () => {
 					</div>
 				</div>
 
-				<TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } />
+				{ hasWooProducts && topTab === 'products'
+					? <TopProductsTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } tabSwitcher={ topTabSwitcher } />
+					: <TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } tabSwitcher={ topTabSwitcher } /> }
 
 				{ extendedSections.map( ( { id, component: SectionComponent } ) => (
 					<SectionComponent key={ id } />

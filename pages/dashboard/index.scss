@@ -722,3 +722,65 @@
 // (.godam-insights-card moved to pages/analytics/index.scss — shared by both surfaces.)
 
 // .godam-analytics-unavailable moved to pages/shared/analytics-unavailable.scss (shared via AnalyticsUnavailableNotice).
+
+/* Top Videos / Top Products segmented switcher (Woo-gated), and the Source chips
+   in the Top Products table. */
+.godam-top-tabs {
+
+	&__nav {
+		display: inline-flex;
+		gap: 4px;
+		padding: 4px;
+		background: #f0f0f1;
+		border-radius: 8px;
+	}
+
+	&__tab {
+		appearance: none;
+		border: 0;
+		background: transparent;
+		padding: 8px 18px;
+		font-size: 14px;
+		font-weight: 500;
+		line-height: 1.4;
+		color: #646970;
+		border-radius: 6px;
+		cursor: pointer;
+
+		// Active tab is a white pill with dark (not accent-coloured) text, matching
+		// the Figma segmented control.
+		&.is-active {
+			background: #fff;
+			color: #1e1e1e;
+			font-weight: 600;
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+		}
+	}
+}
+
+.godam-source-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.godam-chip {
+	display: inline-block;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	color: #50575e;
+	background: #f0f0f1;
+	border-radius: 4px;
+	white-space: nowrap;
+}
+
+// In-video (Direct) add-to-cart that is structurally 0 (variable / grouped /
+// external products can't be added inside a video). Greyed with a dotted
+// underline + help cursor so the hover tooltip reads as an explanation.
+.godam-direct-na {
+	opacity: 0.6;
+	text-decoration: underline dotted;
+	text-underline-offset: 2px;
+	cursor: help;
+}

@@ -75,10 +75,11 @@ function getPageList( current, total ) {
  * include-filter by the REST proxy, so server pagination stays correct.
  *
  * @param {Object}  props
- * @param {string}  props.siteUrl Current site URL.
- * @param {boolean} props.skip    Skip the query while the dashboard is gated.
+ * @param {string}  props.siteUrl       Current site URL.
+ * @param {boolean} props.skip          Skip the query while the dashboard is gated.
+ * @param {Object}  [props.tabSwitcher] Optional switcher node rendered in the table head in place of the title.
  */
-export default function TopVideosTable( { siteUrl, skip = false } ) {
+export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = null } ) {
 	const [ page, setPage ] = useState( 1 );
 	const [ searchInput, setSearchInput ] = useState( '' );
 	const [ search, setSearch ] = useState( '' );
@@ -221,18 +222,20 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 	return (
 		<div className="top-media-container">
 			<div className="top-media-container__head">
-				<h2>
-					{ __( 'Top Videos', 'godam' ) }
-					{ totalItems > 0 && (
-						<span className="ml-2 text-sm font-normal text-zinc-400">
-							{ sprintf(
-								/* translators: %s: number of videos (already locale-formatted). */
-								_n( '%s video', '%s videos', totalItems, 'godam' ),
-								totalItems.toLocaleString(),
-							) }
-						</span>
-					) }
-				</h2>
+				{ tabSwitcher || (
+					<h2>
+						{ __( 'Top Videos', 'godam' ) }
+						{ totalItems > 0 && (
+							<span className="ml-2 text-sm font-normal text-zinc-400">
+								{ sprintf(
+									/* translators: %s: number of videos (already locale-formatted). */
+									_n( '%s video', '%s videos', totalItems, 'godam' ),
+									totalItems.toLocaleString(),
+								) }
+							</span>
+						) }
+					</h2>
+				) }
 				<div className="top-media-container__tools">
 					<SearchControl
 						__nextHasNoMarginBottom

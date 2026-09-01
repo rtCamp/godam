@@ -26,6 +26,7 @@ import DateRangePicker, { triggerLabelFor } from './components/DateRangePicker';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
+import VideoToCartCard from './VideoToCartCard.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
@@ -88,6 +89,9 @@ const Analytics = ( { attachmentID } ) => {
 
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
+	// Video-to-Cart is a WooCommerce feature; the card is shown only on Woo sites
+	// (otherwise it would read a permanent, misleading "0").
+	const isWoo = !! window.videoData?.isWoo;
 	const apiKeyError = getAPIKeyErrorInfo();
 	const apiKeyErrorType = apiKeyError?.type || null;
 
@@ -603,7 +607,6 @@ const Analytics = ( { attachmentID } ) => {
 											'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)',
 											'godam',
 										) }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
 										analyticsDataFetched={ rangedAnalyticsData }
 										dataLabel={ rangeLabel }
 									/>
@@ -615,7 +618,6 @@ const Analytics = ( { attachmentID } ) => {
 											'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
 											'godam',
 										) }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
 										analyticsDataFetched={ rangedAnalyticsData }
 										dataLabel={ rangeLabel }
 									/>
@@ -627,17 +629,23 @@ const Analytics = ( { attachmentID } ) => {
 											'Total time the video has been watched, aggregated across all plays',
 											'godam',
 										) }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
 										analyticsDataFetched={ rangedAnalyticsData }
 										dataLabel={ rangeLabel }
 									/>
+
+									{ isWoo && (
+										<VideoToCartCard
+											videoToCart={ rangedAnalyticsData?.video_to_cart }
+											dataLabel={ rangeLabel }
+										/>
+									) }
 
 									<PlaysVsViewers
 										plays={ rangedAnalyticsData?.plays ?? 0 }
 										uniqueViewers={ rangedAnalyticsData?.unique_viewers ?? null }
 										showRatio={ true }
 										isLoading={ isAnalyticsDataLoading }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
+										dataLabel={ rangeLabel }
 									/>
 								</div>
 							</div>
