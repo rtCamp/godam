@@ -10,6 +10,7 @@ import { SearchControl, ToggleControl } from '@wordpress/components';
  */
 import { useFetchTopVideosQuery, useLazyFetchTopVideosQuery } from '../redux/api/dashboardAnalyticsApi';
 import DateRangePicker from '../../analytics/components/DateRangePicker';
+import Tooltip from '../../analytics/Tooltip';
 import { formatWatchTime } from '../../utils/formatters';
 import DefaultThumbnail from '../../../assets/src/images/video-thumbnail-default.png';
 import ExportBtn from '../../../assets/src/images/export.svg';
@@ -270,14 +271,94 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 				<table className="w-full">
 					<thead>
 						<tr>
-							<th scope="col">{ __( 'Name', 'godam' ) }</th>
-							<th scope="col">{ __( 'Size', 'godam' ) }</th>
-							<th scope="col">{ __( 'Play Rate', 'godam' ) }</th>
-							<th scope="col">{ __( 'Total Plays', 'godam' ) }</th>
-							<th scope="col">{ __( 'Total Watch Time', 'godam' ) }</th>
-							<th scope="col">{ __( 'Average Engagement', 'godam' ) }</th>
-							<th scope="col">{ __( 'Conversion Rate', 'godam' ) }</th>
-							<th scope="col">{ __( 'Placements', 'godam' ) }</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Name', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'The video\'s title. Open it to see this video\'s own analytics.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Size', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'The video file\'s size.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Play Rate', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'The share of people who, after the video loaded, actually pressed play.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Total Plays', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'How many times this video was played.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Total Watch Time', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'The total time everyone spent watching this video.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Average Engagement', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'On average, how much of the video people watch before leaving.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Conversion Rate', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'The share of viewing sessions that acted on an interactive layer: clicked a hotspot or CTA, submitted a form, voted in a poll, or added to cart. Hovers are not counted.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Placements', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'How many different pages this video appears on.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
 						</tr>
 					</thead>
 					<tbody>
