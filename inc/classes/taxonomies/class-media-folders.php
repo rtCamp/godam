@@ -84,6 +84,18 @@ class Media_Folders extends Base {
 			'rewrite'           => array( 'slug' => 'media-folder' ),
 			'show_in_rest'      => true,
 			'query_var'         => true,
+			// Media folders organise the media library, so their management tracks media
+			// access rather than the default `manage_categories` (only Editors/Admins hold
+			// that — which is why an Author got a 403 `rest_cannot_create` on New Folder).
+			// create + rename share `edit_terms`, so `upload_files` lets Authors and above
+			// create/rename folders (Contributors/Subscribers can't upload media anyway).
+			// Deleting stays limited to Editors/Admins via `manage_categories`.
+			'capabilities'      => array(
+				'manage_terms' => 'upload_files',
+				'edit_terms'   => 'upload_files',
+				'delete_terms' => 'manage_categories',
+				'assign_terms' => 'upload_files',
+			),
 		);
 
 		return array_merge( $args, $extra );

@@ -410,7 +410,9 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			ref={ menuRef }
 			style={ { top: position.top, left: position.left } }
 		>
-			{ hasRole( [ 'superadmin', 'administrator', 'editor' ] ) && (
+			{ /* Create + rename share one capability (edit_terms = upload_files), so these
+				are available to Authors and above — matching who can create folders. */ }
+			{ hasRole( [ 'superadmin', 'administrator', 'editor', 'author' ] ) && (
 				<>
 					<Button
 						icon={ NewFolderIcon }
@@ -428,6 +430,12 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 					>
 						{ __( 'Rename', 'godam' ) }
 					</Button>
+				</>
+			) }
+			{ /* Lock is a protective/admin feature and Bookmark uses editor+ bulk endpoints,
+				so both remain limited to Editors and above. */ }
+			{ hasRole( [ 'superadmin', 'administrator', 'editor' ] ) && (
+				<>
 					<Button
 						icon={ LockFolderIcon }
 						onClick={ () => handleMenuItemClick( 'lockFolder' ) }
