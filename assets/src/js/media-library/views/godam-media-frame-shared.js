@@ -16,6 +16,7 @@ import { select, dispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import { getQuery } from '../utility.js';
+import { setupClassicFeaturedImage, resolveClassicFeaturedImage } from '../classic-featured-image.js';
 import { ALLOWED_MEDIA_TYPES as DOCUMENT_MIME_TYPES } from '../../../blocks/godam-pdf/constants.js';
 
 const l10n = wp?.media?.view?.l10n;
@@ -116,7 +117,8 @@ function replaceVirtualIdInCoreImageBlocks( virtualMediaId, realId ) {
  *
  * Core sets `featured_media` synchronously from the frame's `select` event, while the
  * attachment is created asynchronously — so by the time this runs the field already
- * holds the virtual ID and can simply be replaced.
+ * holds the virtual ID and can simply be replaced. The classic editor offers no such
+ * window and is handled by classic-featured-image.js instead.
  *
  * @param {string|number} virtualMediaId - The GoDAM item ID used as a placeholder.
  * @param {number}        realId         - The newly created WP attachment ID.
@@ -143,31 +145,6 @@ function replaceVirtualIdInFeaturedImage( virtualMediaId, realId ) {
 }
 
 /**
- * Check if the current frame is a featured image context.
- *
- * Note: This will not cover the media modal opened from the core feature image block.
- *
- * @since 1.4.8
- *
- * @param {wp.media.view.MediaFrame} frame
- * @return {boolean} True if featured image context, false otherwise.
- */
-const checkIfFeatureImage = ( frame ) => {
-	// Check if this is a featured image context.
-	if ( frame && frame.state && frame.state() ) {
-		const state = frame.state();
-		const stateId = state.id || '';
-
-		// Featured image context
-		if ( stateId === 'featured-image' || frame.id === 'featured-image' ) {
-			return true;
-		}
-	}
-
-	return false;
-};
-
-/**
  * Check if the current frame is an analytics context.
  *
  * @since 1.6.0
@@ -189,10 +166,9 @@ const checkIfAnalyticsContext = ( frame ) => {
  */
 const GoDAMMediaFrameShared = {
 	browseRouter( routerView ) {
-		const isFeatureImage = checkIfFeatureImage( this );
 		const isAnalyticsContext = checkIfAnalyticsContext( this );
 
-		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isFeatureImage && ! isAnalyticsContext ) {
+		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isAnalyticsContext ) {
 			routerView.set( {
 				upload: {
 					text: l10n.uploadFilesTitle,
@@ -223,6 +199,9 @@ const GoDAMMediaFrameShared = {
 
 	GoDAMCreate() {
 		const state = this.state();
+
+		// Hold back a classic-editor featured image pick until its attachment exists.
+		setupClassicFeaturedImage();
 
 		const mimeTypes = normalizeGoDAMTabType(
 			state.get( 'library' )?.props?.get( 'type' ),
@@ -332,8 +311,10 @@ const GoDAMMediaFrameShared = {
 				replaceVirtualIdInCoreImageBlocks( data.id, attachment.id );
 
 				// The featured image lives on the post entity rather than on block
-				// attributes, so it needs its own swap.
+				// attributes, so it needs its own swap. The classic editor gets no
+				// placeholder at all — its pick was parked, and is released here.
 				replaceVirtualIdInFeaturedImage( data.id, attachment.id );
+				resolveClassicFeaturedImage( data.id, attachment.id );
 
 				// Trigger custom JS event godam-virtual-attachment-created
 				const event = new CustomEvent( 'godam-virtual-attachment-created', {
