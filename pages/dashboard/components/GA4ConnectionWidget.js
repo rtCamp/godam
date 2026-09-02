@@ -55,7 +55,7 @@ const getSourceLabel = ( sourceType ) => {
 };
 
 const tooltipText = __(
-	'add_to_cart and purchase are GA4’s default ecommerce events, already tracked by many stores.',
+	'Add To Cart and Purchase are GA4’s default ecommerce events, already tracked by many stores.',
 	'godam',
 );
 
@@ -87,7 +87,7 @@ const WidgetShell = ( { children } ) => (
  */
 const AllTimeBadge = () => (
 	<span
-		className="text-[10px] uppercase tracking-wide text-zinc-400 whitespace-nowrap"
+		className="text-xs tracking-wide text-zinc-500 whitespace-nowrap"
 		data-test-id="godam-ga4-connection-all-time-badge"
 	>
 		{ __( 'All time', 'godam' ) }
@@ -120,7 +120,7 @@ const GA4ConnectionWidget = () => {
 				<div className="flex justify-between items-start flex-row w-full gap-2">
 					<div className="analytics-info-heading">
 						<p className="text-xs text-[#525252] whitespace-nowrap" data-test-id="godam-ga4-connection-label">
-							{ __( 'Send add_to_cart and purchase to your GA4', 'godam' ) }
+							{ __( 'GA4 Tracking', 'godam' ) }
 						</p>
 						<Tooltip text={ tooltipText } />
 					</div>
@@ -165,7 +165,7 @@ const GA4ConnectionWidget = () => {
 							data-test-id="godam-ga4-connection-status"
 						>
 							<Icon icon={ warning } size={ 14 } />
-							{ __( 'GA4 connection status unavailable', 'godam' ) }
+							{ __( 'GA4 unavailable', 'godam' ) }
 						</span>
 						<Tooltip text={ __( 'Could not reach the GA4 status endpoint. This can happen right after an update — try refreshing in a moment.', 'godam' ) } />
 					</div>
@@ -210,29 +210,24 @@ const GA4ConnectionWidget = () => {
 						/>
 					</div>
 				</div>
-				<p className="text-xs text-zinc-500" data-test-id="godam-ga4-connection-standing-down-note">
-					{ sprintf(
-						/* translators: %s: name of the other active GA4 integration. */
-						__( '%s is active — GoDAM is not sending anything to avoid duplicate events.', 'godam' ),
-						sourceLabel,
-					) }
-				</p>
 				<div className="flex flex-row justify-between gap-4 items-end">
 					<div className="flex flex-row gap-6">
 						<div className="flex flex-col">
 							<p className="single-metrics-value" data-test-id="godam-ga4-connection-add-to-cart-count">
 								{ addToCartCount.toLocaleString() }
 							</p>
-							<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'add_to_cart prepared', 'godam' ) }</span>
+							<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Add to Cart', 'godam' ) }</span>
 						</div>
 						<div className="flex flex-col">
 							<p className="single-metrics-value" data-test-id="godam-ga4-connection-purchase-count">
 								{ purchaseCount.toLocaleString() }
 							</p>
-							<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'purchase prepared', 'godam' ) }</span>
+							<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Purchase', 'godam' ) }</span>
 						</div>
-						<AllTimeBadge />
 					</div>
+				</div>
+				<div>
+					<AllTimeBadge />
 					<a
 						className="godam-button"
 						href={ getGeneralSettingsUrl() }
@@ -265,16 +260,18 @@ const GA4ConnectionWidget = () => {
 						<p className="single-metrics-value" data-test-id="godam-ga4-connection-add-to-cart-count">
 							{ addToCartCount.toLocaleString() }
 						</p>
-						<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'add_to_cart', 'godam' ) }</span>
+						<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Add to Cart', 'godam' ) }</span>
 					</div>
 					<div className="flex flex-col">
 						<p className="single-metrics-value" data-test-id="godam-ga4-connection-purchase-count">
 							{ purchaseCount.toLocaleString() }
 						</p>
-						<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'purchase', 'godam' ) }</span>
+						<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Purchase', 'godam' ) }</span>
 					</div>
-					<AllTimeBadge />
 				</div>
+			</div>
+			<div>
+				<AllTimeBadge />
 				<a
 					className="godam-button"
 					href={ getGeneralSettingsUrl() }
