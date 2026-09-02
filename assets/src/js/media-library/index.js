@@ -64,6 +64,12 @@ const MEDIA_FRAME_MENU_MAX_ATTEMPTS = 40;
 const MEDIA_FRAME_MENU_RETRY_DELAY_MS = 50;
 
 /**
+ * Width below which the folder sidebar is a full-screen overlay rather than a column
+ * (matches the `max-width: 900px` breakpoint in media-library.scss).
+ */
+const MOBILE_SIDEBAR_BREAKPOINT = 900;
+
+/**
  * Inject the folder-sidebar root into a media frame's menu and tell the React
  * app to render into it. Shared by the Select and Post media frames so the
  * mounting logic (and its retry tuning) lives in one place instead of being
@@ -338,10 +344,12 @@ class MediaLibrary {
 		if ( ! isFolderOrgDisabled() && isUploadPage() ) {
 			const mediaLibraryRoot = document.createElement( 'div' );
 			mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
-			// Apply the user's saved collapsed state before the node is inserted: the React
-			// sidebar mounts later, so setting the class only from there would paint the
-			// expanded layout first and visibly snap shut on every page load.
-			if ( window.easydamMediaLibrary?.sidebarHidden ) {
+			// Resolve the collapsed state before the node is inserted: the React sidebar
+			// mounts later, so setting the class only from there would paint the expanded
+			// layout first and visibly snap shut on every page load. Below the mobile
+			// breakpoint the sidebar is a full-screen overlay that always starts collapsed;
+			// above it, the user's saved preference decides.
+			if ( window.innerWidth < MOBILE_SIDEBAR_BREAKPOINT || window.easydamMediaLibrary?.sidebarHidden ) {
 				mediaLibraryRoot.classList.add( 'hide-sidebar' );
 			}
 			const wpbody = document.querySelector( '#wpbody' );

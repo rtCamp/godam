@@ -30,6 +30,22 @@ import LockedTab from './components/folder-tree/LockedTab.jsx';
 import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery, useUpdateSidebarPreferenceMutation } from './redux/api/folders.js';
 import SearchBar from './components/search-bar/SearchBar.jsx';
 
+/**
+ * Width below which the folder sidebar is a full-screen overlay rather than a column
+ * (matches the `max-width: 900px` breakpoint in index.scss).
+ */
+const MOBILE_BREAKPOINT = 900;
+
+/**
+ * Whether the sidebar currently renders as a mobile overlay.
+ *
+ * An overlay covers the grid, so it always starts collapsed and expanding it is a
+ * one-off action — the saved preference is neither read nor written at this width.
+ *
+ * @return {boolean} True on viewports narrower than the mobile breakpoint.
+ */
+const isMobileViewport = () => typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
+
 const App = () => {
 	const dispatch = useDispatch();
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
@@ -45,10 +61,13 @@ const App = () => {
 		y: 0,
 		folderId: null,
 	} );
-	// The collapsed state is saved per user in user meta and sent back with the page,
-	// so the sidebar opens the way this user last left it. wp_localize_script
-	// stringifies scalars, so the flag arrives as '1' or ''.
-	const [ isSidebarHidden, setIsSidebarHidden ] = useState( () => Boolean( window.easydamMediaLibrary?.sidebarHidden ) );
+	// The collapsed state is saved per user in user meta and sent back with the page, so
+	// the sidebar opens the way this user last left it — except on mobile, which always
+	// starts collapsed. wp_localize_script stringifies scalars, so the saved flag arrives
+	// as '1' or ''.
+	const [ isSidebarHidden, setIsSidebarHidden ] = useState(
+		() => isMobileViewport() || Boolean( window.easydamMediaLibrary?.sidebarHidden ),
+	);
 
 	const handleClick = useCallback( ( id ) => {
 		if ( isMultiSelecting ) {
@@ -80,11 +99,10 @@ const App = () => {
 		setIsSidebarHidden( true );
 	};
 
-	// Apply the collapsed state on mount: either the user's saved preference, or a
-	// window narrower than 900px. The narrow-viewport close is a layout constraint
-	// rather than a choice, so it is never saved back.
+	// Sync the DOM with the collapsed state resolved above (saved preference, or always
+	// collapsed on mobile).
 	useEffect( () => {
-		if ( isSidebarHidden || ( typeof window !== 'undefined' && window.innerWidth < 900 ) ) {
+		if ( isSidebarHidden ) {
 			closeFolderMenu();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -122,9 +140,12 @@ const App = () => {
 
 		setIsSidebarHidden( newHidden );
 
-		// Fire-and-forget: the sidebar has already moved, and a failed save just means
-		// the next page load falls back to the previously saved state.
-		updateSidebarPreference( newHidden );
+		// Fire-and-forget, and desktop-only: on mobile the sidebar is a transient overlay,
+		// so expanding it must not overwrite the choice the user made on a wide screen. A
+		// failed save just means the next page load falls back to the stored state.
+		if ( ! isMobileViewport() ) {
+			updateSidebarPreference( newHidden );
+		}
 	};
 
 	const handleContextMenu = ( e, folderId, folder ) => {
