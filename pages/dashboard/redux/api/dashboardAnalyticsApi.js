@@ -145,6 +145,27 @@ export const dashboardAnalyticsApi = createApi( {
 				};
 			},
 		} ),
+		// Fetch GA4 add_to_cart/purchase counts pushed by the godam-for-woo add-on's
+		// dataLayer emission. Lives under that add-on's own REST namespace (not
+		// `godam/v1`) since it owns the counting; this plugin only surfaces it. Only
+		// meaningful (and only called) once `enable_gtm_tracking` is on — see
+		// GA4ConnectionWidget.
+		//
+		// `source_active`/`source_type` report whether another GA4 integration on
+		// the store is already covering these events, in which case GoDAM stands
+		// down and pushes nothing even though the counters below keep incrementing
+		// (they document events "prepared to send", not delivered).
+		fetchGa4Counts: builder.query( {
+			query: () => ( {
+				url: 'godam-for-woo/v1/ga4-counts',
+			} ),
+			transformResponse: ( response ) => ( {
+				addToCartCount: Number( response?.add_to_cart_count || 0 ),
+				purchaseCount: Number( response?.purchase_count || 0 ),
+				sourceActive: !! response?.source_active,
+				sourceType: response?.source_type || '',
+			} ),
+		} ),
 	} ),
 } );
 
@@ -155,5 +176,6 @@ export const {
 	useLazyFetchTopVideosQuery,
 	useFetchTopProductsQuery,
 	useLazyFetchTopProductsQuery,
+	useFetchGa4CountsQuery,
 	useFetchPlacementFunnelsQuery,
 } = dashboardAnalyticsApi;

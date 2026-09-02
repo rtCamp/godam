@@ -2,7 +2,7 @@
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, joelabreo, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1, rudrakshigupta, sabbir1991, shreyasikhar26
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 2.1.1
 License: GPLv2 or later
