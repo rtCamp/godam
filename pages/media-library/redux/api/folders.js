@@ -243,6 +243,16 @@ export const folderApi = createApi( {
 				},
 			} ),
 		} ),
+		updateSidebarPreference: builder.mutation( {
+			query: ( hidden ) => ( {
+				url: 'godam/v1/media-library/sidebar-preference',
+				method: 'POST',
+				body: { hidden },
+				headers: {
+					'X-WP-Nonce': window.MediaLibrary.nonce,
+				},
+			} ),
+		} ),
 		searchFolders: builder.query( {
 			async queryFn( { searchTerm, page = 1, perPage = 10 }, api, extraOptions, baseQuery ) {
 				const result = await baseQuery( {
@@ -294,5 +304,6 @@ export const {
 	useBulkBookmarkFoldersMutation,
 	useAssignFolderMutation,
 	useDownloadZipMutation,
+	useUpdateSidebarPreferenceMutation,
 	useSearchFoldersQuery,
 } = folderApi;

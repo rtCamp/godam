@@ -27,7 +27,7 @@ import { FolderCreationModal, RenameModal, DeleteModal } from './components/moda
 import { triggerFilterChange } from './data/media-grid.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
-import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery } from './redux/api/folders.js';
+import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery, useUpdateSidebarPreferenceMutation } from './redux/api/folders.js';
 import SearchBar from './components/search-bar/SearchBar.jsx';
 
 const App = () => {
@@ -37,6 +37,7 @@ const App = () => {
 	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
 	const { data: allMediaCount, refetch: refetchAllMediaCount } = useGetAllMediaCountQuery();
 	const { data: uncategorizedCount, refetch: refetchUncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
+	const [ updateSidebarPreference ] = useUpdateSidebarPreferenceMutation();
 
 	const [ contextMenu, setContextMenu ] = useState( {
 		visible: false,
@@ -44,7 +45,10 @@ const App = () => {
 		y: 0,
 		folderId: null,
 	} );
-	const [ isSidebarHidden, setIsSidebarHidden ] = useState( false );
+	// The collapsed state is saved per user in user meta and sent back with the page,
+	// so the sidebar opens the way this user last left it. wp_localize_script
+	// stringifies scalars, so the flag arrives as '1' or ''.
+	const [ isSidebarHidden, setIsSidebarHidden ] = useState( () => Boolean( window.easydamMediaLibrary?.sidebarHidden ) );
 
 	const handleClick = useCallback( ( id ) => {
 		if ( isMultiSelecting ) {
@@ -76,9 +80,11 @@ const App = () => {
 		setIsSidebarHidden( true );
 	};
 
-	// Call closeFolderMenu on mount when window width is less than 900px so that folder sidebar remains closed by default.
+	// Apply the collapsed state on mount: either the user's saved preference, or a
+	// window narrower than 900px. The narrow-viewport close is a layout constraint
+	// rather than a choice, so it is never saved back.
 	useEffect( () => {
-		if ( typeof window !== 'undefined' && window.innerWidth < 900 ) {
+		if ( isSidebarHidden || ( typeof window !== 'undefined' && window.innerWidth < 900 ) ) {
 			closeFolderMenu();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -115,6 +121,10 @@ const App = () => {
 		}
 
 		setIsSidebarHidden( newHidden );
+
+		// Fire-and-forget: the sidebar has already moved, and a failed save just means
+		// the next page load falls back to the previously saved state.
+		updateSidebarPreference( newHidden );
 	};
 
 	const handleContextMenu = ( e, folderId, folder ) => {

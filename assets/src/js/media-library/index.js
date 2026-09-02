@@ -338,6 +338,12 @@ class MediaLibrary {
 		if ( ! isFolderOrgDisabled() && isUploadPage() ) {
 			const mediaLibraryRoot = document.createElement( 'div' );
 			mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
+			// Apply the user's saved collapsed state before the node is inserted: the React
+			// sidebar mounts later, so setting the class only from there would paint the
+			// expanded layout first and visibly snap shut on every page load.
+			if ( window.easydamMediaLibrary?.sidebarHidden ) {
+				mediaLibraryRoot.classList.add( 'hide-sidebar' );
+			}
 			const wpbody = document.querySelector( '#wpbody' );
 			wpbody.insertBefore( mediaLibraryRoot, wpbody.firstChild );
 		}
