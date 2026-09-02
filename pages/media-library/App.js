@@ -148,13 +148,33 @@ const App = () => {
 		}
 	};
 
-	const handleContextMenu = ( e, folderId, folder ) => {
+	/**
+	 * Open the folder menu, from either a right-click or a row's three-dot button.
+	 *
+	 * `anchor` is passed only by the three-dot button, which has no pointer position.
+	 *
+	 * @param {Event}       e        The originating contextmenu or click event.
+	 * @param {number}      folderId Folder term ID the menu acts on.
+	 * @param {Object}      folder   The folder object backing the row.
+	 * @param {Object|null} anchor   Optional coordinates to open the menu at.
+	 */
+	const handleContextMenu = ( e, folderId, folder, anchor = null ) => {
 		e.preventDefault(); // Prevent default browser context menu
+
+		// The three-dot button (the only caller passing an anchor) toggles: pressing it
+		// again on the folder whose menu is already open dismisses it.
+		if ( anchor && contextMenu.visible && contextMenu.folderId === folderId ) {
+			handleCloseContextMenu();
+			return;
+		}
 
 		setContextMenu( {
 			visible: true,
-			x: e.clientX,
-			y: e.clientY,
+			// Right-click opens at the pointer; the button opens under itself, because a
+			// button press carries no useful pointer position (keyboard activation reports
+			// 0,0). ContextMenu clamps either one into the viewport.
+			x: anchor ? anchor.x : e.clientX,
+			y: anchor ? anchor.y : e.clientY,
 			folderId,
 		} );
 
@@ -162,7 +182,7 @@ const App = () => {
 	};
 
 	const handleCloseContextMenu = () => {
-		setContextMenu( { ...contextMenu, visible: false } );
+		setContextMenu( ( prev ) => ( { ...prev, visible: false } ) );
 	};
 
 	return (

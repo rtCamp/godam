@@ -84,7 +84,7 @@ const BookmarkTab = ( { handleContextMenu } ) => {
 								key={ bookmark?.id || index }
 								index={ index }
 								totalCount={ bookmarkCount }
-								onContextMenu={ ( e, id ) => handleContextMenu( e, id, bookmark ) }
+								onContextMenu={ ( e, id, anchor ) => handleContextMenu( e, id, bookmark, anchor ) }
 							/>
 						) ) }
 					</div>

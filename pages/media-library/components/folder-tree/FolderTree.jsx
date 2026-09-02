@@ -432,7 +432,7 @@ const FolderTree = ( { handleContextMenu } ) => {
 									item={ item }
 									key={ item.id }
 									depth={ item.id === activeId && projected ? projected.depth : item.depth }
-									onContextMenu={ ( e, id ) => handleContextMenu( e, id, item ) }
+									onContextMenu={ ( e, id, anchor ) => handleContextMenu( e, id, item, anchor ) }
 									isMultiSelecting={ isMultiSelecting }
 								/>
 							);

@@ -111,6 +111,13 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	// Close menu if clicked outside.
 	useEffect( () => {
 		const handleClickOutside = ( event ) => {
+			// A row's three-dot button toggles this menu itself. Closing on its mousedown
+			// would let the click that follows re-open the menu, so it could never be
+			// dismissed from the same button it was opened with.
+			if ( event.target?.closest?.( '.tree-item__menu-toggle' ) ) {
+				return;
+			}
+
 			if ( menuRef.current && ! menuRef.current.contains( event.target ) ) {
 				onClose();
 			}
