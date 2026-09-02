@@ -27,6 +27,10 @@ import { __, sprintf, _n } from '@wordpress/i18n';
 import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
 import VideoToCartCard from './VideoToCartCard.js';
+import VideoToPurchaseCard from './VideoToPurchaseCard.js';
+import RevenueCard from './RevenueCard.js';
+import RevenueTips from './RevenueTips.js';
+import PurchaseFunnelCard from './PurchaseFunnelCard.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
@@ -599,7 +603,7 @@ const Analytics = ( { attachmentID } ) => {
 										testIdPrefix="godam-video-insights-daterange"
 									/>
 								</div>
-								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
+								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-wrap lg:[&>*]:grow lg:[&>*]:basis-40">
 									<SingleMetrics
 										metricType={ 'engagement-rate' }
 										label={ __( 'Average Engagement', 'godam' ) }
@@ -640,6 +644,15 @@ const Analytics = ( { attachmentID } ) => {
 										/>
 									) }
 
+									{ /* Video-to-Purchase: the purchase sibling of Video-to-Cart.
+									    Woo-gated; renders nothing when the payload is absent. */ }
+									{ isWoo && (
+										<VideoToPurchaseCard
+											videoToPurchase={ rangedAnalyticsData?.video_to_purchase }
+											dataLabel={ rangeLabel }
+										/>
+									) }
+
 									<PlaysVsViewers
 										plays={ rangedAnalyticsData?.plays ?? 0 }
 										uniqueViewers={ rangedAnalyticsData?.unique_viewers ?? null }
@@ -649,6 +662,41 @@ const Analytics = ( { attachmentID } ) => {
 									/>
 								</div>
 							</div>
+
+							{ /* Per-video Video-Attributed Revenue (single store currency),
+							    split Direct/Assisted. Full-width card; Influenced is
+							    account-level so the per-video payload omits it and the
+							    card hides that box. Woo-gated. */ }
+							{ isWoo && rangedAnalyticsData?.revenue !== undefined && rangedAnalyticsData?.revenue !== null && (
+								<RevenueCard
+									revenue={ {
+										revenue_minor: rangedAnalyticsData.revenue,
+										currency: rangedAnalyticsData.revenue_currency,
+										excluded_orders: rangedAnalyticsData.revenue_excluded_orders,
+										direct_minor: rangedAnalyticsData.revenue_direct_minor,
+										assisted_minor: rangedAnalyticsData.revenue_assisted_minor,
+									} }
+									dataLabel={ rangeLabel }
+								/>
+							) }
+
+							{ /* Comparative revenue tips (EASY WIN B), Woo-gated. The
+							    component renders only the favourable comparisons and
+							    nothing when there is nothing worth saying. */ }
+							{ isWoo && rangedAnalyticsData?.revenue_tips && (
+								<RevenueTips tips={ rangedAnalyticsData.revenue_tips } />
+							) }
+
+							{ /* Purchase Funnel — Viewers -> Added to cart -> Purchased,
+							    a re-plot of the Insights counts. Woo-gated; renders
+							    nothing when the funnel payload is absent. */ }
+							{ isWoo && (
+								<PurchaseFunnelCard
+									funnel={ rangedAnalyticsData?.video_funnel }
+									dataLabel={ rangeLabel }
+									scope="video"
+								/>
+							) }
 
 							{ /* Viewer Retention Curve — standalone chart of per-second
 							    viewer counts across the video timeline (converted from

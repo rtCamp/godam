@@ -21,6 +21,10 @@ import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
 import VideoToCartCard from '../analytics/VideoToCartCard';
+import VideoToPurchaseCard from '../analytics/VideoToPurchaseCard';
+import RevenueCard from '../analytics/RevenueCard';
+import PurchaseFunnelCard from '../analytics/PurchaseFunnelCard';
+import PlacementFunnelCard from '../analytics/PlacementFunnelCard';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
@@ -394,7 +398,7 @@ const Dashboard = () => {
 									testIdPrefix="godam-dashboard-insights-daterange"
 								/>
 							</div>
-							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
+							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-wrap lg:[&>*]:grow lg:[&>*]:basis-40">
 
 								<SingleMetrics
 									mode="dashboard"
@@ -440,22 +444,30 @@ const Dashboard = () => {
 									analyticsDataFetched={ insightsMetrics }
 								/>
 
-								{ /* Engagement Rate is intentionally not shown on the dashboard
-								    (it keeps the row to four cards on Woo / three on non-Woo,
-								    matching the design and avoiding a cramped, clipping row).
+								{ /* Engagement Rate is intentionally not shown on the dashboard;
 								    Average Engagement still appears on each video's own
 								    analytics page. */ }
+							</div>
 
-								{ /* WooCommerce-only: Video-to-Cart has no meaning without a
-								    store, and the card would otherwise read a permanent,
-								    misleading "0" on non-Woo sites. */ }
-								{ hasWooProducts && (
+							{ /* WooCommerce metrics on their own row below the core Insights:
+							    Video-to-Cart and Video-to-Purchase side by side (per the
+							    design), each with its range-aware trend badge. Woo-gated:
+							    both would otherwise read a permanent, misleading "0" on a
+							    non-Woo store. */ }
+							{ hasWooProducts && (
+								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-col items-stretch flex-wrap gap-4 mt-4 lg:[&>*]:grow lg:[&>*]:basis-40">
 									<VideoToCartCard
 										videoToCart={ insightsMetrics?.video_to_cart }
 										dataLabel={ insightsCardLabel }
+										deltaLabel={ insightsDeltaLabel }
 									/>
-								) }
-							</div>
+									<VideoToPurchaseCard
+										videoToPurchase={ insightsMetrics?.video_to_purchase }
+										dataLabel={ insightsCardLabel }
+										deltaLabel={ insightsDeltaLabel }
+									/>
+								</div>
+							) }
 						</div>
 
 						<div className="playback-performance" id="global-analytics-container">
@@ -466,6 +478,36 @@ const Dashboard = () => {
 						</div>
 					</div>
 				</div>
+
+				{ /* Video-Attributed Revenue (WooCommerce only): the headline revenue
+				    figure, split Direct/Assisted, with account-wide Influenced shown
+				    separately. Full-width card, single store currency. */ }
+				{ hasWooProducts && (
+					<RevenueCard
+						revenue={ insightsMetrics?.revenue }
+						dataLabel={ insightsCardLabel }
+						deltaLabel={ insightsDeltaLabel }
+					/>
+				) }
+
+				{ /* Account-wide Play-to-Cart-to-Purchase funnel (WooCommerce only). */ }
+				{ hasWooProducts && (
+					<PurchaseFunnelCard
+						funnel={ insightsMetrics?.video_funnel }
+						dataLabel={ insightsCardLabel }
+						scope="account"
+					/>
+				) }
+
+				{ /* Funnel by placement (WooCommerce only) — fetches its own data. */ }
+				{ hasWooProducts && (
+					<PlacementFunnelCard
+						siteUrl={ siteUrl }
+						startDate={ insightsRange.startDate }
+						endDate={ insightsRange.endDate }
+						dataLabel={ insightsCardLabel }
+					/>
+				) }
 
 				{ hasWooProducts && topTab === 'products'
 					? <TopProductsTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } tabSwitcher={ topTabSwitcher } />

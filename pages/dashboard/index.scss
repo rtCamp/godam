@@ -784,3 +784,19 @@
 	text-underline-offset: 2px;
 	cursor: help;
 }
+
+// The Purchase Funnel and Funnel-by-placement cards sit directly in the dashboard
+// flow between the grid above and the Top Videos/Products table below. The base
+// .godam-card has no margin, so give them the same 1.5rem vertical rhythm the other
+// top-level sections use (matches .top-media-container). Scoped to the dashboard so
+// the per-video Analytics page, where the funnel card is a flex-column child, keeps
+// its own gap.
+.dashboard-container > .godam-revenue-card,
+.dashboard-container > .godam-funnel-card,
+.dashboard-container > .godam-placement-funnel-card {
+	margin-top: 1.5rem;
+}
+
+.dashboard-container > .godam-placement-funnel-card {
+	margin-bottom: 1.5rem;
+}

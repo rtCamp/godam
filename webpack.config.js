@@ -139,6 +139,9 @@ const godamPlayerAnalytics = {
 	...sharedConfig,
 	entry: {
 		'godam-player-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'analytics.js' ),
+		// Standalone layer-analytics runtime for pages without the video player
+		// (e.g. the GoDAM Image block with product hotspots).
+		'godam-layer-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'layer-analytics.js' ),
 	},
 };
 

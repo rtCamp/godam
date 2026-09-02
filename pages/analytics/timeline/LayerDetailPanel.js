@@ -6,13 +6,14 @@ import React, { useEffect, useState } from 'react';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { external } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { formatRevenue } from '../../dashboard/components/TopProductsTable';
 import {
 	LAYER_TYPE_BY_ID,
 	withAlpha,
@@ -21,6 +22,7 @@ import LayerIcon from './LayerIcon';
 import LayerInteractionFunnel from './LayerInteractionFunnel';
 import SubHotspotRail from './SubHotspotRail';
 import LayerModifiedNotice from './LayerModifiedNotice';
+import InfoTooltip from './InfoTooltip';
 
 /**
  * Build the deep-link URL into the video editor for a layer.
@@ -107,6 +109,20 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 		: null;
 	const funnelCounts = activeSub ? activeSub.counts : parent.counts;
 	const funnelNoAction = activeSub ? activeSub.no_action : parent.no_action;
+
+	// Direct in-video revenue for the selected hotspot, or the parent layer's
+	// aggregate (sum of its hotspots) when none is selected. Woo layers only,
+	// shown only when there is revenue. Base currency; other currencies are
+	// excluded (counted on the dashboard, not converted).
+	const revenueEntity = activeSub || parent;
+	const revenueMinor = Number( revenueEntity.revenue_minor ) || 0;
+	const revenueOrders = Number( revenueEntity.orders ) || 0;
+	const showRevenue = parent.layer_type === 'woo' && revenueMinor > 0;
+	const revenueOrdersPhrase = sprintf(
+		/* translators: %d: number of orders. */
+		_n( '%d order', '%d orders', revenueOrders, 'godam' ),
+		revenueOrders,
+	);
 
 	const showRail = meta.hasSubHotspots && ( parent.sub_hotspots || [] ).length > 0;
 
@@ -218,6 +234,37 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 						selectedSubId={ selectedSubId }
 						onSelect={ setSelectedSubId }
 					/>
+				) }
+
+				{ showRevenue && (
+					<div className="mb-4 flex items-center gap-2 flex-wrap text-sm text-zinc-700">
+						<span>
+							{ activeSub
+								// A single hotspot maps to one composite layer_id, so its
+								// order count is an exact distinct count.
+								? sprintf(
+									/* translators: 1: formatted revenue amount, 2: order count phrase (e.g. "3 orders"). */
+									__( 'This hotspot drove %1$s across %2$s', 'godam' ),
+									formatRevenue( revenueMinor, revenueEntity.currency ),
+									revenueOrdersPhrase,
+								)
+								// Parent aggregate: revenue only. Summing the hotspots'
+								// distinct order counts would overcount an order bought via two
+								// hotspots in this layer, so no parent order total is shown
+								// (order counts are not additive).
+								: sprintf(
+									/* translators: %s: formatted revenue amount. */
+									__( 'This layer drove %s', 'godam' ),
+									formatRevenue( revenueMinor, revenueEntity.currency ),
+								) }
+						</span>
+						<InfoTooltip
+							text={ __(
+								'Direct in-video contribution only, from add-to-carts inside the video. It is not the product\'s total revenue; purchases made after clicking through to the product page (Assisted) are not counted here.',
+								'godam',
+							) }
+						/>
+					</div>
 				) }
 
 				<LayerInteractionFunnel
