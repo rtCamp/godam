@@ -38,7 +38,12 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_analytics_data' ),
-					'permission_callback' => '__return_true', // Publicly accessible.
+					// Admin-dashboard read; gated like top-products/top-videos: Phase 2 added
+					// revenue to this response (it was public for view/play analytics only).
+					// Only the admin apps call it, never the public front end.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'video_id' => array(
 							'required'          => true,
@@ -90,7 +95,11 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_dashboard_metrics' ),
-					'permission_callback' => '__return_true',
+					// Admin-dashboard read; gated like the sibling analytics routes (revenue is
+					// account-scoped and returned to the dashboard only).
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -207,13 +216,42 @@ class Analytics extends Base {
 							'required'          => false,
 							'type'              => 'string',
 							'default'           => 'product_views',
+							// Allowlist at the WP boundary (defense in depth): these are
+							// the analytics service's own TOP_PRODUCTS_METRIC_SQL keys, so
+							// a bad value 400s here with a clear message instead of being
+							// forwarded upstream.
+							'enum'              => array( 'product_views', 'add_to_cart', 'impressions', 'ctr' ),
 							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => 'rest_validate_request_arg',
 						),
 						'order'    => array(
 							'required'          => false,
 							'type'              => 'string',
 							'default'           => 'desc',
+							'enum'              => array( 'asc', 'desc' ),
 							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => 'rest_validate_request_arg',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/placement-funnels',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_placement_funnels' ),
+					// Account-scoped server-side (api_key / account_token injected,
+					// never client-supplied), like the sibling dashboard reads.
+					// Admin-dashboard read; gated like the sibling analytics routes.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
 						),
 					),
 				),
@@ -230,7 +268,11 @@ class Analytics extends Base {
 					// return this site's own non-PII aggregate analytics. Locking down
 					// analytics reads, if ever wanted, should be done uniformly across
 					// all analytics routes rather than just this one.
-					'permission_callback' => '__return_true',
+					// Admin-dashboard read; gated uniformly with the sibling analytics routes
+					// (see note above): revenue must not be readable without auth.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'video_id'   => array(
 							'required'          => true,
@@ -408,6 +450,13 @@ class Analytics extends Base {
 		if ( ! empty( $job_id ) ) {
 			$query_params['job_id'] = $job_id;
 		}
+		// Single store currency: the service returns per-hotspot Direct revenue in
+		// this currency (Woo layers only); other currencies are excluded, not
+		// converted. Empty when WooCommerce is inactive, so the service omits it.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$query_params['base_currency'] = $base_currency;
+		}
 		$query_params = $this->append_range_params( $request, $query_params );
 
 		$endpoint = add_query_arg( $query_params, RTGODAM_ANALYTICS_BASE . '/processed-layer-analytics/' );
@@ -481,10 +530,10 @@ class Analytics extends Base {
 	 * first 100 rows as a defensive bound on per-request DB work; rows past the
 	 * cap still get a constant-cost attributable label so none render blank.
 	 *
-	 * The /analytics/fetch route is public (permission_callback __return_true),
-	 * so this never leaks non-public pages (private, draft, pending, trashed) to
-	 * anonymous callers: the real title/permalink is revealed only when the page
-	 * is publicly viewable, or the current user can edit it.
+	 * The analytics read routes are gated on `upload_files` (authors and above),
+	 * but this still never leaks non-public pages (private, draft, pending,
+	 * trashed) beyond what the caller may see: the real title/permalink is
+	 * revealed only when the page is publicly viewable, or the caller can edit it.
 	 *
 	 * @param array $placements Placement rows from the microservice.
 	 * @return array Enriched placement rows.
@@ -631,6 +680,15 @@ class Analytics extends Base {
 			'api_key'       => $api_key,
 		);
 		$query_params = $this->append_range_params( $request, $query_params );
+
+		// Single store currency: pass the store base currency so the per-video
+		// record carries base-currency revenue (and a count of orders in other
+		// currencies). Only when WooCommerce is active; otherwise the service
+		// returns revenue 0 / '' and the card stays hidden.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$query_params['base_currency'] = $base_currency;
+		}
 
 		$analytics_url = add_query_arg( $query_params, $analytics_endpoint );
 
@@ -843,7 +901,7 @@ class Analytics extends Base {
 			);
 		}
 
-		$params   = $this->append_range_params(
+		$params = $this->append_range_params(
 			$request,
 			array(
 				'site_url'      => $site_url,
@@ -851,6 +909,14 @@ class Analytics extends Base {
 				'api_key'       => $api_key,
 			)
 		);
+		// Single store currency: pass the store base currency so the service returns
+		// base-currency revenue plus a count of orders in other currencies (not
+		// converted). Only meaningful when WooCommerce is active; when absent the
+		// service simply omits the `revenue` object.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$params['base_currency'] = $base_currency;
+		}
 		$endpoint = add_query_arg(
 			$params,
 			RTGODAM_ANALYTICS_BASE . '/dashboard/metrics/fetch/'
@@ -1046,9 +1112,26 @@ class Analytics extends Base {
 			);
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$http_code = (int) wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
 
-		$top_videos = $body['top_videos'] ?? array();
+		if ( 200 !== $http_code ) {
+			// Surface a non-2xx / unparseable response as an error rather than an
+			// empty "no data" table (mirrors fetch_layer_analytics).
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) )
+				? $body['detail']
+				: __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 400 === $http_code ? 'bad_request' : 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$top_videos = is_array( $body ) ? ( $body['top_videos'] ?? array() ) : array();
 
 		foreach ( $top_videos as &$video ) {
 			if ( ! empty( $video['video_id'] ) ) {
@@ -1168,6 +1251,77 @@ class Analytics extends Base {
 	}
 
 	/**
+	 * Proxy the per-placement funnel (the "Funnel by placement" card) from the
+	 * analytics microservice. Account-scoped server-side (api_key / account_token
+	 * injected, never client-supplied); the selected date range is forwarded.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_placement_funnels( WP_REST_Request $request ) {
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
+		$params   = $this->append_range_params(
+			$request,
+			array(
+				'site_url'      => $site_url,
+				'account_token' => $account_token,
+				'api_key'       => $api_key,
+			)
+		);
+		$endpoint = add_query_arg(
+			$params,
+			RTGODAM_ANALYTICS_BASE . '/dashboard/placement-funnels/'
+		);
+
+		$response = wp_remote_get( $endpoint );
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) ) ? $body['detail'] : __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $detail,
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'placement_funnels' => $body['placement_funnels'] ?? array(),
+			),
+			200
+		);
+	}
+
+	/**
 	 * Proxy /dashboard/top-products/ from the analytics microservice, then hydrate
 	 * each product row with its current WooCommerce name, image and permalink,
 	 * resolved from product_id. Display fields live in WooCommerce, not the
@@ -1218,6 +1372,11 @@ class Analytics extends Base {
 		if ( ! empty( $order ) ) {
 			$query['order'] = $order;
 		}
+		// Single store currency: revenue/orders sum only the base currency.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$query['base_currency'] = $base_currency;
+		}
 
 		$endpoint = add_query_arg(
 			$this->append_range_params( $request, $query ),
@@ -1249,8 +1408,28 @@ class Analytics extends Base {
 			);
 		}
 
-		$body         = json_decode( wp_remote_retrieve_body( $response ), true );
-		$top_products = $body['top_products'] ?? array();
+		$http_code = (int) wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $http_code ) {
+			// A non-2xx (bad request, service down, HTML error page) or unparseable
+			// body must NOT be rendered as an empty "no product activity" table.
+			// Surface it as an error so the frontend RTK Query layer can show it,
+			// mirroring fetch_layer_analytics.
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) )
+				? $body['detail']
+				: __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 400 === $http_code ? 'bad_request' : 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$top_products = is_array( $body ) ? ( $body['top_products'] ?? array() ) : array();
 
 		foreach ( $top_products as &$product ) {
 			$product_id = intval( $product['product_id'] ?? 0 );

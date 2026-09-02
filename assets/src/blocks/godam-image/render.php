@@ -67,11 +67,36 @@ if ( $godam_show_layers && $godam_attachment_id ) {
 
 $godam_has_layers = ! empty( $godam_layers );
 
-// Enqueue the shared image-layers front-end renderer (+ hotspot styles) only
-// when there are layers to draw. Registered lazily here as footer scripts, so
-// the Woo add-on's `godam_image_layers_frontend_dependencies` hook (added on
+// Enqueue the shared image-layers front-end renderer (+ its analytics runtime)
+// only when there are layers to draw. Registered lazily here as footer scripts,
+// so the Woo add-on's `godam_image_layers_frontend_dependencies` hook (added on
 // wp_enqueue_scripts) is already in place.
 if ( $godam_has_layers ) {
+	// Layer-analytics runtime: registers `window.GoDAM.addLayerInteraction` + the
+	// page-hide flush WITHOUT the video player (image pages never load
+	// `godam-player-analytics.min.js`). Without it every emit in the shared hotspot
+	// managers is a guarded no-op. Registered FIRST and made a DEPENDENCY of the
+	// renderer below, so `window.GoDAM` exists before the renderer's DOMContentLoaded
+	// handler fires the parent-layer 'viewed' impression beacon on render.
+	$godam_la_asset_path = RTGODAM_PATH . 'assets/build/js/godam-layer-analytics.min.asset.php';
+	$godam_la_asset      = file_exists( $godam_la_asset_path )
+		// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is a plugin constant + hardcoded build filename.
+		? include $godam_la_asset_path
+		: array(
+			'dependencies' => array(),
+			'version'      => RTGODAM_VERSION,
+		);
+
+	if ( ! wp_script_is( 'godam-layer-analytics-script', 'registered' ) ) {
+		wp_register_script(
+			'godam-layer-analytics-script',
+			RTGODAM_URL . 'assets/build/js/godam-layer-analytics.min.js',
+			$godam_la_asset['dependencies'],
+			$godam_la_asset['version'],
+			true
+		);
+	}
+
 	$godam_img_asset_path = RTGODAM_PATH . 'assets/build/js/godam-image-layers-frontend.min.asset.php';
 	$godam_img_asset      = file_exists( $godam_img_asset_path )
 		// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is a plugin constant + hardcoded build filename.
@@ -82,7 +107,10 @@ if ( $godam_has_layers ) {
 		);
 
 	if ( ! wp_script_is( 'godam-image-layers-frontend', 'registered' ) ) {
-		$godam_img_deps = apply_filters( 'godam_image_layers_frontend_dependencies', $godam_img_asset['dependencies'] );
+		// Depend on the analytics runtime so `window.GoDAM.addLayerInteraction` is
+		// registered before the renderer runs and fires the 'viewed' beacon.
+		$godam_img_deps   = apply_filters( 'godam_image_layers_frontend_dependencies', $godam_img_asset['dependencies'] );
+		$godam_img_deps[] = 'godam-layer-analytics-script';
 		wp_register_script(
 			'godam-image-layers-frontend',
 			RTGODAM_URL . 'assets/build/js/godam-image-layers-frontend.min.js',
@@ -92,20 +120,15 @@ if ( $godam_has_layers ) {
 		);
 	}
 
+	// Enqueue the runtime explicitly too (in case the renderer was pre-registered
+	// without the dependency), then the renderer, which pulls the runtime first.
+	wp_enqueue_script( 'godam-layer-analytics-script' );
 	wp_enqueue_script( 'godam-image-layers-frontend' );
 
 	// The hotspot stylesheet (`godam-player-style`) is tied to this block via
 	// wp_enqueue_block_style() in class-blocks.php, so WordPress prints it
 	// whenever the block renders (reliable on block themes / FSE, unlike a late
 	// wp_enqueue_style() here), so nothing else needs enqueuing here.
-	//
-	// Analytics is intentionally NOT enqueued for images: they have no analytics
-	// view (`image` capability sets `showStats: false`) and no transcoding job,
-	// so a beacon per hotspot interaction would only collect data nothing
-	// consumes. Without `godam-player-analytics-script`,
-	// `window.GoDAM.addLayerInteraction` is absent, so every emit in the shared
-	// managers / frontend.js is a guarded no-op. Re-enable here when an image
-	// analytics view ships.
 }
 
 $godam_instance_id = 'img_' . bin2hex( random_bytes( 8 ) );
@@ -137,6 +160,7 @@ if ( empty( $godam_is_shortcode ) ) {
 		<?php if ( $godam_has_layers ) : ?>
 			data-id="<?php echo esc_attr( (string) $godam_attachment_id ); ?>"
 			data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
+			data-block-source="godam-image"
 			data-godam-image-layers="<?php echo esc_attr( wp_json_encode( $godam_layers ) ); ?>"
 		<?php endif; ?>
 	>

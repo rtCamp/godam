@@ -14,7 +14,7 @@
 /**
  * Internal dependencies
  */
-import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric } from './TopProductsTable';
+import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements, hasRevenueTierSplit, buildCsvRow, CSV_HEADERS } from './TopProductsTable';
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
 	// A value whose FIRST character is one of these is what a spreadsheet would
@@ -79,11 +79,11 @@ describe( 'escapeCsvCell — formula-injection guard', () => {
 
 describe( 'sourceLabel — Source chip label mapping', () => {
 	it( 'maps each implemented/known block_source to its human label', () => {
-		expect( sourceLabel( 'woo-layer' ) ).toBe( 'Woo Layer' );
+		expect( sourceLabel( 'woo-layer' ) ).toBe( 'Video Woo Layer' );
 		expect( sourceLabel( 'shoppable-video' ) ).toBe( 'Shoppable Video' );
 		expect( sourceLabel( 'reel-pop' ) ).toBe( 'Reel Pop' );
 		expect( sourceLabel( 'wc-product-gallery' ) ).toBe( 'Product Gallery' );
-		expect( sourceLabel( 'godam-image' ) ).toBe( 'Image' );
+		expect( sourceLabel( 'godam-image' ) ).toBe( 'Image Woo Layer' );
 	} );
 
 	it( 'falls back to the raw value for an unknown source', () => {
@@ -112,12 +112,100 @@ describe( 'formatRevenue — revenue_minor -> currency amount', () => {
 		expect( formatRevenue( 1234, 'KWD' ) ).toContain( '1.234' );
 	} );
 
+	it( 'uses the emit-side ISO table, not Intl, for a divergent currency (IQD)', () => {
+		// Intl/ICU treats IQD as 0-decimal, but the store encodes it as 3-decimal
+		// (ISO 4217), so the UI must scale AND display with 3 digits or the amount
+		// is 1000x off.
+		expect( formatRevenue( 1234, 'IQD' ) ).toContain( '1.234' );
+	} );
+
 	it( 'treats a missing amount as zero rather than throwing', () => {
 		expect( formatRevenue( undefined, 'GBP' ) ).toBe( '£0.00' );
 	} );
 
 	it( 'falls back to a plain number when the currency code is invalid', () => {
 		expect( formatRevenue( 1234, 'NOT-A-CODE' ) ).toBe( '12.34 NOT-A-CODE' );
+	} );
+} );
+
+describe( 'hasInfluenced — Influenced sub-line gate (third tier)', () => {
+	it( 'is true only when influenced_revenue_minor is a positive number', () => {
+		expect( hasInfluenced( { influenced_revenue_minor: 250000 } ) ).toBe( true );
+	} );
+
+	it( 'is false when there is no match (0), so no misleading £0 renders', () => {
+		expect( hasInfluenced( { influenced_revenue_minor: 0 } ) ).toBe( false );
+	} );
+
+	it( 'is false when the service omitted the field (older build / no match)', () => {
+		expect( hasInfluenced( {} ) ).toBe( false );
+		expect( hasInfluenced( { influenced_revenue_minor: null } ) ).toBe( false );
+	} );
+
+	it( 'renders its amount via the shipped formatRevenue (no new formatter)', () => {
+		// The sub-line uses the SAME formatRevenue as the Revenue cell, keyed on
+		// the separate influenced_currency: JPY has no decimals, USD has two.
+		expect( formatRevenue( 250000, 'INR' ) ).toContain( '2,500' );
+		expect( formatRevenue( 1234, 'JPY' ) ).not.toContain( '.' );
+		expect( formatRevenue( 500, 'USD' ) ).toBe( '$5.00' );
+	} );
+} );
+
+describe( 'hasRevenueTierSplit — Direct/Assisted revenue sub-line gate', () => {
+	it( 'is true only when both tier amounts are present (Woo store, product with orders)', () => {
+		expect( hasRevenueTierSplit( { revenue_direct_minor: 1000, revenue_assisted_minor: 300 } ) ).toBe( true );
+		// A real zero on one side is still a present split (all revenue on one tier).
+		expect( hasRevenueTierSplit( { revenue_direct_minor: 0, revenue_assisted_minor: 800 } ) ).toBe( true );
+	} );
+
+	it( 'is false when the service omitted the split (older build / no base currency / no orders)', () => {
+		expect( hasRevenueTierSplit( {} ) ).toBe( false );
+		expect( hasRevenueTierSplit( { revenue_direct_minor: 1000 } ) ).toBe( false );
+		expect( hasRevenueTierSplit( { revenue_direct_minor: null, revenue_assisted_minor: null } ) ).toBe( false );
+	} );
+
+	it( 'renders both amounts via the shipped formatRevenue', () => {
+		expect( formatRevenue( 1000, 'GBP' ) ).toBe( '£10.00' );
+		expect( formatRevenue( 300, 'GBP' ) ).toBe( '£3.00' );
+	} );
+} );
+
+describe( 'revenuePlacements — per-placement revenue split (EASY WIN A)', () => {
+	it( 'returns placements with revenue, sorted high-to-low', () => {
+		const out = revenuePlacements( {
+			revenue_by_placement: {
+				'reel-pop': { revenue_minor: 400, orders: 1 },
+				'woo-layer': { revenue_minor: 600, orders: 1 },
+			},
+		} );
+		expect( out.map( ( p ) => p.source ) ).toEqual( [ 'woo-layer', 'reel-pop' ] );
+		expect( out[ 0 ].revenue_minor ).toBe( 600 );
+	} );
+
+	it( 'drops placements with zero revenue', () => {
+		const out = revenuePlacements( {
+			revenue_by_placement: {
+				'woo-layer': { revenue_minor: 600, orders: 1 },
+				'reel-pop': { revenue_minor: 0, orders: 0 },
+			},
+		} );
+		expect( out.map( ( p ) => p.source ) ).toEqual( [ 'woo-layer' ] );
+	} );
+
+	it( 'is empty when there is no split', () => {
+		expect( revenuePlacements( {} ) ).toEqual( [] );
+		expect( revenuePlacements( { revenue_by_placement: {} } ) ).toEqual( [] );
+	} );
+} );
+
+describe( 'influencedOrdersLabel — singular/plural order count', () => {
+	it( 'renders singular for one order', () => {
+		expect( influencedOrdersLabel( { influenced_orders: 1 } ) ).toBe( '1 order' );
+	} );
+
+	it( 'renders plural for several, and zero when absent', () => {
+		expect( influencedOrdersLabel( { influenced_orders: 3 } ) ).toBe( '3 orders' );
+		expect( influencedOrdersLabel( {} ) ).toBe( '0 orders' );
 	} );
 } );
 
@@ -132,7 +220,80 @@ describe( 'formatRevenueNumeric — CSV plain-number revenue', () => {
 		expect( formatRevenueNumeric( 1234, 'KWD' ) ).toBe( '1.234' );
 	} );
 
+	it( 'uses the emit-side table for a currency Intl disagrees on (IQD -> 3 digits)', () => {
+		expect( formatRevenueNumeric( 1234, 'IQD' ) ).toBe( '1.234' );
+	} );
+
 	it( 'treats a missing amount as zero', () => {
 		expect( formatRevenueNumeric( undefined, 'GBP' ) ).toBe( '0.00' );
+	} );
+} );
+
+describe( 'buildCsvRow — the CSV mirrors the on-screen table', () => {
+	const cell = ( row, header ) => row[ CSV_HEADERS.indexOf( header ) ];
+
+	it( 'emits exactly one cell per header, in order', () => {
+		const row = buildCsvRow( { product_id: 5, title: 'Sofa' } );
+		expect( row ).toHaveLength( CSV_HEADERS.length );
+	} );
+
+	it( 'carries reach, the Influenced tier and the per-placement split, matching the row on screen', () => {
+		const item = {
+			product_id: 5,
+			title: 'Sofa',
+			layer_count: 3,
+			video_count: 3,
+			sources: [ 'shoppable-video', 'woo-layer', 'reel-pop' ],
+			product_views: 9,
+			product_views_ctr: 50,
+			added_to_cart: 17,
+			added_to_cart_direct: 0,
+			added_to_cart_assisted: 17,
+			revenue_minor: 8000,
+			currency: 'INR',
+			orders: 2,
+			revenue_direct_minor: 0,
+			revenue_assisted_minor: 8000,
+			influenced_revenue_minor: 6000,
+			influenced_currency: 'INR',
+			influenced_orders: 1,
+			influenced_provisional: true,
+			revenue_by_placement: {
+				'shoppable-video': { revenue_minor: 5000 },
+				'woo-layer': { revenue_minor: 3000 },
+			},
+		};
+		const row = buildCsvRow( item );
+		expect( cell( row, 'Layers' ) ).toBe( 3 );
+		expect( cell( row, 'Videos' ) ).toBe( 3 );
+		expect( cell( row, 'Source' ) ).toContain( 'Shoppable Video' );
+		expect( cell( row, 'Revenue' ) ).toBe( '80.00' );
+		expect( cell( row, 'Revenue (assisted)' ) ).toBe( '80.00' );
+		expect( cell( row, 'Influenced Revenue' ) ).toBe( '60.00' );
+		expect( cell( row, 'Influenced Orders' ) ).toBe( 1 );
+		expect( cell( row, 'Influenced Provisional' ) ).toBe( 'Yes' );
+		expect( cell( row, 'Revenue by Placement' ) ).toContain( 'Shoppable Video: 50.00' );
+		expect( cell( row, 'Revenue by Placement' ) ).toContain( 'Video Woo Layer: 30.00' );
+	} );
+
+	it( 'leaves Influenced and the placement split empty when the row has neither (matches the table)', () => {
+		const item = {
+			product_id: 6,
+			title: 'Lamp',
+			revenue_minor: 1000,
+			currency: 'INR',
+			orders: 1,
+			revenue_by_placement: { 'woo-layer': { revenue_minor: 1000 } }, // single placement
+		};
+		const row = buildCsvRow( item );
+		expect( cell( row, 'Influenced Revenue' ) ).toBe( '' );
+		expect( cell( row, 'Revenue by Placement' ) ).toBe( '' );
+	} );
+} );
+
+describe( 'order-count labels use grouped thousands', () => {
+	it( 'groups a 1,000+ order count and keeps the singular for one', () => {
+		expect( influencedOrdersLabel( { influenced_orders: 1234 } ) ).toBe( '1,234 orders' );
+		expect( influencedOrdersLabel( { influenced_orders: 1 } ) ).toBe( '1 order' );
 	} );
 } );

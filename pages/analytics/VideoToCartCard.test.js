@@ -40,6 +40,9 @@ describe( 'VideoToCartCard — null vs zero', () => {
 		// The count leads the card.
 		expect( html ).toContain( '42' );
 		expect( html ).toContain( 'Video to Cart' );
+		// Subtitle copy matches the design: what the number is + share of players.
+		expect( html ).toContain( 'carts from video' );
+		expect( html ).toContain( '12.5% of viewers who played' );
 	} );
 
 	it( 'still renders for a measured zero-carts payload (0 is a real value, not "unavailable")', () => {

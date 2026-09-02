@@ -3,6 +3,7 @@ on:
     branches:
       - develop
       - main
+      - 'feat/**'
 
 name: JS Unit Tests
 
