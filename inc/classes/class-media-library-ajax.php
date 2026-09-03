@@ -57,6 +57,11 @@ class Media_Library_Ajax {
 		add_filter( 'wp_calculate_image_srcset_meta', array( $this, 'filter_image_srcset_meta' ), 10, 4 );
 		add_filter( 'wp_calculate_image_srcset', array( $this, 'filter_virtual_media_srcset' ), 10, 5 );
 
+		// Resolve single named/array size lookups for GoDAM-managed images. Without this,
+		// image_downsize() builds a CDN sub-size URL that was never offloaded (e.g. Site
+		// Icon / favicon sizes) and 404s. See issue #2009.
+		add_filter( 'image_downsize', array( $this, 'filter_image_downsize_for_virtual_media' ), 10, 3 );
+
 		// Add admin notice for HTTP auth and AJAX handler to save HTTP auth status.
 		add_action( 'admin_notices', array( $this, 'http_auth_warning_notice' ) );
 		add_action( 'wp_ajax_godam_save_http_auth_status', array( $this, 'save_http_auth_status' ) );
@@ -1185,6 +1190,113 @@ class Media_Library_Ajax {
 			}
 
 			return $url;
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	/**
+	 * Resolve single-size image lookups for GoDAM-managed (CDN-offloaded) images.
+	 *
+	 * GoDAM rewrites the full-size attachment URL to the CDN (a `.webp`), but only the
+	 * full-size file and the sizes listed in `rtgodam_image_sizes` actually exist on the
+	 * CDN. Core's `image_downsize()` resolves a single named/array size by taking that
+	 * rewritten full URL and swapping in a locally-derived sub-size filename — producing
+	 * a CDN URL that was never uploaded and 404s. The most visible casualty is the Site
+	 * Icon / favicon (`get_site_icon_url()` → `wp_get_attachment_image_url()`), but any
+	 * `wp_get_attachment_image_src( $id, $size )` caller is affected. See issue #2009.
+	 *
+	 * Resolution order for a requested size:
+	 *  1. If the named size exists in `rtgodam_image_sizes`, use that authoritative CDN URL.
+	 *  2. Otherwise resolve the locally-generated sub-size file (which does exist on disk),
+	 *     built from the upload directory rather than the CDN base — this covers sizes that
+	 *     were never offloaded (e.g. the Site Icon sub-sizes) and array/numeric requests.
+	 *  3. If neither matches, defer to core (which serves the full-size CDN image).
+	 *
+	 * @since 2.2.1
+	 *
+	 * @param array|false  $downsize      Short-circuit value (false unless already set).
+	 * @param int          $attachment_id Attachment ID.
+	 * @param string|int[] $size          Requested size (name or [width, height]).
+	 *
+	 * @return array|false [url, width, height, is_intermediate] or the original $downsize.
+	 */
+	public function filter_image_downsize_for_virtual_media( $downsize, $attachment_id, $size ) {
+		// Respect any earlier short-circuit from another plugin.
+		if ( false !== $downsize ) {
+			return $downsize;
+		}
+
+		// Full size is handled correctly by the wp_get_attachment_url rewrite.
+		if ( 'full' === $size ) {
+			return $downsize;
+		}
+
+		/**
+		 * Fires before reading this attachment's MIME type and GoDAM CDN image-size /
+		 * transcoded-URL meta, so integrations that centralize media on another site can
+		 * switch context first. Wrapped in try/finally because this method returns from
+		 * several points while resolving the requested size.
+		 *
+		 * @since 2.2.1
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			if ( 'image' !== substr( (string) get_post_mime_type( $attachment_id ), 0, 5 ) ) {
+				return $downsize;
+			}
+
+			$rtgodam_transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+			$rtgodam_image_sizes    = $this->get_rtgodam_image_sizes( $attachment_id );
+			$godam_original_id      = get_post_meta( $attachment_id, '_godam_original_id', true );
+
+			// Only intervene when the full URL is actually rewritten to the CDN; otherwise
+			// core's default (local) resolution is already correct.
+			$is_godam_managed = ( ! empty( $rtgodam_image_sizes ) || ! empty( $godam_original_id ) );
+			if ( ! $is_godam_managed || empty( $rtgodam_transcoded_url ) ) {
+				return $downsize;
+			}
+
+			// 1. Named size present in the authoritative CDN size map.
+			if ( is_string( $size ) && ! empty( $rtgodam_image_sizes[ $size ]['url'] ) ) {
+				$cdn_size = $rtgodam_image_sizes[ $size ];
+				$width    = isset( $cdn_size['width'] ) ? (int) $cdn_size['width'] : 0;
+				$height   = isset( $cdn_size['height'] ) ? (int) $cdn_size['height'] : 0;
+
+				if ( $width > 0 && $height > 0 ) {
+					return array( esc_url( $cdn_size['url'] ), $width, $height, true );
+				}
+			}
+
+			// 2. Fall back to the locally-generated sub-size file (it exists on disk).
+			$meta = wp_get_attachment_metadata( $attachment_id );
+			if ( empty( $meta['file'] ) || empty( $meta['sizes'] ) || ! is_array( $meta['sizes'] ) ) {
+				return $downsize;
+			}
+
+			// image_get_intermediate_size() reads the local metadata to pick the best
+			// matching size for a name or [w,h] request. Its 'url' is CDN-rewritten, so we
+			// only take its file/width/height and rebuild the URL from the upload dir.
+			$intermediate = image_get_intermediate_size( $attachment_id, $size );
+			if ( empty( $intermediate['file'] ) ) {
+				return $downsize;
+			}
+
+			$uploads = wp_get_upload_dir();
+			if ( ! empty( $uploads['error'] ) ) {
+				return $downsize;
+			}
+
+			$subdir    = ltrim( dirname( $meta['file'] ), '/.' );
+			$base_url  = trailingslashit( $uploads['baseurl'] . ( '' !== $subdir ? '/' . $subdir : '' ) );
+			$local_url = $base_url . $intermediate['file'];
+
+			return array(
+				esc_url( $local_url ),
+				(int) $intermediate['width'],
+				(int) $intermediate['height'],
+				true,
+			);
 		} finally {
 			do_action( 'rtgodam_after_attachment_lookup' );
 		}
