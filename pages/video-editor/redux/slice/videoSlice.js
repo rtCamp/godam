@@ -24,6 +24,11 @@ const initialState = {
 			fullscreenToggle: true, // Full-screen button
 			subsCapsButton: true,
 			pictureInPictureToggle: false,
+			// Persist an explicit skip duration even when the editor's
+			// "Adjust Skip Duration" control is never touched — a saved
+			// controlBar without this key leaves the frontend player with no
+			// skip buttons at all (Video.js hides them without a duration).
+			skipButtons: { forward: 10, backward: 10 },
 			//custom controls
 			brandingIcon: true,
 			appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',

@@ -513,7 +513,11 @@ $godam_video_setup = array(
 	),
 );
 if ( ! empty( $godam_control_bar_settings ) ) {
-	$godam_video_setup['controlBar'] = $godam_control_bar_settings; // contains settings specific to control bar.
+	// Merge (don't replace) so a partially-saved attachment config keeps the
+	// defaults above for keys it doesn't carry. Attachments saved without ever
+	// touching Video Editor > Adjust Skip Duration have no `skipButtons` key,
+	// and a wholesale replace used to drop it — which hides both skip buttons.
+	$godam_video_setup['controlBar'] = array_merge( $godam_video_setup['controlBar'], $godam_control_bar_settings );
 
 	if ( isset( $godam_control_bar_settings['volumePanel'] ) && empty( $godam_control_bar_settings['volumePanel'] ) ) {
 		$godam_volume_panel_setting = $godam_control_bar_settings['volumePanel'];
@@ -526,6 +530,26 @@ if ( ! empty( $godam_control_bar_settings ) ) {
 
 	$godam_video_setup['controlBar']['volumePanel'] = $godam_volume_panel_setting;
 }
+
+// Video.js only renders its skip buttons for a duration of 5, 10 or 30 seconds
+// (see the SkipForward/SkipBackward components) and hides them for anything
+// else — including a missing value or a numeric string. Normalise to an int in
+// that set so a stale or partial saved config always falls back to 10s instead
+// of silently losing the buttons.
+$godam_skip_buttons  = isset( $godam_video_setup['controlBar']['skipButtons'] ) && is_array( $godam_video_setup['controlBar']['skipButtons'] )
+	? $godam_video_setup['controlBar']['skipButtons']
+	: array();
+$godam_skip_duration = isset( $godam_skip_buttons['forward'] ) ? (int) $godam_skip_buttons['forward'] : 0;
+if ( ! in_array( $godam_skip_duration, array( 5, 10, 30 ), true ) ) {
+	$godam_skip_duration = isset( $godam_skip_buttons['backward'] ) ? (int) $godam_skip_buttons['backward'] : 0;
+}
+if ( ! in_array( $godam_skip_duration, array( 5, 10, 30 ), true ) ) {
+	$godam_skip_duration = 10;
+}
+$godam_video_setup['controlBar']['skipButtons'] = array(
+	'forward'  => $godam_skip_duration,
+	'backward' => $godam_skip_duration,
+);
 
 // The block's "Show caption" overrides the attachment's Display-captions
 // setting for the CC button + caption display on the frontend.

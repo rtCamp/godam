@@ -4,6 +4,28 @@
 import { parseDataAttribute } from '../utils/dataHelpers.js';
 
 /**
+ * Video.js renders its skip buttons only for these durations (see the
+ * SkipForward / SkipBackward components) and hides them for anything else —
+ * a missing value or a numeric string included.
+ */
+const VALID_SKIP_DURATIONS = [ 5, 10, 30 ];
+const DEFAULT_SKIP_DURATION = 10;
+
+/**
+ * Coerce a skip-buttons config into a value Video.js will actually render.
+ *
+ * @param {Object|boolean|undefined} skipButtons - Raw skipButtons config.
+ * @return {Object} Normalized `{ forward, backward }` config.
+ */
+function normalizeSkipButtons( skipButtons ) {
+	const raw = ( skipButtons && typeof skipButtons === 'object' ) ? skipButtons : {};
+	const candidates = [ raw.forward, raw.backward ].map( ( value ) => parseInt( value, 10 ) );
+	const duration = candidates.find( ( value ) => VALID_SKIP_DURATIONS.includes( value ) ) ?? DEFAULT_SKIP_DURATION;
+
+	return { forward: duration, backward: duration };
+}
+
+/**
  * Configuration Manager
  * Handles video configuration setup and data parsing
  */
@@ -125,23 +147,41 @@ export default class ConfigurationManager {
 	}
 
 	/**
-	 * Ensure control bar has default settings
+	 * Ensure the control bar has default settings.
+	 *
+	 * Fills in defaults per key rather than all-or-nothing: a `controlBar` that
+	 * exists but is missing individual keys (an attachment config saved before
+	 * a control existed, a shortcode/page-builder/add-on passing its own
+	 * `data-controls`, or already-cached page HTML) must still get the default
+	 * for what it doesn't carry.
 	 */
 	ensureControlBarDefaults() {
-		if ( ! ( 'controlBar' in this.videoSetupControls ) ) {
-			this.videoSetupControls.controlBar = {
-				playToggle: true,
-				volumePanel: true,
-				currentTimeDisplay: true,
-				timeDivider: true,
-				durationDisplay: true,
-				fullscreenToggle: true,
-				subsCapsButton: true,
-				skipButtons: {
-					forward: 10,
-					backward: 10,
-				},
-			};
-		}
+		const defaults = {
+			playToggle: true,
+			volumePanel: true,
+			currentTimeDisplay: true,
+			timeDivider: true,
+			durationDisplay: true,
+			fullscreenToggle: true,
+			subsCapsButton: true,
+			skipButtons: {
+				forward: DEFAULT_SKIP_DURATION,
+				backward: DEFAULT_SKIP_DURATION,
+			},
+		};
+
+		const controlBar = ( 'controlBar' in this.videoSetupControls ) && this.videoSetupControls.controlBar !== null && typeof this.videoSetupControls.controlBar === 'object'
+			? this.videoSetupControls.controlBar
+			: {};
+
+		Object.keys( defaults ).forEach( ( key ) => {
+			if ( ! ( key in controlBar ) ) {
+				controlBar[ key ] = defaults[ key ];
+			}
+		} );
+
+		controlBar.skipButtons = normalizeSkipButtons( controlBar.skipButtons );
+
+		this.videoSetupControls.controlBar = controlBar;
 	}
 }
