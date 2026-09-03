@@ -22,13 +22,32 @@ import {
 	clearMultiSelectedFolders,
 	setSortOrder,
 	setCurrentContextMenuFolder,
+	updateSnackbar,
 } from './redux/slice/folders';
-import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
-import { triggerFilterChange } from './data/media-grid.js';
+import { FolderCreationModal, RenameModal, DeleteModal, MoveToFolderModal } from './components/modal/index.jsx';
+import { triggerFilterChange, consumePendingNotice } from './data/media-grid.js';
+import SnackbarComp from './components/folder-tree/SnackbarComp.jsx';
+import useMoveToFolderBridge from './hooks/useMoveToFolderBridge.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
-import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery } from './redux/api/folders.js';
+import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery, useUpdateSidebarPreferenceMutation } from './redux/api/folders.js';
 import SearchBar from './components/search-bar/SearchBar.jsx';
+
+/**
+ * Width below which the folder sidebar is a full-screen overlay rather than a column
+ * (matches the `max-width: 900px` breakpoint in index.scss).
+ */
+const MOBILE_BREAKPOINT = 900;
+
+/**
+ * Whether the sidebar currently renders as a mobile overlay.
+ *
+ * An overlay covers the grid, so it always starts collapsed and expanding it is a
+ * one-off action — the saved preference is neither read nor written at this width.
+ *
+ * @return {boolean} True on viewports narrower than the mobile breakpoint.
+ */
+const isMobileViewport = () => typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -37,6 +56,11 @@ const App = () => {
 	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
 	const { data: allMediaCount, refetch: refetchAllMediaCount } = useGetAllMediaCountQuery();
 	const { data: uncategorizedCount, refetch: refetchUncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
+	const [ updateSidebarPreference ] = useUpdateSidebarPreferenceMutation();
+
+	// Lets the wp.media-side triggers (grid toolbar, list bulk action, attachment
+	// details) open the "Move to folder" picker.
+	useMoveToFolderBridge();
 
 	const [ contextMenu, setContextMenu ] = useState( {
 		visible: false,
@@ -44,7 +68,13 @@ const App = () => {
 		y: 0,
 		folderId: null,
 	} );
-	const [ isSidebarHidden, setIsSidebarHidden ] = useState( false );
+	// The collapsed state is saved per user in user meta and sent back with the page, so
+	// the sidebar opens the way this user last left it — except on mobile, which always
+	// starts collapsed. wp_localize_script stringifies scalars, so the saved flag arrives
+	// as '1' or ''.
+	const [ isSidebarHidden, setIsSidebarHidden ] = useState(
+		() => isMobileViewport() || Boolean( window.easydamMediaLibrary?.sidebarHidden ),
+	);
 
 	const handleClick = useCallback( ( id ) => {
 		if ( isMultiSelecting ) {
@@ -76,13 +106,25 @@ const App = () => {
 		setIsSidebarHidden( true );
 	};
 
-	// Call closeFolderMenu on mount when window width is less than 900px so that folder sidebar remains closed by default.
+	// Sync the DOM with the collapsed state resolved above (saved preference, or always
+	// collapsed on mobile).
 	useEffect( () => {
-		if ( typeof window !== 'undefined' && window.innerWidth < 900 ) {
+		if ( isSidebarHidden ) {
 			closeFolderMenu();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
+
+	// A move made in list view refreshes by reloading the page, which discards the
+	// snackbar that should report it — so the notice is parked in sessionStorage and
+	// drained here, once, on the next mount.
+	useEffect( () => {
+		const notice = consumePendingNotice();
+
+		if ( notice ) {
+			dispatch( updateSnackbar( notice ) );
+		}
+	}, [ dispatch ] );
 
 	// Listen for media type filter changes and refetch media count queries
 	useEffect( () => {
@@ -115,15 +157,42 @@ const App = () => {
 		}
 
 		setIsSidebarHidden( newHidden );
+
+		// Fire-and-forget, and desktop-only: on mobile the sidebar is a transient overlay,
+		// so expanding it must not overwrite the choice the user made on a wide screen. A
+		// failed save just means the next page load falls back to the stored state.
+		if ( ! isMobileViewport() ) {
+			updateSidebarPreference( newHidden );
+		}
 	};
 
-	const handleContextMenu = ( e, folderId, folder ) => {
+	/**
+	 * Open the folder menu, from either a right-click or a row's three-dot button.
+	 *
+	 * `anchor` is passed only by the three-dot button, which has no pointer position.
+	 *
+	 * @param {Event}       e        The originating contextmenu or click event.
+	 * @param {number}      folderId Folder term ID the menu acts on.
+	 * @param {Object}      folder   The folder object backing the row.
+	 * @param {Object|null} anchor   Optional coordinates to open the menu at.
+	 */
+	const handleContextMenu = ( e, folderId, folder, anchor = null ) => {
 		e.preventDefault(); // Prevent default browser context menu
+
+		// The three-dot button (the only caller passing an anchor) toggles: pressing it
+		// again on the folder whose menu is already open dismisses it.
+		if ( anchor && contextMenu.visible && contextMenu.folderId === folderId ) {
+			handleCloseContextMenu();
+			return;
+		}
 
 		setContextMenu( {
 			visible: true,
-			x: e.clientX,
-			y: e.clientY,
+			// Right-click opens at the pointer; the button opens under itself, because a
+			// button press carries no useful pointer position (keyboard activation reports
+			// 0,0). ContextMenu clamps either one into the viewport.
+			x: anchor ? anchor.x : e.clientX,
+			y: anchor ? anchor.y : e.clientY,
 			folderId,
 		} );
 
@@ -131,7 +200,7 @@ const App = () => {
 	};
 
 	const handleCloseContextMenu = () => {
-		setContextMenu( { ...contextMenu, visible: false } );
+		setContextMenu( ( prev ) => ( { ...prev, visible: false } ) );
 	};
 
 	return (
@@ -237,6 +306,12 @@ const App = () => {
 			<FolderCreationModal />
 			<RenameModal />
 			<DeleteModal />
+			<MoveToFolderModal />
+
+			{ /* Rendered here rather than inside FolderTree, which returns early while
+			     folders are loading or failed — a move that fails in either of those
+			     states would otherwise have no visible feedback at all. */ }
+			<SnackbarComp />
 		</>
 	);
 };

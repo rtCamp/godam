@@ -18,6 +18,7 @@ import GoDAMMediaFrameShared from './views/godam-media-frame-shared.js';
 
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 import MediaListViewTableDragHandler from './views/attachment-list.js';
+import ListViewBulkActions from './list-view-bulk-actions.js';
 
 import { isFolderOrgDisabled, shouldReplaceAttachmentsViews, isUploadPage, addManageMediaButton } from './utility.js';
 
@@ -62,6 +63,12 @@ function destroyVideoJSPlayersInContainer( container ) {
  */
 const MEDIA_FRAME_MENU_MAX_ATTEMPTS = 40;
 const MEDIA_FRAME_MENU_RETRY_DELAY_MS = 50;
+
+/**
+ * Width below which the folder sidebar is a full-screen overlay rather than a column
+ * (matches the `max-width: 900px` breakpoint in media-library.scss).
+ */
+const MOBILE_SIDEBAR_BREAKPOINT = 900;
 
 /**
  * Inject the folder-sidebar root into a media frame's menu and tell the React
@@ -195,6 +202,10 @@ class MediaLibrary {
 		addManageMediaButton();
 		this.addInputPlaceholder();
 		this.setupDeleteEventListeners();
+
+		// Runs here, not in setupAttachmentBrowser(), because it needs the list
+		// table in the DOM to find the bulk-action selects.
+		this.listViewBulkActions = new ListViewBulkActions();
 	}
 
 	addInputPlaceholder() {
@@ -338,6 +349,14 @@ class MediaLibrary {
 		if ( ! isFolderOrgDisabled() && isUploadPage() ) {
 			const mediaLibraryRoot = document.createElement( 'div' );
 			mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
+			// Resolve the collapsed state before the node is inserted: the React sidebar
+			// mounts later, so setting the class only from there would paint the expanded
+			// layout first and visibly snap shut on every page load. Below the mobile
+			// breakpoint the sidebar is a full-screen overlay that always starts collapsed;
+			// above it, the user's saved preference decides.
+			if ( window.innerWidth < MOBILE_SIDEBAR_BREAKPOINT || window.easydamMediaLibrary?.sidebarHidden ) {
+				mediaLibraryRoot.classList.add( 'hide-sidebar' );
+			}
 			const wpbody = document.querySelector( '#wpbody' );
 			wpbody.insertBefore( mediaLibraryRoot, wpbody.firstChild );
 		}

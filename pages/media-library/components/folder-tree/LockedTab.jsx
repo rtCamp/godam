@@ -93,7 +93,7 @@ const LockedTab = ( { handleContextMenu } ) => {
 								key={ lockedFolder?.id || index }
 								index={ index }
 								totalCount={ lockedCount }
-								onContextMenu={ ( e, id ) => handleContextMenu( e, id, lockedFolder ) }
+								onContextMenu={ ( e, id, anchor ) => handleContextMenu( e, id, lockedFolder, anchor ) }
 							/>
 						) ) }
 					</div>

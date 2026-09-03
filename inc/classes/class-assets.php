@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\REST_API\Media_Library;
 
 /**
  * Class Assets
@@ -342,6 +343,7 @@ class Assets {
 			'canManageOptions'            => current_user_can( 'manage_options' ),
 			'canEditPages'                => current_user_can( 'edit_pages' ),
 			'videoThumbnailsGuideMessage' => $media_library_video_thumbnails_guide_message,
+			'sidebarHidden'               => Media_Library::is_sidebar_hidden(),
 		);
 
 		/** This filter is documented in inc/classes/class-pages.php */

@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { createPortal } from 'react-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
 /**
@@ -29,10 +30,18 @@ const SnackbarComp = () => {
 		) );
 	};
 
-	return (
-		<>
-			{ message && ( <Snackbar className={ `snackbar ${ type }` } onRemove={ () => handleOnRemove() }>{ message }</Snackbar> ) }
-		</>
+	if ( ! message ) {
+		return null;
+	}
+
+	// Portalled to <body> rather than rendered in place. The sidebar root is
+	// `position: fixed; z-index: 1000`, which makes it a STACKING CONTEXT: any
+	// z-index used inside it is resolved against its siblings, not the page, so the
+	// toast was trapped at level 1000 and painted behind the media modal (160000)
+	// no matter how high its own z-index went.
+	return createPortal(
+		<Snackbar className={ `snackbar ${ type }` } onRemove={ () => handleOnRemove() }>{ message }</Snackbar>,
+		document.body,
 	);
 };
 

@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
  * WordPress dependencies
  */
 import { Button } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -17,6 +17,7 @@ import { openModal, updateSnackbar, updateBookmarks, lockFolder } from '../../re
 import { useDownloadZipMutation, useUpdateFolderMutation, useBulkLockFoldersMutation, useBulkBookmarkFoldersMutation, pollZipJobStatus } from '../../redux/api/folders';
 import {
 	BookmarkStarIcon,
+	CutIcon,
 	DeleteIcon,
 	DownloadZipIcon,
 	LockFolderIcon,
@@ -24,6 +25,8 @@ import {
 	RenameFolderIcon,
 } from '../icons';
 import { utilities } from '../../data/utilities';
+import { getSelectedAttachmentIds } from '../../data/media-grid';
+import useMoveAttachments from '../../hooks/useMoveAttachments';
 import './css/context-menu.scss';
 
 /**
@@ -84,6 +87,17 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 		return ids.some( ( id ) => utilities.isAnyParentLocked( id, allFolders ) );
 	}, [ isMultiSelecting, multiSelectedFolderIds, folderId, allFolders ] );
 
+	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
+	const { moveAttachments } = useMoveAttachments();
+
+	/**
+	 * Attachments selected in the media view when this menu opened.
+	 *
+	 * A snapshot, not live state: the menu is mounted fresh on every open, and the
+	 * selection cannot change while it is on screen.
+	 */
+	const [ selectedAttachmentIds ] = useState( () => getSelectedAttachmentIds() );
+
 	const [ updateFolderMutation ] = useUpdateFolderMutation();
 	const [ downloadZipMutation ] = useDownloadZipMutation();
 	const [ bulkLockFoldersMutation ] = useBulkLockFoldersMutation();
@@ -111,6 +125,13 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	// Close menu if clicked outside.
 	useEffect( () => {
 		const handleClickOutside = ( event ) => {
+			// A row's three-dot button toggles this menu itself. Closing on its mousedown
+			// would let the click that follows re-open the menu, so it could never be
+			// dismissed from the same button it was opened with.
+			if ( event.target?.closest?.( '.tree-item__menu-toggle' ) ) {
+				return;
+			}
+
 			if ( menuRef.current && ! menuRef.current.contains( event.target ) ) {
 				onClose();
 			}
@@ -376,6 +397,13 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 
 	const handleMenuItemClick = ( actionType ) => {
 		switch ( actionType ) {
+			case 'moveSelectionHere':
+				moveAttachments( {
+					attachmentIds: selectedAttachmentIds,
+					targetFolderId: folderId,
+					sourceFolderId: selectedFolder?.id,
+				} );
+				break;
 			case 'newSubFolder':
 				dispatch( openModal( 'folderCreation', { parentId: folderId } ) );
 				break;
@@ -410,6 +438,28 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			ref={ menuRef }
 			style={ { top: position.top, left: position.left } }
 		>
+			{ /* Only offered when there is something to move, and never for "All Media"
+			     (id -1), which is a view rather than a destination. */ }
+			{ selectedAttachmentIds.length > 0 && (
+				<Button
+					icon={ CutIcon }
+					onClick={ () => handleMenuItemClick( 'moveSelectionHere' ) }
+					className="folder-context-menu__item folder-context-menu-move-selection"
+					disabled={
+						folderId === -1 ||
+						folderId === selectedFolder?.id ||
+						currentFolder?.meta?.locked ||
+						isAnySelectedParentLocked ||
+						( isMultiSelecting && multiSelectedFolderIds.length > 1 )
+					}
+				>
+					{ sprintf(
+						/* translators: %d: number of selected media items. */
+						_n( 'Move %d item here', 'Move %d items here', selectedAttachmentIds.length, 'godam' ),
+						selectedAttachmentIds.length,
+					) }
+				</Button>
+			) }
 			{ hasRole( [ 'superadmin', 'administrator', 'editor' ] ) && (
 				<>
 					<Button

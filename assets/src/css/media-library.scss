@@ -26,6 +26,7 @@ $media-library-active-folder: #f5f5f5;
 		top: 3px;
 		background-image: url(data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgNjAgNjQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTI4Ljg3MjYgMTEuOTE4QzI4LjY2NjMgMTEuNjY5NiAyOC4zMjkyIDExLjYwNzEgMjguMDM4MSAxMS43NjY0TDIuODAyNDQgMjYuMTM4QzEuMzQzOTkgMjYuOTc2NSAwLjIwNzkwNCAyOC4zOTA3IDAuMDI4NTEzNSAzMC4wNDhDLTAuMTgxMjA5IDMyLjA1NzUgMC43NzgwOCAzMy45MTAxIDIuNTA2ODkgMzQuODk5NEw2Ljc1NDgzIDM3LjMzMDNDNi44NzAwOSAzNy4zOTYyIDcuMDAwMDcgMzcuMzYyIDcuMDkwMiAzNy4yODMyTDI4Ljg3OTUgMTIuNzY5NEMyOS4wOTEgMTIuNTIxIDI5LjA5NTMgMTIuMTc1OCAyOC45MDU1IDExLjkzNjlMMjguODcyNiAxMS45MThaIiBmaWxsPSIjNUQzMUZGIi8+PHBhdGggZD0iTTU4Ljg4MyA2LjQ3MTQ5QzU4Ljg5MjUgMy45NzgxMyA1Ny40NzEzIDIuMDEzMjQgNTUuNTIzMyAwLjk4NTM5OEM1My42NTE1IC0wLjE3MjY0MSA1MS4yMTk5IC0wLjQxMjQ4MSA0OS4wNDY1IDAuODIwOTExTDM5Ljc0MiA2LjEyMTkzQzM4LjY0NTggNi43NTQ5IDM3Ljc1MzIgNy42NzgyMyAzNy4xNzM1IDguNzgwNThMMTguNDU0NCA0Mi43NjVDMTguMTQ0MiA0My4zNjk3IDE4LjM1NDggNDQuMDk4NyAxOC45NDc1IDQ0LjQzNzhMMzUuNjI2NCA1My45ODIyQzM2LjIxOTIgNTQuMzIxNCAzNi45NjM1IDU0LjEzOSAzNy4zMzk2IDUzLjU3Mkw1Ny44MzY5IDIwLjYwNTFDNTguNTE1NSAxOS41NTkzIDU4Ljg4MTIgMTguMzM0NCA1OC44OTA3IDE3LjA3OTZMNTguOTA5IDYuNDY0NjRMNTguODgzIDYuNDcxNDlaIiBmaWxsPSIjNUQzMUZGIi8+PHBhdGggZD0iTTU5LjcwNTEgNTguNzAwMkw1OS43MzMgMjkuOTAzNkM1OS43NDQyIDI5LjU4NDEgNTkuNTA1MSAyOS4zMTY5IDU5LjE4NDQgMjkuMjYzOEM1OC44NjM4IDI5LjIxMDcgNTguNTYzMSAyOS4zODYzIDU4LjQ2NjkgMjkuNzAwNkw0Ny44MDc4IDYwLjU4MzZDNDcuNzU3NiA2MC43MDY5IDQ3LjgxODIgNjAuODI4NiA0Ny45MzM1IDYwLjg5NDVMNTIuMTgxNCA2My4zMjU0QzUzLjkxMDIgNjQuMzE0NyA1Ni4wMTM0IDY0LjIxNDUgNTcuNjcyMSA2My4wMzQyQzU5LjAzNjkgNjIuMDU1MiA1OS43Mjg1IDYwLjM4NjcgNTkuNzIxNSA1OC43MDk2TDU5LjcwNTEgNTguNzAwMloiIGZpbGw9IiM1RDMxRkYiLz48L3N2Zz4=);
 		background-size: contain;
+		background-repeat: no-repeat;
 	}
  }
 
@@ -420,6 +421,91 @@ $media-library-active-folder: #f5f5f5;
 
 	&.hidden {
 		display: none;
+	}
+}
+
+// "Move to folder" is the only way to file media into a folder on touch devices,
+// where the jQuery UI drag never fires, so it has to stay reachable in the
+// wrapped toolbar rather than being pushed off the row.
+.godam-move-to-folder-button {
+	margin-left: 0.5rem;
+
+	@media screen and (max-width: 782px) {
+		margin: 0.25rem 0.5rem 0.25rem 0;
+	}
+}
+
+// The "Folder" row in an attachment's details sidebar (two-column modal) and in
+// the media-frame sidebar. It is a native `span.setting`, so WP already supplies
+// the label and row geometry; this only lays out the current folder name against
+// the button beside it.
+//
+// Scoped under `.attachment-details` / `.media-sidebar` the way core scopes its
+// own `.setting` rules. A bare `.godam-move-to-folder-setting__current` lost the
+// text-align to a more specific rule elsewhere in the admin, so the folder name
+// rendered right-aligned against the button instead of flush with the inputs above.
+.attachment-details .setting.godam-move-to-folder-setting,
+.media-sidebar .setting.godam-move-to-folder-setting {
+
+	// Styled as one of WP's own form controls so the row keeps the bordered-box
+	// rhythm of the inputs above it. It is a real <button> (it opens the picker
+	// dialog), so the whole input look has to be supplied here.
+	//
+	// These rows are FLOAT-based, not flex: the label is `float: left; width: 30%`
+	// and the control `float: right; width: 65%`. The geometry below mirrors the
+	// text inputs in the rows above, measured from the rendered sidebar. Using
+	// `width: 100%` instead made the control span the label column too, because a
+	// full-width block ignores the label's float.
+	.godam-move-to-folder-setting__control {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		float: right;
+		width: 65%;
+		min-height: 40px;
+		box-sizing: border-box;
+		padding: 4px 8px;
+		background: #fff;
+		border: 1px solid #949494;
+		border-radius: 2px;
+		box-shadow: none;
+		color: #2c3338;
+		font-size: 14px;
+		// The folder name reads left, flush with the inputs in the rows above.
+		text-align: left;
+		cursor: pointer;
+
+		&:hover {
+			border-color: var(--wp-admin-theme-color, #3582c4);
+		}
+
+		&:focus {
+			border-color: var(--wp-admin-theme-color, #3582c4);
+			box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #3582c4);
+			outline: 2px solid transparent;
+		}
+	}
+
+	.godam-move-to-folder-setting__current {
+		flex: 1;
+		min-width: 0;
+		// Set here as well as on the control: this sidebar aligns its setting text
+		// away from the start (that is what lines the labels up against the value
+		// column), and that inherits straight through to this span.
+		text-align: left;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.godam-move-to-folder-setting__chevron {
+		flex-shrink: 0;
+		color: #50575e;
+		font-size: 16px;
+		width: 16px;
+		height: 16px;
+		line-height: 1;
 	}
 }
 

@@ -15,6 +15,7 @@ import { Icon, file } from '@wordpress/icons';
 import { changeSelectedFolder } from '../../redux/slice/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
+import FolderMenuToggle from './FolderMenuToggle.jsx';
 
 const TabItem = ( { item, index, onContextMenu } ) => {
 	const dispatch = useDispatch();
@@ -57,6 +58,7 @@ const TabItem = ( { item, index, onContextMenu } ) => {
 					</span>
 				</div>
 			</button>
+			<FolderMenuToggle folderId={ item.id } onContextMenu={ onContextMenu } />
 		</div>
 	);
 };
