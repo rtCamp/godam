@@ -1673,11 +1673,11 @@ class Media_Library extends Base {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function bulk_delete_folders( $request ) {
-		$user            = wp_get_current_user();
-		$is_allowed_role = ( $user instanceof \WP_User ) && in_array( 'administrator', $user->roles, true );
-		$is_superadmin   = is_multisite() && is_super_admin( $user->ID ) && current_user_can( 'manage_network' );
-
-		if ( ! $is_allowed_role && ! $is_superadmin ) {
+		// Deleting folders is administrator-only. Gating on the `manage_options` capability
+		// (rather than a role-name check) keeps this in lockstep with the media-folder
+		// taxonomy's `delete_terms` cap and the `deleteFolders` UI flag. Super admins hold
+		// `manage_options`, so the previous multisite special-case is covered too.
+		if ( ! current_user_can( 'manage_options' ) ) {
 			return new \WP_Error( 'rest_forbidden', __( 'You do not have permission to delete folders.', 'godam' ), array( 'status' => 403 ) );
 		}
 
@@ -1861,11 +1861,10 @@ class Media_Library extends Base {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function bulk_update_folder_lock( $request ) {
-		$user            = wp_get_current_user();
-		$is_allowed_role = ( $user instanceof \WP_User ) && array_intersect( array( 'administrator', 'editor' ), $user->roles );
-		$is_superadmin   = is_multisite() && is_super_admin( $user->ID ) && current_user_can( 'manage_network' );
-
-		if ( ! $is_allowed_role && ! $is_superadmin ) {
+		// Locking/unlocking is an Editor-and-above action. Gating on `manage_categories`
+		// (rather than role-name checks) keeps this consistent with the `locked` term-meta
+		// auth_callback and the `lockFolders` UI flag. Super admins hold this capability too.
+		if ( ! current_user_can( 'manage_categories' ) ) {
 			return new \WP_Error( 'rest_forbidden', __( 'You do not have permission to lock or unlock folders.', 'godam' ), array( 'status' => 403 ) );
 		}
 
@@ -1927,6 +1926,14 @@ class Media_Library extends Base {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function bulk_update_folder_bookmark( $request ) {
+		// Bookmarking is grouped with Lock as an Editor-and-above action, so gate it on the
+		// same `manage_categories` capability the `bookmark` term-meta auth_callback and the
+		// `lockFolders` UI flag use. Without this, the route's `upload_files` permission
+		// callback would let Authors bulk-bookmark while the single-folder path (now) cannot.
+		if ( ! current_user_can( 'manage_categories' ) ) {
+			return new \WP_Error( 'rest_forbidden', __( 'You do not have permission to bookmark folders.', 'godam' ), array( 'status' => 403 ) );
+		}
+
 		$folder_ids      = $request->get_param( 'folder_ids' );
 		$bookmark_status = (bool) $request->get_param( 'bookmark_status' );
 

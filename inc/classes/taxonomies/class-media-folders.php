@@ -84,6 +84,20 @@ class Media_Folders extends Base {
 			'rewrite'           => array( 'slug' => 'media-folder' ),
 			'show_in_rest'      => true,
 			'query_var'         => true,
+			// Media folders organise the media library, so their management tracks media
+			// access rather than the default `manage_categories` (only Editors/Admins hold
+			// that — which is why an Author got a 403 `rest_cannot_create` on New Folder).
+			// create + rename share `edit_terms`, so `upload_files` lets Authors and above
+			// create/rename folders (Contributors/Subscribers can't upload media anyway).
+			// Deleting is restricted to administrators (`manage_options`) to match the
+			// admin-only Delete UI and the `bulk_delete_folders` REST endpoint — Editors
+			// hold `manage_categories`, so using that here would have left them a delete path.
+			'capabilities'      => array(
+				'manage_terms' => 'upload_files',
+				'edit_terms'   => 'upload_files',
+				'delete_terms' => 'manage_options',
+				'assign_terms' => 'upload_files',
+			),
 		);
 
 		return array_merge( $args, $extra );
@@ -99,13 +113,26 @@ class Media_Folders extends Base {
 	 * @return void
 	 */
 	public function register_term_meta() {
+		/*
+		 * Writing `locked`/`bookmark` via the native REST route is gated to Editors and
+		 * above (`manage_categories`) — the same level the Lock/Bookmark bulk endpoints
+		 * and UI use. Without an explicit auth_callback these meta inherit the taxonomy's
+		 * `edit_terms` cap, which this feature lowered to `upload_files` so Authors could
+		 * create/rename folders — that would also let an Author POST `meta.locked = true`
+		 * on any folder and lock it against everyone (see issue #1239 review).
+		 */
+		$manage_meta_auth_callback = static function () {
+			return current_user_can( 'manage_categories' );
+		};
+
 		register_term_meta(
 			static::SLUG,
 			'locked',
 			array(
-				'type'         => 'boolean',
-				'single'       => true,
-				'show_in_rest' => true,
+				'type'          => 'boolean',
+				'single'        => true,
+				'show_in_rest'  => true,
+				'auth_callback' => $manage_meta_auth_callback,
 			)
 		);
 
@@ -113,9 +140,10 @@ class Media_Folders extends Base {
 			static::SLUG,
 			'bookmark',
 			array(
-				'type'         => 'boolean',
-				'single'       => true,
-				'show_in_rest' => true,
+				'type'          => 'boolean',
+				'single'        => true,
+				'show_in_rest'  => true,
+				'auth_callback' => $manage_meta_auth_callback,
 			)
 		);
 	}
