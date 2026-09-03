@@ -181,3 +181,14 @@
 	}
 
 }
+
+// jQuery UI applies this while attachments are dragged over a folder row (see
+// FolderTree's droppable `hoverClass`), which until now matched no rule at all —
+// so drag-to-folder gave no indication of where the drop would land.
+.tree-item.droppable-hover,
+.folder-list__item.droppable-hover {
+	background-color: #F0F0F0;
+	outline: 2px dashed var(--wp-admin-theme-color, #3858e9);
+	outline-offset: -2px;
+	border-radius: 0.25rem;
+}

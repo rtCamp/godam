@@ -18,6 +18,7 @@ import GoDAMMediaFrameShared from './views/godam-media-frame-shared.js';
 
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 import MediaListViewTableDragHandler from './views/attachment-list.js';
+import ListViewBulkActions from './list-view-bulk-actions.js';
 
 import { isFolderOrgDisabled, shouldReplaceAttachmentsViews, isUploadPage, addManageMediaButton } from './utility.js';
 
@@ -201,6 +202,10 @@ class MediaLibrary {
 		addManageMediaButton();
 		this.addInputPlaceholder();
 		this.setupDeleteEventListeners();
+
+		// Runs here, not in setupAttachmentBrowser(), because it needs the list
+		// table in the DOM to find the bulk-action selects.
+		this.listViewBulkActions = new ListViewBulkActions();
 	}
 
 	addInputPlaceholder() {

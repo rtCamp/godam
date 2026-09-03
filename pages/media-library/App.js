@@ -22,9 +22,12 @@ import {
 	clearMultiSelectedFolders,
 	setSortOrder,
 	setCurrentContextMenuFolder,
+	updateSnackbar,
 } from './redux/slice/folders';
-import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
-import { triggerFilterChange } from './data/media-grid.js';
+import { FolderCreationModal, RenameModal, DeleteModal, MoveToFolderModal } from './components/modal/index.jsx';
+import { triggerFilterChange, consumePendingNotice } from './data/media-grid.js';
+import SnackbarComp from './components/folder-tree/SnackbarComp.jsx';
+import useMoveToFolderBridge from './hooks/useMoveToFolderBridge.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
 import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery, useUpdateSidebarPreferenceMutation } from './redux/api/folders.js';
@@ -54,6 +57,10 @@ const App = () => {
 	const { data: allMediaCount, refetch: refetchAllMediaCount } = useGetAllMediaCountQuery();
 	const { data: uncategorizedCount, refetch: refetchUncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
 	const [ updateSidebarPreference ] = useUpdateSidebarPreferenceMutation();
+
+	// Lets the wp.media-side triggers (grid toolbar, list bulk action, attachment
+	// details) open the "Move to folder" picker.
+	useMoveToFolderBridge();
 
 	const [ contextMenu, setContextMenu ] = useState( {
 		visible: false,
@@ -107,6 +114,17 @@ const App = () => {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
+
+	// A move made in list view refreshes by reloading the page, which discards the
+	// snackbar that should report it — so the notice is parked in sessionStorage and
+	// drained here, once, on the next mount.
+	useEffect( () => {
+		const notice = consumePendingNotice();
+
+		if ( notice ) {
+			dispatch( updateSnackbar( notice ) );
+		}
+	}, [ dispatch ] );
 
 	// Listen for media type filter changes and refetch media count queries
 	useEffect( () => {
@@ -288,6 +306,12 @@ const App = () => {
 			<FolderCreationModal />
 			<RenameModal />
 			<DeleteModal />
+			<MoveToFolderModal />
+
+			{ /* Rendered here rather than inside FolderTree, which returns early while
+			     folders are loading or failed — a move that fails in either of those
+			     states would otherwise have no visible feedback at all. */ }
+			<SnackbarComp />
 		</>
 	);
 };

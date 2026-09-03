@@ -1,0 +1,214 @@
+/**
+ * Destination picker for "Move to folder".
+ *
+ * Layout: a fixed header (item count), a fixed search band, a scrolling list of
+ * destinations, and a fixed footer holding the actions plus the chosen folder.
+ * Only the list scrolls, so a long folder tree never takes the search field or
+ * the Move/Cancel buttons with it.
+ *
+ * Styling stays native — it shares .modal__container, .modal__description and
+ * .modal__button-group with the other sidebar modals (see modal.scss) and takes
+ * its accent from the admin colour scheme.
+ *
+ * Holding the regions in place needs an unbroken flex chain from the frame down,
+ * because Modal's DOM is:
+ *
+ *   .components-modal__frame        <- `className` lands here
+ *     .components-modal__content    <- WP's scroller (overflow: auto)
+ *       .components-modal__header   <- position: absolute, out of flow
+ *       <div>                       <- UNCLASSED wrapper around `children`
+ *         our header / search / body / footer
+ *
+ * Every link needs `flex: 1 1 auto; min-height: 0`, or the regions below are laid
+ * out against an unbounded height and the footer is clipped by the frame's
+ * `overflow: hidden`. The unclassed wrapper is the easy one to miss.
+ */
+
+/**
+ * Horizontal padding for every region, matching .components-modal__header's own,
+ * so the item count lines up under the modal title.
+ *
+ * The regions are padded individually rather than by the container, because the
+ * dividers between them have to reach the frame edges. Padding the container and
+ * then cancelling it per region with negative margins looks equivalent but is
+ * not: WP's content padding differs between its own releases (24px in the version
+ * WP ships to the admin, 32px in the one in node_modules), so any hardcoded
+ * cancellation over- or under-shoots and the frame clips the overflow.
+ */
+$region-inline-padding: 24px;
+
+/** Indentation per tree level, matching TreeItem's own spacing. */
+$depth-indent: 12px;
+
+.move-to-folder {
+
+	// The frame is already `display: flex`, but WP leaves flex-direction at the
+	// default `row` — which would shrink the content horizontally, never vertically.
+	flex-direction: column;
+
+	.components-modal__content {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		// WP scrolls this region by default; the body scrolls instead.
+		overflow: hidden;
+		// Hand the horizontal padding to the regions (see $region-inline-padding).
+		// The vertical padding is left alone — its bottom is the footer's breathing
+		// room.
+		padding-inline: 0;
+	}
+
+	// The unclassed wrapper Modal puts around `children`. Selected by exclusion
+	// rather than by position so it does not depend on whether the modal header is
+	// rendered (`__experimentalHideHeader`).
+	.components-modal__content > div:not( .components-modal__header ) {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	&__header,
+	&__search,
+	&__footer,
+	&__option,
+	&__status,
+	&__load-more {
+		padding-inline: $region-inline-padding;
+	}
+
+	// --- Header: the item count, sitting under the modal's own title bar.
+	&__header {
+		flex: 0 0 auto;
+		padding-block: 0 0.75rem;
+		border-bottom: 1px solid #e0e0e0;
+
+		.modal__description {
+			margin: 0;
+		}
+	}
+
+	// --- Search: fixed, so filtering stays available at any scroll position.
+	&__search {
+		flex: 0 0 auto;
+		padding-block: 0.75rem;
+		border-bottom: 1px solid #e0e0e0;
+	}
+
+	// --- Body: the only scrolling region. Its rows carry the inline padding.
+	&__body {
+		// Two bounds, deliberately, because they bind at opposite extremes and the
+		// footer has to survive both. On a tall viewport max-height wins, so a long
+		// tree doesn't stretch the modal to the frame's full height. On a short one
+		// flex-shrink wins: min-height: 0 is what lets this shrink BELOW its content
+		// size instead of pushing the footer past the frame's cap.
+		flex: 1 1 auto;
+		min-height: 0;
+		max-height: 45vh;
+		overflow-y: auto;
+		scrollbar-width: thin;
+
+		&::-webkit-scrollbar {
+			width: 6px;
+		}
+
+		&::-webkit-scrollbar-thumb {
+			background-color: #c7c7c7;
+			border-radius: 3px;
+		}
+	}
+
+	&__option {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding-block: 0.625rem;
+		// The row only publishes its tree depth (as --godam-depth); the arithmetic
+		// belongs with the other spacing values rather than in a style attribute.
+		padding-inline-start: calc(#{$region-inline-padding} + var(--godam-depth, 0) * #{$depth-indent});
+		font-size: 0.875rem;
+		cursor: pointer;
+
+		// Row separators, but not a stray line above the footer's own divider.
+		&:not(:last-child) {
+			border-bottom: 1px solid #f0f0f0;
+		}
+
+		// Ordered most- to least-specific to satisfy stylelint's
+		// no-descending-specificity rule.
+		&:focus-within {
+			outline: 1px solid var(--wp-admin-theme-color);
+			outline-offset: -1px;
+		}
+
+		// Left accent bar plus a tinted row, the way the admin marks a current item.
+		&:has(input:checked) {
+			background-color: #f0f0f0;
+			font-weight: 600;
+			box-shadow: inset 3px 0 0 0 var(--wp-admin-theme-color, #3858e9);
+		}
+
+		&:hover:not(.is-disabled) {
+			background-color: #f5f5f5;
+		}
+
+		&.is-disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+	}
+
+	&__option-name {
+		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__option-badge {
+		flex-shrink: 0;
+		font-size: 0.6875rem;
+		font-weight: 400;
+		color: #757575;
+		border: 1px solid #e0e0e0;
+		border-radius: 0.75rem;
+		padding: 0 0.5rem;
+	}
+
+	&__status {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		margin: 0;
+		padding-block: 0.5rem;
+		font-size: 0.8125rem;
+		color: #757575;
+	}
+
+	&__load-more {
+		padding-block: 0.25rem 0.5rem;
+	}
+
+	// --- Footer: actions on the left, chosen destination echoed on the right.
+	// Keeps .modal__button-group (shared button styling) and only adds the divider
+	// and the summary's placement.
+	&__footer {
+		flex: 0 0 auto;
+		align-items: center;
+		padding-block: 0.75rem 0;
+		border-top: 1px solid #e0e0e0;
+	}
+
+	&__selected {
+		// Pushed to the far end, so it reads as a confirmation of the row above
+		// rather than a third action.
+		margin-inline-start: auto;
+		font-size: 0.8125rem;
+		color: #757575;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
