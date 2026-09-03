@@ -182,6 +182,11 @@ export default class ConfigurationManager {
 
 		controlBar.skipButtons = normalizeSkipButtons( controlBar.skipButtons );
 
+		// Picture-in-picture is not part of the player design in any skin, so
+		// force it off rather than defaulting it — attachment configs and
+		// already-cached page HTML may still ask for it in `data-controls`.
+		controlBar.pictureInPictureToggle = false;
+
 		this.videoSetupControls.controlBar = controlBar;
 	}
 }

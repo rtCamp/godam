@@ -23,7 +23,6 @@ const initialState = {
 			durationDisplay: true, // Total duration
 			fullscreenToggle: true, // Full-screen button
 			subsCapsButton: true,
-			pictureInPictureToggle: false,
 			// Persist an explicit skip duration even when the editor's
 			// "Adjust Skip Duration" control is never touched — a saved
 			// controlBar without this key leaves the frontend player with no

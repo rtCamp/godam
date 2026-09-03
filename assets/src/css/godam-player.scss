@@ -177,10 +177,6 @@
 	order: 6;
 }
 
-.vjs-picture-in-picture-control {
-	order: 7;
-}
-
 .form-container {
 	position: relative;
 	width: 100%;
@@ -1603,17 +1599,10 @@ body.godam-share-modal-open {
 				height: 3em !important;
 			}
 
-			.vjs-picture-in-picture-control {
-				position: absolute;
-				bottom: 0;
-				right: 40px;
-				height: 3em !important;
-			}
-
 			.vjs-settings-button {
 				position: absolute;
 				bottom: 0;
-				right: 80px;
+				right: 40px;
 				height: 3em !important;
 				z-index: 99;
 			}
@@ -1621,7 +1610,7 @@ body.godam-share-modal-open {
 			.vjs-quality-menu-wrapper {
 				position: absolute;
 				bottom: 0;
-				right: calc(3 * 40px);
+				right: calc(2 * 40px);
 				height: 3em !important;
 			}
 

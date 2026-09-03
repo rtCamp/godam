@@ -551,6 +551,11 @@ $godam_video_setup['controlBar']['skipButtons'] = array(
 	'backward' => $godam_skip_duration,
 );
 
+// Picture-in-picture is not part of the player design in any skin, so the
+// control is never created — regardless of what an attachment config, a
+// shortcode or a page builder asks for.
+$godam_video_setup['controlBar']['pictureInPictureToggle'] = false;
+
 // The block's "Show caption" overrides the attachment's Display-captions
 // setting for the CC button + caption display on the frontend.
 $godam_video_setup['controlBar']['subsCapsButton'] = $godam_disable_subtitles_and_transcript ? false : $godam_show_caption;

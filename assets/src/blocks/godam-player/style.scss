@@ -1042,17 +1042,10 @@
 				height: 3em !important;
 			}
 	
-			.vjs-picture-in-picture-control {
-				position: absolute;
-				bottom: 0;
-				right: 40px;
-				height: 3em !important;
-			}
-
 			.vjs-quality-menu-wrapper {
 				position: absolute;
 				bottom: 0;
-				right: calc(3 * 40px);
+				right: calc(2 * 40px);
 				height: 3em !important;
 			}
 
