@@ -25,6 +25,7 @@ import {
 } from './redux/slice/folders';
 import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
 import { triggerFilterChange } from './data/media-grid.js';
+import { canManageFolders } from './data/capabilities.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
 import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery } from './redux/api/folders.js';
@@ -154,21 +155,25 @@ const App = () => {
 			<div className="control-buttons">
 				<div className="button-group mb-spacing">
 					<SearchBar />
-					<Button
-						icon="plus-alt2"
-						__next40pxDefaultSize
-						variant="primary"
-						text={ __( 'New Folder', 'godam' ) }
-						className="button--full mb-spacing new-folder-button"
-						onClick={ () => {
-							// Create at the ROOT from the top-level button. FolderCreationModal
-							// derives the new folder's parent from currentContextMenuFolder, which
-							// a prior right-click leaves set — without this clear, the top button
-							// would nest the folder under the last right-clicked folder.
-							dispatch( setCurrentContextMenuFolder( null ) );
-							dispatch( openModal( 'folderCreation' ) );
-						} }
-					/>
+					{ /* Gated on the same capability the server authorizes create on, so users
+						who cannot create folders (e.g. Contributors) don't see a button that 403s. */ }
+					{ canManageFolders && (
+						<Button
+							icon="plus-alt2"
+							__next40pxDefaultSize
+							variant="primary"
+							text={ __( 'New Folder', 'godam' ) }
+							className="button--full mb-spacing new-folder-button"
+							onClick={ () => {
+								// Create at the ROOT from the top-level button. FolderCreationModal
+								// derives the new folder's parent from currentContextMenuFolder, which
+								// a prior right-click leaves set — without this clear, the top button
+								// would nest the folder under the last right-clicked folder.
+								dispatch( setCurrentContextMenuFolder( null ) );
+								dispatch( openModal( 'folderCreation' ) );
+							} }
+						/>
+					) }
 				</div>
 				<div className="button-group mb-spacing">
 					<Button
