@@ -16,7 +16,8 @@ import { select, dispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import { getQuery } from '../utility.js';
-import { setupClassicFeaturedImage, resolveClassicFeaturedImage } from '../classic-featured-image.js';
+import { isSameId } from '../ids.js';
+import { setupClassicFeaturedImage, resolveClassicFeaturedImage, clearDeferredFeaturedImage } from '../classic-featured-image.js';
 import { ALLOWED_MEDIA_TYPES as DOCUMENT_MIME_TYPES } from '../../../blocks/godam-pdf/constants.js';
 
 const l10n = wp?.media?.view?.l10n;
@@ -97,7 +98,7 @@ function replaceVirtualIdInCoreImageBlocks( virtualMediaId, realId ) {
 			block.name === 'core/image' &&
 			block.attributes?.id !== undefined &&
 			block.attributes?.id !== null &&
-			String( block.attributes.id ) === String( virtualMediaId )
+			isSameId( block.attributes.id, virtualMediaId )
 		) {
 			blockEditorDispatch.updateBlockAttributes( block.clientId, { id: realId } );
 		}
@@ -137,11 +138,33 @@ function replaceVirtualIdInFeaturedImage( virtualMediaId, realId ) {
 		return;
 	}
 
-	if ( String( currentFeaturedMedia ) !== String( virtualMediaId ) ) {
+	if ( ! isSameId( currentFeaturedMedia, virtualMediaId ) ) {
 		return;
 	}
 
-	dispatch( 'core/editor' ).editPost( { featured_media: realId } );
+	try {
+		dispatch( 'core/editor' ).editPost( { featured_media: realId } );
+	} catch {
+		// Guarded like the read above. A throw here would unwind into processGoDAMItem's
+		// swallow-all catch and take out resolveClassicFeaturedImage() along with both
+		// custom events for this item, which other code depends on.
+	}
+}
+
+/**
+ * Release a classic-editor featured image pick whose attachment was never created.
+ *
+ * The pick is lost either way — there is no ID to set — but clearing the park keeps the
+ * failure to this one item instead of jamming every subsequent pick, and the warning
+ * gives the silent drop a trace, since the meta box just keeps its previous value.
+ *
+ * @param {string|number} virtualMediaId The GoDAM item ID whose creation failed.
+ */
+function releaseParkedFeaturedImage( virtualMediaId ) {
+	if ( clearDeferredFeaturedImage( virtualMediaId ) ) {
+		// eslint-disable-next-line no-console
+		console.warn( 'GoDAM: could not create the attachment for the selected featured image, so the featured image was left unchanged.' );
+	}
 }
 
 /**
@@ -201,7 +224,8 @@ const GoDAMMediaFrameShared = {
 		const state = this.state();
 
 		// Hold back a classic-editor featured image pick until its attachment exists.
-		setupClassicFeaturedImage();
+		// Scoped to the Featured image frame; every other frame is left untouched.
+		setupClassicFeaturedImage( this );
 
 		const mimeTypes = normalizeGoDAMTabType(
 			state.get( 'library' )?.props?.get( 'type' ),
@@ -326,9 +350,15 @@ const GoDAMMediaFrameShared = {
 				// Also trigger count refresh for React components
 				const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
 				document.dispatchEvent( countRefreshEvent );
+			} else {
+				// There is no attachment to point the pick at, so a parked classic-editor
+				// featured image has to be released — otherwise the park is held for the
+				// life of the page and every later pick is swallowed too.
+				releaseParkedFeaturedImage( data.id );
 			}
 		} catch {
 			// Swallow request failures so one item does not break the rest of the selection flow.
+			releaseParkedFeaturedImage( data.id );
 		}
 	},
 
