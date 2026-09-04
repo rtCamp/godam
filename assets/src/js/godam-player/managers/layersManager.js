@@ -21,6 +21,7 @@ export default class LayersManager {
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = currentPlayerVideoInstanceId;
 		this.customLayerManagers = {}; // Storage for custom manager instances
+		this.suppressionCheck = null; // Optional predicate that pauses all layer firing
 
 		// Initialize sub-managers
 		this.formLayerManager = new FormLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
@@ -58,12 +59,42 @@ export default class LayersManager {
 			// Event-driven CTA triggers: `on_pause` shows a layer when the viewer
 			// pauses, `end_of_video` overlays one when playback ends. (The
 			// `timestamp` and `watch_depth` triggers run off `timeupdate`.)
-			this.player.on( 'pause', () => this.formLayerManager.handlePause() );
-			this.player.on( 'ended', () => this.formLayerManager.handleEnded() );
+			this.player.on( 'pause', () => {
+				if ( ! this.areLayersSuppressed() ) {
+					this.formLayerManager.handlePause();
+				}
+			} );
+			this.player.on( 'ended', () => {
+				if ( ! this.areLayersSuppressed() ) {
+					this.formLayerManager.handleEnded();
+				}
+			} );
 		}
 
 		this.formLayerManager.sortLayers();
 		this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] = false;
+	}
+
+	/**
+	 * Register a predicate that temporarily suppresses all layer firing.
+	 *
+	 * Used by the hover "Start Preview" behaviour: layers are still set up (and
+	 * stay `hidden`), but nothing is revealed while the muted preview runs, so
+	 * event-driven layers also keep their un-`triggered` state for real playback.
+	 *
+	 * @param {Function} check - Returns true while layers must stay suppressed.
+	 */
+	setSuppressionCheck( check ) {
+		this.suppressionCheck = typeof check === 'function' ? check : null;
+	}
+
+	/**
+	 * Whether layer firing is currently suppressed.
+	 *
+	 * @return {boolean} True when no layer should be revealed.
+	 */
+	areLayersSuppressed() {
+		return this.suppressionCheck?.() === true;
 	}
 
 	/**
@@ -133,6 +164,10 @@ export default class LayersManager {
 	 * @param {number} currentTime - Current video time in seconds
 	 */
 	handleFormLayersTimeUpdate( currentTime ) {
+		if ( this.areLayersSuppressed() ) {
+			return;
+		}
+
 		this.formLayerManager.handleFormLayersTimeUpdate( currentTime );
 	}
 
@@ -142,6 +177,10 @@ export default class LayersManager {
 	 * @param {number} currentTime - Current video time in seconds
 	 */
 	handleHotspotLayersTimeUpdate( currentTime ) {
+		if ( this.areLayersSuppressed() ) {
+			return;
+		}
+
 		this.hotspotLayerManager.handleHotspotLayersTimeUpdate( currentTime );
 	}
 
@@ -152,6 +191,10 @@ export default class LayersManager {
 	 * @param {number} currentTime - Current video time in seconds
 	 */
 	handleCustomLayersTimeUpdate( currentTime ) {
+		if ( this.areLayersSuppressed() ) {
+			return;
+		}
+
 		Object.values( this.customLayerManagers ).forEach( ( manager ) => {
 			if ( typeof manager.handleTimeUpdate === 'function' ) {
 				manager.handleTimeUpdate( currentTime );

@@ -32,6 +32,10 @@ class HoverManager {
 		this.hoverSelect = videoElement.dataset.hoverSelect || 'none';
 		this.isVideoClicked = false;
 		this.isHovered = false;
+		// True while an uncommitted hover preview is running. Interactive layers
+		// are suppressed for its duration – a preview is a playback teaser, not
+		// a place to show forms/CTAs/hotspots.
+		this.isPreviewPlaying = false;
 		this.options = options;
 
 		this.init();
@@ -64,6 +68,16 @@ class HoverManager {
 		this.videoElement.addEventListener( 'mouseenter', this.handleMouseEnter.bind( this ) );
 		this.videoElement.addEventListener( 'mouseleave', this.handleMouseLeave.bind( this ) );
 		this.videoElement.addEventListener( 'click', this.handleVideoClick.bind( this ) );
+
+		// Playback that starts while the pointer is away from the video is real
+		// playback, not a preview – e.g. the big play button or the control bar,
+		// whose clicks never reach the <video> element and so never run
+		// `handleVideoClick`. Clear the preview flag so layers resume working.
+		this.player.on( 'play', () => {
+			if ( ! this.isHovered ) {
+				this.isPreviewPlaying = false;
+			}
+		} );
 	}
 
 	/**
@@ -115,6 +129,7 @@ class HoverManager {
 
 		if ( this.isHovered ) {
 			this.isVideoClicked = true;
+			this.isPreviewPlaying = false;
 
 			this.player.volume( 1 );
 			this.player.play();
@@ -130,6 +145,8 @@ class HoverManager {
 	 * Starts the video preview by playing the video muted and hiding controls.
 	 */
 	startPreview() {
+		this.isPreviewPlaying = true;
+
 		this.player.volume( 0 );
 		this.player.currentTime( 0 );
 
@@ -147,6 +164,21 @@ class HoverManager {
 	stopPreview() {
 		this.player.pause();
 		this.player.currentTime( 0 );
+	}
+
+	/**
+	 * Whether an uncommitted hover preview is in progress.
+	 *
+	 * Deliberately keyed off the live preview flag rather than `hoverSelect`, so
+	 * autoplay players (where `init()` bails out) and `show-player-controls`
+	 * mode can never report a preview. The flag is intentionally NOT cleared by
+	 * `stopPreview()`: `pause()` emits its event asynchronously, so clearing it
+	 * there would let an `on_pause` CTA slip through as the pointer leaves.
+	 *
+	 * @return {boolean} True while a hover preview is active.
+	 */
+	isPreviewActive() {
+		return this.isPreviewPlaying;
 	}
 }
 
