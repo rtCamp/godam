@@ -47,8 +47,9 @@
 	margin: auto;
 	max-height: 500px;
 
+	// Control-bar visibility is owned by `_player-controls.scss` so there is a
+	// single source of truth for it.
 	.vjs-control-bar {
-		display: var(--is-controls-visible, flex);
 		z-index: 8;
 	}
 }

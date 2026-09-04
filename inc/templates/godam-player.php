@@ -525,6 +525,20 @@ if ( ! empty( $godam_control_bar_settings ) ) {
 	}
 
 	$godam_video_setup['controlBar']['volumePanel'] = $godam_volume_panel_setting;
+
+	/*
+	 * Videos saved before a skip duration was ever picked carry no `skipButtons`
+	 * key, and the assignment above replaces the whole control-bar array — which
+	 * dropped the default and left Video.js with no skip buttons to build. The
+	 * editor's Settings tab shows "10 seconds" for those videos, so restore the
+	 * matching default here rather than silently rendering nothing.
+	 */
+	if ( empty( $godam_control_bar_settings['skipButtons']['forward'] ) ) {
+		$godam_video_setup['controlBar']['skipButtons'] = array(
+			'forward'  => 10,
+			'backward' => 10,
+		);
+	}
 }
 
 // The block's "Show caption" overrides the attachment's Display-captions
