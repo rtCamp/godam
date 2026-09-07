@@ -115,4 +115,33 @@ describe( 'RevenueCard — single store currency', () => {
 		);
 		expect( perVideo ).not.toContain( 'godam-revenue-influenced' );
 	} );
+
+	it( 'renders a negative revenue_minor (net refund) as a signed amount, not a wrapped or NaN value', () => {
+		// The card is "before refunds" and refunds are out of scope (issue #26), so a
+		// net-negative revenue is not expected in normal operation — but if one
+		// arrives it must render a sane signed amount, never wrap or crash. See findings.
+		const html = renderToString(
+			<RevenueCard revenue={ { revenue_minor: -46700, currency: 'USD', excluded_orders: 0 } } />,
+		);
+		expect( html ).toContain( 'godam-revenue-card' ); // still renders
+		expect( html ).not.toBe( '' );
+		expect( html ).toContain( '467.00' ); // magnitude, formatted to 2dp
+		expect( html ).toMatch( /-\D*467\.00/ ); // rendered as a negative bound to the amount
+		expect( html ).not.toContain( 'NaN' );
+	} );
+
+	it( 'renders a fully negative Direct/Assisted split sanely (no negative bar width, no NaN)', () => {
+		// A refund-heavy split: headline is the split sum (-80.00), and each leg is
+		// its own signed amount. The split bar must not take a negative width.
+		const html = renderToString(
+			<RevenueCard revenue={ { revenue_minor: -8000, currency: 'INR', excluded_orders: 0, direct_minor: -5000, assisted_minor: -3000 } } />,
+		);
+		expect( html ).toContain( 'godam-revenue-card' );
+		expect( html ).toMatch( /-\D*80\.00/ ); // headline = Direct + Assisted = -80.00
+		expect( html ).toContain( '50.00' ); // direct leg magnitude
+		expect( html ).toContain( '30.00' ); // assisted leg magnitude
+		// splitTotal <= 0 collapses both fractions to 0%, never a negative width.
+		expect( html ).not.toMatch( /width:\s*-/ );
+		expect( html ).not.toContain( 'NaN' );
+	} );
 } );

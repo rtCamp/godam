@@ -62,3 +62,35 @@ describe( 'VideoToCartCard — null vs zero', () => {
 		expect( html ).toContain( 'godam-video-to-cart-card' );
 	} );
 } );
+
+describe( 'VideoToCartCard — out-of-range rate', () => {
+	it( 'shows a rate above 100% sanely, unclamped, to one decimal (current behaviour)', () => {
+		// The service rate is echoed as-is (no clamp, unlike PurchaseFunnelCard); a
+		// skewed >100% rate must still render a sane one-decimal value, not NaN. See findings.
+		const html = renderToString(
+			<VideoToCartCard videoToCart={ { carts: 5, rate: 150, direct: 5, assisted: 0 } } />,
+		);
+		expect( html ).not.toBe( '' );
+		expect( html ).toContain( 'godam-video-to-cart-card' );
+		expect( html ).toContain( '150.0% of viewers who played' );
+		expect( html ).not.toContain( 'NaN' );
+	} );
+
+	it( 'shows a negative rate sanely, to one decimal', () => {
+		const html = renderToString(
+			<VideoToCartCard videoToCart={ { carts: 0, rate: -5, direct: 0, assisted: 0 } } />,
+		);
+		expect( html ).not.toBe( '' );
+		expect( html ).toContain( '-5.0% of viewers who played' );
+	} );
+
+	it( 'keeps one-decimal formatting for a fractional out-of-range rate', () => {
+		// toFixed( 1 ) rounds to a single decimal — 133.333 renders as 133.3, never
+		// the raw 133.33… tail.
+		const html = renderToString(
+			<VideoToCartCard videoToCart={ { carts: 9, rate: 133.333, direct: 9, assisted: 0 } } />,
+		);
+		expect( html ).toContain( '133.3% of viewers who played' );
+		expect( html ).not.toContain( '133.33' );
+	} );
+} );

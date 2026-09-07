@@ -115,6 +115,28 @@ describe( 'PurchaseFunnelCard', () => {
 		expect( html ).not.toContain( '150.0% advanced' );
 	} );
 
+	it( 'renders an all-zero funnel (played 0) with no NaN / Infinity in the advanced %', () => {
+		// An account/video with no plays yet: every stage is 0. The 0/0 divisions in
+		// the advanced-% and share must be guarded, so the card renders flat 0.0%
+		// rather than "NaN%" or "Infinity%".
+		const allZero = {
+			stages: [
+				{ key: 'played', count: 0, rate: 0 },
+				{ key: 'added_to_cart', count: 0, direct: 0, assisted: 0, rate: 0 },
+				{ key: 'purchased', count: 0, rate: 0 },
+			],
+			still_counting: false,
+		};
+		const html = renderToString( <PurchaseFunnelCard funnel={ allZero } /> );
+		expect( html ).toContain( 'godam-purchase-funnel-card' ); // renders, not hidden
+		expect( html ).not.toBe( '' );
+		expect( html ).not.toContain( 'NaN' );
+		expect( html ).not.toContain( 'Infinity' );
+		// Both drop annotations and the "of players" share resolve to a flat 0.0%.
+		expect( html ).toContain( '0.0% advanced' );
+		expect( html ).toContain( '0.0% of players' );
+	} );
+
 	it( 'shows the "still counting" note only when the flag is set', () => {
 		const withNote = renderToString(
 			<PurchaseFunnelCard funnel={ { ...FUNNEL, still_counting: true } } dataLabel="Last 30 days" />,
