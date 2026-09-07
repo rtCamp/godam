@@ -136,7 +136,7 @@ describe( 'groupRows — per-hotspot Direct revenue (single store currency)', ()
 	} );
 
 	it( 'defaults revenue fields to 0/empty when the endpoint sends none', () => {
-		const plain = rows.map( ( { revenue_minor, orders, currency, ...rest } ) => rest );
+		const plain = rows.map( ( { revenue_minor: revenueMinor, orders, currency, ...rest } ) => rest );
 		const [ parent ] = groupRows( plain, 'woo', OPEN_CONFIG );
 		expect( parent.revenue_minor ).toBe( 0 );
 		expect( parent.orders ).toBe( 0 );
