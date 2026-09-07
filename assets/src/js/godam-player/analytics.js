@@ -201,12 +201,15 @@ function flushPageLoadQueue( sync = false ) {
 				return;
 			}
 
+			// keepalive can reject during pagehide (offline, blocked URL, or the
+			// analytics service down); swallow so it does not surface as an
+			// unhandled rejection. This is a fire-and-forget unload flush.
 			fetch( endpoint + '/analytics/', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify( body ),
 				keepalive: true,
-			} );
+			} ).catch( () => {} );
 		} );
 
 		return;
@@ -461,12 +464,16 @@ function observePageLoadForVideo( video ) {
 					continue;
 				}
 
+				// keepalive can reject during pagehide; swallow so it does not
+				// surface as an unhandled rejection. The buffer is still cleared
+				// below by design (re-sending on a later flush would double-count
+				// composite rows, which aggregate with COUNT(*), not uniqExact).
 				fetch( endpoint + '/analytics/', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify( body ),
 					keepalive: true,
-				} );
+				} ).catch( () => {} );
 			}
 		}
 
@@ -827,13 +834,17 @@ function sendPlayerHeatmap( player, video, skipIfKey = null ) {
 	 * `godamGalleryFlushPayloads` direct-call flow below.
 	 *
 	 * Reference: https://fetch.spec.whatwg.org/#keep-alive-flag
+	 *
+	 * keepalive can reject during unload (offline, blocked URL, or the
+	 * analytics service down); swallow so it does not surface as an unhandled
+	 * rejection. Fire-and-forget: the fingerprint below is returned regardless.
 	 */
 	fetch( payload.endpoint + '/analytics/', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify( payload.body ),
 		keepalive: true,
-	} );
+	} ).catch( () => {} );
 
 	return payload.fingerprint;
 }
