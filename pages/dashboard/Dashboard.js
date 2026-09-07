@@ -473,8 +473,16 @@ const Dashboard = () => {
 							{ /* GA4 output is a godam-for-woo feature (it pushes the
 							    add_to_cart/purchase events into the store's own
 							    dataLayer), so it's gated the same as Top Products /
-							    Video-to-Cart: the add-on active + a valid license. */ }
-							{ hasWooProducts && <GA4ConnectionWidget /> }
+							    Video-to-Cart: the add-on active + a valid license.
+							    Needs its own analytics-info-container wrapper:
+							    .analytics-info/.analytics-single-info are only
+							    styled (flex layout, padding, gap) as descendants of
+							    that class — see analytics/index.scss. */ }
+							{ hasWooProducts && (
+								<div className="analytics-info-container mt-4">
+									<GA4ConnectionWidget />
+								</div>
+							) }
 						</div>
 
 						<div className="playback-performance" id="global-analytics-container">

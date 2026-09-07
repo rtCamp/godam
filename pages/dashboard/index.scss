@@ -6,6 +6,56 @@
 	}
 }
 
+// GA4 connection widget's "Enable"/"Manage" action — a real button (not a
+// plain <a>), in the site's own admin theme colour rather than the fixed
+// brand red .godam-button.is-secondary uses, so it matches whatever colour
+// scheme the merchant has picked for wp-admin.
+.godam-ga4-connection-button {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 6px 10px;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--wp-admin-theme-color, #ab3a6c);
+	border: 1px solid var(--wp-admin-theme-color, #ab3a6c);
+	background: transparent;
+	transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+
+	&:hover,
+	&:focus {
+		background: var(--wp-admin-theme-color, #ab3a6c);
+		color: #fff;
+		text-decoration: none;
+	}
+
+	svg {
+		fill: currentcolor;
+	}
+}
+
+// Row/column switch for the widget's own body. Needs an ID-scoped selector
+// (not a plain Tailwind utility, however many classes) because
+// #root-video-analytics/#root-video-dashboard's own unconditional
+// .analytics-info-container .analytics-info .analytics-single-info rule
+// (analytics/index.scss, nested under those IDs) sets flex-direction — an ID
+// beats any number of plain classes, so only another ID-scoped rule can
+// override it.
+#root-video-analytics .analytics-info-container .analytics-info .analytics-single-info.godam-ga4-connection-body,
+#root-video-dashboard .analytics-info-container .analytics-info .analytics-single-info.godam-ga4-connection-body {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+
+	@media screen and (min-width: 1024px) {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+}
+
 .godam-dashboard-container {
 	background-color: #fff;
 	overflow-x: hidden;
