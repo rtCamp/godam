@@ -16,7 +16,7 @@ import { info } from '@wordpress/icons';
 import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
 import { generateCountryHeatmap } from '../analytics/helper';
-import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery } from './redux/api/dashboardAnalyticsApi';
+import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchRevenueSummaryQuery, useFetchVideoFunnelQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
@@ -269,6 +269,39 @@ const Dashboard = () => {
 
 	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl }, { skip: shouldSkipSecondaryQueries } );
 
+	// The three WooCommerce cards each carry their OWN date range, independent of
+	// the Insights picker, via a standalone endpoint per card. Each falls back to
+	// "All time" when no bounded range is picked.
+	const rangeQueryArgs = ( range ) => ( {
+		siteUrl,
+		...( range.startDate ? { startDate: range.startDate } : {} ),
+		...( range.endDate ? { endDate: range.endDate } : {} ),
+	} );
+	const rangeLabel = ( range ) =>
+		( range.startDate && range.endDate ? triggerLabelFor( range ) : __( 'All time', 'godam' ) );
+	// "vs prev N days" for a card's own bounded range (the RevenueCard trend
+	// badge). Empty for an all-time range, which has no comparison window.
+	const rangeDeltaLabel = ( range ) => {
+		if ( ! range.startDate || ! range.endDate ) {
+			return '';
+		}
+		const spanDays = Math.round( ( fromISO( range.endDate ) - fromISO( range.startDate ) ) / 86400000 ) + 1;
+		return sprintf(
+			/* translators: %d: number of days in the compared previous window. */
+			__( 'vs prev %d days', 'godam' ),
+			spanDays,
+		);
+	};
+	const skipWooCards = shouldSkipSecondaryQueries || ! hasWooProducts;
+
+	const [ revenueRange, setRevenueRange ] = useState( { startDate: null, endDate: null } );
+	const { data: revenueData } = useFetchRevenueSummaryQuery( rangeQueryArgs( revenueRange ), { skip: skipWooCards } );
+
+	const [ purchaseFunnelRange, setPurchaseFunnelRange ] = useState( { startDate: null, endDate: null } );
+	const { data: videoFunnelData } = useFetchVideoFunnelQuery( rangeQueryArgs( purchaseFunnelRange ), { skip: skipWooCards } );
+
+	const [ placementFunnelRange, setPlacementFunnelRange ] = useState( { startDate: null, endDate: null } );
+
 	// Connected, but the analytics backend is unreachable (server down) or returned
 	// a microservice error. Gated on a valid key so it never shows for a
 	// disconnected site — that case is handled by the onboarding overlay.
@@ -484,18 +517,31 @@ const Dashboard = () => {
 				    separately. Full-width card, single store currency. */ }
 				{ hasWooProducts && (
 					<RevenueCard
-						revenue={ insightsMetrics?.revenue }
-						dataLabel={ insightsCardLabel }
-						deltaLabel={ insightsDeltaLabel }
+						revenue={ revenueData }
+						deltaLabel={ rangeDeltaLabel( revenueRange ) }
+						rangeControl={
+							<DateRangePicker
+								value={ revenueRange }
+								onChange={ setRevenueRange }
+								testIdPrefix="godam-dashboard-revenue-daterange"
+							/>
+						}
 					/>
 				) }
 
 				{ /* Account-wide Play-to-Cart-to-Purchase funnel (WooCommerce only). */ }
 				{ hasWooProducts && (
 					<PurchaseFunnelCard
-						funnel={ insightsMetrics?.video_funnel }
-						dataLabel={ insightsCardLabel }
+						funnel={ videoFunnelData }
+						dataLabel={ rangeLabel( purchaseFunnelRange ) }
 						scope="account"
+						rangeControl={
+							<DateRangePicker
+								value={ purchaseFunnelRange }
+								onChange={ setPurchaseFunnelRange }
+								testIdPrefix="godam-dashboard-purchase-funnel-daterange"
+							/>
+						}
 					/>
 				) }
 
@@ -503,9 +549,15 @@ const Dashboard = () => {
 				{ hasWooProducts && (
 					<PlacementFunnelCard
 						siteUrl={ siteUrl }
-						startDate={ insightsRange.startDate }
-						endDate={ insightsRange.endDate }
-						dataLabel={ insightsCardLabel }
+						startDate={ placementFunnelRange.startDate }
+						endDate={ placementFunnelRange.endDate }
+						rangeControl={
+							<DateRangePicker
+								value={ placementFunnelRange }
+								onChange={ setPlacementFunnelRange }
+								testIdPrefix="godam-dashboard-placement-funnel-daterange"
+							/>
+						}
 					/>
 				) }
 

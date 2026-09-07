@@ -29,11 +29,12 @@ const COLOR_ASSISTED = '#93c5fd';
  * shown per video (the payload omits it there).
  *
  * @param {Object} props
- * @param {Object} [props.revenue]    { revenue_minor, currency, excluded_orders, direct_minor, assisted_minor, influenced_minor, change }.
- * @param {string} [props.dataLabel]  The active range label (e.g. "All time").
- * @param {string} [props.deltaLabel] Label for the trend badge, e.g. "vs previous 7 days".
+ * @param {Object} [props.revenue]      { revenue_minor, currency, excluded_orders, direct_minor, assisted_minor, influenced_minor, change }.
+ * @param {string} [props.dataLabel]    The active range label (e.g. "All time").
+ * @param {string} [props.deltaLabel]   Label for the trend badge, e.g. "vs previous 7 days".
+ * @param {Object} [props.rangeControl] A date-range picker element rendered in the card head; replaces the plain dataLabel pill when present.
  */
-export default function RevenueCard( { revenue, dataLabel, deltaLabel } ) {
+export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeControl } ) {
 	// Absent payload (an analytics service that predates the revenue read, or a
 	// non-Woo store where no base currency is passed) -> render nothing, so the
 	// card never asserts a misleading "0" for "metric unavailable". A present
@@ -88,9 +89,11 @@ export default function RevenueCard( { revenue, dataLabel, deltaLabel } ) {
 						) }
 					/>
 				</div>
-				{ dataLabel && (
-					<span className="text-[13px] text-[#50575e] border border-[#e2e4e7] rounded-md px-3 py-1">{ dataLabel }</span>
-				) }
+				{ rangeControl
+					? rangeControl
+					: ( dataLabel && (
+						<span className="text-[13px] text-[#50575e] border border-[#e2e4e7] rounded-md px-3 py-1">{ dataLabel }</span>
+					) ) }
 			</div>
 
 			<div className="flex gap-6 max-lg:flex-col">

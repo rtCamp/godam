@@ -144,4 +144,18 @@ describe( 'RevenueCard — single store currency', () => {
 		expect( html ).not.toMatch( /width:\s*-/ );
 		expect( html ).not.toContain( 'NaN' );
 	} );
+
+	it( 'renders rangeControl in the head instead of the dataLabel pill when given', () => {
+		const html = renderToString(
+			<RevenueCard
+				revenue={ { revenue_minor: 250000, currency: 'INR', excluded_orders: 0 } }
+				dataLabel="All time"
+				rangeControl={ <span data-test-id="my-picker">PICKER</span> }
+			/>,
+		);
+		expect( html ).toContain( 'my-picker' );
+		expect( html ).toContain( 'PICKER' );
+		// The plain "All time" pill is replaced by the picker, not shown alongside.
+		expect( html ).not.toContain( 'All time' );
+	} );
 } );

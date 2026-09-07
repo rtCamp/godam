@@ -70,6 +70,40 @@ export const dashboardAnalyticsApi = createApi( {
 				return response.placement_funnels || [];
 			},
 		} ),
+		// Video-Attributed Revenue card. Standalone from the Insights metrics so
+		// the card carries its own date range.
+		fetchRevenueSummary: builder.query( {
+			query: ( { siteUrl, startDate, endDate } ) => ( {
+				url: 'godam/v1/analytics/revenue-summary',
+				params: {
+					site_url: siteUrl,
+					...rangeParams( { startDate, endDate } ),
+				},
+			} ),
+			transformResponse: ( response ) => {
+				if ( response.status === 'error' ) {
+					return { error: true, message: response.message };
+				}
+				return response.revenue || null;
+			},
+		} ),
+		// Purchase Funnel card (account-wide Play to Cart to Purchase). Standalone
+		// so the card carries its own date range.
+		fetchVideoFunnel: builder.query( {
+			query: ( { siteUrl, startDate, endDate } ) => ( {
+				url: 'godam/v1/analytics/video-funnel',
+				params: {
+					site_url: siteUrl,
+					...rangeParams( { startDate, endDate } ),
+				},
+			} ),
+			transformResponse: ( response ) => {
+				if ( response.status === 'error' ) {
+					return { error: true, message: response.message };
+				}
+				return response.video_funnel || null;
+			},
+		} ),
 		// Fetch Dashboard Metrics History
 		fetchDashboardMetricsHistory: builder.query( {
 			query: ( { siteUrl, days, startDate, endDate } ) => ( {
@@ -156,4 +190,6 @@ export const {
 	useFetchTopProductsQuery,
 	useLazyFetchTopProductsQuery,
 	useFetchPlacementFunnelsQuery,
+	useFetchRevenueSummaryQuery,
+	useFetchVideoFunnelQuery,
 } = dashboardAnalyticsApi;

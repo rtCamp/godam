@@ -88,11 +88,12 @@ function DropRow( { advanced, lostLabel, lostIsWarning } ) {
  * flags the range as recent enough that purchase attribution is still settling.
  *
  * @param {Object} props
- * @param {Object} [props.funnel]    The video_funnel payload { stages, still_counting }.
- * @param {string} [props.dataLabel] The active range label (e.g. "Last 30 days").
- * @param {string} [props.scope]     'account' (default) or 'video' — sets the top descriptor + subtitle.
+ * @param {Object} [props.funnel]       The video_funnel payload { stages, still_counting }.
+ * @param {string} [props.dataLabel]    The active range label (e.g. "Last 30 days").
+ * @param {string} [props.scope]        'account' (default) or 'video' — sets the top descriptor + subtitle.
+ * @param {Object} [props.rangeControl] A date-range picker element rendered in the card head; replaces the plain dataLabel pill when present.
  */
-export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'account' } ) {
+export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'account', rangeControl } ) {
 	// Render nothing when the payload is absent, so the card never asserts an
 	// empty funnel for "metric unavailable".
 	if ( ! funnel || ! Array.isArray( funnel.stages ) || funnel.stages.length < 3 ) {
@@ -138,9 +139,11 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 					<span className="text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]">Woo</span>
 					<span className="text-[10px] font-bold leading-none px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#92400E] tracking-wide">{ __( 'NEW', 'godam' ) }</span>
 				</div>
-				{ dataLabel && (
-					<span className="text-[13px] text-[#50575e] border border-[#e2e4e7] rounded-md px-3 py-1">{ dataLabel }</span>
-				) }
+				{ rangeControl
+					? rangeControl
+					: ( dataLabel && (
+						<span className="text-[13px] text-[#50575e] border border-[#e2e4e7] rounded-md px-3 py-1">{ dataLabel }</span>
+					) ) }
 			</div>
 
 			<p className="text-[13px] text-zinc-500 -mt-1 mb-5">{ subtitle }</p>

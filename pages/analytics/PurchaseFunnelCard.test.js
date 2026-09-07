@@ -147,4 +147,19 @@ describe( 'PurchaseFunnelCard', () => {
 		const withoutNote = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } /> );
 		expect( withoutNote ).not.toContain( 'godam-purchase-funnel-still-counting' );
 	} );
+
+	it( 'renders rangeControl in the head instead of the dataLabel pill when given', () => {
+		const html = renderToString(
+			<PurchaseFunnelCard
+				funnel={ FUNNEL }
+				dataLabel="Last 30 days"
+				rangeControl={ <span data-test-id="my-picker">PICKER</span> }
+			/>,
+		);
+		// The picker element takes the head slot.
+		expect( html ).toContain( 'my-picker' );
+		expect( html ).toContain( 'PICKER' );
+		// The plain "Last 30 days" pill is replaced, not shown alongside.
+		expect( html ).not.toContain( 'Last 30 days' );
+	} );
 } );
