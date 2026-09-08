@@ -660,7 +660,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 					return;
 				}
 
-				$form_id = get_post_meta( $entry_id, '_form_id', true );
+				$form_id = get_post_meta( $entry_id, '_form_id', true ); // godam-coverage-ignore -- handle_transcoding_callback(): $entry_id is a Ninja Forms entry ID used as a postmeta key (not the function's own unused $attachment_id parameter).
 
 				if ( empty( $form_id ) ) {
 					return;
@@ -669,7 +669,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 				$meta_key   = 'rtgodam_transcoded_url_ninja-forms_' . $form_id . '_' . $entry_id;
 				$meta_value = $post_array['download_url'] ?? '';
 
-				update_post_meta( $entry_id, $meta_key, $meta_value );
+				update_post_meta( $entry_id, $meta_key, $meta_value ); // godam-coverage-ignore -- handle_transcoding_callback(): $entry_id is a Ninja Forms entry ID used as a postmeta key (not the function's own unused $attachment_id parameter).
 			}
 		}
 	}

@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { isAPIKeyValid, isFolderOrgDisabled } from '../utility';
+import { isAPIKeyValid, isDocumentModel, isFolderOrgDisabled } from '../utility';
 import GodamLogo from '../../../images/godam-logo-gradient.svg';
 
 /**
@@ -164,9 +164,15 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 
 		const modelTypes = [ 'video', 'audio', 'image' ];
 
+		/*
+		 * Every document type, not only PDF. `subtype === 'pdf'` was enough while PDF was the
+		 * only format the block could show, but it left every Office / OpenDocument / text
+		 * upload with no status indicator in grid view — the server sends `transcoding_status`
+		 * for all of them, so the badge was simply never rendered.
+		 */
 		if ( isAPIKeyValid() && (
 			modelTypes.includes( this.model.get( 'type' ) ) ||
-			( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' )
+			isDocumentModel( this.model )
 		) ) {
 			// Get the transcoding status from the model
 			const transcodingStatus = this.model.get( 'transcoding_status' );

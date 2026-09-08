@@ -18,7 +18,7 @@ if ( $post && $post instanceof WP_Post ) {
 	 * Inside a query loop or single post context.
 	 * Get attachment ID from postmeta.
 	 */
-	$godam_query_loop_attachment_id = get_post_meta( $post->ID, '_godam_attachment_id', true );
+	$godam_query_loop_attachment_id = get_post_meta( $post->ID, '_godam_attachment_id', true ); // godam-coverage-ignore -- Reads '_godam_attachment_id' off the host post (global $post), not off the attachment — this is host-post meta, not attachment data.
 
 	/**
 	 * Set ID attribute if not already set.

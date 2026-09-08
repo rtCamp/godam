@@ -173,11 +173,21 @@ class RTGODAM_RetranscodeMedia {
 			if ( ! empty( $ids ) ) {
 				$ids = explode( ',', $ids );
 			} else {
+				/**
+				 * Fires before this fallback "no explicit IDs" scan reads any
+				 * attachment data, so integrations that centralize media on another
+				 * site can switch context first.
+				 *
+				 * @since 2.2.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
+
 				add_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
-				$query = new WP_Query( array( 'post_type' => 'attachments' ) );
+				$query = new WP_Query( array( 'post_type' => 'attachment' ) );
 				$media = $query->get_posts();
 				remove_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
 				if ( empty( $media ) || is_wp_error( $media ) ) {
+					do_action( 'rtgodam_after_attachment_lookup' );
 
 					// translators: Link to the media page.
 					echo '	<p>' . sprintf( esc_html__( "Unable to find any media. Are you sure <a href='%s'>some exist</a>?", 'godam' ), esc_url( admin_url( 'upload.php' ) ) ) . '</p></div>';
@@ -198,6 +208,8 @@ class RTGODAM_RetranscodeMedia {
 						);
 					}
 				}
+
+				do_action( 'rtgodam_after_attachment_lookup' );
 			}
 
 			$stopping_text = esc_html__( 'Stopping...', 'godam' );
@@ -240,10 +252,26 @@ class RTGODAM_RetranscodeMedia {
 	 */
 	public function add_media_row_action( $actions, $post ) {
 
+		/**
+		 * Fires before checking whether this attachment is a supported
+		 * document type, so integrations that centralize media on another
+		 * site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$is_supported_document = rtgodam_is_supported_document_attachment( $post->ID );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		// Documents are included so files already in the library — which predate document
+		// support and so were never sent to GoDAM Central — can have a preview generated
+		// without re-uploading them. Tested against the attachment rather than its MIME alone,
+		// so the action is not offered on the .srt/.asc/.c/.h files that share text/plain and
+		// have no conversion path.
 		if ( (
 				'audio/' !== substr( $post->post_mime_type, 0, 6 ) &&
 				'video/' !== substr( $post->post_mime_type, 0, 6 ) &&
-				'application/pdf' !== $post->post_mime_type
+				! $is_supported_document
 			) ||
 			// Safe fallback via filter; PHPCS can't resolve dynamic capability.
 			// phpcs:ignore WordPress.WP.Capabilities.Undetermined
@@ -370,6 +398,18 @@ class RTGODAM_RetranscodeMedia {
 				// Create the list of image IDs.
 				$usage_info = get_option( 'rtgodam-usage' );
 				$ids        = rtgodam_filter_input( INPUT_GET, 'ids', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+				/**
+				 * Fires before either branch below reads attachment data
+				 * (get_attached_file()/get_the_title(), explicit IDs or the
+				 * fallback WP_Query scan), so integrations that centralize
+				 * media on another site can switch context first. Unlike
+				 * admin_enqueues(), both branches here touch attachment
+				 * data, so both are wrapped.
+				 *
+				 * @since 2.2.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
 				if ( ! empty( $ids ) ) {
 					$media = array_map( 'intval', explode( ',', trim( $ids, ',' ) ) );
 					$ids   = implode( ',', $media );
@@ -386,10 +426,11 @@ class RTGODAM_RetranscodeMedia {
 					}
 				} else {
 					add_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
-					$query = new WP_Query( array( 'post_type' => 'attachments' ) );
+					$query = new WP_Query( array( 'post_type' => 'attachment' ) );
 					$media = $query->get_posts();
 					remove_filter( 'posts_where', array( $this, 'add_search_mime_types' ) );
 					if ( empty( $media ) || is_wp_error( $media ) ) {
+						do_action( 'rtgodam_after_attachment_lookup' );
 
 						// translators: Link to the media page.
 						echo '	<p>' . sprintf( esc_html__( "Unable to find any media. Are you sure <a href='%s'>some exist</a>?", 'godam' ), esc_url( admin_url( 'upload.php' ) ) ) . '</p></div>';
@@ -412,6 +453,7 @@ class RTGODAM_RetranscodeMedia {
 					}
 					$ids = implode( ',', $ids );
 				}
+				do_action( 'rtgodam_after_attachment_lookup' );
 
 				if ( empty( $ids ) ) {
 					echo '	<p>' . esc_html__( 'There are no media available to send for transcoding.', 'godam' ) . '</p>';
@@ -551,8 +593,23 @@ class RTGODAM_RetranscodeMedia {
 	 * @param string $message Error message.
 	 */
 	public function die_json_error_msg( $id, $message ) {
+		/**
+		 * Fires before reading this attachment's title for the error payload below.
+		 *
+		 * No caller currently reaches this method (kept as a public JSON-error
+		 * helper), but the read is wrapped defensively rather than relying on
+		 * every future caller to remember to. die()/exit() never run a
+		 * try/finally's finally block, so the after-hook fires here — before
+		 * die() — rather than wrapping the die() call itself.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$title = get_the_title( $id );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		// translators: Media name, Media ID and message for failed transcode.
-		die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to send. The error message was: %3$s', 'godam' ), esc_html( get_the_title( $id ) ), $id, $message ) ) ) );
+		die( wp_json_encode( array( 'error' => sprintf( __( '&quot;%1$s&quot; (ID %2$s) failed to send. The error message was: %3$s', 'godam' ), esc_html( $title ), $id, $message ) ) ) );
 	}
 
 	/**
@@ -590,7 +647,24 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
+		/**
+		 * Fires before this listener's own postmeta delete.
+		 *
+		 * 'rtgodam_before_thumbnail_store' is a public, third-party-triggerable
+		 * extension point, not a private implementation detail — any code that
+		 * fires it directly (a third-party plugin, WP-CLI, or a future GoDAM
+		 * code path) would otherwise run this delete completely unwrapped.
+		 * Wrapped here defensively rather than relying on
+		 * add_media_thumbnails()'s own before/after pair to always be the one
+		 * true caller.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		delete_post_meta( $media_id, 'rtgodam_media_thumbnails' );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	/**
@@ -604,6 +678,21 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
+		/**
+		 * Fires before this listener's own postmeta read/delete.
+		 *
+		 * 'rtgodam_before_transcoded_media_store' is a public,
+		 * third-party-triggerable extension point, not a private
+		 * implementation detail — any code that fires it directly (a
+		 * third-party plugin, WP-CLI, or a future GoDAM code path) would
+		 * otherwise run this read/delete completely unwrapped. Wrapped here
+		 * defensively rather than relying on add_transcoded_files()'s own
+		 * before/after pair to always be the one true caller.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$current_files = get_post_meta( $media_id, 'rtgodam_media_transcoded_files', true );
 
 		if ( ! empty( $current_files ) && is_array( $current_files ) ) {
@@ -614,6 +703,8 @@ class RTGODAM_RetranscodeMedia {
 			}
 		}
 		delete_post_meta( $media_id, 'rtgodam_media_transcoded_files' );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	/**
@@ -626,34 +717,55 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
-		$current_thumbnail = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
-		$custom_thumbnails = get_post_meta( $media_id, 'rtgodam_custom_media_thumbnails', true );
-		$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
+		/**
+		 * Fires before this listener's own postmeta reads/writes.
+		 *
+		 * 'rtgodam_transcoded_thumbnails_added' is a public,
+		 * third-party-triggerable extension point, not a private
+		 * implementation detail — any code that fires it directly (a
+		 * third-party plugin, WP-CLI, or a future GoDAM code path) would
+		 * otherwise run this method's postmeta access completely unwrapped.
+		 * Wrapped here defensively — in a try/finally, since this method has
+		 * its own early return below — rather than relying on
+		 * add_media_thumbnails()'s own before/after pair to always be the one
+		 * true caller.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 
-		// If the current selected thumbnail is one of the custom uploaded thumbnails, do not overwrite it.
-		if ( ! empty( $current_thumbnail ) && in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
-			return;
-		}
+		try {
+			$current_thumbnail = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
+			$custom_thumbnails = get_post_meta( $media_id, 'rtgodam_custom_media_thumbnails', true );
+			$custom_thumbnails = is_array( $custom_thumbnails ) ? $custom_thumbnails : array();
 
-		$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
-		$new_thumbs = is_array( $new_thumbs ) ? $new_thumbs : array();
-
-		if ( ! empty( $new_thumbs ) ) {
-			update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] );
-		}
-
-		$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
-
-		if ( ! empty( $primary_remote_thumbnail_url ) ) {
-			do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
-
-			// Sync placeholder thumbnail for the newly set primary thumbnail.
-			$godam_placeholder_map = get_post_meta( $media_id, 'rtgodam_media_placeholder_thumbnails', true );
-			if ( is_array( $godam_placeholder_map ) && isset( $godam_placeholder_map[ $primary_remote_thumbnail_url ] ) ) {
-				update_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail', $godam_placeholder_map[ $primary_remote_thumbnail_url ] );
-			} else {
-				delete_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail' );
+			// If the current selected thumbnail is one of the custom uploaded thumbnails, do not overwrite it.
+			if ( ! empty( $current_thumbnail ) && in_array( $current_thumbnail, $custom_thumbnails, true ) ) {
+				return;
 			}
+
+			$new_thumbs = get_post_meta( $media_id, 'rtgodam_media_thumbnails', true );
+			$new_thumbs = is_array( $new_thumbs ) ? $new_thumbs : array();
+
+			if ( ! empty( $new_thumbs ) ) {
+				update_post_meta( $media_id, 'rtgodam_media_video_thumbnail', $new_thumbs[0] );
+			}
+
+			$primary_remote_thumbnail_url = get_post_meta( $media_id, 'rtgodam_media_video_thumbnail', true );
+
+			if ( ! empty( $primary_remote_thumbnail_url ) ) {
+				do_action( 'rtgodam_primary_remote_thumbnail_set', $media_id, $primary_remote_thumbnail_url );
+
+				// Sync placeholder thumbnail for the newly set primary thumbnail.
+				$godam_placeholder_map = get_post_meta( $media_id, 'rtgodam_media_placeholder_thumbnails', true );
+				if ( is_array( $godam_placeholder_map ) && isset( $godam_placeholder_map[ $primary_remote_thumbnail_url ] ) ) {
+					update_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail', $godam_placeholder_map[ $primary_remote_thumbnail_url ] );
+				} else {
+					delete_post_meta( $media_id, 'rtgodam_media_video_placeholder_thumbnail' );
+				}
+			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 	}
 
@@ -669,6 +781,20 @@ class RTGODAM_RetranscodeMedia {
 			return;
 		}
 
+		/**
+		 * Fires before reading/clearing this attachment's retranscoding-sent
+		 * flag, so integrations that centralize media on another site can
+		 * switch context first. Unlike this class's other transcoder-pipeline
+		 * hook handlers, the 'rtgodam_handle_callback_finished' action fires
+		 * unconditionally at the end of handle_callback()
+		 * (admin/class-rtgodam-transcoder-rest-routes.php), outside of any of
+		 * that method's own per-branch before/after pairs, so this postmeta
+		 * access has no coverage from its caller.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$is_retranscoding_job = get_post_meta( $attachment_id, 'rtgodam_retranscoding_sent', true );
 
 		if ( $is_retranscoding_job ) {
@@ -676,6 +802,8 @@ class RTGODAM_RetranscodeMedia {
 			delete_post_meta( $attachment_id, 'rtgodam_retranscoding_sent' );
 
 		}
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	/**

@@ -137,15 +137,26 @@ function rtgodam_fetch_overlay_media_url( $media_id ) {
 		return '';
 	}
 
-	$media = get_post( $media_id );
+	/**
+	 * Fires before resolving this attachment's URL, so integrations that
+	 * centralize media on another site can switch context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$media = get_post( $media_id );
 
-	if ( ! $media || 'attachment' !== $media->post_type ) {
-		return '';
+		if ( ! $media || 'attachment' !== $media->post_type ) {
+			return '';
+		}
+
+		$media_url = wp_get_attachment_url( $media_id );
+
+		return $media_url ? $media_url : '';
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
-
-	$media_url = wp_get_attachment_url( $media_id );
-
-	return $media_url ? $media_url : '';
 }
 
 /**
@@ -707,61 +718,402 @@ function godam_is_audio_file( $file_path_or_url ) {
 }
 
 /**
- * Check whether a document can be embedded by the Document block.
+ * Document formats the Document block can display, as MIME type => primary extension.
  *
- * PDF is the only format the block supports. It embeds through
- * `<object type="application/pdf">`, so pointing that at anything else gives the
- * browser a type it cannot display: it paints an empty box (and suppresses the
- * `<object>` fallback content, so nothing at all is shown) or hands the file to
- * the download manager, which starts a download on every page load.
+ * Mirrors GoDAM Central's own allowlist (`godam_core/api/media.py::OFFICE_DOCUMENT_MIMES`)
+ * plus `application/pdf`. Central converts everything except PDF to a preview PDF, so the
+ * block only ever renders a PDF whatever the author uploaded — but the *upload* has to be
+ * accepted here first, and the transcoder has to label the job `document` rather than `pdf`.
  *
- * Callers use this to skip front-end output entirely and to show an "unsupported
- * format" notice in the editors instead.
+ * This is the single source of truth on the PHP side; the editor's copy lives in
+ * assets/src/blocks/godam-pdf/constants.js and the two are asserted equal by
+ * tests/php/DocumentSupportTest.php.
+ *
+ * @since 2.2.0
+ *
+ * @return array<string, string> MIME type => primary file extension.
+ */
+function rtgodam_get_supported_document_types() {
+	return array(
+		'application/pdf'                                 => 'pdf',
+		'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+		'application/msword'                              => 'doc',
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
+		'application/vnd.ms-excel'                        => 'xls',
+		'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'pptx',
+		'application/vnd.ms-powerpoint'                   => 'ppt',
+		'application/vnd.oasis.opendocument.text'         => 'odt',
+		'application/vnd.oasis.opendocument.spreadsheet'  => 'ods',
+		'application/vnd.oasis.opendocument.presentation' => 'odp',
+		'text/plain'                                      => 'txt',
+		'text/csv'                                        => 'csv',
+		// Some servers report .csv as application/csv; Central accepts both.
+		'application/csv'                                 => 'csv',
+	);
+}
+
+/**
+ * File extensions accepted by the Document block.
+ *
+ * Derived from rtgodam_get_supported_document_types(). Note this is intentionally
+ * narrower than the MIME list: several extensions share a MIME type, and only the
+ * ones named here are recognised when no attachment is available to ask.
+ *
+ * @since 2.2.0
+ *
+ * @return string[] Lowercase extensions, without the leading dot.
+ */
+function rtgodam_get_supported_document_extensions() {
+	return array_values( array_unique( rtgodam_get_supported_document_types() ) );
+}
+
+/**
+ * Read the file extension out of a path or URL.
+ *
+ * Query strings and fragments are dropped first: CDN URLs routinely carry `?v=2` or
+ * `#page=3`, and reading the extension off the raw string would see "pdf?v=2".
+ *
+ * @since 2.2.0
+ *
+ * @param string $path_or_url File path or URL.
+ *
+ * @return string Lowercase extension without the leading dot, or an empty string.
+ */
+function rtgodam_get_extension_from_path( $path_or_url ) {
+	if ( empty( $path_or_url ) || ! is_string( $path_or_url ) ) {
+		return '';
+	}
+
+	$path = wp_parse_url( $path_or_url, PHP_URL_PATH );
+
+	return strtolower( pathinfo( ! empty( $path ) ? $path : $path_or_url, PATHINFO_EXTENSION ) );
+}
+
+/**
+ * The extension of the file an attachment actually points at.
+ *
+ * The stored path is preferred over the URL: it is what the file is called on disk, and it
+ * avoids a second query for attachments whose URL is filtered to a CDN.
+ *
+ * @since 2.2.0
+ *
+ * @param int $attachment_id Attachment ID.
+ *
+ * @return string Lowercase extension without the leading dot, or an empty string when the
+ *                attachment has no resolvable file.
+ */
+function rtgodam_get_attachment_extension( $attachment_id ) {
+	$attachment_id = absint( $attachment_id );
+
+	if ( ! $attachment_id ) {
+		return '';
+	}
+
+	$file = get_post_meta( $attachment_id, '_wp_attached_file', true );
+
+	if ( empty( $file ) ) {
+		$file = wp_get_attachment_url( $attachment_id );
+	}
+
+	return rtgodam_get_extension_from_path( $file );
+}
+
+/**
+ * Check whether a document can be displayed by the Document block.
+ *
+ * The block renders a PDF: either the file itself, or — for Word / Excel / PowerPoint /
+ * OpenDocument / text uploads — the preview PDF GoDAM Central generates for it. Anything
+ * outside that set has no preview to show, so callers use this to skip front-end output
+ * entirely and to show an "unsupported format" notice in the editors instead.
  *
  * The attachment's stored MIME type is authoritative. The URL extension is only a
  * fallback, for GoDAM tab media whose id is not a local numeric attachment and for
  * documents added by URL alone.
  *
+ * WordPress maps .asc/.c/.h/.srt to text/plain exactly as it maps .txt, so the MIME type
+ * alone would class every subtitle and source file in the library as a document. Those have
+ * no conversion path — rtgodam_is_supported_document_attachment() keeps the transcoder from
+ * dispatching them at all — so the extension has to agree with the MIME type whenever the
+ * attachment's own file can be resolved. When it cannot (a deleted or virtual attachment),
+ * the MIME type stands on its own rather than rejecting content that still renders.
+ *
  * @since 2.1.0
+ * @since 2.2.0 Widened beyond PDF to the formats in rtgodam_get_supported_document_types().
  *
  * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
  * @param string     $url           Document URL. Used when no local attachment is available.
  *
- * @return bool True when the document is a PDF and can be embedded, false otherwise.
+ * @return bool True when the document is a supported format, false otherwise.
  */
 function godam_is_supported_document( $attachment_id = 0, $url = '' ) {
-	// Attachment IDs are positive integers, so require digits rather than any
-	// numeric-looking value. is_numeric() would also accept floats and scientific
-	// notation ('12.5', '1e3'), which absint() then silently turns into a
-	// DIFFERENT id, and a mistyped shortcode would resolve somebody else's
-	// attachment and answer for that instead. Anything else falls through to the
-	// URL check below, which is the safe direction.
-	$godam_post_id = 0;
-	if ( is_int( $attachment_id ) && $attachment_id > 0 ) {
-		$godam_post_id = $attachment_id;
-	} elseif ( is_string( $attachment_id ) && ctype_digit( trim( $attachment_id ) ) ) {
-		$godam_post_id = absint( trim( $attachment_id ) );
-	}
+	// 0 for anything that cannot be an attachment id, which falls through to the URL check
+	// below. See rtgodam_normalize_attachment_id() for why that is stricter than is_numeric().
+	$attachment_id = rtgodam_normalize_attachment_id( $attachment_id );
 
-	if ( $godam_post_id ) {
-		$mime_type = get_post_mime_type( $godam_post_id );
+	if ( $attachment_id ) {
+		$mime_type = get_post_mime_type( $attachment_id );
 
 		if ( ! empty( $mime_type ) ) {
-			return 'application/pdf' === $mime_type;
+			if ( ! array_key_exists( $mime_type, rtgodam_get_supported_document_types() ) ) {
+				return false;
+			}
+
+			$extension = rtgodam_get_attachment_extension( $attachment_id );
+
+			// No resolvable file (virtual GoDAM media, or a file already removed from disk):
+			// there is no extension to confirm, so the MIME type is all there is to go on.
+			return '' === $extension
+				|| in_array( $extension, rtgodam_get_supported_document_extensions(), true );
 		}
 
 		// Attachment no longer exists; fall through to the URL check so content
-		// that still carries a valid PDF URL keeps rendering.
+		// that still carries a valid document URL keeps rendering.
 	}
 
 	if ( empty( $url ) || ! is_string( $url ) ) {
 		return false;
 	}
 
-	// Drop any query string / fragment before reading the extension.
-	$path = wp_parse_url( $url, PHP_URL_PATH );
+	return in_array( rtgodam_get_extension_from_path( $url ), rtgodam_get_supported_document_extensions(), true );
+}
 
-	return 'pdf' === strtolower( pathinfo( ! empty( $path ) ? $path : $url, PATHINFO_EXTENSION ) );
+/**
+ * Normalise a Document block's `id` attribute to a usable attachment ID.
+ *
+ * Attachment IDs are positive integers, so this requires digits rather than any
+ * numeric-looking value. is_numeric() would also accept floats and scientific notation
+ * ('12.5', '1e3'), which absint() then silently turns into a DIFFERENT id — a mistyped
+ * shortcode would resolve somebody else's attachment and answer for that instead.
+ *
+ * Anything else returns 0, which callers treat as "no local attachment" and fall back to the
+ * URL they were given. That is the safe direction.
+ *
+ * @since 2.2.0
+ *
+ * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
+ *
+ * @return int Attachment ID, or 0 when the value cannot be one.
+ */
+function rtgodam_normalize_attachment_id( $attachment_id ) {
+	if ( is_int( $attachment_id ) && $attachment_id > 0 ) {
+		return $attachment_id;
+	}
+
+	if ( is_string( $attachment_id ) && ctype_digit( trim( $attachment_id ) ) ) {
+		return absint( trim( $attachment_id ) );
+	}
+
+	return 0;
+}
+
+/**
+ * Whether an attachment is a document GoDAM Central can convert.
+ *
+ * Stricter than a MIME-only test, and deliberately so: several of the supported MIME types
+ * are shared with formats that have no conversion path. WordPress maps .srt, .asc, .c, .cc
+ * and .h to text/plain exactly as it maps .txt, so a MIME-only check would classify every
+ * subtitle and source file in the media library as a document — dispatching them for
+ * transcoding and showing them a progress indicator that never resolves.
+ *
+ * Requiring the extension to match as well costs nothing for the real formats, since each
+ * one carries its own extension anyway.
+ *
+ * @since 2.2.0
+ *
+ * @param int $attachment_id Attachment ID.
+ *
+ * @return bool True when the attachment is a convertible document.
+ */
+function rtgodam_is_supported_document_attachment( $attachment_id ) {
+	$attachment_id = absint( $attachment_id );
+
+	if ( ! $attachment_id ) {
+		return false;
+	}
+
+	$mime_type = get_post_mime_type( $attachment_id );
+
+	if ( empty( $mime_type ) || ! array_key_exists( $mime_type, rtgodam_get_supported_document_types() ) ) {
+		return false;
+	}
+
+	return in_array( rtgodam_get_attachment_extension( $attachment_id ), rtgodam_get_supported_document_extensions(), true );
+}
+
+/**
+ * Resolve the PDF a Document block should render for an attachment.
+ *
+ * Always returns a PDF URL or an empty string, never the original Office/text file:
+ *
+ * 1. `rtgodam_preview_pdf_url` — set by the transcoder callback for every transcoded
+ *    document (for a PDF it is the CDN copy; for anything else it is the preview PDF
+ *    Central generated). This is the normal path.
+ * 2. `rtgodam_transcoded_url` — the key used before document support landed. Only trusted for
+ *    PDFs, because for a document it holds the *original* file, which is not renderable.
+ * 3. The local attachment URL, again only for PDFs.
+ *
+ * Steps 2 and 3 are what keep already-published PDF blocks rendering without a migration.
+ *
+ * An empty return means "no preview available" — either transcoding has not finished or
+ * the file is password protected, and the caller should show its download-only panel.
+ *
+ * @since 2.2.0
+ *
+ * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
+ * @param string     $fallback_src  URL to fall back to when there is no local attachment.
+ *
+ * @return string Preview PDF URL, or an empty string when none is available.
+ */
+function rtgodam_get_document_preview_url( $attachment_id = 0, $fallback_src = '' ) {
+	$attachment_id = rtgodam_normalize_attachment_id( $attachment_id );
+
+	if ( $attachment_id ) {
+		/**
+		 * Fires before reading this attachment's preview-PDF, MIME type, transcoded-URL and
+		 * URL, so integrations that centralize media on another site can switch context
+		 * first. Wrapped in try/finally because the block below returns from several points
+		 * once it determines which URL to offer.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$preview_url = get_post_meta( $attachment_id, 'rtgodam_preview_pdf_url', true );
+
+			if ( ! empty( $preview_url ) ) {
+				return $preview_url;
+			}
+
+			if ( 'application/pdf' === get_post_mime_type( $attachment_id ) ) {
+				$transcoded_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+
+				if ( ! empty( $transcoded_url ) ) {
+					return $transcoded_url;
+				}
+
+				$attachment_url = wp_get_attachment_url( $attachment_id );
+
+				if ( ! empty( $attachment_url ) ) {
+					return $attachment_url;
+				}
+			}
+
+			return '';
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	// No local attachment: a URL-only document can only be previewed when it is
+	// already a PDF, since there is nothing to look a generated preview up against.
+	if ( empty( $fallback_src ) || ! is_string( $fallback_src ) ) {
+		return '';
+	}
+
+	return 'pdf' === rtgodam_get_extension_from_path( $fallback_src ) ? $fallback_src : '';
+}
+
+/**
+ * Resolve the URL a Document block should offer for download.
+ *
+ * This is always the file the author actually uploaded — never the generated preview.
+ * Somebody who uploads report.xlsx and downloads preview.pdf will think something broke.
+ *
+ * wp_get_attachment_url() already resolves virtual GoDAM media to its CDN URL via
+ * Media_Library_Ajax::filter_attachment_url_for_virtual_media(), so local and GoDAM-tab
+ * attachments are both handled here — but see the note in the body on the one case where
+ * that resolution silently produces a path nothing serves.
+ *
+ * Attachment access is bracketed by rtgodam_before_attachment_lookup /
+ * rtgodam_after_attachment_lookup, matching rtgodam_get_document_preview_url() above, so
+ * neither resolver depends on its caller having opened the pair.
+ *
+ * @since 2.2.0
+ *
+ * @param int|string $attachment_id Attachment ID, or a non-numeric GoDAM media id.
+ * @param string     $fallback_src  URL to fall back to when there is no local attachment.
+ *
+ * @return string Original document URL, or an empty string when none is available.
+ */
+function rtgodam_get_document_download_url( $attachment_id = 0, $fallback_src = '' ) {
+	$godam_post_id = rtgodam_normalize_attachment_id( $attachment_id );
+
+	if ( $godam_post_id ) {
+		/**
+		 * Fires before reading this attachment's URL, its virtual-media marker and its
+		 * transcoded-URL meta, so integrations that centralize media on another site can
+		 * switch context first. Wrapped in try/finally because the block below returns from
+		 * several points once it determines which URL to offer.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$attachment_url = wp_get_attachment_url( $godam_post_id );
+
+			/*
+			 * Virtual media — a GoDAM tab import, marked by _godam_original_id — has no local
+			 * file at all: `_wp_attached_file` holds a bare filename that stands for nothing
+			 * on disk.
+			 *
+			 * filter_attachment_url_for_virtual_media() normally redirects such an attachment
+			 * to the CDN, but it does so ONLY through the post guid, and returns WordPress's
+			 * own value untouched when that guid is empty. WordPress then joins the bare
+			 * filename onto the uploads base URL, so the caller gets a confident-looking
+			 * /wp-content/uploads/report.docx that 404s.
+			 *
+			 * rtgodam_transcoded_url is written for these attachments at import time and
+			 * points at the same file on the CDN, so it is the right answer whenever the
+			 * resolved URL turns out to be that local dead end. This matters most for a
+			 * document with no preview, where the download link is the only thing the block
+			 * can offer a visitor.
+			 */
+			$godam_original_id = get_post_meta( $godam_post_id, '_godam_original_id', true );
+
+			if ( ! empty( $godam_original_id ) ) {
+				$godam_uploads     = wp_get_upload_dir();
+				$godam_uploads_url = ! empty( $godam_uploads['baseurl'] ) ? $godam_uploads['baseurl'] : '';
+
+				/*
+				 * Compared with the scheme stripped. SSL and CDN plugins routinely filter
+				 * wp_get_attachment_url() to https:// while wp_get_upload_dir() still reports
+				 * http:// (or the reverse); a raw prefix match fails on those sites, so
+				 * $godam_is_local would come out false and the 404ing local URL would be
+				 * returned — the exact bug this guards against, silently unfixed.
+				 *
+				 * The host is still part of the comparison, so a filter that moves attachment
+				 * URLs onto a different host is treated as NOT local. That is deliberate:
+				 * there is no way to tell a CDN mirror of the uploads directory from a
+				 * genuinely off-site copy, and honouring the URL the site itself advertises is
+				 * the safer of the two guesses.
+				 */
+				$godam_is_local = empty( $attachment_url )
+					|| (
+						! empty( $godam_uploads_url )
+						&& 0 === strpos(
+							preg_replace( '#^https?://#i', '', $attachment_url ),
+							preg_replace( '#^https?://#i', '', $godam_uploads_url )
+						)
+					);
+
+				if ( $godam_is_local ) {
+					$godam_transcoded_url = get_post_meta( $godam_post_id, 'rtgodam_transcoded_url', true );
+
+					if ( ! empty( $godam_transcoded_url ) ) {
+						return $godam_transcoded_url;
+					}
+				}
+			}
+
+			if ( ! empty( $attachment_url ) ) {
+				return $attachment_url;
+			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+	}
+
+	return is_string( $fallback_src ) ? $fallback_src : '';
 }
 
 /**
@@ -858,15 +1210,14 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 		}
 	}
 
+	include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-rest-routes.php';
+
 	/**
 	 * Callback URL from CMM to plugin for transcoding.
 	 */
-	$callback_url = rest_url( 'godam/v1/transcoder-callback' );
+	$callback_url = \RTGODAM_Transcoder_Rest_Routes::get_callback_url();
 
-	/**
-	 * Manually setting the rest api endpoint, we can refactor that later to use similar functionality as callback_url.
-	 */
-	$status_callback_url = get_rest_url( get_current_blog_id(), '/godam/v1/transcoding/transcoding-status' );
+	$status_callback_url = \RTGODAM_Transcoder_Rest_Routes::get_callback_url( 'status' );
 
 	/**
 	 * Prepare data to send as post request to CMM.
@@ -1149,18 +1500,30 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 		return false;
 	}
 
-	// Check post meta first.
-	$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
-	if ( ! empty( $transcript_path ) ) {
-		return $transcript_path;
-	}
-
-	// Get job_id from parameter or post meta.
-	if ( empty( $job_id ) ) {
-		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		if ( empty( $job_id ) ) {
-			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+	/**
+	 * Fires before reading this attachment's transcript/job-id meta, so
+	 * integrations that centralize media on another site can switch
+	 * context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		// Check post meta first.
+		$transcript_path = get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+		if ( ! empty( $transcript_path ) ) {
+			return $transcript_path;
 		}
+
+		// Get job_id from parameter or post meta.
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+			if ( empty( $job_id ) ) {
+				$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+			}
+		}
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
 
 	if ( empty( $job_id ) ) {
@@ -1214,7 +1577,16 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 
 		// Save to post meta using the attachment ID.
 		if ( ! empty( $transcript_path ) ) {
+			/**
+			 * Fires before writing this attachment's transcript-path meta, so
+			 * integrations that centralize media on another site can switch
+			 * context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		return $transcript_path;
@@ -1241,9 +1613,27 @@ function godam_preview_page_content( $video_id ) {
 	$show_video       = false;
 	$video_id         = intval( $video_id );
 
+	$godam_video_title = '';
+	$godam_mime        = '';
+
 	if ( ! empty( $video_id ) ) {
+		/**
+		 * Fires before resolving this attachment's post/mime/title data, so
+		 * integrations that centralize media on another site can switch
+		 * context first. Title and mime type are captured into variables here
+		 * (not re-read later) since the shortcode/block render further down
+		 * must run on the *current* site, after this bracket has closed.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
-		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type;
+		if ( $video_attachment && 'attachment' === $video_attachment->post_type ) {
+			$godam_video_title = get_the_title( $video_id );
+			$godam_mime        = (string) get_post_mime_type( $video_id );
+		}
+		do_action( 'rtgodam_after_attachment_lookup' );
+		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type;
 	}
 
 	if ( ! $show_video ) {
@@ -1257,7 +1647,6 @@ function godam_preview_page_content( $video_id ) {
 		// Render the markup appropriate to the attachment's media type: audio
 		// attachments use the audio shortcode, image attachments the image block
 		// (hotspot / product layers), everything else the video player.
-		$godam_mime     = (string) get_post_mime_type( $video_id );
 		$godam_is_audio = 0 === strpos( $godam_mime, 'audio/' );
 		$godam_is_image = 0 === strpos( $godam_mime, 'image/' );
 
@@ -1294,7 +1683,7 @@ function godam_preview_page_content( $video_id ) {
 		</div>
 		<div class="godam-video-preview">
 			<h1 class="godam-video-preview--title">
-				<?php echo esc_html( get_the_title( $video_id ) ); ?>
+				<?php echo esc_html( $godam_video_title ); ?>
 			</h1>
 			<?php echo $godam_media_output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped inside the block / shortcode render templates. ?>
 		</div>
@@ -1319,7 +1708,7 @@ function rtgodam_get_post_id_by_meta_key_and_value( $key, $value ) {
 
 	$meta = rtgodam_cache_get( $cache_key );
 	if ( empty( $meta ) ) {
-		$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$meta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s", $key, $value ) );  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, godam-coverage-ignore -- rtgodam_get_post_id_by_meta_key_and_value(): covered transitively — sole real caller (Media_Library::update_image_attachment_meta_after_lookup(), looking up 'rtgodam_transcoding_job_id') already runs inside its caller's try/finally before/after pair.
 		rtgodam_cache_set( $cache_key, $meta, HOUR_IN_SECONDS );
 	}
 
@@ -1413,8 +1802,17 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 	$engagements_value = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
 
 	if ( ! empty( $video_id ) ) {
+		/**
+		 * Fires before resolving this attachment's post/mime data, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
-		$show_video       = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 );
+		do_action( 'rtgodam_after_attachment_lookup' );
+		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 );
 	}
 
 	if ( ! $show_video ) {
@@ -1506,6 +1904,52 @@ function rtgodam_convert_to_https_url( $urls ) {
 }
 
 /**
+ * Whether the current admin screen hosts the WordPress media library / a wp.media modal
+ * and therefore needs GoDAM's media-library integration.
+ *
+ * Single source of truth for the enqueue gates below. Covers the core screens that host
+ * the media grid or open a wp.media modal, plus every GoDAM admin page (all of them call
+ * wp_enqueue_media() and may open the modal — dashboard, media editor, analytics,
+ * settings, tools, help, what's-new).
+ *
+ * @param WP_Screen|null $screen Current screen object.
+ * @return bool True if the screen uses the media library / wp.media.
+ */
+function godam_is_media_library_screen( $screen ) {
+	if ( ! $screen ) {
+		return false;
+	}
+
+	// Core screens that host the media grid or a wp.media modal. `post`/`page` (as bases)
+	// also cover the Elementor and WPBakery editors, which run on post.php.
+	$media_bases = array(
+		'upload',      // Media Library (grid & list views).
+		'post',        // Add/Edit any post type.
+		'page',        // Add/Edit Page.
+		'attachment',  // Edit Media.
+		'widgets',     // Classic widgets (image widget uses wp.media).
+		'site-editor', // FSE.
+	);
+
+	if ( in_array( $screen->base, $media_bases, true ) || in_array( $screen->id, $media_bases, true ) ) {
+		return true;
+	}
+
+	// GoDAM's own admin pages (screen ids derive from the `rtgodam` menu slug).
+	$godam_pages = array(
+		'toplevel_page_rtgodam',
+		'godam_page_rtgodam_media_editor',
+		'godam_page_rtgodam_analytics',
+		'godam_page_rtgodam_settings',
+		'godam_page_rtgodam_tools',
+		'godam_page_rtgodam_help',
+		'godam_page_rtgodam_whats_new',
+	);
+
+	return in_array( $screen->id, $godam_pages, true );
+}
+
+/**
  * Check if auth detector scripts should be loaded on current screen.
  *
  * @param WP_Screen|null $screen Current screen object.
@@ -1513,34 +1957,32 @@ function rtgodam_convert_to_https_url( $urls ) {
  * @return bool True if auth detector scripts should load.
  */
 function godam_should_load_auth_detector_script( $screen ) {
-	if ( ! $screen ) {
-		return false;
-	}
+	return godam_is_media_library_screen( $screen );
+}
 
-	// Pages where media library/modal is directly accessible.
-	$media_screens = array(
-		'upload',     // Media Library page (grid & list views).
-		'post',       // Add/Edit Post.
-		'page',       // Add/Edit Page.
-		'attachment', // Edit Media page.
-	);
-
-	// Check if current screen is in the list.
-	if ( in_array( $screen->base, $media_screens, true ) || in_array( $screen->id, $media_screens, true ) ) {
-		return true;
-	}
-
-	// Check if on GoDAM admin pages (where media library/modal can be opened).
-	$godam_pages = array(
-		'toplevel_page_godam',             // Dashboard page.
-		'godam_page_rtgodam_media_editor', // Media Editor page.
-	);
-
-	if ( in_array( $screen->id, $godam_pages, true ) ) {
-		return true;
-	}
-
-	return false;
+/**
+ * Whether the (heavy) GoDAM media-library JS bundles should load on the current screen.
+ *
+ * The media-library.min.js (bundles video.js) and pages/media-library.min.js (React/Redux
+ * folder sidebar) were enqueued on EVERY admin screen via a global admin_enqueue_scripts
+ * hook. They are only needed where the media library / wp.media modal is actually used
+ * (see godam_is_media_library_screen()). Everywhere else the payload is pure overhead.
+ * Integrations that open wp.media on other screens can opt in via the filter below.
+ *
+ * @param WP_Screen|null $screen Current screen object.
+ * @return bool True if the media-library bundles should be enqueued.
+ */
+function godam_should_load_media_library_assets( $screen ) {
+	/**
+	 * Filters whether the GoDAM media-library JS bundles load on the current screen.
+	 *
+	 * Use this to force-load the bundles on custom screens that open wp.media (e.g.
+	 * term-edit screens with media fields).
+	 *
+	 * @param bool           $should_load Whether to enqueue the media-library bundles.
+	 * @param WP_Screen|null $screen      Current screen object.
+	 */
+	return (bool) apply_filters( 'godam_should_load_media_library_assets', godam_is_media_library_screen( $screen ), $screen );
 }
 
 // ---------------------------------------------------------------------------
@@ -1554,7 +1996,8 @@ if ( ! defined( 'RTGODAM_WORK_CACHE_GROUP' ) ) {
 
 /** Cache version — bump to globally invalidate all work-cache entries. */
 if ( ! defined( 'RTGODAM_WORK_CACHE_VERSION' ) ) {
-	define( 'RTGODAM_WORK_CACHE_VERSION', 'v1' );
+	// v2: the cached attachment payload gained the transcript path/deleted keys.
+	define( 'RTGODAM_WORK_CACHE_VERSION', 'v2' );
 }
 
 /** Default TTL (seconds) used as hard-expiry fallback: 30 minutes. */
@@ -1830,6 +2273,15 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 	$resolved_thumbnail   = '';
 	$resolved_placeholder = '';
 
+	/**
+	 * Fires before resolving this attachment's thumbnail/placeholder meta
+	 * and image URL, so integrations that centralize media on another site
+	 * can switch context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+
 	if ( ! empty( $thumbnail_url ) && is_string( $thumbnail_url ) ) {
 		$resolved_thumbnail = esc_url_raw( rtgodam_convert_to_https_url( $thumbnail_url ) );
 	}
@@ -1876,6 +2328,15 @@ function rtgodam_get_video_thumbnail_sources( $attachment_id, $thumbnail_url = '
 	// When no real thumbnail is available, returning '' lets the gallery template
 	// emit a --pending sentinel instead, which the frontend JS replaces with the
 	// video's first frame via initFirstFrameThumbnails().
+
+	/**
+	 * Fires after resolving this attachment's thumbnail/placeholder data,
+	 * so integrations can restore the site context switched in
+	 * `rtgodam_before_attachment_lookup`.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	return array(
 		'thumbnail'   => $resolved_thumbnail,

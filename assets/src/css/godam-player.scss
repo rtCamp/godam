@@ -2523,6 +2523,46 @@ body.godam-share-modal-open {
 	cursor: pointer;
 }
 
+/* Closed state: the inline player is a click-to-open poster, so it shows the
+ * play icon and nothing else. `godam-lightbox-open` is added by modalManager.js
+ * while this player is the one inside the modal — that is where the real
+ * controls belong.
+ *
+ * `!important` is only needed to out-rank Video.js's own
+ * `.vjs-has-started .vjs-control-bar` and the hover-to-reveal rules earlier in
+ * this file. The rule is deliberately subtractive — nothing here ever re-shows
+ * the bar — so `.vjs-controls-disabled` / `.vjs-error` keep their own behaviour
+ * inside the lightbox. */
+.godam-video-wrapper.godam-show-in-lightbox:not(.godam-lightbox-open) {
+
+	/* stylelint-disable-next-line no-descending-specificity -- closed-state override of the earlier control-bar/button rules; it only removes them from the poster. */
+	.vjs-control-bar,
+	.vjs-button.godam-share-button,
+	.vjs-button.godam-transcript-button,
+	.godam-transcript-panel {
+		display: none !important;
+	}
+
+	/* A CTA, hotspot or form layer shown at the timestamp the viewer closed on
+	 * would otherwise stay overlaid on the poster. Only the display is suppressed,
+	 * so the layer's own state survives and it comes back on reopening. */
+	.easydam-layer {
+		display: none !important;
+	}
+
+	/* The poster is a button, so it keeps its play icon even when Video.js has
+	 * controls switched off — which also hides the big play button. That happens
+	 * for a video rendered without playback controls, and temporarily whenever a
+	 * form/CTA layer is on screen, since formLayerManager only switches controls
+	 * back on when the layer is dismissed: closing mid-layer would otherwise leave
+	 * a poster with no way in. An errored player keeps Video.js's own empty state.
+	 * Matches `.custom-play-image` too — it replaces the button and inherits its
+	 * classes (see controlsManager.setupCustomPlayButton). */
+	.video-js:not(.vjs-error) .vjs-big-play-button {
+		display: block !important;
+	}
+}
+
 /* Prevent the page from scrolling behind an open modal. */
 body.godam-player-modal-open {
 	overflow: hidden;

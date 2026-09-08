@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useState, useMemo, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -25,6 +25,7 @@ import {
 } from './redux/slice/folders';
 import { FolderCreationModal, RenameModal, DeleteModal } from './components/modal/index.jsx';
 import { triggerFilterChange } from './data/media-grid.js';
+import { canManageFolders } from './data/capabilities.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
 import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery } from './redux/api/folders.js';
@@ -33,16 +34,10 @@ import SearchBar from './components/search-bar/SearchBar.jsx';
 const App = () => {
 	const dispatch = useDispatch();
 	const selectedFolder = useSelector( ( state ) => state.FolderReducer.selectedFolder );
-	const contextSelectedFolder = useSelector( ( state ) => state.FolderReducer.currentContextMenuFolder );
 	const isMultiSelecting = useSelector( ( state ) => state.FolderReducer.isMultiSelecting );
 	const currentSortOrder = useSelector( ( state ) => state.FolderReducer.sortOrder );
 	const { data: allMediaCount, refetch: refetchAllMediaCount } = useGetAllMediaCountQuery();
 	const { data: uncategorizedCount, refetch: refetchUncategorizedCount } = useGetCategoryMediaCountQuery( { folderId: 0 } );
-
-	const allFolders = useSelector( ( state ) => state.FolderReducer.folders );
-	const currentFolder = useMemo( () => {
-		return allFolders.find( ( folder ) => folder.id === selectedFolder?.id );
-	}, [ allFolders, selectedFolder ] );
 
 	const [ contextMenu, setContextMenu ] = useState( {
 		visible: false,
@@ -160,15 +155,25 @@ const App = () => {
 			<div className="control-buttons">
 				<div className="button-group mb-spacing">
 					<SearchBar />
-					<Button
-						icon="plus-alt2"
-						__next40pxDefaultSize
-						variant="primary"
-						text={ __( 'New Folder', 'godam' ) }
-						className="button--full mb-spacing new-folder-button"
-						onClick={ () => dispatch( openModal( 'folderCreation' ) ) }
-						disabled={ selectedFolder?.meta?.locked || currentFolder?.meta?.locked || contextSelectedFolder?.meta?.locked }
-					/>
+					{ /* Gated on the same capability the server authorizes create on, so users
+						who cannot create folders (e.g. Contributors) don't see a button that 403s. */ }
+					{ canManageFolders && (
+						<Button
+							icon="plus-alt2"
+							__next40pxDefaultSize
+							variant="primary"
+							text={ __( 'New Folder', 'godam' ) }
+							className="button--full mb-spacing new-folder-button"
+							onClick={ () => {
+								// Create at the ROOT from the top-level button. FolderCreationModal
+								// derives the new folder's parent from currentContextMenuFolder, which
+								// a prior right-click leaves set — without this clear, the top button
+								// would nest the folder under the last right-clicked folder.
+								dispatch( setCurrentContextMenuFolder( null ) );
+								dispatch( openModal( 'folderCreation' ) );
+							} }
+						/>
+					) }
 				</div>
 				<div className="button-group mb-spacing">
 					<Button

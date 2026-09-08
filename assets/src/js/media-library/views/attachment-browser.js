@@ -20,7 +20,9 @@ const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 export default AttachmentsBrowser?.extend( {
 
 	initialize() {
-		// Initialize the parent class.
+		// Initialize the parent class. AttachmentsBrowser's own initialize()
+		// does NOT call bindEvents() (that belongs to wp.media.view.Attachments,
+		// a different view), so the override below has to be invoked explicitly.
 		AttachmentsBrowser.prototype.initialize.apply( this, arguments );
 
 		this.updateCollectionObserve();
@@ -29,8 +31,20 @@ export default AttachmentsBrowser?.extend( {
 	},
 
 	bindEvents() {
-		this.collection.props.on( 'change', this.updateCollectionObserve, this );
-		this.collection.props.on( 'change', this.addUploadParam, this );
+		// Chain to the parent's bindEvents (if any) so other code extending
+		// the same wp.media.view.AttachmentsBrowser (e.g. wp-dam) isn't
+		// silently dropped by this override.
+		if ( AttachmentsBrowser.prototype.bindEvents ) {
+			AttachmentsBrowser.prototype.bindEvents.apply( this, arguments );
+		}
+
+		// listenTo (not .on): Backbone's View.remove() tears down listenTo
+		// subscriptions automatically, but not direct .on() handlers. Binding
+		// directly would retain this view whenever the media frame switches
+		// states and replaces the browser, since these are bound on the shared
+		// collection.props, which outlives the view.
+		this.listenTo( this.collection.props, 'change', this.updateCollectionObserve );
+		this.listenTo( this.collection.props, 'change', this.addUploadParam );
 	},
 
 	async createToolbar() {

@@ -68,7 +68,7 @@ class Virtual_Media_Registrar {
 			return;
 		}
 
-		if ( 'attachment' !== get_post_type( $post_id ) ) {
+		if ( 'attachment' !== get_post_type( $post_id ) ) { // godam-coverage-ignore -- maybe_register_from_meta_change(): added_post_meta/updated_post_meta fire for every post type; this is the type-routing check that filters down to attachments before schedule_register_virtual_media_site() (which wraps its own attachment-meta reads below) — not attachment data access itself.
 			return;
 		}
 
@@ -84,21 +84,33 @@ class Virtual_Media_Registrar {
 	 * @return void
 	 */
 	private function schedule_register_virtual_media_site( int $attachment_id ) {
-		// Demo assets are shared/public GoDAM media seeded for the onboarding tours,
-		// not this site's own uploads — don't register the site as a consumer.
-		if ( get_post_meta( $attachment_id, 'rtgodam_is_demo_attachment', true ) ) {
-			return;
-		}
+		/**
+		 * Fires before reading this attachment's registration-state meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			// Demo assets are shared/public GoDAM media seeded for the onboarding tours,
+			// not this site's own uploads — don't register the site as a consumer.
+			if ( get_post_meta( $attachment_id, 'rtgodam_is_demo_attachment', true ) ) {
+				return;
+			}
 
-		$job_name = get_post_meta( $attachment_id, self::META_ORIGINAL_ID, true );
-		// Bail early if there is nothing to register.
-		if ( empty( $job_name ) ) {
-			return;
-		}
+			$job_name = get_post_meta( $attachment_id, self::META_ORIGINAL_ID, true );
+			// Bail early if there is nothing to register.
+			if ( empty( $job_name ) ) {
+				return;
+			}
 
-		// Already successfully registered — nothing to do.
-		if ( get_post_meta( $attachment_id, self::META_REGISTERED, true ) ) {
-			return;
+			// Already successfully registered — nothing to do.
+			if ( get_post_meta( $attachment_id, self::META_REGISTERED, true ) ) {
+				return;
+			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		if ( function_exists( 'as_enqueue_async_action' ) ) {
@@ -207,7 +219,16 @@ class Virtual_Media_Registrar {
 			);
 		}
 
+		/**
+		 * Fires before writing this attachment's registration-state meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		update_post_meta( $attachment_id, self::META_REGISTERED, 1 );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Invalidate the cached job ids.
 		delete_transient( 'rtgodam_virtual_media_job_ids' );
@@ -225,8 +246,18 @@ class Virtual_Media_Registrar {
 	public function maybe_remove_virtual_media_site_on_delete( $post_id ) {
 		$post_id = (int) $post_id;
 
+		/**
+		 * Fires before reading this (about-to-be-deleted) attachment's
+		 * original-id meta, so integrations that centralize media on
+		 * another site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// Only for virtual media attachments.
 		$job_name = get_post_meta( $post_id, self::META_ORIGINAL_ID, true );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		if ( empty( $job_name ) ) {
 			return;
 		}

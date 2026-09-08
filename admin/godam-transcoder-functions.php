@@ -85,15 +85,27 @@ function rtgodam_clear_api_key_invalid_timestamp() {
  * @return boolean
  */
 function rtgodam_is_file_being_transcoded( $attachment_id ) {
-	$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-	if ( ! empty( $job_id ) ) {
-		$transcoded_files  = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
-		$transcoded_thumbs = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
-		if ( empty( $transcoded_files ) && empty( $transcoded_thumbs ) ) {
-			return true;
+	/**
+	 * Fires before reading this attachment's transcoding-status meta, so
+	 * integrations that centralize media on another site can switch
+	 * context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( ! empty( $job_id ) ) {
+			$transcoded_files  = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+			$transcoded_thumbs = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
+			if ( empty( $transcoded_files ) && empty( $transcoded_thumbs ) ) {
+				return true;
+			}
 		}
+		return false;
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
-	return false;
 }
 
 /**
@@ -110,7 +122,19 @@ function rtgodam_is_file_being_transcoded( $attachment_id ) {
  *                     not allow an editing UI.
  */
 function rtgodam_get_edit_post_link( $id = 0, $context = 'display' ) {
+	/**
+	 * Fires before resolving this post by ID, so integrations that
+	 * centralize media on another site can switch context first. $id can be
+	 * an attachment ID — this function's own docblock documents attachments
+	 * as a supported input alongside posts/pages/revisions, and no caller
+	 * currently wraps this lookup.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
 	$_post = get_post( $id );
+	do_action( 'rtgodam_after_attachment_lookup' );
+
 	if ( empty( $_post ) ) {
 		return;
 	}
@@ -152,7 +176,16 @@ function rtgodam_get_job_id_by_attachment_id( $attachment_id ) {
 		return 0;
 	}
 
+	/**
+	 * Fires before reading this attachment's transcoding job-id meta, so
+	 * integrations that centralize media on another site can switch
+	 * context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
 	$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	return $job_id ? $job_id : 0;
 }
@@ -186,6 +219,15 @@ function rtgodam_delete_related_transcoded_files( $post_id ) {
 		return false;
 	}
 
+	/**
+	 * Fires before reading/deleting this (about-to-be-deleted) attachment's
+	 * transcoded-file meta, so integrations that centralize media on
+	 * another site can switch context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+
 	$transcoded_files = get_post_meta( $post_id, 'rtgodam_media_transcoded_files', true );
 
 	if ( ! empty( $transcoded_files ) && is_array( $transcoded_files ) ) {
@@ -202,6 +244,8 @@ function rtgodam_delete_related_transcoded_files( $post_id ) {
 		rtgodam_delete_transcoded_files( $thumbnails );
 	}
 	delete_post_meta( $post_id, 'rtgodam_media_thumbnails' );
+
+	do_action( 'rtgodam_after_attachment_lookup' );
 }
 
 add_action( 'delete_attachment', 'rtgodam_delete_related_transcoded_files', 99, 1 );
@@ -316,25 +360,37 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		return;
 	}
 
-	$transcoded_files = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
+	/**
+	 * Fires before reading this attachment's transcoding-status meta, so
+	 * integrations that centralize media on another site can switch
+	 * context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$transcoded_files = get_post_meta( $post_id, 'rtgodam_transcoded_url', true );
 
-	// Detect virtual media created from GoDAM tab.
-	$is_virtual = ! empty( get_post_meta( $post_id, '_godam_original_id', true ) );
+		// Detect virtual media created from GoDAM tab.
+		$is_virtual = ! empty( get_post_meta( $post_id, '_godam_original_id', true ) );
 
-	if ( $is_virtual ) {
-		?>
-		<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status--completed transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">
-			<div class="transcoding-status__loader" data-percent="100">
-				<img src="<?php echo esc_url( RTGODAM_URL . '/assets/src/images/godam-logo-gradient.svg' ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" width="22" height="22" />
-				</div>
-			<span class="status-text"><?php echo esc_html__( 'Media is transcoded.', 'godam' ); ?></span>
-		</div>
-		<?php
-		return;
+		if ( $is_virtual ) {
+			?>
+			<div id="list-transcoder-status-<?php echo esc_attr( $post_id ); ?>" class="transcoding-status transcoding-status--completed transcoding-status-list" data-id="<?php echo esc_attr( $post_id ); ?>">
+				<div class="transcoding-status__loader" data-percent="100">
+					<img src="<?php echo esc_url( RTGODAM_URL . '/assets/src/images/godam-logo-gradient.svg' ); ?>" alt="<?php esc_attr_e( 'GoDAM Logo', 'godam' ); ?>" width="22" height="22" />
+					</div>
+				<span class="status-text"><?php echo esc_html__( 'Media is transcoded.', 'godam' ); ?></span>
+			</div>
+			<?php
+			return;
+		}
+
+		// only display the check status button for media that are transcoding.
+		$transcoding_status = get_post_meta( $post_id, 'rtgodam_transcoding_status', true );
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
-
-	// only display the check status button for media that are transcoding.
-	$transcoding_status = get_post_meta( $post_id, 'rtgodam_transcoding_status', true );
 
 	if ( empty( $transcoding_status ) && empty( $transcoded_files ) ) {
 		return;
@@ -669,7 +725,7 @@ function rtgodam_get_localize_array() {
 	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
 	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
 	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
-	$localize_array['postTitle']  = get_the_title();
+	$localize_array['postTitle']  = get_the_title(); // godam-coverage-ignore -- No argument: reads the title of whatever post/page the current front-end request is viewing (this fn runs unconditionally on every page load via Assets::enqueue_scripts()), not an explicit attachment lookup.
 	$localize_array['locationIP'] = rtgodam_get_user_ip();
 
 	/**
@@ -688,9 +744,9 @@ function rtgodam_get_localize_array() {
 
 	$localize_array['siteId'] = get_current_blog_id();
 
-	if ( get_post_type() ) {
+	if ( get_post_type() ) { // godam-coverage-ignore -- No argument: same current-page-type check as postTitle above, not an explicit attachment lookup.
 
-		$localize_array['postType'] = get_post_type();
+		$localize_array['postType'] = get_post_type(); // godam-coverage-ignore -- Same call as the `if` check above; not an explicit attachment lookup.
 	}
 
 	$post_id = get_the_ID();
@@ -760,17 +816,29 @@ function rtgodam_get_transcoded_url_from_attachment( $attachment ) {
 		return '';
 	}
 
-	$attachment_obj = get_post( $attachment_id );
+	/**
+	 * Fires before resolving this attachment's post/transcoded-url meta,
+	 * so integrations that centralize media on another site can switch
+	 * context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$attachment_obj = get_post( $attachment_id );
 
-	if ( empty( $attachment_obj ) || ! is_a( $attachment_obj, 'WP_Post' ) ) {
-		return '';
+		if ( empty( $attachment_obj ) || ! is_a( $attachment_obj, 'WP_Post' ) ) {
+			return '';
+		}
+
+		if ( 'attachment' !== $attachment_obj->post_type ) {
+			return '';
+		}
+
+		return get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
-
-	if ( 'attachment' !== $attachment_obj->post_type ) {
-		return '';
-	}
-
-	return get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
 }
 
 /**
@@ -795,17 +863,29 @@ function rtgodam_get_hls_transcoded_url_from_attachment( $attachment ) {
 		return '';
 	}
 
-	$attachment_obj = get_post( $attachment_id );
+	/**
+	 * Fires before resolving this attachment's post/HLS-transcoded-url
+	 * meta, so integrations that centralize media on another site can
+	 * switch context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$attachment_obj = get_post( $attachment_id );
 
-	if ( empty( $attachment_obj ) || ! is_a( $attachment_obj, 'WP_Post' ) ) {
-		return '';
+		if ( empty( $attachment_obj ) || ! is_a( $attachment_obj, 'WP_Post' ) ) {
+			return '';
+		}
+
+		if ( 'attachment' !== $attachment_obj->post_type ) {
+			return '';
+		}
+
+		return get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true );
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
-
-	if ( 'attachment' !== $attachment_obj->post_type ) {
-		return '';
-	}
-
-	return get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true );
 }
 
 /**
@@ -830,17 +910,29 @@ function rtgodam_get_transcoded_status_from_attachment( $attachment ) {
 		return '';
 	}
 
-	$attachment_obj = get_post( $attachment_id );
+	/**
+	 * Fires before resolving this attachment's post/transcoding-status
+	 * meta, so integrations that centralize media on another site can
+	 * switch context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$attachment_obj = get_post( $attachment_id );
 
-	if ( 'attachment' !== $attachment_obj->post_type ) {
-		return '';
+		if ( 'attachment' !== $attachment_obj->post_type ) {
+			return '';
+		}
+
+		$status = strval( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
+		$status = function_exists( 'mb_strtolower' ) ? mb_strtolower( $status ) : strtolower( $status );
+		$status = empty( trim( $status ) ) ? 'not_started' : $status;
+
+		return $status;
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
-
-	$status = strval( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
-	$status = function_exists( 'mb_strtolower' ) ? mb_strtolower( $status ) : strtolower( $status );
-	$status = empty( trim( $status ) ) ? 'not_started' : $status;
-
-	return $status;
 }
 
 /**
@@ -865,11 +957,23 @@ function rtgodam_get_transcoded_error_message_from_attachment( $attachment ) {
 		return '';
 	}
 
-	$attachment_obj = get_post( $attachment_id );
+	/**
+	 * Fires before resolving this attachment's post/transcoding-error
+	 * meta, so integrations that centralize media on another site can
+	 * switch context first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$attachment_obj = get_post( $attachment_id );
 
-	if ( 'attachment' !== $attachment_obj->post_type ) {
-		return '';
+		if ( 'attachment' !== $attachment_obj->post_type ) {
+			return '';
+		}
+
+		return strval( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
 	}
-
-	return strval( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
 }

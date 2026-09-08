@@ -143,6 +143,17 @@ const TRACKER_AUTO_NAME_RE = new RegExp(
 );
 
 /**
+ * Exact separator the hotspot tracker puts between the parent layer name
+ * and the hotspot's own label when it composes `layer_name`. It builds
+ * `<parentLayerName> — <subLabel>` (space, em dash, space) in
+ * `hotspotLayerManager.js`; keep this in sync with that string. Matching
+ * the full separator — rather than just the parent name — is what lets us
+ * strip the prefix without touching a hotspot label that legitimately
+ * begins with a dash.
+ */
+const HOTSPOT_NAME_SEPARATOR = ' — ';
+
+/**
  * Whether a server-delivered layer_name is missing, a bare UUID, or a
  * tracker-side auto-generated name — i.e. anything we should replace with
  * a locally generated (localized) fallback. Also drives the `name_is_auto`
@@ -393,20 +404,32 @@ export function groupRows( rows, layerType, configIndex ) {
 			? configIndex.activeSubIdsByParent.get( parentId )
 			: null;
 
+		// The hotspot list is built from recorded activity in the selected date
+		// range, NOT from the layer's saved configuration. A hotspot with no
+		// activity in the range is therefore absent from this list rather than
+		// rendered with zeros.
+		//
+		// That is a deliberate product decision (2026-08-06), not an oversight:
+		// a hotspot that did not exist during the range has nothing to report,
+		// so showing it would invite the reader to compare it against hotspots
+		// that were actually live. It is a documented exception to the
+		// otherwise-general rule that a metric renders greyed rather than
+		// hidden. Do not "fix" it by enumerating from configIndex.
 		const subHotspots = bucket.subRows
 			.map( ( { row, md }, idx ) => {
 				const counts = pluckCounts( row );
-				const noAction = computeNoAction( layerType, {
-					...counts,
-					// Sub-hotspots inherit viewed from the parent (all sub-
-					// hotspots in one layer become visible together).
-					viewed: parentCounts.viewed,
-				} );
-				// Per-sub conversion comes from the server: the sub's converting
-				// sessions over the PARENT's viewed (subs don't emit their own
-				// viewed), a UNION over the layer type's conversion actions — so
-				// Woo counts cart-adds too — and already bounded ≤ 100%. Don't
-				// recompute from a single action.
+				// Each hotspot carries its own `viewed`: the player emits one
+				// impression per hotspot, and for days before that shipped the
+				// server substitutes the layer's count only for hotspots it can
+				// prove already existed. Either way `row.viewed` is the right
+				// denominator, so do NOT substitute the parent's here: that is
+				// what charged a newly added hotspot with the layer's whole
+				// history as "No Action".
+				const noAction = computeNoAction( layerType, counts );
+				// Per-hotspot conversion comes from the server: the hotspot's
+				// converting sessions over its own viewed, a UNION over the layer
+				// type's conversion actions — so Woo counts cart-adds too — and
+				// already bounded ≤ 100%. Don't recompute from a single action.
 				const conversion = Math.min(
 					100,
 					Math.max( 0, Number( row.conversion_rate ) || 0 ),
@@ -420,7 +443,28 @@ export function groupRows( rows, layerType, configIndex ) {
 				// path the parent uses so a raw composite UUID never reaches
 				// the rail. Falls back to a generic ordinal "<TypeLabel> #N"
 				// when nothing usable.
-				const rawSubName = md.product_name || row.layer_name || '';
+				let rawSubName = md.product_name || row.layer_name || '';
+				// The hotspot tracker packs the parent layer name, the
+				// `HOTSPOT_NAME_SEPARATOR`, and "Hotspot N" into layer_name. The
+				// rail's card title already shows the parent, so that prefix is
+				// pure repetition and, once the row is truncated, it hides the
+				// "Hotspot N" that actually names the row. Drop the exact
+				// "<parent> — " prefix, keeping only the hotspot's own label.
+				// Matching the full separator (not just the parent name) means:
+				// - a custom label that merely begins with the parent name
+				//   (parent "Sale", label "Sale special") is left intact, and
+				// - a label that itself starts with a dash (parent "Summer
+				//   sale", label "-50% off") keeps its leading dash instead of
+				//   having it eaten as part of the separator.
+				// Woo rows carry a bare product_name and never match this, so
+				// they are left alone.
+				if ( ! md.product_name && md.parent_layer_name ) {
+					const parentPrefix =
+						md.parent_layer_name + HOTSPOT_NAME_SEPARATOR;
+					if ( rawSubName.startsWith( parentPrefix ) ) {
+						rawSubName = rawSubName.slice( parentPrefix.length );
+					}
+				}
 				let subName;
 				if (
 					rawSubName &&
@@ -448,11 +492,7 @@ export function groupRows( rows, layerType, configIndex ) {
 				return {
 					id: subId,
 					name: subName,
-					counts: {
-						...counts,
-						// Inherit viewed; per-sub viewed isn't emitted anymore.
-						viewed: parentCounts.viewed,
-					},
+					counts,
 					no_action: noAction,
 					conversion_rate: conversion,
 					product_id: md.product_id || null,

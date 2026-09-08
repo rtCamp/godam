@@ -41,7 +41,21 @@ class Video_Engagement {
 	public function add_engagement_to_video( $attributes, $instance_id, $easydam_meta_data, $godam_settings ) {
 		$attachment_id = ! empty( $attributes['id'] ) && is_numeric( $attributes['id'] ) ? intval( $attributes['id'] ) : '';
 
-		if ( ! empty( $attachment_id ) && 'transcoded' !== strtolower( get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) ) ) {
+		/**
+		 * Fires before reading this attachment's transcoding status, so
+		 * integrations that centralize media on another site can switch
+		 * context first. A separate, small pair from the get_the_title()
+		 * one below — check_if_engagements_enabled() runs in between and
+		 * reads site-specific settings options, which must not be read from
+		 * the media site.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$rtgodam_transcoding_status = ! empty( $attachment_id ) ? get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) : '';
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( ! empty( $attachment_id ) && 'transcoded' !== strtolower( $rtgodam_transcoding_status ) ) {
 			return '';
 		}
 
@@ -56,7 +70,16 @@ class Video_Engagement {
 		if ( empty( $attributes['title'] ) && ! empty( $attributes['seo']['headline'] ) ) {
 			$attributes['title'] = $attributes['seo']['headline'];
 		}
+
+		/**
+		 * Fires before this get_the_title() fallback, so integrations that
+		 * centralize media on another site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$title = ! empty( $attributes['title'] ) ? $attributes['title'] : get_the_title( $attachment_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		$brand_color = '#000'; // Default brand color.
 

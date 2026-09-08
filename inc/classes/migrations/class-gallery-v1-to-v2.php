@@ -155,7 +155,7 @@ class Gallery_V1_To_V2 {
 			// LIKE clause – do not shift the window and cause later posts to
 			// be silently skipped.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
+			$rows = $wpdb->get_results( // godam-coverage-ignore -- run(): post_status NOT IN (...,'inherit') excludes attachments by construction — scans HOST posts/pages for legacy block markup in their own post_content, not attachment data.
 				$wpdb->prepare(
 					"SELECT ID, post_content
 					 FROM {$wpdb->posts}
@@ -191,7 +191,7 @@ class Gallery_V1_To_V2 {
 					continue;
 				}
 
-				$result = wp_update_post(
+				$result = wp_update_post( // godam-coverage-ignore -- run(): updates the HOST post/page fetched by the SELECT above, whose post_status NOT IN (...,'inherit') excludes attachments by construction — rewrites legacy block markup in that post's own post_content, never attachment data.
 					array(
 						'ID'           => (int) $row->ID,
 						'post_content' => $new_content,

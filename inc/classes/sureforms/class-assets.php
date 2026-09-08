@@ -50,7 +50,7 @@ class Assets {
 		/**
 		 * Get current post to check.
 		 */
-		$current_post = get_post();
+		$current_post = get_post(); // godam-coverage-ignore -- register_scripts(): bare get_post() resolves to the current post being rendered, not an attachment.
 		$preview_page = get_query_var( 'godam_page' );
 
 		if ( $current_post instanceof WP_Post ) {

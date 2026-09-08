@@ -14,7 +14,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { openModal, updateSnackbar, updateBookmarks, lockFolder } from '../../redux/slice/folders';
-import { useDownloadZipMutation, useUpdateFolderMutation, useBulkLockFoldersMutation, useBulkBookmarkFoldersMutation } from '../../redux/api/folders';
+import { useDownloadZipMutation, useUpdateFolderMutation, useBulkLockFoldersMutation, useBulkBookmarkFoldersMutation, pollZipJobStatus } from '../../redux/api/folders';
 import {
 	BookmarkStarIcon,
 	DeleteIcon,
@@ -24,22 +24,8 @@ import {
 	RenameFolderIcon,
 } from '../icons';
 import { utilities } from '../../data/utilities';
+import { canManageFolders, canLockFolders, canDeleteFolders } from '../../data/capabilities';
 import './css/context-menu.scss';
-
-/**
- * User roles from global MediaLibrary object.
- */
-const userRoles = window.MediaLibrary?.roles || [];
-
-/**
- * Checks if the user has at least one of the allowed roles.
- *
- * @param {string[]} allowedRoles - Array of allowed role strings.
- * @return {boolean} True if user has at least one allowed role.
- */
-const hasRole = ( allowedRoles ) => {
-	return userRoles.some( ( role ) => allowedRoles.includes( role ) );
-};
 
 const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	const dispatch = useDispatch();
@@ -212,29 +198,29 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				} ),
 			);
 
+			// The archive is now built in the background: start the job, then poll until
+			// it is ready (large folders no longer time out the request).
 			const response = await downloadZipMutation( { folderId: id } ).unwrap();
 
-			if ( ! response?.success ) {
-				throw new Error( response?.message || __( 'Failed to create ZIP file', 'godam' ) );
+			if ( ! response?.success || ! response?.data?.job_id ) {
+				throw new Error( response?.message || __( 'Failed to start ZIP creation', 'godam' ) );
 			}
 
-			const { data } = response;
+			const result = await pollZipJobStatus( response.data.job_id );
 
-			if ( ! data?.zip_url ) {
-				throw new Error( __( 'Invalid response: missing ZIP URL', 'godam' ) );
+			if ( result.status !== 'completed' || ! result.zip_url ) {
+				throw new Error( result.message || __( 'Failed to create ZIP file', 'godam' ) );
 			}
 
 			downloadFile(
-				data.zip_url,
-				data.zip_name || `${ currentFolder?.name || 'folder' }.zip`,
+				result.zip_url,
+				result.zip_name || `${ currentFolder?.name || 'folder' }.zip`,
 				true,
 			);
 
-			const successMessage = data?.message;
-
 			dispatch(
 				updateSnackbar( {
-					message: successMessage,
+					message: result.message || __( 'ZIP file created successfully.', 'godam' ),
 					type: 'success',
 				} ),
 			);
@@ -410,7 +396,9 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			ref={ menuRef }
 			style={ { top: position.top, left: position.left } }
 		>
-			{ hasRole( [ 'superadmin', 'administrator', 'editor' ] ) && (
+			{ /* Create + rename share one capability (edit_terms = upload_files), so these
+				are available to anyone who can manage folders — matching the server. */ }
+			{ canManageFolders && (
 				<>
 					<Button
 						icon={ NewFolderIcon }
@@ -428,6 +416,12 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 					>
 						{ __( 'Rename', 'godam' ) }
 					</Button>
+				</>
+			) }
+			{ /* Lock is a protective/admin feature and Bookmark uses editor+ bulk endpoints,
+				so both remain limited to Editors and above. */ }
+			{ canLockFolders && (
+				<>
 					<Button
 						icon={ LockFolderIcon }
 						onClick={ () => handleMenuItemClick( 'lockFolder' ) }
@@ -454,7 +448,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			>
 				{ __( 'Download Zip', 'godam' ) }
 			</Button>
-			{ hasRole( [ 'superadmin', 'administrator' ] ) && (
+			{ canDeleteFolders && (
 				<Button
 					icon={ DeleteIcon }
 					onClick={ () => handleMenuItemClick( 'delete' ) }

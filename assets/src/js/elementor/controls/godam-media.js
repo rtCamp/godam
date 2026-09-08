@@ -149,12 +149,40 @@ if ( window.elementor ) {
 		},
 
 		getMediaType() {
-			return this.mediaType || this.model.get( 'media_type' ) || this.model.get( 'media_types' )[ 0 ];
+			const mediaType = this.mediaType || this.model.get( 'media_type' );
+
+			// A control may declare several types at once (the Document widget accepts a dozen).
+			// Callers here want one value to branch the control's own rendering on, so use the
+			// first — they all render through the same file-picker branch anyway.
+			return this.splitMediaTypes( mediaType )[ 0 ] || this.model.get( 'media_types' )[ 0 ];
+		},
+
+		/**
+		 * Normalise a control's `media_type` into an array of MIME types.
+		 *
+		 * Accepts a single type, a comma-separated list, or an array, so a control can restrict
+		 * the library to more than one format. Previously this was always wrapped as
+		 * `[ mediaType ]`, which turned a multi-type value into one nonsense entry and left the
+		 * library unfiltered.
+		 *
+		 * @param {string|string[]} mediaType Raw `media_type` value.
+		 * @return {string[]} MIME types, empty entries removed.
+		 */
+		splitMediaTypes( mediaType ) {
+			if ( ! mediaType ) {
+				return [];
+			}
+
+			const types = Array.isArray( mediaType )
+				? mediaType
+				: String( mediaType ).split( ',' );
+
+			return types.map( ( type ) => type.trim() ).filter( Boolean );
 		},
 
 		async openFrame() {
 			const control = this;
-			const mediaType = this.model.get( 'media_type' );
+			const mediaTypes = this.splitMediaTypes( this.model.get( 'media_type' ) );
 			const currentId = this.getControlValue( 'id' );
 
 			const frame = wp.media( {
@@ -163,7 +191,7 @@ if ( window.elementor ) {
 					text: 'Insert File',
 				},
 				library: {
-					type: [ mediaType ] || [ '' ],
+					type: mediaTypes.length ? mediaTypes : [ '' ],
 				},
 				multiple: false,
 			} );

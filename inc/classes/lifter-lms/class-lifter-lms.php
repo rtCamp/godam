@@ -136,7 +136,7 @@ class Lifter_LMS {
 		if ( ! $post_id ) {
 			return false;
 		}
-		$blocks = parse_blocks( get_post( $post_id )->post_content );
+		$blocks = parse_blocks( get_post( $post_id )->post_content ); // godam-coverage-ignore -- has_godam_video_block(): $post_id is get_the_ID() (the current post); reads its own post_content, not attachment data.
 
 		foreach ( $blocks as $block ) {
 			if ( 'godam/video' === $block['blockName'] ) {

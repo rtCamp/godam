@@ -87,31 +87,46 @@ class Video_Metadata {
 	 * @return void
 	 */
 	private function process_video_metadata( $attachment_id ) {
-		$file_path = get_attached_file( $attachment_id );
+		/**
+		 * Fires before reading/writing this attachment's file path and video
+		 * duration/size meta, so integrations that centralize media on
+		 * another site can switch context first. Hooked to `add_attachment`,
+		 * which fires on every insert regardless of caller — some callers
+		 * already switch before triggering it (safe, this just no-ops
+		 * nested), but nothing guarantees all of them do.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$file_path = get_attached_file( $attachment_id );
 
-		if ( $this->is_video_attachment( $attachment_id ) && file_exists( $file_path ) ) {
-			// Check if metadata already exists to avoid unnecessary processing.
-			$existing_duration = get_post_meta( $attachment_id, '_video_duration', true );
-			$existing_size     = get_post_meta( $attachment_id, '_video_file_size', true );
+			if ( $this->is_video_attachment( $attachment_id ) && file_exists( $file_path ) ) {
+				// Check if metadata already exists to avoid unnecessary processing.
+				$existing_duration = get_post_meta( $attachment_id, '_video_duration', true );
+				$existing_size     = get_post_meta( $attachment_id, '_video_file_size', true );
 
-			if ( empty( $existing_duration ) || empty( $existing_size ) ) {
-				if ( ! function_exists( 'wp_read_video_metadata' ) ) {
-					require_once ABSPATH . 'wp-admin/includes/media.php';
-				}
+				if ( empty( $existing_duration ) || empty( $existing_size ) ) {
+					if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+						require_once ABSPATH . 'wp-admin/includes/media.php';
+					}
 
-				$metadata = wp_read_video_metadata( $file_path );
+					$metadata = wp_read_video_metadata( $file_path );
 
-				// Save duration.
-				if ( ! empty( $metadata['length'] ) ) {
-					update_post_meta( $attachment_id, '_video_duration', intval( $metadata['length'] ) );
-				}
+					// Save duration.
+					if ( ! empty( $metadata['length'] ) ) {
+						update_post_meta( $attachment_id, '_video_duration', intval( $metadata['length'] ) );
+					}
 
-				// Save file size.
-				$file_size = filesize( $file_path );
-				if ( $file_size ) {
-					update_post_meta( $attachment_id, '_video_file_size', $file_size );
+					// Save file size.
+					$file_size = filesize( $file_path );
+					if ( $file_size ) {
+						update_post_meta( $attachment_id, '_video_file_size', $file_size );
+					}
 				}
 			}
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 	}
 
@@ -137,6 +152,17 @@ class Video_Metadata {
 		$has_more_videos = true;
 
 		while ( $has_more_videos ) {
+			/**
+			 * Fires before querying for video attachments still missing
+			 * duration/file-size meta, so integrations that centralize
+			 * media on another site can switch context first. This
+			 * get_posts() call reads directly from the attachment post
+			 * type (post_type => attachment), batched across every
+			 * matching video on the site.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
 			// Get a batch of video attachments without metadata.
 			//phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 			$videos = get_posts(
@@ -159,6 +185,7 @@ class Video_Metadata {
 					),
 				)
 			);
+			do_action( 'rtgodam_after_attachment_lookup' );
 
 			if ( ! empty( $videos ) ) {
 				// Process this batch.
@@ -192,10 +219,29 @@ class Video_Metadata {
 		$mime          = isset( $response['mime'] ) ? $response['mime'] : '';
 		$thumbnail_url = '';
 
-		if ( 0 === strpos( $mime, 'video/' ) || 'application/pdf' === $mime ) {
+		/**
+		 * Fires before reading this attachment's video/PDF/audio-thumbnail
+		 * and `_wp_attachment_metadata` postmeta, so integrations that
+		 * centralize media on another site can switch context first. This
+		 * filter runs on every wp_prepare_attachment_for_js() call
+		 * plugin-wide, including ones GoDAM doesn't control (WP core's
+		 * media modal, REST responses) — self-wrapped so it's correct
+		 * regardless of who triggered it.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
+		// Documents cover every convertible type, not just PDF: GoDAM Central rasterises page 0
+		// of the preview for all of them, so an .xlsx gets a real thumbnail too. Keyed off the
+		// attachment rather than the MIME alone, since text/plain also covers .srt/.asc/.c/.h,
+		// which are never transcoded and so never have a thumbnail to find.
+		$is_document = rtgodam_is_supported_document_attachment( $response['id'] );
+
+		if ( 0 === strpos( $mime, 'video/' ) || $is_document ) {
 			$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_video_thumbnail', true );
 
-			// Check for icon if it is a virtual media (for PDFs imported from GoDAM).
+			// Check for icon if it is a virtual media (for documents imported from GoDAM).
 			if ( empty( $thumbnail_url ) ) {
 				$thumbnail_url = get_post_meta( $response['id'], 'rtgodam_media_pdf_thumbnail', true );
 			}
@@ -214,6 +260,8 @@ class Video_Metadata {
 			$response['image']['height'] = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 		}
 
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		return $response;
 	}
 
@@ -229,14 +277,30 @@ class Video_Metadata {
 		add_filter(
 			'wp_get_attachment_url',
 			function ( $url, $post_id ) {
-				$is_vimeo_migrated = get_post_meta( $post_id, 'rtgodam_is_migrated_vimeo_video', true );
-				if ( $is_vimeo_migrated ) {
-					$remote_url = get_post_meta( $post_id, '_wp_attached_file', true );
-					if ( ! empty( $remote_url ) ) {
-						return $remote_url;
+				/**
+				 * Fires before reading this attachment's meta, so
+				 * integrations that centralize media on another site can
+				 * switch context first. This filter runs on every
+				 * wp_get_attachment_url() call plugin-wide, including ones
+				 * GoDAM doesn't control (WP core, other plugins) —
+				 * self-wrapped so it's correct regardless of who triggered
+				 * it.
+				 *
+				 * @since 2.2.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
+				try {
+					$is_vimeo_migrated = get_post_meta( $post_id, 'rtgodam_is_migrated_vimeo_video', true );
+					if ( $is_vimeo_migrated ) {
+						$remote_url = get_post_meta( $post_id, '_wp_attached_file', true );
+						if ( ! empty( $remote_url ) ) {
+							return $remote_url;
+						}
 					}
+					return $url;
+				} finally {
+					do_action( 'rtgodam_after_attachment_lookup' );
 				}
-				return $url;
 			},
 			10,
 			2
@@ -259,6 +323,21 @@ class Video_Metadata {
 	public function set_media_library_list_thumbnail( $html, $attachment_id, $size, $icon ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- We dont use icon param.
 		if ( is_admin() && 'upload' === get_current_screen()->id && array( 60, 60 ) === $size ) {
 
+			/**
+			 * Fires before reading this attachment's video/audio-thumbnail,
+			 * `_godam_icon`, and `_wp_attachment_metadata` postmeta, so
+			 * integrations that centralize media on another site can
+			 * switch context first. This filter runs on every
+			 * wp_get_attachment_image() call plugin-wide, including ones
+			 * GoDAM doesn't control — self-wrapped so it's correct
+			 * regardless of who triggered it. Scoped to the admin
+			 * upload-list-view branch, the only branch that touches
+			 * attachment postmeta.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+
 			$thumbnail_url = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
 			// Virtual GoDAM audio stores its cover in dedicated meta.
@@ -278,6 +357,8 @@ class Video_Metadata {
 				$height = $attachment_meta['height'] ?? self::DEFAULT_THUMBNAIL_HEIGHT;
 				$html   = sprintf( '<img width="%s" height="%s" src="%s" style="object-fit: cover; height: 60px;" decoding="async" loading="lazy" />', esc_attr( $width ), esc_attr( $height ), esc_url( rtgodam_convert_to_https_url( $thumbnail_url ) ) );
 			}
+
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		return $html;
