@@ -67,7 +67,7 @@ export default function VideoToPurchaseCard( { videoToPurchase, dataLabel, delta
 							<span className="text-xs text-zinc-500">
 								{ sprintf(
 									/* translators: %s: percentage of viewers who played and then purchased. */
-									__( 'orders from video, %s%% of viewers who played', 'godam' ),
+									__( 'purchasers from video, %s%% of viewers who played', 'godam' ),
 									rate.toFixed( 1 ),
 								) }
 							</span>
