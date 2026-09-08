@@ -103,7 +103,7 @@ class RTGODAM_Transcoder_Handler {
 	 * No leading comma, unlike $audio_extensions and $other_extensions: exploding those yields
 	 * an empty first entry, which then matches a file with no extension at all.
 	 *
-	 * @since    n.e.x.t
+	 * @since    2.2.0
 	 * @access   public
 	 * @var      string    $document_extensions    Document extensions with comma separated.
 	 */

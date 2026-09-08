@@ -24,22 +24,8 @@ import {
 	RenameFolderIcon,
 } from '../icons';
 import { utilities } from '../../data/utilities';
+import { canManageFolders, canLockFolders, canDeleteFolders } from '../../data/capabilities';
 import './css/context-menu.scss';
-
-/**
- * User roles from global MediaLibrary object.
- */
-const userRoles = window.MediaLibrary?.roles || [];
-
-/**
- * Checks if the user has at least one of the allowed roles.
- *
- * @param {string[]} allowedRoles - Array of allowed role strings.
- * @return {boolean} True if user has at least one allowed role.
- */
-const hasRole = ( allowedRoles ) => {
-	return userRoles.some( ( role ) => allowedRoles.includes( role ) );
-};
 
 const ContextMenu = ( { x, y, folderId, onClose } ) => {
 	const dispatch = useDispatch();
@@ -410,7 +396,9 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			ref={ menuRef }
 			style={ { top: position.top, left: position.left } }
 		>
-			{ hasRole( [ 'superadmin', 'administrator', 'editor' ] ) && (
+			{ /* Create + rename share one capability (edit_terms = upload_files), so these
+				are available to anyone who can manage folders — matching the server. */ }
+			{ canManageFolders && (
 				<>
 					<Button
 						icon={ NewFolderIcon }
@@ -428,6 +416,12 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 					>
 						{ __( 'Rename', 'godam' ) }
 					</Button>
+				</>
+			) }
+			{ /* Lock is a protective/admin feature and Bookmark uses editor+ bulk endpoints,
+				so both remain limited to Editors and above. */ }
+			{ canLockFolders && (
+				<>
 					<Button
 						icon={ LockFolderIcon }
 						onClick={ () => handleMenuItemClick( 'lockFolder' ) }
@@ -454,7 +448,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			>
 				{ __( 'Download Zip', 'godam' ) }
 			</Button>
-			{ hasRole( [ 'superadmin', 'administrator' ] ) && (
+			{ canDeleteFolders && (
 				<Button
 					icon={ DeleteIcon }
 					onClick={ () => handleMenuItemClick( 'delete' ) }
