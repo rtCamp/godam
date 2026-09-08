@@ -331,6 +331,7 @@ class Analytics extends Base {
 			'/' . $this->rest_base . '/layer-analytics',
 			'/' . $this->rest_base . '/top-videos',
 			'/' . $this->rest_base . '/top-products',
+			'/' . $this->rest_base . '/placement-funnels',
 		);
 		foreach ( $routes as &$route ) {
 			if ( in_array( $route['route'], $range_routes, true ) ) {
@@ -1115,9 +1116,10 @@ class Analytics extends Base {
 		$http_code = (int) wp_remote_retrieve_response_code( $response );
 		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
 
-		if ( 200 !== $http_code ) {
-			// Surface a non-2xx / unparseable response as an error rather than an
-			// empty "no data" table (mirrors fetch_layer_analytics).
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			// Surface a non-2xx OR a 200-with-unparseable-body (e.g. an HTML error
+			// page that decodes to null) as an error rather than an empty "no data"
+			// table (mirrors fetch_layer_analytics / fetch_placement_funnels).
 			$detail = ( is_array( $body ) && isset( $body['detail'] ) )
 				? $body['detail']
 				: __( 'Unexpected error from analytics server.', 'godam' );
@@ -1411,11 +1413,12 @@ class Analytics extends Base {
 		$http_code = (int) wp_remote_retrieve_response_code( $response );
 		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
 
-		if ( 200 !== $http_code ) {
-			// A non-2xx (bad request, service down, HTML error page) or unparseable
-			// body must NOT be rendered as an empty "no product activity" table.
-			// Surface it as an error so the frontend RTK Query layer can show it,
-			// mirroring fetch_layer_analytics.
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			// A non-2xx (bad request, service down, HTML error page) or a
+			// 200-with-unparseable-body (decodes to null) must NOT be rendered as an
+			// empty "no product activity" table. Surface it as an error so the
+			// frontend RTK Query layer can show it, mirroring fetch_layer_analytics /
+			// fetch_placement_funnels.
 			$detail = ( is_array( $body ) && isset( $body['detail'] ) )
 				? $body['detail']
 				: __( 'Unexpected error from analytics server.', 'godam' );
