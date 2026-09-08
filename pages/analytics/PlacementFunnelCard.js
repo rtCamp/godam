@@ -91,11 +91,13 @@ function PlacementRow( { placement } ) {
  * @param {string} [props.dataLabel] The active range label (e.g. "Last 30 days").
  */
 export default function PlacementFunnelCard( { siteUrl, startDate, endDate, dataLabel } ) {
-	const { data, isFetching } = useFetchPlacementFunnelsQuery( { siteUrl, startDate, endDate } );
+	const { data, isFetching, isError: isQueryError } = useFetchPlacementFunnelsQuery( { siteUrl, startDate, endDate } );
 	const placements = Array.isArray( data ) ? data : [];
-	// A microservice error comes back as an { error, message } object, which is
-	// NOT the same as "no placement activity" -- surface it rather than hiding.
-	const isError = !! ( data && ! Array.isArray( data ) && data.error );
+	// A microservice error comes back either as a hard transport/HTTP failure
+	// (isQueryError from RTK Query) or as a soft { error, message } object, both of
+	// which are NOT the same as "no placement activity" -- surface either rather
+	// than hiding it behind the empty state.
+	const isError = isQueryError || !! ( data && ! Array.isArray( data ) && data.error );
 
 	// Once loaded, a store with genuinely no placement activity shows nothing; an
 	// error is not "empty", so keep the card to show the message below.
