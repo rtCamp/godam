@@ -12,9 +12,71 @@
  */
 
 /**
+ * External dependencies
+ */
+// TopProductsTable is a stateful function component (useState/useEffect/useRef),
+// which @wordpress/element's renderToString cannot handle (its serializer has no
+// hook dispatcher -> "Invalid hook call"). It is rendered client-side into a
+// jsdom container instead: react-dom/client + act, the same React 18 instance
+// @wordpress/element wraps. Client rendering also avoids the "useLayoutEffect
+// does nothing on the server" warnings that @wordpress/components (SearchControl
+// etc.) log under SSR, which the repo's jest-console setup treats as failures.
+// @testing-library/react is not installed in this repo, so this is done by hand.
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
+
+// act() requires this flag or React logs a console.error the jest-console setup
+// fails on.
+global.IS_REACT_ACT_ENVIRONMENT = true;
+
+/**
+ * Render an element into a detached jsdom container and return its innerHTML.
+ * Effects run (and are cleaned up on unmount), so no debounce timer is left
+ * dangling.
+ *
+ * @param {JSX.Element} element Element to render.
+ * @return {string} The container's innerHTML after render.
+ */
+function renderHTML( element ) {
+	const container = document.createElement( 'div' );
+	document.body.appendChild( container );
+	const root = createRoot( container );
+	act( () => {
+		root.render( element );
+	} );
+	const html = container.innerHTML;
+	act( () => {
+		root.unmount();
+	} );
+	container.remove();
+	return html;
+}
+
+/**
+ * The proxy's error-vs-empty distinction is the whole point of the render tests
+ * below, so the RTK Query hooks are mocked directly rather than wired through a
+ * real store/provider (same approach as GA4ConnectionWidget.test.js /
+ * PlacementFunnelCard.test.js). useLazyFetchTopProductsQuery is only used for
+ * the CSV export and is destructured as an array, so it returns [ fn ].
+ */
+jest.mock( '../redux/api/dashboardAnalyticsApi', () => ( {
+	useFetchTopProductsQuery: jest.fn(),
+	useLazyFetchTopProductsQuery: jest.fn( () => [ jest.fn() ] ),
+} ) );
+
+// The date-range picker header widget is incidental to the error-vs-empty table
+// body under test and has its own test suite; stub it out so these tests stay
+// focused on TopProductsTable's own render branches.
+jest.mock( '../../analytics/components/DateRangePicker', () => ( {
+	__esModule: true,
+	default: () => null,
+} ) );
+
+/**
  * Internal dependencies
  */
-import { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements, hasRevenueTierSplit, buildCsvRow, CSV_HEADERS } from './TopProductsTable';
+import TopProductsTable, { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements, hasRevenueTierSplit, buildCsvRow, CSV_HEADERS } from './TopProductsTable';
+import { useFetchTopProductsQuery } from '../redux/api/dashboardAnalyticsApi';
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
 	// A value whose FIRST character is one of these is what a spreadsheet would
@@ -308,5 +370,32 @@ describe( 'order-count labels use grouped thousands', () => {
 	it( 'groups a 1,000+ order count and keeps the singular for one', () => {
 		expect( influencedOrdersLabel( { influenced_orders: 1234 } ) ).toBe( '1,234 orders' );
 		expect( influencedOrdersLabel( { influenced_orders: 1 } ) ).toBe( '1 order' );
+	} );
+} );
+
+describe( 'TopProductsTable — error vs empty state', () => {
+	beforeEach( () => {
+		useFetchTopProductsQuery.mockReset();
+	} );
+
+	it( 'shows the distinct error row on a failed request, not the empty-state copy', () => {
+		// transformResponse rejects a status:error proxy response, so the query
+		// surfaces isError with no data. That must read as a load failure, not as
+		// a genuine "no product activity" result.
+		useFetchTopProductsQuery.mockReturnValue( { data: undefined, isFetching: false, isError: true } );
+
+		const html = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
+
+		expect( html ).toContain( 'godam-top-products-error' );
+		expect( html ).not.toContain( 'No product activity yet' );
+	} );
+
+	it( 'shows the empty state when a loaded store has no product activity', () => {
+		useFetchTopProductsQuery.mockReturnValue( { data: { products: [] }, isFetching: false, isError: false } );
+
+		const html = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
+
+		expect( html ).toContain( 'No product activity yet' );
+		expect( html ).not.toContain( 'godam-top-products-error' );
 	} );
 } );
