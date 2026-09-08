@@ -200,14 +200,23 @@ const GoDAMMediaFrameShared = {
 		}
 
 		// Browse our library of attachments.
+		const collection = getQuery( { controller: this, type: mimeTypes } );
+
 		const RenderedContent = new wp.media.view.AttachmentsBrowser( {
 			controller: this,
-			collection: getQuery( { controller: this, type: mimeTypes } ),
+			collection,
 			selection: state.get( 'selection' ),
 			model: state,
 		} );
 
 		this.content.set( RenderedContent );
+
+		// Surface GoDAM fetch failures (e.g. an invalid/expired API key) as a clear notice in
+		// the tab instead of leaving it on an infinite spinner or a misleading "No items found".
+		// The collection triggers 'godam:fetched' with the error message (or null) after every
+		// fetch; see models/attachments.js.
+		collection.off( 'godam:fetched', this.renderGoDAMTabNotice, this );
+		collection.on( 'godam:fetched', this.renderGoDAMTabNotice, this );
 
 		// Attaches callback to create attachment entry in WordPress for GoDAM Video.
 		state.off( 'select', this.onGoDAMSelect, this );
@@ -226,6 +235,62 @@ const GoDAMMediaFrameShared = {
 		// GalleryEdit fires frame-level 'update' (not 'select') when "Insert gallery" is clicked.
 		this.off( 'update', this.onGoDAMGalleryUpdate, this );
 		this.on( 'update', this.onGoDAMGalleryUpdate, this );
+	},
+
+	/**
+	 * Show or clear a clear error notice inside the GoDAM tab.
+	 *
+	 * Bound to the collection's 'godam:fetched' event. `errorMessage` is a human-readable
+	 * string when the fetch failed (e.g. invalid API key) or null on success. Rendering here
+	 * — rather than relying on the extended AttachmentsBrowser view — keeps it working in
+	 * additive mode, where the native browser view is used.
+	 *
+	 * @param {Object}      collection   The GoDAM attachments collection (unused).
+	 * @param {string|null} errorMessage The error to show, or null to clear.
+	 */
+	renderGoDAMTabNotice( collection, errorMessage ) {
+		// Only touch the DOM while the GoDAM tab is the active content mode.
+		if ( ! this.content || this.content.mode() !== 'godam' ) {
+			return;
+		}
+
+		const view = this.content.get();
+		const $el = view && view.$el;
+
+		if ( ! $el || ! $el.length ) {
+			return;
+		}
+
+		// Remove any previous notice so success clears it and errors don't stack.
+		$el.find( '.godam-tab-notice' ).remove();
+
+		if ( ! errorMessage ) {
+			return;
+		}
+
+		const $notice = window.jQuery(
+			'<div class="godam-tab-notice notice notice-error" role="alert" />',
+		)
+			.text( errorMessage )
+			// Inline styling so the notice is clearly visible inside the media modal without
+			// depending on a separate stylesheet build.
+			.css( {
+				margin: '12px 16px',
+				padding: '10px 14px',
+				background: '#fcf0f1',
+				borderLeft: '4px solid #d63638',
+				color: '#1d2327',
+				fontSize: '13px',
+				lineHeight: '1.5',
+			} );
+
+		// Place it above the attachments grid so it's the first thing the user sees.
+		const $attachments = $el.find( '.attachments-browser' ).first();
+		if ( $attachments.length ) {
+			$attachments.prepend( $notice );
+		} else {
+			$el.prepend( $notice );
+		}
 	},
 
 	async onGoDAMSelect() {
