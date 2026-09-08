@@ -118,28 +118,36 @@ export default function RevenueCard( { revenue, dataLabel, deltaLabel } ) {
 						</span>
 					</div>
 
-					{ /* Split bar: Direct + Assisted, summing to the base total. */ }
-					<div className="flex h-2.5 w-full rounded-full overflow-hidden bg-zinc-100 mt-4" data-test-id="godam-revenue-split-bar">
-						<div style={ { width: `${ directFrac }%`, background: COLOR_DIRECT } } />
-						<div style={ { width: `${ assistedFrac }%`, background: COLOR_ASSISTED } } />
-					</div>
+					{ /* Split bar + Direct/Assisted labels: shown only when the service
+					    sent the tier split. Without it there are no Direct/Assisted
+					    amounts, so an ungated bar/labels would render an empty bar and
+					    two misleading "£0" rows. */ }
+					{ hasSplit && (
+						<>
+							{ /* Split bar: Direct + Assisted, summing to the base total. */ }
+							<div className="flex h-2.5 w-full rounded-full overflow-hidden bg-zinc-100 mt-4" data-test-id="godam-revenue-split-bar">
+								<div style={ { width: `${ directFrac }%`, background: COLOR_DIRECT } } />
+								<div style={ { width: `${ assistedFrac }%`, background: COLOR_ASSISTED } } />
+							</div>
 
-					<div className="flex flex-col gap-2 mt-4">
-						<div className="flex items-center justify-between gap-4">
-							<span className="flex items-center gap-2 text-[13px] text-zinc-600">
-								<span className="w-3 h-3 rounded-sm" style={ { background: COLOR_DIRECT } } />
-								{ __( 'Direct · added to cart in-video', 'godam' ) }
-							</span>
-							<span className="text-[14px] font-semibold text-[#1e1e1e]" data-test-id="godam-revenue-direct">{ formatRevenue( direct, currency ) }</span>
-						</div>
-						<div className="flex items-center justify-between gap-4">
-							<span className="flex items-center gap-2 text-[13px] text-zinc-600">
-								<span className="w-3 h-3 rounded-sm" style={ { background: COLOR_ASSISTED } } />
-								{ __( 'Assisted · clicked through, then bought', 'godam' ) }
-							</span>
-							<span className="text-[14px] font-semibold text-[#1e1e1e]" data-test-id="godam-revenue-assisted">{ formatRevenue( assisted, currency ) }</span>
-						</div>
-					</div>
+							<div className="flex flex-col gap-2 mt-4">
+								<div className="flex items-center justify-between gap-4">
+									<span className="flex items-center gap-2 text-[13px] text-zinc-600">
+										<span className="w-3 h-3 rounded-sm" style={ { background: COLOR_DIRECT } } />
+										{ __( 'Direct · added to cart in-video', 'godam' ) }
+									</span>
+									<span className="text-[14px] font-semibold text-[#1e1e1e]" data-test-id="godam-revenue-direct">{ formatRevenue( direct, currency ) }</span>
+								</div>
+								<div className="flex items-center justify-between gap-4">
+									<span className="flex items-center gap-2 text-[13px] text-zinc-600">
+										<span className="w-3 h-3 rounded-sm" style={ { background: COLOR_ASSISTED } } />
+										{ __( 'Assisted · clicked through, then bought', 'godam' ) }
+									</span>
+									<span className="text-[14px] font-semibold text-[#1e1e1e]" data-test-id="godam-revenue-assisted">{ formatRevenue( assisted, currency ) }</span>
+								</div>
+							</div>
+						</>
+					) }
 				</div>
 
 				{ /* Right: Influenced, reported separately (dashboard only). */ }
