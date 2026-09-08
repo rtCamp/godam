@@ -35,16 +35,22 @@ describe( 'escapeCsvCell — formula-injection guard', () => {
 		expect( escapeCsvCell( '\t=1+1' ) ).toBe( "'\t=1+1" );
 	} );
 
-	it( 'prefixes a value that leads with a carriage return', () => {
-		expect( escapeCsvCell( '\r=1+1' ) ).toBe( "'\r=1+1" );
+	it( 'prefixes AND quotes a value that leads with a carriage return', () => {
+		// A leading CR is both a formula trigger (a spreadsheet strips it, then sees
+		// =) and a record separator, so it is single-quote prefixed and then
+		// field-quoted so it cannot break out of its cell.
+		const out = escapeCsvCell( '\r=1+1' );
+		expect( out ).toBe( '"\'\r=1+1"' );
+		expect( out.startsWith( '"' ) ).toBe( true );
 	} );
 
-	it( 'quotes a value that leads with a newline so it cannot break out of its cell', () => {
-		// A leading newline is not in the prefix set, but the field-quoting pass
-		// wraps it in double quotes, so the payload stays inside one cell rather
-		// than starting a new record a spreadsheet would then evaluate.
+	it( 'prefixes AND quotes a value that leads with a newline so it cannot break out of its cell', () => {
+		// A leading newline is both a formula trigger and a record separator: it is
+		// single-quote prefixed, then the field-quoting pass wraps it in double
+		// quotes so the payload stays inside one cell rather than starting a new
+		// record a spreadsheet would then evaluate.
 		const out = escapeCsvCell( '\n=1+1' );
-		expect( out ).toBe( '"\n=1+1"' );
+		expect( out ).toBe( '"\'\n=1+1"' );
 		expect( out.startsWith( '"' ) ).toBe( true );
 	} );
 
@@ -69,6 +75,13 @@ describe( 'escapeCsvCell — formula-injection guard', () => {
 
 		it( 'quotes (but does not formula-prefix) a plain value containing a comma', () => {
 			expect( escapeCsvCell( 'Mug, Blue' ) ).toBe( '"Mug, Blue"' );
+		} );
+
+		it( 'quotes (but does not formula-prefix) a plain value containing an interior carriage return', () => {
+			// An interior CR is not a formula trigger (it does not lead the value),
+			// but it is a record separator, so it must be field-quoted to keep the
+			// value inside a single cell.
+			expect( escapeCsvCell( 'Mug\rBlue' ) ).toBe( '"Mug\rBlue"' );
 		} );
 
 		it( 'doubles embedded quotes in a plain value', () => {

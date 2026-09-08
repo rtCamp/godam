@@ -45,10 +45,10 @@ export const sourceLabel = ( value ) => SOURCE_LABELS[ value ] || value;
  */
 export function escapeCsvCell( value ) {
 	let str = String( value );
-	if ( /^[=+\-@\t\r]/.test( str ) ) {
+	if ( /^[=+\-@\t\r\n]/.test( str ) ) {
 		str = `'${ str }`;
 	}
-	return /["\n,]/.test( str ) ? `"${ str.replace( /"/g, '""' ) }"` : str;
+	return /["\n\r,]/.test( str ) ? `"${ str.replace( /"/g, '""' ) }"` : str;
 }
 
 /**
@@ -343,7 +343,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 		return () => clearTimeout( timer );
 	}, [ searchInput ] );
 
-	const { data, isFetching } = useFetchTopProductsQuery(
+	const { data, isFetching, isError, error } = useFetchTopProductsQuery(
 		{
 			siteUrl,
 			page,
@@ -708,7 +708,26 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 							) )
 						) }
 
-						{ ! isFetching && products.length === 0 && (
+						{ /* A failed request (transformResponse throws on status:error, so
+						    the query is rejected with data undefined) must show a distinct
+						    error, not the "No product activity yet" empty state, which
+						    would read as a real "no data" result. */ }
+						{ ! isFetching && isError && (
+							<tr>
+								<td colSpan="5">
+									<div className="godam-empty-state godam-empty-state--error" data-test-id="godam-top-products-error">
+										<p className="godam-empty-state__title">
+											{ __( 'Couldn’t load top products', 'godam' ) }
+										</p>
+										<p className="godam-empty-state__hint">
+											{ error?.message || __( 'Something went wrong loading this data. Please refresh the page to try again.', 'godam' ) }
+										</p>
+									</div>
+								</td>
+							</tr>
+						) }
+
+						{ ! isFetching && ! isError && products.length === 0 && (
 							<tr>
 								<td colSpan="5">
 									<div className="godam-empty-state">
