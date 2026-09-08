@@ -182,12 +182,16 @@ const Dashboard = () => {
 	// The switcher renders inside the active table's head (where its title would
 	// be), so there is no separate title bar and no duplicate heading. Null on
 	// non-Woo sites, where the table falls back to its own "Top Videos" heading.
+	// Plain toggle buttons rather than an ARIA tab widget: only one table renders
+	// at a time and there is no tabpanel/roving-tabIndex/arrow-key machinery, so a
+	// full role=tablist/role=tab pattern would be incomplete and misleading to a
+	// screen reader. aria-pressed on each button communicates the active choice,
+	// and role=group + aria-label names the pair.
 	const topTabSwitcher = hasWooProducts ? (
-		<div className="godam-top-tabs__nav" role="tablist" aria-label={ __( 'Top content', 'godam' ) }>
+		<div className="godam-top-tabs__nav" role="group" aria-label={ __( 'Top content', 'godam' ) }>
 			<button
 				type="button"
-				role="tab"
-				aria-selected={ topTab === 'videos' }
+				aria-pressed={ topTab === 'videos' }
 				className={ `godam-top-tabs__tab${ topTab === 'videos' ? ' is-active' : '' }` }
 				data-test-id="godam-top-tab-videos"
 				onClick={ () => setTopTab( 'videos' ) }
@@ -196,8 +200,7 @@ const Dashboard = () => {
 			</button>
 			<button
 				type="button"
-				role="tab"
-				aria-selected={ topTab === 'products' }
+				aria-pressed={ topTab === 'products' }
 				className={ `godam-top-tabs__tab${ topTab === 'products' ? ' is-active' : '' }` }
 				data-test-id="godam-top-tab-products"
 				onClick={ () => setTopTab( 'products' ) }
@@ -445,9 +448,19 @@ const Dashboard = () => {
 									analyticsDataFetched={ insightsMetrics }
 								/>
 
-								{ /* Engagement Rate is intentionally not shown on the dashboard;
-								    Average Engagement still appears on each video's own
-								    analytics page. */ }
+								<SingleMetrics
+									mode="dashboard"
+									metricType={ 'engagement-rate' }
+									label={ __( 'Engagement Rate', 'godam' ) }
+									tooltipText={ __(
+										'Average share of each video that viewers watched, across all plays.',
+										'godam',
+									) }
+									rangeActive={ insightsRangeActive }
+									deltaLabel={ insightsDeltaLabel }
+									dataLabel={ insightsCardLabel }
+									analyticsDataFetched={ insightsMetrics }
+								/>
 							</div>
 
 							{ /* WooCommerce metrics on their own row below the core Insights:
