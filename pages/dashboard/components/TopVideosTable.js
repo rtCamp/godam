@@ -26,20 +26,20 @@ const ANALYTICS_LINK = ( id ) => `admin.php?page=rtgodam_analytics&id=${ id }`;
 /**
  * Escape a value for a CSV cell.
  *
- * Guards against CSV formula injection: a cell beginning with =, +, -, @, tab or
- * CR is executed as a formula by Excel/Sheets, and video titles are user-settable.
- * Such values are prefixed with a single quote. The value is then quote-wrapped
- * when it contains a double quote, comma, or newline.
+ * Guards against CSV formula injection: a cell beginning with =, +, -, @, tab,
+ * CR or LF is executed as a formula by Excel/Sheets, and video titles are
+ * user-settable. Such values are prefixed with a single quote. The value is then
+ * quote-wrapped when it contains a double quote, comma, newline, or carriage return.
  *
  * @param {*} value Raw cell value.
  * @return {string} CSV-safe field.
  */
 function escapeCsvCell( value ) {
 	let str = String( value );
-	if ( /^[=+\-@\t\r]/.test( str ) ) {
+	if ( /^[=+\-@\t\r\n]/.test( str ) ) {
 		str = `'${ str }`;
 	}
-	return /["\n,]/.test( str ) ? `"${ str.replace( /"/g, '""' ) }"` : str;
+	return /["\n\r,]/.test( str ) ? `"${ str.replace( /"/g, '""' ) }"` : str;
 }
 
 /**
