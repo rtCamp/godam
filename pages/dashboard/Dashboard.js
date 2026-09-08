@@ -15,6 +15,7 @@ import { info } from '@wordpress/icons';
  */
 import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
+import AnalyticsSectionError from '../shared/AnalyticsSectionError';
 import { generateCountryHeatmap } from '../analytics/helper';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
@@ -235,7 +236,7 @@ const Dashboard = () => {
 	// unique-viewer count from the microservice, so the gauge shows real numbers
 	// in every range (not just All Time).
 	const [ gaugeRange, setGaugeRange ] = useState( { startDate: null, endDate: null } );
-	const { data: gaugeMetrics } = useFetchDashboardMetricsQuery(
+	const { data: gaugeMetrics, isError: isGaugeError, refetch: refetchGauge } = useFetchDashboardMetricsQuery(
 		{
 			siteUrl,
 			...( gaugeRange.startDate ? { startDate: gaugeRange.startDate } : {} ),
@@ -248,7 +249,7 @@ const Dashboard = () => {
 	// the microservice return per-card % deltas (vs the previous equal window);
 	// all-time returns them null, so the delta badges stay hidden.
 	const [ insightsRange, setInsightsRange ] = useState( { startDate: null, endDate: null } );
-	const { data: insightsMetrics } = useFetchDashboardMetricsQuery(
+	const { data: insightsMetrics, isError: isInsightsError, refetch: refetchInsights } = useFetchDashboardMetricsQuery(
 		{
 			siteUrl,
 			...( insightsRange.startDate ? { startDate: insightsRange.startDate } : {} ),
@@ -266,6 +267,25 @@ const Dashboard = () => {
 		insightsSpanDays,
 	);
 	const insightsCardLabel = insightsRangeActive ? triggerLabelFor( insightsRange ) : __( 'All time', 'godam' );
+
+	// Scoped error states for the per-card range queries. Without these a
+	// range-scoped error made the whole Insights group vanish (cards return
+	// null on missing data) or read a fake 0, with NO notice — the top-level
+	// `analyticsUnreachable` only watches the all-time primary query. We instead
+	// surface the failure in-place, the way PlacementFunnelCard already does.
+	//
+	// Two levels, matching what the service now returns:
+	//   * full error  — the whole request failed (status:error, or a hard RTK
+	//     error): the entire section (KPIs + Woo cards) can't be trusted.
+	//   * Woo unavailable — the service served the core rollup KPIs but reported
+	//     the heavy live/Woo sections in `unavailable_sections` (a partial
+	//     degradation): the KPIs still render; only the Woo cards are unavailable.
+	const hasUnavailableSections = ( metrics ) =>
+		Array.isArray( metrics?.unavailable_sections ) && metrics.unavailable_sections.length > 0;
+
+	const insightsFullError = ! shouldSkipAnalytics && ( isInsightsError || !! insightsMetrics?.errorType );
+	const insightsWooUnavailable = ! shouldSkipAnalytics && ! insightsFullError && hasUnavailableSections( insightsMetrics );
+	const gaugeFullError = ! shouldSkipAnalytics && ( isGaugeError || !! gaugeMetrics?.errorType );
 
 	// Skip secondary queries until the primary metrics call has returned without an error.
 	// This prevents parallel requests being sent when the server rejects the API key.
@@ -301,7 +321,7 @@ const Dashboard = () => {
 		// per-card range (gaugeMetrics). generateCountryHeatmap clears both
 		// containers before drawing, so it is safe to re-run when the range
 		// changes; it shows an empty-state placeholder when there is no data.
-		if ( gaugeMetrics ) {
+		if ( gaugeMetrics && ! gaugeFullError ) {
 			const interval = setInterval( () => {
 				const mapContainer = document.querySelector( '#map-container' );
 				const tableContainer = document.querySelector( '#table-container' );
@@ -317,7 +337,7 @@ const Dashboard = () => {
 
 			return () => clearInterval( interval );
 		}
-	}, [ gaugeMetrics ] );
+	}, [ gaugeMetrics, gaugeFullError ] );
 
 	useEffect( () => {
 		const checkExist = setInterval( () => {
@@ -381,14 +401,23 @@ const Dashboard = () => {
 								testIdPrefix="godam-dashboard-gauge-daterange"
 							/>
 						</div>
-						<ViewersGauge
-							plays={ gaugeMetrics?.plays ?? 0 }
-							uniqueViewers={ gaugeMetrics?.unique_viewers ?? null }
-						/>
-						<div className="country-views">
-							<div className="country-views-map" id="map-container"></div>
-							<div className="country-views-table" id="table-container"></div>
-						</div>
+						{ gaugeFullError ? (
+							<AnalyticsSectionError
+								onRetry={ refetchGauge }
+								testId="godam-dashboard-gauge-error"
+							/>
+						) : (
+							<>
+								<ViewersGauge
+									plays={ gaugeMetrics?.plays ?? 0 }
+									uniqueViewers={ gaugeMetrics?.unique_viewers ?? null }
+								/>
+								<div className="country-views">
+									<div className="country-views-map" id="map-container"></div>
+									<div className="country-views-table" id="table-container"></div>
+								</div>
+							</>
+						) }
 					</div>
 
 					{ /* Right column — Insights KPIs + Playback Performance. */ }
@@ -402,85 +431,104 @@ const Dashboard = () => {
 									testIdPrefix="godam-dashboard-insights-daterange"
 								/>
 							</div>
-							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-wrap lg:[&>*]:grow lg:[&>*]:basis-40">
-
-								<SingleMetrics
-									mode="dashboard"
-									metricType="total-videos"
-									label={ __( 'Active Videos', 'godam' ) }
-									tooltipText={ __(
-										'Number of unique videos that received user interactions each day, such as views or plays.',
-										'godam',
-									) }
-									rangeActive={ insightsRangeActive }
-									deltaLabel={ insightsDeltaLabel }
-									dataLabel={ insightsCardLabel }
-									analyticsDataFetched={ {
-										total_videos: insightsMetrics?.total_videos ?? 0,
-									} }
+							{ insightsFullError ? (
+								<AnalyticsSectionError
+									onRetry={ refetchInsights }
+									testId="godam-dashboard-insights-error"
 								/>
+							) : (
+								<>
+									<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-wrap lg:[&>*]:grow lg:[&>*]:basis-40">
 
-								<SingleMetrics
-									mode="dashboard"
-									metricType={ 'play-rate' }
-									label={ __( 'Avg. Play Rate', 'godam' ) }
-									tooltipText={ __(
-										'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
-										'godam',
-									) }
-									rangeActive={ insightsRangeActive }
-									deltaLabel={ insightsDeltaLabel }
-									dataLabel={ insightsCardLabel }
-									analyticsDataFetched={ insightsMetrics }
-								/>
+										<SingleMetrics
+											mode="dashboard"
+											metricType="total-videos"
+											label={ __( 'Active Videos', 'godam' ) }
+											tooltipText={ __(
+												'Number of unique videos that received user interactions each day, such as views or plays.',
+												'godam',
+											) }
+											rangeActive={ insightsRangeActive }
+											deltaLabel={ insightsDeltaLabel }
+											dataLabel={ insightsCardLabel }
+											analyticsDataFetched={ {
+												total_videos: insightsMetrics?.total_videos ?? 0,
+											} }
+										/>
 
-								<SingleMetrics
-									mode="dashboard"
-									metricType={ 'watch-time' }
-									label={ __( 'Watch Time', 'godam' ) }
-									tooltipText={ __(
-										'Total time the video has been watched, aggregated across all plays',
-										'godam',
-									) }
-									rangeActive={ insightsRangeActive }
-									deltaLabel={ insightsDeltaLabel }
-									dataLabel={ insightsCardLabel }
-									analyticsDataFetched={ insightsMetrics }
-								/>
+										<SingleMetrics
+											mode="dashboard"
+											metricType={ 'play-rate' }
+											label={ __( 'Avg. Play Rate', 'godam' ) }
+											tooltipText={ __(
+												'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
+												'godam',
+											) }
+											rangeActive={ insightsRangeActive }
+											deltaLabel={ insightsDeltaLabel }
+											dataLabel={ insightsCardLabel }
+											analyticsDataFetched={ insightsMetrics }
+										/>
 
-								<SingleMetrics
-									mode="dashboard"
-									metricType={ 'engagement-rate' }
-									label={ __( 'Engagement Rate', 'godam' ) }
-									tooltipText={ __(
-										'Average share of each video that viewers watched, across all plays.',
-										'godam',
-									) }
-									rangeActive={ insightsRangeActive }
-									deltaLabel={ insightsDeltaLabel }
-									dataLabel={ insightsCardLabel }
-									analyticsDataFetched={ insightsMetrics }
-								/>
-							</div>
+										<SingleMetrics
+											mode="dashboard"
+											metricType={ 'watch-time' }
+											label={ __( 'Watch Time', 'godam' ) }
+											tooltipText={ __(
+												'Total time the video has been watched, aggregated across all plays',
+												'godam',
+											) }
+											rangeActive={ insightsRangeActive }
+											deltaLabel={ insightsDeltaLabel }
+											dataLabel={ insightsCardLabel }
+											analyticsDataFetched={ insightsMetrics }
+										/>
 
-							{ /* WooCommerce metrics on their own row below the core Insights:
-							    Video-to-Cart and Video-to-Purchase side by side (per the
-							    design), each with its range-aware trend badge. Woo-gated:
-							    both would otherwise read a permanent, misleading "0" on a
-							    non-Woo store. */ }
-							{ hasWooProducts && (
-								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-col items-stretch flex-wrap gap-4 mt-4 lg:[&>*]:grow lg:[&>*]:basis-40">
-									<VideoToCartCard
-										videoToCart={ insightsMetrics?.video_to_cart }
-										dataLabel={ insightsCardLabel }
-										deltaLabel={ insightsDeltaLabel }
-									/>
-									<VideoToPurchaseCard
-										videoToPurchase={ insightsMetrics?.video_to_purchase }
-										dataLabel={ insightsCardLabel }
-										deltaLabel={ insightsDeltaLabel }
-									/>
-								</div>
+										<SingleMetrics
+											mode="dashboard"
+											metricType={ 'engagement-rate' }
+											label={ __( 'Engagement Rate', 'godam' ) }
+											tooltipText={ __(
+												'Average share of each video that viewers watched, across all plays.',
+												'godam',
+											) }
+											rangeActive={ insightsRangeActive }
+											deltaLabel={ insightsDeltaLabel }
+											dataLabel={ insightsCardLabel }
+											analyticsDataFetched={ insightsMetrics }
+										/>
+									</div>
+
+									{ /* WooCommerce metrics on their own row below the core Insights:
+									    Video-to-Cart and Video-to-Purchase side by side (per the
+									    design), each with its range-aware trend badge. Woo-gated:
+									    both would otherwise read a permanent, misleading "0" on a
+									    non-Woo store. When the service reports these live sections
+									    unavailable (a partial degradation, core KPIs still shown),
+									    surface a scoped error instead of vanishing the cards. */ }
+									{ hasWooProducts && ( insightsWooUnavailable ? (
+										<div className="analytics-info-container mt-4">
+											<AnalyticsSectionError
+												onRetry={ refetchInsights }
+												testId="godam-dashboard-woo-error"
+												message={ __( 'WooCommerce metrics couldn’t load. This is usually temporary.', 'godam' ) }
+											/>
+										</div>
+									) : (
+										<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-col items-stretch flex-wrap gap-4 mt-4 lg:[&>*]:grow lg:[&>*]:basis-40">
+											<VideoToCartCard
+												videoToCart={ insightsMetrics?.video_to_cart }
+												dataLabel={ insightsCardLabel }
+												deltaLabel={ insightsDeltaLabel }
+											/>
+											<VideoToPurchaseCard
+												videoToPurchase={ insightsMetrics?.video_to_purchase }
+												dataLabel={ insightsCardLabel }
+												deltaLabel={ insightsDeltaLabel }
+											/>
+										</div>
+									) ) }
+								</>
 							) }
 
 							{ /* GA4 output is a godam-for-woo feature (it pushes the
@@ -509,8 +557,12 @@ const Dashboard = () => {
 
 				{ /* Video-Attributed Revenue (WooCommerce only): the headline revenue
 				    figure, split Direct/Assisted, with account-wide Influenced shown
-				    separately. Full-width card, single store currency. */ }
-				{ hasWooProducts && (
+				    separately. Full-width card, single store currency. Hidden when the
+				    Insights request failed or the service reported the Woo/live
+				    sections unavailable — the scoped notice in the Insights card
+				    already explains it, so these don't read a fake 0 or vanish
+				    unexplained. */ }
+				{ hasWooProducts && ! insightsFullError && ! insightsWooUnavailable && (
 					<RevenueCard
 						revenue={ insightsMetrics?.revenue }
 						dataLabel={ insightsCardLabel }
@@ -519,7 +571,7 @@ const Dashboard = () => {
 				) }
 
 				{ /* Account-wide Play-to-Cart-to-Purchase funnel (WooCommerce only). */ }
-				{ hasWooProducts && (
+				{ hasWooProducts && ! insightsFullError && ! insightsWooUnavailable && (
 					<PurchaseFunnelCard
 						funnel={ insightsMetrics?.video_funnel }
 						dataLabel={ insightsCardLabel }
