@@ -88,11 +88,33 @@ function DropRow( { advanced, lostLabel, lostIsWarning } ) {
  * flags the range as recent enough that purchase attribution is still settling.
  *
  * @param {Object} props
- * @param {Object} [props.funnel]    The video_funnel payload { stages, still_counting }.
- * @param {string} [props.dataLabel] The active range label (e.g. "Last 30 days").
- * @param {string} [props.scope]     'account' (default) or 'video' — sets the top descriptor + subtitle.
+ * @param {Object} [props.funnel]       The video_funnel payload { stages, still_counting }.
+ * @param {string} [props.dataLabel]    The active range label (e.g. "Last 30 days").
+ * @param {string} [props.scope]        'account' (default) or 'video' — sets the top descriptor + subtitle.
+ * @param {Object} [props.rangeControl] A date-range picker element rendered in the card head; replaces the plain dataLabel pill when present.
  */
-export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'account' } ) {
+export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'account', rangeControl } ) {
+	// A query error comes back as an { error, message } object (the proxy
+	// normalises a microservice failure to 200 + status:error). Surface it in
+	// place, keeping the range picker, rather than vanishing. Checked before the
+	// absent-payload guard below because { error: true } has no `stages`.
+	if ( funnel && funnel.error ) {
+		return (
+			<div className="godam-card godam-funnel-card" data-test-id="godam-purchase-funnel-card">
+				<div className="godam-card__head">
+					<div className="flex items-center gap-2.5">
+						<h2>{ __( 'Purchase Funnel', 'godam' ) }</h2>
+						<span className="text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]">Woo</span>
+					</div>
+					{ rangeControl }
+				</div>
+				<p className="text-[13px] text-[#b32d2e]" data-test-id="godam-purchase-funnel-error">
+					{ __( 'Couldn’t load the funnel for this range. Please try again.', 'godam' ) }
+				</p>
+			</div>
+		);
+	}
+
 	// Render nothing when the payload is absent, so the card never asserts an
 	// empty funnel for "metric unavailable".
 	if ( ! funnel || ! Array.isArray( funnel.stages ) || funnel.stages.length < 3 ) {
@@ -138,9 +160,11 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 					<span className="text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]">Woo</span>
 					<span className="text-[10px] font-bold leading-none px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#92400E] tracking-wide">{ __( 'NEW', 'godam' ) }</span>
 				</div>
-				{ dataLabel && (
-					<span className="text-[13px] text-[#50575e] border border-[#e2e4e7] rounded-md px-3 py-1">{ dataLabel }</span>
-				) }
+				{ rangeControl
+					? rangeControl
+					: ( dataLabel && (
+						<span className="text-[13px] text-[#50575e] border border-[#e2e4e7] rounded-md px-3 py-1">{ dataLabel }</span>
+					) ) }
 			</div>
 
 			<p className="text-[13px] text-zinc-500 -mt-1 mb-5">{ subtitle }</p>

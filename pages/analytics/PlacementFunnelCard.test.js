@@ -70,4 +70,31 @@ describe( 'PlacementFunnelCard', () => {
 		expect( html ).toContain( 'godam-placement-funnel-error' );
 		expect( html ).toContain( 'Could not load placement data' );
 	} );
+
+	it( 'renders rangeControl in the head instead of the dataLabel pill when given', () => {
+		useFetchPlacementFunnelsQuery.mockReturnValue( { data: DATA, isFetching: false } );
+		const html = renderToString(
+			<PlacementFunnelCard
+				siteUrl="x"
+				dataLabel="Last 30 days"
+				rangeControl={ <span data-test-id="my-picker">PICKER</span> }
+			/>,
+		);
+		expect( html ).toContain( 'my-picker' );
+		expect( html ).toContain( 'PICKER' );
+		// The plain "Last 30 days" pill is replaced by the picker.
+		expect( html ).not.toContain( 'Last 30 days' );
+	} );
+
+	it( 'passes its own startDate/endDate through to the query (own range, not the shared one)', () => {
+		useFetchPlacementFunnelsQuery.mockReturnValue( { data: DATA, isFetching: false } );
+		renderToString(
+			<PlacementFunnelCard siteUrl="x" startDate="2026-01-01" endDate="2026-01-31" />,
+		);
+		expect( useFetchPlacementFunnelsQuery ).toHaveBeenLastCalledWith( {
+			siteUrl: 'x',
+			startDate: '2026-01-01',
+			endDate: '2026-01-31',
+		} );
+	} );
 } );

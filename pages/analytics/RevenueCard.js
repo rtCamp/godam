@@ -29,11 +29,34 @@ const COLOR_ASSISTED = '#93c5fd';
  * shown per video (the payload omits it there).
  *
  * @param {Object} props
- * @param {Object} [props.revenue]    { revenue_minor, currency, excluded_orders, direct_minor, assisted_minor, influenced_minor, change }.
- * @param {string} [props.dataLabel]  The active range label (e.g. "All time").
- * @param {string} [props.deltaLabel] Label for the trend badge, e.g. "vs previous 7 days".
+ * @param {Object} [props.revenue]      { revenue_minor, currency, excluded_orders, direct_minor, assisted_minor, influenced_minor, change }.
+ * @param {string} [props.dataLabel]    The active range label (e.g. "All time").
+ * @param {string} [props.deltaLabel]   Label for the trend badge, e.g. "vs previous 7 days".
+ * @param {Object} [props.rangeControl] A date-range picker element rendered in the card head; replaces the plain dataLabel pill when present.
  */
-export default function RevenueCard( { revenue, dataLabel, deltaLabel } ) {
+export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeControl } ) {
+	// A query error comes back as an { error, message } object (the WP proxy
+	// normalises a microservice failure to HTTP 200 + status:error). Surface it in
+	// place, keeping the range picker so the viewer can retry, rather than vanishing
+	// or rendering the marker as a revenue payload. Checked BEFORE the null/zero
+	// guards below because { error: true } is truthy but has no revenue_minor.
+	if ( revenue && revenue.error ) {
+		return (
+			<div className="godam-card godam-revenue-card" data-test-id="godam-revenue-card">
+				<div className="godam-card__head">
+					<div className="flex items-center gap-2.5">
+						<h2>{ __( 'Video-Attributed Revenue', 'godam' ) }</h2>
+						<span className="text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]">Woo</span>
+					</div>
+					{ rangeControl }
+				</div>
+				<p className="text-[13px] text-[#b32d2e]" data-test-id="godam-revenue-error">
+					{ __( 'Couldn’t load revenue for this range. Please try again.', 'godam' ) }
+				</p>
+			</div>
+		);
+	}
+
 	// Absent payload (an analytics service that predates the revenue read, or a
 	// non-Woo store where no base currency is passed) -> render nothing, so the
 	// card never asserts a misleading "0" for "metric unavailable". A present
@@ -88,9 +111,11 @@ export default function RevenueCard( { revenue, dataLabel, deltaLabel } ) {
 						) }
 					/>
 				</div>
-				{ dataLabel && (
-					<span className="text-[13px] text-[#50575e] border border-[#e2e4e7] rounded-md px-3 py-1">{ dataLabel }</span>
-				) }
+				{ rangeControl
+					? rangeControl
+					: ( dataLabel && (
+						<span className="text-[13px] text-[#50575e] border border-[#e2e4e7] rounded-md px-3 py-1">{ dataLabel }</span>
+					) ) }
 			</div>
 
 			<div className="flex gap-6 max-lg:flex-col">

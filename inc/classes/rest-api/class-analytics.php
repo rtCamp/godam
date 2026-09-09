@@ -258,6 +258,45 @@ class Analytics extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/revenue-summary',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_revenue_summary' ),
+					// Admin-dashboard read; gated like the sibling analytics routes
+					// (revenue must not be readable without auth).
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/video-funnel',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_video_funnel' ),
+					// Admin-dashboard read; gated like the sibling analytics routes.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/layer-analytics',
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
@@ -332,6 +371,8 @@ class Analytics extends Base {
 			'/' . $this->rest_base . '/top-videos',
 			'/' . $this->rest_base . '/top-products',
 			'/' . $this->rest_base . '/placement-funnels',
+			'/' . $this->rest_base . '/revenue-summary',
+			'/' . $this->rest_base . '/video-funnel',
 		);
 		foreach ( $routes as &$route ) {
 			if ( in_array( $route['route'], $range_routes, true ) ) {
@@ -1354,6 +1395,159 @@ class Analytics extends Base {
 	}
 
 	/**
+	 * Video-Attributed Revenue card data, scoped to the card's own date range.
+	 *
+	 * Base-currency revenue with the Direct / Assisted split and the Influenced
+	 * figure. Standalone from the Insights metrics so the card carries its own
+	 * range picker; the store base currency is injected server-side.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_revenue_summary( WP_REST_Request $request ) {
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
+		$params = $this->append_range_params(
+			$request,
+			array(
+				'site_url'      => $site_url,
+				'account_token' => $account_token,
+				'api_key'       => $api_key,
+			)
+		);
+		// Single store currency: pass the base currency so the service sums only it
+		// and counts the rest as excluded. Absent (no WooCommerce) -> the service
+		// returns revenue null and the card hides.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$params['base_currency'] = $base_currency;
+		}
+		$endpoint = add_query_arg(
+			$params,
+			RTGODAM_ANALYTICS_BASE . '/dashboard/revenue-summary/'
+		);
+
+		$response = wp_remote_get( $endpoint );
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) ) ? $body['detail'] : __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $detail,
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'revenue' => $body['revenue'] ?? null,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Purchase Funnel card data, scoped to the card's own date range.
+	 *
+	 * The account-wide Play to Cart to Purchase funnel (nested cohorts, Direct /
+	 * Assisted split within the added stage). Standalone so the card carries its
+	 * own range picker.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_video_funnel( WP_REST_Request $request ) {
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
+		$params   = $this->append_range_params(
+			$request,
+			array(
+				'site_url'      => $site_url,
+				'account_token' => $account_token,
+				'api_key'       => $api_key,
+			)
+		);
+		$endpoint = add_query_arg(
+			$params,
+			RTGODAM_ANALYTICS_BASE . '/dashboard/video-funnel/'
+		);
+
+		$response = wp_remote_get( $endpoint );
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) ) ? $body['detail'] : __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $detail,
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'video_funnel' => $body['video_funnel'] ?? null,
+			),
+			200
+		);
+	}
+
+	/**
 	 * Proxy /dashboard/top-products/ from the analytics microservice, then hydrate
 	 * each product row with its current WooCommerce name, image and permalink,
 	 * resolved from product_id. Display fields live in WooCommerce, not the
@@ -1464,6 +1658,13 @@ class Analytics extends Base {
 
 		$top_products = is_array( $body ) ? ( $body['top_products'] ?? array() ) : array();
 
+		// Product thumbnails are media-library attachments, so the per-product
+		// wp_get_attachment_image_url() calls below must run inside the centralized
+		// attachment-lookup context (offloaded/CDN media resolve there). Wrapped
+		// once around the whole loop, mirroring the Top Videos thumbnail loop,
+		// rather than switching context per product.
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		foreach ( $top_products as &$product ) {
 			$product_id = intval( $product['product_id'] ?? 0 );
 			$wc_product = ( $product_id && function_exists( 'wc_get_product' ) ) ? wc_get_product( $product_id ) : false;
@@ -1499,6 +1700,8 @@ class Analytics extends Base {
 			}
 		}
 		unset( $product );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return new WP_REST_Response(
 			array(
