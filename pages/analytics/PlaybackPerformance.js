@@ -351,7 +351,10 @@ export default function PlaybackPerformanceDashboard( {
 			.domain( [ 'engagement_rate', 'play_rate' ] )
 			.range( [ METRIC_COLORS.engagement_rate, METRIC_COLORS.play_rate ] );
 
-		// Create a tooltip div
+		// Create a tooltip div. Remove any prior one first: the ResizeObserver
+		// below re-runs renderChart without a cleanup, so appending unconditionally
+		// leaked a fresh #chart-tooltip (duplicate id) on every resize.
+		d3.select( 'body' ).select( '#chart-tooltip' ).remove();
 		const tooltip = d3
 			.select( 'body' )
 			.append( 'div' )
@@ -445,7 +448,10 @@ export default function PlaybackPerformanceDashboard( {
 					d3.select( this ).attr( 'r', 4 ).attr( 'stroke-width', 1 );
 					vertical.style( 'opacity', 0 );
 				} )
-				.on( 'mousemove', function() {
+				.on( 'mousemove', function( event ) {
+					// Take the event from the handler arg (d3 passes it), not the
+					// deprecated global `window.event` — which is undefined in Firefox,
+					// so d3.pointer() threw and the follow-line broke there.
 					const [ mouseX ] = d3.pointer( event );
 					vertical.attr( 'x1', mouseX ).attr( 'x2', mouseX );
 				} );

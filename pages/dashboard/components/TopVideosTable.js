@@ -105,7 +105,7 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 		return () => clearTimeout( timer );
 	}, [ searchInput ] );
 
-	const { data, isFetching } = useFetchTopVideosQuery(
+	const { data, isFetching, isError, error } = useFetchTopVideosQuery(
 		{
 			siteUrl,
 			page,
@@ -168,56 +168,92 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 
 	const handleExportCSV = async () => {
 		setIsExporting( true );
+		// try/finally so the button never sticks on "Exporting…" if anything below
+		// (a fetch, Blob/URL creation, DOM ops) throws.
+		try {
+			// Export the full result set for the current search/filter — not just the
+			// page on screen. The microservice caps `limit` at 100, so page through it.
+			const pageCount = Math.max( 1, Math.ceil( ( totalItems || videos.length ) / EXPORT_PAGE_SIZE ) );
 
-		// Export the full result set for the current search/filter — not just the
-		// page on screen. The microservice caps `limit` at 100, so page through it.
-		// A failed page resolves to empty rather than rejecting the whole export.
-		const pageCount = Math.max( 1, Math.ceil( ( totalItems || videos.length ) / EXPORT_PAGE_SIZE ) );
-		const results = await Promise.all(
-			Array.from( { length: pageCount }, ( _, i ) =>
-				fetchForExport( {
-					siteUrl,
-					page: i + 1,
-					limit: EXPORT_PAGE_SIZE,
-					search,
-					hideDeleted: ! showDeleted,
-					startDate: dateRange.startDate,
-					endDate: dateRange.endDate,
-				} ).unwrap().catch( () => ( { videos: [] } ) ),
-			),
-		);
-		const fetched = results.flatMap( ( result ) => result?.videos || [] );
-		// Fall back to the rows already on screen if the full fetch returned nothing.
-		const exportVideos = fetched.length ? fetched : videos;
+			// Bounded concurrency rather than one unbounded Promise.all: a large
+			// library (e.g. 50k videos -> 500 pages) would otherwise fire hundreds of
+			// simultaneous /top-videos requests, each opening an upstream HTTP call and
+			// risking a self-DoS of the proxy and analytics service. Mirrors Top Products.
+			const CONCURRENCY = 4;
+			const pageVideos = new Array( pageCount );
+			let failedPages = 0;
+			let cursor = 0;
+			const worker = async () => {
+				while ( cursor < pageCount ) {
+					const i = cursor++;
+					try {
+						const res = await fetchForExport( {
+							siteUrl,
+							page: i + 1,
+							limit: EXPORT_PAGE_SIZE,
+							search,
+							hideDeleted: ! showDeleted,
+							startDate: dateRange.startDate,
+							endDate: dateRange.endDate,
+						} ).unwrap();
+						pageVideos[ i ] = res?.videos || [];
+					} catch ( e ) {
+						// Record the failure instead of silently dropping the page, so the
+						// user is told the CSV is incomplete rather than getting a short
+						// file with no indication.
+						failedPages++;
+						pageVideos[ i ] = [];
+					}
+				}
+			};
+			await Promise.all(
+				Array.from( { length: Math.min( CONCURRENCY, pageCount ) }, () => worker() ),
+			);
 
-		const headers = [
-			__( 'Title', 'godam' ),
-			__( 'Media ID', 'godam' ),
-			__( 'Size', 'godam' ),
-			__( 'Play Rate', 'godam' ),
-			__( 'Total Plays', 'godam' ),
-			__( 'Watch Time', 'godam' ),
-			__( 'Engagement Rate', 'godam' ),
-			__( 'Conversion Rate', 'godam' ),
-			__( 'Placements', 'godam' ),
-		];
+			const fetched = pageVideos.flat();
+			// Fall back to the rows already on screen if the full fetch returned nothing.
+			const exportVideos = fetched.length ? fetched : videos;
 
-		const csvContent = [ headers, ...exportVideos.map( buildCsvRow ) ]
-			.map( ( row ) => row.map( escapeCsvCell ).join( ',' ) )
-			.join( '\n' );
+			const headers = [
+				__( 'Title', 'godam' ),
+				__( 'Media ID', 'godam' ),
+				__( 'Size', 'godam' ),
+				__( 'Play Rate', 'godam' ),
+				__( 'Total Plays', 'godam' ),
+				__( 'Watch Time', 'godam' ),
+				__( 'Engagement Rate', 'godam' ),
+				__( 'Conversion Rate', 'godam' ),
+				__( 'Placements', 'godam' ),
+			];
 
-		const blob = new Blob( [ csvContent ], { type: 'text/csv;charset=utf-8;' } );
-		const url = URL.createObjectURL( blob );
-		const link = document.createElement( 'a' );
-		link.setAttribute( 'href', url );
-		link.setAttribute( 'download', 'godam-video-analytics.csv' );
-		link.style.display = 'none';
-		document.body.appendChild( link );
-		link.click();
-		document.body.removeChild( link );
-		URL.revokeObjectURL( url );
+			const csvContent = [ headers, ...exportVideos.map( buildCsvRow ) ]
+				.map( ( row ) => row.map( escapeCsvCell ).join( ',' ) )
+				.join( '\n' );
 
-		setIsExporting( false );
+			const blob = new Blob( [ csvContent ], { type: 'text/csv;charset=utf-8;' } );
+			const url = URL.createObjectURL( blob );
+			const link = document.createElement( 'a' );
+			link.setAttribute( 'href', url );
+			link.setAttribute( 'download', 'godam-video-analytics.csv' );
+			link.style.display = 'none';
+			document.body.appendChild( link );
+			link.click();
+			document.body.removeChild( link );
+			URL.revokeObjectURL( url );
+
+			if ( failedPages > 0 ) {
+				// eslint-disable-next-line no-alert
+				window.alert(
+					sprintf(
+						/* translators: %d: number of export pages that failed to load. */
+						__( 'Export is incomplete: %d page(s) could not be loaded, so some videos are missing from the CSV.', 'godam' ),
+						failedPages,
+					),
+				);
+			}
+		} finally {
+			setIsExporting( false );
+		}
 	};
 
 	return (
@@ -432,7 +468,25 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 							) )
 						) }
 
-						{ ! isFetching && videos.length === 0 && (
+						{ /* A backend error must read as an error, not the "No video plays
+						    yet" empty state, which would mislead as a real "no data"
+						    result. Mirrors Top Products. */ }
+						{ ! isFetching && isError && (
+							<tr>
+								<td colSpan="8">
+									<div className="godam-empty-state godam-empty-state--error" data-test-id="godam-top-videos-error">
+										<p className="godam-empty-state__title">
+											{ __( 'Couldn’t load top videos', 'godam' ) }
+										</p>
+										<p className="godam-empty-state__hint">
+											{ error?.message || __( 'Something went wrong loading this data. Please refresh the page to try again.', 'godam' ) }
+										</p>
+									</div>
+								</td>
+							</tr>
+						) }
+
+						{ ! isFetching && ! isError && videos.length === 0 && (
 							<tr>
 								<td colSpan="8">
 									<div className="godam-empty-state">

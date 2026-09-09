@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 /**
  * WordPress dependencies
@@ -249,7 +249,7 @@ const Dashboard = () => {
 	// the microservice return per-card % deltas (vs the previous equal window);
 	// all-time returns them null, so the delta badges stay hidden.
 	const [ insightsRange, setInsightsRange ] = useState( { startDate: null, endDate: null } );
-	const { data: insightsMetrics, isError: isInsightsError, refetch: refetchInsights } = useFetchDashboardMetricsQuery(
+	const { data: insightsMetrics, currentData: insightsCurrentData, isError: isInsightsError, refetch: refetchInsights } = useFetchDashboardMetricsQuery(
 		{
 			siteUrl,
 			...( insightsRange.startDate ? { startDate: insightsRange.startDate } : {} ),
@@ -257,16 +257,29 @@ const Dashboard = () => {
 		},
 		{ skip: shouldSkipAnalytics },
 	);
-	const insightsRangeActive = Boolean( insightsRange.startDate && insightsRange.endDate );
+
+	// The Insights labels must describe the numbers actually on screen. RTK Query
+	// retains the PREVIOUS range's `data` while a new range is fetching
+	// (`currentData` is undefined until the new data lands), so deriving the label
+	// straight from `insightsRange` would show the NEW range's label over the OLD
+	// range's retained numbers during a slow fetch. Track the range whose data is
+	// currently displayed (commit it once its data has arrived) and label from
+	// that, so label and numbers always change together.
+	const committedInsightsRangeRef = useRef( insightsRange );
+	if ( insightsCurrentData !== undefined ) {
+		committedInsightsRangeRef.current = insightsRange;
+	}
+	const displayedInsightsRange = insightsCurrentData !== undefined ? insightsRange : committedInsightsRangeRef.current;
+	const insightsRangeActive = Boolean( displayedInsightsRange.startDate && displayedInsightsRange.endDate );
 	const insightsSpanDays = insightsRangeActive
-		? Math.round( ( fromISO( insightsRange.endDate ) - fromISO( insightsRange.startDate ) ) / 86400000 ) + 1
+		? Math.round( ( fromISO( displayedInsightsRange.endDate ) - fromISO( displayedInsightsRange.startDate ) ) / 86400000 ) + 1
 		: 0;
 	const insightsDeltaLabel = sprintf(
 		/* translators: %d: number of days in the compared previous window. */
 		__( 'vs prev %d days', 'godam' ),
 		insightsSpanDays,
 	);
-	const insightsCardLabel = insightsRangeActive ? triggerLabelFor( insightsRange ) : __( 'All time', 'godam' );
+	const insightsCardLabel = insightsRangeActive ? triggerLabelFor( displayedInsightsRange ) : __( 'All time', 'godam' );
 
 	// Scoped error states for the per-card range queries. Without these a
 	// range-scoped error made the whole Insights group vanish (cards return
