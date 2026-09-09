@@ -28,9 +28,13 @@ import { __ } from '@wordpress/i18n';
  */
 import { formatClock } from '../../utils/time';
 
-// Player events that can move the playhead, change the duration, or extend the
-// buffered range — any of them means the stripe needs a fresh read.
-const READ_EVENTS = [ 'loadedmetadata', 'durationchange', 'timeupdate', 'seeking', 'seeked', 'progress' ];
+// Events that move the playhead — they refresh the current time (and, cheaply,
+// the duration). The rAF loop covers the same read at 60fps while playing.
+const TIME_EVENTS = [ 'timeupdate', 'seeking', 'seeked' ];
+
+// Events that change the duration or extend the buffered range. These fire
+// rarely, so buffered/duration are read here rather than on every frame.
+const RANGE_EVENTS = [ 'loadedmetadata', 'durationchange', 'progress', 'seeked' ];
 
 /**
  * Furthest buffered position, in seconds.
@@ -77,14 +81,38 @@ const PlayerProgressStripe = ( { player, isVisible = true } ) => {
 			return;
 		}
 
+		// Functional updates that return the previous value when nothing changed,
+		// so React bails out of the re-render. Duration and buffered barely move,
+		// so guarding them keeps the per-frame loop from churning renders — only
+		// the current time (which genuinely changes each frame) repaints.
+		const syncDuration = () => {
+			const total = player.duration();
+			const next = Number.isFinite( total ) && total > 0 ? total : 0;
+			setDuration( ( prev ) => ( prev === next ? prev : next ) );
+		};
+
+		const syncBuffered = () => {
+			const next = getBufferedEnd( player );
+			setBufferedEnd( ( prev ) => ( prev === next ? prev : next ) );
+		};
+
+		// Per-frame read: current time plus a guarded duration (cheap, and covers
+		// live streams whose duration grows during playback).
 		const read = () => {
 			if ( player.isDisposed() ) {
 				return;
 			}
-			const total = player.duration();
-			setDuration( Number.isFinite( total ) && total > 0 ? total : 0 );
 			setCurrentTime( player.currentTime() || 0 );
-			setBufferedEnd( getBufferedEnd( player ) );
+			syncDuration();
+		};
+
+		// A full read for event-driven updates, including the buffered range.
+		const readRange = () => {
+			if ( player.isDisposed() ) {
+				return;
+			}
+			syncDuration();
+			syncBuffered();
 		};
 
 		const tick = () => {
@@ -106,11 +134,12 @@ const PlayerProgressStripe = ( { player, isVisible = true } ) => {
 			read();
 		};
 
-		player.on( READ_EVENTS, read );
+		player.on( TIME_EVENTS, read );
+		player.on( RANGE_EVENTS, readRange );
 		player.on( 'play', startTracking );
 		player.on( [ 'pause', 'ended' ], stopTracking );
 
-		read();
+		readRange();
 		if ( ! player.paused() ) {
 			startTracking();
 		}
@@ -123,7 +152,8 @@ const PlayerProgressStripe = ( { player, isVisible = true } ) => {
 			// The player is disposed on unmount by its own effect; unbinding a
 			// disposed player throws, so only detach while it is still alive.
 			if ( ! player.isDisposed() ) {
-				player.off( READ_EVENTS, read );
+				player.off( TIME_EVENTS, read );
+				player.off( RANGE_EVENTS, readRange );
 				player.off( 'play', startTracking );
 				player.off( [ 'pause', 'ended' ], stopTracking );
 			}

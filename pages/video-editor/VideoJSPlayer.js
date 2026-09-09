@@ -105,10 +105,10 @@ const syncSkipButtons = ( controlBar, seconds ) => {
  */
 const syncBrandingIcon = ( controlBar, settings ) => {
 	const controlBarEl = controlBar.el();
-	const existing = controlBarEl.querySelector( '#branding-icon' );
+	const existingWrapper = controlBarEl.querySelector( '.vjs-custom-play-button' );
 
 	if ( ! settings.brandingIcon ) {
-		existing?.remove();
+		existingWrapper?.remove();
 		return;
 	}
 
@@ -119,18 +119,32 @@ const syncBrandingIcon = ( controlBar, settings ) => {
 		imageSrc = godamSettings.brandImage;
 	}
 
-	if ( existing ) {
-		if ( existing.getAttribute( 'src' ) !== imageSrc ) {
-			existing.src = imageSrc;
+	if ( existingWrapper ) {
+		const existingImg = existingWrapper.querySelector( '#branding-icon' );
+		if ( existingImg && existingImg.getAttribute( 'src' ) !== imageSrc ) {
+			existingImg.src = imageSrc;
 		}
 		return;
 	}
 
+	// Mirror the front end's `setupBrandingButton`: the logo must sit inside a
+	// `.vjs-control.vjs-custom-play-button` wrapper and carry the `branding-icon`
+	// class. The shared front-end sizing rule keys on exactly that
+	// (`.vjs-control.vjs-custom-play-button #branding-icon`, which clamps the
+	// image to the bar height), and the same selector sets `order: 8`. A bare
+	// `<img>` appended straight to the bar matches neither, so a large custom
+	// logo would render at its intrinsic size and in the wrong slot.
+	const wrapper = document.createElement( 'div' );
+	wrapper.className = 'vjs-control vjs-button vjs-custom-play-button';
+
 	const img = document.createElement( 'img' );
 	img.src = imageSrc;
 	img.id = 'branding-icon';
+	img.className = 'branding-icon';
 	img.alt = __( 'Branding', 'godam' );
-	controlBarEl.appendChild( img );
+
+	wrapper.appendChild( img );
+	controlBarEl.appendChild( wrapper );
 };
 
 export const VideoJS = ( props ) => {
@@ -222,17 +236,22 @@ export const VideoJS = ( props ) => {
 		}
 
 		// Vertical control bar (legacy option, not exposed in the Settings tab).
-		if ( 'vertical' === controlBarSettings.controlBarPosition ) {
-			controlBar.addClass( 'vjs-control-bar-vertical' );
-			for ( const control of controlBar.el().querySelectorAll( '.vjs-control' ) ) {
-				control.classList.add( 'vjs-control-vertical' );
-				if ( control.classList.contains( 'vjs-volume-panel' ) ) {
-					control.classList.add( 'vjs-volume-panel-vertical' );
-					control.classList.remove( 'vjs-volume-panel-horizontal' );
-				}
-				if ( control.classList.contains( 'vjs-volume-horizontal' ) ) {
-					control.classList.add( 'vjs-volume-vertical' );
-				}
+		// Toggle rather than one-way add, so flipping the option back to horizontal
+		// mid-session reverts the layout instead of leaving the bar stuck vertical.
+		const isVerticalBar = 'vertical' === controlBarSettings.controlBarPosition;
+		controlBar.toggleClass( 'vjs-control-bar-vertical', isVerticalBar );
+		for ( const control of controlBar.el().querySelectorAll( '.vjs-control' ) ) {
+			control.classList.toggle( 'vjs-control-vertical', isVerticalBar );
+			if ( control.classList.contains( 'vjs-volume-panel' ) ) {
+				control.classList.toggle( 'vjs-volume-panel-vertical', isVerticalBar );
+				control.classList.toggle( 'vjs-volume-panel-horizontal', ! isVerticalBar );
+			}
+			if (
+				control.classList.contains( 'vjs-volume-horizontal' ) ||
+				control.classList.contains( 'vjs-volume-vertical' )
+			) {
+				control.classList.toggle( 'vjs-volume-vertical', isVerticalBar );
+				control.classList.toggle( 'vjs-volume-horizontal', ! isVerticalBar );
 			}
 		}
 	}, [ controlBarSettings ] );

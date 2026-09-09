@@ -131,8 +131,12 @@
 			pointer-events: none;
 		}
 
+		// `:focus-within` brings keyboard users the same reveal as hover/scrubbing —
+		// the transparent range is what receives focus, so focusing it thickens the
+		// track and shows the handle instead of leaving no visible feedback at all.
 		&:hover,
-		&.is-scrubbing {
+		&.is-scrubbing,
+		&:focus-within {
 
 			.godam-ve-stripe__track {
 				height: 5px;
@@ -141,6 +145,19 @@
 			.godam-ve-stripe__handle {
 				opacity: 1;
 			}
+		}
+
+		// A distinct focus ring on the handle for keyboard focus specifically, so
+		// it reads as "focused" rather than merely "hovered". Scoped to
+		// `:focus-visible` so a pointer scrub doesn't draw the ring.
+		&:has( .godam-ve-stripe__range:focus-visible ) .godam-ve-stripe__handle {
+			box-shadow: 0 0 0 2px rgb(0 0 0 / 45%), 0 0 0 4px #fff;
+		}
+
+		&__range:focus-visible {
+			// The visible focus indicator lives on the handle above; suppress the
+			// browser's default outline on the transparent input itself.
+			outline: none;
 		}
 	}
 }

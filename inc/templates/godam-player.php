@@ -512,8 +512,11 @@ if ( ! empty( $godam_control_bar_settings ) ) {
 	 * dropped the default and left Video.js with no skip buttons to build. The
 	 * editor's Settings tab shows "10 seconds" for those videos, so restore the
 	 * matching default here rather than silently rendering nothing.
+	 *
+	 * Keyed on `isset()` (not `empty()`) so a stored `0` — a deliberate "no skip
+	 * buttons" — is left untouched; only a genuinely absent key gets the default.
 	 */
-	if ( empty( $godam_control_bar_settings['skipButtons']['forward'] ) ) {
+	if ( ! isset( $godam_control_bar_settings['skipButtons']['forward'] ) ) {
 		$godam_video_setup['controlBar']['skipButtons'] = array(
 			'forward'  => 10,
 			'backward' => 10,
