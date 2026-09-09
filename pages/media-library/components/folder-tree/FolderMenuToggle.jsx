@@ -5,6 +5,11 @@ import { Icon, moreVertical } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
+ * Internal dependencies
+ */
+import { useOpenFolderMenuId } from '../../context/open-folder-menu.jsx';
+
+/**
  * Three-dot trigger that opens a folder's context menu.
  *
  * Right-click is the desktop way into ContextMenu, but touch devices have no
@@ -19,6 +24,9 @@ import { __ } from '@wordpress/i18n';
  * @return {JSX.Element} The trigger button.
  */
 const FolderMenuToggle = ( { folderId, onContextMenu } ) => {
+	const openFolderMenuId = useOpenFolderMenuId();
+	const isExpanded = openFolderMenuId === folderId;
+
 	const handleClick = ( event ) => {
 		const { left, bottom } = event.currentTarget.getBoundingClientRect();
 
@@ -29,8 +37,12 @@ const FolderMenuToggle = ( { folderId, onContextMenu } ) => {
 		<button
 			type="button"
 			className="tree-item__menu-toggle"
+			data-test-id="folder-menu-toggle"
 			aria-label={ __( 'Folder options', 'godam' ) }
+			// The popup is a menu of item buttons (see ContextMenu), so announce it as a
+			// menu and reflect whether it is currently open for this folder.
 			aria-haspopup="menu"
+			aria-expanded={ isExpanded }
 			// The row wrapping this button carries dnd-kit's drag listeners (both the
 			// pointer and the mouse sensor), so a press that starts here must not also
 			// start dragging the folder.

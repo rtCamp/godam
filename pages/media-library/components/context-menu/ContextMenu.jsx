@@ -423,12 +423,16 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			className="folder-context-menu"
 			ref={ menuRef }
 			style={ { top: position.top, left: position.left } }
+			// A menu of item buttons, matching the trigger's aria-haspopup="menu".
+			role="menu"
+			aria-orientation="vertical"
 		>
 			{ /* Only offered when there is something to move, and never for "All Media"
 			     (id -1), which is a view rather than a destination. */ }
 			{ selectedAttachmentIds.length > 0 && (
 				<Button
 					icon={ CutIcon }
+					role="menuitem"
 					onClick={ () => handleMenuItemClick( 'moveSelectionHere' ) }
 					className="folder-context-menu__item folder-context-menu-move-selection"
 					disabled={
@@ -452,6 +456,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				<>
 					<Button
 						icon={ NewFolderIcon }
+						role="menuitem"
 						onClick={ () => handleMenuItemClick( 'newSubFolder' ) }
 						className="folder-context-menu__item folder-context-menu-new-folder"
 						disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
@@ -460,6 +465,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 					</Button>
 					<Button
 						icon={ RenameFolderIcon }
+						role="menuitem"
 						onClick={ () => handleMenuItemClick( 'rename' ) }
 						className="folder-context-menu__item"
 						disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder || currentFolder?.meta?.locked }
@@ -474,6 +480,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				<>
 					<Button
 						icon={ LockFolderIcon }
+						role="menuitem"
 						onClick={ () => handleMenuItemClick( 'lockFolder' ) }
 						className="folder-context-menu__item"
 						disabled={ isSpecialFolder || isAnySelectedParentLocked }
@@ -482,6 +489,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 					</Button>
 					<Button
 						icon={ BookmarkStarIcon }
+						role="menuitem"
 						onClick={ () => handleMenuItemClick( 'addBookmark' ) }
 						className="folder-context-menu__item"
 						disabled={ isSpecialFolder }
@@ -492,6 +500,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			) }
 			<Button
 				icon={ DownloadZipIcon }
+				role="menuitem"
 				onClick={ () => handleMenuItemClick( 'downloadZip' ) }
 				className="folder-context-menu__item"
 				disabled={ ( isMultiSelecting && multiSelectedFolderIds.length > 1 ) || isSpecialFolder }
@@ -501,6 +510,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			{ canDeleteFolders && (
 				<Button
 					icon={ DeleteIcon }
+					role="menuitem"
 					onClick={ () => handleMenuItemClick( 'delete' ) }
 					className="folder-context-menu__item"
 					disabled={ isSpecialFolder || currentFolder?.meta?.locked }

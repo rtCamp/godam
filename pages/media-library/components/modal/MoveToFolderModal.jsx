@@ -18,6 +18,7 @@ import { closeMoveToFolder, updatePage } from '../../redux/slice/folders';
 import { useSearchFoldersQuery } from '../../redux/api/folders';
 import { utilities } from '../../data/utilities';
 import useMoveAttachments, { UNCATEGORIZED_ID } from '../../hooks/useMoveAttachments';
+import { useIsPrimarySidebar } from '../../context/sidebar-root.jsx';
 import './scss/modal.scss';
 import './scss/move-to-folder-modal.scss';
 
@@ -26,6 +27,19 @@ import './scss/move-to-folder-modal.scss';
  * folder id 0 and is a perfectly valid destination.
  */
 const NO_TARGET = null;
+
+/**
+ * Number of search results fetched per page.
+ */
+const SEARCH_PER_PAGE = 20;
+
+/**
+ * DOM id prefix for the destination radios. Deliberately distinct from the details
+ * field's `godam-move-to-folder-<attachmentId>` control: both are on the page at once,
+ * so sharing a prefix let a folder whose term id matched the open attachment's id
+ * collide, and a label click then activated the wrong element.
+ */
+const OPTION_ID_PREFIX = 'godam-move-to-folder-option-';
 
 /**
  * Destination picker for the "Move to folder" flow.
@@ -47,16 +61,25 @@ const MoveToFolderModal = () => {
 
 	const { moveAttachments, isMoving } = useMoveAttachments();
 
+	// The picker is a page-level singleton fed by the shared store; only the owning app
+	// renders it, so two live sidebars don't stack two dialogs (with two focus traps).
+	const isPrimarySidebar = useIsPrimarySidebar();
+
 	const [ searchTerm, setSearchTerm ] = useState( '' );
 	const [ debouncedSearchTerm, setDebouncedSearchTerm ] = useState( '' );
 	const [ targetFolderId, setTargetFolderId ] = useState( NO_TARGET );
+
+	// Search paging: `searchPage` is the page being fetched, `searchResults` accumulates
+	// every page fetched for the current term so a match past the first page is reachable.
+	const [ searchPage, setSearchPage ] = useState( 1 );
+	const [ searchResults, setSearchResults ] = useState( [] );
 
 	const searchRef = useRef( null );
 
 	const isSearching = debouncedSearchTerm.trim().length > 0;
 
 	const { data: searchData, isFetching: isFetchingSearch } = useSearchFoldersQuery(
-		{ searchTerm: debouncedSearchTerm, page: 1, perPage: 20 },
+		{ searchTerm: debouncedSearchTerm, page: searchPage, perPage: SEARCH_PER_PAGE },
 		{ skip: ! isSearching },
 	);
 
@@ -66,6 +89,30 @@ const MoveToFolderModal = () => {
 
 		return () => clearTimeout( handler );
 	}, [ searchTerm ] );
+
+	// A new search term starts paging over: page 1, and no carried-over results.
+	useEffect( () => {
+		setSearchPage( 1 );
+		setSearchResults( [] );
+	}, [ debouncedSearchTerm ] );
+
+	// Accumulate fetched pages. Page 1 replaces (fresh term); later pages append, skipping
+	// any id already held so an overlap at a page boundary can't list a folder twice.
+	useEffect( () => {
+		if ( ! searchData ) {
+			return;
+		}
+
+		setSearchResults( ( previous ) => {
+			if ( searchData.currentPage <= 1 ) {
+				return searchData.items;
+			}
+
+			const seen = new Set( previous.map( ( folder ) => folder.id ) );
+
+			return [ ...previous, ...searchData.items.filter( ( folder ) => ! seen.has( folder.id ) ) ];
+		} );
+	}, [ searchData ] );
 
 	// Start every open from a clean slate — a destination left over from a previous
 	// move would otherwise be pre-selected for a different set of attachments.
@@ -87,7 +134,7 @@ const MoveToFolderModal = () => {
 		// Search results are a flat list whose ancestors may not be loaded, so they
 		// carry no meaningful depth to indent by.
 		const base = isSearching
-			? ( searchData?.items || [] ).map( ( folder ) => ( { ...folder, depth: 0 } ) )
+			? searchResults.map( ( folder ) => ( { ...folder, depth: 0 } ) )
 			: utilities.flattenTree( utilities.buildTree( folders ) );
 
 		const destinations = [
@@ -113,16 +160,38 @@ const MoveToFolderModal = () => {
 				isDisabled: isLocked || isCurrent,
 			};
 		} );
-	}, [ isSearching, searchData, folders, selectedFolder ] );
+	}, [ isSearching, searchResults, folders, selectedFolder ] );
 
 	const selectedFolderName = useMemo(
 		() => rows.find( ( folder ) => folder.id === targetFolderId )?.name || '',
 		[ rows, targetFolderId ],
 	);
 
-	// The folder tree is paginated and buildTree drops folders whose parent page
-	// hasn't loaded, so deep trees need either search or more pages to be reachable.
-	const canLoadMore = ! isSearching && page.current < page.totalPages;
+	// A folder picked from search results disappears from the list once the search is
+	// cleared (the tree may not contain it), which would strand targetFolderId on a row
+	// that is no longer shown — an invisible selection that still enables Move. Drop it so
+	// the pending target and the visible list never disagree. Guarded on isFetchingSearch
+	// so the momentary empty list mid-fetch doesn't clear a valid choice.
+	useEffect( () => {
+		if ( isFetchingSearch || targetFolderId === NO_TARGET ) {
+			return;
+		}
+
+		const stillSelectable = rows.some(
+			( folder ) => folder.id === targetFolderId && ! folder.isDisabled,
+		);
+
+		if ( ! stillSelectable ) {
+			setTargetFolderId( NO_TARGET );
+		}
+	}, [ rows, targetFolderId, isFetchingSearch ] );
+
+	// The folder tree is paginated and buildTree drops folders whose parent page hasn't
+	// loaded, so deep trees need more pages to be reachable; search results page the same
+	// way, so a match past the first page can be loaded rather than silently truncated.
+	const canLoadMore = isSearching
+		? ( !! searchData && searchData.currentPage < searchData.totalPages )
+		: page.current < page.totalPages;
 
 	const handleClose = () => {
 		if ( ! isMoving ) {
@@ -148,7 +217,7 @@ const MoveToFolderModal = () => {
 		}
 	};
 
-	if ( ! isOpen ) {
+	if ( ! isOpen || ! isPrimarySidebar ) {
 		return null;
 	}
 
@@ -192,11 +261,12 @@ const MoveToFolderModal = () => {
 					className="move-to-folder__list"
 					role="radiogroup"
 					aria-label={ __( 'Destination folder', 'godam' ) }
+					data-test-id="move-to-folder-picker"
 				>
 					{ rows.map( ( folder ) => (
 						<label
 							key={ folder.id }
-							htmlFor={ `godam-move-to-folder-${ folder.id }` }
+							htmlFor={ `${ OPTION_ID_PREFIX }${ folder.id }` }
 							className={ `move-to-folder__option${ folder.isDisabled ? ' is-disabled' : '' }` }
 							// Only the depth travels in the style attribute; the SCSS turns it
 							// into padding, so the modal's spacing values stay in one place.
@@ -204,7 +274,7 @@ const MoveToFolderModal = () => {
 						>
 							<input
 								type="radio"
-								id={ `godam-move-to-folder-${ folder.id }` }
+								id={ `${ OPTION_ID_PREFIX }${ folder.id }` }
 								name="godam-move-to-folder-target"
 								value={ folder.id }
 								checked={ targetFolderId === folder.id }
@@ -231,11 +301,17 @@ const MoveToFolderModal = () => {
 					<p className="move-to-folder__status">{ __( 'No folders found.', 'godam' ) }</p>
 				) }
 
-				{ canLoadMore && (
+				{ canLoadMore && ! isFetchingSearch && (
 					<div className="move-to-folder__load-more">
 						<Button
 							variant="tertiary"
-							onClick={ () => dispatch( updatePage( { current: page.current + 1 } ) ) }
+							onClick={ () => {
+								if ( isSearching ) {
+									setSearchPage( ( current ) => current + 1 );
+								} else {
+									dispatch( updatePage( { current: page.current + 1 } ) );
+								}
+							} }
 						>
 							{ __( 'Load more folders', 'godam' ) }
 						</Button>
@@ -250,6 +326,7 @@ const MoveToFolderModal = () => {
 					disabled={ targetFolderId === NO_TARGET || isMoving || ! attachmentIds.length }
 					onClick={ handleSubmit }
 					text={ __( 'Move', 'godam' ) }
+					data-test-id="move-to-folder-submit"
 				/>
 				<Button
 					variant="secondary"

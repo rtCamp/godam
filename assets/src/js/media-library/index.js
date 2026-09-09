@@ -65,8 +65,9 @@ const MEDIA_FRAME_MENU_MAX_ATTEMPTS = 40;
 const MEDIA_FRAME_MENU_RETRY_DELAY_MS = 50;
 
 /**
- * Width below which the folder sidebar is a full-screen overlay rather than a column
- * (matches the `max-width: 900px` breakpoint in media-library.scss).
+ * Width at or below which the folder sidebar is a full-screen overlay rather than a
+ * column. Applied through a `max-width` media query so it matches the inclusive
+ * `max-width: 900px` breakpoint in media-library.scss exactly.
  */
 const MOBILE_SIDEBAR_BREAKPOINT = 900;
 
@@ -354,7 +355,7 @@ class MediaLibrary {
 			// layout first and visibly snap shut on every page load. Below the mobile
 			// breakpoint the sidebar is a full-screen overlay that always starts collapsed;
 			// above it, the user's saved preference decides.
-			if ( window.innerWidth < MOBILE_SIDEBAR_BREAKPOINT || window.easydamMediaLibrary?.sidebarHidden ) {
+			if ( window.matchMedia( `(max-width: ${ MOBILE_SIDEBAR_BREAKPOINT }px)` ).matches || window.easydamMediaLibrary?.sidebarHidden ) {
 				mediaLibraryRoot.classList.add( 'hide-sidebar' );
 			}
 			const wpbody = document.querySelector( '#wpbody' );

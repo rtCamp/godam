@@ -13,11 +13,16 @@ import { Snackbar } from '@wordpress/components';
  * Internal dependencies
  */
 import { updateSnackbar } from '../../redux/slice/folders';
+import { useIsPrimarySidebar } from '../../context/sidebar-root.jsx';
 import './css/snackbar.scss';
 
 const SnackbarComp = () => {
 	const message = useSelector( ( state ) => state.FolderReducer.snackbar.message );
 	const type = useSelector( ( state ) => state.FolderReducer.snackbar.type );
+
+	// The toast is a page-level singleton fed by the shared store; only the owning app
+	// renders it, so two live sidebars don't stack two copies.
+	const isPrimarySidebar = useIsPrimarySidebar();
 
 	const dispatch = useDispatch();
 
@@ -30,7 +35,7 @@ const SnackbarComp = () => {
 		) );
 	};
 
-	if ( ! message ) {
+	if ( ! message || ! isPrimarySidebar ) {
 		return null;
 	}
 

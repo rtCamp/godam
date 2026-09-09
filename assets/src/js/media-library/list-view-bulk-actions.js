@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { isFolderOrgDisabled, isUploadPage } from './utility';
 import { requestMoveToFolder, resolveSidebarRoot } from '../../../../pages/media-library/data/move-to-folder-bridge';
+import { getSelectedAttachmentIds } from '../../../../pages/media-library/data/media-grid';
 
 /**
  * Value of the injected bulk-action option.
@@ -78,20 +79,6 @@ export default class ListViewBulkActions {
 	}
 
 	/**
-	 * Ids of the checked rows.
-	 *
-	 * Scoped to `input[name="media[]"]` rather than every checkbox in the table, so
-	 * the "select all" header/footer boxes are excluded.
-	 *
-	 * @return {Array} Checked attachment ids.
-	 */
-	checkedIds() {
-		return Array.from(
-			this.form.querySelectorAll( '.wp-list-table.media tbody input[name="media[]"]:checked' ),
-		).map( ( checkbox ) => Number( checkbox.value ) ).filter( Boolean );
-	}
-
-	/**
 	 * Intercept Apply for our action and open the folder picker instead.
 	 *
 	 * @param {Event} event The form's submit event.
@@ -107,7 +94,10 @@ export default class ListViewBulkActions {
 		requestMoveToFolder( {
 			// An empty list is still dispatched: the sidebar answers it with a
 			// "select some media first" notice rather than an empty picker.
-			attachmentIds: this.checkedIds(),
+			// The shared helper returns the checked list-view rows here (it excludes the
+			// select-all header/footer boxes), so this stays in step with the sidebar's
+			// own selection reads instead of duplicating the query.
+			attachmentIds: getSelectedAttachmentIds(),
 			source: 'list',
 			root: resolveSidebarRoot( null ),
 		} );

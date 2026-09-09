@@ -96,8 +96,9 @@ document.addEventListener( 'godam-attachment-browser:changed', () => {
  * mode, which makes it the shortest path on a phone, where the alternative — drag
  * and drop — does not work at all.
  *
- * Rendered as a native `span.setting` inside `.settings`, alongside Alt Text /
- * Title / Caption / File URL, so it inherits WP's own row styling. It must NOT
+ * Rendered as a native `span.setting` alongside Alt Text / Title / Caption / File
+ * URL — inside `.settings` in the two-column layout, or directly under the view in
+ * the single-column one — so it inherits WP's own row styling. It must NOT
  * carry a `data-setting` attribute: that is how the view binds a row to a model
  * attribute for auto-save, and this row saves through the picker instead.
  *
@@ -121,13 +122,13 @@ const renderMoveToFolderField = ( view ) => {
 		return;
 	}
 
-	// The details column. Appending to `view.el` instead would drop the row below
-	// BOTH columns of the two-column layout, spanning the full modal width.
-	const settings = view.el.querySelector( '.settings' );
-
-	if ( ! settings ) {
-		return;
-	}
+	// The details column in the two-column layout (`.settings`). The single-column
+	// `tmpl-attachment-details` — the post editor's Add Media / Featured Image sidebar —
+	// has no `.settings` wrapper: its `span.setting` rows sit directly under the view, so
+	// fall back to `view.el` there. In the two-column layout appending to `view.el` would
+	// instead drop the row below BOTH columns, spanning the full modal width, hence the
+	// preference for `.settings` when it exists.
+	const settings = view.el.querySelector( '.settings' ) || view.el;
 
 	view.$el.find( '.godam-move-to-folder-setting' ).remove();
 
@@ -150,6 +151,7 @@ const renderMoveToFolderField = ( view ) => {
 	control.type = 'button';
 	control.id = fieldId;
 	control.className = `value ${ CONTROL_CLASS }`;
+	control.setAttribute( 'data-test-id', 'move-to-folder-field' );
 	// It opens the picker dialog rather than an inline list, so announce it as such.
 	control.setAttribute( 'aria-haspopup', 'dialog' );
 	control.addEventListener( 'click', () => requestMoveToFolder( {
@@ -173,9 +175,13 @@ const renderMoveToFolderField = ( view ) => {
 	row.appendChild( control );
 
 	// Before the plugin-fields container, so this sits with WP's own fields rather
-	// than after the transcoding rows.
+	// than after the transcoding rows. `insertBefore` needs a direct child as the
+	// reference node, so only use `.attachment-compat` when it is one (it is a child of
+	// `.settings` in the two-column layout and of `view.el` in the single-column one);
+	// otherwise append.
 	const compat = settings.querySelector( '.attachment-compat' );
-	settings.insertBefore( row, compat || null );
+	const reference = compat && compat.parentNode === settings ? compat : null;
+	settings.insertBefore( row, reference );
 
 	fillFolderName( control );
 };

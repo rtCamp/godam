@@ -31,6 +31,7 @@ import useMoveToFolderBridge from './hooks/useMoveToFolderBridge.js';
 import { canManageFolders } from './data/capabilities.js';
 import BookmarkTab from './components/folder-tree/BookmarkTab.jsx';
 import LockedTab from './components/folder-tree/LockedTab.jsx';
+import { OpenFolderMenuContext } from './context/open-folder-menu.jsx';
 import { useGetAllMediaCountQuery, useGetCategoryMediaCountQuery, useUpdateSidebarPreferenceMutation } from './redux/api/folders.js';
 import SearchBar from './components/search-bar/SearchBar.jsx';
 
@@ -46,9 +47,13 @@ const MOBILE_BREAKPOINT = 900;
  * An overlay covers the grid, so it always starts collapsed and expanding it is a
  * one-off action — the saved preference is neither read nor written at this width.
  *
- * @return {boolean} True on viewports narrower than the mobile breakpoint.
+ * Uses the same `max-width` media query as the stylesheet so the JS and CSS agree at
+ * exactly the breakpoint (a `< 900` comparison would treat 900px as desktop while the
+ * inclusive `max-width: 900px` rule has already switched to the overlay layout).
+ *
+ * @return {boolean} True when the viewport matches the mobile overlay breakpoint.
  */
-const isMobileViewport = () => typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
+const isMobileViewport = () => typeof window !== 'undefined' && window.matchMedia( `(max-width: ${ MOBILE_BREAKPOINT }px)` ).matches;
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -141,35 +146,40 @@ const App = () => {
 		};
 	}, [ refetchAllMediaCount, refetchUncategorizedCount ] );
 
-	// Debounce persistence so a burst of rapid toggles collapses into a single write.
-	// Each POST is fire-and-forget, so without this two quick toggles could be applied
-	// out of order server-side and leave the stored flag disagreeing with the UI. The
-	// timer always carries the latest value, so the user's final choice is what's saved,
-	// and only ever one request is in flight.
-	const saveTimerRef = useRef( null );
-	const pendingHiddenRef = useRef( null );
+	// Persisting the toggle is serialized rather than debounced: the first change is sent
+	// immediately, and while that POST is in flight further toggles only update the desired
+	// value — which is sent once, on settle, if it still differs from what was last written.
+	// So there is only ever one request in flight, the server can never apply an older state
+	// after a newer one however fast the user toggles, and — unlike a debounce timer — there
+	// is nothing left pending to lose when the page navigates away (list-view moves and
+	// folder clicks on upload.php reload the page rather than unmounting React).
+	const inFlightRef = useRef( false );
+	const sentHiddenRef = useRef( null );
+	const desiredHiddenRef = useRef( null );
 
 	const persistSidebarPreference = useCallback( ( hidden ) => {
-		pendingHiddenRef.current = hidden;
+		desiredHiddenRef.current = hidden;
 
-		if ( saveTimerRef.current ) {
-			clearTimeout( saveTimerRef.current );
+		if ( inFlightRef.current ) {
+			return;
 		}
 
-		saveTimerRef.current = setTimeout( () => {
-			saveTimerRef.current = null;
-			pendingHiddenRef.current = null;
-			updateSidebarPreference( hidden );
-		}, 500 );
-	}, [ updateSidebarPreference ] );
+		const send = ( value ) => {
+			inFlightRef.current = true;
+			sentHiddenRef.current = value;
 
-	// Flush a still-pending save on unmount so the last toggle before the media modal
-	// closes isn't dropped.
-	useEffect( () => () => {
-		if ( saveTimerRef.current ) {
-			clearTimeout( saveTimerRef.current );
-			updateSidebarPreference( pendingHiddenRef.current );
-		}
+			// finally() runs on both success and failure; a failed save just falls back to
+			// the stored state on the next load, matching the previous fire-and-forget flow.
+			updateSidebarPreference( value ).finally( () => {
+				inFlightRef.current = false;
+
+				if ( desiredHiddenRef.current !== sentHiddenRef.current ) {
+					send( desiredHiddenRef.current );
+				}
+			} );
+		};
+
+		send( hidden );
 	}, [ updateSidebarPreference ] );
 
 	const toggleSidebar = ( e ) => {
@@ -236,7 +246,7 @@ const App = () => {
 	};
 
 	return (
-		<>
+		<OpenFolderMenuContext.Provider value={ contextMenu.visible ? contextMenu.folderId : null }>
 			<Button
 				icon="plus-alt2"
 				__next40pxDefaultSize
@@ -348,7 +358,7 @@ const App = () => {
 			     folders are loading or failed — a move that fails in either of those
 			     states would otherwise have no visible feedback at all. */ }
 			<SnackbarComp />
-		</>
+		</OpenFolderMenuContext.Provider>
 	);
 };
 

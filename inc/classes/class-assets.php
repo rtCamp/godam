@@ -206,8 +206,7 @@ class Assets {
 	 * @return void
 	 */
 	public function admin_enqueue_scripts() {
-		$screen           = get_current_screen();
-		$is_upload_screen = ( $screen && 'upload' === $screen->id );
+		$screen = get_current_screen();
 
 		// Ensure WordPress media modal assets are available on admin pages where we open wp.media.
 		if ( function_exists( 'wp_enqueue_media' ) ) {
@@ -355,18 +354,18 @@ class Assets {
 			$easydam_media_library_data
 		);
 
-		if ( $is_upload_screen ) {
-			wp_enqueue_style( 'easydam-media-library' );
-		}
-
 		wp_set_script_translations( 'easydam-media-library', 'godam', RTGODAM_PATH . 'languages' );
 
 		// Only load the heavy media-library bundle (~2.65 MB, bundles video.js) where the
 		// media library / wp.media modal is actually used. It was previously enqueued on
 		// every admin screen. Registration + localization above stay unconditional (cheap,
-		// and inert unless the handle is enqueued).
+		// and inert unless the handle is enqueued). The stylesheet loads on the same gate:
+		// the toolbar button and folder controls are created wherever the script runs (post,
+		// page, attachment, widgets, site-editor — not just the upload screen), so scoping
+		// the CSS to `upload` left them unstyled everywhere else.
 		if ( godam_should_load_media_library_assets( $screen ) ) {
 			wp_enqueue_script( 'easydam-media-library' );
+			wp_enqueue_style( 'easydam-media-library' );
 		}
 
 		/**

@@ -39,7 +39,7 @@ const UNCATEGORIZED_ID = 0;
  * existed the logic lived inline in FolderTree's jQuery UI `drop` handler and was
  * unreachable from anywhere else.
  *
- * @return {{ moveAttachments: Function, canMoveTo: Function, isMoving: boolean }} Move helpers.
+ * @return {{ moveAttachments: Function, isMoving: boolean }} Move helpers.
  */
 const useMoveAttachments = () => {
 	const dispatch = useDispatch();
@@ -188,14 +188,18 @@ const useMoveAttachments = () => {
 		} catch ( error ) {
 			// Surface the server's own wording: it distinguishes a locked folder from
 			// an ownership failure, and a generic string would hide which one it was.
-			dispatch( updateSnackbar( {
+			const notice = {
 				message: error?.data?.message || error?.message || __( 'Failed to move items', 'godam' ),
 				type: 'fail',
-			} ) );
+			};
+
+			dispatch( updateSnackbar( notice ) );
 
 			// The assign loop is not transactional — a mid-loop failure can leave some
-			// items already moved — so re-read the view rather than leaving it stale.
-			refreshAfterMove();
+			// items already moved — so re-read the view rather than leaving it stale. Pass
+			// the notice through, as the success path does, so a list-view reload reports
+			// the failure instead of discarding the toast that was just dispatched.
+			refreshAfterMove( { notice } );
 
 			return { success: false };
 		} finally {
@@ -203,7 +207,10 @@ const useMoveAttachments = () => {
 		}
 	}, [ assignFolderMutation, canMoveTo, dispatch, selectedFolder, updateFolderCounts ] );
 
-	return { moveAttachments, canMoveTo, isMoving };
+	// `canMoveTo` stays internal: it is the pre-flight guard for moveAttachments, and the
+	// modal needs the finer-grained locked/current flags for display rather than this
+	// single allowed/denied verdict, so exposing it only invited a second, divergent copy.
+	return { moveAttachments, isMoving };
 };
 
 export default useMoveAttachments;
