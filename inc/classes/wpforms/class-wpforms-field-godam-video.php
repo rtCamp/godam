@@ -67,11 +67,11 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				'type' => true,
 			);
 
-			// The GoDAM player template emits its wrapper styles as an inline
-			// <style id="godam-player-wrapper-inline-css"> block. wp_kses_post()
-			// strips <style> by default (keeping only its CSS text, which then
-			// leaks onto the page as a raw string), so it must be whitelisted for
-			// the rendered player to be styled on the entry view page.
+			// Player wrapper styles are enqueued as a stylesheet, so the player
+			// markup no longer carries an inline <style>. The allowance stays for
+			// player variants that still emit one (e.g. the audio no-JS block):
+			// wp_kses_post() strips <style> by default while keeping its CSS text,
+			// which then leaks onto the page as a raw string.
 			$allowed_tags['style'] = array(
 				'id'    => true,
 				'type'  => true,
@@ -520,7 +520,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 *
 		 * @return mixed
 		 */
-		public function format_field_value_for_plaintext( $value, $field, $form_data ) {
+		public function format_field_value_for_plaintext( $value, $field, $form_data ) { // phpcs:ignore WordPressVIPMinimum.Hooks.AlwaysReturnInFilter.MissingReturnStatement -- every path returns a value (two direct returns, plus two more inside the try block below); this sniff doesn't trace returns through try/finally.
 			// Check if the field is not a video field.
 			if ( ! isset( $field['type'] ) || 'godam_record' !== $field['type'] ) {
 				return $value;
@@ -532,13 +532,24 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			}
 
-			$attachment = get_post( $value );
+			/**
+			 * Fires before resolving this attachment's URL, so integrations
+			 * that centralize media on another site can switch context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+			try {
+				$attachment = get_post( $value );
 
-			if ( null === $attachment || 'attachment' !== $attachment->post_type ) {
-				return $value;
+				if ( null === $attachment || 'attachment' !== $attachment->post_type ) {
+					return $value;
+				}
+
+				return wp_get_attachment_url( $value ) . PHP_EOL . PHP_EOL;
+			} finally {
+				do_action( 'rtgodam_after_attachment_lookup' );
 			}
-
-			return wp_get_attachment_url( $value ) . PHP_EOL . PHP_EOL;
 		}
 
 		/**

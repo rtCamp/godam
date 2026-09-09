@@ -64,7 +64,7 @@ class GoDAM_Player {
 	 */
 	public function invalidate_video_cache_on_meta_change( $meta_id, $object_id, $meta_key ) {
 		// Only invalidate for attachment posts (GoDAM videos are stored as attachments).
-		if ( 'attachment' !== get_post_type( $object_id ) ) {
+		if ( 'attachment' !== get_post_type( $object_id ) ) { // godam-coverage-ignore -- invalidate_video_cache_on_meta_change(): updated_post_meta/added_post_meta/deleted_post_meta fire for every post type; this is the type-routing check that filters down to attachments — the actual work (invalidate_video_cache_for_post()) only clears a private cache key, not attachment data.
 			return;
 		}
 
@@ -76,6 +76,7 @@ class GoDAM_Player {
 			'rtgodam_media_video_placeholder_thumbnail',
 			'rtgodam_media_placeholder_thumbnails',
 			'rtgodam_transcript_path',
+			'rtgodam_transcript_deleted',
 		);
 
 		if ( ! in_array( $meta_key, $watched_keys, true ) ) {
@@ -96,7 +97,7 @@ class GoDAM_Player {
 	 * @param int $post_id Post ID.
 	 */
 	public function invalidate_video_cache_for_post( $post_id ) {
-		if ( 'attachment' !== get_post_type( $post_id ) ) {
+		if ( 'attachment' !== get_post_type( $post_id ) ) { // godam-coverage-ignore -- invalidate_video_cache_for_post(): type-routing check (also reachable directly via edit_attachment/delete_attachment, which only ever fire for attachments); rtgodam_work_cache_index_clear() below only clears a private cache key, not attachment data.
 			return;
 		}
 
@@ -156,10 +157,31 @@ class GoDAM_Player {
 			);
 		}
 
+		/**
+		 * Player wrapper styles (placeholder / poster / loading states).
+		 *
+		 * Shipped as a real stylesheet rather than an inline <style> emitted by
+		 * inc/templates/godam-player.php: the style tag rendered as a sibling of
+		 * the player markup, so in a flow-layout container (core/column, core/group)
+		 * the player became the second child and picked up the container's
+		 * `margin-block-start` blockGap rule, adding phantom spacing above the video.
+		 * The CSS is static — nothing per-video — so there is nothing to inline.
+		 *
+		 * Registered as a dependency of `godam-player-style` so every existing
+		 * enqueue point (block.json `style`, shortcodes, Elementor `depended_styles`,
+		 * gallery) pulls it in with no further changes.
+		 */
+		wp_register_style(
+			'godam-player-wrapper-style',
+			RTGODAM_URL . 'assets/build/css/godam-player-wrapper.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css' )
+		);
+
 		wp_register_style(
 			'godam-player-style',
 			RTGODAM_URL . 'assets/build/css/godam-player.css',
-			array(),
+			array( 'godam-player-wrapper-style' ),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
 		);
 
@@ -232,11 +254,11 @@ class GoDAM_Player {
 		$godam_needs_runtime = false;
 
 		if ( is_singular() ) {
-			$godam_post = get_post();
+			$godam_post = get_post(); // godam-coverage-ignore -- maybe_enqueue_lightbox_runtime(): bare get_post() resolves to the current singular post, not an attachment.
 
 			if ( $godam_post instanceof \WP_Post ) {
 				// Elementor keeps its layout in post meta rather than post_content.
-				$godam_haystack = $godam_post->post_content . (string) get_post_meta( $godam_post->ID, '_elementor_data', true );
+				$godam_haystack = $godam_post->post_content . (string) get_post_meta( $godam_post->ID, '_elementor_data', true ); // godam-coverage-ignore -- maybe_enqueue_lightbox_runtime(): reads the current post's own '_elementor_data', not attachment data.
 
 				$godam_needs_runtime = false !== strpos( $godam_haystack, 'data-godam-lightbox' )
 					|| false !== strpos( $godam_haystack, '#godam-video-' );
@@ -249,7 +271,7 @@ class GoDAM_Player {
 		 * Use this when a trigger lives somewhere the content sniff cannot see, such
 		 * as a theme template, a sidebar widget or a nav-menu item.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.2.0
 		 *
 		 * @param bool $godam_needs_runtime Whether the runtime is needed.
 		 */
@@ -286,7 +308,7 @@ class GoDAM_Player {
 	 *
 	 * HTML output is NOT cached here by design.  Caching the full rendered blob
 	 * would suppress per-request side effects that the template performs on every
-	 * call: adding wrapper CSS to wp_head, suppressing Gravity Forms autoscroll,
+	 * call: enqueueing the player wrapper stylesheet, suppressing Gravity Forms autoscroll,
 	 * conditionally initialising the IMA SDK for ad-enabled videos, and generating
 	 * a unique per-render $godam_instance_id used in DOM IDs.
 	 *

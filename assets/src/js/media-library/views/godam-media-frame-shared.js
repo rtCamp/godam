@@ -16,8 +16,37 @@ import { select, dispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import { getQuery } from '../utility.js';
+import { ALLOWED_MEDIA_TYPES as DOCUMENT_MIME_TYPES } from '../../../blocks/godam-pdf/constants.js';
 
 const l10n = wp?.media?.view?.l10n;
+
+/**
+ * Collapse a media-frame `type` filter into the single token the GoDAM tab endpoint expects.
+ *
+ * The frame's `type` prop is whatever the opener asked for, and the GoDAM tab passes it
+ * straight through to Central as `job_type`. That works for a single value, but the Document
+ * block requests a dozen MIME types at once — joined with "-" that produces a token Central
+ * has never heard of, and the tab comes back empty.
+ *
+ * Any request made up purely of document MIME types is therefore reported as
+ * `application/pdf`, which the REST handler already expands to `pdf,document`.
+ *
+ * @param {string|string[]} mimeTypes The frame's `type` prop.
+ * @return {string} A token the GoDAM tab endpoint understands.
+ */
+function normalizeGoDAMTabType( mimeTypes ) {
+	if ( ! mimeTypes ) {
+		return 'all';
+	}
+
+	const types = Array.isArray( mimeTypes ) ? mimeTypes : [ mimeTypes ];
+
+	if ( types.length && types.every( ( type ) => DOCUMENT_MIME_TYPES.includes( type ) ) ) {
+		return 'application/pdf';
+	}
+
+	return types.join( '-' );
+}
 
 /**
  * Recursively collects all blocks (including inner blocks at any depth) into a flat array.
@@ -156,13 +185,9 @@ const GoDAMMediaFrameShared = {
 	GoDAMCreate() {
 		const state = this.state();
 
-		let mimeTypes = state.get( 'library' )?.props?.get( 'type' );
-
-		if ( ! mimeTypes ) {
-			mimeTypes = 'all';
-		} else {
-			mimeTypes = Array.isArray( mimeTypes ) ? mimeTypes.join( '-' ) : mimeTypes;
-		}
+		const mimeTypes = normalizeGoDAMTabType(
+			state.get( 'library' )?.props?.get( 'type' ),
+		);
 
 		this.$el.removeClass( 'hide-toolbar' );
 
@@ -253,6 +278,9 @@ const GoDAMMediaFrameShared = {
 					width: data.width || 0,
 					height: data.height || 0,
 					chapters: data.chapters || [],
+					// The renderable PDF for a document. Must travel separately from mpd_url,
+					// which for a converted document holds the original .docx/.xlsx.
+					preview_pdf_url: data.preview_pdf_url || '',
 				},
 			} );
 

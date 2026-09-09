@@ -332,10 +332,21 @@ class Analytics extends Base {
 		// sites within the same account.
 		$job_id = '';
 		if ( $attachment_id ) {
+			/**
+			 * Fires before resolving job_id from attachment meta, so
+			 * integrations that centralize media on another site can switch
+			 * context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+
 			$job_id = (string) get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 			if ( empty( $job_id ) ) {
 				$job_id = (string) get_post_meta( $attachment_id, '_godam_original_id', true );
 			}
+
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
 		// site_url is a client-supplied *filter*, not a trust boundary: the
@@ -479,7 +490,7 @@ class Analytics extends Base {
 				continue;
 			}
 
-			$placement_post = $placement_post_id ? get_post( $placement_post_id ) : null;
+			$placement_post = $placement_post_id ? get_post( $placement_post_id ) : null; // godam-coverage-ignore -- enrich_placements(): $placement_post_id is the host page a video was placed on, not an attachment ID.
 
 			// A trashed post is treated as gone even for users who can edit it:
 			// WordPress maps edit_post on a trashed post to its pre-trash status
@@ -488,7 +499,7 @@ class Analytics extends Base {
 			// 409). Surfacing an Edit link would be a dead end, and the page is
 			// unreachable for visitors, so it belongs in the deleted state.
 			$is_trashed  = $placement_post && 'trash' === $placement_post->post_status;
-			$can_edit    = $placement_post && ! $is_trashed && current_user_can( 'edit_post', $placement_post_id );
+			$can_edit    = $placement_post && ! $is_trashed && current_user_can( 'edit_post', $placement_post_id ); // godam-coverage-ignore -- enrich_placements(): checks edit capability on $placement_post_id, the host page a video was placed on, not an attachment ID (see get_post() above).
 			$is_viewable = $placement_post && ! $is_trashed && is_post_publicly_viewable( $placement_post );
 			$edit_url    = $can_edit ? get_edit_post_link( $placement_post_id, 'raw' ) : null;
 
@@ -496,14 +507,14 @@ class Analytics extends Base {
 				// Public page: reveal title, permalink and (if capable) an edit link.
 				$permalink = get_permalink( $placement_post );
 
-				$placements[ $index ]['title']      = get_the_title( $placement_post );
+				$placements[ $index ]['title']      = get_the_title( $placement_post ); // godam-coverage-ignore -- enrich_placements(): $placement_post is the host page a video was placed on, not an attachment (see get_post() above).
 				$placements[ $index ]['permalink']  = $permalink ? $permalink : null;
 				$placements[ $index ]['edit_url']   = $edit_url ? $edit_url : null;
 				$placements[ $index ]['is_deleted'] = false;
 			} elseif ( $can_edit ) {
 				// Not public (private/draft/pending), but this user may edit it:
 				// show the real title + an Edit link, without a public permalink.
-				$placements[ $index ]['title']      = get_the_title( $placement_post );
+				$placements[ $index ]['title']      = get_the_title( $placement_post ); // godam-coverage-ignore -- enrich_placements(): $placement_post is the host page a video was placed on, not an attachment (see get_post() above).
 				$placements[ $index ]['permalink']  = null;
 				$placements[ $index ]['edit_url']   = $edit_url ? $edit_url : null;
 				$placements[ $index ]['is_deleted'] = false;
@@ -643,7 +654,7 @@ class Analytics extends Base {
 
 			if ( ! empty( $post_ids ) ) {
 				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
-				$posts = get_posts(
+				$posts = get_posts( // godam-coverage-ignore -- fetch_analytics_data(): $post_ids are HOST post IDs (post_type "any") from the external microservice's per-page view-count data, not attachment IDs — same host-page pattern as enrich_placements() above.
 					array(
 						'post__in'         => $post_ids,
 						'post_type'        => 'any',
@@ -657,7 +668,7 @@ class Analytics extends Base {
 					if ( isset( $post_views[ $post->ID ] ) ) {
 						$post_details[] = array(
 							'id'    => $post->ID,
-							'title' => get_the_title( $post ),
+							'title' => get_the_title( $post ), // godam-coverage-ignore -- fetch_analytics_data(): $post comes from $post_ids above, HOST post IDs (post_type "any"), not attachment IDs (see get_posts() above).
 							'url'   => get_permalink( $post ),
 							'views' => $post_views[ $post->ID ],
 						);
@@ -998,16 +1009,25 @@ class Analytics extends Base {
 
 		$top_videos = $body['top_videos'] ?? array();
 
+		/**
+		 * Fires before enriching each top-video row with local attachment
+		 * data, so integrations that centralize media on another site can
+		 * switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		foreach ( $top_videos as &$video ) {
 			if ( ! empty( $video['video_id'] ) ) {
 				$attachment_id = intval( $video['video_id'] );
 				$attachment    = get_post( $attachment_id );
-				
+
 				if ( $attachment && 'attachment' === $attachment->post_type ) {
 					// Check if this is virtual media (from GoDAM Tab).
 					$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
 					$is_virtual_media  = ! empty( $godam_original_id );
-					
+
 					// Get file size - different approach for virtual vs local media.
 					if ( $is_virtual_media ) {
 						// For virtual media, get size from metadata.
@@ -1016,11 +1036,11 @@ class Analytics extends Base {
 					} else {
 						// For local media, get actual file size.
 						$file_path = get_attached_file( $attachment_id );
-						
+
 						$file_size = ( $file_path && file_exists( $file_path ) ) ? filesize( $file_path ) : 0;
-						
+
 					}
-					
+
 					$video['video_size']    = round( $file_size / ( 1024 * 1024 ), 2 );
 					$video['title']         = get_the_title( $attachment_id );
 					$video['exists']        = true;
@@ -1038,6 +1058,14 @@ class Analytics extends Base {
 				}
 			}
 		}
+
+		/**
+		 * Fires after enriching top-video rows, so integrations can restore
+		 * the site context switched in `rtgodam_before_attachment_lookup`.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return new WP_REST_Response(
 			array(
@@ -1105,8 +1133,10 @@ class Analytics extends Base {
 			$query_args['s'] = $search;
 		}
 
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- bounded, `suppress_filters => false` (cacheable), and the common no-search case is transient-cached; matches the existing convention in this class.
 		$ids = array_map( 'intval', (array) get_posts( $query_args ) );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		if ( $is_full_set ) {
 			set_transient( $cache_key, $ids, 5 * MINUTE_IN_SECONDS );

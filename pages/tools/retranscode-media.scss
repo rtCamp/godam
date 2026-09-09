@@ -16,6 +16,23 @@
     }
 }
 
+.godam-retranscode-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    margin-bottom: 1em;
+
+    &__media-type {
+        max-width: 400px;
+    }
+
+    &__force {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+    }
+}
+
 .godam-storage-exceeded-notice {
     margin-bottom: 1em;
     padding: 1em;

@@ -1,3 +1,8 @@
+/**
+ * Internal dependencies
+ */
+import { ALLOWED_MEDIA_TYPES } from '../../blocks/godam-pdf/constants.js';
+
 ( function( $ ) {
 	'use strict';
 
@@ -27,14 +32,14 @@
 			const $docTitleInput = $attributeContainer.find( '[name="doc_title"]' );
 			const $descriptionInput = $attributeContainer.find( '[name="description"]' );
 
-			// Create WordPress media frame, restricted to PDF documents.
+			// Create WordPress media frame, restricted to the formats the block can display.
 			const frame = wp.media( {
 				title: __( 'Select or Upload Document', 'godam' ),
 				button: {
 					text: __( 'Select Document', 'godam' ),
 				},
 				library: {
-					type: 'application/pdf',
+					type: ALLOWED_MEDIA_TYPES,
 				},
 				multiple: false,
 			} );

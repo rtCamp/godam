@@ -253,7 +253,7 @@ class Media_Usage_Tracker {
 	 * @return void
 	 */
 	public function on_before_delete_post( $post_id ) {
-		if ( 'attachment' === get_post_type( $post_id ) ) {
+		if ( 'attachment' === get_post_type( $post_id ) ) { // godam-coverage-ignore -- on_before_delete_post(): before_delete_post fires for every post type being permanently deleted; this is the type-routing check that filters out attachments (their own usage cleanup happens elsewhere) so the rest of this method can treat $post_id as a host post — not attachment data access.
 			return;
 		}
 
@@ -264,7 +264,7 @@ class Media_Usage_Tracker {
 			$this->unregister_media_usage( $attachment_id, $post_id, 'content' );
 		}
 
-		delete_post_meta( $post_id, self::POST_META_KEY );
+		delete_post_meta( $post_id, self::POST_META_KEY ); // godam-coverage-ignore -- on_before_delete_post(): $post_id is guaranteed non-attachment (the function's own post_type guard returns early otherwise); deletes that host post's own POST_META_KEY tracking marker, not attachment data.
 	}
 
 	// -------------------------------------------------------------------------
@@ -284,7 +284,7 @@ class Media_Usage_Tracker {
 		$new_ids = $this->extract_attachment_ids( $post_content );
 
 		// Featured image lives outside post_content — add it separately.
-		$thumbnail_id = (int) get_post_meta( $post_id, '_thumbnail_id', true );
+		$thumbnail_id = (int) get_post_meta( $post_id, '_thumbnail_id', true ); // godam-coverage-ignore -- sync_post_attachments(): $post_id is always the host post being scanned (both callers exclude 'attachment'); reads that post's own '_thumbnail_id' pointer, not attachment data.
 		if ( $thumbnail_id > 0 ) {
 			$new_ids = array_values( array_unique( array_merge( $new_ids, array( $thumbnail_id ) ) ) );
 		}
@@ -308,7 +308,7 @@ class Media_Usage_Tracker {
 		}
 
 		// Persist the new set so the next save can diff cheaply.
-		update_post_meta( $post_id, self::POST_META_KEY, array_values( $new_ids ) );
+		update_post_meta( $post_id, self::POST_META_KEY, array_values( $new_ids ) ); // godam-coverage-ignore -- sync_post_attachments(): $post_id is always the host post being scanned; writes that post's own POST_META_KEY 'processed' marker (mirrors class-media-usage-backfill.php:396), not attachment data.
 	}
 
 	// -------------------------------------------------------------------------
@@ -344,26 +344,62 @@ class Media_Usage_Tracker {
 			return;
 		}
 
-		$map      = $this->get_usage_sources( $attachment_id );
-		$existing = isset( $map[ $post_id ] ) ? $map[ $post_id ] : array();
+		// Captured before the switch below, so this is always the site $post_id
+		// actually belongs to (the one currently active), not the media site.
+		$blog_id = get_current_blog_id();
+		$key     = $this->make_usage_key( $blog_id, $post_id );
+
+		/**
+		 * Fires before reading/writing the attachment-keyed usage index, so
+		 * integrations that centralize media on another site can switch
+		 * context first. $post_id belongs to whatever site is currently
+		 * active and must stay untouched, so the switch is scoped tightly to
+		 * the attachment-meta calls below and is always restored before
+		 * get_post_type( $post_id ) or schedule_log_media_view() run.
+		 *
+		 * May fire re-entrantly: this call can be nested inside another
+		 * already-open before/after pair (see get_usage_sources() /
+		 * save_usage_sources() below — each of which fires its own
+		 * before/after pair around its own meta access while this outer
+		 * bracket is still open). Listeners must balance switches with a
+		 * stack (e.g. WordPress's own switch_to_blog()/restore_current_blog(),
+		 * which already handles this via $_wp_switched_stack) rather than a
+		 * single before/after flag, or the first inner after() will restore
+		 * context prematurely.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
+		$map      = $this->get_usage_sources( $attachment_id, $blog_id );
+		$existing = isset( $map[ $key ] ) ? $map[ $key ]['sources'] : array();
 
 		$was_referenced = ! empty( $existing );
 
 		if ( in_array( $source, $existing, true ) ) {
+			do_action( 'rtgodam_after_attachment_lookup' );
 			return; // Already recorded for this source; nothing changes.
 		}
 
-		$existing[]      = $source;
-		$map[ $post_id ] = $existing;
-		$this->save_usage_sources( $attachment_id, $map );
+		$existing[]  = $source;
+		$map[ $key ] = array(
+			'blog_id' => $blog_id,
+			'post_id' => $post_id,
+			'sources' => $existing,
+		);
+		$this->save_usage_sources( $attachment_id, $map, $blog_id );
 
-		// First source to reference this pair → notify GoDAM Central.
-		if ( ! $was_referenced ) {
-			$godam_id = $this->get_godam_id_for_attachment( $attachment_id );
-			if ( $godam_id ) {
-				$type = '' !== $post_type ? $post_type : (string) get_post_type( $post_id );
-				$this->schedule_log_media_view( $godam_id, $post_id, $this->get_wp_site(), $type );
-			}
+		$godam_id = ! $was_referenced ? $this->get_godam_id_for_attachment( $attachment_id ) : '';
+
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		// First source to reference this pair → notify GoDAM Central. get_post_type()
+		// and schedule_log_media_view() (which captures get_current_blog_id() for the
+		// async payload) must run against the post's own site, not the attachment's —
+		// hence running this after the lookup above has already been restored.
+		if ( $godam_id ) {
+			$type = '' !== $post_type ? $post_type : (string) get_post_type( $post_id ); // godam-coverage-ignore -- register_media_usage(): $post_id is the referencing HOST post (never the attachment — that's $attachment_id, already wrapped above via get_usage_sources()/save_usage_sources()); deliberately read only after that attachment-scoped lookup is restored, per the docblock above.
+			$this->schedule_log_media_view( $godam_id, $post_id, $this->get_wp_site(), $type );
 		}
 	}
 
@@ -389,28 +425,41 @@ class Media_Usage_Tracker {
 			return;
 		}
 
-		$map = $this->get_usage_sources( $attachment_id );
+		// See register_media_usage(): captured before the switch below, so
+		// this is always the site $post_id actually belongs to.
+		$blog_id = get_current_blog_id();
+		$key     = $this->make_usage_key( $blog_id, $post_id );
 
-		if ( ! isset( $map[ $post_id ] ) || ! in_array( $source, $map[ $post_id ], true ) ) {
+		// See register_media_usage(): scoped tightly to the attachment-meta
+		// calls below, always restored before schedule_remove_media_view()
+		// (which captures get_current_blog_id() for the async payload and
+		// needs the post's own, originating site).
+		do_action( 'rtgodam_before_attachment_lookup' );
+
+		$map = $this->get_usage_sources( $attachment_id, $blog_id );
+
+		if ( ! isset( $map[ $key ] ) || ! in_array( $source, $map[ $key ]['sources'], true ) ) {
+			do_action( 'rtgodam_after_attachment_lookup' );
 			return; // Nothing to remove for this source.
 		}
 
-		$remaining = array_values( array_diff( $map[ $post_id ], array( $source ) ) );
+		$remaining = array_values( array_diff( $map[ $key ]['sources'], array( $source ) ) );
 
 		if ( empty( $remaining ) ) {
-			unset( $map[ $post_id ] );
+			unset( $map[ $key ] );
 		} else {
-			$map[ $post_id ] = $remaining;
+			$map[ $key ]['sources'] = $remaining;
 		}
 
-		$this->save_usage_sources( $attachment_id, $map );
+		$this->save_usage_sources( $attachment_id, $map, $blog_id );
+
+		$godam_id = empty( $remaining ) ? $this->get_godam_id_for_attachment( $attachment_id ) : '';
+
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Last source removed → notify GoDAM Central.
-		if ( empty( $remaining ) ) {
-			$godam_id = $this->get_godam_id_for_attachment( $attachment_id );
-			if ( $godam_id ) {
-				$this->schedule_remove_media_view( $godam_id, $post_id, $this->get_wp_site() );
-			}
+		if ( $godam_id ) {
+			$this->schedule_remove_media_view( $godam_id, $post_id, $this->get_wp_site() );
 		}
 	}
 
@@ -424,37 +473,103 @@ class Media_Usage_Tracker {
 	 * @return int[]
 	 */
 	public function get_usage_post_ids( $attachment_id ) {
+		/**
+		 * Fires before reading this attachment's usage-index meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$ids = get_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, true );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		return is_array( $ids ) ? array_map( 'intval', $ids ) : array();
+	}
+
+	/**
+	 * Build the composite, per-site-unique key used by the source-aware map.
+	 *
+	 * @param int $blog_id Blog ID the post belongs to.
+	 * @param int $post_id Post ID, local to that blog.
+	 * @return string
+	 */
+	private function make_usage_key( $blog_id, $post_id ) {
+		return ( (int) $blog_id ) . ':' . ( (int) $post_id );
 	}
 
 	/**
 	 * Read the source-aware reference map for an attachment.
 	 *
-	 * Lazily migrates legacy data: on installs predating the source map, the
-	 * existing `_godam_usage_post_ids` entries are treated as the 'content'
-	 * source (the only writer before this API existed). The migration is
+	 * Lazily migrates legacy data, oldest first: entries from before blog_id
+	 * qualification (bare `int $post_id => string[] $sources`) and entries from
+	 * before the source map existed at all (`_godam_usage_post_ids` only) are both
+	 * assumed to belong to `$blog_id` — the same assumption every older version of
+	 * this code already made when it read the current blog directly, since neither
+	 * legacy shape recorded a site of its own. This is necessarily a best-effort
+	 * guess for pre-existing data (there is no way to recover which site actually
+	 * wrote a bare legacy entry), but it never makes an already-correct pair
+	 * ambiguous, and every write from here on is unambiguous. Migrations are
 	 * persisted on the next save_usage_sources() call.
 	 *
 	 * @param int $attachment_id Attachment WP post ID.
-	 * @return array<int, string[]> Map of post ID → source list.
+	 * @param int $blog_id       Blog ID to attribute migrated/legacy entries to.
+	 *                           Callers must capture this via get_current_blog_id()
+	 *                           BEFORE firing rtgodam_before_attachment_lookup, since
+	 *                           this method itself runs inside that lookup bracket
+	 *                           and a listener may have already switched sites by
+	 *                           the time it executes.
+	 * @return array<string, array{blog_id:int, post_id:int, sources:string[]}> Map keyed by make_usage_key().
 	 */
-	private function get_usage_sources( $attachment_id ) {
+	private function get_usage_sources( $attachment_id, $blog_id ) {
+		/**
+		 * Fires before reading this attachment's source-aware usage map, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$map = get_post_meta( $attachment_id, self::SOURCES_META_KEY, true );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		if ( is_array( $map ) ) {
 			$normalized = array();
-			foreach ( $map as $post_id => $sources ) {
-				$normalized[ (int) $post_id ] = array_values( array_filter( array_map( 'strval', (array) $sources ) ) );
+			foreach ( $map as $map_key => $entry ) {
+				if ( is_array( $entry ) && isset( $entry['post_id'], $entry['sources'] ) ) {
+					// Current shape already.
+					$entry_blog_id = isset( $entry['blog_id'] ) ? (int) $entry['blog_id'] : $blog_id;
+					$post_id       = (int) $entry['post_id'];
+					$sources       = array_values( array_filter( array_map( 'strval', (array) $entry['sources'] ) ) );
+				} else {
+					// Legacy shape: bare int post_id => string[] sources.
+					$entry_blog_id = $blog_id;
+					$post_id       = (int) $map_key;
+					$sources       = array_values( array_filter( array_map( 'strval', (array) $entry ) ) );
+				}
+
+				if ( empty( $sources ) ) {
+					continue;
+				}
+
+				$normalized[ $this->make_usage_key( $entry_blog_id, $post_id ) ] = array(
+					'blog_id' => $entry_blog_id,
+					'post_id' => $post_id,
+					'sources' => $sources,
+				);
 			}
 			return $normalized;
 		}
 
-		// Lazy migration from the legacy post-ID list.
+		// Lazy migration from the even older legacy post-ID-only list.
 		$legacy = $this->get_usage_post_ids( $attachment_id );
 		$map    = array();
 		foreach ( $legacy as $post_id ) {
-			$map[ (int) $post_id ] = array( 'content' );
+			$map[ $this->make_usage_key( $blog_id, $post_id ) ] = array(
+				'blog_id' => $blog_id,
+				'post_id' => (int) $post_id,
+				'sources' => array( 'content' ),
+			);
 		}
 		return $map;
 	}
@@ -462,38 +577,63 @@ class Media_Usage_Tracker {
 	/**
 	 * Persist the source-aware reference map and keep the derived post-ID list in sync.
 	 *
-	 * @param int                  $attachment_id Attachment WP post ID.
-	 * @param array<int, string[]> $map           Map of post ID → source list.
+	 * @param int                                                              $attachment_id Attachment WP post ID.
+	 * @param array<string, array{blog_id:int, post_id:int, sources:string[]}> $map           Map keyed by make_usage_key().
+	 * @param int                                                              $blog_id       Fallback blog ID for any
+	 *                                                                                         entry in $map missing its
+	 *                                                                                         own (defensive — see
+	 *                                                                                         get_usage_sources()).
 	 * @return void
 	 */
-	private function save_usage_sources( $attachment_id, array $map ) {
+	private function save_usage_sources( $attachment_id, array $map, $blog_id ) {
 		$clean = array();
-		foreach ( $map as $post_id => $sources ) {
-			$sources = array_values( array_unique( array_filter( (array) $sources ) ) );
+		foreach ( $map as $map_key => $entry ) {
+			$sources = array_values( array_unique( array_filter( (array) ( $entry['sources'] ?? array() ) ) ) );
 			if ( ! empty( $sources ) ) {
-				$clean[ (int) $post_id ] = $sources;
+				$clean[ $map_key ] = array(
+					'blog_id' => (int) ( $entry['blog_id'] ?? $blog_id ),
+					'post_id' => (int) ( $entry['post_id'] ?? 0 ),
+					'sources' => $sources,
+				);
 			}
 		}
 
-		if ( empty( $clean ) ) {
-			delete_post_meta( $attachment_id, self::SOURCES_META_KEY );
-			delete_post_meta( $attachment_id, self::ATTACHMENT_META_KEY );
-			return;
-		}
-
-		update_post_meta( $attachment_id, self::SOURCES_META_KEY, $clean );
-
-		// Derived public list holds real post IDs only — the synthetic anchor 0
-		// (block widgets, other non-post contexts) is recorded in the source map
-		// but never leaks into get_usage_post_ids().
-		$post_ids = array();
-		foreach ( array_keys( $clean ) as $post_id ) {
-			$post_id = (int) $post_id;
-			if ( $post_id > 0 ) {
-				$post_ids[] = $post_id;
+		/**
+		 * Fires before writing this attachment's usage-index meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			if ( empty( $clean ) ) {
+				delete_post_meta( $attachment_id, self::SOURCES_META_KEY );
+				delete_post_meta( $attachment_id, self::ATTACHMENT_META_KEY );
+				return;
 			}
+
+			update_post_meta( $attachment_id, self::SOURCES_META_KEY, $clean );
+
+			// Derived public list holds real post IDs only — the synthetic anchor 0
+			// (block widgets, other non-post contexts) is recorded in the source map
+			// but never leaks into get_usage_post_ids(). Kept as a flat, network-wide
+			// set of post ID numbers (not blog-qualified) for backward compatibility
+			// with this method's own documented, unchanged public signature — nothing
+			// in this codebase resolves these IDs via get_post() without a caller-side
+			// site switch of its own, so the collapse across sites is informational
+			// only, not a correctness gap the way the write-side collision was.
+			$post_ids = array();
+			foreach ( $clean as $entry ) {
+				$post_id = (int) $entry['post_id'];
+				if ( $post_id > 0 ) {
+					$post_ids[] = $post_id;
+				}
+			}
+			update_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, array_values( array_unique( $post_ids ) ) );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-		update_post_meta( $attachment_id, self::ATTACHMENT_META_KEY, $post_ids );
 	}
 
 	/**
@@ -503,7 +643,7 @@ class Media_Usage_Tracker {
 	 * @return int[]
 	 */
 	private function get_tracked_attachment_ids( $post_id ) {
-		$ids = get_post_meta( $post_id, self::POST_META_KEY, true );
+		$ids = get_post_meta( $post_id, self::POST_META_KEY, true ); // godam-coverage-ignore -- get_tracked_attachment_ids(): $post_id is always the host post (both callers guarantee non-attachment); reads that post's own POST_META_KEY marker, not attachment data.
 		return is_array( $ids ) ? array_map( 'intval', $ids ) : array();
 	}
 
@@ -654,7 +794,7 @@ class Media_Usage_Tracker {
 			return array();
 		}
 
-		$data = get_post_meta( $post_id, '_elementor_data', true );
+		$data = get_post_meta( $post_id, '_elementor_data', true ); // godam-coverage-ignore -- extract_ids_from_elementor(): $post_id is the host post (sole caller is sync_post_attachments()); reads that post's own '_elementor_data' (never present on an attachment, per the elementor-gallery-widget-v1-to-v2 precedent).
 		if ( empty( $data ) || ! is_string( $data ) ) {
 			return array();
 		}
@@ -1138,13 +1278,25 @@ class Media_Usage_Tracker {
 	 * @return string GoDAM Central ID, or '' if not a Central media item.
 	 */
 	private function get_godam_id_for_attachment( $attachment_id ) {
-		$godam_id = get_post_meta( $attachment_id, '_godam_original_id', true );
-		if ( ! empty( $godam_id ) ) {
-			return $godam_id;
-		}
+		/**
+		 * Fires before reading this attachment's GoDAM Central identifier
+		 * meta, so integrations that centralize media on another site can
+		 * switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			$godam_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+			if ( ! empty( $godam_id ) ) {
+				return $godam_id;
+			}
 
-		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
-		return ! empty( $job_id ) ? $job_id : '';
+			$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+			return ! empty( $job_id ) ? $job_id : '';
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	/**
@@ -1519,6 +1671,18 @@ class Media_Usage_Tracker {
 
 		global $wpdb;
 
+		/**
+		 * Fires before resolving a WP attachment post ID from its GoDAM
+		 * Central identifier, so integrations that centralize media on
+		 * another site can switch context first. This is a direct
+		 * $wpdb->postmeta query for the attachment carrying this
+		 * _godam_original_id value — the same attachment-scoped lookup
+		 * get_post_meta() would do, just expressed as raw SQL for
+		 * performance.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$post_id = (int) $wpdb->get_var(
 			$wpdb->prepare(
@@ -1526,6 +1690,7 @@ class Media_Usage_Tracker {
 				$godam_id
 			)
 		);
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		$this->godam_id_cache[ $godam_id ] = $post_id;
 		return $post_id;

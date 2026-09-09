@@ -4,8 +4,8 @@
 	"name": "godam/pdf",
 	"title": "Document",
 	"category": "media",
-	"description": "Embed a PDF file with preview.",
-	"keywords": [ "document", "pdf", "file", "preview", "godam" ],
+	"description": "Embed a document with a preview. Supports PDF, Word, Excel, PowerPoint, OpenDocument, TXT and CSV.",
+	"keywords": [ "document", "pdf", "doc", "docx", "word", "excel", "xlsx", "powerpoint", "pptx", "spreadsheet", "csv", "file", "preview", "godam" ],
 	"textdomain": "godam",
 	"attributes": {
 		"blob": {

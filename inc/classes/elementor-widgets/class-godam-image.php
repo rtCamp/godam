@@ -110,8 +110,16 @@ class Godam_Image extends Base {
 			return;
 		}
 
+		/**
+		 * Fires before reading this attachment's alt text, so integrations
+		 * that centralize media on another site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// Mirror the block: alt comes from the attachment's stored alt text.
 		$alt = $image_id ? (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ) : '';
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		$shortcode_atts = array(
 			'id'                => $image_id,

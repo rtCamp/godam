@@ -164,7 +164,7 @@ class Jetpack extends Base {
 
 		do {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$posts_with_forms = $wpdb->get_results(
+			$posts_with_forms = $wpdb->get_results( // godam-coverage-ignore -- get_jetpack_forms(): post_type IN ('page','post') is an explicit allow-list; scans ordinary content pages/posts for embedded Jetpack form blocks, never attachment.
 				$wpdb->prepare(
 					"SELECT DISTINCT p.ID, p.post_title, p.post_content 
 					FROM {$wpdb->posts} p 
@@ -301,7 +301,7 @@ class Jetpack extends Base {
 		$form_number = intval( $form_parts[1] );
 
 		// Get the post content.
-		$post = get_post( $post_id );
+		$post = get_post( $post_id ); // godam-coverage-ignore -- get_jetpack_form(): $post_id is the host post embedding the Jetpack form block, not an attachment ID.
 		if ( ! $post ) {
 			return new \WP_Error( 'post_not_found', __( 'Post not found.', 'godam' ), array( 'status' => 404 ) );
 		}
@@ -379,7 +379,7 @@ class Jetpack extends Base {
 		}
 
 		// Store current post state.
-		$target_post = get_post( $post_id );
+		$target_post = get_post( $post_id ); // godam-coverage-ignore -- render_jetpack_form_directly(): $post_id is the same host post embedding the Jetpack form block that its sole caller (get_jetpack_form) already resolved, not an attachment ID.
 		if ( ! $target_post ) {
 			return false;
 		}
@@ -431,7 +431,7 @@ class Jetpack extends Base {
 		$form_number = intval( $form_parts[1] );
 
 		// Get the post content.
-		$post = get_post( $post_id );
+		$post = get_post( $post_id ); // godam-coverage-ignore -- get_rendered_form_html_static(): $post_id is the host post embedding the Jetpack form block, not an attachment ID.
 		if ( ! $post ) {
 			return false;
 		}
@@ -509,7 +509,7 @@ class Jetpack extends Base {
 		}
 
 		// Store current post state.
-		$target_post = get_post( $post_id );
+		$target_post = get_post( $post_id ); // godam-coverage-ignore -- render_jetpack_form_directly_static(): $post_id is the same host post embedding the Jetpack form block that its sole caller (get_rendered_form_html_static) already resolved, not an attachment ID.
 		if ( ! $target_post ) {
 			return false;
 		}
@@ -765,7 +765,7 @@ class Jetpack extends Base {
 	 */
 	private function load_form_into_memory_with_origin( $form_id, $form_hash, $origin_post_id ) {
 		// Get the origin post.
-		$origin_post = get_post( $origin_post_id );
+		$origin_post = get_post( $origin_post_id ); // godam-coverage-ignore -- load_form_into_memory_with_origin(): $origin_post_id is the host post that originated the form submission (REST "origin-post-id" param or the same form-ID parsing as get_jetpack_form), not an attachment ID.
 		if ( ! $origin_post ) {
 			return false;
 		}

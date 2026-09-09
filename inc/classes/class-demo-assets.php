@@ -105,7 +105,19 @@ class Demo_Assets {
 	 * @return bool
 	 */
 	private static function is_valid_attachment( $attachment_id ) {
+		/**
+		 * Fires before reading this candidate demo attachment's post record,
+		 * so integrations that centralize media on another site can switch
+		 * context first. Reads the attachment's own post_type/post_status to
+		 * confirm the tracked id still points at a live (non-trashed)
+		 * attachment.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$post = get_post( $attachment_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
 		return $post instanceof \WP_Post
 			&& 'attachment' === $post->post_type
 			&& 'trash' !== $post->post_status;
@@ -118,6 +130,16 @@ class Demo_Assets {
 	 * @return int Attachment id, or 0.
 	 */
 	private static function find_existing( $key ) {
+		/**
+		 * Fires before querying for an existing demo attachment by its
+		 * tracking key, so integrations that centralize media on another
+		 * site can switch context first. This is a real attachment query
+		 * (post_type => 'attachment') keyed on the KEY_META marker this
+		 * class itself writes on every demo attachment it creates.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
 		$ids = get_posts(
 			array(
@@ -132,6 +154,7 @@ class Demo_Assets {
 				'meta_value'       => $key,
 			)
 		);
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return ! empty( $ids ) ? (int) $ids[0] : 0;
 	}
@@ -217,7 +240,17 @@ class Demo_Assets {
 			return 0;
 		}
 
+		/**
+		 * Fires before writing this attachment's demo-asset marker, so
+		 * integrations that centralize media on another site can switch
+		 * context first — this runs after create_virtual_attachment()'s own
+		 * wrap has already restored.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		update_post_meta( $attach_id, self::KEY_META, $key );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return (int) $attach_id;
 	}

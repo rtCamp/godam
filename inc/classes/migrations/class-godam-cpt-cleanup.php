@@ -263,7 +263,7 @@ class Godam_Cpt_Cleanup {
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-		$total = (int) $wpdb->get_var(
+		$total = (int) $wpdb->get_var( // godam-coverage-ignore -- run(): post_type = self::POST_TYPE ('godam-video') — a discontinued CPT being permanently deleted, never 'attachment'.
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s",
 				self::POST_TYPE
@@ -348,7 +348,7 @@ class Godam_Cpt_Cleanup {
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-		$ids = $wpdb->get_col(
+		$ids = $wpdb->get_col( // godam-coverage-ignore -- process_batch(): post_type = self::POST_TYPE ('godam-video'); same discontinued-CPT deletion as run(), not attachment data.
 			$wpdb->prepare(
 				"SELECT ID FROM {$wpdb->posts} WHERE post_type = %s ORDER BY ID ASC LIMIT %d",
 				self::POST_TYPE,
@@ -392,7 +392,7 @@ class Godam_Cpt_Cleanup {
 
 		// Check how many posts remain to decide whether to queue another batch.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-		$remaining = (int) $wpdb->get_var(
+		$remaining = (int) $wpdb->get_var( // godam-coverage-ignore -- process_batch(): post_type = self::POST_TYPE ('godam-video'); the remaining-count check for the same discontinued-CPT deletion, not attachment data.
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s",
 				self::POST_TYPE

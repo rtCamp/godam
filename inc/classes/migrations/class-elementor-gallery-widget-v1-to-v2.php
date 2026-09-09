@@ -102,7 +102,7 @@ class Elementor_Gallery_Widget_V1_To_V2 {
 			// godam-gallery widget. LIKE is a coarse prefilter; a precise
 			// confirmation check runs inside the loop before any write.
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$rows = $wpdb->get_results(
+			$rows = $wpdb->get_results( // godam-coverage-ignore -- run(): the discovery query that finds candidate post IDs via a SQL LIKE prefilter on '_elementor_data' — same marker as lines 128/150, so it never matches an attachment post either.
 				$wpdb->prepare(
 					"SELECT p.ID
 					 FROM {$wpdb->posts} p
@@ -125,7 +125,7 @@ class Elementor_Gallery_Widget_V1_To_V2 {
 
 			foreach ( $rows as $row ) {
 				$post_id = (int) $row->ID;
-				$raw     = get_post_meta( $post_id, '_elementor_data', true );
+				$raw     = get_post_meta( $post_id, '_elementor_data', true ); // godam-coverage-ignore -- run(): reads '_elementor_data' on Elementor-built posts/pages (prefiltered by SQL) — never an attachment post type.
 
 				if ( ! is_string( $raw ) || '' === $raw ) {
 					++$skipped;
@@ -147,7 +147,7 @@ class Elementor_Gallery_Widget_V1_To_V2 {
 					continue;
 				}
 
-				$result = update_post_meta(
+				$result = update_post_meta( // godam-coverage-ignore -- run(): writes '_elementor_data' back to the same Elementor-built posts/pages — never an attachment post type.
 					$post_id,
 					'_elementor_data',
 					wp_slash( wp_json_encode( $new_elements, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) )

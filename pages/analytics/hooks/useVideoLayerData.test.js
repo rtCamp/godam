@@ -77,3 +77,205 @@ describe( 'groupRows — conversion comes from the server, not a client recomput
 		expect( parent.conversion_rate ).toBe( 100 );
 	} );
 } );
+
+describe( 'groupRows — a hotspot reports its own viewed, never the layer\'s', () => {
+	// The layer was seen 9 times. Hotspot A has been there throughout and was
+	// seen 7 of those times; hotspot B was added late and has been seen once.
+	// Substituting the layer's 9 onto either of them is the bug: it charges B
+	// with 9 impressions it was never present for, all landing in "No Action".
+	const base = {
+		layer_type: 'hotspot',
+		page_url: 'https://example.com',
+		timestamp: 4.59,
+	};
+	const rows = [
+		{
+			...base,
+			layer_id: 'h-1',
+			layer_name: 'Hotspot layer at 4.59s',
+			viewed: 9, clicked: 2, hovered: 5,
+			conversion_rate: 22.2,
+			layer_metadata: '{"parent_layer_id":"h-1"}',
+		},
+		{
+			...base,
+			layer_id: 'h-1::a',
+			layer_name: 'Long-standing hotspot',
+			viewed: 7, clicked: 1, hovered: 3,
+			conversion_rate: 14.3,
+			layer_metadata: '{"parent_layer_id":"h-1"}',
+		},
+		{
+			...base,
+			layer_id: 'h-1::b',
+			layer_name: 'Added yesterday',
+			viewed: 1, clicked: 0, hovered: 0,
+			conversion_rate: 0,
+			layer_metadata: '{"parent_layer_id":"h-1"}',
+		},
+	];
+
+	it( 'keeps each hotspot\'s own viewed instead of the parent\'s', () => {
+		const [ parent ] = groupRows( rows, 'hotspot', OPEN_CONFIG );
+		const byName = Object.fromEntries(
+			parent.sub_hotspots.map( ( s ) => [ s.name, s.counts.viewed ] ),
+		);
+		expect( byName[ 'Long-standing hotspot' ] ).toBe( 7 );
+		expect( byName[ 'Added yesterday' ] ).toBe( 1 );
+	} );
+
+	it( 'computes No Action against the hotspot\'s own viewed', () => {
+		const [ parent ] = groupRows( rows, 'hotspot', OPEN_CONFIG );
+		const byName = Object.fromEntries(
+			parent.sub_hotspots.map( ( s ) => [ s.name, s.no_action ] ),
+		);
+		// 7 - 3, not the parent's 9 - 3 = 6.
+		expect( byName[ 'Long-standing hotspot' ] ).toBe( 4 );
+		// 1 - 0, not the parent's 9 - 0 = 9. This is the reported bug.
+		expect( byName[ 'Added yesterday' ] ).toBe( 1 );
+	} );
+
+	it( 'leaves the layer row itself on its own aggregate', () => {
+		const [ parent ] = groupRows( rows, 'hotspot', OPEN_CONFIG );
+		expect( parent.counts.viewed ).toBe( 9 );
+		expect( parent.no_action ).toBe( 4 );
+	} );
+
+	// Woo product hotspots go through this same code path, and the two types
+	// must behave identically. Asserted separately because `layerType` selects
+	// the No Action formula, so a woo-only regression would not be caught above.
+	it( 'treats a Woo product hotspot exactly the same way', () => {
+		const wooRows = rows.map( ( r ) => ( {
+			...r,
+			layer_type: 'woo',
+			layer_id: r.layer_id.replace( '::a', '::p1' ).replace( '::b', '::p2' ),
+			layer_metadata: r.layer_id.includes( '::' )
+				? JSON.stringify( {
+					parent_layer_id: 'h-1',
+					product_id: r.layer_id.endsWith( 'a' ) ? 1 : 2,
+					product_name: r.layer_id.endsWith( 'a' ) ? 'Established product' : 'Added yesterday',
+				} )
+				: '{"parent_layer_id":"h-1"}',
+		} ) );
+		const [ parent ] = groupRows( wooRows, 'woo', OPEN_CONFIG );
+		const byName = Object.fromEntries(
+			parent.sub_hotspots.map( ( s ) => [ s.name, [ s.counts.viewed, s.no_action ] ] ),
+		);
+		expect( byName[ 'Established product' ] ).toEqual( [ 7, 4 ] );
+		expect( byName[ 'Added yesterday' ] ).toEqual( [ 1, 1 ] );
+	} );
+} );
+
+describe( 'groupRows — hotspot sub-name drops the redundant parent prefix', () => {
+	// The tracker writes each hotspot event's layer_name as the parent layer
+	// name, a separator dash, then "Hotspot N" (e.g. the parent "Hotspot layer
+	// at 4.59s" followed by " <dash> Hotspot 2"). The rail already shows the
+	// parent as its card title, so the row must read just "Hotspot N". SEP is
+	// built from a code point so no literal em dash lives in this file.
+	const SEP = ` ${ String.fromCharCode( 0x2014 ) } `;
+	const PARENT = 'Hotspot layer at 4.59s';
+	const base = { layer_type: 'hotspot', page_url: 'https://example.com', timestamp: 4.59 };
+	const parentRow = {
+		...base,
+		layer_id: 'h-1',
+		layer_name: PARENT,
+		viewed: 2, clicked: 1, hovered: 2,
+		conversion_rate: 50,
+		layer_metadata: JSON.stringify( { parent_layer_id: 'h-1', parent_layer_name: PARENT } ),
+	};
+	const subRow = ( suffix, label, index ) => ( {
+		...base,
+		layer_id: `h-1::${ suffix }`,
+		layer_name: `${ PARENT }${ SEP }${ label }`,
+		viewed: 1, clicked: 0, hovered: 0,
+		conversion_rate: 0,
+		layer_metadata: JSON.stringify( {
+			parent_layer_id: 'h-1',
+			parent_layer_name: PARENT,
+			hotspot_index: index,
+		} ),
+	} );
+
+	it( 'strips the parent name and separator, leaving only "Hotspot N"', () => {
+		const rows = [ parentRow, subRow( 'a', 'Hotspot 1', 0 ), subRow( 'b', 'Hotspot 2', 1 ) ];
+		const [ parent ] = groupRows( rows, 'hotspot', OPEN_CONFIG );
+		expect( parent.sub_hotspots.map( ( s ) => s.name ).sort() ).toEqual( [ 'Hotspot 1', 'Hotspot 2' ] );
+	} );
+
+	it( 'leaves a Woo product name untouched (guarded by product_name)', () => {
+		const wooParent = {
+			...parentRow,
+			layer_type: 'woo',
+			layer_id: 'w-1',
+			layer_name: 'Woo layer at 9.90s',
+			layer_metadata: JSON.stringify( { parent_layer_id: 'w-1', parent_layer_name: 'Woo layer at 9.90s' } ),
+		};
+		const wooSub = {
+			...base,
+			layer_type: 'woo',
+			layer_id: 'w-1::p1',
+			layer_name: 'Lamp',
+			viewed: 0, hovered: 1, added_to_cart: 0, conversion_rate: 0,
+			layer_metadata: JSON.stringify( { parent_layer_id: 'w-1', product_id: 1, product_name: 'Lamp' } ),
+		};
+		const [ parent ] = groupRows( [ wooParent, wooSub ], 'woo', OPEN_CONFIG );
+		expect( parent.sub_hotspots.map( ( s ) => s.name ) ).toEqual( [ 'Lamp' ] );
+	} );
+
+	it( 'keeps a sub name that does not start with the parent prefix', () => {
+		const custom = {
+			...subRow( 'c', 'ignored', 2 ),
+			layer_name: 'Buy now',
+			layer_metadata: JSON.stringify( { parent_layer_id: 'h-1', parent_layer_name: PARENT } ),
+		};
+		const [ parent ] = groupRows( [ parentRow, custom ], 'hotspot', OPEN_CONFIG );
+		expect( parent.sub_hotspots.map( ( s ) => s.name ) ).toContain( 'Buy now' );
+	} );
+
+	// A custom label that merely begins with the parent name but is not the
+	// tracker composite (no separator). Stripping on the bare parent name
+	// would leave "special"; matching the full "<parent> — " separator keeps
+	// the label whole.
+	it( 'leaves a custom label that only shares the parent name as a prefix', () => {
+		const collidingParent = 'Sale';
+		const parentSale = {
+			...base,
+			layer_id: 'h-2',
+			layer_name: collidingParent,
+			viewed: 2, clicked: 1, hovered: 2, conversion_rate: 50,
+			layer_metadata: JSON.stringify( { parent_layer_id: 'h-2', parent_layer_name: collidingParent } ),
+		};
+		const sub = {
+			...base,
+			layer_id: 'h-2::a',
+			layer_name: 'Sale special',
+			viewed: 1, clicked: 0, hovered: 0, conversion_rate: 0,
+			layer_metadata: JSON.stringify( { parent_layer_id: 'h-2', parent_layer_name: collidingParent } ),
+		};
+		const [ parent ] = groupRows( [ parentSale, sub ], 'hotspot', OPEN_CONFIG );
+		expect( parent.sub_hotspots.map( ( s ) => s.name ) ).toEqual( [ 'Sale special' ] );
+	} );
+
+	// A hotspot whose own label starts with a dash. Only the single separator
+	// is the prefix; the label's leading dash must survive so "-50% off" does
+	// not become "50% off" (the opposite meaning).
+	it( 'keeps a hotspot label that itself begins with a dash', () => {
+		const dashParent = 'Summer sale';
+		const parentSummer = {
+			...base,
+			layer_id: 'h-3',
+			layer_name: dashParent,
+			viewed: 2, clicked: 1, hovered: 2, conversion_rate: 50,
+			layer_metadata: JSON.stringify( { parent_layer_id: 'h-3', parent_layer_name: dashParent } ),
+		};
+		const sub = {
+			...base,
+			layer_id: 'h-3::a',
+			layer_name: `${ dashParent }${ SEP }-50% off`,
+			viewed: 1, clicked: 0, hovered: 0, conversion_rate: 0,
+			layer_metadata: JSON.stringify( { parent_layer_id: 'h-3', parent_layer_name: dashParent } ),
+		};
+		const [ parent ] = groupRows( [ parentSummer, sub ], 'hotspot', OPEN_CONFIG );
+		expect( parent.sub_hotspots.map( ( s ) => s.name ) ).toEqual( [ '-50% off' ] );
+	} );
+} );

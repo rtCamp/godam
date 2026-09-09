@@ -105,6 +105,19 @@ const mediaLibrary = {
 	entry: {
 		'media-library': path.resolve( process.cwd(), 'assets', 'src', 'js', 'media-library', 'index.js' ),
 	},
+	// This entry now code-splits video.js into an async chunk (see videojs-loader). It
+	// shares the assets/build/js output dir and the default `webpackChunkgodam` global
+	// with godamPlayerFrontend / godamImageLayersFrontend, which ALSO emit video.js-family
+	// async chunks. Give this compilation its own runtime global (uniqueName) and prefixed,
+	// content-hashed chunk filenames so its async chunks can't collide with theirs on disk
+	// or clobber each other's chunk-loading runtime (the "TypeError: o[t] is not a function"
+	// class of bug documented on godamImageLayersFrontend below). The content hash also
+	// avoids a browser serving a stale videojs chunk after a plugin update.
+	output: {
+		...sharedConfig.output,
+		uniqueName: 'godamMediaLibrary',
+		chunkFilename: 'media-library-[name].[contenthash].min.js',
+	},
 };
 
 const godamPlayerFrontend = {
