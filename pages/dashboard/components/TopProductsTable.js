@@ -358,6 +358,10 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 	const products = data?.products || [];
 	const totalPages = data?.totalPages || 1;
 	const totalItems = data?.totalItems || 0;
+	// The revenue column is single-currency: the service sums only the store's base
+	// currency and stamps every row's `currency` with that base code. Surface the
+	// code so the header note can name it. Empty on a non-Woo store (no revenue rows).
+	const baseCurrency = products.find( ( p ) => p.currency )?.currency || '';
 
 	const [ fetchForExport ] = useLazyFetchTopProductsQuery();
 
@@ -465,6 +469,18 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 						) }
 					</h2>
 				) }
+				{ baseCurrency && (
+					<p
+						className="w-full order-last mt-1 mb-0 text-[13px] text-zinc-500"
+						data-test-id="godam-top-products-currency-note"
+					>
+						{ sprintf(
+							/* translators: %s: ISO 4217 currency code, e.g. USD. */
+							__( 'Revenue is shown only in your store’s base currency (%s). Orders in other currencies are not converted or counted here.', 'godam' ),
+							baseCurrency,
+						) }
+					</p>
+				) }
 				<div className="top-media-container__tools">
 					<SearchControl
 						__nextHasNoMarginBottom
@@ -530,10 +546,16 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 								<span className="inline-flex items-center gap-1">
 									{ __( 'Revenue', 'godam' ) }
 									<Tooltip
-										text={ __(
-											'Order value traced to this product\'s videos, in the store\'s base currency, before refunds. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.',
-											'godam',
-										) }
+										text={ baseCurrency
+											? sprintf(
+												/* translators: %s: ISO 4217 currency code, e.g. USD. */
+												__( 'Order value traced to this product\'s videos, in the store\'s base currency (%s), before refunds. Orders in other currencies are not converted or counted. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.', 'godam' ),
+												baseCurrency,
+											)
+											: __(
+												'Order value traced to this product\'s videos, in the store\'s base currency, before refunds. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.',
+												'godam',
+											) }
 									/>
 								</span>
 							</th>

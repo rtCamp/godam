@@ -331,11 +331,20 @@ const Dashboard = () => {
 	};
 	const skipWooCards = shouldSkipSecondaryQueries || ! hasWooProducts;
 
+	// Synthesize the { error: true } marker on a HARD query failure too, not just
+	// the soft one. transformResponse only mints { error: true } for a 2xx body
+	// carrying status:error (an MS error the WP proxy normalised to 200); on a hard
+	// failure isolated to these routes (a stale-nonce 401/403, a PHP fatal / 5xx in
+	// the proxy, unparseable JSON, or a version-skew 404) RTK sets isError and
+	// leaves data undefined. Without this, the card would hit its null guard and
+	// vanish. Mirrors how PlacementFunnelCard folds its own isError into the marker.
 	const [ revenueRange, setRevenueRange ] = useState( { startDate: null, endDate: null } );
-	const { data: revenueData } = useFetchRevenueSummaryQuery( rangeQueryArgs( revenueRange ), { skip: skipWooCards } );
+	const { data: revenueDataRaw, isError: isRevenueError } = useFetchRevenueSummaryQuery( rangeQueryArgs( revenueRange ), { skip: skipWooCards } );
+	const revenueData = isRevenueError ? { error: true } : revenueDataRaw;
 
 	const [ purchaseFunnelRange, setPurchaseFunnelRange ] = useState( { startDate: null, endDate: null } );
-	const { data: videoFunnelData } = useFetchVideoFunnelQuery( rangeQueryArgs( purchaseFunnelRange ), { skip: skipWooCards } );
+	const { data: videoFunnelDataRaw, isError: isVideoFunnelError } = useFetchVideoFunnelQuery( rangeQueryArgs( purchaseFunnelRange ), { skip: skipWooCards } );
+	const videoFunnelData = isVideoFunnelError ? { error: true } : videoFunnelDataRaw;
 
 	const [ placementFunnelRange, setPlacementFunnelRange ] = useState( { startDate: null, endDate: null } );
 

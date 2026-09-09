@@ -399,3 +399,31 @@ describe( 'TopProductsTable — error vs empty state', () => {
 		expect( html ).not.toContain( 'godam-top-products-error' );
 	} );
 } );
+
+describe( 'TopProductsTable — base-currency note', () => {
+	it( 'names the store base currency (from the rows) so a mixed-currency store is not confusing', () => {
+		useFetchTopProductsQuery.mockReturnValue( {
+			data: {
+				products: [ { product_id: 1, title: 'A', revenue_minor: 6100, currency: 'USD', orders: 1 } ],
+				totalItems: 1,
+				totalPages: 1,
+			},
+			isFetching: false,
+			isError: false,
+		} );
+		const html = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
+		expect( html ).toContain( 'godam-top-products-currency-note' );
+		expect( html ).toContain( 'base currency' );
+		expect( html ).toContain( 'USD' );
+	} );
+
+	it( 'omits the note when no row carries a currency (non-Woo / no revenue yet)', () => {
+		useFetchTopProductsQuery.mockReturnValue( {
+			data: { products: [ { product_id: 1, title: 'A' } ], totalItems: 1, totalPages: 1 },
+			isFetching: false,
+			isError: false,
+		} );
+		const html = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
+		expect( html ).not.toContain( 'godam-top-products-currency-note' );
+	} );
+} );
