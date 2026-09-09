@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -141,6 +141,37 @@ const App = () => {
 		};
 	}, [ refetchAllMediaCount, refetchUncategorizedCount ] );
 
+	// Debounce persistence so a burst of rapid toggles collapses into a single write.
+	// Each POST is fire-and-forget, so without this two quick toggles could be applied
+	// out of order server-side and leave the stored flag disagreeing with the UI. The
+	// timer always carries the latest value, so the user's final choice is what's saved,
+	// and only ever one request is in flight.
+	const saveTimerRef = useRef( null );
+	const pendingHiddenRef = useRef( null );
+
+	const persistSidebarPreference = useCallback( ( hidden ) => {
+		pendingHiddenRef.current = hidden;
+
+		if ( saveTimerRef.current ) {
+			clearTimeout( saveTimerRef.current );
+		}
+
+		saveTimerRef.current = setTimeout( () => {
+			saveTimerRef.current = null;
+			pendingHiddenRef.current = null;
+			updateSidebarPreference( hidden );
+		}, 500 );
+	}, [ updateSidebarPreference ] );
+
+	// Flush a still-pending save on unmount so the last toggle before the media modal
+	// closes isn't dropped.
+	useEffect( () => () => {
+		if ( saveTimerRef.current ) {
+			clearTimeout( saveTimerRef.current );
+			updateSidebarPreference( pendingHiddenRef.current );
+		}
+	}, [ updateSidebarPreference ] );
+
 	const toggleSidebar = ( e ) => {
 		const target = e.target;
 
@@ -159,11 +190,11 @@ const App = () => {
 
 		setIsSidebarHidden( newHidden );
 
-		// Fire-and-forget, and desktop-only: on mobile the sidebar is a transient overlay,
-		// so expanding it must not overwrite the choice the user made on a wide screen. A
-		// failed save just means the next page load falls back to the stored state.
+		// Desktop-only: on mobile the sidebar is a transient overlay, so expanding it must
+		// not overwrite the choice the user made on a wide screen. A failed save just means
+		// the next page load falls back to the stored state.
 		if ( ! isMobileViewport() ) {
-			updateSidebarPreference( newHidden );
+			persistSidebarPreference( newHidden );
 		}
 	};
 
