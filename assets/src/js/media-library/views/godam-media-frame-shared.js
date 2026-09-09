@@ -16,6 +16,8 @@ import { select, dispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import { getQuery } from '../utility.js';
+import { isSameId } from '../ids.js';
+import { setupClassicFeaturedImage, resolveClassicFeaturedImage, clearDeferredFeaturedImage } from '../classic-featured-image.js';
 import { ALLOWED_MEDIA_TYPES as DOCUMENT_MIME_TYPES } from '../../../blocks/godam-pdf/constants.js';
 
 const l10n = wp?.media?.view?.l10n;
@@ -96,7 +98,7 @@ function replaceVirtualIdInCoreImageBlocks( virtualMediaId, realId ) {
 			block.name === 'core/image' &&
 			block.attributes?.id !== undefined &&
 			block.attributes?.id !== null &&
-			String( block.attributes.id ) === String( virtualMediaId )
+			isSameId( block.attributes.id, virtualMediaId )
 		) {
 			blockEditorDispatch.updateBlockAttributes( block.clientId, { id: realId } );
 		}
@@ -104,29 +106,66 @@ function replaceVirtualIdInCoreImageBlocks( virtualMediaId, realId ) {
 }
 
 /**
- * Check if the current frame is a featured image context.
+ * Repoints the post's featured image from the virtual GoDAM ID to the real WP
+ * attachment ID.
  *
- * Note: This will not cover the media modal opened from the core feature image block.
+ * The featured image is not a block attribute — `core/post-featured-image` (and the
+ * document sidebar's Featured image panel) writes it to the post entity's
+ * `featured_media` field. So the block-attribute swap performed by
+ * core-media-blocks-extension.js never reaches it: the field keeps the GoDAM job ID,
+ * `getEntityRecord( 'postType', 'attachment', <job id> )` 404s, and the block renders
+ * an empty placeholder with no preview.
  *
- * @since 1.4.8
+ * Core sets `featured_media` synchronously from the frame's `select` event, while the
+ * attachment is created asynchronously — so by the time this runs the field already
+ * holds the virtual ID and can simply be replaced. The classic editor offers no such
+ * window and is handled by classic-featured-image.js instead.
  *
- * @param {wp.media.view.MediaFrame} frame
- * @return {boolean} True if featured image context, false otherwise.
+ * @param {string|number} virtualMediaId - The GoDAM item ID used as a placeholder.
+ * @param {number}        realId         - The newly created WP attachment ID.
  */
-const checkIfFeatureImage = ( frame ) => {
-	// Check if this is a featured image context.
-	if ( frame && frame.state && frame.state() ) {
-		const state = frame.state();
-		const stateId = state.id || '';
+function replaceVirtualIdInFeaturedImage( virtualMediaId, realId ) {
+	let currentFeaturedMedia;
 
-		// Featured image context
-		if ( stateId === 'featured-image' || frame.id === 'featured-image' ) {
-			return true;
-		}
+	try {
+		// Undefined outside the post editor (media library screen, classic editor).
+		currentFeaturedMedia = select( 'core/editor' )?.getEditedPostAttribute?.( 'featured_media' );
+	} catch {
+		return;
 	}
 
-	return false;
-};
+	if ( currentFeaturedMedia === undefined || currentFeaturedMedia === null ) {
+		return;
+	}
+
+	if ( ! isSameId( currentFeaturedMedia, virtualMediaId ) ) {
+		return;
+	}
+
+	try {
+		dispatch( 'core/editor' ).editPost( { featured_media: realId } );
+	} catch {
+		// Guarded like the read above. A throw here would unwind into processGoDAMItem's
+		// swallow-all catch and take out resolveClassicFeaturedImage() along with both
+		// custom events for this item, which other code depends on.
+	}
+}
+
+/**
+ * Release a classic-editor featured image pick whose attachment was never created.
+ *
+ * The pick is lost either way — there is no ID to set — but clearing the park keeps the
+ * failure to this one item instead of jamming every subsequent pick, and the warning
+ * gives the silent drop a trace, since the meta box just keeps its previous value.
+ *
+ * @param {string|number} virtualMediaId The GoDAM item ID whose creation failed.
+ */
+function releaseParkedFeaturedImage( virtualMediaId ) {
+	if ( clearDeferredFeaturedImage( virtualMediaId ) ) {
+		// eslint-disable-next-line no-console
+		console.warn( 'GoDAM: could not create the attachment for the selected featured image, so the featured image was left unchanged.' );
+	}
+}
 
 /**
  * Check if the current frame is an analytics context.
@@ -150,10 +189,9 @@ const checkIfAnalyticsContext = ( frame ) => {
  */
 const GoDAMMediaFrameShared = {
 	browseRouter( routerView ) {
-		const isFeatureImage = checkIfFeatureImage( this );
 		const isAnalyticsContext = checkIfAnalyticsContext( this );
 
-		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isFeatureImage && ! isAnalyticsContext ) {
+		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isAnalyticsContext ) {
 			routerView.set( {
 				upload: {
 					text: l10n.uploadFilesTitle,
@@ -184,6 +222,10 @@ const GoDAMMediaFrameShared = {
 
 	GoDAMCreate() {
 		const state = this.state();
+
+		// Hold back a classic-editor featured image pick until its attachment exists.
+		// Scoped to the Featured image frame; every other frame is left untouched.
+		setupClassicFeaturedImage( this );
 
 		const mimeTypes = normalizeGoDAMTabType(
 			state.get( 'library' )?.props?.get( 'type' ),
@@ -292,6 +334,12 @@ const GoDAMMediaFrameShared = {
 				// so that inner blocks are resolved without relying on React effect timing.
 				replaceVirtualIdInCoreImageBlocks( data.id, attachment.id );
 
+				// The featured image lives on the post entity rather than on block
+				// attributes, so it needs its own swap. The classic editor gets no
+				// placeholder at all — its pick was parked, and is released here.
+				replaceVirtualIdInFeaturedImage( data.id, attachment.id );
+				resolveClassicFeaturedImage( data.id, attachment.id );
+
 				// Trigger custom JS event godam-virtual-attachment-created
 				const event = new CustomEvent( 'godam-virtual-attachment-created', {
 					detail: { virtualMediaId: data.id, attachment },
@@ -302,9 +350,15 @@ const GoDAMMediaFrameShared = {
 				// Also trigger count refresh for React components
 				const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
 				document.dispatchEvent( countRefreshEvent );
+			} else {
+				// There is no attachment to point the pick at, so a parked classic-editor
+				// featured image has to be released — otherwise the park is held for the
+				// life of the page and every later pick is swallowed too.
+				releaseParkedFeaturedImage( data.id );
 			}
 		} catch {
 			// Swallow request failures so one item does not break the rest of the selection flow.
+			releaseParkedFeaturedImage( data.id );
 		}
 	},
 

@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 2.2.0\n"
+"Project-Id-Version: GoDAM 2.2.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-27T10:55:02+00:00\n"
+"POT-Creation-Date: 2026-09-08T08:28:38+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -1649,7 +1649,7 @@ msgstr ""
 #: assets/src/js/godam-player/engagement.js:744
 #: pages/godam/components/ConfirmModal.jsx:38
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:191
-#: pages/media-library/App.js:178
+#: pages/media-library/App.js:183
 #: pages/media-library/components/modal/DeleteModal.jsx:139
 #: pages/media-library/components/modal/FolderCreationModal.jsx:132
 #: pages/media-library/components/modal/RenameModal.jsx:104
@@ -2284,7 +2284,7 @@ msgstr ""
 #: assets/build/pages/media-library.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/godam-player/engagement.js:938
-#: pages/media-library/components/context-menu/ContextMenu.jsx:464
+#: pages/media-library/components/context-menu/ContextMenu.jsx:458
 #: pages/media-library/components/modal/DeleteModal.jsx:132
 #: pages/video-editor/components/SidebarLayers.js:750
 #: pages/video-editor/components/transcription/Transcription.js:304
@@ -2540,7 +2540,7 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-admin.php:192
 #: admin/class-rtgodam-transcoder-admin.php:336
 #: admin/godam-transcoder-functions.php:381
-#: inc/classes/class-media-library-ajax.php:1421
+#: inc/classes/class-media-library-ajax.php:1592
 #: inc/templates/video-preview.php:71
 #: assets/src/js/media-library/views/attachment.js:184
 #: pages/godam/components/GoDAMHeader.jsx:74
@@ -4989,12 +4989,12 @@ msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
 #: inc/classes/rest-api/class-media-library.php:1565
-#: pages/media-library/components/context-menu/ContextMenu.jsx:210
+#: pages/media-library/components/context-menu/ContextMenu.jsx:196
 msgid "Preparing ZIP file…"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:220
+#: pages/media-library/components/context-menu/ContextMenu.jsx:206
 msgid "Failed to start ZIP creation"
 msgstr ""
 
@@ -5009,109 +5009,109 @@ msgid "Timed out while preparing the ZIP file."
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:226
+#: pages/media-library/components/context-menu/ContextMenu.jsx:212
 msgid "Failed to create ZIP file"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
 #: inc/classes/rest-api/class-media-library.php:1627
-#: pages/media-library/components/context-menu/ContextMenu.jsx:237
+#: pages/media-library/components/context-menu/ContextMenu.jsx:223
 msgid "ZIP file created successfully."
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:242
+#: pages/media-library/components/context-menu/ContextMenu.jsx:228
 msgid "Failed to download folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:201
+#: pages/media-library/components/context-menu/ContextMenu.jsx:187
 msgid "Folder ID is missing for download."
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:267
+#: pages/media-library/components/context-menu/ContextMenu.jsx:253
 msgid "Invalid folder for bookmark."
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:290
+#: pages/media-library/components/context-menu/ContextMenu.jsx:276
 msgid "Bookmark removed successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:291
+#: pages/media-library/components/context-menu/ContextMenu.jsx:277
 msgid "Bookmark added successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:301
+#: pages/media-library/components/context-menu/ContextMenu.jsx:287
 msgid "Bookmarks added successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:307
+#: pages/media-library/components/context-menu/ContextMenu.jsx:293
 msgid "Failed to update bookmark status"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:323
+#: pages/media-library/components/context-menu/ContextMenu.jsx:309
 msgid "Invalid folder to lock."
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:339
+#: pages/media-library/components/context-menu/ContextMenu.jsx:325
 msgid "Folder unlocked successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:340
+#: pages/media-library/components/context-menu/ContextMenu.jsx:326
 msgid "Folder locked successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:362
+#: pages/media-library/components/context-menu/ContextMenu.jsx:348
 msgid "Folders locked successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:369
+#: pages/media-library/components/context-menu/ContextMenu.jsx:355
 msgid "Failed to update folder lock status"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:421
+#: pages/media-library/components/context-menu/ContextMenu.jsx:409
 msgid "New Sub-folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:429
+#: pages/media-library/components/context-menu/ContextMenu.jsx:417
 #: pages/media-library/components/modal/RenameModal.jsx:98
 msgid "Rename"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:437
+#: pages/media-library/components/context-menu/ContextMenu.jsx:431
 msgid "Lock Folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:437
+#: pages/media-library/components/context-menu/ContextMenu.jsx:431
 msgid "Unlock Folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:445
+#: pages/media-library/components/context-menu/ContextMenu.jsx:439
 msgid "Add Bookmark"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:445
+#: pages/media-library/components/context-menu/ContextMenu.jsx:439
 msgid "Remove Bookmark"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/context-menu/ContextMenu.jsx:455
+#: pages/media-library/components/context-menu/ContextMenu.jsx:449
 msgid "Download Zip"
 msgstr ""
 
@@ -8412,17 +8412,17 @@ msgid "Welcome to GoDAM! Thank you for using our product."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:276
-#: inc/classes/class-media-library-ajax.php:949
+#: inc/classes/class-media-library-ajax.php:954
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:278
-#: inc/classes/class-media-library-ajax.php:951
+#: inc/classes/class-media-library-ajax.php:956
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:279
-#: inc/classes/class-media-library-ajax.php:952
+#: inc/classes/class-media-library-ajax.php:957
 msgid "Dismiss banner"
 msgstr ""
 
@@ -8598,7 +8598,7 @@ msgid "Please upgrade your plan to continue transcoding."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:340
-#: inc/classes/class-media-library-ajax.php:330
+#: inc/classes/class-media-library-ajax.php:335
 msgid "HTTP authentication is enabled on your site, preventing transcoding."
 msgstr ""
 
@@ -8809,49 +8809,49 @@ msgstr ""
 msgid "Demo asset not found."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:815
-#: pages/media-library/App.js:214
+#: inc/classes/class-media-library-ajax.php:820
+#: pages/media-library/App.js:219
 msgid "Uncategorized"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:819
+#: inc/classes/class-media-library-ajax.php:824
 msgid "All collections"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:901
+#: inc/classes/class-media-library-ajax.php:906
 msgid "Offer banner dismissed successfully."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:995
+#: inc/classes/class-media-library-ajax.php:1000
 msgid "Invalid attachment ID or URL."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1017
+#: inc/classes/class-media-library-ajax.php:1022
 #: inc/classes/rest-api/class-media-library.php:827
 msgid "Invalid attachment ID."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1029
+#: inc/classes/class-media-library-ajax.php:1034
 msgid "Could not initialize WordPress filesystem."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1049
+#: inc/classes/class-media-library-ajax.php:1054
 msgid "Could not move file into uploads directory."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1373
+#: inc/classes/class-media-library-ajax.php:1544
 msgid "Insufficient permissions."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1390
+#: inc/classes/class-media-library-ajax.php:1561
 msgid "HTTP auth status saved."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1423
+#: inc/classes/class-media-library-ajax.php:1594
 msgid "GoDAM Transcoding Blocked"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1426
+#: inc/classes/class-media-library-ajax.php:1597
 msgid "HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding."
 msgstr ""
 
@@ -10254,7 +10254,7 @@ msgstr ""
 
 #. translators: %s is the HTTP status code from the GoDAM API response.
 #: inc/classes/rest-api/class-media-library.php:1098
-#: inc/classes/rest-api/class-media-library.php:2080
+#: inc/classes/rest-api/class-media-library.php:2087
 #, php-format
 msgid "GoDAM API returned HTTP status: %s"
 msgstr ""
@@ -10310,8 +10310,8 @@ msgid "You do not have permission to delete folders."
 msgstr ""
 
 #: inc/classes/rest-api/class-media-library.php:1687
-#: inc/classes/rest-api/class-media-library.php:1876
-#: inc/classes/rest-api/class-media-library.php:1934
+#: inc/classes/rest-api/class-media-library.php:1875
+#: inc/classes/rest-api/class-media-library.php:1941
 msgid "No folder IDs provided or invalid format."
 msgstr ""
 
@@ -10373,95 +10373,99 @@ msgstr ""
 msgid "Failed to update folder %s."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1869
+#: inc/classes/rest-api/class-media-library.php:1868
 msgid "You do not have permission to lock or unlock folders."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1888
+#: inc/classes/rest-api/class-media-library.php:1887
 #, php-format
 msgid "%d folder(s) locked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1890
+#: inc/classes/rest-api/class-media-library.php:1889
 #, php-format
 msgid "%d folder(s) unlocked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1904
+#: inc/classes/rest-api/class-media-library.php:1903
 #, php-format
 msgid "Some folders locked, but issues occurred with others. Locked: %d."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1906
+#: inc/classes/rest-api/class-media-library.php:1905
 #, php-format
 msgid "Some folders unlocked, but issues occurred with others. Unlocked: %d."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1917
+#: inc/classes/rest-api/class-media-library.php:1916
 msgid "No folders were updated for lock status."
 msgstr ""
 
+#: inc/classes/rest-api/class-media-library.php:1934
+msgid "You do not have permission to bookmark folders."
+msgstr ""
+
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1946
+#: inc/classes/rest-api/class-media-library.php:1953
 #, php-format
 msgid "%d folder(s) bookmarked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1948
+#: inc/classes/rest-api/class-media-library.php:1955
 #, php-format
 msgid "%d folder(s) unbookmarked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1962
+#: inc/classes/rest-api/class-media-library.php:1969
 #, php-format
 msgid "Some folders bookmarked, but issues occurred with others. Bookmarked: %d."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:1964
+#: inc/classes/rest-api/class-media-library.php:1971
 #, php-format
 msgid "Some folders unbookmarked, but issues occurred with others. Unbookmarked: %d."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1975
+#: inc/classes/rest-api/class-media-library.php:1982
 msgid "No folders were updated for bookmark status."
 msgstr ""
 
 #. translators: %s is the error message from the GoDAM API request.
-#: inc/classes/rest-api/class-media-library.php:2065
+#: inc/classes/rest-api/class-media-library.php:2072
 #, php-format
 msgid "GoDAM API request failed: %s"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2093
+#: inc/classes/rest-api/class-media-library.php:2100
 msgid "Unexpected API response format."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2126
+#: inc/classes/rest-api/class-media-library.php:2133
 msgid "Filtered GoDAM files by MIME type."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2156
+#: inc/classes/rest-api/class-media-library.php:2163
 msgid "Required fields are missing."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2164
 #: inc/classes/rest-api/class-media-library.php:2171
-#: inc/classes/rest-api/class-media-library.php:2183
+#: inc/classes/rest-api/class-media-library.php:2178
+#: inc/classes/rest-api/class-media-library.php:2190
 msgid "Invalid or disallowed MIME type."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2218
+#: inc/classes/rest-api/class-media-library.php:2225
 msgid "Attachment ready"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2542
+#: inc/classes/rest-api/class-media-library.php:2549
 msgid "A Folder ID is required"
 msgstr ""
 
@@ -11543,22 +11547,22 @@ msgstr ""
 msgid "Feature Screenshot"
 msgstr ""
 
-#: pages/media-library/App.js:161
+#: pages/media-library/App.js:165
 msgid "New Folder"
 msgstr ""
 
-#: pages/media-library/App.js:178
+#: pages/media-library/App.js:183
 msgid "Bulk Select"
 msgstr ""
 
-#: pages/media-library/App.js:186
+#: pages/media-library/App.js:191
 msgid "By Name (A-Z)"
 msgstr ""
 
-#: pages/media-library/App.js:187
+#: pages/media-library/App.js:192
 msgid "By Name (Z-A)"
 msgstr ""
 
-#: pages/media-library/App.js:202
+#: pages/media-library/App.js:207
 msgid "All Media"
 msgstr ""

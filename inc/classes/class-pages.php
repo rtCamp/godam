@@ -1303,9 +1303,18 @@ class Pages {
 			'media-library-react',
 			'MediaLibrary',
 			array(
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'userData' => rtgodam_get_user_data( true ),
-				'roles'    => $roles,
+				'nonce'        => wp_create_nonce( 'wp_rest' ),
+				'userData'     => rtgodam_get_user_data( true ),
+				'roles'        => $roles,
+				// Folder permissions resolved from the SAME capabilities the server
+				// authorizes on, so the UI stays in lockstep with REST rather than gating
+				// on hardcoded role slugs (which mismatch for custom roles such as
+				// shop_manager or membership-plugin roles). See issue #1239 review.
+				'capabilities' => array(
+					'manageFolders' => current_user_can( 'upload_files' ),     // Create + rename (manage_terms/edit_terms).
+					'lockFolders'   => current_user_can( 'manage_categories' ), // Lock + bookmark (Editors and above).
+					'deleteFolders' => current_user_can( 'manage_options' ),    // Delete (administrators only).
+				),
 			)
 		);
 
