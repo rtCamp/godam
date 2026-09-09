@@ -709,13 +709,19 @@
 	background-color: var(--rtgodam-control-bar-color, #3858e9) !important;
 	border: 0;
 	border-radius: 50%;
+	// Hidden until a preview is playing. `visibility`/`pointer-events` (not just
+	// opacity) so the invisible button cannot swallow a click meant to start the
+	// video, and is not tab-reachable or announced while off screen.
 	opacity: 0;
-	// Interactive – must receive clicks even though the stripe does not.
-	pointer-events: auto;
-	transition: opacity 0.15s ease, filter 0.15s ease;
+	visibility: hidden;
+	pointer-events: none;
+	transition: opacity 0.15s ease, filter 0.15s ease, visibility 0s linear 0.15s;
 
 	&.is-visible {
 		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+		transition: opacity 0.15s ease, filter 0.15s ease;
 	}
 
 	&:hover,

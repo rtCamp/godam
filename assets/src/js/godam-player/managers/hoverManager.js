@@ -1,4 +1,9 @@
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * HoverManager
  *
  * A utility class for managing hover-based video interactions using Video.js.
@@ -67,6 +72,10 @@ class HoverManager {
 		// `play` event that signals real, committed playback. Consumed once in the
 		// `play` handler.
 		this.isPreviewInitiatedPlay = false;
+		// True once the viewer has interacted with THIS player (clicked it or its
+		// mute toggle). A cross-preview unmute is only re-applied to players with
+		// a gesture, since browsers pause media unmuted without one.
+		this.hasUserGesture = false;
 		this.options = options;
 
 		this.init();
@@ -109,6 +118,11 @@ class HoverManager {
 		// Advance the reel progress stripe as the preview plays.
 		this.player.on( 'timeupdate', this.updatePreviewProgress.bind( this ) );
 
+		// The preview now starts on a timer; cancel it if the player is disposed
+		// inside the delay window (block-editor re-render, gallery removal, SPA
+		// nav) so the callback never runs against a torn-down player.
+		this.player.on( 'dispose', () => this.clearPreviewTimer() );
+
 		// Any `play` event other than the preview's own means real, committed
 		// playback has begun – e.g. the big play button, the control bar, the
 		// spacebar/keyboard handler, or a programmatic `player.play()`, none of
@@ -126,13 +140,14 @@ class HoverManager {
 				this.isPreviewInitiatedPlay = false;
 				return;
 			}
-			// Real, committed playback. Lift suppression and mark the player as
-			// committed so a later hover cannot restart a preview over it – the
-			// big play button / control bar never reach `handleVideoClick`, so
-			// `isVideoClicked` would otherwise stay false and re-enable preview.
+			// Real, committed playback (big play button, control bar, keyboard,
+			// programmatic). Mark the player committed so a later hover cannot
+			// restart a preview over it, then fully restore anything a preceding
+			// `startPreview()` changed – otherwise this path can leave the player
+			// muted, control-less and stuck behind its own poster.
 			this.isPreviewPlaying = false;
 			this.isVideoClicked = true;
-			this.togglePreviewOverlays( false );
+			this.exitPreviewToPlayback();
 		} );
 	}
 
@@ -175,6 +190,7 @@ class HoverManager {
 		this.previewMuteButton = document.createElement( 'button' );
 		this.previewMuteButton.type = 'button';
 		this.previewMuteButton.className = 'godam-preview-mute vjs-mute-control vjs-control vjs-button';
+		this.previewMuteButton.setAttribute( 'data-test-id', 'godam-preview-mute-toggle' );
 		this.previewMuteButton.innerHTML =
 			'<span class="vjs-icon-placeholder" aria-hidden="true"></span>' +
 			'<span class="vjs-control-text" aria-live="polite"></span>';
@@ -226,32 +242,47 @@ class HoverManager {
 	}
 
 	/**
-	 * Applies the session mute preference to the player and syncs the button
-	 * icon. Kept separate from `player.muted()` so preview start (always muted
-	 * for autoplay) and the viewer's stored choice stay in one place.
+	 * The mute state to actually apply to this preview. Honours the shared
+	 * session preference, but only carries a cross-preview *unmute* onto a
+	 * player the viewer has interacted with – browsers pause media that becomes
+	 * unmuted without a user gesture, so an ungestured player stays muted.
+	 *
+	 * @return {boolean} True if this preview should be muted.
 	 */
-	applyPreviewMute() {
-		this.player.muted( previewSessionMuted );
-		this.updateMuteButton();
+	getEffectiveMuted() {
+		return previewSessionMuted || ! this.hasUserGesture;
 	}
 
 	/**
-	 * Reflects the current mute state on the toggle button. Only the Video.js
+	 * Applies the effective mute state to the player and syncs the button icon.
+	 * Kept separate from `player.muted()` so preview start (always muted for
+	 * autoplay) and the viewer's stored choice stay in one place.
+	 */
+	applyPreviewMute() {
+		const muted = this.getEffectiveMuted();
+		this.player.muted( muted );
+		this.updateMuteButton( muted );
+	}
+
+	/**
+	 * Reflects the given mute state on the toggle button. Only the Video.js
 	 * volume-state class is swapped (`vjs-vol-0` ↔ `vjs-vol-3`) so the skin's CSS
 	 * paints the matching glyph; the label/ARIA describe the action available.
+	 *
+	 * @param {boolean} [muted] - Mute state to reflect; defaults to the effective one.
 	 */
-	updateMuteButton() {
+	updateMuteButton( muted = this.getEffectiveMuted() ) {
 		if ( ! this.previewMuteButton ) {
 			return;
 		}
 
-		this.previewMuteButton.classList.toggle( VJS_VOL_MUTED, previewSessionMuted );
-		this.previewMuteButton.classList.toggle( VJS_VOL_ON, ! previewSessionMuted );
+		this.previewMuteButton.classList.toggle( VJS_VOL_MUTED, muted );
+		this.previewMuteButton.classList.toggle( VJS_VOL_ON, ! muted );
 
-		const label = previewSessionMuted ? 'Unmute' : 'Mute';
+		const label = muted ? __( 'Unmute', 'godam' ) : __( 'Mute', 'godam' );
 		this.previewMuteButton.setAttribute( 'aria-label', label );
 		this.previewMuteButton.setAttribute( 'title', label );
-		this.previewMuteButton.setAttribute( 'aria-pressed', String( ! previewSessionMuted ) );
+		this.previewMuteButton.setAttribute( 'aria-pressed', String( ! muted ) );
 		if ( this.previewMuteIcon ) {
 			this.previewMuteIcon.textContent = label;
 		}
@@ -262,7 +293,9 @@ class HoverManager {
 	 *
 	 * Stops the click from reaching the <video> (which would switch to normal
 	 * playback) and persists the choice for the rest of the page session so
-	 * later previews honour it.
+	 * later previews honour it. Toggles relative to the state the viewer can
+	 * actually see, so it does the opposite of the icon regardless of why the
+	 * preview was muted.
 	 *
 	 * @param {Event} event - The click event on the mute button.
 	 */
@@ -270,7 +303,9 @@ class HoverManager {
 		event.preventDefault();
 		event.stopPropagation();
 
-		previewSessionMuted = ! previewSessionMuted;
+		const currentlyMuted = this.getEffectiveMuted();
+		this.hasUserGesture = true;
+		previewSessionMuted = ! currentlyMuted;
 		this.applyPreviewMute();
 	}
 
@@ -308,23 +343,25 @@ class HoverManager {
 	 * Handles mouse leave events - stops preview if currently active.
 	 */
 	handleMouseLeave() {
-		if ( this.isVideoClicked ) {
+		// Always clear the hover flag first – otherwise, once playback is
+		// committed (`isVideoClicked`) the early return below would leave
+		// `isHovered` stuck true for the life of the page.
+		const wasHovered = this.isHovered;
+		this.isHovered = false;
+
+		if ( this.isVideoClicked || ! wasHovered ) {
 			return;
 		}
 
-		if ( this.isHovered ) {
-			this.isHovered = false;
+		// Cancel a preview that was still waiting out the hover delay.
+		this.clearPreviewTimer();
 
-			// Cancel a preview that was still waiting out the hover delay.
-			this.clearPreviewTimer();
-
-			// Only tear down the "started" visual state and playback if the
-			// preview actually began; otherwise nothing was ever changed.
-			if ( this.isPreviewPlaying ) {
-				this.player.removeClass( 'vjs-has-started' );
-				this.player.addClass( 'godam-hover-started' );
-				this.stopPreview();
-			}
+		// Only tear down the "started" visual state and playback if the
+		// preview actually began; otherwise nothing was ever changed.
+		if ( this.isPreviewPlaying ) {
+			this.player.removeClass( 'vjs-has-started' );
+			this.player.addClass( 'godam-hover-started' );
+			this.stopPreview();
 		}
 	}
 
@@ -349,21 +386,17 @@ class HoverManager {
 		if ( this.isHovered ) {
 			this.isVideoClicked = true;
 			this.isPreviewPlaying = false;
+			this.hasUserGesture = true;
 
 			// A click within the hover-delay window commits straight to real
 			// playback – drop the still-pending preview start.
 			this.clearPreviewTimer();
 
-			// Real playback: unmute and hand the chrome back to the control bar.
-			this.togglePreviewOverlays( false );
-			this.player.muted( false );
-			this.player.volume( 1 );
+			// Restore audio/controls/started state, then play. Done here rather
+			// than relying on the `play` handler because `play()` on an already
+			// playing preview fires no `play` event.
+			this.exitPreviewToPlayback();
 			this.player.play();
-
-			const controlBar = this.player.controlBar?.el();
-			if ( controlBar ) {
-				controlBar.classList.remove( 'hide' );
-			}
 		}
 	}
 
@@ -397,16 +430,43 @@ class HoverManager {
 		const played = this.player.play();
 		Promise.resolve( played )
 			.then( () => this.applyPreviewMute() )
-			.catch( () => {} );
+			.catch( () => {
+				// Autoplay was refused (e.g. iOS Low Power Mode), so no `play`
+				// event will fire to clear `isPreviewInitiatedPlay`. Roll both
+				// flags back, or the viewer's next real play would be mistaken
+				// for the preview's own and leave layers suppressed all session.
+				this.isPreviewInitiatedPlay = false;
+				this.isPreviewPlaying = false;
+				this.togglePreviewOverlays( false );
+			} );
 	}
 
 	/**
-	 * Stops preview, resets video to start, and shows controls.
+	 * Stops preview, resets video to start, and shows controls. The control bar
+	 * `hide` is lifted here too so a preview that ends on mouse-leave never
+	 * leaves a later real playback control-less.
 	 */
 	stopPreview() {
 		this.togglePreviewOverlays( false );
+		this.player.controlBar?.el()?.classList.remove( 'hide' );
 		this.player.pause();
 		this.player.currentTime( 0 );
+	}
+
+	/**
+	 * Restores everything `startPreview()` changed when the player commits to
+	 * real playback: shows the control bar, makes playback audible, lifts the
+	 * hover-poster state (Video.js keeps `hasStarted_` latched, so the poster
+	 * only clears once `godam-hover-started` is removed and `vjs-has-started`
+	 * restored), and hides the preview chrome. Idempotent.
+	 */
+	exitPreviewToPlayback() {
+		this.togglePreviewOverlays( false );
+		this.player.controlBar?.el()?.classList.remove( 'hide' );
+		this.player.muted( false );
+		this.player.volume( 1 );
+		this.player.addClass( 'vjs-has-started' );
+		this.player.removeClass( 'godam-hover-started' );
 	}
 
 	/**
@@ -423,6 +483,14 @@ class HoverManager {
 	isPreviewActive() {
 		return this.isPreviewPlaying;
 	}
+}
+
+/**
+ * Test-only helper: reset the shared, page-session mute preference so it does
+ * not leak between specs. Not referenced by production code.
+ */
+export function resetPreviewSessionMuted() {
+	previewSessionMuted = true;
 }
 
 export default HoverManager;

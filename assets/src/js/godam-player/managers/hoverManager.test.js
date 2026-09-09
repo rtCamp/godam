@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import HoverManager from './hoverManager';
+import HoverManager, { resetPreviewSessionMuted } from './hoverManager';
+
+// The mute preference is shared, page-session module state; reset it after
+// every spec so a failure mid-test cannot leak `false` into later specs.
+afterEach( () => resetPreviewSessionMuted() );
 
 /**
  * Minimal Video.js player stub.
@@ -279,5 +283,121 @@ describe( 'HoverManager preview reel chrome', () => {
 
 		// Restore the shared page-session mute preference for other tests.
 		manager.handleMuteToggle( { preventDefault() {}, stopPropagation() {} } );
+	} );
+} );
+
+/**
+ * Richer player stub that models the two things the minimal stub cannot: a
+ * stable control-bar element (so the `hide` class is observable) and Video.js's
+ * `hasStarted_` latch (so `vjs-has-started` cannot be re-added once set).
+ *
+ * @return {Object} `{ p, root, controlBarEl }`.
+ */
+const createStatefulPlayer = () => {
+	const handlers = {};
+	const root = document.createElement( 'div' );
+	const controlBarEl = document.createElement( 'div' );
+	let mutedState = false;
+	let paused = true;
+	let hasStarted = false;
+	const p = {
+		autoplay: () => false,
+		el: () => root,
+		controlBar: { el: () => controlBarEl },
+		on: ( e, cb ) => ( handlers[ e ] = handlers[ e ] || [] ).push( cb ),
+		emit: ( e ) => ( handlers[ e ] || [] ).forEach( ( cb ) => cb() ),
+		addClass: ( c ) => root.classList.add( c ),
+		removeClass: ( c ) => root.classList.remove( c ),
+		muted: ( v ) => ( v === undefined ? mutedState : ( mutedState = v ) ),
+		volume: () => {},
+		duration: () => 10,
+		currentTime: () => 0,
+		pause: () => {
+			paused = true;
+		},
+		// Video.js fires `play` only when transitioning from paused, and
+		// hasStarted(true) is a no-op once already started.
+		play: () => {
+			if ( ! paused ) {
+				return;
+			}
+			paused = false;
+			if ( ! hasStarted ) {
+				hasStarted = true;
+				root.classList.add( 'vjs-has-started' );
+			}
+			( handlers.play || [] ).forEach( ( cb ) => cb() );
+		},
+	};
+	return { p, root, controlBarEl };
+};
+
+describe( 'HoverManager exit-to-playback restore', () => {
+	beforeEach( () => jest.useFakeTimers() );
+	afterEach( () => jest.useRealTimers() );
+
+	it( 'restores sound, controls and started state when the big play button commits after a preview', () => {
+		const { p, root, controlBarEl } = createStatefulPlayer();
+		const manager = createManager( p );
+
+		manager.handleMouseEnter();
+		jest.runOnlyPendingTimers(); // preview runs (muted, control bar hidden)
+		manager.handleMouseLeave(); // pointer leaves; poster returns
+		manager.handleMouseEnter(); // re-enter, timer pending
+		p.play(); // big play button, before the timer fires
+
+		expect( p.muted() ).toBe( false );
+		expect( controlBarEl.classList.contains( 'hide' ) ).toBe( false );
+		expect( root.classList.contains( 'vjs-has-started' ) ).toBe( true );
+		expect( root.classList.contains( 'godam-hover-started' ) ).toBe( false );
+	} );
+} );
+
+describe( 'HoverManager robustness fixes', () => {
+	beforeEach( () => jest.useFakeTimers() );
+	afterEach( () => jest.useRealTimers() );
+
+	it( 'rolls the preview-initiated flag back when play() is rejected', async () => {
+		const player = createPlayer();
+		player.play = jest.fn( () => Promise.reject( new Error( 'NotAllowedError' ) ) );
+		const manager = createManager( player );
+
+		manager.handleMouseEnter();
+		jest.runOnlyPendingTimers();
+		await Promise.resolve(); // let the rejected play() settle
+		await Promise.resolve();
+
+		// A later real play must not be swallowed as the preview's own.
+		player.emit( 'play' );
+		expect( manager.isPreviewActive() ).toBe( false );
+	} );
+
+	it( 'cancels a pending preview timer on player dispose', () => {
+		const player = createPlayer();
+		const manager = createManager( player );
+
+		manager.handleMouseEnter(); // schedules the delayed preview
+		player.emit( 'dispose' );
+		jest.runOnlyPendingTimers();
+
+		expect( manager.isPreviewActive() ).toBe( false );
+		expect( player.play ).not.toHaveBeenCalled();
+	} );
+
+	it( 'does not carry a cross-preview unmute onto an un-gestured player', () => {
+		const gestured = createPlayer();
+		const gesturedManager = createManager( gestured );
+
+		// Viewer unmutes this preview (a user gesture on this player).
+		gesturedManager.handleMouseEnter();
+		jest.runOnlyPendingTimers();
+		gesturedManager.handleMuteToggle( { preventDefault() {}, stopPropagation() {} } );
+		expect( gestured.muted ).toHaveBeenLastCalledWith( false );
+
+		// A different video's preview, with no gesture, must still start muted.
+		const other = createPlayer();
+		const otherManager = createManager( other );
+		otherManager.applyPreviewMute();
+		expect( other.muted ).toHaveBeenLastCalledWith( true );
 	} );
 } );

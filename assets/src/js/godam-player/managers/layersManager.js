@@ -91,6 +91,13 @@ export default class LayersManager {
 	/**
 	 * Whether layer firing is currently suppressed.
 	 *
+	 * NOTE: this gate only covers layers processed through `LayersManager`.
+	 * Layers created through the public `GoDAMAPI` run their own `timeupdate`
+	 * listener (`api/player.js` → `handleCustomLayersTimeUpdate`) and do not
+	 * consult this check, so third-party add-on layers can still appear during a
+	 * hover preview. Wiring that path through this suppression state is tracked
+	 * as follow-up work.
+	 *
 	 * @return {boolean} True when no layer should be revealed.
 	 */
 	areLayersSuppressed() {
