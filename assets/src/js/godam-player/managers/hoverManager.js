@@ -126,7 +126,13 @@ class HoverManager {
 				this.isPreviewInitiatedPlay = false;
 				return;
 			}
+			// Real, committed playback. Lift suppression and mark the player as
+			// committed so a later hover cannot restart a preview over it – the
+			// big play button / control bar never reach `handleVideoClick`, so
+			// `isVideoClicked` would otherwise stay false and re-enable preview.
 			this.isPreviewPlaying = false;
+			this.isVideoClicked = true;
+			this.togglePreviewOverlays( false );
 		} );
 	}
 

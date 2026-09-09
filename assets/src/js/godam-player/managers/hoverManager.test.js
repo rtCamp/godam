@@ -109,6 +109,21 @@ describe( 'HoverManager preview suppression flag', () => {
 		expect( manager.isPreviewActive() ).toBe( false );
 	} );
 
+	it( 'marks real playback committed so a later hover cannot restart a preview', () => {
+		const player = createPlayer();
+		const manager = createManager( player );
+
+		// Real playback from the big play button (no click on the <video>).
+		player.emit( 'play' );
+		expect( manager.isVideoClicked ).toBe( true );
+
+		// A subsequent hover must not schedule or start another preview.
+		manager.handleMouseEnter();
+		jest.runOnlyPendingTimers();
+		expect( manager.isPreviewActive() ).toBe( false );
+		expect( player.play ).not.toHaveBeenCalled();
+	} );
+
 	it( 'clears when the video is clicked to commit playback', () => {
 		const manager = createManager( createPlayer() );
 		manager.handleMouseEnter();
