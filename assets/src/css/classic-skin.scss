@@ -178,23 +178,6 @@
 			}
 		}
 
-		.vjs-picture-in-picture-control {
-			position: absolute;
-			bottom: 0;
-			right: 40px;
-			height: 3em !important;
-			
-			span::before {
-				content: '' !important; /* Hide default icon */
-				background: url(../images/classic-pip.svg);
-				background-repeat: no-repeat;
-				background-size: contain;
-				display: inline-block;
-				height: 20px;
-				width: 20px;
-			}
-		}
-
 		.vjs-fullscreen-control {
 			position: absolute;
 			bottom: 0;
@@ -279,7 +262,7 @@
 		.vjs-settings-button {
 			position: absolute;
 			bottom: 0;
-			right: 80px;
+			right: 40px;
 			height: 3em !important;
 			z-index: 19;
 
@@ -407,7 +390,7 @@
 		.vjs-quality-menu-wrapper {
 			position: absolute;
 			bottom: 0;
-			right: calc(3 * 40px);
+			right: calc(2 * 40px);
 			height: 3em !important;
 		}
 
@@ -523,7 +506,7 @@
 	.video-js .vjs-control-bar > .vjs-subs-caps-button.vjs-control {
 		position: absolute;
 		bottom: 0;
-		right: calc(3 * 40px);
+		right: calc(2 * 40px);
 		height: 3em !important;
 		z-index: 19;
 	}
@@ -557,7 +540,6 @@
 
 			[class^="vjs-skip-forward-"],
 			[class^="vjs-skip-backward-"],
-			.vjs-picture-in-picture-control,
 			.vjs-volume-control,  
 			.vjs-duration, 
 			.vjs-current-time, 
