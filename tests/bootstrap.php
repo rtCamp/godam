@@ -178,6 +178,13 @@ if ( ! class_exists( 'WP_REST_Controller' ) ) {
  */
 require_once __DIR__ . '/stubs/hooks.php';
 require_once __DIR__ . '/stubs/i18n.php';
+// HTTP / REST stubs for the Analytics microservice-proxy tests (fetch_top_videos
+// / fetch_top_products): fake wp_remote_* responses + get_option, and minimal
+// WP_REST_Request / WP_REST_Response so the proxy's error-vs-empty guard can be
+// asserted without a WordPress test install.
+require_once __DIR__ . '/stubs/class-wp-rest-request.php';
+require_once __DIR__ . '/stubs/class-wp-rest-response.php';
+require_once __DIR__ . '/stubs/wp-http-functions.php';
 
 // Version-compatibility checks read this. High enough that any add-on minimum
 // passes, so tests exercising the incompatible branch raise their own minimum.
@@ -193,6 +200,7 @@ require_once dirname( __DIR__ ) . '/inc/classes/fluentforms/class-init.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-base.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
 

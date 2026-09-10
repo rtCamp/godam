@@ -6,12 +6,6 @@ import React from 'react';
  * Internal dependencies
  */
 import Tooltip from './Tooltip';
-import {
-	calculateEngagementRate,
-	calculatePlayRate,
-	ensureAll7Days,
-	calculateTrendPercentage,
-} from './helper';
 import { formatWatchTime } from '../utils/formatters';
 
 import './charts.js';
@@ -66,7 +60,6 @@ const SingleMetrics = ( {
 	label,
 	tooltipText,
 	dataLabel,
-	processedAnalyticsHistory,
 	analyticsDataFetched,
 	// Dashboard range mode: when a bounded range is active the card shows the
 	// server-computed period-over-period delta with this label ("vs previous
@@ -77,11 +70,12 @@ const SingleMetrics = ( {
 	const isDashboard = mode === 'dashboard';
 	const config = chartConfigMap[ metricType ];
 
-	// Dashboard mode renders value + delta reactively from props (range-aware).
-	// The server nulls the *_change fields outside a bounded range, so the
-	// badge only appears once a range is picked. Analytics (per-video) mode is
-	// unchanged: charts.js sets the value and the effect below writes a
-	// client-side trend badge.
+	// Dashboard mode renders value + a range-aware period-over-period delta from
+	// props: the server nulls the *_change fields outside a bounded range, so the
+	// badge appears only once a range is picked, and All Time falls back to the
+	// range sub-label. Per-video (analytics) mode shows no trend badge; charts.js
+	// sets the value and the bottom row is the active range sub-label, so it
+	// matches the range picker and the other per-video cards.
 	const dashboardValue = isDashboard
 		? formatDashboardMetric( metricType, analyticsDataFetched )
 		: null;
@@ -91,40 +85,11 @@ const SingleMetrics = ( {
 			: null;
 	const hasServerDelta = serverDelta !== null && serverDelta !== undefined;
 
-	// Analytics (per-video) mode: client-side "vs prev 7 days" trend from the
-	// 7-day processed history. Computed in render (not an imperative DOM write)
-	// so it can be shown on the card's bottom row as an arrow + coloured % —
-	// matching Figma — instead of a pill in the header (which overflowed the
-	// narrow cards).
-	let analyticsTrend = null;
-	if ( ! isDashboard && config && processedAnalyticsHistory && analyticsDataFetched ) {
-		const mapped = processedAnalyticsHistory.map( ( history ) => ( {
-			date: history.date,
-			engagement_rate: parseFloat( calculateEngagementRate(
-				history.plays,
-				history.video_length,
-				history.play_time,
-			) ) || 0,
-			play_rate: parseFloat( calculatePlayRate( history.page_load, history.plays ) ) || 0,
-			plays: parseFloat( history.plays ) || 0,
-			watch_time: parseFloat( history.play_time ) || 0,
-		} ) );
-		const sorted = ensureAll7Days( mapped ).sort(
-			( a, b ) => new Date( a.date ) - new Date( b.date ),
-		);
-		analyticsTrend = calculateTrendPercentage( sorted, config.key );
-	}
-
-	// Unified delta for the card's bottom row (arrow + coloured % + muted
-	// label), matching Figma on BOTH dashboard and per-video. Dashboard uses
-	// the server period-over-period delta (present only for a bounded range);
-	// per-video uses the client-side last-7-days trend. Falls back to the range
-	// sub-label when there is no delta to show.
-	const deltaValue = isDashboard ? serverDelta : analyticsTrend;
-	const showDelta = isDashboard ? hasServerDelta : analyticsTrend !== null;
-	const deltaText = isDashboard
-		? ( deltaLabel || __( 'vs prev period', 'godam' ) )
-		: __( 'vs prev 7 days', 'godam' );
+	// Only dashboard mode shows a delta badge (range-aware); per-video always
+	// falls back to the range sub-label below.
+	const deltaValue = isDashboard ? serverDelta : null;
+	const showDelta = isDashboard ? hasServerDelta : false;
+	const deltaText = deltaLabel || __( 'vs prev period', 'godam' );
 
 	return (
 		<div className="analytics-info flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full">
@@ -147,9 +112,9 @@ const SingleMetrics = ( {
 						    matching Figma, for both dashboard and per-video. Falls back
 						    to the range sub-label when there is no delta to show. */ }
 						{ showDelta ? (
-							<div className="flex items-center gap-1.5">
-								<span className={ `text-xs font-semibold ${ deltaValue >= 0 ? 'text-[#15803D]' : 'text-[#B91C1C]' }` }>
-									{ `${ deltaValue >= 0 ? '↑' : '↓' } ${ Math.abs( deltaValue ).toFixed( 2 ) }%` }
+							<div className="flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+								<span className={ `text-xs font-semibold whitespace-nowrap ${ deltaValue >= 0 ? 'text-[#15803D]' : 'text-[#B91C1C]' }` }>
+									{ `${ deltaValue >= 0 ? '↗' : '↘' } ${ Math.abs( deltaValue ).toFixed( 2 ) }%` }
 								</span>
 								<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ deltaText }</span>
 							</div>

@@ -6,11 +6,12 @@ import React from 'react';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { formatRevenue } from '../../dashboard/components/TopProductsTable';
 import {
 	LAYER_TYPE_BY_ID,
 	subHotspotColor,
@@ -231,6 +232,20 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 								>
 									{ ( Number( sub.conversion_rate ) || 0 ).toFixed( 1 ) }%
 								</span>
+								{ /* Per-hotspot Direct revenue (Woo only), shown only when
+								    this hotspot has attributed orders. Base currency; other
+								    currencies are excluded, not converted. */ }
+								{ parent.layer_type === 'woo' && Number( sub.orders ) > 0 && (
+									<span className="basis-full text-right text-xs text-zinc-500 tabular-nums">
+										{ formatRevenue( sub.revenue_minor, sub.currency ) }
+										{ ' · ' }
+										{ sprintf(
+											/* translators: %d: number of orders attributed to this hotspot. */
+											_n( '%d order', '%d orders', sub.orders, 'godam' ),
+											sub.orders,
+										) }
+									</span>
+								) }
 							</button>
 						</li>
 					);

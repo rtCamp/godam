@@ -194,9 +194,11 @@ export function initImageFrame( frame ) {
 				hotspotManager.computeContentRect = () => adapter.computeContentRect();
 				hotspotManager.setupHotspotLayer( mergedLayer, hotspotGroup );
 				const layerObj = hotspotManager.hotspotLayers[ hotspotManager.hotspotLayers.length - 1 ];
-				// No analytics on images (see godam-image/render.php): the block does
-				// not load the analytics buffer, so the managers' interaction emits are
-				// guarded no-ops — there is no `viewed` beacon to fire here.
+				// The analytics runtime is loaded on image pages now (see
+				// godam-image/render.php), so plain-hotspot interaction emits are
+				// captured like on video. Commerce impressions (Top Products) come from
+				// the Woo layer's parent 'viewed' below; a plain hotspot has no product
+				// row, so no impression beacon is fired here.
 				hotspotManager.createHotspots( layerObj );
 			}
 
@@ -230,6 +232,15 @@ export function initImageFrame( frame ) {
 						wooManager.setupLayer( layer, layerEl );
 						const layerObj = wooManager.wooLayers[ wooManager.wooLayers.length - 1 ];
 						wooManager.createProductHotspots( layerObj );
+						// A still image has no play/visibility transition, so fire the
+						// parent-layer 'viewed' impression beacon once, now, on render.
+						// This is the impressions signal the product rollup reads; without
+						// it image Woo hotspots would always show 0 impressions. Guarded
+						// no-op until the analytics runtime is loaded (it is a dependency
+						// of this script, so it is present by now).
+						if ( typeof wooManager.emitLayerVisible === 'function' ) {
+							wooManager.emitLayerVisible( layerObj.layer );
+						}
 					} );
 				}
 			}
