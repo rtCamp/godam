@@ -27,6 +27,16 @@ class Media_Library extends Base {
 	protected $rest_base = 'media-library';
 
 	/**
+	 * User meta key — whether the folder sidebar on upload.php is collapsed.
+	 *
+	 * Stored per user (not per browser) so the choice follows the user across
+	 * devices. Absent meta means "expanded", the default.
+	 *
+	 * @var string
+	 */
+	const SIDEBAR_HIDDEN_META_KEY = 'rtgodam_media_library_sidebar_hidden';
+
+	/**
 	 * Setup hooks.
 	 *
 	 * Adds the base REST-route registration plus a server-side guard that enforces
@@ -479,7 +489,59 @@ class Media_Library extends Base {
 					'permission_callback' => array( $this, 'verify_callback_permission' ),
 				),
 			),
+			// Write-only: the current value is localized with the media-library script so
+			// the sidebar can render collapsed on first paint, without a REST round trip.
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/sidebar-preference',
+				'args'      => array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'update_sidebar_preference' ),
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'hidden' => array(
+							'required'    => true,
+							'type'        => 'boolean',
+							'description' => __( 'Whether the media library folder sidebar is collapsed.', 'godam' ),
+						),
+					),
+				),
+			),
 		);
+	}
+
+	/**
+	 * Whether the current user last left the media library folder sidebar collapsed.
+	 *
+	 * @param int $user_id User ID. Defaults to the current user.
+	 * @return bool True when the sidebar should render collapsed.
+	 */
+	public static function is_sidebar_hidden( $user_id = 0 ) {
+		$user_id = $user_id ? $user_id : get_current_user_id();
+
+		return (bool) get_user_meta( $user_id, self::SIDEBAR_HIDDEN_META_KEY, true );
+	}
+
+	/**
+	 * POST handler — persist the folder sidebar's collapsed state for the current user.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response Response echoing the saved state.
+	 */
+	public function update_sidebar_preference( $request ) {
+		$hidden = (bool) $request->get_param( 'hidden' );
+
+		// Delete rather than store a falsey value: "expanded" is the default, so an
+		// absent key keeps the meta table clean and reads identically.
+		if ( $hidden ) {
+			update_user_meta( get_current_user_id(), self::SIDEBAR_HIDDEN_META_KEY, 1 );
+		} else {
+			delete_user_meta( get_current_user_id(), self::SIDEBAR_HIDDEN_META_KEY );
+		}
+
+		return new \WP_REST_Response( array( 'hidden' => $hidden ), 200 );
 	}
 
 	/**

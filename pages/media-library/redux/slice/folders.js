@@ -42,6 +42,15 @@ const slice = createSlice( {
 			folderCreation: false,
 			rename: false,
 			delete: false,
+			moveToFolder: false,
+		},
+
+		// Which attachments the "Move to folder" picker is acting on, and which
+		// surface asked for it. `openModal` only carries a modal name, so the
+		// picker needs its own action to receive the ids.
+		moveToFolderRequest: {
+			attachmentIds: [],
+			source: null,
 		},
 
 		currentContextMenuFolder: null,
@@ -72,6 +81,20 @@ const slice = createSlice( {
 			if ( state.modals.hasOwnProperty( modalName ) ) {
 				state.modals[ modalName ] = false;
 			}
+		},
+		openMoveToFolder: ( state, action ) => {
+			state.moveToFolderRequest = {
+				attachmentIds: action.payload?.attachmentIds || [],
+				source: action.payload?.source || 'grid',
+			};
+			state.modals.moveToFolder = true;
+		},
+		closeMoveToFolder: ( state ) => {
+			state.modals.moveToFolder = false;
+			state.moveToFolderRequest = {
+				attachmentIds: [],
+				source: null,
+			};
 		},
 		updateSnackbar: ( state, action ) => {
 			state.snackbar.message = action.payload.message;
@@ -397,11 +420,19 @@ const slice = createSlice( {
 				id: -1,
 			};
 
-			// Close all modals
+			// Close all modals. This REPLACES the object, so every modal key has to
+			// be listed — a missing key is deleted outright and `openModal`'s
+			// hasOwnProperty guard would then silently refuse to reopen it.
 			state.modals = {
 				folderCreation: false,
 				rename: false,
 				delete: false,
+				moveToFolder: false,
+			};
+
+			state.moveToFolderRequest = {
+				attachmentIds: [],
+				source: null,
 			};
 
 			// Reset multi-selection state
@@ -436,6 +467,8 @@ export const {
 	renameFolder,
 	deleteFolder,
 	setTree,
+	openMoveToFolder,
+	closeMoveToFolder,
 	toggleMultiSelectMode,
 	addMultiSelectedFolder,
 	removeMultiSelectedFolder,

@@ -4,6 +4,12 @@
 import { __ } from '@wordpress/i18n';
 
 /**
+ * Internal dependencies
+ */
+import { createAttachmentField, createTable } from './fields/compat-fields';
+import renderMoveToFolderField from './fields/move-to-folder-field';
+
+/**
  * Reference to the WordPress media Attachment Details view.
  *
  * @type {Object}
@@ -27,81 +33,6 @@ const isMpd = ( url ) => typeof url === 'string' && url.trim().toLowerCase().end
 const isM3U8 = ( url ) => typeof url === 'string' && url.trim().toLowerCase().endsWith( '.m3u8' );
 
 /**
- * Creates a table row element representing an attachment field.
- *
- * @param {Object}        params            - The parameters for the field.
- * @param {number|string} params.id         - The attachment ID.
- * @param {string}        params.fieldName  - The name of the field.
- * @param {string}        params.fieldLabel - The label for the field.
- * @param {string}        params.url        - The URL value for the field.
- * @param {string}        params.helpText   - The help text to display under the field.
- * @return {HTMLElement} The constructed table row element.
- */
-const createAttachmentField = ( { id, fieldName, fieldLabel, url, helpText } ) => {
-	const tr = document.createElement( 'tr' );
-	tr.className = `compat-field-${ fieldName }`;
-
-	const th = document.createElement( 'th' );
-	th.scope = 'row';
-	th.className = 'label';
-
-	const label = document.createElement( 'label' );
-	label.htmlFor = `attachments-${ id }-${ fieldName }`;
-
-	const span = document.createElement( 'span' );
-	span.className = 'alignleft';
-	span.textContent = fieldLabel;
-	label.appendChild( span );
-
-	label.appendChild( document.createElement( 'br' ) );
-	label.querySelector( 'br' ).className = 'clear';
-
-	th.appendChild( label );
-	tr.appendChild( th );
-
-	const td = document.createElement( 'td' );
-	td.className = 'field';
-
-	const input = document.createElement( 'input' );
-	input.type = 'text';
-	input.className = 'widefat';
-	input.name = `attachments[${ id }][${ fieldName }]`;
-	input.id = `attachments-${ id }-${ fieldName }`;
-	input.value = url;
-	input.readOnly = true;
-	td.appendChild( input );
-
-	const p = document.createElement( 'p' );
-	p.className = 'help';
-	p.textContent = helpText;
-	td.appendChild( p );
-
-	tr.appendChild( td );
-
-	return tr;
-};
-
-/**
- * Creates a table for displaying attachment fields inside a given container.
- *
- * @param {HTMLElement} container - The container element to append the table to.
- * @return {HTMLElement} The table body element (<tbody>).
- */
-const createTable = ( container ) => {
-	const table = document.createElement( 'table' );
-	table.className = `compat-attachment-fields compat-item`;
-	container.appendChild( table );
-
-	let tableBody = table.querySelector( 'tbody' );
-	if ( ! tableBody ) {
-		tableBody = document.createElement( 'tbody' );
-		table.appendChild( tableBody );
-	}
-
-	return tableBody;
-};
-
-/**
  * AttachmentDetails extension used to add links to attachments selected from the GoDAM tab.
  * This component displays transcoded CDN URLs (MPD/HLS) for GoDAM attachments in the media modal.
  */
@@ -112,6 +43,11 @@ export default AttachmentDetails?.extend( {
 
 	render() {
 		AttachmentDetails.prototype.render.apply( this, arguments );
+
+		// Before the early returns below: the folder control belongs on every
+		// attachment, not just transcoded videos.
+		renderMoveToFolderField( this );
+
 		const mime = this.model.get( 'mime' );
 
 		if ( mime && ! mime.startsWith( 'video/' ) ) {
@@ -134,7 +70,6 @@ export default AttachmentDetails?.extend( {
 
 		const attachmentId = this.model.get( 'id' );
 
-		// No need to check if table exists, as if it did we would have returned early on link checks.
 		const tableBody = createTable( this.el );
 
 		if ( oEmbeddedVideoUrl ) {

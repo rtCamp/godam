@@ -13,6 +13,7 @@ import store from './redux/store';
 import { resetUIState } from './redux/slice/folders';
 import { triggerFilterChange } from './data/media-grid.js';
 import App from './App';
+import { SidebarRootContext } from './context/sidebar-root.jsx';
 import posthog from '../utils/posthog';
 import './index.scss';
 
@@ -36,11 +37,15 @@ import './index.scss';
  * Performance Impact: Minimal - only resets UI state, preserves expensive data
  */
 
-const Index = () => {
+const Index = ( { root } ) => {
 	return (
 		<PostHogProvider client={ posthog }>
 			<Provider store={ store }>
-				<App />
+				{ /* Tells this app which sidebar node is its own, so document-level
+				     requests aimed at another media frame's sidebar are ignored. */ }
+				<SidebarRootContext.Provider value={ root }>
+					<App />
+				</SidebarRootContext.Provider>
 			</Provider>
 		</PostHogProvider>
 	);
@@ -174,7 +179,7 @@ function renderSidebarInto( rootElement ) {
 	const root = ReactDOM.createRoot( rootElement );
 	rootElement._reactRoot = root;
 	rootElement.dataset.godamMounted = 'true';
-	root.render( <Index /> );
+	root.render( <Index root={ rootElement } /> );
 }
 
 function initializeMediaLibrary( event ) {
