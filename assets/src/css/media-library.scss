@@ -738,3 +738,11 @@ $media-library-active-folder: #f5f5f5;
 		background-size: contain !important;
 	}
 }
+
+// Error notice shown inside the GoDAM media-modal tab (e.g. invalid/expired API key).
+// Colours, border and padding come from core's `.notice.notice-error`, so it follows the
+// active admin colour scheme (including dark mode); this only handles placement inside the
+// modal so the message sits above the attachments grid.
+.godam-tab-notice {
+	margin: 12px 16px;
+}

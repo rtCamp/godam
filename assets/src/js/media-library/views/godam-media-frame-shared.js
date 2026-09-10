@@ -245,7 +245,7 @@ const GoDAMMediaFrameShared = {
 	 * — rather than relying on the extended AttachmentsBrowser view — keeps it working in
 	 * additive mode, where the native browser view is used.
 	 *
-	 * @param {Object}      collection   The GoDAM attachments collection (unused).
+	 * @param {Object}      collection   The collection that emitted the event.
 	 * @param {string|null} errorMessage The error to show, or null to clear.
 	 */
 	renderGoDAMTabNotice( collection, errorMessage ) {
@@ -261,6 +261,13 @@ const GoDAMMediaFrameShared = {
 			return;
 		}
 
+		// Ignore a late event from a previous tab activation's collection. Re-opening the tab
+		// builds a fresh collection/view, but an in-flight request from the old one can resolve
+		// afterwards — without this guard its (stale) result could overwrite the current tab.
+		if ( view.collection && collection && view.collection !== collection ) {
+			return;
+		}
+
 		// Remove any previous notice so success clears it and errors don't stack.
 		$el.find( '.godam-tab-notice' ).remove();
 
@@ -268,21 +275,12 @@ const GoDAMMediaFrameShared = {
 			return;
 		}
 
+		// Styling lives in CSS (see media-library styles) so the notice inherits core's
+		// `notice notice-error` theming — including the dark admin colour scheme — instead of
+		// baking in light-mode colours here.
 		const $notice = window.jQuery(
 			'<div class="godam-tab-notice notice notice-error" role="alert" />',
-		)
-			.text( errorMessage )
-			// Inline styling so the notice is clearly visible inside the media modal without
-			// depending on a separate stylesheet build.
-			.css( {
-				margin: '12px 16px',
-				padding: '10px 14px',
-				background: '#fcf0f1',
-				borderLeft: '4px solid #d63638',
-				color: '#1d2327',
-				fontSize: '13px',
-				lineHeight: '1.5',
-			} );
+		).text( errorMessage );
 
 		// Place it above the attachments grid so it's the first thing the user sees.
 		const $attachments = $el.find( '.attachments-browser' ).first();

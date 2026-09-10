@@ -28,8 +28,12 @@ function deriveGodamTabError( source ) {
 	const status = source?.status ?? null;
 	const message = source?.responseJSON?.message || source?.message || '';
 
-	// Authentication/authorization failures → the API key is the problem.
-	if ( 401 === status || 403 === status || /\b40[13]\b/.test( message ) ) {
+	// Authentication/authorization failures → the API key is the problem. Trust the HTTP
+	// status when present; on the `success:false` path there is no status, so match only the
+	// REST proxy's own phrasing ("GoDAM API returned HTTP status: 401") rather than any bare
+	// 401/403 token, which could otherwise appear in an unrelated id/count and misclassify a
+	// valid key.
+	if ( 401 === status || 403 === status || /HTTP status:\s*40[13]\b/i.test( message ) ) {
 		return __( 'Invalid or expired GoDAM API key. Please verify your API key on the GoDAM settings page.', 'godam' );
 	}
 
@@ -88,12 +92,13 @@ const Attachments = wp?.media?.model?.Attachments.extend( {
 		// always told the fetch finished, so the spinner clears either way.
 		mirroring.more( options ).always( function() {
 			// Surface any error the query captured so the tab can show a clear message
-			// rather than an endless spinner or a misleading "No items found".
-			attachments._godamError = mirroring._godamError || null;
+			// rather than an endless spinner or a misleading "No items found". Read it from
+			// the query and pass it straight through — no need to stash it on the collection.
+			const godamError = mirroring._godamError || null;
 
 			deferred.resolveWith( attachments );
 
-			attachments.trigger( 'godam:fetched', attachments, attachments._godamError );
+			attachments.trigger( 'godam:fetched', attachments, godamError );
 			// Used for the search results.
 			attachments.trigger( 'attachments:received', attachments );
 		} );
@@ -153,6 +158,9 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 			}
 
 			if ( ! this.hasMore() ) {
+				// No fetch will run on this short-circuit, so drop any error from a previous
+				// page load — otherwise the caller's `.always()` would re-emit a stale message.
+				this._godamError = null;
 				return jQuery.Deferred().resolveWith( this ).promise();
 			}
 
