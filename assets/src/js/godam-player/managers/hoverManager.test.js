@@ -298,6 +298,7 @@ const createStatefulPlayer = () => {
 	const root = document.createElement( 'div' );
 	const controlBarEl = document.createElement( 'div' );
 	let mutedState = false;
+	let vol = 1;
 	let paused = true;
 	let hasStarted = false;
 	const p = {
@@ -309,11 +310,12 @@ const createStatefulPlayer = () => {
 		addClass: ( c ) => root.classList.add( c ),
 		removeClass: ( c ) => root.classList.remove( c ),
 		muted: ( v ) => ( v === undefined ? mutedState : ( mutedState = v ) ),
-		volume: () => {},
+		volume: ( v ) => ( v === undefined ? vol : ( vol = v ) ),
 		duration: () => 10,
 		currentTime: () => 0,
 		pause: () => {
 			paused = true;
+			( handlers.pause || [] ).forEach( ( cb ) => cb() );
 		},
 		// Video.js fires `play` only when transitioning from paused, and
 		// hasStarted(true) is a no-op once already started.
@@ -351,6 +353,31 @@ describe( 'HoverManager exit-to-playback restore', () => {
 		expect( root.classList.contains( 'vjs-has-started' ) ).toBe( true );
 		expect( root.classList.contains( 'godam-hover-started' ) ).toBe( false );
 	} );
+
+	it( 'keeps the viewer mute and volume across a pause/resume after commit', () => {
+		const { p } = createStatefulPlayer();
+		createManager( p );
+
+		p.play(); // commit real playback
+		p.muted( true ); // viewer mutes
+		p.volume( 0.2 ); // viewer lowers volume
+		p.pause();
+		p.play(); // resume
+
+		expect( p.muted() ).toBe( true );
+		expect( p.volume() ).toBe( 0.2 );
+	} );
+
+	it( 'leaves the configured volume level untouched when committing', () => {
+		const { p } = createStatefulPlayer();
+		p.volume( 0.5 ); // site-configured volume
+		createManager( p );
+
+		p.play(); // commit real playback (unmutes, must not slam volume to 1)
+
+		expect( p.muted() ).toBe( false );
+		expect( p.volume() ).toBe( 0.5 );
+	} );
 } );
 
 describe( 'HoverManager robustness fixes', () => {
@@ -369,6 +396,22 @@ describe( 'HoverManager robustness fixes', () => {
 
 		// A later real play must not be swallowed as the preview's own.
 		player.emit( 'play' );
+		expect( manager.isPreviewActive() ).toBe( false );
+	} );
+
+	it( 'restores the poster and control bar when autoplay is refused', async () => {
+		const { p, root, controlBarEl } = createStatefulPlayer();
+		p.play = () => Promise.reject( new Error( 'NotAllowedError' ) );
+		const manager = createManager( p );
+
+		manager.handleMouseEnter();
+		jest.runOnlyPendingTimers(); // startPreview → play() rejects
+		await Promise.resolve();
+		await Promise.resolve();
+
+		expect( controlBarEl.classList.contains( 'hide' ) ).toBe( false );
+		expect( root.classList.contains( 'vjs-has-started' ) ).toBe( false );
+		expect( root.classList.contains( 'godam-hover-started' ) ).toBe( true );
 		expect( manager.isPreviewActive() ).toBe( false );
 	} );
 

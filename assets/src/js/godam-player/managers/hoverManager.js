@@ -140,9 +140,14 @@ class HoverManager {
 				this.isPreviewInitiatedPlay = false;
 				return;
 			}
-			// Real, committed playback (big play button, control bar, keyboard,
-			// programmatic). Mark the player committed so a later hover cannot
-			// restart a preview over it, then fully restore anything a preceding
+			// Already committed: this is an ordinary resume, not the transition
+			// out of preview. Leave the viewer's mute/volume alone.
+			if ( this.isVideoClicked ) {
+				return;
+			}
+			// First real, committed playback (big play button, control bar,
+			// keyboard, programmatic). Mark the player committed so a later hover
+			// cannot restart a preview over it, then restore anything a preceding
 			// `startPreview()` changed – otherwise this path can leave the player
 			// muted, control-less and stuck behind its own poster.
 			this.isPreviewPlaying = false;
@@ -359,8 +364,7 @@ class HoverManager {
 		// Only tear down the "started" visual state and playback if the
 		// preview actually began; otherwise nothing was ever changed.
 		if ( this.isPreviewPlaying ) {
-			this.player.removeClass( 'vjs-has-started' );
-			this.player.addClass( 'godam-hover-started' );
+			this.showPoster();
 			this.stopPreview();
 		}
 	}
@@ -410,9 +414,10 @@ class HoverManager {
 		this.isPreviewInitiatedPlay = true;
 
 		// Always begin muted so the hover-triggered autoplay is never blocked;
-		// the session preference is re-applied once playback has started.
+		// the session preference is re-applied once playback has started. Mute
+		// via `muted()` only – the volume level is left untouched so the site's
+		// or viewer's configured volume survives the preview.
 		this.player.muted( true );
-		this.player.volume( 1 );
 		this.player.currentTime( 0 );
 
 		const controlBar = this.player.controlBar?.el();
@@ -432,12 +437,14 @@ class HoverManager {
 			.then( () => this.applyPreviewMute() )
 			.catch( () => {
 				// Autoplay was refused (e.g. iOS Low Power Mode), so no `play`
-				// event will fire to clear `isPreviewInitiatedPlay`. Roll both
-				// flags back, or the viewer's next real play would be mistaken
-				// for the preview's own and leave layers suppressed all session.
+				// event will fire to clear `isPreviewInitiatedPlay`. Roll the
+				// flags back and fully tear the preview down – otherwise the
+				// video is left paused at frame 0 with the control bar hidden and
+				// no poster, and a following `mouseleave` skips its teardown.
 				this.isPreviewInitiatedPlay = false;
 				this.isPreviewPlaying = false;
-				this.togglePreviewOverlays( false );
+				this.showPoster();
+				this.stopPreview();
 			} );
 	}
 
@@ -454,17 +461,26 @@ class HoverManager {
 	}
 
 	/**
+	 * Returns the player to its poster/idle look. Video.js keeps `hasStarted_`
+	 * latched once a preview has played, so the poster only reappears when
+	 * `vjs-has-started` is removed and `godam-hover-started` restored.
+	 */
+	showPoster() {
+		this.player.removeClass( 'vjs-has-started' );
+		this.player.addClass( 'godam-hover-started' );
+	}
+
+	/**
 	 * Restores everything `startPreview()` changed when the player commits to
-	 * real playback: shows the control bar, makes playback audible, lifts the
-	 * hover-poster state (Video.js keeps `hasStarted_` latched, so the poster
-	 * only clears once `godam-hover-started` is removed and `vjs-has-started`
-	 * restored), and hides the preview chrome. Idempotent.
+	 * real playback: shows the control bar, unmutes (leaving the volume level
+	 * alone), lifts the hover-poster state (`vjs-has-started` back on,
+	 * `godam-hover-started` off), and hides the preview chrome. Runs once per
+	 * commit – the `play` handler guards against re-running it on later resumes.
 	 */
 	exitPreviewToPlayback() {
 		this.togglePreviewOverlays( false );
 		this.player.controlBar?.el()?.classList.remove( 'hide' );
 		this.player.muted( false );
-		this.player.volume( 1 );
 		this.player.addClass( 'vjs-has-started' );
 		this.player.removeClass( 'godam-hover-started' );
 	}
