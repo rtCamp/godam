@@ -644,6 +644,124 @@
 	}
 }
 
+// ---------------------------------------------------------------------------
+// Hover-preview reel chrome
+// Lightweight overlays shown only while a "start-preview" hover preview is
+// playing: a thin reel-style progress stripe along the bottom and a
+// mute/unmute toggle in the top-right corner. Both are appended to the player
+// root by HoverManager and toggled via `.is-visible`.
+// ---------------------------------------------------------------------------
+
+// While a hover preview is playing, hide the overlay share / transcript
+// buttons (they sit on the container, outside the control bar that the preview
+// already hides). Bubble skin routes them into the control bar instead, so they
+// are hidden with it and need no rule here.
+.easydam-video-container.godam-hover-preview-active {
+
+	.godam-share-button,
+	.godam-transcript-button {
+		display: none !important;
+	}
+}
+
+.godam-preview-progress {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 3;
+	height: 3px;
+	background-color: rgba(255, 255, 255, 0.25);
+	opacity: 0;
+	// Presentational only – clicks fall through to the video (commit playback).
+	pointer-events: none;
+	transition: opacity 0.15s ease;
+
+	&.is-visible {
+		opacity: 1;
+	}
+
+	&__fill {
+		width: 0;
+		height: 100%;
+		background-color: var(--rtgodam-control-bar-color, #3858e9);
+		transition: width 0.1s linear;
+	}
+}
+
+// The toggle reuses Video.js's `vjs-mute-control vjs-control vjs-button`
+// markup so each skin paints its own volume glyph; these rules only lift it
+// out of the (hidden) control bar and into the top-right corner. The doubled
+// class raises specificity enough to win over the base `.vjs-control` sizing.
+.godam-preview-mute.vjs-control.vjs-button {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 4;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 3em;
+	height: 3em;
+	padding: 0;
+	margin: 0;
+	color: #fff;
+	cursor: pointer;
+	// Match the player's primary (control bar) colour.
+	background-color: var(--rtgodam-control-bar-color, #3858e9) !important;
+	border: 0;
+	border-radius: 50%;
+	// Hidden until a preview is playing. `visibility`/`pointer-events` (not just
+	// opacity) so the invisible button cannot swallow a click meant to start the
+	// video, and is not tab-reachable or announced while off screen.
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transition: opacity 0.15s ease, filter 0.15s ease, visibility 0s linear 0.15s;
+
+	&.is-visible {
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+		transition: opacity 0.15s ease, filter 0.15s ease;
+	}
+
+	&:hover,
+	&:focus-visible {
+		filter: brightness(1.1);
+	}
+
+	.vjs-icon-placeholder::before {
+		position: static;
+		width: auto;
+		font-size: 1.5em;
+		line-height: 1;
+	}
+}
+
+// Classic skin overrides the mute glyph with SVGs scoped to `.vjs-control-bar`;
+// the preview toggle lives outside it, so mirror those SVGs here (only the
+// muted / full-volume states the toggle uses) to match the control bar.
+.godam-classic-skin .video-js .godam-preview-mute {
+
+	/* stylelint-disable-next-line no-descending-specificity -- overlay copy of the classic mute glyph; the control-bar rule keeps its own icon. */
+	&.vjs-vol-0 .vjs-icon-placeholder::before {
+		width: 21px;
+		height: 21px;
+		background: url(../images/classic-mute-icon.svg) no-repeat;
+		background-size: contain;
+		content: '' !important; /* Hide default icon */
+	}
+
+	&.vjs-vol-3 .vjs-icon-placeholder::before {
+		width: 21px;
+		height: 21px;
+		background: url(../images/classic-volume-3-icon.svg) no-repeat;
+		background-size: contain;
+		content: '' !important; /* Hide default icon */
+	}
+}
+
 // CSS to override the elementor image CSS in editor.
 .elementor .vjs-poster img {
 	height: 100% !important;
