@@ -39,34 +39,23 @@ const Appearance = ( { attachmentID } ) => {
 	const [ brandNotice, setBrandNotice ] = useState( { message: '', status: 'error', isVisible: false } );
 
 	useEffect( () => {
-		// Keep the captions button visibility in sync (it re-adds on load).
-		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
-		if ( controlBar.subsCapsButton && captionsButton ) {
-			captionsButton.classList.remove( 'vjs-hidden' );
-		}
+		// Clear any selected layer so the stage shows the player preview (the
+		// front-end control bar) instead of a layer overlay.
 		dispatch( setCurrentLayer( null ) );
-	}, [ dispatch, controlBar.subsCapsButton ] );
+	}, [ dispatch ] );
 
 	const updateControlBar = ( patch ) => {
 		dispatch( updateVideoConfig( { controlBar: { ...controlBar, ...patch } } ) );
 	};
 
+	// The stage preview renders the real Video.js control bar on this tab, so
+	// every setting below only has to update state — `VideoJSPlayer` reflects it.
 	const handleVolumeToggle = () => {
-		const volumeSlider = document.querySelector( '.vjs-volume-panel' );
 		updateControlBar( { volumePanel: ! controlBar.volumePanel } );
-		if ( volumeSlider ) {
-			volumeSlider.classList.toggle( 'hide', controlBar.volumePanel );
-			volumeSlider.classList.toggle( 'show', ! controlBar.volumePanel );
-		}
 	};
 
 	const handleCaptionsToggle = () => {
-		const captionsButton = document.querySelector( '.vjs-subs-caps-button' );
 		updateControlBar( { subsCapsButton: ! controlBar.subsCapsButton } );
-		if ( captionsButton ) {
-			captionsButton.classList.toggle( 'hide', controlBar.subsCapsButton );
-			captionsButton.classList.toggle( 'show', ! controlBar.subsCapsButton );
-		}
 	};
 
 	const handleSkipDuration = ( value ) => {
@@ -127,6 +116,9 @@ const Appearance = ( { attachmentID } ) => {
 			<div className="godam-ve-config">
 
 				<VeSection title={ __( 'Display Settings', 'godam' ) }>
+					<p className="godam-ve-field__help">
+						{ __( 'The controls under the video preview show how this player will appear on the front end.', 'godam' ) }
+					</p>
 					<VeToggle
 						data-test-id="godam-video-editor-control-volume"
 						label={ __( 'Show volume slider', 'godam' ) }
