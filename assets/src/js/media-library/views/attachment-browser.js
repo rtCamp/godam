@@ -5,6 +5,8 @@
  */
 import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter';
 import MediaDateRangeFilter from './filters/media-date-range-filter';
+import MediaCategoryFilter from './filters/media-category-filter';
+import MediaTagFilter from './filters/media-tag-filter';
 import MediaRetranscode from './filters/media-retranscode';
 import MediaMoveToFolder from './filters/media-move-to-folder';
 
@@ -96,6 +98,28 @@ export default AttachmentsBrowser?.extend( {
 					} ).render(),
 				);
 			}
+		}
+
+		if ( MediaCategoryFilter ) {
+			this.toolbar.set(
+				'MediaCategoryFilter',
+				new MediaCategoryFilter( {
+					controller: this.controller,
+					model: this.collection.props,
+					priority: -80,
+				} ).render(),
+			);
+		}
+
+		if ( MediaTagFilter ) {
+			this.toolbar.set(
+				'MediaTagFilter',
+				new MediaTagFilter( {
+					controller: this.controller,
+					model: this.collection.props,
+					priority: -80,
+				} ).render(),
+			);
 		}
 
 		if ( isAPIKeyValid() && isUploadPage() ) {
