@@ -144,45 +144,49 @@ function rtgodam_plugin_deactivate() {
 
 register_deactivation_hook( __FILE__, 'rtgodam_plugin_deactivate' );
 
-/**
- * Runs when the plugin is deleted.
+/*
+ * Plugin-state cleanup on deletion lives in uninstall.php (run in isolation by WordPress),
+ * NOT in a register_uninstall_hook() callback. The register_uninstall_hook() path makes
+ * WordPress bootstrap this whole file (and load bundled Action Scheduler) during deletion,
+ * which then fatals on `shutdown` once the files are gone — see uninstall.php and issue #1146.
  */
-function rtgodam_plugin_delete() {
-	// Delete options related to plugin state (What's New, version).
-	// This is to ensure redirection on a fresh install.
-	if ( is_multisite() ) {
-		// Get all blogs in the network and delete options from each blog.
-		$blogs = get_sites( array( 'fields' => 'ids' ) );
 
-		foreach ( $blogs as $blog_id ) {
-			switch_to_blog( $blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
+/**
+ * Prevent a `shutdown` fatal when GoDAM is deleted while active.
+ *
+ * GoDAM bundles WooCommerce Action Scheduler, whose queue runner registers a `shutdown`
+ * callback (`ActionScheduler_QueueRunner::maybe_dispatch_async_request`). Deleting the
+ * plugin removes its files mid-request, so on `shutdown` that callback tries to autoload a
+ * class from the now-deleted plugin (e.g. `ActionScheduler_Lock`) and throws a fatal. A
+ * fatal-catcher such as Query Monitor appends that error to the delete-plugin AJAX body,
+ * corrupting the JSON so the admin shows "Deletion failed" even though the plugin was
+ * actually removed. `delete_plugin` fires immediately before the files are deleted, so
+ * detaching Action Scheduler's shutdown dispatch here avoids the fatal entirely (and the
+ * async request it would dispatch is pointless when the plugin is going away). See #1146.
+ *
+ * @since 2.2.1
+ *
+ * @param string $plugin_file Plugin being deleted, relative to the plugins directory.
+ * @return void
+ */
+function rtgodam_detach_action_scheduler_on_delete( $plugin_file ) {
+	if ( plugin_basename( __FILE__ ) !== $plugin_file ) {
+		return;
+	}
 
-			delete_option( 'rtgodam_plugin_version' );
-			delete_option( 'rtgodam_show_whats_new' );
-			delete_transient( 'rtgodam_show_whats_new' ); // Stored as a transient in ≤1.7.2.
-			delete_option( 'rtgodam_user_data' );
-			delete_option( 'rtgodam-api-key' );
-			delete_option( 'rtgodam-api-key-stored' );
-			delete_option( 'rtgodam-account-token' );
-			delete_option( 'rtgodam-api-key-status' );
-			delete_option( 'rtgodam-api-key-error-since' );
-			delete_transient( 'rtgodam_release_data' );
+	if ( ! class_exists( 'ActionScheduler_QueueRunner' ) || ! method_exists( 'ActionScheduler_QueueRunner', 'instance' ) ) {
+		return;
+	}
 
-			restore_current_blog();
-		}
+	$runner = ActionScheduler_QueueRunner::instance();
+
+	// Prefer Action Scheduler's own API; fall back to removing the hook directly for older
+	// versions that predate unhook_dispatch_async_request().
+	if ( method_exists( $runner, 'unhook_dispatch_async_request' ) ) {
+		$runner->unhook_dispatch_async_request();
 	} else {
-		// For single site, delete options directly.
-		delete_option( 'rtgodam_plugin_version' );
-		delete_option( 'rtgodam_show_whats_new' );
-		delete_transient( 'rtgodam_show_whats_new' ); // Stored as a transient in ≤1.7.2.
-		delete_option( 'rtgodam_user_data' );
-		delete_option( 'rtgodam-api-key' );
-		delete_option( 'rtgodam-api-key-stored' );
-		delete_option( 'rtgodam-account-token' );
-		delete_option( 'rtgodam-api-key-status' );
-		delete_option( 'rtgodam-api-key-error-since' );
-		delete_transient( 'rtgodam_release_data' );
+		remove_action( 'shutdown', array( $runner, 'maybe_dispatch_async_request' ) );
 	}
 }
 
-register_uninstall_hook( __FILE__, 'rtgodam_plugin_delete' );
+add_action( 'delete_plugin', 'rtgodam_detach_action_scheduler_on_delete' );
