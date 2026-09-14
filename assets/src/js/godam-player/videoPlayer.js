@@ -392,6 +392,12 @@ export default class GodamVideoPlayer {
 			onControlsMove: () => this.controlsManager.moveVideoControls(),
 		} );
 
+		// Suppress layers while an uncommitted hover preview ("Start Preview")
+		// is playing – the preview is meant to show playback, not layers.
+		this.layersManager.setSuppressionCheck(
+			() => this.hoverManager?.isPreviewActive() === true,
+		);
+
 		// Set up preview state change callback
 		if ( this.previewManager.getPreviewWatcher() ) {
 			this.previewManager.setPreviewStateChangeCallback(

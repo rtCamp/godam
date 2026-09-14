@@ -15,6 +15,7 @@ import { __ } from '@wordpress/i18n';
 import { addIcon, trashIcon, editIcon, barChartIcon } from '../media-library-icons';
 import { canManageAttachment, isDocumentModel } from '../utility';
 import { loadVideoJs, getLoadedVideoJs } from '../videojs-loader.js';
+import renderMoveToFolderField from './fields/move-to-folder-field';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -991,6 +992,11 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	render() {
 		// Call the parent render method.
 		AttachmentDetailsTwoColumn.prototype.render.apply( this, arguments );
+
+		// Needed here as well as in attachment-details.js: core builds TwoColumn from
+		// the ORIGINAL Attachment.Details captured at module scope, so replacing
+		// wp.media.view.Attachment.Details does not reach this view.
+		renderMoveToFolderField( this );
 
 		// Check if the attachment is a video and render the edit buttons.
 		if ( this.model.get( 'type' ) === 'video' ) {

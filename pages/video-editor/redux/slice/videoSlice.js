@@ -24,6 +24,10 @@ const initialState = {
 			fullscreenToggle: true, // Full-screen button
 			subsCapsButton: true,
 			pictureInPictureToggle: false,
+			skipButtons: {
+				forward: 10,
+				backward: 10,
+			},
 			//custom controls
 			brandingIcon: true,
 			appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',

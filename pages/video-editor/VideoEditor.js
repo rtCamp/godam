@@ -644,6 +644,31 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		return <EditorSkeleton />;
 	}
 
+	// The stage preview doubles as the front-end preview on the Settings tab, so
+	// the player's control bar is composed from the saved player settings rather
+	// than a fixed list — the same way `inc/templates/godam-player.php` hands
+	// them to Video.js on the front end. `VideoJSPlayer` keeps the bar in step as
+	// the settings change; this only seeds the initial composition.
+	//
+	// Skip buttons render only when a duration is actually stored, matching the
+	// front end (which passes the saved `controlBar` through verbatim).
+	const skipDuration = Number( videoConfig?.controlBar?.skipButtons?.forward ) || 0;
+	const previewControlBar = {
+		playToggle: true,
+		volumePanel: Boolean( videoConfig?.controlBar?.volumePanel ),
+		currentTimeDisplay: true,
+		timeDivider: true,
+		durationDisplay: true,
+		fullscreenToggle: true,
+		// Always created so the "Display captions" toggle can show/hide it
+		// without rebuilding the bar.
+		subsCapsButton: true,
+		pictureInPictureToggle: Boolean( videoConfig?.controlBar?.pictureInPictureToggle ),
+		skipButtons: skipDuration
+			? { forward: skipDuration, backward: skipDuration }
+			: false,
+	};
+
 	// Fallback title matches the attachment's media type (video/audio/image).
 	const untitledLabel = {
 		audio: __( 'Untitled audio', 'godam' ),
@@ -763,17 +788,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 													limitRenditionByPlayerDimensions: false, // don't cap by video element size
 												},
 											},
-											controlBar: {
-												playToggle: true,
-												volumePanel: true,
-												currentTimeDisplay: true,
-												timeDivider: true,
-												durationDisplay: true,
-												fullscreenToggle: false,
-												subsCapsButton: true,
-												skipButtons: false,
-												pictureInPictureToggle: false,
-											},
+											controlBar: previewControlBar,
 										} }
 										onTimeupdate={ handleTimeUpdate }
 										onReady={ handlePlayerReady }

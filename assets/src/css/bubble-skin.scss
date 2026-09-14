@@ -34,7 +34,7 @@
 			}
 		}
   
-		.vjs-seek-to-live-control, .vjs-remaining-time, .vjs-picture-in-picture-control, [class^="vjs-skip-backward"], [class^="vjs-skip-forward"], .vjs-custom-play-button {
+		.vjs-seek-to-live-control, .vjs-remaining-time, [class^="vjs-skip-backward"], [class^="vjs-skip-forward"], .vjs-custom-play-button {
 			display: none !important;
 		}
   
@@ -391,7 +391,7 @@
 				margin: 0 30px !important;
 			}
 	
-		   .vjs-duration, .vjs-current-time, .vjs-time-divider, .vjs-picture-in-picture-control {
+		   .vjs-duration, .vjs-current-time, .vjs-time-divider {
 				display: none !important;
 			}
 		}

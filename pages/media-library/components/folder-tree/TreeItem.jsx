@@ -20,6 +20,7 @@ import { triggerFilterChange } from '../../data/media-grid';
 import './css/tree-item.scss';
 import { FolderTreeChevron } from '../icons';
 import { utilities } from '../../data/utilities';
+import FolderMenuToggle from './FolderMenuToggle.jsx';
 
 const indentPerLevel = 12;
 
@@ -121,6 +122,7 @@ const TreeItem = ( { item, index, depth, onContextMenu, isMultiSelecting } ) => 
 						</span>
 					</div>
 				</button>
+				<FolderMenuToggle folderId={ item.id } onContextMenu={ onContextMenu } />
 			</div>
 		</>
 	);
