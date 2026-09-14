@@ -93,6 +93,7 @@ class GoDAM_Image {
 			wp_enqueue_script( 'godam-image-layers-frontend' );
 		}
 		wp_enqueue_style( 'godam-image-style' );
+		wp_enqueue_style( 'godam-player-wrapper-style' );
 		wp_enqueue_style( 'godam-player-style' );
 	}
 
@@ -139,7 +140,13 @@ class GoDAM_Image {
 		// The block's hotspot stylesheet is attached via wp_enqueue_block_style()
 		// (see class-blocks.php), which only fires in block context. Enqueue the
 		// image block style + the shared hotspot styles for the shortcode path.
+		// `godam-player-wrapper-style` carries the player placeholder / poster /
+		// aspect-ratio rules; it is enqueued explicitly (rather than relying only
+		// on the `godam-player-style` dependency) so a page mixing this shortcode
+		// with a video keeps the correct video sizing even if another registration
+		// of `godam-player-style` won the race without the dependency.
 		wp_enqueue_style( 'godam-image-style' );
+		wp_enqueue_style( 'godam-player-wrapper-style' );
 		wp_enqueue_style( 'godam-player-style' );
 
 		// Tells the shared render.php it runs outside block context.
