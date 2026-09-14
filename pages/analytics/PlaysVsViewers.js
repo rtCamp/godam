@@ -6,7 +6,6 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import { calculateEngagementRate, calculatePlayRate, ensureAll7Days, calculateTrendPercentage } from './helper';
 import './charts.js';
 
 /**
@@ -24,12 +23,12 @@ import { __ } from '@wordpress/i18n';
  * "Average views per viewer" formula. Never summed across per-video rows.
  *
  * @param {Object}  props
- * @param {string}  [props.mode='analytics']          'analytics' | 'dashboard'
- * @param {number}  props.plays                       Total plays count.
- * @param {number}  props.uniqueViewers               Deduplicated distinct-person count.
- * @param {boolean} [props.showRatio=true]            Whether to render the ratio footer.
- * @param {boolean} [props.isLoading=false]           Show skeleton state when true.
- * @param {Array}   [props.processedAnalyticsHistory] History rows for the sparkline.
+ * @param {string}  [props.mode='analytics'] 'analytics' | 'dashboard'
+ * @param {number}  props.plays              Total plays count.
+ * @param {number}  props.uniqueViewers      Deduplicated distinct-person count.
+ * @param {boolean} [props.showRatio=true]   Whether to render the ratio footer.
+ * @param {boolean} [props.isLoading=false]  Show skeleton state when true.
+ * @param {string}  [props.dataLabel]        Active range label (e.g. "All time").
  */
 const PlaysVsViewers = ( {
 	mode = 'analytics',
@@ -37,7 +36,7 @@ const PlaysVsViewers = ( {
 	uniqueViewers = 0,
 	showRatio = true,
 	isLoading = false,
-	processedAnalyticsHistory,
+	dataLabel,
 } ) => {
 	// Range mode returns a live range-scoped unique count (0 is valid), so only
 	// a null/undefined means genuinely unavailable, shown as "—" with no
@@ -53,35 +52,6 @@ const PlaysVsViewers = ( {
 
 	const formattedPlays = Number( plays ).toLocaleString();
 	const formattedViewers = viewersUnavailable ? '—' : Number( uniqueViewers ).toLocaleString();
-
-	// Client-side "vs prev 7 days" plays trend from the 7-day history. Computed
-	// in render so the delta shows on the card's bottom row (arrow + coloured %,
-	// matching Figma) instead of an overflowing pill in the header.
-	let playsTrend = null;
-	if ( Array.isArray( processedAnalyticsHistory ) ) {
-		const mappedData = processedAnalyticsHistory.map( ( h ) => (
-			mode === 'analytics'
-				? {
-					date: h.date,
-					plays: parseFloat( h.plays ) || 0,
-					engagement_rate: parseFloat( calculateEngagementRate( h.plays, h.video_length, h.play_time ) ) || 0,
-					play_rate: parseFloat( calculatePlayRate( h.page_load, h.plays ) ) || 0,
-					watch_time: parseFloat( h.play_time ) || 0,
-				}
-				: {
-					date: h.date,
-					plays: parseFloat( h.plays ) || 0,
-					engagement_rate: parseFloat( h.avg_engagement ) || 0,
-					play_rate: h.play_rate ? parseFloat( h.play_rate * 100 ) : 0,
-					watch_time: parseFloat( h.watch_time ) || 0,
-					total_videos: parseInt( h.total_videos ) || 0,
-				}
-		) );
-		const sortedData = ensureAll7Days( mappedData ).sort(
-			( a, b ) => new Date( a.date ) - new Date( b.date ),
-		);
-		playsTrend = calculateTrendPercentage( sortedData, 'plays' );
-	}
 
 	return (
 		<div className="analytics-info plays-vs-viewers-card flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full">
@@ -119,13 +89,8 @@ const PlaysVsViewers = ( {
 					</div>
 				) }
 
-				{ mode !== 'dashboard' && playsTrend !== null && (
-					<div className="flex items-center gap-1.5">
-						<span className={ `text-xs font-semibold ${ playsTrend >= 0 ? 'text-[#15803D]' : 'text-[#B91C1C]' }` }>
-							{ `${ playsTrend >= 0 ? '↑' : '↓' } ${ Math.abs( playsTrend ).toFixed( 2 ) }%` }
-						</span>
-						<span className="text-[11px] text-zinc-400 whitespace-nowrap">{ __( 'vs prev 7 days', 'godam' ) }</span>
-					</div>
+				{ mode !== 'dashboard' && (
+					<p className="text-zinc-500 text-xs">{ dataLabel || __( 'All time', 'godam' ) }</p>
 				) }
 
 				{ showRatio && (

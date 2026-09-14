@@ -52,6 +52,58 @@ export const dashboardAnalyticsApi = createApi( {
 				return response.dashboard_metrics || {};
 			},
 		} ),
+		// Per-placement funnel (the "Funnel by placement" card). Fetched
+		// separately from the main metrics so its heavier per-placement queries
+		// don't block the dashboard load.
+		fetchPlacementFunnels: builder.query( {
+			query: ( { siteUrl, startDate, endDate } ) => ( {
+				url: 'godam/v1/analytics/placement-funnels',
+				params: {
+					site_url: siteUrl,
+					...rangeParams( { startDate, endDate } ),
+				},
+			} ),
+			transformResponse: ( response ) => {
+				if ( response.status === 'error' ) {
+					return { error: true, message: response.message };
+				}
+				return response.placement_funnels || [];
+			},
+		} ),
+		// Video-Attributed Revenue card. Standalone from the Insights metrics so
+		// the card carries its own date range.
+		fetchRevenueSummary: builder.query( {
+			query: ( { siteUrl, startDate, endDate } ) => ( {
+				url: 'godam/v1/analytics/revenue-summary',
+				params: {
+					site_url: siteUrl,
+					...rangeParams( { startDate, endDate } ),
+				},
+			} ),
+			transformResponse: ( response ) => {
+				if ( response.status === 'error' ) {
+					return { error: true, message: response.message };
+				}
+				return response.revenue || null;
+			},
+		} ),
+		// Purchase Funnel card (account-wide Play to Cart to Purchase). Standalone
+		// so the card carries its own date range.
+		fetchVideoFunnel: builder.query( {
+			query: ( { siteUrl, startDate, endDate } ) => ( {
+				url: 'godam/v1/analytics/video-funnel',
+				params: {
+					site_url: siteUrl,
+					...rangeParams( { startDate, endDate } ),
+				},
+			} ),
+			transformResponse: ( response ) => {
+				if ( response.status === 'error' ) {
+					return { error: true, message: response.message };
+				}
+				return response.video_funnel || null;
+			},
+		} ),
 		// Fetch Dashboard Metrics History
 		fetchDashboardMetricsHistory: builder.query( {
 			query: ( { siteUrl, days, startDate, endDate } ) => ( {
@@ -98,6 +150,56 @@ export const dashboardAnalyticsApi = createApi( {
 				};
 			},
 		} ),
+		// Fetch Top Products
+		fetchTopProducts: builder.query( {
+			// sortBy/order are accepted by the endpoint and reserved for a later
+			// interactive column-sort feature; the table sends only the default
+			// (product_views, desc) for now.
+			query: ( { siteUrl, page = 1, limit = 10, search = '', sortBy = 'product_views', order = 'desc', startDate, endDate } ) => ( {
+				url: 'godam/v1/analytics/top-products',
+				params: {
+					site_url: siteUrl,
+					page,
+					limit,
+					sort_by: sortBy,
+					order,
+					// Only send `search` when set so the proxy can skip the WP_Query.
+					...( search ? { search } : {} ),
+					...rangeParams( { startDate, endDate } ),
+				},
+			} ),
+			transformResponse: ( response ) => {
+				if ( response.status === 'error' ) {
+					throw new Error( response.message );
+				}
+				return {
+					products: response.top_products || [],
+					totalPages: response.total_pages || 1,
+					totalItems: response.total_items || 0,
+				};
+			},
+		} ),
+		// Fetch GA4 add_to_cart/purchase counts pushed by the godam-for-woo add-on's
+		// dataLayer emission. Lives under that add-on's own REST namespace (not
+		// `godam/v1`) since it owns the counting; this plugin only surfaces it. Only
+		// meaningful (and only called) once `enable_gtm_tracking` is on — see
+		// GA4ConnectionWidget.
+		//
+		// `source_active`/`source_type` report whether another GA4 integration on
+		// the store is already covering these events, in which case GoDAM stands
+		// down and pushes nothing even though the counters below keep incrementing
+		// (they document events "prepared to send", not delivered).
+		fetchGa4Counts: builder.query( {
+			query: () => ( {
+				url: 'godam-for-woo/v1/ga4-counts',
+			} ),
+			transformResponse: ( response ) => ( {
+				addToCartCount: Number( response?.add_to_cart_count || 0 ),
+				purchaseCount: Number( response?.purchase_count || 0 ),
+				sourceActive: !! response?.source_active,
+				sourceType: response?.source_type || '',
+			} ),
+		} ),
 	} ),
 } );
 
@@ -106,4 +208,10 @@ export const {
 	useFetchDashboardMetricsHistoryQuery,
 	useFetchTopVideosQuery,
 	useLazyFetchTopVideosQuery,
+	useFetchTopProductsQuery,
+	useLazyFetchTopProductsQuery,
+	useFetchGa4CountsQuery,
+	useFetchPlacementFunnelsQuery,
+	useFetchRevenueSummaryQuery,
+	useFetchVideoFunnelQuery,
 } = dashboardAnalyticsApi;
