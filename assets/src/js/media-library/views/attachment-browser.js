@@ -6,6 +6,7 @@
 import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter';
 import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
+import MediaMoveToFolder from './filters/media-move-to-folder';
 
 import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
 
@@ -74,6 +75,24 @@ export default AttachmentsBrowser?.extend( {
 						controller: this.controller,
 						model: this.collection.props,
 						priority: -80,
+					} ).render(),
+				);
+			}
+
+			// Negative priority puts this in .media-toolbar-secondary with core's own
+			// bulk affordances. -72 specifically, so it lands after Transcode Media
+			// (-75) but ahead of the Bulk Select toggle's "Cancel" (-70), which
+			// belongs last. It must NOT tie with -70: PriorityList.set() inserts
+			// before the first view of strictly greater priority, so an equal
+			// priority appends *after* the tied view — and core's buttons are always
+			// registered first, since the parent createToolbar() runs above.
+			if ( MediaMoveToFolder ) {
+				this.toolbar.set(
+					'MediaMoveToFolder',
+					new MediaMoveToFolder( {
+						controller: this.controller,
+						model: this.collection.props,
+						priority: -72,
 					} ).render(),
 				);
 			}

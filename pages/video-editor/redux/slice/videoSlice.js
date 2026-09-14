@@ -24,11 +24,6 @@ const initialState = {
 			fullscreenToggle: true, // Full-screen button
 			subsCapsButton: true,
 			pictureInPictureToggle: false,
-			// Skip-forward / skip-backward jump, in seconds. The Settings tab has
-			// always *displayed* 10 as its default, but without a stored value
-			// Video.js builds no skip buttons at all — so the player showed none
-			// until the duration was explicitly changed and saved. Keep the state
-			// in step with what the UI claims.
 			skipButtons: {
 				forward: 10,
 				backward: 10,
