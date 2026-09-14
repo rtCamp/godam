@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.2.1
+Stable tag: 2.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -224,6 +224,17 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.2.2 (September 14, 2026) =
+
+- Feat: Organize media into folders in bulk — the media library list view now has a "Move to folder…" bulk action, and each user's folder sidebar remembers its own open/closed state.
+- Tweak: The Video Editor's player preview now mirrors the real front-end control bar — skip buttons, volume panel, branding, and appearance settings — and restores skip buttons that were missing on older videos.
+- Fix: GoDAM media can now be set as a post's featured image in both the block and classic editors, with the placeholder swapped for the real attachment once it is created.
+- Fix: Interactive layers (forms, CTAs, hotspots) no longer trigger while a video is only being previewed on hover.
+- Fix: Skip buttons in the video player now always appear with a valid skip duration, and the picture-in-picture control has been removed across all player skins.
+- Fix: The GoDAM tab in the media picker now shows a clear error when the API key is missing, invalid, or revoked, instead of spinning forever or showing a misleading "No items found".
+- Fix: Long or tall HTML CTA layers no longer overflow their container — they fill it and scroll when needed.
+- Fix: Deleting the GoDAM plugin no longer throws a 502 / "Deletion failed" error.
+
 = v2.2.1 (September 8, 2026) =
 
 - Fix: Authors can now create and rename media folders.
@@ -239,12 +250,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Resolved bugs in the GoDAM Media Library module.
 - Fix: Fixed the transcription source issue for GoDAM videos.
 - Fix: Layer analytics now records a view for each hotspot in its own right, so a hotspot's views, conversion, and "No Action" describe that hotspot rather than the whole layer. This stays correct even as hotspots are added or removed over time.
-
-= v2.1.1 (August 6, 2026) =
-
-- Fix: GoDAM no longer fills the debug log with `Function _load_textdomain_just_in_time was called incorrectly` on WordPress 6.7 and later. On sites that display errors, the warning could also appear on the page itself, in the admin and on the front end.
-- Fix: 34 more pieces of on-screen text can now be translated, covering the video player's transcript, chapters, comments, sharing and sign-in prompts, which no language pack could reach before.
-- Tweak: GoDAM no longer contacts the GoDAM service to re-check your API key during front-end page views, REST requests or scheduled tasks. That happens only on the Media Library screen, which is the one place the transcode status column needs it.
 
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
