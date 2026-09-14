@@ -39,15 +39,25 @@ $rtgodam_uninstall_transients = array(
 	'rtgodam_release_data',
 );
 
-/**
- * Delete GoDAM's plugin-state options and transients for the current site.
- *
- * A closure (rather than a named function) keeps this self-contained and avoids any
- * redeclaration concerns in the shared uninstall context.
- *
- * @var callable $rtgodam_cleanup
- */
-$rtgodam_cleanup = static function () use ( $rtgodam_uninstall_options, $rtgodam_uninstall_transients ) {
+// On multisite, clean every site; otherwise just the current one. `'number' => 0` lifts
+// WP_Site_Query's default 100-site cap so options/transients are not left behind on
+// networks with more than 100 sites. The deletes are lightweight (option/transient only),
+// so it is safe to run across every site without the plugin being loaded.
+$rtgodam_is_multisite = is_multisite();
+$rtgodam_blog_ids     = $rtgodam_is_multisite
+	? get_sites(
+		array(
+			'fields' => 'ids',
+			'number' => 0,
+		) 
+	)
+	: array( 0 );
+
+foreach ( $rtgodam_blog_ids as $rtgodam_blog_id ) {
+	if ( $rtgodam_is_multisite ) {
+		switch_to_blog( $rtgodam_blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
+	}
+
 	foreach ( $rtgodam_uninstall_options as $rtgodam_option ) {
 		delete_option( $rtgodam_option );
 	}
@@ -55,18 +65,8 @@ $rtgodam_cleanup = static function () use ( $rtgodam_uninstall_options, $rtgodam
 	foreach ( $rtgodam_uninstall_transients as $rtgodam_transient ) {
 		delete_transient( $rtgodam_transient );
 	}
-};
 
-if ( is_multisite() ) {
-	// Clean each site's options. Kept lightweight (option/transient deletes only) so it is
-	// safe to run across every site without the plugin being loaded.
-	$rtgodam_blog_ids = get_sites( array( 'fields' => 'ids' ) );
-
-	foreach ( $rtgodam_blog_ids as $rtgodam_blog_id ) {
-		switch_to_blog( $rtgodam_blog_id ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog
-		$rtgodam_cleanup();
+	if ( $rtgodam_is_multisite ) {
 		restore_current_blog();
 	}
-} else {
-	$rtgodam_cleanup();
 }
