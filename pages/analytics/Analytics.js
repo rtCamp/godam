@@ -677,13 +677,6 @@ const Analytics = ( { attachmentID } ) => {
 										assisted_minor: rangedAnalyticsData.revenue_assisted_minor,
 									} }
 									dataLabel={ rangeLabel }
-									rangeControl={
-										<DateRangePicker
-											value={ range }
-											onChange={ setRange }
-											testIdPrefix="godam-video-revenue-daterange"
-										/>
-									}
 								/>
 							) }
 
@@ -702,13 +695,6 @@ const Analytics = ( { attachmentID } ) => {
 									funnel={ rangedAnalyticsData?.video_funnel }
 									dataLabel={ rangeLabel }
 									scope="video"
-									rangeControl={
-										<DateRangePicker
-											value={ range }
-											onChange={ setRange }
-											testIdPrefix="godam-video-purchase-funnel-daterange"
-										/>
-									}
 								/>
 							) }
 
