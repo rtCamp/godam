@@ -1,6 +1,6 @@
 # Changelog #
 
-## v2.2.2 (September 14, 2026) ##
+## v2.2.2 (September 15, 2026) ##
 
 - Feat: Organize media into folders in bulk — the media library list view now has a "Move to folder…" bulk action, and each user's folder sidebar remembers its own open/closed state.
 - Tweak: The Video Editor's player preview now mirrors the real front-end control bar — skip buttons, volume panel, branding, and appearance settings — and restores skip buttons that were missing on older videos.
