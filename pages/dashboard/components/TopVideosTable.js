@@ -21,7 +21,10 @@ const PER_PAGE = 10;
 // The analytics microservice caps `limit` at 100 per request, so a full-set
 // export pages through it 100 at a time rather than asking for everything at once.
 const EXPORT_PAGE_SIZE = 100;
-const ANALYTICS_LINK = ( id ) => `admin.php?page=rtgodam_analytics&id=${ id }`;
+// `from=dashboard` lets the single-video analytics page send its Back button to
+// the Dashboard (not the Media Editor) when the user arrived from Top Videos.
+// godam-analytics #313 item 2.
+const ANALYTICS_LINK = ( id ) => `admin.php?page=rtgodam_analytics&id=${ id }&from=dashboard`;
 
 /**
  * Escape a value for a CSV cell.

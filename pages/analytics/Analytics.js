@@ -91,6 +91,20 @@ const Analytics = ( { attachmentID } ) => {
 	const [ retentionRange, setRetentionRange ] = useState( { startDate: null, endDate: null } );
 	const retentionRangeActive = Boolean( retentionRange.startDate && retentionRange.endDate );
 
+	// Back-link target depends on where the user entered from. Top Videos on the
+	// Dashboard links here with `&from=dashboard`, so Back returns to the
+	// Dashboard; any other entry (the Media Editor) keeps the editor target, now
+	// carrying the video id so it reopens this video instead of the generic media
+	// grid. godam-analytics #313 item 2.
+	const cameFromDashboard =
+		new URLSearchParams( window.location.search ).get( 'from' ) === 'dashboard';
+	const backHref = cameFromDashboard
+		? 'admin.php?page=rtgodam'
+		: `admin.php?page=rtgodam_media_editor&id=${ encodeURIComponent( attachmentID ) }`;
+	const backLabel = cameFromDashboard
+		? __( 'Back to Dashboard', 'godam' )
+		: __( 'Back to Media Editor', 'godam' );
+
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
 	// Video-to-Cart is a WooCommerce feature; the card is shown only on Woo sites
@@ -537,7 +551,9 @@ const Analytics = ( { attachmentID } ) => {
 							{ /* Generic page label — the video name now lives in the hero
 							    below, so don't repeat it here. */ }
 							<div className="subheading">{ __( 'Single Video Analytics', 'godam' ) }</div>
-							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_media_editor' }><span className="max-md:hidden">{ __( 'Back to Media Editor', 'godam' ) }</span></Button>
+							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => {
+								window.location.href = backHref;
+							} }><span className="max-md:hidden">{ backLabel }</span></Button>
 
 						</div>
 					</div>
