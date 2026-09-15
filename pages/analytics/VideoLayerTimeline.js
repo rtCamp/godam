@@ -16,7 +16,7 @@ import { Icon } from '@wordpress/components';
 import { useVideoLayerData } from './hooks/useVideoLayerData';
 import LayerTimelineStrip from './timeline/LayerTimelineStrip';
 import LayerDetailPanel from './timeline/LayerDetailPanel';
-import DateRangePicker, { spanDays } from './components/DateRangePicker';
+import DateRangePicker from './components/DateRangePicker';
 import InfoTooltip from './timeline/InfoTooltip';
 import HistoricalLayersDrawer from './timeline/HistoricalLayersDrawer';
 
@@ -97,10 +97,11 @@ function TimelineSkeleton() {
  * @return {JSX.Element} The full timeline section.
  */
 const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
-	// Shared date-range picker value (last 7 days by default, matching the
-	// other analytics surfaces). Replaces the timeline's old bespoke preset
-	// picker so the whole page uses one consistent control.
-	const [ range, setRange ] = useState( () => spanDays( 7 ) );
+	// Shared date-range picker value. Defaults to All Time so this surface
+	// matches every other analytics card's default instead of starting on
+	// "Last 7 days" (godam-analytics #313 item 7). Replaces the timeline's old
+	// bespoke preset picker so the whole page uses one consistent control.
+	const [ range, setRange ] = useState( { startDate: null, endDate: null } );
 	const siteUrl = window.location.origin;
 
 	const { parents, isLoading, errorType, errorMessage, videoConversion } =

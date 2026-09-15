@@ -65,21 +65,23 @@ const shortLabel = ( date ) =>
 // Quick presets. `resolve` returns the ISO { startDate, endDate } pair; a
 // span of N days is [today-(N-1) .. today] so it is inclusive of today.
 const PRESETS = [
+	// menuLabel matches triggerLabel so the option a user clicks reads the same
+	// as the label that then shows on the button (godam-analytics #313 item 7).
 	{
 		key: '7d',
-		menuLabel: __( '7 Days', 'godam' ),
+		menuLabel: __( 'Last 7 days', 'godam' ),
 		triggerLabel: __( 'Last 7 days', 'godam' ),
 		resolve: () => spanDays( 7 ),
 	},
 	{
 		key: '15d',
-		menuLabel: __( '15 Days', 'godam' ),
+		menuLabel: __( 'Last 15 days', 'godam' ),
 		triggerLabel: __( 'Last 15 days', 'godam' ),
 		resolve: () => spanDays( 15 ),
 	},
 	{
 		key: '1m',
-		menuLabel: __( '1 Month', 'godam' ),
+		menuLabel: __( 'Last 1 month', 'godam' ),
 		triggerLabel: __( 'Last 1 month', 'godam' ),
 		resolve: () => spanDays( 30 ),
 	},

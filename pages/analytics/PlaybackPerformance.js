@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useFetchProcessedAnalyticsHistoryQuery } from './redux/api/analyticsApi';
 import { useFetchDashboardMetricsHistoryQuery } from '../dashboard/redux/api/dashboardAnalyticsApi';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
-import DateRangePicker, { spanDays, fromISO } from './components/DateRangePicker';
+import DateRangePicker, { fromISO } from './components/DateRangePicker';
 /**
  * WordPress dependencies
  */
@@ -30,11 +30,12 @@ export default function PlaybackPerformanceDashboard( {
 	mode = 'analytics',
 } ) {
 	const chartRef = useRef( null );
-	// Shared date-range picker value. Defaults to the last 7 days to preserve
-	// the previous "Last 7 days" default. `{ null, null }` = All Time. The d3
-	// x-axis already adapts its tick density to the span, so arbitrary custom
-	// ranges render correctly.
-	const [ range, setRange ] = useState( () => spanDays( 7 ) );
+	// Shared date-range picker value. Defaults to All Time (`{ null, null }`)
+	// so this chart matches every other analytics card's default rather than
+	// starting on "Last 7 days" (godam-analytics #313 item 7). The d3 x-axis
+	// already adapts its tick density to the span, so any range renders
+	// correctly.
+	const [ range, setRange ] = useState( { startDate: null, endDate: null } );
 	const [ selectedMetrics, setSelectedMetrics ] = useState( [
 		'engagement_rate',
 		'play_rate',
