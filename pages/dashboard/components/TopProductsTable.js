@@ -640,7 +640,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 									<td>
 										<span className="font-semibold">{ Number( item.product_views || 0 ).toLocaleString() }</span>
 										{ ' ' }
-										<span className="text-zinc-400">{ Number( item.product_views_ctr || 0 ).toFixed( 1 ) }%</span>
+										<span className="text-zinc-400">({ Number( item.product_views_ctr || 0 ).toFixed( 1 ) }%)</span>
 									</td>
 									<td
 										title={ sprintf(
@@ -652,7 +652,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 									>
 										<span className="font-semibold">{ Number( item.added_to_cart || 0 ).toLocaleString() }</span>
 										{ ' ' }
-										<span className="text-zinc-400">{ cartRate( item ).toFixed( 1 ) }%</span>
+										<span className="text-zinc-400">({ cartRate( item ).toFixed( 1 ) }%)</span>
 										<p className="text-xs text-zinc-400">
 											<span
 												className={ supportsDirect( item ) ? undefined : 'godam-direct-na' }
