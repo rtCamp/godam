@@ -75,6 +75,11 @@ class Release_Post extends Base {
 			$image = $post['_embedded']['wp:featuredmedia'][0]['source_url'];
 		}
 
+		// Pass the RAW rendered content to the parser. Do NOT wp_kses_post() it
+		// here: sanitizing before structural parsing turns disallowed inline
+		// elements (e.g. the video block's <style>) into loose text that leaks
+		// into a feature description. parse_features_from_content() sanitizes
+		// each extracted field itself.
 		$rendered = isset( $post['content']['rendered'] ) ? $post['content']['rendered'] : '';
 		$features = $this->parse_features_from_content( $rendered, $image );
 

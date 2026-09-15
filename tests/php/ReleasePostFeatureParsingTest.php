@@ -105,6 +105,36 @@ class ReleasePostFeatureParsingTest extends TestCase {
 	}
 
 	/**
+	 * End-to-end against the real captured godam.io "GoDAM 2.2" content
+	 * (tests/fixtures/release-post-godam-2-2.html) with the actual GoDAM video
+	 * block and its inline <style> present. This is the exact payload that
+	 * produced the reported leak; every feature description must come out clean.
+	 */
+	public function test_real_release_post_with_video_block_does_not_leak() {
+		$content = file_get_contents( __DIR__ . '/../fixtures/release-post-godam-2-2.html' );
+		$this->assertNotFalse( $content, 'Fixture missing.' );
+		$this->assertStringContainsString( 'wp-block-godam-video', $content, 'Fixture should contain the video block.' );
+		$this->assertStringContainsString( 'godam-player-wrapper-inline-css', $content, 'Fixture should contain the inline style.' );
+
+		$features = $this->parse( $content );
+
+		$this->assertNotEmpty( $features );
+		foreach ( $features as $feature ) {
+			$this->assertStringNotContainsString( '.godam-video-placeholder', $feature['description'] );
+			$this->assertStringNotContainsString( 'godam_pulse_animation', $feature['description'] );
+			$this->assertStringNotContainsString( '<style', $feature['description'] );
+			$this->assertStringNotContainsString( '<video', $feature['description'] );
+			$this->assertStringNotContainsString( 'wp-block-godam-video', $feature['description'] );
+		}
+
+		// The real "Preview in one click" copy is preserved.
+		$titles = array_column( $features, 'title' );
+		$this->assertContains( 'Preview in one click', $titles );
+		$preview = $features[ array_search( 'Preview in one click', $titles, true ) ];
+		$this->assertStringContainsString( 'just a click', $preview['description'] );
+	}
+
+	/**
 	 * The genuine red-without-fix guard: a <style> nested INSIDE a collected
 	 * <p>. The pre-fix parser gathered the paragraph and wp_kses_post() then
 	 * stripped the tag while keeping the CSS text; dropping the node first
