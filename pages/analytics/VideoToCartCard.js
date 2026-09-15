@@ -71,8 +71,8 @@ export default function VideoToCartCard( { videoToCart, dataLabel, deltaLabel } 
 							<p className="single-metrics-value" data-test-id="godam-video-to-cart-value">{ carts.toLocaleString() }</p>
 							<span className="text-xs text-zinc-500">
 								{ sprintf(
-									/* translators: %s: percentage of viewers who played and then added to cart. */
-									__( 'carts from video, %s%% of viewers who played', 'godam' ),
+									/* translators: %s: percentage of unique viewers who played and then added to cart. */
+									__( 'viewers added to cart, %s%% of unique viewers who played', 'godam' ),
 									rate.toFixed( 1 ),
 								) }
 							</span>
