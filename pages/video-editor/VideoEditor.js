@@ -53,6 +53,7 @@ import { openAttachmentDetailsModal } from './utils/openAttachmentDetails';
 import { getFormIdFromLayer } from './utils/formUtils';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 import { ensureAddonLayersRegistered } from './utils/loadAddonLayers';
+import { normalizeSkipButtons } from '../../assets/src/js/godam-player/managers/configurationManager.js';
 
 /**
  * Decode HTML entities in a string (e.g. `&amp;` → `&`).
@@ -650,9 +651,10 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	// them to Video.js on the front end. `VideoJSPlayer` keeps the bar in step as
 	// the settings change; this only seeds the initial composition.
 	//
-	// Skip buttons render only when a duration is actually stored, matching the
-	// front end (which passes the saved `controlBar` through verbatim).
-	const skipDuration = Number( videoConfig?.controlBar?.skipButtons?.forward ) || 0;
+	// Skip buttons always render on the front end, at a normalized 5/10/30s
+	// duration (falling back to 10). Run the saved value through the same
+	// normalization here so the preview never shows a duration — or an
+	// enabled/disabled state — the front-end player wouldn't.
 	const previewControlBar = {
 		playToggle: true,
 		volumePanel: Boolean( videoConfig?.controlBar?.volumePanel ),
@@ -664,9 +666,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		// without rebuilding the bar.
 		subsCapsButton: true,
 		pictureInPictureToggle: Boolean( videoConfig?.controlBar?.pictureInPictureToggle ),
-		skipButtons: skipDuration
-			? { forward: skipDuration, backward: skipDuration }
-			: false,
+		skipButtons: normalizeSkipButtons( videoConfig?.controlBar?.skipButtons ),
 	};
 
 	// Fallback title matches the attachment's media type (video/audio/image).
