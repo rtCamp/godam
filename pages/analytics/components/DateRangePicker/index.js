@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 /**
  * WordPress dependencies
@@ -248,6 +248,28 @@ const DateRangePanel = ( { value, activeKey, testIdPrefix, onSelect } ) => {
 	const grid = useMemo( () => monthGrid( viewMonth ), [ viewMonth ] );
 	const maxDate = today();
 
+	// When the preset list opens, move focus to the currently-selected preset so
+	// the visible highlight lands on the active option, not the first item
+	// (godam-analytics #313 item 4). Runs after the popover's own focus-on-mount,
+	// so the timeout is needed to win the race.
+	const panelRef = useRef( null );
+	useEffect( () => {
+		if ( showCalendar ) {
+			return undefined;
+		}
+		const timer = setTimeout( () => {
+			const activeItem = panelRef.current?.querySelector(
+				`[data-test-id="${ testIdPrefix }-preset-${ activeKey }"]`,
+			);
+			if ( activeItem ) {
+				activeItem.focus();
+			}
+		}, 0 );
+		return () => clearTimeout( timer );
+		// Mount-only: focus the active option once when the panel opens.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [] );
+
 	const onDayClick = ( date ) => {
 		if ( date > maxDate ) {
 			return; // no future dates
@@ -281,7 +303,7 @@ const DateRangePanel = ( { value, activeKey, testIdPrefix, onSelect } ) => {
 		( pendingEnd && date.getTime() === pendingEnd.getTime() );
 
 	return (
-		<div className="godam-daterange" data-test-id={ `${ testIdPrefix }-panel` }>
+		<div className="godam-daterange" data-test-id={ `${ testIdPrefix }-panel` } ref={ panelRef }>
 			{ showCalendar && (
 				<div className="godam-daterange__calendar">
 					<div className="godam-daterange__cal-head">
