@@ -26,6 +26,102 @@ class Analytics extends Base {
 	protected $rest_base = 'analytics';
 
 	/**
+	 * Register REST routes (via the parent) plus the cache-invalidation hooks
+	 * for the Top Products / Top Videos "existing ids" allow-lists.
+	 *
+	 * The resolve_top_products_id_filter()/resolve_top_videos_id_filter() helpers
+	 * cache the set of published product / attachment ids in a 5-minute transient so the
+	 * common "hide deleted" request doesn't re-query a large catalog every time.
+	 * Without invalidation, a product a shop owner just trashed stays in that
+	 * cached allow-list, so it keeps appearing in Top Products (with "Show
+	 * deleted" off) until the transient expires — which reads as "the toggle is
+	 * broken". Flush the relevant cache the moment the underlying post is
+	 * trashed, untrashed, restored, or deleted so the change shows immediately.
+	 *
+	 * @return void
+	 */
+	protected function setup_hooks() {
+		parent::setup_hooks();
+
+		// Trash / untrash / publish / draft transitions for products.
+		add_action( 'transition_post_status', array( $this, 'flush_existing_ids_cache_on_transition' ), 10, 3 );
+		// Permanent deletion of a product (and any other post type below).
+		add_action( 'before_delete_post', array( $this, 'flush_existing_ids_cache_on_delete' ), 10, 2 );
+		// Attachments (videos) are removed via wp_delete_attachment, which fires
+		// delete_attachment rather than transition_post_status.
+		add_action( 'delete_attachment', array( $this, 'flush_top_videos_ids_cache' ) );
+		// A newly added product/attachment should also drop the stale allow-list
+		// so it can enter the "hide deleted" set without a 5-minute wait.
+		add_action( 'save_post_product', array( $this, 'flush_top_products_ids_cache' ) );
+		add_action( 'add_attachment', array( $this, 'flush_top_videos_ids_cache' ) );
+	}
+
+	/**
+	 * Flush the right allow-list cache when a post changes status (e.g. a
+	 * product moved to or out of the trash). Only acts on a real status change
+	 * for a post type the analytics tables track.
+	 *
+	 * @param string   $new_status New post status.
+	 * @param string   $old_status Previous post status.
+	 * @param \WP_Post $post       The post being transitioned.
+	 * @return void
+	 */
+	public function flush_existing_ids_cache_on_transition( $new_status, $old_status, $post ) {
+		if ( $new_status === $old_status || ! $post instanceof \WP_Post ) {
+			return;
+		}
+		$this->flush_existing_ids_cache_for_post_type( $post->post_type );
+	}
+
+	/**
+	 * Flush the right allow-list cache when a post is permanently deleted.
+	 *
+	 * @param int           $post_id The post ID being deleted.
+	 * @param \WP_Post|null $post    The post object (WP 5.5+), or null on older cores.
+	 * @return void
+	 */
+	public function flush_existing_ids_cache_on_delete( $post_id, $post = null ) {
+		if ( ! $post instanceof \WP_Post ) {
+			$post = get_post( $post_id );
+		}
+		if ( $post instanceof \WP_Post ) {
+			$this->flush_existing_ids_cache_for_post_type( $post->post_type );
+		}
+	}
+
+	/**
+	 * Map a post type to its allow-list transient and delete it.
+	 *
+	 * @param string $post_type The post type that changed.
+	 * @return void
+	 */
+	private function flush_existing_ids_cache_for_post_type( $post_type ) {
+		if ( 'product' === $post_type ) {
+			$this->flush_top_products_ids_cache();
+		} elseif ( 'attachment' === $post_type ) {
+			$this->flush_top_videos_ids_cache();
+		}
+	}
+
+	/**
+	 * Delete the cached Top Products published-id allow-list.
+	 *
+	 * @return void
+	 */
+	public function flush_top_products_ids_cache() {
+		delete_transient( 'rtgodam_top_products_existing_ids' );
+	}
+
+	/**
+	 * Delete the cached Top Videos published-id allow-list.
+	 *
+	 * @return void
+	 */
+	public function flush_top_videos_ids_cache() {
+		delete_transient( 'rtgodam_top_videos_existing_ids' );
+	}
+
+	/**
 	 * Register custom REST API routes for Analytics.
 	 *
 	 * @return array Array of registered REST API routes.
