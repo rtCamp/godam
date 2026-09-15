@@ -404,9 +404,17 @@ export function generateCountryHeatmap(
 
 			flagWrapper.append( 'span' ).text( d.country );
 
+			// Percentage of total views. A country with views but a sub-1%
+			// share reads as "<1%", never a rounded "0%" (which looked like
+			// "no views"). #313 item 5.
+			const sharePct = totalViews ? ( d.views / totalViews ) * 100 : 0;
+			const shareLabel = sharePct > 0 && sharePct < 1
+				? __( '<1%', 'godam' )
+				: `${ Math.round( sharePct ) }%`;
+
 			mainRow
 				.append( 'td' )
-				.text( `${ Math.round( ( d.views / totalViews ) * 100 ) }%` )
+				.text( shareLabel )
 				.style( 'text-align', 'right' )
 				.style( 'font-weight', '500' )
 				.style( 'padding', '10px' );
@@ -426,7 +434,10 @@ export function generateCountryHeatmap(
 			progressContainer
 				.append( 'div' )
 				.style( 'height', '100%' )
-				.style( 'width', `${ ( d.views / totalViews ) * 100 }%` )
+				.style( 'width', `${ sharePct }%` )
+				// Keep a visible sliver for a country with views but a sub-1%
+				// share, so the bar never reads as empty. #313 item 5.
+				.style( 'min-width', d.views > 0 ? '3px' : '0' )
 				.style( 'background-color', 'var(--wp-admin-theme-color)' )
 				.style( 'border-radius', '8px' );
 		} );
