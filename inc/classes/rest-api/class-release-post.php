@@ -75,8 +75,8 @@ class Release_Post extends Base {
 			$image = $post['_embedded']['wp:featuredmedia'][0]['source_url'];
 		}
 
-		$content  = isset( $post['content']['rendered'] ) ? wp_kses_post( $post['content']['rendered'] ) : '';
-		$features = $this->parse_features_from_content( $content, $image );
+		$rendered = isset( $post['content']['rendered'] ) ? $post['content']['rendered'] : '';
+		$features = $this->build_features( $rendered, $image );
 
 		$result = array(
 			'version'  => RTGODAM_VERSION,
@@ -86,6 +86,30 @@ class Release_Post extends Base {
 		set_transient( $transient_key, $result );
 		
 		return new \WP_REST_Response( $result, 200 );
+	}
+
+	/**
+	 * Build the feature list from a release post's rendered content.
+	 *
+	 * Kept separate from get_release_post()'s HTTP fetch so the content
+	 * transform can be unit-tested without a live request.
+	 *
+	 * @param string $rendered_content Rendered post content (content.rendered).
+	 * @param string $default_image    Default feature image URL.
+	 *
+	 * @return array Array of features.
+	 */
+	private function build_features( $rendered_content, $default_image = '' ) {
+		// Strip <script>/<style> blocks (tag + contents) before sanitizing.
+		// wp_kses_post() removes these disallowed tags but keeps their inner
+		// text, so an inline <style> printed into the post content (e.g. the
+		// GoDAM video block's placeholder CSS) would otherwise leak into a
+		// feature description as raw CSS text. Mirrors core wp_strip_all_tags().
+		$rendered_content = preg_replace( '#<(script|style)\b[^>]*>.*?</\1>#is', '', (string) $rendered_content );
+
+		$content = wp_kses_post( $rendered_content );
+
+		return $this->parse_features_from_content( $content, $default_image );
 	}
 
 	/**
