@@ -145,7 +145,7 @@ export default function PlacementFunnelCard( { siteUrl, startDate, endDate, data
 			</div>
 
 			<p className="text-[13px] text-zinc-500 -mt-1 mb-5">
-				{ __( 'Different placements do different jobs, so averaging them hides both winners and losers.', 'godam' ) }
+				{ __( 'Different placements do different jobs, so averaging them hides both winners and losers. Each stage counts distinct visitors, so these figures will not sum to the Top Products totals.', 'godam' ) }
 			</p>
 
 			{ body }
