@@ -44,6 +44,29 @@ if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 	}
 }
 
+// Narrow stubs used by Release_Post's feature parser (ReleasePostFeatureParsingTest).
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+
+	/**
+	 * @param string $str Input.
+	 * @return string
+	 */
+	function sanitize_text_field( $str ) {
+		return trim( preg_replace( '/[\r\n\t ]+/', ' ', wp_strip_all_tags( (string) $str ) ) );
+	}
+}
+
+if ( ! function_exists( 'esc_url' ) ) {
+
+	/**
+	 * @param string $url Input.
+	 * @return string
+	 */
+	function esc_url( $url ) {
+		return (string) $url;
+	}
+}
+
 /*
  * ---------------------------------------------------------------------------
  * Narrow WP stubs for Video_Editor unit tests.
@@ -195,6 +218,12 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php'
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
+
+// Loaded for its feature parser (ReleasePostFeatureParsingTest reaches
+// parse_features_from_content() through reflection). The class extends the
+// stubbed Base and touches WordPress only inside its route callback, so
+// requiring the file runs no WP code.
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-release-post.php';
 
 // Loaded for its media-type => MIME map, which RetranscodeMediaTypeMapTest reaches
 // through reflection. The class extends the stubbed Base above and touches WordPress
