@@ -1123,6 +1123,12 @@ do_action( 'rtgodam_after_attachment_lookup' );
 												 * legitimate CTA shortcode's own output might need (e.g. <form>,
 												 * for a placeholder a form-embed script hydrates client-side).
 												 *
+												 * This sanitizer is the last line of defense for CTA HTML at render
+												 * time. wp_kses() is a pure allowlist with no hardcoded blocklist, so
+												 * adding tags/attributes here (e.g. `script`, `iframe`, `on*` event
+												 * attributes) removes the protection those defaults provide. Hook
+												 * implementers are responsible for the safety of anything they add.
+												 *
 												 * @since n.e.x.t
 												 *
 												 * @param array $godam_cta_allowed_tags Allowed tags/attributes, same shape as wp_kses_allowed_html().
