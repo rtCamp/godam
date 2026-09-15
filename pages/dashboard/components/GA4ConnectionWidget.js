@@ -186,13 +186,13 @@ const MetricsRow = ( { addToCartCount, purchaseCount } ) => (
 			<p className="single-metrics-value" data-test-id="godam-ga4-connection-add-to-cart-count">
 				{ addToCartCount.toLocaleString() }
 			</p>
-			<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Add to Cart', 'godam' ) }</span>
+			<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Add to Cart events', 'godam' ) }</span>
 		</div>
 		<div className="flex flex-col">
 			<p className="single-metrics-value" data-test-id="godam-ga4-connection-purchase-count">
 				{ purchaseCount.toLocaleString() }
 			</p>
-			<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Purchase', 'godam' ) }</span>
+			<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Purchase events', 'godam' ) }</span>
 		</div>
 	</div>
 );
