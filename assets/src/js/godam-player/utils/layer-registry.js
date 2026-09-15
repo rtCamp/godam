@@ -1,15 +1,55 @@
 /**
  * Layer Registry
  * Manages dynamic layer type registration for add-ons
+ *
+ * The registry store lives on `window` so every webpack bundle that imports
+ * this module shares ONE store. The main player build and the separate
+ * image-layers build each carry their own module-scoped copy of this file; a
+ * module-local store would give each build a private registry. Add-ons (e.g.
+ * the Woo layer) register once — into whichever build initialized
+ * `window.godamLayerRegistry` first (it drains the queue) — so with private
+ * stores the other build never sees that registration. The player reads its
+ * own copy via getLayerManager(), so on a page that had both a godam/video and
+ * a godam/image block, if the image build won the init race the player's store
+ * stayed empty and the video's Woo hotspots never rendered. A shared,
+ * window-backed store makes every copy of these functions read/write the same
+ * data, independent of bundle load order.
  */
 
-// Internal registry for layer types, validators, and managers
-const layerRegistry = {
-	types: {},
-	validators: {},
-	managers: {},
-	hooks: [],
-};
+const STORE_KEY = '__godamLayerRegistryStore';
+
+/**
+ * Create an empty registry store.
+ *
+ * @return {Object} A fresh store for layer types, validators, managers and hooks.
+ */
+function createStore() {
+	return {
+		types: {},
+		validators: {},
+		managers: {},
+		hooks: [],
+	};
+}
+
+// Module-local fallback for non-browser contexts (SSR / unit tests with no
+// window). In the browser the store is a singleton hung off `window`.
+const fallbackStore = createStore();
+
+/**
+ * Get the shared registry store.
+ *
+ * @return {Object} The window-backed store, or the module-local fallback when there is no `window`.
+ */
+function getStore() {
+	if ( typeof window === 'undefined' ) {
+		return fallbackStore;
+	}
+	if ( ! window[ STORE_KEY ] ) {
+		window[ STORE_KEY ] = createStore();
+	}
+	return window[ STORE_KEY ];
+}
 
 /**
  * Register a new layer type
@@ -22,6 +62,8 @@ const layerRegistry = {
  * @return {boolean} True if registration successful, false if already registered
  */
 export function registerLayerType( id, config ) {
+	const layerRegistry = getStore();
+
 	if ( layerRegistry.types[ id ] ) {
 		// eslint-disable-next-line no-console
 		console.warn( `Layer type "${ id }" is already registered. Skipping duplicate registration.` );
@@ -59,6 +101,7 @@ export function registerLayerType( id, config ) {
  * @return {Object} Object with all registered layer type IDs as keys
  */
 export function getLayerTypes() {
+	const layerRegistry = getStore();
 	const defaultTypes = {
 		FORM: 'form',
 		CTA: 'cta',
@@ -79,7 +122,7 @@ export function getLayerTypes() {
  * @return {Function|null} Validator function if found, null otherwise
  */
 export function getLayerValidator( layerType ) {
-	return layerRegistry.validators[ layerType ] || null;
+	return getStore().validators[ layerType ] || null;
 }
 
 /**
@@ -89,7 +132,7 @@ export function getLayerValidator( layerType ) {
  * @return {Function|null} Manager class if found, null otherwise
  */
 export function getLayerManager( layerType ) {
-	return layerRegistry.managers[ layerType ] || null;
+	return getStore().managers[ layerType ] || null;
 }
 
 /**
@@ -99,7 +142,7 @@ export function getLayerManager( layerType ) {
  * @return {boolean} True if layer type is registered
  */
 export function isLayerTypeRegistered( layerType ) {
-	return !! layerRegistry.types[ layerType ] || [ 'form', 'cta', 'poll', 'hotspot' ].includes( layerType );
+	return !! getStore().types[ layerType ] || [ 'form', 'cta', 'poll', 'hotspot' ].includes( layerType );
 }
 
 /**
@@ -109,7 +152,7 @@ export function isLayerTypeRegistered( layerType ) {
  * @param {Function} callback - Callback function to execute
  */
 export function addLayerRegistryHook( callback ) {
-	layerRegistry.hooks.push( callback );
+	getStore().hooks.push( callback );
 }
 
 /**
@@ -119,6 +162,6 @@ export function addLayerRegistryHook( callback ) {
  */
 export function getAllRegisteredLayerTypes() {
 	return {
-		...layerRegistry.types,
+		...getStore().types,
 	};
 }
