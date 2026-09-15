@@ -412,29 +412,44 @@ export default function PlaybackPerformanceDashboard( {
 						.html(
 							`
               <div class="text-zinc-500">
-                ${ d.date.getDate() } ${ d.date.toLocaleString( 'default', { month: 'short' } ) } ${ d.date.getFullYear() }
+                ${ d.date.getDate() } ${ d3.timeFormat( '%b' )( d.date ) } ${ d.date.getFullYear() }
               </div>
               <hr />
 				<div class="flex flex-col min-w-[250px]">
 					<div class="flex justify-between items-center h-9">
 						<div class="flex items-center gap-2">
-							<span style="color: #9333EA">●</span>
-							<p class="text-zinc-500">${ __( 'Engagement Rate', 'godam' ) }</p>
-						</div>
-						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
-					</div>
-					<div class="flex justify-between items-center h-9">
-						<div class="flex items-center gap-2">
-							<span style="color: #5CC8BE">●</span>
+							<span style="color: ${ METRIC_COLORS.play_rate }">●</span>
 							<p class="text-zinc-500">${ __( 'Play Rate', 'godam' ) }</p>
 						</div>
 						<span class="text-zinc-950 font-medium">${ d.play_rate.toFixed( 2 ) }${ unit }</span>
 					</div>
+					<div class="flex justify-between items-center h-9">
+						<div class="flex items-center gap-2">
+							<span style="color: ${ METRIC_COLORS.engagement_rate }">●</span>
+							<p class="text-zinc-500">${ __( 'Engagement Rate', 'godam' ) }</p>
+						</div>
+						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
+					</div>
 				</div>
 
             `,
-						)
-						.style( 'left', event.pageX + 10 + 'px' )
+						);
+
+					// Position beside the cursor, flipping to the left when the
+					// tooltip would overflow the viewport's right edge so it is
+					// never clipped by the screen. #313 item 1.
+					const ttNode = tooltip.node();
+					const ttWidth = ttNode ? ttNode.offsetWidth : 300;
+					const viewportRight = window.scrollX + document.documentElement.clientWidth;
+					let ttLeft = event.pageX + 10;
+					if ( ttLeft + ttWidth > viewportRight - 8 ) {
+						ttLeft = event.pageX - ttWidth - 10;
+					}
+					if ( ttLeft < window.scrollX + 8 ) {
+						ttLeft = window.scrollX + 8;
+					}
+					tooltip
+						.style( 'left', ttLeft + 'px' )
 						.style( 'top', event.pageY - 30 + 'px' );
 
 					d3.select( this ).attr( 'r', 6 ).attr( 'stroke-width', 2 );
