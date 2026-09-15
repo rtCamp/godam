@@ -155,7 +155,7 @@ export const dashboardAnalyticsApi = createApi( {
 			// sortBy/order are accepted by the endpoint and reserved for a later
 			// interactive column-sort feature; the table sends only the default
 			// (product_views, desc) for now.
-			query: ( { siteUrl, page = 1, limit = 10, search = '', sortBy = 'product_views', order = 'desc', startDate, endDate } ) => ( {
+			query: ( { siteUrl, page = 1, limit = 10, search = '', sortBy = 'product_views', order = 'desc', hideDeleted = true, startDate, endDate } ) => ( {
 				url: 'godam/v1/analytics/top-products',
 				params: {
 					site_url: siteUrl,
@@ -163,6 +163,7 @@ export const dashboardAnalyticsApi = createApi( {
 					limit,
 					sort_by: sortBy,
 					order,
+					hide_deleted: hideDeleted ? 1 : 0,
 					// Only send `search` when set so the proxy can skip the WP_Query.
 					...( search ? { search } : {} ),
 					...rangeParams( { startDate, endDate } ),

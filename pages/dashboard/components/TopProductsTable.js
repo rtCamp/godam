@@ -3,7 +3,7 @@
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { SearchControl } from '@wordpress/components';
+import { SearchControl, ToggleControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -325,12 +325,20 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 	const [ page, setPage ] = useState( 1 );
 	const [ searchInput, setSearchInput ] = useState( '' );
 	const [ search, setSearch ] = useState( '' );
+	// Off by default: hide rows whose product was deleted. Toggle on to also
+	// show deleted-product rows that still have analytics.
+	const [ showDeleted, setShowDeleted ] = useState( false );
 	const [ isExporting, setIsExporting ] = useState( false );
 	// Date range for the table. Empty = all-time.
 	const [ dateRange, setDateRange ] = useState( { startDate: null, endDate: null } );
 
 	const onChangeRange = ( next ) => {
 		setDateRange( next );
+		setPage( 1 );
+	};
+
+	const onToggleDeleted = ( value ) => {
+		setShowDeleted( value );
 		setPage( 1 );
 	};
 
@@ -349,6 +357,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 			page,
 			limit: PER_PAGE,
 			search,
+			hideDeleted: ! showDeleted,
 			startDate: dateRange.startDate,
 			endDate: dateRange.endDate,
 		},
@@ -402,6 +411,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 							page: i + 1,
 							limit: EXPORT_PAGE_SIZE,
 							search,
+							hideDeleted: ! showDeleted,
 							startDate: dateRange.startDate,
 							endDate: dateRange.endDate,
 						} ).unwrap();
@@ -491,6 +501,13 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 						placeholder={ __( 'Search products', 'godam' ) }
 						label={ __( 'Search products', 'godam' ) }
 						hideLabelFromVision
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						data-test-id="godam-top-products-toggle-deleted"
+						label={ __( 'Show deleted products', 'godam' ) }
+						checked={ showDeleted }
+						onChange={ onToggleDeleted }
 					/>
 					<DateRangePicker
 						value={ dateRange }

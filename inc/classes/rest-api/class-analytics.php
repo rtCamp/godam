@@ -189,30 +189,30 @@ class Analytics extends Base {
 						return current_user_can( 'upload_files' );
 					},
 					'args'                => array(
-						'page'     => array(
+						'page'         => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'default'           => 1,
 							'sanitize_callback' => 'absint',
 						),
-						'limit'    => array(
+						'limit'        => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
 						),
-						'site_url' => array(
+						'site_url'     => array(
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'esc_url_raw',
 						),
-						'search'   => array(
+						'search'       => array(
 							'required'          => false,
 							'type'              => 'string',
 							'default'           => '',
 							'sanitize_callback' => 'sanitize_text_field',
 						),
-						'sort_by'  => array(
+						'sort_by'      => array(
 							'required'          => false,
 							'type'              => 'string',
 							'default'           => 'product_views',
@@ -224,13 +224,19 @@ class Analytics extends Base {
 							'sanitize_callback' => 'sanitize_text_field',
 							'validate_callback' => 'rest_validate_request_arg',
 						),
-						'order'    => array(
+						'order'        => array(
 							'required'          => false,
 							'type'              => 'string',
 							'default'           => 'desc',
 							'enum'              => array( 'asc', 'desc' ),
 							'sanitize_callback' => 'sanitize_text_field',
 							'validate_callback' => 'rest_validate_request_arg',
+						),
+						'hide_deleted' => array(
+							'required'          => false,
+							'type'              => 'boolean',
+							'default'           => false,
+							'sanitize_callback' => 'rest_sanitize_boolean',
 						),
 					),
 				),
@@ -1567,6 +1573,7 @@ class Analytics extends Base {
 		$search        = trim( (string) $request->get_param( 'search' ) );
 		$sort_by       = $request->get_param( 'sort_by' );
 		$order         = $request->get_param( 'order' );
+		$hide_deleted  = rest_sanitize_boolean( $request->get_param( 'hide_deleted' ) );
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1580,10 +1587,11 @@ class Analytics extends Base {
 			);
 		}
 
-		// Product-name search lives in WooCommerce, not the microservice. Resolve
-		// it into the microservice's product_ids include-filter. null => no
-		// restriction; an array (including []) => restrict to that set.
-		$product_ids = $this->resolve_top_products_id_filter( $search );
+		// Product-name search and hide-deleted are WordPress-only concerns (titles
+		// and deletion state live in WP, not the microservice). Resolve them into
+		// the microservice's product_ids include-filter. null => no restriction;
+		// an array (including []) => restrict to that set ([] yields zero rows).
+		$product_ids = $this->resolve_top_products_id_filter( $search, $hide_deleted );
 
 		$query = array(
 			'page'          => $page,
@@ -1715,28 +1723,50 @@ class Analytics extends Base {
 	}
 
 	/**
-	 * Resolve the product_ids include-filter for a product-name search.
+	 * Resolve the product_ids include-filter for a product-name search and/or the
+	 * hide-deleted toggle.
 	 *
-	 * Product names live in WooCommerce, not the microservice, so a search term is
-	 * turned into an explicit list of matching product IDs for the microservice to
-	 * filter on. Returns null when no search is active (no restriction).
+	 * Product names and deletion state live in WooCommerce, not the microservice,
+	 * so both concerns are turned into an explicit list of product IDs for the
+	 * microservice to filter on. Returns null when neither is active (no
+	 * restriction); an array (including []) restricts to that set. Mirrors
+	 * resolve_top_videos_id_filter so pagination stays correct (the set is
+	 * restricted before the microservice paginates, never filtered after).
 	 *
-	 * @param string $search Search term, matched against the product title/content.
-	 * @return array|null Product IDs, or null when no search is active.
+	 * @param string $search       Search term, matched against the product title/content.
+	 * @param bool   $hide_deleted Whether to restrict to existing (published) products.
+	 * @return array|null Product IDs, or null when no restriction applies.
 	 */
-	private function resolve_top_products_id_filter( $search ) {
-		if ( '' === (string) $search ) {
+	private function resolve_top_products_id_filter( $search, $hide_deleted ) {
+		$has_search = ( '' !== (string) $search );
+
+		// Neither concern active => let the microservice return everything
+		// (deleted rows are still flagged "Deleted Product" during hydration).
+		if ( ! $has_search && ! $hide_deleted ) {
 			return null;
 		}
 
-		// Existing published products matching the search term. Capped at the
-		// microservice's product_ids limit (10000).
+		// The default the UI sends on every load / page change is no-search +
+		// hide-deleted, which resolves to the full set of published product IDs —
+		// that set rarely changes, so cache it briefly to avoid re-querying a large
+		// catalog on each request. (Up to 5 min stale, which is fine for analytics —
+		// it isn't real-time.) Search results vary per term, so they're not cached.
+		$cache_key   = 'rtgodam_top_products_existing_ids';
+		$is_full_set = ( ! $has_search && $hide_deleted );
+		if ( $is_full_set ) {
+			$cached = get_transient( $cache_key );
+			if ( is_array( $cached ) ) {
+				return $cached;
+			}
+		}
+
+		// Existing published products, optionally matching the search term. Capped
+		// at the microservice's product_ids limit (10000).
 		$query_args = array(
 			'post_type'        => 'product',
 			'post_status'      => 'publish',
 			'fields'           => 'ids',
-			's'                => $search,
-			// phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- bounded by the microservice's 10000 product_ids cap; search results vary per term so are not cached.
+			// phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- bounded by the microservice's 10000 product_ids cap, and the common no-search case is transient-cached below.
 			'posts_per_page'   => 10000,
 			'no_found_rows'    => true,
 			'suppress_filters' => false,
@@ -1744,8 +1774,16 @@ class Analytics extends Base {
 			'order'            => 'ASC',
 		);
 
+		if ( $has_search ) {
+			$query_args['s'] = $search;
+		}
+
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- bounded and cacheable (suppress_filters => false); matches resolve_top_videos_id_filter in this class.
 		$ids = array_map( 'intval', (array) get_posts( $query_args ) );
+
+		if ( $is_full_set ) {
+			set_transient( $cache_key, $ids, 5 * MINUTE_IN_SECONDS );
+		}
 
 		return $ids;
 	}
