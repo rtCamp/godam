@@ -219,10 +219,10 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
 
-// Loaded for its feature-parsing helpers (ReleasePostFeatureParsingTest reaches
-// build_features()/parse_features_from_content() through reflection). The class
-// extends the stubbed Base and touches WordPress only inside its route callback,
-// so requiring the file runs no WP code.
+// Loaded for its feature parser (ReleasePostFeatureParsingTest reaches
+// parse_features_from_content() through reflection). The class extends the
+// stubbed Base and touches WordPress only inside its route callback, so
+// requiring the file runs no WP code.
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-release-post.php';
 
 // Loaded for its media-type => MIME map, which RetranscodeMediaTypeMapTest reaches

@@ -76,7 +76,7 @@ class Release_Post extends Base {
 		}
 
 		$rendered = isset( $post['content']['rendered'] ) ? $post['content']['rendered'] : '';
-		$features = $this->build_features( $rendered, $image );
+		$features = $this->parse_features_from_content( $rendered, $image );
 
 		$result = array(
 			'version'  => RTGODAM_VERSION,
@@ -84,38 +84,23 @@ class Release_Post extends Base {
 		);
 
 		set_transient( $transient_key, $result );
-		
+
 		return new \WP_REST_Response( $result, 200 );
 	}
 
 	/**
-	 * Build the feature list from a release post's rendered content.
+	 * Parse features from a release post's rendered content.
 	 *
-	 * Kept separate from get_release_post()'s HTTP fetch so the content
-	 * transform can be unit-tested without a live request.
+	 * Takes the raw `content.rendered` and sanitizes each extracted field, rather
+	 * than sanitizing the whole document up front. wp_kses_post() is a lossy
+	 * transform: it strips disallowed inline elements such as
+	 * `<style id="godam-player-wrapper-inline-css">` (printed by the GoDAM video
+	 * block) but keeps their inner text, which DOMDocument then re-wraps in a
+	 * `<p>` and this parser would fold into a feature description. Parsing the raw
+	 * markup keeps structure intact, and since only `<p>`/`<ul>`/`<ol>` and
+	 * `<figure>` images are collected, sibling `<style>`/`<script>` are ignored.
 	 *
-	 * @param string $rendered_content Rendered post content (content.rendered).
-	 * @param string $default_image    Default feature image URL.
-	 *
-	 * @return array Array of features.
-	 */
-	private function build_features( $rendered_content, $default_image = '' ) {
-		// Strip <script>/<style> blocks (tag + contents) before sanitizing.
-		// wp_kses_post() removes these disallowed tags but keeps their inner
-		// text, so an inline <style> printed into the post content (e.g. the
-		// GoDAM video block's placeholder CSS) would otherwise leak into a
-		// feature description as raw CSS text. Mirrors core wp_strip_all_tags().
-		$rendered_content = preg_replace( '#<(script|style)\b[^>]*>.*?</\1>#is', '', (string) $rendered_content );
-
-		$content = wp_kses_post( $rendered_content );
-
-		return $this->parse_features_from_content( $content, $default_image );
-	}
-
-	/**
-	 * Parse features from post content by extracting headings and their content.
-	 *
-	 * @param string $content The post content HTML.
+	 * @param string $content       The raw post content HTML (content.rendered).
 	 * @param string $default_image Default image URL for features.
 	 *
 	 * @return array Array of features
@@ -126,11 +111,25 @@ class Release_Post extends Base {
 		// Creating DOMDocument to parse HTML content.
 		$dom = new \DOMDocument();
 		libxml_use_internal_errors( true );
-		$dom->loadHTML( '<?xml encoding="UTF-8">' . $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
+		$dom->loadHTML( '<?xml encoding="UTF-8">' . (string) $content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD );
 		libxml_clear_errors();
 
+		$xpath = new \DOMXPath( $dom );
+
+		// Defence in depth: drop <script>/<style>/<noscript> nodes (tag +
+		// contents) outright, so their text can never leak into a description
+		// even if WordPress renders one nested inside a collected element (a bare
+		// wp_kses_post() would keep that text). This also neutralises an
+		// unclosed <style>, which DOMDocument still parses into a node.
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- DOM API property.
+		foreach ( iterator_to_array( $xpath->query( '//script | //style | //noscript' ) ) as $stripped_node ) {
+			if ( $stripped_node->parentNode ) {
+				$stripped_node->parentNode->removeChild( $stripped_node );
+			}
+		}
+		// phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+
 		// Find all headings for features.
-		$xpath    = new \DOMXPath( $dom );
 		$headings = $xpath->query( '//h2 | //h3 | //h4' );
 
 		foreach ( $headings as $heading ) {
