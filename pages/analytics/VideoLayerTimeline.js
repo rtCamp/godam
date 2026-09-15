@@ -186,12 +186,12 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 						<div>
 							<div className="flex items-center gap-1.5">
 								<span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-									{ __( 'Video conversion', 'godam' ) }
+									{ __( 'Interaction rate', 'godam' ) }
 								</span>
 								<InfoTooltip
 									size={ 14 }
 									text={ __(
-										'Share of plays where the viewer converted on any layer (clicked a CTA, submitted a form, voted in a poll, or added a product to cart). A play counts once even if the viewer converts on several layers, so this never exceeds 100%.',
+										'Share of plays where the viewer interacted with any layer (clicked a CTA, submitted a form, voted in a poll, or added a product to cart). A play counts once even if the viewer interacts with several layers, so this never exceeds 100%.',
 										'godam',
 									) }
 								/>
@@ -202,7 +202,7 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 								</span>
 								<span className="text-xs text-zinc-500">
 									{ sprintf(
-										/* translators: 1: converting sessions, 2: total plays. */
+										/* translators: 1: interacting sessions, 2: total plays. */
 										__( '%1$s of %2$s plays', 'godam' ),
 										videoConversion.converting.toLocaleString(),
 										videoConversion.plays.toLocaleString(),

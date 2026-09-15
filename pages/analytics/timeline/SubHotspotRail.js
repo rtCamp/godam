@@ -77,7 +77,7 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 				</div>
 				<div className="flex items-center gap-1 flex-shrink-0">
 					<span className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
-						{ __( 'Conversion', 'godam' ) }
+						{ __( 'Interaction', 'godam' ) }
 					</span>
 					<InfoTooltip
 						size={ 13 }
@@ -138,11 +138,11 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 							text={
 								parent.layer_type === 'woo'
 									? __(
-										'A session counts as converted here when it converts on any one product in this layer — clicks it or adds it to the cart. Each session counts once, so this can read higher than every single product\'s rate.',
+										'A session counts as an interaction here when it acts on any one product in this layer — clicks it or adds it to the cart. Each session counts once, so this can read higher than every single product\'s rate.',
 										'godam',
 									)
 									: __(
-										'A session counts as converted here when it clicks any one hotspot in this layer. Each session counts once, so this can read higher than every single hotspot\'s rate.',
+										'A session counts as an interaction here when it clicks any one hotspot in this layer. Each session counts once, so this can read higher than every single hotspot\'s rate.',
 										'godam',
 									)
 							}

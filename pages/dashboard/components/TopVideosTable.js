@@ -222,7 +222,7 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 				__( 'Total Plays', 'godam' ),
 				__( 'Watch Time', 'godam' ),
 				__( 'Engagement Rate', 'godam' ),
-				__( 'Conversion Rate', 'godam' ),
+				__( 'Interaction Rate', 'godam' ),
 				__( 'Placements', 'godam' ),
 			];
 
@@ -375,7 +375,7 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 							</th>
 							<th scope="col">
 								<span className="inline-flex items-center gap-1">
-									{ __( 'Conversion Rate', 'godam' ) }
+									{ __( 'Interaction Rate', 'godam' ) }
 									<Tooltip
 										text={ __(
 											'The share of viewing sessions that acted on an interactive layer: clicked a hotspot or CTA, submitted a form, voted in a poll, or added to cart. Hovers are not counted.',
@@ -451,12 +451,12 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 										title={
 											item.total_converting_sessions > 0
 												? sprintf(
-													/* translators: 1: converting sessions, 2: total plays. */
-													__( '%1$s of %2$s sessions converted', 'godam' ),
+													/* translators: 1: interacting sessions, 2: total plays. */
+													__( '%1$s of %2$s sessions interacted with a layer', 'godam' ),
 													Number( item.total_converting_sessions ).toLocaleString(),
 													Number( item.plays ).toLocaleString(),
 												)
-												: __( 'No layer conversions in this period', 'godam' )
+												: __( 'No layer interactions in this period', 'godam' )
 										}
 									>
 										{ item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
