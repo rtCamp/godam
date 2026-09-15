@@ -225,7 +225,7 @@ function PlacementRow( { row } ) {
 	const title = getPlacementTitle( row );
 
 	const metrics = [
-		{ label: __( 'Views', 'godam' ), value: Number( row.views ?? 0 ).toLocaleString() },
+		{ label: __( 'Unique Views', 'godam' ), value: Number( row.views ?? 0 ).toLocaleString() },
 		{ label: __( 'Plays', 'godam' ), value: Number( row.plays ?? 0 ).toLocaleString() },
 		{ label: __( 'Play Rate', 'godam' ), value: `${ playRate.toFixed( 2 ) }%` },
 		{
