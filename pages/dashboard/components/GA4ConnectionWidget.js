@@ -116,7 +116,13 @@ const StatusDot = ( { colorClass } ) => (
  * @return {JSX.Element} Status line element.
  */
 const StatusLine = ( { dotClass, textClass, icon, label, tooltip } ) => (
-	<div className="flex items-center gap-2">
+	// The Tooltip renders `id="tooltip-container"`, and `#tooltip-container`
+	// (dashboard/index.scss) sets `display:inline-block` at ID specificity, which
+	// drops the info icon a couple of pixels off the label's centre. The Insight
+	// cards escape it only because their rule is scoped under the `#root-video-
+	// dashboard` id. Flex-centre it here with `!important` so it beats that ID
+	// rule and lines up with the status text, matching the Insight cards.
+	<div className="flex items-center gap-2 [&_.tooltip-container]:!flex [&_.tooltip-container]:!items-center">
 		<StatusDot colorClass={ dotClass } />
 		<span
 			className={ `flex items-center gap-1 text-xs font-semibold whitespace-nowrap ${ textClass }` }
