@@ -82,7 +82,7 @@ class Analytics extends Base {
 	 */
 	public function flush_existing_ids_cache_on_delete( $post_id, $post = null ) {
 		if ( ! $post instanceof \WP_Post ) {
-			$post = get_post( $post_id );
+			$post = get_post( $post_id ); // godam-coverage-ignore -- reads only post_type to pick the allow-list transient to flush, not attachment data.
 		}
 		if ( $post instanceof \WP_Post ) {
 			$this->flush_existing_ids_cache_for_post_type( $post->post_type );
