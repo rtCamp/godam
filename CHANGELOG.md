@@ -1,5 +1,9 @@
 # Changelog #
 
+## v2.2.3 (September 16, 2026) ##
+
+- Fix: Resolved content and display issues on the What's New page.
+
 ## v2.2.2 (September 15, 2026) ##
 
 - Feat: Organize media into folders in bulk — the media library list view now has a "Move to folder…" bulk action, and each user's folder sidebar remembers its own open/closed state.

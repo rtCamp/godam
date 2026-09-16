@@ -44,6 +44,29 @@ if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 	}
 }
 
+// Narrow stubs used by Release_Post's feature parser (ReleasePostFeatureParsingTest).
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+
+	/**
+	 * @param string $str Input.
+	 * @return string
+	 */
+	function sanitize_text_field( $str ) {
+		return trim( preg_replace( '/[\r\n\t ]+/', ' ', wp_strip_all_tags( (string) $str ) ) );
+	}
+}
+
+if ( ! function_exists( 'esc_url' ) ) {
+
+	/**
+	 * @param string $url Input.
+	 * @return string
+	 */
+	function esc_url( $url ) {
+		return (string) $url;
+	}
+}
+
 /*
  * ---------------------------------------------------------------------------
  * Narrow WP stubs for Video_Editor unit tests.
@@ -172,6 +195,131 @@ if ( ! class_exists( 'WP_REST_Controller' ) ) {
 }
 
 /*
+ * ---------------------------------------------------------------------------
+ * Stubs for the Release_Post caller boundary (ReleasePostFeatureParsingTest's
+ * get_release_post() test). The HTTP + transient responses are driven by
+ * $GLOBALS['rtgodam_stub'] so a test can feed a canned remote payload and force
+ * a cache miss, exercising the full fetch -> parse path without WordPress.
+ * ---------------------------------------------------------------------------
+ */
+if ( ! defined( 'RTGODAM_IO_API_BASE' ) ) {
+	define( 'RTGODAM_IO_API_BASE', 'https://godam.io' );
+}
+
+if ( ! class_exists( 'WP_Error' ) ) {
+	class WP_Error { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+		/**
+		 * @param mixed $code    Ignored.
+		 * @param mixed $message Ignored.
+		 * @param mixed $data    Ignored.
+		 */
+		public function __construct( $code = '', $message = '', $data = '' ) {} // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+	}
+}
+
+if ( ! class_exists( 'WP_REST_Response' ) ) {
+	class WP_REST_Response { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+		/** @var mixed */
+		public $data;
+
+		/**
+		 * @param mixed $data   Response payload.
+		 * @param int   $status Ignored.
+		 */
+		public function __construct( $data = null, $status = 200 ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+			$this->data = $data;
+		}
+
+		/** @return mixed */
+		public function get_data() {
+			return $this->data;
+		}
+	}
+}
+
+if ( ! function_exists( 'wp_json_encode' ) ) {
+
+	/**
+	 * @param mixed $data Data to encode.
+	 * @return string|false
+	 */
+	function wp_json_encode( $data ) {
+		return json_encode( $data ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
+	}
+}
+
+if ( ! function_exists( 'is_wp_error' ) ) {
+
+	/**
+	 * @param mixed $thing Value to test.
+	 * @return bool
+	 */
+	function is_wp_error( $thing ) {
+		return $thing instanceof \WP_Error;
+	}
+}
+
+if ( ! function_exists( 'wp_remote_get' ) ) {
+
+	/**
+	 * @param string $url  Requested URL (recorded).
+	 * @param array  $args Ignored.
+	 * @return mixed
+	 */
+	function wp_remote_get( $url, $args = array() ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, WordPress.WP.AlternativeFunctions.wp_remote_get_wp_remote_get
+		$GLOBALS['rtgodam_stub']['last_remote_url'] = $url;
+		return $GLOBALS['rtgodam_stub']['remote_response'] ?? array();
+	}
+}
+
+if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
+
+	/**
+	 * @param mixed $response Ignored; the code is supplied by the test.
+	 * @return int
+	 */
+	function wp_remote_retrieve_response_code( $response ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+		return (int) ( $GLOBALS['rtgodam_stub']['remote_code'] ?? 200 );
+	}
+}
+
+if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
+
+	/**
+	 * @param mixed $response Ignored; the body is supplied by the test.
+	 * @return string
+	 */
+	function wp_remote_retrieve_body( $response ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+		return (string) ( $GLOBALS['rtgodam_stub']['remote_body'] ?? '' );
+	}
+}
+
+if ( ! function_exists( 'get_transient' ) ) {
+
+	/**
+	 * @param string $key Transient key.
+	 * @return mixed False on a miss.
+	 */
+	function get_transient( $key ) {
+		return $GLOBALS['rtgodam_stub']['transient'][ $key ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'set_transient' ) ) {
+
+	/**
+	 * @param string $key        Transient key.
+	 * @param mixed  $value      Value to store.
+	 * @param int    $expiration Ignored.
+	 * @return true
+	 */
+	function set_transient( $key, $value, $expiration = 0 ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+		$GLOBALS['rtgodam_stub']['transient'][ $key ] = $value;
+		return true;
+	}
+}
+
+/*
  * Hook registry and translation-recording stubs. These let the #465 guards
  * assert behaviour — which hook a callback lands on, and whether anything
  * translates while an early hook runs — rather than the shape of the source.
@@ -195,6 +343,12 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php'
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
+
+// Loaded for its feature parser (ReleasePostFeatureParsingTest reaches
+// parse_features_from_content() through reflection). The class extends the
+// stubbed Base and touches WordPress only inside its route callback, so
+// requiring the file runs no WP code.
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-release-post.php';
 
 // Loaded for its media-type => MIME map, which RetranscodeMediaTypeMapTest reaches
 // through reflection. The class extends the stubbed Base above and touches WordPress

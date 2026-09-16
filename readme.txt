@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.2.2
+Stable tag: 2.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -224,6 +224,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.2.3 (September 16, 2026) =
+
+- Fix: Resolved content and display issues on the What's New page.
+
 = v2.2.2 (September 15, 2026) =
 
 - Feat: Organize media into folders in bulk — the media library list view now has a "Move to folder…" bulk action, and each user's folder sidebar remembers its own open/closed state.
@@ -240,17 +244,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Authors can now create and rename media folders.
 - Fix: Site Icon / favicon no longer 404s on sites using GoDAM CDN offload.
 - Fix: Resolved open Dependabot security advisories (npm + Composer).
-
-= v2.2.0 (August 27, 2026) =
-
-- Feat: The Document block now handles far more than PDFs. You can embed and preview Word, Excel, PowerPoint, OpenDocument, and plain-text files.
-- Feat: Added the same document preview support to the Elementor and WPBakery GoDAM Document widgets.
-- Feat: Show in lightbox — a new option opens a video in a centered lightbox overlay when its poster is clicked, instead of playing it in place. Available in the GoDAM Video block, the Elementor widget, and the WPBakery element.
-- Tweak: The GoDAM media transcoding tool now supports bulk transcoding of all media types supported by GoDAM.
-- Fix: Resolved bugs in the GoDAM Media Library module.
-- Fix: Fixed the transcription source issue for GoDAM videos.
-- Fix: Layer analytics now records a view for each hotspot in its own right, so a hotspot's views, conversion, and "No Action" describe that hotspot rather than the whole layer. This stays correct even as hotspots are added or removed over time.
-
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

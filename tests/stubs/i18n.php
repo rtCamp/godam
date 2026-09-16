@@ -101,11 +101,25 @@ if ( ! function_exists( 'esc_attr' ) ) {
 if ( ! function_exists( 'wp_kses_post' ) ) {
 
 	/**
+	 * Passthrough by default. When a test sets
+	 * $GLOBALS['rtgodam_stub']['kses_strip_disallowed'] = true, this reproduces
+	 * the one aspect of real wp_kses_post() that matters to Release_Post: a
+	 * disallowed <style>/<script> element has its TAGS removed while its inner
+	 * text is kept. That is what leaks inline CSS into parsed content, so the
+	 * flag lets ReleasePostFeatureParsingTest exercise the real failure mode.
+	 *
 	 * @param string $data Content to filter.
 	 *
 	 * @return string
 	 */
 	function wp_kses_post( $data ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return (string) $data;
+		$data = (string) $data;
+
+		if ( ! empty( $GLOBALS['rtgodam_stub']['kses_strip_disallowed'] ) ) {
+			// Strip the tags only; keep inner text, as kses does for disallowed elements.
+			$data = preg_replace( '#</?(?:style|script)\b[^>]*>#i', '', $data );
+		}
+
+		return $data;
 	}
 }
