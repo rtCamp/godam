@@ -163,6 +163,39 @@ const Analytics = ( { attachmentID } ) => {
 		{ skip: ! attachmentID || shouldSkipAnalytics },
 	);
 
+	// Per-card independent ranges for the two Woo cards, matching the dashboard's
+	// standalone Revenue and Purchase Funnel cards: each carries its own date
+	// picker and its own fetch, decoupled from the page range and from each other.
+	// Both default to All Time, so they share the all-time query's cache key until
+	// a range is picked on that specific card.
+	const [ revenueRange, setRevenueRange ] = useState( { startDate: null, endDate: null } );
+	const revenueRangeLabel = revenueRange.startDate && revenueRange.endDate
+		? triggerLabelFor( revenueRange )
+		: __( 'All time', 'godam' );
+	const { data: revenueRangeData } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( revenueRange.startDate ? { startDate: revenueRange.startDate } : {} ),
+			...( revenueRange.endDate ? { endDate: revenueRange.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics },
+	);
+
+	const [ purchaseFunnelRange, setPurchaseFunnelRange ] = useState( { startDate: null, endDate: null } );
+	const purchaseFunnelRangeLabel = purchaseFunnelRange.startDate && purchaseFunnelRange.endDate
+		? triggerLabelFor( purchaseFunnelRange )
+		: __( 'All time', 'godam' );
+	const { data: purchaseFunnelRangeData } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( purchaseFunnelRange.startDate ? { startDate: purchaseFunnelRange.startDate } : {} ),
+			...( purchaseFunnelRange.endDate ? { endDate: purchaseFunnelRange.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics },
+	);
+
 	// Connected, but the analytics backend is unreachable (server down) or returned
 	// a microservice error. Gated on a valid key so it never shows for a
 	// disconnected site — that case is handled by the onboarding overlay.
@@ -683,34 +716,49 @@ const Analytics = ( { attachmentID } ) => {
 							    split Direct/Assisted. Full-width card; Influenced is
 							    account-level so the per-video payload omits it and the
 							    card hides that box. Woo-gated. */ }
-							{ isWoo && rangedAnalyticsData?.revenue !== undefined && rangedAnalyticsData?.revenue !== null && (
+							{ isWoo && revenueRangeData?.revenue !== undefined && revenueRangeData?.revenue !== null && (
 								<RevenueCard
 									revenue={ {
-										revenue_minor: rangedAnalyticsData.revenue,
-										currency: rangedAnalyticsData.revenue_currency,
-										excluded_orders: rangedAnalyticsData.revenue_excluded_orders,
-										direct_minor: rangedAnalyticsData.revenue_direct_minor,
-										assisted_minor: rangedAnalyticsData.revenue_assisted_minor,
+										revenue_minor: revenueRangeData.revenue,
+										currency: revenueRangeData.revenue_currency,
+										excluded_orders: revenueRangeData.revenue_excluded_orders,
+										direct_minor: revenueRangeData.revenue_direct_minor,
+										assisted_minor: revenueRangeData.revenue_assisted_minor,
 									} }
-									dataLabel={ rangeLabel }
+									dataLabel={ revenueRangeLabel }
+									rangeControl={
+										<DateRangePicker
+											value={ revenueRange }
+											onChange={ setRevenueRange }
+											testIdPrefix="godam-video-revenue-daterange"
+										/>
+									}
 								/>
 							) }
 
 							{ /* Comparative revenue tips (EASY WIN B), Woo-gated. The
 							    component renders only the favourable comparisons and
-							    nothing when there is nothing worth saying. */ }
-							{ isWoo && rangedAnalyticsData?.revenue_tips && (
-								<RevenueTips tips={ rangedAnalyticsData.revenue_tips } />
+							    nothing when there is nothing worth saying. Follows the
+							    Revenue card's own range. */ }
+							{ isWoo && revenueRangeData?.revenue_tips && (
+								<RevenueTips tips={ revenueRangeData.revenue_tips } />
 							) }
 
-							{ /* Purchase Funnel — Viewers -> Added to cart -> Purchased,
-							    a re-plot of the Insights counts. Woo-gated; renders
-							    nothing when the funnel payload is absent. */ }
+							{ /* Purchase Funnel — Viewers -> Added to cart -> Purchased.
+							    Woo-gated; carries its own independent date picker and
+							    fetch, renders nothing when the funnel payload is absent. */ }
 							{ isWoo && (
 								<PurchaseFunnelCard
-									funnel={ rangedAnalyticsData?.video_funnel }
-									dataLabel={ rangeLabel }
+									funnel={ purchaseFunnelRangeData?.video_funnel }
+									dataLabel={ purchaseFunnelRangeLabel }
 									scope="video"
+									rangeControl={
+										<DateRangePicker
+											value={ purchaseFunnelRange }
+											onChange={ setPurchaseFunnelRange }
+											testIdPrefix="godam-video-purchase-funnel-daterange"
+										/>
+									}
 								/>
 							) }
 
