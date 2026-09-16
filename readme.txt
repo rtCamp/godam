@@ -226,7 +226,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v2.2.3 (September 16, 2026) =
 
-- Fix: The "What's New" screen no longer shows a block of raw CSS in the "Preview in one click" section. Release notes that embed a GoDAM video now render as text only.
+- Fix: Resolved content and display issues on the What's New page.
 
 = v2.2.2 (September 15, 2026) =
 
