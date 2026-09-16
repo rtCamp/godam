@@ -1,5 +1,9 @@
 # Changelog #
 
+## v2.2.3 (September 16, 2026) ##
+
+- Fix: The "What's New" screen no longer shows a block of raw CSS in the "Preview in one click" section. Release notes that embed a GoDAM video now render as text only.
+
 ## v2.2.2 (September 15, 2026) ##
 
 - Feat: Organize media into folders in bulk — the media library list view now has a "Move to folder…" bulk action, and each user's folder sidebar remembers its own open/closed state.
