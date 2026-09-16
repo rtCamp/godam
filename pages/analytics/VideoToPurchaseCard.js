@@ -66,8 +66,8 @@ export default function VideoToPurchaseCard( { videoToPurchase, dataLabel, delta
 							<p className="single-metrics-value" data-test-id="godam-video-to-purchase-value">{ purchases.toLocaleString() }</p>
 							<span className="text-xs text-zinc-500">
 								{ sprintf(
-									/* translators: %s: percentage of viewers who played and then purchased. */
-									__( 'purchasers from video, %s%% of viewers who played', 'godam' ),
+									/* translators: %s: percentage of unique viewers who played and then purchased. */
+									__( 'purchasers from video, %s%% of unique viewers who played', 'godam' ),
 									rate.toFixed( 1 ),
 								) }
 							</span>

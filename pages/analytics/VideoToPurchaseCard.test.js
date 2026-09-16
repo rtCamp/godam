@@ -41,7 +41,7 @@ describe( 'VideoToPurchaseCard — null vs zero', () => {
 		// Subtitle copy names what the number is (distinct purchasers, not orders)
 		// + the share of players.
 		expect( html ).toContain( 'purchasers from video' );
-		expect( html ).toContain( '17.5% of viewers who played' );
+		expect( html ).toContain( '17.5% of unique viewers who played' );
 	} );
 
 	it( 'still renders for a measured zero-purchases payload (0 is a real value, not "unavailable")', () => {
