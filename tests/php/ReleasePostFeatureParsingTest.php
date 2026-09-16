@@ -135,6 +135,42 @@ class ReleasePostFeatureParsingTest extends TestCase {
 	}
 
 	/**
+	 * Caller-boundary guard: drive the public get_release_post() with a mocked
+	 * remote response and a forced cache miss. This covers the fetch -> parse
+	 * ordering, so if pre-parse sanitization is ever reintroduced in the caller,
+	 * the real production case (a sibling <style>) leaks and this fails red.
+	 */
+	public function test_get_release_post_does_not_leak_at_caller_boundary() {
+		$fixture = file_get_contents( __DIR__ . '/../fixtures/release-post-godam-2-2.html' );
+		$body    = wp_json_encode(
+			array(
+				array(
+					'content'   => array( 'rendered' => $fixture ),
+					'_embedded' => array( 'wp:featuredmedia' => array( array( 'source_url' => 'https://example.com/featured.jpg' ) ) ),
+				),
+			)
+		);
+
+		$GLOBALS['rtgodam_stub']['remote_response'] = array( 'body' => $body );
+		$GLOBALS['rtgodam_stub']['remote_code']     = 200;
+		$GLOBALS['rtgodam_stub']['remote_body']     = $body;
+		$GLOBALS['rtgodam_stub']['transient']       = array(); // Force a cache miss.
+
+		$ref      = new \ReflectionClass( Release_Post::class );
+		$object   = $ref->newInstanceWithoutConstructor();
+		$response = $object->get_release_post();
+		$data     = $response->get_data();
+
+		$this->assertNotEmpty( $data['features'] );
+		foreach ( $data['features'] as $feature ) {
+			$this->assertStringNotContainsString( '.godam-video-placeholder', $feature['description'] );
+			$this->assertStringNotContainsString( '<style', $feature['description'] );
+			$this->assertStringNotContainsString( 'wp-block-godam-video', $feature['description'] );
+		}
+		$this->assertContains( 'Preview in one click', array_column( $data['features'], 'title' ) );
+	}
+
+	/**
 	 * The genuine red-without-fix guard: a <style> nested INSIDE a collected
 	 * <p>. The pre-fix parser gathered the paragraph and wp_kses_post() then
 	 * stripped the tag while keeping the CSS text; dropping the node first
