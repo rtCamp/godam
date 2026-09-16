@@ -86,7 +86,11 @@ export default AttachmentsBrowser?.extend( {
 			// before the first view of strictly greater priority, so an equal
 			// priority appends *after* the tied view — and core's buttons are always
 			// registered first, since the parent createToolbar() runs above.
-			if ( MediaMoveToFolder ) {
+			//
+			// Restricted to the media grid page (upload.php): in picker frames — e.g.
+			// the "Select a Watermark" media modal — the toolbar is for choosing an
+			// attachment, not filing it, so the button is left out there.
+			if ( MediaMoveToFolder && isUploadPage() ) {
 				this.toolbar.set(
 					'MediaMoveToFolder',
 					new MediaMoveToFolder( {

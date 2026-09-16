@@ -60,6 +60,20 @@ class Blocks {
 		// unscoped). Tie it to the block via wp_enqueue_block_style so WordPress
 		// prints it reliably whenever the block renders — including block themes /
 		// FSE, where a late wp_enqueue_style() from render.php is not printed.
+		//
+		// `godam-player-style` depends on `godam-player-wrapper-style` (the player
+		// placeholder / poster / aspect-ratio rules), a dependency declared where
+		// the player registers its scripts (class-godam-player.php), on
+		// `wp_enqueue_scripts`. On classic themes, `enqueue_block_assets` fires at
+		// the very start of `wp_enqueue_scripts`, so this block-style callback
+		// registers `godam-player-style` FIRST — and a later wp_register_style()
+		// for an already-registered handle is a silent no-op, which would drop the
+		// wrapper dependency. That left a page carrying both a godam/video and a
+		// godam/image block with the player's aspect-ratio CSS missing, so the
+		// video poster rendered at its natural (oversized) height. Declaring the
+		// same dependency here keeps it regardless of which registration wins the
+		// race; the wrapper handle itself is registered by the always-booted
+		// player shortcode class, so it resolves at print time.
 		if ( function_exists( 'wp_enqueue_block_style' ) ) {
 			$godam_player_css = RTGODAM_PATH . 'assets/build/css/godam-player.css';
 			wp_enqueue_block_style(
@@ -67,6 +81,7 @@ class Blocks {
 				array(
 					'handle' => 'godam-player-style',
 					'src'    => RTGODAM_URL . 'assets/build/css/godam-player.css',
+					'deps'   => array( 'godam-player-wrapper-style' ),
 					'path'   => $godam_player_css,
 					'ver'    => file_exists( $godam_player_css ) ? filemtime( $godam_player_css ) : RTGODAM_VERSION,
 				)

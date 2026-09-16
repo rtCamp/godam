@@ -1,5 +1,16 @@
 # Changelog #
 
+## v2.2.2 (September 15, 2026) ##
+
+- Feat: Organize media into folders in bulk — the media library list view now has a "Move to folder…" bulk action, and each user's folder sidebar remembers its own open/closed state.
+- Tweak: The Video Editor's player preview now mirrors the real front-end control bar — skip buttons, volume panel, branding, and appearance settings — and restores skip buttons that were missing on older videos.
+- Fix: GoDAM media can now be set as a post's featured image in both the block and classic editors, with the placeholder swapped for the real attachment once it is created.
+- Fix: Interactive layers (forms, CTAs, hotspots) no longer trigger while a video is only being previewed on hover.
+- Fix: Skip buttons in the video player now always appear with a valid skip duration, and the picture-in-picture control has been removed across all player skins.
+- Fix: The GoDAM tab in the media picker now shows a clear error when the API key is missing, invalid, or revoked, instead of spinning forever or showing a misleading "No items found".
+- Fix: Long or tall HTML CTA layers no longer overflow their container — they fill it and scroll when needed.
+- Fix: Deleting the GoDAM plugin no longer throws a 502 / "Deletion failed" error.
+
 ## v2.2.1 (September 8, 2026) ##
 
 - Fix: Authors can now create and rename media folders.

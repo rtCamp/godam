@@ -116,6 +116,14 @@ const renderMoveToFolderField = ( view ) => {
 		return;
 	}
 
+	// The GoDAM tab lists remote SaaS media that is not yet a WP attachment, so it
+	// has no local folder to move — and no `media-folder` taxonomy to move it into.
+	// Skip the control there (the tab is identified by its content mode, the same
+	// signal godam-media-frame-shared.js uses).
+	if ( view.controller?.content?.mode?.() === 'godam' ) {
+		return;
+	}
+
 	const id = view.model?.get?.( 'id' );
 
 	if ( ! id ) {
