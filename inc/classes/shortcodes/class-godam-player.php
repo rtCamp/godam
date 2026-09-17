@@ -304,6 +304,13 @@ class GoDAM_Player {
 	 * enqueues via render() as usual, is untouched. Mirrors the GoDAM Image element's
 	 * preload_wpbakery_editor_assets().
 	 *
+	 * The analytics script (godam-player-analytics-script) is deliberately NOT
+	 * preloaded here. Its only skip guard, shouldSkipAnalytics(), gates on is_admin()
+	 * (false on the WPBakery frontend inline-editor page) and the video-preview query
+	 * var (unset here), so it would not skip — every preview play/scrub while designing
+	 * would send real view/engagement events and corrupt the video's stats. The player
+	 * runs fine without it; the front end still loads analytics via render() as before.
+	 *
 	 * @since 2.2.2
 	 *
 	 * @return void
@@ -313,18 +320,30 @@ class GoDAM_Player {
 			return;
 		}
 
-		// register_scripts() (priority 10) has already registered these handles.
+		// register_scripts() (priority 10) has already registered this handle.
 		if ( wp_script_is( 'godam-player-frontend-script', 'registered' ) ) {
 			wp_enqueue_script( 'godam-player-frontend-script' );
-		}
-		if ( wp_script_is( 'godam-player-analytics-script', 'registered' ) ) {
-			wp_enqueue_script( 'godam-player-analytics-script' );
 		}
 
 		wp_enqueue_style( 'godam-player-style' );
 
-		// Match the active player skin, exactly as render() does, so the editor
-		// preview looks like the front end rather than defaulting to the base skin.
+		// Match the active player skin so the editor preview looks like the front end.
+		$this->enqueue_active_skin_style();
+	}
+
+	/**
+	 * Enqueue the stylesheet for the site's currently selected player skin, if any.
+	 *
+	 * Shared by render() (front end) and preload_wpbakery_editor_assets() (inline
+	 * editor) so the skin map lives in one place and the editor preview can never
+	 * silently diverge from the front end when a skin is added, renamed or removed.
+	 * No-op when no skin (or the default base skin) is selected.
+	 *
+	 * @since 2.2.2
+	 *
+	 * @return void
+	 */
+	private function enqueue_active_skin_style() {
 		$godam_settings = get_option( 'rtgodam-settings', array() );
 		$selected_skin  = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : '';
 		$skins          = array(
@@ -502,18 +521,7 @@ class GoDAM_Player {
 		wp_enqueue_script( 'godam-player-analytics-script' );
 		wp_enqueue_style( 'godam-player-style' );
 
-		$godam_settings = get_option( 'rtgodam-settings', array() );
-		$selected_skin  = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : '';
-		$skins          = array(
-			'Minimal' => 'godam-player-minimal-skin',
-			'Pills'   => 'godam-player-pills-skin',
-			'Bubble'  => 'godam-player-bubble-skin',
-			'Classic' => 'godam-player-classic-skin',
-		);
-
-		if ( isset( $skins[ $selected_skin ] ) ) {
-			wp_enqueue_style( $skins[ $selected_skin ] );
-		}
+		$this->enqueue_active_skin_style();
 
 		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
