@@ -27,6 +27,8 @@ class GoDAM_Player {
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 		// Priority 20: must run after register_scripts() above has registered the handles.
 		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue_lightbox_runtime' ), 20 );
+		// Priority 20: same reason — register_scripts() (priority 10) must have run first.
+		add_action( 'wp_enqueue_scripts', array( $this, 'preload_wpbakery_editor_assets' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'godam_skin_styles_enqueue' ) );
@@ -283,6 +285,58 @@ class GoDAM_Player {
 
 		wp_enqueue_script( 'godam-player-frontend-script' );
 		wp_enqueue_style( 'godam-player-style' );
+	}
+
+	/**
+	 * Preload the player runtime in the WPBakery inline editor.
+	 *
+	 * WPBakery adds/updates an element via AJAX and does NOT inject newly enqueued
+	 * scripts into the running editor page. `render()` calls wp_enqueue_script()
+	 * during that AJAX render, but the handle never reaches the live preview — so a
+	 * GoDAM Video added to a page that had no player before stayed frozen on its
+	 * poster/loading placeholder, and only turned into the real player after a full
+	 * page reload (which re-renders the shortcode in content with the script present).
+	 *
+	 * Enqueue the player script (and its styles + the selected skin) up front in the
+	 * inline editor so frontend.js — which already watches for builder-injected markup
+	 * and re-initialises pending players — can bring a just-added video to life
+	 * immediately, without a refresh. Editor-only; the published front end, which
+	 * enqueues via render() as usual, is untouched. Mirrors the GoDAM Image element's
+	 * preload_wpbakery_editor_assets().
+	 *
+	 * @since 2.2.2
+	 *
+	 * @return void
+	 */
+	public function preload_wpbakery_editor_assets() {
+		if ( ! function_exists( 'vc_is_inline' ) || ! vc_is_inline() ) {
+			return;
+		}
+
+		// register_scripts() (priority 10) has already registered these handles.
+		if ( wp_script_is( 'godam-player-frontend-script', 'registered' ) ) {
+			wp_enqueue_script( 'godam-player-frontend-script' );
+		}
+		if ( wp_script_is( 'godam-player-analytics-script', 'registered' ) ) {
+			wp_enqueue_script( 'godam-player-analytics-script' );
+		}
+
+		wp_enqueue_style( 'godam-player-style' );
+
+		// Match the active player skin, exactly as render() does, so the editor
+		// preview looks like the front end rather than defaulting to the base skin.
+		$godam_settings = get_option( 'rtgodam-settings', array() );
+		$selected_skin  = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : '';
+		$skins          = array(
+			'Minimal' => 'godam-player-minimal-skin',
+			'Pills'   => 'godam-player-pills-skin',
+			'Bubble'  => 'godam-player-bubble-skin',
+			'Classic' => 'godam-player-classic-skin',
+		);
+
+		if ( isset( $skins[ $selected_skin ] ) ) {
+			wp_enqueue_style( $skins[ $selected_skin ] );
+		}
 	}
 
 	/**
