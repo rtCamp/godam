@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 /**
  * WordPress dependencies
@@ -15,14 +15,22 @@ import { info } from '@wordpress/icons';
  */
 import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
+import AnalyticsSectionError from '../shared/AnalyticsSectionError';
 import { generateCountryHeatmap } from '../analytics/helper';
-import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery } from './redux/api/dashboardAnalyticsApi';
+import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchRevenueSummaryQuery, useFetchVideoFunnelQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import SingleMetrics from '../analytics/SingleMetrics';
+import VideoToCartCard from '../analytics/VideoToCartCard';
+import VideoToPurchaseCard from '../analytics/VideoToPurchaseCard';
+import RevenueCard from '../analytics/RevenueCard';
+import PurchaseFunnelCard from '../analytics/PurchaseFunnelCard';
+import PlacementFunnelCard from '../analytics/PlacementFunnelCard';
 import ViewersGauge from './components/ViewersGauge';
 import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
+import TopProductsTable from './components/TopProductsTable';
+import GA4ConnectionWidget from './components/GA4ConnectionWidget';
 import DateRangePicker, { triggerLabelFor, fromISO } from '../analytics/components/DateRangePicker';
 
 /**
@@ -166,6 +174,43 @@ const Dashboard = () => {
 
 	const siteUrl = window.location.origin;
 
+	// Top Products is a WooCommerce feature; show its tab only when WooCommerce is
+	// active (godam-for-woo supplies the product interactions it reads). Non-Woo
+	// sites keep the plain Top Videos table with no tab switcher.
+	const hasWooProducts = !! window.videoData?.isWoo;
+	const [ topTab, setTopTab ] = useState( 'videos' );
+
+	// The switcher renders inside the active table's head (where its title would
+	// be), so there is no separate title bar and no duplicate heading. Null on
+	// non-Woo sites, where the table falls back to its own "Top Videos" heading.
+	// Plain toggle buttons rather than an ARIA tab widget: only one table renders
+	// at a time and there is no tabpanel/roving-tabIndex/arrow-key machinery, so a
+	// full role=tablist/role=tab pattern would be incomplete and misleading to a
+	// screen reader. aria-pressed on each button communicates the active choice,
+	// and role=group + aria-label names the pair.
+	const topTabSwitcher = hasWooProducts ? (
+		<div className="godam-top-tabs__nav" role="group" aria-label={ __( 'Top content', 'godam' ) }>
+			<button
+				type="button"
+				aria-pressed={ topTab === 'videos' }
+				className={ `godam-top-tabs__tab${ topTab === 'videos' ? ' is-active' : '' }` }
+				data-test-id="godam-top-tab-videos"
+				onClick={ () => setTopTab( 'videos' ) }
+			>
+				{ __( 'Top Videos', 'godam' ) }
+			</button>
+			<button
+				type="button"
+				aria-pressed={ topTab === 'products' }
+				className={ `godam-top-tabs__tab${ topTab === 'products' ? ' is-active' : '' }` }
+				data-test-id="godam-top-tab-products"
+				onClick={ () => setTopTab( 'products' ) }
+			>
+				{ __( 'Top Products', 'godam' ) }
+			</button>
+		</div>
+	) : null;
+
 	// Reel Pops live in the godam-for-woo add-on, which registers the
 	// "reel-pops-analytics" dashboard section. Only surface the link when it's
 	// available so the page exists to navigate to.
@@ -191,7 +236,7 @@ const Dashboard = () => {
 	// unique-viewer count from the microservice, so the gauge shows real numbers
 	// in every range (not just All Time).
 	const [ gaugeRange, setGaugeRange ] = useState( { startDate: null, endDate: null } );
-	const { data: gaugeMetrics } = useFetchDashboardMetricsQuery(
+	const { data: gaugeMetrics, isError: isGaugeError, refetch: refetchGauge } = useFetchDashboardMetricsQuery(
 		{
 			siteUrl,
 			...( gaugeRange.startDate ? { startDate: gaugeRange.startDate } : {} ),
@@ -204,7 +249,7 @@ const Dashboard = () => {
 	// the microservice return per-card % deltas (vs the previous equal window);
 	// all-time returns them null, so the delta badges stay hidden.
 	const [ insightsRange, setInsightsRange ] = useState( { startDate: null, endDate: null } );
-	const { data: insightsMetrics } = useFetchDashboardMetricsQuery(
+	const { data: insightsMetrics, currentData: insightsCurrentData, isError: isInsightsError, refetch: refetchInsights } = useFetchDashboardMetricsQuery(
 		{
 			siteUrl,
 			...( insightsRange.startDate ? { startDate: insightsRange.startDate } : {} ),
@@ -212,22 +257,96 @@ const Dashboard = () => {
 		},
 		{ skip: shouldSkipAnalytics },
 	);
-	const insightsRangeActive = Boolean( insightsRange.startDate && insightsRange.endDate );
+
+	// The Insights labels must describe the numbers actually on screen. RTK Query
+	// retains the PREVIOUS range's `data` while a new range is fetching
+	// (`currentData` is undefined until the new data lands), so deriving the label
+	// straight from `insightsRange` would show the NEW range's label over the OLD
+	// range's retained numbers during a slow fetch. Track the range whose data is
+	// currently displayed (commit it once its data has arrived) and label from
+	// that, so label and numbers always change together.
+	const committedInsightsRangeRef = useRef( insightsRange );
+	if ( insightsCurrentData !== undefined ) {
+		committedInsightsRangeRef.current = insightsRange;
+	}
+	const displayedInsightsRange = insightsCurrentData !== undefined ? insightsRange : committedInsightsRangeRef.current;
+	const insightsRangeActive = Boolean( displayedInsightsRange.startDate && displayedInsightsRange.endDate );
 	const insightsSpanDays = insightsRangeActive
-		? Math.round( ( fromISO( insightsRange.endDate ) - fromISO( insightsRange.startDate ) ) / 86400000 ) + 1
+		? Math.round( ( fromISO( displayedInsightsRange.endDate ) - fromISO( displayedInsightsRange.startDate ) ) / 86400000 ) + 1
 		: 0;
 	const insightsDeltaLabel = sprintf(
 		/* translators: %d: number of days in the compared previous window. */
 		__( 'vs prev %d days', 'godam' ),
 		insightsSpanDays,
 	);
-	const insightsCardLabel = insightsRangeActive ? triggerLabelFor( insightsRange ) : __( 'All time', 'godam' );
+	const insightsCardLabel = insightsRangeActive ? triggerLabelFor( displayedInsightsRange ) : __( 'All time', 'godam' );
+
+	// Scoped error states for the per-card range queries. Without these a
+	// range-scoped error made the whole Insights group vanish (cards return
+	// null on missing data) or read a fake 0, with NO notice — the top-level
+	// `analyticsUnreachable` only watches the all-time primary query. We instead
+	// surface the failure in-place, the way PlacementFunnelCard already does.
+	//
+	// Two levels, matching what the service now returns:
+	//   * full error  — the whole request failed (status:error, or a hard RTK
+	//     error): the entire section (KPIs + Woo cards) can't be trusted.
+	//   * Woo unavailable — the service served the core rollup KPIs but reported
+	//     the heavy live/Woo sections in `unavailable_sections` (a partial
+	//     degradation): the KPIs still render; only the Woo cards are unavailable.
+	const hasUnavailableSections = ( metrics ) =>
+		Array.isArray( metrics?.unavailable_sections ) && metrics.unavailable_sections.length > 0;
+
+	const insightsFullError = ! shouldSkipAnalytics && ( isInsightsError || !! insightsMetrics?.errorType );
+	const insightsWooUnavailable = ! shouldSkipAnalytics && ! insightsFullError && hasUnavailableSections( insightsMetrics );
+	const gaugeFullError = ! shouldSkipAnalytics && ( isGaugeError || !! gaugeMetrics?.errorType );
 
 	// Skip secondary queries until the primary metrics call has returned without an error.
 	// This prevents parallel requests being sent when the server rejects the API key.
 	const shouldSkipSecondaryQueries = shouldSkipAnalytics || ! dashboardMetrics || !! dashboardMetrics?.errorType;
 
 	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl }, { skip: shouldSkipSecondaryQueries } );
+
+	// The three WooCommerce cards each carry their OWN date range, independent of
+	// the Insights picker, via a standalone endpoint per card. Each falls back to
+	// "All time" when no bounded range is picked.
+	const rangeQueryArgs = ( range ) => ( {
+		siteUrl,
+		...( range.startDate ? { startDate: range.startDate } : {} ),
+		...( range.endDate ? { endDate: range.endDate } : {} ),
+	} );
+	const rangeLabel = ( range ) =>
+		( range.startDate && range.endDate ? triggerLabelFor( range ) : __( 'All time', 'godam' ) );
+	// "vs prev N days" for a card's own bounded range (the RevenueCard trend
+	// badge). Empty for an all-time range, which has no comparison window.
+	const rangeDeltaLabel = ( range ) => {
+		if ( ! range.startDate || ! range.endDate ) {
+			return '';
+		}
+		const spanDays = Math.round( ( fromISO( range.endDate ) - fromISO( range.startDate ) ) / 86400000 ) + 1;
+		return sprintf(
+			/* translators: %d: number of days in the compared previous window. */
+			__( 'vs prev %d days', 'godam' ),
+			spanDays,
+		);
+	};
+	const skipWooCards = shouldSkipSecondaryQueries || ! hasWooProducts;
+
+	// Synthesize the { error: true } marker on a HARD query failure too, not just
+	// the soft one. transformResponse only mints { error: true } for a 2xx body
+	// carrying status:error (an MS error the WP proxy normalised to 200); on a hard
+	// failure isolated to these routes (a stale-nonce 401/403, a PHP fatal / 5xx in
+	// the proxy, unparseable JSON, or a version-skew 404) RTK sets isError and
+	// leaves data undefined. Without this, the card would hit its null guard and
+	// vanish. Mirrors how PlacementFunnelCard folds its own isError into the marker.
+	const [ revenueRange, setRevenueRange ] = useState( { startDate: null, endDate: null } );
+	const { data: revenueDataRaw, isError: isRevenueError } = useFetchRevenueSummaryQuery( rangeQueryArgs( revenueRange ), { skip: skipWooCards } );
+	const revenueData = isRevenueError ? { error: true } : revenueDataRaw;
+
+	const [ purchaseFunnelRange, setPurchaseFunnelRange ] = useState( { startDate: null, endDate: null } );
+	const { data: videoFunnelDataRaw, isError: isVideoFunnelError } = useFetchVideoFunnelQuery( rangeQueryArgs( purchaseFunnelRange ), { skip: skipWooCards } );
+	const videoFunnelData = isVideoFunnelError ? { error: true } : videoFunnelDataRaw;
+
+	const [ placementFunnelRange, setPlacementFunnelRange ] = useState( { startDate: null, endDate: null } );
 
 	// Connected, but the analytics backend is unreachable (server down) or returned
 	// a microservice error. Gated on a valid key so it never shows for a
@@ -257,7 +376,7 @@ const Dashboard = () => {
 		// per-card range (gaugeMetrics). generateCountryHeatmap clears both
 		// containers before drawing, so it is safe to re-run when the range
 		// changes; it shows an empty-state placeholder when there is no data.
-		if ( gaugeMetrics ) {
+		if ( gaugeMetrics && ! gaugeFullError ) {
 			const interval = setInterval( () => {
 				const mapContainer = document.querySelector( '#map-container' );
 				const tableContainer = document.querySelector( '#table-container' );
@@ -273,7 +392,7 @@ const Dashboard = () => {
 
 			return () => clearInterval( interval );
 		}
-	}, [ gaugeMetrics ] );
+	}, [ gaugeMetrics, gaugeFullError ] );
 
 	useEffect( () => {
 		const checkExist = setInterval( () => {
@@ -337,14 +456,23 @@ const Dashboard = () => {
 								testIdPrefix="godam-dashboard-gauge-daterange"
 							/>
 						</div>
-						<ViewersGauge
-							plays={ gaugeMetrics?.plays ?? 0 }
-							uniqueViewers={ gaugeMetrics?.unique_viewers ?? null }
-						/>
-						<div className="country-views">
-							<div className="country-views-map" id="map-container"></div>
-							<div className="country-views-table" id="table-container"></div>
-						</div>
+						{ gaugeFullError ? (
+							<AnalyticsSectionError
+								onRetry={ refetchGauge }
+								testId="godam-dashboard-gauge-error"
+							/>
+						) : (
+							<>
+								<ViewersGauge
+									plays={ gaugeMetrics?.plays ?? 0 }
+									uniqueViewers={ gaugeMetrics?.unique_viewers ?? null }
+								/>
+								<div className="country-views">
+									<div className="country-views-map" id="map-container"></div>
+									<div className="country-views-table" id="table-container"></div>
+								</div>
+							</>
+						) }
 					</div>
 
 					{ /* Right column — Insights KPIs + Playback Performance. */ }
@@ -358,66 +486,119 @@ const Dashboard = () => {
 									testIdPrefix="godam-dashboard-insights-daterange"
 								/>
 							</div>
-							<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
-
-								<SingleMetrics
-									mode="dashboard"
-									metricType="total-videos"
-									label={ __( 'Active Videos', 'godam' ) }
-									tooltipText={ __(
-										'Number of unique videos that received user interactions each day, such as views or plays.',
-										'godam',
-									) }
-									rangeActive={ insightsRangeActive }
-									deltaLabel={ insightsDeltaLabel }
-									dataLabel={ insightsCardLabel }
-									analyticsDataFetched={ {
-										total_videos: insightsMetrics?.total_videos ?? 0,
-									} }
+							{ insightsFullError ? (
+								<AnalyticsSectionError
+									onRetry={ refetchInsights }
+									testId="godam-dashboard-insights-error"
 								/>
+							) : (
+								<>
+									<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-wrap lg:[&>*]:grow lg:[&>*]:basis-40">
 
-								<SingleMetrics
-									mode="dashboard"
-									metricType={ 'play-rate' }
-									label={ __( 'Avg. Play Rate', 'godam' ) }
-									tooltipText={ __(
-										'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
-										'godam',
-									) }
-									rangeActive={ insightsRangeActive }
-									deltaLabel={ insightsDeltaLabel }
-									dataLabel={ insightsCardLabel }
-									analyticsDataFetched={ insightsMetrics }
-								/>
+										<SingleMetrics
+											mode="dashboard"
+											metricType="total-videos"
+											label={ __( 'Active Videos', 'godam' ) }
+											tooltipText={ __(
+												'Number of unique videos that received user interactions each day, such as views or plays.',
+												'godam',
+											) }
+											rangeActive={ insightsRangeActive }
+											deltaLabel={ insightsDeltaLabel }
+											dataLabel={ insightsCardLabel }
+											analyticsDataFetched={ {
+												total_videos: insightsMetrics?.total_videos ?? 0,
+											} }
+										/>
 
-								<SingleMetrics
-									mode="dashboard"
-									metricType={ 'watch-time' }
-									label={ __( 'Watch Time', 'godam' ) }
-									tooltipText={ __(
-										'Total time the video has been watched, aggregated across all plays',
-										'godam',
-									) }
-									rangeActive={ insightsRangeActive }
-									deltaLabel={ insightsDeltaLabel }
-									dataLabel={ insightsCardLabel }
-									analyticsDataFetched={ insightsMetrics }
-								/>
+										<SingleMetrics
+											mode="dashboard"
+											metricType={ 'play-rate' }
+											label={ __( 'Avg. Play Rate', 'godam' ) }
+											tooltipText={ __(
+												'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
+												'godam',
+											) }
+											rangeActive={ insightsRangeActive }
+											deltaLabel={ insightsDeltaLabel }
+											dataLabel={ insightsCardLabel }
+											analyticsDataFetched={ insightsMetrics }
+										/>
 
-								<SingleMetrics
-									mode="dashboard"
-									metricType={ 'engagement-rate' }
-									label={ __( 'Engagement Rate', 'godam' ) }
-									tooltipText={ __(
-										'Average share of each video that viewers watched, across all plays.',
-										'godam',
-									) }
-									rangeActive={ insightsRangeActive }
-									deltaLabel={ insightsDeltaLabel }
-									dataLabel={ insightsCardLabel }
-									analyticsDataFetched={ insightsMetrics }
-								/>
-							</div>
+										<SingleMetrics
+											mode="dashboard"
+											metricType={ 'watch-time' }
+											label={ __( 'Watch Time', 'godam' ) }
+											tooltipText={ __(
+												'Total time the video has been watched, aggregated across all plays',
+												'godam',
+											) }
+											rangeActive={ insightsRangeActive }
+											deltaLabel={ insightsDeltaLabel }
+											dataLabel={ insightsCardLabel }
+											analyticsDataFetched={ insightsMetrics }
+										/>
+
+										<SingleMetrics
+											mode="dashboard"
+											metricType={ 'engagement-rate' }
+											label={ __( 'Engagement Rate', 'godam' ) }
+											tooltipText={ __(
+												'Average share of each video that viewers watched, across all plays.',
+												'godam',
+											) }
+											rangeActive={ insightsRangeActive }
+											deltaLabel={ insightsDeltaLabel }
+											dataLabel={ insightsCardLabel }
+											analyticsDataFetched={ insightsMetrics }
+										/>
+									</div>
+
+									{ /* WooCommerce metrics on their own row below the core Insights:
+									    Video-to-Cart and Video-to-Purchase side by side (per the
+									    design), each with its range-aware trend badge. Woo-gated:
+									    both would otherwise read a permanent, misleading "0" on a
+									    non-Woo store. When the service reports these live sections
+									    unavailable (a partial degradation, core KPIs still shown),
+									    surface a scoped error instead of vanishing the cards. */ }
+									{ hasWooProducts && ( insightsWooUnavailable ? (
+										<div className="analytics-info-container mt-4">
+											<AnalyticsSectionError
+												onRetry={ refetchInsights }
+												testId="godam-dashboard-woo-error"
+												message={ __( 'WooCommerce metrics couldn’t load. This is usually temporary.', 'godam' ) }
+											/>
+										</div>
+									) : (
+										<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-col items-stretch flex-wrap gap-4 mt-4 lg:[&>*]:grow lg:[&>*]:basis-40">
+											<VideoToCartCard
+												videoToCart={ insightsMetrics?.video_to_cart }
+												dataLabel={ insightsCardLabel }
+												deltaLabel={ insightsDeltaLabel }
+											/>
+											<VideoToPurchaseCard
+												videoToPurchase={ insightsMetrics?.video_to_purchase }
+												dataLabel={ insightsCardLabel }
+												deltaLabel={ insightsDeltaLabel }
+											/>
+										</div>
+									) ) }
+								</>
+							) }
+
+							{ /* GA4 output is a godam-for-woo feature (it pushes the
+							    add_to_cart/purchase events into the store's own
+							    dataLayer), so it's gated the same as Top Products /
+							    Video-to-Cart: the add-on active + a valid license.
+							    Needs its own analytics-info-container wrapper:
+							    .analytics-info/.analytics-single-info are only
+							    styled (flex layout, padding, gap) as descendants of
+							    that class — see analytics/index.scss. */ }
+							{ hasWooProducts && (
+								<div className="analytics-info-container mt-4">
+									<GA4ConnectionWidget />
+								</div>
+							) }
 						</div>
 
 						<div className="playback-performance" id="global-analytics-container">
@@ -429,7 +610,62 @@ const Dashboard = () => {
 					</div>
 				</div>
 
-				<TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } />
+				{ /* Video-Attributed Revenue (WooCommerce only): the headline revenue
+				    figure, split Direct/Assisted, with account-wide Influenced shown
+				    separately. Full-width card, single store currency. Carries its OWN
+				    date-range picker and fetches its own data (revenueData), so it is
+				    independent of the Insights query: an empty range renders 0 and a
+				    query error surfaces inside the card, never a silent vanish. */ }
+				{ hasWooProducts && (
+					<RevenueCard
+						revenue={ revenueData }
+						deltaLabel={ rangeDeltaLabel( revenueRange ) }
+						rangeControl={
+							<DateRangePicker
+								value={ revenueRange }
+								onChange={ setRevenueRange }
+								testIdPrefix="godam-dashboard-revenue-daterange"
+							/>
+						}
+					/>
+				) }
+
+				{ /* Account-wide Play-to-Cart-to-Purchase funnel (WooCommerce only).
+				    Own picker + own query, same independence as the Revenue card. */ }
+				{ hasWooProducts && (
+					<PurchaseFunnelCard
+						funnel={ videoFunnelData }
+						dataLabel={ rangeLabel( purchaseFunnelRange ) }
+						scope="account"
+						rangeControl={
+							<DateRangePicker
+								value={ purchaseFunnelRange }
+								onChange={ setPurchaseFunnelRange }
+								testIdPrefix="godam-dashboard-purchase-funnel-daterange"
+							/>
+						}
+					/>
+				) }
+
+				{ /* Funnel by placement (WooCommerce only) — fetches its own data. */ }
+				{ hasWooProducts && (
+					<PlacementFunnelCard
+						siteUrl={ siteUrl }
+						startDate={ placementFunnelRange.startDate }
+						endDate={ placementFunnelRange.endDate }
+						rangeControl={
+							<DateRangePicker
+								value={ placementFunnelRange }
+								onChange={ setPlacementFunnelRange }
+								testIdPrefix="godam-dashboard-placement-funnel-daterange"
+							/>
+						}
+					/>
+				) }
+
+				{ hasWooProducts && topTab === 'products'
+					? <TopProductsTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } tabSwitcher={ topTabSwitcher } />
+					: <TopVideosTable siteUrl={ siteUrl } skip={ shouldSkipSecondaryQueries } tabSwitcher={ topTabSwitcher } /> }
 
 				{ extendedSections.map( ( { id, component: SectionComponent } ) => (
 					<SectionComponent key={ id } />

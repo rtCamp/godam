@@ -26,6 +26,102 @@ class Analytics extends Base {
 	protected $rest_base = 'analytics';
 
 	/**
+	 * Register REST routes (via the parent) plus the cache-invalidation hooks
+	 * for the Top Products / Top Videos "existing ids" allow-lists.
+	 *
+	 * The resolve_top_products_id_filter()/resolve_top_videos_id_filter() helpers
+	 * cache the set of published product / attachment ids in a 5-minute transient so the
+	 * common "hide deleted" request doesn't re-query a large catalog every time.
+	 * Without invalidation, a product a shop owner just trashed stays in that
+	 * cached allow-list, so it keeps appearing in Top Products (with "Show
+	 * deleted" off) until the transient expires — which reads as "the toggle is
+	 * broken". Flush the relevant cache the moment the underlying post is
+	 * trashed, untrashed, restored, or deleted so the change shows immediately.
+	 *
+	 * @return void
+	 */
+	protected function setup_hooks() {
+		parent::setup_hooks();
+
+		// Trash / untrash / publish / draft transitions for products.
+		add_action( 'transition_post_status', array( $this, 'flush_existing_ids_cache_on_transition' ), 10, 3 );
+		// Permanent deletion of a product (and any other post type below).
+		add_action( 'before_delete_post', array( $this, 'flush_existing_ids_cache_on_delete' ), 10, 2 );
+		// Attachments (videos) are removed via wp_delete_attachment, which fires
+		// delete_attachment rather than transition_post_status.
+		add_action( 'delete_attachment', array( $this, 'flush_top_videos_ids_cache' ) );
+		// A newly added product/attachment should also drop the stale allow-list
+		// so it can enter the "hide deleted" set without a 5-minute wait.
+		add_action( 'save_post_product', array( $this, 'flush_top_products_ids_cache' ) );
+		add_action( 'add_attachment', array( $this, 'flush_top_videos_ids_cache' ) );
+	}
+
+	/**
+	 * Flush the right allow-list cache when a post changes status (e.g. a
+	 * product moved to or out of the trash). Only acts on a real status change
+	 * for a post type the analytics tables track.
+	 *
+	 * @param string   $new_status New post status.
+	 * @param string   $old_status Previous post status.
+	 * @param \WP_Post $post       The post being transitioned.
+	 * @return void
+	 */
+	public function flush_existing_ids_cache_on_transition( $new_status, $old_status, $post ) {
+		if ( $new_status === $old_status || ! $post instanceof \WP_Post ) {
+			return;
+		}
+		$this->flush_existing_ids_cache_for_post_type( $post->post_type );
+	}
+
+	/**
+	 * Flush the right allow-list cache when a post is permanently deleted.
+	 *
+	 * @param int           $post_id The post ID being deleted.
+	 * @param \WP_Post|null $post    The post object (WP 5.5+), or null on older cores.
+	 * @return void
+	 */
+	public function flush_existing_ids_cache_on_delete( $post_id, $post = null ) {
+		if ( ! $post instanceof \WP_Post ) {
+			$post = get_post( $post_id ); // godam-coverage-ignore -- reads only post_type to pick the allow-list transient to flush, not attachment data.
+		}
+		if ( $post instanceof \WP_Post ) {
+			$this->flush_existing_ids_cache_for_post_type( $post->post_type );
+		}
+	}
+
+	/**
+	 * Map a post type to its allow-list transient and delete it.
+	 *
+	 * @param string $post_type The post type that changed.
+	 * @return void
+	 */
+	private function flush_existing_ids_cache_for_post_type( $post_type ) {
+		if ( 'product' === $post_type ) {
+			$this->flush_top_products_ids_cache();
+		} elseif ( 'attachment' === $post_type ) {
+			$this->flush_top_videos_ids_cache();
+		}
+	}
+
+	/**
+	 * Delete the cached Top Products published-id allow-list.
+	 *
+	 * @return void
+	 */
+	public function flush_top_products_ids_cache() {
+		delete_transient( 'rtgodam_top_products_existing_ids' );
+	}
+
+	/**
+	 * Delete the cached Top Videos published-id allow-list.
+	 *
+	 * @return void
+	 */
+	public function flush_top_videos_ids_cache() {
+		delete_transient( 'rtgodam_top_videos_existing_ids' );
+	}
+
+	/**
 	 * Register custom REST API routes for Analytics.
 	 *
 	 * @return array Array of registered REST API routes.
@@ -38,7 +134,12 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_analytics_data' ),
-					'permission_callback' => '__return_true', // Publicly accessible.
+					// Admin-dashboard read; gated like top-products/top-videos: Phase 2 added
+					// revenue to this response (it was public for view/play analytics only).
+					// Only the admin apps call it, never the public front end.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'video_id' => array(
 							'required'          => true,
@@ -90,7 +191,11 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_dashboard_metrics' ),
-					'permission_callback' => '__return_true',
+					// Admin-dashboard read; gated like the sibling analytics routes (revenue is
+					// account-scoped and returned to the dashboard only).
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -169,6 +274,131 @@ class Analytics extends Base {
 			),
 			array(
 				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/top-products',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_top_products' ),
+					// Admin-dashboard read, gated like top-videos (authors and above);
+					// the search path resolves an uncached WP_Query, so this also
+					// closes the unauthenticated DB-amplification vector.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'page'         => array(
+							'required'          => false,
+							'type'              => 'integer',
+							'default'           => 1,
+							'sanitize_callback' => 'absint',
+						),
+						'limit'        => array(
+							'required'          => false,
+							'type'              => 'integer',
+							'default'           => 10,
+							'sanitize_callback' => 'absint',
+						),
+						'site_url'     => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+						'search'       => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'sort_by'      => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => 'product_views',
+							// Allowlist at the WP boundary (defense in depth): these are
+							// the analytics service's own TOP_PRODUCTS_METRIC_SQL keys, so
+							// a bad value 400s here with a clear message instead of being
+							// forwarded upstream.
+							'enum'              => array( 'product_views', 'add_to_cart', 'impressions', 'ctr' ),
+							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => 'rest_validate_request_arg',
+						),
+						'order'        => array(
+							'required'          => false,
+							'type'              => 'string',
+							'default'           => 'desc',
+							'enum'              => array( 'asc', 'desc' ),
+							'sanitize_callback' => 'sanitize_text_field',
+							'validate_callback' => 'rest_validate_request_arg',
+						),
+						'hide_deleted' => array(
+							'required'          => false,
+							'type'              => 'boolean',
+							'default'           => false,
+							'sanitize_callback' => 'rest_sanitize_boolean',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/placement-funnels',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_placement_funnels' ),
+					// Account-scoped server-side (api_key / account_token injected,
+					// never client-supplied), like the sibling dashboard reads.
+					// Admin-dashboard read; gated like the sibling analytics routes.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/revenue-summary',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_revenue_summary' ),
+					// Admin-dashboard read; gated like the sibling analytics routes
+					// (revenue must not be readable without auth).
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
+				'route'     => '/' . $this->rest_base . '/video-funnel',
+				'args'      => array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'fetch_video_funnel' ),
+					// Admin-dashboard read; gated like the sibling analytics routes.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
+					'args'                => array(
+						'site_url' => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			),
+			array(
+				'namespace' => $this->namespace,
 				'route'     => '/' . $this->rest_base . '/layer-analytics',
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
@@ -179,7 +409,11 @@ class Analytics extends Base {
 					// return this site's own non-PII aggregate analytics. Locking down
 					// analytics reads, if ever wanted, should be done uniformly across
 					// all analytics routes rather than just this one.
-					'permission_callback' => '__return_true',
+					// Admin-dashboard read; gated uniformly with the sibling analytics routes
+					// (see note above): revenue must not be readable without auth.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 					'args'                => array(
 						'video_id'   => array(
 							'required'          => true,
@@ -237,6 +471,10 @@ class Analytics extends Base {
 			'/' . $this->rest_base . '/dashboard-history',
 			'/' . $this->rest_base . '/layer-analytics',
 			'/' . $this->rest_base . '/top-videos',
+			'/' . $this->rest_base . '/top-products',
+			'/' . $this->rest_base . '/placement-funnels',
+			'/' . $this->rest_base . '/revenue-summary',
+			'/' . $this->rest_base . '/video-funnel',
 		);
 		foreach ( $routes as &$route ) {
 			if ( in_array( $route['route'], $range_routes, true ) ) {
@@ -367,6 +605,13 @@ class Analytics extends Base {
 		if ( ! empty( $job_id ) ) {
 			$query_params['job_id'] = $job_id;
 		}
+		// Single store currency: the service returns per-hotspot Direct revenue in
+		// this currency (Woo layers only); other currencies are excluded, not
+		// converted. Empty when WooCommerce is inactive, so the service omits it.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$query_params['base_currency'] = $base_currency;
+		}
 		$query_params = $this->append_range_params( $request, $query_params );
 
 		$endpoint = add_query_arg( $query_params, RTGODAM_ANALYTICS_BASE . '/processed-layer-analytics/' );
@@ -440,10 +685,10 @@ class Analytics extends Base {
 	 * first 100 rows as a defensive bound on per-request DB work; rows past the
 	 * cap still get a constant-cost attributable label so none render blank.
 	 *
-	 * The /analytics/fetch route is public (permission_callback __return_true),
-	 * so this never leaks non-public pages (private, draft, pending, trashed) to
-	 * anonymous callers: the real title/permalink is revealed only when the page
-	 * is publicly viewable, or the current user can edit it.
+	 * The analytics read routes are gated on `upload_files` (authors and above),
+	 * but this still never leaks non-public pages (private, draft, pending,
+	 * trashed) beyond what the caller may see: the real title/permalink is
+	 * revealed only when the page is publicly viewable, or the caller can edit it.
 	 *
 	 * @param array $placements Placement rows from the microservice.
 	 * @return array Enriched placement rows.
@@ -590,6 +835,15 @@ class Analytics extends Base {
 			'api_key'       => $api_key,
 		);
 		$query_params = $this->append_range_params( $request, $query_params );
+
+		// Single store currency: pass the store base currency so the per-video
+		// record carries base-currency revenue (and a count of orders in other
+		// currencies). Only when WooCommerce is active; otherwise the service
+		// returns revenue 0 / '' and the card stays hidden.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$query_params['base_currency'] = $base_currency;
+		}
 
 		$analytics_url = add_query_arg( $query_params, $analytics_endpoint );
 
@@ -802,7 +1056,7 @@ class Analytics extends Base {
 			);
 		}
 
-		$params   = $this->append_range_params(
+		$params = $this->append_range_params(
 			$request,
 			array(
 				'site_url'      => $site_url,
@@ -810,6 +1064,14 @@ class Analytics extends Base {
 				'api_key'       => $api_key,
 			)
 		);
+		// Single store currency: pass the store base currency so the service returns
+		// base-currency revenue plus a count of orders in other currencies (not
+		// converted). Only meaningful when WooCommerce is active; when absent the
+		// service simply omits the `revenue` object.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$params['base_currency'] = $base_currency;
+		}
 		$endpoint = add_query_arg(
 			$params,
 			RTGODAM_ANALYTICS_BASE . '/dashboard/metrics/fetch/'
@@ -1005,9 +1267,27 @@ class Analytics extends Base {
 			);
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$http_code = (int) wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
 
-		$top_videos = $body['top_videos'] ?? array();
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			// Surface a non-2xx OR a 200-with-unparseable-body (e.g. an HTML error
+			// page that decodes to null) as an error rather than an empty "no data"
+			// table (mirrors fetch_layer_analytics / fetch_placement_funnels).
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) )
+				? $body['detail']
+				: __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 400 === $http_code ? 'bad_request' : 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$top_videos = is_array( $body ) ? ( $body['top_videos'] ?? array() ) : array();
 
 		/**
 		 * Fires before enriching each top-video row with local attachment
@@ -1137,6 +1417,465 @@ class Analytics extends Base {
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- bounded, `suppress_filters => false` (cacheable), and the common no-search case is transient-cached; matches the existing convention in this class.
 		$ids = array_map( 'intval', (array) get_posts( $query_args ) );
 		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( $is_full_set ) {
+			set_transient( $cache_key, $ids, 5 * MINUTE_IN_SECONDS );
+		}
+
+		return $ids;
+	}
+
+	/**
+	 * Proxy the per-placement funnel (the "Funnel by placement" card) from the
+	 * analytics microservice. Account-scoped server-side (api_key / account_token
+	 * injected, never client-supplied); the selected date range is forwarded.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_placement_funnels( WP_REST_Request $request ) {
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
+		$params   = $this->append_range_params(
+			$request,
+			array(
+				'site_url'      => $site_url,
+				'account_token' => $account_token,
+				'api_key'       => $api_key,
+			)
+		);
+		$endpoint = add_query_arg(
+			$params,
+			RTGODAM_ANALYTICS_BASE . '/dashboard/placement-funnels/'
+		);
+
+		$response = wp_remote_get( $endpoint );
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) ) ? $body['detail'] : __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $detail,
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'placement_funnels' => $body['placement_funnels'] ?? array(),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Video-Attributed Revenue card data, scoped to the card's own date range.
+	 *
+	 * Base-currency revenue with the Direct / Assisted split and the Influenced
+	 * figure. Standalone from the Insights metrics so the card carries its own
+	 * range picker; the store base currency is injected server-side.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_revenue_summary( WP_REST_Request $request ) {
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
+		$params = $this->append_range_params(
+			$request,
+			array(
+				'site_url'      => $site_url,
+				'account_token' => $account_token,
+				'api_key'       => $api_key,
+			)
+		);
+		// Single store currency: pass the base currency so the service sums only it
+		// and counts the rest as excluded. Absent (no WooCommerce) -> the service
+		// returns revenue null and the card hides.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$params['base_currency'] = $base_currency;
+		}
+		$endpoint = add_query_arg(
+			$params,
+			RTGODAM_ANALYTICS_BASE . '/dashboard/revenue-summary/'
+		);
+
+		$response = wp_remote_get( $endpoint );
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) ) ? $body['detail'] : __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $detail,
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'revenue' => $body['revenue'] ?? null,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Purchase Funnel card data, scoped to the card's own date range.
+	 *
+	 * The account-wide Play to Cart to Purchase funnel (nested cohorts, Direct /
+	 * Assisted split within the added stage). Standalone so the card carries its
+	 * own range picker.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_video_funnel( WP_REST_Request $request ) {
+		$site_url      = $request->get_param( 'site_url' );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $api_key ) || empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Missing API key.', 'godam' ),
+					'errorType' => 'missing_key',
+				),
+				200
+			);
+		}
+
+		$params   = $this->append_range_params(
+			$request,
+			array(
+				'site_url'      => $site_url,
+				'account_token' => $account_token,
+				'api_key'       => $api_key,
+			)
+		);
+		$endpoint = add_query_arg(
+			$params,
+			RTGODAM_ANALYTICS_BASE . '/dashboard/video-funnel/'
+		);
+
+		$response = wp_remote_get( $endpoint );
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Unable to reach analytics server.', 'godam' ),
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$http_code = wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) ) ? $body['detail'] : __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $detail,
+				),
+				200
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'video_funnel' => $body['video_funnel'] ?? null,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Proxy /dashboard/top-products/ from the analytics microservice, then hydrate
+	 * each product row with its current WooCommerce name, image and permalink,
+	 * resolved from product_id. Display fields live in WooCommerce, not the
+	 * microservice, so a rename or a new image reflects immediately and no stale
+	 * copy is stored.
+	 *
+	 * Mirrors fetch_top_videos: a product-name search is a WordPress-only concern,
+	 * resolved to a product_ids include-filter and POSTed; otherwise a plain GET.
+	 *
+	 * @param WP_REST_Request $request REST API request.
+	 * @return WP_REST_Response
+	 */
+	public function fetch_top_products( WP_REST_Request $request ) {
+		$page          = $request->get_param( 'page' ) ?? 1;
+		$limit         = $request->get_param( 'limit' ) ?? 10;
+		$site_url      = $request->get_param( 'site_url' );
+		$search        = trim( (string) $request->get_param( 'search' ) );
+		$sort_by       = $request->get_param( 'sort_by' );
+		$order         = $request->get_param( 'order' );
+		$hide_deleted  = rest_sanitize_boolean( $request->get_param( 'hide_deleted' ) );
+		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+
+		if ( empty( $account_token ) || 'unverified' === $account_token ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => __( 'Invalid or unverified API key.', 'godam' ),
+				),
+				200
+			);
+		}
+
+		// Product-name search and hide-deleted are WordPress-only concerns (titles
+		// and deletion state live in WP, not the microservice). Resolve them into
+		// the microservice's product_ids include-filter. null => no restriction;
+		// an array (including []) => restrict to that set ([] yields zero rows).
+		$product_ids = $this->resolve_top_products_id_filter( $search, $hide_deleted );
+
+		$query = array(
+			'page'          => $page,
+			'limit'         => $limit,
+			'site_url'      => $site_url,
+			'account_token' => $account_token,
+			'api_key'       => $api_key,
+		);
+		if ( ! empty( $sort_by ) ) {
+			$query['sort_by'] = $sort_by;
+		}
+		if ( ! empty( $order ) ) {
+			$query['order'] = $order;
+		}
+		// Single store currency: revenue/orders sum only the base currency.
+		$base_currency = get_option( 'woocommerce_currency', '' );
+		if ( ! empty( $base_currency ) ) {
+			$query['base_currency'] = $base_currency;
+		}
+
+		$endpoint = add_query_arg(
+			$this->append_range_params( $request, $query ),
+			RTGODAM_ANALYTICS_BASE . '/dashboard/top-products/'
+		);
+
+		// POST the product_ids filter when a search applies (the list can be
+		// large); otherwise a plain GET.
+		if ( is_array( $product_ids ) ) {
+			$response = wp_remote_post(
+				$endpoint,
+				array(
+					'timeout' => 3,
+					'headers' => array( 'Content-Type' => 'application/json' ),
+					'body'    => wp_json_encode( array( 'product_ids' => array_values( array_map( 'intval', $product_ids ) ) ) ),
+				)
+			);
+		} else {
+			$response = wp_remote_get( $endpoint, array( 'timeout' => 3 ) );
+		}
+
+		if ( is_wp_error( $response ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'error',
+					'message' => $response->get_error_message(),
+				),
+				500
+			);
+		}
+
+		$http_code = (int) wp_remote_retrieve_response_code( $response );
+		$body      = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( 200 !== $http_code || ! is_array( $body ) ) {
+			// A non-2xx (bad request, service down, HTML error page) or a
+			// 200-with-unparseable-body (decodes to null) must NOT be rendered as an
+			// empty "no product activity" table. Surface it as an error so the
+			// frontend RTK Query layer can show it, mirroring fetch_layer_analytics /
+			// fetch_placement_funnels.
+			$detail = ( is_array( $body ) && isset( $body['detail'] ) )
+				? $body['detail']
+				: __( 'Unexpected error from analytics server.', 'godam' );
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 400 === $http_code ? 'bad_request' : 'microservice_error',
+				),
+				200
+			);
+		}
+
+		$top_products = is_array( $body ) ? ( $body['top_products'] ?? array() ) : array();
+
+		// Product thumbnails are media-library attachments, so the per-product
+		// wp_get_attachment_image_url() calls below must run inside the centralized
+		// attachment-lookup context (offloaded/CDN media resolve there). Wrapped
+		// once around the whole loop, mirroring the Top Videos thumbnail loop,
+		// rather than switching context per product.
+		do_action( 'rtgodam_before_attachment_lookup' );
+
+		foreach ( $top_products as &$product ) {
+			$product_id = intval( $product['product_id'] ?? 0 );
+			$wc_product = ( $product_id && function_exists( 'wc_get_product' ) ) ? wc_get_product( $product_id ) : false;
+
+			if ( $wc_product ) {
+				$image_id                 = $wc_product->get_image_id();
+				$product['title']         = $wc_product->get_name();
+				$product['permalink']     = get_permalink( $product_id );
+				$product['thumbnail_url'] = $image_id
+					? wp_get_attachment_image_url( $image_id, 'thumbnail' )
+					: ( function_exists( 'wc_placeholder_img_src' ) ? wc_placeholder_img_src( 'thumbnail' ) : null );
+				$product['exists']        = true;
+				// Whether the product can be added to cart from inside a video. Variable,
+				// grouped and external products cannot (they only convert on the product
+				// page), so their in-video/Direct count is always 0 and the UI greys it
+				// with a helper. Mirrors the shoppable template's own guard.
+				$product['supports_direct_add_to_cart'] = ! in_array(
+					$wc_product->get_type(),
+					array( 'variable', 'grouped', 'external' ),
+					true
+				);
+			} else {
+				$product['title'] = sprintf(
+					/* translators: %d: WooCommerce product ID. */
+					__( 'ID: %d (Deleted Product)', 'godam' ),
+					$product_id
+				);
+				$product['permalink']     = null;
+				$product['thumbnail_url'] = null;
+				$product['exists']        = false;
+				// Unknown for a deleted product; default to true so we don't grey it.
+				$product['supports_direct_add_to_cart'] = true;
+			}
+		}
+		unset( $product );
+
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		return new WP_REST_Response(
+			array(
+				'status'       => 'success',
+				'top_products' => $top_products,
+				'total_pages'  => $body['total_pages'] ?? 1,
+				'total_items'  => $body['total_items'] ?? 0,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Resolve the product_ids include-filter for a product-name search and/or the
+	 * hide-deleted toggle.
+	 *
+	 * Product names and deletion state live in WooCommerce, not the microservice,
+	 * so both concerns are turned into an explicit list of product IDs for the
+	 * microservice to filter on. Returns null when neither is active (no
+	 * restriction); an array (including []) restricts to that set. Mirrors
+	 * resolve_top_videos_id_filter so pagination stays correct (the set is
+	 * restricted before the microservice paginates, never filtered after).
+	 *
+	 * @param string $search       Search term, matched against the product title/content.
+	 * @param bool   $hide_deleted Whether to restrict to existing (published) products.
+	 * @return array|null Product IDs, or null when no restriction applies.
+	 */
+	private function resolve_top_products_id_filter( $search, $hide_deleted ) {
+		$has_search = ( '' !== (string) $search );
+
+		// Neither concern active => let the microservice return everything
+		// (deleted rows are still flagged "Deleted Product" during hydration).
+		if ( ! $has_search && ! $hide_deleted ) {
+			return null;
+		}
+
+		// The default the UI sends on every load / page change is no-search +
+		// hide-deleted, which resolves to the full set of published product IDs —
+		// that set rarely changes, so cache it briefly to avoid re-querying a large
+		// catalog on each request. (Up to 5 min stale, which is fine for analytics —
+		// it isn't real-time.) Search results vary per term, so they're not cached.
+		$cache_key   = 'rtgodam_top_products_existing_ids';
+		$is_full_set = ( ! $has_search && $hide_deleted );
+		if ( $is_full_set ) {
+			$cached = get_transient( $cache_key );
+			if ( is_array( $cached ) ) {
+				return $cached;
+			}
+		}
+
+		// Existing published products, optionally matching the search term. Capped
+		// at the microservice's product_ids limit (10000).
+		$query_args = array(
+			'post_type'        => 'product',
+			'post_status'      => 'publish',
+			'fields'           => 'ids',
+			// phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- bounded by the microservice's 10000 product_ids cap, and the common no-search case is transient-cached below.
+			'posts_per_page'   => 10000,
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+			'orderby'          => 'ID',
+			'order'            => 'ASC',
+		);
+
+		if ( $has_search ) {
+			$query_args['s'] = $search;
+		}
+
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- bounded and cacheable (suppress_filters => false); matches resolve_top_videos_id_filter in this class.
+		$ids = array_map( 'intval', (array) get_posts( $query_args ) );
 
 		if ( $is_full_set ) {
 			set_transient( $cache_key, $ids, 5 * MINUTE_IN_SECONDS );

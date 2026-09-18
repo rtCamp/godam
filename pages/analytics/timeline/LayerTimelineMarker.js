@@ -127,7 +127,7 @@ const LayerTimelineMarker = ( { parent, selected, onSelect, laneOffset = 0 } ) =
 				{ formatTimestamp( parent.timestamp ) }
 			</span>
 
-			{ /* Conversion-rate badge */ }
+			{ /* Interaction-rate badge */ }
 			<span
 				className="text-[11px] font-semibold mt-1 px-2 py-0.5 rounded tabular-nums"
 				style={ {
@@ -135,7 +135,7 @@ const LayerTimelineMarker = ( { parent, selected, onSelect, laneOffset = 0 } ) =
 					background: withAlpha( color, 0.12 ),
 				} }
 				title={ __(
-					'Conversion rate — share of viewers who saw this layer and interacted with it.',
+					'Interaction rate: share of viewers who saw this layer and interacted with it.',
 					'godam',
 				) }
 			>
