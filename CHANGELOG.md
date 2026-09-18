@@ -1,5 +1,9 @@
 # Changelog #
 
+## v2.2.4 (September 18, 2026) ##
+
+- Chore: Resolved open Dependabot security advisories in build-time dependencies (npm).
+
 ## v2.2.3 (September 16, 2026) ##
 
 - Fix: Resolved content and display issues on the What's New page.
