@@ -3,7 +3,7 @@
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { SearchControl, ToggleControl, Tooltip as WPTooltip } from '@wordpress/components';
+import { SearchControl, ToggleControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -608,24 +608,22 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 											</a>
 											<div className="title-link">
 												<div className="w-full max-w-40 text-left flex-1">
-													{ /* The cell truncates with an ellipsis; the full name shows on hover/focus. */ }
-													<WPTooltip text={ item.title || '' } placement="top" className="godam-readable-tooltip">
-														<p className="font-semibold">
-															<a
-																className="product-title-link text-inherit no-underline hover:underline"
-																href={ item.permalink || undefined }
-																target={ item.permalink ? '_blank' : undefined }
-																rel={ item.permalink ? 'noreferrer' : undefined }
-																data-test-id="godam-top-products-title-link"
-															>
-																{ item.title || sprintf(
-																	/* translators: %d: WooCommerce product ID, shown when the product name is unavailable. */
-																	__( 'Product ID: %d', 'godam' ),
-																	item.product_id,
-																) }
-															</a>
-														</p>
-													</WPTooltip>
+													<p className="font-semibold">
+														<a
+															className="product-title-link text-inherit no-underline hover:underline"
+															title={ item.title || undefined }
+															href={ item.permalink || undefined }
+															target={ item.permalink ? '_blank' : undefined }
+															rel={ item.permalink ? 'noreferrer' : undefined }
+															data-test-id="godam-top-products-title-link"
+														>
+															{ item.title || sprintf(
+																/* translators: %d: WooCommerce product ID, shown when the product name is unavailable. */
+																__( 'Product ID: %d', 'godam' ),
+																item.product_id,
+															) }
+														</a>
+													</p>
 													<p className="text-xs text-zinc-400">{ reachLabel( item ) }</p>
 												</div>
 											</div>

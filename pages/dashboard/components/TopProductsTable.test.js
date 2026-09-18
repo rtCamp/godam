@@ -67,13 +67,6 @@ jest.mock( '../redux/api/dashboardAnalyticsApi', () => ( {
 // The date-range picker header widget is incidental to the error-vs-empty table
 // body under test and has its own test suite; stub it out so these tests stay
 // focused on TopProductsTable's own render branches.
-// The WP Tooltip portals a popover on hover and cannot render to a string in
-// this harness; render the wrapped title as-is (the real one is used in the plugin).
-jest.mock( '@wordpress/components', () => ( {
-	...jest.requireActual( '@wordpress/components' ),
-	Tooltip: ( { children } ) => children,
-} ) );
-
 jest.mock( '../../analytics/components/DateRangePicker', () => ( {
 	__esModule: true,
 	default: () => null,
