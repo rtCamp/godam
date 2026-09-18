@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { SearchControl, ToggleControl } from '@wordpress/components';
+import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal dependencies
@@ -611,12 +612,13 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 													<p className="font-semibold">
 														<a
 															className="product-title-link text-inherit no-underline hover:underline"
+															title={ item.title ? decodeEntities( item.title ) : undefined }
 															href={ item.permalink || undefined }
 															target={ item.permalink ? '_blank' : undefined }
 															rel={ item.permalink ? 'noreferrer' : undefined }
 															data-test-id="godam-top-products-title-link"
 														>
-															{ item.title || sprintf(
+															{ item.title ? decodeEntities( item.title ) : sprintf(
 																/* translators: %d: WooCommerce product ID, shown when the product name is unavailable. */
 																__( 'Product ID: %d', 'godam' ),
 																item.product_id,

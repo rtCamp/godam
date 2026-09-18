@@ -597,6 +597,11 @@
 			text-decoration: underline;
 		}
 	}
+
+	// When both head links render, only the first one pushes right.
+	.godam-reel-pop-link + .godam-analytics-docs-link {
+		margin-left: 0;
+	}
 }
 
 .godam-dashboard-grid {

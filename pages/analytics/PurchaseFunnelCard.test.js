@@ -18,11 +18,19 @@ import { renderToString } from '@wordpress/element';
  */
 import PurchaseFunnelCard from './PurchaseFunnelCard';
 
+// The WP Tooltip portals a popover on hover and cannot render to a string in
+// this WP-free harness; the card is client-rendered in the plugin, so render
+// the wrapped segment as-is here. Its hover text is also on aria-label, which
+// is what the assertions read.
+jest.mock( '@wordpress/components', () => ( {
+	Tooltip: ( { children } ) => children,
+} ) );
+
 const FUNNEL = {
 	stages: [
 		{ key: 'played', count: 1412, rate: 100 },
 		{ key: 'added_to_cart', count: 64, direct: 27, assisted: 40, rate: 4.53 },
-		{ key: 'purchased', count: 27, rate: 1.91 },
+		{ key: 'purchased', count: 27, direct: 20, assisted: 7, rate: 1.91 },
 	],
 	still_counting: false,
 };
@@ -151,5 +159,33 @@ describe( 'PurchaseFunnelCard', () => {
 		expect( html ).toContain( 'godam-purchase-funnel-error' );
 		expect( html ).toContain( 'my-picker' );
 		expect( html ).not.toBe( '' );
+	} );
+
+	it( 'explains each bar segment on hover, with its share of the stage', () => {
+		const html = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } /> );
+		expect( html ).toContain( '1,412 visitors played a video' );
+		// Added to cart: 27 Direct + 37 Assisted-only = 64.
+		expect( html ).toContain( 'Direct (added in-video): 27 of 64 added to cart (42.2%)' );
+		expect( html ).toContain( 'Assisted only (clicked out): 37 of 64 added to cart (57.8%)' );
+		expect( html ).toContain( 'Did not reach this stage: 1,348 of 1,412 players' );
+	} );
+
+	it( 'splits the Purchased bar into Direct and Assisted like the cart bar', () => {
+		const html = renderToString( <PurchaseFunnelCard funnel={ FUNNEL } /> );
+		const bar = html.slice( html.indexOf( 'godam-purchase-funnel-bar-purchased' ) );
+		expect( bar ).toContain( 'background:#2563eb' );
+		expect( bar ).toContain( 'background:#93c5fd' );
+		expect( html ).toContain( 'Direct (added in-video): 20 of 27 purchased (74.1%)' );
+		expect( html ).toContain( 'Assisted only (clicked out): 7 of 27 purchased (25.9%)' );
+		expect( html ).toContain( 'Did not reach this stage: 1,385 of 1,412 players' );
+	} );
+
+	it( 'keeps a single Purchased segment when an older service sends no split', () => {
+		const legacy = { ...FUNNEL, stages: FUNNEL.stages.map( ( s ) => ( s.key === 'purchased' ? { key: 'purchased', count: 27, rate: 1.91 } : s ) ) };
+		const html = renderToString( <PurchaseFunnelCard funnel={ legacy } /> );
+		const bar = html.slice( html.indexOf( 'godam-purchase-funnel-bar-purchased' ), html.indexOf( 'godam-purchase-funnel-bar-purchased' ) + 900 );
+		expect( bar ).toContain( 'background:#2563eb' );
+		expect( bar ).not.toContain( 'background:#93c5fd' );
+		expect( html ).toContain( '27 purchased' );
 	} );
 } );
