@@ -611,6 +611,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 													<p className="font-semibold">
 														<a
 															className="product-title-link text-inherit no-underline hover:underline"
+															title={ item.title || undefined }
 															href={ item.permalink || undefined }
 															target={ item.permalink ? '_blank' : undefined }
 															rel={ item.permalink ? 'noreferrer' : undefined }

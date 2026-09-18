@@ -2,6 +2,7 @@
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { Tooltip } from '@wordpress/components';
 
 // Direct = added in-video (dark blue); Assisted = clicked out then added (light
 // blue); the rest of each track stays grey ("did not reach this stage").
@@ -16,14 +17,15 @@ const pct = ( n ) => `${ Number( n || 0 ).toFixed( 1 ) }%`;
  * grey track (split into coloured segments), and the count + sub-label on the right.
  *
  * @param {Object} props
- * @param {string} props.label      Stage name.
- * @param {string} props.descriptor Grey sub-label under the stage name.
- * @param {Array}  props.segments   [{ color, frac }] left-aligned bar segments (frac of the track).
- * @param {number} props.count      The stage count.
- * @param {string} props.rightSub   The sub-label under the count (e.g. "4.5% of players").
- * @param {string} props.testId     data-test-id for the bar.
+ * @param {string} props.label       Stage name.
+ * @param {string} props.descriptor  Grey sub-label under the stage name.
+ * @param {Array}  props.segments    [{ color, frac, label }] left-aligned bar segments (frac of the track); `label` is the hover tooltip text.
+ * @param {number} props.count       The stage count.
+ * @param {string} props.rightSub    The sub-label under the count (e.g. "4.5% of players").
+ * @param {string} props.testId      data-test-id for the bar.
+ * @param {string} [props.restLabel] Hover text for the grey remainder of the track ("did not reach this stage").
  */
-function FunnelRow( { label, descriptor, segments, count, rightSub, testId } ) {
+function FunnelRow( { label, descriptor, segments, count, rightSub, testId, restLabel } ) {
 	return (
 		<div className="grid grid-cols-[minmax(150px,210px)_1fr_minmax(88px,auto)] items-center gap-x-5">
 			<div>
@@ -32,11 +34,25 @@ function FunnelRow( { label, descriptor, segments, count, rightSub, testId } ) {
 			</div>
 			<div className="h-14 rounded-md overflow-hidden flex" style={ { background: '#eef0f3' } } data-test-id={ testId }>
 				{ segments.map( ( seg, i ) => (
-					<div
-						key={ i }
-						style={ { width: `${ Math.max( 0, Math.min( 100, seg.frac * 100 ) ) }%`, background: seg.color } }
-					/>
+					// Each coloured segment explains itself on hover: which tier, how
+					// many, and their share of this stage. The WP Tooltip portals to
+					// <body>, so it is never clipped by the track's overflow-hidden;
+					// aria-label carries the same text for assistive tech.
+					<Tooltip key={ i } text={ seg.label } placement="top" className="godam-readable-tooltip">
+						<div
+							role="img"
+							aria-label={ seg.label }
+							tabIndex={ 0 }
+							className="h-full outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/70"
+							style={ { width: `${ Math.max( 0, Math.min( 100, seg.frac * 100 ) ) }%`, background: seg.color } }
+						/>
+					</Tooltip>
 				) ) }
+				{ restLabel && (
+					<Tooltip text={ restLabel } placement="top" className="godam-readable-tooltip">
+						<div role="img" aria-label={ restLabel } className="h-full flex-1" />
+					</Tooltip>
+				) }
 			</div>
 			<div className="text-right">
 				<div className="text-[28px] font-bold text-[#1e1e1e] leading-none tabular-nums">{ fmt( count ) }</div>
@@ -126,6 +142,11 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 	const carts = Number( byKey.added_to_cart?.count || 0 );
 	const direct = Number( byKey.added_to_cart?.direct || 0 );
 	const purchased = Number( byKey.purchased?.count || 0 );
+	// The Purchased stage carries its own Direct/Assisted split (added by the
+	// service alongside the cart split). An older service omits it; then the bar
+	// stays a single segment rather than guessing a tier.
+	const hasPurchaseSplit = byKey.purchased && byKey.purchased.direct !== undefined;
+	const purchasedDirect = Number( byKey.purchased?.direct || 0 );
 
 	// Bar segments are fractions of the track, denominated by players (the top).
 	// Clamp to [0,1] so a stale-service deploy skew can never invert the funnel
@@ -133,6 +154,33 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 	const frac = ( n ) => ( played > 0 ? Math.max( 0, Math.min( 1, n / played ) ) : 0 );
 	// Assisted-only = added but not in-video, so direct + assistedOnly = carts.
 	const assistedOnly = Math.max( 0, carts - direct );
+	const purchasedAssistedOnly = Math.max( 0, purchased - purchasedDirect );
+
+	// Hover text for a bar segment: tier, count, and share of THIS stage.
+	const shareOf = ( n, total ) => ( total > 0 ? pct( ( n / total ) * 100 ) : pct( 0 ) );
+	/* translators: 1: tier name (Direct/Assisted), 2: count, 3: stage total, 4: stage verb (added to cart/purchased), 5: percentage. */
+	const segLabel = ( tier, n, total, verb ) => sprintf( __( '%1$s: %2$s of %3$s %4$s (%5$s)', 'godam' ), tier, fmt( n ), fmt( total ), verb, shareOf( n, total ) );
+	/* translators: 1: number who did not reach this stage, 2: number of players. */
+	const restLabel = ( n ) => sprintf( __( 'Did not reach this stage: %1$s of %2$s players', 'godam' ), fmt( n ), fmt( played ) );
+	const tierDirect = __( 'Direct (added in-video)', 'godam' );
+	const tierAssisted = __( 'Assisted only (clicked out)', 'godam' );
+	const verbAdded = __( 'added to cart', 'godam' );
+	const verbPurchased = __( 'purchased', 'godam' );
+
+	let purchasedSegments = [];
+	if ( purchased > 0 && hasPurchaseSplit ) {
+		purchasedSegments = [
+			{ color: COLOR_DIRECT, frac: frac( purchasedDirect ), label: segLabel( tierDirect, purchasedDirect, purchased, verbPurchased ) },
+			{ color: COLOR_ASSISTED, frac: frac( purchasedAssistedOnly ), label: segLabel( tierAssisted, purchasedAssistedOnly, purchased, verbPurchased ) },
+		];
+	} else if ( purchased > 0 ) {
+		purchasedSegments = [ {
+			color: COLOR_DIRECT,
+			frac: frac( purchased ),
+			/* translators: %s: number of visitors who purchased. */
+			label: sprintf( __( '%s purchased', 'godam' ), fmt( purchased ) ),
+		} ];
+	}
 
 	// Clamp to 100% like buyAdvanced below: a stale-service skew (carts > played)
 	// must not print an above-100% "advanced" annotation.
@@ -173,7 +221,12 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 				<FunnelRow
 					label={ __( 'Played a video', 'godam' ) }
 					descriptor={ topDescriptor }
-					segments={ played > 0 ? [ { color: COLOR_DIRECT, frac: 1 } ] : [] }
+					segments={ played > 0 ? [ {
+						color: COLOR_DIRECT,
+						frac: 1,
+						/* translators: %s: number of visitors who played a video. */
+						label: sprintf( __( '%s visitors played a video', 'godam' ), fmt( played ) ),
+					} ] : [] }
 					count={ played }
 					rightSub={ __( 'visitors', 'godam' ) }
 					testId="godam-purchase-funnel-bar-played"
@@ -190,9 +243,10 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 					label={ __( 'Added to cart', 'godam' ) }
 					descriptor={ __( 'in-video or after clicking out', 'godam' ) }
 					segments={ [
-						{ color: COLOR_DIRECT, frac: frac( direct ) },
-						{ color: COLOR_ASSISTED, frac: frac( assistedOnly ) },
+						{ color: COLOR_DIRECT, frac: frac( direct ), label: segLabel( tierDirect, direct, carts, verbAdded ) },
+						{ color: COLOR_ASSISTED, frac: frac( assistedOnly ), label: segLabel( tierAssisted, assistedOnly, carts, verbAdded ) },
 					] }
+					restLabel={ restLabel( didNotAdd ) }
 					count={ carts }
 					rightSub={ sprintf(
 						/* translators: %s: percentage of players. */
@@ -213,7 +267,8 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 				<FunnelRow
 					label={ __( 'Purchased', 'godam' ) }
 					descriptor={ __( 'of those who added', 'godam' ) }
-					segments={ purchased > 0 ? [ { color: COLOR_DIRECT, frac: frac( purchased ) } ] : [] }
+					segments={ purchasedSegments }
+					restLabel={ restLabel( Math.max( 0, played - purchased ) ) }
 					count={ purchased }
 					rightSub={ sprintf(
 						/* translators: %s: percentage of players. */

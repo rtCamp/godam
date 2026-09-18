@@ -443,6 +443,17 @@ const Dashboard = () => {
 							<span className="godam-reel-pop-link__arrow" aria-hidden="true">↗</span>
 						</a>
 					) }
+					{ /* Quick path to the analytics docs (what each card measures, how attribution works). */ }
+					<a
+						className="godam-reel-pop-link godam-analytics-docs-link"
+						href="https://godam.io/docs/godam-analytics/"
+						target="_blank"
+						rel="noopener noreferrer"
+						data-test-id="godam-analytics-docs-link"
+					>
+						{ __( 'Analytics docs', 'godam' ) }
+						<span className="godam-reel-pop-link__arrow" aria-hidden="true">↗</span>
+					</a>
 				</div>
 
 				<div className="godam-dashboard-grid">
