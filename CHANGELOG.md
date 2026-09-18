@@ -1,5 +1,17 @@
 # Changelog #
 
+## v2.3.0 (September 23, 2026) ##
+
+- Feat: Revenue Analytics for WooCommerce. See how much order value each video earned, split into Direct (bought straight from the video) and Assisted (watched the video, then bought from the product page). Influenced revenue is reported separately and is never added to the headline.
+- Feat: Top Products, a new dashboard tab showing per-product views, add-to-cart counts split into in-video and product-page, revenue, and the source of each add.
+- Feat: Video-to-Cart and Video-to-Purchase rates, measured against the people who actually played the video.
+- Feat: Two new funnels: Play to Cart to Purchase, and the same funnel broken down by placement.
+- Feat: Per-hotspot revenue in layer analytics, so each product hotspot shows what it earned.
+- Feat: Google Analytics 4 connection widget on the analytics dashboard.
+- Tweak: The Revenue and Purchase Funnel cards on the single-video page each have their own date-range picker.
+- Tweak: The layer interaction metric is now called "Interaction rate" instead of "Conversion".
+- Note: Revenue and product metrics need the GoDAM for Woo add-on 2.2.0 or later.
+
 ## v2.2.3 (September 16, 2026) ##
 
 - Fix: Resolved content and display issues on the What's New page.
