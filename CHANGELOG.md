@@ -2,7 +2,7 @@
 
 ## v2.2.4 (September 18, 2026) ##
 
-- Chore: Resolved open Dependabot security advisories in build-time dependencies (npm).
+- Chore: Security fixes.
 
 ## v2.2.3 (September 16, 2026) ##
 
