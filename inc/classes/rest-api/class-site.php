@@ -85,6 +85,16 @@ class Site extends Base {
 			}
 
 			if ( ! empty( $site_data_response['message']['folder_id'] ) ) {
+				/*
+				 * Persist the site's GoDAM Central root folder id durably. The transient
+				 * below is only a 24h cache; this option is the stable anchor the media
+				 * -library sync layer diffs against — it is the parent for top-level
+				 * folder pushes and the reference that stops a Central-side rename of the
+				 * site folder from creating a duplicate. Mirror only: the authoritative
+				 * site-to-folder link is `site_folder` on the Active Site row in Central.
+				 */
+				update_option( 'rtgodam_site_folder_id', sanitize_text_field( $site_data_response['message']['folder_id'] ), false );
+
 				// Cache the response data for future requests.
 				rtgodam_cache_set( $cache_key, $site_data_response, 86400 );
 				$site_data = $site_data_response;
