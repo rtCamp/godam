@@ -3,7 +3,7 @@
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { SearchControl, ToggleControl } from '@wordpress/components';
+import { SearchControl, ToggleControl, Tooltip as WPTooltip } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -425,9 +425,12 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 															alt={ item.title || __( 'Video thumbnail', 'godam' ) }
 														/>
 													</a>
-													<a className="title-link" href={ ANALYTICS_LINK( item.video_id ) } title={ item.title || `Video ID: ${ item.video_id }` }>
+													<a className="title-link" href={ ANALYTICS_LINK( item.video_id ) }>
 														<div className="w-full max-w-40 text-left flex-1">
-															<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
+															{ /* The cell truncates with an ellipsis; the full title shows on hover/focus. */ }
+															<WPTooltip text={ item.title || `Video ID: ${ item.video_id }` } placement="top" className="godam-readable-tooltip">
+																<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
+															</WPTooltip>
 														</div>
 													</a>
 												</>
@@ -436,9 +439,12 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 													<div className="thumbnail-link">
 														<img src={ DefaultThumbnail } alt={ item.title || __( 'Video thumbnail', 'godam' ) } />
 													</div>
-													<div className="title-link" title={ item.title || '' }>
+													<div className="title-link">
 														<div className="w-full max-w-40 text-left flex-1">
-															<p className="font-semibold">{ item.title }</p>
+															{ /* The cell truncates with an ellipsis; the full title shows on hover/focus. */ }
+															<WPTooltip text={ item.title } placement="top" className="godam-readable-tooltip">
+																<p className="font-semibold">{ item.title }</p>
+															</WPTooltip>
 														</div>
 													</div>
 												</>
