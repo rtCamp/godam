@@ -1,6 +1,6 @@
 # Changelog #
 
-## v2.2.4 (September 18, 2026) ##
+## v2.2.4 (September 21, 2026) ##
 
 - Chore: Security fixes.
 
