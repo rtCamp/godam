@@ -188,4 +188,23 @@ describe( 'PurchaseFunnelCard', () => {
 		expect( bar ).not.toContain( 'background:#93c5fd' );
 		expect( html ).toContain( '27 purchased' );
 	} );
+
+	it( 'renders no focusable segment for a zero-count tier', () => {
+		const funnel = {
+			stages: [
+				{ key: 'played', count: 10, rate: 100 },
+				{ key: 'added_to_cart', count: 5, direct: 0, assisted: 5, rate: 50 },
+				{ key: 'purchased', count: 3, direct: 3, assisted: 0, rate: 30 },
+			],
+			still_counting: false,
+		};
+		const html = renderToString( <PurchaseFunnelCard funnel={ funnel } /> );
+		// Zero-count tiers must not render (no invisible width:0% keyboard tab stop).
+		expect( html ).not.toContain( 'Direct (added in-video): 0 of' );
+		expect( html ).not.toContain( 'Assisted only (clicked out): 0 of' );
+		expect( html ).not.toMatch( /width:\s*0%/ );
+		// The nonzero tiers still render with their share.
+		expect( html ).toContain( 'Assisted only (clicked out): 5 of 5 added to cart' );
+		expect( html ).toContain( 'Direct (added in-video): 3 of 3 purchased' );
+	} );
 } );

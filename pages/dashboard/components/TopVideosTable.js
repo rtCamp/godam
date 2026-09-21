@@ -423,7 +423,7 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 													<a className="thumbnail-link" href={ ANALYTICS_LINK( item.video_id ) }>
 														<img
 															src={ item.thumbnail_url || DefaultThumbnail }
-															alt={ item.title || __( 'Video thumbnail', 'godam' ) }
+															alt={ decodeEntities( item.title || __( 'Video thumbnail', 'godam' ) ) }
 														/>
 													</a>
 													<a className="title-link" href={ ANALYTICS_LINK( item.video_id ) } title={ decodeEntities( item.title || `Video ID: ${ item.video_id }` ) }>
@@ -435,7 +435,7 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 											) : (
 												<>
 													<div className="thumbnail-link">
-														<img src={ DefaultThumbnail } alt={ item.title || __( 'Video thumbnail', 'godam' ) } />
+														<img src={ DefaultThumbnail } alt={ decodeEntities( item.title || __( 'Video thumbnail', 'godam' ) ) } />
 													</div>
 													<div className="title-link" title={ decodeEntities( item.title || '' ) }>
 														<div className="w-full max-w-40 text-left flex-1">

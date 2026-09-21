@@ -33,7 +33,10 @@ function FunnelRow( { label, descriptor, segments, count, rightSub, testId, rest
 				<div className="text-[13px] text-zinc-500 leading-tight">{ descriptor }</div>
 			</div>
 			<div className="h-14 rounded-md overflow-hidden flex" style={ { background: '#eef0f3' } } data-test-id={ testId }>
-				{ segments.map( ( seg, i ) => (
+				{ /* Skip zero-width (zero-count) tiers: rendering them would leave an
+				     invisible width:0% div that is still a keyboard tab stop announcing
+				     "0 of N", so a 0-count Direct or Assisted tier must not render. */ }
+				{ segments.filter( ( seg ) => seg.frac > 0 ).map( ( seg, i ) => (
 					// Each coloured segment explains itself on hover: which tier, how
 					// many, and their share of this stage. The WP Tooltip portals to
 					// <body>, so it is never clipped by the track's overflow-hidden;
