@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.2.3
+Stable tag: 2.2.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -224,6 +224,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.2.4 (September 21, 2026) =
+
+- Chore: Security fixes.
+
 = v2.2.3 (September 16, 2026) =
 
 - Fix: Resolved content and display issues on the What's New page.
@@ -238,12 +242,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: The GoDAM tab in the media picker now shows a clear error when the API key is missing, invalid, or revoked, instead of spinning forever or showing a misleading "No items found".
 - Fix: Long or tall HTML CTA layers no longer overflow their container — they fill it and scroll when needed.
 - Fix: Deleting the GoDAM plugin no longer throws a 502 / "Deletion failed" error.
-
-= v2.2.1 (September 8, 2026) =
-
-- Fix: Authors can now create and rename media folders.
-- Fix: Site Icon / favicon no longer 404s on sites using GoDAM CDN offload.
-- Fix: Resolved open Dependabot security advisories (npm + Composer).
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
