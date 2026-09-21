@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { SearchControl, ToggleControl } from '@wordpress/components';
+import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal dependencies
@@ -422,23 +423,23 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 													<a className="thumbnail-link" href={ ANALYTICS_LINK( item.video_id ) }>
 														<img
 															src={ item.thumbnail_url || DefaultThumbnail }
-															alt={ item.title || __( 'Video thumbnail', 'godam' ) }
+															alt={ decodeEntities( item.title || __( 'Video thumbnail', 'godam' ) ) }
 														/>
 													</a>
-													<a className="title-link" href={ ANALYTICS_LINK( item.video_id ) }>
+													<a className="title-link" href={ ANALYTICS_LINK( item.video_id ) } title={ decodeEntities( item.title || `Video ID: ${ item.video_id }` ) }>
 														<div className="w-full max-w-40 text-left flex-1">
-															<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
+															<p className="font-semibold">{ decodeEntities( item.title || `Video ID: ${ item.video_id }` ) }</p>
 														</div>
 													</a>
 												</>
 											) : (
 												<>
 													<div className="thumbnail-link">
-														<img src={ DefaultThumbnail } alt={ item.title || __( 'Video thumbnail', 'godam' ) } />
+														<img src={ DefaultThumbnail } alt={ decodeEntities( item.title || __( 'Video thumbnail', 'godam' ) ) } />
 													</div>
-													<div className="title-link">
+													<div className="title-link" title={ decodeEntities( item.title || '' ) }>
 														<div className="w-full max-w-40 text-left flex-1">
-															<p className="font-semibold">{ item.title }</p>
+															<p className="font-semibold">{ decodeEntities( item.title || '' ) }</p>
 														</div>
 													</div>
 												</>
