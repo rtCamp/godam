@@ -224,32 +224,25 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v2.3.0 (September 23, 2026) =
+= v2.3.0 (September 24, 2026) =
 
-- Feat: Revenue Analytics for WooCommerce. See how much order value each video earned, split into Direct (bought straight from the video) and Assisted (watched the video, then bought from the product page). Influenced revenue is reported separately and is never added to the headline.
-- Feat: Top Products, a new dashboard tab showing per-product views, add-to-cart counts split into in-video and product-page, revenue, and the source of each add.
-- Feat: Video-to-Cart and Video-to-Purchase rates, measured against the people who actually played the video.
+- Feat: Revenue Analytics for WooCommerce. See how much order value is credited to each video, split into Direct (added to cart inside the video) and Assisted (clicked the product in a video, image hotspot or Reel Pop, then added it to cart on its product page). Influenced revenue is reported separately and is never added to the headline.
+- Feat: Top Products, a new dashboard tab showing per-product views, add-to-cart counts split into in-video and product-page, revenue, and where in your videos each product appeared.
+- Feat: Video to Cart and Video to Purchase rates, measured against the people who actually played the video.
 - Feat: Two new funnels: Play to Cart to Purchase, and the same funnel broken down by placement.
-- Feat: Per-hotspot revenue in layer analytics, so each product hotspot shows what it earned.
-- Feat: Google Analytics 4 connection widget on the analytics dashboard.
+- Feat: Per-hotspot revenue in layer analytics, showing the revenue from in-video add-to-carts made through each product hotspot.
+- Feat: A Google Analytics 4 status widget on the analytics dashboard, showing whether GoDAM for Woo is pushing video-driven add_to_cart and purchase events to your Google Tag Manager dataLayer.
 - Tweak: The Revenue and Purchase Funnel cards on the single-video page each have their own date-range picker.
 - Tweak: The layer interaction metric is now called "Interaction rate" instead of "Conversion".
 - Note: Revenue and product metrics need the GoDAM for Woo add-on 2.2.0 or later.
 
+= v2.2.4 (September 21, 2026) =
+
+- Chore: Security fixes.
+
 = v2.2.3 (September 16, 2026) =
 
 - Fix: Resolved content and display issues on the What's New page.
-
-= v2.2.2 (September 15, 2026) =
-
-- Feat: Organize media into folders in bulk — the media library list view now has a "Move to folder…" bulk action, and each user's folder sidebar remembers its own open/closed state.
-- Tweak: The Video Editor's player preview now mirrors the real front-end control bar — skip buttons, volume panel, branding, and appearance settings — and restores skip buttons that were missing on older videos.
-- Fix: GoDAM media can now be set as a post's featured image in both the block and classic editors, with the placeholder swapped for the real attachment once it is created.
-- Fix: Interactive layers (forms, CTAs, hotspots) no longer trigger while a video is only being previewed on hover.
-- Fix: Skip buttons in the video player now always appear with a valid skip duration, and the picture-in-picture control has been removed across all player skins.
-- Fix: The GoDAM tab in the media picker now shows a clear error when the API key is missing, invalid, or revoked, instead of spinning forever or showing a misleading "No items found".
-- Fix: Long or tall HTML CTA layers no longer overflow their container — they fill it and scroll when needed.
-- Fix: Deleting the GoDAM plugin no longer throws a 502 / "Deletion failed" error.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
