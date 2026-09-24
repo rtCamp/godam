@@ -30,7 +30,6 @@ $cta-card-max-width-vertical: 400px !default;
 .godam-cta-overlay-container {
     display: flex;
     justify-content: center;
-    align-items: safe center; // Automatically switches to 'start' when content overflows
     width: 100%;
     height: 100%;
     overflow: auto;
@@ -255,6 +254,13 @@ $cta-card-max-width-vertical: 400px !default;
 // ============================================
 // Container Query Responsive
 // ============================================
+
+@container cta-container (min-width: 600px) {
+
+    .godam-cta-card {
+        align-self: center;
+    }
+}
 
 // Medium containers (≤600px)
 @container cta-container (max-width: 600px) {
