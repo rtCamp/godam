@@ -136,6 +136,62 @@ describe( 'HoverManager preview suppression flag', () => {
 	} );
 } );
 
+describe( 'HoverManager preview play() settlement race', () => {
+	beforeEach( () => jest.useFakeTimers() );
+	afterEach( () => jest.useRealTimers() );
+
+	// Flush the microtask queue so the play() promise's then/catch handlers run.
+	const flush = async () => {
+		await Promise.resolve();
+		await Promise.resolve();
+		await Promise.resolve();
+	};
+
+	it( 'does not tear down playback when a click commits before a refused autoplay rejects', async () => {
+		const player = createPlayer();
+		player.play = jest.fn( () => Promise.reject( new Error( 'autoplay refused' ) ) );
+		const manager = createManager( player );
+
+		manager.startPreview();
+		// A click commits real playback while the preview play() is still pending.
+		manager.isVideoClicked = true;
+
+		await flush();
+
+		// stopPreview() would pause the now-real playback and reset it to 0; skip it.
+		expect( player.pause ).not.toHaveBeenCalled();
+	} );
+
+	it( 'still tears the preview down when autoplay is refused and no click intervened', async () => {
+		const player = createPlayer();
+		player.play = jest.fn( () => Promise.reject( new Error( 'autoplay refused' ) ) );
+		const manager = createManager( player );
+
+		manager.startPreview();
+
+		await flush();
+
+		expect( player.pause ).toHaveBeenCalled();
+		expect( manager.isPreviewPlaying ).toBe( false );
+	} );
+
+	it( 'does not re-apply the preview mute once a click has committed playback', async () => {
+		const player = createPlayer();
+		player.play = jest.fn( () => Promise.resolve() );
+		const manager = createManager( player );
+
+		manager.startPreview();
+		const mutedCallsAfterStart = player.muted.mock.calls.length;
+		manager.isVideoClicked = true;
+
+		await flush();
+
+		// applyPreviewMute() would call muted() again; the committed real playback
+		// must keep the viewer's audio.
+		expect( player.muted.mock.calls.length ).toBe( mutedCallsAfterStart );
+	} );
+} );
+
 describe( 'HoverManager hover-intent delay', () => {
 	beforeEach( () => jest.useFakeTimers() );
 	afterEach( () => jest.useRealTimers() );
