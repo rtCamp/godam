@@ -108,7 +108,7 @@ WordPress native video hosting solution, perfect for creators, marketing teams, 
 #### 📌 Advanced Video Analytics [Paid]
 - Get first-party video insights to understand viewer behavior, make data-driven decisions, and refine your content strategy.
 - Play rate, watch time, engagement
-- Heatmaps to understand dropoffs
+- Viewer retention curve to see where viewers drop off
 - Geo-based traffic data
 - Performance comparison
 
@@ -155,7 +155,7 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 ### Pricing Plans
 [View Pricing Plans](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link)
 
-- **30-day Free Trial** with all features included
+- **60-day Free Trial** with all features included
 - **Flexible pricing** options to suit different needs.
 - **Upgrade or cancel anytime** based on usage.
 
@@ -208,10 +208,10 @@ Adaptive bitrate streaming ensures that viewers get the best possible video qual
 Yes, our customizable player allows you to tailor the controls, branding, and features to match your unique requirements and branding guidelines.
 
 ### 7. Is there a free trial available?
-Yes! You can start with a 7-day free trial to explore all features. If you decide not to continue with the subscribed plan, you can cancel anytime and remove your credit card.
+Yes! You can start with a 60-day free trial to explore all features. No credit card is required, and you can cancel anytime.
 
 ### 8. Can I track video engagement and analytics?
-Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and heatmaps to see which parts of your videos are most engaging. These insights help you optimize your content strategy.
+Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
 ### Screenshots
 

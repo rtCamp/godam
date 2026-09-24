@@ -67,11 +67,11 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 						text={
 							parent.layer_type === 'woo'
 								? __(
-									'Each row is one product hotspot inside this layer. Select a row to see its individual funnel; "All Products (Cumulative)" counts sessions that converted on any product.',
+									'Each row is one product hotspot inside this layer. Select a row to see its individual funnel; "All Products (Cumulative)" counts sessions that interacted with any product.',
 									'godam',
 								)
 								: __(
-									'Each row is one hotspot inside this layer. Select a row to see its individual funnel; "All Hotspots (Cumulative)" counts sessions that converted on any hotspot.',
+									'Each row is one hotspot inside this layer. Select a row to see its individual funnel; "All Hotspots (Cumulative)" counts sessions that interacted with any hotspot.',
 									'godam',
 								)
 						}
@@ -86,7 +86,7 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 						text={
 							parent.layer_type === 'woo'
 								? __(
-									'Share of sessions that saw the product and converted — clicked through to it or added it to the cart. Each session counts once, so this never exceeds 100%.',
+									'Share of sessions that saw the product and interacted with it: clicked through to it or added it to the cart. Each session counts once, so this never exceeds 100%.',
 									'godam',
 								)
 								: __(
