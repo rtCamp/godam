@@ -115,6 +115,14 @@ describe( 'visitor id (window.analytics) on pages without the video player', () 
 		global.fetch = jest.fn( () => Promise.resolve( { ok: true } ) );
 	} );
 
+	it( 'creates no visitor id on pages that send no analytics', () => {
+		window.videoAnalyticsParams = { isAdminPage: true };
+		initLayerAnalytics();
+
+		expect( window.analytics ).toBeUndefined();
+		expect( localStorage.getItem( '__anon_id' ) ).toBeNull();
+	} );
+
 	it( 'gives an image-only page a non-empty anonymous id', () => {
 		initLayerAnalytics();
 

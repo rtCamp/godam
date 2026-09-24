@@ -185,7 +185,11 @@ function flushLayerInteractions() {
  */
 export function initLayerAnalytics() {
 	// First, so the visitor id is readable before any hotspot can be clicked.
-	ensureAnalyticsInstance();
+	// Not on pages that send no analytics (previews, admin): there the id would
+	// be stored with nothing to use it.
+	if ( ! shouldSkipAnalytics() ) {
+		ensureAnalyticsInstance();
+	}
 
 	window.GoDAM = window.GoDAM || {};
 
