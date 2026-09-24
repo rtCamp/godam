@@ -134,12 +134,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_analytics_data' ),
-					// Admin-dashboard read; gated like top-products/top-videos: Phase 2 added
-					// revenue to this response (it was public for view/play analytics only).
-					// Only the admin apps call it, never the public front end.
-					'permission_callback' => function () {
-						return current_user_can( 'upload_files' );
-					},
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'video_id' => array(
 							'required'          => true,
@@ -165,7 +160,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_analytics_history' ),
-					'permission_callback' => '__return_true',
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'days'     => array(
 							'required'          => false,
@@ -191,11 +186,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_dashboard_metrics' ),
-					// Admin-dashboard read; gated like the sibling analytics routes (revenue is
-					// account-scoped and returned to the dashboard only).
-					'permission_callback' => function () {
-						return current_user_can( 'upload_files' );
-					},
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -211,7 +202,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_dashboard_history' ),
-					'permission_callback' => '__return_true',
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'days'     => array(
 							'required'          => false,
@@ -232,13 +223,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_top_videos' ),
-					// Admin-dashboard read: gate to users who can see the analytics
-					// dashboard (authors and above — matches the menu's `upload_files`
-					// capability). The search path resolves an uncached WP_Query, so
-					// this also closes the unauthenticated DB-amplification vector.
-					'permission_callback' => function () {
-						return current_user_can( 'upload_files' );
-					},
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'page'         => array(
 							'required'          => false,
@@ -278,12 +263,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_top_products' ),
-					// Admin-dashboard read, gated like top-videos (authors and above);
-					// the search path resolves an uncached WP_Query, so this also
-					// closes the unauthenticated DB-amplification vector.
-					'permission_callback' => function () {
-						return current_user_can( 'upload_files' );
-					},
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'page'         => array(
 							'required'          => false,
@@ -343,12 +323,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_placement_funnels' ),
-					// Account-scoped server-side (api_key / account_token injected,
-					// never client-supplied), like the sibling dashboard reads.
-					// Admin-dashboard read; gated like the sibling analytics routes.
-					'permission_callback' => function () {
-						return current_user_can( 'upload_files' );
-					},
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -364,11 +339,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_revenue_summary' ),
-					// Admin-dashboard read; gated like the sibling analytics routes
-					// (revenue must not be readable without auth).
-					'permission_callback' => function () {
-						return current_user_can( 'upload_files' );
-					},
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -384,10 +355,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_video_funnel' ),
-					// Admin-dashboard read; gated like the sibling analytics routes.
-					'permission_callback' => function () {
-						return current_user_can( 'upload_files' );
-					},
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -403,17 +371,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_layer_analytics' ),
-					// Matches the sibling analytics routes: the api_key / account_token
-					// are injected server-side (never client-supplied) and the
-					// microservice scopes every query by account, so this can only ever
-					// return this site's own non-PII aggregate analytics. Locking down
-					// analytics reads, if ever wanted, should be done uniformly across
-					// all analytics routes rather than just this one.
-					// Admin-dashboard read; gated uniformly with the sibling analytics routes
-					// (see note above): revenue must not be readable without auth.
-					'permission_callback' => function () {
-						return current_user_can( 'upload_files' );
-					},
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'video_id'   => array(
 							'required'          => true,
@@ -484,6 +442,22 @@ class Analytics extends Base {
 		unset( $route );
 
 		return $routes;
+	}
+
+	/**
+	 * Permission check shared by every analytics read route.
+	 *
+	 * Each route proxies the site's stored API key and account token to the
+	 * analytics microservice, so none may answer anonymous callers. Access
+	 * matches the GoDAM menu's `upload_files` capability (authors and above),
+	 * which every admin caller (Dashboard, Analytics, Video Editor) already
+	 * meets. It also stops unauthenticated requests from triggering uncached
+	 * upstream calls and the top-videos WP_Query.
+	 *
+	 * @return bool Whether the current user may read analytics.
+	 */
+	public function check_analytics_read_permission() {
+		return current_user_can( 'upload_files' );
 	}
 
 	/**
