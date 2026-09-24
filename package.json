@@ -169,7 +169,7 @@
 		"build:prod": "cross-env NODE_ENV=production npm-run-all 'build:!(dev|prod)'",
 		"build:blocks": "wp-scripts build --config ./node_modules/@wordpress/scripts/config/webpack.config.js --webpack-src-dir=./assets/src/blocks/ --output-path=./assets/build/blocks/",
 		"build:js": "wp-scripts build --config ./webpack.config.js",
-		"test:unit": "wp-scripts test-unit-js --passWithNoTests",
+		"test:unit": "cross-env LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 wp-scripts test-unit-js --passWithNoTests",
 		"test:unit:watch": "wp-scripts test-unit-js --watch",
 		"lint": "npm-run-all --parallel lint:*",
 		"lint:css": "wp-scripts lint-style",

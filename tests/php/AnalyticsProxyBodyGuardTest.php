@@ -12,7 +12,7 @@
  *
  * The methods are exercised on a constructor-less instance (Base's constructor
  * registers WP hooks we don't want here); the WP HTTP / REST surface is stubbed
- * in tests/stubs/wp-http.php and driven per-case via $GLOBALS['rtgodam_stub'].
+ * in tests/bootstrap.php and tests/stubs/wp-http-functions.php, and driven per-case via $GLOBALS['rtgodam_stub'].
  *
  * @package GoDAM
  */

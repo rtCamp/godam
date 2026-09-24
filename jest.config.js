@@ -5,6 +5,10 @@
  * `*.test.js` discovery) and adds a stub for `*.svg` imports — those reach the
  * unit code transitively (layer-type icons in constants/layerTypes.js) but only
  * webpack knows how to load them.
+ *
+ * The `test:unit` script pins the locale to en_US (LC_ALL / LANG). Number and
+ * date formatting with no explicit locale follows the machine's, and Node reads
+ * it once at start-up, so it can't be set from a setup file.
  */
 const defaultConfig = require( '@wordpress/scripts/config/jest-unit.config.js' );
 

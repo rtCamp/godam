@@ -1,6 +1,6 @@
 <?php
 /**
- * Narrow WordPress HTTP / option stubs for the Analytics microservice-proxy tests.
+ * Narrow WordPress option / URL stubs for the Analytics microservice-proxy tests.
  *
  * These let the pure (no-WordPress) suite exercise Analytics::fetch_top_videos
  * and Analytics::fetch_top_products without a full WP install. Each stub reads
@@ -33,59 +33,9 @@ if ( ! function_exists( 'get_option' ) ) {
 	}
 }
 
-if ( ! function_exists( 'is_wp_error' ) ) {
-
-	/**
-	 * The proxy only ever hands this the wp_remote_* return value. The fake
-	 * responses are arrays, so this is false; a real WP_Error-like object (one
-	 * exposing get_error_message) reads as true.
-	 *
-	 * @param mixed $thing Value to test.
-	 * @return bool
-	 */
-	function is_wp_error( $thing ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return is_object( $thing ) && method_exists( $thing, 'get_error_message' );
-	}
-}
-
-if ( ! function_exists( 'wp_remote_get' ) ) {
-
-	/**
-	 * @param string $url  Ignored; the response is supplied by the test.
-	 * @param array  $args Ignored.
-	 * @return mixed The fake response set on $GLOBALS['rtgodam_stub']['http'].
-	 */
-	function wp_remote_get( $url, $args = array() ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound, Generic.CodeAnalysis.UnusedFunctionParameter.Found, Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- stub mirroring the WP function; args are ignored.
-		return isset( $GLOBALS['rtgodam_stub']['http'] )
-			? $GLOBALS['rtgodam_stub']['http']
-			: array(
-				'code' => 200,
-				'body' => '',
-			);
-	}
-}
-
-if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
-
-	/**
-	 * @param mixed $response Fake response array.
-	 * @return int
-	 */
-	function wp_remote_retrieve_response_code( $response ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return ( is_array( $response ) && isset( $response['code'] ) ) ? (int) $response['code'] : 0;
-	}
-}
-
-if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
-
-	/**
-	 * @param mixed $response Fake response array.
-	 * @return string
-	 */
-	function wp_remote_retrieve_body( $response ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return ( is_array( $response ) && isset( $response['body'] ) ) ? (string) $response['body'] : '';
-	}
-}
+// is_wp_error() and the wp_remote_* stubs live in tests/bootstrap.php, which
+// defines them first. A test fakes the upstream response by setting
+// $GLOBALS['rtgodam_stub']['http'] = array( 'code' => ..., 'body' => ... ).
 
 if ( ! function_exists( 'add_query_arg' ) ) {
 
