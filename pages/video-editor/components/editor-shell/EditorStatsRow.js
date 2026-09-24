@@ -109,7 +109,7 @@ const EditorStatsRow = ( { attachmentID } ) => {
 		{
 			label: __( 'Layer CTR', 'godam' ),
 			value: ctr === null ? '—' : `${ ctr.toFixed( 1 ) }%`,
-			tooltip: __( 'Click-through rate of interactive layers: the share of plays where a viewer interacted with a layer. Layer CTR = Converting sessions / Total plays.', 'godam' ),
+			tooltip: __( 'Click-through rate of interactive layers: the share of plays where a viewer interacted with a layer. Layer CTR = Interacting sessions / Total plays.', 'godam' ),
 		},
 		{
 			label: __( 'Avg. Watch Time', 'godam' ),

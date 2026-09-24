@@ -182,14 +182,14 @@ export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeCont
 							<span className="text-[13px] text-zinc-500">{ __( 'Influenced', 'godam' ) }</span>
 							<Tooltip
 								text={ __(
-									'Bought on a product page after playing its video, with no click to prove the video caused the sale. Worked out at the product level, shown on its own, and never added to the Direct + Assisted figure.',
+									'Sales already counted as Direct or Assisted where the same shopper also played a video on the product page, up to 30 days before buying. It overlaps the Direct + Assisted figure, so it is shown on its own and never added to it.',
 									'godam',
 								) }
 							/>
 						</div>
 						<p className="text-2xl font-bold text-[#1e1e1e] mt-1" data-test-id="godam-revenue-influenced-value">{ formatRevenue( influenced, currency ) }</p>
 						<p className="text-[12px] text-zinc-500 mt-2 leading-snug">
-							{ __( 'Bought on a product page after playing its video. Reported separately because there is no click-through to prove intent, so it is not added to the figure on the left.', 'godam' ) }
+							{ __( 'Direct or Assisted sales where the shopper also played a video on the product page first. Shown separately because it overlaps the figure on the left, so it is not added to it.', 'godam' ) }
 						</p>
 					</div>
 				) }
