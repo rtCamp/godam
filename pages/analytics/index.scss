@@ -421,7 +421,12 @@
 #root-video-dashboard #tooltip-container .tooltip-text {
 	position: absolute;
 	top: 100%;
-    left: -95%;
+	// Anchor to the icon's right edge and grow leftward (inward) instead of
+	// rightward. The last Insights card sits at the row's right edge, so a
+	// right-growing tooltip ran off the screen and clipped; growing inward keeps
+	// it on-screen for the rightmost card while the others still have room.
+	right: 0;
+	left: auto;
 	visibility: hidden;
 	background-color: rgba(0, 0, 0, 0.8);
 	color: #fff;

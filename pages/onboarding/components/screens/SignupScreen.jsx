@@ -79,7 +79,7 @@ const SignupScreen = () => {
 				<TextControl __nextHasNoMarginBottom type="password" label={ <>{ __( 'Confirm Password', 'godam' ) } <Required /></> } value={ fields.confirm } onChange={ set( 'confirm' ) } help={ errors.confirm } placeholder={ __( 'Enter Password', 'godam' ) } data-test-id="godam-onboarding-input-confirm" />
 
 				<CheckboxControl __nextHasNoMarginBottom checked={ fields.tnc } onChange={ set( 'tnc' ) } help={ errors.tnc } data-test-id="godam-onboarding-checkbox-tnc"
-					label={ <>{ __( 'I agree to', 'godam' ) } <a className="godam-onboarding__link" href="https://godam.io/terms/" target="_blank" rel="noreferrer">{ __( 'Terms and Conditions, Privacy Policy, Refund Policy', 'godam' ) }</a></> } />
+					label={ <>{ __( 'I agree to', 'godam' ) } <a className="godam-onboarding__link" href="https://godam.io/tos/" target="_blank" rel="noreferrer">{ __( 'Terms and Conditions, Privacy Policy, Refund Policy', 'godam' ) }</a></> } />
 				<CheckboxControl __nextHasNoMarginBottom checked={ fields.newsletter } onChange={ set( 'newsletter' ) } label={ __( 'Email me product updates and release news.', 'godam' ) } data-test-id="godam-onboarding-checkbox-newsletter" />
 			</div>
 

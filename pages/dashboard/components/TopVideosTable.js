@@ -4,12 +4,14 @@
 import { useState, useEffect, useRef } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { SearchControl, ToggleControl } from '@wordpress/components';
+import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal dependencies
  */
 import { useFetchTopVideosQuery, useLazyFetchTopVideosQuery } from '../redux/api/dashboardAnalyticsApi';
 import DateRangePicker from '../../analytics/components/DateRangePicker';
+import Tooltip from '../../analytics/Tooltip';
 import { formatWatchTime } from '../../utils/formatters';
 import DefaultThumbnail from '../../../assets/src/images/video-thumbnail-default.png';
 import ExportBtn from '../../../assets/src/images/export.svg';
@@ -20,25 +22,28 @@ const PER_PAGE = 10;
 // The analytics microservice caps `limit` at 100 per request, so a full-set
 // export pages through it 100 at a time rather than asking for everything at once.
 const EXPORT_PAGE_SIZE = 100;
-const ANALYTICS_LINK = ( id ) => `admin.php?page=rtgodam_analytics&id=${ id }`;
+// `from=dashboard` lets the single-video analytics page send its Back button to
+// the Dashboard (not the Media Editor) when the user arrived from Top Videos.
+// godam-analytics #313 item 2.
+const ANALYTICS_LINK = ( id ) => `admin.php?page=rtgodam_analytics&id=${ id }&from=dashboard`;
 
 /**
  * Escape a value for a CSV cell.
  *
- * Guards against CSV formula injection: a cell beginning with =, +, -, @, tab or
- * CR is executed as a formula by Excel/Sheets, and video titles are user-settable.
- * Such values are prefixed with a single quote. The value is then quote-wrapped
- * when it contains a double quote, comma, or newline.
+ * Guards against CSV formula injection: a cell beginning with =, +, -, @, tab,
+ * CR or LF is executed as a formula by Excel/Sheets, and video titles are
+ * user-settable. Such values are prefixed with a single quote. The value is then
+ * quote-wrapped when it contains a double quote, comma, newline, or carriage return.
  *
  * @param {*} value Raw cell value.
  * @return {string} CSV-safe field.
  */
 function escapeCsvCell( value ) {
 	let str = String( value );
-	if ( /^[=+\-@\t\r]/.test( str ) ) {
+	if ( /^[=+\-@\t\r\n]/.test( str ) ) {
 		str = `'${ str }`;
 	}
-	return /["\n,]/.test( str ) ? `"${ str.replace( /"/g, '""' ) }"` : str;
+	return /["\n\r,]/.test( str ) ? `"${ str.replace( /"/g, '""' ) }"` : str;
 }
 
 /**
@@ -75,10 +80,11 @@ function getPageList( current, total ) {
  * include-filter by the REST proxy, so server pagination stays correct.
  *
  * @param {Object}  props
- * @param {string}  props.siteUrl Current site URL.
- * @param {boolean} props.skip    Skip the query while the dashboard is gated.
+ * @param {string}  props.siteUrl       Current site URL.
+ * @param {boolean} props.skip          Skip the query while the dashboard is gated.
+ * @param {Object}  [props.tabSwitcher] Optional switcher node rendered in the table head in place of the title.
  */
-export default function TopVideosTable( { siteUrl, skip = false } ) {
+export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = null } ) {
 	const [ page, setPage ] = useState( 1 );
 	const [ searchInput, setSearchInput ] = useState( '' );
 	const [ search, setSearch ] = useState( '' );
@@ -103,7 +109,7 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 		return () => clearTimeout( timer );
 	}, [ searchInput ] );
 
-	const { data, isFetching } = useFetchTopVideosQuery(
+	const { data, isFetching, isError, error } = useFetchTopVideosQuery(
 		{
 			siteUrl,
 			page,
@@ -166,73 +172,111 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 
 	const handleExportCSV = async () => {
 		setIsExporting( true );
+		// try/finally so the button never sticks on "Exporting…" if anything below
+		// (a fetch, Blob/URL creation, DOM ops) throws.
+		try {
+			// Export the full result set for the current search/filter — not just the
+			// page on screen. The microservice caps `limit` at 100, so page through it.
+			const pageCount = Math.max( 1, Math.ceil( ( totalItems || videos.length ) / EXPORT_PAGE_SIZE ) );
 
-		// Export the full result set for the current search/filter — not just the
-		// page on screen. The microservice caps `limit` at 100, so page through it.
-		// A failed page resolves to empty rather than rejecting the whole export.
-		const pageCount = Math.max( 1, Math.ceil( ( totalItems || videos.length ) / EXPORT_PAGE_SIZE ) );
-		const results = await Promise.all(
-			Array.from( { length: pageCount }, ( _, i ) =>
-				fetchForExport( {
-					siteUrl,
-					page: i + 1,
-					limit: EXPORT_PAGE_SIZE,
-					search,
-					hideDeleted: ! showDeleted,
-					startDate: dateRange.startDate,
-					endDate: dateRange.endDate,
-				} ).unwrap().catch( () => ( { videos: [] } ) ),
-			),
-		);
-		const fetched = results.flatMap( ( result ) => result?.videos || [] );
-		// Fall back to the rows already on screen if the full fetch returned nothing.
-		const exportVideos = fetched.length ? fetched : videos;
+			// Bounded concurrency rather than one unbounded Promise.all: a large
+			// library (e.g. 50k videos -> 500 pages) would otherwise fire hundreds of
+			// simultaneous /top-videos requests, each opening an upstream HTTP call and
+			// risking a self-DoS of the proxy and analytics service. Mirrors Top Products.
+			const CONCURRENCY = 4;
+			const pageVideos = new Array( pageCount );
+			let failedPages = 0;
+			let cursor = 0;
+			const worker = async () => {
+				while ( cursor < pageCount ) {
+					const i = cursor++;
+					try {
+						const res = await fetchForExport( {
+							siteUrl,
+							page: i + 1,
+							limit: EXPORT_PAGE_SIZE,
+							search,
+							hideDeleted: ! showDeleted,
+							startDate: dateRange.startDate,
+							endDate: dateRange.endDate,
+						} ).unwrap();
+						pageVideos[ i ] = res?.videos || [];
+					} catch ( e ) {
+						// Record the failure instead of silently dropping the page, so the
+						// user is told the CSV is incomplete rather than getting a short
+						// file with no indication.
+						failedPages++;
+						pageVideos[ i ] = [];
+					}
+				}
+			};
+			await Promise.all(
+				Array.from( { length: Math.min( CONCURRENCY, pageCount ) }, () => worker() ),
+			);
 
-		const headers = [
-			__( 'Title', 'godam' ),
-			__( 'Media ID', 'godam' ),
-			__( 'Size', 'godam' ),
-			__( 'Play Rate', 'godam' ),
-			__( 'Total Plays', 'godam' ),
-			__( 'Watch Time', 'godam' ),
-			__( 'Engagement Rate', 'godam' ),
-			__( 'Conversion Rate', 'godam' ),
-			__( 'Placements', 'godam' ),
-		];
+			const fetched = pageVideos.flat();
+			// Fall back to the rows already on screen if the full fetch returned nothing.
+			const exportVideos = fetched.length ? fetched : videos;
 
-		const csvContent = [ headers, ...exportVideos.map( buildCsvRow ) ]
-			.map( ( row ) => row.map( escapeCsvCell ).join( ',' ) )
-			.join( '\n' );
+			const headers = [
+				__( 'Title', 'godam' ),
+				__( 'Media ID', 'godam' ),
+				__( 'Size', 'godam' ),
+				__( 'Play Rate', 'godam' ),
+				__( 'Total Plays', 'godam' ),
+				__( 'Watch Time', 'godam' ),
+				__( 'Engagement Rate', 'godam' ),
+				__( 'Interaction Rate', 'godam' ),
+				__( 'Placements', 'godam' ),
+			];
 
-		const blob = new Blob( [ csvContent ], { type: 'text/csv;charset=utf-8;' } );
-		const url = URL.createObjectURL( blob );
-		const link = document.createElement( 'a' );
-		link.setAttribute( 'href', url );
-		link.setAttribute( 'download', 'godam-video-analytics.csv' );
-		link.style.display = 'none';
-		document.body.appendChild( link );
-		link.click();
-		document.body.removeChild( link );
-		URL.revokeObjectURL( url );
+			const csvContent = [ headers, ...exportVideos.map( buildCsvRow ) ]
+				.map( ( row ) => row.map( escapeCsvCell ).join( ',' ) )
+				.join( '\n' );
 
-		setIsExporting( false );
+			const blob = new Blob( [ csvContent ], { type: 'text/csv;charset=utf-8;' } );
+			const url = URL.createObjectURL( blob );
+			const link = document.createElement( 'a' );
+			link.setAttribute( 'href', url );
+			link.setAttribute( 'download', 'godam-video-analytics.csv' );
+			link.style.display = 'none';
+			document.body.appendChild( link );
+			link.click();
+			document.body.removeChild( link );
+			URL.revokeObjectURL( url );
+
+			if ( failedPages > 0 ) {
+				// eslint-disable-next-line no-alert
+				window.alert(
+					sprintf(
+						/* translators: %d: number of export pages that failed to load. */
+						__( 'Export is incomplete: %d page(s) could not be loaded, so some videos are missing from the CSV.', 'godam' ),
+						failedPages,
+					),
+				);
+			}
+		} finally {
+			setIsExporting( false );
+		}
 	};
 
 	return (
 		<div className="top-media-container">
 			<div className="top-media-container__head">
-				<h2>
-					{ __( 'Top Videos', 'godam' ) }
-					{ totalItems > 0 && (
-						<span className="ml-2 text-sm font-normal text-zinc-400">
-							{ sprintf(
-								/* translators: %s: number of videos (already locale-formatted). */
-								_n( '%s video', '%s videos', totalItems, 'godam' ),
-								totalItems.toLocaleString(),
-							) }
-						</span>
-					) }
-				</h2>
+				{ tabSwitcher || (
+					<h2>
+						{ __( 'Top Videos', 'godam' ) }
+						{ totalItems > 0 && (
+							<span className="ml-2 text-sm font-normal text-zinc-400">
+								{ sprintf(
+									/* translators: %s: number of videos (already locale-formatted). */
+									_n( '%s video', '%s videos', totalItems, 'godam' ),
+									totalItems.toLocaleString(),
+								) }
+							</span>
+						) }
+					</h2>
+				) }
 				<div className="top-media-container__tools">
 					<SearchControl
 						__nextHasNoMarginBottom
@@ -267,14 +311,94 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 				<table className="w-full">
 					<thead>
 						<tr>
-							<th scope="col">{ __( 'Name', 'godam' ) }</th>
-							<th scope="col">{ __( 'Size', 'godam' ) }</th>
-							<th scope="col">{ __( 'Play Rate', 'godam' ) }</th>
-							<th scope="col">{ __( 'Total Plays', 'godam' ) }</th>
-							<th scope="col">{ __( 'Total Watch Time', 'godam' ) }</th>
-							<th scope="col">{ __( 'Average Engagement', 'godam' ) }</th>
-							<th scope="col">{ __( 'Conversion Rate', 'godam' ) }</th>
-							<th scope="col">{ __( 'Placements', 'godam' ) }</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Name', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'The video\'s title. Open it to see this video\'s own analytics.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Size', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'The video file\'s size.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Play Rate', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'The share of people who, after the video loaded, actually pressed play.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Total Plays', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'How many times this video was played.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Total Watch Time', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'The total time everyone spent watching this video.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Average Engagement', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'On average, how much of the video people watch before leaving.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Interaction Rate', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'The share of viewing sessions that acted on an interactive layer: clicked a hotspot or CTA, submitted a form, voted in a poll, or added to cart. Hovers are not counted.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Placements', 'godam' ) }
+									<Tooltip
+										text={ __(
+											'How many different pages this video appears on.',
+											'godam',
+										) }
+									/>
+								</span>
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -299,23 +423,23 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 													<a className="thumbnail-link" href={ ANALYTICS_LINK( item.video_id ) }>
 														<img
 															src={ item.thumbnail_url || DefaultThumbnail }
-															alt={ item.title || __( 'Video thumbnail', 'godam' ) }
+															alt={ decodeEntities( item.title || __( 'Video thumbnail', 'godam' ) ) }
 														/>
 													</a>
-													<a className="title-link" href={ ANALYTICS_LINK( item.video_id ) }>
+													<a className="title-link" href={ ANALYTICS_LINK( item.video_id ) } title={ decodeEntities( item.title || `Video ID: ${ item.video_id }` ) }>
 														<div className="w-full max-w-40 text-left flex-1">
-															<p className="font-semibold">{ item.title || `Video ID: ${ item.video_id }` }</p>
+															<p className="font-semibold">{ decodeEntities( item.title || `Video ID: ${ item.video_id }` ) }</p>
 														</div>
 													</a>
 												</>
 											) : (
 												<>
 													<div className="thumbnail-link">
-														<img src={ DefaultThumbnail } alt={ item.title || __( 'Video thumbnail', 'godam' ) } />
+														<img src={ DefaultThumbnail } alt={ decodeEntities( item.title || __( 'Video thumbnail', 'godam' ) ) } />
 													</div>
-													<div className="title-link">
+													<div className="title-link" title={ decodeEntities( item.title || '' ) }>
 														<div className="w-full max-w-40 text-left flex-1">
-															<p className="font-semibold">{ item.title }</p>
+															<p className="font-semibold">{ decodeEntities( item.title || '' ) }</p>
 														</div>
 													</div>
 												</>
@@ -331,12 +455,12 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 										title={
 											item.total_converting_sessions > 0
 												? sprintf(
-													/* translators: 1: converting sessions, 2: total plays. */
-													__( '%1$s of %2$s sessions converted', 'godam' ),
+													/* translators: 1: interacting sessions, 2: total plays. */
+													__( '%1$s of %2$s sessions interacted with a layer', 'godam' ),
 													Number( item.total_converting_sessions ).toLocaleString(),
 													Number( item.plays ).toLocaleString(),
 												)
-												: __( 'No layer conversions in this period', 'godam' )
+												: __( 'No layer interactions in this period', 'godam' )
 										}
 									>
 										{ item.video_conversion_rate !== undefined && item.video_conversion_rate !== null
@@ -348,7 +472,25 @@ export default function TopVideosTable( { siteUrl, skip = false } ) {
 							) )
 						) }
 
-						{ ! isFetching && videos.length === 0 && (
+						{ /* A backend error must read as an error, not the "No video plays
+						    yet" empty state, which would mislead as a real "no data"
+						    result. Mirrors Top Products. */ }
+						{ ! isFetching && isError && (
+							<tr>
+								<td colSpan="8">
+									<div className="godam-empty-state godam-empty-state--error" data-test-id="godam-top-videos-error">
+										<p className="godam-empty-state__title">
+											{ __( 'Couldn’t load top videos', 'godam' ) }
+										</p>
+										<p className="godam-empty-state__hint">
+											{ error?.message || __( 'Something went wrong loading this data. Please refresh the page to try again.', 'godam' ) }
+										</p>
+									</div>
+								</td>
+							</tr>
+						) }
+
+						{ ! isFetching && ! isError && videos.length === 0 && (
 							<tr>
 								<td colSpan="8">
 									<div className="godam-empty-state">

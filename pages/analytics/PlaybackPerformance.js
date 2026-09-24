@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useFetchProcessedAnalyticsHistoryQuery } from './redux/api/analyticsApi';
 import { useFetchDashboardMetricsHistoryQuery } from '../dashboard/redux/api/dashboardAnalyticsApi';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
-import DateRangePicker, { spanDays, fromISO } from './components/DateRangePicker';
+import DateRangePicker, { fromISO } from './components/DateRangePicker';
 /**
  * WordPress dependencies
  */
@@ -30,11 +30,12 @@ export default function PlaybackPerformanceDashboard( {
 	mode = 'analytics',
 } ) {
 	const chartRef = useRef( null );
-	// Shared date-range picker value. Defaults to the last 7 days to preserve
-	// the previous "Last 7 days" default. `{ null, null }` = All Time. The d3
-	// x-axis already adapts its tick density to the span, so arbitrary custom
-	// ranges render correctly.
-	const [ range, setRange ] = useState( () => spanDays( 7 ) );
+	// Shared date-range picker value. Defaults to All Time (`{ null, null }`)
+	// so this chart matches every other analytics card's default rather than
+	// starting on "Last 7 days" (godam-analytics #313 item 7). The d3 x-axis
+	// already adapts its tick density to the span, so any range renders
+	// correctly.
+	const [ range, setRange ] = useState( { startDate: null, endDate: null } );
 	const [ selectedMetrics, setSelectedMetrics ] = useState( [
 		'engagement_rate',
 		'play_rate',
@@ -351,7 +352,10 @@ export default function PlaybackPerformanceDashboard( {
 			.domain( [ 'engagement_rate', 'play_rate' ] )
 			.range( [ METRIC_COLORS.engagement_rate, METRIC_COLORS.play_rate ] );
 
-		// Create a tooltip div
+		// Create a tooltip div. Remove any prior one first: the ResizeObserver
+		// below re-runs renderChart without a cleanup, so appending unconditionally
+		// leaked a fresh #chart-tooltip (duplicate id) on every resize.
+		d3.select( 'body' ).select( '#chart-tooltip' ).remove();
 		const tooltip = d3
 			.select( 'body' )
 			.append( 'div' )
@@ -408,29 +412,44 @@ export default function PlaybackPerformanceDashboard( {
 						.html(
 							`
               <div class="text-zinc-500">
-                ${ d.date.getDate() } ${ d.date.toLocaleString( 'default', { month: 'short' } ) } ${ d.date.getFullYear() }
+                ${ d.date.getDate() } ${ d3.timeFormat( '%b' )( d.date ) } ${ d.date.getFullYear() }
               </div>
               <hr />
 				<div class="flex flex-col min-w-[250px]">
 					<div class="flex justify-between items-center h-9">
 						<div class="flex items-center gap-2">
-							<span style="color: #9333EA">●</span>
-							<p class="text-zinc-500">${ __( 'Engagement Rate', 'godam' ) }</p>
-						</div>
-						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
-					</div>
-					<div class="flex justify-between items-center h-9">
-						<div class="flex items-center gap-2">
-							<span style="color: #5CC8BE">●</span>
+							<span style="color: ${ METRIC_COLORS.play_rate }">●</span>
 							<p class="text-zinc-500">${ __( 'Play Rate', 'godam' ) }</p>
 						</div>
 						<span class="text-zinc-950 font-medium">${ d.play_rate.toFixed( 2 ) }${ unit }</span>
 					</div>
+					<div class="flex justify-between items-center h-9">
+						<div class="flex items-center gap-2">
+							<span style="color: ${ METRIC_COLORS.engagement_rate }">●</span>
+							<p class="text-zinc-500">${ __( 'Engagement Rate', 'godam' ) }</p>
+						</div>
+						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
+					</div>
 				</div>
 
             `,
-						)
-						.style( 'left', event.pageX + 10 + 'px' )
+						);
+
+					// Position beside the cursor, flipping to the left when the
+					// tooltip would overflow the viewport's right edge so it is
+					// never clipped by the screen. #313 item 1.
+					const ttNode = tooltip.node();
+					const ttWidth = ttNode ? ttNode.offsetWidth : 300;
+					const viewportRight = window.scrollX + document.documentElement.clientWidth;
+					let ttLeft = event.pageX + 10;
+					if ( ttLeft + ttWidth > viewportRight - 8 ) {
+						ttLeft = event.pageX - ttWidth - 10;
+					}
+					if ( ttLeft < window.scrollX + 8 ) {
+						ttLeft = window.scrollX + 8;
+					}
+					tooltip
+						.style( 'left', ttLeft + 'px' )
 						.style( 'top', event.pageY - 30 + 'px' );
 
 					d3.select( this ).attr( 'r', 6 ).attr( 'stroke-width', 2 );
@@ -445,7 +464,10 @@ export default function PlaybackPerformanceDashboard( {
 					d3.select( this ).attr( 'r', 4 ).attr( 'stroke-width', 1 );
 					vertical.style( 'opacity', 0 );
 				} )
-				.on( 'mousemove', function() {
+				.on( 'mousemove', function( event ) {
+					// Take the event from the handler arg (d3 passes it), not the
+					// deprecated global `window.event` — which is undefined in Firefox,
+					// so d3.pointer() threw and the follow-line broke there.
 					const [ mouseX ] = d3.pointer( event );
 					vertical.attr( 'x1', mouseX ).attr( 'x2', mouseX );
 				} );
