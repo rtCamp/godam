@@ -237,6 +237,38 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 	}
 }
 
+/*
+ * ---------------------------------------------------------------------------
+ * Stubs for AnalyticsRoutePermissionTest. The route table reads the
+ * WP_REST_Server method constants, and the permission callbacks ask
+ * current_user_can(), which answers from $GLOBALS['rtgodam_stub']['caps'].
+ * ---------------------------------------------------------------------------
+ */
+if ( ! class_exists( 'WP_REST_Server' ) ) {
+	class WP_REST_Server { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+		const READABLE   = 'GET';
+		const CREATABLE  = 'POST';
+		const EDITABLE   = 'POST, PUT, PATCH';
+		const DELETABLE  = 'DELETE';
+		const ALLMETHODS = 'GET, POST, PUT, PATCH, DELETE';
+	}
+}
+
+if ( ! function_exists( 'current_user_can' ) ) {
+
+	/**
+	 * @param string $capability Capability name.
+	 * @param mixed  ...$args    Ignored; object-level checks are not stubbed.
+	 * @return bool
+	 */
+	function current_user_can( $capability, ...$args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $args are ignored.
+		$caps = isset( $GLOBALS['rtgodam_stub']['caps'] ) && is_array( $GLOBALS['rtgodam_stub']['caps'] )
+			? $GLOBALS['rtgodam_stub']['caps']
+			: array();
+		return in_array( $capability, $caps, true );
+	}
+}
+
 if ( ! function_exists( 'wp_json_encode' ) ) {
 
 	/**
@@ -354,6 +386,11 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-release-post.php'
 // through reflection. The class extends the stubbed Base above and touches WordPress
 // only inside its route callbacks, so requiring the file runs no WP code.
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-transcoding.php';
+
+// Loaded for its route table, which AnalyticsRoutePermissionTest builds to check
+// every route's permission callback. The class extends the stubbed Base and
+// touches WordPress only inside its route callbacks, so requiring it runs no WP code.
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
 
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.

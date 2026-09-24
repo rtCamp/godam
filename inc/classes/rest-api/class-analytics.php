@@ -38,7 +38,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_analytics_data' ),
-					'permission_callback' => '__return_true', // Publicly accessible.
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'video_id' => array(
 							'required'          => true,
@@ -64,7 +64,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_analytics_history' ),
-					'permission_callback' => '__return_true',
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'days'     => array(
 							'required'          => false,
@@ -90,7 +90,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_dashboard_metrics' ),
-					'permission_callback' => '__return_true',
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -106,7 +106,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_dashboard_history' ),
-					'permission_callback' => '__return_true',
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'days'     => array(
 							'required'          => false,
@@ -127,13 +127,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_top_videos' ),
-					// Admin-dashboard read: gate to users who can see the analytics
-					// dashboard (authors and above — matches the menu's `upload_files`
-					// capability). The search path resolves an uncached WP_Query, so
-					// this also closes the unauthenticated DB-amplification vector.
-					'permission_callback' => function () {
-						return current_user_can( 'upload_files' );
-					},
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'page'         => array(
 							'required'          => false,
@@ -173,13 +167,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_layer_analytics' ),
-					// Matches the sibling analytics routes: the api_key / account_token
-					// are injected server-side (never client-supplied) and the
-					// microservice scopes every query by account, so this can only ever
-					// return this site's own non-PII aggregate analytics. Locking down
-					// analytics reads, if ever wanted, should be done uniformly across
-					// all analytics routes rather than just this one.
-					'permission_callback' => '__return_true',
+					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
 						'video_id'   => array(
 							'required'          => true,
@@ -246,6 +234,22 @@ class Analytics extends Base {
 		unset( $route );
 
 		return $routes;
+	}
+
+	/**
+	 * Permission check shared by every analytics read route.
+	 *
+	 * Each route proxies the site's stored API key and account token to the
+	 * analytics microservice, so none may answer anonymous callers. Access
+	 * matches the GoDAM menu's `upload_files` capability (authors and above),
+	 * which every admin caller (Dashboard, Analytics, Video Editor) already
+	 * meets. It also stops unauthenticated requests from triggering uncached
+	 * upstream calls and the top-videos WP_Query.
+	 *
+	 * @return bool Whether the current user may read analytics.
+	 */
+	public function check_analytics_read_permission() {
+		return current_user_can( 'upload_files' );
 	}
 
 	/**
@@ -440,10 +444,10 @@ class Analytics extends Base {
 	 * first 100 rows as a defensive bound on per-request DB work; rows past the
 	 * cap still get a constant-cost attributable label so none render blank.
 	 *
-	 * The /analytics/fetch route is public (permission_callback __return_true),
-	 * so this never leaks non-public pages (private, draft, pending, trashed) to
-	 * anonymous callers: the real title/permalink is revealed only when the page
-	 * is publicly viewable, or the current user can edit it.
+	 * The analytics read routes are gated on `upload_files` (authors and above),
+	 * but this still never leaks non-public pages (private, draft, pending,
+	 * trashed) beyond what the caller may see: the real title/permalink is
+	 * revealed only when the page is publicly viewable, or the caller can edit it.
 	 *
 	 * @param array $placements Placement rows from the microservice.
 	 * @return array Enriched placement rows.
