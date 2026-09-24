@@ -16,8 +16,16 @@
  * is a tracked follow-up; kept separate here so the in-review video analytics is
  * untouched.)
  *
+ * It also makes sure `window.analytics` exists (see ensureAnalyticsInstance), since
+ * the anonymous visitor id is read from there and only the video bundle creates it.
+ *
  * @package
  */
+
+/**
+ * External dependencies
+ */
+import { Analytics } from 'analytics';
 
 /**
  * Internal dependencies
@@ -29,6 +37,43 @@ import {
 	clearLayerInteractions as bufferClearLayerInteractions,
 } from './utils/storage';
 import { LAYER_ACTIONS, LAYER_TYPE_WHITELIST, getLayerDisplayName } from './utils/layerActions';
+
+/**
+ * App name of the video player's analytics instance (`analytics.js`), reused so the
+ * fallback instance below is configured the same way.
+ */
+const ANALYTICS_APP_NAME = 'analytics-cdp-plugin';
+
+/**
+ * Make sure `window.analytics` exists, so the anonymous visitor id can be read on a
+ * page that never loads the video bundle (e.g. one whose only GoDAM content is an
+ * Image block with product hotspots).
+ *
+ * This runtime's flush and the Woo add-on's in-image add-to-cart send
+ * `window.analytics.user().anonymousId` as the user_token. Without an instance it
+ * was '', and the add-on refuses Direct attribution for an empty token, so the
+ * sale's revenue was lost.
+ *
+ * The fallback is the library the player bundles, with the player's app name and
+ * NO plugins, so it sends nothing, and nothing here calls page() or track() on it.
+ * It reads the stored visitor id, or creates and stores one, under the storage key
+ * the player's instance reads, so a visitor keeps one id across image and video
+ * pages.
+ *
+ * An existing `window.analytics` (the player's, or any other) is never replaced.
+ * If the player bundle runs later on the page, its own assignment replaces the
+ * fallback. A new id is stored in promise work that a browser finishes between two
+ * scripts, so the player reads it; if both bundles were concatenated into one
+ * script, the player stores its own id instead, before the fallback's can be read.
+ *
+ * @return {Object} The instance on `window.analytics`.
+ */
+export function ensureAnalyticsInstance() {
+	if ( ! window.analytics ) {
+		window.analytics = Analytics( { app: ANALYTICS_APP_NAME } );
+	}
+	return window.analytics;
+}
 
 /**
  * Find the element carrying analytics identity for a numeric key.
@@ -139,6 +184,13 @@ function flushLayerInteractions() {
  * clears the buffer after dispatch, so the later flush is a no-op.
  */
 export function initLayerAnalytics() {
+	// First, so the visitor id is readable before any hotspot can be clicked.
+	// Not on pages that send no analytics (previews, admin): there the id would
+	// be stored with nothing to use it.
+	if ( ! shouldSkipAnalytics() ) {
+		ensureAnalyticsInstance();
+	}
+
 	window.GoDAM = window.GoDAM || {};
 
 	// Register the buffer API only if the video bundle has not already done so, so
