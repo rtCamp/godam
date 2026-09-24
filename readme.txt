@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.2.4
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,7 +101,7 @@ WordPress native video hosting solution, perfect for creators, marketing teams, 
 📌 **Advanced Video Analytics [Paid]**
 ✓ Get first-party video insights to understand viewer behavior, make data-driven decisions, and refine your content strategy.
 ✓ Play rate, watch time, engagement
-✓ Heatmaps to understand dropoffs
+✓ Viewer retention curve to see where viewers drop off
 ✓ Geo-based traffic data
 ✓ Performance comparison
 
@@ -146,7 +146,7 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 = Pricing Plans =
 [View Pricing Plans](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link)
 
-✓ **30-day Free Trial** with all features included
+✓ **60-day Free Trial** with all features included
 ✓ Flexible pricing options to suit different needs.
 ✓ Upgrade or cancel anytime based on usage.
 
@@ -188,10 +188,10 @@ A. Adaptive bitrate streaming ensures that viewers get the best possible video q
 A. Yes, our customizable player allows you to tailor the controls, branding, and features to match your unique requirements and branding guidelines.
 
 = Is there a free trial available? =
-A. Yes! You can start with a 7-day free trial to explore all features. If you decide not to continue with the subscribed plan, you can cancel anytime and remove your credit card.
+A. Yes! You can start with a 60-day free trial to explore all features. No credit card is required, and you can cancel anytime.
 
 = Can I track video engagement and analytics? =
-A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and heatmaps to see which parts of your videos are most engaging. These insights help you optimize your content strategy.
+A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
 == Screenshots ==
 1. General Settings
@@ -224,6 +224,18 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.3.0 (September 24, 2026) =
+
+- Feat: Revenue Analytics for WooCommerce. See how much order value is credited to each video, split into Direct (added to cart inside the video) and Assisted (clicked the product in a video, image hotspot or Reel Pop, then added it to cart on its product page). Influenced revenue is reported separately and is never added to the headline.
+- Feat: Top Products, a new dashboard tab showing per-product views, add-to-cart counts split into in-video and product-page, revenue, and where in your videos each product appeared.
+- Feat: Video to Cart and Video to Purchase rates, measured against the people who actually played the video.
+- Feat: Two new funnels: Play to Cart to Purchase, and the same funnel broken down by placement.
+- Feat: Per-hotspot revenue in layer analytics, showing the revenue from in-video add-to-carts made through each product hotspot.
+- Feat: A Google Analytics 4 status widget on the analytics dashboard, showing whether GoDAM for Woo is pushing video-driven add_to_cart and purchase events to your Google Tag Manager dataLayer.
+- Tweak: The Revenue and Purchase Funnel cards on the single-video page each have their own date-range picker.
+- Tweak: The layer interaction metric is now called "Interaction rate" instead of "Conversion".
+- Note: Revenue and product metrics need the GoDAM for Woo add-on 2.2.0 or later.
+
 = v2.2.4 (September 21, 2026) =
 
 - Chore: Security fixes.
@@ -231,17 +243,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v2.2.3 (September 16, 2026) =
 
 - Fix: Resolved content and display issues on the What's New page.
-
-= v2.2.2 (September 15, 2026) =
-
-- Feat: Organize media into folders in bulk — the media library list view now has a "Move to folder…" bulk action, and each user's folder sidebar remembers its own open/closed state.
-- Tweak: The Video Editor's player preview now mirrors the real front-end control bar — skip buttons, volume panel, branding, and appearance settings — and restores skip buttons that were missing on older videos.
-- Fix: GoDAM media can now be set as a post's featured image in both the block and classic editors, with the placeholder swapped for the real attachment once it is created.
-- Fix: Interactive layers (forms, CTAs, hotspots) no longer trigger while a video is only being previewed on hover.
-- Fix: Skip buttons in the video player now always appear with a valid skip duration, and the picture-in-picture control has been removed across all player skins.
-- Fix: The GoDAM tab in the media picker now shows a clear error when the API key is missing, invalid, or revoked, instead of spinning forever or showing a misleading "No items found".
-- Fix: Long or tall HTML CTA layers no longer overflow their container — they fill it and scroll when needed.
-- Fix: Deleting the GoDAM plugin no longer throws a 502 / "Deletion failed" error.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

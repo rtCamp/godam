@@ -26,6 +26,11 @@ import DateRangePicker, { triggerLabelFor } from './components/DateRangePicker';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
+import VideoToCartCard from './VideoToCartCard.js';
+import VideoToPurchaseCard from './VideoToPurchaseCard.js';
+import RevenueCard from './RevenueCard.js';
+import RevenueTips from './RevenueTips.js';
+import PurchaseFunnelCard from './PurchaseFunnelCard.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
@@ -86,8 +91,25 @@ const Analytics = ( { attachmentID } ) => {
 	const [ retentionRange, setRetentionRange ] = useState( { startDate: null, endDate: null } );
 	const retentionRangeActive = Boolean( retentionRange.startDate && retentionRange.endDate );
 
+	// Back-link target depends on where the user entered from. Top Videos on the
+	// Dashboard links here with `&from=dashboard`, so Back returns to the
+	// Dashboard; any other entry (the Media Editor) keeps the editor target, now
+	// carrying the video id so it reopens this video instead of the generic media
+	// grid. godam-analytics #313 item 2.
+	const cameFromDashboard =
+		new URLSearchParams( window.location.search ).get( 'from' ) === 'dashboard';
+	const backHref = cameFromDashboard
+		? 'admin.php?page=rtgodam'
+		: `admin.php?page=rtgodam_media_editor&id=${ encodeURIComponent( attachmentID ) }`;
+	const backLabel = cameFromDashboard
+		? __( 'Back to Dashboard', 'godam' )
+		: __( 'Back to Media Editor', 'godam' );
+
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
+	// Video-to-Cart is a WooCommerce feature; the card is shown only on Woo sites
+	// (otherwise it would read a permanent, misleading "0").
+	const isWoo = !! window.videoData?.isWoo;
 	const apiKeyError = getAPIKeyErrorInfo();
 	const apiKeyErrorType = apiKeyError?.type || null;
 
@@ -137,6 +159,39 @@ const Analytics = ( { attachmentID } ) => {
 			siteUrl,
 			...( range.startDate ? { startDate: range.startDate } : {} ),
 			...( range.endDate ? { endDate: range.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics },
+	);
+
+	// Per-card independent ranges for the two Woo cards, matching the dashboard's
+	// standalone Revenue and Purchase Funnel cards: each carries its own date
+	// picker and its own fetch, decoupled from the page range and from each other.
+	// Both default to All Time, so they share the all-time query's cache key until
+	// a range is picked on that specific card.
+	const [ revenueRange, setRevenueRange ] = useState( { startDate: null, endDate: null } );
+	const revenueRangeLabel = revenueRange.startDate && revenueRange.endDate
+		? triggerLabelFor( revenueRange )
+		: __( 'All time', 'godam' );
+	const { data: revenueRangeData } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( revenueRange.startDate ? { startDate: revenueRange.startDate } : {} ),
+			...( revenueRange.endDate ? { endDate: revenueRange.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics },
+	);
+
+	const [ purchaseFunnelRange, setPurchaseFunnelRange ] = useState( { startDate: null, endDate: null } );
+	const purchaseFunnelRangeLabel = purchaseFunnelRange.startDate && purchaseFunnelRange.endDate
+		? triggerLabelFor( purchaseFunnelRange )
+		: __( 'All time', 'godam' );
+	const { data: purchaseFunnelRangeData } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( purchaseFunnelRange.startDate ? { startDate: purchaseFunnelRange.startDate } : {} ),
+			...( purchaseFunnelRange.endDate ? { endDate: purchaseFunnelRange.endDate } : {} ),
 		},
 		{ skip: ! attachmentID || shouldSkipAnalytics },
 	);
@@ -529,7 +584,9 @@ const Analytics = ( { attachmentID } ) => {
 							{ /* Generic page label — the video name now lives in the hero
 							    below, so don't repeat it here. */ }
 							<div className="subheading">{ __( 'Single Video Analytics', 'godam' ) }</div>
-							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_media_editor' }><span className="max-md:hidden">{ __( 'Back to Media Editor', 'godam' ) }</span></Button>
+							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => {
+								window.location.href = backHref;
+							} }><span className="max-md:hidden">{ backLabel }</span></Button>
 
 						</div>
 					</div>
@@ -595,7 +652,7 @@ const Analytics = ( { attachmentID } ) => {
 										testIdPrefix="godam-video-insights-daterange"
 									/>
 								</div>
-								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-nowrap">
+								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-wrap lg:[&>*]:grow lg:[&>*]:basis-40">
 									<SingleMetrics
 										metricType={ 'engagement-rate' }
 										label={ __( 'Average Engagement', 'godam' ) }
@@ -603,7 +660,6 @@ const Analytics = ( { attachmentID } ) => {
 											'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)',
 											'godam',
 										) }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
 										analyticsDataFetched={ rangedAnalyticsData }
 										dataLabel={ rangeLabel }
 									/>
@@ -615,7 +671,6 @@ const Analytics = ( { attachmentID } ) => {
 											'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
 											'godam',
 										) }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
 										analyticsDataFetched={ rangedAnalyticsData }
 										dataLabel={ rangeLabel }
 									/>
@@ -627,20 +682,85 @@ const Analytics = ( { attachmentID } ) => {
 											'Total time the video has been watched, aggregated across all plays',
 											'godam',
 										) }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
 										analyticsDataFetched={ rangedAnalyticsData }
 										dataLabel={ rangeLabel }
 									/>
+
+									{ isWoo && (
+										<VideoToCartCard
+											videoToCart={ rangedAnalyticsData?.video_to_cart }
+											dataLabel={ rangeLabel }
+										/>
+									) }
+
+									{ /* Video-to-Purchase: the purchase sibling of Video-to-Cart.
+									    Woo-gated; renders nothing when the payload is absent. */ }
+									{ isWoo && (
+										<VideoToPurchaseCard
+											videoToPurchase={ rangedAnalyticsData?.video_to_purchase }
+											dataLabel={ rangeLabel }
+										/>
+									) }
 
 									<PlaysVsViewers
 										plays={ rangedAnalyticsData?.plays ?? 0 }
 										uniqueViewers={ rangedAnalyticsData?.unique_viewers ?? null }
 										showRatio={ true }
 										isLoading={ isAnalyticsDataLoading }
-										processedAnalyticsHistory={ processedAnalyticsHistory }
+										dataLabel={ rangeLabel }
 									/>
 								</div>
 							</div>
+
+							{ /* Per-video Video-Attributed Revenue (single store currency),
+							    split Direct/Assisted. Full-width card; Influenced is
+							    account-level so the per-video payload omits it and the
+							    card hides that box. Woo-gated. */ }
+							{ isWoo && revenueRangeData?.revenue !== undefined && revenueRangeData?.revenue !== null && (
+								<RevenueCard
+									revenue={ {
+										revenue_minor: revenueRangeData.revenue,
+										currency: revenueRangeData.revenue_currency,
+										excluded_orders: revenueRangeData.revenue_excluded_orders,
+										direct_minor: revenueRangeData.revenue_direct_minor,
+										assisted_minor: revenueRangeData.revenue_assisted_minor,
+									} }
+									dataLabel={ revenueRangeLabel }
+									rangeControl={
+										<DateRangePicker
+											value={ revenueRange }
+											onChange={ setRevenueRange }
+											testIdPrefix="godam-video-revenue-daterange"
+										/>
+									}
+								/>
+							) }
+
+							{ /* Comparative revenue tips (EASY WIN B), Woo-gated. The
+							    component renders only the favourable comparisons and
+							    nothing when there is nothing worth saying. Follows the
+							    Revenue card's own range. */ }
+							{ isWoo && revenueRangeData?.revenue_tips && (
+								<RevenueTips tips={ revenueRangeData.revenue_tips } />
+							) }
+
+							{ /* Purchase Funnel — Viewers -> Added to cart -> Purchased.
+							    Woo-gated; carries its own independent date picker and
+							    fetch, renders nothing when the funnel payload is absent. */ }
+							{ isWoo && (
+								<PurchaseFunnelCard
+									funnel={ purchaseFunnelRangeData?.video_funnel }
+									dataLabel={ purchaseFunnelRangeLabel }
+									scope="video"
+									rangeControl={
+										<DateRangePicker
+											value={ purchaseFunnelRange }
+											onChange={ setPurchaseFunnelRange }
+											testIdPrefix="godam-video-purchase-funnel-daterange"
+										/>
+									}
+								/>
+							) }
 
 							{ /* Viewer Retention Curve — standalone chart of per-second
 							    viewer counts across the video timeline (converted from

@@ -16,7 +16,7 @@ import { Icon } from '@wordpress/components';
 import { useVideoLayerData } from './hooks/useVideoLayerData';
 import LayerTimelineStrip from './timeline/LayerTimelineStrip';
 import LayerDetailPanel from './timeline/LayerDetailPanel';
-import DateRangePicker, { spanDays } from './components/DateRangePicker';
+import DateRangePicker from './components/DateRangePicker';
 import InfoTooltip from './timeline/InfoTooltip';
 import HistoricalLayersDrawer from './timeline/HistoricalLayersDrawer';
 
@@ -97,10 +97,11 @@ function TimelineSkeleton() {
  * @return {JSX.Element} The full timeline section.
  */
 const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
-	// Shared date-range picker value (last 7 days by default, matching the
-	// other analytics surfaces). Replaces the timeline's old bespoke preset
-	// picker so the whole page uses one consistent control.
-	const [ range, setRange ] = useState( () => spanDays( 7 ) );
+	// Shared date-range picker value. Defaults to All Time so this surface
+	// matches every other analytics card's default instead of starting on
+	// "Last 7 days" (godam-analytics #313 item 7). Replaces the timeline's old
+	// bespoke preset picker so the whole page uses one consistent control.
+	const [ range, setRange ] = useState( { startDate: null, endDate: null } );
 	const siteUrl = window.location.origin;
 
 	const { parents, isLoading, errorType, errorMessage, videoConversion } =
@@ -186,12 +187,12 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 						<div>
 							<div className="flex items-center gap-1.5">
 								<span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-									{ __( 'Video conversion', 'godam' ) }
+									{ __( 'Interaction rate', 'godam' ) }
 								</span>
 								<InfoTooltip
 									size={ 14 }
 									text={ __(
-										'Share of plays where the viewer converted on any layer (clicked a CTA, submitted a form, voted in a poll, or added a product to cart). A play counts once even if the viewer converts on several layers, so this never exceeds 100%.',
+										'Share of plays where the viewer interacted with any layer (clicked a CTA, submitted a form, voted in a poll, or added a product to cart). A play counts once even if the viewer interacts with several layers, so this never exceeds 100%.',
 										'godam',
 									) }
 								/>
@@ -202,7 +203,7 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 								</span>
 								<span className="text-xs text-zinc-500">
 									{ sprintf(
-										/* translators: 1: converting sessions, 2: total plays. */
+										/* translators: 1: interacting sessions, 2: total plays. */
 										__( '%1$s of %2$s plays', 'godam' ),
 										videoConversion.converting.toLocaleString(),
 										videoConversion.plays.toLocaleString(),

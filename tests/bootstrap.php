@@ -207,7 +207,9 @@ if ( ! defined( 'RTGODAM_IO_API_BASE' ) ) {
 }
 
 if ( ! class_exists( 'WP_Error' ) ) {
-	class WP_Error { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+	// phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed, Generic.Files.OneObjectStructurePerFile.MultipleFound -- test stub.
+	class WP_Error {
+
 		/**
 		 * @param mixed $code    Ignored.
 		 * @param mixed $message Ignored.
@@ -218,7 +220,8 @@ if ( ! class_exists( 'WP_Error' ) ) {
 }
 
 if ( ! class_exists( 'WP_REST_Response' ) ) {
-	class WP_REST_Response { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+	// phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed, Generic.Files.OneObjectStructurePerFile.MultipleFound -- test stub.
+	class WP_REST_Response {
 		/** @var mixed */
 		public $data;
 
@@ -245,7 +248,8 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
  * ---------------------------------------------------------------------------
  */
 if ( ! class_exists( 'WP_REST_Server' ) ) {
-	class WP_REST_Server { // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+	// phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed, Generic.Files.OneObjectStructurePerFile.MultipleFound -- test stub.
+	class WP_REST_Server {
 		const READABLE   = 'GET';
 		const CREATABLE  = 'POST';
 		const EDITABLE   = 'POST, PUT, PATCH';
@@ -283,14 +287,24 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 if ( ! function_exists( 'is_wp_error' ) ) {
 
 	/**
+	 * A WP_Error, or any error-like object exposing get_error_message().
+	 *
 	 * @param mixed $thing Value to test.
 	 * @return bool
 	 */
 	function is_wp_error( $thing ) {
-		return $thing instanceof \WP_Error;
+		return $thing instanceof \WP_Error || ( is_object( $thing ) && method_exists( $thing, 'get_error_message' ) );
 	}
 }
 
+/*
+ * The only wp_remote_* stubs in the suite. A test fakes a response one of two
+ * ways, both on $GLOBALS['rtgodam_stub']:
+ *  - `http`: a whole response, array( 'code' => 200, 'body' => '...' ), read
+ *    back from the response itself (the Analytics proxy tests);
+ *  - `remote_response`, with the status and body in `remote_code` and
+ *    `remote_body` (the release-post tests).
+ */
 if ( ! function_exists( 'wp_remote_get' ) ) {
 
 	/**
@@ -300,6 +314,9 @@ if ( ! function_exists( 'wp_remote_get' ) ) {
 	 */
 	function wp_remote_get( $url, $args = array() ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed, WordPress.WP.AlternativeFunctions.wp_remote_get_wp_remote_get
 		$GLOBALS['rtgodam_stub']['last_remote_url'] = $url;
+		if ( isset( $GLOBALS['rtgodam_stub']['http'] ) ) {
+			return $GLOBALS['rtgodam_stub']['http'];
+		}
 		return $GLOBALS['rtgodam_stub']['remote_response'] ?? array();
 	}
 }
@@ -307,10 +324,13 @@ if ( ! function_exists( 'wp_remote_get' ) ) {
 if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
 
 	/**
-	 * @param mixed $response Ignored; the code is supplied by the test.
-	 * @return int
+	 * @param mixed $response The fake response.
+	 * @return int The response's own `code`, else `remote_code` (default 200).
 	 */
-	function wp_remote_retrieve_response_code( $response ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+	function wp_remote_retrieve_response_code( $response ) {
+		if ( is_array( $response ) && isset( $response['code'] ) ) {
+			return (int) $response['code'];
+		}
 		return (int) ( $GLOBALS['rtgodam_stub']['remote_code'] ?? 200 );
 	}
 }
@@ -318,10 +338,13 @@ if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
 if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
 
 	/**
-	 * @param mixed $response Ignored; the body is supplied by the test.
-	 * @return string
+	 * @param mixed $response The fake response.
+	 * @return string The response's own `body`, else `remote_body`.
 	 */
-	function wp_remote_retrieve_body( $response ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+	function wp_remote_retrieve_body( $response ) {
+		if ( is_array( $response ) && isset( $response['body'] ) ) {
+			return (string) $response['body'];
+		}
 		return (string) ( $GLOBALS['rtgodam_stub']['remote_body'] ?? '' );
 	}
 }
@@ -358,6 +381,13 @@ if ( ! function_exists( 'set_transient' ) ) {
  */
 require_once __DIR__ . '/stubs/hooks.php';
 require_once __DIR__ . '/stubs/i18n.php';
+// HTTP / REST stubs for the Analytics microservice-proxy tests (fetch_top_videos
+// / fetch_top_products): fake wp_remote_* responses + get_option, and minimal
+// WP_REST_Request / WP_REST_Response so the proxy's error-vs-empty guard can be
+// asserted without a WordPress test install.
+require_once __DIR__ . '/stubs/class-wp-rest-request.php';
+require_once __DIR__ . '/stubs/class-wp-rest-response.php';
+require_once __DIR__ . '/stubs/wp-http-functions.php';
 
 // Version-compatibility checks read this. High enough that any add-on minimum
 // passes, so tests exercising the incompatible branch raise their own minimum.
@@ -373,6 +403,7 @@ require_once dirname( __DIR__ ) . '/inc/classes/fluentforms/class-init.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-base.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
 

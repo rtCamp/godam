@@ -6,11 +6,14 @@ import React from 'react';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
+import { Tooltip, Icon } from '@wordpress/components';
+import { receipt } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
+import { formatRevenue } from '../../dashboard/components/TopProductsTable';
 import {
 	LAYER_TYPE_BY_ID,
 	subHotspotColor,
@@ -64,11 +67,11 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 						text={
 							parent.layer_type === 'woo'
 								? __(
-									'Each row is one product hotspot inside this layer. Select a row to see its individual funnel; "All Products (Cumulative)" counts sessions that converted on any product.',
+									'Each row is one product hotspot inside this layer. Select a row to see its individual funnel; "All Products (Cumulative)" counts sessions that interacted with any product.',
 									'godam',
 								)
 								: __(
-									'Each row is one hotspot inside this layer. Select a row to see its individual funnel; "All Hotspots (Cumulative)" counts sessions that converted on any hotspot.',
+									'Each row is one hotspot inside this layer. Select a row to see its individual funnel; "All Hotspots (Cumulative)" counts sessions that interacted with any hotspot.',
 									'godam',
 								)
 						}
@@ -76,14 +79,14 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 				</div>
 				<div className="flex items-center gap-1 flex-shrink-0">
 					<span className="text-[11px] font-medium uppercase tracking-wide text-zinc-500">
-						{ __( 'Conversion', 'godam' ) }
+						{ __( 'Interaction', 'godam' ) }
 					</span>
 					<InfoTooltip
 						size={ 13 }
 						text={
 							parent.layer_type === 'woo'
 								? __(
-									'Share of sessions that saw the product and converted — clicked through to it or added it to the cart. Each session counts once, so this never exceeds 100%.',
+									'Share of sessions that saw the product and interacted with it: clicked through to it or added it to the cart. Each session counts once, so this never exceeds 100%.',
 									'godam',
 								)
 								: __(
@@ -137,11 +140,11 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 							text={
 								parent.layer_type === 'woo'
 									? __(
-										'A session counts as converted here when it converts on any one product in this layer — clicks it or adds it to the cart. Each session counts once, so this can read higher than every single product\'s rate.',
+										'A session counts as an interaction here when it acts on any one product in this layer — clicks it or adds it to the cart. Each session counts once, so this can read higher than every single product\'s rate.',
 										'godam',
 									)
 									: __(
-										'A session counts as converted here when it clicks any one hotspot in this layer. Each session counts once, so this can read higher than every single hotspot\'s rate.',
+										'A session counts as an interaction here when it clicks any one hotspot in this layer. Each session counts once, so this can read higher than every single hotspot\'s rate.',
 										'godam',
 									)
 							}
@@ -158,19 +161,47 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 					// can still see their historical performance without
 					// the row competing visually with live sub-hotspots.
 					const subIsActive = sub.isActive !== false;
+					// Per-hotspot Direct revenue (Woo only), shown only when this
+					// hotspot has attributed orders. Base currency; other currencies
+					// are excluded, not converted. Surfaced as a hover tooltip on a
+					// receipt icon rather than inline text — inline it competed with
+					// the product name for the row width and truncated it, and the
+					// same figure already shows in the "This hotspot drove ..." line
+					// of the detail panel.
+					const hasRevenue = parent.layer_type === 'woo' && Number( sub.orders ) > 0;
+					const revenueTooltip = hasRevenue
+						? sprintf(
+							/* translators: 1: formatted revenue amount, 2: order count phrase (e.g. "3 orders"). */
+							__( 'Drove %1$s across %2$s', 'godam' ),
+							formatRevenue( sub.revenue_minor, sub.currency ),
+							sprintf(
+								/* translators: %d: number of orders attributed to this hotspot. */
+								_n( '%d order', '%d orders', sub.orders, 'godam' ),
+								sub.orders,
+							),
+						)
+						: '';
 					return (
-						<li key={ sub.id }>
+						// The row is the flex container (not the button itself) so the
+						// revenue tooltip trigger can sit as a sibling of the row button
+						// — a button nested in a button is invalid HTML. The active /
+						// removed styling moves onto the <li> so it spans the whole row,
+						// mirroring the "All Products (Cumulative)" row above.
+						<li
+							key={ sub.id }
+							className="flex items-center"
+							style={ {
+								background: active
+									? withAlpha( meta.color, 0.08 )
+									: 'transparent',
+								transition: 'background-color 140ms ease-out',
+								opacity: subIsActive ? 1 : 0.55,
+							} }
+						>
 							<button
 								type="button"
 								onClick={ () => onSelect( sub.id ) }
-								className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-left cursor-pointer"
-								style={ {
-									background: active
-										? withAlpha( meta.color, 0.08 )
-										: 'transparent',
-									transition: 'background-color 140ms ease-out',
-									opacity: subIsActive ? 1 : 0.55,
-								} }
+								className="flex-1 min-w-0 flex items-center justify-between gap-2 px-4 py-2.5 text-left cursor-pointer bg-transparent border-0"
 							>
 								<span className="flex items-center gap-2 min-w-0">
 									{ sub.product_image ? (
@@ -232,6 +263,24 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 									{ ( Number( sub.conversion_rate ) || 0 ).toFixed( 1 ) }%
 								</span>
 							</button>
+							{ hasRevenue && (
+								<span className="pl-1 pr-4 flex items-center shrink-0">
+									<Tooltip
+										text={ revenueTooltip }
+										placement="bottom"
+										className="godam-readable-tooltip"
+									>
+										<button
+											type="button"
+											aria-label={ revenueTooltip }
+											className="inline-flex items-center justify-center bg-transparent border-0 p-0 text-zinc-400 hover:text-zinc-600 focus:text-zinc-600"
+											style={ { cursor: 'help', lineHeight: 0 } }
+										>
+											<Icon icon={ receipt } size={ 16 } />
+										</button>
+									</Tooltip>
+								</span>
+							) }
 						</li>
 					);
 				} ) }

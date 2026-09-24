@@ -97,11 +97,11 @@ const App = () => {
 			articles_list: [
 				{
 					title: __( 'Interface', 'godam' ),
-					link: 'dam/interface/',
+					link: 'wordpress/media-library-manager/interface/',
 				},
 				{
 					title: __( 'How Tos', 'godam' ),
-					link: 'dam/how-tos/',
+					link: 'wordpress/media-library-manager/user-guide/',
 				},
 			],
 			icon: Folder,
