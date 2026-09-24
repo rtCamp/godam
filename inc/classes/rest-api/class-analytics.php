@@ -1762,14 +1762,14 @@ class Analytics extends Base {
 
 		$top_products = is_array( $body ) ? ( $body['top_products'] ?? array() ) : array();
 
-		// Product thumbnails are media-library attachments, so the per-product
-		// wp_get_attachment_image_url() calls below must run inside the centralized
-		// attachment-lookup context (offloaded/CDN media resolve there). Wrapped
-		// once around the whole loop, mirroring the Top Videos thumbnail loop,
-		// rather than switching context per product.
-		do_action( 'rtgodam_before_attachment_lookup' );
+		// Products, their permalinks and the WooCommerce placeholder image live on
+		// this site, so they are looked up here, OUTSIDE the attachment-lookup
+		// context below: a media-centralizing plugin switches to the media site
+		// inside it, where these products don't exist. Each product's image id is
+		// kept for the thumbnail pass.
+		$thumbnail_ids = array();
 
-		foreach ( $top_products as &$product ) {
+		foreach ( $top_products as $index => &$product ) {
 			$product_id = intval( $product['product_id'] ?? 0 );
 			$wc_product = ( $product_id && function_exists( 'wc_get_product' ) ) ? wc_get_product( $product_id ) : false;
 
@@ -1778,7 +1778,7 @@ class Analytics extends Base {
 				$product['title']         = $wc_product->get_name();
 				$product['permalink']     = get_permalink( $product_id );
 				$product['thumbnail_url'] = $image_id
-					? wp_get_attachment_image_url( $image_id, 'thumbnail' )
+					? null // Resolved from the attachment in the thumbnail pass below.
 					: ( function_exists( 'wc_placeholder_img_src' ) ? wc_placeholder_img_src( 'thumbnail' ) : null );
 				$product['exists']        = true;
 				// Whether the product can be added to cart from inside a video. Variable,
@@ -1790,6 +1790,10 @@ class Analytics extends Base {
 					array( 'variable', 'grouped', 'external' ),
 					true
 				);
+
+				if ( $image_id ) {
+					$thumbnail_ids[ $index ] = $image_id;
+				}
 			} else {
 				$product['title'] = sprintf(
 					/* translators: %d: WooCommerce product ID. */
@@ -1804,6 +1808,17 @@ class Analytics extends Base {
 			}
 		}
 		unset( $product );
+
+		// Product thumbnails are media-library attachments, so only these
+		// wp_get_attachment_image_url() calls run inside the centralized
+		// attachment-lookup context (offloaded/CDN media resolve there). Wrapped
+		// once around the whole loop, mirroring the Top Videos thumbnail loop,
+		// rather than switching context per product.
+		do_action( 'rtgodam_before_attachment_lookup' );
+
+		foreach ( $thumbnail_ids as $index => $image_id ) {
+			$top_products[ $index ]['thumbnail_url'] = wp_get_attachment_image_url( $image_id, 'thumbnail' );
+		}
 
 		do_action( 'rtgodam_after_attachment_lookup' );
 
