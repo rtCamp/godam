@@ -1,0 +1,517 @@
+/**
+ * GoDAM widget on the WordPress Dashboard.
+ *
+ * WordPress admin greys for text and structure; GoDAM violet, the logo's
+ * colour, for the numbers, the charts and the review ask. Alerts keep the
+ * WordPress warning and error colours.
+ */
+
+$dw-brand: #5d31ff;
+$dw-brand-dark: #3b1db8;
+$dw-brand-tint: #f3f0ff;
+$dw-brand-tint-strong: #e2dbff;
+
+// File types in the library bar. The legend names each one, so colour is never the only cue.
+$dw-mix: (
+	images: #b3a4ff,
+	videos: $dw-brand,
+	documents: #1a8f86,
+	audio: #d9822b,
+	other: #a7aaad,
+);
+
+#rtgodam_dashboard_widget {
+
+	// The footer's grey runs to the widget's edge, so its corners take the
+	// widget's own rounding: 8px in WordPress 7, square in older versions.
+	.inside {
+		margin-bottom: 0;
+		padding-bottom: 0;
+		border-bottom-left-radius: inherit;
+		border-bottom-right-radius: inherit;
+	}
+
+	// The GoDAM mark before the title. Core spaces the title row apart, so pack it left.
+	.hndle {
+		justify-content: flex-start;
+		gap: 8px;
+
+		&::before {
+			content: "";
+			flex: 0 0 18px;
+			width: 18px;
+			height: 18px;
+			background: url(../images/godam-logo-24x24.svg) center / contain no-repeat;
+		}
+	}
+
+	// Core's #dashboard-widgets heading rules outrank a class, so match on the widget ID.
+	.rtgodam-dw__heading {
+		margin: 0 0 8px;
+		color: #50575e;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.rtgodam-dw__subheading {
+		margin: 0;
+		font-size: 13px;
+		font-weight: 600;
+	}
+}
+
+.rtgodam-dw {
+	// Lets the tile rows respond to the widget's width, not the window's.
+	container-type: inline-size;
+	border-bottom-left-radius: inherit;
+	border-bottom-right-radius: inherit;
+
+	.button-primary {
+		border-color: $dw-brand;
+		background: $dw-brand;
+
+		&:hover,
+		&:focus {
+			border-color: $dw-brand-dark;
+			background: $dw-brand-dark;
+		}
+	}
+
+	&__lead {
+		margin: 0 0 12px;
+		font-size: 14px;
+	}
+
+	&__section,
+	&__attention {
+		margin: 0 -12px;
+		padding: 12px;
+		border-bottom: 1px solid #f0f0f1;
+
+		&:first-child {
+			padding-top: 4px;
+		}
+
+		&[hidden] {
+			display: none;
+		}
+	}
+
+	// Up to three tiles a row, and a short last row shares its width, so five
+	// tiles read 3 + 2 rather than leaving one tile alone in a column.
+	&__receipts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__receipt {
+		box-sizing: border-box;
+		flex: 1 1 calc((100% - 16px) / 3);
+		min-width: 120px;
+		margin: 0;
+		padding: 10px 12px;
+		border-radius: 4px;
+		background: $dw-brand-tint;
+
+		&[hidden] {
+			display: none;
+		}
+	}
+
+	// Four tiles read as two rows of two, or one row of four when there is room.
+	&__receipts[data-count="4"] &__receipt {
+		flex-basis: calc((100% - 8px) / 2);
+	}
+
+
+	&__value {
+		display: block;
+		font-size: 24px;
+		font-weight: 600;
+		line-height: 1.2;
+		color: $dw-brand-dark;
+	}
+
+	&__label {
+		display: block;
+		margin-top: 2px;
+		color: #50575e;
+	}
+
+	// Placeholder tiles hold the layout while the numbers load.
+	&__receipt.is-loading &__value,
+	&__receipt.is-loading &__label {
+		border-radius: 3px;
+		background: $dw-brand-tint-strong;
+		color: transparent;
+		animation: rtgodam-dw-pulse 1.4s ease-in-out infinite;
+	}
+
+	&__receipt.is-loading &__value {
+		width: 48px;
+		height: 26px;
+	}
+
+	&__receipt.is-loading &__label {
+		width: 96px;
+		height: 13px;
+		margin-top: 6px;
+	}
+
+	// Links that lead somewhere (Connect, Open GoDAM, clickable tiles) end in an
+	// arrow. Right-to-left languages point it the other way. The arrow rules
+	// run in rising specificity, so each later rule wins where it should.
+	&__arrow {
+		display: inline-block;
+		margin-inline-start: 4px;
+		transition: transform 0.15s ease, opacity 0.15s ease;
+	}
+
+	.rtl &__arrow {
+		transform: scaleX(-1);
+	}
+
+	// A clickable tile: the link fills the tile, with the arrow in its corner.
+	// Logical properties keep the arrow at the reading end in either direction.
+	&__receipt.is-link {
+		padding: 0;
+	}
+
+	&__tile-link {
+		position: relative;
+		display: block;
+		box-sizing: border-box;
+		height: 100%;
+		padding-block: 10px;
+		padding-inline: 12px 28px;
+		border-radius: inherit;
+		color: inherit;
+		text-decoration: none;
+
+		&:hover,
+		&:focus {
+			background: $dw-brand-tint-strong;
+			color: inherit;
+		}
+
+		&:focus {
+			outline: 2px solid transparent;
+			box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #2271b1);
+		}
+
+		.rtgodam-dw__arrow {
+			position: absolute;
+			inset-block-start: 10px;
+			inset-inline-end: 10px;
+			margin: 0;
+			color: $dw-brand;
+			opacity: 0.55;
+		}
+	}
+
+	a:hover > &__arrow,
+	a:focus > &__arrow {
+		transform: translateX(2px);
+	}
+
+	&__receipt.is-loading &__arrow {
+		visibility: hidden;
+	}
+
+	&__tile-link:hover &__arrow,
+	&__tile-link:focus &__arrow {
+		opacity: 1;
+	}
+
+	.rtl a:hover > &__arrow,
+	.rtl a:focus > &__arrow {
+		transform: scaleX(-1) translateX(2px);
+	}
+
+	&__chart,
+	&__top,
+	&__mix {
+		margin-top: 12px;
+
+		&[hidden] {
+			display: none;
+		}
+	}
+
+	&__chart-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 12px;
+	}
+
+	&__chart-total {
+		font-weight: 600;
+		color: $dw-brand-dark;
+	}
+
+	&__chart-svg {
+		display: block;
+		width: 100%;
+		height: 64px;
+	}
+
+	&__bar {
+		fill: $dw-brand;
+
+		&:hover {
+			fill: $dw-brand-dark;
+		}
+
+		&.is-empty {
+			fill: #dcdcde;
+		}
+	}
+
+	// Placeholder chart and list rows hold the layout while the numbers load.
+	&__chart.is-loading &__chart-svg,
+	&__top-skeleton {
+		border-radius: 3px;
+		background: $dw-brand-tint;
+		animation: rtgodam-dw-pulse 1.4s ease-in-out infinite;
+	}
+
+	&__alerts,
+	&__checklist {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__alert {
+		margin: 0 0 6px;
+		padding: 8px 10px;
+		border-left: 4px solid #dba617;
+		background: #fcf9e8;
+
+		&.is-error {
+			border-left-color: #d63638;
+			background: #fcf0f1;
+		}
+
+		a {
+			white-space: nowrap;
+		}
+	}
+
+	&__review {
+		margin: 12px 0;
+		padding: 10px 12px;
+		border-radius: 4px;
+		background: $dw-brand-tint;
+
+		&[hidden] {
+			display: none;
+		}
+
+		.button-link {
+			color: $dw-brand-dark;
+		}
+	}
+
+	&__review-text {
+		margin: 0 0 8px;
+	}
+
+	&__review-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 12px;
+		margin: 0;
+	}
+
+	&__top-list {
+		margin: 4px 0 0;
+		padding: 0;
+		list-style: none;
+
+		li {
+			display: flex;
+			justify-content: space-between;
+			gap: 12px;
+			margin: 0;
+			padding: 6px 0;
+			border-top: 1px solid #f0f0f1;
+		}
+
+		.rtgodam-dw__top-skeleton {
+			height: 14px;
+			margin: 6px 0;
+			padding: 0;
+			border-top: 0;
+		}
+	}
+
+	&__top-empty {
+		color: #50575e;
+	}
+
+	&__mix-bar {
+		display: flex;
+		gap: 2px;
+		height: 12px;
+		overflow: hidden;
+		border-radius: 6px;
+	}
+
+	&__mix-part {
+		// Every type stays visible, however small its share.
+		flex-basis: 0;
+		min-width: 4px;
+	}
+
+	&__mix-legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px 14px;
+		margin: 8px 0 0;
+		padding: 0;
+		list-style: none;
+		color: #50575e;
+
+		li {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			margin: 0;
+		}
+	}
+
+	&__swatch {
+		flex: 0 0 10px;
+		height: 10px;
+		border-radius: 2px;
+	}
+
+	@each $type, $colour in $dw-mix {
+
+		&__mix-part.is-#{$type},
+		&__swatch.is-#{$type} {
+			background: $colour;
+		}
+	}
+
+	&__connect {
+		margin: 12px 0;
+		font-size: 13px;
+
+		a {
+			font-weight: 600;
+			white-space: nowrap;
+		}
+	}
+
+	&__top-meta {
+		flex-shrink: 0;
+		color: #50575e;
+	}
+
+	&__step-marker {
+		display: flex;
+		flex: 0 0 20px;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		height: 20px;
+		border: 2px solid #c3c4c7;
+		border-radius: 50%;
+		font-size: 11px;
+		font-weight: 600;
+	}
+
+	&__step {
+		display: flex;
+		gap: 10px;
+		margin: 0;
+		padding: 8px 0;
+		border-top: 1px solid #f0f0f1;
+
+		&.is-done .rtgodam-dw__step-marker {
+			border-color: #00a32a;
+			background: #00a32a;
+			color: #fff;
+		}
+	}
+
+	&__step-title {
+		display: block;
+		font-weight: 600;
+	}
+
+	&__step-detail {
+		display: block;
+		color: #50575e;
+	}
+
+	&__status {
+		margin: 0;
+		color: #50575e;
+	}
+
+	// Under tiles, the status line needs a gap; alone under the heading, it does not.
+	&__receipts:not([data-count="0"]) ~ &__status {
+		margin-top: 12px;
+	}
+
+	&__footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+		margin: 0 -12px;
+		padding: 10px 12px;
+		border-top: 1px solid #f0f0f1;
+		border-bottom-left-radius: inherit;
+		border-bottom-right-radius: inherit;
+		background: #f6f7f7;
+	}
+
+	// A section already draws the line above the footer.
+	&__section + &__footer {
+		border-top: 0;
+	}
+
+	&__updated {
+		color: #646970;
+	}
+}
+
+@container (min-width: 640px) {
+
+	.rtgodam-dw__receipts[data-count="4"] .rtgodam-dw__receipt {
+		flex-basis: calc((100% - 24px) / 4);
+	}
+}
+
+@keyframes rtgodam-dw-pulse {
+
+	50% {
+		opacity: 0.5;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.rtgodam-dw__receipt.is-loading .rtgodam-dw__value,
+	.rtgodam-dw__receipt.is-loading .rtgodam-dw__label,
+	.rtgodam-dw__chart.is-loading .rtgodam-dw__chart-svg,
+	.rtgodam-dw__top-skeleton {
+		animation: none;
+	}
+
+	.rtgodam-dw__arrow {
+		transition: none;
+	}
+}

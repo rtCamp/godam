@@ -41,6 +41,7 @@ use RTGODAM\Inc\REST_API\Ads;
 use RTGODAM\Inc\REST_API\Transcoding;
 use RTGODAM\Inc\REST_API\Transcription;
 use RTGODAM\Inc\REST_API\Analytics;
+use RTGODAM\Inc\REST_API\Dashboard_Widget_Summary;
 use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
@@ -103,6 +104,7 @@ class Plugin {
 		Assets::get_instance();
 		Blocks::get_instance();
 		Pages::get_instance();
+		Dashboard_Widget::get_instance();
 		Media_Library_Ajax::get_instance();
 		Media_Tracker::get_instance();
 		Media_Usage_Tracker::get_instance();
@@ -193,6 +195,7 @@ class Plugin {
 		Transcoding::get_instance();
 		Transcription::get_instance();
 		Analytics::get_instance();
+		Dashboard_Widget_Summary::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();
