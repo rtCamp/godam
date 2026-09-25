@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-24T11:42:37+00:00\n"
+"POT-Creation-Date: 2026-09-25T06:29:54+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -17,6 +17,7 @@ msgstr ""
 #. Plugin Name of the plugin
 #: godam.php
 #: assets/build/pages/video-editor.min.js:2
+#: inc/classes/class-dashboard-widget.php:245
 #: inc/classes/class-elementor-widgets.php:240
 #: inc/classes/class-pages.php:184
 #: inc/classes/class-pages.php:185
@@ -2209,6 +2210,148 @@ msgstr ""
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:353
 #, js-format
 msgid "Maximum allowed size: %s MB"
+msgstr ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:55
+msgid "hour watched"
+msgid_plural "hours watched"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:56
+msgid "minute watched"
+msgid_plural "minutes watched"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:80
+msgid "Time people actually spent watching. Pauses, buffering and skipped parts are not counted."
+msgstr ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:85
+msgid "play"
+msgid_plural "plays"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:86
+msgid "A play is one viewer watching a video on a given day."
+msgstr ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:90
+msgid "viewer"
+msgid_plural "viewers"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:91
+msgid "Counted once per browser that played a video."
+msgstr ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:95
+msgid "country reached"
+msgid_plural "countries reached"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:96
+msgid "Countries your videos were watched in."
+msgstr ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:100
+msgid "time shown on a page"
+msgid_plural "times shown on pages"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/js/dashboard-widget.min.js:1
+#: assets/src/js/dashboard-widget/index.js:101
+msgid "Times one of your videos came into view on a page, played or not."
+msgstr ""
+
+#. translators: 1: a date such as "Sep 12", 2: number of plays.
+#: assets/build/js/dashboard-widget.min.js:2
+#: assets/src/js/dashboard-widget/index.js:193
+#, js-format
+msgid "%1$s: %2$s play"
+msgid_plural "%1$s: %2$s plays"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: number of plays.
+#: assets/build/js/dashboard-widget.min.js:3
+#: assets/src/js/dashboard-widget/index.js:206
+#, js-format
+msgid "%s play in the last 30 days"
+msgid_plural "%s plays in the last 30 days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/js/dashboard-widget.min.js:3
+#: assets/src/js/dashboard-widget/index.js:247
+msgid "No plays in the last 30 days."
+msgstr ""
+
+#. translators: %s: number of plays.
+#: assets/build/js/dashboard-widget.min.js:4
+#: assets/src/js/dashboard-widget/index.js:258
+#, js-format
+msgid "%s play"
+msgid_plural "%s plays"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: attachment ID.
+#: assets/build/js/dashboard-widget.min.js:5
+#: assets/src/js/dashboard-widget/index.js:271
+#, js-format
+msgid "Video %d"
+msgstr ""
+
+#: assets/build/js/dashboard-widget.min.js:5
+#: assets/src/js/dashboard-widget/index.js:413
+msgid "GoDAM analytics is unavailable right now. Your videos keep playing as usual."
+msgstr ""
+
+#: assets/build/js/dashboard-widget.min.js:5
+#: assets/src/js/dashboard-widget/index.js:414
+msgid "GoDAM analytics could not load right now."
+msgstr ""
+
+#: assets/build/js/dashboard-widget.min.js:5
+#: assets/src/js/dashboard-widget/index.js:432
+msgid "Add a GoDAM video to a page. Plays and watch time show up here once people start watching."
+msgstr ""
+
+#: assets/build/js/dashboard-widget.min.js:5
+#: assets/src/js/dashboard-widget/index.js:313
+msgid "Updated just now"
+msgstr ""
+
+#. translators: %s: minutes since the numbers were fetched.
+#: assets/build/js/dashboard-widget.min.js:6
+#: assets/src/js/dashboard-widget/index.js:316
+#, js-format
+msgid "Updated %s minute ago"
+msgid_plural "Updated %s minutes ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: a round number of plays the site has passed, e.g. "2,500".
+#: assets/build/js/dashboard-widget.min.js:7
+#: assets/src/js/dashboard-widget/index.js:342
+#, js-format
+msgid "Your videos have passed %s plays. If GoDAM has earned it, a quick review on WordPress.org helps other site owners find it."
 msgstr ""
 
 #: assets/build/js/deactivation-feedback.min.js:1
@@ -8968,6 +9111,7 @@ msgid "Yes, Continue"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
+#: inc/classes/class-dashboard-widget.php:1511
 #: pages/video-editor/onboarding/ProductGuide.jsx:237
 msgid "Not now"
 msgstr ""
@@ -9618,6 +9762,7 @@ msgid "Allow"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:740
+#: inc/classes/class-dashboard-widget.php:1512
 msgid "No thanks"
 msgstr ""
 
@@ -9861,6 +10006,258 @@ msgstr ""
 
 #: inc/classes/class-assets.php:94
 msgid "No video found for attachment ID"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1033
+msgid "Your GoDAM API key has expired."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1034
+msgid "Update key"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1039
+msgid "GoDAM could not verify your API key just now. It will try again automatically."
+msgstr ""
+
+#. translators: %s: storage used, as a percentage of the plan.
+#: inc/classes/class-dashboard-widget.php:1044
+#, php-format
+msgid "Storage is full (%s%%). New uploads are not being transcoded."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1045
+#: inc/classes/class-dashboard-widget.php:1052
+#: inc/classes/class-dashboard-widget.php:1059
+#: inc/classes/class-dashboard-widget.php:1066
+msgid "View plan"
+msgstr ""
+
+#. translators: %s: storage used, as a percentage of the plan.
+#: inc/classes/class-dashboard-widget.php:1051
+#, php-format
+msgid "Storage is %s%% full. At 100%%, new uploads stop transcoding."
+msgstr ""
+
+#. translators: %s: bandwidth used this billing period, as a percentage of the plan.
+#: inc/classes/class-dashboard-widget.php:1058
+#, php-format
+msgid "Bandwidth is over this period's limit (%s%%)."
+msgstr ""
+
+#. translators: %s: bandwidth used this billing period, as a percentage of the plan.
+#: inc/classes/class-dashboard-widget.php:1065
+#, php-format
+msgid "Bandwidth is %s%% used this billing period."
+msgstr ""
+
+#. translators: %s: number of files.
+#: inc/classes/class-dashboard-widget.php:1073
+#, php-format
+msgid "GoDAM could not process %s file."
+msgid_plural "GoDAM could not process %s files."
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/classes/class-dashboard-widget.php:1074
+msgid "Retry"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1098
+msgid "Your library"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1099
+msgid "Ready to stream and preview"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1120
+msgid "Open GoDAM"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1146
+msgid "Watching"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1168
+msgid "Plays, last 30 days"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1176
+msgid "Top videos, last 30 days"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1332
+msgid "file"
+msgid_plural "files"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/classes/class-dashboard-widget.php:1333
+msgid "Everything in your Media Library."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1338
+msgid "file in folders"
+msgid_plural "files in folders"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/classes/class-dashboard-widget.php:1339
+msgid "Files sorted into a GoDAM folder."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1344
+msgid "folder"
+msgid_plural "folders"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/classes/class-dashboard-widget.php:1345
+msgid "Folders in your Media Library."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1350
+msgid "file in use on your site"
+msgid_plural "files in use on your site"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/classes/class-dashboard-widget.php:1351
+msgid "Files that appear in at least one post, page or widget. Drafts count too."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1358
+msgid "hour of video"
+msgid_plural "hours of video"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/classes/class-dashboard-widget.php:1359
+msgid "The combined length of the videos in your Media Library."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1364
+msgid "video ready to stream"
+msgid_plural "videos ready to stream"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/classes/class-dashboard-widget.php:1365
+msgid "Videos GoDAM has transcoded into adaptive streams."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1370
+msgid "audio file ready to stream"
+msgid_plural "audio files ready to stream"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/classes/class-dashboard-widget.php:1371
+msgid "Audio files GoDAM has prepared for streaming."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1376
+msgid "document ready to preview"
+msgid_plural "documents ready to preview"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/classes/class-dashboard-widget.php:1377
+msgid "Documents GoDAM has prepared for the on-page viewer."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1382
+msgid "video with captions"
+msgid_plural "videos with captions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/classes/class-dashboard-widget.php:1383
+msgid "Videos with a GoDAM transcript, which the player shows as captions."
+msgstr ""
+
+#. translators: %s: the library's file counts by type, such as "1,980 images, 48 videos".
+#: inc/classes/class-dashboard-widget.php:1427
+#, php-format
+msgid "Your Media Library: %s"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1445
+msgid "Connect GoDAM to stream all your videos in the right quality for every screen."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1448
+msgid "Connect GoDAM to turn all your Word, Excel and PowerPoint files into previews visitors can read on the page."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1451
+msgid "Connect GoDAM to stream all your audio files in a player that can show chapters and transcripts."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1454
+msgid "Connect GoDAM to use this library on your other sites and share it with your team."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1462
+msgid "Connect"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1475
+msgid "Connect GoDAM to stream your videos in the right quality for every screen."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1477
+#: inc/classes/class-dashboard-widget.php:1561
+msgid "Connect GoDAM"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1489
+msgid "Reload the page to load your GoDAM numbers."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1494
+msgid "Loading your numbers..."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1509
+msgid "Leave a review"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1510
+msgid "(opens in a new tab)"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1527
+msgid "Needs attention"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1562
+msgid "Your site is linked to your GoDAM account."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1566
+msgid "Upload a video"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1567
+msgid "Add it to the Media Library. GoDAM prepares it for streaming."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1572
+msgid "Get your first video ready to stream"
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1574
+msgid "GoDAM is preparing it now, so it plays smoothly on any screen and connection."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1575
+msgid "GoDAM prepares it to play smoothly on any screen and connection."
+msgstr ""
+
+#: inc/classes/class-dashboard-widget.php:1579
+msgid "Get set up"
 msgstr ""
 
 #: inc/classes/class-deactivation.php:64
