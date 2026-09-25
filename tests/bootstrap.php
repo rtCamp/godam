@@ -423,6 +423,12 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-transcoding.php';
 // touches WordPress only inside its route callbacks, so requiring it runs no WP code.
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
 
+// Loaded for the Dashboard widget's rules and summary shaping (DashboardWidgetTest).
+// Each file only declares a class, so requiring them runs no WP code.
+require_once dirname( __DIR__ ) . '/inc/classes/enums/class-api-key-status.php';
+require_once dirname( __DIR__ ) . '/inc/classes/class-dashboard-widget.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-dashboard-widget-summary.php';
+
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
 require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';
