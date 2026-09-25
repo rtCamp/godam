@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -224,6 +224,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.3.1 (September 25, 2026) =
+
+- Fix: What's New refreshes after every plugin update, so it always shows the current release post.
+
 = v2.3.0 (September 24, 2026) =
 
 - Feat: Revenue Analytics for WooCommerce. See how much order value is credited to each video, split into Direct (added to cart inside the video) and Assisted (clicked the product in a video, image hotspot or Reel Pop, then added it to cart on its product page). Influenced revenue is reported separately and is never added to the headline.
@@ -239,10 +243,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v2.2.4 (September 21, 2026) =
 
 - Chore: Security fixes.
-
-= v2.2.3 (September 16, 2026) =
-
-- Fix: Resolved content and display issues on the What's New page.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

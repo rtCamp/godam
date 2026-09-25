@@ -1,5 +1,9 @@
 # Changelog #
 
+## v2.3.1 (September 25, 2026) ##
+
+- Fix: What's New refreshes after every plugin update, so it always shows the current release post.
+
 ## v2.3.0 (September 24, 2026) ##
 
 - Feat: Revenue Analytics for WooCommerce. See how much order value is credited to each video, split into Direct (added to cart inside the video) and Assisted (clicked the product in a video, image hotspot or Reel Pop, then added it to cart on its product page). Influenced revenue is reported separately and is never added to the headline.
