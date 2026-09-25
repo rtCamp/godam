@@ -2,7 +2,7 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 2.3.0\n"
+"Project-Id-Version: GoDAM 2.3.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -9982,7 +9982,7 @@ msgstr ""
 msgid "Maximum number of choices allowed: "
 msgstr ""
 
-#: inc/classes/class-update.php:89
+#: inc/classes/class-update.php:93
 msgid "GoDAM video performance settings have been simplified to Balanced and Priority modes. Please review any hero videos that should stay in Priority mode after this update."
 msgstr ""
 
