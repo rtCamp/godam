@@ -264,6 +264,7 @@ class Dashboard_Widget {
 		$model      = $this->get_model();
 		$asset_path = RTGODAM_PATH . 'assets/build/js/dashboard-widget.min.asset.php';
 		$asset      = file_exists( $asset_path )
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is a plugin constant + hardcoded build filename.
 			? include $asset_path
 			: array(
 				'dependencies' => array( 'wp-api-fetch', 'wp-i18n' ),
@@ -762,7 +763,8 @@ class Dashboard_Widget {
 		);
 
 		foreach ( $by_mime as $mime => $count ) {
-			$count                                 = max( 0, (int) $count );
+			$count = max( 0, (int) $count );
+
 			$types[ self::mime_family( $mime ) ] += $count;
 
 			if ( self::is_office_mime( $mime ) ) {
@@ -1174,7 +1176,7 @@ class Dashboard_Widget {
 			$top_seen ? ' is-loading' : '',
 			$top_seen ? '' : ' hidden',
 			esc_html__( 'Top videos, last 30 days', 'godam' ),
-			$top_seen ? str_repeat( '<li class="rtgodam-dw__top-skeleton" aria-hidden="true"></li>', 3 ) : ''
+			$top_seen ? str_repeat( '<li class="rtgodam-dw__top-skeleton" aria-hidden="true"></li>', 3 ) : '' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- constant markup.
 		);
 
 		$this->render_status( $loading );
@@ -1398,19 +1400,39 @@ class Dashboard_Widget {
 	 * @return void
 	 */
 	private function render_library_mix( array $types ) {
+		// Plain counts first: make-pot skips an _n() whose count reads "(int) ( $x ?? 0 )".
+		$counts = array_map(
+			'intval',
+			array_merge(
+				array(
+					'images'    => 0,
+					'videos'    => 0,
+					'documents' => 0,
+					'audio'     => 0,
+					'other'     => 0,
+				),
+				array_intersect_key( $types, array_flip( array( 'images', 'videos', 'documents', 'audio', 'other' ) ) )
+			)
+		);
+
 		$parts = array(
-			'images'    => _n( '%s image', '%s images', (int) ( $types['images'] ?? 0 ), 'godam' ),
-			'videos'    => _n( '%s video', '%s videos', (int) ( $types['videos'] ?? 0 ), 'godam' ),
-			'documents' => _n( '%s document', '%s documents', (int) ( $types['documents'] ?? 0 ), 'godam' ),
-			'audio'     => _n( '%s audio file', '%s audio files', (int) ( $types['audio'] ?? 0 ), 'godam' ),
-			'other'     => _n( '%s other file', '%s other files', (int) ( $types['other'] ?? 0 ), 'godam' ),
+			/* translators: %s: number of images. */
+			'images'    => _n( '%s image', '%s images', $counts['images'], 'godam' ),
+			/* translators: %s: number of videos. */
+			'videos'    => _n( '%s video', '%s videos', $counts['videos'], 'godam' ),
+			/* translators: %s: number of documents. */
+			'documents' => _n( '%s document', '%s documents', $counts['documents'], 'godam' ),
+			/* translators: %s: number of audio files. */
+			'audio'     => _n( '%s audio file', '%s audio files', $counts['audio'], 'godam' ),
+			/* translators: %s: number of other files. */
+			'other'     => _n( '%s other file', '%s other files', $counts['other'], 'godam' ),
 		);
 
 		$segments = '';
 		$legend   = '';
 		$labels   = array();
 		foreach ( $parts as $type => $format ) {
-			$count = (int) ( $types[ $type ] ?? 0 );
+			$count = $counts[ $type ];
 			if ( $count <= 0 ) {
 				continue;
 			}
