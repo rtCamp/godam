@@ -831,9 +831,13 @@
 }
 
 // In-video (Direct) add-to-cart that is structurally 0 (variable / grouped /
-// external products can't be added inside a video). Greyed with a dotted
-// underline + help cursor so the hover tooltip reads as an explanation.
-.godam-direct-na {
+// external products can't be added inside a video), and the other Top Products
+// figures that are empty by design: a grouped or external product's adds and
+// revenue, and the add-to-cart rate of a product never counted as shown. Greyed
+// with a dotted underline + help cursor so the hover tooltip reads as an
+// explanation.
+.godam-direct-na,
+.godam-na-hint {
 	opacity: 0.6;
 	text-decoration: underline dotted;
 	text-underline-offset: 2px;

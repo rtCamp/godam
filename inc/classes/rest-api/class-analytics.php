@@ -1764,6 +1764,9 @@ class Analytics extends Base {
 					array( 'variable', 'grouped', 'external' ),
 					true
 				);
+				// The type itself lets the UI say why a grouped or external product
+				// has no adds or revenue at all: neither ever reaches this store's cart.
+				$product['product_type'] = $wc_product->get_type();
 
 				if ( $image_id ) {
 					$thumbnail_ids[ $index ] = $image_id;
@@ -1779,6 +1782,7 @@ class Analytics extends Base {
 				$product['exists']        = false;
 				// Unknown for a deleted product; default to true so we don't grey it.
 				$product['supports_direct_add_to_cart'] = true;
+				$product['product_type']                = null;
 			}
 		}
 		unset( $product );

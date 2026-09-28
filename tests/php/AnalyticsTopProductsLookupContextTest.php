@@ -252,4 +252,26 @@ class AnalyticsTopProductsLookupContextTest extends TestCase {
 		$this->assertSame( 'https://shop.test/wp-content/uploads/woocommerce-placeholder-150x150.png', $rows[12]['thumbnail_url'] );
 		$this->assertSame( 'ID: 13 (Deleted Product)', $rows[13]['title'] );
 	}
+
+	/**
+	 * Each row names its WooCommerce product type, so the table can say why a
+	 * grouped or external product has no adds or revenue: neither ever reaches
+	 * this store's cart. A deleted product has no type.
+	 */
+	public function test_rows_name_the_woocommerce_product_type() {
+		$GLOBALS['rtgodam_stub']['products'][14] = array(
+			'name'     => 'Gift set',
+			'type'     => 'grouped',
+			'image_id' => 0,
+		);
+		$this->set_microservice_rows( array( 11, 12, 13, 14 ) );
+
+		$rows = $this->fetch_rows();
+
+		$this->assertSame( 'simple', $rows[11]['product_type'] );
+		$this->assertSame( 'variable', $rows[12]['product_type'] );
+		$this->assertNull( $rows[13]['product_type'], 'a deleted product has no type' );
+		$this->assertSame( 'grouped', $rows[14]['product_type'] );
+		$this->assertFalse( $rows[14]['supports_direct_add_to_cart'], 'a grouped product cannot be added to cart in-video' );
+	}
 }

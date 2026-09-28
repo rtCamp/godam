@@ -75,7 +75,7 @@ jest.mock( '../../analytics/components/DateRangePicker', () => ( {
 /**
  * Internal dependencies
  */
-import TopProductsTable, { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements, hasRevenueTierSplit, buildCsvRow, CSV_HEADERS } from './TopProductsTable';
+import TopProductsTable, { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements, hasRevenueTierSplit, hasNoCartRate, buildCsvRow, CSV_HEADERS } from './TopProductsTable';
 import { useFetchTopProductsQuery } from '../redux/api/dashboardAnalyticsApi';
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
@@ -163,6 +163,143 @@ describe( 'sourceLabel — Source chip label mapping', () => {
 
 	it( 'falls back to the raw value for an unknown source', () => {
 		expect( sourceLabel( 'something-new' ) ).toBe( 'something-new' );
+	} );
+} );
+
+describe( 'hasNoCartRate — adds with no times shown', () => {
+	it( 'is true only when a product has adds but was never counted as shown', () => {
+		expect( hasNoCartRate( { impressions: 0, added_to_cart: 2 } ) ).toBe( true );
+		expect( hasNoCartRate( { added_to_cart: 2 } ) ).toBe( true );
+		expect( hasNoCartRate( { impressions: 40, added_to_cart: 2 } ) ).toBe( false );
+		expect( hasNoCartRate( { impressions: 0, added_to_cart: 0 } ) ).toBe( false );
+	} );
+} );
+
+describe( 'TopProductsTable — hints on figures a product type or its path leaves empty', () => {
+	/**
+	 * Render the table with one product row and return its DOM, so a test can
+	 * read that row's cells and their hover text.
+	 *
+	 * @param {Object} product A Top Products row, as the proxy sends it.
+	 * @return {HTMLElement} A detached element holding the rendered table.
+	 */
+	function renderRow( product ) {
+		useFetchTopProductsQuery.mockReturnValue( {
+			data: { products: [ product ], totalItems: 1, totalPages: 1 },
+			isFetching: false,
+			isError: false,
+		} );
+		const dom = document.createElement( 'div' );
+		dom.innerHTML = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
+		return dom;
+	}
+
+	const titleOf = ( dom, selector ) => dom.querySelector( selector )?.getAttribute( 'title' ) ?? '';
+	const addsCell = ( dom ) => dom.querySelector( 'td[title$="via product page"]' );
+
+	beforeEach( () => {
+		useFetchTopProductsQuery.mockReset();
+	} );
+
+	it( 'greys a grouped product\'s adds and revenue with a hint that the products it lists carry them', () => {
+		const dom = renderRow( {
+			product_id: 80,
+			title: 'Gift set',
+			product_type: 'grouped',
+			supports_direct_add_to_cart: false,
+			impressions: 40,
+			product_views: 6,
+			added_to_cart: 0,
+		} );
+		const hint = 'A grouped product is never added to the cart itself: shoppers add the products it lists.';
+
+		expect( titleOf( dom, '[data-test-id="godam-top-products-adds"]' ) ).toContain( hint );
+		expect( titleOf( dom, '[data-test-id="godam-top-products-revenue-empty"]' ) ).toContain( hint );
+		expect( titleOf( dom, '.godam-direct-na' ) ).toContain( hint );
+	} );
+
+	it( 'shows "-" instead of 0.0% for a product with adds but no times shown, with a hint', () => {
+		// A child bought from a grouped product's page: the video showed the
+		// grouped product, so the child itself has no times shown.
+		const dom = renderRow( {
+			product_id: 70,
+			title: 'Mug',
+			product_type: 'simple',
+			supports_direct_add_to_cart: true,
+			impressions: 0,
+			added_to_cart: 2,
+			added_to_cart_assisted: 2,
+			revenue_minor: 3000,
+			currency: 'USD',
+			orders: 2,
+		} );
+
+		expect( addsCell( dom ).textContent ).toContain( '2 (-)' );
+		expect( titleOf( dom, '[data-test-id="godam-top-products-cart-rate"]' ) ).toContain( 'No rate: this product has adds but was not counted as shown in this date range.' );
+	} );
+
+	it( 'keeps the rate, with no hint, for a product that was shown', () => {
+		const dom = renderRow( {
+			product_id: 11,
+			title: 'Mug',
+			product_type: 'simple',
+			supports_direct_add_to_cart: true,
+			impressions: 40,
+			added_to_cart: 2,
+			added_to_cart_direct: 2,
+		} );
+
+		expect( addsCell( dom ).textContent ).toContain( '2 (5.0%)' );
+		expect( dom.querySelector( '[data-test-id="godam-top-products-cart-rate"]' ) ).toBeNull();
+		expect( titleOf( dom, '[data-test-id="godam-top-products-adds"]' ) ).toBe( '' );
+	} );
+
+	it( 'keeps a variable product\'s in-video hint about variable products only', () => {
+		const dom = renderRow( {
+			product_id: 12,
+			title: 'Tee',
+			product_type: 'variable',
+			supports_direct_add_to_cart: false,
+			impressions: 10,
+			added_to_cart: 1,
+			added_to_cart_assisted: 1,
+		} );
+		const inVideoHint = titleOf( dom, '.godam-direct-na' );
+
+		expect( inVideoHint ).toContain( 'Variable products cannot be added to cart inside a video' );
+		expect( inVideoHint ).not.toContain( 'grouped' );
+		expect( titleOf( dom, '[data-test-id="godam-top-products-adds"]' ) ).toBe( '' );
+	} );
+
+	it( 'greys an external product\'s adds and revenue with a hint that it is bought on another site', () => {
+		const dom = renderRow( {
+			product_id: 90,
+			title: 'Camera on partner store',
+			product_type: 'external',
+			supports_direct_add_to_cart: false,
+			impressions: 10,
+			product_views: 3,
+			added_to_cart: 0,
+		} );
+		const hint = 'External products are bought on another site, so they are never added to this store\'s cart';
+
+		expect( titleOf( dom, '[data-test-id="godam-top-products-adds"]' ) ).toContain( hint );
+		expect( titleOf( dom, '[data-test-id="godam-top-products-revenue-empty"]' ) ).toContain( hint );
+		expect( titleOf( dom, '.godam-direct-na' ) ).toContain( hint );
+	} );
+
+	it( 'never greys a grouped product\'s adds when it does have some', () => {
+		const dom = renderRow( {
+			product_id: 80,
+			title: 'Gift set',
+			product_type: 'grouped',
+			supports_direct_add_to_cart: false,
+			impressions: 40,
+			added_to_cart: 3,
+			added_to_cart_assisted: 3,
+		} );
+
+		expect( titleOf( dom, '[data-test-id="godam-top-products-adds"]' ) ).toBe( '' );
 	} );
 } );
 
