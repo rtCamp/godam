@@ -146,5 +146,26 @@ class Media_Folders extends Base {
 				'auth_callback' => $manage_meta_auth_callback,
 			)
 		);
+
+		/*
+		 * Maps this WordPress `media-folder` term to its GoDAM Central `GoDAM File Label`
+		 * (a Frappe docname — a string, not an int). System-managed: written only by the
+		 * media-library sync layer via update_term_meta() (see Folder_Sync_Map). It is
+		 * deliberately kept out of REST (`show_in_rest => false`) and write-denied
+		 * (`auth_callback => __return_false`) so no user can repoint a folder at another
+		 * tenant's Central folder through the native term-meta route. If the React tree
+		 * needs the mapping (e.g. to show sync status) it is surfaced read-only via the
+		 * godam/v1/media-library/media-folders payload, never this meta directly.
+		 */
+		register_term_meta(
+			static::SLUG,
+			'_godam_folder_id',
+			array(
+				'type'          => 'string',
+				'single'        => true,
+				'show_in_rest'  => false,
+				'auth_callback' => '__return_false',
+			)
+		);
 	}
 }

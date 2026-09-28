@@ -2376,3 +2376,18 @@ function rtgodam_format_html_attributes( $attributes ) {
 
 	return implode( ' ', $formatted );
 }
+
+/**
+ * Get this site's GoDAM Central root folder id.
+ *
+ * Durable local mirror of the site's `GoDAM File Label` root, persisted by
+ * RTGODAM\Inc\REST_API\Site::get_site_data() when Central resolves it. Used by the
+ * media-library sync layer as the parent for top-level folder pushes and as the
+ * anchor a Central-side rename is diffed against. Returns an empty string until the
+ * site has been resolved against Central at least once.
+ *
+ * @return string GoDAM Central root folder id, or empty string when unknown.
+ */
+function rtgodam_get_site_folder_id() {
+	return (string) get_option( 'rtgodam_site_folder_id', '' );
+}
