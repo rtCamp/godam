@@ -38,7 +38,16 @@ describe( 'RevenueCard — single store currency', () => {
 		);
 		expect( html ).toContain( 'godam-revenue-card' );
 		expect( html ).toContain( '2,500' ); // 250000 minor INR = 2,500.00, full number
-		expect( html ).not.toContain( 'excluding' ); // nothing excluded
+		// Nothing excluded: no "excluding N orders in other currencies" line. The
+		// tooltip's own "excluding tax, shipping and fees" is not that line.
+		expect( html ).not.toMatch( /excluding [\d,.]+ orders? in other currencies/ );
+	} );
+
+	it( 'says in its tooltip what the figure includes', () => {
+		const html = renderToString(
+			<RevenueCard revenue={ { revenue_minor: 250000, currency: 'INR', excluded_orders: 0 } } />,
+		);
+		expect( html ).toContain( 'Shown after discounts and before refunds, excluding tax, shipping and fees.' );
 	} );
 
 	it( 'shows the excluded-orders sub-line when there are orders in other currencies', () => {

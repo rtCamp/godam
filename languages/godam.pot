@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-24T11:42:37+00:00\n"
+"POT-Creation-Date: 2026-09-28T12:30:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -3433,7 +3433,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/RevenueCard.js:108
-msgid "Order value traced back to the video that earned it, in the store's base currency. Direct means added to cart inside the video; Assisted means the shopper clicked through to the product page and bought there. Orders in other currencies are counted separately, not converted. Shown before refunds."
+msgid "Order value traced back to the video that earned it, in the store's base currency. Direct means added to cart inside the video; Assisted means the shopper clicked through to the product page and bought there. Orders in other currencies are counted separately, not converted. Shown after discounts and before refunds, excluding tax, shipping and fees."
 msgstr ""
 
 #. translators: %s: number of orders placed in other currencies, not included in the total.
@@ -4628,12 +4628,12 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: pages/dashboard/components/TopProductsTable.js:570
 #, js-format
-msgid "Order value traced to this product's videos, in the store's base currency (%s), before refunds. Orders in other currencies are not converted or counted. Direct means added to cart in-video; Assisted means bought after clicking through to the product page."
+msgid "Order value traced to this product's videos, in the store's base currency (%s), after discounts and before refunds, excluding tax, shipping and fees. Orders in other currencies are not converted or counted. Direct means added to cart in-video; Assisted means bought after clicking through to the product page."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
 #: pages/dashboard/components/TopProductsTable.js:573
-msgid "Order value traced to this product's videos, in the store's base currency, before refunds. Direct means added to cart in-video; Assisted means bought after clicking through to the product page."
+msgid "Order value traced to this product's videos, in the store's base currency, after discounts and before refunds, excluding tax, shipping and fees. Direct means added to cart in-video; Assisted means bought after clicking through to the product page."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
