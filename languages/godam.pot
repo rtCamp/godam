@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-29T08:32:01+00:00\n"
+"POT-Creation-Date: 2026-09-29T08:45:48+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -3206,7 +3206,7 @@ msgstr ""
 #: pages/analytics/Analytics.js:193
 #: pages/analytics/PlaysVsViewers.js:93
 #: pages/analytics/SingleMetrics.js:122
-#: pages/dashboard/components/GA4ConnectionWidget.js:174
+#: pages/dashboard/components/GA4ConnectionWidget.js:175
 #: pages/dashboard/Dashboard.js:287
 #: pages/dashboard/Dashboard.js:323
 msgid "All time"
@@ -4944,81 +4944,81 @@ msgid "Top videos pagination"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:35
+#: pages/dashboard/components/GA4ConnectionWidget.js:36
 msgid "a custom GA4 integration"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:36
+#: pages/dashboard/components/GA4ConnectionWidget.js:37
 msgid "a manually configured GA4 integration"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:57
+#: pages/dashboard/components/GA4ConnectionWidget.js:58
 msgid "Add To Cart and Purchase are GA4’s default ecommerce events, already tracked by many stores."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:195
+#: pages/dashboard/components/GA4ConnectionWidget.js:200
 msgid "Add to Cart events"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:201
+#: pages/dashboard/components/GA4ConnectionWidget.js:207
 msgid "Purchase events"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:232
+#: pages/dashboard/components/GA4ConnectionWidget.js:240
 msgid "GA4 Tracking off"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:237
+#: pages/dashboard/components/GA4ConnectionWidget.js:245
 msgid "Enable"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:250
+#: pages/dashboard/components/GA4ConnectionWidget.js:258
 msgid "Checking GA4 status…"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:263
+#: pages/dashboard/components/GA4ConnectionWidget.js:271
 msgid "GA4 unavailable"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:264
+#: pages/dashboard/components/GA4ConnectionWidget.js:272
 msgid "Could not reach the GA4 status endpoint. This can happen right after an update — try refreshing in a moment."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:268
-#: pages/dashboard/components/GA4ConnectionWidget.js:301
-#: pages/dashboard/components/GA4ConnectionWidget.js:325
+#: pages/dashboard/components/GA4ConnectionWidget.js:276
+#: pages/dashboard/components/GA4ConnectionWidget.js:309
+#: pages/dashboard/components/GA4ConnectionWidget.js:333
 msgid "Manage"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:47
+#: pages/dashboard/components/GA4ConnectionWidget.js:48
 msgid "another GA4 integration"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:288
+#: pages/dashboard/components/GA4ConnectionWidget.js:296
 msgid "GoDAM is standing down"
 msgstr ""
 
 #. translators: %s: name of the other active GA4 integration.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:291
+#: pages/dashboard/components/GA4ConnectionWidget.js:299
 #, js-format
 msgid "%s is already sending these events, so GoDAM is not pushing them to avoid duplicates."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:316
+#: pages/dashboard/components/GA4ConnectionWidget.js:324
 msgid "Sending to GA4"
 msgstr ""
 

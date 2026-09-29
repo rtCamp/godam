@@ -10,6 +10,7 @@ import { check, warning, chevronRight } from '@wordpress/icons';
  */
 import Tooltip from '../../analytics/Tooltip';
 import { useFetchGa4CountsQuery } from '../redux/api/dashboardAnalyticsApi';
+import { canViewRevenue } from '../../shared/canViewRevenue';
 
 /**
  * Settings link back to the General Settings tab, where the actual
@@ -181,12 +182,16 @@ const AllTimeBadge = () => (
  * way, since the server counts events "prepared to send" independent of
  * whether GoDAM itself ends up pushing them; see the standing-down copy).
  *
- * @param {Object} props                Props.
- * @param {number} props.addToCartCount Lifetime add_to_cart count.
- * @param {number} props.purchaseCount  Lifetime purchase count.
+ * The purchase count comes from orders, so it shows only to users who may see
+ * order data (see canViewRevenue); everyone else sees the add_to_cart count alone.
+ *
+ * @param {Object}  props                Props.
+ * @param {number}  props.addToCartCount Lifetime add_to_cart count.
+ * @param {number}  props.purchaseCount  Lifetime purchase count.
+ * @param {boolean} props.showPurchase   Whether to show the purchase count.
  * @return {JSX.Element} Metrics row.
  */
-const MetricsRow = ( { addToCartCount, purchaseCount } ) => (
+const MetricsRow = ( { addToCartCount, purchaseCount, showPurchase } ) => (
 	<div className="flex flex-row gap-8">
 		<div className="flex flex-col">
 			<p className="single-metrics-value" data-test-id="godam-ga4-connection-add-to-cart-count">
@@ -194,12 +199,14 @@ const MetricsRow = ( { addToCartCount, purchaseCount } ) => (
 			</p>
 			<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Add to Cart events', 'godam' ) }</span>
 		</div>
-		<div className="flex flex-col">
-			<p className="single-metrics-value" data-test-id="godam-ga4-connection-purchase-count">
-				{ purchaseCount.toLocaleString() }
-			</p>
-			<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Purchase events', 'godam' ) }</span>
-		</div>
+		{ showPurchase && (
+			<div className="flex flex-col">
+				<p className="single-metrics-value" data-test-id="godam-ga4-connection-purchase-count">
+					{ purchaseCount.toLocaleString() }
+				</p>
+				<span className="text-xs text-zinc-500 whitespace-nowrap">{ __( 'Purchase events', 'godam' ) }</span>
+			</div>
+		) }
 	</div>
 );
 
@@ -220,6 +227,7 @@ const MetricsRow = ( { addToCartCount, purchaseCount } ) => (
  */
 const GA4ConnectionWidget = () => {
 	const isConnected = !! window.godamSettings?.enableGTMTracking;
+	const showPurchase = canViewRevenue();
 
 	const { data, isLoading, isError } = useFetchGa4CountsQuery( undefined, { skip: ! isConnected } );
 
@@ -293,7 +301,7 @@ const GA4ConnectionWidget = () => {
 					) }
 				/>
 				<div className="flex items-center gap-6">
-					<MetricsRow addToCartCount={ addToCartCount } purchaseCount={ purchaseCount } />
+					<MetricsRow addToCartCount={ addToCartCount } purchaseCount={ purchaseCount } showPurchase={ showPurchase } />
 					<div className="flex items-center gap-3">
 						<AllTimeBadge />
 						<ActionButton
@@ -317,7 +325,7 @@ const GA4ConnectionWidget = () => {
 				tooltip={ tooltipText }
 			/>
 			<div className="flex items-center gap-6">
-				<MetricsRow addToCartCount={ addToCartCount } purchaseCount={ purchaseCount } />
+				<MetricsRow addToCartCount={ addToCartCount } purchaseCount={ purchaseCount } showPurchase={ showPurchase } />
 				<div className="flex items-center gap-3">
 					<AllTimeBadge />
 					<ActionButton

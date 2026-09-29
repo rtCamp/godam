@@ -43,7 +43,9 @@ describe( 'GA4ConnectionWidget', () => {
 	beforeEach( () => {
 		useFetchGa4CountsQuery.mockReset();
 		useFetchGa4CountsQuery.mockReturnValue( { data: undefined, isLoading: false, isError: false } );
-		window.videoData = { adminUrl: 'admin.php?page=rtgodam_settings#video-settings' };
+		// The purchase count comes from orders, so these tests run as a user who may
+		// see order data; the "without order access" block at the end turns it off.
+		window.videoData = { adminUrl: 'admin.php?page=rtgodam_settings#video-settings', canViewRevenue: true };
 	} );
 
 	afterEach( () => {
@@ -237,5 +239,52 @@ describe( 'GA4ConnectionWidget', () => {
 				expect( html ).toContain( 'godam-ga4-connection-manage-link' );
 			} );
 		} );
+	} );
+} );
+
+describe( 'GA4ConnectionWidget without order access', () => {
+	const originalGodamSettings = window.godamSettings;
+	const originalVideoData = window.videoData;
+
+	beforeEach( () => {
+		useFetchGa4CountsQuery.mockReset();
+		window.godamSettings = { enableGTMTracking: true };
+		window.videoData = { adminUrl: 'admin.php?page=rtgodam_settings#video-settings', canViewRevenue: false };
+	} );
+
+	afterEach( () => {
+		window.godamSettings = originalGodamSettings;
+		window.videoData = originalVideoData;
+	} );
+
+	it( 'shows the add to cart count and leaves the purchase count out', () => {
+		useFetchGa4CountsQuery.mockReturnValue( {
+			data: { addToCartCount: 1234, purchaseCount: 56, sourceActive: false, sourceType: '' },
+			isLoading: false,
+			isError: false,
+		} );
+
+		const html = renderToString( <GA4ConnectionWidget /> );
+
+		expect( html ).toContain( 'Sending to GA4' );
+		expect( html ).toContain( 'godam-ga4-connection-add-to-cart-count' );
+		expect( html ).toContain( '1,234' );
+		expect( html ).not.toContain( 'godam-ga4-connection-purchase-count' );
+		expect( html ).not.toContain( 'Purchase events' );
+		expect( html ).not.toContain( '>56<' );
+	} );
+
+	it( 'does the same in the standing-down state', () => {
+		useFetchGa4CountsQuery.mockReturnValue( {
+			data: { addToCartCount: 7, purchaseCount: 3, sourceActive: true, sourceType: '' },
+			isLoading: false,
+			isError: false,
+		} );
+
+		const html = renderToString( <GA4ConnectionWidget /> );
+
+		expect( html ).toContain( 'standing down' );
+		expect( html ).toContain( 'godam-ga4-connection-add-to-cart-count' );
+		expect( html ).not.toContain( 'godam-ga4-connection-purchase-count' );
 	} );
 } );
