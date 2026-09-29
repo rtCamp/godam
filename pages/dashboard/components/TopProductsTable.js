@@ -115,12 +115,15 @@ const neverAddedToCart = ( item ) =>
 
 // Hover text for a figure a product's type leaves empty: the in-video (Direct)
 // count of a product that can't be added inside a video, and the adds and
-// revenue of one that never reaches the cart (see neverAddedToCart()).
+// revenue of one that never reaches the cart (see neverAddedToCart()). The
+// "never added to the cart" sentences are only for a row with no adds: a grouped
+// or external row that has some (older data, or a product whose type changed
+// after it sold) gets the neutral sentence below, not a contradiction.
 const productTypeHint = ( item ) => {
-	if ( item.product_type === 'grouped' ) {
-		return __( 'A grouped product is never added to the cart itself: shoppers add the products it lists. Those products\' own rows show the adds and revenue.', 'godam' );
-	}
-	if ( item.product_type === 'external' ) {
+	if ( neverAddedToCart( item ) ) {
+		if ( item.product_type === 'grouped' ) {
+			return __( 'A grouped product is never added to the cart itself: shoppers add the products it lists. Those products\' own rows show the adds and revenue.', 'godam' );
+		}
 		return __( 'External products are bought on another site, so they are never added to this store\'s cart and earn no revenue here.', 'godam' );
 	}
 	if ( item.product_type === 'variable' ) {

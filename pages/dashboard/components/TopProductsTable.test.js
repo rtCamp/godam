@@ -319,6 +319,23 @@ describe( 'TopProductsTable — hints on figures a product type or its path leav
 		expect( titleOf( dom, '.godam-direct-na' ) ).toContain( hint );
 	} );
 
+	it.each( [ 'grouped', 'external' ] )( 'gives a row of type %s that has adds the neutral in-video hint, not "never added to the cart"', ( productType ) => {
+		// Older data, or a product whose type was changed after it sold.
+		const dom = renderRow( {
+			product_id: 97,
+			title: 'Changed product',
+			product_type: productType,
+			supports_direct_add_to_cart: false,
+			impressions: 10,
+			added_to_cart: 2,
+			added_to_cart_assisted: 2,
+		} );
+		const inVideoHint = titleOf( dom, '.godam-direct-na' );
+
+		expect( inVideoHint ).toBe( 'This product cannot be added to cart inside a video, so in-video (Direct) is always 0.' );
+		expect( inVideoHint ).not.toContain( 'never' );
+	} );
+
 	it( 'never greys a grouped product\'s adds when it does have some', () => {
 		const dom = renderRow( {
 			product_id: 80,
