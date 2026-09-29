@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GoDAM 2.3.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/analytics-route-permissions\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-24T11:42:37+00:00\n"
+"POT-Creation-Date: 2026-09-29T08:32:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -573,7 +573,7 @@ msgstr ""
 #: inc/templates/godam-video-gallery.php:261
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:163
 #: assets/src/blocks/godam-gallery-v2/edit.js:716
-#: pages/analytics/Analytics.js:624
+#: pages/analytics/Analytics.js:629
 #: pages/video-editor/VideoEditor.js:676
 msgid "Untitled video"
 msgstr ""
@@ -637,8 +637,8 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/src/blocks/godam-gallery-v2/edit.js:767
-#: pages/dashboard/components/TopProductsTable.js:269
-#: pages/dashboard/components/TopProductsTable.js:532
+#: pages/dashboard/components/TopProductsTable.js:270
+#: pages/dashboard/components/TopProductsTable.js:552
 msgid "Source"
 msgstr ""
 
@@ -766,7 +766,7 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:290
 #: assets/src/blocks/godam-gallery-v2/edit.js:962
 #: assets/src/blocks/godam-gallery-v2/edit.js:966
-#: pages/analytics/timeline/SubHotspotRail.js:82
+#: pages/analytics/timeline/SubHotspotRail.js:83
 msgid "Interaction"
 msgstr ""
 
@@ -3201,14 +3201,14 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:125
-#: pages/analytics/Analytics.js:174
-#: pages/analytics/Analytics.js:188
+#: pages/analytics/Analytics.js:130
+#: pages/analytics/Analytics.js:179
+#: pages/analytics/Analytics.js:193
 #: pages/analytics/PlaysVsViewers.js:93
 #: pages/analytics/SingleMetrics.js:122
 #: pages/dashboard/components/GA4ConnectionWidget.js:174
-#: pages/dashboard/Dashboard.js:282
-#: pages/dashboard/Dashboard.js:318
+#: pages/dashboard/Dashboard.js:287
+#: pages/dashboard/Dashboard.js:323
 msgid "All time"
 msgstr ""
 
@@ -3254,53 +3254,53 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:31
+#: pages/dashboard/components/TopProductsTable.js:32
 msgid "Video Woo Layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/components/Placements/index.js:34
-#: pages/dashboard/components/TopProductsTable.js:32
+#: pages/dashboard/components/TopProductsTable.js:33
 msgid "Shoppable Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/components/Placements/index.js:37
-#: pages/dashboard/components/TopProductsTable.js:33
+#: pages/dashboard/components/TopProductsTable.js:34
 msgid "Reel Pop"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:34
+#: pages/dashboard/components/TopProductsTable.js:35
 msgid "Product Gallery"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:35
+#: pages/dashboard/components/TopProductsTable.js:36
 msgid "Image Woo Layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:265
-#: pages/dashboard/components/TopProductsTable.js:529
+#: pages/dashboard/components/TopProductsTable.js:266
+#: pages/dashboard/components/TopProductsTable.js:549
 msgid "Product"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:266
+#: pages/dashboard/components/TopProductsTable.js:267
 msgid "Product ID"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:267
+#: pages/dashboard/components/TopProductsTable.js:268
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:18
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:601
 msgid "Layers"
@@ -3311,101 +3311,101 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:99
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:92
-#: pages/dashboard/components/TopProductsTable.js:268
+#: pages/dashboard/components/TopProductsTable.js:269
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:71
 msgid "Videos"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:270
-#: pages/dashboard/components/TopProductsTable.js:543
+#: pages/dashboard/components/TopProductsTable.js:271
+#: pages/dashboard/components/TopProductsTable.js:563
 msgid "Product Views"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:271
+#: pages/dashboard/components/TopProductsTable.js:272
 msgid "Product Views Rate"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:272
-#: pages/dashboard/components/TopProductsTable.js:554
+#: pages/dashboard/components/TopProductsTable.js:273
+#: pages/dashboard/components/TopProductsTable.js:574
 msgid "Add to Cart"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:273
+#: pages/dashboard/components/TopProductsTable.js:274
 msgid "Add to Cart (in-video)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:274
+#: pages/dashboard/components/TopProductsTable.js:275
 msgid "Add to Cart (assisted)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:275
-#: pages/dashboard/components/TopProductsTable.js:565
+#: pages/dashboard/components/TopProductsTable.js:281
+#: pages/dashboard/components/TopProductsTable.js:586
 msgid "Revenue"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:276
+#: pages/dashboard/components/TopProductsTable.js:282
 msgid "Revenue (direct)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:277
+#: pages/dashboard/components/TopProductsTable.js:283
 msgid "Revenue (assisted)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:278
+#: pages/dashboard/components/TopProductsTable.js:284
 msgid "Currency"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:279
+#: pages/dashboard/components/TopProductsTable.js:285
 msgid "Orders"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:280
+#: pages/dashboard/components/TopProductsTable.js:286
 msgid "Influenced Revenue"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:281
+#: pages/dashboard/components/TopProductsTable.js:287
 msgid "Influenced Currency"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:282
+#: pages/dashboard/components/TopProductsTable.js:288
 msgid "Influenced Orders"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:283
+#: pages/dashboard/components/TopProductsTable.js:289
 msgid "Influenced Provisional"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:284
+#: pages/dashboard/components/TopProductsTable.js:290
 msgid "Revenue by Placement"
 msgstr ""
 
@@ -3424,8 +3424,8 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:138
-#: pages/analytics/PurchaseFunnelCard.js:212
+#: pages/analytics/PlacementFunnelCard.js:146
+#: pages/analytics/PurchaseFunnelCard.js:224
 #: pages/analytics/RevenueCard.js:106
 msgid "NEW"
 msgstr ""
@@ -3499,28 +3499,33 @@ msgstr ""
 #. translators: %s: percentage of visitors that advanced to the next stage.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:85
+#: pages/analytics/PurchaseFunnelCard.js:90
 #, js-format
 msgid "↓ %s advanced"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:125
-#: pages/analytics/PurchaseFunnelCard.js:210
+#: pages/analytics/PurchaseFunnelCard.js:126
 msgid "Purchase Funnel"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:131
+#: pages/analytics/PurchaseFunnelCard.js:126
+msgid "Cart Funnel"
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: pages/analytics/PurchaseFunnelCard.js:143
 msgid "Couldn’t load the funnel for this range. Please try again."
 msgstr ""
 
 #. translators: 1: tier name (Direct/Assisted), 2: count, 3: stage total, 4: stage verb (added to cart/purchased), 5: percentage.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:165
+#: pages/analytics/PurchaseFunnelCard.js:177
 #, js-format
 msgid "%1$s: %2$s of %3$s %4$s (%5$s)"
 msgstr ""
@@ -3528,113 +3533,113 @@ msgstr ""
 #. translators: 1: number who did not reach this stage, 2: number of players.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:167
+#: pages/analytics/PurchaseFunnelCard.js:179
 #, js-format
 msgid "Did not reach this stage: %1$s of %2$s players"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:168
+#: pages/analytics/PurchaseFunnelCard.js:180
 msgid "Direct (added in-video)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:169
+#: pages/analytics/PurchaseFunnelCard.js:181
 msgid "Assisted only (clicked out)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:170
+#: pages/analytics/PurchaseFunnelCard.js:182
 msgid "added to cart"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:171
+#: pages/analytics/PurchaseFunnelCard.js:183
 msgid "purchased"
 msgstr ""
 
 #. translators: %s: number of visitors who purchased.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:184
+#: pages/analytics/PurchaseFunnelCard.js:196
 #, js-format
 msgid "%s purchased"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:200
+#: pages/analytics/PurchaseFunnelCard.js:212
 msgid "this video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:201
+#: pages/analytics/PurchaseFunnelCard.js:213
 msgid "any GoDAM video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:203
+#: pages/analytics/PurchaseFunnelCard.js:215
 msgid "Distinct viewers of this video. Covers Direct and Assisted."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:204
+#: pages/analytics/PurchaseFunnelCard.js:216
 msgid "Distinct visitors, counted across page visits. Covers Direct and Assisted."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:225
+#: pages/analytics/PurchaseFunnelCard.js:237
 msgid "Played a video"
 msgstr ""
 
 #. translators: %s: number of visitors who played a video.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:231
+#: pages/analytics/PurchaseFunnelCard.js:243
 #, js-format
 msgid "%s visitors played a video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:234
+#: pages/analytics/PurchaseFunnelCard.js:246
 msgid "visitors"
 msgstr ""
 
 #. translators: %s: number of visitors who did not add to cart.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:241
+#: pages/analytics/PurchaseFunnelCard.js:253
 #, js-format
 msgid "%s did not add to cart"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:72
-#: pages/analytics/PurchaseFunnelCard.js:246
+#: pages/analytics/PlacementFunnelCard.js:78
+#: pages/analytics/PurchaseFunnelCard.js:258
 msgid "Added to cart"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:247
+#: pages/analytics/PurchaseFunnelCard.js:259
 msgid "in-video or after clicking out"
 msgstr ""
 
 #. translators: %s: percentage of players.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:256
-#: pages/analytics/PurchaseFunnelCard.js:278
+#: pages/analytics/PurchaseFunnelCard.js:268
+#: pages/analytics/PurchaseFunnelCard.js:292
 #, js-format
 msgid "%s of players"
 msgstr ""
@@ -3642,53 +3647,59 @@ msgstr ""
 #. translators: %s: number of visitors who added to cart but did not buy.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:266
+#: pages/analytics/PurchaseFunnelCard.js:280
 #, js-format
 msgid "%s abandoned after adding"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:73
-#: pages/analytics/PurchaseFunnelCard.js:271
+#: pages/analytics/PlacementFunnelCard.js:80
+#: pages/analytics/PurchaseFunnelCard.js:285
 msgid "Purchased"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:272
+#: pages/analytics/PurchaseFunnelCard.js:286
 msgid "of those who added"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:286
+#: pages/analytics/PurchaseFunnelCard.js:302
 msgid "Direct, added to cart in-video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:287
+#: pages/analytics/PurchaseFunnelCard.js:303
 msgid "Assisted, clicked out then bought"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:288
+#: pages/analytics/PurchaseFunnelCard.js:303
+msgid "Assisted, clicked out then added to cart"
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: pages/analytics/PurchaseFunnelCard.js:304
 msgid "did not reach this stage"
 msgstr ""
 
 #. translators: %s: the selected date range label.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:299
+#: pages/analytics/PurchaseFunnelCard.js:315
 #, js-format
 msgid "Still counting — purchases for %s keep settling for up to 30 days."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:300
+#: pages/analytics/PurchaseFunnelCard.js:316
 msgid "this range"
 msgstr ""
 
@@ -3716,8 +3727,8 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:669
-#: pages/analytics/Analytics.js:1022
+#: pages/analytics/Analytics.js:674
+#: pages/analytics/Analytics.js:1027
 #: pages/analytics/components/Placements/index.js:230
 #: pages/analytics/PlaybackPerformance.js:422
 #: pages/analytics/PlaybackPerformance.js:546
@@ -3731,7 +3742,7 @@ msgstr ""
 #: pages/analytics/PlaybackPerformance.js:429
 #: pages/analytics/PlaybackPerformance.js:547
 #: pages/dashboard/components/TopVideosTable.js:228
-#: pages/dashboard/Dashboard.js:556
+#: pages/dashboard/Dashboard.js:561
 msgid "Engagement Rate"
 msgstr ""
 
@@ -3844,7 +3855,7 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: pages/analytics/timeline/LayerTimelineMarker.js:155
-#: pages/analytics/timeline/SubHotspotRail.js:253
+#: pages/analytics/timeline/SubHotspotRail.js:254
 msgid "Removed"
 msgstr ""
 
@@ -3903,58 +3914,58 @@ msgid "of viewers"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:63
+#: pages/analytics/timeline/SubHotspotRail.js:64
 msgid "Products in this layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:64
+#: pages/analytics/timeline/SubHotspotRail.js:65
 msgid "Hotspots in this layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:69
+#: pages/analytics/timeline/SubHotspotRail.js:70
 msgid "Each row is one product hotspot inside this layer. Select a row to see its individual funnel; \"All Products (Cumulative)\" counts sessions that interacted with any product."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:73
+#: pages/analytics/timeline/SubHotspotRail.js:74
 msgid "Each row is one hotspot inside this layer. Select a row to see its individual funnel; \"All Hotspots (Cumulative)\" counts sessions that interacted with any hotspot."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:88
+#: pages/analytics/timeline/SubHotspotRail.js:89
 msgid "Share of sessions that saw the product and interacted with it: clicked through to it or added it to the cart. Each session counts once, so this never exceeds 100%."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:92
+#: pages/analytics/timeline/SubHotspotRail.js:93
 msgid "Share of sessions that saw the hotspot and clicked it. Each session counts once, so this never exceeds 100%."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:125
+#: pages/analytics/timeline/SubHotspotRail.js:126
 msgid "All Products (Cumulative)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:126
+#: pages/analytics/timeline/SubHotspotRail.js:127
 msgid "All Hotspots (Cumulative)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:142
+#: pages/analytics/timeline/SubHotspotRail.js:143
 msgid "A session counts as an interaction here when it acts on any one product in this layer — clicks it or adds it to the cart. Each session counts once, so this can read higher than every single product's rate."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:146
+#: pages/analytics/timeline/SubHotspotRail.js:147
 msgid "A session counts as an interaction here when it clicks any one hotspot in this layer. Each session counts once, so this can read higher than every single hotspot's rate."
 msgstr ""
 
 #. translators: 1: formatted revenue amount, 2: order count phrase (e.g. "3 orders").
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:175
+#: pages/analytics/timeline/SubHotspotRail.js:176
 #, js-format
 msgid "Drove %1$s across %2$s"
 msgstr ""
@@ -3962,8 +3973,8 @@ msgstr ""
 #. translators: %d: number of orders.
 #. translators: %d: number of orders attributed to this hotspot.
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:123
-#: pages/analytics/timeline/SubHotspotRail.js:179
+#: pages/analytics/timeline/LayerDetailPanel.js:125
+#: pages/analytics/timeline/SubHotspotRail.js:180
 #, js-format
 msgid "%d order"
 msgid_plural "%d orders"
@@ -3997,71 +4008,71 @@ msgid "Dismiss notice"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:154
+#: pages/analytics/timeline/LayerDetailPanel.js:156
 msgid "Untitled layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:158
+#: pages/analytics/timeline/LayerDetailPanel.js:160
 msgid "Appeared at"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:180
+#: pages/analytics/timeline/LayerDetailPanel.js:182
 msgid "View this poll’s results"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:181
+#: pages/analytics/timeline/LayerDetailPanel.js:183
 msgid "View this form’s entries"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:184
+#: pages/analytics/timeline/LayerDetailPanel.js:186
 msgid "View Poll results"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:185
+#: pages/analytics/timeline/LayerDetailPanel.js:187
 msgid "View Form entries"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:193
+#: pages/analytics/timeline/LayerDetailPanel.js:195
 msgid "Edit this layer in the video editor"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:195
+#: pages/analytics/timeline/LayerDetailPanel.js:197
 msgid "Edit Layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:202
+#: pages/analytics/timeline/LayerDetailPanel.js:204
 msgid "This layer is no longer in the video. Historical analytics preserved."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:204
+#: pages/analytics/timeline/LayerDetailPanel.js:206
 msgid "Removed from video"
 msgstr ""
 
 #. translators: 1: formatted revenue amount, 2: order count phrase (e.g. "3 orders").
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:254
+#: pages/analytics/timeline/LayerDetailPanel.js:256
 #, js-format
 msgid "This hotspot drove %1$s across %2$s"
 msgstr ""
 
 #. translators: %s: formatted revenue amount.
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:264
+#: pages/analytics/timeline/LayerDetailPanel.js:266
 #, js-format
 msgid "This layer drove %s"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:269
+#: pages/analytics/timeline/LayerDetailPanel.js:271
 msgid "Direct in-video contribution only, from add-to-carts inside the video. It is not the product's total revenue; purchases made after clicking through to the product page (Assisted) are not counted here."
 msgstr ""
 
@@ -4154,7 +4165,7 @@ msgstr ""
 
 #. translators: %d: WordPress post ID.
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/rest-api/class-analytics.php:704
+#: inc/classes/rest-api/class-analytics.php:880
 #: pages/analytics/components/Placements/index.js:173
 #, js-format,php-format
 msgid "Post #%d"
@@ -4173,7 +4184,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:1013
+#: pages/analytics/Analytics.js:1018
 #: pages/analytics/components/Placements/index.js:229
 #: pages/dashboard/components/TopVideosTable.js:226
 #: pages/dashboard/components/TopVideosTable.js:349
@@ -4198,8 +4209,8 @@ msgid "Displayed on:"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/rest-api/class-analytics.php:705
-#: inc/classes/rest-api/class-analytics.php:766
+#: inc/classes/rest-api/class-analytics.php:881
+#: inc/classes/rest-api/class-analytics.php:942
 #: pages/analytics/components/Placements/index.js:273
 msgid "Deleted page"
 msgstr ""
@@ -4260,12 +4271,12 @@ msgid "We couldn’t reach the GoDAM analytics service. This is usually temporar
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:105
+#: pages/analytics/Analytics.js:106
 msgid "Back to Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:106
+#: pages/analytics/Analytics.js:107
 msgid "Back to Media Editor"
 msgstr ""
 
@@ -4280,40 +4291,40 @@ msgid "viewers"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:463
+#: pages/analytics/Analytics.js:468
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:465
+#: pages/analytics/Analytics.js:470
 msgid "Use this Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:572
+#: pages/analytics/Analytics.js:577
 msgid "This media doesn't exist."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:574
+#: pages/analytics/Analytics.js:579
 msgid "Go to Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:586
+#: pages/analytics/Analytics.js:591
 msgid "Single Video Analytics"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:598
-#: pages/dashboard/Dashboard.js:431
+#: pages/analytics/Analytics.js:603
+#: pages/dashboard/Dashboard.js:436
 msgid "Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:612
+#: pages/analytics/Analytics.js:617
 #: pages/dashboard/components/TopVideosTable.js:426
 #: pages/dashboard/components/TopVideosTable.js:438
 msgid "Video thumbnail"
@@ -4323,7 +4334,7 @@ msgstr ""
 #. translators: %d is the number of layers.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:632
+#: pages/analytics/Analytics.js:637
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:233
 #, js-format
 msgid "%d layer"
@@ -4333,124 +4344,124 @@ msgstr[1] ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:648
-#: pages/dashboard/Dashboard.js:493
+#: pages/analytics/Analytics.js:653
+#: pages/dashboard/Dashboard.js:498
 msgid "Insights"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:658
-#: pages/analytics/Analytics.js:1006
+#: pages/analytics/Analytics.js:663
+#: pages/analytics/Analytics.js:1011
 #: pages/dashboard/components/TopVideosTable.js:371
 msgid "Average Engagement"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:659
+#: pages/analytics/Analytics.js:664
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:670
-#: pages/dashboard/Dashboard.js:529
+#: pages/analytics/Analytics.js:675
+#: pages/dashboard/Dashboard.js:534
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:680
+#: pages/analytics/Analytics.js:685
 #: pages/dashboard/components/TopVideosTable.js:227
-#: pages/dashboard/Dashboard.js:542
+#: pages/dashboard/Dashboard.js:547
 msgid "Watch Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:681
-#: pages/dashboard/Dashboard.js:543
+#: pages/analytics/Analytics.js:686
+#: pages/dashboard/Dashboard.js:548
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:772
+#: pages/analytics/Analytics.js:777
 msgid "Viewer Retention Curve"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:786
+#: pages/analytics/Analytics.js:791
 msgid "Viewer retention will appear here once this video receives views."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:834
+#: pages/analytics/Analytics.js:839
 msgid "Views by Source"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:845
+#: pages/analytics/Analytics.js:850
 msgid "Performance Comparison"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:866
+#: pages/analytics/Analytics.js:871
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:856
+#: pages/analytics/Analytics.js:861
 msgid "In Progress"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:861
+#: pages/analytics/Analytics.js:866
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:878
+#: pages/analytics/Analytics.js:883
 msgid "Start Test"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:897
+#: pages/analytics/Analytics.js:902
 msgid "Choose Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:909
+#: pages/analytics/Analytics.js:914
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:918
+#: pages/analytics/Analytics.js:923
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:923
+#: pages/analytics/Analytics.js:928
 msgid "Choose"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:994
+#: pages/analytics/Analytics.js:999
 msgid "Views"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1034
+#: pages/analytics/Analytics.js:1039
 msgid "Page Loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1048
+#: pages/analytics/Analytics.js:1053
 msgid "Play Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1062
+#: pages/analytics/Analytics.js:1067
 msgid "Video Length"
 msgstr ""
 
@@ -4481,7 +4492,7 @@ msgstr ""
 
 #. translators: %s: number of layers the product appears in.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:96
+#: pages/dashboard/components/TopProductsTable.js:97
 #, js-format
 msgid "%s layer"
 msgid_plural "%s layers"
@@ -4492,8 +4503,8 @@ msgstr[1] ""
 #. translators: %s: number of videos the product appears in.
 #. translators: %s: number of videos (already locale-formatted).
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:48
-#: pages/dashboard/components/TopProductsTable.js:98
+#: pages/analytics/PlacementFunnelCard.js:52
+#: pages/dashboard/components/TopProductsTable.js:99
 #: pages/dashboard/components/TopVideosTable.js:273
 #, js-format
 msgid "%s video"
@@ -4504,13 +4515,46 @@ msgstr[1] ""
 #. translators: %s: number of distinct orders contributing to this product's revenue.
 #. translators: %s: number of distinct orders influenced by a product-page view of a video.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:208
-#: pages/dashboard/components/TopProductsTable.js:224
+#: pages/dashboard/components/TopProductsTable.js:209
+#: pages/dashboard/components/TopProductsTable.js:225
 #, js-format
 msgid "%s order"
 msgid_plural "%s orders"
 msgstr[0] ""
 msgstr[1] ""
+
+#: assets/build/pages/dashboard.min.js:2
+#: pages/dashboard/components/TopProductsTable.js:491
+#: pages/dashboard/Dashboard.js:214
+msgid "Top Products"
+msgstr ""
+
+#. translators: %s: number of products (already locale-formatted).
+#: assets/build/pages/dashboard.min.js:2
+#: pages/dashboard/components/TopProductsTable.js:496
+#, js-format
+msgid "%s product"
+msgid_plural "%s products"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: ISO 4217 currency code, e.g. USD.
+#: assets/build/pages/dashboard.min.js:2
+#: pages/dashboard/components/TopProductsTable.js:510
+#, js-format
+msgid "Revenue is shown only in your store’s base currency (%s). Orders in other currencies are not converted or counted here."
+msgstr ""
+
+#: assets/build/pages/dashboard.min.js:2
+#: pages/dashboard/components/TopProductsTable.js:522
+#: pages/dashboard/components/TopProductsTable.js:523
+msgid "Search products"
+msgstr ""
+
+#: assets/build/pages/dashboard.min.js:2
+#: pages/dashboard/components/TopProductsTable.js:529
+msgid "Show deleted products"
+msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:147
@@ -4534,7 +4578,7 @@ msgstr[1] ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:300
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:340
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:382
-#: pages/dashboard/components/TopProductsTable.js:293
+#: pages/dashboard/components/TopProductsTable.js:317
 msgid "Yes"
 msgstr ""
 
@@ -4553,228 +4597,195 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:301
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:339
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:383
-#: pages/dashboard/components/TopProductsTable.js:293
+#: pages/dashboard/components/TopProductsTable.js:317
 msgid "No"
-msgstr ""
-
-#: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:471
-#: pages/dashboard/Dashboard.js:209
-msgid "Top Products"
-msgstr ""
-
-#. translators: %s: number of products (already locale-formatted).
-#: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:476
-#, js-format
-msgid "%s product"
-msgid_plural "%s products"
-msgstr[0] ""
-msgstr[1] ""
-
-#. translators: %s: ISO 4217 currency code, e.g. USD.
-#: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:490
-#, js-format
-msgid "Revenue is shown only in your store’s base currency (%s). Orders in other currencies are not converted or counted here."
-msgstr ""
-
-#: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:502
-#: pages/dashboard/components/TopProductsTable.js:503
-msgid "Search products"
-msgstr ""
-
-#: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:509
-msgid "Show deleted products"
 msgstr ""
 
 #. translators: %d: number of export pages that failed to load.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:456
+#: pages/dashboard/components/TopProductsTable.js:476
 #, js-format
 msgid "Export is incomplete: %d page(s) could not be loaded, so some products are missing from the CSV."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:520
+#: pages/dashboard/components/TopProductsTable.js:540
 #: pages/dashboard/components/TopVideosTable.js:305
 msgid "Exporting…"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:520
+#: pages/dashboard/components/TopProductsTable.js:540
 #: pages/dashboard/components/TopVideosTable.js:305
 msgid "Export"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:534
+#: pages/dashboard/components/TopProductsTable.js:554
 msgid "Where in your videos this product appeared: a Woo layer, a shoppable video, a reel pop, and so on."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:545
+#: pages/dashboard/components/TopProductsTable.js:565
 msgid "How many times shoppers opened this product from a video, with the click-through rate beside it (product opens / times the product was shown)."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:556
+#: pages/dashboard/components/TopProductsTable.js:576
 msgid "How many times the product was added to cart from a video, with the add-to-cart rate. In-video means added inside the player; via product page means added after clicking through."
 msgstr ""
 
 #. translators: %s: ISO 4217 currency code, e.g. USD.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:570
+#: pages/dashboard/components/TopProductsTable.js:591
 #, js-format
 msgid "Order value traced to this product's videos, in the store's base currency (%s), before refunds. Orders in other currencies are not converted or counted. Direct means added to cart in-video; Assisted means bought after clicking through to the product page."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:573
+#: pages/dashboard/components/TopProductsTable.js:594
 msgid "Order value traced to this product's videos, in the store's base currency, before refunds. Direct means added to cart in-video; Assisted means bought after clicking through to the product page."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:607
+#: pages/dashboard/components/TopProductsTable.js:629
 msgid "Product image"
 msgstr ""
 
 #. translators: %d: WooCommerce product ID, shown when the product name is unavailable.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:623
+#: pages/dashboard/components/TopProductsTable.js:645
 #, js-format
 msgid "Product ID: %d"
 msgstr ""
 
 #. translators: 1: in-video adds, 2: assisted adds.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:650
+#: pages/dashboard/components/TopProductsTable.js:672
 #, js-format
 msgid "%1$s in-video, %2$s via product page"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:663
+#: pages/dashboard/components/TopProductsTable.js:685
 msgid "Variable, grouped and external products cannot be added to cart inside a video, so in-video (Direct) is always 0; they convert on the product page (Assisted)."
 msgstr ""
 
 #. translators: %s: in-video (Direct) add-to-cart count.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:667
+#: pages/dashboard/components/TopProductsTable.js:689
 #, js-format
 msgid "%s in-video"
 msgstr ""
 
 #. translators: %s: assisted (via product page) add-to-cart count.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:674
+#: pages/dashboard/components/TopProductsTable.js:696
 #, js-format
 msgid "%s via product page"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:689
+#: pages/dashboard/components/TopProductsTable.js:712
 msgid "No data"
 msgstr ""
 
 #. translators: 1: direct (in-video) revenue amount, 2: assisted (via product page) revenue amount.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:702
+#: pages/dashboard/components/TopProductsTable.js:725
 #, js-format
 msgid "%1$s direct · %2$s assisted"
 msgstr ""
 
 #. translators: 1: formatted influenced revenue amount, 2: order count phrase (e.g. "3 orders").
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:718
+#: pages/dashboard/components/TopProductsTable.js:741
 #, js-format
 msgid "Influenced %1$s · %2$s"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:725
+#: pages/dashboard/components/TopProductsTable.js:748
 msgid "(provisional)"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:761
+#: pages/dashboard/components/TopProductsTable.js:785
 msgid "Couldn’t load top products"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:764
+#: pages/dashboard/components/TopProductsTable.js:788
 #: pages/dashboard/components/TopVideosTable.js:486
 msgid "Something went wrong loading this data. Please refresh the page to try again."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:777
+#: pages/dashboard/components/TopProductsTable.js:801
 msgid "No products match your search"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:778
+#: pages/dashboard/components/TopProductsTable.js:802
 msgid "No product activity yet"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:782
+#: pages/dashboard/components/TopProductsTable.js:806
 msgid "Try a different name, or clear the search to see all products."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:783
+#: pages/dashboard/components/TopProductsTable.js:807
 msgid "Once shoppers interact with products in your videos, your top products will show up here."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:794
+#: pages/dashboard/components/TopProductsTable.js:818
 msgid "Top products pagination"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:800
+#: pages/dashboard/components/TopProductsTable.js:824
 #: pages/dashboard/components/TopVideosTable.js:522
 msgid "Previous page"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:826
+#: pages/dashboard/components/TopProductsTable.js:850
 #: pages/dashboard/components/TopVideosTable.js:548
 msgid "Next page"
 msgstr ""
 
 #. translators: %s: play-to-purchase conversion rate.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:65
+#: pages/analytics/PlacementFunnelCard.js:70
 #, js-format
 msgid "Play to purchase %s"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:71
+#: pages/analytics/PlacementFunnelCard.js:77
 msgid "Played"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:113
+#: pages/analytics/PlacementFunnelCard.js:121
 msgid "Could not load placement data. Please try again."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:119
+#: pages/analytics/PlacementFunnelCard.js:127
 msgid "Loading placements…"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:136
+#: pages/analytics/PlacementFunnelCard.js:144
 msgid "Funnel by placement"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:148
+#: pages/analytics/PlacementFunnelCard.js:156
 msgid "Different placements do different jobs, so averaging them hides both winners and losers. Each stage counts distinct visitors, so these figures will not sum to the Top Products totals."
 msgstr ""
 
@@ -4799,7 +4810,7 @@ msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
 #: pages/dashboard/components/TopVideosTable.js:268
-#: pages/dashboard/Dashboard.js:200
+#: pages/dashboard/Dashboard.js:205
 msgid "Top Videos"
 msgstr ""
 
@@ -5012,14 +5023,14 @@ msgid "Sending to GA4"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:192
+#: pages/dashboard/Dashboard.js:197
 msgid "Top content"
 msgstr ""
 
 #. translators: %d: number of days in the compared previous window.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:279
-#: pages/dashboard/Dashboard.js:328
+#: pages/dashboard/Dashboard.js:284
+#: pages/dashboard/Dashboard.js:333
 #, js-format
 msgid "vs prev %d days"
 msgstr ""
@@ -5027,47 +5038,47 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: inc/classes/class-pages.php:199
 #: inc/classes/class-pages.php:200
-#: pages/dashboard/Dashboard.js:426
+#: pages/dashboard/Dashboard.js:431
 msgid "Dashboard"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:442
+#: pages/dashboard/Dashboard.js:447
 msgid "See Reel Pop Analytics"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:454
+#: pages/dashboard/Dashboard.js:459
 msgid "Analytics docs"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:463
+#: pages/dashboard/Dashboard.js:468
 msgid "Total Plays / Unique Viewers"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:512
+#: pages/dashboard/Dashboard.js:517
 msgid "Active Videos"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:513
+#: pages/dashboard/Dashboard.js:518
 msgid "Number of unique videos that received user interactions each day, such as views or plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:528
+#: pages/dashboard/Dashboard.js:533
 msgid "Avg. Play Rate"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:557
+#: pages/dashboard/Dashboard.js:562
 msgid "Average share of each video that viewers watched, across all plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:580
+#: pages/dashboard/Dashboard.js:585
 msgid "WooCommerce metrics couldn’t load. This is usually temporary."
 msgstr ""
 
@@ -10894,66 +10905,66 @@ msgstr ""
 msgid "The Site URL associated with the video."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:524
-#: inc/classes/rest-api/class-analytics.php:797
-#: inc/classes/rest-api/class-analytics.php:1026
-#: inc/classes/rest-api/class-analytics.php:1419
-#: inc/classes/rest-api/class-analytics.php:1492
-#: inc/classes/rest-api/class-analytics.php:1572
+#: inc/classes/rest-api/class-analytics.php:692
+#: inc/classes/rest-api/class-analytics.php:973
+#: inc/classes/rest-api/class-analytics.php:1206
+#: inc/classes/rest-api/class-analytics.php:1604
+#: inc/classes/rest-api/class-analytics.php:1693
+#: inc/classes/rest-api/class-analytics.php:1773
 #: inc/classes/rest-api/class-engagement.php:365
 #: inc/classes/rest-api/class-site.php:169
 msgid "Missing API key."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:535
+#: inc/classes/rest-api/class-analytics.php:703
 msgid "GoDAM account is not verified. Connect your account in GoDAM settings to view layer analytics."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:601
-#: inc/classes/rest-api/class-analytics.php:832
-#: inc/classes/rest-api/class-analytics.php:1072
-#: inc/classes/rest-api/class-analytics.php:1444
-#: inc/classes/rest-api/class-analytics.php:1524
-#: inc/classes/rest-api/class-analytics.php:1597
+#: inc/classes/rest-api/class-analytics.php:769
+#: inc/classes/rest-api/class-analytics.php:1008
+#: inc/classes/rest-api/class-analytics.php:1252
+#: inc/classes/rest-api/class-analytics.php:1629
+#: inc/classes/rest-api/class-analytics.php:1725
+#: inc/classes/rest-api/class-analytics.php:1798
 msgid "Unable to reach analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:610
-#: inc/classes/rest-api/class-analytics.php:843
-#: inc/classes/rest-api/class-analytics.php:1081
-#: inc/classes/rest-api/class-analytics.php:1253
-#: inc/classes/rest-api/class-analytics.php:1455
-#: inc/classes/rest-api/class-analytics.php:1535
-#: inc/classes/rest-api/class-analytics.php:1608
-#: inc/classes/rest-api/class-analytics.php:1726
+#: inc/classes/rest-api/class-analytics.php:778
+#: inc/classes/rest-api/class-analytics.php:1019
+#: inc/classes/rest-api/class-analytics.php:1261
+#: inc/classes/rest-api/class-analytics.php:1438
+#: inc/classes/rest-api/class-analytics.php:1640
+#: inc/classes/rest-api/class-analytics.php:1736
+#: inc/classes/rest-api/class-analytics.php:1809
+#: inc/classes/rest-api/class-analytics.php:1932
 msgid "Unexpected error from analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:752
+#: inc/classes/rest-api/class-analytics.php:928
 msgid "Unavailable"
 msgstr ""
 
 #. translators: %d: WordPress post ID.
-#: inc/classes/rest-api/class-analytics.php:765
+#: inc/classes/rest-api/class-analytics.php:941
 #, php-format
 msgid "Post #%d (deleted)"
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:965
-#: inc/classes/rest-api/class-analytics.php:1130
-#: inc/classes/rest-api/class-analytics.php:1194
-#: inc/classes/rest-api/class-analytics.php:1654
+#: inc/classes/rest-api/class-analytics.php:1145
+#: inc/classes/rest-api/class-analytics.php:1315
+#: inc/classes/rest-api/class-analytics.php:1379
+#: inc/classes/rest-api/class-analytics.php:1860
 msgid "Invalid or unverified API key."
 msgstr ""
 
 #. translators: %s is the error message from the API response.
-#: inc/classes/rest-api/class-analytics.php:993
+#: inc/classes/rest-api/class-analytics.php:1173
 #, php-format
 msgid "Error fetching history data: %s"
 msgstr ""
 
 #. translators: %d: WooCommerce product ID.
-#: inc/classes/rest-api/class-analytics.php:1774
+#: inc/classes/rest-api/class-analytics.php:1983
 #, php-format
 msgid "ID: %d (Deleted Product)"
 msgstr ""

@@ -30,6 +30,16 @@ const DATA = [
 ];
 
 describe( 'PlacementFunnelCard', () => {
+	// The Purchased box and the play-to-purchase rate come from orders, so these
+	// tests run as a user who may see order data (WooCommerce's report permission).
+	beforeEach( () => {
+		window.videoData = { canViewRevenue: true };
+	} );
+
+	afterEach( () => {
+		delete window.videoData;
+	} );
+
 	it( 'renders nothing when a loaded store has no placements', () => {
 		useFetchPlacementFunnelsQuery.mockReturnValue( { data: [], isFetching: false } );
 		expect( renderToString( <PlacementFunnelCard siteUrl="x" /> ) ).toBe( '' );
@@ -96,5 +106,44 @@ describe( 'PlacementFunnelCard', () => {
 			startDate: '2026-01-01',
 			endDate: '2026-01-31',
 		} );
+	} );
+} );
+
+describe( 'PlacementFunnelCard without order access', () => {
+	// The placement rows the route sends a user who may not see order data: no
+	// purchased count and no purchase rate.
+	const CART_ONLY = DATA.map( ( row ) => {
+		const cartOnly = { ...row };
+		delete cartOnly.purchased;
+		delete cartOnly.purchase_rate;
+		return cartOnly;
+	} );
+
+	beforeEach( () => {
+		window.videoData = { canViewRevenue: false };
+		useFetchPlacementFunnelsQuery.mockReturnValue( { data: CART_ONLY, isFetching: false } );
+	} );
+
+	afterEach( () => {
+		delete window.videoData;
+	} );
+
+	it( 'keeps played, added to cart and reach, and drops every purchase figure', () => {
+		const html = renderToString( <PlacementFunnelCard siteUrl="x" /> );
+		expect( html ).toContain( 'Shoppable Video block' );
+		expect( html ).toContain( '612' );
+		expect( html ).toContain( 'Played' );
+		expect( html ).toContain( 'Added to cart' );
+		expect( html ).toContain( '49' );
+		expect( html ).toContain( '22 layers · 9 videos' );
+		expect( html ).not.toContain( 'Purchased' );
+		expect( html ).not.toContain( 'Play to purchase' );
+	} );
+
+	it( 'hides the purchase figures even if a full row reaches it', () => {
+		useFetchPlacementFunnelsQuery.mockReturnValue( { data: DATA, isFetching: false } );
+		const html = renderToString( <PlacementFunnelCard siteUrl="x" /> );
+		expect( html ).not.toContain( 'Purchased' );
+		expect( html ).not.toContain( 'Play to purchase' );
 	} );
 } );

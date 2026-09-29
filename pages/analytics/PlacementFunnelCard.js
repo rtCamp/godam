@@ -7,6 +7,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useFetchPlacementFunnelsQuery } from '../dashboard/redux/api/dashboardAnalyticsApi';
+import { canViewRevenue } from '../shared/canViewRevenue';
 
 const fmt = ( n ) => Number( n || 0 ).toLocaleString();
 const pct = ( n ) => `${ Number( n || 0 ).toFixed( 1 ) }%`;
@@ -33,12 +34,15 @@ function StatBox( { label, count, sub } ) {
 
 /**
  * One placement's funnel: a header (name, reach, play-to-purchase rate) and the
- * three Played -> Added -> Purchased number boxes.
+ * three Played -> Added -> Purchased number boxes. The Purchased box and the
+ * play-to-purchase rate come from orders, so they show only when the user may see
+ * order data (see canViewRevenue); the routes leave them out for everyone else.
  *
  * @param {Object} props
  * @param {Object} props.placement A placement_funnels entry.
  */
 function PlacementRow( { placement } ) {
+	const showPurchase = canViewRevenue();
 	const reach = [];
 	if ( placement.units !== null && placement.units !== undefined && placement.unit_label ) {
 		reach.push( `${ fmt( placement.units ) } ${ placement.unit_label }` );
@@ -59,18 +63,22 @@ function PlacementRow( { placement } ) {
 					<span className="text-[15px] font-semibold text-[#1e1e1e]">{ placement.label }</span>
 					<span className="text-[13px] text-zinc-500">{ reach.join( ' · ' ) }</span>
 				</div>
-				<span className="text-[13px] text-zinc-600">
-					{ sprintf(
-						/* translators: %s: play-to-purchase conversion rate. */
-						__( 'Play to purchase %s', 'godam' ),
-						pct( placement.purchase_rate ),
-					) }
-				</span>
+				{ showPurchase && (
+					<span className="text-[13px] text-zinc-600">
+						{ sprintf(
+							/* translators: %s: play-to-purchase conversion rate. */
+							__( 'Play to purchase %s', 'godam' ),
+							pct( placement.purchase_rate ),
+						) }
+					</span>
+				) }
 			</div>
 			<div className="flex flex-wrap gap-3">
 				<StatBox label={ __( 'Played', 'godam' ) } count={ placement.played } />
 				<StatBox label={ __( 'Added to cart', 'godam' ) } count={ placement.added } sub={ pct( placement.add_rate ) } />
-				<StatBox label={ __( 'Purchased', 'godam' ) } count={ placement.purchased } sub={ pct( placement.purchase_rate ) } />
+				{ showPurchase && (
+					<StatBox label={ __( 'Purchased', 'godam' ) } count={ placement.purchased } sub={ pct( placement.purchase_rate ) } />
+				) }
 			</div>
 		</div>
 	);

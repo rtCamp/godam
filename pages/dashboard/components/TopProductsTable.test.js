@@ -75,8 +75,19 @@ jest.mock( '../../analytics/components/DateRangePicker', () => ( {
 /**
  * Internal dependencies
  */
-import TopProductsTable, { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements, hasRevenueTierSplit, buildCsvRow, CSV_HEADERS } from './TopProductsTable';
-import { useFetchTopProductsQuery } from '../redux/api/dashboardAnalyticsApi';
+import TopProductsTable, { escapeCsvCell, sourceLabel, formatRevenue, formatRevenueNumeric, hasInfluenced, influencedOrdersLabel, revenuePlacements, hasRevenueTierSplit, buildCsvRow, CSV_HEADERS, CSV_HEADERS_BASE } from './TopProductsTable';
+import { useFetchTopProductsQuery, useLazyFetchTopProductsQuery } from '../redux/api/dashboardAnalyticsApi';
+
+// The Revenue column and its orders line come from orders, so the tests below run
+// as a user who may see order data (the flag PHP localizes from WooCommerce's
+// report permission); the "without order access" block at the end turns it off.
+beforeEach( () => {
+	window.videoData = { canViewRevenue: true };
+} );
+
+afterEach( () => {
+	delete window.videoData;
+} );
 
 describe( 'escapeCsvCell — formula-injection guard', () => {
 	// A value whose FIRST character is one of these is what a spreadsheet would
@@ -425,5 +436,169 @@ describe( 'TopProductsTable — base-currency note', () => {
 		} );
 		const html = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
 		expect( html ).not.toContain( 'godam-top-products-currency-note' );
+	} );
+} );
+
+describe( 'TopProductsTable without order access', () => {
+	// What the route sends a user who may not see order data: views, impressions
+	// and add-to-carts only. The currency is order-derived too, so it is gone.
+	const CART_ONLY_ROW = {
+		product_id: 1,
+		title: 'Mug',
+		product_views: 40,
+		product_views_ctr: 12.5,
+		added_to_cart: 9,
+		added_to_cart_direct: 6,
+		added_to_cart_assisted: 3,
+		sources: [ 'woo-layer' ],
+		video_count: 2,
+		layer_count: 1,
+	};
+
+	const FULL_ROW = {
+		...CART_ONLY_ROW,
+		revenue_minor: 4500,
+		orders: 3,
+		currency: 'USD',
+		revenue_direct_minor: 3000,
+		revenue_assisted_minor: 1500,
+		influenced_revenue_minor: 900,
+		influenced_currency: 'USD',
+		influenced_orders: 1,
+		influenced_provisional: false,
+	};
+
+	beforeEach( () => {
+		window.videoData = { canViewRevenue: false };
+		useFetchTopProductsQuery.mockReturnValue( {
+			data: { products: [ CART_ONLY_ROW ], totalItems: 1, totalPages: 1 },
+			isFetching: false,
+			isError: false,
+		} );
+	} );
+
+	it( 'drops the Revenue column and keeps views and add-to-carts', () => {
+		const html = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
+		expect( html ).not.toContain( 'godam-top-products-revenue' );
+		expect( html ).not.toContain( 'No data' );
+		expect( html ).not.toContain( '>Revenue<' );
+		expect( html ).toContain( 'Product Views' );
+		expect( html ).toContain( 'Add to Cart' );
+		expect( html ).toContain( '>40<' );
+		expect( html ).toContain( '>9<' );
+		expect( html ).toContain( 'Mug' );
+	} );
+
+	it( 'shows four header cells, not five', () => {
+		const html = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
+		expect( ( html.match( /<th /g ) || [] ).length ).toBe( 4 );
+	} );
+
+	it( 'drops the base-currency note even when a row carries a currency', () => {
+		useFetchTopProductsQuery.mockReturnValue( {
+			data: { products: [ FULL_ROW ], totalItems: 1, totalPages: 1 },
+			isFetching: false,
+			isError: false,
+		} );
+		const html = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
+		expect( html ).not.toContain( 'godam-top-products-currency-note' );
+		expect( html ).not.toContain( 'godam-top-products-revenue' );
+		expect( html ).not.toContain( 'godam-top-products-influenced' );
+	} );
+
+	it( 'spans the empty and error rows over the four columns', () => {
+		useFetchTopProductsQuery.mockReturnValue( { data: { products: [], totalItems: 0, totalPages: 1 }, isFetching: false, isError: false } );
+		expect( renderHTML( <TopProductsTable siteUrl="https://example.test" /> ) ).toContain( 'colspan="4"' );
+		useFetchTopProductsQuery.mockReturnValue( { data: undefined, isFetching: false, isError: true, error: { message: 'boom' } } );
+		expect( renderHTML( <TopProductsTable siteUrl="https://example.test" /> ) ).toContain( 'colspan="4"' );
+	} );
+
+	it( 'keeps five columns for a user who may see order data', () => {
+		window.videoData = { canViewRevenue: true };
+		useFetchTopProductsQuery.mockReturnValue( {
+			data: { products: [ FULL_ROW ], totalItems: 1, totalPages: 1 },
+			isFetching: false,
+			isError: false,
+		} );
+		const html = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
+		expect( ( html.match( /<th /g ) || [] ).length ).toBe( 5 );
+		expect( html ).toContain( 'godam-top-products-revenue' );
+	} );
+
+	describe( 'CSV export', () => {
+		it( 'buildCsvRow without revenue emits one cell per base header and no order cells', () => {
+			const row = buildCsvRow( FULL_ROW, false );
+			expect( row ).toHaveLength( CSV_HEADERS_BASE.length );
+			expect( row.map( String ) ).not.toContain( '45.00' );
+			expect( row.map( String ) ).not.toContain( 'USD' );
+			// The shared columns are the first cells of the full row, unchanged.
+			expect( row ).toEqual( buildCsvRow( FULL_ROW ).slice( 0, CSV_HEADERS_BASE.length ) );
+		} );
+
+		it( 'the full headers are the base headers plus the order-derived ones', () => {
+			expect( CSV_HEADERS.slice( 0, CSV_HEADERS_BASE.length ) ).toEqual( CSV_HEADERS_BASE );
+			expect( CSV_HEADERS_BASE ).not.toContain( 'Revenue' );
+			expect( CSV_HEADERS_BASE ).not.toContain( 'Orders' );
+			expect( CSV_HEADERS_BASE ).not.toContain( 'Currency' );
+			expect( CSV_HEADERS ).toContain( 'Revenue' );
+		} );
+
+		/**
+		 * Click Export and capture the CSV text the component builds.
+		 *
+		 * @return {Promise<string>} The CSV content.
+		 */
+		async function exportedCsv() {
+			const fetchForExport = jest.fn( () => ( { unwrap: () => Promise.resolve( { products: [ FULL_ROW ] } ) } ) );
+			useLazyFetchTopProductsQuery.mockReturnValue( [ fetchForExport ] );
+
+			const parts = [];
+			const RealBlob = global.Blob;
+			global.Blob = class {
+				constructor( chunks ) {
+					parts.push( ...chunks );
+				}
+			};
+			global.URL.createObjectURL = jest.fn( () => 'blob:test' );
+			global.URL.revokeObjectURL = jest.fn();
+			// The download link is clicked programmatically; jsdom cannot navigate to a blob URL.
+			const clickSpy = jest.spyOn( HTMLAnchorElement.prototype, 'click' ).mockImplementation( () => {} );
+
+			const container = document.createElement( 'div' );
+			document.body.appendChild( container );
+			const root = createRoot( container );
+			act( () => {
+				root.render( <TopProductsTable siteUrl="https://example.test" /> );
+			} );
+			await act( async () => {
+				container.querySelector( '[data-test-id="godam-top-products-export"]' ).click();
+			} );
+			act( () => {
+				root.unmount();
+			} );
+			container.remove();
+			global.Blob = RealBlob;
+			clickSpy.mockRestore();
+			return parts.join( '' );
+		}
+
+		it( 'the exported file has no revenue, orders or currency columns', async () => {
+			const csv = await exportedCsv();
+			const [ header, line ] = csv.split( '\n' );
+			expect( header.split( ',' ) ).toEqual( CSV_HEADERS_BASE );
+			expect( line ).toContain( 'Mug' );
+			expect( csv ).not.toContain( 'Revenue' );
+			expect( csv ).not.toContain( 'USD' );
+			expect( csv ).not.toContain( '45.00' );
+		} );
+
+		it( 'the exported file keeps every column for a user who may see order data', async () => {
+			window.videoData = { canViewRevenue: true };
+			const csv = await exportedCsv();
+			const [ header, line ] = csv.split( '\n' );
+			expect( header.split( ',' ) ).toEqual( CSV_HEADERS );
+			expect( line ).toContain( '45.00' );
+			expect( line ).toContain( 'USD' );
+		} );
 	} );
 } );

@@ -39,6 +39,7 @@ import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
 import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
+import { canViewRevenue } from '../shared/canViewRevenue';
 import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
@@ -110,6 +111,10 @@ const Analytics = ( { attachmentID } ) => {
 	// Video-to-Cart is a WooCommerce feature; the card is shown only on Woo sites
 	// (otherwise it would read a permanent, misleading "0").
 	const isWoo = !! window.videoData?.isWoo;
+	// Revenue, purchases and revenue tips come from orders: shown only to users who
+	// may see order data (WooCommerce's report permission). The routes strip those
+	// fields for everyone else, so an author sees the cart figures without them.
+	const showRevenue = canViewRevenue();
 	const apiKeyError = getAPIKeyErrorInfo();
 	const apiKeyErrorType = apiKeyError?.type || null;
 
@@ -179,7 +184,7 @@ const Analytics = ( { attachmentID } ) => {
 			...( revenueRange.startDate ? { startDate: revenueRange.startDate } : {} ),
 			...( revenueRange.endDate ? { endDate: revenueRange.endDate } : {} ),
 		},
-		{ skip: ! attachmentID || shouldSkipAnalytics },
+		{ skip: ! attachmentID || shouldSkipAnalytics || ! showRevenue },
 	);
 
 	const [ purchaseFunnelRange, setPurchaseFunnelRange ] = useState( { startDate: null, endDate: null } );
@@ -695,7 +700,7 @@ const Analytics = ( { attachmentID } ) => {
 
 									{ /* Video-to-Purchase: the purchase sibling of Video-to-Cart.
 									    Woo-gated; renders nothing when the payload is absent. */ }
-									{ isWoo && (
+									{ isWoo && showRevenue && (
 										<VideoToPurchaseCard
 											videoToPurchase={ rangedAnalyticsData?.video_to_purchase }
 											dataLabel={ rangeLabel }
@@ -716,7 +721,7 @@ const Analytics = ( { attachmentID } ) => {
 							    split Direct/Assisted. Full-width card; Influenced is
 							    account-level so the per-video payload omits it and the
 							    card hides that box. Woo-gated. */ }
-							{ isWoo && revenueRangeData?.revenue !== undefined && revenueRangeData?.revenue !== null && (
+							{ isWoo && showRevenue && revenueRangeData?.revenue !== undefined && revenueRangeData?.revenue !== null && (
 								<RevenueCard
 									revenue={ {
 										revenue_minor: revenueRangeData.revenue,
@@ -740,7 +745,7 @@ const Analytics = ( { attachmentID } ) => {
 							    component renders only the favourable comparisons and
 							    nothing when there is nothing worth saying. Follows the
 							    Revenue card's own range. */ }
-							{ isWoo && revenueRangeData?.revenue_tips && (
+							{ isWoo && showRevenue && revenueRangeData?.revenue_tips && (
 								<RevenueTips tips={ revenueRangeData.revenue_tips } />
 							) }
 

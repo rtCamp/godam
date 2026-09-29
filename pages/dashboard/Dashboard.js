@@ -20,6 +20,7 @@ import { generateCountryHeatmap } from '../analytics/helper';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchRevenueSummaryQuery, useFetchVideoFunnelQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
+import { canViewRevenue } from '../shared/canViewRevenue';
 import SingleMetrics from '../analytics/SingleMetrics';
 import VideoToCartCard from '../analytics/VideoToCartCard';
 import VideoToPurchaseCard from '../analytics/VideoToPurchaseCard';
@@ -178,6 +179,10 @@ const Dashboard = () => {
 	// active (godam-for-woo supplies the product interactions it reads). Non-Woo
 	// sites keep the plain Top Videos table with no tab switcher.
 	const hasWooProducts = !! window.videoData?.isWoo;
+	// Revenue, order counts and purchases follow WooCommerce's report permission
+	// (shop managers and administrators). The routes strip those fields for anyone
+	// else, so the matching cards, columns and steps are left out here too.
+	const showRevenue = canViewRevenue();
 	const [ topTab, setTopTab ] = useState( 'videos' );
 
 	// The switcher renders inside the active table's head (where its title would
@@ -339,7 +344,7 @@ const Dashboard = () => {
 	// leaves data undefined. Without this, the card would hit its null guard and
 	// vanish. Mirrors how PlacementFunnelCard folds its own isError into the marker.
 	const [ revenueRange, setRevenueRange ] = useState( { startDate: null, endDate: null } );
-	const { data: revenueDataRaw, isError: isRevenueError } = useFetchRevenueSummaryQuery( rangeQueryArgs( revenueRange ), { skip: skipWooCards } );
+	const { data: revenueDataRaw, isError: isRevenueError } = useFetchRevenueSummaryQuery( rangeQueryArgs( revenueRange ), { skip: skipWooCards || ! showRevenue } );
 	const revenueData = isRevenueError ? { error: true } : revenueDataRaw;
 
 	const [ purchaseFunnelRange, setPurchaseFunnelRange ] = useState( { startDate: null, endDate: null } );
@@ -587,11 +592,13 @@ const Dashboard = () => {
 												dataLabel={ insightsCardLabel }
 												deltaLabel={ insightsDeltaLabel }
 											/>
-											<VideoToPurchaseCard
-												videoToPurchase={ insightsMetrics?.video_to_purchase }
-												dataLabel={ insightsCardLabel }
-												deltaLabel={ insightsDeltaLabel }
-											/>
+											{ showRevenue && (
+												<VideoToPurchaseCard
+													videoToPurchase={ insightsMetrics?.video_to_purchase }
+													dataLabel={ insightsCardLabel }
+													deltaLabel={ insightsDeltaLabel }
+												/>
+											) }
 										</div>
 									) ) }
 								</>
@@ -627,7 +634,7 @@ const Dashboard = () => {
 				    date-range picker and fetches its own data (revenueData), so it is
 				    independent of the Insights query: an empty range renders 0 and a
 				    query error surfaces inside the card, never a silent vanish. */ }
-				{ hasWooProducts && (
+				{ hasWooProducts && showRevenue && (
 					<RevenueCard
 						revenue={ revenueData }
 						deltaLabel={ rangeDeltaLabel( revenueRange ) }

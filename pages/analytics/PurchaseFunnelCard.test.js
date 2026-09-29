@@ -36,6 +36,16 @@ const FUNNEL = {
 };
 
 describe( 'PurchaseFunnelCard', () => {
+	// The Purchased step comes from orders, so these tests run as a user who may
+	// see order data (the flag PHP localizes from WooCommerce's report permission).
+	beforeEach( () => {
+		window.videoData = { canViewRevenue: true };
+	} );
+
+	afterEach( () => {
+		delete window.videoData;
+	} );
+
 	it( 'renders nothing when the payload is absent or incomplete', () => {
 		expect( renderToString( <PurchaseFunnelCard funnel={ null } /> ) ).toBe( '' );
 		expect( renderToString( <PurchaseFunnelCard /> ) ).toBe( '' );
@@ -206,5 +216,67 @@ describe( 'PurchaseFunnelCard', () => {
 		// The nonzero tiers still render with their share.
 		expect( html ).toContain( 'Assisted only (clicked out): 5 of 5 added to cart' );
 		expect( html ).toContain( 'Direct (added in-video): 3 of 3 purchased' );
+	} );
+} );
+
+describe( 'PurchaseFunnelCard without order access', () => {
+	// What the funnel routes send a user who may not see order data: no Purchased
+	// step and no "still counting" flag.
+	const CART_ONLY = {
+		stages: [
+			{ key: 'played', count: 1412, rate: 100 },
+			{ key: 'added_to_cart', count: 64, direct: 27, assisted: 40, rate: 4.53 },
+		],
+	};
+
+	beforeEach( () => {
+		window.videoData = { canViewRevenue: false };
+	} );
+
+	afterEach( () => {
+		delete window.videoData;
+	} );
+
+	it( 'renders the two cart steps as a Cart Funnel, with no Purchased step', () => {
+		const html = renderToString( <PurchaseFunnelCard funnel={ CART_ONLY } dataLabel="Last 30 days" /> );
+		expect( html ).toContain( 'godam-purchase-funnel-card' );
+		expect( html ).toContain( 'Cart Funnel' );
+		expect( html ).not.toContain( 'Purchase Funnel' );
+		expect( html ).toContain( 'godam-purchase-funnel-bar-played' );
+		expect( html ).toContain( 'godam-purchase-funnel-bar-added_to_cart' );
+		expect( html ).toContain( '1,412' );
+		expect( html ).toContain( '4.5% advanced' );
+		expect( html ).not.toContain( 'godam-purchase-funnel-bar-purchased' );
+		expect( html ).not.toContain( 'Purchased' );
+		expect( html ).not.toContain( 'abandoned after adding' );
+	} );
+
+	it( 'words the legend without a purchase', () => {
+		const html = renderToString( <PurchaseFunnelCard funnel={ CART_ONLY } /> );
+		expect( html ).toContain( 'Assisted, clicked out then added to cart' );
+		expect( html ).not.toContain( 'clicked out then bought' );
+	} );
+
+	it( 'still hides the Purchased step and the purchases note if a full funnel ever reaches it', () => {
+		const html = renderToString( <PurchaseFunnelCard funnel={ { ...FUNNEL, still_counting: true } } dataLabel="Last 7 days" /> );
+		expect( html ).not.toContain( 'godam-purchase-funnel-bar-purchased' );
+		expect( html ).not.toContain( 'godam-purchase-funnel-still-counting' );
+		expect( html ).not.toContain( 'abandoned after adding' );
+	} );
+
+	it( 'renders nothing when there is not even a cart step', () => {
+		expect( renderToString( <PurchaseFunnelCard funnel={ { stages: [ { key: 'played', count: 5, rate: 100 } ] } } /> ) ).toBe( '' );
+		expect( renderToString( <PurchaseFunnelCard funnel={ null } /> ) ).toBe( '' );
+	} );
+
+	it( 'keeps the error state, titled as the cart funnel', () => {
+		const html = renderToString( <PurchaseFunnelCard funnel={ { error: true } } /> );
+		expect( html ).toContain( 'godam-purchase-funnel-error' );
+		expect( html ).toContain( 'Cart Funnel' );
+	} );
+
+	it( 'a user with order access still needs all three steps (a two-step payload renders nothing)', () => {
+		window.videoData = { canViewRevenue: true };
+		expect( renderToString( <PurchaseFunnelCard funnel={ CART_ONLY } /> ) ).toBe( '' );
 	} );
 } );

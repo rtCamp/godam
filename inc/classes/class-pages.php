@@ -878,6 +878,11 @@ class Pages {
 					// A plain WooCommerce store without the paid add-on does not
 					// see them.
 					'isWoo'                 => function_exists( 'godam_woo_should_show_premium_blocks' ) && godam_woo_should_show_premium_blocks(),
+					// Revenue, order counts and purchases follow WooCommerce's own
+					// report permission (shop managers and administrators). The
+					// analytics routes strip those fields for everyone else; this
+					// flag lets the screen leave out the matching cards and columns.
+					'canViewRevenue'        => current_user_can( 'view_woocommerce_reports' ), // phpcs:ignore WordPress.WP.Capabilities.Unknown -- WooCommerce registers this capability itself.
 				)
 			);
 
@@ -944,6 +949,10 @@ class Pages {
 					// per-video card on the same gate as the dashboard: the add-on
 					// active plus a valid GoDAM license.
 					'isWoo'            => function_exists( 'godam_woo_should_show_premium_blocks' ) && godam_woo_should_show_premium_blocks(),
+					// Same rule as the dashboard: order-derived figures need
+					// WooCommerce's report permission, and the routes strip them
+					// for everyone else.
+					'canViewRevenue'   => current_user_can( 'view_woocommerce_reports' ), // phpcs:ignore WordPress.WP.Capabilities.Unknown -- WooCommerce registers this capability itself.
 				)
 			);
 
