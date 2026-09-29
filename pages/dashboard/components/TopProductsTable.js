@@ -123,7 +123,13 @@ const productTypeHint = ( item ) => {
 	if ( item.product_type === 'external' ) {
 		return __( 'External products are bought on another site, so they are never added to this store\'s cart and earn no revenue here.', 'godam' );
 	}
-	return __( 'Variable products cannot be added to cart inside a video, so in-video (Direct) is always 0; they convert on the product page (Assisted).', 'godam' );
+	if ( item.product_type === 'variable' ) {
+		return __( 'Variable products cannot be added to cart inside a video, so in-video (Direct) is always 0; they convert on the product page (Assisted).', 'godam' );
+	}
+	// Any other product the proxy marks as not addable in a video (a type added
+	// later, or a row from before the proxy sent product_type): say only what
+	// the flag proves, not a reason that may not apply.
+	return __( 'This product cannot be added to cart inside a video, so in-video (Direct) is always 0.', 'godam' );
 };
 
 // Whether the add-to-cart rate means nothing for this row: it has adds but was

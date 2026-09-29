@@ -271,6 +271,37 @@ describe( 'TopProductsTable — hints on figures a product type or its path leav
 		expect( titleOf( dom, '[data-test-id="godam-top-products-adds"]' ) ).toBe( '' );
 	} );
 
+	it( 'gives a product type it does not know a neutral in-video hint, not the variable one', () => {
+		// A fourth restricted type a later microservice might send.
+		const dom = renderRow( {
+			product_id: 95,
+			title: 'Bundle',
+			product_type: 'bundle',
+			supports_direct_add_to_cart: false,
+			impressions: 10,
+			added_to_cart: 1,
+			added_to_cart_assisted: 1,
+		} );
+		const inVideoHint = titleOf( dom, '.godam-direct-na' );
+
+		expect( inVideoHint ).toBe( 'This product cannot be added to cart inside a video, so in-video (Direct) is always 0.' );
+		expect( inVideoHint ).not.toContain( 'Variable' );
+		expect( titleOf( dom, '[data-test-id="godam-top-products-adds"]' ) ).toBe( '' );
+	} );
+
+	it( 'gives a legacy row (in-video flag off, no product type) the same neutral hint', () => {
+		const dom = renderRow( {
+			product_id: 96,
+			title: 'Old row',
+			supports_direct_add_to_cart: false,
+			impressions: 10,
+			added_to_cart: 1,
+			added_to_cart_assisted: 1,
+		} );
+
+		expect( titleOf( dom, '.godam-direct-na' ) ).toBe( 'This product cannot be added to cart inside a video, so in-video (Direct) is always 0.' );
+	} );
+
 	it( 'greys an external product\'s adds and revenue with a hint that it is bought on another site', () => {
 		const dom = renderRow( {
 			product_id: 90,
