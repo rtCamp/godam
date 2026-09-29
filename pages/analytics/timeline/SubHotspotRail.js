@@ -14,7 +14,7 @@ import { receipt } from '@wordpress/icons';
  * Internal dependencies
  */
 import { formatRevenue } from '../../dashboard/components/TopProductsTable';
-import { canViewRevenue } from '../../shared/canViewRevenue';
+import { canViewStoreData } from '../../shared/canViewStoreData';
 import {
 	LAYER_TYPE_BY_ID,
 	subHotspotColor,
@@ -169,7 +169,7 @@ const SubHotspotRail = ( { parent, selectedSubId, onSelect } ) => {
 					// the product name for the row width and truncated it, and the
 					// same figure already shows in the "This hotspot drove ..." line
 					// of the detail panel.
-					const hasRevenue = canViewRevenue() && parent.layer_type === 'woo' && Number( sub.orders ) > 0;
+					const hasRevenue = canViewStoreData() && parent.layer_type === 'woo' && Number( sub.orders ) > 0;
 					const revenueTooltip = hasRevenue
 						? sprintf(
 							/* translators: 1: formatted revenue amount, 2: order count phrase (e.g. "3 orders"). */

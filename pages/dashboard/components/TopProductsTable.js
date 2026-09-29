@@ -11,7 +11,6 @@ import { decodeEntities } from '@wordpress/html-entities';
  */
 import { useFetchTopProductsQuery, useLazyFetchTopProductsQuery } from '../redux/api/dashboardAnalyticsApi';
 import DateRangePicker from '../../analytics/components/DateRangePicker';
-import { canViewRevenue } from '../../shared/canViewRevenue';
 import Tooltip from '../../analytics/Tooltip';
 import DefaultThumbnail from '../../../assets/src/images/video-thumbnail-default.png';
 import ExportBtn from '../../../assets/src/images/export.svg';
@@ -262,7 +261,7 @@ export const hasRevenueTierSplit = ( item ) =>
  */
 // Export column headers, matched 1:1 with buildCsvRow below, mirroring every
 // column and sub-line shown in the on-screen Top Products table.
-export const CSV_HEADERS_BASE = [
+export const CSV_HEADERS = [
 	__( 'Product', 'godam' ),
 	__( 'Product ID', 'godam' ),
 	__( 'Layers', 'godam' ),
@@ -273,11 +272,6 @@ export const CSV_HEADERS_BASE = [
 	__( 'Add to Cart', 'godam' ),
 	__( 'Add to Cart (in-video)', 'godam' ),
 	__( 'Add to Cart (assisted)', 'godam' ),
-];
-
-// The columns that come from orders. Left out of the export for users who may not
-// see order data (see canViewRevenue), matching the table on screen.
-const CSV_HEADERS_REVENUE = [
 	__( 'Revenue', 'godam' ),
 	__( 'Revenue (direct)', 'godam' ),
 	__( 'Revenue (assisted)', 'godam' ),
@@ -290,13 +284,15 @@ const CSV_HEADERS_REVENUE = [
 	__( 'Revenue by Placement', 'godam' ),
 ];
 
-export const CSV_HEADERS = [ ...CSV_HEADERS_BASE, ...CSV_HEADERS_REVENUE ];
-
 // One CSV cell per column, in CSV_HEADERS order. Mirrors every value the table
 // renders so an export reconciles cell-for-cell with what the merchant sees.
-// `includeRevenue` false drops the order-derived cells, as CSV_HEADERS_BASE does.
-export const buildCsvRow = ( item, includeRevenue = true ) => {
-	const baseCells = [
+export const buildCsvRow = ( item ) => {
+	const placements = revenuePlacements( item );
+	let influencedProvisional = '';
+	if ( hasInfluenced( item ) ) {
+		influencedProvisional = item.influenced_provisional ? __( 'Yes', 'godam' ) : __( 'No', 'godam' );
+	}
+	return [
 		item.title || item.product_id,
 		`ID: ${ item.product_id }`,
 		Number( item.layer_count || 0 ),
@@ -307,17 +303,6 @@ export const buildCsvRow = ( item, includeRevenue = true ) => {
 		Number( item.added_to_cart || 0 ),
 		Number( item.added_to_cart_direct || 0 ),
 		Number( item.added_to_cart_assisted || 0 ),
-	];
-	if ( ! includeRevenue ) {
-		return baseCells;
-	}
-	const placements = revenuePlacements( item );
-	let influencedProvisional = '';
-	if ( hasInfluenced( item ) ) {
-		influencedProvisional = item.influenced_provisional ? __( 'Yes', 'godam' ) : __( 'No', 'godam' );
-	}
-	return [
-		...baseCells,
 		hasRevenue( item ) ? formatRevenueNumeric( item.revenue_minor, item.currency ) : '',
 		hasRevenueTierSplit( item ) ? formatRevenueNumeric( item.revenue_direct_minor, item.currency ) : '',
 		hasRevenueTierSplit( item ) ? formatRevenueNumeric( item.revenue_assisted_minor, item.currency ) : '',
@@ -338,10 +323,6 @@ export const buildCsvRow = ( item, includeRevenue = true ) => {
 };
 
 export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher = null } ) {
-	// Revenue and orders come from orders: shown only to users who may see order
-	// data. The route leaves those fields out for everyone else.
-	const showRevenue = canViewRevenue();
-	const columnCount = showRevenue ? 5 : 4;
 	const [ page, setPage ] = useState( 1 );
 	const [ searchInput, setSearchInput ] = useState( '' );
 	const [ search, setSearch ] = useState( '' );
@@ -452,8 +433,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 			const fetched = pageProducts.flat();
 			const exportProducts = fetched.length ? fetched : products;
 
-			const csvHeaders = showRevenue ? CSV_HEADERS : CSV_HEADERS_BASE;
-			const csvContent = [ csvHeaders, ...exportProducts.map( ( item ) => buildCsvRow( item, showRevenue ) ) ]
+			const csvContent = [ CSV_HEADERS, ...exportProducts.map( buildCsvRow ) ]
 				.map( ( row ) => row.map( escapeCsvCell ).join( ',' ) )
 				.join( '\n' );
 
@@ -500,7 +480,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 						) }
 					</h2>
 				) }
-				{ showRevenue && baseCurrency && (
+				{ baseCurrency && (
 					<p
 						className="w-full order-last mt-1 mb-0 text-[13px] text-zinc-500"
 						data-test-id="godam-top-products-currency-note"
@@ -580,32 +560,30 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 									/>
 								</span>
 							</th>
-							{ showRevenue && (
-								<th scope="col">
-									<span className="inline-flex items-center gap-1">
-										{ __( 'Revenue', 'godam' ) }
-										<Tooltip
-											text={ baseCurrency
-												? sprintf(
-													/* translators: %s: ISO 4217 currency code, e.g. USD. */
-													__( 'Order value traced to this product\'s videos, in the store\'s base currency (%s), before refunds. Orders in other currencies are not converted or counted. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.', 'godam' ),
-													baseCurrency,
-												)
-												: __(
-													'Order value traced to this product\'s videos, in the store\'s base currency, before refunds. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.',
-													'godam',
-												) }
-										/>
-									</span>
-								</th>
-							) }
+							<th scope="col">
+								<span className="inline-flex items-center gap-1">
+									{ __( 'Revenue', 'godam' ) }
+									<Tooltip
+										text={ baseCurrency
+											? sprintf(
+												/* translators: %s: ISO 4217 currency code, e.g. USD. */
+												__( 'Order value traced to this product\'s videos, in the store\'s base currency (%s), before refunds. Orders in other currencies are not converted or counted. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.', 'godam' ),
+												baseCurrency,
+											)
+											: __(
+												'Order value traced to this product\'s videos, in the store\'s base currency, before refunds. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.',
+												'godam',
+											) }
+									/>
+								</span>
+							</th>
 						</tr>
 					</thead>
 					<tbody>
 
 						{ isFetching ? (
 							<tr>
-								<td colSpan={ columnCount }>
+								<td colSpan="5">
 									<div className="space-y-4 mt-3">
 										<div className="skeleton h-4 w-full"></div>
 										<div className="skeleton h-4 w-full"></div>
@@ -698,77 +676,75 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 											) }
 										</p>
 									</td>
-									{ showRevenue && (
-										<td data-test-id="godam-top-products-revenue">
-											{ hasRevenue( item ) ? (
-												<>
-													<span className="font-semibold">{ formatRevenue( item.revenue_minor, item.currency ) }</span>
-													{ ' ' }
-													<span className="text-zinc-400">{ ordersLabel( item ) }</span>
-												</>
-											) : (
-												// null-not-zero: the service sends null revenue for a
-												// product with no orders yet; say so rather than "0".
-												<span className="text-zinc-400" data-test-id="godam-top-products-revenue-empty">{ __( 'No data', 'godam' ) }</span>
-											) }
-											{ /* Direct/Assisted split of this product's revenue,
-											    mirroring the dashboard revenue card. Shown only when
-											    the service sent the split (WooCommerce store, product
-											    with orders); never a "£0 direct · £0 assisted". */ }
-											{ hasRevenue( item ) && hasRevenueTierSplit( item ) && (
-												<div
-													className="mt-1 text-xs text-zinc-500"
-													data-test-id="godam-top-products-tier-split"
-												>
-													{ sprintf(
-														/* translators: 1: direct (in-video) revenue amount, 2: assisted (via product page) revenue amount. */
-														__( '%1$s direct · %2$s assisted', 'godam' ),
-														formatRevenue( item.revenue_direct_minor, item.currency ),
-														formatRevenue( item.revenue_assisted_minor, item.currency ),
-													) }
-												</div>
-											) }
-											{ /* Influenced revenue (third tier): a separate sub-line,
-											    shown only when there is a real match, never added into
-											    the product's own revenue above. */ }
-											{ hasInfluenced( item ) && (
-												<div
-													className="mt-1 text-xs text-zinc-500"
-													data-test-id="godam-top-products-influenced"
-												>
-													{ sprintf(
-														/* translators: 1: formatted influenced revenue amount, 2: order count phrase (e.g. "3 orders"). */
-														__( 'Influenced %1$s · %2$s', 'godam' ),
-														formatRevenue( item.influenced_revenue_minor, item.influenced_currency ),
-														influencedOrdersLabel( item ),
-													) }
-													{ item.influenced_provisional && (
-														<span className="text-zinc-400">
-															{ ' ' }
-															{ __( '(provisional)', 'godam' ) }
-														</span>
-													) }
-												</div>
-											) }
-											{ /* Per-placement revenue split — only when 2+ surfaces
-											    drove revenue (a single placement just repeats the
-											    total above). */ }
-											{ hasRevenue( item ) && revenuePlacements( item ).length >= 2 && (
-												<div
-													className="mt-1 text-xs text-zinc-400"
-													data-test-id="godam-top-products-placement-split"
-												>
-													{ revenuePlacements( item ).map( ( p, i ) => (
-														<span key={ p.source }>
-															{ i > 0 && ' · ' }
-															{ sourceLabel( p.source ) }{ ' ' }
-															{ formatRevenue( p.revenue_minor, item.currency ) }
-														</span>
-													) ) }
-												</div>
-											) }
-										</td>
-									) }
+									<td data-test-id="godam-top-products-revenue">
+										{ hasRevenue( item ) ? (
+											<>
+												<span className="font-semibold">{ formatRevenue( item.revenue_minor, item.currency ) }</span>
+												{ ' ' }
+												<span className="text-zinc-400">{ ordersLabel( item ) }</span>
+											</>
+										) : (
+											// null-not-zero: the service sends null revenue for a
+											// product with no orders yet; say so rather than "0".
+											<span className="text-zinc-400" data-test-id="godam-top-products-revenue-empty">{ __( 'No data', 'godam' ) }</span>
+										) }
+										{ /* Direct/Assisted split of this product's revenue,
+										    mirroring the dashboard revenue card. Shown only when
+										    the service sent the split (WooCommerce store, product
+										    with orders); never a "£0 direct · £0 assisted". */ }
+										{ hasRevenue( item ) && hasRevenueTierSplit( item ) && (
+											<div
+												className="mt-1 text-xs text-zinc-500"
+												data-test-id="godam-top-products-tier-split"
+											>
+												{ sprintf(
+													/* translators: 1: direct (in-video) revenue amount, 2: assisted (via product page) revenue amount. */
+													__( '%1$s direct · %2$s assisted', 'godam' ),
+													formatRevenue( item.revenue_direct_minor, item.currency ),
+													formatRevenue( item.revenue_assisted_minor, item.currency ),
+												) }
+											</div>
+										) }
+										{ /* Influenced revenue (third tier): a separate sub-line,
+										    shown only when there is a real match, never added into
+										    the product's own revenue above. */ }
+										{ hasInfluenced( item ) && (
+											<div
+												className="mt-1 text-xs text-zinc-500"
+												data-test-id="godam-top-products-influenced"
+											>
+												{ sprintf(
+													/* translators: 1: formatted influenced revenue amount, 2: order count phrase (e.g. "3 orders"). */
+													__( 'Influenced %1$s · %2$s', 'godam' ),
+													formatRevenue( item.influenced_revenue_minor, item.influenced_currency ),
+													influencedOrdersLabel( item ),
+												) }
+												{ item.influenced_provisional && (
+													<span className="text-zinc-400">
+														{ ' ' }
+														{ __( '(provisional)', 'godam' ) }
+													</span>
+												) }
+											</div>
+										) }
+										{ /* Per-placement revenue split — only when 2+ surfaces
+										    drove revenue (a single placement just repeats the
+										    total above). */ }
+										{ hasRevenue( item ) && revenuePlacements( item ).length >= 2 && (
+											<div
+												className="mt-1 text-xs text-zinc-400"
+												data-test-id="godam-top-products-placement-split"
+											>
+												{ revenuePlacements( item ).map( ( p, i ) => (
+													<span key={ p.source }>
+														{ i > 0 && ' · ' }
+														{ sourceLabel( p.source ) }{ ' ' }
+														{ formatRevenue( p.revenue_minor, item.currency ) }
+													</span>
+												) ) }
+											</div>
+										) }
+									</td>
 								</tr>
 							) )
 						) }
@@ -779,7 +755,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 						    would read as a real "no data" result. */ }
 						{ ! isFetching && isError && (
 							<tr>
-								<td colSpan={ columnCount }>
+								<td colSpan="5">
 									<div className="godam-empty-state godam-empty-state--error" data-test-id="godam-top-products-error">
 										<p className="godam-empty-state__title">
 											{ __( 'Couldn’t load top products', 'godam' ) }
@@ -794,7 +770,7 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 
 						{ ! isFetching && ! isError && products.length === 0 && (
 							<tr>
-								<td colSpan={ columnCount }>
+								<td colSpan="5">
 									<div className="godam-empty-state">
 										<p className="godam-empty-state__title">
 											{ search

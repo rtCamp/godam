@@ -1,11 +1,11 @@
 /**
- * Unit tests for who sees per-hotspot revenue in the layer panel.
+ * Unit tests for who sees per-hotspot store figures in the layer panel.
  *
- * A Woo layer's hotspots carry Direct revenue and an order count. That comes
- * from orders, so the detail panel line ("This layer drove ...") and the rail's
- * receipt icon show only to a user who may see order data (WooCommerce's report
- * permission, localized as canViewRevenue). The route strips the same fields for
- * everyone else; the views, clicks and add-to-cart funnel is unaffected.
+ * A Woo layer's hotspots carry Direct revenue and an order count. That is store
+ * data, so the detail panel line ("This layer drove ...") and the rail's receipt
+ * icon show only to a user who may see store data (WooCommerce's report
+ * permission, localized as canViewStoreData). The route strips the same fields
+ * for everyone else; the views and clicks funnel is unaffected.
  *
  * @package
  */
@@ -93,14 +93,14 @@ afterEach( () => {
 
 describe( 'LayerDetailPanel revenue line', () => {
 	it( 'shows what the layer drove to a user who may see order data', () => {
-		window.videoData = { canViewRevenue: true };
+		window.videoData = { canViewStoreData: true };
 		const html = renderHTML( <LayerDetailPanel parent={ WOO_LAYER } attachmentID={ 55 } /> );
 		expect( html ).toContain( 'This layer drove' );
 		expect( html ).toContain( '$5.00' );
 	} );
 
 	it( 'leaves the revenue line out for a user who may not, and keeps the funnel', () => {
-		window.videoData = { canViewRevenue: false };
+		window.videoData = { canViewStoreData: false };
 		const html = renderHTML( <LayerDetailPanel parent={ WOO_LAYER } attachmentID={ 55 } /> );
 		expect( html ).not.toContain( 'drove' );
 		expect( html ).not.toContain( '$5.00' );
@@ -109,7 +109,7 @@ describe( 'LayerDetailPanel revenue line', () => {
 	} );
 
 	it( 'shows no revenue line when the response was stripped, whatever the flag says', () => {
-		window.videoData = { canViewRevenue: true };
+		window.videoData = { canViewStoreData: true };
 		const html = renderHTML( <LayerDetailPanel parent={ WOO_LAYER_STRIPPED } attachmentID={ 55 } /> );
 		expect( html ).not.toContain( 'drove' );
 	} );
@@ -119,13 +119,13 @@ describe( 'SubHotspotRail revenue tooltip', () => {
 	const rail = ( parent ) => <SubHotspotRail parent={ parent } selectedSubId={ null } onSelect={ () => {} } />;
 
 	it( 'shows the per-hotspot revenue tooltip to a user who may see order data', () => {
-		window.videoData = { canViewRevenue: true };
+		window.videoData = { canViewStoreData: true };
 		const html = renderHTML( rail( WOO_LAYER ) );
 		expect( html ).toContain( 'Drove $5.00 across 2 orders' );
 	} );
 
 	it( 'leaves it out for a user who may not, and keeps the product rows', () => {
-		window.videoData = { canViewRevenue: false };
+		window.videoData = { canViewStoreData: false };
 		const html = renderHTML( rail( WOO_LAYER ) );
 		expect( html ).not.toContain( 'Drove' );
 		expect( html ).not.toContain( '$5.00' );
@@ -134,7 +134,7 @@ describe( 'SubHotspotRail revenue tooltip', () => {
 	} );
 
 	it( 'shows no tooltip when the response was stripped, whatever the flag says', () => {
-		window.videoData = { canViewRevenue: true };
+		window.videoData = { canViewStoreData: true };
 		expect( renderHTML( rail( WOO_LAYER_STRIPPED ) ) ).not.toContain( 'Drove' );
 	} );
 } );

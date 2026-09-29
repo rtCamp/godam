@@ -14,7 +14,7 @@ import { Icon } from '@wordpress/components';
  * Internal dependencies
  */
 import { formatRevenue } from '../../dashboard/components/TopProductsTable';
-import { canViewRevenue } from '../../shared/canViewRevenue';
+import { canViewStoreData } from '../../shared/canViewStoreData';
 import {
 	LAYER_TYPE_BY_ID,
 	withAlpha,
@@ -119,7 +119,7 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 	const revenueEntity = activeSub || parent;
 	const revenueMinor = Number( revenueEntity.revenue_minor ) || 0;
 	const revenueOrders = Number( revenueEntity.orders ) || 0;
-	const showRevenue = canViewRevenue() && parent.layer_type === 'woo' && revenueMinor > 0;
+	const showRevenue = canViewStoreData() && parent.layer_type === 'woo' && revenueMinor > 0;
 	const revenueOrdersPhrase = sprintf(
 		/* translators: %d: number of orders. */
 		_n( '%d order', '%d orders', revenueOrders, 'godam' ),

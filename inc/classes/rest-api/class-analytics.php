@@ -263,7 +263,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_top_products' ),
-					'permission_callback' => array( $this, 'check_dashboard_read_permission' ),
+					'permission_callback' => array( $this, 'check_dashboard_store_permission' ),
 					'args'                => array(
 						'page'         => array(
 							'required'          => false,
@@ -323,7 +323,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_placement_funnels' ),
-					'permission_callback' => array( $this, 'check_dashboard_read_permission' ),
+					'permission_callback' => array( $this, 'check_dashboard_store_permission' ),
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -339,7 +339,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_revenue_summary' ),
-					'permission_callback' => array( $this, 'check_dashboard_read_permission' ),
+					'permission_callback' => array( $this, 'check_dashboard_store_permission' ),
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -355,7 +355,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_video_funnel' ),
-					'permission_callback' => array( $this, 'check_dashboard_read_permission' ),
+					'permission_callback' => array( $this, 'check_dashboard_store_permission' ),
 					'args'                => array(
 						'site_url' => array(
 							'required'          => true,
@@ -461,32 +461,47 @@ class Analytics extends Base {
 	}
 
 	/**
-	 * Permission check for the routes only the Dashboard page calls
-	 * (dashboard-metrics, dashboard-history, top-videos, top-products,
-	 * placement-funnels, revenue-summary, video-funnel).
+	 * Permission check for the routes only the Dashboard page calls and that
+	 * carry no store data (dashboard-metrics, dashboard-history, top-videos).
 	 *
 	 * The Dashboard menu needs `edit_pages` (editors and above), so its routes
 	 * ask for the same capability: a user who cannot open the page cannot read
 	 * its store-wide figures through the routes either.
 	 *
-	 * @return bool Whether the current user may read the Dashboard's analytics.
+	 * @return bool Whether the current user may read the Dashboard's video analytics.
 	 */
 	public function check_dashboard_read_permission() {
 		return current_user_can( 'edit_pages' );
 	}
 
 	/**
-	 * Whether the current user may see figures that come from orders (revenue,
-	 * order counts, purchases, Video-to-Purchase and the funnels' Purchase step).
+	 * Permission check for the Dashboard routes whose whole answer is store data
+	 * (top-products, revenue-summary, placement-funnels, video-funnel).
+	 *
+	 * The user must be able to open the Dashboard (`edit_pages`) and must hold
+	 * WooCommerce's report permission. Anyone else is refused with a 403 rather
+	 * than sent an empty or partial answer.
+	 *
+	 * @return bool Whether the current user may read the Dashboard's store analytics.
+	 */
+	public function check_dashboard_store_permission() {
+		return $this->check_dashboard_read_permission() && $this->can_view_store_data();
+	}
+
+	/**
+	 * Whether the current user may see store data: products, add-to-carts,
+	 * Video-to-Cart, orders, purchases and revenue.
 	 *
 	 * This follows WooCommerce's own report permission, which it grants to shop
-	 * managers and administrators only. Routes strip the order fields below from
-	 * their responses for everyone else, so the numbers cannot be read through
+	 * managers and administrators only. Editors and authors get no WooCommerce or
+	 * Products menu, so they see video data only. Routes that are all store data
+	 * refuse everyone else; routes that mix video and store data strip the store
+	 * fields below from their responses, so the numbers cannot be read through
 	 * the route even if the screen hides them.
 	 *
-	 * @return bool Whether the current user may view order-derived analytics.
+	 * @return bool Whether the current user may view store analytics.
 	 */
-	public function can_view_order_data() {
+	public function can_view_store_data() {
 		return current_user_can( 'view_woocommerce_reports' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown -- WooCommerce registers this capability itself.
 	}
 
@@ -495,7 +510,7 @@ class Analytics extends Base {
 	 * through unchanged, so a null payload stays null.
 	 *
 	 * @param mixed $data Response fragment.
-	 * @param array $keys Keys that come from orders.
+	 * @param array $keys Keys that come from the store.
 	 * @return mixed
 	 */
 	private function without_keys( $data, array $keys ) {
@@ -506,68 +521,66 @@ class Analytics extends Base {
 	}
 
 	/**
-	 * Drop the Purchased step from a Play to Cart to Purchase funnel payload,
-	 * along with the flag whose only message is that purchases are still settling.
+	 * Drop the rows of a list of tuples that are about add-to-carts. The service
+	 * sends per-layer counters as rows such as [ layer_type, action_type, count ];
+	 * a row is an add-to-cart row when any of its values is `added_to_cart`.
 	 *
-	 * @param mixed $funnel A `video_funnel` payload ({ stages, still_counting }).
-	 * @return mixed The funnel with only the Played and Added to cart steps.
+	 * @param mixed $rows A list of counter rows.
+	 * @return mixed The list without the add-to-cart rows.
 	 */
-	private function without_purchase_step( $funnel ) {
-		if ( ! is_array( $funnel ) ) {
-			return $funnel;
+	private function without_add_to_cart_rows( $rows ) {
+		if ( ! is_array( $rows ) ) {
+			return $rows;
 		}
-		if ( isset( $funnel['stages'] ) && is_array( $funnel['stages'] ) ) {
-			$funnel['stages'] = array_values(
-				array_filter(
-					$funnel['stages'],
-					function ( $stage ) {
-						return ! is_array( $stage ) || 'purchased' !== ( $stage['key'] ?? '' );
-					}
-				)
-			);
-		}
-		unset( $funnel['still_counting'] );
-		return $funnel;
+		return array_values(
+			array_filter(
+				$rows,
+				function ( $row ) {
+					return ! is_array( $row ) || ! in_array( 'added_to_cart', $row, true );
+				}
+			)
+		);
 	}
 
 	/**
-	 * Strip order-derived fields from a `dashboard_metrics` payload.
-	 *
-	 * Revenue, Video-to-Purchase and the funnel's Purchase step go. The names of
-	 * those two sections also leave `unavailable_sections`, so the page has no
-	 * "couldn't load" state to show for a card the user was never going to see.
+	 * Strip store fields from a `dashboard_metrics` payload: Video-to-Cart,
+	 * Video-to-Purchase, the funnel and revenue. The names of those sections also
+	 * leave `unavailable_sections`, so the page has no "couldn't load" state to
+	 * show for a card the user was never going to see.
 	 *
 	 * @param array $metrics The merged `dashboard_metrics` payload.
 	 * @return array
 	 */
-	private function strip_order_data_from_dashboard_metrics( array $metrics ) {
-		$metrics = $this->without_keys( $metrics, array( 'revenue', 'video_to_purchase' ) );
-		if ( array_key_exists( 'video_funnel', $metrics ) ) {
-			$metrics['video_funnel'] = $this->without_purchase_step( $metrics['video_funnel'] );
-		}
+	private function strip_store_data_from_dashboard_metrics( array $metrics ) {
+		$store_sections = array( 'video_to_cart', 'video_to_purchase', 'video_funnel', 'revenue' );
+		$metrics        = $this->without_keys( $metrics, $store_sections );
 		if ( isset( $metrics['unavailable_sections'] ) && is_array( $metrics['unavailable_sections'] ) ) {
 			$metrics['unavailable_sections'] = array_values(
-				array_diff( $metrics['unavailable_sections'], array( 'revenue', 'video_to_purchase' ) )
+				array_diff( $metrics['unavailable_sections'], $store_sections )
 			);
 		}
 		return $metrics;
 	}
 
 	/**
-	 * Strip order-derived fields from a per-video analytics record.
+	 * Strip store fields from a per-video analytics record: Video-to-Cart,
+	 * Video-to-Purchase, the funnel, revenue and tips, and the add-to-cart rows of
+	 * the per-layer counters.
 	 *
 	 * The record is passed through from the service whole, so every key that
-	 * carries order data is named here. A new order-derived field on the service
+	 * carries store data is named here. A new store-derived field on the service
 	 * side has to be added to this list too.
 	 *
 	 * @param array $record The `processed_analytics` record for one video.
 	 * @return array
 	 */
-	private function strip_order_data_from_video_record( array $record ) {
+	private function strip_store_data_from_video_record( array $record ) {
 		$record = $this->without_keys(
 			$record,
 			array(
+				'video_to_cart',
 				'video_to_purchase',
+				'video_funnel',
 				'revenue',
 				'revenue_currency',
 				'revenue_excluded_orders',
@@ -576,56 +589,46 @@ class Analytics extends Base {
 				'revenue_tips',
 			)
 		);
-		if ( array_key_exists( 'video_funnel', $record ) ) {
-			$record['video_funnel'] = $this->without_purchase_step( $record['video_funnel'] );
+		foreach ( array( 'layer_type_stats', 'layer_details' ) as $counter_rows ) {
+			if ( array_key_exists( $counter_rows, $record ) ) {
+				$record[ $counter_rows ] = $this->without_add_to_cart_rows( $record[ $counter_rows ] );
+			}
 		}
 		return $record;
 	}
 
 	/**
-	 * Strip order-derived fields from one Top Products row, keeping views,
-	 * impressions and add-to-carts.
+	 * Strip store fields from a layer analytics payload: the add-to-cart counter
+	 * (per layer, in the totals and per day) and per-hotspot revenue and orders.
+	 * Views, hovers and clicks stay.
 	 *
-	 * @param mixed $product One row from the service's `top_products`.
+	 * @param mixed $layer_analytics The `layer_analytics` payload.
 	 * @return mixed
 	 */
-	private function strip_order_data_from_top_product( $product ) {
-		return $this->without_keys(
-			$product,
-			array(
-				'revenue_minor',
-				'orders',
-				'currency',
-				'revenue_direct_minor',
-				'revenue_assisted_minor',
-				'revenue_by_placement',
-				'influenced_revenue_minor',
-				'influenced_currency',
-				'influenced_orders',
-				'influenced_provisional',
-			)
-		);
-	}
-
-	/**
-	 * Strip order-derived fields from one row of the layer analytics response
-	 * (per-hotspot revenue on Woo layers).
-	 *
-	 * @param mixed $layer One entry of `individual_layers`.
-	 * @return mixed
-	 */
-	private function strip_order_data_from_layer( $layer ) {
-		return $this->without_keys( $layer, array( 'revenue_minor', 'orders', 'currency' ) );
-	}
-
-	/**
-	 * Strip the Purchased step from one placement funnel row.
-	 *
-	 * @param mixed $placement One row from the service's `placement_funnels`.
-	 * @return mixed
-	 */
-	private function strip_order_data_from_placement( $placement ) {
-		return $this->without_keys( $placement, array( 'purchased', 'purchase_rate' ) );
+	private function strip_store_data_from_layer_analytics( $layer_analytics ) {
+		if ( ! is_array( $layer_analytics ) ) {
+			return $layer_analytics;
+		}
+		if ( isset( $layer_analytics['cumulative'] ) ) {
+			$layer_analytics['cumulative'] = $this->without_keys( $layer_analytics['cumulative'], array( 'added_to_cart' ) );
+		}
+		if ( isset( $layer_analytics['daily_breakdown'] ) && is_array( $layer_analytics['daily_breakdown'] ) ) {
+			$layer_analytics['daily_breakdown'] = array_map(
+				function ( $day ) {
+					return $this->without_keys( $day, array( 'added_to_cart' ) );
+				},
+				$layer_analytics['daily_breakdown']
+			);
+		}
+		if ( isset( $layer_analytics['individual_layers'] ) && is_array( $layer_analytics['individual_layers'] ) ) {
+			$layer_analytics['individual_layers'] = array_map(
+				function ( $layer ) {
+					return $this->without_keys( $layer, array( 'added_to_cart', 'revenue_minor', 'orders', 'currency' ) );
+				},
+				$layer_analytics['individual_layers']
+			);
+		}
+		return $layer_analytics;
 	}
 
 	/**
@@ -809,11 +812,8 @@ class Analytics extends Base {
 		}
 
 		$layer_analytics = $body['layer_analytics'] ?? array();
-		if ( ! $this->can_view_order_data() && isset( $layer_analytics['individual_layers'] ) && is_array( $layer_analytics['individual_layers'] ) ) {
-			$layer_analytics['individual_layers'] = array_map(
-				array( $this, 'strip_order_data_from_layer' ),
-				$layer_analytics['individual_layers']
-			);
+		if ( ! $this->can_view_store_data() ) {
+			$layer_analytics = $this->strip_store_data_from_layer_analytics( $layer_analytics );
 		}
 
 		return new WP_REST_Response(
@@ -1042,8 +1042,8 @@ class Analytics extends Base {
 
 		// Return analytics data if available.
 		if ( isset( $data['processed_analytics'] ) ) {
-			if ( ! $this->can_view_order_data() && is_array( $data['processed_analytics'] ) ) {
-				$data['processed_analytics'] = $this->strip_order_data_from_video_record( $data['processed_analytics'] );
+			if ( ! $this->can_view_store_data() && is_array( $data['processed_analytics'] ) ) {
+				$data['processed_analytics'] = $this->strip_store_data_from_video_record( $data['processed_analytics'] );
 			}
 
 			// Placement rows (added by the placements-capable microservice) get
@@ -1283,8 +1283,8 @@ class Analytics extends Base {
 		}
 
 		$dashboard_metrics = array_merge( $empty_metrics, $body['dashboard_metrics'] ?? array() );
-		if ( ! $this->can_view_order_data() ) {
-			$dashboard_metrics = $this->strip_order_data_from_dashboard_metrics( $dashboard_metrics );
+		if ( ! $this->can_view_store_data() ) {
+			$dashboard_metrics = $this->strip_store_data_from_dashboard_metrics( $dashboard_metrics );
 		}
 
 		return new WP_REST_Response(
@@ -1647,14 +1647,9 @@ class Analytics extends Base {
 			);
 		}
 
-		$placement_funnels = $body['placement_funnels'] ?? array();
-		if ( ! $this->can_view_order_data() && is_array( $placement_funnels ) ) {
-			$placement_funnels = array_map( array( $this, 'strip_order_data_from_placement' ), $placement_funnels );
-		}
-
 		return new WP_REST_Response(
 			array(
-				'placement_funnels' => $placement_funnels,
+				'placement_funnels' => $body['placement_funnels'] ?? array(),
 			),
 			200
 		);
@@ -1671,17 +1666,6 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_revenue_summary( WP_REST_Request $request ) {
-		// The whole response is order data: nothing to fetch for a user who may
-		// not see it. A null revenue is what the card already treats as "hide".
-		if ( ! $this->can_view_order_data() ) {
-			return new WP_REST_Response(
-				array(
-					'revenue' => null,
-				),
-				200
-			);
-		}
-
 		$site_url      = $request->get_param( 'site_url' );
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
@@ -1816,14 +1800,9 @@ class Analytics extends Base {
 			);
 		}
 
-		$video_funnel = $body['video_funnel'] ?? null;
-		if ( ! $this->can_view_order_data() ) {
-			$video_funnel = $this->without_purchase_step( $video_funnel );
-		}
-
 		return new WP_REST_Response(
 			array(
-				'video_funnel' => $video_funnel,
+				'video_funnel' => $body['video_funnel'] ?? null,
 			),
 			200
 		);
@@ -1941,9 +1920,6 @@ class Analytics extends Base {
 		}
 
 		$top_products = is_array( $body ) ? ( $body['top_products'] ?? array() ) : array();
-		if ( ! $this->can_view_order_data() && is_array( $top_products ) ) {
-			$top_products = array_map( array( $this, 'strip_order_data_from_top_product' ), $top_products );
-		}
 
 		// Products, their permalinks and the WooCommerce placeholder image live on
 		// this site, so they are looked up here, OUTSIDE the attachment-lookup

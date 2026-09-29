@@ -4,11 +4,6 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { Tooltip } from '@wordpress/components';
 
-/**
- * Internal dependencies
- */
-import { canViewRevenue } from '../shared/canViewRevenue';
-
 // Direct = added in-video (dark blue); Assisted = clicked out then added (light
 // blue); the rest of each track stays grey ("did not reach this stage").
 const COLOR_DIRECT = '#2563eb';
@@ -111,10 +106,6 @@ function DropRow( { advanced, lostLabel, lostIsWarning } ) {
  * (clicked out then added). A "still counting" note appears when the backend
  * flags the range as recent enough that purchase attribution is still settling.
  *
- * The Purchased step comes from orders, so it only shows for users who may see
- * order data (see canViewRevenue). Everyone else gets the two-step Played to Added
- * to cart funnel, titled "Cart Funnel": the routes send them no Purchased step.
- *
  * @param {Object} props
  * @param {Object} [props.funnel]       The video_funnel payload { stages, still_counting }.
  * @param {string} [props.dataLabel]    The active range label (e.g. "Last 30 days").
@@ -122,9 +113,6 @@ function DropRow( { advanced, lostLabel, lostIsWarning } ) {
  * @param {Object} [props.rangeControl] A date-range picker element rendered in the card head; replaces the plain dataLabel pill when present.
  */
 export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'account', rangeControl } ) {
-	const showPurchase = canViewRevenue();
-	const title = showPurchase ? __( 'Purchase Funnel', 'godam' ) : __( 'Cart Funnel', 'godam' );
-
 	// A query error comes back as an { error, message } object (the proxy
 	// normalises a microservice failure to 200 + status:error). Surface it in
 	// place, keeping the range picker, rather than vanishing. Checked before the
@@ -134,7 +122,7 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 			<div className="godam-card godam-funnel-card" data-test-id="godam-purchase-funnel-card">
 				<div className="godam-card__head">
 					<div className="flex items-center gap-2.5">
-						<h2>{ title }</h2>
+						<h2>{ __( 'Purchase Funnel', 'godam' ) }</h2>
 						<span className="text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]">Woo</span>
 					</div>
 					{ rangeControl }
@@ -148,7 +136,7 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 
 	// Render nothing when the payload is absent, so the card never asserts an
 	// empty funnel for "metric unavailable".
-	if ( ! funnel || ! Array.isArray( funnel.stages ) || funnel.stages.length < ( showPurchase ? 3 : 2 ) ) {
+	if ( ! funnel || ! Array.isArray( funnel.stages ) || funnel.stages.length < 3 ) {
 		return null;
 	}
 
@@ -219,7 +207,7 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 		<div className="godam-card godam-funnel-card" data-test-id="godam-purchase-funnel-card">
 			<div className="godam-card__head">
 				<div className="flex items-center gap-2.5">
-					<h2>{ title }</h2>
+					<h2>{ __( 'Purchase Funnel', 'godam' ) }</h2>
 					<span className="text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-[#EDE9FE] text-[#6D28D9]">Woo</span>
 					<span className="text-[10px] font-bold leading-none px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#92400E] tracking-wide">{ __( 'NEW', 'godam' ) }</span>
 				</div>
@@ -270,41 +258,37 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 					) }
 					testId="godam-purchase-funnel-bar-added_to_cart"
 				/>
-				{ showPurchase && (
-					<>
-						<DropRow
-							advanced={ buyAdvanced }
-							lostIsWarning
-							lostLabel={ sprintf(
-								/* translators: %s: number of visitors who added to cart but did not buy. */
-								__( '%s abandoned after adding', 'godam' ),
-								fmt( abandoned ),
-							) }
-						/>
-						<FunnelRow
-							label={ __( 'Purchased', 'godam' ) }
-							descriptor={ __( 'of those who added', 'godam' ) }
-							segments={ purchasedSegments }
-							restLabel={ restLabel( Math.max( 0, played - purchased ) ) }
-							count={ purchased }
-							rightSub={ sprintf(
-								/* translators: %s: percentage of players. */
-								__( '%s of players', 'godam' ),
-								buyShare,
-							) }
-							testId="godam-purchase-funnel-bar-purchased"
-						/>
-					</>
-				) }
+				<DropRow
+					advanced={ buyAdvanced }
+					lostIsWarning
+					lostLabel={ sprintf(
+						/* translators: %s: number of visitors who added to cart but did not buy. */
+						__( '%s abandoned after adding', 'godam' ),
+						fmt( abandoned ),
+					) }
+				/>
+				<FunnelRow
+					label={ __( 'Purchased', 'godam' ) }
+					descriptor={ __( 'of those who added', 'godam' ) }
+					segments={ purchasedSegments }
+					restLabel={ restLabel( Math.max( 0, played - purchased ) ) }
+					count={ purchased }
+					rightSub={ sprintf(
+						/* translators: %s: percentage of players. */
+						__( '%s of players', 'godam' ),
+						buyShare,
+					) }
+					testId="godam-purchase-funnel-bar-purchased"
+				/>
 			</div>
 
 			<div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-6 pt-4 border-t border-[#eef0f3] text-[13px] text-zinc-600">
 				<span className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm" style={ { background: COLOR_DIRECT } } />{ __( 'Direct, added to cart in-video', 'godam' ) }</span>
-				<span className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm" style={ { background: COLOR_ASSISTED } } />{ showPurchase ? __( 'Assisted, clicked out then bought', 'godam' ) : __( 'Assisted, clicked out then added to cart', 'godam' ) }</span>
+				<span className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm" style={ { background: COLOR_ASSISTED } } />{ __( 'Assisted, clicked out then bought', 'godam' ) }</span>
 				<span className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm border border-zinc-300" style={ { background: '#eef0f3' } } />{ __( 'did not reach this stage', 'godam' ) }</span>
 			</div>
 
-			{ showPurchase && funnel.still_counting && (
+			{ funnel.still_counting && (
 				<div
 					className="godam-funnel__note mt-4 inline-flex items-center gap-2 text-[13px] text-[#0a7f2e] bg-[#0a7f2e]/10 border border-[#0a7f2e]/20 rounded-lg px-3 py-2"
 					data-test-id="godam-purchase-funnel-still-counting"
