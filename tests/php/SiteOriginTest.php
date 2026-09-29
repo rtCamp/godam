@@ -38,6 +38,7 @@ class SiteOriginTest extends TestCase {
 		parent::setUp();
 
 		$GLOBALS['rtgodam_translated'] = array();
+		$GLOBALS['rtgodam_hooks']      = array();
 		$GLOBALS['rtgodam_stub']       = array(
 			'home_url' => 'https://example.test',
 			'options'  => array(
@@ -61,6 +62,69 @@ class SiteOriginTest extends TestCase {
 		$GLOBALS['rtgodam_stub']['home_url'] = $home_url;
 
 		$this->assertSame( $expected, rtgodam_get_site_origin() );
+	}
+
+	/**
+	 * For sites whose home_url() differs from what visitors' browsers report (a proxy
+	 * that ends TLS without setting the HTTPS flag, several domains on one site).
+	 */
+	public function test_filter_can_replace_the_origin() {
+		$GLOBALS['rtgodam_stub']['home_url'] = 'http://example.test';
+		add_filter(
+			'rtgodam_site_origin',
+			function () {
+				return 'https://example.test';
+			}
+		);
+
+		$this->assertSame( 'https://example.test', rtgodam_get_site_origin() );
+	}
+
+	public function test_filter_receives_the_computed_origin_and_home_url() {
+		$GLOBALS['rtgodam_stub']['home_url'] = 'https://example.test/site-1';
+		$seen                                = array();
+		add_filter(
+			'rtgodam_site_origin',
+			function ( $origin, $home_url ) use ( &$seen ) {
+				$seen = array( $origin, $home_url );
+				return $origin;
+			},
+			10,
+			2
+		);
+
+		rtgodam_get_site_origin();
+
+		$this->assertSame( array( 'https://example.test', 'https://example.test/site-1' ), $seen );
+	}
+
+	/**
+	 * @dataProvider unusable_filter_results
+	 *
+	 * @param mixed $result What the filter returned.
+	 */
+	public function test_unusable_filter_result_keeps_the_computed_origin( $result ) {
+		add_filter(
+			'rtgodam_site_origin',
+			function () use ( $result ) {
+				return $result;
+			}
+		);
+
+		$this->assertSame( 'https://example.test', rtgodam_get_site_origin() );
+	}
+
+	/**
+	 * @return array<string, array{0: mixed}>
+	 */
+	public function unusable_filter_results() {
+		return array(
+			'null'         => array( null ),
+			'empty string' => array( '' ),
+			'array'        => array( array( 'https://example.test' ) ),
+			'no scheme'    => array( 'example.test' ),
+			'has a path'   => array( 'https://example.test/site-1' ),
+		);
 	}
 
 	/**
