@@ -520,6 +520,15 @@ class Engagement extends Base {
 		$current_user_name  = $current_user['name'];
 		$transcoder_job_id  = $this->get_transcoder_job_id( $video_id );
 
+		// Only the author may edit a comment, whatever id the browser sends.
+		if ( 'edit' === $comment_type ) {
+			$ownership = $this->verify_comment_ownership( $transcoder_job_id, $comment_parent_id, $account_credentials );
+
+			if ( $ownership instanceof WP_REST_Response ) {
+				return $ownership;
+			}
+		}
+
 		$query_params = array(
 			'api_key'        => $account_credentials['api_key'],
 			'reference_name' => $transcoder_job_id,
@@ -569,7 +578,7 @@ class Engagement extends Base {
 				'parent_id'       => isset( $comment['custom_reply_to'] ) ? $comment['custom_reply_to'] : null,
 				'text'            => html_entity_decode( $comment['content'], ENT_QUOTES, 'UTF-8' ),
 				'author_name'     => $comment['comment_by'],
-				'author_email'    => $comment['comment_email'],
+				'is_own'          => true,
 				'created_at_date' => $created_date['date'],
 				'created_at_time' => $created_date['time'],
 				'author_image'    => get_avatar_url( $comment['comment_email'] ),
@@ -626,6 +635,13 @@ class Engagement extends Base {
 		$current_user       = rtgodam_get_current_logged_in_user_data();
 		$current_user_email = $current_user['email'];
 		$transcoder_job_id  = $this->get_transcoder_job_id( $video_id );
+
+		// Only the author may delete a comment, whatever id the browser sends.
+		$ownership = $this->verify_comment_ownership( $transcoder_job_id, $comment_id, $account_credentials );
+
+		if ( $ownership instanceof WP_REST_Response ) {
+			return $ownership;
+		}
 
 		$query_params = array(
 			'api_key'        => $account_credentials['api_key'],
@@ -690,7 +706,10 @@ class Engagement extends Base {
 	}
 
 	/**
-	 * Gets comments for a transcoder job ID.
+	 * Gets the public comment tree for a transcoder job ID.
+	 *
+	 * The tree carries the display name, avatar and an `is_own` flag for the
+	 * current viewer. It never carries the author's email address.
 	 *
 	 * @param string $transcoder_job_id     Transcoder job ID.
 	 * @param array  $account_credentials   Account credentials.
@@ -698,13 +717,30 @@ class Engagement extends Base {
 	 * @return array
 	 */
 	public function get_comments( $transcoder_job_id, $account_credentials ) {
+		$result = $this->get_comment_tree( $transcoder_job_id, $account_credentials );
+
+		return array(
+			'comments' => $this->to_public_comments( $result['comments'] ),
+			'total'    => $result['total'],
+		);
+	}
+
+	/**
+	 * Gets the comment tree for a transcoder job ID, from cache when possible.
+	 *
+	 * The tree is shared by every viewer, so it keeps each author's email for
+	 * to_public_comments() to compare against the current viewer. It is server
+	 * side only and must not be returned as it is.
+	 *
+	 * @param string $transcoder_job_id     Transcoder job ID.
+	 * @param array  $account_credentials   Account credentials.
+	 *
+	 * @return array
+	 */
+	private function get_comment_tree( $transcoder_job_id, $account_credentials ) {
 
 		$comment_tree  = array();
 		$comment_index = array();
-		$query_params  = array(
-			'name'    => $transcoder_job_id,
-			'api_key' => $account_credentials['api_key'],
-		);
 
 		$cache_key   = 'rtgodam-engagements-comments-transcoder-job-id-' . $transcoder_job_id;
 		$cached_data = rtgodam_cache_get( $cache_key );
@@ -712,19 +748,9 @@ class Engagement extends Base {
 			return $cached_data;
 		}
 
-		$comments_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.get_wp_comments';
-		$comments_response = wp_remote_post(
-			$comments_endpoint,
-			array(
-				'body'    => wp_json_encode( $query_params ),
-				'headers' => array(
-					'Content-Type' => 'application/json',
-				),
-			)
-		);
-		$process_response  = $this->process_response( $comments_response );
+		$fetched = $this->fetch_raw_comments( $transcoder_job_id, $account_credentials );
 
-		if ( $process_response instanceof WP_REST_Response || empty( $process_response['message']['comments'] ) || ! is_array( $process_response['message']['comments'] ) ) {
+		if ( empty( $fetched['comments'] ) ) {
 
 			return array(
 				'comments' => $comment_tree,
@@ -732,8 +758,8 @@ class Engagement extends Base {
 			);
 		}
 
-		$comments = $process_response['message']['comments'];
-		$count    = $process_response['message']['count'];
+		$comments = $fetched['comments'];
+		$count    = $fetched['count'];
 
 		foreach ( $comments as $comment ) {
 			$created_date = $this->calculate_days( $comment['creation'] );
@@ -773,6 +799,145 @@ class Engagement extends Base {
 		rtgodam_cache_set( $cache_key, $result );
 
 		return $result;
+	}
+
+	/**
+	 * Fetches a video's comments from GoDAM Central, without using the cache.
+	 *
+	 * @param string $transcoder_job_id     Transcoder job ID.
+	 * @param array  $account_credentials   Account credentials.
+	 *
+	 * @return array|null Array with `comments` (list) and `count`, or null when Central could not be reached or refused the request.
+	 */
+	private function fetch_raw_comments( $transcoder_job_id, $account_credentials ) {
+		$query_params = array(
+			'name'    => $transcoder_job_id,
+			'api_key' => $account_credentials['api_key'],
+		);
+
+		$comments_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.get_wp_comments';
+		$comments_response = wp_remote_post(
+			$comments_endpoint,
+			array(
+				'body'    => wp_json_encode( $query_params ),
+				'headers' => array(
+					'Content-Type' => 'application/json',
+				),
+			)
+		);
+		$process_response  = $this->process_response( $comments_response );
+
+		if ( $process_response instanceof WP_REST_Response ) {
+			return null;
+		}
+
+		if ( empty( $process_response['message']['comments'] ) || ! is_array( $process_response['message']['comments'] ) ) {
+			return array(
+				'comments' => array(),
+				'count'    => 0,
+			);
+		}
+
+		return array(
+			'comments' => $process_response['message']['comments'],
+			'count'    => $process_response['message']['count'],
+		);
+	}
+
+	/**
+	 * Turns a comment tree into what the browser is allowed to see.
+	 *
+	 * Builds each comment from a fixed list of fields, so a field added to the
+	 * stored tree later is not returned by accident.
+	 *
+	 * @param array $comments Comment tree from get_comment_tree().
+	 *
+	 * @return array
+	 */
+	private function to_public_comments( $comments ) {
+		$public = array();
+
+		foreach ( $comments as $comment ) {
+			$public[] = array(
+				'id'              => $comment['id'],
+				'parent_id'       => $comment['parent_id'],
+				'text'            => $comment['text'],
+				'author_name'     => $comment['author_name'],
+				'is_own'          => $this->is_own_comment( $comment['author_email'] ?? '' ),
+				'created_at_date' => $comment['created_at_date'],
+				'created_at_time' => $comment['created_at_time'],
+				'author_image'    => $comment['author_image'],
+				'children'        => $this->to_public_comments( $comment['children'] ?? array() ),
+			);
+		}
+
+		return $public;
+	}
+
+	/**
+	 * Whether a comment was written by the person making this request.
+	 *
+	 * Decided from the WordPress session alone. Guests and logged-out visitors
+	 * never own a comment: there is no guest session on the server.
+	 *
+	 * @param string $author_email Email address stored with the comment.
+	 *
+	 * @return bool
+	 */
+	public function is_own_comment( $author_email ) {
+		$current_user = rtgodam_get_current_logged_in_user_data();
+
+		if ( 'user' !== $current_user['type'] || empty( $author_email ) ) {
+			return false;
+		}
+
+		return strtolower( trim( $current_user['email'] ) ) === strtolower( trim( (string) $author_email ) );
+	}
+
+	/**
+	 * Checks that the current user wrote a comment, using a fresh copy from Central.
+	 *
+	 * Central lets any signed-in visitor edit or soft-delete a comment when its
+	 * author has no GoDAM Central account, so the site has to decide.
+	 *
+	 * @param string|null $transcoder_job_id   Transcoder job ID of the video.
+	 * @param string      $comment_id          ID of the comment to change.
+	 * @param array       $account_credentials Account credentials.
+	 *
+	 * @return true|WP_REST_Response True when the comment belongs to the current user, otherwise an error response.
+	 */
+	private function verify_comment_ownership( $transcoder_job_id, $comment_id, $account_credentials ) {
+		$fetched = empty( $transcoder_job_id ) ? array() : $this->fetch_raw_comments( $transcoder_job_id, $account_credentials );
+
+		if ( null === $fetched ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => __( 'Unable to verify the comment. Please try again.', 'godam' ),
+					'errorType' => 'failed_to_verify_comment',
+				),
+				500
+			);
+		}
+
+		foreach ( $fetched['comments'] ?? array() as $comment ) {
+			if ( isset( $comment['name'] ) && (string) $comment['name'] === (string) $comment_id ) {
+				if ( $this->is_own_comment( $comment['comment_email'] ?? '' ) ) {
+					return true;
+				}
+				break;
+			}
+		}
+
+		// Same answer for a comment that is not there and one that is not theirs.
+		return new WP_REST_Response(
+			array(
+				'status'    => 'error',
+				'message'   => __( 'You can only change your own comments.', 'godam' ),
+				'errorType' => 'comment_not_owned',
+			),
+			403
+		);
 	}
 
 	/**
