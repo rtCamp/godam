@@ -2376,3 +2376,36 @@ function rtgodam_format_html_attributes( $attributes ) {
 
 	return implode( ' ', $formatted );
 }
+
+/**
+ * Get this site's origin: scheme, host and port, with no path.
+ *
+ * Analytics events are recorded under the visitor's `window.location.origin`,
+ * so reads made on the site's behalf use the same shape, built from home_url().
+ *
+ * @since n.e.x.t
+ *
+ * @return string Origin such as `https://example.com`, or '' when home_url() has no scheme or host.
+ */
+function rtgodam_get_site_origin() {
+	$parts = wp_parse_url( home_url() );
+
+	if ( empty( $parts['scheme'] ) || empty( $parts['host'] ) ) {
+		return '';
+	}
+
+	$scheme = strtolower( $parts['scheme'] );
+	$origin = $scheme . '://' . strtolower( $parts['host'] );
+
+	// Browsers leave the default port out of window.location.origin.
+	$default_ports = array(
+		'http'  => 80,
+		'https' => 443,
+	);
+
+	if ( ! empty( $parts['port'] ) && ( $default_ports[ $scheme ] ?? null ) !== (int) $parts['port'] ) {
+		$origin .= ':' . $parts['port'];
+	}
+
+	return $origin;
+}

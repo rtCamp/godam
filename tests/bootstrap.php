@@ -388,6 +388,7 @@ require_once __DIR__ . '/stubs/i18n.php';
 require_once __DIR__ . '/stubs/class-wp-rest-request.php';
 require_once __DIR__ . '/stubs/class-wp-rest-response.php';
 require_once __DIR__ . '/stubs/wp-http-functions.php';
+require_once __DIR__ . '/stubs/site-functions.php';
 
 // Version-compatibility checks read this. High enough that any add-on minimum
 // passes, so tests exercising the incompatible branch raise their own minimum.
@@ -422,6 +423,10 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-transcoding.php';
 // every route's permission callback. The class extends the stubbed Base and
 // touches WordPress only inside its route callbacks, so requiring it runs no WP code.
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
+
+// Loaded for get_activities(), which SiteOriginTest drives with the stubs above.
+// Requiring the file runs no WP code.
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-engagement.php';
 
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
