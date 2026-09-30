@@ -28,10 +28,10 @@ if ( ! function_exists( 'home_url' ) ) {
 if ( ! function_exists( 'is_user_logged_in' ) ) {
 
 	/**
-	 * @return bool Always false: the suite runs as a logged-out visitor.
+	 * @return bool False unless a test sets $GLOBALS['rtgodam_stub']['user'].
 	 */
 	function is_user_logged_in() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return false;
+		return ! empty( $GLOBALS['rtgodam_stub']['user'] );
 	}
 }
 

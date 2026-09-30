@@ -2378,6 +2378,28 @@ function rtgodam_format_html_attributes( $attributes ) {
 }
 
 /**
+ * Normalise an origin the way browsers report `window.location.origin`.
+ *
+ * Accepts only a bare `http(s)://host[:port]`: no path, query, fragment, spaces
+ * or userinfo. The result is lowercased, since browsers report it lowercase and
+ * stored events are matched exactly.
+ *
+ * @since n.e.x.t
+ *
+ * @param mixed $value Candidate origin.
+ * @return string The normalised origin, or '' when the value is not one.
+ */
+function rtgodam_normalize_origin( $value ) {
+	if ( ! is_string( $value ) ) {
+		return '';
+	}
+
+	$value = strtolower( $value );
+
+	return 1 === preg_match( '#^https?://[^/?\#\s@]+$#', $value ) ? $value : '';
+}
+
+/**
  * Get this site's origin: scheme, host and port, with no path.
  *
  * Analytics events are recorded under the visitor's `window.location.origin`,
@@ -2417,8 +2439,8 @@ function rtgodam_get_site_origin() {
 	 * Filters the origin analytics and engagement reads send as this site's address.
 	 *
 	 * Return the origin visitors' browsers report as `window.location.origin`:
-	 * scheme, host and any non-default port, no path and no trailing slash. Any
-	 * other value is ignored.
+	 * scheme, host and any non-default port, no path, no userinfo and no trailing
+	 * slash. It is lowercased; any other value is ignored.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -2427,8 +2449,42 @@ function rtgodam_get_site_origin() {
 	 */
 	$filtered = apply_filters( 'rtgodam_site_origin', $origin, $home_url );
 
-	if ( is_string( $filtered ) && 1 === preg_match( '#^https?://[^/?\#\s]+$#i', $filtered ) ) {
-		return $filtered;
+	$filtered = rtgodam_normalize_origin( $filtered );
+
+	return '' !== $filtered ? $filtered : $origin;
+}
+
+/**
+ * Get the origin an authenticated analytics read should send for this site.
+ *
+ * This is the site's own origin (see rtgodam_get_site_origin()), with one
+ * exception: when the request carries an origin on the same host and port and
+ * the scheme is the only difference, that origin is used. It covers a proxy that
+ * ends TLS without telling WordPress, where home_url() says `http` and the
+ * admin's browser is on `https`. A different host (www against apex, another
+ * domain) or port, a path, userinfo or a non-http scheme is ignored, so a caller
+ * can only pick between the two schemes of this site's own host. Use it only on
+ * routes behind a capability check; the public views route uses
+ * rtgodam_get_site_origin() directly.
+ *
+ * @since n.e.x.t
+ *
+ * @param mixed $requested_origin The site_url sent with the request, if any.
+ * @return string Origin such as `https://example.com`, or '' when the site has none.
+ */
+function rtgodam_get_request_site_origin( $requested_origin ) {
+	$origin    = rtgodam_get_site_origin();
+	$requested = rtgodam_normalize_origin( $requested_origin );
+
+	if ( '' === $origin || '' === $requested || $requested === $origin ) {
+		return $origin;
+	}
+
+	$own = wp_parse_url( $origin );
+	$req = wp_parse_url( $requested );
+
+	if ( ( $own['host'] ?? null ) === ( $req['host'] ?? false ) && ( $own['port'] ?? null ) === ( $req['port'] ?? null ) ) {
+		return $requested;
 	}
 
 	return $origin;

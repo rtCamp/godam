@@ -246,6 +246,9 @@ class Engagement extends Base {
 		$response_data = array();
 		$video_id      = $request->get_param( 'video_id' );
 		$site_url      = rtgodam_get_site_origin();
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response( 500 );
+		}
 
 		$account_credentials = $this->access_credentials_check();
 

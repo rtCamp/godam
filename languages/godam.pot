@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-29T07:52:43+00:00\n"
+"POT-Creation-Date: 2026-09-30T09:30:37+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -4154,7 +4154,7 @@ msgstr ""
 
 #. translators: %d: WordPress post ID.
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/rest-api/class-analytics.php:646
+#: inc/classes/rest-api/class-analytics.php:649
 #: pages/analytics/components/Placements/index.js:173
 #, js-format,php-format
 msgid "Post #%d"
@@ -4198,8 +4198,8 @@ msgid "Displayed on:"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/rest-api/class-analytics.php:647
-#: inc/classes/rest-api/class-analytics.php:708
+#: inc/classes/rest-api/class-analytics.php:650
+#: inc/classes/rest-api/class-analytics.php:711
 #: pages/analytics/components/Placements/index.js:273
 msgid "Deleted page"
 msgstr ""
@@ -10887,68 +10887,72 @@ msgstr ""
 msgid "The Video ID for fetching analytics data."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:469
-#: inc/classes/rest-api/class-analytics.php:739
-#: inc/classes/rest-api/class-analytics.php:968
-#: inc/classes/rest-api/class-analytics.php:1361
-#: inc/classes/rest-api/class-analytics.php:1434
-#: inc/classes/rest-api/class-analytics.php:1514
-#: inc/classes/rest-api/class-engagement.php:355
+#: inc/classes/rest-api/class-analytics.php:472
+#: inc/classes/rest-api/class-analytics.php:745
+#: inc/classes/rest-api/class-analytics.php:980
+#: inc/classes/rest-api/class-analytics.php:1382
+#: inc/classes/rest-api/class-analytics.php:1458
+#: inc/classes/rest-api/class-analytics.php:1541
+#: inc/classes/rest-api/class-engagement.php:358
 #: inc/classes/rest-api/class-site.php:169
 msgid "Missing API key."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:480
+#: inc/classes/rest-api/class-analytics.php:483
 msgid "GoDAM account is not verified. Connect your account in GoDAM settings to view layer analytics."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:543
-#: inc/classes/rest-api/class-analytics.php:774
-#: inc/classes/rest-api/class-analytics.php:1014
-#: inc/classes/rest-api/class-analytics.php:1386
-#: inc/classes/rest-api/class-analytics.php:1466
-#: inc/classes/rest-api/class-analytics.php:1539
+#: inc/classes/rest-api/class-analytics.php:546
+#: inc/classes/rest-api/class-analytics.php:780
+#: inc/classes/rest-api/class-analytics.php:1026
+#: inc/classes/rest-api/class-analytics.php:1407
+#: inc/classes/rest-api/class-analytics.php:1490
+#: inc/classes/rest-api/class-analytics.php:1566
 msgid "Unable to reach analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:552
-#: inc/classes/rest-api/class-analytics.php:785
-#: inc/classes/rest-api/class-analytics.php:1023
-#: inc/classes/rest-api/class-analytics.php:1195
-#: inc/classes/rest-api/class-analytics.php:1397
-#: inc/classes/rest-api/class-analytics.php:1477
-#: inc/classes/rest-api/class-analytics.php:1550
-#: inc/classes/rest-api/class-analytics.php:1668
+#: inc/classes/rest-api/class-analytics.php:555
+#: inc/classes/rest-api/class-analytics.php:791
+#: inc/classes/rest-api/class-analytics.php:1035
+#: inc/classes/rest-api/class-analytics.php:1213
+#: inc/classes/rest-api/class-analytics.php:1418
+#: inc/classes/rest-api/class-analytics.php:1501
+#: inc/classes/rest-api/class-analytics.php:1577
+#: inc/classes/rest-api/class-analytics.php:1698
 msgid "Unexpected error from analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:694
+#: inc/classes/rest-api/class-analytics.php:697
 msgid "Unavailable"
 msgstr ""
 
 #. translators: %d: WordPress post ID.
-#: inc/classes/rest-api/class-analytics.php:707
+#: inc/classes/rest-api/class-analytics.php:710
 #, php-format
 msgid "Post #%d (deleted)"
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:907
-#: inc/classes/rest-api/class-analytics.php:1072
-#: inc/classes/rest-api/class-analytics.php:1136
-#: inc/classes/rest-api/class-analytics.php:1596
+#: inc/classes/rest-api/class-analytics.php:916
+#: inc/classes/rest-api/class-analytics.php:1087
+#: inc/classes/rest-api/class-analytics.php:1154
+#: inc/classes/rest-api/class-analytics.php:1626
 msgid "Invalid or unverified API key."
 msgstr ""
 
 #. translators: %s is the error message from the API response.
-#: inc/classes/rest-api/class-analytics.php:935
+#: inc/classes/rest-api/class-analytics.php:944
 #, php-format
 msgid "Error fetching history data: %s"
 msgstr ""
 
 #. translators: %d: WooCommerce product ID.
-#: inc/classes/rest-api/class-analytics.php:1716
+#: inc/classes/rest-api/class-analytics.php:1746
 #, php-format
 msgid "ID: %d (Deleted Product)"
+msgstr ""
+
+#: inc/classes/rest-api/class-base.php:63
+msgid "This site's address could not be determined, so analytics were not requested. Check the Site Address in Settings > General."
 msgstr ""
 
 #: inc/classes/rest-api/class-cf7.php:36
@@ -11008,57 +11012,57 @@ msgstr ""
 msgid "The guest user email"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:302
+#: inc/classes/rest-api/class-engagement.php:305
 #: inc/classes/rest-api/class-site.php:116
 msgid "Unable to reach server."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:312
+#: inc/classes/rest-api/class-engagement.php:315
 #: inc/classes/rest-api/class-site.php:126
 msgid "Unexpected error from server."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:471
+#: inc/classes/rest-api/class-engagement.php:474
 msgid "Failed to update likes."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:581
-#: inc/classes/rest-api/class-engagement.php:675
+#: inc/classes/rest-api/class-engagement.php:584
+#: inc/classes/rest-api/class-engagement.php:678
 msgid "Failed to update comment."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:839
+#: inc/classes/rest-api/class-engagement.php:842
 msgid "Today"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:841
+#: inc/classes/rest-api/class-engagement.php:844
 msgid "Yesterday"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:843
+#: inc/classes/rest-api/class-engagement.php:846
 msgid " days ago"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:871
+#: inc/classes/rest-api/class-engagement.php:874
 msgid "Invalid guest user email."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:883
+#: inc/classes/rest-api/class-engagement.php:886
 msgid "Guest"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:890
+#: inc/classes/rest-api/class-engagement.php:893
 msgid "Guest user email saved successfully."
 msgstr ""
 
 #. translators: 1: Parameter.
-#: inc/classes/rest-api/class-engagement.php:958
+#: inc/classes/rest-api/class-engagement.php:961
 #, php-format
 msgid "%1$s is invalid."
 msgstr ""
 
 #. translators: 1: Parameter.
-#: inc/classes/rest-api/class-engagement.php:968
+#: inc/classes/rest-api/class-engagement.php:971
 #, php-format
 msgid "%1$s is empty."
 msgstr ""

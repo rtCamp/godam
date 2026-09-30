@@ -119,12 +119,28 @@ class SiteOriginTest extends TestCase {
 	 */
 	public function unusable_filter_results() {
 		return array(
-			'null'         => array( null ),
-			'empty string' => array( '' ),
-			'array'        => array( array( 'https://example.test' ) ),
-			'no scheme'    => array( 'example.test' ),
-			'has a path'   => array( 'https://example.test/site-1' ),
+			'null'          => array( null ),
+			'empty string'  => array( '' ),
+			'array'         => array( array( 'https://example.test' ) ),
+			'no scheme'     => array( 'example.test' ),
+			'has a path'    => array( 'https://example.test/site-1' ),
+			'userinfo'      => array( 'https://user@example.test' ),
+			'user and pass' => array( 'https://user:secret@example.test' ),
 		);
+	}
+
+	/**
+	 * Browsers report a lowercase origin, so a filter result is lowercased to match.
+	 */
+	public function test_filter_result_is_lowercased() {
+		add_filter(
+			'rtgodam_site_origin',
+			function () {
+				return 'HTTPS://Example.TEST:8080';
+			}
+		);
+
+		$this->assertSame( 'https://example.test:8080', rtgodam_get_site_origin() );
 	}
 
 	/**
@@ -219,6 +235,121 @@ class SiteOriginTest extends TestCase {
 		$this->engagement()->get_activities( $request );
 
 		$this->assertSame( 'https://example.test', $this->site_url_sent() );
+	}
+
+	/**
+	 * When home_url() has no scheme or host the origin is '', and the analytics
+	 * service reads an empty site_url as "all sites for the account". The handlers
+	 * refuse to ask instead of widening the read.
+	 *
+	 * @dataProvider analytics_reads
+	 *
+	 * @param string               $method Analytics handler.
+	 * @param array<string, mixed> $params Other request params the handler needs.
+	 */
+	public function test_analytics_read_makes_no_request_without_a_site_origin( $method, $params ) {
+		$GLOBALS['rtgodam_stub']['home_url'] = '';
+
+		$response = $this->analytics()->$method( new \WP_REST_Request( array_merge( array( 'site_url' => self::REQUEST_SITE_URL ), $params ) ) );
+
+		$this->assertInstanceOf( \WP_REST_Response::class, $response );
+		$data = $response->get_data();
+		$this->assertSame( 'error', $data['status'] );
+		$this->assertSame( 'site_origin_unavailable', $data['errorType'] );
+		$this->assertArrayNotHasKey( 'last_remote_url', $GLOBALS['rtgodam_stub'], 'no request should reach the microservice' );
+	}
+
+	public function test_engagement_makes_no_request_without_a_site_origin() {
+		$GLOBALS['rtgodam_stub']['home_url'] = '';
+
+		$response = $this->engagement()->get_activities( new \WP_REST_Request( array( 'video_id' => 'cmmid_job-1' ) ) );
+
+		$this->assertInstanceOf( \WP_REST_Response::class, $response );
+		$this->assertSame( 'site_origin_unavailable', $response->get_data()['errorType'] );
+		$this->assertArrayNotHasKey( 'last_remote_url', $GLOBALS['rtgodam_stub'], 'no request should reach the microservice' );
+	}
+
+	/**
+	 * Behind a proxy that ends TLS, home_url() can say http while the admin's
+	 * browser is on https. Only that case, same host and port with the scheme as
+	 * the sole difference, takes the request's value; anything else keeps the
+	 * site's own origin.
+	 *
+	 * @dataProvider request_origins
+	 *
+	 * @param string      $home_url  The site's home URL.
+	 * @param string|null $requested The site_url the admin page sent.
+	 * @param string      $expected  The origin the read should send.
+	 */
+	public function test_analytics_read_trusts_only_a_scheme_only_difference( $home_url, $requested, $expected ) {
+		$GLOBALS['rtgodam_stub']['home_url'] = $home_url;
+		$params                              = null === $requested ? array() : array( 'site_url' => $requested );
+
+		$this->analytics()->fetch_dashboard_metrics( new \WP_REST_Request( $params ) );
+
+		$this->assertSame( $expected, $this->site_url_sent() );
+	}
+
+	/**
+	 * @return array<string, array{0: string, 1: string|null, 2: string}>
+	 */
+	public function request_origins() {
+		return array(
+			'https request, http home'   => array( 'http://example.test', 'https://example.test', 'https://example.test' ),
+			'http request, https home'   => array( 'https://example.test', 'http://example.test', 'http://example.test' ),
+			'same scheme'                => array( 'https://example.test', 'https://example.test', 'https://example.test' ),
+			'no site_url sent'           => array( 'http://example.test', null, 'http://example.test' ),
+			'different host'             => array( 'http://example.test', 'https://another-site.test', 'http://example.test' ),
+			'www against apex'           => array( 'https://example.test', 'https://www.example.test', 'https://example.test' ),
+			'different port'             => array( 'http://localhost:8080', 'https://localhost:9090', 'http://localhost:8080' ),
+			'same custom port'           => array( 'http://localhost:8080', 'https://localhost:8080', 'https://localhost:8080' ),
+			'request adds a port'        => array( 'http://example.test', 'https://example.test:8443', 'http://example.test' ),
+			'request has userinfo'       => array( 'http://example.test', 'https://user@example.test', 'http://example.test' ),
+			'request has a path'         => array( 'http://example.test', 'https://example.test/site-1', 'http://example.test' ),
+			'request is not http'        => array( 'http://example.test', 'ftp://example.test', 'http://example.test' ),
+			'request in upper case'      => array( 'http://example.test', 'HTTPS://EXAMPLE.TEST', 'https://example.test' ),
+			'request host contains home' => array( 'http://example.test', 'https://example.test.evil.test', 'http://example.test' ),
+		);
+	}
+
+	/**
+	 * The public views route never trusts the request, even for a scheme-only difference.
+	 */
+	public function test_engagement_never_uses_the_requests_origin() {
+		$GLOBALS['rtgodam_stub']['home_url']  = 'http://example.test';
+		$GLOBALS['rtgodam_stub']['transient'] = array(
+			'rtgodam-engagements-likes-transcoder-job-id-job-1-user-email-anonymous@example.test' => array(
+				'likes'             => 0,
+				'has_liked_by_user' => false,
+			),
+			'rtgodam-engagements-comments-transcoder-job-id-job-1' => array(
+				'comments' => array(),
+				'total'    => 0,
+			),
+		);
+
+		$this->engagement()->get_activities(
+			new \WP_REST_Request(
+				array(
+					'video_id' => 'cmmid_job-1',
+					'site_url' => 'https://example.test',
+				)
+			)
+		);
+
+		$this->assertSame( 'http://example.test', $this->site_url_sent() );
+	}
+
+	/**
+	 * The stub answers from $GLOBALS['rtgodam_stub']['user'] and reports a
+	 * logged-out visitor when no user is set, which is what these tests assume.
+	 */
+	public function test_visitor_is_logged_out_unless_a_test_sets_a_user() {
+		$this->assertFalse( is_user_logged_in() );
+
+		$GLOBALS['rtgodam_stub']['user'] = 7;
+
+		$this->assertTrue( is_user_logged_in() );
 	}
 
 	/**
