@@ -499,6 +499,29 @@ class Analytics extends Base {
 	}
 
 	/**
+	 * Add the store's current UTC offset, in minutes, to a query for one of the
+	 * funnel reads (Video-to-Cart, Video-to-Purchase, the funnels).
+	 *
+	 * With it the microservice counts every play, add and order on the store's own
+	 * day, the day the Revenue card uses for an order, instead of the UTC day. It is
+	 * the offset WordPress's timezone setting has now, the same value GoDAM for Woo
+	 * stamps on an order, so around a daylight-saving change an event within an hour
+	 * of midnight can fall on the neighbouring day. A microservice that does not know
+	 * the parameter ignores it and keeps counting on the UTC day.
+	 *
+	 * @param array $params Query params destined for the microservice.
+	 * @return array
+	 */
+	private function append_store_offset_param( array $params ) {
+		$timezone = wp_timezone();
+		$minutes  = (int) round( $timezone->getOffset( new \DateTimeImmutable( 'now', $timezone ) ) / 60 );
+
+		// The microservice takes -12:00 to +14:00 (the range of a WordPress timezone).
+		$params['store_utc_offset_minutes'] = max( -720, min( 840, $minutes ) );
+		return $params;
+	}
+
+	/**
 	 * Proxy /processed-layer-analytics/ from the analytics microservice.
 	 *
 	 * Looks up the transcoded job_id from the attachment ID so callers only
@@ -809,6 +832,7 @@ class Analytics extends Base {
 			'api_key'       => $api_key,
 		);
 		$query_params = $this->append_range_params( $request, $query_params );
+		$query_params = $this->append_store_offset_param( $query_params );
 
 		// Single store currency: pass the store base currency so the per-video
 		// record carries base-currency revenue (and a count of orders in other
@@ -1038,6 +1062,7 @@ class Analytics extends Base {
 				'api_key'       => $api_key,
 			)
 		);
+		$params = $this->append_store_offset_param( $params );
 		// Single store currency: pass the store base currency so the service returns
 		// base-currency revenue plus a count of orders in other currencies (not
 		// converted). Only meaningful when WooCommerce is active; when absent the
@@ -1431,6 +1456,7 @@ class Analytics extends Base {
 				'api_key'       => $api_key,
 			)
 		);
+		$params   = $this->append_store_offset_param( $params );
 		$endpoint = add_query_arg(
 			$params,
 			RTGODAM_ANALYTICS_BASE . '/dashboard/placement-funnels/'
@@ -1584,6 +1610,7 @@ class Analytics extends Base {
 				'api_key'       => $api_key,
 			)
 		);
+		$params   = $this->append_store_offset_param( $params );
 		$endpoint = add_query_arg(
 			$params,
 			RTGODAM_ANALYTICS_BASE . '/dashboard/video-funnel/'
