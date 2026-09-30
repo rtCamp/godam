@@ -39,6 +39,7 @@ import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
 import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
+import { canViewStoreData } from '../shared/canViewStoreData';
 import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
@@ -107,9 +108,12 @@ const Analytics = ( { attachmentID } ) => {
 
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
-	// Video-to-Cart is a WooCommerce feature; the card is shown only on Woo sites
-	// (otherwise it would read a permanent, misleading "0").
-	const isWoo = !! window.videoData?.isWoo;
+	// Video-to-Cart, Video-to-Purchase, Revenue and the funnel are WooCommerce
+	// features; the cards are shown only on Woo sites (otherwise they would read a
+	// permanent, misleading "0"). They are store data, so they also need
+	// WooCommerce's report permission: editors and authors see video data only, and
+	// the route strips the store fields for them.
+	const isWoo = !! window.videoData?.isWoo && canViewStoreData();
 	const apiKeyError = getAPIKeyErrorInfo();
 	const apiKeyErrorType = apiKeyError?.type || null;
 

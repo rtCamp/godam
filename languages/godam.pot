@@ -573,7 +573,7 @@ msgstr ""
 #: inc/templates/godam-video-gallery.php:261
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:163
 #: assets/src/blocks/godam-gallery-v2/edit.js:716
-#: pages/analytics/Analytics.js:624
+#: pages/analytics/Analytics.js:628
 #: pages/video-editor/VideoEditor.js:676
 msgid "Untitled video"
 msgstr ""
@@ -766,7 +766,7 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:290
 #: assets/src/blocks/godam-gallery-v2/edit.js:962
 #: assets/src/blocks/godam-gallery-v2/edit.js:966
-#: pages/analytics/timeline/SubHotspotRail.js:82
+#: pages/analytics/timeline/SubHotspotRail.js:83
 msgid "Interaction"
 msgstr ""
 
@@ -3201,14 +3201,14 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:125
-#: pages/analytics/Analytics.js:174
-#: pages/analytics/Analytics.js:188
+#: pages/analytics/Analytics.js:129
+#: pages/analytics/Analytics.js:178
+#: pages/analytics/Analytics.js:192
 #: pages/analytics/PlaysVsViewers.js:93
 #: pages/analytics/SingleMetrics.js:122
 #: pages/dashboard/components/GA4ConnectionWidget.js:174
-#: pages/dashboard/Dashboard.js:282
-#: pages/dashboard/Dashboard.js:318
+#: pages/dashboard/Dashboard.js:288
+#: pages/dashboard/Dashboard.js:324
 msgid "All time"
 msgstr ""
 
@@ -3716,8 +3716,8 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:669
-#: pages/analytics/Analytics.js:1022
+#: pages/analytics/Analytics.js:673
+#: pages/analytics/Analytics.js:1026
 #: pages/analytics/components/Placements/index.js:230
 #: pages/analytics/PlaybackPerformance.js:422
 #: pages/analytics/PlaybackPerformance.js:546
@@ -3731,7 +3731,7 @@ msgstr ""
 #: pages/analytics/PlaybackPerformance.js:429
 #: pages/analytics/PlaybackPerformance.js:547
 #: pages/dashboard/components/TopVideosTable.js:228
-#: pages/dashboard/Dashboard.js:556
+#: pages/dashboard/Dashboard.js:562
 msgid "Engagement Rate"
 msgstr ""
 
@@ -3844,7 +3844,7 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: pages/analytics/timeline/LayerTimelineMarker.js:155
-#: pages/analytics/timeline/SubHotspotRail.js:253
+#: pages/analytics/timeline/SubHotspotRail.js:254
 msgid "Removed"
 msgstr ""
 
@@ -3869,92 +3869,92 @@ msgid "Info"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerInteractionFunnel.js:164
+#: pages/analytics/timeline/LayerInteractionFunnel.js:169
 msgid "Interaction Outcomes"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerInteractionFunnel.js:167
+#: pages/analytics/timeline/LayerInteractionFunnel.js:172
 msgid "Of everyone who saw this layer (Viewed = 100%), the share who took each action. \"No action\" saw the layer but never interacted. A viewer can appear in more than one action, so the bars need not add up to 100%."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerInteractionFunnel.js:174
+#: pages/analytics/timeline/LayerInteractionFunnel.js:179
 msgid "Out of all viewers who saw this layer"
 msgstr ""
 
 #. translators: %1$s value, %2$s percentage
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerInteractionFunnel.js:226
+#: pages/analytics/timeline/LayerInteractionFunnel.js:231
 #, js-format
 msgid "%1$s viewers (%2$s%%) saw this layer but didn't interact with it."
 msgstr ""
 
 #. translators: %1$s action name, %2$s value, %3$s percentage
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerInteractionFunnel.js:233
+#: pages/analytics/timeline/LayerInteractionFunnel.js:238
 #, js-format
 msgid "%1$s: %2$s viewers (%3$s%%)."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerInteractionFunnel.js:283
+#: pages/analytics/timeline/LayerInteractionFunnel.js:288
 msgid "of viewers"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:63
+#: pages/analytics/timeline/SubHotspotRail.js:64
 msgid "Products in this layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:64
+#: pages/analytics/timeline/SubHotspotRail.js:65
 msgid "Hotspots in this layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:69
+#: pages/analytics/timeline/SubHotspotRail.js:70
 msgid "Each row is one product hotspot inside this layer. Select a row to see its individual funnel; \"All Products (Cumulative)\" counts sessions that interacted with any product."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:73
+#: pages/analytics/timeline/SubHotspotRail.js:74
 msgid "Each row is one hotspot inside this layer. Select a row to see its individual funnel; \"All Hotspots (Cumulative)\" counts sessions that interacted with any hotspot."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:88
+#: pages/analytics/timeline/SubHotspotRail.js:89
 msgid "Share of sessions that saw the product and interacted with it: clicked through to it or added it to the cart. Each session counts once, so this never exceeds 100%."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:92
+#: pages/analytics/timeline/SubHotspotRail.js:93
 msgid "Share of sessions that saw the hotspot and clicked it. Each session counts once, so this never exceeds 100%."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:125
+#: pages/analytics/timeline/SubHotspotRail.js:126
 msgid "All Products (Cumulative)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:126
+#: pages/analytics/timeline/SubHotspotRail.js:127
 msgid "All Hotspots (Cumulative)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:142
+#: pages/analytics/timeline/SubHotspotRail.js:143
 msgid "A session counts as an interaction here when it acts on any one product in this layer — clicks it or adds it to the cart. Each session counts once, so this can read higher than every single product's rate."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:146
+#: pages/analytics/timeline/SubHotspotRail.js:147
 msgid "A session counts as an interaction here when it clicks any one hotspot in this layer. Each session counts once, so this can read higher than every single hotspot's rate."
 msgstr ""
 
 #. translators: 1: formatted revenue amount, 2: order count phrase (e.g. "3 orders").
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/SubHotspotRail.js:175
+#: pages/analytics/timeline/SubHotspotRail.js:176
 #, js-format
 msgid "Drove %1$s across %2$s"
 msgstr ""
@@ -3962,8 +3962,8 @@ msgstr ""
 #. translators: %d: number of orders.
 #. translators: %d: number of orders attributed to this hotspot.
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:123
-#: pages/analytics/timeline/SubHotspotRail.js:179
+#: pages/analytics/timeline/LayerDetailPanel.js:125
+#: pages/analytics/timeline/SubHotspotRail.js:180
 #, js-format
 msgid "%d order"
 msgid_plural "%d orders"
@@ -3997,71 +3997,71 @@ msgid "Dismiss notice"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:154
+#: pages/analytics/timeline/LayerDetailPanel.js:156
 msgid "Untitled layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:158
+#: pages/analytics/timeline/LayerDetailPanel.js:160
 msgid "Appeared at"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:180
+#: pages/analytics/timeline/LayerDetailPanel.js:182
 msgid "View this poll’s results"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:181
+#: pages/analytics/timeline/LayerDetailPanel.js:183
 msgid "View this form’s entries"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:184
+#: pages/analytics/timeline/LayerDetailPanel.js:186
 msgid "View Poll results"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:185
+#: pages/analytics/timeline/LayerDetailPanel.js:187
 msgid "View Form entries"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:193
+#: pages/analytics/timeline/LayerDetailPanel.js:195
 msgid "Edit this layer in the video editor"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:195
+#: pages/analytics/timeline/LayerDetailPanel.js:197
 msgid "Edit Layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:202
+#: pages/analytics/timeline/LayerDetailPanel.js:204
 msgid "This layer is no longer in the video. Historical analytics preserved."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:204
+#: pages/analytics/timeline/LayerDetailPanel.js:206
 msgid "Removed from video"
 msgstr ""
 
 #. translators: 1: formatted revenue amount, 2: order count phrase (e.g. "3 orders").
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:254
+#: pages/analytics/timeline/LayerDetailPanel.js:256
 #, js-format
 msgid "This hotspot drove %1$s across %2$s"
 msgstr ""
 
 #. translators: %s: formatted revenue amount.
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:264
+#: pages/analytics/timeline/LayerDetailPanel.js:266
 #, js-format
 msgid "This layer drove %s"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/timeline/LayerDetailPanel.js:269
+#: pages/analytics/timeline/LayerDetailPanel.js:271
 msgid "Direct in-video contribution only, from add-to-carts inside the video. It is not the product's total revenue; purchases made after clicking through to the product page (Assisted) are not counted here."
 msgstr ""
 
@@ -4173,7 +4173,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:1013
+#: pages/analytics/Analytics.js:1017
 #: pages/analytics/components/Placements/index.js:229
 #: pages/dashboard/components/TopVideosTable.js:226
 #: pages/dashboard/components/TopVideosTable.js:349
@@ -4260,12 +4260,12 @@ msgid "We couldn’t reach the GoDAM analytics service. This is usually temporar
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:105
+#: pages/analytics/Analytics.js:106
 msgid "Back to Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:106
+#: pages/analytics/Analytics.js:107
 msgid "Back to Media Editor"
 msgstr ""
 
@@ -4280,40 +4280,40 @@ msgid "viewers"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:463
+#: pages/analytics/Analytics.js:467
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:465
+#: pages/analytics/Analytics.js:469
 msgid "Use this Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:572
+#: pages/analytics/Analytics.js:576
 msgid "This media doesn't exist."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:574
+#: pages/analytics/Analytics.js:578
 msgid "Go to Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:586
+#: pages/analytics/Analytics.js:590
 msgid "Single Video Analytics"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:598
-#: pages/dashboard/Dashboard.js:431
+#: pages/analytics/Analytics.js:602
+#: pages/dashboard/Dashboard.js:437
 msgid "Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:612
+#: pages/analytics/Analytics.js:616
 #: pages/dashboard/components/TopVideosTable.js:426
 #: pages/dashboard/components/TopVideosTable.js:438
 msgid "Video thumbnail"
@@ -4323,7 +4323,7 @@ msgstr ""
 #. translators: %d is the number of layers.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:632
+#: pages/analytics/Analytics.js:636
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:233
 #, js-format
 msgid "%d layer"
@@ -4333,124 +4333,124 @@ msgstr[1] ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:648
-#: pages/dashboard/Dashboard.js:493
+#: pages/analytics/Analytics.js:652
+#: pages/dashboard/Dashboard.js:499
 msgid "Insights"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:658
-#: pages/analytics/Analytics.js:1006
+#: pages/analytics/Analytics.js:662
+#: pages/analytics/Analytics.js:1010
 #: pages/dashboard/components/TopVideosTable.js:371
 msgid "Average Engagement"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:659
+#: pages/analytics/Analytics.js:663
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:670
-#: pages/dashboard/Dashboard.js:529
+#: pages/analytics/Analytics.js:674
+#: pages/dashboard/Dashboard.js:535
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:680
+#: pages/analytics/Analytics.js:684
 #: pages/dashboard/components/TopVideosTable.js:227
-#: pages/dashboard/Dashboard.js:542
+#: pages/dashboard/Dashboard.js:548
 msgid "Watch Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:681
-#: pages/dashboard/Dashboard.js:543
+#: pages/analytics/Analytics.js:685
+#: pages/dashboard/Dashboard.js:549
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:772
+#: pages/analytics/Analytics.js:776
 msgid "Viewer Retention Curve"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:786
+#: pages/analytics/Analytics.js:790
 msgid "Viewer retention will appear here once this video receives views."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:834
+#: pages/analytics/Analytics.js:838
 msgid "Views by Source"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:845
+#: pages/analytics/Analytics.js:849
 msgid "Performance Comparison"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:866
+#: pages/analytics/Analytics.js:870
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:856
+#: pages/analytics/Analytics.js:860
 msgid "In Progress"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:861
+#: pages/analytics/Analytics.js:865
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:878
+#: pages/analytics/Analytics.js:882
 msgid "Start Test"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:897
+#: pages/analytics/Analytics.js:901
 msgid "Choose Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:909
+#: pages/analytics/Analytics.js:913
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:918
+#: pages/analytics/Analytics.js:922
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:923
+#: pages/analytics/Analytics.js:927
 msgid "Choose"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:994
+#: pages/analytics/Analytics.js:998
 msgid "Views"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1034
+#: pages/analytics/Analytics.js:1038
 msgid "Page Loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1048
+#: pages/analytics/Analytics.js:1052
 msgid "Play Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1062
+#: pages/analytics/Analytics.js:1066
 msgid "Video Length"
 msgstr ""
 
@@ -4819,7 +4819,7 @@ msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
 #: pages/dashboard/components/TopVideosTable.js:268
-#: pages/dashboard/Dashboard.js:200
+#: pages/dashboard/Dashboard.js:206
 msgid "Top Videos"
 msgstr ""
 
@@ -5032,14 +5032,14 @@ msgid "Sending to GA4"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:192
+#: pages/dashboard/Dashboard.js:198
 msgid "Top content"
 msgstr ""
 
 #. translators: %d: number of days in the compared previous window.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:279
-#: pages/dashboard/Dashboard.js:328
+#: pages/dashboard/Dashboard.js:285
+#: pages/dashboard/Dashboard.js:334
 #, js-format
 msgid "vs prev %d days"
 msgstr ""
@@ -5047,47 +5047,47 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: inc/classes/class-pages.php:199
 #: inc/classes/class-pages.php:200
-#: pages/dashboard/Dashboard.js:426
+#: pages/dashboard/Dashboard.js:432
 msgid "Dashboard"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:442
+#: pages/dashboard/Dashboard.js:448
 msgid "See Reel Pop Analytics"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:454
+#: pages/dashboard/Dashboard.js:460
 msgid "Analytics docs"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:463
+#: pages/dashboard/Dashboard.js:469
 msgid "Total Plays / Unique Viewers"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:512
+#: pages/dashboard/Dashboard.js:518
 msgid "Active Videos"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:513
+#: pages/dashboard/Dashboard.js:519
 msgid "Number of unique videos that received user interactions each day, such as views or plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:528
+#: pages/dashboard/Dashboard.js:534
 msgid "Avg. Play Rate"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:557
+#: pages/dashboard/Dashboard.js:563
 msgid "Average share of each video that viewers watched, across all plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:580
+#: pages/dashboard/Dashboard.js:586
 msgid "WooCommerce metrics couldn’t load. This is usually temporary."
 msgstr ""
 
@@ -10903,11 +10903,11 @@ msgstr ""
 msgid "Plugin deactivated successfully."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:142
+#: inc/classes/rest-api/class-analytics.php:271
 msgid "The Video ID for fetching analytics data."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:151
+#: inc/classes/rest-api/class-analytics.php:280
 #: inc/classes/rest-api/class-engagement.php:60
 #: inc/classes/rest-api/class-engagement.php:94
 #: inc/classes/rest-api/class-engagement.php:137

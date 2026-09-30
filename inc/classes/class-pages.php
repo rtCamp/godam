@@ -878,6 +878,12 @@ class Pages {
 					// A plain WooCommerce store without the paid add-on does not
 					// see them.
 					'isWoo'                 => function_exists( 'godam_woo_should_show_premium_blocks' ) && godam_woo_should_show_premium_blocks(),
+					// Store data (products, add-to-carts, orders, revenue) follows
+					// WooCommerce's own report permission (shop managers and
+					// administrators). Editors see video data only. The analytics
+					// routes refuse or strip the store fields for everyone else; this
+					// flag lets the screen leave out the matching cards and tables.
+					'canViewStoreData'      => current_user_can( 'view_woocommerce_reports' ), // phpcs:ignore WordPress.WP.Capabilities.Unknown -- WooCommerce registers this capability itself.
 				)
 			);
 
@@ -944,6 +950,9 @@ class Pages {
 					// per-video card on the same gate as the dashboard: the add-on
 					// active plus a valid GoDAM license.
 					'isWoo'            => function_exists( 'godam_woo_should_show_premium_blocks' ) && godam_woo_should_show_premium_blocks(),
+					// Same rule as the dashboard: store data needs WooCommerce's
+					// report permission, and the routes strip it for everyone else.
+					'canViewStoreData' => current_user_can( 'view_woocommerce_reports' ), // phpcs:ignore WordPress.WP.Capabilities.Unknown -- WooCommerce registers this capability itself.
 				)
 			);
 
