@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -224,6 +224,16 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.3.1 (September 30, 2026) =
+
+- Fix: What's New refreshes after every plugin update, so it always shows the current release post.
+- Fix: A video's hotspot, call-to-action, form and poll analytics are now stored with the same video ID as its plays, so they stay together in Top Products.
+- Fix: Revenue tooltips now say that revenue is after discounts and excludes tax, shipping and fees.
+- Fix: Top Products explains why grouped and external products show no add-to-carts or revenue, and shows "-" instead of a misleading 0.0% add-to-cart rate.
+- Fix: Video to Cart, Video to Purchase and the funnels now count each day in the store's time zone, matching the Revenue card.
+- Fix: Editors and Authors see video analytics only; store data (products, add-to-carts, orders, revenue) needs WooCommerce's report permission.
+- Fix: Security fixes.
+
 = v2.3.0 (September 24, 2026) =
 
 - Feat: Revenue Analytics for WooCommerce. See how much order value is credited to each video, split into Direct (added to cart inside the video) and Assisted (clicked the product in a video, image hotspot or Reel Pop, then added it to cart on its product page). Influenced revenue is reported separately and is never added to the headline.
@@ -239,10 +249,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v2.2.4 (September 21, 2026) =
 
 - Chore: Security fixes.
-
-= v2.2.3 (September 16, 2026) =
-
-- Fix: Resolved content and display issues on the What's New page.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
