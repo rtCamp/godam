@@ -2388,7 +2388,7 @@ function rtgodam_format_html_attributes( $attributes ) {
  * labels, an IPv4 address or a bracketed IPv6 address, and a port must be
  * 1 to 65535.
  *
- * @since n.e.x.t
+ * @since 2.3.1
  *
  * @param mixed $value Candidate origin.
  * @return string The normalised origin, or '' when the value is not one.
@@ -2449,7 +2449,7 @@ function rtgodam_normalize_origin( $value ) {
  * `https`), or when one site answers on several domains. Use the
  * `rtgodam_site_origin` filter on those sites.
  *
- * @since n.e.x.t
+ * @since 2.3.1
  *
  * @return string Origin such as `https://example.com`, or '' when home_url() has no scheme or host.
  */
@@ -2482,7 +2482,7 @@ function rtgodam_get_site_origin() {
 	 * scheme, host and any non-default port, no path, no userinfo and no trailing
 	 * slash. It is lowercased; any other value is ignored.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.3.1
 	 *
 	 * @param string $origin   Origin built from home_url().
 	 * @param string $home_url The home_url() it was built from.
@@ -2507,7 +2507,7 @@ function rtgodam_get_site_origin() {
  * routes behind a capability check; the public views route uses
  * rtgodam_get_site_origin() directly.
  *
- * @since n.e.x.t
+ * @since 2.3.1
  *
  * @param mixed $requested_origin The site_url sent with the request, if any.
  * @return string Origin such as `https://example.com`, or '' when the site has none.

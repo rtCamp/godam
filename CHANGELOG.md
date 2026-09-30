@@ -1,6 +1,6 @@
 # Changelog #
 
-## v2.3.1 (September 30, 2026) ##
+## v2.3.1 (October 5, 2026) ##
 
 - Fix: What's New refreshes after every plugin update, so it always shows the current release post.
 - Fix: A video's hotspot, call-to-action, form and poll analytics are now stored with the same video ID as its plays, so they stay together in Top Products.
