@@ -105,6 +105,45 @@ const reachLabel = ( item ) => {
 // (e.g. a deleted product), so nothing is greyed without cause.
 const supportsDirect = ( item ) => item.supports_direct_add_to_cart !== false;
 
+// Whether a product never reaches this store's cart at all: shoppers add a
+// grouped product's listed products instead (each on its own row), and buy an
+// external product on another site. Its adds and revenue are then empty by
+// design, so the UI greys them with a hint. Checked against the row's own adds
+// too, so a figure that is not empty is never greyed.
+const neverAddedToCart = ( item ) =>
+	( item.product_type === 'grouped' || item.product_type === 'external' ) && ! Number( item.added_to_cart || 0 );
+
+// Hover text for a figure a product's type leaves empty: the in-video (Direct)
+// count of a product that can't be added inside a video, and the adds and
+// revenue of one that never reaches the cart (see neverAddedToCart()). The
+// "never added to the cart" sentences are only for a row with no adds: a grouped
+// or external row that has some (older data, or a product whose type changed
+// after it sold) gets the neutral sentence below, not a contradiction.
+const productTypeHint = ( item ) => {
+	if ( neverAddedToCart( item ) ) {
+		if ( item.product_type === 'grouped' ) {
+			return __( 'A grouped product is never added to the cart itself: shoppers add the products it lists. Those products\' own rows show the adds and revenue.', 'godam' );
+		}
+		return __( 'External products are bought on another site, so they are never added to this store\'s cart and earn no revenue here.', 'godam' );
+	}
+	if ( item.product_type === 'variable' ) {
+		return __( 'Variable products cannot be added to cart inside a video, so in-video (Direct) is always 0; they convert on the product page (Assisted).', 'godam' );
+	}
+	// Any other product the proxy marks as not addable in a video (a type added
+	// later, or a row from before the proxy sent product_type): say only what
+	// the flag proves, not a reason that may not apply.
+	return __( 'This product cannot be added to cart inside a video, so in-video (Direct) is always 0.', 'godam' );
+};
+
+// Whether the add-to-cart rate means nothing for this row: it has adds but was
+// never counted as shown in the date range. That is a product bought from a
+// grouped product's page (the video showed the grouped product), one added after
+// a Reel Pop (its views are counted per Reel Pop, not per product), or one whose
+// video click came before the range. Shown as '-' with a hint, not as a "0.0%"
+// that reads as "shown, and nobody added it".
+export const hasNoCartRate = ( item ) =>
+	Number( item.impressions || 0 ) <= 0 && Number( item.added_to_cart || 0 ) > 0;
+
 // Whether this row carries real revenue data. `revenue_minor` (and its sibling
 // `orders`/`currency`) are only present once the analytics microservice has
 // shipped order-attribution; an older service build simply omits them. Treated
@@ -652,15 +691,29 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 											Number( item.added_to_cart_assisted || 0 ).toLocaleString(),
 										) }
 									>
-										<span className="font-semibold">{ Number( item.added_to_cart || 0 ).toLocaleString() }</span>
+										<span
+											className={ neverAddedToCart( item ) ? 'font-semibold godam-na-hint' : 'font-semibold' }
+											title={ neverAddedToCart( item ) ? productTypeHint( item ) : undefined }
+											data-test-id="godam-top-products-adds"
+										>
+											{ Number( item.added_to_cart || 0 ).toLocaleString() }
+										</span>
 										{ ' ' }
-										<span className="text-zinc-400">({ cartRate( item ).toFixed( 1 ) }%)</span>
+										<span className="text-zinc-400">
+											({ hasNoCartRate( item ) ? (
+												<span
+													className="godam-na-hint"
+													title={ __( 'No rate: this product has adds but was not counted as shown in this date range. That happens when it was added from a grouped product\'s page, from a Reel Pop, or after a video click before this date range.', 'godam' ) }
+													data-test-id="godam-top-products-cart-rate"
+												>
+													-
+												</span>
+											) : `${ cartRate( item ).toFixed( 1 ) }%` })
+										</span>
 										<p className="text-xs text-zinc-400">
 											<span
 												className={ supportsDirect( item ) ? undefined : 'godam-direct-na' }
-												title={ supportsDirect( item )
-													? undefined
-													: __( 'Variable, grouped and external products cannot be added to cart inside a video, so in-video (Direct) is always 0; they convert on the product page (Assisted).', 'godam' ) }
+												title={ supportsDirect( item ) ? undefined : productTypeHint( item ) }
 											>
 												{ sprintf(
 													/* translators: %s: in-video (Direct) add-to-cart count. */
@@ -686,7 +739,13 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 										) : (
 											// null-not-zero: the service sends null revenue for a
 											// product with no orders yet; say so rather than "0".
-											<span className="text-zinc-400" data-test-id="godam-top-products-revenue-empty">{ __( 'No data', 'godam' ) }</span>
+											<span
+												className={ neverAddedToCart( item ) ? 'text-zinc-400 godam-na-hint' : 'text-zinc-400' }
+												title={ neverAddedToCart( item ) ? productTypeHint( item ) : undefined }
+												data-test-id="godam-top-products-revenue-empty"
+											>
+												{ __( 'No data', 'godam' ) }
+											</span>
 										) }
 										{ /* Direct/Assisted split of this product's revenue,
 										    mirroring the dashboard revenue card. Shown only when
