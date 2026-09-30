@@ -539,12 +539,14 @@ class EngagementCommentPrivacyTest extends TestCase {
 		$writes = $this->central_writes();
 		$this->assertCount( 1, $writes );
 		$this->assertSame( 'c-1', $writes[0]['body']['name'] );
-		// Three pages of 100: the comment is the oldest of 250.
-		$this->assertSame( array( 0, 100, 200 ), array_column( $this->central_comment_reads(), 'start' ) );
+		// The cached list first (Central's default window), then three pages of 100: the comment is the oldest of 250.
+		$reads = $this->central_comment_reads();
+		$this->assertArrayNotHasKey( 'limit', $reads[0] );
+		$this->assertSame( array( 0, 100, 200 ), array_column( array_slice( $reads, 1 ), 'start' ) );
 	}
 
-	/** A comment on the first page is found without reading further. */
-	public function test_ownership_lookup_stops_once_the_comment_is_found() {
+	/** A comment in the newest 20 is answered from the list the site already reads, with no paging. */
+	public function test_ownership_lookup_needs_no_paging_for_a_recent_comment() {
 		$this->set_long_thread( 250 );
 		$this->sign_in_as( self::BOB, 'Bob' );
 
@@ -578,7 +580,7 @@ class EngagementCommentPrivacyTest extends TestCase {
 		);
 
 		$this->assertSame( 403, $response->get_status() );
-		$this->assertSame( array( 0, 100, 200 ), array_column( $this->central_comment_reads(), 'start' ) );
+		$this->assertSame( array( 0, 100, 200 ), array_column( array_slice( $this->central_comment_reads(), 1 ), 'start' ) );
 		$this->assertSame( array(), $this->central_writes() );
 	}
 
@@ -618,7 +620,100 @@ class EngagementCommentPrivacyTest extends TestCase {
 		);
 
 		$this->assertSame( 403, $response->get_status() );
+		// The list read, then one page that turns out to be the same 20 comments.
+		$this->assertCount( 2, $this->central_comment_reads() );
+	}
+
+	/** A comment the cached list holds is answered from it: no further call to Central. */
+	public function test_ownership_lookup_uses_the_cached_comments_first() {
+		$this->sign_in_as( self::ALICE, 'Alice' );
+		$this->get_activities();
 		$this->assertCount( 1, $this->central_comment_reads() );
+
+		$response = $this->engagement()->user_delete_comment(
+			new \WP_REST_Request(
+				array(
+					'video_id'    => 'cmmid_job-1',
+					'comment_id'  => 'c-alice-2',
+					'delete_type' => 'hard-delete',
+				)
+			)
+		);
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertCount( 1, $this->central_comment_reads(), 'No extra read for a comment the cache holds.' );
+		$this->assertCount( 1, $this->central_writes() );
+	}
+
+	/** Someone else's comment in the cached list is refused from it, without asking Central. */
+	public function test_someone_elses_cached_comment_is_refused_without_a_read() {
+		$this->sign_in_as( self::BOB, 'Bob' );
+		$this->get_activities();
+
+		$response = $this->engagement()->user_delete_comment(
+			new \WP_REST_Request(
+				array(
+					'video_id'    => 'cmmid_job-1',
+					'comment_id'  => 'c-alice',
+					'delete_type' => 'soft-delete',
+				)
+			)
+		);
+
+		$this->assertSame( 403, $response->get_status() );
+		$this->assertCount( 1, $this->central_comment_reads() );
+		$this->assertSame( array(), $this->central_writes() );
+	}
+
+	/** An unknown comment ID in a short thread costs the list read and one page, no more. */
+	public function test_an_unknown_comment_id_in_a_short_thread_is_cheap() {
+		$this->sign_in_as( self::ALICE, 'Alice' );
+
+		$response = $this->engagement()->user_delete_comment(
+			new \WP_REST_Request(
+				array(
+					'video_id'    => 'cmmid_job-1',
+					'comment_id'  => 'c-unknown',
+					'delete_type' => 'hard-delete',
+				)
+			)
+		);
+
+		$this->assertSame( 403, $response->get_status() );
+		$this->assertCount( 2, $this->central_comment_reads() );
+	}
+
+	/** In a very long thread the lookup stops after five pages, so an unknown ID cannot cost more. */
+	public function test_the_ownership_lookup_stops_after_five_pages() {
+		$this->set_long_thread( 650 );
+		$this->sign_in_as( self::ALICE, 'Alice' );
+
+		$response = $this->engagement()->user_delete_comment(
+			new \WP_REST_Request(
+				array(
+					'video_id'    => 'cmmid_job-1',
+					'comment_id'  => 'c-unknown',
+					'delete_type' => 'hard-delete',
+				)
+			)
+		);
+
+		$this->assertSame( 403, $response->get_status() );
+		$reads = $this->central_comment_reads();
+		$this->assertCount( 6, $reads, 'The list read and five pages.' );
+		$this->assertSame( array( 0, 100, 200, 300, 400 ), array_column( array_slice( $reads, 1 ), 'start' ) );
+
+		// Alice's comment is the oldest of 650, past the newest 500.
+		$response = $this->engagement()->user_delete_comment(
+			new \WP_REST_Request(
+				array(
+					'video_id'    => 'cmmid_job-1',
+					'comment_id'  => 'c-1',
+					'delete_type' => 'hard-delete',
+				)
+			)
+		);
+		$this->assertSame( 403, $response->get_status() );
 	}
 
 	/** The public list still asks Central for its default window, not the whole thread. */

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-30T09:24:29+00:00\n"
+"POT-Creation-Date: 2026-09-30T10:16:49+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -451,7 +451,7 @@ msgstr ""
 #: assets/src/blocks/godam-audio/edit.js:602
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:252
 #: assets/src/blocks/godam-player/track-uploader.js:57
-#: assets/src/js/godam-player/engagement.js:949
+#: assets/src/js/godam-player/engagement.js:955
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:553
 msgid "Edit"
 msgstr ""
@@ -1652,7 +1652,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:308
 #: assets/src/js/deactivation-feedback.js:36
-#: assets/src/js/godam-player/engagement.js:744
+#: assets/src/js/godam-player/engagement.js:750
 #: pages/godam/components/ConfirmModal.jsx:38
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:191
 #: pages/media-library/App.js:293
@@ -1670,7 +1670,7 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:311
-#: assets/src/js/godam-player/engagement.js:1118
+#: assets/src/js/godam-player/engagement.js:1124
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:134
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:140
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:360
@@ -2268,43 +2268,43 @@ msgid "File upload in progress…"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:725
+#: assets/src/js/godam-player/engagement.js:731
 msgid "Add timestamp"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:731
+#: assets/src/js/godam-player/engagement.js:737
 msgid "Add emoji"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:739
-#: assets/src/js/godam-player/engagement.js:931
-#: assets/src/js/godam-player/engagement.js:971
+#: assets/src/js/godam-player/engagement.js:745
+#: assets/src/js/godam-player/engagement.js:937
+#: assets/src/js/godam-player/engagement.js:977
 msgid "Reply"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:739
+#: assets/src/js/godam-player/engagement.js:745
 msgid "Comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: inc/helpers/custom-functions.php:1360
-#: assets/src/js/godam-player/engagement.js:902
-#: assets/src/js/godam-player/engagement.js:909
+#: assets/src/js/godam-player/engagement.js:908
+#: assets/src/js/godam-player/engagement.js:915
 msgid "Anonymous"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:918
+#: assets/src/js/godam-player/engagement.js:924
 msgid "This comment has been deleted"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/media-library.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/engagement.js:941
+#: assets/src/js/godam-player/engagement.js:947
 #: pages/media-library/components/context-menu/ContextMenu.jsx:518
 #: pages/media-library/components/modal/DeleteModal.jsx:132
 #: pages/video-editor/components/SidebarLayers.js:750
@@ -2313,33 +2313,33 @@ msgid "Delete"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:971
+#: assets/src/js/godam-player/engagement.js:977
 msgid "Replies"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1023
+#: assets/src/js/godam-player/engagement.js:1029
 msgid "No comments yet. Be the first to comment!"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1084
+#: assets/src/js/godam-player/engagement.js:1090
 msgid "Register"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1084
+#: assets/src/js/godam-player/engagement.js:1090
 msgid "Login"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1084
+#: assets/src/js/godam-player/engagement.js:1090
 msgid "to comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/onboarding.min.js:2
-#: assets/src/js/godam-player/engagement.js:1091
+#: assets/src/js/godam-player/engagement.js:1097
 #: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:58
 #: pages/onboarding/components/screens/LoginScreen.jsx:54
 #: pages/onboarding/components/screens/SignupScreen.jsx:77
@@ -2347,22 +2347,22 @@ msgid "Email"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1095
+#: assets/src/js/godam-player/engagement.js:1101
 msgid "Enter your email"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1154
+#: assets/src/js/godam-player/engagement.js:1160
 msgid "GoDAM Video"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1265
+#: assets/src/js/godam-player/engagement.js:1271
 msgid "Comments"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1270
+#: assets/src/js/godam-player/engagement.js:1276
 msgid "Hide Comments"
 msgstr ""
 
@@ -10888,9 +10888,9 @@ msgid "The Video ID for fetching analytics data."
 msgstr ""
 
 #: inc/classes/rest-api/class-analytics.php:151
-#: inc/classes/rest-api/class-engagement.php:75
-#: inc/classes/rest-api/class-engagement.php:109
-#: inc/classes/rest-api/class-engagement.php:152
+#: inc/classes/rest-api/class-engagement.php:78
+#: inc/classes/rest-api/class-engagement.php:112
+#: inc/classes/rest-api/class-engagement.php:155
 msgid "The Site URL associated with the video."
 msgstr ""
 
@@ -10900,7 +10900,7 @@ msgstr ""
 #: inc/classes/rest-api/class-analytics.php:1419
 #: inc/classes/rest-api/class-analytics.php:1492
 #: inc/classes/rest-api/class-analytics.php:1572
-#: inc/classes/rest-api/class-engagement.php:380
+#: inc/classes/rest-api/class-engagement.php:383
 #: inc/classes/rest-api/class-site.php:169
 msgid "Missing API key."
 msgstr ""
@@ -10978,97 +10978,97 @@ msgstr ""
 msgid "Open video: %s"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:63
-#: inc/classes/rest-api/class-engagement.php:97
-#: inc/classes/rest-api/class-engagement.php:140
-#: inc/classes/rest-api/class-engagement.php:203
+#: inc/classes/rest-api/class-engagement.php:66
+#: inc/classes/rest-api/class-engagement.php:100
+#: inc/classes/rest-api/class-engagement.php:143
+#: inc/classes/rest-api/class-engagement.php:206
 msgid "The ID of the video."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:119
+#: inc/classes/rest-api/class-engagement.php:122
 msgid "The like status (like or unlike)."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:160
-#: inc/classes/rest-api/class-engagement.php:213
+#: inc/classes/rest-api/class-engagement.php:163
+#: inc/classes/rest-api/class-engagement.php:216
 msgid "The ID of the parent comment."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:172
+#: inc/classes/rest-api/class-engagement.php:175
 msgid "The comment text"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:182
+#: inc/classes/rest-api/class-engagement.php:185
 msgid "The comment type if it is new OR edit"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:223
+#: inc/classes/rest-api/class-engagement.php:226
 msgid "The type of deletion (soft or hard)."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:248
+#: inc/classes/rest-api/class-engagement.php:251
 msgid "The guest user email"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:327
+#: inc/classes/rest-api/class-engagement.php:330
 #: inc/classes/rest-api/class-site.php:116
 msgid "Unable to reach server."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:337
+#: inc/classes/rest-api/class-engagement.php:340
 #: inc/classes/rest-api/class-site.php:126
 msgid "Unexpected error from server."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:496
+#: inc/classes/rest-api/class-engagement.php:499
 msgid "Failed to update likes."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:615
-#: inc/classes/rest-api/class-engagement.php:716
+#: inc/classes/rest-api/class-engagement.php:618
+#: inc/classes/rest-api/class-engagement.php:719
 msgid "Failed to update comment."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:950
+#: inc/classes/rest-api/class-engagement.php:968
 msgid "Unable to verify the comment. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:978
+#: inc/classes/rest-api/class-engagement.php:1027
 msgid "You can only change your own comments."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1056
+#: inc/classes/rest-api/class-engagement.php:1105
 msgid "Today"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1058
+#: inc/classes/rest-api/class-engagement.php:1107
 msgid "Yesterday"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1060
+#: inc/classes/rest-api/class-engagement.php:1109
 msgid " days ago"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1088
+#: inc/classes/rest-api/class-engagement.php:1137
 msgid "Invalid guest user email."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1100
+#: inc/classes/rest-api/class-engagement.php:1149
 msgid "Guest"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1107
+#: inc/classes/rest-api/class-engagement.php:1156
 msgid "Guest user email saved successfully."
 msgstr ""
 
 #. translators: 1: Parameter.
-#: inc/classes/rest-api/class-engagement.php:1175
+#: inc/classes/rest-api/class-engagement.php:1224
 #, php-format
 msgid "%1$s is invalid."
 msgstr ""
 
 #. translators: 1: Parameter.
-#: inc/classes/rest-api/class-engagement.php:1185
+#: inc/classes/rest-api/class-engagement.php:1234
 #, php-format
 msgid "%1$s is empty."
 msgstr ""
@@ -12585,11 +12585,11 @@ msgctxt "verb"
 msgid "Upload"
 msgstr ""
 
-#: assets/src/js/godam-player/engagement.js:1108
+#: assets/src/js/godam-player/engagement.js:1114
 msgid "Back"
 msgstr ""
 
-#: assets/src/js/godam-player/engagement.js:1118
+#: assets/src/js/godam-player/engagement.js:1124
 msgid "Continue as Guest"
 msgstr ""
 

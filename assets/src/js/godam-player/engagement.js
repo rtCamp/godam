@@ -614,11 +614,17 @@ function CommentForm( props ) {
 			comment_type: commentType,
 		};
 		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
-		const result = await apiFetch( {
-			path: addQueryArgs( '/godam/v1/engagement/user-comment' ),
-			method: 'POST',
-			data: queryParams,
-		} );
+		let result;
+		try {
+			result = await apiFetch( {
+				path: addQueryArgs( '/godam/v1/engagement/user-comment' ),
+				method: 'POST',
+				data: queryParams,
+			} );
+		} catch ( error ) {
+			// The server refuses to change a comment the viewer did not write.
+			result = { status: 'error', message: error?.message };
+		}
 
 		if ( 'error' === result.status ) {
 			setIsSending( false );

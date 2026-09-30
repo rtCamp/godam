@@ -94,6 +94,7 @@ describe( 'Comment controls', () => {
 	const deleteButton = () => container.querySelector( '.comment-button-delete' );
 	const editButton = () => container.querySelector( '.comment-button-edit' );
 	const replyButton = () => container.querySelector( '.comment-button-reply' );
+	const sendButton = () => container.querySelector( '.rtgodam-video-engagement--comment-form button.rtgodam-video-engagement--comment-button:not(.button-general)' );
 
 	beforeEach( () => {
 		apiFetch.mockReset();
@@ -201,5 +202,56 @@ describe( 'Comment controls', () => {
 		expect( storeObj.dispatch.errorHappened ).toHaveBeenCalledWith( 'You can only change your own comments.' );
 		expect( setCommentsData ).not.toHaveBeenCalled();
 		expect( deleteButton().disabled ).toBe( false );
+	} );
+
+	it( 'sends the new text, the comment id and the edit type when an edit is saved', async () => {
+		apiFetch.mockResolvedValue( { status: 'success', data: { id: 'c-1', text: 'Nice video, edited', children: [] } } );
+		renderComment( makeComment( { is_own: true } ) );
+
+		act( () => {
+			editButton().click();
+		} );
+		await act( async () => {
+			sendButton().click();
+		} );
+
+		expect( apiFetch ).toHaveBeenCalledTimes( 1 );
+		const request = apiFetch.mock.calls[ 0 ][ 0 ];
+		expect( request.path ).toBe( '/godam/v1/engagement/user-comment' );
+		expect( request.data ).toMatchObject( { video_id: 42, comment_parent_id: 'c-1', comment_text: 'Nice video', comment_type: 'edit' } );
+		expect( JSON.stringify( request.data ) ).not.toContain( '@' );
+		expect( setCommentsData ).toHaveBeenCalled();
+	} );
+
+	it( 'reports a refused edit and lets the viewer try again instead of staying in the sending state', async () => {
+		apiFetch.mockRejectedValue( { message: 'You can only change your own comments.' } );
+		renderComment( makeComment( { is_own: true } ) );
+
+		act( () => {
+			editButton().click();
+		} );
+		await act( async () => {
+			sendButton().click();
+		} );
+
+		expect( storeObj.dispatch.errorHappened ).toHaveBeenCalledWith( 'You can only change your own comments.' );
+		expect( setCommentsData ).not.toHaveBeenCalled();
+		expect( sendButton().disabled ).toBe( false );
+		expect( sendButton().className ).not.toContain( 'is-comment-progressing' );
+	} );
+
+	it( 'reports a failed ownership check on an edit the same way', async () => {
+		apiFetch.mockRejectedValue( { message: 'Unable to verify the comment. Please try again.' } );
+		renderComment( makeComment( { is_own: true } ) );
+
+		act( () => {
+			editButton().click();
+		} );
+		await act( async () => {
+			sendButton().click();
+		} );
+
+		expect( storeObj.dispatch.errorHappened ).toHaveBeenCalledWith( 'Unable to verify the comment. Please try again.' );
+		expect( sendButton().disabled ).toBe( false );
 	} );
 } );

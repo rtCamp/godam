@@ -36,12 +36,15 @@ class Engagement extends Base {
 	const OWNERSHIP_LOOKUP_PAGE_SIZE = 100;
 
 	/**
-	 * Most requests one ownership lookup may make, so a video with thousands of
-	 * comments (or a Central that ignores `start`) cannot keep a request busy.
+	 * Most requests one ownership lookup may make to Central once the cached
+	 * comments have not answered it. The player only shows the newest 20
+	 * comments, so a comment someone is acting on has moved down by the number
+	 * of comments added since their page loaded, not by hundreds. Five pages is
+	 * the newest 500, and keeps an unknown comment ID from costing more.
 	 *
 	 * @var int
 	 */
-	const OWNERSHIP_LOOKUP_MAX_PAGES = 50;
+	const OWNERSHIP_LOOKUP_MAX_PAGES = 5;
 
 	/**
 	 * Get REST routes.
@@ -921,14 +924,18 @@ class Engagement extends Base {
 	}
 
 	/**
-	 * Checks that the current user wrote a comment, using a fresh copy from Central.
+	 * Checks that the current user wrote a comment.
 	 *
 	 * Central lets any signed-in visitor edit or soft-delete a comment when its
 	 * author has no GoDAM Central account, so the site has to decide.
 	 *
-	 * The comment is looked for in every page of the video's comments, not only
-	 * the newest 20 the player shows, so a comment that has moved out of that
-	 * window since the page loaded can still be changed by its author.
+	 * Who wrote a comment never changes, so the cached comments answer first:
+	 * a comment found there is the current user's or it is not, with no call to
+	 * Central. Only a comment the cache does not hold is looked for on Central,
+	 * a page of 100 at a time, newest first. That covers a comment that has
+	 * moved out of the window the player shows since the page loaded. If several
+	 * comments arrive during the lookup, a page boundary can move past the
+	 * comment; the author then gets the refusal below and can try again.
 	 *
 	 * @param string|null $transcoder_job_id   Transcoder job ID of the video.
 	 * @param string      $comment_id          ID of the comment to change.
@@ -939,6 +946,17 @@ class Engagement extends Base {
 	private function verify_comment_ownership( $transcoder_job_id, $comment_id, $account_credentials ) {
 		$page_size = self::OWNERSHIP_LOOKUP_PAGE_SIZE;
 		$start     = 0;
+
+		if ( ! empty( $transcoder_job_id ) ) {
+			$cached_comment = $this->find_comment_in_tree(
+				$this->get_comment_tree( $transcoder_job_id, $account_credentials )['comments'],
+				$comment_id
+			);
+
+			if ( null !== $cached_comment ) {
+				return $this->is_own_comment( $cached_comment['author_email'] ?? '' ) ? true : $this->comment_not_owned_response();
+			}
+		}
 
 		for ( $page_number = 0; ! empty( $transcoder_job_id ) && $page_number < self::OWNERSHIP_LOOKUP_MAX_PAGES; $page_number++ ) {
 			$page = $this->fetch_raw_comments( $transcoder_job_id, $account_credentials, $start, $page_size );
@@ -956,10 +974,7 @@ class Engagement extends Base {
 
 			foreach ( $page['comments'] as $comment ) {
 				if ( isset( $comment['name'] ) && (string) $comment['name'] === (string) $comment_id ) {
-					if ( $this->is_own_comment( $comment['comment_email'] ?? '' ) ) {
-						return true;
-					}
-					break 2;
+					return $this->is_own_comment( $comment['comment_email'] ?? '' ) ? true : $this->comment_not_owned_response();
 				}
 			}
 
@@ -971,7 +986,41 @@ class Engagement extends Base {
 			}
 		}
 
-		// Same answer for a comment that is not there and one that is not theirs.
+		return $this->comment_not_owned_response();
+	}
+
+	/**
+	 * Finds a comment by ID in a comment tree, replies included.
+	 *
+	 * @param array  $comments   Comment tree from get_comment_tree().
+	 * @param string $comment_id ID of the comment to find.
+	 *
+	 * @return array|null The comment, or null when the tree does not hold it.
+	 */
+	private function find_comment_in_tree( $comments, $comment_id ) {
+		foreach ( $comments as $comment ) {
+			if ( isset( $comment['id'] ) && (string) $comment['id'] === (string) $comment_id ) {
+				return $comment;
+			}
+
+			$found = $this->find_comment_in_tree( $comment['children'] ?? array(), $comment_id );
+
+			if ( null !== $found ) {
+				return $found;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * The refusal for a comment the current user did not write.
+	 *
+	 * The same answer for a comment that is not there and one that is not theirs.
+	 *
+	 * @return WP_REST_Response
+	 */
+	private function comment_not_owned_response() {
 		return new WP_REST_Response(
 			array(
 				'status'    => 'error',
