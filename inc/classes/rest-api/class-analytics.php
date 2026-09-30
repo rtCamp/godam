@@ -26,6 +26,113 @@ class Analytics extends Base {
 	protected $rest_base = 'analytics';
 
 	/**
+	 * Fields of the `dashboard_metrics` payload that are video data. Users without
+	 * `view_woocommerce_reports` get these and nothing else, so a field the
+	 * analytics service adds later stays hidden from them until it is listed here.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_DASHBOARD_METRICS = array(
+		'plays',
+		'play_time',
+		'page_load',
+		'avg_engagement',
+		'views_change',
+		'watch_time_change',
+		'play_rate_change',
+		'avg_engagement_change',
+		'country_views',
+		'total_videos',
+		'unique_viewers',
+		'unavailable_sections',
+	);
+
+	/**
+	 * Sections of `dashboard_metrics` the service may report as unavailable that
+	 * are video data. Every other name is a store section.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_SECTIONS = array( 'unique_viewers' );
+
+	/**
+	 * Fields of a per-video analytics record (the `processed_analytics` row plus
+	 * the placements the service flattens into it) that are video data. The store
+	 * fields the service adds to the same record (Video-to-Cart, Video-to-Purchase,
+	 * the funnel, revenue and tips) are deliberately not listed.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_RECORD = array(
+		'video_id',
+		'job_id',
+		'account_token',
+		'site_url',
+		'date',
+		'plays',
+		'unique_viewers',
+		'unique_converting_sessions',
+		'play_time',
+		'page_load',
+		'video_length',
+		'heatmap',
+		'all_time_heatmap',
+		'country_views',
+		'post_views',
+		'placements',
+		'views_change',
+		'watch_time_change',
+		'play_rate_change',
+		'avg_engagement_change',
+		'layer_type_stats',
+		'layer_details',
+		'layer_positions',
+		'layer_converting_sessions',
+	);
+
+	/**
+	 * Layer actions that are video data: what a viewer did with a layer. The
+	 * `added_to_cart` action is store data and is not listed.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_LAYER_ACTIONS = array( 'viewed', 'clicked', 'hovered', 'skipped', 'submitted', 'voted' );
+
+	/**
+	 * Fields of the layer analytics payload that are video data, at its top level.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_LAYER_PAYLOAD = array( 'layer_type', 'days', 'cumulative', 'daily_breakdown', 'individual_layers' );
+
+	/**
+	 * Fields other than the layer actions that are video data in the layer totals
+	 * and in each day of the daily breakdown.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_LAYER_TOTALS = array( 'date', 'conversion_rate' );
+
+	/**
+	 * Fields other than the layer actions that are video data in one layer or
+	 * hotspot row. Revenue, orders and currency are deliberately not listed.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_LAYER_ROW = array(
+		'layer_id',
+		'layer_name',
+		'layer_type',
+		'timestamp',
+		'page_url',
+		'layer_metadata',
+		'historical_positions',
+		'is_subhotspot',
+		'conversion_rate',
+		'converting_sessions',
+	);
+
+	/**
 	 * Register REST routes (via the parent) plus the cache-invalidation hooks
 	 * for the Top Products / Top Videos "existing ids" allow-lists.
 	 *
@@ -506,29 +613,34 @@ class Analytics extends Base {
 	}
 
 	/**
-	 * Remove the named keys from an array. Anything that is not an array passes
+	 * Keep only the named keys of an array. Anything that is not an array passes
 	 * through unchanged, so a null payload stays null.
 	 *
-	 * @param mixed $data Response fragment.
-	 * @param array $keys Keys that come from the store.
+	 * The routes that mix video and store data use this, not a list of store
+	 * fields to remove: a field the analytics service adds later is hidden from
+	 * users without store access until it is listed as video data.
+	 *
+	 * @param mixed $data    Response fragment.
+	 * @param array $allowed Keys that are video data.
 	 * @return mixed
 	 */
-	private function without_keys( $data, array $keys ) {
+	private function only_keys( $data, array $allowed ) {
 		if ( ! is_array( $data ) ) {
 			return $data;
 		}
-		return array_diff_key( $data, array_flip( $keys ) );
+		return array_intersect_key( $data, array_flip( $allowed ) );
 	}
 
 	/**
-	 * Drop the rows of a list of tuples that are about add-to-carts. The service
+	 * Keep the rows of a list of tuples that are about a video action. The service
 	 * sends per-layer counters as rows such as [ layer_type, action_type, count ];
-	 * a row is an add-to-cart row when any of its values is `added_to_cart`.
+	 * a row is kept only when one of its values is a video layer action, so an
+	 * `added_to_cart` row, or a row for an action added later, is dropped.
 	 *
 	 * @param mixed $rows A list of counter rows.
-	 * @return mixed The list without the add-to-cart rows.
+	 * @return mixed The list with only the video action rows.
 	 */
-	private function without_add_to_cart_rows( $rows ) {
+	private function only_video_action_rows( $rows ) {
 		if ( ! is_array( $rows ) ) {
 			return $rows;
 		}
@@ -536,94 +648,79 @@ class Analytics extends Base {
 			array_filter(
 				$rows,
 				function ( $row ) {
-					return ! is_array( $row ) || ! in_array( 'added_to_cart', $row, true );
+					return is_array( $row ) && array() !== array_intersect( $row, self::VIDEO_DATA_LAYER_ACTIONS );
 				}
 			)
 		);
 	}
 
 	/**
-	 * Strip store fields from a `dashboard_metrics` payload: Video-to-Cart,
-	 * Video-to-Purchase, the funnel and revenue. The names of those sections also
-	 * leave `unavailable_sections`, so the page has no "couldn't load" state to
-	 * show for a card the user was never going to see.
+	 * Reduce a `dashboard_metrics` payload to its video data. The names of store
+	 * sections also leave `unavailable_sections`, so the page has no "couldn't
+	 * load" state to show for a card the user was never going to see.
 	 *
 	 * @param array $metrics The merged `dashboard_metrics` payload.
 	 * @return array
 	 */
-	private function strip_store_data_from_dashboard_metrics( array $metrics ) {
-		$store_sections = array( 'video_to_cart', 'video_to_purchase', 'video_funnel', 'revenue' );
-		$metrics        = $this->without_keys( $metrics, $store_sections );
+	private function video_data_in_dashboard_metrics( array $metrics ) {
+		$metrics = $this->only_keys( $metrics, self::VIDEO_DATA_DASHBOARD_METRICS );
 		if ( isset( $metrics['unavailable_sections'] ) && is_array( $metrics['unavailable_sections'] ) ) {
 			$metrics['unavailable_sections'] = array_values(
-				array_diff( $metrics['unavailable_sections'], $store_sections )
+				array_intersect( $metrics['unavailable_sections'], self::VIDEO_DATA_SECTIONS )
 			);
 		}
 		return $metrics;
 	}
 
 	/**
-	 * Strip store fields from a per-video analytics record: Video-to-Cart,
-	 * Video-to-Purchase, the funnel, revenue and tips, and the add-to-cart rows of
-	 * the per-layer counters.
-	 *
-	 * The record is passed through from the service whole, so every key that
-	 * carries store data is named here. A new store-derived field on the service
-	 * side has to be added to this list too.
+	 * Reduce a per-video analytics record to its video data: the listed fields
+	 * only, and of the per-layer counters only the video action rows.
 	 *
 	 * @param array $record The `processed_analytics` record for one video.
 	 * @return array
 	 */
-	private function strip_store_data_from_video_record( array $record ) {
-		$record = $this->without_keys(
-			$record,
-			array(
-				'video_to_cart',
-				'video_to_purchase',
-				'video_funnel',
-				'revenue',
-				'revenue_currency',
-				'revenue_excluded_orders',
-				'revenue_direct_minor',
-				'revenue_assisted_minor',
-				'revenue_tips',
-			)
-		);
+	private function video_data_in_video_record( array $record ) {
+		$record = $this->only_keys( $record, self::VIDEO_DATA_RECORD );
 		foreach ( array( 'layer_type_stats', 'layer_details' ) as $counter_rows ) {
 			if ( array_key_exists( $counter_rows, $record ) ) {
-				$record[ $counter_rows ] = $this->without_add_to_cart_rows( $record[ $counter_rows ] );
+				$record[ $counter_rows ] = $this->only_video_action_rows( $record[ $counter_rows ] );
 			}
 		}
 		return $record;
 	}
 
 	/**
-	 * Strip store fields from a layer analytics payload: the add-to-cart counter
-	 * (per layer, in the totals and per day) and per-hotspot revenue and orders.
-	 * Views, hovers and clicks stay.
+	 * Reduce a layer analytics payload to its video data: views, hovers, clicks,
+	 * skips, submissions and votes, with the interaction rate, per layer, in the
+	 * totals and per day. The add-to-cart counter and per-hotspot revenue, orders
+	 * and currency are store data and go.
 	 *
 	 * @param mixed $layer_analytics The `layer_analytics` payload.
 	 * @return mixed
 	 */
-	private function strip_store_data_from_layer_analytics( $layer_analytics ) {
+	private function video_data_in_layer_analytics( $layer_analytics ) {
 		if ( ! is_array( $layer_analytics ) ) {
 			return $layer_analytics;
 		}
+		$totals_fields = array_merge( self::VIDEO_DATA_LAYER_TOTALS, self::VIDEO_DATA_LAYER_ACTIONS );
+		$row_fields    = array_merge( self::VIDEO_DATA_LAYER_ROW, self::VIDEO_DATA_LAYER_ACTIONS );
+
+		$layer_analytics = $this->only_keys( $layer_analytics, self::VIDEO_DATA_LAYER_PAYLOAD );
 		if ( isset( $layer_analytics['cumulative'] ) ) {
-			$layer_analytics['cumulative'] = $this->without_keys( $layer_analytics['cumulative'], array( 'added_to_cart' ) );
+			$layer_analytics['cumulative'] = $this->only_keys( $layer_analytics['cumulative'], $totals_fields );
 		}
 		if ( isset( $layer_analytics['daily_breakdown'] ) && is_array( $layer_analytics['daily_breakdown'] ) ) {
 			$layer_analytics['daily_breakdown'] = array_map(
-				function ( $day ) {
-					return $this->without_keys( $day, array( 'added_to_cart' ) );
+				function ( $day ) use ( $totals_fields ) {
+					return $this->only_keys( $day, $totals_fields );
 				},
 				$layer_analytics['daily_breakdown']
 			);
 		}
 		if ( isset( $layer_analytics['individual_layers'] ) && is_array( $layer_analytics['individual_layers'] ) ) {
 			$layer_analytics['individual_layers'] = array_map(
-				function ( $layer ) {
-					return $this->without_keys( $layer, array( 'added_to_cart', 'revenue_minor', 'orders', 'currency' ) );
+				function ( $layer ) use ( $row_fields ) {
+					return $this->only_keys( $layer, $row_fields );
 				},
 				$layer_analytics['individual_layers']
 			);
@@ -813,7 +910,7 @@ class Analytics extends Base {
 
 		$layer_analytics = $body['layer_analytics'] ?? array();
 		if ( ! $this->can_view_store_data() ) {
-			$layer_analytics = $this->strip_store_data_from_layer_analytics( $layer_analytics );
+			$layer_analytics = $this->video_data_in_layer_analytics( $layer_analytics );
 		}
 
 		return new WP_REST_Response(
@@ -1043,7 +1140,7 @@ class Analytics extends Base {
 		// Return analytics data if available.
 		if ( isset( $data['processed_analytics'] ) ) {
 			if ( ! $this->can_view_store_data() && is_array( $data['processed_analytics'] ) ) {
-				$data['processed_analytics'] = $this->strip_store_data_from_video_record( $data['processed_analytics'] );
+				$data['processed_analytics'] = $this->video_data_in_video_record( $data['processed_analytics'] );
 			}
 
 			// Placement rows (added by the placements-capable microservice) get
@@ -1284,7 +1381,7 @@ class Analytics extends Base {
 
 		$dashboard_metrics = array_merge( $empty_metrics, $body['dashboard_metrics'] ?? array() );
 		if ( ! $this->can_view_store_data() ) {
-			$dashboard_metrics = $this->strip_store_data_from_dashboard_metrics( $dashboard_metrics );
+			$dashboard_metrics = $this->video_data_in_dashboard_metrics( $dashboard_metrics );
 		}
 
 		return new WP_REST_Response(

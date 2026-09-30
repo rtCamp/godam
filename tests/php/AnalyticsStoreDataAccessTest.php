@@ -8,10 +8,11 @@
  * WooCommerce's report permission, `view_woocommerce_reports`, held by shop
  * managers and administrators. Routes that are all store data refuse everyone
  * else (see AnalyticsRoutePermissionTest). The three routes that mix the two,
- * `dashboard-metrics`, `fetch` and `layer-analytics`, strip the store fields
- * from their responses for everyone else, so the numbers cannot be read through
- * the route even if the screen hides them. Views, plays, watch time and hotspot
- * clicks stay.
+ * `dashboard-metrics`, `fetch` and `layer-analytics`, reduce their responses to
+ * an allow-list of video fields for everyone else, so the numbers cannot be read
+ * through the route even if the screen hides them, and a field the analytics
+ * service adds later stays hidden until it is listed as video data. Views,
+ * plays, watch time and hotspot clicks stay.
  *
  * Each test feeds a route a canned microservice reply that carries both kinds of
  * field (shaped like the analytics service's responses), calls it as an author,
@@ -622,5 +623,157 @@ class AnalyticsStoreDataAccessTest extends TestCase {
 		$this->assertSame( 4500, $products['top_products'][0]['revenue_minor'] );
 		$this->assertSame( 9, $products['top_products'][0]['added_to_cart'] );
 		$this->assertSame( 'Mug', $products['top_products'][0]['title'] );
+	}
+
+	/**
+	 * A field the analytics service adds later, which nobody has classified yet,
+	 * must not reach an editor or an author: each mixed route answers with an
+	 * allow-list, not a list of store fields to remove. A shop manager still gets it.
+	 */
+	public function test_a_field_the_service_adds_later_stays_hidden_from_editors_and_authors() {
+		$future_metrics = array(
+			'plays'                => 120,
+			'unique_viewers'       => 80,
+			'refund_minor'         => 900,
+			'basket_abandon_rate'  => 12.5,
+			'unavailable_sections' => array( 'unique_viewers', 'wishlist' ),
+		);
+		$future_record  = $this->video_record() + array(
+			'refunds_minor'   => 100,
+			'coupon_sessions' => 4,
+		);
+		$future_layers  = $this->layer_analytics_payload();
+
+		$future_layers['margin_minor']                          = 7;
+		$future_layers['cumulative']['wishlist_adds']           = 2;
+		$future_layers['daily_breakdown'][0]['wishlist_adds']   = 2;
+		$future_layers['individual_layers'][0]['wishlist_adds'] = 2;
+
+		$request = array( 'site_url' => 'https://shop.test' );
+		foreach (
+			array(
+				'editor' => self::EDITOR,
+				'author' => self::AUTHOR,
+			) as $role => $caps
+		) {
+			$this->upstream_replies( array( 'dashboard_metrics' => $future_metrics ) );
+			$metrics = $this->call_as( 'fetch_dashboard_metrics', $request, $caps )['dashboard_metrics'];
+			$this->assertArrayNotHasKey( 'refund_minor', $metrics, $role );
+			$this->assertArrayNotHasKey( 'basket_abandon_rate', $metrics, $role );
+			$this->assertSame( 120, $metrics['plays'], $role );
+			$this->assertSame( array( 'unique_viewers' ), $metrics['unavailable_sections'], "$role: only a video section name stays" );
+
+			$this->upstream_replies( array( 'processed_analytics' => $future_record ) );
+			$record = $this->call_as(
+				'fetch_analytics_data',
+				array(
+					'video_id' => 55,
+					'site_url' => 'https://shop.test',
+				),
+				$caps
+			)['data'];
+			$this->assertArrayNotHasKey( 'refunds_minor', $record, $role );
+			$this->assertArrayNotHasKey( 'coupon_sessions', $record, $role );
+			$this->assertSame( 70, $record['plays'], $role );
+
+			$this->upstream_replies( array( 'layer_analytics' => $future_layers ) );
+			$layers = $this->call_as(
+				'fetch_layer_analytics',
+				array(
+					'video_id'   => 55,
+					'layer_type' => 'woo',
+					'site_url'   => 'https://shop.test',
+				),
+				$caps
+			)['layer_analytics'];
+			$this->assertArrayNotHasKey( 'margin_minor', $layers, "$role: top level" );
+			$this->assertArrayNotHasKey( 'wishlist_adds', $layers['cumulative'], "$role: totals" );
+			$this->assertArrayNotHasKey( 'wishlist_adds', $layers['daily_breakdown'][0], "$role: per day" );
+			$this->assertArrayNotHasKey( 'wishlist_adds', $layers['individual_layers'][0], "$role: per layer" );
+			$this->assertSame( 10, $layers['individual_layers'][0]['clicked'], $role );
+		}
+
+		// A shop manager is not filtered, so the same fields reach them.
+		$this->upstream_replies( array( 'dashboard_metrics' => $future_metrics ) );
+		$this->assertSame( 900, $this->call_as( 'fetch_dashboard_metrics', $request, self::SHOP_MANAGER )['dashboard_metrics']['refund_minor'] );
+
+		$this->upstream_replies( array( 'processed_analytics' => $future_record ) );
+		$this->assertSame(
+			100,
+			$this->call_as(
+				'fetch_analytics_data',
+				array(
+					'video_id' => 55,
+					'site_url' => 'https://shop.test',
+				),
+				self::SHOP_MANAGER
+			)['data']['refunds_minor']
+		);
+
+		$this->upstream_replies( array( 'layer_analytics' => $future_layers ) );
+		$this->assertSame(
+			2,
+			$this->call_as(
+				'fetch_layer_analytics',
+				array(
+					'video_id'   => 55,
+					'layer_type' => 'woo',
+					'site_url'   => 'https://shop.test',
+				),
+				self::SHOP_MANAGER
+			)['layer_analytics']['individual_layers'][0]['wishlist_adds']
+		);
+	}
+
+	/**
+	 * A per-layer counter row for an action nobody has classified, like the
+	 * add-to-cart rows, is dropped for an editor; the viewed and clicked rows stay.
+	 */
+	public function test_counter_rows_for_an_unclassified_action_are_dropped_for_an_editor() {
+		$record                     = $this->video_record();
+		$record['layer_type_stats'] = array(
+			array( 'woo', 'clicked', 3 ),
+			array( 'woo', 'wishlisted', 2 ),
+			array( 'woo', 'added_to_cart', 3 ),
+		);
+		$record['layer_details']    = array(
+			array( 'l1::p11', '', 'woo', 'viewed', 4, 5, '', '' ),
+			array( 'l1::p11', '', 'woo', 'wishlisted', 2, 5, '', '' ),
+			array( 'l1::p11', '', 'woo', 'added_to_cart', 3, 5, '', '' ),
+		);
+		$this->upstream_replies( array( 'processed_analytics' => $record ) );
+
+		$data = $this->call_as(
+			'fetch_analytics_data',
+			array(
+				'video_id' => 55,
+				'site_url' => 'https://shop.test',
+			),
+			self::EDITOR
+		)['data'];
+
+		$this->assertSame( array( array( 'woo', 'clicked', 3 ) ), $data['layer_type_stats'] );
+		$this->assertCount( 1, $data['layer_details'] );
+		$this->assertSame( 'viewed', $data['layer_details'][0][3] );
+	}
+
+	/**
+	 * Guard: an allow-list must never name a store field, or adding one there by
+	 * mistake would hand store data to editors.
+	 */
+	public function test_no_video_data_allow_list_names_a_store_field() {
+		$allow_lists = array(
+			'VIDEO_DATA_DASHBOARD_METRICS' => Analytics::VIDEO_DATA_DASHBOARD_METRICS,
+			'VIDEO_DATA_SECTIONS'          => Analytics::VIDEO_DATA_SECTIONS,
+			'VIDEO_DATA_RECORD'            => Analytics::VIDEO_DATA_RECORD,
+			'VIDEO_DATA_LAYER_ACTIONS'     => Analytics::VIDEO_DATA_LAYER_ACTIONS,
+			'VIDEO_DATA_LAYER_PAYLOAD'     => Analytics::VIDEO_DATA_LAYER_PAYLOAD,
+			'VIDEO_DATA_LAYER_TOTALS'      => Analytics::VIDEO_DATA_LAYER_TOTALS,
+			'VIDEO_DATA_LAYER_ROW'         => Analytics::VIDEO_DATA_LAYER_ROW,
+		);
+
+		foreach ( $allow_lists as $name => $fields ) {
+			$this->assertSame( array(), array_values( array_intersect( $fields, self::STORE_KEYS ) ), "$name lists a store field" );
+		}
 	}
 }

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-29T09:34:14+00:00\n"
+"POT-Creation-Date: 2026-09-30T09:27:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -4154,7 +4154,7 @@ msgstr ""
 
 #. translators: %d: WordPress post ID.
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/rest-api/class-analytics.php:880
+#: inc/classes/rest-api/class-analytics.php:977
 #: pages/analytics/components/Placements/index.js:173
 #, js-format,php-format
 msgid "Post #%d"
@@ -4198,8 +4198,8 @@ msgid "Displayed on:"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/rest-api/class-analytics.php:881
-#: inc/classes/rest-api/class-analytics.php:942
+#: inc/classes/rest-api/class-analytics.php:978
+#: inc/classes/rest-api/class-analytics.php:1039
 #: pages/analytics/components/Placements/index.js:273
 msgid "Deleted page"
 msgstr ""
@@ -10883,77 +10883,77 @@ msgstr ""
 msgid "Plugin deactivated successfully."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:142
+#: inc/classes/rest-api/class-analytics.php:249
 msgid "The Video ID for fetching analytics data."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:151
+#: inc/classes/rest-api/class-analytics.php:258
 #: inc/classes/rest-api/class-engagement.php:60
 #: inc/classes/rest-api/class-engagement.php:94
 #: inc/classes/rest-api/class-engagement.php:137
 msgid "The Site URL associated with the video."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:695
-#: inc/classes/rest-api/class-analytics.php:973
-#: inc/classes/rest-api/class-analytics.php:1206
-#: inc/classes/rest-api/class-analytics.php:1604
-#: inc/classes/rest-api/class-analytics.php:1677
-#: inc/classes/rest-api/class-analytics.php:1757
+#: inc/classes/rest-api/class-analytics.php:792
+#: inc/classes/rest-api/class-analytics.php:1070
+#: inc/classes/rest-api/class-analytics.php:1303
+#: inc/classes/rest-api/class-analytics.php:1701
+#: inc/classes/rest-api/class-analytics.php:1774
+#: inc/classes/rest-api/class-analytics.php:1854
 #: inc/classes/rest-api/class-engagement.php:365
 #: inc/classes/rest-api/class-site.php:169
 msgid "Missing API key."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:706
+#: inc/classes/rest-api/class-analytics.php:803
 msgid "GoDAM account is not verified. Connect your account in GoDAM settings to view layer analytics."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:772
-#: inc/classes/rest-api/class-analytics.php:1008
-#: inc/classes/rest-api/class-analytics.php:1252
-#: inc/classes/rest-api/class-analytics.php:1629
-#: inc/classes/rest-api/class-analytics.php:1709
-#: inc/classes/rest-api/class-analytics.php:1782
+#: inc/classes/rest-api/class-analytics.php:869
+#: inc/classes/rest-api/class-analytics.php:1105
+#: inc/classes/rest-api/class-analytics.php:1349
+#: inc/classes/rest-api/class-analytics.php:1726
+#: inc/classes/rest-api/class-analytics.php:1806
+#: inc/classes/rest-api/class-analytics.php:1879
 msgid "Unable to reach analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:781
-#: inc/classes/rest-api/class-analytics.php:1019
-#: inc/classes/rest-api/class-analytics.php:1261
-#: inc/classes/rest-api/class-analytics.php:1438
-#: inc/classes/rest-api/class-analytics.php:1640
-#: inc/classes/rest-api/class-analytics.php:1720
-#: inc/classes/rest-api/class-analytics.php:1793
-#: inc/classes/rest-api/class-analytics.php:1911
+#: inc/classes/rest-api/class-analytics.php:878
+#: inc/classes/rest-api/class-analytics.php:1116
+#: inc/classes/rest-api/class-analytics.php:1358
+#: inc/classes/rest-api/class-analytics.php:1535
+#: inc/classes/rest-api/class-analytics.php:1737
+#: inc/classes/rest-api/class-analytics.php:1817
+#: inc/classes/rest-api/class-analytics.php:1890
+#: inc/classes/rest-api/class-analytics.php:2008
 msgid "Unexpected error from analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:928
+#: inc/classes/rest-api/class-analytics.php:1025
 msgid "Unavailable"
 msgstr ""
 
 #. translators: %d: WordPress post ID.
-#: inc/classes/rest-api/class-analytics.php:941
+#: inc/classes/rest-api/class-analytics.php:1038
 #, php-format
 msgid "Post #%d (deleted)"
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:1145
-#: inc/classes/rest-api/class-analytics.php:1315
-#: inc/classes/rest-api/class-analytics.php:1379
-#: inc/classes/rest-api/class-analytics.php:1839
+#: inc/classes/rest-api/class-analytics.php:1242
+#: inc/classes/rest-api/class-analytics.php:1412
+#: inc/classes/rest-api/class-analytics.php:1476
+#: inc/classes/rest-api/class-analytics.php:1936
 msgid "Invalid or unverified API key."
 msgstr ""
 
 #. translators: %s is the error message from the API response.
-#: inc/classes/rest-api/class-analytics.php:1173
+#: inc/classes/rest-api/class-analytics.php:1270
 #, php-format
 msgid "Error fetching history data: %s"
 msgstr ""
 
 #. translators: %d: WooCommerce product ID.
-#: inc/classes/rest-api/class-analytics.php:1959
+#: inc/classes/rest-api/class-analytics.php:2056
 #, php-format
 msgid "ID: %d (Deleted Product)"
 msgstr ""
