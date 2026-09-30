@@ -5,6 +5,7 @@
  * They cover the current user, avatars, the object cache and wp_remote_post().
  * Each reads per-test state from `$GLOBALS['rtgodam_stub']`, matching the
  * convention in bootstrap.php:
+ *  - `home_url`     the site's home URL (default https://example.test);
  *  - `user`         array( 'email' => ..., 'name' => ... ) for a signed-in user;
  *                   leave it unset for a logged-out visitor.
  *  - `post_handler` callable( $url, $args ) that answers a wp_remote_post() call.
@@ -15,8 +16,10 @@
  * @package GoDAM
  */
 
+// Same value as tests/stubs/site-functions.php, so the constant is the same
+// whichever stub file loads first; no test depends on it.
 if ( ! defined( 'RTGODAM_API_BASE' ) ) {
-	define( 'RTGODAM_API_BASE', 'https://central.test' );
+	define( 'RTGODAM_API_BASE', 'https://api.test' );
 }
 
 if ( ! function_exists( 'is_user_logged_in' ) ) {
@@ -73,11 +76,15 @@ if ( ! function_exists( 'wp_timezone' ) ) {
 if ( ! function_exists( 'home_url' ) ) {
 
 	/**
+	 * The home URL a test sets in `home_url`, https://example.test otherwise:
+	 * the same key and default as tests/stubs/site-functions.php, so either
+	 * file can load first.
+	 *
 	 * @param string $path Path to append.
 	 * @return string
 	 */
 	function home_url( $path = '' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return 'https://www.example.com' . $path;
+		return ( isset( $GLOBALS['rtgodam_stub']['home_url'] ) ? (string) $GLOBALS['rtgodam_stub']['home_url'] : 'https://example.test' ) . $path;
 	}
 }
 

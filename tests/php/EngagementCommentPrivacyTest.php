@@ -36,6 +36,8 @@ class EngagementCommentPrivacyTest extends TestCase {
 		parent::setUp();
 
 		$GLOBALS['rtgodam_stub'] = array(
+			// The logged-out visitor's placeholder address is built from this.
+			'home_url'     => 'https://www.example.com',
 			'options'      => array(
 				'rtgodam-account-token' => 'verified-account',
 				'rtgodam-api-key'       => 'test-key',
