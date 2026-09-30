@@ -567,11 +567,11 @@ export default function TopProductsTable( { siteUrl, skip = false, tabSwitcher =
 										text={ baseCurrency
 											? sprintf(
 												/* translators: %s: ISO 4217 currency code, e.g. USD. */
-												__( 'Order value traced to this product\'s videos, in the store\'s base currency (%s), before refunds. Orders in other currencies are not converted or counted. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.', 'godam' ),
+												__( 'Order value traced to this product\'s videos, in the store\'s base currency (%s), after discounts and before refunds, excluding tax, shipping and fees. Orders in other currencies are not converted or counted. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.', 'godam' ),
 												baseCurrency,
 											)
 											: __(
-												'Order value traced to this product\'s videos, in the store\'s base currency, before refunds. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.',
+												'Order value traced to this product\'s videos, in the store\'s base currency, after discounts and before refunds, excluding tax, shipping and fees. Direct means added to cart in-video; Assisted means bought after clicking through to the product page.',
 												'godam',
 											) }
 									/>

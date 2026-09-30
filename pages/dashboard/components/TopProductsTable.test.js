@@ -427,3 +427,26 @@ describe( 'TopProductsTable — base-currency note', () => {
 		expect( html ).not.toContain( 'godam-top-products-currency-note' );
 	} );
 } );
+
+describe( 'TopProductsTable — Revenue column tooltip', () => {
+	it( 'says what the figure includes, with and without a base currency', () => {
+		const basis = 'after discounts and before refunds, excluding tax, shipping and fees';
+		useFetchTopProductsQuery.mockReturnValue( {
+			data: {
+				products: [ { product_id: 1, title: 'A', revenue_minor: 6100, currency: 'USD', orders: 1 } ],
+				totalItems: 1,
+				totalPages: 1,
+			},
+			isFetching: false,
+			isError: false,
+		} );
+		expect( renderHTML( <TopProductsTable siteUrl="https://example.test" /> ) ).toContain( `base currency (USD), ${ basis }.` );
+
+		useFetchTopProductsQuery.mockReturnValue( {
+			data: { products: [ { product_id: 1, title: 'A' } ], totalItems: 1, totalPages: 1 },
+			isFetching: false,
+			isError: false,
+		} );
+		expect( renderHTML( <TopProductsTable siteUrl="https://example.test" /> ) ).toContain( `base currency, ${ basis }.` );
+	} );
+} );
