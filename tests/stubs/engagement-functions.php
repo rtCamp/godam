@@ -60,10 +60,13 @@ if ( ! function_exists( 'get_avatar_url' ) ) {
 if ( ! function_exists( 'wp_timezone' ) ) {
 
 	/**
+	 * UTC unless a test sets `timezone`, so another test file's stub of this
+	 * function can be the one that loads first without losing its zone.
+	 *
 	 * @return DateTimeZone
 	 */
 	function wp_timezone() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return new DateTimeZone( 'UTC' );
+		return $GLOBALS['rtgodam_stub']['timezone'] ?? new DateTimeZone( 'UTC' );
 	}
 }
 

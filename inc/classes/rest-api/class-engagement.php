@@ -29,6 +29,21 @@ class Engagement extends Base {
 	protected $rest_base = 'engagement';
 
 	/**
+	 * How many comments to ask Central for per request when looking for one comment.
+	 *
+	 * @var int
+	 */
+	const OWNERSHIP_LOOKUP_PAGE_SIZE = 100;
+
+	/**
+	 * Most requests one ownership lookup may make, so a video with thousands of
+	 * comments (or a Central that ignores `start`) cannot keep a request busy.
+	 *
+	 * @var int
+	 */
+	const OWNERSHIP_LOOKUP_MAX_PAGES = 50;
+
+	/**
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
@@ -804,16 +819,27 @@ class Engagement extends Base {
 	/**
 	 * Fetches a video's comments from GoDAM Central, without using the cache.
 	 *
-	 * @param string $transcoder_job_id     Transcoder job ID.
-	 * @param array  $account_credentials   Account credentials.
+	 * Without `$limit`, Central answers with its default window: the newest 20
+	 * comments, newest first, which is what the player shows. Pass `$start` and
+	 * `$limit` to read further back.
 	 *
-	 * @return array|null Array with `comments` (list) and `count`, or null when Central could not be reached or refused the request.
+	 * @param string   $transcoder_job_id     Transcoder job ID.
+	 * @param array    $account_credentials   Account credentials.
+	 * @param int|null $start                 Number of newest comments to skip. Only used with `$limit`.
+	 * @param int|null $limit                 Number of comments to return.
+	 *
+	 * @return array|null Array with `comments` (list) and `count` (all comments on the video), or null when Central could not be reached or refused the request.
 	 */
-	private function fetch_raw_comments( $transcoder_job_id, $account_credentials ) {
+	private function fetch_raw_comments( $transcoder_job_id, $account_credentials, $start = null, $limit = null ) {
 		$query_params = array(
 			'name'    => $transcoder_job_id,
 			'api_key' => $account_credentials['api_key'],
 		);
+
+		if ( null !== $limit ) {
+			$query_params['start'] = (int) $start;
+			$query_params['limit'] = (int) $limit;
+		}
 
 		$comments_endpoint = RTGODAM_API_BASE . '/api/method/godam_core.api.comment.get_wp_comments';
 		$comments_response = wp_remote_post(
@@ -900,6 +926,10 @@ class Engagement extends Base {
 	 * Central lets any signed-in visitor edit or soft-delete a comment when its
 	 * author has no GoDAM Central account, so the site has to decide.
 	 *
+	 * The comment is looked for in every page of the video's comments, not only
+	 * the newest 20 the player shows, so a comment that has moved out of that
+	 * window since the page loaded can still be changed by its author.
+	 *
 	 * @param string|null $transcoder_job_id   Transcoder job ID of the video.
 	 * @param string      $comment_id          ID of the comment to change.
 	 * @param array       $account_credentials Account credentials.
@@ -907,24 +937,36 @@ class Engagement extends Base {
 	 * @return true|WP_REST_Response True when the comment belongs to the current user, otherwise an error response.
 	 */
 	private function verify_comment_ownership( $transcoder_job_id, $comment_id, $account_credentials ) {
-		$fetched = empty( $transcoder_job_id ) ? array() : $this->fetch_raw_comments( $transcoder_job_id, $account_credentials );
+		$page_size = self::OWNERSHIP_LOOKUP_PAGE_SIZE;
+		$start     = 0;
 
-		if ( null === $fetched ) {
-			return new WP_REST_Response(
-				array(
-					'status'    => 'error',
-					'message'   => __( 'Unable to verify the comment. Please try again.', 'godam' ),
-					'errorType' => 'failed_to_verify_comment',
-				),
-				500
-			);
-		}
+		for ( $page_number = 0; ! empty( $transcoder_job_id ) && $page_number < self::OWNERSHIP_LOOKUP_MAX_PAGES; $page_number++ ) {
+			$page = $this->fetch_raw_comments( $transcoder_job_id, $account_credentials, $start, $page_size );
 
-		foreach ( $fetched['comments'] ?? array() as $comment ) {
-			if ( isset( $comment['name'] ) && (string) $comment['name'] === (string) $comment_id ) {
-				if ( $this->is_own_comment( $comment['comment_email'] ?? '' ) ) {
-					return true;
+			if ( null === $page ) {
+				return new WP_REST_Response(
+					array(
+						'status'    => 'error',
+						'message'   => __( 'Unable to verify the comment. Please try again.', 'godam' ),
+						'errorType' => 'failed_to_verify_comment',
+					),
+					500
+				);
+			}
+
+			foreach ( $page['comments'] as $comment ) {
+				if ( isset( $comment['name'] ) && (string) $comment['name'] === (string) $comment_id ) {
+					if ( $this->is_own_comment( $comment['comment_email'] ?? '' ) ) {
+						return true;
+					}
+					break 2;
 				}
+			}
+
+			$start += $page_size;
+
+			// A short page, or one that reaches the total, is the last one.
+			if ( count( $page['comments'] ) < $page_size || $start >= $page['count'] ) {
 				break;
 			}
 		}

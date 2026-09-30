@@ -136,9 +136,20 @@ class EngagementCommentPrivacyTest extends TestCase {
 		}
 
 		if ( false !== strpos( $url, 'get_wp_comments' ) ) {
+			// Like Central: newest first, and only the newest 20 unless asked for more.
+			$body = json_decode( $args['body'], true );
+			$rows = $stub['central_comments'];
+			usort(
+				$rows,
+				static function ( $a, $b ) {
+					return strcmp( $b['creation'], $a['creation'] );
+				}
+			);
+			$limit   = isset( $stub['central_ignores_paging'] ) ? 20 : ( $body['limit'] ?? 20 );
+			$start   = isset( $stub['central_ignores_paging'] ) ? 0 : ( $body['start'] ?? 0 );
 			$message = array(
-				'comments' => $stub['central_comments'],
-				'count'    => count( $stub['central_comments'] ),
+				'comments' => array_slice( $rows, $start, $limit ),
+				'count'    => count( $rows ),
 			);
 		} elseif ( false !== strpos( $url, 'get_wp_likes' ) ) {
 			$message = array(
@@ -475,6 +486,152 @@ class EngagementCommentPrivacyTest extends TestCase {
 		$this->assertTrue( $data['is_own'] );
 		$this->assertArrayNotHasKey( 'author_email', $data );
 		$this->assertStringNotContainsString( '@', wp_json_encode( $data ) );
+	}
+
+	/**
+	 * The requests the plugin made to read comments from Central.
+	 *
+	 * @return array List of decoded request bodies.
+	 */
+	private function central_comment_reads() {
+		$reads = array();
+		foreach ( $GLOBALS['rtgodam_stub']['posts'] ?? array() as $post ) {
+			if ( false !== strpos( $post['url'], 'get_wp_comments' ) ) {
+				$reads[] = json_decode( $post['args']['body'], true );
+			}
+		}
+		return $reads;
+	}
+
+	/**
+	 * Build a long thread: Alice wrote the oldest comment, others wrote the rest.
+	 *
+	 * @param int $total Number of comments.
+	 */
+	private function set_long_thread( $total ) {
+		$rows = array();
+		for ( $i = 1; $i <= $total; $i++ ) {
+			$row             = $this->comment_row( 'c-' . $i, self::BOB, 'Bob', null );
+			$row['creation'] = gmdate( 'Y-m-d H:i:s', 1790000000 + $i * 60 );
+			$rows[]          = $row;
+		}
+		$rows[0]['comment_email'] = self::ALICE;
+		$rows[0]['comment_by']    = 'Alice';
+		$this->set_central_comments( $rows );
+	}
+
+	/** The author can change a comment that is older than Central's newest 20 (and than the first lookup page). */
+	public function test_owner_can_delete_a_comment_beyond_the_newest_comments() {
+		$this->set_long_thread( 250 );
+		$this->sign_in_as( self::ALICE, 'Alice' );
+
+		$response = $this->engagement()->user_delete_comment(
+			new \WP_REST_Request(
+				array(
+					'video_id'    => 'cmmid_job-1',
+					'comment_id'  => 'c-1',
+					'delete_type' => 'hard-delete',
+				)
+			)
+		);
+
+		$this->assertSame( 200, $response->get_status() );
+		$writes = $this->central_writes();
+		$this->assertCount( 1, $writes );
+		$this->assertSame( 'c-1', $writes[0]['body']['name'] );
+		// Three pages of 100: the comment is the oldest of 250.
+		$this->assertSame( array( 0, 100, 200 ), array_column( $this->central_comment_reads(), 'start' ) );
+	}
+
+	/** A comment on the first page is found without reading further. */
+	public function test_ownership_lookup_stops_once_the_comment_is_found() {
+		$this->set_long_thread( 250 );
+		$this->sign_in_as( self::BOB, 'Bob' );
+
+		$response = $this->engagement()->user_delete_comment(
+			new \WP_REST_Request(
+				array(
+					'video_id'    => 'cmmid_job-1',
+					'comment_id'  => 'c-250',
+					'delete_type' => 'hard-delete',
+				)
+			)
+		);
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertCount( 1, $this->central_comment_reads() );
+	}
+
+	/** A comment that is nowhere in the thread is refused after reading it all, and no further. */
+	public function test_ownership_lookup_reads_every_page_then_refuses_an_unknown_comment() {
+		$this->set_long_thread( 250 );
+		$this->sign_in_as( self::ALICE, 'Alice' );
+
+		$response = $this->engagement()->user_delete_comment(
+			new \WP_REST_Request(
+				array(
+					'video_id'    => 'cmmid_job-1',
+					'comment_id'  => 'c-999',
+					'delete_type' => 'hard-delete',
+				)
+			)
+		);
+
+		$this->assertSame( 403, $response->get_status() );
+		$this->assertSame( array( 0, 100, 200 ), array_column( $this->central_comment_reads(), 'start' ) );
+		$this->assertSame( array(), $this->central_writes() );
+	}
+
+	/** An old comment that is not the viewer's is still refused, wherever it sits. */
+	public function test_old_comment_of_another_user_is_refused() {
+		$this->set_long_thread( 250 );
+		$this->sign_in_as( self::BOB, 'Bob' );
+
+		$response = $this->engagement()->user_delete_comment(
+			new \WP_REST_Request(
+				array(
+					'video_id'    => 'cmmid_job-1',
+					'comment_id'  => 'c-1',
+					'delete_type' => 'soft-delete',
+				)
+			)
+		);
+
+		$this->assertSame( 403, $response->get_status() );
+		$this->assertSame( array(), $this->central_writes() );
+	}
+
+	/** A Central that ignores paging cannot keep the lookup reading. */
+	public function test_ownership_lookup_ends_when_central_ignores_paging() {
+		$this->set_long_thread( 250 );
+		$GLOBALS['rtgodam_stub']['central_ignores_paging'] = true;
+		$this->sign_in_as( self::ALICE, 'Alice' );
+
+		$response = $this->engagement()->user_delete_comment(
+			new \WP_REST_Request(
+				array(
+					'video_id'    => 'cmmid_job-1',
+					'comment_id'  => 'c-1',
+					'delete_type' => 'hard-delete',
+				)
+			)
+		);
+
+		$this->assertSame( 403, $response->get_status() );
+		$this->assertCount( 1, $this->central_comment_reads() );
+	}
+
+	/** The public list still asks Central for its default window, not the whole thread. */
+	public function test_the_public_list_does_not_read_past_centrals_default_window() {
+		$this->set_long_thread( 250 );
+
+		$response = $this->get_activities();
+
+		$reads = $this->central_comment_reads();
+		$this->assertCount( 1, $reads );
+		$this->assertArrayNotHasKey( 'limit', $reads[0] );
+		$this->assertCount( 20, $response->get_data()['data']['comments'] );
+		$this->assertSame( 250, $response->get_data()['data']['comments_count'] );
 	}
 
 	/** Only a signed-in WordPress user may reach the write routes. */
