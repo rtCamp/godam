@@ -2381,8 +2381,12 @@ function rtgodam_format_html_attributes( $attributes ) {
  * Normalise an origin the way browsers report `window.location.origin`.
  *
  * Accepts only a bare `http(s)://host[:port]`: no path, query, fragment, spaces
- * or userinfo. The result is lowercased, since browsers report it lowercase and
- * stored events are matched exactly.
+ * or userinfo. Stored events are matched exactly, so the result follows what a
+ * browser reports: lowercase, an internationalised host as punycode (when the
+ * intl extension is available; otherwise it is kept as written), and no port
+ * when it is the scheme's default. The host must be a hostname made of valid
+ * labels, an IPv4 address or a bracketed IPv6 address, and a port must be
+ * 1 to 65535.
  *
  * @since n.e.x.t
  *
@@ -2394,9 +2398,43 @@ function rtgodam_normalize_origin( $value ) {
 		return '';
 	}
 
-	$value = strtolower( $value );
+	if ( 1 !== preg_match( '#^(https?)://(\[[0-9a-f:.]+\]|[^/?\#\s@:\[\]]+)(?::([0-9]{1,5}))?$#iu', $value, $parts ) ) {
+		return '';
+	}
 
-	return 1 === preg_match( '#^https?://[^/?\#\s@]+$#', $value ) ? $value : '';
+	$scheme = strtolower( $parts[1] );
+	$host   = strtolower( $parts[2] );
+	$port   = isset( $parts[3] ) ? (int) $parts[3] : 0;
+
+	if ( '[' === $host[0] ) {
+		if ( false === filter_var( substr( $host, 1, -1 ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ) {
+			return '';
+		}
+	} else {
+		if ( 1 === preg_match( '/[^\x00-\x7f]/', $host ) && function_exists( 'idn_to_ascii' ) ) {
+			$host = idn_to_ascii( $host, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46 );
+
+			if ( ! is_string( $host ) ) {
+				return '';
+			}
+		}
+
+		// Letters, digits, underscore and hyphen (not at either end), and any
+		// non-ASCII character for the case where idn_to_ascii() is unavailable.
+		$label = '[a-z0-9_\x{80}-\x{10FFFF}](?:[a-z0-9_\x{80}-\x{10FFFF}-]{0,61}[a-z0-9_\x{80}-\x{10FFFF}])?';
+
+		if ( strlen( $host ) > 253 || 1 !== preg_match( '/^' . $label . '(?:\.' . $label . ')*$/u', $host ) ) {
+			return '';
+		}
+	}
+
+	if ( $port < 0 || $port > 65535 || ( isset( $parts[3] ) && 0 === $port ) ) {
+		return '';
+	}
+
+	$default_port = 'https' === $scheme ? 443 : 80;
+
+	return $scheme . '://' . $host . ( $port && $default_port !== $port ? ':' . $port : '' );
 }
 
 /**
@@ -2434,6 +2472,8 @@ function rtgodam_get_site_origin() {
 			$origin .= ':' . $parts['port'];
 		}
 	}
+
+	$origin = rtgodam_normalize_origin( $origin );
 
 	/**
 	 * Filters the origin analytics and engagement reads send as this site's address.

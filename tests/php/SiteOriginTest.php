@@ -119,13 +119,64 @@ class SiteOriginTest extends TestCase {
 	 */
 	public function unusable_filter_results() {
 		return array(
-			'null'          => array( null ),
-			'empty string'  => array( '' ),
-			'array'         => array( array( 'https://example.test' ) ),
-			'no scheme'     => array( 'example.test' ),
-			'has a path'    => array( 'https://example.test/site-1' ),
-			'userinfo'      => array( 'https://user@example.test' ),
-			'user and pass' => array( 'https://user:secret@example.test' ),
+			'null'                         => array( null ),
+			'empty string'                 => array( '' ),
+			'array'                        => array( array( 'https://example.test' ) ),
+			'no scheme'                    => array( 'example.test' ),
+			'has a path'                   => array( 'https://example.test/site-1' ),
+			'userinfo'                     => array( 'https://user@example.test' ),
+			'user and pass'                => array( 'https://user:secret@example.test' ),
+			'empty host with a port'       => array( 'http://:80' ),
+			'empty label'                  => array( 'http://ex..com' ),
+			'non-numeric port'             => array( 'http://host:abc' ),
+			'port above 65535'             => array( 'http://host:65536' ),
+			'port zero'                    => array( 'http://host:0' ),
+			'trailing dot'                 => array( 'http://example.test.' ),
+			'label starting with a hyphen' => array( 'http://-a.test' ),
+			'label ending with a hyphen'   => array( 'http://a-.test' ),
+			'label over 63 characters'     => array( 'http://' . str_repeat( 'a', 64 ) . '.test' ),
+			'invalid IPv6'                 => array( 'http://[zz]' ),
+			'invalid UTF-8'                => array( "http://ex\xC3.test" ),
+			'a lone dot'                   => array( 'http://.' ),
+		);
+	}
+
+	/**
+	 * Browsers report the origin as punycode, lowercase, and without a default port.
+	 *
+	 * @dataProvider normalised_filter_results
+	 *
+	 * @param string $result   What the filter returned.
+	 * @param string $expected The origin that is used.
+	 */
+	public function test_filter_result_is_normalised_like_a_browser_origin( $result, $expected ) {
+		add_filter(
+			'rtgodam_site_origin',
+			function () use ( $result ) {
+				return $result;
+			}
+		);
+
+		$this->assertSame( $expected, rtgodam_get_site_origin() );
+	}
+
+	/**
+	 * @return array<string, array{0: string, 1: string}>
+	 */
+	public function normalised_filter_results() {
+		return array(
+			'unicode host becomes punycode' => array( 'https://bücher.example', 'https://xn--bcher-kva.example' ),
+			'upper case unicode host'       => array( 'HTTPS://BÜCHER.example', 'https://xn--bcher-kva.example' ),
+			'unicode label with a port'     => array( 'https://bücher.example:8443', 'https://xn--bcher-kva.example:8443' ),
+			'already punycode'              => array( 'https://xn--bcher-kva.example', 'https://xn--bcher-kva.example' ),
+			'IPv4 with a port'              => array( 'http://127.0.0.1:8080', 'http://127.0.0.1:8080' ),
+			'IPv6 with a port'              => array( 'http://[::1]:8080', 'http://[::1]:8080' ),
+			'localhost'                     => array( 'http://localhost', 'http://localhost' ),
+			'default http port dropped'     => array( 'http://example.test:80', 'http://example.test' ),
+			'default https port dropped'    => array( 'https://example.test:443', 'https://example.test' ),
+			'other scheme default kept'     => array( 'https://example.test:80', 'https://example.test:80' ),
+			'leading zeros in a port'       => array( 'http://example.test:08080', 'http://example.test:8080' ),
+			'underscore in a label'         => array( 'http://my_host.test', 'http://my_host.test' ),
 		);
 	}
 
@@ -158,6 +209,7 @@ class SiteOriginTest extends TestCase {
 			'default https port dropped'     => array( 'https://example.test:443', 'https://example.test' ),
 			'default http port dropped'      => array( 'http://example.test:80', 'http://example.test' ),
 			'host and scheme lowercased'     => array( 'HTTPS://Example.TEST', 'https://example.test' ),
+			'unicode host in home URL'       => array( 'https://bücher.example/', 'https://xn--bcher-kva.example' ),
 			'unparseable home URL'           => array( '', '' ),
 		);
 	}
