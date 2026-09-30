@@ -102,7 +102,7 @@ class Addon_Registry {
 			'godam_addon_minimum_compatible_versions',
 			array(
 				'godam-for-woo' => array(
-					'version' => '2.0.0',
+					'version' => '2.2.1',
 					'name'    => __( 'GoDAM for WooCommerce', 'godam' ),
 				),
 			)
