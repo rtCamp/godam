@@ -10978,6 +10978,10 @@ msgstr ""
 msgid "ID: %d (Deleted Product)"
 msgstr ""
 
+#: inc/classes/rest-api/class-base.php:63
+msgid "This site's address could not be determined, so analytics were not requested. Check the Site Address in Settings > General."
+msgstr ""
+
 #: inc/classes/rest-api/class-cf7.php:36
 msgid "The ID of the Contact Form 7 Form."
 msgstr ""
@@ -10999,88 +11003,93 @@ msgid "Open video: %s"
 msgstr ""
 
 #: inc/classes/rest-api/class-engagement.php:48
-#: inc/classes/rest-api/class-engagement.php:82
-#: inc/classes/rest-api/class-engagement.php:125
-#: inc/classes/rest-api/class-engagement.php:188
+#: inc/classes/rest-api/class-engagement.php:72
+#: inc/classes/rest-api/class-engagement.php:115
+#: inc/classes/rest-api/class-engagement.php:178
 msgid "The ID of the video."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:104
+#: inc/classes/rest-api/class-engagement.php:84
+#: inc/classes/rest-api/class-engagement.php:127
+msgid "The Site URL associated with the video."
+msgstr ""
+
+#: inc/classes/rest-api/class-engagement.php:94
 msgid "The like status (like or unlike)."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:145
-#: inc/classes/rest-api/class-engagement.php:198
+#: inc/classes/rest-api/class-engagement.php:135
+#: inc/classes/rest-api/class-engagement.php:188
 msgid "The ID of the parent comment."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:157
+#: inc/classes/rest-api/class-engagement.php:147
 msgid "The comment text"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:167
+#: inc/classes/rest-api/class-engagement.php:157
 msgid "The comment type if it is new OR edit"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:208
+#: inc/classes/rest-api/class-engagement.php:198
 msgid "The type of deletion (soft or hard)."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:233
+#: inc/classes/rest-api/class-engagement.php:223
 msgid "The guest user email"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:312
+#: inc/classes/rest-api/class-engagement.php:305
 #: inc/classes/rest-api/class-site.php:116
 msgid "Unable to reach server."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:322
+#: inc/classes/rest-api/class-engagement.php:315
 #: inc/classes/rest-api/class-site.php:126
 msgid "Unexpected error from server."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:481
+#: inc/classes/rest-api/class-engagement.php:474
 msgid "Failed to update likes."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:591
-#: inc/classes/rest-api/class-engagement.php:685
+#: inc/classes/rest-api/class-engagement.php:584
+#: inc/classes/rest-api/class-engagement.php:678
 msgid "Failed to update comment."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:849
+#: inc/classes/rest-api/class-engagement.php:842
 msgid "Today"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:851
+#: inc/classes/rest-api/class-engagement.php:844
 msgid "Yesterday"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:853
+#: inc/classes/rest-api/class-engagement.php:846
 msgid " days ago"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:881
+#: inc/classes/rest-api/class-engagement.php:874
 msgid "Invalid guest user email."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:893
+#: inc/classes/rest-api/class-engagement.php:886
 msgid "Guest"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:900
+#: inc/classes/rest-api/class-engagement.php:893
 msgid "Guest user email saved successfully."
 msgstr ""
 
 #. translators: 1: Parameter.
-#: inc/classes/rest-api/class-engagement.php:968
+#: inc/classes/rest-api/class-engagement.php:961
 #, php-format
 msgid "%1$s is invalid."
 msgstr ""
 
 #. translators: 1: Parameter.
-#: inc/classes/rest-api/class-engagement.php:978
+#: inc/classes/rest-api/class-engagement.php:971
 #, php-format
 msgid "%1$s is empty."
 msgstr ""

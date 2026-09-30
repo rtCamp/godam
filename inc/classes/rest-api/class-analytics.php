@@ -145,12 +145,6 @@ class Analytics extends Base {
 							},
 							'sanitize_callback' => 'absint',
 						),
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'description'       => __( 'The Site URL associated with the video.', 'godam' ),
-							'sanitize_callback' => 'esc_url_raw',
-						),
 					),
 				),
 			),
@@ -172,11 +166,6 @@ class Analytics extends Base {
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
 						),
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
-						),
 					),
 				),
 			),
@@ -187,13 +176,7 @@ class Analytics extends Base {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_dashboard_metrics' ),
 					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
-					'args'                => array(
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
+					'args'                => array(),
 				),
 			),
 			array(
@@ -204,15 +187,10 @@ class Analytics extends Base {
 					'callback'            => array( $this, 'fetch_dashboard_history' ),
 					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
 					'args'                => array(
-						'days'     => array(
+						'days' => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
-						),
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
 						),
 					),
 				),
@@ -236,11 +214,6 @@ class Analytics extends Base {
 							'type'              => 'integer',
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
-						),
-						'site_url'     => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
 						),
 						'search'       => array(
 							'required'          => false,
@@ -276,11 +249,6 @@ class Analytics extends Base {
 							'type'              => 'integer',
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
-						),
-						'site_url'     => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
 						),
 						'search'       => array(
 							'required'          => false,
@@ -324,13 +292,7 @@ class Analytics extends Base {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_placement_funnels' ),
 					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
-					'args'                => array(
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
+					'args'                => array(),
 				),
 			),
 			array(
@@ -340,13 +302,7 @@ class Analytics extends Base {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_revenue_summary' ),
 					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
-					'args'                => array(
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
+					'args'                => array(),
 				),
 			),
 			array(
@@ -356,13 +312,7 @@ class Analytics extends Base {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_video_funnel' ),
 					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
-					'args'                => array(
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
+					'args'                => array(),
 				),
 			),
 			array(
@@ -389,11 +339,6 @@ class Analytics extends Base {
 								// Mirror of LAYER_TYPE_WHITELIST in godam-analytics.
 								return in_array( $param, array( 'cta', 'form', 'hotspot', 'woo', 'poll' ), true );
 							},
-						),
-						'site_url'   => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
 						),
 						'days'       => array(
 							'required'          => false,
@@ -535,7 +480,10 @@ class Analytics extends Base {
 	public function fetch_layer_analytics( WP_REST_Request $request ) {
 		$attachment_id = $request->get_param( 'video_id' );
 		$layer_type    = $request->get_param( 'layer_type' );
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url      = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$days          = $request->get_param( 'days' );
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
@@ -584,11 +532,8 @@ class Analytics extends Base {
 			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
-		// site_url is a client-supplied *filter*, not a trust boundary: the
-		// account_token above is read from this site's own stored option (never
-		// from the request), and the microservice scopes every query by
-		// account_token — so a caller cannot read another account's data
-		// regardless of the site_url passed.
+		// site_url and account_token both come from this site (its origin and its
+		// stored option), never from the request.
 		$query_params = array(
 			'video_id'      => $attachment_id,
 			'layer_type'    => $layer_type,
@@ -804,7 +749,10 @@ class Analytics extends Base {
 	 */
 	public function fetch_analytics_data( WP_REST_Request $request ) {
 		$video_id = $request->get_param( 'video_id' );
-		$site_url = $request->get_param( 'site_url' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 
 		// Define API URL for fetching analytics.
 		$analytics_endpoint = RTGODAM_ANALYTICS_BASE . '/processed-analytics/fetch/';
@@ -976,9 +924,12 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_analytics_history( WP_REST_Request $request ) {
-		$days          = $request->get_param( 'days' );
-		$video_id      = $request->get_param( 'video_id' );
-		$site_url      = $request->get_param( 'site_url' );
+		$days     = $request->get_param( 'days' );
+		$video_id = $request->get_param( 'video_id' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1039,7 +990,10 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_dashboard_metrics( WP_REST_Request $request ) {
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1143,8 +1097,11 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_dashboard_history( WP_REST_Request $request ) {
-		$days          = $request->get_param( 'days' );
-		$site_url      = $request->get_param( 'site_url' );
+		$days     = $request->get_param( 'days' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1204,9 +1161,12 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_top_videos( WP_REST_Request $request ) {
-		$page          = $request->get_param( 'page' ) ?? 1;
-		$limit         = $request->get_param( 'limit' ) ?? 10;
-		$site_url      = $request->get_param( 'site_url' );
+		$page     = $request->get_param( 'page' ) ?? 1;
+		$limit    = $request->get_param( 'limit' ) ?? 10;
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$search        = trim( (string) $request->get_param( 'search' ) );
 		$hide_deleted  = rest_sanitize_boolean( $request->get_param( 'hide_deleted' ) );
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
@@ -1433,7 +1393,10 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_placement_funnels( WP_REST_Request $request ) {
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1507,7 +1470,10 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_revenue_summary( WP_REST_Request $request ) {
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1587,7 +1553,10 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_video_funnel( WP_REST_Request $request ) {
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1664,9 +1633,12 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_top_products( WP_REST_Request $request ) {
-		$page          = $request->get_param( 'page' ) ?? 1;
-		$limit         = $request->get_param( 'limit' ) ?? 10;
-		$site_url      = $request->get_param( 'site_url' );
+		$page     = $request->get_param( 'page' ) ?? 1;
+		$limit    = $request->get_param( 'limit' ) ?? 10;
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$search        = trim( (string) $request->get_param( 'search' ) );
 		$sort_by       = $request->get_param( 'sort_by' );
 		$order         = $request->get_param( 'order' );

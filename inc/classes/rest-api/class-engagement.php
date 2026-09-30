@@ -54,16 +54,6 @@ class Engagement extends Base {
 										'validate_request_args',
 									),
 								),
-								'site_url' => array(
-									'required'          => true,
-									'type'              => 'string',
-									'description'       => __( 'The Site URL associated with the video.', 'godam' ),
-									'sanitize_callback' => 'esc_url_raw',
-									'validate_callback' => array(
-										$this,
-										'validate_request_args',
-									),
-								),
 							)
 						),
 					),
@@ -255,7 +245,10 @@ class Engagement extends Base {
 
 		$response_data = array();
 		$video_id      = $request->get_param( 'video_id' );
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url      = rtgodam_get_site_origin();
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response( 500 );
+		}
 
 		$account_credentials = $this->access_credentials_check();
 
