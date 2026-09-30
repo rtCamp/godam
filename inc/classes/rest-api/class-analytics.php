@@ -99,6 +99,20 @@ class Analytics extends Base {
 	const VIDEO_DATA_LAYER_ACTIONS = array( 'viewed', 'clicked', 'hovered', 'skipped', 'submitted', 'voted' );
 
 	/**
+	 * Where the action sits in one row of each per-layer counter list of a record:
+	 * `layer_type_stats` rows are [ layer_type, action_type, count ] and
+	 * `layer_details` rows are [ layer_id, layer_name, layer_type, action_type,
+	 * count, timestamp, page_url, layer_metadata ]. Only that column is checked,
+	 * because the other columns hold text an editor can choose, such as a layer name.
+	 *
+	 * @var array<string,int>
+	 */
+	const VIDEO_DATA_COUNTER_ACTION_COLUMN = array(
+		'layer_type_stats' => 1,
+		'layer_details'    => 3,
+	);
+
+	/**
 	 * Fields of the layer analytics payload that are video data, at its top level.
 	 *
 	 * @var string[]
@@ -108,6 +122,14 @@ class Analytics extends Base {
 	/**
 	 * Fields other than the layer actions that are video data in the layer totals
 	 * and in each day of the daily breakdown.
+	 *
+	 * The conversion counters (`conversion_rate`, `converting_sessions`,
+	 * `unique_converting_sessions`, `layer_converting_sessions`) are kept on purpose.
+	 * They count sessions that acted on a video: clicked, submitted or voted and, on
+	 * a WooCommerce layer, added to cart, once per session. They carry no product,
+	 * amount or order and are the only figure for how well a form or call-to-action
+	 * layer performs, so Editors and Authors see them. The `added_to_cart` counter
+	 * itself and everything from the store stay behind `view_woocommerce_reports`.
 	 *
 	 * @var string[]
 	 */
@@ -640,23 +662,28 @@ class Analytics extends Base {
 	}
 
 	/**
-	 * Keep the rows of a list of tuples that are about a video action. The service
-	 * sends per-layer counters as rows such as [ layer_type, action_type, count ];
-	 * a row is kept only when one of its values is a video layer action, so an
-	 * `added_to_cart` row, or a row for an action added later, is dropped.
+	 * Keep the rows of a per-layer counter list that are about a video action. The
+	 * service sends each counter as a row with the action in a fixed column (see
+	 * VIDEO_DATA_COUNTER_ACTION_COLUMN); a row is kept only when that column holds a
+	 * video layer action. An `added_to_cart` row, a row for an action added later, and
+	 * a row too short to have the column are dropped. No other column is looked at, so
+	 * a layer named after a video action cannot keep its `added_to_cart` row.
 	 *
-	 * @param mixed $rows A list of counter rows.
+	 * @param mixed $rows          A list of counter rows.
+	 * @param int   $action_column Index of the action in each row.
 	 * @return mixed The list with only the video action rows.
 	 */
-	private function only_video_action_rows( $rows ) {
+	private function only_video_action_rows( $rows, $action_column ) {
 		if ( ! is_array( $rows ) ) {
 			return $rows;
 		}
 		return array_values(
 			array_filter(
 				$rows,
-				function ( $row ) {
-					return is_array( $row ) && array() !== array_intersect( $row, self::VIDEO_DATA_LAYER_ACTIONS );
+				function ( $row ) use ( $action_column ) {
+					return is_array( $row )
+						&& isset( $row[ $action_column ] )
+						&& in_array( $row[ $action_column ], self::VIDEO_DATA_LAYER_ACTIONS, true );
 				}
 			)
 		);
@@ -689,9 +716,9 @@ class Analytics extends Base {
 	 */
 	private function video_data_in_video_record( array $record ) {
 		$record = $this->only_keys( $record, self::VIDEO_DATA_RECORD );
-		foreach ( array( 'layer_type_stats', 'layer_details' ) as $counter_rows ) {
+		foreach ( self::VIDEO_DATA_COUNTER_ACTION_COLUMN as $counter_rows => $action_column ) {
 			if ( array_key_exists( $counter_rows, $record ) ) {
-				$record[ $counter_rows ] = $this->only_video_action_rows( $record[ $counter_rows ] );
+				$record[ $counter_rows ] = $this->only_video_action_rows( $record[ $counter_rows ], $action_column );
 			}
 		}
 		return $record;

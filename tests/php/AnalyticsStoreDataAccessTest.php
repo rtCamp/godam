@@ -762,6 +762,45 @@ class AnalyticsStoreDataAccessTest extends TestCase {
 	}
 
 	/**
+	 * The counter rows are matched on their action column only. A layer's name is
+	 * user-editable, so a layer named after a video action must not keep its
+	 * add-to-cart row, and a layer named after a store word must not lose a video row.
+	 * A row too short to have an action column is dropped.
+	 */
+	public function test_counter_rows_are_matched_on_the_action_column_only() {
+		$record                     = $this->video_record();
+		$record['layer_type_stats'] = array(
+			array( 'woo', 'clicked', 3 ),
+			array( 'viewed', 'added_to_cart', 2 ),
+			array( 'woo' ),
+		);
+		$record['layer_details']    = array(
+			array( 'l1::p11', '', 'woo', 'viewed', 4, 5, '', '' ),
+			array( 'l2', 'viewed', 'woo', 'added_to_cart', 4, 5, '', '' ),
+			array( 'l3', 'clicked', 'woo', 'added_to_cart', 2, 5, '', '' ),
+			array( 'l4', 'added_to_cart', 'woo', 'clicked', 2, 5, '', '' ),
+			array( 'l5', 'viewed', 'woo' ),
+		);
+		$this->upstream_replies( array( 'processed_analytics' => $record ) );
+
+		$data = $this->call_as(
+			'fetch_analytics_data',
+			array(
+				'video_id' => 55,
+				'site_url' => 'https://shop.test',
+			),
+			self::EDITOR
+		)['data'];
+
+		$this->assertSame( array( array( 'woo', 'clicked', 3 ) ), $data['layer_type_stats'], 'a layer type named viewed keeps no add-to-cart row' );
+		$this->assertSame(
+			array( 'l1::p11', 'l4' ),
+			array_column( $data['layer_details'], 0 ),
+			'only the viewed row and the clicked row stay, whatever the layers are called'
+		);
+	}
+
+	/**
 	 * Guard: an allow-list must never name a store field, or adding one there by
 	 * mistake would hand store data to editors.
 	 */
