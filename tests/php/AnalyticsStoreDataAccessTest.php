@@ -332,34 +332,36 @@ class AnalyticsStoreDataAccessTest extends TestCase {
 	 */
 	private function video_record() {
 		return array(
-			'video_id'                => 55,
-			'plays'                   => 70,
-			'page_load'               => 200,
-			'play_time'               => 640.5,
-			'unique_viewers'          => 60,
-			'post_views'              => array(),
-			'layer_type_stats'        => array(
+			'video_id'                   => 55,
+			'plays'                      => 70,
+			'page_load'                  => 200,
+			'play_time'                  => 640.5,
+			'unique_viewers'             => 60,
+			'unique_converting_sessions' => 3,
+			'layer_converting_sessions'  => array( 'l1::p11' => 3 ),
+			'post_views'                 => array(),
+			'layer_type_stats'           => array(
 				array( 'woo', 'clicked', 3 ),
 				array( 'woo', 'added_to_cart', 3 ),
 			),
-			'layer_details'           => array(
+			'layer_details'              => array(
 				array( 'l1::p11', '', 'woo', 'viewed', 4, 5, '', '' ),
 				array( 'l1::p11', '', 'woo', 'clicked', 3, 5, '', '' ),
 				array( 'l1::p11', '', 'woo', 'added_to_cart', 3, 5, '', '' ),
 			),
-			'video_to_cart'           => $this->video_to_cart_payload(),
-			'video_to_purchase'       => array(
+			'video_to_cart'              => $this->video_to_cart_payload(),
+			'video_to_purchase'          => array(
 				'played'    => 60,
 				'purchases' => 2,
 				'rate'      => 3.33,
 			),
-			'video_funnel'            => $this->funnel_payload(),
-			'revenue'                 => 8800,
-			'revenue_currency'        => 'USD',
-			'revenue_excluded_orders' => 1,
-			'revenue_direct_minor'    => 8000,
-			'revenue_assisted_minor'  => 800,
-			'revenue_tips'            => array(
+			'video_funnel'               => $this->funnel_payload(),
+			'revenue'                    => 8800,
+			'revenue_currency'           => 'USD',
+			'revenue_excluded_orders'    => 1,
+			'revenue_direct_minor'       => 8000,
+			'revenue_assisted_minor'     => 800,
+			'revenue_tips'               => array(
 				'aov_favourable'  => true,
 				'video_aov_minor' => 4400,
 				'store_aov_minor' => 3000,
@@ -443,22 +445,24 @@ class AnalyticsStoreDataAccessTest extends TestCase {
 			),
 			'daily_breakdown'   => array(
 				array(
-					'date'          => '2026-09-29',
-					'viewed'        => 100,
-					'clicked'       => 20,
-					'added_to_cart' => 8,
+					'date'            => '2026-09-29',
+					'viewed'          => 100,
+					'clicked'         => 20,
+					'added_to_cart'   => 8,
+					'conversion_rate' => 25.0,
 				),
 			),
 			'individual_layers' => array(
 				array(
-					'layer_id'        => 'l1::p11',
-					'viewed'          => 50,
-					'clicked'         => 10,
-					'added_to_cart'   => 4,
-					'conversion_rate' => 28.0,
-					'revenue_minor'   => 500,
-					'orders'          => 2,
-					'currency'        => 'USD',
+					'layer_id'            => 'l1::p11',
+					'viewed'              => 50,
+					'clicked'             => 10,
+					'added_to_cart'       => 4,
+					'conversion_rate'     => 28.0,
+					'converting_sessions' => 3,
+					'revenue_minor'       => 500,
+					'orders'              => 2,
+					'currency'            => 'USD',
 				),
 				array(
 					'layer_id'        => 'l1',
@@ -775,5 +779,76 @@ class AnalyticsStoreDataAccessTest extends TestCase {
 		foreach ( $allow_lists as $name => $fields ) {
 			$this->assertSame( array(), array_values( array_intersect( $fields, self::STORE_KEYS ) ), "$name lists a store field" );
 		}
+	}
+
+	/**
+	 * Decided on purpose: the conversion counters stay visible to editors and
+	 * authors, even though a total that counts an add-to-cart once can include
+	 * some. They count sessions that acted on a video, with no products, amounts
+	 * or orders, and they are how an editor sees how the form and call-to-action
+	 * layers they build perform. Pins `total_conversion` (top-videos) and the four
+	 * layer counters, so a later change to the allow-lists cannot hide them by accident.
+	 */
+	public function test_conversion_counts_stay_visible_to_editors_and_authors() {
+		foreach (
+			array(
+				'editor' => self::EDITOR,
+				'author' => self::AUTHOR,
+			) as $role => $caps
+		) {
+			$this->upstream_replies( array( 'processed_analytics' => $this->video_record() ) );
+			$record = $this->call_as(
+				'fetch_analytics_data',
+				array(
+					'video_id' => 55,
+					'site_url' => 'https://shop.test',
+				),
+				$caps
+			)['data'];
+			$this->assertSame( 3, $record['unique_converting_sessions'], $role );
+			$this->assertSame( array( 'l1::p11' => 3 ), $record['layer_converting_sessions'], $role );
+
+			$this->upstream_replies( array( 'layer_analytics' => $this->layer_analytics_payload() ) );
+			$layers = $this->call_as(
+				'fetch_layer_analytics',
+				array(
+					'video_id'   => 55,
+					'layer_type' => 'woo',
+					'site_url'   => 'https://shop.test',
+				),
+				$caps
+			)['layer_analytics'];
+			$this->assertSame( 3, $layers['individual_layers'][0]['converting_sessions'], $role );
+			$this->assertEquals( 28.0, $layers['individual_layers'][0]['conversion_rate'], $role );
+			$this->assertEquals( 25.0, $layers['cumulative']['conversion_rate'], "$role: totals" );
+			$this->assertEquals( 25.0, $layers['daily_breakdown'][0]['conversion_rate'], "$role: per day" );
+		}
+
+		// top-videos is a Dashboard route, so an author never reaches it; an editor does.
+		$this->upstream_replies(
+			array(
+				'top_videos'  => array(
+					array(
+						'plays'                     => 60,
+						'total_conversion'          => 7,
+						'total_converting_sessions' => 7,
+						'video_conversion_rate'     => 11.67,
+					),
+				),
+				'total_pages' => 1,
+				'total_items' => 1,
+			)
+		);
+		$videos = $this->call_as( 'fetch_top_videos', array( 'site_url' => 'https://shop.test' ), self::EDITOR )['top_videos'][0];
+		$this->assertSame( 7, $videos['total_conversion'] );
+		$this->assertSame( 7, $videos['total_converting_sessions'] );
+		$this->assertEquals( 11.67, $videos['video_conversion_rate'] );
+
+		// And the allow-lists name them, so they are not hidden by accident.
+		$this->assertContains( 'unique_converting_sessions', Analytics::VIDEO_DATA_RECORD );
+		$this->assertContains( 'layer_converting_sessions', Analytics::VIDEO_DATA_RECORD );
+		$this->assertContains( 'converting_sessions', Analytics::VIDEO_DATA_LAYER_ROW );
+		$this->assertContains( 'conversion_rate', Analytics::VIDEO_DATA_LAYER_ROW );
+		$this->assertContains( 'conversion_rate', Analytics::VIDEO_DATA_LAYER_TOTALS );
 	}
 }
