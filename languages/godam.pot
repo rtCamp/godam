@@ -451,7 +451,7 @@ msgstr ""
 #: assets/src/blocks/godam-audio/edit.js:602
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:252
 #: assets/src/blocks/godam-player/track-uploader.js:57
-#: assets/src/js/godam-player/engagement.js:946
+#: assets/src/js/godam-player/engagement.js:955
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:553
 msgid "Edit"
 msgstr ""
@@ -1652,7 +1652,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:308
 #: assets/src/js/deactivation-feedback.js:36
-#: assets/src/js/godam-player/engagement.js:744
+#: assets/src/js/godam-player/engagement.js:750
 #: pages/godam/components/ConfirmModal.jsx:38
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:191
 #: pages/media-library/App.js:293
@@ -1670,7 +1670,7 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:311
-#: assets/src/js/godam-player/engagement.js:1115
+#: assets/src/js/godam-player/engagement.js:1124
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:134
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:140
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:360
@@ -2268,43 +2268,43 @@ msgid "File upload in progress…"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:725
+#: assets/src/js/godam-player/engagement.js:731
 msgid "Add timestamp"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:731
+#: assets/src/js/godam-player/engagement.js:737
 msgid "Add emoji"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:739
-#: assets/src/js/godam-player/engagement.js:928
-#: assets/src/js/godam-player/engagement.js:968
+#: assets/src/js/godam-player/engagement.js:745
+#: assets/src/js/godam-player/engagement.js:937
+#: assets/src/js/godam-player/engagement.js:977
 msgid "Reply"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:739
+#: assets/src/js/godam-player/engagement.js:745
 msgid "Comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: inc/helpers/custom-functions.php:1360
-#: assets/src/js/godam-player/engagement.js:899
-#: assets/src/js/godam-player/engagement.js:906
+#: assets/src/js/godam-player/engagement.js:908
+#: assets/src/js/godam-player/engagement.js:915
 msgid "Anonymous"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:915
+#: assets/src/js/godam-player/engagement.js:924
 msgid "This comment has been deleted"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/media-library.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/engagement.js:938
+#: assets/src/js/godam-player/engagement.js:947
 #: pages/media-library/components/context-menu/ContextMenu.jsx:518
 #: pages/media-library/components/modal/DeleteModal.jsx:132
 #: pages/video-editor/components/SidebarLayers.js:750
@@ -2313,33 +2313,33 @@ msgid "Delete"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:968
+#: assets/src/js/godam-player/engagement.js:977
 msgid "Replies"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1020
+#: assets/src/js/godam-player/engagement.js:1029
 msgid "No comments yet. Be the first to comment!"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1081
+#: assets/src/js/godam-player/engagement.js:1090
 msgid "Register"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1081
+#: assets/src/js/godam-player/engagement.js:1090
 msgid "Login"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1081
+#: assets/src/js/godam-player/engagement.js:1090
 msgid "to comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/onboarding.min.js:2
-#: assets/src/js/godam-player/engagement.js:1088
+#: assets/src/js/godam-player/engagement.js:1097
 #: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:58
 #: pages/onboarding/components/screens/LoginScreen.jsx:54
 #: pages/onboarding/components/screens/SignupScreen.jsx:77
@@ -2347,22 +2347,22 @@ msgid "Email"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1092
+#: assets/src/js/godam-player/engagement.js:1101
 msgid "Enter your email"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1151
+#: assets/src/js/godam-player/engagement.js:1160
 msgid "GoDAM Video"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1262
+#: assets/src/js/godam-player/engagement.js:1271
 msgid "Comments"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1267
+#: assets/src/js/godam-player/engagement.js:1276
 msgid "Hide Comments"
 msgstr ""
 
@@ -12606,11 +12606,11 @@ msgctxt "verb"
 msgid "Upload"
 msgstr ""
 
-#: assets/src/js/godam-player/engagement.js:1105
+#: assets/src/js/godam-player/engagement.js:1114
 msgid "Back"
 msgstr ""
 
-#: assets/src/js/godam-player/engagement.js:1115
+#: assets/src/js/godam-player/engagement.js:1124
 msgid "Continue as Guest"
 msgstr ""
 
