@@ -602,9 +602,17 @@ class Analytics extends Base {
 	 * This follows WooCommerce's own report permission, which it grants to shop
 	 * managers and administrators only. Editors and authors get no WooCommerce or
 	 * Products menu, so they see video data only. Routes that are all store data
-	 * refuse everyone else; routes that mix video and store data strip the store
-	 * fields below from their responses, so the numbers cannot be read through
-	 * the route even if the screen hides them.
+	 * refuse everyone else; routes that mix video and store data reduce their
+	 * responses to the video fields listed in the VIDEO_DATA_* constants, so the
+	 * numbers cannot be read through the route even if the screen hides them.
+	 *
+	 * The capability lives on the roles, not in WooCommerce's code. Where
+	 * WooCommerce has never been active, or where its data was removed on
+	 * uninstall (it then removes its roles and capabilities), nobody holds it, so
+	 * even an Administrator gets video data only from the mixed routes and a 403
+	 * from the store routes. Deactivating WooCommerce leaves the capability on the
+	 * roles, so shop managers and administrators can still read store data
+	 * recorded earlier while it is off.
 	 *
 	 * @return bool Whether the current user may view store analytics.
 	 */
