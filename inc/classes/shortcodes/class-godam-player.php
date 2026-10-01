@@ -151,7 +151,7 @@ class GoDAM_Player {
 			wp_register_script(
 				'godam-player-analytics-script',
 				RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
-				array( 'godam-player-frontend-script', 'wp-i18n' ),
+				array( 'godam-player-frontend-script', 'wp-i18n', 'analytics-library' ),
 				filemtime( $player_analytics_path ),
 				true
 			);

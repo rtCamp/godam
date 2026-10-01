@@ -54,8 +54,10 @@ const ANALYTICS_APP_NAME = 'analytics-cdp-plugin';
  * was '', and the add-on refuses Direct attribution for an empty token, so the
  * sale's revenue was lost.
  *
- * The fallback is the library the player bundles, with the player's app name and
- * NO plugins, so it sends nothing, and nothing here calls page() or track() on it.
+ * The fallback is built from the same library the player uses (the one
+ * `analytics-library` script, so the page downloads it once), with the player's app
+ * name and NO plugins, so it sends nothing, and nothing here calls page() or track()
+ * on it.
  * It reads the stored visitor id, or creates and stores one, under the storage key
  * the player's instance reads, so a visitor keeps one id across image and video
  * pages.

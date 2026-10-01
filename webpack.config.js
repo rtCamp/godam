@@ -10,6 +10,7 @@ const RemoveEmptyScriptsPlugin = require( 'webpack-remove-empty-scripts' );
  * WordPress dependencies
  */
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
+const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 
 const isProduction = process.env.NODE_ENV === 'production';
 const mode = isProduction ? 'production' : 'development';
@@ -148,6 +149,10 @@ const godamImageLayersFrontend = {
 	},
 };
 
+// The analytics library is built once, as the `analytics-library` script (global
+// `_analytics`, see godamAnalyticsLibrary below). The two bundles that import it
+// below get it as an external instead of bundling their own copy, and their
+// .asset.php lists `analytics-library` as a dependency so WordPress loads it first.
 const godamPlayerAnalytics = {
 	...sharedConfig,
 	entry: {
@@ -155,6 +160,28 @@ const godamPlayerAnalytics = {
 		// Standalone layer-analytics runtime for pages without the video player
 		// (e.g. the GoDAM Image block with product hotspots).
 		'godam-layer-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'layer-analytics.js' ),
+	},
+	plugins: sharedConfig.plugins.map( ( plugin ) => {
+		if ( plugin.constructor.name !== 'DependencyExtractionWebpackPlugin' ) {
+			return plugin;
+		}
+		return new DependencyExtractionWebpackPlugin( {
+			requestToExternal: ( request ) => ( request === 'analytics' ? '_analytics' : undefined ),
+			requestToHandle: ( request ) => ( request === 'analytics' ? 'analytics-library' : undefined ),
+		} );
+	} ),
+};
+
+// The one copy of the analytics library, as the global `_analytics`. Loaded by
+// WordPress as the `analytics-library` script (see Assets::register_analytics_library).
+const godamAnalyticsLibrary = {
+	...sharedConfig,
+	entry: {
+		'godam-analytics-library': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'analytics-library.js' ),
+	},
+	output: {
+		...sharedConfig.output,
+		library: { name: '_analytics', type: 'var' },
 	},
 };
 
@@ -427,6 +454,7 @@ module.exports = [
 	godamPlayerFrontend,
 	godamImageLayersFrontend,
 	godamPlayerAnalytics,
+	godamAnalyticsLibrary,
 	deactivationJS,
 	httpAuthDetector,
 	godamGallery,

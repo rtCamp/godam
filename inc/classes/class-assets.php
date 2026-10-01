@@ -35,9 +35,32 @@ class Assets {
 		/**
 		 * Action
 		 */
+		add_action( 'init', array( $this, 'register_analytics_library' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_block_editor_assets' ) );
+	}
+
+	/**
+	 * Register the analytics library, the one copy a page loads.
+	 *
+	 * The video-player and layer-analytics bundles do not bundle the library, they
+	 * read the global it defines (`_analytics`), so they list this script as a
+	 * dependency. Registered on `init` so the handle exists on every request that
+	 * can print them, front end, admin and block editor alike.
+	 *
+	 * @return void
+	 */
+	public function register_analytics_library() {
+		$library_path = RTGODAM_PATH . 'assets/build/js/godam-analytics-library.min.js';
+
+		wp_register_script(
+			'analytics-library',
+			RTGODAM_URL . 'assets/build/js/godam-analytics-library.min.js',
+			array(),
+			file_exists( $library_path ) ? filemtime( $library_path ) : RTGODAM_VERSION,
+			true
+		);
 	}
 
 	/**
@@ -62,13 +85,7 @@ class Assets {
 			filemtime( RTGODAM_PATH . 'assets/build/css/main.css' )
 		);
 
-		wp_enqueue_script(
-			'analytics-library',
-			RTGODAM_URL . 'assets/src/libs/analytics.min.js',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/src/libs/analytics.min.js' ),
-			true
-		);
+		wp_enqueue_script( 'analytics-library' );
 
 		wp_localize_script(
 			'rtgodam-script',
