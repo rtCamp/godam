@@ -100,14 +100,26 @@ export default function PlacementFunnelCard( { siteUrl, startDate, endDate, data
 	// than hiding it behind the empty state.
 	const isError = isQueryError || !! ( data && ! Array.isArray( data ) && data.error );
 
+	// A picked range that comes back empty has to keep the card, with its picker,
+	// or the viewer cannot choose another range without reloading the page. At All
+	// Time nothing is picked, and a narrower range cannot reveal anything the full
+	// history lacks, so that case still hides the card below.
+	const isEmptyRange = !! rangeControl && !! ( startDate && endDate ) && ! isFetching && ! isError && placements.length === 0;
+
 	// Once loaded, a store with genuinely no placement activity shows nothing; an
 	// error is not "empty", so keep the card to show the message below.
-	if ( ! isFetching && ! isError && placements.length === 0 ) {
+	if ( ! isFetching && ! isError && placements.length === 0 && ! isEmptyRange ) {
 		return null;
 	}
 
 	let body;
-	if ( isError ) {
+	if ( isEmptyRange ) {
+		body = (
+			<div className="text-[13px] text-zinc-500 py-6 text-center" data-test-id="godam-placement-funnel-empty">
+				{ __( 'No placement activity in this date range.', 'godam' ) }
+			</div>
+		);
+	} else if ( isError ) {
 		body = (
 			<div className="text-[13px] text-[#B91C1C] py-6 text-center" data-test-id="godam-placement-funnel-error">
 				{ __( 'Could not load placement data. Please try again.', 'godam' ) }

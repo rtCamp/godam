@@ -97,4 +97,60 @@ describe( 'PlacementFunnelCard', () => {
 			endDate: '2026-01-31',
 		} );
 	} );
+
+	describe( 'a date range that comes back empty', () => {
+		const picker = <span data-test-id="my-picker">PICKER</span>;
+
+		it( 'keeps the card and its picker with an empty message when the picked range has no placements', () => {
+			useFetchPlacementFunnelsQuery.mockReturnValue( { data: [], isFetching: false } );
+			const html = renderToString(
+				<PlacementFunnelCard siteUrl="x" startDate="2026-01-01" endDate="2026-01-07" rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-placement-funnel-card' );
+			expect( html ).toContain( 'Funnel by placement' );
+			expect( html ).toContain( 'my-picker' ); // the viewer can pick another range
+			expect( html ).toContain( 'godam-placement-funnel-empty' );
+			expect( html ).toContain( 'No placement activity in this date range.' );
+		} );
+
+		it( 'brings the placements back when the next range has data', () => {
+			useFetchPlacementFunnelsQuery.mockReturnValue( { data: DATA, isFetching: false } );
+			const html = renderToString(
+				<PlacementFunnelCard siteUrl="x" startDate="2026-01-01" endDate="2026-01-31" rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-placement-funnel-shoppable-video' );
+			expect( html ).toContain( 'my-picker' );
+			expect( html ).not.toContain( 'godam-placement-funnel-empty' );
+		} );
+
+		it( 'stays hidden at All Time (no range picked), where a different range cannot reveal anything', () => {
+			useFetchPlacementFunnelsQuery.mockReturnValue( { data: [], isFetching: false } );
+			expect( renderToString( <PlacementFunnelCard siteUrl="x" rangeControl={ picker } /> ) ).toBe( '' );
+		} );
+
+		it( 'stays hidden when the card has no picker to keep', () => {
+			useFetchPlacementFunnelsQuery.mockReturnValue( { data: [], isFetching: false } );
+			expect(
+				renderToString( <PlacementFunnelCard siteUrl="x" startDate="2026-01-01" endDate="2026-01-07" /> ),
+			).toBe( '' );
+		} );
+
+		it( 'shows the loading state, not the empty message, while the picked range is fetching', () => {
+			useFetchPlacementFunnelsQuery.mockReturnValue( { data: undefined, isFetching: true } );
+			const html = renderToString(
+				<PlacementFunnelCard siteUrl="x" startDate="2026-01-01" endDate="2026-01-07" rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-placement-funnel-loading' );
+			expect( html ).not.toContain( 'godam-placement-funnel-empty' );
+		} );
+
+		it( 'shows the error, not the empty message, when the picked range failed', () => {
+			useFetchPlacementFunnelsQuery.mockReturnValue( { data: undefined, isFetching: false, isError: true } );
+			const html = renderToString(
+				<PlacementFunnelCard siteUrl="x" startDate="2026-01-01" endDate="2026-01-07" rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-placement-funnel-error' );
+			expect( html ).not.toContain( 'godam-placement-funnel-empty' );
+		} );
+	} );
 } );

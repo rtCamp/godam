@@ -207,4 +207,85 @@ describe( 'PurchaseFunnelCard', () => {
 		expect( html ).toContain( 'Assisted only (clicked out): 5 of 5 added to cart' );
 		expect( html ).toContain( 'Direct (added in-video): 3 of 3 purchased' );
 	} );
+
+	describe( 'a date range that comes back empty', () => {
+		const picker = <span data-test-id="my-picker">PICKER</span>;
+
+		it( 'keeps the card and its picker with an empty message when the range has no funnel', () => {
+			// Dashboard shape: a loaded query with no funnel is null. Per-video shape: the
+			// page maps a payload without video_funnel to null.
+			const html = renderToString(
+				<PurchaseFunnelCard funnel={ null } rangeActive rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-purchase-funnel-card' );
+			expect( html ).toContain( 'Purchase Funnel' );
+			expect( html ).toContain( 'my-picker' ); // the viewer can pick another range
+			expect( html ).toContain( 'godam-purchase-funnel-empty' );
+			expect( html ).toContain( 'No funnel activity in this date range.' );
+			expect( html ).not.toContain( 'godam-purchase-funnel-bar-played' );
+		} );
+
+		it( 'treats an incomplete stage list like an empty range', () => {
+			const html = renderToString(
+				<PurchaseFunnelCard funnel={ { stages: [] } } rangeActive rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-purchase-funnel-empty' );
+		} );
+
+		it( 'brings the funnel back when the next range has data', () => {
+			const html = renderToString(
+				<PurchaseFunnelCard funnel={ FUNNEL } rangeActive rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-purchase-funnel-bar-played' );
+			expect( html ).toContain( '1,412' );
+			expect( html ).toContain( 'my-picker' );
+			expect( html ).not.toContain( 'godam-purchase-funnel-empty' );
+		} );
+
+		it( 'renders nothing while the payload has not loaded (undefined), so no empty message flashes', () => {
+			expect( renderToString( <PurchaseFunnelCard rangeActive rangeControl={ picker } /> ) ).toBe( '' );
+		} );
+
+		it( 'keeps the picker but holds the empty message while the picked range is still being fetched', () => {
+			// The payload on hand is the previous range's (RTK Query keeps it until the new
+			// answer lands), so claiming "no activity" now would be wrong for the new range.
+			const html = renderToString(
+				<PurchaseFunnelCard funnel={ null } rangeActive isFetching rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-purchase-funnel-card' );
+			expect( html ).toContain( 'my-picker' );
+			expect( html ).not.toContain( 'godam-purchase-funnel-empty' );
+			expect( html ).not.toContain( 'No funnel activity' );
+		} );
+
+		it( 'shows the empty message once the fetch is done', () => {
+			const html = renderToString(
+				<PurchaseFunnelCard funnel={ null } rangeActive isFetching={ false } rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-purchase-funnel-empty' );
+		} );
+
+		it( 'still shows an error while fetching is flagged', () => {
+			const html = renderToString(
+				<PurchaseFunnelCard funnel={ { error: true } } rangeActive isFetching rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-purchase-funnel-error' );
+		} );
+
+		it( 'stays hidden at All Time (no range picked), where a different range cannot reveal anything', () => {
+			expect( renderToString( <PurchaseFunnelCard funnel={ null } rangeControl={ picker } /> ) ).toBe( '' );
+		} );
+
+		it( 'stays hidden when the card has no picker to keep', () => {
+			expect( renderToString( <PurchaseFunnelCard funnel={ null } rangeActive /> ) ).toBe( '' );
+		} );
+
+		it( 'shows the error, not the empty message, when the query failed', () => {
+			const html = renderToString(
+				<PurchaseFunnelCard funnel={ { error: true } } rangeActive rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-purchase-funnel-error' );
+			expect( html ).not.toContain( 'godam-purchase-funnel-empty' );
+		} );
+	} );
 } );

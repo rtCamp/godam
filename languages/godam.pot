@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-24T11:42:37+00:00\n"
+"POT-Creation-Date: 2026-10-01T14:19:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -573,7 +573,7 @@ msgstr ""
 #: inc/templates/godam-video-gallery.php:261
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:163
 #: assets/src/blocks/godam-gallery-v2/edit.js:716
-#: pages/analytics/Analytics.js:624
+#: pages/analytics/Analytics.js:626
 #: pages/video-editor/VideoEditor.js:676
 msgid "Untitled video"
 msgstr ""
@@ -3202,8 +3202,8 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/Analytics.js:125
-#: pages/analytics/Analytics.js:174
-#: pages/analytics/Analytics.js:188
+#: pages/analytics/Analytics.js:175
+#: pages/analytics/Analytics.js:190
 #: pages/analytics/PlaysVsViewers.js:93
 #: pages/analytics/SingleMetrics.js:122
 #: pages/dashboard/components/GA4ConnectionWidget.js:174
@@ -3411,35 +3411,41 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:48
-#: pages/analytics/RevenueCard.js:104
+#: pages/analytics/RevenueCard.js:64
+#: pages/analytics/RevenueCard.js:126
 msgid "Video-Attributed Revenue"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:54
+#: pages/analytics/RevenueCard.js:71
 msgid "Couldn’t load revenue for this range. Please try again."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:138
-#: pages/analytics/PurchaseFunnelCard.js:212
-#: pages/analytics/RevenueCard.js:106
+#: pages/analytics/RevenueCard.js:75
+msgid "No video-attributed revenue in this date range."
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: pages/analytics/PlacementFunnelCard.js:150
+#: pages/analytics/PurchaseFunnelCard.js:232
+#: pages/analytics/RevenueCard.js:128
 msgid "NEW"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:108
+#: pages/analytics/RevenueCard.js:130
 msgid "Order value traced back to the video that earned it, in the store's base currency. Direct means added to cart inside the video; Assisted means the shopper clicked through to the product page and bought there. Orders in other currencies are counted separately, not converted. Shown before refunds."
 msgstr ""
 
 #. translators: %s: number of orders placed in other currencies, not included in the total.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:134
+#: pages/analytics/RevenueCard.js:156
 #, js-format
 msgid "before refunds · excluding %s order in other currencies"
 msgid_plural "before refunds · excluding %s orders in other currencies"
@@ -3448,37 +3454,37 @@ msgstr[1] ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:142
+#: pages/analytics/RevenueCard.js:164
 msgid "before refunds"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:162
+#: pages/analytics/RevenueCard.js:184
 msgid "Direct · added to cart in-video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:169
+#: pages/analytics/RevenueCard.js:191
 msgid "Assisted · clicked through, then bought"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:182
+#: pages/analytics/RevenueCard.js:204
 msgid "Influenced"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:184
+#: pages/analytics/RevenueCard.js:206
 msgid "Bought on a product page after playing its video, with no click to prove the video caused the sale. Worked out at the product level, shown on its own, and never added to the Direct + Assisted figure."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:192
+#: pages/analytics/RevenueCard.js:214
 msgid "Bought on a product page after playing its video. Reported separately because there is no click-through to prove intent, so it is not added to the figure on the left."
 msgstr ""
 
@@ -3506,21 +3512,27 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:125
-#: pages/analytics/PurchaseFunnelCard.js:210
+#: pages/analytics/PurchaseFunnelCard.js:139
+#: pages/analytics/PurchaseFunnelCard.js:230
 msgid "Purchase Funnel"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:131
+#: pages/analytics/PurchaseFunnelCard.js:146
 msgid "Couldn’t load the funnel for this range. Please try again."
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: pages/analytics/PurchaseFunnelCard.js:150
+msgid "No funnel activity in this date range."
 msgstr ""
 
 #. translators: 1: tier name (Direct/Assisted), 2: count, 3: stage total, 4: stage verb (added to cart/purchased), 5: percentage.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:165
+#: pages/analytics/PurchaseFunnelCard.js:185
 #, js-format
 msgid "%1$s: %2$s of %3$s %4$s (%5$s)"
 msgstr ""
@@ -3528,91 +3540,91 @@ msgstr ""
 #. translators: 1: number who did not reach this stage, 2: number of players.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:167
+#: pages/analytics/PurchaseFunnelCard.js:187
 #, js-format
 msgid "Did not reach this stage: %1$s of %2$s players"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:168
+#: pages/analytics/PurchaseFunnelCard.js:188
 msgid "Direct (added in-video)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:169
+#: pages/analytics/PurchaseFunnelCard.js:189
 msgid "Assisted only (clicked out)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:170
+#: pages/analytics/PurchaseFunnelCard.js:190
 msgid "added to cart"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:171
+#: pages/analytics/PurchaseFunnelCard.js:191
 msgid "purchased"
 msgstr ""
 
 #. translators: %s: number of visitors who purchased.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:184
+#: pages/analytics/PurchaseFunnelCard.js:204
 #, js-format
 msgid "%s purchased"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:200
+#: pages/analytics/PurchaseFunnelCard.js:220
 msgid "this video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:201
+#: pages/analytics/PurchaseFunnelCard.js:221
 msgid "any GoDAM video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:203
+#: pages/analytics/PurchaseFunnelCard.js:223
 msgid "Distinct viewers of this video. Covers Direct and Assisted."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:204
+#: pages/analytics/PurchaseFunnelCard.js:224
 msgid "Distinct visitors, counted across page visits. Covers Direct and Assisted."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:225
+#: pages/analytics/PurchaseFunnelCard.js:245
 msgid "Played a video"
 msgstr ""
 
 #. translators: %s: number of visitors who played a video.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:231
+#: pages/analytics/PurchaseFunnelCard.js:251
 #, js-format
 msgid "%s visitors played a video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:234
+#: pages/analytics/PurchaseFunnelCard.js:254
 msgid "visitors"
 msgstr ""
 
 #. translators: %s: number of visitors who did not add to cart.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:241
+#: pages/analytics/PurchaseFunnelCard.js:261
 #, js-format
 msgid "%s did not add to cart"
 msgstr ""
@@ -3620,21 +3632,21 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/PlacementFunnelCard.js:72
-#: pages/analytics/PurchaseFunnelCard.js:246
+#: pages/analytics/PurchaseFunnelCard.js:266
 msgid "Added to cart"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:247
+#: pages/analytics/PurchaseFunnelCard.js:267
 msgid "in-video or after clicking out"
 msgstr ""
 
 #. translators: %s: percentage of players.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:256
-#: pages/analytics/PurchaseFunnelCard.js:278
+#: pages/analytics/PurchaseFunnelCard.js:276
+#: pages/analytics/PurchaseFunnelCard.js:298
 #, js-format
 msgid "%s of players"
 msgstr ""
@@ -3642,7 +3654,7 @@ msgstr ""
 #. translators: %s: number of visitors who added to cart but did not buy.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:266
+#: pages/analytics/PurchaseFunnelCard.js:286
 #, js-format
 msgid "%s abandoned after adding"
 msgstr ""
@@ -3650,45 +3662,45 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/PlacementFunnelCard.js:73
-#: pages/analytics/PurchaseFunnelCard.js:271
+#: pages/analytics/PurchaseFunnelCard.js:291
 msgid "Purchased"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:272
+#: pages/analytics/PurchaseFunnelCard.js:292
 msgid "of those who added"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:286
+#: pages/analytics/PurchaseFunnelCard.js:306
 msgid "Direct, added to cart in-video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:287
+#: pages/analytics/PurchaseFunnelCard.js:307
 msgid "Assisted, clicked out then bought"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:288
+#: pages/analytics/PurchaseFunnelCard.js:308
 msgid "did not reach this stage"
 msgstr ""
 
 #. translators: %s: the selected date range label.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:299
+#: pages/analytics/PurchaseFunnelCard.js:319
 #, js-format
 msgid "Still counting — purchases for %s keep settling for up to 30 days."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:300
+#: pages/analytics/PurchaseFunnelCard.js:320
 msgid "this range"
 msgstr ""
 
@@ -3716,8 +3728,8 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:669
-#: pages/analytics/Analytics.js:1022
+#: pages/analytics/Analytics.js:671
+#: pages/analytics/Analytics.js:1028
 #: pages/analytics/components/Placements/index.js:230
 #: pages/analytics/PlaybackPerformance.js:422
 #: pages/analytics/PlaybackPerformance.js:546
@@ -3731,7 +3743,7 @@ msgstr ""
 #: pages/analytics/PlaybackPerformance.js:429
 #: pages/analytics/PlaybackPerformance.js:547
 #: pages/dashboard/components/TopVideosTable.js:228
-#: pages/dashboard/Dashboard.js:556
+#: pages/dashboard/Dashboard.js:558
 msgid "Engagement Rate"
 msgstr ""
 
@@ -4173,7 +4185,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:1013
+#: pages/analytics/Analytics.js:1019
 #: pages/analytics/components/Placements/index.js:229
 #: pages/dashboard/components/TopVideosTable.js:226
 #: pages/dashboard/components/TopVideosTable.js:349
@@ -4280,40 +4292,40 @@ msgid "viewers"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:463
+#: pages/analytics/Analytics.js:465
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:465
+#: pages/analytics/Analytics.js:467
 msgid "Use this Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:572
+#: pages/analytics/Analytics.js:574
 msgid "This media doesn't exist."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:574
+#: pages/analytics/Analytics.js:576
 msgid "Go to Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:586
+#: pages/analytics/Analytics.js:588
 msgid "Single Video Analytics"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:598
-#: pages/dashboard/Dashboard.js:431
+#: pages/analytics/Analytics.js:600
+#: pages/dashboard/Dashboard.js:433
 msgid "Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:612
+#: pages/analytics/Analytics.js:614
 #: pages/dashboard/components/TopVideosTable.js:426
 #: pages/dashboard/components/TopVideosTable.js:438
 msgid "Video thumbnail"
@@ -4323,7 +4335,7 @@ msgstr ""
 #. translators: %d is the number of layers.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:632
+#: pages/analytics/Analytics.js:634
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:233
 #, js-format
 msgid "%d layer"
@@ -4333,124 +4345,124 @@ msgstr[1] ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:648
-#: pages/dashboard/Dashboard.js:493
+#: pages/analytics/Analytics.js:650
+#: pages/dashboard/Dashboard.js:495
 msgid "Insights"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:658
-#: pages/analytics/Analytics.js:1006
+#: pages/analytics/Analytics.js:660
+#: pages/analytics/Analytics.js:1012
 #: pages/dashboard/components/TopVideosTable.js:371
 msgid "Average Engagement"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:659
+#: pages/analytics/Analytics.js:661
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:670
-#: pages/dashboard/Dashboard.js:529
+#: pages/analytics/Analytics.js:672
+#: pages/dashboard/Dashboard.js:531
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:680
+#: pages/analytics/Analytics.js:682
 #: pages/dashboard/components/TopVideosTable.js:227
-#: pages/dashboard/Dashboard.js:542
+#: pages/dashboard/Dashboard.js:544
 msgid "Watch Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:681
-#: pages/dashboard/Dashboard.js:543
+#: pages/analytics/Analytics.js:683
+#: pages/dashboard/Dashboard.js:545
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:772
+#: pages/analytics/Analytics.js:778
 msgid "Viewer Retention Curve"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:786
+#: pages/analytics/Analytics.js:792
 msgid "Viewer retention will appear here once this video receives views."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:834
+#: pages/analytics/Analytics.js:840
 msgid "Views by Source"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:845
+#: pages/analytics/Analytics.js:851
 msgid "Performance Comparison"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:866
+#: pages/analytics/Analytics.js:872
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:856
+#: pages/analytics/Analytics.js:862
 msgid "In Progress"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:861
+#: pages/analytics/Analytics.js:867
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:878
+#: pages/analytics/Analytics.js:884
 msgid "Start Test"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:897
+#: pages/analytics/Analytics.js:903
 msgid "Choose Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:909
+#: pages/analytics/Analytics.js:915
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:918
+#: pages/analytics/Analytics.js:924
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:923
+#: pages/analytics/Analytics.js:929
 msgid "Choose"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:994
+#: pages/analytics/Analytics.js:1000
 msgid "Views"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1034
+#: pages/analytics/Analytics.js:1040
 msgid "Page Loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1048
+#: pages/analytics/Analytics.js:1054
 msgid "Play Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1062
+#: pages/analytics/Analytics.js:1068
 msgid "Video Length"
 msgstr ""
 
@@ -4759,22 +4771,27 @@ msgid "Played"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:113
+#: pages/analytics/PlacementFunnelCard.js:119
+msgid "No placement activity in this date range."
+msgstr ""
+
+#: assets/build/pages/dashboard.min.js:2
+#: pages/analytics/PlacementFunnelCard.js:125
 msgid "Could not load placement data. Please try again."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:119
+#: pages/analytics/PlacementFunnelCard.js:131
 msgid "Loading placements…"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:136
+#: pages/analytics/PlacementFunnelCard.js:148
 msgid "Funnel by placement"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:148
+#: pages/analytics/PlacementFunnelCard.js:160
 msgid "Different placements do different jobs, so averaging them hides both winners and losers. Each stage counts distinct visitors, so these figures will not sum to the Top Products totals."
 msgstr ""
 
@@ -5019,7 +5036,7 @@ msgstr ""
 #. translators: %d: number of days in the compared previous window.
 #: assets/build/pages/dashboard.min.js:2
 #: pages/dashboard/Dashboard.js:279
-#: pages/dashboard/Dashboard.js:328
+#: pages/dashboard/Dashboard.js:330
 #, js-format
 msgid "vs prev %d days"
 msgstr ""
@@ -5027,47 +5044,47 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: inc/classes/class-pages.php:199
 #: inc/classes/class-pages.php:200
-#: pages/dashboard/Dashboard.js:426
+#: pages/dashboard/Dashboard.js:428
 msgid "Dashboard"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:442
+#: pages/dashboard/Dashboard.js:444
 msgid "See Reel Pop Analytics"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:454
+#: pages/dashboard/Dashboard.js:456
 msgid "Analytics docs"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:463
+#: pages/dashboard/Dashboard.js:465
 msgid "Total Plays / Unique Viewers"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:512
+#: pages/dashboard/Dashboard.js:514
 msgid "Active Videos"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:513
+#: pages/dashboard/Dashboard.js:515
 msgid "Number of unique videos that received user interactions each day, such as views or plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:528
+#: pages/dashboard/Dashboard.js:530
 msgid "Avg. Play Rate"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:557
+#: pages/dashboard/Dashboard.js:559
 msgid "Average share of each video that viewers watched, across all plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:580
+#: pages/dashboard/Dashboard.js:582
 msgid "WooCommerce metrics couldn’t load. This is usually temporary."
 msgstr ""
 
