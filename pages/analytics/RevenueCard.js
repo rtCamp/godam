@@ -28,19 +28,32 @@ const COLOR_ASSISTED = '#93c5fd';
  * the Direct + Assisted total. Influenced is a product-page concept, so it is not
  * shown per video (the payload omits it there).
  *
- * @param {Object} props
- * @param {Object} [props.revenue]      { revenue_minor, currency, excluded_orders, direct_minor, assisted_minor, influenced_minor, change }.
- * @param {string} [props.dataLabel]    The active range label (e.g. "All time").
- * @param {string} [props.deltaLabel]   Label for the trend badge, e.g. "vs previous 7 days".
- * @param {Object} [props.rangeControl] A date-range picker element rendered in the card head; replaces the plain dataLabel pill when present.
+ * @param {Object}  props
+ * @param {Object}  [props.revenue]      { revenue_minor, currency, excluded_orders, direct_minor, assisted_minor, influenced_minor, change }.
+ * @param {string}  [props.dataLabel]    The active range label (e.g. "All time").
+ * @param {string}  [props.deltaLabel]   Label for the trend badge, e.g. "vs previous 7 days".
+ * @param {Object}  [props.rangeControl] A date-range picker element rendered in the card head; replaces the plain dataLabel pill when present.
+ * @param {boolean} [props.rangeActive]  True when the viewer picked a date range. With a range control, a range that comes back empty then keeps the card and its picker (with an empty message) instead of hiding it.
  */
-export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeControl } ) {
+export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeControl, rangeActive } ) {
+	// A picked range with no revenue-bearing row. The card has to stay, with its
+	// picker, or the viewer cannot choose another range without reloading the page.
+	// `undefined` still means "not loaded yet" and renders nothing; at All Time
+	// (no range picked) an absent payload also stays hidden, since a different
+	// range cannot reveal anything the full history lacks.
+	const isEmptyRange =
+		!! rangeControl &&
+		!! rangeActive &&
+		revenue !== undefined &&
+		( revenue === null || revenue.revenue_minor === null || revenue.revenue_minor === undefined );
+
 	// A query error comes back as an { error, message } object (the WP proxy
 	// normalises a microservice failure to HTTP 200 + status:error). Surface it in
 	// place, keeping the range picker so the viewer can retry, rather than vanishing
 	// or rendering the marker as a revenue payload. Checked BEFORE the null/zero
 	// guards below because { error: true } is truthy but has no revenue_minor.
-	if ( revenue && revenue.error ) {
+	if ( ( revenue && revenue.error ) || isEmptyRange ) {
+		const isError = !! ( revenue && revenue.error );
 		return (
 			<div className="godam-card godam-revenue-card" data-test-id="godam-revenue-card">
 				<div className="godam-card__head">
@@ -50,9 +63,15 @@ export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeCont
 					</div>
 					{ rangeControl }
 				</div>
-				<p className="text-[13px] text-[#b32d2e]" data-test-id="godam-revenue-error">
-					{ __( 'Couldn’t load revenue for this range. Please try again.', 'godam' ) }
-				</p>
+				{ isError ? (
+					<p className="text-[13px] text-[#b32d2e]" data-test-id="godam-revenue-error">
+						{ __( 'Couldn’t load revenue for this range. Please try again.', 'godam' ) }
+					</p>
+				) : (
+					<p className="text-[13px] text-zinc-500" data-test-id="godam-revenue-empty">
+						{ __( 'No video-attributed revenue in this date range.', 'godam' ) }
+					</p>
+				) }
 			</div>
 		);
 	}

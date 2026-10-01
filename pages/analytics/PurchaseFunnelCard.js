@@ -106,18 +106,29 @@ function DropRow( { advanced, lostLabel, lostIsWarning } ) {
  * (clicked out then added). A "still counting" note appears when the backend
  * flags the range as recent enough that purchase attribution is still settling.
  *
- * @param {Object} props
- * @param {Object} [props.funnel]       The video_funnel payload { stages, still_counting }.
- * @param {string} [props.dataLabel]    The active range label (e.g. "Last 30 days").
- * @param {string} [props.scope]        'account' (default) or 'video' — sets the top descriptor + subtitle.
- * @param {Object} [props.rangeControl] A date-range picker element rendered in the card head; replaces the plain dataLabel pill when present.
+ * @param {Object}  props
+ * @param {Object}  [props.funnel]       The video_funnel payload { stages, still_counting }.
+ * @param {string}  [props.dataLabel]    The active range label (e.g. "Last 30 days").
+ * @param {string}  [props.scope]        'account' (default) or 'video' — sets the top descriptor + subtitle.
+ * @param {Object}  [props.rangeControl] A date-range picker element rendered in the card head; replaces the plain dataLabel pill when present.
+ * @param {boolean} [props.rangeActive]  True when the viewer picked a date range. With a range control, a range that comes back empty then keeps the card and its picker (with an empty message) instead of hiding it.
  */
-export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'account', rangeControl } ) {
+export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'account', rangeControl, rangeActive } ) {
+	const hasFunnel = !! funnel && Array.isArray( funnel.stages ) && funnel.stages.length >= 3;
+
+	// A picked range with no funnel payload. The card has to stay, with its picker,
+	// or the viewer cannot choose another range without reloading the page.
+	// `undefined` still means "not loaded yet" and renders nothing; at All Time (no
+	// range picked) an absent payload also stays hidden, since a different range
+	// cannot reveal anything the full history lacks.
+	const isEmptyRange = !! rangeControl && !! rangeActive && funnel !== undefined && ! hasFunnel && ! ( funnel && funnel.error );
+
 	// A query error comes back as an { error, message } object (the proxy
 	// normalises a microservice failure to 200 + status:error). Surface it in
 	// place, keeping the range picker, rather than vanishing. Checked before the
 	// absent-payload guard below because { error: true } has no `stages`.
-	if ( funnel && funnel.error ) {
+	if ( ( funnel && funnel.error ) || isEmptyRange ) {
+		const isError = !! ( funnel && funnel.error );
 		return (
 			<div className="godam-card godam-funnel-card" data-test-id="godam-purchase-funnel-card">
 				<div className="godam-card__head">
@@ -127,16 +138,22 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 					</div>
 					{ rangeControl }
 				</div>
-				<p className="text-[13px] text-[#b32d2e]" data-test-id="godam-purchase-funnel-error">
-					{ __( 'Couldn’t load the funnel for this range. Please try again.', 'godam' ) }
-				</p>
+				{ isError ? (
+					<p className="text-[13px] text-[#b32d2e]" data-test-id="godam-purchase-funnel-error">
+						{ __( 'Couldn’t load the funnel for this range. Please try again.', 'godam' ) }
+					</p>
+				) : (
+					<p className="text-[13px] text-zinc-500" data-test-id="godam-purchase-funnel-empty">
+						{ __( 'No funnel activity in this date range.', 'godam' ) }
+					</p>
+				) }
 			</div>
 		);
 	}
 
 	// Render nothing when the payload is absent, so the card never asserts an
 	// empty funnel for "metric unavailable".
-	if ( ! funnel || ! Array.isArray( funnel.stages ) || funnel.stages.length < 3 ) {
+	if ( ! hasFunnel ) {
 		return null;
 	}
 

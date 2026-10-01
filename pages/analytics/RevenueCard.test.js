@@ -174,4 +174,72 @@ describe( 'RevenueCard — single store currency', () => {
 		expect( html ).toContain( 'my-picker' ); // picker kept so the viewer can retry
 		expect( html ).not.toContain( 'NaN' );
 	} );
+
+	describe( 'a date range that comes back empty', () => {
+		const picker = <span data-test-id="my-picker">PICKER</span>;
+
+		it( 'keeps the card and its picker with an empty message when the range has no revenue row', () => {
+			// Dashboard shape: a loaded query with no revenue is null.
+			const html = renderToString(
+				<RevenueCard revenue={ null } rangeActive rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-revenue-card' );
+			expect( html ).toContain( 'Video-Attributed Revenue' );
+			expect( html ).toContain( 'my-picker' ); // the viewer can pick another range
+			expect( html ).toContain( 'godam-revenue-empty' );
+			expect( html ).toContain( 'No video-attributed revenue in this date range.' );
+			expect( html ).not.toContain( 'godam-revenue-value' ); // no figures, no misleading 0
+			expect( html ).not.toContain( 'NaN' );
+		} );
+
+		it( 'does the same for the per-video shape, where revenue_minor is undefined', () => {
+			const html = renderToString(
+				<RevenueCard revenue={ { revenue_minor: undefined, currency: undefined } } rangeActive rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'my-picker' );
+			expect( html ).toContain( 'godam-revenue-empty' );
+		} );
+
+		it( 'brings the figures back when the next range has revenue', () => {
+			const html = renderToString(
+				<RevenueCard
+					revenue={ { revenue_minor: 250000, currency: 'INR', excluded_orders: 0 } }
+					rangeActive
+					rangeControl={ picker }
+				/>,
+			);
+			expect( html ).toContain( 'godam-revenue-value' );
+			expect( html ).toContain( '2,500' );
+			expect( html ).toContain( 'my-picker' );
+			expect( html ).not.toContain( 'godam-revenue-empty' );
+		} );
+
+		it( 'still renders a measured 0 as figures, not as the empty message', () => {
+			const html = renderToString(
+				<RevenueCard revenue={ { revenue_minor: 0, currency: 'INR', excluded_orders: 0 } } rangeActive rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-revenue-value' );
+			expect( html ).not.toContain( 'godam-revenue-empty' );
+		} );
+
+		it( 'renders nothing while the payload has not loaded (undefined), so no empty message flashes', () => {
+			expect( renderToString( <RevenueCard rangeActive rangeControl={ picker } /> ) ).toBe( '' );
+		} );
+
+		it( 'stays hidden at All Time (no range picked), where a different range cannot reveal anything', () => {
+			expect( renderToString( <RevenueCard revenue={ null } rangeControl={ picker } /> ) ).toBe( '' );
+		} );
+
+		it( 'stays hidden when the card has no picker to keep', () => {
+			expect( renderToString( <RevenueCard revenue={ null } rangeActive /> ) ).toBe( '' );
+		} );
+
+		it( 'shows the error, not the empty message, when the query failed', () => {
+			const html = renderToString(
+				<RevenueCard revenue={ { error: true } } rangeActive rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-revenue-error' );
+			expect( html ).not.toContain( 'godam-revenue-empty' );
+		} );
+	} );
 } );

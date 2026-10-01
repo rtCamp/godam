@@ -169,6 +169,7 @@ const Analytics = ( { attachmentID } ) => {
 	// Both default to All Time, so they share the all-time query's cache key until
 	// a range is picked on that specific card.
 	const [ revenueRange, setRevenueRange ] = useState( { startDate: null, endDate: null } );
+	const revenueRangeActive = Boolean( revenueRange.startDate && revenueRange.endDate );
 	const revenueRangeLabel = revenueRange.startDate && revenueRange.endDate
 		? triggerLabelFor( revenueRange )
 		: __( 'All time', 'godam' );
@@ -183,6 +184,7 @@ const Analytics = ( { attachmentID } ) => {
 	);
 
 	const [ purchaseFunnelRange, setPurchaseFunnelRange ] = useState( { startDate: null, endDate: null } );
+	const purchaseFunnelRangeActive = Boolean( purchaseFunnelRange.startDate && purchaseFunnelRange.endDate );
 	const purchaseFunnelRangeLabel = purchaseFunnelRange.startDate && purchaseFunnelRange.endDate
 		? triggerLabelFor( purchaseFunnelRange )
 		: __( 'All time', 'godam' );
@@ -716,9 +718,9 @@ const Analytics = ( { attachmentID } ) => {
 							    split Direct/Assisted. Full-width card; Influenced is
 							    account-level so the per-video payload omits it and the
 							    card hides that box. Woo-gated. */ }
-							{ isWoo && revenueRangeData?.revenue !== undefined && revenueRangeData?.revenue !== null && (
+							{ isWoo && revenueRangeData && (
 								<RevenueCard
-									revenue={ {
+									revenue={ revenueRangeData.errorType ? { error: true } : {
 										revenue_minor: revenueRangeData.revenue,
 										currency: revenueRangeData.revenue_currency,
 										excluded_orders: revenueRangeData.revenue_excluded_orders,
@@ -726,6 +728,7 @@ const Analytics = ( { attachmentID } ) => {
 										assisted_minor: revenueRangeData.revenue_assisted_minor,
 									} }
 									dataLabel={ revenueRangeLabel }
+									rangeActive={ revenueRangeActive }
 									rangeControl={
 										<DateRangePicker
 											value={ revenueRange }
@@ -747,10 +750,11 @@ const Analytics = ( { attachmentID } ) => {
 							{ /* Purchase Funnel — Viewers -> Added to cart -> Purchased.
 							    Woo-gated; carries its own independent date picker and
 							    fetch, renders nothing when the funnel payload is absent. */ }
-							{ isWoo && (
+							{ isWoo && purchaseFunnelRangeData && (
 								<PurchaseFunnelCard
-									funnel={ purchaseFunnelRangeData?.video_funnel }
+									funnel={ purchaseFunnelRangeData.errorType ? { error: true } : ( purchaseFunnelRangeData.video_funnel ?? null ) }
 									dataLabel={ purchaseFunnelRangeLabel }
+									rangeActive={ purchaseFunnelRangeActive }
 									scope="video"
 									rangeControl={
 										<DateRangePicker

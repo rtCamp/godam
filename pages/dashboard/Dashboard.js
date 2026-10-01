@@ -316,6 +316,8 @@ const Dashboard = () => {
 	} );
 	const rangeLabel = ( range ) =>
 		( range.startDate && range.endDate ? triggerLabelFor( range ) : __( 'All time', 'godam' ) );
+	// True once the viewer picked a bounded range on a card (not All time).
+	const isRangeActive = ( range ) => Boolean( range.startDate && range.endDate );
 	// "vs prev N days" for a card's own bounded range (the RevenueCard trend
 	// badge). Empty for an all-time range, which has no comparison window.
 	const rangeDeltaLabel = ( range ) => {
@@ -631,6 +633,7 @@ const Dashboard = () => {
 					<RevenueCard
 						revenue={ revenueData }
 						deltaLabel={ rangeDeltaLabel( revenueRange ) }
+						rangeActive={ isRangeActive( revenueRange ) }
 						rangeControl={
 							<DateRangePicker
 								value={ revenueRange }
@@ -647,6 +650,7 @@ const Dashboard = () => {
 					<PurchaseFunnelCard
 						funnel={ videoFunnelData }
 						dataLabel={ rangeLabel( purchaseFunnelRange ) }
+						rangeActive={ isRangeActive( purchaseFunnelRange ) }
 						scope="account"
 						rangeControl={
 							<DateRangePicker
