@@ -70,3 +70,7 @@ foreach ( $rtgodam_blog_ids as $rtgodam_blog_id ) {
 		restore_current_blog();
 	}
 }
+
+// Per-user guided-tour state lives in the (network-wide) usermeta table, so it is
+// removed once rather than per site.
+delete_metadata( 'user', 0, 'rtgodam_media_library_guide_state', '', true );

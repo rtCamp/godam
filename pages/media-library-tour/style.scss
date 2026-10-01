@@ -1,0 +1,351 @@
+/**
+ * Media Library guided tour.
+ *
+ * Popover theming follows the Video Editor product guide (dark indigo → purple
+ * bubble, n/total counter, progress bar) so both GoDAM tours feel like one
+ * product, with a title line and Back / Next buttons for the informational steps.
+ */
+
+$godam-tour-accent: #7c4dff;
+$godam-tour-accent-hover: #6a3aff;
+$godam-tour-text: #fff;
+$godam-tour-muted: rgba(255, 255, 255, 0.72);
+
+// driver.js blocks pointer events on everything except the highlighted element.
+// Steps opt extra regions back in (e.g. the folder tree while dragging media, or
+// the whole folder-creation modal) via this class.
+.driver-active .godam-ml-tour-interactive,
+.driver-active .godam-ml-tour-interactive * {
+	pointer-events: auto;
+}
+
+// driver.js gives its overlay <path> an inline `pointer-events: auto` and
+// swallows every mousedown / mouseup / click that lands on it (capture phase,
+// stopImmediatePropagation). During the drag-and-drop step that ate the drop's
+// mouseup, so jQuery UI only noticed the drop on the *next* mouse move. The
+// overlay is purely visual here (every exit goes through the popover's X), so
+// let events fall through; `.driver-active *` above still keeps non-highlighted
+// controls inert.
+.driver-active .driver-overlay,
+.driver-active .driver-overlay path {
+	pointer-events: none !important;
+}
+
+// Snackbars ("Folder created successfully") should stay readable above the overlay.
+.driver-active .components-snackbar-list {
+	z-index: 1000000001;
+}
+
+.driver-popover.godam-ml-tour {
+	background: linear-gradient(135deg, #241655 0%, #4a1d96 100%);
+	color: $godam-tour-text;
+	border-radius: 12px;
+	min-width: 280px;
+	max-width: 340px;
+	padding: 18px 18px 14px;
+	box-shadow: 0 14px 36px rgba(20, 8, 48, 0.45);
+
+	* {
+		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	}
+
+	.driver-popover-title {
+		font-size: 15px;
+		font-weight: 600;
+		line-height: 1.4;
+		color: $godam-tour-text;
+		padding-right: 22px; // room for the X
+	}
+
+	.driver-popover-description {
+		font-size: 13.5px;
+		font-weight: 400;
+		line-height: 1.55;
+		color: rgba(255, 255, 255, 0.9);
+		margin-top: 6px;
+		padding-right: 6px;
+	}
+
+	.driver-popover-footer {
+		margin-top: 16px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+
+		.driver-popover-progress-text {
+			font-size: 12px;
+			font-weight: 500;
+			color: $godam-tour-muted;
+			margin-right: auto;
+		}
+	}
+
+	.driver-popover-navigation-btns {
+		display: flex;
+		gap: 6px;
+	}
+
+	.driver-popover-next-btn,
+	.driver-popover-prev-btn {
+		border: 0;
+		border-radius: 6px;
+		font-size: 13px;
+		font-weight: 500;
+		line-height: 1.2;
+		padding: 7px 14px;
+		text-shadow: none;
+		cursor: pointer;
+		transition: background-color 0.15s ease;
+	}
+
+	.driver-popover-next-btn {
+		background: $godam-tour-accent;
+		color: #fff;
+
+		&:hover,
+		&:focus-visible {
+			background: $godam-tour-accent-hover;
+		}
+	}
+
+	.driver-popover-prev-btn {
+		background: rgba(255, 255, 255, 0.12);
+		color: #fff;
+
+		&:hover,
+		&:focus-visible {
+			background: rgba(255, 255, 255, 0.2);
+		}
+	}
+
+	.driver-popover-next-btn:focus-visible,
+	.driver-popover-prev-btn:focus-visible {
+		outline: 2px solid #fff;
+		outline-offset: 2px;
+	}
+
+	// "Your turn" chip on action-driven steps.
+	.godam-ml-tour__hint {
+		order: -1;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		color: #241655;
+		background: #ffc94d;
+		border-radius: 999px;
+		padding: 3px 8px;
+	}
+
+	.driver-popover-close-btn {
+		color: $godam-tour-muted;
+		font-size: 18px;
+		top: 6px;
+		right: 6px;
+
+		&:hover,
+		&:focus {
+			color: $godam-tour-text;
+		}
+
+		&:focus-visible {
+			outline: 2px solid #fff;
+			outline-offset: 2px;
+		}
+	}
+
+	.godam-ml-tour__bar {
+		height: 4px;
+		margin-top: 12px;
+		border-radius: 12px;
+		background: rgba(255, 255, 255, 0.16);
+		overflow: hidden;
+
+		.godam-ml-tour__bar-fill {
+			display: block;
+			height: 100%;
+			background: $godam-tour-accent;
+			border-radius: 0 2px 2px 0;
+			transition: width 0.25s ease;
+		}
+	}
+
+	&.driver-popover-arrow-side-left .driver-popover-arrow {
+		border-left-color: #3a1880;
+	}
+
+	&.driver-popover-arrow-side-right .driver-popover-arrow {
+		border-right-color: #2c1668;
+	}
+
+	&.driver-popover-arrow-side-top .driver-popover-arrow {
+		border-top-color: #3a1880;
+	}
+
+	&.driver-popover-arrow-side-bottom .driver-popover-arrow {
+		border-bottom-color: #2c1668;
+	}
+}
+
+// Bulb button — matches the header's Manage Media button.
+.godam-ml-tour-bulb-container {
+	display: inline-flex;
+	vertical-align: top;
+	margin-left: 4px; // + inline whitespace = the 12px gap between header buttons
+}
+
+// Same box as the Manage Media button (44px tall, nudged 4px like it).
+.wrap .button.godam-ml-tour-bulb {
+	position: relative;
+	top: 4px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 44px;
+	height: 44px;
+	min-height: 44px;
+	margin: 0;
+	padding: 0;
+	border-color: #a3a3a3;
+	border-radius: 4px;
+	color: #4a1d96;
+
+	&:hover,
+	&:focus {
+		color: $godam-tour-accent;
+		border-color: $godam-tour-accent;
+	}
+
+	svg {
+		display: block;
+	}
+
+	// Gentle attention cue until the user has taken (or skipped) the tour once.
+	&--pulse::after {
+		content: "";
+		position: absolute;
+		top: -3px;
+		right: -3px;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: #ffb400;
+		box-shadow: 0 0 0 0 rgba(255, 180, 0, 0.6);
+		animation: godam-ml-tour-pulse 1.8s ease-out infinite;
+	}
+}
+
+@keyframes godam-ml-tour-pulse {
+
+	0% {
+		box-shadow: 0 0 0 0 rgba(255, 180, 0, 0.6);
+	}
+
+	70% {
+		box-shadow: 0 0 0 8px rgba(255, 180, 0, 0);
+	}
+
+	100% {
+		box-shadow: 0 0 0 0 rgba(255, 180, 0, 0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.wrap .button.godam-ml-tour-bulb--pulse::after {
+		animation: none;
+	}
+}
+
+// Welcome modal.
+.godam-ml-tour-welcome {
+
+	&.components-modal__frame {
+		max-width: 620px;
+	}
+
+	.godam-ml-tour-welcome__subtitle {
+		margin: 0 0 16px;
+		font-size: 14px;
+		line-height: 1.55;
+		color: #4b5563;
+	}
+
+	.godam-ml-tour-welcome__media {
+		max-height: 30vh;
+		background: #33197a;
+		border-radius: 10px;
+		overflow: hidden;
+		line-height: 0;
+	}
+
+	.godam-ml-tour-welcome__art {
+		width: 100%;
+		height: auto;
+		max-height: 30vh;
+		display: block;
+	}
+
+	.godam-ml-tour-welcome__features {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 12px;
+		margin: 18px 0 0;
+		padding: 0;
+		list-style: none;
+
+		li {
+			margin: 0;
+			padding: 12px;
+			border: 1px solid #e7e2ff;
+			border-radius: 8px;
+			background: #faf9ff;
+		}
+
+		strong {
+			display: block;
+			font-size: 13px;
+			color: #241655;
+			margin-bottom: 4px;
+		}
+
+		span {
+			font-size: 12.5px;
+			line-height: 1.5;
+			color: #4b5563;
+		}
+	}
+
+	.godam-ml-tour-welcome__actions,
+	.godam-ml-tour-finish__actions {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 8px;
+		margin-top: 22px;
+	}
+
+	@media (max-width: 600px) {
+
+		.godam-ml-tour-welcome__features {
+			grid-template-columns: 1fr;
+		}
+	}
+}
+
+.godam-ml-tour-finish {
+
+	.godam-ml-tour-finish__text {
+		margin: 0;
+		font-size: 14px;
+		line-height: 1.6;
+		color: #1e1e1e;
+	}
+
+	.godam-ml-tour-finish__actions {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 20px;
+	}
+}
