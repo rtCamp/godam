@@ -148,6 +148,7 @@ class Pages {
 		// (default priority 10) enqueue scripts that depend on it.
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_shared_components' ), 5 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_media_library_tour' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
 		// The old slug is no longer a registered menu page, so WordPress' menu
 		// access check (wp-admin/menu.php) wp_die()s before `admin_init` fires.
@@ -1334,6 +1335,70 @@ class Pages {
 			'posthogConfig',
 			$this->get_posthog_config()
 		);
+	}
+
+	/**
+	 * Enqueue the Media Library guided tour (folder organization walkthrough).
+	 *
+	 * A small standalone bundle, loaded only on the Media Library screen and only
+	 * while GoDAM's folder organization is enabled, so it never adds weight to the
+	 * shared media-library bundle or to any other admin screen. It adds the "Take a
+	 * tour" bulb button next to Manage Media and auto-starts the tour once per user.
+	 *
+	 * @return void
+	 */
+	public function enqueue_media_library_tour() {
+		$screen = get_current_screen();
+
+		if ( ! $screen || 'upload' !== $screen->id ) {
+			return;
+		}
+
+		if ( ! rtgodam_is_media_library_ui_enabled() || ! current_user_can( 'upload_files' ) ) {
+			return;
+		}
+
+		/**
+		 * Filter whether the Media Library guided tour is available.
+		 *
+		 * @param bool $enabled Whether to load the tour. Default true.
+		 */
+		if ( ! apply_filters( 'godam_media_library_tour_enabled', true ) ) {
+			return;
+		}
+
+		$asset = RTGODAM_PATH . 'assets/build/pages/media-library-tour.min.js';
+
+		if ( ! file_exists( $asset ) ) {
+			return;
+		}
+
+		wp_register_script(
+			'godam-media-library-tour',
+			RTGODAM_URL . 'assets/build/pages/media-library-tour.min.js',
+			array( 'wp-element', 'wp-components', 'wp-i18n' ),
+			filemtime( $asset ),
+			true
+		);
+
+		wp_set_script_translations( 'godam-media-library-tour', 'godam', RTGODAM_PATH . 'languages' );
+
+		wp_localize_script(
+			'godam-media-library-tour',
+			'godamMediaLibraryTour',
+			array(
+				'restUrl'       => esc_url_raw( rest_url() ),
+				'nonce'         => wp_create_nonce( 'wp_rest' ),
+				'state'         => \RTGODAM\Inc\REST_API\Onboarding::get_media_library_guide_state(),
+				// Auto-start is suppressed in E2E runs so existing Media Library tests
+				// aren't blocked by the welcome modal; the bulb button still works.
+				'autoStart'     => ! ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
+				'isApiKeyValid' => rtgodam_is_api_key_valid(),
+				'gridUrl'       => admin_url( 'upload.php?mode=grid' ),
+			)
+		);
+
+		wp_enqueue_script( 'godam-media-library-tour' );
 	}
 
 	/**
