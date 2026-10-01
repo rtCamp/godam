@@ -341,11 +341,11 @@ const Dashboard = () => {
 	// leaves data undefined. Without this, the card would hit its null guard and
 	// vanish. Mirrors how PlacementFunnelCard folds its own isError into the marker.
 	const [ revenueRange, setRevenueRange ] = useState( { startDate: null, endDate: null } );
-	const { data: revenueDataRaw, isError: isRevenueError } = useFetchRevenueSummaryQuery( rangeQueryArgs( revenueRange ), { skip: skipWooCards } );
+	const { data: revenueDataRaw, isError: isRevenueError, isFetching: isRevenueFetching } = useFetchRevenueSummaryQuery( rangeQueryArgs( revenueRange ), { skip: skipWooCards } );
 	const revenueData = isRevenueError ? { error: true } : revenueDataRaw;
 
 	const [ purchaseFunnelRange, setPurchaseFunnelRange ] = useState( { startDate: null, endDate: null } );
-	const { data: videoFunnelDataRaw, isError: isVideoFunnelError } = useFetchVideoFunnelQuery( rangeQueryArgs( purchaseFunnelRange ), { skip: skipWooCards } );
+	const { data: videoFunnelDataRaw, isError: isVideoFunnelError, isFetching: isVideoFunnelFetching } = useFetchVideoFunnelQuery( rangeQueryArgs( purchaseFunnelRange ), { skip: skipWooCards } );
 	const videoFunnelData = isVideoFunnelError ? { error: true } : videoFunnelDataRaw;
 
 	const [ placementFunnelRange, setPlacementFunnelRange ] = useState( { startDate: null, endDate: null } );
@@ -634,6 +634,7 @@ const Dashboard = () => {
 						revenue={ revenueData }
 						deltaLabel={ rangeDeltaLabel( revenueRange ) }
 						rangeActive={ isRangeActive( revenueRange ) }
+						isFetching={ isRevenueFetching }
 						rangeControl={
 							<DateRangePicker
 								value={ revenueRange }
@@ -651,6 +652,7 @@ const Dashboard = () => {
 						funnel={ videoFunnelData }
 						dataLabel={ rangeLabel( purchaseFunnelRange ) }
 						rangeActive={ isRangeActive( purchaseFunnelRange ) }
+						isFetching={ isVideoFunnelFetching }
 						scope="account"
 						rangeControl={
 							<DateRangePicker

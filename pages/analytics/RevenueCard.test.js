@@ -226,6 +226,32 @@ describe( 'RevenueCard — single store currency', () => {
 			expect( renderToString( <RevenueCard rangeActive rangeControl={ picker } /> ) ).toBe( '' );
 		} );
 
+		it( 'keeps the picker but holds the empty message while the picked range is still being fetched', () => {
+			// The payload on hand is the previous range's (RTK Query keeps it until the new
+			// answer lands), so claiming "no revenue" now would be wrong for the new range.
+			const html = renderToString(
+				<RevenueCard revenue={ null } rangeActive isFetching rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-revenue-card' );
+			expect( html ).toContain( 'my-picker' );
+			expect( html ).not.toContain( 'godam-revenue-empty' );
+			expect( html ).not.toContain( 'No video-attributed revenue' );
+		} );
+
+		it( 'shows the empty message once the fetch is done', () => {
+			const html = renderToString(
+				<RevenueCard revenue={ null } rangeActive isFetching={ false } rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-revenue-empty' );
+		} );
+
+		it( 'still shows an error while fetching is flagged', () => {
+			const html = renderToString(
+				<RevenueCard revenue={ { error: true } } rangeActive isFetching rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-revenue-error' );
+		} );
+
 		it( 'stays hidden at All Time (no range picked), where a different range cannot reveal anything', () => {
 			expect( renderToString( <RevenueCard revenue={ null } rangeControl={ picker } /> ) ).toBe( '' );
 		} );

@@ -246,6 +246,32 @@ describe( 'PurchaseFunnelCard', () => {
 			expect( renderToString( <PurchaseFunnelCard rangeActive rangeControl={ picker } /> ) ).toBe( '' );
 		} );
 
+		it( 'keeps the picker but holds the empty message while the picked range is still being fetched', () => {
+			// The payload on hand is the previous range's (RTK Query keeps it until the new
+			// answer lands), so claiming "no activity" now would be wrong for the new range.
+			const html = renderToString(
+				<PurchaseFunnelCard funnel={ null } rangeActive isFetching rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-purchase-funnel-card' );
+			expect( html ).toContain( 'my-picker' );
+			expect( html ).not.toContain( 'godam-purchase-funnel-empty' );
+			expect( html ).not.toContain( 'No funnel activity' );
+		} );
+
+		it( 'shows the empty message once the fetch is done', () => {
+			const html = renderToString(
+				<PurchaseFunnelCard funnel={ null } rangeActive isFetching={ false } rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-purchase-funnel-empty' );
+		} );
+
+		it( 'still shows an error while fetching is flagged', () => {
+			const html = renderToString(
+				<PurchaseFunnelCard funnel={ { error: true } } rangeActive isFetching rangeControl={ picker } />,
+			);
+			expect( html ).toContain( 'godam-purchase-funnel-error' );
+		} );
+
 		it( 'stays hidden at All Time (no range picked), where a different range cannot reveal anything', () => {
 			expect( renderToString( <PurchaseFunnelCard funnel={ null } rangeControl={ picker } /> ) ).toBe( '' );
 		} );

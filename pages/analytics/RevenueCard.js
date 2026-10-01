@@ -34,13 +34,16 @@ const COLOR_ASSISTED = '#93c5fd';
  * @param {string}  [props.deltaLabel]   Label for the trend badge, e.g. "vs previous 7 days".
  * @param {Object}  [props.rangeControl] A date-range picker element rendered in the card head; replaces the plain dataLabel pill when present.
  * @param {boolean} [props.rangeActive]  True when the viewer picked a date range. With a range control, a range that comes back empty then keeps the card and its picker (with an empty message) instead of hiding it.
+ * @param {boolean} [props.isFetching]   True while the card's range is being fetched. The payload on hand then belongs to the previous range, so the empty message waits for the answer.
  */
-export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeControl, rangeActive } ) {
+export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeControl, rangeActive, isFetching } ) {
 	// A picked range with no revenue-bearing row. The card has to stay, with its
 	// picker, or the viewer cannot choose another range without reloading the page.
 	// `undefined` still means "not loaded yet" and renders nothing; at All Time
 	// (no range picked) an absent payload also stays hidden, since a different
-	// range cannot reveal anything the full history lacks.
+	// range cannot reveal anything the full history lacks. While the picked range
+	// is still being fetched the payload on hand belongs to the PREVIOUS range, so
+	// the message below waits for the answer rather than claim the new range is empty.
 	const isEmptyRange =
 		!! rangeControl &&
 		!! rangeActive &&
@@ -67,11 +70,11 @@ export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeCont
 					<p className="text-[13px] text-[#b32d2e]" data-test-id="godam-revenue-error">
 						{ __( 'Couldn’t load revenue for this range. Please try again.', 'godam' ) }
 					</p>
-				) : (
+				) : ( ! isFetching && (
 					<p className="text-[13px] text-zinc-500" data-test-id="godam-revenue-empty">
 						{ __( 'No video-attributed revenue in this date range.', 'godam' ) }
 					</p>
-				) }
+				) ) }
 			</div>
 		);
 	}
