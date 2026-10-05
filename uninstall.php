@@ -72,5 +72,6 @@ foreach ( $rtgodam_blog_ids as $rtgodam_blog_id ) {
 }
 
 // Per-user guided-tour state lives in the (network-wide) usermeta table, so it is
-// removed once rather than per site.
+// removed once rather than per site. Uninstall runs without loading the plugin, so
+// this mirrors Onboarding::MEDIA_LIBRARY_GUIDE_META_KEY — keep the two in sync.
 delete_metadata( 'user', 0, 'rtgodam_media_library_guide_state', '', true );

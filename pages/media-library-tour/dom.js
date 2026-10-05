@@ -7,6 +7,11 @@
  * (`godam-media-library:folder-created`, `godam-media-library:attachments-moved`).
  */
 
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
 export const SELECTORS = {
 	sidebar: '#rt-transcoder-media-library-root',
 	sidebarToggle: '#media-folder-toggle-button',
@@ -19,7 +24,7 @@ export const SELECTORS = {
 	folderTabs: '#rt-transcoder-media-library-root .folder-tabs',
 	folderTree: '#rt-transcoder-media-library-root .tree-container',
 	contextMenu: '.folder-context-menu',
-	folderModal: '.components-modal__frame.modal__container:not(.move-to-folder)',
+	folderModal: '.components-modal__frame.folder-creation-modal',
 	moveModal: '.components-modal__frame.move-to-folder',
 	modalOverlay: '.components-modal__screen-overlay',
 	grid: '#wp-media-grid',
@@ -47,7 +52,10 @@ export const EVENTS = {
  * @param {number} id Folder term id.
  * @return {string} CSS selector.
  */
-export const folderRow = ( id ) => `${ SELECTORS.folderTree } .tree-item[data-id="${ Number( id ) }"]`;
+export const folderRow = ( id ) => ( 0 === Number( id )
+	// "Uncategorized" (term 0) lives in the fixed list above the tree.
+	? `${ SELECTORS.folderList } .tree-item[data-id="0"]`
+	: `${ SELECTORS.folderTree } .tree-item[data-id="${ Number( id ) }"]` );
 
 /**
  * Whether an element is rendered and visible (not display:none / zero-size).
@@ -117,7 +125,13 @@ export const isGridMode = () => Boolean( document.querySelector( SELECTORS.grid 
  *
  * @return {boolean} True while it is open.
  */
-export const isFolderModalOpen = () => document.body.classList.contains( 'folder-creation-modal-open' );
+export const isFolderModalOpen = () =>
+	// Detect the modal element itself: it mounts in the same commit that removes
+	// the context menu, whereas the `folder-creation-modal-open` body class is
+	// added a frame later (post-paint effect). Checking only the body class left
+	// a gap where both "menu open" and "modal open" read false, which made the
+	// folder-menu step rewind while the sub-folder modal was actually open.
+	Boolean( document.querySelector( SELECTORS.folderModal ) ) || document.body.classList.contains( 'folder-creation-modal-open' );
 
 /**
  * Show "All Media" in the grid. Creating a folder switches the grid's filter to
@@ -198,4 +212,4 @@ export const expandFolder = ( id ) => {
  * @param {number} id Folder id.
  * @return {string} Folder name, or ''.
  */
-export const folderName = ( id ) => document.querySelector( `${ folderRow( id ) } .tree-item__text` )?.textContent?.trim() || '';
+export const folderName = ( id ) => ( 0 === Number( id ) ? __( 'Uncategorized', 'godam' ) : document.querySelector( `${ folderRow( id ) } .tree-item__text` )?.textContent?.trim() || '' );

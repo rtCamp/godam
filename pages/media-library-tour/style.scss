@@ -124,19 +124,6 @@ $godam-tour-muted: rgba(255, 255, 255, 0.72);
 		outline-offset: 2px;
 	}
 
-	// "Your turn" chip on action-driven steps.
-	.godam-ml-tour__hint {
-		order: -1;
-		font-size: 11px;
-		font-weight: 600;
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-		color: #241655;
-		background: #ffc94d;
-		border-radius: 999px;
-		padding: 3px 8px;
-	}
-
 	.driver-popover-close-btn {
 		color: $godam-tour-muted;
 		font-size: 18px;

@@ -34,6 +34,8 @@ import { EVENTS, $visible, waitFor } from './dom';
 import { setTourState, TOUR_STATES, writeSession, clearSession } from './state';
 
 const POLL_INTERVAL = 150;
+// driver.js highlight transition (its default `duration` is 400ms) plus margin.
+const TRANSITION_MS = 600;
 const INTERACTIVE_CLASS = 'godam-ml-tour-interactive';
 
 let driverObj = null;
@@ -46,6 +48,7 @@ let pollTimer = null;
 let showToken = 0;
 let highlighted = null;
 let lastRect = '';
+let highlightedAt = 0;
 let callbacks = {};
 
 /**
@@ -216,7 +219,16 @@ const watch = ( step, element ) => {
 		// still the previous step's target — refreshing then would park the
 		// popover next to the old control (e.g. "New Folder") until the next
 		// scroll. So only refresh once the transition has landed on this element.
-		const settled = driverObj?.getState?.( '__activeElement' ) === element;
+		//
+		// driver.js has no public "settled element" API: getActiveElement()
+		// switches to the new target as soon as the transition *starts*, which is
+		// exactly the window we must avoid. So read the internal
+		// `__activeElement`, and if a future driver.js renames it, fall back to
+		// waiting out the transition by time instead of never refreshing.
+		const settledEl = driverObj?.getState?.( '__activeElement' );
+		const settled = undefined === settledEl
+			? Date.now() - highlightedAt > TRANSITION_MS
+			: settledEl === element;
 		const rect = JSON.stringify( element.getBoundingClientRect() );
 		if ( settled && ( rect !== lastRect || ! refreshedAfterSettle ) ) {
 			lastRect = rect;
@@ -285,6 +297,7 @@ const show = async () => {
 	}
 
 	highlighted = element;
+	highlightedAt = Date.now();
 	lastRect = JSON.stringify( element.getBoundingClientRect() );
 
 	const { position, total } = progress();
@@ -338,18 +351,6 @@ const show = async () => {
 					popover.wrapper.appendChild( bar );
 				}
 				bar.querySelector( '.godam-ml-tour__bar-fill' ).style.width = `${ pct }%`;
-
-				// Steps that wait for the user to do something get a "Your turn" chip
-				// (even when they also offer Skip).
-				if ( step.advanceOn || step.advanceWhen ) {
-					let hint = popover.wrapper.querySelector( '.godam-ml-tour__hint' );
-					if ( ! hint ) {
-						hint = document.createElement( 'span' );
-						hint.className = 'godam-ml-tour__hint';
-						popover.footer.prepend( hint );
-					}
-					hint.textContent = __( 'Your turn', 'godam' );
-				}
 			},
 		},
 	} );

@@ -58,11 +58,25 @@ class Onboarding extends Base {
 	 *
 	 * Shares the pending / completed / dismissed vocabulary with the Video Editor
 	 * product guide, but is tracked separately so finishing one tour never
-	 * suppresses the other.
+	 * suppresses the other. uninstall.php deletes this key by its literal value
+	 * (it runs without loading the plugin) — keep the two in sync.
 	 *
 	 * @var string
 	 */
 	const MEDIA_LIBRARY_GUIDE_META_KEY = 'rtgodam_media_library_guide_state';
+
+	/**
+	 * Guided tours whose per-user state is stored in user meta, keyed by guide name.
+	 *
+	 * Allowlist used by the shared state helpers so the meta-key lookup, state
+	 * vocabulary and default live in one place for every tour.
+	 *
+	 * @var array<string, string>
+	 */
+	const GUIDE_META_KEYS = array(
+		'product'       => self::PRODUCT_GUIDE_META_KEY,
+		'media-library' => self::MEDIA_LIBRARY_GUIDE_META_KEY,
+	);
 
 	/**
 	 * User meta key — whether the user dismissed the "unlocked Woo features" nudge (O10).
@@ -182,11 +196,8 @@ class Onboarding extends Base {
 				'namespace' => $this->namespace,
 				'route'     => $base . '/media-library-guide',
 				'args'      => array(
-					array(
-						'methods'             => WP_REST_Server::READABLE,
-						'callback'            => array( $this, 'get_media_library_guide' ),
-						'permission_callback' => array( $this, 'permissions_check' ),
-					),
+					// Write-only: the initial state is localized into the page
+					// (godamMediaLibraryTour.state), so no GET handler is needed.
 					array(
 						'methods'             => WP_REST_Server::CREATABLE,
 						'callback'            => array( $this, 'update_media_library_guide' ),
@@ -505,16 +516,44 @@ class Onboarding extends Base {
 	}
 
 	/**
-	 * Get the stored product-guide state for a user, falling back to "pending".
+	 * Get a guided tour's stored state for a user, falling back to "pending".
+	 *
+	 * @param string $guide   Guide name (a key of self::GUIDE_META_KEYS).
+	 * @param int    $user_id User ID. Defaults to the current user.
+	 * @return string One of self::PRODUCT_GUIDE_STATES.
+	 */
+	public static function get_guide_state( $guide, $user_id = 0 ) {
+		if ( ! isset( self::GUIDE_META_KEYS[ $guide ] ) ) {
+			return 'pending';
+		}
+
+		$user_id = $user_id ? $user_id : get_current_user_id();
+		$state   = get_user_meta( $user_id, self::GUIDE_META_KEYS[ $guide ], true );
+
+		return in_array( $state, self::PRODUCT_GUIDE_STATES, true ) ? $state : 'pending';
+	}
+
+	/**
+	 * Persist a guided tour's state for the current user and build the REST response.
+	 *
+	 * @param string $guide  Guide name (a key of self::GUIDE_META_KEYS).
+	 * @param string $status One of self::PRODUCT_GUIDE_STATES (validated by the route schema).
+	 * @return WP_REST_Response Response with the saved state.
+	 */
+	private function save_guide_state( $guide, $status ) {
+		update_user_meta( get_current_user_id(), self::GUIDE_META_KEYS[ $guide ], $status );
+
+		return new WP_REST_Response( array( 'status' => $status ), 200 );
+	}
+
+	/**
+	 * Get the stored product-guide (Video Editor) state for a user, falling back to "pending".
 	 *
 	 * @param int $user_id User ID. Defaults to the current user.
 	 * @return string One of self::PRODUCT_GUIDE_STATES.
 	 */
 	public static function get_product_guide_state( $user_id = 0 ) {
-		$user_id = $user_id ? $user_id : get_current_user_id();
-		$state   = get_user_meta( $user_id, self::PRODUCT_GUIDE_META_KEY, true );
-
-		return in_array( $state, self::PRODUCT_GUIDE_STATES, true ) ? $state : 'pending';
+		return self::get_guide_state( 'product', $user_id );
 	}
 
 	/**
@@ -524,22 +563,7 @@ class Onboarding extends Base {
 	 * @return string One of self::PRODUCT_GUIDE_STATES.
 	 */
 	public static function get_media_library_guide_state( $user_id = 0 ) {
-		$user_id = $user_id ? $user_id : get_current_user_id();
-		$state   = get_user_meta( $user_id, self::MEDIA_LIBRARY_GUIDE_META_KEY, true );
-
-		return in_array( $state, self::PRODUCT_GUIDE_STATES, true ) ? $state : 'pending';
-	}
-
-	/**
-	 * GET handler — return the current user's Media Library guided-tour state.
-	 *
-	 * @return WP_REST_Response Response with the current state.
-	 */
-	public function get_media_library_guide() {
-		return new WP_REST_Response(
-			array( 'status' => self::get_media_library_guide_state() ),
-			200
-		);
+		return self::get_guide_state( 'media-library', $user_id );
 	}
 
 	/**
@@ -549,11 +573,7 @@ class Onboarding extends Base {
 	 * @return WP_REST_Response Response with the saved state.
 	 */
 	public function update_media_library_guide( WP_REST_Request $request ) {
-		$status = $request->get_param( 'status' );
-
-		update_user_meta( get_current_user_id(), self::MEDIA_LIBRARY_GUIDE_META_KEY, $status );
-
-		return new WP_REST_Response( array( 'status' => $status ), 200 );
+		return $this->save_guide_state( 'media-library', $request->get_param( 'status' ) );
 	}
 
 	/**
@@ -601,11 +621,7 @@ class Onboarding extends Base {
 	 * @return WP_REST_Response Response with the saved state.
 	 */
 	public function update_product_guide( WP_REST_Request $request ) {
-		$status = $request->get_param( 'status' );
-
-		update_user_meta( get_current_user_id(), self::PRODUCT_GUIDE_META_KEY, $status );
-
-		return new WP_REST_Response( array( 'status' => $status ), 200 );
+		return $this->save_guide_state( 'product', $request->get_param( 'status' ) );
 	}
 
 	/**

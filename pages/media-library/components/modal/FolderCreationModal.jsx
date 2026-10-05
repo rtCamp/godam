@@ -115,7 +115,8 @@ const FolderCreationModal = () => {
 			<Modal
 				title={ __( 'Create a new folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'folderCreation' ) ) }
-				className="modal__container"
+				// `folder-creation-modal` is a stable hook for the Media Library tour.
+				className="modal__container folder-creation-modal"
 				bodyOpenClassName="folder-creation-modal-open"
 			>
 				<TextControl

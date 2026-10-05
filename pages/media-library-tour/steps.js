@@ -205,7 +205,7 @@ export const getSteps = () => [
 		element: SELECTORS.firstAttachment,
 		text: ( ctx ) => sprintf(
 			/* translators: %s: folder name. */
-			__( 'Drag this item and drop it on “%s” in the sidebar. Tip: select several items first to move them together.', 'godam' ),
+			__( 'Drag this item and drop it on “%s” in the sidebar. You can select multiple items to move them together.', 'godam' ),
 			nameOf( ctx, 'folder' ),
 		),
 		side: 'bottom',
@@ -300,7 +300,9 @@ export const getSteps = () => [
 		interactive: [ SELECTORS.modalOverlay ],
 		advanceOn: EVENTS.ATTACHMENTS_MOVED,
 		onEvent: ( ctx, detail ) => {
-			ctx.bulkMovedTo = Number( detail?.targetFolderId ) || 0;
+			// 0 is a real destination ("Uncategorized"); only a missing id is not.
+			const target = Number( detail?.targetFolderId );
+			ctx.bulkMovedTo = Number.isInteger( target ) && target >= 0 ? target : -1;
 			ctx.bulkMovedCount = detail?.attachmentIds?.length || 1;
 			return true;
 		},
@@ -362,7 +364,7 @@ export const getSteps = () => [
 		},
 		side: 'right',
 		align: 'center',
-		when: ( ctx ) => ctx.bulkMovedTo > 0,
+		when: ( ctx ) => Number.isInteger( ctx.bulkMovedTo ) && ctx.bulkMovedTo >= 0,
 		onEnter: ( ctx ) => {
 			ctx.bulkTries = 0;
 			ctx.bulkExpanded = false;

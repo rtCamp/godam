@@ -29,6 +29,10 @@ import { isGridMode, waitFor, SELECTORS, $visible } from '../dom';
  */
 const waitForPageReady = async () => {
 	await waitFor( () => document.querySelector( `${ SELECTORS.sidebar } .folder-container` ), 10000 );
+	// List view has no media grid; the welcome there only needs the sidebar.
+	if ( ! isGridMode() ) {
+		return;
+	}
 	// Folders + first page of media (either may legitimately be empty).
 	await waitFor( () => $visible( SELECTORS.firstAttachment ) || document.querySelector( `${ SELECTORS.grid } .attachments-browser .no-media` ), 8000 );
 };
