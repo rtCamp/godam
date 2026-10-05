@@ -17,7 +17,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from '../components/editor-shell/icons';
+import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon, ButtonCtaLayerIcon } from '../components/editor-shell/icons';
 import GFIcon from '../assets/layers/GFIcon.svg';
 import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
 import CF7Icon from '../assets/layers/CF7Icon.svg';
@@ -55,6 +55,7 @@ export const FORM_PLUGIN_META = {
 export const LAYER_TYPE_COLORS = {
 	cta: '#3858e9',
 	hotspot: '#10B77F',
+	'button-cta': '#7B61FF',
 	woo: '#873eff',
 	poll: '#E8499E',
 	form: '#088EAF',
@@ -76,6 +77,11 @@ export const layerTypes = [
 		title: __( 'Hotspot', 'godam' ),
 		icon: HotspotLayerIcon,
 		type: 'hotspot',
+	},
+	{
+		title: __( 'Button CTA', 'godam' ),
+		icon: ButtonCtaLayerIcon,
+		type: 'button-cta',
 	},
 	{
 		title: __( 'Ad', 'godam' ),

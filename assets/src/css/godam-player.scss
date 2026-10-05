@@ -18,6 +18,9 @@
 // CTA Card styles - Shared component (also used in video editor)
 @use './cta-card';
 
+// Button CTA layer styles - Shared component (also used in video editor)
+@use './button-cta';
+
 .rtgodam-video-caption {
 
 	margin-bottom: 1em;

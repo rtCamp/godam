@@ -11,6 +11,7 @@ import { Suspense } from '@wordpress/element';
 import FormLayer from './FormLayer';
 import CTALayer from './CTALayer';
 import HotspotLayer from './HotspotLayer';
+import ButtonCtaLayer from './ButtonCtaLayer';
 import Ads from './AdsLayer';
 import PollLayer from './PollLayer';
 import LayerErrorBoundary from './LayerErrorBoundary';
@@ -28,6 +29,9 @@ const coreLayerComponents = {
 	},
 	hotspot: {
 		component: HotspotLayer,
+	},
+	'button-cta': {
+		component: ButtonCtaLayer,
 	},
 	ad: {
 		component: Ads,

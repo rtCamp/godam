@@ -18,7 +18,7 @@ import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
-import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from './editor-shell/icons';
+import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon, ButtonCtaLayerIcon } from './editor-shell/icons';
 import { LAYER_TYPE_COLORS } from '../utils/layerTypes';
 import { notify as notifyGuide } from '../onboarding/productGuide';
 
@@ -45,6 +45,12 @@ export const layerTypes = [
 		icon: customPostType,
 		type: 'hotspot',
 		layerText: __( 'Hotspot', 'godam' ),
+	},
+	{
+		title: __( 'Button CTA', 'godam' ),
+		icon: customLink,
+		type: 'button-cta',
+		layerText: __( 'Button CTA', 'godam' ),
 	},
 	{
 		title: __( 'Forms', 'godam' ),
@@ -368,6 +374,24 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					} ),
 				);
 				break;
+			case 'button-cta':
+				dispatch(
+					addLayer( {
+						id: uuidv4(),
+						displayTime: addTime,
+						type,
+						name: getDefaultLayerName( type ),
+						// Mirrors the Hotspot layer: a non-modal overlay shown for a
+						// `displayTime` + `duration` window, with optional pause-on-hover.
+						duration: 5,
+						pauseOnHover: false,
+						// Multiple buttons per layer; the first is auto-seeded on open
+						// (via `isNew`) so a fresh layer already has one to configure.
+						buttons: [],
+						isNew: true,
+					} ),
+				);
+				break;
 			case 'ad':
 				dispatch( addLayer( {
 					id: uuidv4(),
@@ -451,6 +475,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	const layerTypeIcons = {
 		cta: CtaLayerIcon,
 		hotspot: HotspotLayerIcon,
+		'button-cta': ButtonCtaLayerIcon,
 		poll: PollLayerIcon,
 	};
 
@@ -461,6 +486,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 		const options = [
 			{ key: 'cta', iconComponent: CtaLayerIcon, title: __( 'CTA', 'godam' ), description: __( 'Add a clickable button', 'godam' ), onSelect: () => addNewLayer( 'cta' ) },
 			{ key: 'hotspot', iconComponent: HotspotLayerIcon, title: __( 'Hotspot', 'godam' ), description: __( 'Add an info hotspot', 'godam' ), onSelect: () => addNewLayer( 'hotspot' ) },
+			{ key: 'button-cta', iconComponent: ButtonCtaLayerIcon, title: __( 'Button CTA', 'godam' ), description: __( 'Place buttons over the video', 'godam' ), onSelect: () => addNewLayer( 'button-cta' ) },
 		];
 
 		// "Form" entry. With multiple active form plugins it opens a side submenu
@@ -516,7 +542,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 
 		// Add-on layers (e.g., WooCommerce) merged from PHP.
 		layerTypes
-			.filter( ( lt ) => ! [ 'cta', 'hotspot', 'form', 'ad', 'poll' ].includes( lt.type ) )
+			.filter( ( lt ) => ! [ 'cta', 'hotspot', 'button-cta', 'form', 'ad', 'poll' ].includes( lt.type ) )
 			.forEach( ( lt ) => {
 				options.push( {
 					key: lt.type,

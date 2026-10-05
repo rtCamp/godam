@@ -6,6 +6,7 @@ import { getLayerManager } from '../utils/layer-registry.js';
 import LayerValidator from './layers/layerValidator.js';
 import FormLayerManager from './layers/formLayerManager.js';
 import HotspotLayerManager from './layers/hotspotLayerManager.js';
+import ButtonCtaLayerManager from './layers/buttonCtaLayerManager.js';
 import { loadFontAwesome, hasHotspotsWithIcons } from '../utils/pluginLoader.js';
 
 /**
@@ -26,6 +27,7 @@ export default class LayersManager {
 		// Initialize sub-managers
 		this.formLayerManager = new FormLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
 		this.hotspotLayerManager = new HotspotLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
+		this.buttonCtaLayerManager = new ButtonCtaLayerManager( player, isDisplayingLayers, currentPlayerVideoInstanceId );
 
 		/**
 		 * Naming convention is bit unusual here to avoid confusion with the main player instance.
@@ -138,6 +140,8 @@ export default class LayersManager {
 			this.formLayerManager.setupFormLayer( layer, layerElement );
 		} else if ( layer.type === LAYER_TYPES.HOTSPOT ) {
 			this.hotspotLayerManager.setupHotspotLayer( layer, layerElement );
+		} else if ( layer.type === LAYER_TYPES.BUTTON_CTA ) {
+			this.buttonCtaLayerManager.setupButtonCtaLayer( layer, layerElement );
 		} else {
 			// Try to find a custom layer manager registered via the layer registry.
 			const customManagerClass = getLayerManager( layer.type );
@@ -192,6 +196,19 @@ export default class LayersManager {
 	}
 
 	/**
+	 * Handle button CTA layers time update
+	 *
+	 * @param {number} currentTime - Current video time in seconds
+	 */
+	handleButtonCtaLayersTimeUpdate( currentTime ) {
+		if ( this.areLayersSuppressed() ) {
+			return;
+		}
+
+		this.buttonCtaLayerManager.handleButtonCtaLayersTimeUpdate( currentTime );
+	}
+
+	/**
 	 * Handle custom layer time update
 	 * Calls timeUpdate on all registered custom layer managers
 	 *
@@ -214,6 +231,7 @@ export default class LayersManager {
 	 */
 	handleVideoResize() {
 		this.hotspotLayerManager.updateHotspotPositions();
+		this.buttonCtaLayerManager.updateButtonPositions();
 
 		// Call update methods on custom layer managers if they exist
 		Object.values( this.customLayerManagers ).forEach( ( manager ) => {
@@ -232,6 +250,7 @@ export default class LayersManager {
 
 		this.formLayerManager.handleFullscreenChange( isFullscreen, videoContainer );
 		this.hotspotLayerManager.handleFullscreenChange( isFullscreen, videoContainer );
+		this.buttonCtaLayerManager.handleFullscreenChange( isFullscreen, videoContainer );
 
 		// Notify custom layer managers about fullscreen changes
 		Object.values( this.customLayerManagers ).forEach( ( manager ) => {
