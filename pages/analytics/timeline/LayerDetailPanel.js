@@ -14,6 +14,7 @@ import { Icon } from '@wordpress/components';
  * Internal dependencies
  */
 import { formatRevenue } from '../../dashboard/components/TopProductsTable';
+import { canViewStoreData } from '../../shared/canViewStoreData';
 import {
 	LAYER_TYPE_BY_ID,
 	withAlpha,
@@ -112,12 +113,13 @@ const LayerDetailPanel = ( { parent, attachmentID } ) => {
 
 	// Direct in-video revenue for the selected hotspot, or the parent layer's
 	// aggregate (sum of its hotspots) when none is selected. Woo layers only,
-	// shown only when there is revenue. Base currency; other currencies are
-	// excluded (counted on the dashboard, not converted).
+	// shown only when there is revenue and the user may see order data. Base
+	// currency; other currencies are excluded (counted on the dashboard, not
+	// converted).
 	const revenueEntity = activeSub || parent;
 	const revenueMinor = Number( revenueEntity.revenue_minor ) || 0;
 	const revenueOrders = Number( revenueEntity.orders ) || 0;
-	const showRevenue = parent.layer_type === 'woo' && revenueMinor > 0;
+	const showRevenue = canViewStoreData() && parent.layer_type === 'woo' && revenueMinor > 0;
 	const revenueOrdersPhrase = sprintf(
 		/* translators: %d: number of orders. */
 		_n( '%d order', '%d orders', revenueOrders, 'godam' ),

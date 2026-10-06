@@ -47,6 +47,27 @@ abstract class Base extends \WP_REST_Controller {
 	}
 
 	/**
+	 * Response for a read that cannot go ahead because the site has no origin.
+	 *
+	 * An empty site_url makes the analytics service aggregate across every site on
+	 * the account, so a handler with no origin must refuse to ask rather than widen
+	 * the read.
+	 *
+	 * @param int $http_status HTTP status for the response.
+	 * @return \WP_REST_Response
+	 */
+	protected function site_origin_unavailable_response( $http_status = 200 ) {
+		return new \WP_REST_Response(
+			array(
+				'status'    => 'error',
+				'message'   => __( 'This site\'s address could not be determined, so analytics were not requested. Check the Site Address in Settings > General.', 'godam' ),
+				'errorType' => 'site_origin_unavailable',
+			),
+			$http_status
+		);
+	}
+
+	/**
 	 * Register REST routes.
 	 */
 	public function register_rest_routes() {

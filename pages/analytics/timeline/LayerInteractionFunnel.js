@@ -16,6 +16,7 @@ import {
 	actionLabel,
 } from '../constants/layerTypes';
 import InfoTooltip from './InfoTooltip';
+import { canViewStoreData } from '../../shared/canViewStoreData';
 
 /**
  * Inline icon for a funnel action. Matches the mockup's iconography.
@@ -124,6 +125,9 @@ function barShade( idx, count ) {
  * ("Viewers who saw this layer but didn't interact with it") even though
  * the per-type math differs.
  *
+ * The "Added to Cart" bar is store data, so it shows only to users who may see
+ * it (see canViewStoreData); editors and authors get the other bars.
+ *
  * @param {Object} props
  * @param {string} props.layerType Layer type id.
  * @param {Object} props.counts    { viewed, hovered, clicked, ... }
@@ -138,7 +142,8 @@ const LayerInteractionFunnel = ( { layerType, counts, noAction } ) => {
 			return [];
 		}
 		const viewed = Math.max( 0, Number( counts?.viewed ) || 0 );
-		return meta.funnel.map( ( action ) => {
+		const showStoreData = canViewStoreData();
+		return meta.funnel.filter( ( action ) => showStoreData || 'added_to_cart' !== action ).map( ( action ) => {
 			const value =
 				action === 'no_action'
 					? Math.max( 0, Number( noAction ) || 0 )

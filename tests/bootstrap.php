@@ -225,17 +225,26 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 		/** @var mixed */
 		public $data;
 
+		/** @var int */
+		public $status;
+
 		/**
 		 * @param mixed $data   Response payload.
-		 * @param int   $status Ignored.
+		 * @param int   $status HTTP status code.
 		 */
-		public function __construct( $data = null, $status = 200 ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
-			$this->data = $data;
+		public function __construct( $data = null, $status = 200 ) {
+			$this->data   = $data;
+			$this->status = $status;
 		}
 
 		/** @return mixed */
 		public function get_data() {
 			return $this->data;
+		}
+
+		/** @return int */
+		public function get_status() {
+			return $this->status;
 		}
 	}
 }
@@ -388,6 +397,9 @@ require_once __DIR__ . '/stubs/i18n.php';
 require_once __DIR__ . '/stubs/class-wp-rest-request.php';
 require_once __DIR__ . '/stubs/class-wp-rest-response.php';
 require_once __DIR__ . '/stubs/wp-http-functions.php';
+require_once __DIR__ . '/stubs/site-functions.php';
+// Current-user, avatar and wp_remote_post stubs for the Engagement route tests.
+require_once __DIR__ . '/stubs/engagement-functions.php';
 
 // Version-compatibility checks read this. High enough that any add-on minimum
 // passes, so tests exercising the incompatible branch raise their own minimum.
@@ -404,6 +416,10 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-base.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-video-editor.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-gf.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
+
+// Loaded for EngagementCommentPrivacyTest, which calls its public handlers on a
+// constructor-less instance. Central and the WP user are stubbed per case.
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-engagement.php';
 
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-onboarding-response.php';
 
@@ -422,6 +438,10 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-transcoding.php';
 // every route's permission callback. The class extends the stubbed Base and
 // touches WordPress only inside its route callbacks, so requiring it runs no WP code.
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
+
+// Loaded for get_activities(), which SiteOriginTest drives with the stubs above.
+// Requiring the file runs no WP code.
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-engagement.php';
 
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
