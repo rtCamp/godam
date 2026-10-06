@@ -247,7 +247,7 @@ if ( class_exists( 'GF_Field' ) ) {
 		 * Older Gravity Forms versions have no submission-files methods and never call this one;
 		 * there it returns empty lists instead of calling the missing parent method.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.3.1
 		 *
 		 * @return array[] The 'existing' and 'new' files, as returned by Gravity Forms.
 		 */

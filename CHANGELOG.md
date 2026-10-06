@@ -1,6 +1,6 @@
 # Changelog #
 
-## v2.3.1 (October 5, 2026) ##
+## v2.3.1 (October 6, 2026) ##
 
 - Fix: What's New refreshes after every plugin update, so it always shows the current release post.
 - Fix: A video's hotspot, call-to-action, form and poll analytics are now stored with the same video ID as its plays, so they stay together in Top Products.
@@ -8,6 +8,7 @@
 - Fix: Top Products explains why grouped and external products show no add-to-carts or revenue, and shows "-" instead of a misleading 0.0% add-to-cart rate.
 - Fix: Video to Cart, Video to Purchase and the funnels now count each day in the store's time zone, matching the Revenue card.
 - Fix: Editors and Authors see video analytics only; store data (products, add-to-carts, orders, revenue) needs WooCommerce's report permission.
+- Fix: A GoDAM Record field on a Gravity Forms form no longer fails with "Number of files (2) exceeds limit (1)" after moving between pages or fixing a failed submit, on Gravity Forms 2.9.18 and later.
 - Fix: Security fixes.
 
 ## v2.3.0 (September 24, 2026) ##
