@@ -20,6 +20,7 @@ import { generateCountryHeatmap } from '../analytics/helper';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchRevenueSummaryQuery, useFetchVideoFunnelQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
+import { canViewStoreData } from '../shared/canViewStoreData';
 import SingleMetrics from '../analytics/SingleMetrics';
 import VideoToCartCard from '../analytics/VideoToCartCard';
 import VideoToPurchaseCard from '../analytics/VideoToPurchaseCard';
@@ -177,7 +178,12 @@ const Dashboard = () => {
 	// Top Products is a WooCommerce feature; show its tab only when WooCommerce is
 	// active (godam-for-woo supplies the product interactions it reads). Non-Woo
 	// sites keep the plain Top Videos table with no tab switcher.
-	const hasWooProducts = !! window.videoData?.isWoo;
+	// Editors see video data only: products, add-to-carts, orders and revenue follow
+	// WooCommerce's report permission (shop managers and administrators), and the
+	// routes refuse or strip that data for anyone else. So every WooCommerce section
+	// below needs both the add-on and that permission, and a user without it lands
+	// on the plain Top Videos table with no tab switcher.
+	const hasWooProducts = !! window.videoData?.isWoo && canViewStoreData();
 	const [ topTab, setTopTab ] = useState( 'videos' );
 
 	// The switcher renders inside the active table's head (where its title would

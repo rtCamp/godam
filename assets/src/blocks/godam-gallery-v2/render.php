@@ -12,7 +12,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$inner_block_video_ids = array();
+$inner_block_video_ids = array(); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Local to WP_Block::render(); the shared gallery template reads it by this name.
 
 if ( isset( $block ) && ! empty( $block->inner_blocks ) ) {
 	foreach ( $block->inner_blocks as $godam_inner_block ) {
@@ -20,7 +20,7 @@ if ( isset( $block ) && ! empty( $block->inner_blocks ) ) {
 			continue;
 		}
 
-		$inner_block_video_ids[] = isset( $godam_inner_block->attributes['videoId'] ) ? absint( $godam_inner_block->attributes['videoId'] ) : 0;
+		$inner_block_video_ids[] = isset( $godam_inner_block->attributes['videoId'] ) ? absint( $godam_inner_block->attributes['videoId'] ) : 0; // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Local to WP_Block::render(), see above.
 	}
 }
 

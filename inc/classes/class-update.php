@@ -60,6 +60,10 @@ class Update {
 		}
 
 		if ( version_compare( $current_version, $saved_version, '>' ) ) {
+			// Refresh the cached release post on every update, so What's New
+			// never keeps an older post.
+			delete_transient( 'rtgodam_release_data' );
+
 			// Existing install with a version bump — show What's New only.
 			if ( $this->rtgodam_is_release_bump( $saved_version, $current_version ) ) {
 				update_option( 'rtgodam_show_whats_new', true );

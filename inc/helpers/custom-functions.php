@@ -2376,3 +2376,156 @@ function rtgodam_format_html_attributes( $attributes ) {
 
 	return implode( ' ', $formatted );
 }
+
+/**
+ * Normalise an origin the way browsers report `window.location.origin`.
+ *
+ * Accepts only a bare `http(s)://host[:port]`: no path, query, fragment, spaces
+ * or userinfo. Stored events are matched exactly, so the result follows what a
+ * browser reports: lowercase, an internationalised host as punycode (when the
+ * intl extension is available; otherwise it is kept as written), and no port
+ * when it is the scheme's default. The host must be a hostname made of valid
+ * labels, an IPv4 address or a bracketed IPv6 address, and a port must be
+ * 1 to 65535.
+ *
+ * @since 2.3.1
+ *
+ * @param mixed $value Candidate origin.
+ * @return string The normalised origin, or '' when the value is not one.
+ */
+function rtgodam_normalize_origin( $value ) {
+	if ( ! is_string( $value ) ) {
+		return '';
+	}
+
+	if ( 1 !== preg_match( '#^(https?)://(\[[0-9a-f:.]+\]|[^/?\#\s@:\[\]]+)(?::([0-9]{1,5}))?$#iu', $value, $parts ) ) {
+		return '';
+	}
+
+	$scheme = strtolower( $parts[1] );
+	$host   = strtolower( $parts[2] );
+	$port   = isset( $parts[3] ) ? (int) $parts[3] : 0;
+
+	if ( '[' === $host[0] ) {
+		if ( false === filter_var( substr( $host, 1, -1 ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ) {
+			return '';
+		}
+	} else {
+		if ( 1 === preg_match( '/[^\x00-\x7f]/', $host ) && function_exists( 'idn_to_ascii' ) ) {
+			$host = idn_to_ascii( $host, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46 );
+
+			if ( ! is_string( $host ) ) {
+				return '';
+			}
+		}
+
+		// Letters, digits, underscore and hyphen (not at either end), and any
+		// non-ASCII character for the case where idn_to_ascii() is unavailable.
+		$label = '[a-z0-9_\x{80}-\x{10FFFF}](?:[a-z0-9_\x{80}-\x{10FFFF}-]{0,61}[a-z0-9_\x{80}-\x{10FFFF}])?';
+
+		if ( strlen( $host ) > 253 || 1 !== preg_match( '/^' . $label . '(?:\.' . $label . ')*$/u', $host ) ) {
+			return '';
+		}
+	}
+
+	if ( $port < 0 || $port > 65535 || ( isset( $parts[3] ) && 0 === $port ) ) {
+		return '';
+	}
+
+	$default_port = 'https' === $scheme ? 443 : 80;
+
+	return $scheme . '://' . $host . ( $port && $default_port !== $port ? ':' . $port : '' );
+}
+
+/**
+ * Get this site's origin: scheme, host and port, with no path.
+ *
+ * Analytics events are recorded under the visitor's `window.location.origin`,
+ * so reads made on the site's behalf use the same shape, built from home_url().
+ *
+ * This assumes home_url() and the address visitors load the site from give the
+ * same origin. They can differ, for example when a proxy ends TLS without
+ * telling WordPress (home_url() then keeps `http` while browsers report
+ * `https`), or when one site answers on several domains. Use the
+ * `rtgodam_site_origin` filter on those sites.
+ *
+ * @since 2.3.1
+ *
+ * @return string Origin such as `https://example.com`, or '' when home_url() has no scheme or host.
+ */
+function rtgodam_get_site_origin() {
+	$home_url = home_url();
+	$parts    = wp_parse_url( $home_url );
+	$origin   = '';
+
+	if ( ! empty( $parts['scheme'] ) && ! empty( $parts['host'] ) ) {
+		$scheme = strtolower( $parts['scheme'] );
+		$origin = $scheme . '://' . strtolower( $parts['host'] );
+
+		// Browsers leave the default port out of window.location.origin.
+		$default_ports = array(
+			'http'  => 80,
+			'https' => 443,
+		);
+
+		if ( ! empty( $parts['port'] ) && ( $default_ports[ $scheme ] ?? null ) !== (int) $parts['port'] ) {
+			$origin .= ':' . $parts['port'];
+		}
+	}
+
+	$origin = rtgodam_normalize_origin( $origin );
+
+	/**
+	 * Filters the origin analytics and engagement reads send as this site's address.
+	 *
+	 * Return the origin visitors' browsers report as `window.location.origin`:
+	 * scheme, host and any non-default port, no path, no userinfo and no trailing
+	 * slash. It is lowercased; any other value is ignored.
+	 *
+	 * @since 2.3.1
+	 *
+	 * @param string $origin   Origin built from home_url().
+	 * @param string $home_url The home_url() it was built from.
+	 */
+	$filtered = apply_filters( 'rtgodam_site_origin', $origin, $home_url );
+
+	$filtered = rtgodam_normalize_origin( $filtered );
+
+	return '' !== $filtered ? $filtered : $origin;
+}
+
+/**
+ * Get the origin an authenticated analytics read should send for this site.
+ *
+ * This is the site's own origin (see rtgodam_get_site_origin()), with one
+ * exception: when the request carries an origin on the same host and port and
+ * the scheme is the only difference, that origin is used. It covers a proxy that
+ * ends TLS without telling WordPress, where home_url() says `http` and the
+ * admin's browser is on `https`. A different host (www against apex, another
+ * domain) or port, a path, userinfo or a non-http scheme is ignored, so a caller
+ * can only pick between the two schemes of this site's own host. Use it only on
+ * routes behind a capability check; the public views route uses
+ * rtgodam_get_site_origin() directly.
+ *
+ * @since 2.3.1
+ *
+ * @param mixed $requested_origin The site_url sent with the request, if any.
+ * @return string Origin such as `https://example.com`, or '' when the site has none.
+ */
+function rtgodam_get_request_site_origin( $requested_origin ) {
+	$origin    = rtgodam_get_site_origin();
+	$requested = rtgodam_normalize_origin( $requested_origin );
+
+	if ( '' === $origin || '' === $requested || $requested === $origin ) {
+		return $origin;
+	}
+
+	$own = wp_parse_url( $origin );
+	$req = wp_parse_url( $requested );
+
+	if ( ( $own['host'] ?? null ) === ( $req['host'] ?? false ) && ( $own['port'] ?? null ) === ( $req['port'] ?? null ) ) {
+		return $requested;
+	}
+
+	return $origin;
+}

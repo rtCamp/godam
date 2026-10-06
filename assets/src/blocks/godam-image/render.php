@@ -87,6 +87,16 @@ if ( $godam_show_layers && $godam_attachment_id ) {
 
 $godam_has_layers = ! empty( $godam_layers );
 
+// The job id WordPress already has for this image, so its hotspot events carry it
+// the way the player's events carry theirs: the layer-analytics flush and the Woo
+// add-on's in-image add read it from the frame's `data-job_id`. Empty when the
+// image has none. The helper runs the attachment-lookup hooks itself.
+$godam_image_job_id = '';
+if ( $godam_has_layers && function_exists( 'rtgodam_get_job_id_by_attachment_id' ) ) {
+	$godam_image_job_id = rtgodam_get_job_id_by_attachment_id( $godam_attachment_id );
+	$godam_image_job_id = $godam_image_job_id ? (string) $godam_image_job_id : '';
+}
+
 // Enqueue the shared image-layers front-end renderer (+ its analytics runtime)
 // only when there are layers to draw. Registered lazily here as footer scripts,
 // so the Woo add-on's `godam_image_layers_frontend_dependencies` hook (added on
@@ -179,6 +189,7 @@ if ( empty( $godam_is_shortcode ) ) {
 		style="<?php echo esc_attr( $godam_frame_style ); ?>"
 		<?php if ( $godam_has_layers ) : ?>
 			data-id="<?php echo esc_attr( (string) $godam_attachment_id ); ?>"
+			data-job_id="<?php echo esc_attr( $godam_image_job_id ); ?>"
 			data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
 			data-block-source="godam-image"
 			data-godam-image-layers="<?php echo esc_attr( wp_json_encode( $godam_layers ) ); ?>"
