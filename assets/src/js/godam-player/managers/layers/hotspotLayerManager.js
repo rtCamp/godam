@@ -8,7 +8,31 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import { HOTSPOT_CONSTANTS } from '../../utils/constants';
 import { getLayerDisplayName } from '../../utils/layerActions.js';
-import { resolveHotspotStyle } from '../../utils/hotspotStyle';
+import { resolveHotspotStyle, isButtonHotspot } from '../../utils/hotspotStyle';
+import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars } from '../../utils/buttonCtaStyle';
+
+// Every rendered hotspot point: circles (pulse / icon style) and buttons (button
+// style). Points are matched to `layer.hotspots` by index, so both must be found.
+const HOTSPOT_POINT_SELECTOR = '.hotspot, .godam-hotspot-button';
+
+/**
+ * Whether an authored link is safe to make navigable. Only http(s) destinations
+ * qualify (relative URLs resolve against the page), never `javascript:`, `data:`
+ * and friends — `noopener` and `textContent` don't validate the destination, and
+ * the editor's own URL check only shows an error, it doesn't stop the value being
+ * saved.
+ *
+ * @param {string} url Authored link.
+ * @return {boolean} True when the link resolves to an http(s) URL.
+ */
+function isSafeLinkUrl( url ) {
+	try {
+		const { protocol } = new URL( url, window.location.href );
+		return protocol === 'http:' || protocol === 'https:';
+	} catch ( e ) {
+		return false;
+	}
+}
 
 /**
  * Resolve the analytics videoKey (data-id or data-job_id) for a player.
@@ -118,8 +142,7 @@ export default class HotspotLayerManager {
 	 * @param {number} index       Hotspot's position in parentLayer.hotspots.
 	 * @param {string} actionType  e.g. 'clicked', 'hovered'.
 	 * @param {Object} [metadata]  Extra fields merged into layer_metadata.
-	 * @param {Array}  [collector] When given, the built event is pushed here
-	 *                            instead of written, so a caller can batch.
+	 * @param {Array}  [collector] When given, the built event is pushed here instead of written, so a caller can batch.
 	 */
 	emitHotspotEvent( parentLayer, hotspot, index, actionType, metadata, collector ) {
 		// Build-only mode (a collector array is supplied) pushes the event for a
@@ -268,8 +291,7 @@ export default class HotspotLayerManager {
 	 * @param {Object} parentLayer Parent layer config (.id required; .name / .displayTime / .type preferred).
 	 * @param {string} actionType  e.g. 'viewed'.
 	 * @param {Object} [metadata]  Extra fields merged into layer_metadata.
-	 * @param {Array}  [collector] When given, the built event is pushed here
-	 *                            instead of written, so a caller can batch.
+	 * @param {Array}  [collector] When given, the built event is pushed here instead of written, so a caller can batch.
 	 */
 	emitParentLayerEvent( parentLayer, actionType, metadata, collector ) {
 		// Build-only mode (a collector array is supplied) only needs to push the
@@ -497,7 +519,7 @@ export default class HotspotLayerManager {
 						layerObj.layerElement.dataset.hotspotsInitialized = true;
 					} else {
 						requestAnimationFrame( () => {
-							const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
+							const hotspotDivs = layerObj.layerElement.querySelectorAll( HOTSPOT_POINT_SELECTOR );
 							hotspotDivs.forEach( ( hotspotDiv ) => {
 								const tooltipDiv = hotspotDiv.querySelector( '.hotspot-tooltip' );
 								if ( tooltipDiv ) {
@@ -563,6 +585,12 @@ export default class HotspotLayerManager {
 			this.setupHotspotAnalytics( hotspotDiv, layerObj, hotspot, index );
 
 			layerObj.layerElement.appendChild( hotspotDiv );
+
+			// A button can only be measured (and clamped inside the video) once it is
+			// attached to the visible layer.
+			if ( hotspotDiv.classList.contains( 'godam-hotspot-button' ) ) {
+				this.positionHotspotButton( hotspotDiv, hotspot );
+			}
 
 			const tooltipDiv = hotspotDiv.querySelector( '.hotspot-tooltip' );
 			if ( tooltipDiv ) {
@@ -682,6 +710,11 @@ export default class HotspotLayerManager {
 	 * @return {HTMLElement} Created hotspot element
 	 */
 	createHotspotElement( hotspot, index, containerWidth, containerHeight, baseWidth, baseHeight, layer ) {
+		// Button style: the point is a Button CTA-style button, not a circle.
+		if ( isButtonHotspot( layer, hotspot ) ) {
+			return this.createHotspotButtonElement( hotspot, index );
+		}
+
 		const hotspotDiv = document.createElement( 'div' );
 		hotspotDiv.classList.add( 'hotspot', 'circle' );
 		hotspotDiv.style.position = 'absolute';
@@ -735,6 +768,95 @@ export default class HotspotLayerManager {
 		hotspotDiv.appendChild( hotspotContent );
 
 		return hotspotDiv;
+	}
+
+	/**
+	 * Create a button-style hotspot point (the layer's "Button" style).
+	 *
+	 * Mirrors the Button CTA layer's button: text or die-cut sticker variant,
+	 * per-hotspot colours and attention animation (all from `_button-cta.scss`).
+	 * The label is the hotspot's tooltip text, there is no hover tooltip, and the
+	 * button itself opens the hotspot link. It deliberately does NOT carry the
+	 * `.hotspot` / `.circle` classes, whose circle styles would override it.
+	 *
+	 * @param {Object} hotspot Hotspot configuration object.
+	 * @param {number} index   Index of the hotspot.
+	 * @return {HTMLElement} The created anchor element.
+	 */
+	createHotspotButtonElement( hotspot, index ) {
+		const style = resolveButtonCtaStyle( hotspot );
+
+		const buttonEl = document.createElement( 'a' );
+		buttonEl.className = getButtonCtaClassName( style, { extra: 'godam-hotspot-button' } );
+
+		/* translators: %d: hotspot number */
+		const label = hotspot.tooltipText || sprintf( __( 'Hotspot %d', 'godam' ), index + 1 );
+		// textContent (never innerHTML) keeps author-entered labels inert.
+		buttonEl.textContent = label;
+		// The sticker variant draws its die-cut border from `data-sticker-text`.
+		if ( style.variant === 'sticker' ) {
+			buttonEl.setAttribute( 'data-sticker-text', label );
+		}
+
+		if ( hotspot.link && isSafeLinkUrl( hotspot.link ) ) {
+			buttonEl.href = hotspot.link;
+			buttonEl.target = '_blank';
+			buttonEl.rel = 'noopener noreferrer';
+		}
+
+		buttonEl.style.position = 'absolute';
+		Object.entries( getButtonCtaCssVars( style ) ).forEach( ( [ prop, value ] ) => {
+			buttonEl.style.setProperty( prop, value );
+		} );
+
+		this.positionHotspotButton( buttonEl, hotspot );
+
+		return buttonEl;
+	}
+
+	/**
+	 * Place a button-style hotspot with its top-left corner on the hotspot's
+	 * position, inside the video content box (same anchoring as the circles).
+	 * Buttons size to their label, so only left/top are set — then clamped so the
+	 * button stays inside the content box: the saved position scales with the video
+	 * but the button's pixel size doesn't, so a point near the bottom or right edge
+	 * would otherwise overflow (and be clipped by) a small player.
+	 *
+	 * @param {HTMLElement} buttonEl The button element.
+	 * @param {Object}      hotspot  Hotspot configuration object.
+	 */
+	positionHotspotButton( buttonEl, hotspot ) {
+		const containerEl = this.player.el();
+		const rect = this.computeContentRect() || {
+			left: 0,
+			top: 0,
+			width: containerEl?.offsetWidth || 0,
+			height: containerEl?.offsetHeight || 0,
+		};
+
+		const posX = hotspot.oPosition?.x ?? hotspot.position?.x ?? 50;
+		const posY = hotspot.oPosition?.y ?? hotspot.position?.y ?? 50;
+		// Percent units for current hotspots; legacy pixel units are relative to 800x600.
+		const isPercent = hotspot.unit === 'percent';
+		const fractionX = isPercent ? posX / 100 : posX / HotspotLayerManager.BASE_WIDTH;
+		const fractionY = isPercent ? posY / 100 : posY / HotspotLayerManager.BASE_HEIGHT;
+
+		let left = rect.left + ( fractionX * rect.width );
+		let top = rect.top + ( fractionY * rect.height );
+		buttonEl.style.left = `${ left }px`;
+		buttonEl.style.top = `${ top }px`;
+
+		// Measure after placing it (its wrapped width depends on where it sits). A
+		// button that isn't laid out yet (hidden layer, not attached) measures 0 and
+		// is clamped on the next reposition instead.
+		const width = buttonEl.offsetWidth;
+		const height = buttonEl.offsetHeight;
+		if ( width && height ) {
+			left = Math.max( rect.left, Math.min( left, rect.left + rect.width - width ) );
+			top = Math.max( rect.top, Math.min( top, rect.top + rect.height - height ) );
+			buttonEl.style.left = `${ left }px`;
+			buttonEl.style.top = `${ top }px`;
+		}
 	}
 
 	/**
@@ -1007,9 +1129,15 @@ export default class HotspotLayerManager {
 
 		this.hotspotLayers.forEach( ( layerObj ) => {
 			const isLayerHidden = layerObj.layerElement.classList.contains( 'hidden' );
-			const hotspotDivs = layerObj.layerElement.querySelectorAll( '.hotspot' );
+			const hotspotDivs = layerObj.layerElement.querySelectorAll( HOTSPOT_POINT_SELECTOR );
 			hotspotDivs.forEach( ( hotspotDiv, index ) => {
 				const hotspot = layerObj.hotspots[ index ];
+
+				// Buttons size to their label and have no tooltip — only move them.
+				if ( hotspotDiv.classList.contains( 'godam-hotspot-button' ) ) {
+					this.positionHotspotButton( hotspotDiv, hotspot );
+					return;
+				}
 
 				// Recalc position
 				const fallbackPosX = hotspot.oPosition?.x ?? hotspot.position.x;

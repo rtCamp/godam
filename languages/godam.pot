@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-24T11:42:37+00:00\n"
+"POT-Creation-Date: 2026-10-06T12:22:49+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -109,7 +109,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:261
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-audio/render.php:261
 #: assets/src/blocks/godam-audio/tabs.js:147
@@ -241,7 +241,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
 #: assets/build/blocks/godam-audio/view.js:1
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-audio/tabs.js:194
 #: assets/src/blocks/godam-audio/view.js:124
@@ -1080,7 +1080,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/build/js/godam-player-frontend.min.js:5
+#: assets/build/js/godam-player-frontend.min.js:7
 #: assets/build/pages/tools.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:78
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:103
@@ -1094,7 +1094,7 @@ msgid "Video"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/view.js:1
-#: assets/build/js/godam-player-frontend.min.js:5
+#: assets/build/js/godam-player-frontend.min.js:7
 #: assets/src/blocks/godam-gallery-v2/view.js:129
 #: assets/src/blocks/godam-gallery-v2/view.js:136
 #: assets/src/js/godam-player/managers/modalManager.js:355
@@ -1102,7 +1102,7 @@ msgid "Video player"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/view.js:1
-#: assets/build/js/godam-player-frontend.min.js:5
+#: assets/build/js/godam-player-frontend.min.js:7
 #: assets/build/pages/onboarding.min.js:2
 #: assets/src/blocks/godam-gallery-v2/view.js:142
 #: assets/src/js/godam-player/managers/modalManager.js:345
@@ -1120,85 +1120,90 @@ msgstr ""
 msgid "Next video"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:1
-#: assets/build/js/godam-image-layers-frontend.min.js:1
-#: assets/build/js/godam-player-frontend.min.js:1
-#: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:806
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:200
-#: pages/video-editor/components/layers/HotspotLayer.js:769
-msgid "Custom Icon"
-msgstr ""
-
 #. translators: %d: hotspot number
 #. translators: %d is the hotspot index
 #: assets/build/blocks/godam-image/index.js:3
 #: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:7
 #: assets/build/js/godam-image-layers-frontend.min.js:3
 #: assets/build/js/godam-image-layers-frontend.min.js:5
+#: assets/build/js/godam-image-layers-frontend.min.js:7
 #: assets/build/js/godam-player-frontend.min.js:3
 #: assets/build/js/godam-player-frontend.min.js:5
+#: assets/build/js/godam-player-frontend.min.js:7
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:848
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:855
-#: pages/video-editor/components/layers/HotspotLayer.js:458
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:793
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:970
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:977
+#: pages/video-editor/components/layers/HotspotLayer.js:467
+#: pages/video-editor/components/layers/HotspotLayer.js:679
 #, js-format
 msgid "Hotspot %d"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:3
+#: assets/build/js/godam-image-layers-frontend.min.js:3
+#: assets/build/js/godam-player-frontend.min.js:3
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:928
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:200
+#: pages/video-editor/components/layers/HotspotLayer.js:841
+msgid "Custom Icon"
+msgstr ""
+
+#: assets/build/blocks/godam-image/index.js:7
 #: assets/src/blocks/godam-image/edit.js:84
 msgid "Only image files are allowed in the GoDAM Image block."
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:7
 #: assets/src/blocks/godam-image/edit.js:182
 msgid "Customize Image"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:7
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-image/edit.js:197
 #: pages/video-editor/components/cta/CardCTA.js:399
 msgid "Remove image"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:7
 #: assets/src/blocks/godam-image/edit.js:165
 #: assets/src/blocks/godam-image/edit.js:264
 msgid "Add Image"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:7
 #: inc/classes/elementor-widgets/class-godam-image.php:54
 #: assets/src/blocks/godam-image/edit.js:222
 msgid "Image Selection"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:7
 #: assets/src/blocks/godam-image/edit.js:224
 msgid "Add hotspot and product layers to make your image stand out."
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:7
 #: inc/classes/elementor-widgets/class-godam-image.php:72
 #: assets/src/blocks/godam-image/edit.js:231
 msgid "Show image layers"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:7
 #: inc/classes/elementor-widgets/class-godam-image.php:78
 #: assets/src/blocks/godam-image/edit.js:234
 msgid "Overlays the hotspot / product layers authored in the GoDAM image editor."
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:7
 #: inc/classes/elementor-widgets/class-godam-image.php:165
 #: assets/src/blocks/godam-image/edit.js:246
 msgid "Add Image Here"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:5
+#: assets/build/blocks/godam-image/index.js:7
 #: assets/src/blocks/godam-image/edit.js:249
 msgid "Upload or select an image from your media library to get started."
 msgstr ""
@@ -1611,7 +1616,7 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:128
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:283
 #: pages/analytics/helper.js:548
-#: pages/video-editor/components/layers/HotspotLayer.js:509
+#: pages/video-editor/components/layers/HotspotLayer.js:533
 msgid "Duration"
 msgstr ""
 
@@ -2449,37 +2454,37 @@ msgstr ""
 msgid "Continue"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:5
+#: assets/build/js/godam-player-frontend.min.js:7
 #: assets/src/js/godam-player/managers/modalManager.js:41
 msgid "Play video in a lightbox"
 msgstr ""
 
 #. translators: %d: number of seconds to seek backward
 #. translators: %d: number of seconds to seek forward
-#: assets/build/js/godam-player-frontend.min.js:7
 #: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/src/js/godam-player/managers/playerManager.js:466
 #: assets/src/js/godam-player/managers/playerManager.js:482
 #, js-format
 msgid "%ds"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/src/js/godam-player/managers/shareManager.js:281
 msgid "Check out this video!"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/src/js/godam-player/managers/shareManager.js:321
 msgid "Share Media"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/src/js/godam-player/managers/shareManager.js:330
 msgid "Page Link"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/godam.min.js:2
@@ -2491,38 +2496,38 @@ msgstr ""
 msgid "GoDAM Central"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/src/js/godam-player/managers/shareManager.js:332
 msgid "Embed"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/src/js/godam-player/managers/shareManager.js:341
 msgid "Start at"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/src/js/godam-player/managers/shareManager.js:345
 msgid "mm:ss"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/src/js/godam-player/managers/shareManager.js:652
 msgid "copy icon"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:296
 msgid "Toggle transcript"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:382
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:384
 msgid "Close transcript"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:9
+#: assets/build/js/godam-player-frontend.min.js:11
 #: assets/build/pages/godam.min.js:2
 #: assets/src/js/godam-player/masterSettings.js:264
 msgid "Invalid item"
@@ -7895,7 +7900,7 @@ msgstr ""
 #: pages/video-editor/components/ads/CustomAdSettings.js:268
 #: pages/video-editor/components/cta/CardCTA.js:274
 #: pages/video-editor/components/cta/CardCTA.js:284
-#: pages/video-editor/components/layers/HotspotLayer.js:486
+#: pages/video-editor/components/layers/HotspotLayer.js:503
 msgid "Please enter a valid URL (e.g., https://example.com)"
 msgstr ""
 
@@ -8025,14 +8030,17 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/cta/CardCTA.js:477
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:42
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:153
 msgid "Text"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/cta/CardCTA.js:484
 #: pages/video-editor/components/layers/FormLayer.js:147
-#: pages/video-editor/components/layers/HotspotLayer.js:580
+#: pages/video-editor/components/layers/HotspotLayer.js:610
 #: pages/video-editor/components/layers/PollLayer.js:72
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:152
 msgid "Background"
 msgstr ""
 
@@ -8092,7 +8100,7 @@ msgid "Another CTA already uses On Pause — only one CTA per video can."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:511
+#: pages/video-editor/components/layers/HotspotLayer.js:535
 #: pages/video-editor/components/layers/shared/TriggerSection.jsx:107
 msgid "Start Time"
 msgstr ""
@@ -8139,14 +8147,78 @@ msgid "Add custom"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:63
+#: inc/classes/elementor-widgets/class-godam-video.php:353
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:180
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:189
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:34
+msgid "None"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/HotspotLayer.js:67
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:35
 msgid "Pulse"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:64
-#: pages/video-editor/components/layers/HotspotLayer.js:573
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:36
+msgid "Border waves"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:37
+msgid "Glow"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:43
+msgid "Sticker"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:106
+msgid "Type"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:143
+msgid "Attention animation"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:150
+msgid "Colours"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:154
+msgid "Hover Background"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:155
+msgid "Hover Text"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:161
+msgid "Fill colour"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:163
+msgid "Fill"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/HotspotLayer.js:68
+#: pages/video-editor/components/layers/HotspotLayer.js:603
 msgid "Icon"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/HotspotLayer.js:69
+msgid "Button"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
@@ -8246,7 +8318,7 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/layers/FormLayer.js:128
-#: pages/video-editor/components/layers/HotspotLayer.js:590
+#: pages/video-editor/components/layers/HotspotLayer.js:620
 #: pages/video-editor/components/layers/PollLayer.js:54
 msgid "Behaviour"
 msgstr ""
@@ -8315,79 +8387,95 @@ msgid "No Image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:224
+#: pages/video-editor/components/layers/HotspotLayer.js:233
 msgid "New Hotspot"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:438
+#: pages/video-editor/components/layers/HotspotLayer.js:447
 msgid "Add Hotspots"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:442
+#: pages/video-editor/components/layers/HotspotLayer.js:451
 msgid "Drag the hotspot in video to reposition it."
 msgstr ""
 
 #. translators: %d is the hotspot index
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:466
+#: pages/video-editor/components/layers/HotspotLayer.js:475
 #, js-format
 msgid "Delete Hotspot %d"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:476
+#: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:509
+#: pages/video-editor/components/layers/HotspotLayer.js:493
+msgid "Button Text"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/HotspotLayer.js:493
 msgid "Tooltip Text"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:477
+#: pages/video-editor/components/layers/HotspotLayer.js:494
+msgid "Click here"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/HotspotLayer.js:494
 msgid "Click Me!"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:483
+#: pages/video-editor/components/layers/HotspotLayer.js:500
 msgid "Link"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:502
+#: pages/video-editor/components/layers/HotspotLayer.js:526
 msgid "Add Hotspot"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:518
+#: pages/video-editor/components/layers/HotspotLayer.js:542
 msgid "Layer Duration (seconds)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:176
+#: pages/video-editor/components/layers/HotspotLayer.js:185
 msgid "Layer duration exceeds the remaining video length. Please reduce the duration."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:525
+#: pages/video-editor/components/layers/HotspotLayer.js:549
 msgid "Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:531
+#: pages/video-editor/components/layers/HotspotLayer.js:555
 msgid "Style"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:555
+#: pages/video-editor/components/layers/HotspotLayer.js:564
+msgid "Each hotspot is a button. Set its type, text, colours and animation in the hotspot cards above."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/HotspotLayer.js:585
 msgid "Pulse colour"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:593
+#: pages/video-editor/components/layers/HotspotLayer.js:623
 msgid "Pause video when hotspot is hovered"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:596
+#: pages/video-editor/components/layers/HotspotLayer.js:626
 msgid "Player will pause the video while the layer is displayed and users hover over the hotspots."
 msgstr ""
 
@@ -10406,12 +10494,6 @@ msgstr ""
 msgid "Hover Option"
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:353
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:180
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:189
-msgid "None"
-msgstr ""
-
 #: inc/classes/elementor-widgets/class-godam-video.php:354
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:190
 msgid "Show Player Controls"
@@ -10534,10 +10616,6 @@ msgstr ""
 #: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:495
 #: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:510
 msgid "Text for the start recording button"
-msgstr ""
-
-#: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:509
-msgid "Button Text"
 msgstr ""
 
 #: inc/classes/everest-forms/class-everest-forms-integration.php:270

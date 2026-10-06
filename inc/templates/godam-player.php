@@ -1138,21 +1138,6 @@ do_action( 'rtgodam_after_attachment_lookup' );
 								>
 								</div>
 								<?php
-								// BUTTON CTA layer. Renders an empty positioned container; the
-								// frontend JS (buttonCtaLayerManager) builds, positions and wires
-								// each button from the layer config in `data-options`.
-							elseif ( isset( $godam_layer['type'] ) && 'button-cta' === $godam_layer['type'] ) :
-								?>
-								<div
-									id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
-									class="easydam-layer hidden godam-button-cta-layer"
-									<?php
-									if ( ! empty( $godam_layer['bg_color'] ) ) :
-										?>
-										style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"<?php endif; ?>
-								>
-								</div>
-								<?php
 								// Extensible layer types (e.g. WooCommerce) rendered by add-ons.
 							else :
 								/**

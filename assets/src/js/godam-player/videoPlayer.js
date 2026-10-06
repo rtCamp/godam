@@ -525,9 +525,6 @@ export default class GodamVideoPlayer {
 		// Handle hotspot layers
 		this.layersManager.handleHotspotLayersTimeUpdate( currentTime );
 
-		// Handle button CTA layers
-		this.layersManager.handleButtonCtaLayersTimeUpdate( currentTime );
-
 		// Handle custom add-on layers (WooCommerce, etc.)
 		this.layersManager.handleCustomLayersTimeUpdate( currentTime );
 	}

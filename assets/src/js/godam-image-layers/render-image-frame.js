@@ -176,6 +176,12 @@ export function initImageFrame( frame ) {
 				hotspotLayers.forEach( ( layer ) => {
 					( layer.hotspots || [] ).forEach( ( hotspot ) => {
 						const style = resolveHotspotStyle( layer, hotspot );
+						// Button-style hotspots keep their own button fields; tag them so
+						// the style-less merged layer still renders them as buttons.
+						if ( style.styleType === 'button' ) {
+							mergedHotspots.push( { ...hotspot, styleType: 'button' } );
+							return;
+						}
 						mergedHotspots.push( {
 							...hotspot,
 							icon: style.icon || '',

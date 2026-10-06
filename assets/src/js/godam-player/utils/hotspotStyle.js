@@ -35,7 +35,7 @@ const DEFAULT_HOTSPOT_CUSTOM_ICON_BG = '#ffffff';
  *
  * @param {Object} layer   Parent hotspot layer config.
  * @param {Object} hotspot Individual hotspot config.
- * @return {{icon: (string|null), customIconUrl: (string|null), color: string, iconColor: string}} Effective style. `color` is the circle fill (pulse colour in pulse mode, background colour in icon mode); `iconColor` recolours a library glyph.
+ * @return {{styleType: string, icon: (string|null), customIconUrl: (string|null), color: (string|null), iconColor: string}} Effective style. `styleType` is 'pulse', 'icon' or 'button'; `color` is the circle fill (pulse colour in pulse mode, background colour in icon mode, null for buttons); `iconColor` recolours a library glyph.
  */
 export function resolveHotspotStyle( layer, hotspot = {} ) {
 	// `styleType` marks a layer as using the shared layer-level model — set both
@@ -51,7 +51,23 @@ export function resolveHotspotStyle( layer, hotspot = {} ) {
 	const icon = layer?.icon || legacy.icon || null;
 	const customIconUrl = layer?.customIconUrl || legacy.customIconUrl || null;
 	const hasIcon = !! ( icon || customIconUrl );
-	const styleType = layer?.styleType || ( hasIcon ? 'icon' : 'pulse' );
+	// A per-hotspot `styleType` only reaches us on the legacy path — the godam/image
+	// block merges every hotspot layer into one synthetic, style-less layer and
+	// tags button hotspots with `styleType: 'button'` (see render-image-frame.js).
+	const styleType = layer?.styleType || legacy.styleType || ( hasIcon ? 'icon' : 'pulse' );
+
+	// Button style: each point renders as a Button CTA-style button. Its look is
+	// per hotspot and resolved by `resolveButtonCtaStyle( hotspot )`, so there is
+	// no circle colour or glyph here.
+	if ( styleType === 'button' ) {
+		return {
+			styleType,
+			icon: null,
+			customIconUrl: null,
+			color: null,
+			iconColor: DEFAULT_HOTSPOT_ICON_COLOR,
+		};
+	}
 
 	if ( styleType === 'icon' ) {
 		// A custom uploaded image sits on a neutral white circle by default; a
@@ -60,6 +76,7 @@ export function resolveHotspotStyle( layer, hotspot = {} ) {
 		// light content.
 		const bgDefault = customIconUrl ? DEFAULT_HOTSPOT_CUSTOM_ICON_BG : DEFAULT_HOTSPOT_COLOR;
 		return {
+			styleType,
 			icon,
 			customIconUrl,
 			color: layer?.backgroundColor || legacy.backgroundColor || bgDefault,
@@ -69,11 +86,23 @@ export function resolveHotspotStyle( layer, hotspot = {} ) {
 
 	// Pulse dot — no icon, just the pulse colour.
 	return {
+		styleType: 'pulse',
 		icon: null,
 		customIconUrl: null,
 		color: layer?.pulseColor || legacy.backgroundColor || DEFAULT_HOTSPOT_COLOR,
 		iconColor: DEFAULT_HOTSPOT_ICON_COLOR,
 	};
+}
+
+/**
+ * Whether a hotspot renders as a button (the layer's "Button" style).
+ *
+ * @param {Object} layer   Parent hotspot layer config.
+ * @param {Object} hotspot Individual hotspot config.
+ * @return {boolean} True when the hotspot should render as a button.
+ */
+export function isButtonHotspot( layer, hotspot = {} ) {
+	return resolveHotspotStyle( layer, hotspot ).styleType === 'button';
 }
 
 export { DEFAULT_HOTSPOT_COLOR, DEFAULT_HOTSPOT_ICON_COLOR, DEFAULT_HOTSPOT_CUSTOM_ICON_BG };

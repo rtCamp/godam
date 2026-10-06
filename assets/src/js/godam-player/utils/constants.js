@@ -62,7 +62,6 @@ export const LAYER_TYPES = {
 	CTA: 'cta',
 	POLL: 'poll',
 	HOTSPOT: 'hotspot',
-	BUTTON_CTA: 'button-cta',
 	WOOCOMMERCE: 'woo',
 };
 

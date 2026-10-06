@@ -30,7 +30,6 @@ export default class LayerValidator {
 			[ LAYER_TYPES.POLL ]: () => dependencies?.wpPolls,
 			[ LAYER_TYPES.CTA ]: () => true,
 			[ LAYER_TYPES.HOTSPOT ]: () => true,
-			[ LAYER_TYPES.BUTTON_CTA ]: () => true,
 		};
 
 		const checker = layerTypeChecks[ layer.type ];

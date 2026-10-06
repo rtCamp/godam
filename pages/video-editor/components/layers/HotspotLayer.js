@@ -37,6 +37,9 @@ import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from './LayersHeader';
 import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
 import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR, DEFAULT_HOTSPOT_ICON_COLOR, DEFAULT_HOTSPOT_CUSTOM_ICON_BG } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
+import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars } from '../../../../assets/src/js/godam-player/utils/buttonCtaStyle';
+import { ButtonVariantField, ButtonStyleFields, useDebouncedItemColor } from '../shared/button-cta/ButtonControls.jsx';
+import { ButtonCtaLayerIcon } from '../editor-shell/icons';
 import { VeSection, VeColorList, VeSegmented, VeTextInput, VeToggle } from '../controls';
 
 /**
@@ -59,9 +62,11 @@ const CartIconOption = () => (
 // Icon-on-top segmented cards, matching the WooCommerce hotspot layer's Style
 // field. Woo uses a cart for its "Icon" option (product-specific); a generic
 // hotspot uses a map-marker glyph instead.
+// "Button" renders each point as a Button CTA-style button, configured per hotspot.
 const STYLE_OPTIONS = [
 	{ value: 'pulse', label: __( 'Pulse', 'godam' ), icon: <PulseDotIcon /> },
 	{ value: 'icon', label: __( 'Icon', 'godam' ), icon: <CartIconOption /> },
+	{ value: 'button', label: __( 'Button', 'godam' ), icon: <ButtonCtaLayerIcon /> },
 ];
 
 const HotspotLayer = ( { layerID, goBack, duration } ) => {
@@ -97,6 +102,10 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	}, [ dispatch, layer?.id ] );
 
 	const styleType = layer?.styleType || 'pulse';
+	const isButtonStyle = styleType === 'button';
+
+	// Debounced colour writes for button-style hotspots (see useDebouncedItemColor).
+	const debouncedHotspotColor = useDebouncedItemColor( layerID, 'hotspots' );
 
 	/**
 	 * Migrate legacy layers (saved with per-hotspot style and no `styleType`)
@@ -471,10 +480,18 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 								{ expandedHotspotIndex === index && (
 									<div className="godam-ve-hotspot-card__body">
+										{ /* Button style: the same per-button settings as the Button CTA layer
+										     (no image variant). The tooltip text becomes the button label. */ }
+										{ isButtonStyle && (
+											<ButtonVariantField
+												value={ hotspot.variant }
+												onChange={ ( val ) => updateHotspotField( index, { variant: val } ) }
+											/>
+										) }
 										<VeTextInput
 											data-test-id={ `godam-hotspot-control-tooltip-text-${ index }` }
-											label={ __( 'Tooltip Text', 'godam' ) }
-											placeholder={ __( 'Click Me!', 'godam' ) }
+											label={ isButtonStyle ? __( 'Button Text', 'godam' ) : __( 'Tooltip Text', 'godam' ) }
+											placeholder={ isButtonStyle ? __( 'Click here', 'godam' ) : __( 'Click Me!', 'godam' ) }
 											value={ hotspot.tooltipText }
 											onChange={ ( val ) => updateHotspotField( index, { tooltipText: val } ) }
 										/>
@@ -486,6 +503,13 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											error={ hotspot.linkInvalid ? __( 'Please enter a valid URL (e.g., https://example.com)', 'godam' ) : '' }
 											onChange={ ( val ) => updateHotspotField( index, { link: val, linkInvalid: !! val && ! isValidURL( val ) } ) }
 										/>
+										{ isButtonStyle && (
+											<ButtonStyleFields
+												button={ hotspot }
+												onFieldChange={ ( changes ) => updateHotspotField( index, changes ) }
+												onColorChange={ ( field, val ) => debouncedHotspotColor( index, field, val ) }
+											/>
+										) }
 									</div>
 								) }
 							</div>
@@ -527,13 +551,19 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					</VeSection>
 				) }
 
-				{ /* Style: shared across all hotspot points. */ }
+				{ /* Style: Pulse / Icon are shared across all points; Button is set per hotspot. */ }
 				<VeSection title={ __( 'Style', 'godam' ) }>
 					<VeSegmented
 						options={ STYLE_OPTIONS }
 						value={ styleType }
 						onChange={ ( value ) => updateField( 'styleType', value ) }
 					/>
+
+					{ isButtonStyle && (
+						<p className="godam-ve-hint">
+							{ __( 'Each hotspot is a button. Set its type, text, colours and animation in the hotspot cards above.', 'godam' ) }
+						</p>
+					) }
 
 					{ styleType === 'icon' && (
 						<FontAwesomeIconPicker
@@ -639,6 +669,48 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 							pixelX = ( posX / baseWidth ) * ( contentRect?.width || HOTSPOT_CONSTANTS.BASE_WIDTH );
 							pixelY = ( posY / baseHeight ) * ( contentRect?.height || HOTSPOT_CONSTANTS.BASE_HEIGHT );
 							pixelDiameter = ( diameter / baseWidth ) * ( contentRect?.width || HOTSPOT_CONSTANTS.BASE_WIDTH );
+						}
+
+						// Button style: preview the point as the same button the player
+						// renders (sized to its label; drag to move, no resize).
+						if ( isButtonStyle ) {
+							const buttonStyle = resolveButtonCtaStyle( hotspot );
+							/* translators: %d is the hotspot index */
+							const label = hotspot.tooltipText || sprintf( __( 'Hotspot %d', 'godam' ), index + 1 );
+
+							return (
+								<Rnd
+									// Distinct key so switching from Pulse/Icon remounts the Rnd
+									// at auto size instead of keeping the circle's stored size.
+									key={ `${ hotspot.id }-button` }
+									position={ { x: pixelX, y: pixelY } }
+									default={ { x: pixelX, y: pixelY, width: 'auto', height: 'auto' } }
+									bounds="parent"
+									enableResizing={ false }
+									onDragStop={ ( e, d ) => {
+										if ( ! contentRect ) {
+											return;
+										}
+										const nextPosition = { x: pxToPercent( d.x, 'x' ), y: pxToPercent( d.y, 'y' ) };
+										const changes = { unit: 'percent', position: nextPosition, oPosition: nextPosition };
+										// Converting a legacy pixel hotspot to percent: convert its
+										// diameter too, so switching back to Pulse/Icon keeps its size.
+										if ( hotspot.unit !== 'percent' ) {
+											const minPercent = ( HOTSPOT_CONSTANTS.MIN_PX / contentRect.width ) * 100;
+											const nextDiameter = Math.max( minPercent, ( diameter / HOTSPOT_CONSTANTS.BASE_WIDTH ) * 100 );
+											changes.size = { diameter: nextDiameter };
+											changes.oSize = { diameter: nextDiameter };
+										}
+										updateHotspotField( index, changes );
+									} }
+									onClick={ () => setExpandedHotspotIndex( index ) }
+									className={ getButtonCtaClassName( buttonStyle, { extra: 'godam-hotspot-button' } ) }
+									style={ getButtonCtaCssVars( buttonStyle ) }
+									data-sticker-text={ buttonStyle.variant === 'sticker' ? label : undefined }
+								>
+									{ label }
+								</Rnd>
+							);
 						}
 
 						return (

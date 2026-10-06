@@ -1,24 +1,14 @@
 /**
- * Button CTA layer styles.
+ * Button styles for the Hotspot layer's "Button" style.
  *
  * Shared by the frontend player and the video-editor preview (both load
  * `godam-player.scss`). Each button's colours arrive as inline CSS custom
- * properties (`--godam-btn-*`), set by `buttonCtaLayerManager` on the frontend
- * and by `ButtonCtaLayer` in the editor preview, so idle + hover + alpha are all
- * expressible from here (plain inline styles can't express `:hover`).
+ * properties (`--godam-btn-*`), set by `hotspotLayerManager` on the frontend and
+ * by `HotspotLayer` in the editor preview, so idle + hover + alpha are all
+ * expressible from here (plain inline styles can't express `:hover`). The
+ * `.hotspot-layer` container is already click-through, so only the buttons
+ * themselves are interactive.
  */
-
-// The overlay container is click-through so it never blocks the video controls;
-// only the buttons themselves are interactive. Mirrors `.hotspot-layer`.
-.easydam-layer.godam-button-cta-layer {
-	pointer-events: none;
-	background: transparent;
-	z-index: 5;
-
-	&.overlapped {
-		z-index: 0;
-	}
-}
 
 .godam-button-cta {
 	pointer-events: auto;
@@ -49,38 +39,13 @@
 	}
 }
 
-// Sticker / image variant: the uploaded <img> IS the button, so drop the
-// text-button chrome and let the image define the box. Width is applied inline
-// (a % of the video content width); height follows the image aspect ratio.
-.godam-button-cta--image {
-	padding: 0;
-	max-width: none;
-	border: none;
-	border-radius: 0;
-	background: transparent;
-
-	&:hover,
-	&:focus {
-		background: transparent;
-	}
-
-	img {
-		display: block;
-		width: 100%;
-		height: auto;
-		object-fit: contain;
-		pointer-events: none;
-	}
-}
-
 // Sticker variant: the button text rendered as a die-cut sticker — a bold,
-// dark-outlined word with a thick white sticker border and a drop shadow (a
+// dark-outlined word with a thick white sticker border and a soft shadow (a
 // peel-and-stick label). The letter fill uses the chosen Fill colour
 // (`--godam-btn-bg`); the dark outline, white border and shadow are fixed sticker
-// chrome. Built from `-webkit-text-stroke` (dark outline) + layered `text-shadow`
-// (the white die-cut) + a `filter` drop-shadow that follows the white contour.
-// No element `transform`, so it never fights the editor preview's react-rnd
-// positioning.
+// chrome, drawn with `-webkit-text-stroke` on the element and on `::before` /
+// `::after` copies of the text (`data-sticker-text`). No element `transform`, so
+// it never fights the editor preview's react-rnd positioning.
 .godam-button-cta--sticker {
 	display: inline-block;
 	padding: 0;
