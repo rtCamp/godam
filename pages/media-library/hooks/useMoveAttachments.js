@@ -182,6 +182,11 @@ const useMoveAttachments = () => {
 
 			updateFolderCounts( Number( sourceFolderId ), target, ids.length );
 			dispatch( updateSnackbar( notice ) );
+
+			// Let decoupled listeners (e.g. the Media Library guided tour) know media moved.
+			document.dispatchEvent( new CustomEvent( 'godam-media-library:attachments-moved', {
+				detail: { attachmentIds: ids, targetFolderId: target },
+			} ) );
 			refreshAfterMove( { notice } );
 
 			return { success: true };
