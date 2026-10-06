@@ -143,13 +143,17 @@ function flushLayerInteractions() {
 			? findVideoElementById( numericId )
 			: document.querySelector( `.video-js[data-job_id="${ videoKey }"]` );
 
+		// The job id WordPress already has for this image or video, from the same
+		// element: without it the job-id backfill later rewrites these events.
+		const flushJobId = isNumeric ? flushVideoEl?.getAttribute( 'data-job_id' ) || '' : videoKey;
+
 		for ( let i = 0; i < events.length; i += MAX_PER_REQUEST ) {
 			const chunk = events.slice( i, i + MAX_PER_REQUEST );
 			const { endpoint, body } = buildAnalyticsRequestBody( {
 				type: 3,
 				userToken: window.analytics?.user?.()?.anonymousId || '',
 				videoId: isNumeric ? numericId : 0,
-				jobId: isNumeric ? '' : videoKey,
+				jobId: flushJobId,
 				layers: chunk,
 				blockSource: flushVideoEl?.dataset?.blockSource || '',
 				hostPostId: elementHostPostId( flushVideoEl ),

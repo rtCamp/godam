@@ -26,6 +26,135 @@ class Analytics extends Base {
 	protected $rest_base = 'analytics';
 
 	/**
+	 * Fields of the `dashboard_metrics` payload that are video data. Users without
+	 * `view_woocommerce_reports` get these and nothing else, so a field the
+	 * analytics service adds later stays hidden from them until it is listed here.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_DASHBOARD_METRICS = array(
+		'plays',
+		'play_time',
+		'page_load',
+		'avg_engagement',
+		'views_change',
+		'watch_time_change',
+		'play_rate_change',
+		'avg_engagement_change',
+		'country_views',
+		'total_videos',
+		'unique_viewers',
+		'unavailable_sections',
+	);
+
+	/**
+	 * Sections of `dashboard_metrics` the service may report as unavailable that
+	 * are video data. Every other name is a store section.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_SECTIONS = array( 'unique_viewers' );
+
+	/**
+	 * Fields of a per-video analytics record (the `processed_analytics` row plus
+	 * the placements the service flattens into it) that are video data. The store
+	 * fields the service adds to the same record (Video-to-Cart, Video-to-Purchase,
+	 * the funnel, revenue and tips) are deliberately not listed.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_RECORD = array(
+		'video_id',
+		'job_id',
+		'account_token',
+		'site_url',
+		'date',
+		'plays',
+		'unique_viewers',
+		'unique_converting_sessions',
+		'play_time',
+		'page_load',
+		'video_length',
+		'heatmap',
+		'all_time_heatmap',
+		'country_views',
+		'post_views',
+		'placements',
+		'views_change',
+		'watch_time_change',
+		'play_rate_change',
+		'avg_engagement_change',
+		'layer_type_stats',
+		'layer_details',
+		'layer_positions',
+		'layer_converting_sessions',
+	);
+
+	/**
+	 * Layer actions that are video data: what a viewer did with a layer. The
+	 * `added_to_cart` action is store data and is not listed.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_LAYER_ACTIONS = array( 'viewed', 'clicked', 'hovered', 'skipped', 'submitted', 'voted' );
+
+	/**
+	 * Where the action sits in one row of each per-layer counter list of a record:
+	 * `layer_type_stats` rows are [ layer_type, action_type, count ] and
+	 * `layer_details` rows are [ layer_id, layer_name, layer_type, action_type,
+	 * count, timestamp, page_url, layer_metadata ]. Only that column is checked,
+	 * because the other columns hold text an editor can choose, such as a layer name.
+	 *
+	 * @var array<string,int>
+	 */
+	const VIDEO_DATA_COUNTER_ACTION_COLUMN = array(
+		'layer_type_stats' => 1,
+		'layer_details'    => 3,
+	);
+
+	/**
+	 * Fields of the layer analytics payload that are video data, at its top level.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_LAYER_PAYLOAD = array( 'layer_type', 'days', 'cumulative', 'daily_breakdown', 'individual_layers' );
+
+	/**
+	 * Fields other than the layer actions that are video data in the layer totals
+	 * and in each day of the daily breakdown.
+	 *
+	 * The conversion counters (`conversion_rate`, `converting_sessions`,
+	 * `unique_converting_sessions`, `layer_converting_sessions`) are kept on purpose.
+	 * They count sessions that acted on a video: clicked, submitted or voted and, on
+	 * a WooCommerce layer, added to cart, once per session. They carry no product,
+	 * amount or order and are the only figure for how well a form or call-to-action
+	 * layer performs, so Editors and Authors see them. The `added_to_cart` counter
+	 * itself and everything from the store stay behind `view_woocommerce_reports`.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_LAYER_TOTALS = array( 'date', 'conversion_rate' );
+
+	/**
+	 * Fields other than the layer actions that are video data in one layer or
+	 * hotspot row. Revenue, orders and currency are deliberately not listed.
+	 *
+	 * @var string[]
+	 */
+	const VIDEO_DATA_LAYER_ROW = array(
+		'layer_id',
+		'layer_name',
+		'layer_type',
+		'timestamp',
+		'page_url',
+		'layer_metadata',
+		'historical_positions',
+		'is_subhotspot',
+		'conversion_rate',
+		'converting_sessions',
+	);
+
+	/**
 	 * Register REST routes (via the parent) plus the cache-invalidation hooks
 	 * for the Top Products / Top Videos "existing ids" allow-lists.
 	 *
@@ -145,12 +274,6 @@ class Analytics extends Base {
 							},
 							'sanitize_callback' => 'absint',
 						),
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'description'       => __( 'The Site URL associated with the video.', 'godam' ),
-							'sanitize_callback' => 'esc_url_raw',
-						),
 					),
 				),
 			),
@@ -172,11 +295,6 @@ class Analytics extends Base {
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
 						),
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
-						),
 					),
 				),
 			),
@@ -186,14 +304,8 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_dashboard_metrics' ),
-					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
-					'args'                => array(
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
+					'permission_callback' => array( $this, 'check_dashboard_read_permission' ),
+					'args'                => array(),
 				),
 			),
 			array(
@@ -202,17 +314,12 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_dashboard_history' ),
-					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
+					'permission_callback' => array( $this, 'check_dashboard_read_permission' ),
 					'args'                => array(
-						'days'     => array(
+						'days' => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'sanitize_callback' => 'absint',
-						),
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
 						),
 					),
 				),
@@ -223,7 +330,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_top_videos' ),
-					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
+					'permission_callback' => array( $this, 'check_dashboard_read_permission' ),
 					'args'                => array(
 						'page'         => array(
 							'required'          => false,
@@ -236,11 +343,6 @@ class Analytics extends Base {
 							'type'              => 'integer',
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
-						),
-						'site_url'     => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
 						),
 						'search'       => array(
 							'required'          => false,
@@ -263,7 +365,7 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_top_products' ),
-					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
+					'permission_callback' => array( $this, 'check_dashboard_store_permission' ),
 					'args'                => array(
 						'page'         => array(
 							'required'          => false,
@@ -276,11 +378,6 @@ class Analytics extends Base {
 							'type'              => 'integer',
 							'default'           => 10,
 							'sanitize_callback' => 'absint',
-						),
-						'site_url'     => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
 						),
 						'search'       => array(
 							'required'          => false,
@@ -323,14 +420,8 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_placement_funnels' ),
-					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
-					'args'                => array(
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
+					'permission_callback' => array( $this, 'check_dashboard_store_permission' ),
+					'args'                => array(),
 				),
 			),
 			array(
@@ -339,14 +430,8 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_revenue_summary' ),
-					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
-					'args'                => array(
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
+					'permission_callback' => array( $this, 'check_dashboard_store_permission' ),
+					'args'                => array(),
 				),
 			),
 			array(
@@ -355,14 +440,8 @@ class Analytics extends Base {
 				'args'      => array(
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'fetch_video_funnel' ),
-					'permission_callback' => array( $this, 'check_analytics_read_permission' ),
-					'args'                => array(
-						'site_url' => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
-						),
-					),
+					'permission_callback' => array( $this, 'check_dashboard_store_permission' ),
+					'args'                => array(),
 				),
 			),
 			array(
@@ -389,11 +468,6 @@ class Analytics extends Base {
 								// Mirror of LAYER_TYPE_WHITELIST in godam-analytics.
 								return in_array( $param, array( 'cta', 'form', 'hotspot', 'woo', 'poll' ), true );
 							},
-						),
-						'site_url'   => array(
-							'required'          => true,
-							'type'              => 'string',
-							'sanitize_callback' => 'esc_url_raw',
 						),
 						'days'       => array(
 							'required'          => false,
@@ -445,19 +519,193 @@ class Analytics extends Base {
 	}
 
 	/**
-	 * Permission check shared by every analytics read route.
+	 * Permission check for the analytics routes the Analytics page and the Video
+	 * Editor call (fetch, history, layer-analytics).
 	 *
 	 * Each route proxies the site's stored API key and account token to the
 	 * analytics microservice, so none may answer anonymous callers. Access
-	 * matches the GoDAM menu's `upload_files` capability (authors and above),
-	 * which every admin caller (Dashboard, Analytics, Video Editor) already
-	 * meets. It also stops unauthenticated requests from triggering uncached
-	 * upstream calls and the top-videos WP_Query.
+	 * matches the Analytics and Media Editor menus' `upload_files` capability
+	 * (authors and above). It also stops unauthenticated requests from
+	 * triggering uncached upstream calls.
 	 *
-	 * @return bool Whether the current user may read analytics.
+	 * @return bool Whether the current user may read per-video analytics.
 	 */
 	public function check_analytics_read_permission() {
 		return current_user_can( 'upload_files' );
+	}
+
+	/**
+	 * Permission check for the routes only the Dashboard page calls and that
+	 * carry no store data (dashboard-metrics, dashboard-history, top-videos).
+	 *
+	 * The Dashboard menu needs `edit_pages` (editors and above), so its routes
+	 * ask for the same capability: a user who cannot open the page cannot read
+	 * its store-wide figures through the routes either.
+	 *
+	 * @return bool Whether the current user may read the Dashboard's video analytics.
+	 */
+	public function check_dashboard_read_permission() {
+		return current_user_can( 'edit_pages' );
+	}
+
+	/**
+	 * Permission check for the Dashboard routes whose whole answer is store data
+	 * (top-products, revenue-summary, placement-funnels, video-funnel).
+	 *
+	 * The user must be able to open the Dashboard (`edit_pages`) and must hold
+	 * WooCommerce's report permission. Anyone else is refused with a 403 rather
+	 * than sent an empty or partial answer.
+	 *
+	 * @return bool Whether the current user may read the Dashboard's store analytics.
+	 */
+	public function check_dashboard_store_permission() {
+		return $this->check_dashboard_read_permission() && $this->can_view_store_data();
+	}
+
+	/**
+	 * Whether the current user may see store data: products, add-to-carts,
+	 * Video-to-Cart, orders, purchases and revenue.
+	 *
+	 * This follows WooCommerce's own report permission, which it grants to shop
+	 * managers and administrators only. Editors and authors get no WooCommerce or
+	 * Products menu, so they see video data only. Routes that are all store data
+	 * refuse everyone else; routes that mix video and store data reduce their
+	 * responses to the video fields listed in the VIDEO_DATA_* constants, so the
+	 * numbers cannot be read through the route even if the screen hides them.
+	 *
+	 * The capability lives on the roles, not in WooCommerce's code. Where
+	 * WooCommerce has never been active, or where its data was removed on
+	 * uninstall (it then removes its roles and capabilities), nobody holds it, so
+	 * even an Administrator gets video data only from the mixed routes and a 403
+	 * from the store routes. Deactivating WooCommerce leaves the capability on the
+	 * roles, so shop managers and administrators can still read store data
+	 * recorded earlier while it is off.
+	 *
+	 * @return bool Whether the current user may view store analytics.
+	 */
+	public function can_view_store_data() {
+		return current_user_can( 'view_woocommerce_reports' ); // phpcs:ignore WordPress.WP.Capabilities.Unknown -- WooCommerce registers this capability itself.
+	}
+
+	/**
+	 * Keep only the named keys of an array. Anything that is not an array passes
+	 * through unchanged, so a null payload stays null.
+	 *
+	 * The routes that mix video and store data use this, not a list of store
+	 * fields to remove: a field the analytics service adds later is hidden from
+	 * users without store access until it is listed as video data.
+	 *
+	 * @param mixed $data    Response fragment.
+	 * @param array $allowed Keys that are video data.
+	 * @return mixed
+	 */
+	private function only_keys( $data, array $allowed ) {
+		if ( ! is_array( $data ) ) {
+			return $data;
+		}
+		return array_intersect_key( $data, array_flip( $allowed ) );
+	}
+
+	/**
+	 * Keep the rows of a per-layer counter list that are about a video action. The
+	 * service sends each counter as a row with the action in a fixed column (see
+	 * VIDEO_DATA_COUNTER_ACTION_COLUMN); a row is kept only when that column holds a
+	 * video layer action. An `added_to_cart` row, a row for an action added later, and
+	 * a row too short to have the column are dropped. No other column is looked at, so
+	 * a layer named after a video action cannot keep its `added_to_cart` row.
+	 *
+	 * @param mixed $rows          A list of counter rows.
+	 * @param int   $action_column Index of the action in each row.
+	 * @return mixed The list with only the video action rows.
+	 */
+	private function only_video_action_rows( $rows, $action_column ) {
+		if ( ! is_array( $rows ) ) {
+			return $rows;
+		}
+		return array_values(
+			array_filter(
+				$rows,
+				function ( $row ) use ( $action_column ) {
+					return is_array( $row )
+						&& isset( $row[ $action_column ] )
+						&& in_array( $row[ $action_column ], self::VIDEO_DATA_LAYER_ACTIONS, true );
+				}
+			)
+		);
+	}
+
+	/**
+	 * Reduce a `dashboard_metrics` payload to its video data. The names of store
+	 * sections also leave `unavailable_sections`, so the page has no "couldn't
+	 * load" state to show for a card the user was never going to see.
+	 *
+	 * @param array $metrics The merged `dashboard_metrics` payload.
+	 * @return array
+	 */
+	private function video_data_in_dashboard_metrics( array $metrics ) {
+		$metrics = $this->only_keys( $metrics, self::VIDEO_DATA_DASHBOARD_METRICS );
+		if ( isset( $metrics['unavailable_sections'] ) && is_array( $metrics['unavailable_sections'] ) ) {
+			$metrics['unavailable_sections'] = array_values(
+				array_intersect( $metrics['unavailable_sections'], self::VIDEO_DATA_SECTIONS )
+			);
+		}
+		return $metrics;
+	}
+
+	/**
+	 * Reduce a per-video analytics record to its video data: the listed fields
+	 * only, and of the per-layer counters only the video action rows.
+	 *
+	 * @param array $record The `processed_analytics` record for one video.
+	 * @return array
+	 */
+	private function video_data_in_video_record( array $record ) {
+		$record = $this->only_keys( $record, self::VIDEO_DATA_RECORD );
+		foreach ( self::VIDEO_DATA_COUNTER_ACTION_COLUMN as $counter_rows => $action_column ) {
+			if ( array_key_exists( $counter_rows, $record ) ) {
+				$record[ $counter_rows ] = $this->only_video_action_rows( $record[ $counter_rows ], $action_column );
+			}
+		}
+		return $record;
+	}
+
+	/**
+	 * Reduce a layer analytics payload to its video data: views, hovers, clicks,
+	 * skips, submissions and votes, with the interaction rate, per layer, in the
+	 * totals and per day. The add-to-cart counter and per-hotspot revenue, orders
+	 * and currency are store data and go.
+	 *
+	 * @param mixed $layer_analytics The `layer_analytics` payload.
+	 * @return mixed
+	 */
+	private function video_data_in_layer_analytics( $layer_analytics ) {
+		if ( ! is_array( $layer_analytics ) ) {
+			return $layer_analytics;
+		}
+		$totals_fields = array_merge( self::VIDEO_DATA_LAYER_TOTALS, self::VIDEO_DATA_LAYER_ACTIONS );
+		$row_fields    = array_merge( self::VIDEO_DATA_LAYER_ROW, self::VIDEO_DATA_LAYER_ACTIONS );
+
+		$layer_analytics = $this->only_keys( $layer_analytics, self::VIDEO_DATA_LAYER_PAYLOAD );
+		if ( isset( $layer_analytics['cumulative'] ) ) {
+			$layer_analytics['cumulative'] = $this->only_keys( $layer_analytics['cumulative'], $totals_fields );
+		}
+		if ( isset( $layer_analytics['daily_breakdown'] ) && is_array( $layer_analytics['daily_breakdown'] ) ) {
+			$layer_analytics['daily_breakdown'] = array_map(
+				function ( $day ) use ( $totals_fields ) {
+					return $this->only_keys( $day, $totals_fields );
+				},
+				$layer_analytics['daily_breakdown']
+			);
+		}
+		if ( isset( $layer_analytics['individual_layers'] ) && is_array( $layer_analytics['individual_layers'] ) ) {
+			$layer_analytics['individual_layers'] = array_map(
+				function ( $layer ) use ( $row_fields ) {
+					return $this->only_keys( $layer, $row_fields );
+				},
+				$layer_analytics['individual_layers']
+			);
+		}
+		return $layer_analytics;
 	}
 
 	/**
@@ -499,6 +747,29 @@ class Analytics extends Base {
 	}
 
 	/**
+	 * Add the store's current UTC offset, in minutes, to a query for one of the
+	 * funnel reads (Video-to-Cart, Video-to-Purchase, the funnels).
+	 *
+	 * With it the microservice counts every play, add and order on the store's own
+	 * day, the day the Revenue card uses for an order, instead of the UTC day. It is
+	 * the offset WordPress's timezone setting has now, the same value GoDAM for Woo
+	 * stamps on an order, so around a daylight-saving change an event within an hour
+	 * of midnight can fall on the neighbouring day. A microservice that does not know
+	 * the parameter ignores it and keeps counting on the UTC day.
+	 *
+	 * @param array $params Query params destined for the microservice.
+	 * @return array
+	 */
+	private function append_store_offset_param( array $params ) {
+		$timezone = wp_timezone();
+		$minutes  = (int) round( $timezone->getOffset( new \DateTimeImmutable( 'now', $timezone ) ) / 60 );
+
+		// The microservice takes -12:00 to +14:00 (the range of a WordPress timezone).
+		$params['store_utc_offset_minutes'] = max( -720, min( 840, $minutes ) );
+		return $params;
+	}
+
+	/**
 	 * Proxy /processed-layer-analytics/ from the analytics microservice.
 	 *
 	 * Looks up the transcoded job_id from the attachment ID so callers only
@@ -512,7 +783,10 @@ class Analytics extends Base {
 	public function fetch_layer_analytics( WP_REST_Request $request ) {
 		$attachment_id = $request->get_param( 'video_id' );
 		$layer_type    = $request->get_param( 'layer_type' );
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url      = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$days          = $request->get_param( 'days' );
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
@@ -561,11 +835,8 @@ class Analytics extends Base {
 			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
-		// site_url is a client-supplied *filter*, not a trust boundary: the
-		// account_token above is read from this site's own stored option (never
-		// from the request), and the microservice scopes every query by
-		// account_token — so a caller cannot read another account's data
-		// regardless of the site_url passed.
+		// site_url and account_token both come from this site (its origin and its
+		// stored option), never from the request.
 		$query_params = array(
 			'video_id'      => $attachment_id,
 			'layer_type'    => $layer_type,
@@ -640,10 +911,15 @@ class Analytics extends Base {
 			);
 		}
 
+		$layer_analytics = $body['layer_analytics'] ?? array();
+		if ( ! $this->can_view_store_data() ) {
+			$layer_analytics = $this->video_data_in_layer_analytics( $layer_analytics );
+		}
+
 		return new WP_REST_Response(
 			array(
 				'status'          => 'success',
-				'layer_analytics' => $body['layer_analytics'] ?? array(),
+				'layer_analytics' => $layer_analytics,
 			),
 			200
 		);
@@ -781,7 +1057,10 @@ class Analytics extends Base {
 	 */
 	public function fetch_analytics_data( WP_REST_Request $request ) {
 		$video_id = $request->get_param( 'video_id' );
-		$site_url = $request->get_param( 'site_url' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 
 		// Define API URL for fetching analytics.
 		$analytics_endpoint = RTGODAM_ANALYTICS_BASE . '/processed-analytics/fetch/';
@@ -809,6 +1088,7 @@ class Analytics extends Base {
 			'api_key'       => $api_key,
 		);
 		$query_params = $this->append_range_params( $request, $query_params );
+		$query_params = $this->append_store_offset_param( $query_params );
 
 		// Single store currency: pass the store base currency so the per-video
 		// record carries base-currency revenue (and a count of orders in other
@@ -866,6 +1146,10 @@ class Analytics extends Base {
 
 		// Return analytics data if available.
 		if ( isset( $data['processed_analytics'] ) ) {
+			if ( ! $this->can_view_store_data() && is_array( $data['processed_analytics'] ) ) {
+				$data['processed_analytics'] = $this->video_data_in_video_record( $data['processed_analytics'] );
+			}
+
 			// Placement rows (added by the placements-capable microservice) get
 			// WP-side page context. Key left absent when the microservice
 			// doesn't send it, so the frontend can treat "old microservice"
@@ -952,9 +1236,12 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_analytics_history( WP_REST_Request $request ) {
-		$days          = $request->get_param( 'days' );
-		$video_id      = $request->get_param( 'video_id' );
-		$site_url      = $request->get_param( 'site_url' );
+		$days     = $request->get_param( 'days' );
+		$video_id = $request->get_param( 'video_id' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1015,7 +1302,10 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_dashboard_metrics( WP_REST_Request $request ) {
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1038,6 +1328,7 @@ class Analytics extends Base {
 				'api_key'       => $api_key,
 			)
 		);
+		$params = $this->append_store_offset_param( $params );
 		// Single store currency: pass the store base currency so the service returns
 		// base-currency revenue plus a count of orders in other currencies (not
 		// converted). Only meaningful when WooCommerce is active; when absent the
@@ -1102,10 +1393,15 @@ class Analytics extends Base {
 			);
 		}
 
+		$dashboard_metrics = array_merge( $empty_metrics, $body['dashboard_metrics'] ?? array() );
+		if ( ! $this->can_view_store_data() ) {
+			$dashboard_metrics = $this->video_data_in_dashboard_metrics( $dashboard_metrics );
+		}
+
 		return new WP_REST_Response(
 			array(
 				'status'            => 'success',
-				'dashboard_metrics' => array_merge( $empty_metrics, $body['dashboard_metrics'] ?? array() ),
+				'dashboard_metrics' => $dashboard_metrics,
 			),
 			200
 		);
@@ -1118,8 +1414,11 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_dashboard_history( WP_REST_Request $request ) {
-		$days          = $request->get_param( 'days' );
-		$site_url      = $request->get_param( 'site_url' );
+		$days     = $request->get_param( 'days' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1179,9 +1478,12 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_top_videos( WP_REST_Request $request ) {
-		$page          = $request->get_param( 'page' ) ?? 1;
-		$limit         = $request->get_param( 'limit' ) ?? 10;
-		$site_url      = $request->get_param( 'site_url' );
+		$page     = $request->get_param( 'page' ) ?? 1;
+		$limit    = $request->get_param( 'limit' ) ?? 10;
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$search        = trim( (string) $request->get_param( 'search' ) );
 		$hide_deleted  = rest_sanitize_boolean( $request->get_param( 'hide_deleted' ) );
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
@@ -1408,7 +1710,10 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_placement_funnels( WP_REST_Request $request ) {
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1431,6 +1736,7 @@ class Analytics extends Base {
 				'api_key'       => $api_key,
 			)
 		);
+		$params   = $this->append_store_offset_param( $params );
 		$endpoint = add_query_arg(
 			$params,
 			RTGODAM_ANALYTICS_BASE . '/dashboard/placement-funnels/'
@@ -1481,7 +1787,10 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_revenue_summary( WP_REST_Request $request ) {
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1561,7 +1870,10 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_video_funnel( WP_REST_Request $request ) {
-		$site_url      = $request->get_param( 'site_url' );
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$account_token = get_option( 'rtgodam-account-token', 'unverified' );
 		$api_key       = get_option( 'rtgodam-api-key', '' );
 
@@ -1584,6 +1896,7 @@ class Analytics extends Base {
 				'api_key'       => $api_key,
 			)
 		);
+		$params   = $this->append_store_offset_param( $params );
 		$endpoint = add_query_arg(
 			$params,
 			RTGODAM_ANALYTICS_BASE . '/dashboard/video-funnel/'
@@ -1637,9 +1950,12 @@ class Analytics extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function fetch_top_products( WP_REST_Request $request ) {
-		$page          = $request->get_param( 'page' ) ?? 1;
-		$limit         = $request->get_param( 'limit' ) ?? 10;
-		$site_url      = $request->get_param( 'site_url' );
+		$page     = $request->get_param( 'page' ) ?? 1;
+		$limit    = $request->get_param( 'limit' ) ?? 10;
+		$site_url = rtgodam_get_request_site_origin( $request->get_param( 'site_url' ) );
+		if ( '' === $site_url ) {
+			return $this->site_origin_unavailable_response();
+		}
 		$search        = trim( (string) $request->get_param( 'search' ) );
 		$sort_by       = $request->get_param( 'sort_by' );
 		$order         = $request->get_param( 'order' );
@@ -1764,6 +2080,9 @@ class Analytics extends Base {
 					array( 'variable', 'grouped', 'external' ),
 					true
 				);
+				// The type itself lets the UI say why a grouped or external product
+				// has no adds or revenue at all: neither ever reaches this store's cart.
+				$product['product_type'] = $wc_product->get_type();
 
 				if ( $image_id ) {
 					$thumbnail_ids[ $index ] = $image_id;
@@ -1779,6 +2098,7 @@ class Analytics extends Base {
 				$product['exists']        = false;
 				// Unknown for a deleted product; default to true so we don't grey it.
 				$product['supports_direct_add_to_cart'] = true;
+				$product['product_type']                = null;
 			}
 		}
 		unset( $product );

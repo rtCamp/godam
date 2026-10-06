@@ -446,7 +446,8 @@ function observePageLoadForVideo( video ) {
 			}
 
 			// videoKey is either the WP attachment ID (numeric) or the job_id.
-			// Numeric → ride on `video_id`; non-numeric → ride on `job_id`.
+			// Numeric → ride on `video_id`, plus the element's `data-job_id` when
+			// it has one; non-numeric → ride on `job_id`.
 			const numericId = parseInt( videoKey, 10 );
 			const isNumeric = Number.isFinite( numericId ) && String( numericId ) === videoKey;
 
@@ -455,6 +456,11 @@ function observePageLoadForVideo( video ) {
 			const flushVideoEl = isNumeric
 				? findVideoElementById( numericId )
 				: document.querySelector( `.video-js[data-job_id="${ videoKey }"]` );
+
+			// Send the job id WordPress already has for this media, as the page-load
+			// event does: an event stored without one is later rewritten by the
+			// job-id backfill, and every summary keyed on job_id then has to follow.
+			const flushJobId = isNumeric ? flushVideoEl?.getAttribute( 'data-job_id' ) || '' : videoKey;
 
 			// Group events into chunks bounded by BOTH the 100-entry server
 			// limit and the byte budget above. A single oversized event still
@@ -485,7 +491,7 @@ function observePageLoadForVideo( video ) {
 					type: 3,
 					userToken: window.analytics?.user?.()?.anonymousId || '',
 					videoId: isNumeric ? numericId : 0,
-					jobId: isNumeric ? '' : videoKey,
+					jobId: flushJobId,
 					layers,
 					blockSource: flushVideoEl?.dataset?.blockSource || '',
 					// From this video's own element, not a page-level lookup: a

@@ -23,7 +23,6 @@ tailwind.config.js
 webpack.config.js
 .github/
 .git/
-composer.json
 composer.lock
 README.md
 wp-assets/

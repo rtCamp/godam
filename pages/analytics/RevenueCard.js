@@ -106,7 +106,7 @@ export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeCont
 					<span className="text-[10px] font-bold leading-none px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#92400E] tracking-wide">{ __( 'NEW', 'godam' ) }</span>
 					<Tooltip
 						text={ __(
-							'Order value traced back to the video that earned it, in the store\'s base currency. Direct means added to cart inside the video; Assisted means the shopper clicked through to the product page and bought there. Orders in other currencies are counted separately, not converted. Shown before refunds.',
+							'Order value traced back to the video that earned it, in the store\'s base currency. Direct means added to cart inside the video; Assisted means the shopper clicked through to the product page and bought there. Orders in other currencies are counted separately, not converted. Shown after discounts and before refunds, excluding tax, shipping and fees.',
 							'godam',
 						) }
 					/>
