@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { getLayerDisplayName } from '../../utils/layerActions.js';
-import { resolveButtonCtaStyle } from '../../utils/buttonCtaStyle';
+import { resolveButtonCtaStyle, isImageButtonVariant } from '../../utils/buttonCtaStyle';
 
 /**
  * Resolve the analytics videoKey (data-id or data-job_id) for a player.
@@ -141,12 +141,39 @@ export default class ButtonCtaLayerManager {
 	 */
 	createButtonElement( button, index, layerObj ) {
 		const style = resolveButtonCtaStyle( button );
+		const isImage = isImageButtonVariant( style.variant ) && !! style.imageUrl;
+		const isSticker = style.variant === 'sticker';
 
 		const buttonEl = document.createElement( 'a' );
 		buttonEl.className = 'godam-button-cta' +
+			( isImage ? ' godam-button-cta--image' : '' ) +
+			( isSticker ? ' godam-button-cta--sticker' : '' ) +
 			( style.attention !== 'none' ? ` godam-button-cta--attn-${ style.attention }` : '' );
-		// textContent (never innerHTML) keeps author-entered labels inert.
-		buttonEl.textContent = button.text || __( 'Button', 'godam' );
+
+		if ( isImage ) {
+			// Sticker / image variant: the uploaded graphic IS the button. Mirrors
+			// the hotspot custom-icon render (objectFit + onerror fallback). Width
+			// is applied to the anchor in positionButton (a % of content width).
+			const img = document.createElement( 'img' );
+			img.src = style.imageUrl;
+			img.alt = button.text || __( 'Button', 'godam' );
+			img.onerror = () => {
+				img.remove();
+				buttonEl.classList.remove( 'godam-button-cta--image' );
+				buttonEl.style.width = '';
+				buttonEl.textContent = button.text || __( 'Button', 'godam' );
+			};
+			buttonEl.appendChild( img );
+		} else {
+			// textContent (never innerHTML) keeps author-entered labels inert.
+			const label = button.text || __( 'Button', 'godam' );
+			buttonEl.textContent = label;
+			// Sticker variant duplicates the label via ::before/::after (see
+			// `_button-cta.scss`), which read it from `data-sticker-text`.
+			if ( isSticker ) {
+				buttonEl.setAttribute( 'data-sticker-text', label );
+			}
+		}
 
 		if ( button.link ) {
 			buttonEl.href = button.link;
@@ -191,6 +218,13 @@ export default class ButtonCtaLayerManager {
 
 		buttonEl.style.left = `${ contentRect.left + ( ( posX / 100 ) * contentRect.width ) }px`;
 		buttonEl.style.top = `${ contentRect.top + ( ( posY / 100 ) * contentRect.height ) }px`;
+
+		// Sticker / image buttons size relative to the video content width (height
+		// follows the image aspect ratio), so re-apply width on every reposition.
+		const style = resolveButtonCtaStyle( button );
+		if ( isImageButtonVariant( style.variant ) && style.imageUrl ) {
+			buttonEl.style.width = `${ ( style.size / 100 ) * contentRect.width }px`;
+		}
 	}
 
 	/**
@@ -344,7 +378,11 @@ export default class ButtonCtaLayerManager {
 		const subId = button?.id ? String( button.id ) : `idx${ index }`;
 		const compositeId = `${ parentId }::${ subId }`;
 		const parentName = getLayerDisplayName( layer, layer?.type || 'button-cta' );
-		const subLabel = button?.text || `Button ${ index + 1 }`;
+		// Image/sticker buttons have no text, so give analytics a readable label.
+		let subLabel = button?.text;
+		if ( ! subLabel ) {
+			subLabel = isImageButtonVariant( button?.variant ) ? `Image ${ index + 1 }` : `Button ${ index + 1 }`;
+		}
 
 		this.writeEvent( {
 			dedupeKey: compositeId,

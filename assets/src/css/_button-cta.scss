@@ -49,6 +49,90 @@
 	}
 }
 
+// Sticker / image variant: the uploaded <img> IS the button, so drop the
+// text-button chrome and let the image define the box. Width is applied inline
+// (a % of the video content width); height follows the image aspect ratio.
+.godam-button-cta--image {
+	padding: 0;
+	max-width: none;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+
+	&:hover,
+	&:focus {
+		background: transparent;
+	}
+
+	img {
+		display: block;
+		width: 100%;
+		height: auto;
+		object-fit: contain;
+		pointer-events: none;
+	}
+}
+
+// Sticker variant: the button text rendered as a die-cut sticker — a bold,
+// dark-outlined word with a thick white sticker border and a drop shadow (a
+// peel-and-stick label). The letter fill uses the chosen Fill colour
+// (`--godam-btn-bg`); the dark outline, white border and shadow are fixed sticker
+// chrome. Built from `-webkit-text-stroke` (dark outline) + layered `text-shadow`
+// (the white die-cut) + a `filter` drop-shadow that follows the white contour.
+// No element `transform`, so it never fights the editor preview's react-rnd
+// positioning.
+.godam-button-cta--sticker {
+	display: inline-block;
+	padding: 0;
+	max-width: none;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	font-family: "Titan One", Fredoka, "Baloo 2", system-ui, sans-serif;
+	font-size: 2rem;
+	font-weight: 400;
+	line-height: 1.1;
+	white-space: nowrap;
+	color: var(--godam-btn-bg, #3858e9);
+	-webkit-text-stroke: 0.02em #333;
+	// Own stacking context so the z-index:-1/-2 die-cut/shadow pseudos stay
+	// behind the text but in front of the video, not behind the whole layer.
+	isolation: isolate;
+
+	&:hover,
+	&:focus {
+		background: transparent;
+		color: var(--godam-btn-bg, #3858e9);
+	}
+
+	// Duplicate the text (via `data-sticker-text`) twice behind the fill: the
+	// white die-cut border and a soft offset shadow (the classic sticker look).
+	&::before,
+	&::after {
+		content: attr(data-sticker-text);
+		position: absolute;
+		white-space: nowrap;
+		pointer-events: none;
+	}
+
+	// White die-cut border hugging the letters.
+	&::before {
+		inset: 0;
+		z-index: -1;
+		color: #fff;
+		-webkit-text-stroke: 0.25em #fff;
+	}
+
+	// Soft drop shadow (offset + blurred).
+	&::after {
+		inset: 0.0125em 0 0 0.0125em;
+		z-index: -2;
+		color: #fff;
+		-webkit-text-stroke: 0.25em rgba(0, 0, 0, 0.13);
+		filter: blur(0.0025em);
+	}
+}
+
 /**
  * Attention animations — opt-in per button to grab the viewer's eye. They are
  * built from box-shadow and ::after pseudo-elements (never a `transform` on the
@@ -57,7 +141,8 @@
  */
 
 // Pulse: a ring that expands out of the button edge and fades.
-.godam-button-cta--attn-pulse::after {
+// Excluded from stickers (which get a contour-following version below).
+.godam-button-cta--attn-pulse:not(.godam-button-cta--sticker)::after {
 	content: "";
 	position: absolute;
 	inset: 0;
@@ -85,7 +170,8 @@
 }
 
 // Border waves: a bordered ring that scales up and fades (radar ping).
-.godam-button-cta--attn-ripple::after {
+// Excluded from stickers (which get a contour-following version below).
+.godam-button-cta--attn-ripple:not(.godam-button-cta--sticker)::after {
 	content: "";
 	position: absolute;
 	inset: 0;
@@ -109,7 +195,8 @@
 }
 
 // Glow: a soft, pulsing halo in the button colour.
-.godam-button-cta--attn-glow {
+// Excluded from stickers (which get a contour-following version below).
+.godam-button-cta--attn-glow:not(.godam-button-cta--sticker) {
 	animation: godam-btn-glow 1.6s ease-in-out infinite;
 }
 
@@ -125,7 +212,90 @@
 	}
 }
 
-// Respect reduced-motion preferences.
+// Sticker attention animations follow the die-cut letter contour instead of a
+// rectangle. Pulse / border-waves animate the stroke WIDTH of a coloured copy of
+// the text (the `::after`, replacing the static shadow). A stroke grows
+// uniformly outward from the glyph edge, and it starts at 0.25em — the same width
+// as the white die-cut border sitting in front of it — so the effect begins
+// exactly at the sticker border and expands from there (no scaling, so no
+// off-centre "ghost"). Glow pulses a `drop-shadow` of the whole sticker shape.
+// None of these use `transform` on the button, so they never move the
+// react-rnd-positioned element.
+.godam-button-cta--sticker.godam-button-cta--attn-pulse::after,
+.godam-button-cta--sticker.godam-button-cta--attn-ripple::after {
+	inset: 0;
+	z-index: -2;
+	color: transparent;
+	filter: none;
+	-webkit-text-stroke-color: var(--godam-btn-bg, #3858e9);
+	-webkit-text-stroke-width: 0.25em;
+}
+
+.godam-button-cta--sticker.godam-button-cta--attn-pulse::after {
+	animation: godam-sticker-pulse 1.8s ease-out infinite;
+}
+
+.godam-button-cta--sticker.godam-button-cta--attn-ripple::after {
+	animation: godam-sticker-ripple 2s ease-out infinite;
+}
+
+.godam-button-cta--sticker.godam-button-cta--attn-glow {
+	animation: godam-sticker-glow 1.6s ease-in-out infinite;
+}
+
+// Pulse: one soft band swelling out from the border and fading.
+@keyframes godam-sticker-pulse {
+
+	0% {
+		-webkit-text-stroke-width: 0.25em;
+		opacity: 0.65;
+	}
+
+	100% {
+		-webkit-text-stroke-width: 0.85em;
+		opacity: 0;
+	}
+}
+
+// Border waves: two quick waves per cycle, each travelling out from the border.
+@keyframes godam-sticker-ripple {
+
+	0% {
+		-webkit-text-stroke-width: 0.25em;
+		opacity: 0.8;
+	}
+
+	45% {
+		-webkit-text-stroke-width: 0.65em;
+		opacity: 0;
+	}
+
+	50% {
+		-webkit-text-stroke-width: 0.25em;
+		opacity: 0.8;
+	}
+
+	95%,
+	100% {
+		-webkit-text-stroke-width: 0.65em;
+		opacity: 0;
+	}
+}
+
+@keyframes godam-sticker-glow {
+
+	0%,
+	100% {
+		filter: drop-shadow(0 0 0 var(--godam-btn-bg, #3858e9));
+	}
+
+	50% {
+		filter: drop-shadow(0 0 8px var(--godam-btn-bg, #3858e9));
+	}
+}
+
+// Respect reduced-motion preferences. The unscoped selectors below also match
+// stickers (which carry the same `--attn-*` classes), so this covers both.
 @media (prefers-reduced-motion: reduce) {
 
 	.godam-button-cta--attn-pulse::after,

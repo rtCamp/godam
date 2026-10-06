@@ -24,12 +24,14 @@ import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader';
 import {
 	resolveButtonCtaStyle,
+	isImageButtonVariant,
 	DEFAULT_BUTTON_BG,
 	DEFAULT_BUTTON_TEXT,
 	DEFAULT_BUTTON_HOVER_BG,
 	DEFAULT_BUTTON_HOVER_TEXT,
+	DEFAULT_IMAGE_SIZE,
 } from '../../../../assets/src/js/godam-player/utils/buttonCtaStyle';
-import { VeSection, VeField, VeColorList, VeSelect, VeTextInput, VeToggle } from '../controls';
+import { VeSection, VeField, VeColorList, VeSegmented, VeSelect, VeSlider, VeTextInput, VeToggle } from '../controls';
 
 // Attention animations that draw the viewer's eye to a button.
 const ATTENTION_OPTIONS = [
@@ -37,6 +39,15 @@ const ATTENTION_OPTIONS = [
 	{ value: 'pulse', label: __( 'Pulse', 'godam' ) },
 	{ value: 'ripple', label: __( 'Border waves', 'godam' ) },
 	{ value: 'glow', label: __( 'Glow', 'godam' ) },
+];
+
+// Per-button variant: a text label, or an uploaded sticker / image. Sticker and
+// image share the same upload + render path (a sticker is just decorative, so its
+// link is optional).
+const VARIANT_OPTIONS = [
+	{ value: 'text', label: __( 'Text', 'godam' ) },
+	{ value: 'sticker', label: __( 'Sticker', 'godam' ) },
+	{ value: 'image', label: __( 'Image', 'godam' ) },
 ];
 
 const ButtonCtaLayer = ( { layerID, goBack, duration } ) => {
@@ -194,6 +205,7 @@ const ButtonCtaLayer = ( { layerID, goBack, duration } ) => {
 	const handleAddButton = useCallback( () => {
 		const newButton = {
 			id: uuidv4(),
+			variant: 'text',
 			text: __( 'Click here', 'godam' ),
 			link: '',
 			position: { x: 50, y: 50 },
@@ -202,6 +214,44 @@ const ButtonCtaLayer = ( { layerID, goBack, duration } ) => {
 		};
 		updateButtons( [ ...buttonsRef.current, newButton ] );
 	}, [ updateButtons ] );
+
+	// Open the WordPress media picker for a sticker/image button. Stores the
+	// resolved `attachment.url` directly (works for WP + GoDAM-hosted media, no
+	// server-side resolution), mirroring the hotspot custom-icon picker.
+	const handleSelectImage = useCallback( ( index ) => {
+		const fileFrame = wp.media( {
+			title: __( 'Select or upload an image', 'godam' ),
+			button: { text: __( 'Use this image', 'godam' ) },
+			library: { type: 'image' },
+			multiple: false,
+		} );
+
+		fileFrame.on( 'select', function() {
+			const attachment = fileFrame.state().get( 'selection' ).first().toJSON();
+			if ( attachment.type !== 'image' ) {
+				return;
+			}
+			updateButtonField( index, { imageUrl: attachment.url, imageId: attachment.id } );
+		} );
+
+		// Pre-select the current image when reopening the modal.
+		const current = buttonsRef.current[ index ];
+		if ( current?.imageId ) {
+			const attachment = wp.media.attachment( current.imageId );
+			attachment.fetch();
+			fileFrame.on( 'open', function() {
+				const selection = fileFrame.state().get( 'selection' );
+				selection.reset();
+				selection.add( attachment );
+			} );
+		}
+
+		fileFrame.open();
+	}, [ updateButtonField ] );
+
+	const handleRemoveImage = useCallback( ( index ) => {
+		updateButtonField( index, { imageUrl: '', imageId: null } );
+	}, [ updateButtonField ] );
 
 	// Auto-add the first button when a fresh layer mounts.
 	useEffect( () => {
@@ -384,13 +434,75 @@ const ButtonCtaLayer = ( { layerID, goBack, duration } ) => {
 
 								{ expandedButtonIndex === index && (
 									<div className="godam-ve-hotspot-card__body">
-										<VeTextInput
-											data-test-id={ `godam-button-cta-control-text-${ index }` }
-											label={ __( 'Button Text', 'godam' ) }
-											placeholder={ __( 'Click here', 'godam' ) }
-											value={ button.text }
-											onChange={ ( val ) => updateButtonField( index, { text: val } ) }
-										/>
+										<VeField label={ __( 'Type', 'godam' ) }>
+											<VeSegmented
+												options={ VARIANT_OPTIONS }
+												value={ button.variant || 'text' }
+												onChange={ ( val ) => updateButtonField( index, { variant: val } ) }
+											/>
+										</VeField>
+
+										{ ! isImageButtonVariant( button.variant ) ? (
+											<VeTextInput
+												data-test-id={ `godam-button-cta-control-text-${ index }` }
+												label={ __( 'Button Text', 'godam' ) }
+												placeholder={ __( 'Click here', 'godam' ) }
+												value={ button.text }
+												onChange={ ( val ) => updateButtonField( index, { text: val } ) }
+											/>
+										) : (
+											<>
+												<VeField label={ __( 'Image', 'godam' ) }>
+													{ button.imageUrl ? (
+														<div className="godam-ve-media">
+															<button
+																type="button"
+																className="godam-ve-media__main"
+																onClick={ () => handleSelectImage( index ) }
+																aria-label={ __( 'Replace image', 'godam' ) }
+																data-test-id={ `godam-button-cta-replace-image-${ index }` }
+															>
+																<img
+																	src={ button.imageUrl }
+																	alt={ __( 'Selected image', 'godam' ) }
+																	className="godam-ve-media__thumb"
+																/>
+																<span className="godam-ve-media__meta">
+																	<span className="godam-ve-media__name">{ __( 'Image selected', 'godam' ) }</span>
+																</span>
+															</button>
+															<Button
+																className="godam-ve-media__remove"
+																icon={ trash }
+																isDestructive
+																label={ __( 'Remove image', 'godam' ) }
+																onClick={ () => handleRemoveImage( index ) }
+																data-test-id={ `godam-button-cta-remove-image-${ index }` }
+															/>
+														</div>
+													) : (
+														<Button
+															className="godam-ve-media-select"
+															variant="secondary"
+															icon={ plus }
+															onClick={ () => handleSelectImage( index ) }
+															data-test-id={ `godam-button-cta-upload-image-${ index }` }
+														>
+															{ __( 'Select Image', 'godam' ) }
+														</Button>
+													) }
+												</VeField>
+												<VeSlider
+													label={ __( 'Size', 'godam' ) }
+													value={ button.size ?? DEFAULT_IMAGE_SIZE }
+													onChange={ ( val ) => updateButtonField( index, { size: val } ) }
+													min={ 5 }
+													max={ 60 }
+													step={ 1 }
+												/>
+											</>
+										) }
+
 										<VeTextInput
 											data-test-id={ `godam-button-cta-control-link-${ index }` }
 											label={ __( 'Link', 'godam' ) }
@@ -406,38 +518,72 @@ const ButtonCtaLayer = ( { layerID, goBack, duration } ) => {
 											options={ ATTENTION_OPTIONS }
 											onChange={ ( val ) => updateButtonField( index, { attention: val } ) }
 										/>
-										<VeField label={ __( 'Colours', 'godam' ) }>
-											<VeColorList>
-												<ColorPickerButton
-													className="godam-ve-color-row"
-													value={ button.bgColor ?? DEFAULT_BUTTON_BG }
-													label={ __( 'Background', 'godam' ) }
-													enableAlpha={ true }
-													onChange={ ( val ) => debouncedButtonColor( index, 'bgColor', val ) }
-												/>
-												<ColorPickerButton
-													className="godam-ve-color-row"
-													value={ button.textColor ?? DEFAULT_BUTTON_TEXT }
-													label={ __( 'Text', 'godam' ) }
-													enableAlpha={ true }
-													onChange={ ( val ) => debouncedButtonColor( index, 'textColor', val ) }
-												/>
-												<ColorPickerButton
-													className="godam-ve-color-row"
-													value={ button.hoverBgColor ?? DEFAULT_BUTTON_HOVER_BG }
-													label={ __( 'Hover Background', 'godam' ) }
-													enableAlpha={ true }
-													onChange={ ( val ) => debouncedButtonColor( index, 'hoverBgColor', val ) }
-												/>
-												<ColorPickerButton
-													className="godam-ve-color-row"
-													value={ button.hoverTextColor ?? DEFAULT_BUTTON_HOVER_TEXT }
-													label={ __( 'Hover Text', 'godam' ) }
-													enableAlpha={ true }
-													onChange={ ( val ) => debouncedButtonColor( index, 'hoverTextColor', val ) }
-												/>
-											</VeColorList>
-										</VeField>
+
+										{ ! isImageButtonVariant( button.variant ) && button.variant !== 'sticker' && (
+											<VeField label={ __( 'Colours', 'godam' ) }>
+												<VeColorList>
+													<ColorPickerButton
+														className="godam-ve-color-row"
+														value={ button.bgColor ?? DEFAULT_BUTTON_BG }
+														label={ __( 'Background', 'godam' ) }
+														enableAlpha={ true }
+														onChange={ ( val ) => debouncedButtonColor( index, 'bgColor', val ) }
+													/>
+													<ColorPickerButton
+														className="godam-ve-color-row"
+														value={ button.textColor ?? DEFAULT_BUTTON_TEXT }
+														label={ __( 'Text', 'godam' ) }
+														enableAlpha={ true }
+														onChange={ ( val ) => debouncedButtonColor( index, 'textColor', val ) }
+													/>
+													<ColorPickerButton
+														className="godam-ve-color-row"
+														value={ button.hoverBgColor ?? DEFAULT_BUTTON_HOVER_BG }
+														label={ __( 'Hover Background', 'godam' ) }
+														enableAlpha={ true }
+														onChange={ ( val ) => debouncedButtonColor( index, 'hoverBgColor', val ) }
+													/>
+													<ColorPickerButton
+														className="godam-ve-color-row"
+														value={ button.hoverTextColor ?? DEFAULT_BUTTON_HOVER_TEXT }
+														label={ __( 'Hover Text', 'godam' ) }
+														enableAlpha={ true }
+														onChange={ ( val ) => debouncedButtonColor( index, 'hoverTextColor', val ) }
+													/>
+												</VeColorList>
+											</VeField>
+										) }
+
+										{ button.variant === 'sticker' && (
+											<VeField label={ __( 'Fill colour', 'godam' ) }>
+												<VeColorList>
+													<ColorPickerButton
+														className="godam-ve-color-row"
+														value={ button.bgColor ?? DEFAULT_BUTTON_BG }
+														label={ __( 'Fill', 'godam' ) }
+														enableAlpha={ true }
+														onChange={ ( val ) => debouncedButtonColor( index, 'bgColor', val ) }
+													/>
+												</VeColorList>
+											</VeField>
+										) }
+
+										{ isImageButtonVariant( button.variant ) && button.attention && button.attention !== 'none' && (
+											<VeField
+												label={ __( 'Accent colour', 'godam' ) }
+												help={ __( 'Colour of the attention animation.', 'godam' ) }
+											>
+												<VeColorList>
+													<ColorPickerButton
+														className="godam-ve-color-row"
+														value={ button.bgColor ?? DEFAULT_BUTTON_BG }
+														label={ __( 'Accent', 'godam' ) }
+														enableAlpha={ true }
+														onChange={ ( val ) => debouncedButtonColor( index, 'bgColor', val ) }
+													/>
+												</VeColorList>
+											</VeField>
+										) }
 									</div>
 								) }
 							</div>
@@ -513,6 +659,8 @@ const ButtonCtaLayer = ( { layerID, goBack, duration } ) => {
 						const pixelX = percentToPx( posX, 'x' );
 						const pixelY = percentToPx( posY, 'y' );
 						const style = resolveButtonCtaStyle( button );
+						const isImage = isImageButtonVariant( style.variant ) && !! style.imageUrl;
+						const isSticker = style.variant === 'sticker';
 
 						return (
 							<Rnd
@@ -534,15 +682,29 @@ const ButtonCtaLayer = ( { layerID, goBack, duration } ) => {
 									} );
 								} }
 								onClick={ () => setExpandedButtonIndex( index ) }
-								className={ `godam-button-cta${ style.attention !== 'none' ? ` godam-button-cta--attn-${ style.attention }` : '' }` }
+								className={ `godam-button-cta${ isImage ? ' godam-button-cta--image' : '' }${ isSticker ? ' godam-button-cta--sticker' : '' }${ style.attention !== 'none' ? ` godam-button-cta--attn-${ style.attention }` : '' }` }
 								style={ {
 									'--godam-btn-bg': style.bgColor,
 									'--godam-btn-text': style.textColor,
 									'--godam-btn-hover-bg': style.hoverBgColor,
 									'--godam-btn-hover-text': style.hoverTextColor,
 								} }
+								data-sticker-text={ isSticker ? ( button.text || __( 'Button', 'godam' ) ) : undefined }
 							>
-								{ button.text || __( 'Button', 'godam' ) }
+								{ isImage ? (
+									<img
+										src={ style.imageUrl }
+										alt=""
+										style={ {
+											width: percentToPx( style.size, 'x' ),
+											height: 'auto',
+											display: 'block',
+											pointerEvents: 'none',
+										} }
+									/>
+								) : (
+									button.text || __( 'Button', 'godam' )
+								) }
 							</Rnd>
 						);
 					} ) }
