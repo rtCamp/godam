@@ -244,11 +244,21 @@ if ( class_exists( 'GF_Field' ) ) {
 		 * request. The field takes one recording, so a recording sent now replaces the saved one
 		 * instead of failing with "Number of files (2) exceeds limit (1)".
 		 *
+		 * Older Gravity Forms versions have no submission-files methods and never call this one;
+		 * there it returns empty lists instead of calling the missing parent method.
+		 *
 		 * @since n.e.x.t
 		 *
 		 * @return array[] The 'existing' and 'new' files, as returned by Gravity Forms.
 		 */
 		public function get_submission_files() {
+			if ( ! method_exists( \GF_Field_FileUpload::class, 'get_submission_files' ) ) {
+				return array(
+					'existing' => array(),
+					'new'      => array(),
+				);
+			}
+
 			$files = parent::get_submission_files();
 
 			if ( ! $this->multipleFiles && ! empty( $files['new'] ) && ! empty( $files['existing'] ) ) {
