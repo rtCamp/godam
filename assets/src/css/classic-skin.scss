@@ -440,7 +440,10 @@
 				display: none;
 			}
 
-			@media screen and (max-width: 420px) {
+			// Hide the time display on a narrow PLAYER (container query), not a
+			// narrow viewport, so it reacts to the player's own width (e.g. in the
+			// device-frame preview where the viewport stays wide).
+			@container godam-player-classic-skin (max-width: 420px) {
 				display: none !important;
 			}
 		}

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-06T08:47:13+00:00\n"
+"POT-Creation-Date: 2026-10-07T09:55:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -18,8 +18,8 @@ msgstr ""
 #: godam.php
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/class-elementor-widgets.php:240
-#: inc/classes/class-pages.php:184
 #: inc/classes/class-pages.php:185
+#: inc/classes/class-pages.php:186
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:68
 #: inc/classes/wpbakery-elements/class-wpb-godam-document.php:102
 #: inc/classes/wpbakery-elements/class-wpb-godam-image.php:68
@@ -459,8 +459,8 @@ msgstr ""
 #: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: godam.php:108
-#: inc/classes/class-pages.php:242
 #: inc/classes/class-pages.php:243
+#: inc/classes/class-pages.php:244
 #: assets/src/blocks/godam-audio/edit.js:607
 #: pages/video-editor/components/appearance/Appearance.js:113
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:19
@@ -1648,6 +1648,7 @@ msgstr ""
 #: assets/build/js/deactivation-feedback.min.js:1
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/godam.min.js:2
+#: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:308
@@ -1657,7 +1658,7 @@ msgstr ""
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:191
 #: pages/media-library/App.js:293
 #: pages/media-library/components/modal/DeleteModal.jsx:139
-#: pages/media-library/components/modal/FolderCreationModal.jsx:132
+#: pages/media-library/components/modal/FolderCreationModal.jsx:139
 #: pages/media-library/components/modal/MoveToFolderModal.jsx:335
 #: pages/media-library/components/modal/RenameModal.jsx:104
 #: pages/video-editor/components/chapters/ChapterForm.js:124
@@ -1918,7 +1919,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
 #: assets/build/js/media-library.min.js:1
-#: inc/templates/video-preview.php:94
+#: inc/templates/video-preview.php:114
 #: assets/src/blocks/godam-player/edit.js:969
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:782
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:790
@@ -1937,7 +1938,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
 #: assets/build/pages/godam.min.js:2
-#: inc/templates/video-preview.php:147
+#: inc/templates/video-preview.php:167
 #: assets/src/blocks/godam-player/edit.js:1010
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:310
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:55
@@ -2409,8 +2410,10 @@ msgid "Mute"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
+#: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:320
+#: pages/media-library-tour/components/FinishModal.jsx:34
 #: pages/video-editor/components/layers/CTALayer.js:265
 msgid "Done"
 msgstr ""
@@ -2425,11 +2428,16 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
+#: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/tools.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:325
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:329
 #: pages/godam/components/WooUnlockedNotice.jsx:202
+#: pages/media-library-tour/steps.js:228
+#: pages/media-library-tour/steps.js:250
+#: pages/media-library-tour/steps.js:265
+#: pages/media-library-tour/steps.js:281
 #: pages/video-editor/components/forms/FormPreview.js:86
 #: pages/video-editor/components/layers/CTALayer.js:265
 msgid "Skip"
@@ -2484,10 +2492,12 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
+#: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/tools.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/godam-player/managers/shareManager.js:331
 #: pages/godam/components/GoDAMHeader.jsx:107
+#: pages/media-library-tour/steps.js:414
 msgid "GoDAM Central"
 msgstr ""
 
@@ -2563,8 +2573,10 @@ msgid "Transcoding…"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
+#: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
 #: assets/src/js/media-library/views/filters/media-move-to-folder.js:37
+#: pages/media-library-tour/steps.js:270
 #: pages/media-library/components/modal/MoveToFolderModal.jsx:226
 msgid "Move to folder"
 msgstr ""
@@ -2581,7 +2593,7 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-admin.php:336
 #: admin/godam-transcoder-functions.php:381
 #: inc/classes/class-media-library-ajax.php:1592
-#: inc/templates/video-preview.php:71
+#: inc/templates/video-preview.php:77
 #: assets/src/js/media-library/views/attachment.js:184
 #: pages/godam/components/GoDAMHeader.jsx:74
 #: pages/whats-new/components/Header.js:19
@@ -2589,9 +2601,11 @@ msgid "GoDAM Logo"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
+#: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
 #: inc/classes/class-media-library-ajax.php:820
 #: assets/src/js/media-library/views/fields/move-to-folder-field.js:79
+#: pages/media-library-tour/dom.js:215
 #: pages/media-library/App.js:329
 #: pages/media-library/components/modal/MoveToFolderModal.jsx:143
 msgid "Uncategorized"
@@ -2646,16 +2660,16 @@ msgid "Video Thumbnails"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: inc/templates/video-preview.php:90
+#: inc/templates/video-preview.php:110
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:765
 msgid "Edit Image"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/class-pages.php:219
 #: inc/classes/class-pages.php:220
-#: inc/templates/video-preview.php:82
+#: inc/classes/class-pages.php:221
+#: inc/templates/video-preview.php:102
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:784
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:791
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:320
@@ -2663,7 +2677,7 @@ msgid "Analytics"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: inc/templates/video-preview.php:92
+#: inc/templates/video-preview.php:112
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:818
 msgid "Edit Audio"
 msgstr ""
@@ -5045,8 +5059,8 @@ msgid "vs prev %d days"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: inc/classes/class-pages.php:199
 #: inc/classes/class-pages.php:200
+#: inc/classes/class-pages.php:201
 #: pages/dashboard/Dashboard.js:432
 msgid "Dashboard"
 msgstr ""
@@ -5154,8 +5168,8 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: inc/classes/class-pages.php:268
 #: inc/classes/class-pages.php:269
+#: inc/classes/class-pages.php:270
 #: pages/dashboard/components/MarketingCarousel.jsx:94
 #: pages/godam/components/GoDAMFooter.jsx:31
 msgid "What's New"
@@ -5249,6 +5263,7 @@ msgid "Enter your API key here"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
+#: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/ConfirmModal.jsx:37
 msgid "Confirm"
@@ -5937,9 +5952,350 @@ msgstr ""
 msgid "Allows the GoDAM plugin to track anonymous events for analytics purposes. This helps us improve the product experience."
 msgstr ""
 
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/WelcomeModal.jsx:45
+msgid "Welcome to the GoDAM Media Library"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/WelcomeModal.jsx:51
+msgid "Take a quick, hands-on tour: you’ll create a folder, nest a sub-folder inside it and move media into it. It takes about two minutes."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/WelcomeModal.jsx:18
+msgid "Folders & sub-folders"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/WelcomeModal.jsx:19
+msgid "Organize every file into a tidy, nested structure."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/WelcomeModal.jsx:22
+msgid "Drag & drop"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/WelcomeModal.jsx:23
+msgid "Move media into folders, or rearrange the folders themselves."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/WelcomeModal.jsx:26
+msgid "Bookmarks & locks"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/WelcomeModal.jsx:27
+msgid "Pin the folders you use most and protect the ones that matter."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: assets/build/pages/video-editor.min.js:2
+#: pages/media-library-tour/components/WelcomeModal.jsx:69
+#: pages/video-editor/onboarding/WelcomeChooserModal.jsx:129
+#: pages/video-editor/onboarding/WelcomeIntroModal.jsx:57
+msgid "Skip for now"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/WelcomeModal.jsx:72
+msgid "Start the tour"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/FinishModal.jsx:24
+msgid "You’re all set!"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/FinishModal.jsx:30
+msgid "You now know how to organize your Media Library with GoDAM folders. Replay the tour anytime from the bulb button next to Manage Media."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/BulbButton.jsx:23
+msgid "Take a guided tour of GoDAM Media Library features"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:55
+msgid "your folder"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: assets/build/pages/video-editor.min.js:2
+#: pages/media-library-tour/controller.js:320
+#: pages/video-editor/onboarding/productGuide.js:197
+msgid "Next"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: assets/src/js/godam-player/engagement.js:1114
+#: pages/media-library-tour/controller.js:321
+msgid "Back"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:90
+msgid "Your folder panel"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:92
+msgid "GoDAM adds folders to your Media Library. All Media shows everything, and Uncategorized collects media that isn’t in a folder yet."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:100
+msgid "Create a folder"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:102
+msgid "Let’s create your first folder. Click “New Folder”."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:112
+msgid "Name it"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:113
+msgid "Type a name, for example “Marketing”, and click Create."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
+#: pages/media-library-tour/steps.js:118
 #: pages/media-library/components/folder-tree/FolderMenuToggle.jsx:41
 msgid "Folder options"
+msgstr ""
+
+#. translators: %s: folder name.
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:122
+#, js-format
+msgid "“%s” is ready! Click the three-dot menu next to it (or right-click the folder) to see what you can do with it."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:138
+msgid "Everything in one menu"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:140
+msgid "Rename, lock, bookmark, download as ZIP or delete folders from here. Now click “New Sub-folder” to nest a folder inside this one."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:154
+msgid "Name the sub-folder"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:155
+msgid "Give the sub-folder a name, for example “Campaign assets”, and click Create."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:163
+msgid "Nested folders"
+msgstr ""
+
+#. translators: %s: sub-folder name.
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:180
+#, js-format
+msgid "“%s” now lives inside its parent. Tip: drag and drop any folder to reorder it or move it into another folder."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:194
+msgid "Bookmarks & locked folders"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:196
+msgid "Bookmark the folders you use most and lock the ones that shouldn’t change. They are collected here for quick access."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:204
+msgid "Add media to a folder"
+msgstr ""
+
+#. translators: %s: folder name.
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:208
+#, js-format
+msgid "Drag this item and drop it on “%s” in the sidebar. You can select multiple items to move them together."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:233
+msgid "Open your folder"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:235
+msgid "Click the folder to open it and see the media inside."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:243
+msgid "Move many at once"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:245
+msgid "Prefer clicking to dragging? Click “Bulk select” to pick several items at once."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:255
+msgid "Pick your media"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:257
+msgid "Click one or more items to select them."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:272
+msgid "Now click “Move to folder”. You can keep adding items to the selection first."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:286
+msgid "Choose a destination"
+msgstr ""
+
+#. translators: %s: folder name.
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:293
+#, js-format
+msgid "Pick a folder, for example “%s”, and click Move."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:296
+msgid "Pick a destination folder and click Move."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:315
+msgid "Moved!"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:339
+msgid "the folder"
+msgstr ""
+
+#. translators: 1: number of items, 2: folder name.
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:355
+#, js-format
+msgid "%1$d item is now in “%2$s” — the count next to the folder went up. That’s all it takes to move media in bulk."
+msgid_plural "%1$d items are now in “%2$s” — the count next to the folder went up. That’s all it takes to move media in bulk."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: 1: number of items, 2: folder name.
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:343
+#, js-format
+msgid "%1$d item is now in “%2$s”. Open that folder anytime to see it. That’s all it takes to move media in bulk."
+msgid_plural "%1$d items are now in “%2$s”. Open that folder anytime to see them. That’s all it takes to move media in bulk."
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:376
+msgid "Leave Bulk select"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:378
+msgid "Click “Cancel” to leave Bulk select mode before we continue."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:387
+msgid "Upload straight into a folder"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:389
+msgid "Files you upload while a folder is open are saved in that folder automatically."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:396
+msgid "Find anything fast"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:398
+msgid "Filter by media type or date range, or search across your whole library."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:405
+msgid "Folder tools"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:407
+msgid "Search folders by name, sort them A–Z or Z–A, or use Bulk Select to act on several folders at once."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:416
+msgid "Open GoDAM Central for advanced media management, sharing and analytics."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:424
+msgid "Replay anytime"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:426
+msgid "That’s the tour! Click the bulb whenever you want to take it again."
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/steps.js:430
+msgid "Finish"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/TourApp.jsx:140
+msgid "End the tour?"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/TourApp.jsx:141
+msgid "End tour"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: assets/build/pages/video-editor.min.js:2
+#: pages/media-library-tour/components/TourApp.jsx:142
+#: pages/video-editor/onboarding/ProductGuide.jsx:225
+msgid "Keep going"
+msgstr ""
+
+#: assets/build/pages/media-library-tour.min.js:2
+#: pages/media-library-tour/components/TourApp.jsx:147
+msgid "You can pick it up again anytime from the bulb button next to Manage Media."
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
@@ -5988,7 +6344,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/hooks/useMoveAttachments.js:192
+#: pages/media-library/hooks/useMoveAttachments.js:197
 msgid "Failed to move items"
 msgstr ""
 
@@ -6165,28 +6521,28 @@ msgid "Folder created successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:83
+#: pages/media-library/components/modal/FolderCreationModal.jsx:89
 msgid "Folder with that name already exists."
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:90
+#: pages/media-library/components/modal/FolderCreationModal.jsx:96
 msgid "Failed to create folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:110
+#: pages/media-library/components/modal/FolderCreationModal.jsx:116
 msgid "Create a new folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:118
+#: pages/media-library/components/modal/FolderCreationModal.jsx:125
 #: pages/media-library/components/modal/RenameModal.jsx:88
 msgid "Folder Name"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:126
+#: pages/media-library/components/modal/FolderCreationModal.jsx:133
 msgid "Create"
 msgstr ""
 
@@ -7388,11 +7744,6 @@ msgstr ""
 #: pages/video-editor/components/SidebarLayers.js:510
 #: pages/video-editor/utils/layerTypes.js:81
 msgid "Ad"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/productGuide.js:197
-msgid "Next"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
@@ -8822,8 +9173,8 @@ msgid "Last edited %s"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/class-pages.php:209
 #: inc/classes/class-pages.php:210
+#: inc/classes/class-pages.php:211
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:648
 msgid "Media Editor"
 msgstr ""
@@ -8942,12 +9293,6 @@ msgid "Welcome options"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/WelcomeChooserModal.jsx:129
-#: pages/video-editor/onboarding/WelcomeIntroModal.jsx:57
-msgid "Skip for now"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/onboarding/WelcomeIntroModal.jsx:37
 msgid "Get Started with GoDAM"
 msgstr ""
@@ -8965,11 +9310,6 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/onboarding/ProductGuide.jsx:224
 msgid "End guide"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:225
-msgid "Keep going"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
@@ -9976,29 +10316,29 @@ msgstr ""
 msgid "Action Scheduler is required to run the GoDAM media usage backfill."
 msgstr ""
 
-#: inc/classes/class-pages.php:231
 #: inc/classes/class-pages.php:232
+#: inc/classes/class-pages.php:233
 msgid "Tools"
 msgstr ""
 
-#: inc/classes/class-pages.php:252
 #: inc/classes/class-pages.php:253
+#: inc/classes/class-pages.php:254
 msgid "Help"
 msgstr ""
 
-#: inc/classes/class-pages.php:442
+#: inc/classes/class-pages.php:443
 msgid "Sorry, you are not allowed to edit this item."
 msgstr ""
 
-#: inc/classes/class-pages.php:824
+#: inc/classes/class-pages.php:825
 msgid "Your last request is still being processed. Please wait a while ..."
 msgstr ""
 
-#: inc/classes/class-pages.php:825
+#: inc/classes/class-pages.php:826
 msgid "Please choose a valid poll answer."
 msgstr ""
 
-#: inc/classes/class-pages.php:826
+#: inc/classes/class-pages.php:827
 msgid "Maximum number of choices allowed: "
 msgstr ""
 
@@ -11586,31 +11926,31 @@ msgstr ""
 msgid "A Folder ID is required"
 msgstr ""
 
-#: inc/classes/rest-api/class-onboarding.php:216
+#: inc/classes/rest-api/class-onboarding.php:262
 msgid "GoDAM onboarding requires a secure (HTTPS) connection to the GoDAM service."
 msgstr ""
 
-#: inc/classes/rest-api/class-onboarding.php:227
+#: inc/classes/rest-api/class-onboarding.php:273
 msgid "Your session has expired. Please sign in again."
 msgstr ""
 
-#: inc/classes/rest-api/class-onboarding.php:249
+#: inc/classes/rest-api/class-onboarding.php:295
 msgid "Could not reach GoDAM. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-onboarding.php:257
+#: inc/classes/rest-api/class-onboarding.php:303
 msgid "Request failed. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-onboarding.php:353
+#: inc/classes/rest-api/class-onboarding.php:399
 msgid "Sign-in failed. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-onboarding.php:393
+#: inc/classes/rest-api/class-onboarding.php:439
 msgid "This workspace has no API key yet."
 msgstr ""
 
-#: inc/classes/rest-api/class-onboarding.php:432
+#: inc/classes/rest-api/class-onboarding.php:478
 msgid "Could not connect this site."
 msgstr ""
 
@@ -12489,61 +12829,73 @@ msgstr ""
 msgid "Video Embed: Attachment(%s)"
 msgstr ""
 
-#: inc/templates/video-preview.php:34
+#: inc/templates/video-preview.php:40
 msgid "Image Preview"
 msgstr ""
 
-#: inc/templates/video-preview.php:36
+#: inc/templates/video-preview.php:42
 msgid "Audio Preview"
 msgstr ""
 
-#: inc/templates/video-preview.php:38
+#: inc/templates/video-preview.php:44
 msgid "Video Preview"
 msgstr ""
 
 #. translators: 1: media type label (e.g. "Image Preview"), 2: attachment ID.
-#: inc/templates/video-preview.php:49
+#: inc/templates/video-preview.php:55
 #, php-format
 msgid "%1$s: Attachment(%2$s)"
 msgstr ""
 
-#: inc/templates/video-preview.php:112
+#: inc/templates/video-preview.php:84
+msgid "Preview device width"
+msgstr ""
+
+#: inc/templates/video-preview.php:87
+msgid "Desktop"
+msgstr ""
+
+#: inc/templates/video-preview.php:91
+msgid "Mobile"
+msgstr ""
+
+#: inc/templates/video-preview.php:132
 msgid "Our Pro Features"
 msgstr ""
 
-#: inc/templates/video-preview.php:116
+#: inc/templates/video-preview.php:136
 msgid "Smart media offloading"
 msgstr ""
 
-#: inc/templates/video-preview.php:117
+#: inc/templates/video-preview.php:137
 msgid "Global CDN-powered delivery"
 msgstr ""
 
-#: inc/templates/video-preview.php:118
+#: inc/templates/video-preview.php:138
 msgid "Adaptive bitrate video streaming"
 msgstr ""
 
-#: inc/templates/video-preview.php:119
+#: inc/templates/video-preview.php:139
 msgid "Advanced video performance analytics"
 msgstr ""
 
-#: inc/templates/video-preview.php:120
+#: inc/templates/video-preview.php:140
 msgid "Automatic video transcoding"
 msgstr ""
 
-#: inc/templates/video-preview.php:121
+#: inc/templates/video-preview.php:141
 msgid "AI-powered video transcription"
 msgstr ""
 
-#: inc/templates/video-preview.php:122
+#: inc/templates/video-preview.php:142
 msgid "Video watermarking"
 msgstr ""
 
-#: inc/templates/video-preview.php:123
+#: inc/templates/video-preview.php:143
 msgid "Multi-thumbnail generation"
 msgstr ""
 
-#: inc/templates/video-preview.php:124
+#: inc/templates/video-preview.php:144
 msgid "Unified GoDAM Central media library"
 msgstr ""
 
@@ -12605,10 +12957,6 @@ msgstr ""
 #: assets/src/blocks/godam-player/track-uploader.js:228
 msgctxt "verb"
 msgid "Upload"
-msgstr ""
-
-#: assets/src/js/godam-player/engagement.js:1114
-msgid "Back"
 msgstr ""
 
 #: assets/src/js/godam-player/engagement.js:1124

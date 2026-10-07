@@ -1613,14 +1613,13 @@ function godam_preview_page_content( $video_id ) {
 	$show_video       = false;
 	$video_id         = intval( $video_id );
 
-	$godam_video_title = '';
-	$godam_mime        = '';
+	$godam_mime = '';
 
 	if ( ! empty( $video_id ) ) {
 		/**
-		 * Fires before resolving this attachment's post/mime/title data, so
+		 * Fires before resolving this attachment's post/mime data, so
 		 * integrations that centralize media on another site can switch
-		 * context first. Title and mime type are captured into variables here
+		 * context first. The mime type is captured into a variable here
 		 * (not re-read later) since the shortcode/block render further down
 		 * must run on the *current* site, after this bracket has closed.
 		 *
@@ -1629,8 +1628,7 @@ function godam_preview_page_content( $video_id ) {
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
 		if ( $video_attachment && 'attachment' === $video_attachment->post_type ) {
-			$godam_video_title = get_the_title( $video_id );
-			$godam_mime        = (string) get_post_mime_type( $video_id );
+			$godam_mime = (string) get_post_mime_type( $video_id );
 		}
 		do_action( 'rtgodam_after_attachment_lookup' );
 		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type;
@@ -1682,9 +1680,6 @@ function godam_preview_page_content( $video_id ) {
 			<?php echo esc_html( $godam_notice ); ?>
 		</div>
 		<div class="godam-video-preview">
-			<h1 class="godam-video-preview--title">
-				<?php echo esc_html( $godam_video_title ); ?>
-			</h1>
 			<?php echo $godam_media_output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped inside the block / shortcode render templates. ?>
 		</div>
 		<?php
