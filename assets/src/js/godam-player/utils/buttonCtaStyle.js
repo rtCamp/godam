@@ -30,6 +30,94 @@ const BUTTON_ATTENTION_TYPES = [ 'none', 'pulse', 'ripple', 'glow' ];
 // Supported variants: a text label, or the label as a die-cut sticker.
 const BUTTON_VARIANTS = [ 'text', 'sticker' ];
 
+// Default button size per variant, as a percentage of the content-box WIDTH —
+// the button's analogue of the circle hotspot's DEFAULT_DIAMETER_PERCENT. A
+// button with no stored `fontPercent` falls back to this, so EVERY button scales
+// with the video (never a fixed px size), exactly like a circle always resolves a
+// percent diameter. These equal 16px / 32px (the old `1rem` / `2rem` CSS
+// defaults) at a 640px-wide content box.
+const DEFAULT_BUTTON_FONT_PERCENT = { text: 2.5, sticker: 5 };
+
+// Sanity clamp for a button's rendered font-size. MIN is only a "don't vanish"
+// guard (a button can't collapse to nothing from a tiny stored value or a resize);
+// MAX stops it dominating a 4K / fullscreen stage. Kept small so buttons stay
+// responsive on phones — the width cap below may shrink below MIN to avoid
+// overflow. Absolute px, applied after the percent → px conversion.
+const MIN_BUTTON_FONT_PX = 4;
+const MAX_BUTTON_FONT_PX = 200;
+
+// Overall-size cap: the button may not be wider than this fraction of the video
+// content width. On a small player (or with a long label / an author-oversized
+// button) the font is shrunk to fit. This is what keeps a sticker — which is a
+// single nowrap line and can't wrap — from spilling off a narrow screen.
+const MAX_BUTTON_WIDTH_FRACTION = 0.9;
+
+/**
+ * Resolve a button-style hotspot's size as a percentage of the content-box width.
+ *
+ * Like the circle hotspots' `diameter` (which always resolves to a percent —
+ * stored or a computed fallback — so it scales with the video), a button always
+ * has a percent size: its stored `fontPercent`, or the per-variant default. This
+ * is what keeps the button "intact with reference to video pixels" as the player
+ * or its container resizes.
+ *
+ * @param {Object} hotspot Button (hotspot) config.
+ * @return {number} Font-size as a percentage of the content-box width.
+ */
+export function resolveButtonFontPercent( hotspot = {} ) {
+	if ( Number.isFinite( hotspot?.fontPercent ) ) {
+		return hotspot.fontPercent;
+	}
+	const variant = resolveButtonCtaStyle( hotspot ).variant;
+	return DEFAULT_BUTTON_FONT_PERCENT[ variant ] ?? DEFAULT_BUTTON_FONT_PERCENT.text;
+}
+
+/**
+ * Shrink a button's font-size so the button fits within MAX_BUTTON_WIDTH_FRACTION
+ * of the video width — the "overall size" cap for small players and long labels.
+ * The whole button is em-based, so scaling the font scales its width with it.
+ * Returns the size unchanged when it already fits (or can't be measured).
+ *
+ * The fit has NO lower floor: on a narrow phone a long label (or a nowrap sticker,
+ * which can't wrap) must be free to shrink as small as needed, or it overflows the
+ * screen. Fitting the width always wins over the readability floor.
+ *
+ * @param {number} currentFontPx Current font-size in px.
+ * @param {number} measuredWidth The button's measured px width at that font-size.
+ * @param {number} contentWidth  Content-box width in px.
+ * @return {number} Font-size in px, reduced if needed to fit.
+ */
+export function fitButtonFontPx( currentFontPx, measuredWidth, contentWidth ) {
+	if ( ! Number.isFinite( currentFontPx ) || ! measuredWidth || ! Number.isFinite( contentWidth ) || contentWidth <= 0 ) {
+		return currentFontPx;
+	}
+	const maxWidth = MAX_BUTTON_WIDTH_FRACTION * contentWidth;
+	if ( measuredWidth <= maxWidth ) {
+		return currentFontPx;
+	}
+	return currentFontPx * ( maxWidth / measuredWidth );
+}
+
+/**
+ * Convert a button's size (percentage of content width) to a clamped px
+ * font-size. The whole button (padding, sticker strokes, animations) is em-based,
+ * so font-size alone scales it proportionally.
+ *
+ * Returns `null` only when the content width isn't known yet (stage not laid out)
+ * so the caller can leave the CSS default until the next reposition.
+ *
+ * @param {number} fontPercent  Font-size as a percentage of content width (see resolveButtonFontPercent).
+ * @param {number} contentWidth Content-box width in px.
+ * @return {number|null} Clamped font-size in px, or null when it can't be computed.
+ */
+export function getButtonFontPx( fontPercent, contentWidth ) {
+	if ( ! Number.isFinite( fontPercent ) || ! Number.isFinite( contentWidth ) || contentWidth <= 0 ) {
+		return null;
+	}
+	const px = ( fontPercent / 100 ) * contentWidth;
+	return Math.max( MIN_BUTTON_FONT_PX, Math.min( px, MAX_BUTTON_FONT_PX ) );
+}
+
 /**
  * Resolve the effective variant + colours + attention animation for a single
  * button, applying the shared defaults for any unset field.
@@ -87,4 +175,8 @@ export {
 	DEFAULT_BUTTON_HOVER_TEXT,
 	BUTTON_ATTENTION_TYPES,
 	BUTTON_VARIANTS,
+	DEFAULT_BUTTON_FONT_PERCENT,
+	MIN_BUTTON_FONT_PX,
+	MAX_BUTTON_FONT_PX,
+	MAX_BUTTON_WIDTH_FRACTION,
 };

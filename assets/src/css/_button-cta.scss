@@ -18,8 +18,11 @@
 	justify-content: center;
 	box-sizing: border-box;
 	max-width: 90%;
-	padding: 10px 18px;
-	border-radius: 0.25rem;
+	// em-based so a single font-size knob scales the whole button proportionally
+	// (the stored per-hotspot size drives font-size; see getButtonFontPx). Values
+	// equal the previous 10px/18px/0.25rem/1px at the 16px default.
+	padding: 0.625em 1.125em;
+	border-radius: 0.25em;
 	font-size: 1rem;
 	font-weight: 600;
 	line-height: 1.2;
@@ -28,7 +31,7 @@
 	cursor: pointer;
 	background-color: var(--godam-btn-bg, #3858e9);
 	color: var(--godam-btn-text, #fff);
-	border: 1px solid transparent;
+	border: 0.0625em solid transparent;
 	transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 
 	&:hover,

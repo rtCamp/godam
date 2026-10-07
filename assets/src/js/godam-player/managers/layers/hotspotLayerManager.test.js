@@ -249,6 +249,60 @@ describe( 'HotspotLayerManager button style', () => {
 		expect( el.style.top ).toBe( '60px' ); // 20 + 10% of 400
 	} );
 
+	it( 'sizes a button from its stored fontPercent, scaled to the content width', () => {
+		// fontPercent is a % of the content width, like the circle diameter, so the
+		// button scales with the video. 5% of 800 = 40px.
+		const el = build( { styleType: 'button' }, { id: 'S', tooltipText: 'Go', fontPercent: 5, position: { x: 0, y: 0 }, unit: 'percent' } );
+
+		expect( el.style.fontSize ).toBe( '40px' );
+	} );
+
+	it( 'sizes a button with no stored size from the per-variant default, so it still scales', () => {
+		// No fontPercent → default (text 2.5% of 800 = 20px), never a fixed px size.
+		const text = build( { styleType: 'button' }, { id: 'N', tooltipText: 'Go', position: { x: 0, y: 0 }, unit: 'percent' } );
+		expect( text.style.fontSize ).toBe( '20px' );
+
+		// Sticker default is larger (5% of 800 = 40px).
+		const sticker = build( { styleType: 'button' }, { id: 'N2', tooltipText: 'Sale', variant: 'sticker', position: { x: 0, y: 0 }, unit: 'percent' } );
+		expect( sticker.style.fontSize ).toBe( '40px' );
+	} );
+
+	it( 'shrinks an over-wide button to fit 90% of the video width', () => {
+		// fontPercent 10 on an 800px box → 80px; 90% cap = 720px.
+		const hotspot = { id: 'W', tooltipText: 'Limited time offer', variant: 'sticker', fontPercent: 10, position: { x: 0, y: 0 }, unit: 'percent' };
+		const el = build( { styleType: 'button' }, hotspot );
+		expect( el.style.fontSize ).toBe( '80px' );
+
+		// jsdom has no layout: say the 80px button measures 900px (> 720 cap).
+		Object.defineProperty( el, 'offsetWidth', { value: 900, configurable: true } );
+		Object.defineProperty( el, 'offsetHeight', { value: 100, configurable: true } );
+		manager.positionHotspotButton( el, hotspot );
+
+		// Shrunk to fit: 80 * 720/900 = 64px.
+		expect( el.style.fontSize ).toBe( '64px' );
+	} );
+
+	it( 'does not shrink a button that already fits the width cap', () => {
+		const hotspot = { id: 'FIT', tooltipText: 'Go', fontPercent: 5, position: { x: 0, y: 0 }, unit: 'percent' };
+		const el = build( { styleType: 'button' }, hotspot );
+		Object.defineProperty( el, 'offsetWidth', { value: 120, configurable: true } );
+		Object.defineProperty( el, 'offsetHeight', { value: 40, configurable: true } );
+		manager.positionHotspotButton( el, hotspot );
+
+		expect( el.style.fontSize ).toBe( '40px' ); // 5% of 800, unchanged
+	} );
+
+	it( 'rescales a button font-size when the content box resizes', () => {
+		const hotspot = { id: 'R', tooltipText: 'Go', fontPercent: 5, position: { x: 0, y: 0 }, unit: 'percent' };
+		const el = build( { styleType: 'button' }, hotspot );
+		expect( el.style.fontSize ).toBe( '40px' ); // 5% of 800
+
+		// The player shrinks: the same percentage now resolves to a smaller px size.
+		manager.computeContentRect = () => ( { left: 0, top: 0, width: 400, height: 200 } );
+		manager.positionHotspotButton( el, hotspot );
+		expect( el.style.fontSize ).toBe( '20px' ); // 5% of 400
+	} );
+
 	it( 'falls back to a numbered label and no link', () => {
 		const el = build( { styleType: 'button' }, { id: 'B', position: { x: 10, y: 10 }, unit: 'percent' }, 2 );
 

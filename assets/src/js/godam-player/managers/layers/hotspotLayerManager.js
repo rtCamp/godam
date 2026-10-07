@@ -9,7 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { HOTSPOT_CONSTANTS } from '../../utils/constants';
 import { getLayerDisplayName } from '../../utils/layerActions.js';
 import { resolveHotspotStyle, isButtonHotspot } from '../../utils/hotspotStyle';
-import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars } from '../../utils/buttonCtaStyle';
+import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, fitButtonFontPx } from '../../utils/buttonCtaStyle';
 
 // Every rendered hotspot point: circles (pulse / icon style) and buttons (button
 // style). Points are matched to `layer.hotspots` by index, so both must be found.
@@ -841,6 +841,16 @@ export default class HotspotLayerManager {
 		const fractionX = isPercent ? posX / 100 : posX / HotspotLayerManager.BASE_WIDTH;
 		const fractionY = isPercent ? posY / 100 : posY / HotspotLayerManager.BASE_HEIGHT;
 
+		// Size: a button's font-size is a percentage of the content width, so it
+		// scales with the video (like the circle hotspots' diameter). Every button
+		// resolves a percent — its stored `fontPercent` or the per-variant default —
+		// so it always scales, never a fixed px size. Set it before measuring below
+		// so the edge-clamp uses the scaled size.
+		const fontPx = getButtonFontPx( resolveButtonFontPercent( hotspot ), rect.width );
+		if ( fontPx !== null ) {
+			buttonEl.style.fontSize = `${ fontPx }px`;
+		}
+
 		let left = rect.left + ( fractionX * rect.width );
 		let top = rect.top + ( fractionY * rect.height );
 		buttonEl.style.left = `${ left }px`;
@@ -849,8 +859,22 @@ export default class HotspotLayerManager {
 		// Measure after placing it (its wrapped width depends on where it sits). A
 		// button that isn't laid out yet (hidden layer, not attached) measures 0 and
 		// is clamped on the next reposition instead.
-		const width = buttonEl.offsetWidth;
-		const height = buttonEl.offsetHeight;
+		let width = buttonEl.offsetWidth;
+		let height = buttonEl.offsetHeight;
+
+		// Overall-size cap: shrink the font so the button fits within 90% of the
+		// video width (small players, long labels, or an author-oversized button).
+		// The sticker is a single nowrap line and can't wrap, so without this it
+		// would spill off a narrow screen.
+		if ( fontPx !== null && width ) {
+			const fitted = fitButtonFontPx( fontPx, width, rect.width );
+			if ( fitted !== fontPx ) {
+				buttonEl.style.fontSize = `${ fitted }px`;
+				width = buttonEl.offsetWidth;
+				height = buttonEl.offsetHeight;
+			}
+		}
+
 		if ( width && height ) {
 			left = Math.max( rect.left, Math.min( left, rect.left + rect.width - width ) );
 			top = Math.max( rect.top, Math.min( top, rect.top + rect.height - height ) );
