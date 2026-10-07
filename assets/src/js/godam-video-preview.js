@@ -96,9 +96,14 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			// the full design width in desktop view.
 			const deviceMaxWidth = 'mobile' === currentView ? MOBILE_MAX_WIDTH : DESKTOP_MAX_WIDTH;
 
-			// Get max width from parent container.
-			const parentWidth = previewContainer.offsetWidth;
-			const maxWidth = Math.min( parentWidth, deviceMaxWidth );
+			// Bound the player by the device-frame card's inner width (its width
+			// minus horizontal padding) so it never overflows the card.
+			const containerStyles = window.getComputedStyle( previewContainer );
+			const horizontalPadding =
+				parseFloat( containerStyles.paddingLeft ) +
+				parseFloat( containerStyles.paddingRight );
+			const innerWidth = previewContainer.clientWidth - horizontalPadding;
+			const maxWidth = Math.min( innerWidth, deviceMaxWidth );
 
 			// Constrain the width.
 			const constrainedWidth = Math.min( calculatedWidth, maxWidth );
@@ -122,6 +127,31 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 	// --- Device-view toggle ---------------------------------------------------
 
+	// Re-run the video sizing on every frame for the length of the card's
+	// max-width transition. The device-frame card animates its width over ~0.3s,
+	// so a single synchronous re-measure right after toggling reads a
+	// mid-animation width; tracking across the transition keeps the player in
+	// step and lands on the correct final width (e.g. back to full desktop
+	// width when returning from mobile).
+	let relayoutRafId = null;
+	const relayoutAcrossTransition = () => {
+		const TRACK_DURATION = 400; // Slightly longer than the CSS transition.
+		const clock = window.performance || Date;
+		const startTime = clock.now();
+
+		const step = () => {
+			resizeHandlers.forEach( ( handler ) => handler() );
+			if ( clock.now() - startTime < TRACK_DURATION ) {
+				relayoutRafId = window.requestAnimationFrame( step );
+			}
+		};
+
+		if ( relayoutRafId ) {
+			window.cancelAnimationFrame( relayoutRafId );
+		}
+		relayoutRafId = window.requestAnimationFrame( step );
+	};
+
 	/**
 	 * Apply a device view: update the layout class, the button states, re-clamp
 	 * the video width and persist the choice.
@@ -141,8 +171,9 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			button.setAttribute( 'aria-pressed', isActive ? 'true' : 'false' );
 		} );
 
-		// Re-run the video sizing so the player re-clamps to the new width.
-		resizeHandlers.forEach( ( handler ) => handler() );
+		// Re-run the video sizing across the card's width transition so the
+		// player re-clamps smoothly and settles at the new device width.
+		relayoutAcrossTransition();
 
 		try {
 			window.localStorage.setItem( STORAGE_KEY, currentView );
