@@ -63,6 +63,7 @@ export default class EventsManager {
 		this.onVideoResize = callbacks.onVideoResize;
 		this.onPlay = callbacks.onPlay;
 		this.onControlsMove = callbacks.onControlsMove;
+		this.onControlsReset = callbacks.onControlsReset;
 	}
 
 	/**
@@ -111,6 +112,21 @@ export default class EventsManager {
 		window.addEventListener( 'resize', () => this.handleVideoResize() );
 		this.player.on( 'fullscreenchange', () => this.handleVideoResize() );
 		this.player.on( 'customfullscreenchange', () => this.handleVideoResize() );
+
+		// Observe the player's own container so the control layout recomputes
+		// whenever the CONTAINER resizes for any reason — not just on a window
+		// resize. The control positions are derived from the container's pixel
+		// size, so a container-only size change (a CSS width change, a flex
+		// reflow, the media-preview Desktop/Mobile toggle) would otherwise be
+		// missed and the controls would keep their previous-width positions.
+		const videoContainer = this.video?.closest?.( '.easydam-video-container' );
+		if ( videoContainer && typeof window.ResizeObserver === 'function' ) {
+			this.containerResizeObserver = new window.ResizeObserver(
+				() => this.handleVideoResize(),
+			);
+			this.containerResizeObserver.observe( videoContainer );
+			this.player.on( 'dispose', () => this.containerResizeObserver?.disconnect() );
+		}
 	}
 
 	/**
@@ -134,6 +150,12 @@ export default class EventsManager {
 		// Check container width constraint for other skins
 		const videoContainer = this.video.closest( '.easydam-video-container' );
 		if ( videoContainer?.offsetWidth > 480 ) {
+			// Wide player: restore the default (desktop) control layout, clearing
+			// any inline positions applied for a narrow player. Needed when the
+			// container grows back — e.g. Mobile -> Desktop in the media preview.
+			if ( this.onControlsReset ) {
+				this.onControlsReset();
+			}
 			return;
 		}
 
