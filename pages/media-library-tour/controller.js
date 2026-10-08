@@ -62,6 +62,18 @@ export const configure = ( next ) => {
 
 const resolve = ( value ) => ( typeof value === 'function' ? value( ctx ) : value );
 
+// driver.js renders the popover description as HTML. Tour copy is plain text but
+// interpolates user-controlled folder names, so encode it to stop a crafted
+// folder name from injecting markup or event handlers into wp-admin.
+const escapeHtml = ( value ) =>
+	String( value ?? '' ).replace( /[&<>"']/g, ( char ) => ( {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#39;',
+	}[ char ] ) );
+
 const passes = ( step ) => ! step.when || step.when( ctx );
 
 const isInformational = ( step ) => Boolean( step?.showNext ) && ! step.advanceOn && ! step.advanceWhen && ! step.skipTo;
@@ -313,7 +325,7 @@ const show = async () => {
 		element,
 		popover: {
 			title: step.title || '',
-			description: resolve( step.text ),
+			description: escapeHtml( resolve( step.text ) ),
 			side: step.side || 'bottom',
 			align: step.align || 'start',
 			showButtons: buttons,
