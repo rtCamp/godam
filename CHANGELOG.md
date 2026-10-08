@@ -1,5 +1,10 @@
 # Changelog #
 
+## v2.3.2 (October 8, 2026) ##
+
+- Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts once the first time you open the library and can be replayed anytime from the new button next to Manage Media.
+- Fix: Resolved open Dependabot security advisories (npm).
+
 ## v2.3.1 (October 6, 2026) ##
 
 - Fix: What's New refreshes after every plugin update, so it always shows the current release post.

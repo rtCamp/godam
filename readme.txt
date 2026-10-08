@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -223,6 +223,11 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 27. Likes and Comments
 
 == Changelog ==
+
+= v2.3.2 (October 8, 2026) =
+
+- Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts once the first time you open the library and can be replayed anytime from the new button next to Manage Media.
+- Fix: Resolved open Dependabot security advisories (npm).
 
 = v2.3.1 (October 6, 2026) =
 
