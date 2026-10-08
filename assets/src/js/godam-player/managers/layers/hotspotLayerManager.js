@@ -520,7 +520,14 @@ export default class HotspotLayerManager {
 					} else {
 						requestAnimationFrame( () => {
 							const hotspotDivs = layerObj.layerElement.querySelectorAll( HOTSPOT_POINT_SELECTOR );
-							hotspotDivs.forEach( ( hotspotDiv ) => {
+							hotspotDivs.forEach( ( hotspotDiv, index ) => {
+								// Buttons size to their label and carry no tooltip. While the
+								// layer was hidden they measured 0x0, so any resize skipped
+								// their clamp; re-clamp them now that the layer is visible.
+								if ( hotspotDiv.classList.contains( 'godam-hotspot-button' ) ) {
+									this.positionHotspotButton( hotspotDiv, layerObj.hotspots[ index ] );
+									return;
+								}
 								const tooltipDiv = hotspotDiv.querySelector( '.hotspot-tooltip' );
 								if ( tooltipDiv ) {
 									this.positionTooltip( hotspotDiv, tooltipDiv );

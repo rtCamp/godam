@@ -341,4 +341,50 @@ describe( 'HotspotLayerManager button style', () => {
 		expect( el.style.width ).toBe( '' );
 		expect( el.style.height ).toBe( '' );
 	} );
+
+	it( 'clamps a button inside the video when its layer is shown again after a resize', () => {
+		// A hidden layer is display:none, so its button measures 0x0 and any
+		// resize that happened while it was hidden skipped the clamp. When the
+		// layer reappears it must be re-clamped, not just its (absent) tooltip.
+		const rafSpy = jest
+			.spyOn( window, 'requestAnimationFrame' )
+			.mockImplementation( ( cb ) => {
+				cb();
+				return 0;
+			} );
+		// emitLayerVisible needs analytics globals; this test only cares about position.
+		jest.spyOn( manager, 'emitLayerVisible' ).mockImplementation( () => {} );
+
+		const hotspots = [ { id: 'A', tooltipText: 'Shop now', position: { x: 95, y: 90 }, unit: 'percent' } ];
+		const layerElement = document.createElement( 'div' );
+		const buttonEl = build( { styleType: 'button' }, hotspots[ 0 ] );
+		layerElement.appendChild( buttonEl );
+		// The layer has already rendered once, then been hidden.
+		layerElement.classList.add( 'hidden' );
+		layerElement.dataset.hotspotsInitialized = 'true';
+
+		manager.hotspotLayers.push( {
+			layerElement,
+			hotspots,
+			layer: { id: 'L', hotspots },
+			show: true,
+			displayTime: 0,
+			duration: 100,
+		} );
+
+		// The player shrank while the layer was hidden; give the button a measured size.
+		manager.computeContentRect = () => ( { left: 0, top: 0, width: 400, height: 200 } );
+		Object.defineProperty( buttonEl, 'offsetWidth', { value: 120, configurable: true } );
+		Object.defineProperty( buttonEl, 'offsetHeight', { value: 40, configurable: true } );
+
+		manager.handleHotspotLayersTimeUpdate( 5 );
+
+		// Layer is visible again and the button sits inside the 400x200 video:
+		// right edge 400 - 120 = 280, bottom edge 200 - 40 = 160.
+		expect( layerElement.classList.contains( 'hidden' ) ).toBe( false );
+		expect( buttonEl.style.left ).toBe( '280px' );
+		expect( buttonEl.style.top ).toBe( '160px' );
+
+		rafSpy.mockRestore();
+	} );
 } );

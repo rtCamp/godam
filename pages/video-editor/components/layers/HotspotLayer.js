@@ -733,12 +733,23 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 										const scale = ( ref.offsetWidth || start.width ) / start.width;
 										const newFontPx = Math.max( MIN_BUTTON_FONT_PX, Math.min( start.fontPx * scale, MAX_BUTTON_FONT_PX ) );
 										const nextPosition = { x: pxToPercent( position.x, 'x' ), y: pxToPercent( position.y, 'y' ) };
-										updateHotspotField( index, {
+										const changes = {
 											unit: 'percent',
 											fontPercent: pxToPercent( newFontPx, 'x' ),
 											position: nextPosition,
 											oPosition: nextPosition,
-										} );
+										};
+										// Same legacy-diameter conversion as onDragStop below: a
+										// hotspot resized before it was ever dragged still has its
+										// circle size in pixels, which switching back to Pulse/Icon
+										// would otherwise read as a percentage.
+										if ( hotspot.unit !== 'percent' ) {
+											const minPercent = ( HOTSPOT_CONSTANTS.MIN_PX / contentRect.width ) * 100;
+											const nextDiameter = Math.max( minPercent, ( diameter / HOTSPOT_CONSTANTS.BASE_WIDTH ) * 100 );
+											changes.size = { diameter: nextDiameter };
+											changes.oSize = { diameter: nextDiameter };
+										}
+										updateHotspotField( index, changes );
 									} }
 									onDragStop={ ( e, d ) => {
 										if ( ! contentRect ) {
