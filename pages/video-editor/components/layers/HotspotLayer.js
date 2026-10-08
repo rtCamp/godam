@@ -37,6 +37,9 @@ import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from './LayersHeader';
 import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
 import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR, DEFAULT_HOTSPOT_ICON_COLOR, DEFAULT_HOTSPOT_CUSTOM_ICON_BG } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
+import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, MIN_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX } from '../../../../assets/src/js/godam-player/utils/buttonCtaStyle';
+import { ButtonVariantField, ButtonStyleFields, useDebouncedItemColor } from '../shared/button-cta/ButtonControls.jsx';
+import { ButtonCtaLayerIcon } from '../editor-shell/icons';
 import { VeSection, VeColorList, VeSegmented, VeTextInput, VeToggle } from '../controls';
 
 /**
@@ -59,10 +62,25 @@ const CartIconOption = () => (
 // Icon-on-top segmented cards, matching the WooCommerce hotspot layer's Style
 // field. Woo uses a cart for its "Icon" option (product-specific); a generic
 // hotspot uses a map-marker glyph instead.
+// "Button" renders each point as a button, configured per hotspot.
 const STYLE_OPTIONS = [
 	{ value: 'pulse', label: __( 'Pulse', 'godam' ), icon: <PulseDotIcon /> },
 	{ value: 'icon', label: __( 'Icon', 'godam' ), icon: <CartIconOption /> },
+	{ value: 'button', label: __( 'Button', 'godam' ), icon: <ButtonCtaLayerIcon /> },
 ];
+
+// Button points resize by a single lock-aspect font-size knob, so only the four
+// corner handles are offered (no edge handles, which would imply free stretch).
+const BUTTON_RESIZE_HANDLES = {
+	top: false,
+	right: false,
+	bottom: false,
+	left: false,
+	topRight: true,
+	bottomRight: true,
+	bottomLeft: true,
+	topLeft: true,
+};
 
 const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
@@ -85,6 +103,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 	const containerRef = useRef( null );
 	const videoRef = useRef( null );
+	// Starting size captured when a button-style point begins resizing, so the live
+	// drag can scale its font-size from a stable origin (see the button Rnd below).
+	const buttonResizeStart = useRef( { width: 1, fontPx: 16 } );
 
 	// Sync duration input with layer duration
 	useEffect( () => {
@@ -97,6 +118,10 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	}, [ dispatch, layer?.id ] );
 
 	const styleType = layer?.styleType || 'pulse';
+	const isButtonStyle = styleType === 'button';
+
+	// Debounced colour writes for button-style hotspots (see useDebouncedItemColor).
+	const debouncedHotspotColor = useDebouncedItemColor( layerID, 'hotspots' );
 
 	/**
 	 * Migrate legacy layers (saved with per-hotspot style and no `styleType`)
@@ -471,10 +496,18 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 								{ expandedHotspotIndex === index && (
 									<div className="godam-ve-hotspot-card__body">
+										{ /* Button style: per-hotspot settings for the button
+										     (no image variant). The tooltip text becomes the button label. */ }
+										{ isButtonStyle && (
+											<ButtonVariantField
+												value={ hotspot.variant }
+												onChange={ ( val ) => updateHotspotField( index, { variant: val } ) }
+											/>
+										) }
 										<VeTextInput
 											data-test-id={ `godam-hotspot-control-tooltip-text-${ index }` }
-											label={ __( 'Tooltip Text', 'godam' ) }
-											placeholder={ __( 'Click Me!', 'godam' ) }
+											label={ isButtonStyle ? __( 'Button Text', 'godam' ) : __( 'Tooltip Text', 'godam' ) }
+											placeholder={ isButtonStyle ? __( 'Click here', 'godam' ) : __( 'Click Me!', 'godam' ) }
 											value={ hotspot.tooltipText }
 											onChange={ ( val ) => updateHotspotField( index, { tooltipText: val } ) }
 										/>
@@ -486,6 +519,13 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 											error={ hotspot.linkInvalid ? __( 'Please enter a valid URL (e.g., https://example.com)', 'godam' ) : '' }
 											onChange={ ( val ) => updateHotspotField( index, { link: val, linkInvalid: !! val && ! isValidURL( val ) } ) }
 										/>
+										{ isButtonStyle && (
+											<ButtonStyleFields
+												button={ hotspot }
+												onFieldChange={ ( changes ) => updateHotspotField( index, changes ) }
+												onColorChange={ ( field, val ) => debouncedHotspotColor( index, field, val ) }
+											/>
+										) }
 									</div>
 								) }
 							</div>
@@ -527,13 +567,19 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 					</VeSection>
 				) }
 
-				{ /* Style: shared across all hotspot points. */ }
+				{ /* Style: Pulse / Icon are shared across all points; Button is set per hotspot. */ }
 				<VeSection title={ __( 'Style', 'godam' ) }>
 					<VeSegmented
 						options={ STYLE_OPTIONS }
 						value={ styleType }
 						onChange={ ( value ) => updateField( 'styleType', value ) }
 					/>
+
+					{ isButtonStyle && (
+						<p className="godam-ve-hint">
+							{ __( 'Each hotspot is a button. Set its type, text, colours and animation in the hotspot cards above.', 'godam' ) }
+						</p>
+					) }
 
 					{ styleType === 'icon' && (
 						<FontAwesomeIconPicker
@@ -639,6 +685,99 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 							pixelX = ( posX / baseWidth ) * ( contentRect?.width || HOTSPOT_CONSTANTS.BASE_WIDTH );
 							pixelY = ( posY / baseHeight ) * ( contentRect?.height || HOTSPOT_CONSTANTS.BASE_HEIGHT );
 							pixelDiameter = ( diameter / baseWidth ) * ( contentRect?.width || HOTSPOT_CONSTANTS.BASE_WIDTH );
+						}
+
+						// Button style: preview the point as the same button the player
+						// renders. Drag to move; corner-drag to resize by a single
+						// lock-aspect font-size knob (the whole button is em-based, so
+						// font-size scales it proportionally — matching the frontend).
+						if ( isButtonStyle ) {
+							const buttonStyle = resolveButtonCtaStyle( hotspot );
+							/* translators: %d is the hotspot index */
+							const label = hotspot.tooltipText || sprintf( __( 'Hotspot %d', 'godam' ), index + 1 );
+							// Size (font-size as a % of content width) → px for the preview,
+							// so it matches the player and scales with the stage. Resolves
+							// a per-variant default when unset, so every button scales.
+							const fontPx = getButtonFontPx( resolveButtonFontPercent( hotspot ), contentRect?.width );
+
+							return (
+								<Rnd
+									// Key includes the size so a resize remounts the Rnd at
+									// auto size (clearing the px width/height it set while
+									// dragging); the distinct `-button` suffix also stops it
+									// inheriting the circle's stored size on a style switch.
+									key={ `${ hotspot.id }-button-${ Math.round( ( hotspot.fontPercent || 0 ) * 100 ) }` }
+									position={ { x: pixelX, y: pixelY } }
+									default={ { x: pixelX, y: pixelY, width: 'auto', height: 'auto' } }
+									bounds="parent"
+									lockAspectRatio
+									enableResizing={ BUTTON_RESIZE_HANDLES }
+									onResizeStart={ ( e, dir, ref ) => {
+										buttonResizeStart.current = {
+											width: ref.offsetWidth || 1,
+											fontPx: parseFloat( window.getComputedStyle( ref ).fontSize ) || MIN_BUTTON_FONT_PX,
+										};
+									} }
+									onResize={ ( e, dir, ref ) => {
+										// Scale the font live so the label fills the resizing
+										// box in real time (no empty-box flash on release).
+										const start = buttonResizeStart.current;
+										const scale = ( ref.offsetWidth || start.width ) / start.width;
+										ref.style.fontSize = `${ start.fontPx * scale }px`;
+									} }
+									onResizeStop={ ( e, dir, ref, delta, position ) => {
+										if ( ! contentRect?.width ) {
+											return;
+										}
+										const start = buttonResizeStart.current;
+										const scale = ( ref.offsetWidth || start.width ) / start.width;
+										const newFontPx = Math.max( MIN_BUTTON_FONT_PX, Math.min( start.fontPx * scale, MAX_BUTTON_FONT_PX ) );
+										const nextPosition = { x: pxToPercent( position.x, 'x' ), y: pxToPercent( position.y, 'y' ) };
+										const changes = {
+											unit: 'percent',
+											fontPercent: pxToPercent( newFontPx, 'x' ),
+											position: nextPosition,
+											oPosition: nextPosition,
+										};
+										// Same legacy-diameter conversion as onDragStop below: a
+										// hotspot resized before it was ever dragged still has its
+										// circle size in pixels, which switching back to Pulse/Icon
+										// would otherwise read as a percentage.
+										if ( hotspot.unit !== 'percent' ) {
+											const minPercent = ( HOTSPOT_CONSTANTS.MIN_PX / contentRect.width ) * 100;
+											const nextDiameter = Math.max( minPercent, ( diameter / HOTSPOT_CONSTANTS.BASE_WIDTH ) * 100 );
+											changes.size = { diameter: nextDiameter };
+											changes.oSize = { diameter: nextDiameter };
+										}
+										updateHotspotField( index, changes );
+									} }
+									onDragStop={ ( e, d ) => {
+										if ( ! contentRect ) {
+											return;
+										}
+										const nextPosition = { x: pxToPercent( d.x, 'x' ), y: pxToPercent( d.y, 'y' ) };
+										const changes = { unit: 'percent', position: nextPosition, oPosition: nextPosition };
+										// Converting a legacy pixel hotspot to percent: convert its
+										// diameter too, so switching back to Pulse/Icon keeps its size.
+										if ( hotspot.unit !== 'percent' ) {
+											const minPercent = ( HOTSPOT_CONSTANTS.MIN_PX / contentRect.width ) * 100;
+											const nextDiameter = Math.max( minPercent, ( diameter / HOTSPOT_CONSTANTS.BASE_WIDTH ) * 100 );
+											changes.size = { diameter: nextDiameter };
+											changes.oSize = { diameter: nextDiameter };
+										}
+										updateHotspotField( index, changes );
+									} }
+									onClick={ () => setExpandedHotspotIndex( index ) }
+									className={ getButtonCtaClassName( buttonStyle, { extra: 'godam-hotspot-button' } ) }
+									style={ {
+										...getButtonCtaCssVars( buttonStyle ),
+										...( fontPx !== null ? { fontSize: `${ fontPx }px` } : {} ),
+									} }
+									data-sticker-text={ buttonStyle.variant === 'sticker' ? label : undefined }
+								>
+									{ label }
+								</Rnd>
+							);
 						}
 
 						return (
