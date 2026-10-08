@@ -9,7 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { HOTSPOT_CONSTANTS } from '../../utils/constants';
 import { getLayerDisplayName } from '../../utils/layerActions.js';
 import { resolveHotspotStyle, isButtonHotspot } from '../../utils/hotspotStyle';
-import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, resolveButtonMinFontPx, fitButtonFontPx } from '../../utils/buttonCtaStyle';
+import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, fitButtonFontPx } from '../../utils/buttonCtaStyle';
 
 // Every rendered hotspot point: circles (pulse / icon style) and buttons (button
 // style). Points are matched to `layer.hotspots` by index, so both must be found.
@@ -853,7 +853,7 @@ export default class HotspotLayerManager {
 		// resolves a percent — its stored `fontPercent` or the per-variant default —
 		// so it always scales, never a fixed px size. Set it before measuring below
 		// so the edge-clamp uses the scaled size.
-		const fontPx = getButtonFontPx( resolveButtonFontPercent( hotspot ), rect.width, resolveButtonMinFontPx( hotspot ) );
+		const fontPx = getButtonFontPx( resolveButtonFontPercent( hotspot ), rect.width );
 		if ( fontPx !== null ) {
 			buttonEl.style.fontSize = `${ fontPx }px`;
 		}

@@ -37,7 +37,7 @@ import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from './LayersHeader';
 import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
 import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR, DEFAULT_HOTSPOT_ICON_COLOR, DEFAULT_HOTSPOT_CUSTOM_ICON_BG } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
-import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, resolveButtonMinFontPx, MIN_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX } from '../../../../assets/src/js/godam-player/utils/buttonCtaStyle';
+import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, MIN_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX } from '../../../../assets/src/js/godam-player/utils/buttonCtaStyle';
 import { ButtonVariantField, ButtonStyleFields, useDebouncedItemColor } from '../shared/button-cta/ButtonControls.jsx';
 import { ButtonCtaLayerIcon } from '../editor-shell/icons';
 import { VeSection, VeColorList, VeSegmented, VeTextInput, VeToggle } from '../controls';
@@ -698,7 +698,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 							// Size (font-size as a % of content width) → px for the preview,
 							// so it matches the player and scales with the stage. Resolves
 							// a per-variant default when unset, so every button scales.
-							const fontPx = getButtonFontPx( resolveButtonFontPercent( hotspot ), contentRect?.width, resolveButtonMinFontPx( hotspot ) );
+							const fontPx = getButtonFontPx( resolveButtonFontPercent( hotspot ), contentRect?.width );
 
 							return (
 								<Rnd

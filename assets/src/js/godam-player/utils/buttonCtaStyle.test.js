@@ -9,7 +9,7 @@
 /**
  * Internal dependencies
  */
-import { getButtonFontPx, fitButtonFontPx, resolveButtonFontPercent, resolveButtonMinFontPx, DEFAULT_BUTTON_FONT_PERCENT, MIN_BUTTON_FONT_PX, MIN_TEXT_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX, MAX_BUTTON_WIDTH_FRACTION } from './buttonCtaStyle';
+import { getButtonFontPx, fitButtonFontPx, resolveButtonFontPercent, DEFAULT_BUTTON_FONT_PERCENT, MIN_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX, MAX_BUTTON_WIDTH_FRACTION } from './buttonCtaStyle';
 
 describe( 'resolveButtonFontPercent', () => {
 	it( 'returns the stored fontPercent when set', () => {
@@ -46,25 +46,6 @@ describe( 'getButtonFontPx', () => {
 		expect( getButtonFontPx( 0.25, 800 ) ).toBe( MIN_BUTTON_FONT_PX );
 		// 50% of 800 = 400px → clamped down to the ceiling.
 		expect( getButtonFontPx( 50, 800 ) ).toBe( MAX_BUTTON_FONT_PX );
-	} );
-
-	it( 'honours a caller-supplied minimum (text readability floor)', () => {
-		// 2.5% of 360 (phone) = 9px → held at the text floor instead of vanishing.
-		expect( getButtonFontPx( 2.5, 360, MIN_TEXT_BUTTON_FONT_PX ) ).toBe( MIN_TEXT_BUTTON_FONT_PX );
-		// Above the floor, the floor does not interfere.
-		expect( getButtonFontPx( 5, 800, MIN_TEXT_BUTTON_FONT_PX ) ).toBe( 40 );
-	} );
-} );
-
-describe( 'resolveButtonMinFontPx', () => {
-	it( 'gives text buttons the readability floor and stickers the don\'t-vanish guard', () => {
-		expect( resolveButtonMinFontPx( { variant: 'text' } ) ).toBe( MIN_TEXT_BUTTON_FONT_PX );
-		expect( resolveButtonMinFontPx( {} ) ).toBe( MIN_TEXT_BUTTON_FONT_PX ); // default variant is text
-		expect( resolveButtonMinFontPx( { variant: 'sticker' } ) ).toBe( MIN_BUTTON_FONT_PX );
-	} );
-
-	it( 'keeps the text floor above the sticker guard', () => {
-		expect( MIN_TEXT_BUTTON_FONT_PX ).toBeGreaterThan( MIN_BUTTON_FONT_PX );
 	} );
 } );
 
