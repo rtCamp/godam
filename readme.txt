@@ -252,10 +252,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Tweak: The layer interaction metric is now called "Interaction rate" instead of "Conversion".
 - Note: Revenue and product metrics need the GoDAM for Woo add-on 2.2.0 or later.
 
-= v2.2.4 (September 21, 2026) =
-
-- Chore: Security fixes.
-
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
 == External Services ==
