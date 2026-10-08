@@ -46,6 +46,15 @@ const DEFAULT_BUTTON_FONT_PERCENT = { text: 2.5, sticker: 5 };
 const MIN_BUTTON_FONT_PX = 4;
 const MAX_BUTTON_FONT_PX = 200;
 
+// Readability floor for the TEXT variant: a text button carries a label meant to
+// be read and tapped, so on a small player its scaled font-size is held at a
+// legible minimum, keeping the button near the WCAG 2.2 (2.5.8) 24px tap target
+// instead of shrinking to ~9px on a phone. The width cap below may still go under
+// this (a long label must be free to shrink rather than overflow). Stickers are
+// display graphics that can't wrap, so they keep the lower "don't vanish" guard
+// and stay free to shrink on narrow screens.
+const MIN_TEXT_BUTTON_FONT_PX = 12;
+
 // Overall-size cap: the button may not be wider than this fraction of the video
 // content width. On a small player (or with a long label / an author-oversized
 // button) the font is shrunk to fit. This is what keeps a sticker — which is a
@@ -108,14 +117,31 @@ export function fitButtonFontPx( currentFontPx, measuredWidth, contentWidth ) {
  *
  * @param {number} fontPercent  Font-size as a percentage of content width (see resolveButtonFontPercent).
  * @param {number} contentWidth Content-box width in px.
+ * @param {number} [minPx]      Lower clamp (defaults to the "don't vanish" guard; pass the text floor via `resolveButtonMinFontPx`).
  * @return {number|null} Clamped font-size in px, or null when it can't be computed.
  */
-export function getButtonFontPx( fontPercent, contentWidth ) {
+export function getButtonFontPx( fontPercent, contentWidth, minPx = MIN_BUTTON_FONT_PX ) {
 	if ( ! Number.isFinite( fontPercent ) || ! Number.isFinite( contentWidth ) || contentWidth <= 0 ) {
 		return null;
 	}
+	const floor = Number.isFinite( minPx ) ? minPx : MIN_BUTTON_FONT_PX;
 	const px = ( fontPercent / 100 ) * contentWidth;
-	return Math.max( MIN_BUTTON_FONT_PX, Math.min( px, MAX_BUTTON_FONT_PX ) );
+	return Math.max( floor, Math.min( px, MAX_BUTTON_FONT_PX ) );
+}
+
+/**
+ * Lower font-size clamp for a button, by variant: text buttons get the
+ * readability floor (`MIN_TEXT_BUTTON_FONT_PX`), stickers the lower "don't
+ * vanish" guard (`MIN_BUTTON_FONT_PX`). Pass the result to `getButtonFontPx`.
+ * The width cap (`fitButtonFontPx`) runs afterwards and may still go below it.
+ *
+ * @param {Object} hotspot Button (hotspot) config.
+ * @return {number} Minimum font-size in px for this button's variant.
+ */
+export function resolveButtonMinFontPx( hotspot = {} ) {
+	return resolveButtonCtaStyle( hotspot ).variant === 'sticker'
+		? MIN_BUTTON_FONT_PX
+		: MIN_TEXT_BUTTON_FONT_PX;
 }
 
 /**
@@ -177,6 +203,7 @@ export {
 	BUTTON_VARIANTS,
 	DEFAULT_BUTTON_FONT_PERCENT,
 	MIN_BUTTON_FONT_PX,
+	MIN_TEXT_BUTTON_FONT_PX,
 	MAX_BUTTON_FONT_PX,
 	MAX_BUTTON_WIDTH_FRACTION,
 };

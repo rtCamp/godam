@@ -56,9 +56,9 @@ export function resolveHotspotStyle( layer, hotspot = {} ) {
 	// tags button hotspots with `styleType: 'button'` (see render-image-frame.js).
 	const styleType = layer?.styleType || legacy.styleType || ( hasIcon ? 'icon' : 'pulse' );
 
-	// Button style: each point renders as a Button CTA-style button. Its look is
-	// per hotspot and resolved by `resolveButtonCtaStyle( hotspot )`, so there is
-	// no circle colour or glyph here.
+	// Button style: each point renders as a button rather than a circle. Its look
+	// is per hotspot and resolved by `resolveButtonCtaStyle( hotspot )`, so there
+	// is no circle colour or glyph here.
 	if ( styleType === 'button' ) {
 		return {
 			styleType,

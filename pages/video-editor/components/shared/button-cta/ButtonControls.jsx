@@ -44,7 +44,7 @@ export const VARIANT_OPTIONS = [
 ];
 
 /**
- * Debounced colour writer for items in a layer array (`buttons`, `hotspots`).
+ * Debounced colour writer for items in a layer array (e.g. `hotspots`).
  *
  * ColorPicker fires on every drag tick, so writes are debounced (150ms). The
  * write lands later, so it is addressed by the item's stable id, not its index:

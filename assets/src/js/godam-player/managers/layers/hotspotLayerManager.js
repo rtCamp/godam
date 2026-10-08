@@ -9,7 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { HOTSPOT_CONSTANTS } from '../../utils/constants';
 import { getLayerDisplayName } from '../../utils/layerActions.js';
 import { resolveHotspotStyle, isButtonHotspot } from '../../utils/hotspotStyle';
-import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, fitButtonFontPx } from '../../utils/buttonCtaStyle';
+import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, resolveButtonMinFontPx, fitButtonFontPx } from '../../utils/buttonCtaStyle';
 
 // Every rendered hotspot point: circles (pulse / icon style) and buttons (button
 // style). Points are matched to `layer.hotspots` by index, so both must be found.
@@ -717,7 +717,7 @@ export default class HotspotLayerManager {
 	 * @return {HTMLElement} Created hotspot element
 	 */
 	createHotspotElement( hotspot, index, containerWidth, containerHeight, baseWidth, baseHeight, layer ) {
-		// Button style: the point is a Button CTA-style button, not a circle.
+		// Button style: the point is a button, not a circle.
 		if ( isButtonHotspot( layer, hotspot ) ) {
 			return this.createHotspotButtonElement( hotspot, index );
 		}
@@ -780,7 +780,7 @@ export default class HotspotLayerManager {
 	/**
 	 * Create a button-style hotspot point (the layer's "Button" style).
 	 *
-	 * Mirrors the Button CTA layer's button: text or die-cut sticker variant,
+	 * Renders the hotspot's Button style: text or die-cut sticker variant,
 	 * per-hotspot colours and attention animation (all from `_button-cta.scss`).
 	 * The label is the hotspot's tooltip text, there is no hover tooltip, and the
 	 * button itself opens the hotspot link. It deliberately does NOT carry the
@@ -853,7 +853,7 @@ export default class HotspotLayerManager {
 		// resolves a percent — its stored `fontPercent` or the per-variant default —
 		// so it always scales, never a fixed px size. Set it before measuring below
 		// so the edge-clamp uses the scaled size.
-		const fontPx = getButtonFontPx( resolveButtonFontPercent( hotspot ), rect.width );
+		const fontPx = getButtonFontPx( resolveButtonFontPercent( hotspot ), rect.width, resolveButtonMinFontPx( hotspot ) );
 		if ( fontPx !== null ) {
 			buttonEl.style.fontSize = `${ fontPx }px`;
 		}

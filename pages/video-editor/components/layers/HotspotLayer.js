@@ -37,7 +37,7 @@ import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from './LayersHeader';
 import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
 import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR, DEFAULT_HOTSPOT_ICON_COLOR, DEFAULT_HOTSPOT_CUSTOM_ICON_BG } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
-import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, MIN_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX } from '../../../../assets/src/js/godam-player/utils/buttonCtaStyle';
+import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, resolveButtonMinFontPx, MIN_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX } from '../../../../assets/src/js/godam-player/utils/buttonCtaStyle';
 import { ButtonVariantField, ButtonStyleFields, useDebouncedItemColor } from '../shared/button-cta/ButtonControls.jsx';
 import { ButtonCtaLayerIcon } from '../editor-shell/icons';
 import { VeSection, VeColorList, VeSegmented, VeTextInput, VeToggle } from '../controls';
@@ -62,7 +62,7 @@ const CartIconOption = () => (
 // Icon-on-top segmented cards, matching the WooCommerce hotspot layer's Style
 // field. Woo uses a cart for its "Icon" option (product-specific); a generic
 // hotspot uses a map-marker glyph instead.
-// "Button" renders each point as a Button CTA-style button, configured per hotspot.
+// "Button" renders each point as a button, configured per hotspot.
 const STYLE_OPTIONS = [
 	{ value: 'pulse', label: __( 'Pulse', 'godam' ), icon: <PulseDotIcon /> },
 	{ value: 'icon', label: __( 'Icon', 'godam' ), icon: <CartIconOption /> },
@@ -496,7 +496,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 
 								{ expandedHotspotIndex === index && (
 									<div className="godam-ve-hotspot-card__body">
-										{ /* Button style: the same per-button settings as the Button CTA layer
+										{ /* Button style: per-hotspot settings for the button
 										     (no image variant). The tooltip text becomes the button label. */ }
 										{ isButtonStyle && (
 											<ButtonVariantField
@@ -698,7 +698,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 							// Size (font-size as a % of content width) → px for the preview,
 							// so it matches the player and scales with the stage. Resolves
 							// a per-variant default when unset, so every button scales.
-							const fontPx = getButtonFontPx( resolveButtonFontPercent( hotspot ), contentRect?.width );
+							const fontPx = getButtonFontPx( resolveButtonFontPercent( hotspot ), contentRect?.width, resolveButtonMinFontPx( hotspot ) );
 
 							return (
 								<Rnd
