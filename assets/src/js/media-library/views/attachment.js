@@ -216,7 +216,6 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 					markRefused( this.el, this.el.querySelector( '.transcoding-status__loader' ), {
 						code: errorCode,
 						reason: this.model.get( 'transcoding_error_msg' ) || '',
-						detail: this.model.get( 'transcoding_error_detail' ) || '',
 					} );
 				}
 			} else if ( transcodingStatus === 'blocked' ) {

@@ -642,19 +642,28 @@ $media-frame-width: calc(300px + 2 * 24px);
 		}
 	}
 
-	// Central refused the job on a source-file check; the full reason is in the title attribute.
-	&--preflight-failed {
+	// Central refused the job: a short, single-line label. The full reason is in list view,
+	// the Tools log and the icon's aria-label.
+	&--preflight-failed,
+	&--job-refused {
 
-		.transcoding-status__loader {
-			--status-text: "Transcoding Failed - Source File Check Failed";
+		.transcoding-status__loader::after {
+			width: auto;
+			white-space: nowrap;
 		}
 	}
 
-	// Central refused the job (licence, storage or site); the full reason is in the title attribute.
+	&--preflight-failed {
+
+		.transcoding-status__loader {
+			--status-text: "Source file check failed";
+		}
+	}
+
 	&--job-refused {
 
 		.transcoding-status__loader {
-			--status-text: "Transcoding Failed - Refused by GoDAM";
+			--status-text: "Refused by GoDAM";
 		}
 	}
 

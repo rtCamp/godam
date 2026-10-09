@@ -42,7 +42,8 @@ describe( 'GridViewTranscodingStatus — failed state', () => {
 		expect( tile.classList.contains( 'transcoding-status--job-refused' ) ).toBe( true );
 		expect( loader.getAttribute( 'aria-label' ) ).toBe( 'Your GoDAM storage is full. Upgrade your plan or delete unused files.' );
 		expect( loader.getAttribute( 'tabindex' ) ).toBe( '0' );
-		expect( loader.getAttribute( 'title' ) ).toContain( 'GoDAM said: Storage limit exceeded' );
+		// One short hover label (CSS), not a second native tooltip with the full reason.
+		expect( loader.hasAttribute( 'title' ) ).toBe( false );
 	} );
 
 	it( 'leaves other failures generic', () => {

@@ -109,7 +109,6 @@ class GridViewTranscodingStatus {
 			markRefused( this.transcodingStatusElement, this.transcodingStatusLoader, {
 				code: data.error_code,
 				reason: data.error_msg || '',
-				detail: data.error_detail || '',
 			} );
 		}
 	}
