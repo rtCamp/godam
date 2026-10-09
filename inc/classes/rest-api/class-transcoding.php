@@ -319,15 +319,21 @@ class Transcoding extends Base {
 			if ( ! empty( $status ) && 'failed' === strtolower( $status ) ) {
 				$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
 				$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
+				$can_edit   = current_user_can( 'edit_post', $attachment_id );
+
+				// This route is public, and a refusal's message can be Central's own wording (an
+				// unknown reason), which can carry URLs. Only someone who can edit the file sees it.
+				if ( rtgodam_is_job_refusal( $error_code ) && ! $can_edit ) {
+					$error_msg = __( 'GoDAM can\'t transcode this file.', 'godam' );
+				}
 
 				return array(
 					'status'       => 'failed',
 					'progress'     => 0,
 					'error_code'   => $error_code,
 					'error_msg'    => $error_msg,
-					// Central's own wording when it refused the job, for support. This route is
-					// public and that text can carry URLs, so only someone who can edit the file sees it.
-					'error_detail' => current_user_can( 'edit_post', $attachment_id )
+					// Central's own wording when it refused the job, for support.
+					'error_detail' => $can_edit
 						? sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', true ) )
 						: '',
 				);

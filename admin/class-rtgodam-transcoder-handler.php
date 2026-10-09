@@ -587,12 +587,25 @@ class RTGODAM_Transcoder_Handler {
 					? \RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media::MAX_RETRY_ATTEMPTS
 					: 3;
 
+				$status_code = is_wp_error( $upload_page ) ? 0 : intval( $upload_page['response']['code'] );
+
+				if ( 429 === $status_code ) {
+					$cause = __( 'GoDAM Central is receiving too many requests right now.', 'godam' );
+				} elseif ( 408 === $status_code ) {
+					$cause = __( 'GoDAM Central timed out.', 'godam' );
+				} elseif ( 0 === $status_code ) {
+					$cause = __( 'GoDAM Central couldn\'t be reached.', 'godam' );
+				} else {
+					$cause = __( 'GoDAM Central returned a server error.', 'godam' );
+				}
+
 				update_post_meta(
 					$attachment_id,
 					'rtgodam_transcoding_error_msg',
 					sprintf(
-						/* translators: 1: max retry attempts, 2: retry interval in minutes */
-						__( 'GoDAM Central returned a server error. Transcoding will be retried automatically (up to %1$d times, every %2$d minutes).', 'godam' ),
+						/* translators: 1: why the job couldn't be sent, 2: max retry attempts, 3: retry interval in minutes */
+						__( '%1$s Transcoding will be retried automatically (up to %2$d times, every %3$d minutes).', 'godam' ),
+						$cause,
 						$max_retries,
 						10
 					)

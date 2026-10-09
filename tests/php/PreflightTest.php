@@ -319,6 +319,47 @@ class PreflightTest extends TestCase {
 	}
 
 	/**
+	 * The public status route gives a refusal's own wording only to someone who can edit
+	 * the file. Anyone else gets a generic message and no detail.
+	 *
+	 * @dataProvider status_viewers
+	 *
+	 * @param array  $caps     The viewer's capabilities.
+	 * @param string $expected Expected `error_msg`.
+	 * @param string $detail   Expected `error_detail`.
+	 */
+	public function test_status_route_gates_refusal_wording( $caps, $expected, $detail ) {
+		$GLOBALS['rtgodam_stub']['caps']      = $caps;
+		$GLOBALS['rtgodam_stub']['post_meta'] = array(
+			'rtgodam_transcoding_status'       => 'failed',
+			'rtgodam_transcoding_error_code'   => 'job_refused',
+			'rtgodam_transcoding_error_msg'    => 'Title is too long for https://internal.example/x',
+			'rtgodam_transcoding_error_detail' => 'Title is too long for https://internal.example/x',
+		);
+
+		$transcoding = ( new \ReflectionClass( \RTGODAM\Inc\REST_API\Transcoding::class ) )->newInstanceWithoutConstructor();
+		$status      = ( new \ReflectionMethod( $transcoding, 'get_status_object_from_attachment' ) );
+		$status->setAccessible( true );
+		$result = $status->invoke( $transcoding, 42 );
+
+		$this->assertSame( 'job_refused', $result['error_code'] );
+		$this->assertSame( $expected, $result['error_msg'] );
+		$this->assertSame( $detail, $result['error_detail'] );
+	}
+
+	/**
+	 * Viewers of the status route.
+	 *
+	 * @return array[]
+	 */
+	public function status_viewers() {
+		return array(
+			'anonymous' => array( array(), "GoDAM can't transcode this file.", '' ),
+			'editor'    => array( array( 'edit_post' ), 'Title is too long for https://internal.example/x', 'Title is too long for https://internal.example/x' ),
+		);
+	}
+
+	/**
 	 * A server error is left to the existing retry handling.
 	 */
 	public function test_record_refusal_ignores_server_errors() {

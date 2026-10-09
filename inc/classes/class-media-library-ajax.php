@@ -648,9 +648,17 @@ class Media_Library_Ajax {
 		$error_code = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code', true );
 
 		if ( 'failed' === $response['transcoding_status'] && rtgodam_is_job_refusal( $error_code ) ) {
+			// The message can be Central's own wording and the detail always is, which can carry
+			// URLs: only someone who can edit the file sees them, as on the status route.
+			$can_edit = current_user_can( 'edit_post', $attachment->ID );
+
 			$response['transcoding_error_code']   = $error_code;
-			$response['transcoding_error_msg']    = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg', true );
-			$response['transcoding_error_detail'] = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_detail', true );
+			$response['transcoding_error_msg']    = $can_edit
+				? get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg', true )
+				: __( 'GoDAM can\'t transcode this file.', 'godam' );
+			$response['transcoding_error_detail'] = $can_edit
+				? get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_detail', true )
+				: '';
 		}
 
 		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );
