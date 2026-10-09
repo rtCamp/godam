@@ -319,12 +319,23 @@ class Transcoding extends Base {
 			if ( ! empty( $status ) && 'failed' === strtolower( $status ) ) {
 				$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
 				$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
+				$can_edit   = current_user_can( 'edit_post', $attachment_id );
+
+				// This route is public, and a refusal's message can be Central's own wording (an
+				// unknown reason), which can carry URLs. Only someone who can edit the file sees it.
+				if ( rtgodam_is_job_refusal( $error_code ) && ! $can_edit ) {
+					$error_msg = __( 'This file can\'t be transcoded.', 'godam' );
+				}
 
 				return array(
-					'status'     => 'failed',
-					'progress'   => 0,
-					'error_code' => $error_code,
-					'error_msg'  => $error_msg,
+					'status'       => 'failed',
+					'progress'     => 0,
+					'error_code'   => $error_code,
+					'error_msg'    => $error_msg,
+					// Central's own wording when it refused the job, for support.
+					'error_detail' => $can_edit
+						? sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', true ) )
+						: '',
 				);
 			}
 
@@ -936,6 +947,7 @@ class Transcoding extends Base {
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_status' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
 
 		$wp_metadata              = array();
 		$wp_metadata['mime_type'] = $mime_type;
@@ -955,6 +967,61 @@ class Transcoding extends Base {
 
 		// Check if the transcoding job ID is set.
 		$is_sent = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+
+		// Central refused the job (source-file checks, licence, storage or site); say why. The
+		// error meta was cleared before dispatch, so a refusal code here is from this attempt,
+		// even when an older job ID is still stored.
+		$error_code = get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true );
+
+		if ( rtgodam_is_job_refusal( $error_code ) ) {
+			$detail = get_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', true );
+
+			// Plain text throughout: the Tools log renders it as a React text node, so
+			// HTML-escaping here would show quotes as &#039;.
+			$message = sprintf(
+				// translators: 1: Attachment title, 2: Attachment ID, 3: Why GoDAM could not use the source file.
+				__( '%1$s (ID %2$d) cannot be transcoded. %3$s', 'godam' ),
+				html_entity_decode( wp_strip_all_tags( $title ), ENT_QUOTES, 'UTF-8' ),
+				absint( $attachment_id ),
+				get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true )
+			);
+
+			if ( '' !== $detail ) {
+				// translators: %s: GoDAM Central's own wording of why it refused the file.
+				$message .= ' ' . sprintf( __( '(Details: %s)', 'godam' ), $detail );
+			}
+
+			return new \WP_REST_Response(
+				array(
+					'message'   => $message,
+					'skipped'   => true,
+					'reason'    => $error_code,
+					// The reason alone, for the attachment details panel (the message names the file).
+					'error_msg' => get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ),
+				),
+				200
+			);
+		}
+
+		// A server error, timeout or rate limit on this attempt: the status was cleared before
+		// dispatch, so `failed` is fresh. Report it even if an older job ID is still stored.
+		if ( 'failed' === get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) ) {
+			$message = sprintf(
+				// translators: 1: Attachment title, 2: Attachment ID, 3: Why the request failed and whether it will be retried.
+				__( '%1$s (ID %2$d) transcoding request failed. %3$s', 'godam' ),
+				html_entity_decode( wp_strip_all_tags( $title ), ENT_QUOTES, 'UTF-8' ),
+				absint( $attachment_id ),
+				get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true )
+			);
+
+			return new \WP_REST_Response(
+				array(
+					'message'   => $message,
+					'error_msg' => get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ),
+				),
+				500
+			);
+		}
 
 		if ( empty( $is_sent ) ) {
 

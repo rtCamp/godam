@@ -56,6 +56,19 @@ if ( ! function_exists( 'sanitize_text_field' ) ) {
 	}
 }
 
+if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+
+	/**
+	 * Like sanitize_text_field(), but keeps line breaks.
+	 *
+	 * @param string $str Input.
+	 * @return string
+	 */
+	function sanitize_textarea_field( $str ) {
+		return trim( preg_replace( '/[\t ]+/', ' ', wp_strip_all_tags( (string) $str ) ) );
+	}
+}
+
 if ( ! function_exists( 'esc_url' ) ) {
 
 	/**

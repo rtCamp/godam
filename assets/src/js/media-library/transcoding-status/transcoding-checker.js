@@ -12,13 +12,25 @@ class TranscodingChecker {
 		this.polling = null;
 	}
 
+	/**
+	 * Send the REST nonce, so the route knows the logged-in user (it adds Central's own
+	 * wording for a refused job only for someone who can edit the file).
+	 *
+	 * @return {Object} fetch() options.
+	 */
+	requestOptions() {
+		const nonce = window.transcoderSettings?.nonce;
+
+		return nonce ? { headers: { 'X-WP-Nonce': nonce } } : {};
+	}
+
 	async fetchStatusOnce( postIds ) {
 		const url = this.buildUrl( postIds );
 		if ( ! url ) {
 			return;
 		}
 		try {
-			const response = await fetch( url );
+			const response = await fetch( url, this.requestOptions() );
 			const data = await response.json();
 			this.updateCallback( data );
 		} catch ( error ) {
@@ -33,7 +45,7 @@ class TranscodingChecker {
 		}
 
 		try {
-			const response = await fetch( url );
+			const response = await fetch( url, this.requestOptions() );
 			const data = await response.json();
 
 			this.updateCallback( data );

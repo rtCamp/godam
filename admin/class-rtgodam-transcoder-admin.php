@@ -42,6 +42,7 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
 			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
 			add_action( 'admin_notices', array( $this, 'api_key_status_notice' ) );
+			add_action( 'admin_notices', array( $this, 'preflight_notices' ) );
 			add_action( 'admin_notices', array( $this, 'woo_integration_promo_notice' ) );
 			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
 			add_action( 'admin_init', array( $this, 'handle_clear_godam_cache' ) );
@@ -798,6 +799,102 @@ class RTGODAM_Transcoder_Admin {
 		echo '<div class="notice notice-' . esc_attr( $notice_type ) . ' is-dismissible">';
 		echo '<p>' . wp_kses_post( $message ) . '</p>';
 		echo '</div>';
+	}
+
+	/**
+	 * Show the problems GoDAM Central's licence preflight found on this site.
+	 *
+	 * The notice speaks to the site owner: what goes wrong and the likely cause, in a
+	 * sentence, then where to fix it. Central's own messages are diagnostics meant for
+	 * support, so the notice links to the troubleshooting guide and to support instead.
+	 *
+	 * The four callback checks share a cause (something between Central and this site
+	 * is blocking the requests), so they make one notice. Any other failing or warning
+	 * check gets a notice of its own. Notices can't be dismissed: they go away once
+	 * Central's next check passes, which can take hours (Central caches the result), so
+	 * like the API key status notice they show only on the Dashboard and Media screens.
+	 *
+	 * GoDAM's own screens strip admin notices; the settings page shows the same
+	 * checks itself.
+	 *
+	 * @since 2.3.2
+	 *
+	 * @see https://github.com/rtCamp/godam-core/issues/856
+	 */
+	public function preflight_notices() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( ! $screen || ! in_array( $screen->id, array( 'dashboard', 'upload', 'media' ), true ) ) {
+			return;
+		}
+
+		$issues = rtgodam_get_preflight_issues();
+
+		if ( empty( $issues ) ) {
+			return;
+		}
+
+		$callback_issues = array_filter(
+			$issues,
+			function ( $check ) {
+				return 0 === strpos( $check['id'] ?? '', 'check_callback_' );
+			}
+		);
+
+		if ( ! empty( $callback_issues ) ) {
+			$this->display_preflight_notice(
+				in_array( 'fail', wp_list_pluck( $callback_issues, 'status' ), true ) ? 'error' : 'warning',
+				__( 'Your site can\'t receive transcoding updates', 'godam' ),
+				__( 'New videos may stay at "Processing" because transcoding updates can\'t reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it. After you fix it, this message can take a few hours to clear.', 'godam' ),
+				'site-not-reachable'
+			);
+		}
+
+		foreach ( array_diff_key( $issues, $callback_issues ) as $check ) {
+			$this->display_preflight_notice(
+				'fail' === $check['status'] ? 'error' : 'warning',
+				$check['label'] ?? __( 'Setup check', 'godam' ),
+				'' !== ( $check['remediation'] ?? '' ) ? $check['remediation'] : ( $check['message'] ?? '' )
+			);
+		}
+	}
+
+	/**
+	 * Display a single preflight notice.
+	 *
+	 * Uses the same header layout as the usage-limit notices: the troubleshooting guide
+	 * is the call to action, with Contact Support as a secondary link.
+	 *
+	 * @param string $type    Notice type: `error` or `warning`.
+	 * @param string $title   Notice title.
+	 * @param string $message One or two sentences for the site owner.
+	 * @param string $section Section of the troubleshooting guide that covers this problem.
+	 */
+	private function display_preflight_notice( $type, $title, $message, $section = '' ) {
+		$logo_url  = plugins_url( 'assets/src/images/godam-logo.svg', __DIR__ );
+		$guide_url = 'https://godam.io/docs/troubleshooting/?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=preflight-check&utm_content=troubleshooting-button' . ( '' !== $section ? '#' . $section : '' );
+		?>
+		<div class="notice notice-<?php echo esc_attr( $type ); ?> godam-preflight-notice">
+			<div class="godam-notice-header">
+				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
+				<div>
+					<p><strong><?php echo esc_html( $title ); ?></strong></p>
+					<p><?php echo esc_html( $message ); ?></p>
+					<p class="godam-preflight-notice__actions">
+						<a href="<?php echo esc_url( $guide_url ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary">
+							<?php esc_html_e( 'How to fix', 'godam' ); ?>
+						</a>
+						<a href="https://app.godam.io/helpdesk/my-tickets" target="_blank" rel="noopener noreferrer">
+							<?php esc_html_e( 'Contact Support', 'godam' ); ?>
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 
 	/**

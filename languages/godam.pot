@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-09T06:06:16+00:00\n"
+"POT-Creation-Date: 2026-10-09T11:41:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -1220,7 +1220,7 @@ msgstr ""
 #: assets/build/js/media-library.min.js:1
 #: assets/src/blocks/godam-pdf/viewer/index.js:350
 #: assets/src/blocks/godam-pdf/viewer/index.js:386
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:1199
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:1201
 msgid "Document preview"
 msgstr ""
 
@@ -1686,7 +1686,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:441
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:174
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:146
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:412
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:413
 msgid "Video Thumbnail"
 msgstr ""
 
@@ -1695,8 +1695,8 @@ msgstr ""
 #: assets/build/js/media-library.min.js:1
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:168
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:241
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:318
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:319
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:320
 msgid "Upload Custom Thumbnail"
 msgstr ""
 
@@ -1921,8 +1921,8 @@ msgstr ""
 #: assets/build/js/media-library.min.js:1
 #: inc/templates/video-preview.php:94
 #: assets/src/blocks/godam-player/edit.js:969
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:782
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:790
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:783
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:791
 msgid "Edit Video"
 msgstr ""
 
@@ -2291,7 +2291,7 @@ msgid "Comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: inc/helpers/custom-functions.php:1360
+#: inc/helpers/custom-functions.php:1703
 #: assets/src/js/godam-player/engagement.js:908
 #: assets/src/js/godam-player/engagement.js:915
 msgid "Anonymous"
@@ -2552,23 +2552,23 @@ msgid "Remove recording"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: admin/godam-transcoder-functions.php:410
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:190
+#: admin/godam-transcoder-functions.php:416
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:193
 msgid "Transcoding failed, please try again."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:209
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:212
 msgid "Not started"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:229
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:232
 msgid "Media is transcoded"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:265
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:268
 msgid "Transcoding…"
 msgstr ""
 
@@ -2589,10 +2589,10 @@ msgstr ""
 #: assets/build/pages/tools.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/build/pages/whats-new.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:192
-#: admin/class-rtgodam-transcoder-admin.php:336
+#: admin/class-rtgodam-transcoder-admin.php:193
+#: admin/class-rtgodam-transcoder-admin.php:337
 #: admin/godam-transcoder-functions.php:381
-#: inc/classes/class-media-library-ajax.php:1592
+#: inc/classes/class-media-library-ajax.php:1625
 #: inc/templates/video-preview.php:71
 #: assets/src/js/media-library/views/attachment.js:184
 #: pages/godam/components/GoDAMHeader.jsx:74
@@ -2603,7 +2603,7 @@ msgstr ""
 #: assets/build/js/media-library.min.js:1
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
-#: inc/classes/class-media-library-ajax.php:820
+#: inc/classes/class-media-library-ajax.php:853
 #: assets/src/js/media-library/views/fields/move-to-folder-field.js:79
 #: pages/media-library-tour/dom.js:215
 #: pages/media-library/App.js:329
@@ -2617,51 +2617,118 @@ msgid "Folder"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:109
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:44
+msgid "Transcoding has started."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:53
+msgid "Transcoding isn't available on a localhost site."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:55
+msgid "Your GoDAM storage is full. Upgrade your plan to continue transcoding."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:57
+msgid "HTTP authentication is enabled on this site. Disable it to allow transcoding."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:59
+msgid "The request failed. Try again."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:115
+msgid "This file couldn't be transcoded"
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: inc/classes/class-media-library-ajax.php:658
+#: inc/classes/rest-api/class-transcoding.php:327
+#: inc/helpers/custom-functions.php:672
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:116
+msgid "This file can't be transcoded."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/help.min.js:2
+#: assets/build/pages/tools.min.js:2
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:123
+#: pages/godam/components/GoDAMHeader.jsx:118
+msgid "Upgrade plan"
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:131
+msgid "Retranscode"
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/build/pages/onboarding.min.js:2
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:72
+#: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:61
+msgid "Sending…"
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:148
+msgid "Details for support"
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:110
 msgid "No thumbnails found"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:266
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:267
 msgid "Select Custom Thumbnail"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:267
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:268
 msgid "Use this image"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:279
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:280
 msgid "Please select a valid image file (JPEG, PNG, GIF, etc.)."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:315
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:316
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:317
 msgid "Only 3 custom thumbnails allowed"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:363
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:364
 msgid "Custom Video Thumbnail"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:370
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:374
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:371
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:375
 msgid "Remove Image"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:591
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:1233
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:592
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:1235
 msgid "Video Thumbnails"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: inc/templates/video-preview.php:90
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:765
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:766
 msgid "Edit Image"
 msgstr ""
 
@@ -2670,49 +2737,49 @@ msgstr ""
 #: inc/classes/class-pages.php:220
 #: inc/classes/class-pages.php:221
 #: inc/templates/video-preview.php:82
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:784
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:791
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:785
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:792
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:320
 msgid "Analytics"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: inc/templates/video-preview.php:92
-#: assets/src/js/media-library/views/attachment-detail-two-column.js:818
+#: assets/src/js/media-library/views/attachment-detail-two-column.js:819
 msgid "Edit Audio"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/attachment-details.js:80
+#: assets/src/js/media-library/views/attachment-details.js:82
 msgid "oEmbed Video URL"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/attachment-details.js:82
+#: assets/src/js/media-library/views/attachment-details.js:84
 msgid "The oEmbed URL can be used to embed the video in other platforms that support oEmbed."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: admin/godam-transcoder-actions.php:87
-#: assets/src/js/media-library/views/attachment-details.js:92
+#: assets/src/js/media-library/views/attachment-details.js:94
 msgid "Transcoded CDN URL (MPD)"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: admin/godam-transcoder-actions.php:101
-#: assets/src/js/media-library/views/attachment-details.js:94
+#: assets/src/js/media-library/views/attachment-details.js:96
 msgid "The URL of the transcoded file is generated automatically and cannot be edited."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: admin/godam-transcoder-actions.php:109
-#: assets/src/js/media-library/views/attachment-details.js:104
+#: assets/src/js/media-library/views/attachment-details.js:106
 msgid "Transcoded CDN URL (HLS)"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: admin/godam-transcoder-actions.php:118
-#: assets/src/js/media-library/views/attachment-details.js:106
+#: assets/src/js/media-library/views/attachment-details.js:108
 msgid "The HLS URL of the transcoded file is generated automatically and cannot be edited."
 msgstr ""
 
@@ -3052,16 +3119,6 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/GoDAMHeader.jsx:107
 msgid "Premium feature"
-msgstr ""
-
-#: assets/build/pages/analytics.min.js:2
-#: assets/build/pages/dashboard.min.js:2
-#: assets/build/pages/godam.min.js:2
-#: assets/build/pages/help.min.js:2
-#: assets/build/pages/tools.min.js:2
-#: assets/build/pages/video-editor.min.js:2
-#: pages/godam/components/GoDAMHeader.jsx:118
-msgid "Upgrade plan"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
@@ -5106,14 +5163,14 @@ msgid "WooCommerce metrics couldn’t load. This is usually temporary."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/App.js:35
+#: pages/godam/App.js:36
 #: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:101
 msgid "API Key"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
-#: pages/godam/App.js:44
+#: pages/godam/App.js:45
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:101
 #: pages/help/App.js:55
 msgid "General Settings"
@@ -5121,7 +5178,7 @@ msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
-#: pages/godam/App.js:50
+#: pages/godam/App.js:51
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:101
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:110
 #: pages/help/App.js:59
@@ -5129,18 +5186,18 @@ msgid "Video Settings"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/App.js:56
+#: pages/godam/App.js:57
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:408
 msgid "Video Player"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/App.js:65
+#: pages/godam/App.js:66
 msgid "Video Ads"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/App.js:74
+#: pages/godam/App.js:75
 msgid "Integrations Settings"
 msgstr ""
 
@@ -5229,6 +5286,37 @@ msgstr ""
 #: assets/build/pages/tools.min.js:2
 #: pages/godam/components/GoDAMFooter.jsx:77
 msgid "Made with ♥ by the GoDAM Team"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: admin/class-rtgodam-transcoder-admin.php:888
+#: pages/godam/components/PreflightNotices.jsx:55
+msgid "How to fix"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: admin/class-rtgodam-transcoder-admin.php:891
+#: pages/godam/components/PreflightNotices.jsx:58
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:180
+msgid "Contact Support"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: admin/class-rtgodam-transcoder-admin.php:850
+#: pages/godam/components/PreflightNotices.jsx:90
+msgid "Your site can't receive transcoding updates"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: admin/class-rtgodam-transcoder-admin.php:851
+#: pages/godam/components/PreflightNotices.jsx:91
+msgid "New videos may stay at \"Processing\" because transcoding updates can't reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it. After you fix it, this message can take a few hours to clear."
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: admin/class-rtgodam-transcoder-admin.php:859
+#: pages/godam/components/PreflightNotices.jsx:100
+msgid "Setup check"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
@@ -5354,9 +5442,9 @@ msgid "Refreshing…"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:562
-#: admin/class-rtgodam-transcoder-admin.php:625
-#: admin/class-rtgodam-transcoder-admin.php:664
+#: admin/class-rtgodam-transcoder-admin.php:563
+#: admin/class-rtgodam-transcoder-admin.php:626
+#: admin/class-rtgodam-transcoder-admin.php:665
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:151
 msgid "Refresh Status"
 msgstr ""
@@ -5369,11 +5457,6 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:173
 msgid "Having any issue?"
-msgstr ""
-
-#: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:180
-msgid "Contact Support"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
@@ -5597,10 +5680,10 @@ msgid "Install %s"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:221
-#: admin/class-rtgodam-transcoder-admin.php:559
-#: admin/class-rtgodam-transcoder-admin.php:622
-#: admin/class-rtgodam-transcoder-admin.php:661
+#: admin/class-rtgodam-transcoder-admin.php:222
+#: admin/class-rtgodam-transcoder-admin.php:560
+#: admin/class-rtgodam-transcoder-admin.php:623
+#: admin/class-rtgodam-transcoder-admin.php:662
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationActionButton.jsx:82
 msgid "Learn More"
 msgstr ""
@@ -7098,11 +7181,6 @@ msgstr ""
 #: assets/build/pages/onboarding.min.js:2
 #: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:41
 msgid "Could not send the reset link."
-msgstr ""
-
-#: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:61
-msgid "Sending…"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
@@ -9809,210 +9887,210 @@ msgid "Insufficient bandwidth!"
 msgstr ""
 
 #. translators: %s is the URL to the plugin settings page where the API key can be activated.
-#: admin/class-rtgodam-transcoder-admin.php:86
-#: admin/class-rtgodam-transcoder-admin.php:148
-#: admin/class-rtgodam-transcoder-admin.php:163
+#: admin/class-rtgodam-transcoder-admin.php:87
+#: admin/class-rtgodam-transcoder-admin.php:149
+#: admin/class-rtgodam-transcoder-admin.php:164
 #, php-format
 msgid "Enjoy using our <strong>DAM and Media Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href=\"%s\">please activate your API key.</a>"
 msgstr ""
 
 #. translators: %d: Number of days until trial ends
-#: admin/class-rtgodam-transcoder-admin.php:111
+#: admin/class-rtgodam-transcoder-admin.php:112
 #, php-format
 msgid "Your product is under trial. You will be charged after <strong>%d days</strong>. If you wish to cancel, please visit <a href=\"https://app.godam.io/subscription/my-account\" target=\"_blank\">your subscription settings</a>."
 msgstr ""
 
 #. translators: %d: Number of days until transcoded videos are deleted after subscription ends
-#: admin/class-rtgodam-transcoder-admin.php:135
+#: admin/class-rtgodam-transcoder-admin.php:136
 #, php-format
 msgid "Your subscription has ended. No further transcoding can be done. Transcoded videos will be removed after <strong>%d days</strong>, and Pro features will not be accessible. After the 30-day grace period, already transcoded videos will no longer be served from the CDN. Renew your subscription to keep it up and running."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:185
-#: admin/class-rtgodam-transcoder-admin.php:346
+#: admin/class-rtgodam-transcoder-admin.php:186
+#: admin/class-rtgodam-transcoder-admin.php:347
 msgid "Activate API Key"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:185
+#: admin/class-rtgodam-transcoder-admin.php:186
 msgid "Use Media Editor"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:196
+#: admin/class-rtgodam-transcoder-admin.php:197
 msgid "Welcome to GoDAM! Thank you for using our product."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:276
-#: inc/classes/class-media-library-ajax.php:954
+#: admin/class-rtgodam-transcoder-admin.php:277
+#: inc/classes/class-media-library-ajax.php:987
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:278
-#: inc/classes/class-media-library-ajax.php:956
+#: admin/class-rtgodam-transcoder-admin.php:279
+#: inc/classes/class-media-library-ajax.php:989
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:279
-#: inc/classes/class-media-library-ajax.php:957
+#: admin/class-rtgodam-transcoder-admin.php:280
+#: inc/classes/class-media-library-ajax.php:990
 msgid "Dismiss banner"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:339
+#: admin/class-rtgodam-transcoder-admin.php:340
 msgid "Unlock Video Analytics, Transcoding and more with GoDAM Pro. Start with a free 60-day trial."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:343
+#: admin/class-rtgodam-transcoder-admin.php:344
 msgid "Get your Free Plan"
 msgstr ""
 
 #. translators: %1$s: bandwidth percentage, %2$s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:522
+#: admin/class-rtgodam-transcoder-admin.php:523
 #, php-format
 msgid "Your bandwidth (%1$s%%) and storage (%2$s%%) usage have exceeded your plan limits."
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:529
+#: admin/class-rtgodam-transcoder-admin.php:530
 #, php-format
 msgid "Your bandwidth usage (%s%%) has exceeded your plan limit."
 msgstr ""
 
 #. translators: %s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:535
+#: admin/class-rtgodam-transcoder-admin.php:536
 #, php-format
 msgid "Your storage usage (%s%%) has exceeded your plan limit."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:540
+#: admin/class-rtgodam-transcoder-admin.php:541
 msgid "Transcoding requests may be blocked until you upgrade your plan."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:552
+#: admin/class-rtgodam-transcoder-admin.php:553
 msgid "GoDAM Usage Limit Exceeded"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:556
-#: admin/class-rtgodam-transcoder-admin.php:658
+#: admin/class-rtgodam-transcoder-admin.php:557
+#: admin/class-rtgodam-transcoder-admin.php:659
 msgid "Upgrade Your Plan"
 msgstr ""
 
 #. translators: %1$s: bandwidth percentage, %2$s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:585
+#: admin/class-rtgodam-transcoder-admin.php:586
 #, php-format
 msgid "Your bandwidth (%1$s%%) and storage (%2$s%%) usage are approaching your plan limits."
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:592
+#: admin/class-rtgodam-transcoder-admin.php:593
 #, php-format
 msgid "Your bandwidth usage (%s%%) is approaching your plan limit."
 msgstr ""
 
 #. translators: %s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:598
+#: admin/class-rtgodam-transcoder-admin.php:599
 #, php-format
 msgid "Your storage usage (%s%%) is approaching your plan limit."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:603
+#: admin/class-rtgodam-transcoder-admin.php:604
 msgid "Consider upgrading your plan to avoid service interruptions."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:615
+#: admin/class-rtgodam-transcoder-admin.php:616
 msgid "GoDAM Usage Warning"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:619
+#: admin/class-rtgodam-transcoder-admin.php:620
 msgid "View Plans"
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:642
+#: admin/class-rtgodam-transcoder-admin.php:643
 #, php-format
 msgid "Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:654
+#: admin/class-rtgodam-transcoder-admin.php:655
 msgid "GoDAM Bandwidth Exceeded"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:655
+#: admin/class-rtgodam-transcoder-admin.php:656
 msgid "Transcoding will continue to work."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:707
+#: admin/class-rtgodam-transcoder-admin.php:708
 msgid "Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect anonymous diagnostic data and usage information."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:714
+#: admin/class-rtgodam-transcoder-admin.php:715
 msgid "what we collect"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:716
+#: admin/class-rtgodam-transcoder-admin.php:717
 msgid "Data we collect:"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:718
+#: admin/class-rtgodam-transcoder-admin.php:719
 msgid "Server environment details (PHP, MySQL, Server, and WordPress versions)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:719
+#: admin/class-rtgodam-transcoder-admin.php:720
 msgid "Site and user count (Language and number of users)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:720
+#: admin/class-rtgodam-transcoder-admin.php:721
 msgid "Plugin details (Number of active and inactive plugins)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:721
+#: admin/class-rtgodam-transcoder-admin.php:722
 msgid "Usage data (Interactions, navigation, session replays, heatmaps, and errors via PostHog)"
 msgstr ""
 
 #. translators: %s: PostHog privacy policy URL
-#: admin/class-rtgodam-transcoder-admin.php:727
+#: admin/class-rtgodam-transcoder-admin.php:728
 #, php-format
 msgid "We are using PostHog to collect anonymous data. <a href=\"%s\" target=\"_blank\">Learn more</a>. This can be disabled from the settings on the Help page."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:739
+#: admin/class-rtgodam-transcoder-admin.php:740
 msgid "Allow"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:740
+#: admin/class-rtgodam-transcoder-admin.php:741
 msgid "No thanks"
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:778
+#: admin/class-rtgodam-transcoder-admin.php:779
 #, php-format
 msgid "Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href=\"%s\">renew your subscription</a> to restore access."
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:783
+#: admin/class-rtgodam-transcoder-admin.php:784
 #, php-format
 msgid "Temporarily unable to verify your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a> or try refreshing the status."
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:792
+#: admin/class-rtgodam-transcoder-admin.php:793
 #, php-format
 msgid "There is an issue with your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a>."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:891
+#: admin/class-rtgodam-transcoder-admin.php:988
 #, php-format
 msgid "<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:899
+#: admin/class-rtgodam-transcoder-admin.php:996
 #, php-format
 msgid "<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:907
+#: admin/class-rtgodam-transcoder-admin.php:1004
 #, php-format
 msgid "<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature."
 msgstr ""
@@ -10032,21 +10110,37 @@ msgstr ""
 msgid "HTTP authentication is enabled on your site, preventing transcoding."
 msgstr ""
 
-#. translators: 1: max retry attempts, 2: retry interval in minutes
-#: admin/class-rtgodam-transcoder-handler.php:589
-#, php-format
-msgid "GoDAM Central returned a server error. Transcoding will be retried automatically (up to %1$d times, every %2$d minutes)."
+#: admin/class-rtgodam-transcoder-handler.php:593
+msgid "Too many transcoding requests right now."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:693
+#: admin/class-rtgodam-transcoder-handler.php:595
+msgid "The transcoding request timed out."
+msgstr ""
+
+#: admin/class-rtgodam-transcoder-handler.php:597
+msgid "The transcoding service couldn't be reached."
+msgstr ""
+
+#: admin/class-rtgodam-transcoder-handler.php:599
+msgid "The transcoding service had a server error."
+msgstr ""
+
+#. translators: 1: why the job couldn't be sent, 2: max retry attempts, 3: retry interval in minutes
+#: admin/class-rtgodam-transcoder-handler.php:607
+#, php-format
+msgid "%1$s Transcoding will be retried automatically (up to %2$d times, every %3$d minutes)."
+msgstr ""
+
+#: admin/class-rtgodam-transcoder-handler.php:712
 msgid "You have successfully subscribed."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:715
+#: admin/class-rtgodam-transcoder-handler.php:734
 msgid "This API key is invalid."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:730
+#: admin/class-rtgodam-transcoder-handler.php:749
 msgid "Transcoding service can not be activated on the localhost"
 msgstr ""
 
@@ -10107,9 +10201,9 @@ msgid "Transcription callback received."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-rest-routes.php:696
-#: admin/godam-transcoder-functions.php:522
+#: admin/godam-transcoder-functions.php:529
 #: inc/classes/rest-api/class-media-library.php:560
-#: inc/classes/rest-api/class-transcoding.php:438
+#: inc/classes/rest-api/class-transcoding.php:449
 msgid "API key is required."
 msgstr ""
 
@@ -10120,7 +10214,7 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-rest-routes.php:704
 #: inc/classes/rest-api/class-media-library.php:567
 #: inc/classes/rest-api/class-settings.php:187
-#: inc/classes/rest-api/class-transcoding.php:444
+#: inc/classes/rest-api/class-transcoding.php:455
 msgid "Invalid API key."
 msgstr ""
 
@@ -10159,24 +10253,24 @@ msgid "Transcode Status"
 msgstr ""
 
 #: admin/godam-transcoder-functions.php:383
-#: admin/godam-transcoder-functions.php:433
-#: inc/classes/rest-api/class-transcoding.php:354
+#: admin/godam-transcoder-functions.php:440
+#: inc/classes/rest-api/class-transcoding.php:365
 msgid "Media is transcoded."
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:531
+#: admin/godam-transcoder-functions.php:538
 msgid "API key verification is blocked for localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define('RTGODAM_API_KEY', 'your-api-key-here');"
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:540
+#: admin/godam-transcoder-functions.php:547
 msgid "The provided API key does not match the RTGODAM_API_KEY constant defined in wp-config.php."
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:636
+#: admin/godam-transcoder-functions.php:643
 msgid "API key verified and stored successfully!"
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:643
+#: admin/godam-transcoder-functions.php:650
 #: inc/classes/enums/class-api-key-status.php:84
 msgid "Unable to verify API key. Please try again later."
 msgstr ""
@@ -10239,44 +10333,44 @@ msgstr ""
 msgid "Demo asset not found."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:824
+#: inc/classes/class-media-library-ajax.php:857
 msgid "All collections"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:906
+#: inc/classes/class-media-library-ajax.php:939
 msgid "Offer banner dismissed successfully."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1000
+#: inc/classes/class-media-library-ajax.php:1033
 msgid "Invalid attachment ID or URL."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1022
+#: inc/classes/class-media-library-ajax.php:1055
 #: inc/classes/rest-api/class-media-library.php:889
 msgid "Invalid attachment ID."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1034
+#: inc/classes/class-media-library-ajax.php:1067
 msgid "Could not initialize WordPress filesystem."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1054
+#: inc/classes/class-media-library-ajax.php:1087
 msgid "Could not move file into uploads directory."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1544
+#: inc/classes/class-media-library-ajax.php:1577
 msgid "Insufficient permissions."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1561
+#: inc/classes/class-media-library-ajax.php:1594
 msgid "HTTP auth status saved."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1594
+#: inc/classes/class-media-library-ajax.php:1627
 msgid "GoDAM Transcoding Blocked"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1597
+#: inc/classes/class-media-library-ajax.php:1630
 msgid "HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding."
 msgstr ""
 
@@ -10373,21 +10467,21 @@ msgid "Retranscode Failed Media"
 msgstr ""
 
 #. translators: %d is the maximum number of retry attempts.
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:129
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:155
 #, php-format
-msgid "Transcoding failed after %d retry attempts. GoDAM Central returned a server error on each attempt."
+msgid "Transcoding failed after %d retry attempts. Retranscode it later, or contact support if this keeps happening."
 msgstr ""
 
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:194
-msgid "GoDAM: Transcoding server error"
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:245
+msgid "GoDAM: Media queued for transcoding retry"
 msgstr ""
 
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:198
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:249
 msgid "Media Library"
 msgstr ""
 
 #. translators: 1: number of media items queued, 2: retry interval in minutes, 3: max retries, 4: Media Library link
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:202
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:253
 #, php-format
 msgid "%1$d media file(s) could not be sent to the GoDAM transcoding server and have been queued for automatic retry (every %2$d minutes, up to %3$d attempts). Visit the %4$s to see their status."
 msgstr ""
@@ -11066,7 +11160,7 @@ msgid "Leave empty to allow any duration. Example: 180 = 3 minutes."
 msgstr ""
 
 #: inc/classes/gravity-forms/class-init.php:314
-#: inc/helpers/custom-functions.php:1254
+#: inc/helpers/custom-functions.php:1595
 msgid "Gravity forms"
 msgstr ""
 
@@ -12054,96 +12148,114 @@ msgstr ""
 msgid "Transcoding status updated successfully."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:334
+#: inc/classes/rest-api/class-transcoding.php:345
 msgid "Media has not been transcoded."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:341
+#: inc/classes/rest-api/class-transcoding.php:352
 msgid "Transcoding has not started."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:350
+#: inc/classes/rest-api/class-transcoding.php:361
 msgid "Media is queued for transcoding."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:351
+#: inc/classes/rest-api/class-transcoding.php:362
 msgid "Media is downloading for transcoding."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:352
+#: inc/classes/rest-api/class-transcoding.php:363
 msgid "Media is downloaded for transcoding."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:353
+#: inc/classes/rest-api/class-transcoding.php:364
 msgid "Media is transcoding."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:358
+#: inc/classes/rest-api/class-transcoding.php:369
 msgid "Unknown transcoding status."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:376
+#: inc/classes/rest-api/class-transcoding.php:387
 msgid "Transcoding complete, generating thumbnail..."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:441
+#: inc/classes/rest-api/class-transcoding.php:452
 msgid "API key not configured."
 msgstr ""
 
 #. translators: %s is the storage usage percentage.
-#: inc/classes/rest-api/class-transcoding.php:527
+#: inc/classes/rest-api/class-transcoding.php:538
 #, php-format
 msgid "Storage limit exceeded (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:755
+#: inc/classes/rest-api/class-transcoding.php:766
 msgid "Attachment ID not provided"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:799
+#: inc/classes/rest-api/class-transcoding.php:810
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Transcoding requests are not allowed in the localhost environment."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:819
+#: inc/classes/rest-api/class-transcoding.php:830
 #, php-format
 msgid "%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this media on GoDAM Central."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:839
+#: inc/classes/rest-api/class-transcoding.php:850
 #, php-format
 msgid "%1$s (ID %2$d) is migrated Vimeo video. Please retranscode this video on GoDAM Central."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: storage usage percent.
-#: inc/classes/rest-api/class-transcoding.php:862
+#: inc/classes/rest-api/class-transcoding.php:873
 #, php-format
 msgid "%1$s (ID %2$d) cannot be retranscoded. Storage limit exceeded (%3$s%%). Please upgrade your plan to continue transcoding."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:883
+#: inc/classes/rest-api/class-transcoding.php:894
 #, php-format
 msgid "%1$s (ID %2$d) cannot be transcoded. HTTP authentication is enabled on your site. Please disable it to allow transcoding."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:920
+#: inc/classes/rest-api/class-transcoding.php:931
 #, php-format
 msgid "%1$s (ID %2$d) is not a document format GoDAM can convert, so it was skipped."
 msgstr ""
 
+#. translators: 1: Attachment title, 2: Attachment ID, 3: Why GoDAM could not use the source file.
+#: inc/classes/rest-api/class-transcoding.php:983
+#, php-format
+msgid "%1$s (ID %2$d) cannot be transcoded. %3$s"
+msgstr ""
+
+#. translators: %s: GoDAM Central's own wording of why it refused the file.
+#: inc/classes/rest-api/class-transcoding.php:991
+#, php-format
+msgid "(Details: %s)"
+msgstr ""
+
+#. translators: 1: Attachment title, 2: Attachment ID, 3: Why the request failed and whether it will be retried.
+#: inc/classes/rest-api/class-transcoding.php:1011
+#, php-format
+msgid "%1$s (ID %2$d) transcoding request failed. %3$s"
+msgstr ""
+
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:963
+#: inc/classes/rest-api/class-transcoding.php:1030
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Unknown error"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:979
+#: inc/classes/rest-api/class-transcoding.php:1046
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""
@@ -12776,45 +12888,78 @@ msgstr ""
 msgid "Bandwidth limit exceeded (%s%%). Please upgrade your plan to continue."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:517
+#: inc/helpers/custom-functions.php:580
+msgid "Only files served over HTTPS can be transcoded. Serve your media over https://."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:585
+msgid "This file couldn't be downloaded from your site. Make sure uploaded videos are publicly accessible."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:586
+msgid "The file's link opens a web page instead of the video, often because of a login or media protection plugin."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:587
+msgid "The file is empty or too large. Try uploading it again."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:655
+#: inc/helpers/custom-functions.php:656
+msgid "This site's API key wasn't recognised. Check the key in GoDAM settings."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:657
+msgid "Your GoDAM licence is inactive. Renew your plan to transcode new uploads."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:658
+msgid "Your GoDAM storage is full. Upgrade your plan or delete unused files."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:659
+msgid "This site isn't on your GoDAM account's list of allowed sites. Ask your GoDAM admin to add it."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:858
 msgid "API key not found ( try refreshing the page )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:551
+#: inc/helpers/custom-functions.php:892
 msgid "Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1150
+#: inc/helpers/custom-functions.php:1491
 msgid "Form transcoding has been disabled by the site administrator."
 msgstr ""
 
 #. translators: %s: Entry ID for which transcoding failed
-#: inc/helpers/custom-functions.php:1290
+#: inc/helpers/custom-functions.php:1633
 #, php-format
 msgid "Transcoding failed | entry Id: %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1326
+#: inc/helpers/custom-functions.php:1669
 msgid "s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1643
+#: inc/helpers/custom-functions.php:1986
 msgid "Oops! We could not locate your video"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1654
+#: inc/helpers/custom-functions.php:1997
 msgid "Note: This is a simple image preview. The image and its layers may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1656
+#: inc/helpers/custom-functions.php:1999
 msgid "Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1658
+#: inc/helpers/custom-functions.php:2001
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1822
+#: inc/helpers/custom-functions.php:2165
 msgid "Video not found"
 msgstr ""
 

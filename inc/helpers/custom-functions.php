@@ -505,6 +505,347 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 }
 
 /**
+ * Get the licence preflight checks GoDAM Central flagged for this site.
+ *
+ * Central runs these checks on every `verify_api_key` call and returns them under
+ * `preflight`. That response is already kept in the cached user data, so this makes
+ * no remote request, and removing the API key (which drops the cache) clears them.
+ *
+ * The quota check is left out: `usage_limit_notices()` already warns about usage,
+ * from fresher numbers and at a lower threshold.
+ *
+ * @since 2.3.2
+ *
+ * @see https://github.com/rtCamp/godam-core/issues/856
+ *
+ * @return array[] Checks with a `warn` or `fail` status, in the order Central sent them.
+ */
+function rtgodam_get_preflight_issues() {
+	$user_data = rtgodam_get_user_data();
+
+	if ( empty( $user_data['valid_api_key'] ) || empty( $user_data['user_data']['preflight']['checks'] ) ) {
+		return array();
+	}
+
+	$issues = array();
+
+	foreach ( (array) $user_data['user_data']['preflight']['checks'] as $check ) {
+		if ( ! is_array( $check ) || 'check_quota' === ( $check['id'] ?? '' ) ) {
+			continue;
+		}
+
+		if ( in_array( $check['status'] ?? '', array( 'warn', 'fail' ), true ) ) {
+			$issues[] = $check;
+		}
+	}
+
+	return $issues;
+}
+
+/**
+ * Turn the source-video checks Central failed into a short message for the media item.
+ *
+ * Central's messages are diagnostics (HTTP codes, Python exceptions) written for
+ * support, so the known checks get plain wording here. A check this plugin doesn't
+ * know yet falls back to Central's message.
+ *
+ * When the video URL can't be reached, Central still reports the content-type and
+ * size checks, but only to say they were skipped. They add nothing, so only the
+ * reachability failure is kept in that case.
+ *
+ * @since 2.3.2
+ *
+ * @param array $results The `message.results` list from Central's HTTP 417 response.
+ *
+ * @return string What went wrong and what to do, or an empty string if no check failed.
+ */
+function rtgodam_get_preflight_failure_message( $results ) {
+	$failed = array_filter(
+		(array) $results,
+		function ( $check ) {
+			return is_array( $check ) && 'fail' === ( $check['status'] ?? '' );
+		}
+	);
+
+	foreach ( $failed as $check ) {
+		if ( 'check_source_reachable' === ( $check['id'] ?? '' ) ) {
+			$failed = array( $check );
+			break;
+		}
+	}
+
+	// Central refuses every http:// source, and "make it publicly accessible" is the wrong fix for that.
+	foreach ( $failed as $check ) {
+		if ( false !== stripos( $check['message'] ?? '', "disallowed scheme 'http'" ) ) {
+			return __( 'Only files served over HTTPS can be transcoded. Serve your media over https://.', 'godam' );
+		}
+	}
+
+	$known = array(
+		'check_source_reachable'    => __( 'This file couldn\'t be downloaded from your site. Make sure uploaded videos are publicly accessible.', 'godam' ),
+		'check_source_content_type' => __( 'The file\'s link opens a web page instead of the video, often because of a login or media protection plugin.', 'godam' ),
+		'check_source_size'         => __( 'The file is empty or too large. Try uploading it again.', 'godam' ),
+	);
+
+	$messages = array();
+
+	foreach ( $failed as $check ) {
+		$messages[] = $known[ $check['id'] ?? '' ] ?? ( $check['message'] ?? '' );
+	}
+
+	return sanitize_text_field( implode( ' ', array_unique( array_filter( $messages ) ) ) );
+}
+
+/**
+ * Turn Central's refusal of a job (any 4xx answer) into a short message for the media item.
+ *
+ * Central refuses a job on purpose in two shapes: HTTP 417 with the source-file checks
+ * that failed, or Frappe's standard error body for licence and account problems
+ * (unknown licence, licence inactive, storage full, site not allowed). The known
+ * reasons get plain wording; anything else falls back to Central's own message.
+ *
+ * @since 2.3.2
+ *
+ * @see https://github.com/rtCamp/godam-core/issues/856
+ *
+ * @param int   $status_code HTTP status of Central's answer.
+ * @param array $body        Central's decoded JSON answer.
+ *
+ * @return array{code: string, message: string} Error code (`preflight_failed` for the
+ *                                              source-file checks, `job_refused` otherwise)
+ *                                              and message, or empty strings when the
+ *                                              answer is not a refusal.
+ */
+function rtgodam_get_job_refusal( $status_code, $body ) {
+	$none = array(
+		'code'    => '',
+		'message' => '',
+		'detail'  => '',
+	);
+
+	// 408 and 429 are transient (timeout, rate limit), not a refusal: retrying can work.
+	if ( $status_code < 400 || $status_code >= 500 || in_array( $status_code, array( 408, 429 ), true ) ) {
+		return $none;
+	}
+
+	$body = is_array( $body ) ? $body : array();
+
+	if ( ! empty( $body['message']['has_failures'] ) ) {
+		$results = $body['message']['results'] ?? array();
+		$message = rtgodam_get_preflight_failure_message( $results );
+
+		return '' === $message ? $none : array(
+			'code'    => 'preflight_failed',
+			'message' => $message,
+			'detail'  => rtgodam_get_preflight_failure_detail( $results ),
+		);
+	}
+
+	$reason = rtgodam_get_frappe_error_message( $body );
+
+	// Central can quote the API key ("Could not find License: <key>"). The plugin never
+	// shows it in full, so mask it as GoDAM settings does.
+	$api_key = (string) get_option( 'rtgodam-api-key', '' );
+	if ( '' !== $api_key ) {
+		$reason = str_replace( $api_key, rtgodam_mask_string( $api_key ), $reason );
+	}
+
+	$known = array(
+		// An unknown key fails Central's link check (HTTP 417) before its own 404 "Invalid License".
+		'Could not find License' => __( 'This site\'s API key wasn\'t recognised. Check the key in GoDAM settings.', 'godam' ),
+		'Invalid License'        => __( 'This site\'s API key wasn\'t recognised. Check the key in GoDAM settings.', 'godam' ),
+		'License Inactive'       => __( 'Your GoDAM licence is inactive. Renew your plan to transcode new uploads.', 'godam' ),
+		'Storage limit exceeded' => __( 'Your GoDAM storage is full. Upgrade your plan or delete unused files.', 'godam' ),
+		'not whitelisted'        => __( 'This site isn\'t on your GoDAM account\'s list of allowed sites. Ask your GoDAM admin to add it.', 'godam' ),
+	);
+
+	$message = '';
+
+	foreach ( $known as $needle => $plain ) {
+		if ( false !== stripos( $reason, $needle ) ) {
+			$message = $plain;
+			break;
+		}
+	}
+
+	if ( '' === $message ) {
+		$message = '' !== $reason ? $reason : __( 'This file can\'t be transcoded.', 'godam' );
+	}
+
+	$message = sanitize_text_field( $message );
+	$detail  = sanitize_text_field( $reason );
+
+	return array(
+		'code'    => 'job_refused',
+		'message' => $message,
+		// Only worth keeping when it says something the plain message doesn't.
+		'detail'  => $detail === $message ? '' : $detail,
+	);
+}
+
+/**
+ * Central's own messages for the source-file checks that failed, for support.
+ *
+ * Follows rtgodam_get_preflight_failure_message(): when the URL can't be reached, only
+ * that check is kept.
+ *
+ * @since 2.3.2
+ *
+ * @param array $results The `message.results` list from Central's HTTP 417 response.
+ *
+ * @return string The failing checks' messages, or an empty string.
+ */
+function rtgodam_get_preflight_failure_detail( $results ) {
+	$failed = array_values(
+		array_filter(
+			(array) $results,
+			function ( $check ) {
+				return is_array( $check ) && 'fail' === ( $check['status'] ?? '' );
+			}
+		)
+	);
+
+	foreach ( $failed as $check ) {
+		if ( 'check_source_reachable' === ( $check['id'] ?? '' ) ) {
+			$failed = array( $check );
+			break;
+		}
+	}
+
+	return sanitize_text_field( implode( ' ', array_filter( array_column( $failed, 'message' ) ) ) );
+}
+
+/**
+ * Read the human message out of a Frappe error body.
+ *
+ * Frappe sends it JSON-encoded twice in `_server_messages`; `exception` carries it too,
+ * after the exception class name.
+ *
+ * @since 2.3.2
+ *
+ * @param array $body Central's decoded JSON answer.
+ *
+ * @return string The message, or an empty string.
+ */
+function rtgodam_get_frappe_error_message( $body ) {
+	if ( ! empty( $body['_server_messages'] ) && is_string( $body['_server_messages'] ) ) {
+		$messages = json_decode( $body['_server_messages'], true );
+		$first    = is_array( $messages ) && isset( $messages[0] ) ? json_decode( (string) $messages[0], true ) : null;
+
+		if ( is_array( $first ) && ! empty( $first['message'] ) ) {
+			return wp_strip_all_tags( (string) $first['message'] );
+		}
+	}
+
+	if ( ! empty( $body['exception'] ) && is_string( $body['exception'] ) ) {
+		$parts = explode( ': ', $body['exception'], 2 );
+
+		return trim( $parts[1] ?? $parts[0] );
+	}
+
+	return '';
+}
+
+/**
+ * Mark an attachment as failed when Central refused its job.
+ *
+ * A refusal (any 4xx answer) is deliberate: the source file failed Central's checks,
+ * or the licence, storage or site isn't allowed to transcode. Before this the plugin
+ * kept no status for it, so the admin was never told why the file didn't transcode.
+ * Retrying sends the same request, so the attachment is also dropped from the 5xx
+ * retry queue in case an earlier attempt put it there.
+ *
+ * @since 2.3.2
+ *
+ * @see https://github.com/rtCamp/godam-core/issues/856
+ *
+ * @param int            $attachment_id ID of attachment.
+ * @param array|WP_Error $response      Response from the Transcoder Job request.
+ *
+ * @return bool Whether the response was a refusal (and was recorded).
+ */
+function rtgodam_record_job_refusal( $attachment_id, $response ) {
+	if ( is_wp_error( $response ) ) {
+		return false;
+	}
+
+	$refusal = rtgodam_get_job_refusal(
+		intval( wp_remote_retrieve_response_code( $response ) ),
+		json_decode( wp_remote_retrieve_body( $response ), true )
+	);
+
+	if ( '' === $refusal['code'] ) {
+		return false;
+	}
+
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', $refusal['code'] );
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $refusal['message'] );
+	// Central's own wording, for support: the plain message above can't carry every cause.
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', $refusal['detail'] );
+
+	rtgodam_remove_from_retry_queue( $attachment_id );
+
+	return true;
+}
+
+/**
+ * Remove an attachment from the 5xx retry queue.
+ *
+ * Entries are keyed by attachment ID, but legacy ones are numerically indexed (see the
+ * 5xx branch of wp_media_transcoding()), so a key can hold another attachment. The
+ * embedded attachment_id decides; the key only counts for an entry without one.
+ *
+ * @since 2.3.2
+ *
+ * @param int $attachment_id ID of attachment.
+ *
+ * @return void
+ */
+function rtgodam_remove_from_retry_queue( $attachment_id ) {
+	$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+	$remaining                      = array_filter(
+		(array) $failed_transcoding_attachments,
+		function ( $entry, $key ) use ( $attachment_id ) {
+			$entry_id = is_array( $entry ) && isset( $entry['attachment_id'] ) ? $entry['attachment_id'] : $key;
+
+			return (int) $entry_id !== (int) $attachment_id;
+		},
+		ARRAY_FILTER_USE_BOTH
+	);
+
+	if ( count( $remaining ) !== count( (array) $failed_transcoding_attachments ) ) {
+		update_option( 'rtgodam-failed-transcoding-attachments', $remaining );
+	}
+}
+
+/**
+ * Whether Central refused a job because of the plan: storage full or licence inactive.
+ *
+ * @since 2.3.2
+ *
+ * @param string $detail Central's own wording, from `rtgodam_transcoding_error_detail`.
+ *
+ * @return bool
+ */
+function rtgodam_refusal_needs_plan( $detail ) {
+	return false !== stripos( (string) $detail, 'Storage limit exceeded' ) || false !== stripos( (string) $detail, 'License Inactive' );
+}
+
+/**
+ * Whether an attachment's failure is Central refusing its job (see rtgodam_record_job_refusal()).
+ *
+ * @since 2.3.2
+ *
+ * @param string $error_code The attachment's `rtgodam_transcoding_error_code`.
+ *
+ * @return bool
+ */
+function rtgodam_is_job_refusal( $error_code ) {
+	return in_array( $error_code, array( 'preflight_failed', 'job_refused' ), true );
+}
+
+/**
  * Get the storage and bandwidth usage data.
  *
  * @return array|WP_Error
@@ -1283,6 +1624,8 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$response = wp_remote_post( $transcoding_url, $args );
 
 	if ( is_wp_error( $response ) || empty( $response['response']['code'] ) || 200 !== intval( $response['response']['code'] ) ) {
+		// The error answers the visitor who submitted the form, so it stays generic: an
+		// account reason (storage full, licence inactive) is for the site owner.
 		return new WP_Error(
 			400,
 			sprintf(
