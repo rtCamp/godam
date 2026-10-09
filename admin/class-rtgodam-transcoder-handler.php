@@ -531,12 +531,9 @@ class RTGODAM_Transcoder_Handler {
 					}
 
 					if ( $manual_retranscode ) {
-						$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
-
-						if ( isset( $failed_transcoding_attachments[ $attachment_id ] ) ) {
-							unset( $failed_transcoding_attachments[ $attachment_id ] );
-							update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
-						}
+						// Matches legacy, numerically indexed entries too, so the cron doesn't
+						// keep retrying a job Central has already accepted.
+						rtgodam_remove_from_retry_queue( $attachment_id );
 					}
 				}
 			}

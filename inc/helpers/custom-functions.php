@@ -663,10 +663,14 @@ function rtgodam_get_job_refusal( $status_code, $body ) {
 		$message = '' !== $reason ? $reason : __( 'GoDAM refused this file.', 'godam' );
 	}
 
+	$message = sanitize_text_field( $message );
+	$detail  = sanitize_text_field( $reason );
+
 	return array(
 		'code'    => 'job_refused',
-		'message' => sanitize_text_field( $message ),
-		'detail'  => sanitize_text_field( $reason ),
+		'message' => $message,
+		// Only worth keeping when it says something the plain message doesn't.
+		'detail'  => $detail === $message ? '' : $detail,
 	);
 }
 
@@ -771,9 +775,25 @@ function rtgodam_record_job_refusal( $attachment_id, $response ) {
 	// Central's own wording, for support: the plain message above can't carry every cause.
 	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', $refusal['detail'] );
 
-	// Entries are keyed by attachment ID, but legacy ones are numerically indexed (see the
-	// 5xx branch of wp_media_transcoding()), so a key can hold another attachment. The
-	// embedded attachment_id decides; the key only counts for an entry without one.
+	rtgodam_remove_from_retry_queue( $attachment_id );
+
+	return true;
+}
+
+/**
+ * Remove an attachment from the 5xx retry queue.
+ *
+ * Entries are keyed by attachment ID, but legacy ones are numerically indexed (see the
+ * 5xx branch of wp_media_transcoding()), so a key can hold another attachment. The
+ * embedded attachment_id decides; the key only counts for an entry without one.
+ *
+ * @since n.e.x.t
+ *
+ * @param int $attachment_id ID of attachment.
+ *
+ * @return void
+ */
+function rtgodam_remove_from_retry_queue( $attachment_id ) {
 	$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 	$remaining                      = array_filter(
 		(array) $failed_transcoding_attachments,
@@ -788,8 +808,6 @@ function rtgodam_record_job_refusal( $attachment_id, $response ) {
 	if ( count( $remaining ) !== count( (array) $failed_transcoding_attachments ) ) {
 		update_option( 'rtgodam-failed-transcoding-attachments', $remaining );
 	}
-
-	return true;
 }
 
 /**

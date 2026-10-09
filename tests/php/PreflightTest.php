@@ -222,6 +222,16 @@ class PreflightTest extends TestCase {
 	}
 
 	/**
+	 * An unknown reason is shown as-is, so the detail would only repeat it.
+	 */
+	public function test_unknown_reason_has_no_repeated_detail() {
+		$refusal = rtgodam_get_job_refusal( 417, array( 'exception' => 'frappe.exceptions.ValidationError: Title is too long' ) );
+
+		$this->assertSame( 'Title is too long', $refusal['message'] );
+		$this->assertSame( '', $refusal['detail'] );
+	}
+
+	/**
 	 * Timeouts and rate limits are transient, so they are not recorded as refusals.
 	 *
 	 * @dataProvider transient_codes

@@ -325,8 +325,11 @@ class Transcoding extends Base {
 					'progress'     => 0,
 					'error_code'   => $error_code,
 					'error_msg'    => $error_msg,
-					// Central's own wording when it refused the job, for support.
-					'error_detail' => sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', true ) ),
+					// Central's own wording when it refused the job, for support. This route is
+					// public and that text can carry URLs, so only someone who can edit the file sees it.
+					'error_detail' => current_user_can( 'edit_post', $attachment_id )
+						? sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', true ) )
+						: '',
 				);
 			}
 
