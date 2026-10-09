@@ -163,6 +163,35 @@ class RetryQueueTest extends TestCase {
 	}
 
 	/**
+	 * A legacy index that equals another file's ID doesn't overwrite that file's entry:
+	 * both files are retried and both stay queued after another transient failure.
+	 */
+	public function test_legacy_index_does_not_overwrite_another_file() {
+		$GLOBALS['rtgodam_result'][42] = 'transient';
+		$GLOBALS['rtgodam_result'][9]  = 'transient';
+
+		$queue = $this->run_cron(
+			array(
+				0  => array(
+					'attachment_id' => 42,
+					'retry_count'   => 0,
+				),
+				42 => array(
+					'attachment_id' => 9,
+					'retry_count'   => 1,
+				),
+			)
+		);
+
+		$this->assertSame( array( 42, 9 ), $GLOBALS['rtgodam_jobs'] );
+		$keys = array_keys( $queue );
+		sort( $keys );
+		$this->assertSame( array( 9, 42 ), $keys );
+		$this->assertSame( 1, $queue[42]['retry_count'] );
+		$this->assertSame( 2, $queue[9]['retry_count'] );
+	}
+
+	/**
 	 * Other files in the queue are still retried.
 	 */
 	public function test_other_files_are_still_retried() {

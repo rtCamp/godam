@@ -88,7 +88,7 @@ const PreflightNotices = () => {
 				<PreflightNotice
 					status={ callbackIssues.some( ( check ) => check.status === 'fail' ) ? 'error' : 'warning' }
 					title={ __( 'GoDAM can\'t reach your site', 'godam' ) }
-					message={ __( 'New videos may stay at "Processing" because GoDAM can\'t send updates back to this site. A firewall, security plugin or Cloudflare rule is usually blocking it.', 'godam' ) }
+					message={ __( 'New videos may stay at "Processing" because GoDAM can\'t send updates back to this site. A firewall, security plugin or Cloudflare rule is usually blocking it. After you fix it, this message can take a few hours to clear.', 'godam' ) }
 					section="site-not-reachable"
 				/>
 			) }

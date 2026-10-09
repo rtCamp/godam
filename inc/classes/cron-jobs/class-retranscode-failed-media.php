@@ -99,41 +99,37 @@ class Retranscode_Failed_Media {
 			include_once RTGODAM_PATH . 'admin/class-rtgodam-transcoder-handler.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant
 		}
 
-		// Attachments already retried in this run. A legacy, numerically keyed entry and a
-		// current entry can both point at the same file; it's retried once.
-		$retried = array();
-
-		foreach ( $failed_transcoding_attachments as $attachment_id => $attachment ) {
-			$real_attachment_id = (int) ( $attachment['attachment_id'] ?? 0 );
+		// Key every entry by the attachment it's for. Legacy queues are numerically indexed,
+		// so an index can equal another file's ID; rebuilding avoids overwriting that file's
+		// entry, and a file with both a legacy and a current entry is retried once, with the
+		// higher count. Entries with no attachment ID are dropped as stale.
+		$queue = array();
+		foreach ( (array) $failed_transcoding_attachments as $attachment ) {
+			$real_attachment_id = is_array( $attachment ) ? (int) ( $attachment['attachment_id'] ?? 0 ) : 0;
 			if ( ! $real_attachment_id ) {
-				// Remove stale entry and persist immediately.
-				$this->update_queue_entry( $attachment_id, null );
 				continue;
 			}
 
-			// An earlier pass removed this entry (the file was accepted or refused) or retried
-			// the same file: don't retry it again from the snapshot.
-			$queue = (array) get_option( 'rtgodam-failed-transcoding-attachments', array() );
-			if ( ! array_key_exists( $attachment_id, $queue ) ) {
+			$attachment['attachment_id'] = $real_attachment_id;
+			$attachment['retry_count']   = (int) ( $attachment['retry_count'] ?? 0 );
+
+			if ( ! isset( $queue[ $real_attachment_id ] ) || $attachment['retry_count'] > $queue[ $real_attachment_id ]['retry_count'] ) {
+				$queue[ $real_attachment_id ] = $attachment;
+			}
+		}
+
+		if ( $queue !== $failed_transcoding_attachments ) {
+			update_option( 'rtgodam-failed-transcoding-attachments', $queue );
+		}
+
+		foreach ( $queue as $real_attachment_id => $attachment ) {
+			// An earlier pass in this run removed it (Central accepted or refused the file).
+			$stored = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+			if ( ! is_array( $stored ) || ! array_key_exists( $real_attachment_id, $stored ) ) {
 				continue;
 			}
 
-			if ( isset( $retried[ $real_attachment_id ] ) ) {
-				// A duplicate for a file already retried. Its current entry is keyed by its ID;
-				// drop any other.
-				if ( $attachment_id !== $real_attachment_id ) {
-					$this->update_queue_entry( $attachment_id, null );
-				}
-				continue;
-			}
-
-			$retried[ $real_attachment_id ] = true;
-
-			$retry_count = isset( $attachment['retry_count'] ) ? (int) $attachment['retry_count'] : 0;
-			// A legacy entry's file may also have a current entry: keep the higher count.
-			if ( isset( $queue[ $real_attachment_id ]['retry_count'] ) && (int) ( $queue[ $real_attachment_id ]['attachment_id'] ?? $real_attachment_id ) === $real_attachment_id ) {
-				$retry_count = max( $retry_count, (int) $queue[ $real_attachment_id ]['retry_count'] );
-			}
+			$retry_count = $attachment['retry_count'];
 
 			// If we have exhausted all retry attempts, mark the attachment as permanently
 			// failed and remove it from the retry queue — persist immediately.
@@ -159,19 +155,14 @@ class Retranscode_Failed_Media {
 					sprintf( __( 'Transcoding failed after %d retry attempts: GoDAM Central couldn\'t accept the job on any of them. Retranscode it later, or contact support if this keeps happening.', 'godam' ), self::MAX_RETRY_ATTEMPTS )
 				);
 				do_action( 'rtgodam_after_attachment_lookup' );
-				// Every entry for this file, legacy ones included.
-				rtgodam_remove_from_retry_queue( $real_attachment_id );
+				$this->update_queue_entry( $real_attachment_id, null );
 				continue;
 			}
 
 			// Increment the retry count and persist BEFORE calling wp_media_transcoding.
 			// This ensures the incremented count survives even if wp_media_transcoding
 			// re-adds the entry (on another 5xx). The handler reads `existing_retry_count`
-			// from the DB, so it will pick up the incremented value. A legacy entry moves to
-			// its attachment ID, where the handler reads and rewrites it.
-			if ( $attachment_id !== $real_attachment_id ) {
-				$this->update_queue_entry( $attachment_id, null );
-			}
+			// from the DB, so it will pick up the incremented value.
 			$this->update_queue_entry( $real_attachment_id, array_merge( $attachment, array( 'retry_count' => $retry_count + 1 ) ) );
 
 			$transcoder_handler = new \RTGODAM_Transcoder_Handler();

@@ -1001,6 +1001,23 @@ class Transcoding extends Base {
 			);
 		}
 
+		// A server error, timeout or rate limit on this attempt: the status was cleared before
+		// dispatch, so `failed` is fresh. Report it even if an older job ID is still stored.
+		if ( 'failed' === get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) ) {
+			$message = sprintf(
+				// translators: 1: Attachment title, 2: Attachment ID, 3: Why the request failed and whether it will be retried.
+				__( '%1$s (ID %2$d) transcoding request failed. %3$s', 'godam' ),
+				html_entity_decode( wp_strip_all_tags( $title ), ENT_QUOTES, 'UTF-8' ),
+				absint( $attachment_id ),
+				get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true )
+			);
+
+			return new \WP_REST_Response(
+				array( 'message' => $message ),
+				500
+			);
+		}
+
 		if ( empty( $is_sent ) ) {
 
 			$message = sprintf(

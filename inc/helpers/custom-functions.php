@@ -643,7 +643,16 @@ function rtgodam_get_job_refusal( $status_code, $body ) {
 
 	$reason = rtgodam_get_frappe_error_message( $body );
 
+	// Central can quote the API key ("Could not find License: <key>"). The plugin never
+	// shows it in full, so mask it as GoDAM settings does.
+	$api_key = (string) get_option( 'rtgodam-api-key', '' );
+	if ( '' !== $api_key ) {
+		$reason = str_replace( $api_key, rtgodam_mask_string( $api_key ), $reason );
+	}
+
 	$known = array(
+		// An unknown key fails Central's link check (HTTP 417) before its own 404 "Invalid License".
+		'Could not find License' => __( 'GoDAM didn\'t recognise this site\'s API key. Check the key in GoDAM settings.', 'godam' ),
 		'Invalid License'        => __( 'GoDAM didn\'t recognise this site\'s API key. Check the key in GoDAM settings.', 'godam' ),
 		'License Inactive'       => __( 'Your GoDAM licence is inactive. Renew your plan to transcode new uploads.', 'godam' ),
 		'Storage limit exceeded' => __( 'Your GoDAM storage is full. Upgrade your plan or delete unused files.', 'godam' ),
@@ -1602,24 +1611,8 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$response = wp_remote_post( $transcoding_url, $args );
 
 	if ( is_wp_error( $response ) || empty( $response['response']['code'] ) || 200 !== intval( $response['response']['code'] ) ) {
-		// A recording has no attachment to keep the reason on, so say why Central refused it here.
-		$refusal = is_wp_error( $response ) ? array( 'message' => '' ) : rtgodam_get_job_refusal(
-			intval( wp_remote_retrieve_response_code( $response ) ),
-			json_decode( wp_remote_retrieve_body( $response ), true )
-		);
-
-		if ( '' !== $refusal['message'] ) {
-			return new WP_Error(
-				400,
-				sprintf(
-					/* translators: 1: Entry ID for which transcoding failed, 2: Why GoDAM refused the recording. */
-					__( 'Transcoding failed | entry Id: %1$s | %2$s', 'godam' ),
-					$entry_id,
-					$refusal['message']
-				)
-			);
-		}
-
+		// The error answers the visitor who submitted the form, so it stays generic: an
+		// account reason (storage full, licence inactive) is for the site owner.
 		return new WP_Error(
 			400,
 			sprintf(

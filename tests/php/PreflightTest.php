@@ -319,6 +319,27 @@ class PreflightTest extends TestCase {
 	}
 
 	/**
+	 * An unknown key fails Central's link check (417, no source checks) with the key in the
+	 * text: it gets the plain message, and the key is masked in the stored detail.
+	 */
+	public function test_unknown_licence_is_plain_and_masks_the_key() {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key'] = 'abcdef1234567890';
+
+		$refusal = rtgodam_get_job_refusal(
+			417,
+			array(
+				'exc_type'         => 'LinkValidationError',
+				'_server_messages' => wp_json_encode( array( wp_json_encode( array( 'message' => 'Could not find License: abcdef1234567890' ) ) ) ),
+			)
+		);
+
+		$this->assertSame( 'job_refused', $refusal['code'] );
+		$this->assertSame( "GoDAM didn't recognise this site's API key. Check the key in GoDAM settings.", $refusal['message'] );
+		$this->assertStringNotContainsString( 'abcdef1234567890', $refusal['detail'] );
+		$this->assertStringEndsWith( '7890', $refusal['detail'] );
+	}
+
+	/**
 	 * The public status route gives a refusal's own wording only to someone who can edit
 	 * the file. Anyone else gets a generic message and no detail.
 	 *
