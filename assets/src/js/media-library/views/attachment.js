@@ -3,7 +3,7 @@
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -215,12 +215,15 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 
 				if ( errorCode === 'preflight_failed' || errorCode === 'job_refused' ) {
 					const reason = this.model.get( 'transcoding_error_msg' ) || '';
+					const detail = this.model.get( 'transcoding_error_detail' ) || '';
 
 					this.$el.addClass( `transcoding-status--${ errorCode.replace( '_', '-' ) }` );
 
 					// Focusable and labelled, so keyboard and screen-reader users get the reason too.
+					// The tooltip adds Central's own wording, for support.
 					this.$el.find( '.transcoding-status__loader' ).attr( {
-						title: reason,
+						/* translators: %s: GoDAM Central's own wording of why it refused the file. */
+						title: detail ? `${ reason }\n\n${ sprintf( __( 'GoDAM said: %s', 'godam' ), detail ) }` : reason,
 						tabindex: 0,
 						role: 'img',
 						'aria-label': reason,

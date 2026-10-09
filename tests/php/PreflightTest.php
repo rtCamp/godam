@@ -21,6 +21,7 @@ use PHPUnit\Framework\TestCase;
  * @covers ::rtgodam_get_job_refusal
  * @covers ::rtgodam_get_frappe_error_message
  * @covers ::rtgodam_record_job_refusal
+ * @covers ::rtgodam_get_preflight_failure_detail
  *
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
@@ -191,6 +192,59 @@ class PreflightTest extends TestCase {
 	}
 
 	/**
+	 * Central refuses every http:// source; the advice has to say HTTPS, and Central's own words are kept.
+	 */
+	public function test_refusal_http_source_says_https_and_keeps_centrals_words() {
+		$refusal = rtgodam_get_job_refusal(
+			417,
+			array(
+				'message' => array(
+					'has_failures' => true,
+					'results'      => array(
+						$this->check( 'check_source_reachable', 'fail', "Could not reach video URL: Refusing to fetch source URL with disallowed scheme 'http'.", 'Your server may be offline.' ),
+						$this->check( 'check_source_size', 'fail', 'Could not read Content-Length, skipped size check.' ),
+					),
+				),
+			)
+		);
+
+		$this->assertSame( 'GoDAM only downloads files served over HTTPS. Serve your media over https:// to transcode this file.', $refusal['message'] );
+		$this->assertSame( "Could not reach video URL: Refusing to fetch source URL with disallowed scheme 'http'.", $refusal['detail'] );
+	}
+
+	/**
+	 * A licence refusal keeps Central's wording as the detail.
+	 */
+	public function test_refusal_keeps_centrals_wording_as_detail() {
+		$refusal = rtgodam_get_job_refusal( 403, array( 'exception' => 'frappe.exceptions.PermissionError: License Inactive' ) );
+
+		$this->assertSame( 'License Inactive', $refusal['detail'] );
+	}
+
+	/**
+	 * Timeouts and rate limits are transient, so they are not recorded as refusals.
+	 *
+	 * @dataProvider transient_codes
+	 *
+	 * @param int $status HTTP status.
+	 */
+	public function test_transient_4xx_is_not_a_refusal( $status ) {
+		$this->assertSame( '', rtgodam_get_job_refusal( $status, array( 'exception' => 'Slow down' ) )['code'] );
+	}
+
+	/**
+	 * Transient 4xx codes.
+	 *
+	 * @return array[]
+	 */
+	public function transient_codes() {
+		return array(
+			'timeout'    => array( 408 ),
+			'rate limit' => array( 429 ),
+		);
+	}
+
+	/**
 	 * Success and server errors are not refusals: they keep their existing handling.
 	 */
 	public function test_non_4xx_is_not_a_refusal() {
@@ -221,6 +275,7 @@ class PreflightTest extends TestCase {
 		$this->assertTrue( $recorded );
 		$this->assertSame( 'failed', $GLOBALS['rtgodam_meta'][42]['rtgodam_transcoding_status'] );
 		$this->assertSame( 'job_refused', $GLOBALS['rtgodam_meta'][42]['rtgodam_transcoding_error_code'] );
+		$this->assertSame( 'License Inactive', $GLOBALS['rtgodam_meta'][42]['rtgodam_transcoding_error_detail'] );
 		$this->assertSame(
 			array( 7 => array( 'attachment_id' => 7 ) ),
 			$GLOBALS['rtgodam_stub']['options']['rtgodam-failed-transcoding-attachments']

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-09T07:37:42+00:00\n"
+"POT-Creation-Date: 2026-10-09T07:51:06+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -1217,7 +1217,7 @@ msgid "Loading preview…"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf-viewer.js:1
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/blocks/godam-pdf/viewer/index.js:350
 #: assets/src/blocks/godam-pdf/viewer/index.js:386
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:1199
@@ -1682,7 +1682,7 @@ msgid "Save"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: inc/classes/elementor-widgets/class-godam-video.php:441
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:174
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:146
@@ -1692,7 +1692,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: assets/build/blocks/godam-player/index.js:2
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:168
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:241
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:318
@@ -1918,7 +1918,7 @@ msgid "Video duration: %s"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: inc/templates/video-preview.php:94
 #: assets/src/blocks/godam-player/edit.js:969
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:782
@@ -2291,7 +2291,7 @@ msgid "Comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: inc/helpers/custom-functions.php:1613
+#: inc/helpers/custom-functions.php:1677
 #: assets/src/js/godam-player/engagement.js:908
 #: assets/src/js/godam-player/engagement.js:915
 msgid "Anonymous"
@@ -2592,7 +2592,7 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-admin.php:193
 #: admin/class-rtgodam-transcoder-admin.php:337
 #: admin/godam-transcoder-functions.php:381
-#: inc/classes/class-media-library-ajax.php:1603
+#: inc/classes/class-media-library-ajax.php:1612
 #: inc/templates/video-preview.php:71
 #: assets/src/js/media-library/views/attachment.js:184
 #: pages/godam/components/GoDAMHeader.jsx:74
@@ -2600,10 +2600,17 @@ msgstr ""
 msgid "GoDAM Logo"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#. translators: %s: GoDAM Central's own wording of why it refused the file.
+#: assets/build/js/media-library.min.js:3
+#: assets/src/js/media-library/views/attachment.js:226
+#, js-format
+msgid "GoDAM said: %s"
+msgstr ""
+
+#: assets/build/js/media-library.min.js:3
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
-#: inc/classes/class-media-library-ajax.php:831
+#: inc/classes/class-media-library-ajax.php:840
 #: assets/src/js/media-library/views/fields/move-to-folder-field.js:79
 #: pages/media-library-tour/dom.js:215
 #: pages/media-library/App.js:329
@@ -2611,61 +2618,61 @@ msgstr ""
 msgid "Uncategorized"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/fields/move-to-folder-field.js:151
 msgid "Folder"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:109
 msgid "No thumbnails found"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:266
 msgid "Select Custom Thumbnail"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:267
 msgid "Use this image"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:279
 msgid "Please select a valid image file (JPEG, PNG, GIF, etc.)."
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:315
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:316
 msgid "Only 3 custom thumbnails allowed"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:363
 msgid "Custom Video Thumbnail"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:370
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:374
 msgid "Remove Image"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:591
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:1233
 msgid "Video Thumbnails"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: inc/templates/video-preview.php:90
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:765
 msgid "Edit Image"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/class-pages.php:220
 #: inc/classes/class-pages.php:221
@@ -2676,57 +2683,57 @@ msgstr ""
 msgid "Analytics"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: inc/templates/video-preview.php:92
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:818
 msgid "Edit Audio"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/attachment-details.js:80
 msgid "oEmbed Video URL"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/views/attachment-details.js:82
 msgid "The oEmbed URL can be used to embed the video in other platforms that support oEmbed."
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: admin/godam-transcoder-actions.php:87
 #: assets/src/js/media-library/views/attachment-details.js:92
 msgid "Transcoded CDN URL (MPD)"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: admin/godam-transcoder-actions.php:101
 #: assets/src/js/media-library/views/attachment-details.js:94
 msgid "The URL of the transcoded file is generated automatically and cannot be edited."
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: admin/godam-transcoder-actions.php:109
 #: assets/src/js/media-library/views/attachment-details.js:104
 msgid "Transcoded CDN URL (HLS)"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: admin/godam-transcoder-actions.php:118
 #: assets/src/js/media-library/views/attachment-details.js:106
 msgid "The HLS URL of the transcoded file is generated automatically and cannot be edited."
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/classic-featured-image.js:81
 msgid "Setting featured image…"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/list-view-bulk-actions.js:52
 msgid "Move to folder…"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/godam.min.js:2
@@ -2738,12 +2745,12 @@ msgstr ""
 msgid "Manage Media"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/utility.js:107
 msgid "Premium Feature"
 msgstr ""
 
-#: assets/build/js/media-library.min.js:1
+#: assets/build/js/media-library.min.js:3
 #: assets/src/js/media-library/index.js:217
 msgid "Search Media"
 msgstr ""
@@ -5232,32 +5239,32 @@ msgid "Made with ♥ by the GoDAM Team"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:882
+#: admin/class-rtgodam-transcoder-admin.php:888
 #: pages/godam/components/PreflightNotices.jsx:55
 msgid "How to fix"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:885
+#: admin/class-rtgodam-transcoder-admin.php:891
 #: pages/godam/components/PreflightNotices.jsx:58
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:180
 msgid "Contact Support"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:844
+#: admin/class-rtgodam-transcoder-admin.php:850
 #: pages/godam/components/PreflightNotices.jsx:90
 msgid "GoDAM can't reach your site"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:845
+#: admin/class-rtgodam-transcoder-admin.php:851
 #: pages/godam/components/PreflightNotices.jsx:91
 msgid "New videos may stay at \"Processing\" because GoDAM can't send updates back to this site. A firewall, security plugin or Cloudflare rule is usually blocking it."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:853
+#: admin/class-rtgodam-transcoder-admin.php:859
 #: pages/godam/components/PreflightNotices.jsx:100
 msgid "GoDAM setup check"
 msgstr ""
@@ -9868,17 +9875,17 @@ msgid "Welcome to GoDAM! Thank you for using our product."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:277
-#: inc/classes/class-media-library-ajax.php:965
+#: inc/classes/class-media-library-ajax.php:974
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:279
-#: inc/classes/class-media-library-ajax.php:967
+#: inc/classes/class-media-library-ajax.php:976
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:280
-#: inc/classes/class-media-library-ajax.php:968
+#: inc/classes/class-media-library-ajax.php:977
 msgid "Dismiss banner"
 msgstr ""
 
@@ -10026,19 +10033,19 @@ msgid "There is an issue with your GoDAM API key. Transcoding may not work. Plea
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:982
+#: admin/class-rtgodam-transcoder-admin.php:988
 #, php-format
 msgid "<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:990
+#: admin/class-rtgodam-transcoder-admin.php:996
 #, php-format
 msgid "<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:998
+#: admin/class-rtgodam-transcoder-admin.php:1004
 #, php-format
 msgid "<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature."
 msgstr ""
@@ -10059,20 +10066,20 @@ msgid "HTTP authentication is enabled on your site, preventing transcoding."
 msgstr ""
 
 #. translators: 1: max retry attempts, 2: retry interval in minutes
-#: admin/class-rtgodam-transcoder-handler.php:592
+#: admin/class-rtgodam-transcoder-handler.php:597
 #, php-format
 msgid "GoDAM Central returned a server error. Transcoding will be retried automatically (up to %1$d times, every %2$d minutes)."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:696
+#: admin/class-rtgodam-transcoder-handler.php:701
 msgid "You have successfully subscribed."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:718
+#: admin/class-rtgodam-transcoder-handler.php:723
 msgid "This API key is invalid."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:733
+#: admin/class-rtgodam-transcoder-handler.php:738
 msgid "Transcoding service can not be activated on the localhost"
 msgstr ""
 
@@ -10265,44 +10272,44 @@ msgstr ""
 msgid "Demo asset not found."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:835
+#: inc/classes/class-media-library-ajax.php:844
 msgid "All collections"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:917
+#: inc/classes/class-media-library-ajax.php:926
 msgid "Offer banner dismissed successfully."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1011
+#: inc/classes/class-media-library-ajax.php:1020
 msgid "Invalid attachment ID or URL."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1033
+#: inc/classes/class-media-library-ajax.php:1042
 #: inc/classes/rest-api/class-media-library.php:889
 msgid "Invalid attachment ID."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1045
+#: inc/classes/class-media-library-ajax.php:1054
 msgid "Could not initialize WordPress filesystem."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1065
+#: inc/classes/class-media-library-ajax.php:1074
 msgid "Could not move file into uploads directory."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1555
+#: inc/classes/class-media-library-ajax.php:1564
 msgid "Insufficient permissions."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1572
+#: inc/classes/class-media-library-ajax.php:1581
 msgid "HTTP auth status saved."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1605
+#: inc/classes/class-media-library-ajax.php:1614
 msgid "GoDAM Transcoding Blocked"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1608
+#: inc/classes/class-media-library-ajax.php:1617
 msgid "HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding."
 msgstr ""
 
@@ -10399,21 +10406,21 @@ msgid "Retranscode Failed Media"
 msgstr ""
 
 #. translators: %d is the maximum number of retry attempts.
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:129
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:131
 #, php-format
 msgid "Transcoding failed after %d retry attempts. GoDAM Central returned a server error on each attempt."
 msgstr ""
 
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:194
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:221
 msgid "GoDAM: Transcoding server error"
 msgstr ""
 
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:198
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:225
 msgid "Media Library"
 msgstr ""
 
 #. translators: 1: number of media items queued, 2: retry interval in minutes, 3: max retries, 4: Media Library link
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:202
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:229
 #, php-format
 msgid "%1$d media file(s) could not be sent to the GoDAM transcoding server and have been queued for automatic retry (every %2$d minutes, up to %3$d attempts). Visit the %4$s to see their status."
 msgstr ""
@@ -11092,7 +11099,7 @@ msgid "Leave empty to allow any duration. Example: 180 = 3 minutes."
 msgstr ""
 
 #: inc/classes/gravity-forms/class-init.php:314
-#: inc/helpers/custom-functions.php:1507
+#: inc/helpers/custom-functions.php:1553
 msgid "Gravity forms"
 msgstr ""
 
@@ -12163,19 +12170,25 @@ msgid "%1$s (ID %2$d) is not a document format GoDAM can convert, so it was skip
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: Why GoDAM could not use the source file.
-#: inc/classes/rest-api/class-transcoding.php:965
+#: inc/classes/rest-api/class-transcoding.php:972
 #, php-format
 msgid "%1$s (ID %2$d) cannot be transcoded. %3$s"
 msgstr ""
 
+#. translators: %s: GoDAM Central's own wording of why it refused the file.
+#: inc/classes/rest-api/class-transcoding.php:980
+#, php-format
+msgid "(GoDAM said: %s)"
+msgstr ""
+
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:987
+#: inc/classes/rest-api/class-transcoding.php:997
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Unknown error"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:1003
+#: inc/classes/rest-api/class-transcoding.php:1013
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""
@@ -12808,77 +12821,87 @@ msgstr ""
 msgid "Bandwidth limit exceeded (%s%%). Please upgrade your plan to continue."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:578
+#: inc/helpers/custom-functions.php:580
+msgid "GoDAM only downloads files served over HTTPS. Serve your media over https:// to transcode this file."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:585
 msgid "GoDAM couldn't download this file from your site. Make sure uploaded videos are publicly accessible."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:579
+#: inc/helpers/custom-functions.php:586
 msgid "The file's link opens a web page instead of the video, often because of a login or media protection plugin."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:580
+#: inc/helpers/custom-functions.php:587
 msgid "The file is empty or larger than GoDAM accepts. Try uploading it again."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:636
+#: inc/helpers/custom-functions.php:647
 msgid "GoDAM didn't recognise this site's API key. Check the key in GoDAM settings."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:637
+#: inc/helpers/custom-functions.php:648
 msgid "Your GoDAM licence is inactive. Renew your plan to transcode new uploads."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:638
+#: inc/helpers/custom-functions.php:649
 msgid "Your GoDAM storage is full. Upgrade your plan or delete unused files."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:639
+#: inc/helpers/custom-functions.php:650
 msgid "This site isn't on your GoDAM account's list of allowed sites. Ask your GoDAM admin to add it."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:652
+#: inc/helpers/custom-functions.php:663
 msgid "GoDAM refused this file."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:770
+#: inc/helpers/custom-functions.php:816
 msgid "API key not found ( try refreshing the page )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:804
+#: inc/helpers/custom-functions.php:850
 msgid "Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1403
+#: inc/helpers/custom-functions.php:1449
 msgid "Form transcoding has been disabled by the site administrator."
 msgstr ""
 
+#. translators: 1: Entry ID for which transcoding failed, 2: Why GoDAM refused the recording.
+#: inc/helpers/custom-functions.php:1596
+#, php-format
+msgid "Transcoding failed | entry Id: %1$s | %2$s"
+msgstr ""
+
 #. translators: %s: Entry ID for which transcoding failed
-#: inc/helpers/custom-functions.php:1543
+#: inc/helpers/custom-functions.php:1607
 #, php-format
 msgid "Transcoding failed | entry Id: %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1579
+#: inc/helpers/custom-functions.php:1643
 msgid "s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1896
+#: inc/helpers/custom-functions.php:1960
 msgid "Oops! We could not locate your video"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1907
+#: inc/helpers/custom-functions.php:1971
 msgid "Note: This is a simple image preview. The image and its layers may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1909
+#: inc/helpers/custom-functions.php:1973
 msgid "Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1911
+#: inc/helpers/custom-functions.php:1975
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2075
+#: inc/helpers/custom-functions.php:2139
 msgid "Video not found"
 msgstr ""
 

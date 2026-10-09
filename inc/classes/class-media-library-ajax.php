@@ -433,8 +433,16 @@ class Media_Library_Ajax {
 			}
 		}
 
+		/**
+		 * Fires before recording a refusal on this attachment, so integrations that
+		 * centralize media on another site write it where the attachment lives.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		// Central refused the job on purpose (4xx): record why, so the file says so.
 		rtgodam_record_job_refusal( $attachment_id, $upload_media );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Note: For now media is only uploaded to the GoDAM and we are storing the transcoding job ID in the attachment meta.
 		// Todo: In future we can add more logic to handle the transcoded image URLs to provide image CDN feature.
@@ -640,8 +648,9 @@ class Media_Library_Ajax {
 		$error_code = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code', true );
 
 		if ( 'failed' === $response['transcoding_status'] && rtgodam_is_job_refusal( $error_code ) ) {
-			$response['transcoding_error_code'] = $error_code;
-			$response['transcoding_error_msg']  = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg', true );
+			$response['transcoding_error_code']   = $error_code;
+			$response['transcoding_error_msg']    = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg', true );
+			$response['transcoding_error_detail'] = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_detail', true );
 		}
 
 		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );

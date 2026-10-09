@@ -936,6 +936,7 @@ class Transcoding extends Base {
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_status' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
 
 		$wp_metadata              = array();
 		$wp_metadata['mime_type'] = $mime_type;
@@ -956,19 +957,28 @@ class Transcoding extends Base {
 		// Check if the transcoding job ID is set.
 		$is_sent = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 
-		// Central refused the job (source-file checks, licence, storage or site); say why.
+		// Central refused the job (source-file checks, licence, storage or site); say why. The
+		// error meta was cleared before dispatch, so a refusal code here is from this attempt,
+		// even when an older job ID is still stored.
 		$error_code = get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true );
 
-		if ( empty( $is_sent ) && rtgodam_is_job_refusal( $error_code ) ) {
+		if ( rtgodam_is_job_refusal( $error_code ) ) {
+			$detail = get_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', true );
+
+			// Plain text throughout: the Tools log renders it as a React text node, so
+			// HTML-escaping here would show quotes as &#039;.
 			$message = sprintf(
 				// translators: 1: Attachment title, 2: Attachment ID, 3: Why GoDAM could not use the source file.
 				__( '%1$s (ID %2$d) cannot be transcoded. %3$s', 'godam' ),
-				esc_html( $title ),
+				html_entity_decode( wp_strip_all_tags( $title ), ENT_QUOTES, 'UTF-8' ),
 				absint( $attachment_id ),
-				// Plain text, already sanitized when stored: the Tools log renders it as a
-				// React text node, so esc_html() would show Central's quotes as &#039;.
 				get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true )
 			);
+
+			if ( '' !== $detail ) {
+				// translators: %s: GoDAM Central's own wording of why it refused the file.
+				$message .= ' ' . sprintf( __( '(GoDAM said: %s)', 'godam' ), $detail );
+			}
 
 			return new \WP_REST_Response(
 				array(

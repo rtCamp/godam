@@ -514,7 +514,7 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
  * The quota check is left out: `usage_limit_notices()` already warns about usage,
  * from fresher numbers and at a lower threshold.
  *
- * @since 2.3.2
+ * @since n.e.x.t
  *
  * @see https://github.com/rtCamp/godam-core/issues/856
  *
@@ -553,7 +553,7 @@ function rtgodam_get_preflight_issues() {
  * size checks, but only to say they were skipped. They add nothing, so only the
  * reachability failure is kept in that case.
  *
- * @since 2.3.2
+ * @since n.e.x.t
  *
  * @param array $results The `message.results` list from Central's HTTP 417 response.
  *
@@ -571,6 +571,13 @@ function rtgodam_get_preflight_failure_message( $results ) {
 		if ( 'check_source_reachable' === ( $check['id'] ?? '' ) ) {
 			$failed = array( $check );
 			break;
+		}
+	}
+
+	// Central refuses every http:// source, and "make it publicly accessible" is the wrong fix for that.
+	foreach ( $failed as $check ) {
+		if ( false !== stripos( $check['message'] ?? '', "disallowed scheme 'http'" ) ) {
+			return __( 'GoDAM only downloads files served over HTTPS. Serve your media over https:// to transcode this file.', 'godam' );
 		}
 	}
 
@@ -597,7 +604,7 @@ function rtgodam_get_preflight_failure_message( $results ) {
  * (unknown licence, licence inactive, storage full, site not allowed). The known
  * reasons get plain wording; anything else falls back to Central's own message.
  *
- * @since 2.3.2
+ * @since n.e.x.t
  *
  * @see https://github.com/rtCamp/godam-core/issues/856
  *
@@ -613,20 +620,24 @@ function rtgodam_get_job_refusal( $status_code, $body ) {
 	$none = array(
 		'code'    => '',
 		'message' => '',
+		'detail'  => '',
 	);
 
-	if ( $status_code < 400 || $status_code >= 500 ) {
+	// 408 and 429 are transient (timeout, rate limit), not a refusal: retrying can work.
+	if ( $status_code < 400 || $status_code >= 500 || in_array( $status_code, array( 408, 429 ), true ) ) {
 		return $none;
 	}
 
 	$body = is_array( $body ) ? $body : array();
 
 	if ( ! empty( $body['message']['has_failures'] ) ) {
-		$message = rtgodam_get_preflight_failure_message( $body['message']['results'] ?? array() );
+		$results = $body['message']['results'] ?? array();
+		$message = rtgodam_get_preflight_failure_message( $results );
 
 		return '' === $message ? $none : array(
 			'code'    => 'preflight_failed',
 			'message' => $message,
+			'detail'  => rtgodam_get_preflight_failure_detail( $results ),
 		);
 	}
 
@@ -655,7 +666,40 @@ function rtgodam_get_job_refusal( $status_code, $body ) {
 	return array(
 		'code'    => 'job_refused',
 		'message' => sanitize_text_field( $message ),
+		'detail'  => sanitize_text_field( $reason ),
 	);
+}
+
+/**
+ * Central's own messages for the source-file checks that failed, for support.
+ *
+ * Follows rtgodam_get_preflight_failure_message(): when the URL can't be reached, only
+ * that check is kept.
+ *
+ * @since n.e.x.t
+ *
+ * @param array $results The `message.results` list from Central's HTTP 417 response.
+ *
+ * @return string The failing checks' messages, or an empty string.
+ */
+function rtgodam_get_preflight_failure_detail( $results ) {
+	$failed = array_values(
+		array_filter(
+			(array) $results,
+			function ( $check ) {
+				return is_array( $check ) && 'fail' === ( $check['status'] ?? '' );
+			}
+		)
+	);
+
+	foreach ( $failed as $check ) {
+		if ( 'check_source_reachable' === ( $check['id'] ?? '' ) ) {
+			$failed = array( $check );
+			break;
+		}
+	}
+
+	return sanitize_text_field( implode( ' ', array_filter( array_column( $failed, 'message' ) ) ) );
 }
 
 /**
@@ -664,7 +708,7 @@ function rtgodam_get_job_refusal( $status_code, $body ) {
  * Frappe sends it JSON-encoded twice in `_server_messages`; `exception` carries it too,
  * after the exception class name.
  *
- * @since 2.3.2
+ * @since n.e.x.t
  *
  * @param array $body Central's decoded JSON answer.
  *
@@ -698,7 +742,7 @@ function rtgodam_get_frappe_error_message( $body ) {
  * Retrying sends the same request, so the attachment is also dropped from the 5xx
  * retry queue in case an earlier attempt put it there.
  *
- * @since 2.3.2
+ * @since n.e.x.t
  *
  * @see https://github.com/rtCamp/godam-core/issues/856
  *
@@ -724,6 +768,8 @@ function rtgodam_record_job_refusal( $attachment_id, $response ) {
 	update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
 	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', $refusal['code'] );
 	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $refusal['message'] );
+	// Central's own wording, for support: the plain message above can't carry every cause.
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', $refusal['detail'] );
 
 	// Entries are keyed by attachment ID, but legacy ones are numerically indexed with the
 	// ID inside (see the 5xx branch of wp_media_transcoding()), so match either.
@@ -747,7 +793,7 @@ function rtgodam_record_job_refusal( $attachment_id, $response ) {
 /**
  * Whether an attachment's failure is Central refusing its job (see rtgodam_record_job_refusal()).
  *
- * @since 2.3.2
+ * @since n.e.x.t
  *
  * @param string $error_code The attachment's `rtgodam_transcoding_error_code`.
  *
@@ -1536,6 +1582,24 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$response = wp_remote_post( $transcoding_url, $args );
 
 	if ( is_wp_error( $response ) || empty( $response['response']['code'] ) || 200 !== intval( $response['response']['code'] ) ) {
+		// A recording has no attachment to keep the reason on, so say why Central refused it here.
+		$refusal = is_wp_error( $response ) ? array( 'message' => '' ) : rtgodam_get_job_refusal(
+			intval( wp_remote_retrieve_response_code( $response ) ),
+			json_decode( wp_remote_retrieve_body( $response ), true )
+		);
+
+		if ( '' !== $refusal['message'] ) {
+			return new WP_Error(
+				400,
+				sprintf(
+					/* translators: 1: Entry ID for which transcoding failed, 2: Why GoDAM refused the recording. */
+					__( 'Transcoding failed | entry Id: %1$s | %2$s', 'godam' ),
+					$entry_id,
+					$refusal['message']
+				)
+			);
+		}
+
 		return new WP_Error(
 			400,
 			sprintf(

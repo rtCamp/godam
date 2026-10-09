@@ -811,17 +811,23 @@ class RTGODAM_Transcoder_Admin {
 	 * The four callback checks share a cause (something between Central and this site
 	 * is blocking the requests), so they make one notice. Any other failing or warning
 	 * check gets a notice of its own. Notices can't be dismissed: they go away once
-	 * Central's next check passes.
+	 * Central's next check passes, which can take hours (Central caches the result), so
+	 * like the API key status notice they show only on the Dashboard and Media screens.
 	 *
 	 * GoDAM's own screens strip admin notices; the settings page shows the same
 	 * checks itself.
 	 *
-	 * @since 2.3.2
+	 * @since n.e.x.t
 	 *
 	 * @see https://github.com/rtCamp/godam-core/issues/856
 	 */
 	public function preflight_notices() {
 		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( ! $screen || ! in_array( $screen->id, array( 'dashboard', 'upload', 'media' ), true ) ) {
 			return;
 		}
 

@@ -515,6 +515,7 @@ class RTGODAM_Transcoder_Handler {
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'Queued' );
 					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
 
 					if ( 'document' === $job_type ) {
 						/*
@@ -579,6 +580,10 @@ class RTGODAM_Transcoder_Handler {
 				// Mark the attachment as failed immediately so the media library reflects the
 				// error state right away (the cron will clear this once retries succeed or are exhausted).
 				update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+
+				// A server error replaces any earlier refusal: drop its code and Central's wording.
+				delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+				delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
 
 				$max_retries = class_exists( '\RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media' )
 					? \RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media::MAX_RETRY_ATTEMPTS
