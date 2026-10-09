@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-09T06:06:16+00:00\n"
+"POT-Creation-Date: 2026-10-09T09:59:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -6027,14 +6027,14 @@ msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/media-library-tour/controller.js:332
+#: pages/media-library-tour/controller.js:351
 #: pages/video-editor/onboarding/productGuide.js:197
 msgid "Next"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/src/js/godam-player/engagement.js:1114
-#: pages/media-library-tour/controller.js:333
+#: pages/media-library-tour/controller.js:352
 msgid "Back"
 msgstr ""
 
@@ -6277,24 +6277,24 @@ msgid "Finish"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/components/TourApp.jsx:140
+#: pages/media-library-tour/components/TourApp.jsx:144
 msgid "End the tour?"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/components/TourApp.jsx:141
+#: pages/media-library-tour/components/TourApp.jsx:145
 msgid "End tour"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/media-library-tour/components/TourApp.jsx:142
+#: pages/media-library-tour/components/TourApp.jsx:146
 #: pages/video-editor/onboarding/ProductGuide.jsx:225
 msgid "Keep going"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/components/TourApp.jsx:147
+#: pages/media-library-tour/components/TourApp.jsx:151
 msgid "You can pick it up again anytime from the bulb button next to Manage Media."
 msgstr ""
 

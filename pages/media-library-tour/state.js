@@ -44,17 +44,20 @@ export const getTourState = () => cachedState;
 export const shouldAutoStart = () => cachedState === TOUR_STATES.PENDING && false !== config.autoStart && '' !== config.autoStart;
 
 /**
- * Persist the per-user tour state. Optimistic; network errors are non-fatal
+ * Persist the per-user tour state. Optimistic: the cache updates at once and is
+ * rolled back if the save fails, so the first-run prompt isn't hidden for this
+ * page only to come back after a reload. Failures are otherwise non-fatal
  * because the tour is a nicety, never a blocker.
  *
  * @param {string} status One of TOUR_STATES.
- * @return {Promise<void>} Resolves once the request settles.
+ * @return {Promise<boolean>} Whether the state was saved.
  */
 export const setTourState = async ( status ) => {
+	const previous = cachedState;
 	cachedState = status;
 
 	try {
-		await fetch( `${ restURL.replace( /\/$/, '' ) }/${ ENDPOINT }`, {
+		const response = await fetch( `${ restURL.replace( /\/$/, '' ) }/${ ENDPOINT }`, {
 			method: 'POST',
 			credentials: 'same-origin',
 			headers: {
@@ -63,9 +66,20 @@ export const setTourState = async ( status ) => {
 			},
 			body: JSON.stringify( { status } ),
 		} );
+
+		if ( response.ok ) {
+			return true;
+		}
 	} catch {
-		// Best-effort; ignore network errors.
+		// Network error; roll back below.
 	}
+
+	// Only roll back if nothing newer was set while this request was in flight.
+	if ( cachedState === status ) {
+		cachedState = previous;
+	}
+
+	return false;
 };
 
 /**

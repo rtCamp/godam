@@ -160,6 +160,25 @@ const goTo = ( id ) => {
 };
 
 /**
+ * Rewind to the start of an abandoned action (`backTo`). When that start step was
+ * itself skipped (e.g. no New Folder button), skip this step too: rewinding would
+ * skip forward again and loop.
+ *
+ * @param {Object} step The step whose action was abandoned.
+ */
+const rewind = ( step ) => {
+	const target = steps.find( ( candidate ) => candidate.id === step.backTo );
+
+	if ( target && ! skipped.has( target.id ) && passes( target ) ) {
+		goTo( step.backTo );
+		return;
+	}
+
+	skipped.add( step.id );
+	goToIndex( index + 1, { record: false } );
+};
+
+/**
  * Advance to the next step, or complete the tour after the last one.
  */
 export const next = () => {
@@ -217,7 +236,7 @@ const watch = ( step, element ) => {
 			return;
 		}
 		if ( step.abortWhen && step.abortWhen( ctx ) ) {
-			goTo( step.backTo );
+			rewind( step );
 			return;
 		}
 		// React re-rendered the target (or it scrolled / resized): re-attach.
@@ -297,7 +316,7 @@ const show = async () => {
 	}
 
 	if ( true === element || aborted() ) {
-		goTo( step.backTo );
+		rewind( step );
 		return;
 	}
 
