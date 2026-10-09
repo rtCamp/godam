@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { Notice, ExternalLink } from '@wordpress/components';
+import { Button, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -9,14 +9,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { hasValidAPIKey } from '../utils/index.js';
 
-const SETUP_GUIDE_URL = 'https://godam.io/docs/troubleshooting?utm_source=wordpress-plugin&utm_medium=settings&utm_campaign=preflight-check&utm_content=setup-guide-link';
-
-const CALLBACK_CAUSES = [
-	__( 'A security plugin (such as Wordfence or Solid Security) blocking unauthenticated REST API requests.', 'godam' ),
-	__( 'A Cloudflare WAF or bot-protection rule challenging requests to /wp-json/.', 'godam' ),
-	__( 'A server firewall or host-level rule blocking incoming requests.', 'godam' ),
-	__( 'A reverse proxy or maintenance mode returning errors for the REST API.', 'godam' ),
-];
+const HOW_TO_FIX_URL = 'https://godam.io/docs/troubleshooting?utm_source=wordpress-plugin&utm_medium=settings&utm_campaign=preflight-check&utm_content=how-to-fix-button';
 
 /**
  * The licence preflight checks GoDAM Central flagged for this site.
@@ -40,15 +33,33 @@ const getPreflightIssues = () => {
 	return checks.filter( ( check ) => check?.id !== 'check_quota' && [ 'warn', 'fail' ].includes( check?.status ) );
 };
 
-const PreflightNotice = ( { status, title, children } ) => (
+/**
+ * One preflight notice: a title and a sentence for the site owner, with Central's own
+ * messages (meant for support) collapsed under "Details".
+ *
+ * @param {Object}   props
+ * @param {string}   props.status  `error` or `warning`.
+ * @param {string}   props.title   Notice title.
+ * @param {string}   props.message What goes wrong and why, in a sentence or two.
+ * @param {Object[]} props.checks  The checks behind the notice.
+ *
+ * @return {JSX.Element} The notice.
+ */
+const PreflightNotice = ( { status, title, message, checks } ) => (
 	<Notice className="mb-4 godam-preflight-notice" status={ status } isDismissible={ false }>
 		<p><strong>{ title }</strong></p>
-		{ children }
-		<p className="description">
-			{ __( 'GoDAM re-runs these checks every few hours. This notice goes away once they pass.', 'godam' ) }
-			{ ' ' }
-			<ExternalLink href={ SETUP_GUIDE_URL }>{ __( 'GoDAM Setup Guide', 'godam' ) }</ExternalLink>
-		</p>
+		<p>{ message }</p>
+		<details className="godam-preflight-notice__details">
+			<summary>{ __( 'Details', 'godam' ) }</summary>
+			<ul className="godam-preflight-notice__technical">
+				{ checks.map( ( check ) => (
+					<li key={ check.id }>{ `${ check.label }: ${ check.message } ${ check.remediation || '' }` }</li>
+				) ) }
+			</ul>
+		</details>
+		<Button variant="secondary" href={ HOW_TO_FIX_URL } target="_blank" rel="noopener noreferrer">
+			{ __( 'How to fix', 'godam' ) }
+		</Button>
 	</Notice>
 );
 
@@ -56,7 +67,7 @@ const PreflightNotice = ( { status, title, children } ) => (
  * Problems GoDAM Central's licence preflight found on this site.
  *
  * GoDAM's screens strip WordPress admin notices, so the settings page shows the
- * same checks as RTGODAM_Transcoder_Admin::preflight_notices() itself. The four
+ * same notices as RTGODAM_Transcoder_Admin::preflight_notices() itself. The four
  * callback checks share a cause and are shown as one notice.
  *
  * @see https://github.com/rtCamp/godam-core/issues/856
@@ -73,39 +84,15 @@ const PreflightNotices = () => {
 	const callbackIssues = issues.filter( ( check ) => check.id?.startsWith( 'check_callback_' ) );
 	const otherIssues = issues.filter( ( check ) => ! callbackIssues.includes( check ) );
 
-	// Endpoints blocked by the same thing get the same fix from Central; say it once.
-	const remediations = [ ...new Set( callbackIssues.map( ( check ) => check.remediation ).filter( Boolean ) ) ];
-
 	return (
 		<>
 			{ callbackIssues.length > 0 && (
 				<PreflightNotice
 					status={ callbackIssues.some( ( check ) => check.status === 'fail' ) ? 'error' : 'warning' }
-					title={ __( 'GoDAM cannot reach your site', 'godam' ) }
-				>
-					<p>{ __( 'Transcoding will finish on GoDAM, but this site will not be told, so videos stay at "Processing".', 'godam' ) }</p>
-					<ul className="godam-preflight-notice__list">
-						{ callbackIssues.map( ( check ) => <li key={ check.id }>{ check.label }</li> ) }
-					</ul>
-					{ remediations.map( ( remediation ) => (
-						<p key={ remediation }>{ remediation }</p>
-					) ) }
-					<details className="godam-preflight-notice__details">
-						<summary>{ __( 'Common causes', 'godam' ) }</summary>
-						<ul className="godam-preflight-notice__list">
-							{ CALLBACK_CAUSES.map( ( cause ) => <li key={ cause }>{ cause }</li> ) }
-						</ul>
-					</details>
-					{ /* Central's messages are raw connection errors: useful to support, noise to everyone else. */ }
-					<details className="godam-preflight-notice__details">
-						<summary>{ __( 'Technical details', 'godam' ) }</summary>
-						<ul className="godam-preflight-notice__list godam-preflight-notice__technical">
-							{ callbackIssues.map( ( check ) => (
-								<li key={ check.id }>{ `${ check.label }: ${ check.message }` }</li>
-							) ) }
-						</ul>
-					</details>
-				</PreflightNotice>
+					title={ __( 'GoDAM can\'t reach your site', 'godam' ) }
+					message={ __( 'New videos may stay at "Processing" because GoDAM can\'t send updates back to this site. A firewall, security plugin or Cloudflare rule is usually blocking it.', 'godam' ) }
+					checks={ callbackIssues }
+				/>
 			) }
 
 			{ otherIssues.map( ( check ) => (
@@ -113,10 +100,9 @@ const PreflightNotices = () => {
 					key={ check.id }
 					status={ check.status === 'fail' ? 'error' : 'warning' }
 					title={ check.label || __( 'GoDAM setup check', 'godam' ) }
-				>
-					{ check.message && <p>{ check.message }</p> }
-					{ check.remediation && <p>{ check.remediation }</p> }
-				</PreflightNotice>
+					message={ check.remediation || check.message }
+					checks={ [ check ] }
+				/>
 			) ) }
 		</>
 	);

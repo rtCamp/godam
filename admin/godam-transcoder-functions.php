@@ -411,7 +411,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 				</svg>
 			</div>
 			<?php if ( '' !== $preflight_reason ) : ?>
-				<span class="status-text"><?php esc_html_e( 'GoDAM could not use this file.', 'godam' ); ?> <?php echo nl2br( esc_html( $preflight_reason ) ); ?></span>
+				<span class="status-text"><?php echo esc_html( $preflight_reason ); ?></span>
 			<?php else : ?>
 				<span class="status-text"><?php esc_html_e( 'Transcoding failed, please try again.', 'godam' ); ?></span>
 			<?php endif; ?>

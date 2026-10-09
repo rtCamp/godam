@@ -804,10 +804,14 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Show the problems GoDAM Central's licence preflight found on this site.
 	 *
-	 * The four callback checks share a cause (something between Central and this
-	 * site is blocking the requests), so their failures are shown as one notice.
-	 * Any other failing or warning check gets a notice of its own. The notices are
-	 * not dismissible: they go away once Central's next check passes.
+	 * The notice speaks to the site owner: what goes wrong and the likely cause, in a
+	 * sentence. Central's own messages are raw connection errors meant for support, so
+	 * they sit in a collapsed "Details" section.
+	 *
+	 * The four callback checks share a cause (something between Central and this site
+	 * is blocking the requests), so they make one notice. Any other failing or warning
+	 * check gets a notice of its own. Notices can't be dismissed: they go away once
+	 * Central's next check passes.
 	 *
 	 * GoDAM's own screens strip admin notices; the settings page shows the same
 	 * checks itself.
@@ -835,70 +839,22 @@ class RTGODAM_Transcoder_Admin {
 		);
 
 		if ( ! empty( $callback_issues ) ) {
-			$this->display_callback_preflight_notice( $callback_issues );
+			$this->display_preflight_notice(
+				in_array( 'fail', wp_list_pluck( $callback_issues, 'status' ), true ) ? 'error' : 'warning',
+				__( 'GoDAM can\'t reach your site', 'godam' ),
+				__( 'New videos may stay at "Processing" because GoDAM can\'t send updates back to this site. A firewall, security plugin or Cloudflare rule is usually blocking it.', 'godam' ),
+				$callback_issues
+			);
 		}
 
 		foreach ( array_diff_key( $issues, $callback_issues ) as $check ) {
 			$this->display_preflight_notice(
 				'fail' === $check['status'] ? 'error' : 'warning',
 				$check['label'] ?? __( 'GoDAM setup check', 'godam' ),
-				$check['message'] ?? '',
-				$check['remediation'] ?? ''
+				'' !== ( $check['remediation'] ?? '' ) ? $check['remediation'] : ( $check['message'] ?? '' ),
+				array( $check )
 			);
 		}
-	}
-
-	/**
-	 * Display the notice for callback URLs GoDAM Central could not reach.
-	 *
-	 * @param array[] $checks The failing or warning callback checks.
-	 */
-	private function display_callback_preflight_notice( $checks ) {
-		$has_failure = in_array( 'fail', wp_list_pluck( $checks, 'status' ), true );
-
-
-		// Endpoints blocked by the same thing get the same fix from Central; say it once.
-		$remediations = array_unique( array_filter( wp_list_pluck( $checks, 'remediation' ) ) );
-
-		ob_start();
-		?>
-		<p><?php esc_html_e( 'Transcoding will finish on GoDAM, but this site will not be told, so videos stay at "Processing".', 'godam' ); ?></p>
-		<ul class="godam-preflight-notice__list">
-			<?php foreach ( $checks as $check ) : ?>
-				<li><?php echo esc_html( $check['label'] ?? '' ); ?></li>
-			<?php endforeach; ?>
-		</ul>
-		<?php foreach ( $remediations as $remediation ) : ?>
-			<p><?php echo esc_html( $remediation ); ?></p>
-		<?php endforeach; ?>
-		<details class="godam-preflight-notice__details">
-			<summary><?php esc_html_e( 'Common causes', 'godam' ); ?></summary>
-			<ul class="godam-preflight-notice__list">
-				<li><?php esc_html_e( 'A security plugin (such as Wordfence or Solid Security) blocking unauthenticated REST API requests.', 'godam' ); ?></li>
-				<li><?php esc_html_e( 'A Cloudflare WAF or bot-protection rule challenging requests to /wp-json/.', 'godam' ); ?></li>
-				<li><?php esc_html_e( 'A server firewall or host-level rule blocking incoming requests.', 'godam' ); ?></li>
-				<li><?php esc_html_e( 'A reverse proxy or maintenance mode returning errors for the REST API.', 'godam' ); ?></li>
-			</ul>
-		</details>
-		<?php // Central's messages are raw connection errors: useful to support, noise to everyone else. ?>
-		<details class="godam-preflight-notice__details">
-			<summary><?php esc_html_e( 'Technical details', 'godam' ); ?></summary>
-			<ul class="godam-preflight-notice__list godam-preflight-notice__technical">
-				<?php foreach ( $checks as $check ) : ?>
-					<li><?php echo esc_html( sprintf( '%s: %s', $check['label'] ?? '', $check['message'] ?? '' ) ); ?></li>
-				<?php endforeach; ?>
-			</ul>
-		</details>
-		<?php
-		$details = ob_get_clean();
-
-		$this->display_preflight_notice(
-			$has_failure ? 'error' : 'warning',
-			__( 'GoDAM cannot reach your site', 'godam' ),
-			'',
-			'',
-			$details
-		);
 	}
 
 	/**
@@ -906,32 +862,32 @@ class RTGODAM_Transcoder_Admin {
 	 *
 	 * Uses the same header layout as the usage-limit notices.
 	 *
-	 * @param string $type        Notice type: `error` or `warning`.
-	 * @param string $title       Notice title.
-	 * @param string $message     What GoDAM found.
-	 * @param string $remediation What to do about it.
-	 * @param string $details     Extra markup, already escaped.
+	 * @param string  $type    Notice type: `error` or `warning`.
+	 * @param string  $title   Notice title.
+	 * @param string  $message One or two sentences for the site owner.
+	 * @param array[] $checks  The checks behind the notice, listed under "Details" for support.
 	 */
-	private function display_preflight_notice( $type, $title, $message, $remediation, $details = '' ) {
+	private function display_preflight_notice( $type, $title, $message, $checks ) {
 		$logo_url  = plugins_url( 'assets/src/images/godam-logo.svg', __DIR__ );
-		$guide_url = 'https://godam.io/docs/troubleshooting?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=preflight-check&utm_content=setup-guide-button';
+		$guide_url = 'https://godam.io/docs/troubleshooting?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=preflight-check&utm_content=how-to-fix-button';
 		?>
 		<div class="notice notice-<?php echo esc_attr( $type ); ?> godam-preflight-notice">
 			<div class="godam-notice-header">
 				<img src="<?php echo esc_url( $logo_url ); ?>" alt="GoDAM Logo" class="godam-logo">
 				<div>
 					<p><strong><?php echo esc_html( $title ); ?></strong></p>
-					<?php if ( '' !== $message ) : ?>
-						<p><?php echo esc_html( $message ); ?></p>
-					<?php endif; ?>
-					<?php if ( '' !== $remediation ) : ?>
-						<p><?php echo esc_html( $remediation ); ?></p>
-					<?php endif; ?>
-					<?php echo $details; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped output in display_callback_preflight_notice(). ?>
-					<p class="description"><?php esc_html_e( 'GoDAM re-runs these checks every few hours. This notice goes away once they pass.', 'godam' ); ?></p>
+					<p><?php echo esc_html( $message ); ?></p>
+					<details class="godam-preflight-notice__details">
+						<summary><?php esc_html_e( 'Details', 'godam' ); ?></summary>
+						<ul class="godam-preflight-notice__technical">
+							<?php foreach ( $checks as $check ) : ?>
+								<li><?php echo esc_html( sprintf( '%s: %s %s', $check['label'] ?? '', $check['message'] ?? '', $check['remediation'] ?? '' ) ); ?></li>
+							<?php endforeach; ?>
+						</ul>
+					</details>
 					<p>
 						<a href="<?php echo esc_url( $guide_url ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary">
-							<?php esc_html_e( 'GoDAM Setup Guide', 'godam' ); ?>
+							<?php esc_html_e( 'How to fix', 'godam' ); ?>
 						</a>
 					</p>
 				</div>

@@ -543,7 +543,11 @@ function rtgodam_get_preflight_issues() {
 }
 
 /**
- * Turn the source-video checks Central failed into one message for the media item.
+ * Turn the source-video checks Central failed into a short message for the media item.
+ *
+ * Central's messages are diagnostics (HTTP codes, Python exceptions) written for
+ * support, so the known checks get plain wording here. A check this plugin doesn't
+ * know yet falls back to Central's message.
  *
  * When the video URL can't be reached, Central still reports the content-type and
  * size checks, but only to say they were skipped. They add nothing, so only the
@@ -553,7 +557,7 @@ function rtgodam_get_preflight_issues() {
  *
  * @param array $results The `message.results` list from Central's HTTP 417 response.
  *
- * @return string The failing checks' messages and fixes, or an empty string if none failed.
+ * @return string What went wrong and what to do, or an empty string if no check failed.
  */
 function rtgodam_get_preflight_failure_message( $results ) {
 	$failed = array_filter(
@@ -570,13 +574,19 @@ function rtgodam_get_preflight_failure_message( $results ) {
 		}
 	}
 
-	$lines = array();
+	$known = array(
+		'check_source_reachable'    => __( 'GoDAM couldn\'t download this file from your site. Make sure uploaded videos are publicly accessible.', 'godam' ),
+		'check_source_content_type' => __( 'The file\'s link opens a web page instead of the video, often because of a login or media protection plugin.', 'godam' ),
+		'check_source_size'         => __( 'The file is empty or larger than GoDAM accepts. Try uploading it again.', 'godam' ),
+	);
+
+	$messages = array();
 
 	foreach ( $failed as $check ) {
-		$lines[] = trim( sprintf( '%s %s', $check['message'] ?? '', $check['remediation'] ?? '' ) );
+		$messages[] = $known[ $check['id'] ?? '' ] ?? ( $check['message'] ?? '' );
 	}
 
-	return sanitize_textarea_field( implode( "\n", $lines ) );
+	return sanitize_text_field( implode( ' ', array_unique( array_filter( $messages ) ) ) );
 }
 
 /**

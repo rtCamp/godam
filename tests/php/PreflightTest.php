@@ -88,23 +88,23 @@ class PreflightTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 'Video URL returned HTTP 403. Make it public.', $message );
+		$this->assertSame( 'GoDAM couldn\'t download this file from your site. Make sure uploaded videos are publicly accessible.', $message );
 	}
 
 	/**
-	 * Independent failures each get their own line; passing checks are left out.
+	 * Known checks get plain wording, unknown ones fall back to Central's message, and passes are left out.
 	 */
-	public function test_failure_message_lists_each_failure() {
+	public function test_failure_message_uses_plain_wording_and_falls_back() {
 		$message = rtgodam_get_preflight_failure_message(
 			array(
 				$this->check( 'check_source_reachable', 'pass', 'Video URL returned HTTP 200.' ),
-				$this->check( 'check_source_content_type', 'fail', "Expected a video Content-Type, got 'text/html'.", 'Use the direct file URL.' ),
 				$this->check( 'check_source_size', 'fail', 'Content-Length is 0 or absent.' ),
+				$this->check( 'check_source_future', 'fail', 'Something new Central checks.' ),
 			)
 		);
 
 		$this->assertSame(
-			"Expected a video Content-Type, got 'text/html'. Use the direct file URL.\nContent-Length is 0 or absent.",
+			'The file is empty or larger than GoDAM accepts. Try uploading it again. Something new Central checks.',
 			$message
 		);
 	}
