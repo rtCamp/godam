@@ -612,7 +612,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 			opacity: 0;
 		}
 
-		&:hover::after {
+		&:hover::after,
+		&:focus-visible::after {
 			opacity: 1;
 		}
 	}

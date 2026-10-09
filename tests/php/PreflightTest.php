@@ -20,6 +20,7 @@ use PHPUnit\Framework\TestCase;
  * @covers ::rtgodam_get_preflight_failure_message
  * @covers ::rtgodam_get_job_refusal
  * @covers ::rtgodam_get_frappe_error_message
+ * @covers ::rtgodam_record_job_refusal
  *
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
@@ -195,6 +196,68 @@ class PreflightTest extends TestCase {
 	public function test_non_4xx_is_not_a_refusal() {
 		$this->assertSame( '', rtgodam_get_job_refusal( 200, array() )['code'] );
 		$this->assertSame( '', rtgodam_get_job_refusal( 503, array( 'exception' => 'Boom' ) )['code'] );
+	}
+
+	/**
+	 * A refusal marks the file failed and drops it from the retry queue, in either queue shape.
+	 */
+	public function test_record_refusal_marks_failed_and_clears_both_queue_shapes() {
+		$this->stub_meta_and_option_writes();
+
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-failed-transcoding-attachments'] = array(
+			42 => array( 'attachment_id' => 42 ),
+			0  => array( 'attachment_id' => 42 ),
+			7  => array( 'attachment_id' => 7 ),
+		);
+
+		$recorded = rtgodam_record_job_refusal(
+			42,
+			array(
+				'code' => 403,
+				'body' => wp_json_encode( array( 'exception' => 'frappe.exceptions.PermissionError: License Inactive' ) ),
+			)
+		);
+
+		$this->assertTrue( $recorded );
+		$this->assertSame( 'failed', $GLOBALS['rtgodam_meta'][42]['rtgodam_transcoding_status'] );
+		$this->assertSame( 'job_refused', $GLOBALS['rtgodam_meta'][42]['rtgodam_transcoding_error_code'] );
+		$this->assertSame(
+			array( 7 => array( 'attachment_id' => 7 ) ),
+			$GLOBALS['rtgodam_stub']['options']['rtgodam-failed-transcoding-attachments']
+		);
+	}
+
+	/**
+	 * A server error is left to the existing retry handling.
+	 */
+	public function test_record_refusal_ignores_server_errors() {
+		$this->stub_meta_and_option_writes();
+
+		$this->assertFalse(
+			rtgodam_record_job_refusal(
+				42,
+				array(
+					'code' => 503,
+					'body' => '',
+				) 
+			) 
+		);
+		$this->assertArrayNotHasKey( 42, $GLOBALS['rtgodam_meta'] );
+	}
+
+	/**
+	 * Record meta and option writes in globals (this class runs in separate processes).
+	 */
+	private function stub_meta_and_option_writes() {
+		$GLOBALS['rtgodam_meta'] = array();
+
+		if ( ! function_exists( 'update_post_meta' ) ) {
+			eval( 'function update_post_meta( $id, $key, $value ) { $GLOBALS["rtgodam_meta"][ $id ][ $key ] = $value; return true; }' ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
+		}
+
+		if ( ! function_exists( 'update_option' ) ) {
+			eval( 'function update_option( $key, $value ) { $GLOBALS["rtgodam_stub"]["options"][ $key ] = $value; return true; }' ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
+		}
 	}
 
 	/**

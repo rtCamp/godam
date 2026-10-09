@@ -725,11 +725,20 @@ function rtgodam_record_job_refusal( $attachment_id, $response ) {
 	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', $refusal['code'] );
 	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $refusal['message'] );
 
+	// Entries are keyed by attachment ID, but legacy ones are numerically indexed with the
+	// ID inside (see the 5xx branch of wp_media_transcoding()), so match either.
 	$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+	$remaining                      = array_filter(
+		(array) $failed_transcoding_attachments,
+		function ( $entry, $key ) use ( $attachment_id ) {
+			return (int) $key !== (int) $attachment_id
+				&& ! ( is_array( $entry ) && isset( $entry['attachment_id'] ) && (int) $entry['attachment_id'] === (int) $attachment_id );
+		},
+		ARRAY_FILTER_USE_BOTH
+	);
 
-	if ( isset( $failed_transcoding_attachments[ $attachment_id ] ) ) {
-		unset( $failed_transcoding_attachments[ $attachment_id ] );
-		update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
+	if ( count( $remaining ) !== count( (array) $failed_transcoding_attachments ) ) {
+		update_option( 'rtgodam-failed-transcoding-attachments', $remaining );
 	}
 
 	return true;

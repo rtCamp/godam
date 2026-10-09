@@ -214,8 +214,17 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 				const errorCode = this.model.get( 'transcoding_error_code' );
 
 				if ( errorCode === 'preflight_failed' || errorCode === 'job_refused' ) {
+					const reason = this.model.get( 'transcoding_error_msg' ) || '';
+
 					this.$el.addClass( `transcoding-status--${ errorCode.replace( '_', '-' ) }` );
-					this.$el.find( '.transcoding-status__loader' ).attr( 'title', this.model.get( 'transcoding_error_msg' ) || '' );
+
+					// Focusable and labelled, so keyboard and screen-reader users get the reason too.
+					this.$el.find( '.transcoding-status__loader' ).attr( {
+						title: reason,
+						tabindex: 0,
+						role: 'img',
+						'aria-label': reason,
+					} );
 				}
 			} else if ( transcodingStatus === 'blocked' ) {
 				// Show blocked status with warning icon (same as transcoding failed)
