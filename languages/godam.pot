@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-09T11:28:01+00:00\n"
+"POT-Creation-Date: 2026-10-09T11:41:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -2617,7 +2617,32 @@ msgid "Folder"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:86
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:44
+msgid "Transcoding has started."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:53
+msgid "Transcoding isn't available on a localhost site."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:55
+msgid "Your GoDAM storage is full. Upgrade your plan to continue transcoding."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:57
+msgid "HTTP authentication is enabled on this site. Disable it to allow transcoding."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:59
+msgid "The request failed. Try again."
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:115
 msgid "This file couldn't be transcoded"
 msgstr ""
 
@@ -2625,8 +2650,7 @@ msgstr ""
 #: inc/classes/class-media-library-ajax.php:658
 #: inc/classes/rest-api/class-transcoding.php:327
 #: inc/helpers/custom-functions.php:672
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:57
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:87
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:116
 msgid "This file can't be transcoded."
 msgstr ""
 
@@ -2637,35 +2661,25 @@ msgstr ""
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:94
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:123
 #: pages/godam/components/GoDAMHeader.jsx:118
 msgid "Upgrade plan"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:102
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:131
 msgid "Retranscode"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: assets/build/pages/onboarding.min.js:2
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:42
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:72
 #: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:61
 msgid "Sending…"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:52
-msgid "Transcoding has started."
-msgstr ""
-
-#: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:59
-msgid "The request failed. Try again."
-msgstr ""
-
-#: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:119
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:148
 msgid "Details for support"
 msgstr ""
 
@@ -12229,19 +12243,19 @@ msgid "(Details: %s)"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: Why the request failed and whether it will be retried.
-#: inc/classes/rest-api/class-transcoding.php:1009
+#: inc/classes/rest-api/class-transcoding.php:1011
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. %3$s"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:1025
+#: inc/classes/rest-api/class-transcoding.php:1030
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Unknown error"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:1041
+#: inc/classes/rest-api/class-transcoding.php:1046
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""

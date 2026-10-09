@@ -90,8 +90,29 @@ describe( 'transcoding refusal panel', () => {
 		expect( panel().querySelector( '.godam-transcoding-refusal__status' ).textContent ).toBe( 'Transcoding has started.' );
 	} );
 
-	it( 'shows the route\'s message when the request fails', async () => {
-		apiFetch.mockRejectedValue( { message: 'Sample (ID 55) transcoding request failed. The transcoding request timed out.' } );
+	it.each( [
+		[
+			'refused again',
+			( mock ) => mock.mockResolvedValue( { message: 'Sample (ID 55) cannot be transcoded. Your GoDAM storage is full.', skipped: true, reason: 'job_refused', error_msg: 'Your GoDAM storage is full.' } ),
+			'Your GoDAM storage is full.',
+		],
+		[
+			'a transient failure',
+			( mock ) => mock.mockRejectedValue( { message: 'Sample (ID 55) transcoding request failed. The transcoding request timed out.', error_msg: 'The transcoding request timed out.' } ),
+			'The transcoding request timed out.',
+		],
+		[
+			'a localhost site',
+			( mock ) => mock.mockResolvedValue( { message: 'Sample (ID 55) transcoding request failed. Transcoding requests are not allowed in the localhost environment.', skipped: true, reason: 'local_environment' } ),
+			'Transcoding isn\'t available on a localhost site.',
+		],
+		[
+			'a network error',
+			( mock ) => mock.mockRejectedValue( new Error( 'offline' ) ),
+			'The request failed. Try again.',
+		],
+	] )( 'shows only the reason, never the file name and ID, for %s', async ( _label, answer, expected ) => {
+		answer( apiFetch );
 		renderTranscodingRefusalPanel( view( refused ) );
 
 		const button = panel().querySelector( 'button' );
@@ -99,7 +120,9 @@ describe( 'transcoding refusal panel', () => {
 		await Promise.resolve();
 		await Promise.resolve();
 
-		expect( panel().querySelector( '.godam-transcoding-refusal__status' ).textContent ).toContain( 'The transcoding request timed out.' );
+		const text = panel().querySelector( '.godam-transcoding-refusal__status' ).textContent;
+		expect( text ).toBe( expected );
+		expect( text ).not.toContain( '(ID 55)' );
 		expect( button.disabled ).toBe( false );
 	} );
 } );

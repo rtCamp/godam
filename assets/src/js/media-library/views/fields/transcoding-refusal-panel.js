@@ -31,6 +31,36 @@ const el = ( tag, className, text = '' ) => {
 };
 
 /**
+ * What to say in the panel for the retranscode route's answer. Its `message` names the
+ * file (it's written for the Tools log), so the panel uses the plain reason, or its own
+ * short copy for the route's other skip reasons.
+ *
+ * @param {Object} answer The route's JSON answer, from a success or an error.
+ *
+ * @return {string} One short line.
+ */
+const describeAnswer = ( answer ) => {
+	if ( answer?.sent ) {
+		return __( 'Transcoding has started.', 'godam' );
+	}
+
+	if ( answer?.error_msg ) {
+		return answer.error_msg;
+	}
+
+	switch ( answer?.reason ) {
+		case 'local_environment':
+			return __( 'Transcoding isn\'t available on a localhost site.', 'godam' );
+		case 'storage_exceeded':
+			return __( 'Your GoDAM storage is full. Upgrade your plan to continue transcoding.', 'godam' );
+		case 'http_auth_enabled':
+			return __( 'HTTP authentication is enabled on this site. Disable it to allow transcoding.', 'godam' );
+		default:
+			return __( 'The request failed. Try again.', 'godam' );
+	}
+};
+
+/**
  * Send the file for transcoding again, and say what happened in the panel.
  *
  * @param {Object}      model  The attachment model.
@@ -48,15 +78,14 @@ const retranscode = async ( model, button, status ) => {
 			data: { id: model.get( 'id' ) },
 		} );
 
+		status.textContent = describeAnswer( response );
+
 		if ( response?.sent ) {
-			status.textContent = __( 'Transcoding has started.', 'godam' );
 			return;
 		}
-
-		// Refused again: the route's message says why.
-		status.textContent = response?.message || __( 'This file can\'t be transcoded.', 'godam' );
 	} catch ( error ) {
-		status.textContent = error?.message || __( 'The request failed. Try again.', 'godam' );
+		// apiFetch rejects with the route's JSON body on an error status.
+		status.textContent = describeAnswer( error );
 	}
 
 	button.disabled = false;

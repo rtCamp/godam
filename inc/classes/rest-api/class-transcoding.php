@@ -993,9 +993,11 @@ class Transcoding extends Base {
 
 			return new \WP_REST_Response(
 				array(
-					'message' => $message,
-					'skipped' => true,
-					'reason'  => $error_code,
+					'message'   => $message,
+					'skipped'   => true,
+					'reason'    => $error_code,
+					// The reason alone, for the attachment details panel (the message names the file).
+					'error_msg' => get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ),
 				),
 				200
 			);
@@ -1013,7 +1015,10 @@ class Transcoding extends Base {
 			);
 
 			return new \WP_REST_Response(
-				array( 'message' => $message ),
+				array(
+					'message'   => $message,
+					'error_msg' => get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ),
+				),
 				500
 			);
 		}
