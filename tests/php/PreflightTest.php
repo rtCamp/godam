@@ -258,10 +258,13 @@ class PreflightTest extends TestCase {
 	public function test_record_refusal_marks_failed_and_clears_both_queue_shapes() {
 		$this->stub_meta_and_option_writes();
 
+		// Keyed by ID; legacy index holding 42; legacy index 7 holding another file; key 42 in a
+		// legacy queue holding attachment 9 (must stay); entry without an embedded ID at key 42.
 		$GLOBALS['rtgodam_stub']['options']['rtgodam-failed-transcoding-attachments'] = array(
-			42 => array( 'attachment_id' => 42 ),
 			0  => array( 'attachment_id' => 42 ),
 			7  => array( 'attachment_id' => 7 ),
+			42 => array( 'attachment_id' => 9 ),
+			43 => array( 'retry_count' => 1 ),
 		);
 
 		$recorded = rtgodam_record_job_refusal(
@@ -277,9 +280,32 @@ class PreflightTest extends TestCase {
 		$this->assertSame( 'job_refused', $GLOBALS['rtgodam_meta'][42]['rtgodam_transcoding_error_code'] );
 		$this->assertSame( 'License Inactive', $GLOBALS['rtgodam_meta'][42]['rtgodam_transcoding_error_detail'] );
 		$this->assertSame(
-			array( 7 => array( 'attachment_id' => 7 ) ),
+			array(
+				7  => array( 'attachment_id' => 7 ),
+				42 => array( 'attachment_id' => 9 ),
+				43 => array( 'retry_count' => 1 ),
+			),
 			$GLOBALS['rtgodam_stub']['options']['rtgodam-failed-transcoding-attachments']
 		);
+	}
+
+	/**
+	 * An entry without an embedded ID falls back to its key.
+	 */
+	public function test_record_refusal_falls_back_to_the_key() {
+		$this->stub_meta_and_option_writes();
+
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-failed-transcoding-attachments'] = array( 42 => array( 'retry_count' => 2 ) );
+
+		rtgodam_record_job_refusal(
+			42,
+			array(
+				'code' => 404,
+				'body' => '',
+			)
+		);
+
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['options']['rtgodam-failed-transcoding-attachments'] );
 	}
 
 	/**

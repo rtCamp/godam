@@ -4,6 +4,7 @@
  * Internal dependencies
  */
 import TranscodingChecker from './transcoding-checker';
+import { isRefusal, markRefused } from './refusal';
 
 const icons = {
 
@@ -52,7 +53,7 @@ class GridViewTranscodingStatus {
 
 		// Handle failure first — takes priority over any progress value.
 		if ( status === 'failed' ) {
-			this.updateFailedStatus();
+			this.updateFailedStatus( data );
 			return;
 		}
 
@@ -92,7 +93,7 @@ class GridViewTranscodingStatus {
 		this.transcodingStatusLoader.style.removeProperty( '--status-text' );
 	}
 
-	updateFailedStatus() {
+	updateFailedStatus( data = {} ) {
 		if ( this.transcodingStatusSVG ) {
 			this.transcodingStatusSVG.remove();
 		}
@@ -102,6 +103,15 @@ class GridViewTranscodingStatus {
 		this.transcodingStatusElement.classList.remove( 'transcoding-status--in-progress' );
 		this.transcodingStatusElement.classList.add( 'transcoding-status--failed' );
 		this.transcodingStatusLoader.style.removeProperty( '--status-text' );
+
+		// A job Central refused while the grid was open: show why, as on a fresh render.
+		if ( isRefusal( data.error_code ) ) {
+			markRefused( this.transcodingStatusElement, this.transcodingStatusLoader, {
+				code: data.error_code,
+				reason: data.error_msg || '',
+				detail: data.error_detail || '',
+			} );
+		}
 	}
 
 	updateNotTranscodingStatus() {

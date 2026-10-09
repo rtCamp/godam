@@ -3,13 +3,14 @@
 /**
  * WordPress dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { isAPIKeyValid, isDocumentModel, isFolderOrgDisabled } from '../utility';
 import GodamLogo from '../../../images/godam-logo-gradient.svg';
+import { isRefusal, markRefused } from '../transcoding-status/refusal';
 
 /**
  * SVG icons for transcoding states
@@ -208,25 +209,14 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 				this.$el.addClass( 'transcoding-status' );
 				this.$el.addClass( 'transcoding-status--failed' );
 
-				// Central refused the job: the source file failed its checks (preflight_failed),
-				// or the licence, storage or site isn't allowed (job_refused). The tile clips the
-				// CSS tooltip, so the full reason goes in the native one.
+				// Central refused the job: say why on the tile (see markRefused()).
 				const errorCode = this.model.get( 'transcoding_error_code' );
 
-				if ( errorCode === 'preflight_failed' || errorCode === 'job_refused' ) {
-					const reason = this.model.get( 'transcoding_error_msg' ) || '';
-					const detail = this.model.get( 'transcoding_error_detail' ) || '';
-
-					this.$el.addClass( `transcoding-status--${ errorCode.replace( '_', '-' ) }` );
-
-					// Focusable and labelled, so keyboard and screen-reader users get the reason too.
-					// The tooltip adds Central's own wording, for support.
-					this.$el.find( '.transcoding-status__loader' ).attr( {
-						/* translators: %s: GoDAM Central's own wording of why it refused the file. */
-						title: detail ? `${ reason }\n\n${ sprintf( __( 'GoDAM said: %s', 'godam' ), detail ) }` : reason,
-						tabindex: 0,
-						role: 'img',
-						'aria-label': reason,
+				if ( isRefusal( errorCode ) ) {
+					markRefused( this.el, this.el.querySelector( '.transcoding-status__loader' ), {
+						code: errorCode,
+						reason: this.model.get( 'transcoding_error_msg' ) || '',
+						detail: this.model.get( 'transcoding_error_detail' ) || '',
 					} );
 				}
 			} else if ( transcodingStatus === 'blocked' ) {

@@ -321,10 +321,12 @@ class Transcoding extends Base {
 				$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
 
 				return array(
-					'status'     => 'failed',
-					'progress'   => 0,
-					'error_code' => $error_code,
-					'error_msg'  => $error_msg,
+					'status'       => 'failed',
+					'progress'     => 0,
+					'error_code'   => $error_code,
+					'error_msg'    => $error_msg,
+					// Central's own wording when it refused the job, for support.
+					'error_detail' => sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', true ) ),
 				);
 			}
 

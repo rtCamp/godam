@@ -544,7 +544,8 @@ class RTGODAM_Transcoder_Handler {
 			// Central refused the job on purpose (4xx): record why, and don't retry.
 			rtgodam_record_job_refusal( $attachment_id, $upload_page );
 
-			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
+			// Server errors, timeouts (408) and rate limits (429) are transient: queue a retry.
+			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) || in_array( intval( $upload_page['response']['code'] ), array( 408, 429 ), true ) ) {
 				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 
 				// Preserve the existing retry_count so the cron-job retry limiter is not reset

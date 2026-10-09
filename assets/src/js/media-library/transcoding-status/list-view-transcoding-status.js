@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import TranscodingChecker from './transcoding-checker';
+import { isRefusal } from './refusal';
 
 /**
  * SVG icons used for different transcoding states
@@ -189,8 +190,7 @@ class ListViewTranscodingStatus {
 		this._replaceIcon( loader, existingIcon, ICONS.exclamation );
 
 		// When Central refused the job, its reason is what the admin needs, not a generic retry hint.
-		const isRefusal = [ 'preflight_failed', 'job_refused' ].includes( data.error_code ) && data.error_msg;
-		const failureMessage = isRefusal ? data.error_msg : __( 'Transcoding failed, please try again.', 'godam' );
+		const failureMessage = isRefusal( data.error_code ) && data.error_msg ? data.error_msg : __( 'Transcoding failed, please try again.', 'godam' );
 		loader.style.setProperty( '--status-text', failureMessage );
 		statusText.textContent = failureMessage;
 	}
