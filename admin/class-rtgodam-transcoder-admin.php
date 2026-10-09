@@ -457,6 +457,11 @@ class RTGODAM_Transcoder_Admin {
 			return;
 		}
 
+		// On the Dashboard, the GoDAM widget shows storage and bandwidth alerts itself.
+		if ( \RTGODAM\Inc\Dashboard_Widget::get_instance()->shows_account_alerts() ) {
+			return;
+		}
+
 		// Don't show usage notices if no API key is configured.
 		$api_key = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 		if ( empty( $api_key ) ) {
@@ -750,6 +755,11 @@ class RTGODAM_Transcoder_Admin {
 		// Only show on dashboard, media library pages.
 		$screen = get_current_screen();
 		if ( ! $screen || ! in_array( $screen->id, array( 'dashboard', 'upload', 'media' ), true ) ) {
+			return;
+		}
+
+		// On the Dashboard, the GoDAM widget shows the key alert itself.
+		if ( \RTGODAM\Inc\Dashboard_Widget::get_instance()->shows_account_alerts() ) {
 			return;
 		}
 

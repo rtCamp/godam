@@ -42,3 +42,6 @@ phpunit.xml.dist
 # Leading slash anchors this to the plugin root: an unanchored `tests/` would
 # also strip vendor/**/tests/, which is not this file's call to make.
 /tests/
+
+# Dashboard widget sample data: development and review only, never shipped.
+/inc/classes/class-dashboard-widget-preview.php
