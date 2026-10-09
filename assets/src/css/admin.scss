@@ -641,11 +641,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 		}
 	}
 
-	// The tooltip carries Central's reason for refusing the job, so give it room.
+	// Central refused the job on a source-file check; the full reason is in the title attribute.
 	&--preflight-failed {
 
-		.transcoding-status__loader::after {
-			width: 180px;
+		.transcoding-status__loader {
+			--status-text: "Transcoding Failed - Source File Check Failed";
 		}
 	}
 
@@ -1166,5 +1166,15 @@ to ensure proper responsiveness and avoid layout issues.
 	&__details summary {
 		cursor: pointer;
 		font-weight: 600;
+	}
+
+	&__details + &__details {
+		margin-top: 0.5em;
+	}
+
+	&__technical {
+		color: #646970;
+		font-size: 12px;
+		word-break: break-word;
 	}
 }

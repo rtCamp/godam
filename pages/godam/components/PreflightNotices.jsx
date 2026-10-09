@@ -85,9 +85,7 @@ const PreflightNotices = () => {
 				>
 					<p>{ __( 'Transcoding will finish on GoDAM, but this site will not be told, so videos stay at "Processing".', 'godam' ) }</p>
 					<ul className="godam-preflight-notice__list">
-						{ callbackIssues.map( ( check ) => (
-							<li key={ check.id }>{ `${ check.label }: ${ check.message }` }</li>
-						) ) }
+						{ callbackIssues.map( ( check ) => <li key={ check.id }>{ check.label }</li> ) }
 					</ul>
 					{ remediations.map( ( remediation ) => (
 						<p key={ remediation }>{ remediation }</p>
@@ -96,6 +94,15 @@ const PreflightNotices = () => {
 						<summary>{ __( 'Common causes', 'godam' ) }</summary>
 						<ul className="godam-preflight-notice__list">
 							{ CALLBACK_CAUSES.map( ( cause ) => <li key={ cause }>{ cause }</li> ) }
+						</ul>
+					</details>
+					{ /* Central's messages are raw connection errors: useful to support, noise to everyone else. */ }
+					<details className="godam-preflight-notice__details">
+						<summary>{ __( 'Technical details', 'godam' ) }</summary>
+						<ul className="godam-preflight-notice__list godam-preflight-notice__technical">
+							{ callbackIssues.map( ( check ) => (
+								<li key={ check.id }>{ `${ check.label }: ${ check.message }` }</li>
+							) ) }
 						</ul>
 					</details>
 				</PreflightNotice>

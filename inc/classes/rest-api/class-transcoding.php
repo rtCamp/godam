@@ -963,7 +963,9 @@ class Transcoding extends Base {
 				__( '%1$s (ID %2$d) cannot be transcoded. %3$s', 'godam' ),
 				esc_html( $title ),
 				absint( $attachment_id ),
-				esc_html( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) )
+				// Plain text, already sanitized when stored: the Tools log renders it as a
+				// React text node, so esc_html() would show Central's quotes as &#039;.
+				get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true )
 			);
 
 			return new \WP_REST_Response(
