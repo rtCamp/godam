@@ -227,6 +227,8 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v2.3.2 (October 9, 2026) =
 
 - Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts automatically the first time you open the library and can be replayed anytime from the new button next to Manage Media.
+- Feat: GoDAM now tells you when it can't reach your site to send back transcoding updates, on admin screens and in GoDAM settings, so videos no longer sit at "Processing" without explanation.
+- Fix: Uploads that GoDAM refuses (the file can't be downloaded, isn't a video, is empty or too large, or the licence is inactive, storage is full or the site isn't allowed) are now marked as failed with the reason in the Media Library and on the Tools page, instead of showing no status at all.
 - Fix: Security fixes.
 
 = v2.3.1 (October 6, 2026) =

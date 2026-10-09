@@ -816,7 +816,7 @@ class RTGODAM_Transcoder_Admin {
 	 * GoDAM's own screens strip admin notices; the settings page shows the same
 	 * checks itself.
 	 *
-	 * @since 2.3.3
+	 * @since 2.3.2
 	 *
 	 * @see https://github.com/rtCamp/godam-core/issues/856
 	 */

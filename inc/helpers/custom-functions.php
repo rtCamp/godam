@@ -514,7 +514,7 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
  * The quota check is left out: `usage_limit_notices()` already warns about usage,
  * from fresher numbers and at a lower threshold.
  *
- * @since 2.3.3
+ * @since 2.3.2
  *
  * @see https://github.com/rtCamp/godam-core/issues/856
  *
@@ -553,7 +553,7 @@ function rtgodam_get_preflight_issues() {
  * size checks, but only to say they were skipped. They add nothing, so only the
  * reachability failure is kept in that case.
  *
- * @since 2.3.3
+ * @since 2.3.2
  *
  * @param array $results The `message.results` list from Central's HTTP 417 response.
  *
@@ -597,7 +597,7 @@ function rtgodam_get_preflight_failure_message( $results ) {
  * (unknown licence, licence inactive, storage full, site not allowed). The known
  * reasons get plain wording; anything else falls back to Central's own message.
  *
- * @since 2.3.3
+ * @since 2.3.2
  *
  * @see https://github.com/rtCamp/godam-core/issues/856
  *
@@ -664,7 +664,7 @@ function rtgodam_get_job_refusal( $status_code, $body ) {
  * Frappe sends it JSON-encoded twice in `_server_messages`; `exception` carries it too,
  * after the exception class name.
  *
- * @since 2.3.3
+ * @since 2.3.2
  *
  * @param array $body Central's decoded JSON answer.
  *
@@ -698,7 +698,7 @@ function rtgodam_get_frappe_error_message( $body ) {
  * Retrying sends the same request, so the attachment is also dropped from the 5xx
  * retry queue in case an earlier attempt put it there.
  *
- * @since 2.3.3
+ * @since 2.3.2
  *
  * @see https://github.com/rtCamp/godam-core/issues/856
  *
@@ -738,7 +738,7 @@ function rtgodam_record_job_refusal( $attachment_id, $response ) {
 /**
  * Whether an attachment's failure is Central refusing its job (see rtgodam_record_job_refusal()).
  *
- * @since 2.3.3
+ * @since 2.3.2
  *
  * @param string $error_code The attachment's `rtgodam_transcoding_error_code`.
  *
