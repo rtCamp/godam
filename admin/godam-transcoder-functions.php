@@ -388,7 +388,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 
 		// only display the check status button for media that are transcoding.
 		$transcoding_status = get_post_meta( $post_id, 'rtgodam_transcoding_status', true );
-		$preflight_reason   = 'preflight_failed' === get_post_meta( $post_id, 'rtgodam_transcoding_error_code', true )
+		$preflight_reason   = rtgodam_is_job_refusal( get_post_meta( $post_id, 'rtgodam_transcoding_error_code', true ) )
 			? get_post_meta( $post_id, 'rtgodam_transcoding_error_msg', true )
 			: '';
 	} finally {

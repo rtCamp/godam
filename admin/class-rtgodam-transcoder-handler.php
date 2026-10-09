@@ -540,9 +540,8 @@ class RTGODAM_Transcoder_Handler {
 				}
 			}
 
-			if ( ! is_wp_error( $upload_page ) && 417 === intval( wp_remote_retrieve_response_code( $upload_page ) ) ) {
-				$this->record_preflight_failure( $attachment_id, $upload_page );
-			}
+			// Central refused the job on purpose (4xx): record why, and don't retry.
+			rtgodam_record_job_refusal( $attachment_id, $upload_page );
 
 			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
 				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
@@ -602,48 +601,6 @@ class RTGODAM_Transcoder_Handler {
 		}
 
 		return $wp_metadata;
-	}
-
-	/**
-	 * Mark an attachment as failed when Central refused its job on a source-video check.
-	 *
-	 * Before queuing a video job, Central checks that the file URL is reachable, serves
-	 * a video and has a sane size. If any check fails it creates no job and answers
-	 * HTTP 417 with the results. Without this the attachment kept no status at all, so
-	 * the admin was never told why the video did not transcode.
-	 *
-	 * Other validation errors also come back as 417, so only a body carrying
-	 * `message.has_failures` is treated as a preflight failure.
-	 *
-	 * @since 2.3.3
-	 *
-	 * @see https://github.com/rtCamp/godam-core/issues/856
-	 *
-	 * @param int   $attachment_id ID of attachment.
-	 * @param array $response      Response from the Transcoder Job request.
-	 *
-	 * @return void
-	 */
-	private function record_preflight_failure( $attachment_id, $response ) {
-		$body    = json_decode( wp_remote_retrieve_body( $response ), true );
-		$message = rtgodam_get_preflight_failure_message( $body['message']['results'] ?? array() );
-
-		if ( empty( $body['message']['has_failures'] ) || '' === $message ) {
-			return;
-		}
-
-		update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
-		update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', 'preflight_failed' );
-		update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $message );
-
-		// Retrying sends the same file, so it can only fail the same way. Drop the
-		// attachment from the 5xx retry queue in case an earlier attempt put it there.
-		$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
-
-		if ( isset( $failed_transcoding_attachments[ $attachment_id ] ) ) {
-			unset( $failed_transcoding_attachments[ $attachment_id ] );
-			update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
-		}
 	}
 
 	/**

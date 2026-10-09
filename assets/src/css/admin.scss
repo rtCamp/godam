@@ -649,6 +649,14 @@ $media-frame-width: calc(300px + 2 * 24px);
 		}
 	}
 
+	// Central refused the job (licence, storage or site); the full reason is in the title attribute.
+	&--job-refused {
+
+		.transcoding-status__loader {
+			--status-text: "Transcoding Failed - Refused by GoDAM";
+		}
+	}
+
 	&--not-started {
 
 		.transcoding-status__loader {

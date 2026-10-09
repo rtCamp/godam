@@ -590,6 +590,165 @@ function rtgodam_get_preflight_failure_message( $results ) {
 }
 
 /**
+ * Turn Central's refusal of a job (any 4xx answer) into a short message for the media item.
+ *
+ * Central refuses a job on purpose in two shapes: HTTP 417 with the source-file checks
+ * that failed, or Frappe's standard error body for licence and account problems
+ * (unknown licence, licence inactive, storage full, site not allowed). The known
+ * reasons get plain wording; anything else falls back to Central's own message.
+ *
+ * @since 2.3.3
+ *
+ * @see https://github.com/rtCamp/godam-core/issues/856
+ *
+ * @param int   $status_code HTTP status of Central's answer.
+ * @param array $body        Central's decoded JSON answer.
+ *
+ * @return array{code: string, message: string} Error code (`preflight_failed` for the
+ *                                              source-file checks, `job_refused` otherwise)
+ *                                              and message, or empty strings when the
+ *                                              answer is not a refusal.
+ */
+function rtgodam_get_job_refusal( $status_code, $body ) {
+	$none = array(
+		'code'    => '',
+		'message' => '',
+	);
+
+	if ( $status_code < 400 || $status_code >= 500 ) {
+		return $none;
+	}
+
+	$body = is_array( $body ) ? $body : array();
+
+	if ( ! empty( $body['message']['has_failures'] ) ) {
+		$message = rtgodam_get_preflight_failure_message( $body['message']['results'] ?? array() );
+
+		return '' === $message ? $none : array(
+			'code'    => 'preflight_failed',
+			'message' => $message,
+		);
+	}
+
+	$reason = rtgodam_get_frappe_error_message( $body );
+
+	$known = array(
+		'Invalid License'        => __( 'GoDAM didn\'t recognise this site\'s API key. Check the key in GoDAM settings.', 'godam' ),
+		'License Inactive'       => __( 'Your GoDAM licence is inactive. Renew your plan to transcode new uploads.', 'godam' ),
+		'Storage limit exceeded' => __( 'Your GoDAM storage is full. Upgrade your plan or delete unused files.', 'godam' ),
+		'not whitelisted'        => __( 'This site isn\'t on your GoDAM account\'s list of allowed sites. Ask your GoDAM admin to add it.', 'godam' ),
+	);
+
+	$message = '';
+
+	foreach ( $known as $needle => $plain ) {
+		if ( false !== stripos( $reason, $needle ) ) {
+			$message = $plain;
+			break;
+		}
+	}
+
+	if ( '' === $message ) {
+		$message = '' !== $reason ? $reason : __( 'GoDAM refused this file.', 'godam' );
+	}
+
+	return array(
+		'code'    => 'job_refused',
+		'message' => sanitize_text_field( $message ),
+	);
+}
+
+/**
+ * Read the human message out of a Frappe error body.
+ *
+ * Frappe sends it JSON-encoded twice in `_server_messages`; `exception` carries it too,
+ * after the exception class name.
+ *
+ * @since 2.3.3
+ *
+ * @param array $body Central's decoded JSON answer.
+ *
+ * @return string The message, or an empty string.
+ */
+function rtgodam_get_frappe_error_message( $body ) {
+	if ( ! empty( $body['_server_messages'] ) && is_string( $body['_server_messages'] ) ) {
+		$messages = json_decode( $body['_server_messages'], true );
+		$first    = is_array( $messages ) && isset( $messages[0] ) ? json_decode( (string) $messages[0], true ) : null;
+
+		if ( is_array( $first ) && ! empty( $first['message'] ) ) {
+			return wp_strip_all_tags( (string) $first['message'] );
+		}
+	}
+
+	if ( ! empty( $body['exception'] ) && is_string( $body['exception'] ) ) {
+		$parts = explode( ': ', $body['exception'], 2 );
+
+		return trim( $parts[1] ?? $parts[0] );
+	}
+
+	return '';
+}
+
+/**
+ * Mark an attachment as failed when Central refused its job.
+ *
+ * A refusal (any 4xx answer) is deliberate: the source file failed Central's checks,
+ * or the licence, storage or site isn't allowed to transcode. Before this the plugin
+ * kept no status for it, so the admin was never told why the file didn't transcode.
+ * Retrying sends the same request, so the attachment is also dropped from the 5xx
+ * retry queue in case an earlier attempt put it there.
+ *
+ * @since 2.3.3
+ *
+ * @see https://github.com/rtCamp/godam-core/issues/856
+ *
+ * @param int            $attachment_id ID of attachment.
+ * @param array|WP_Error $response      Response from the Transcoder Job request.
+ *
+ * @return bool Whether the response was a refusal (and was recorded).
+ */
+function rtgodam_record_job_refusal( $attachment_id, $response ) {
+	if ( is_wp_error( $response ) ) {
+		return false;
+	}
+
+	$refusal = rtgodam_get_job_refusal(
+		intval( wp_remote_retrieve_response_code( $response ) ),
+		json_decode( wp_remote_retrieve_body( $response ), true )
+	);
+
+	if ( '' === $refusal['code'] ) {
+		return false;
+	}
+
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', $refusal['code'] );
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $refusal['message'] );
+
+	$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+
+	if ( isset( $failed_transcoding_attachments[ $attachment_id ] ) ) {
+		unset( $failed_transcoding_attachments[ $attachment_id ] );
+		update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
+	}
+
+	return true;
+}
+
+/**
+ * Whether an attachment's failure is Central refusing its job (see rtgodam_record_job_refusal()).
+ *
+ * @since 2.3.3
+ *
+ * @param string $error_code The attachment's `rtgodam_transcoding_error_code`.
+ *
+ * @return bool
+ */
+function rtgodam_is_job_refusal( $error_code ) {
+	return in_array( $error_code, array( 'preflight_failed', 'job_refused' ), true );
+}
+
+/**
  * Get the storage and bandwidth usage data.
  *
  * @return array|WP_Error

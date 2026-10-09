@@ -433,6 +433,9 @@ class Media_Library_Ajax {
 			}
 		}
 
+		// Central refused the job on purpose (4xx): record why, so the file says so.
+		rtgodam_record_job_refusal( $attachment_id, $upload_media );
+
 		// Note: For now media is only uploaded to the GoDAM and we are storing the transcoding job ID in the attachment meta.
 		// Todo: In future we can add more logic to handle the transcoded image URLs to provide image CDN feature.
 	}
@@ -634,8 +637,10 @@ class Media_Library_Ajax {
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
 
 		// Say why Central refused the job, so the grid can show it on the item.
-		if ( 'failed' === $response['transcoding_status'] && 'preflight_failed' === get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code', true ) ) {
-			$response['transcoding_error_code'] = 'preflight_failed';
+		$error_code = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code', true );
+
+		if ( 'failed' === $response['transcoding_status'] && rtgodam_is_job_refusal( $error_code ) ) {
+			$response['transcoding_error_code'] = $error_code;
 			$response['transcoding_error_msg']  = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg', true );
 		}
 

@@ -18,6 +18,8 @@ use PHPUnit\Framework\TestCase;
  *
  * @covers ::rtgodam_get_preflight_issues
  * @covers ::rtgodam_get_preflight_failure_message
+ * @covers ::rtgodam_get_job_refusal
+ * @covers ::rtgodam_get_frappe_error_message
  *
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
@@ -115,6 +117,84 @@ class PreflightTest extends TestCase {
 	public function test_failure_message_is_empty_without_failures() {
 		$this->assertSame( '', rtgodam_get_preflight_failure_message( null ) );
 		$this->assertSame( '', rtgodam_get_preflight_failure_message( array( $this->check( 'check_source_size', 'pass' ) ) ) );
+	}
+
+	/**
+	 * A 417 with failed checks is a source-file refusal, in plain wording.
+	 */
+	public function test_refusal_417_uses_the_checks() {
+		$refusal = rtgodam_get_job_refusal(
+			417,
+			array(
+				'message' => array(
+					'has_failures' => true,
+					'results'      => array( $this->check( 'check_source_size', 'fail', 'Content-Length is 0.' ) ),
+				),
+			)
+		);
+
+		$this->assertSame( 'preflight_failed', $refusal['code'] );
+		$this->assertSame( 'The file is empty or larger than GoDAM accepts. Try uploading it again.', $refusal['message'] );
+	}
+
+	/**
+	 * Licence and account refusals come in Frappe's error body and get plain wording.
+	 *
+	 * @dataProvider frappe_refusals
+	 *
+	 * @param int    $status   HTTP status.
+	 * @param array  $body     Frappe error body.
+	 * @param string $expected Message saved on the file.
+	 */
+	public function test_refusal_from_frappe_error_body( $status, $body, $expected ) {
+		$refusal = rtgodam_get_job_refusal( $status, $body );
+
+		$this->assertSame( 'job_refused', $refusal['code'] );
+		$this->assertSame( $expected, $refusal['message'] );
+	}
+
+	/**
+	 * Frappe error bodies Central sends when it refuses a job.
+	 *
+	 * @return array[]
+	 */
+	public function frappe_refusals() {
+		return array(
+			'licence inactive (403, _server_messages)' => array(
+				403,
+				array( '_server_messages' => wp_json_encode( array( wp_json_encode( array( 'message' => 'License Inactive' ) ) ) ) ),
+				'Your GoDAM licence is inactive. Renew your plan to transcode new uploads.',
+			),
+			'unknown licence (404, exception only)'    => array(
+				404,
+				array( 'exception' => 'frappe.exceptions.DoesNotExistError: Invalid License' ),
+				'GoDAM didn\'t recognise this site\'s API key. Check the key in GoDAM settings.',
+			),
+			'storage full (403)'                       => array(
+				403,
+				array( 'exception' => 'frappe.exceptions.PermissionError: Storage limit exceeded' ),
+				'Your GoDAM storage is full. Upgrade your plan or delete unused files.',
+			),
+			'site not allowed (403)'                   => array(
+				403,
+				array( 'exception' => 'frappe.exceptions.PermissionError: Site Whitelisting is enabled and this site is not whitelisted. Contact your administrator to whitelist this site.' ),
+				'This site isn\'t on your GoDAM account\'s list of allowed sites. Ask your GoDAM admin to add it.',
+			),
+			'unknown reason falls back to Central'     => array(
+				417,
+				array( 'exception' => 'frappe.exceptions.ValidationError: Title is too long' ),
+				'Title is too long',
+			),
+			'no message at all'                        => array( 400, array(), 'GoDAM refused this file.' ),
+		);
+	}
+
+	/**
+	 * Success and server errors are not refusals: they keep their existing handling.
+	 */
+	public function test_non_4xx_is_not_a_refusal() {
+		$this->assertSame( '', rtgodam_get_job_refusal( 200, array() )['code'] );
+		$this->assertSame( '', rtgodam_get_job_refusal( 503, array( 'exception' => 'Boom' ) )['code'] );
 	}
 
 	/**

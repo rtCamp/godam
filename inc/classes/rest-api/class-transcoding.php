@@ -956,8 +956,10 @@ class Transcoding extends Base {
 		// Check if the transcoding job ID is set.
 		$is_sent = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
 
-		// Central refused the job because the source file failed its checks; say why.
-		if ( empty( $is_sent ) && 'preflight_failed' === get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) ) {
+		// Central refused the job (source-file checks, licence, storage or site); say why.
+		$error_code = get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true );
+
+		if ( empty( $is_sent ) && rtgodam_is_job_refusal( $error_code ) ) {
 			$message = sprintf(
 				// translators: 1: Attachment title, 2: Attachment ID, 3: Why GoDAM could not use the source file.
 				__( '%1$s (ID %2$d) cannot be transcoded. %3$s', 'godam' ),
@@ -972,7 +974,7 @@ class Transcoding extends Base {
 				array(
 					'message' => $message,
 					'skipped' => true,
-					'reason'  => 'preflight_failed',
+					'reason'  => $error_code,
 				),
 				200
 			);

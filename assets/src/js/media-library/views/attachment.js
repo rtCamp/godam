@@ -208,10 +208,13 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 				this.$el.addClass( 'transcoding-status' );
 				this.$el.addClass( 'transcoding-status--failed' );
 
-				// Central refused the job because the source file failed its checks. The tile
-				// clips the CSS tooltip, so the full reason goes in the native one.
-				if ( this.model.get( 'transcoding_error_code' ) === 'preflight_failed' ) {
-					this.$el.addClass( 'transcoding-status--preflight-failed' );
+				// Central refused the job: the source file failed its checks (preflight_failed),
+				// or the licence, storage or site isn't allowed (job_refused). The tile clips the
+				// CSS tooltip, so the full reason goes in the native one.
+				const errorCode = this.model.get( 'transcoding_error_code' );
+
+				if ( errorCode === 'preflight_failed' || errorCode === 'job_refused' ) {
+					this.$el.addClass( `transcoding-status--${ errorCode.replace( '_', '-' ) }` );
 					this.$el.find( '.transcoding-status__loader' ).attr( 'title', this.model.get( 'transcoding_error_msg' ) || '' );
 				}
 			} else if ( transcodingStatus === 'blocked' ) {
