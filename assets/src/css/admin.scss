@@ -641,6 +641,14 @@ $media-frame-width: calc(300px + 2 * 24px);
 		}
 	}
 
+	// The tooltip carries Central's reason for refusing the job, so give it room.
+	&--preflight-failed {
+
+		.transcoding-status__loader::after {
+			width: 180px;
+		}
+	}
+
 	&--not-started {
 
 		.transcoding-status__loader {
@@ -1144,5 +1152,19 @@ to ensure proper responsiveness and avoid layout issues.
 	select,
 	.elementor-switch {
 		cursor: not-allowed;
+	}
+}
+
+// Licence preflight notices (see RTGODAM_Transcoder_Admin::preflight_notices()).
+.godam-preflight-notice {
+
+	&__list {
+		list-style: disc;
+		margin: 0.25em 0 0.5em 1.5em;
+	}
+
+	&__details summary {
+		cursor: pointer;
+		font-weight: 600;
 	}
 }

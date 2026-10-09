@@ -505,6 +505,81 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 }
 
 /**
+ * Get the licence preflight checks GoDAM Central flagged for this site.
+ *
+ * Central runs these checks on every `verify_api_key` call and returns them under
+ * `preflight`. That response is already kept in the cached user data, so this makes
+ * no remote request, and removing the API key (which drops the cache) clears them.
+ *
+ * The quota check is left out: `usage_limit_notices()` already warns about usage,
+ * from fresher numbers and at a lower threshold.
+ *
+ * @since 2.3.3
+ *
+ * @see https://github.com/rtCamp/godam-core/issues/856
+ *
+ * @return array[] Checks with a `warn` or `fail` status, in the order Central sent them.
+ */
+function rtgodam_get_preflight_issues() {
+	$user_data = rtgodam_get_user_data();
+
+	if ( empty( $user_data['valid_api_key'] ) || empty( $user_data['user_data']['preflight']['checks'] ) ) {
+		return array();
+	}
+
+	$issues = array();
+
+	foreach ( (array) $user_data['user_data']['preflight']['checks'] as $check ) {
+		if ( ! is_array( $check ) || 'check_quota' === ( $check['id'] ?? '' ) ) {
+			continue;
+		}
+
+		if ( in_array( $check['status'] ?? '', array( 'warn', 'fail' ), true ) ) {
+			$issues[] = $check;
+		}
+	}
+
+	return $issues;
+}
+
+/**
+ * Turn the source-video checks Central failed into one message for the media item.
+ *
+ * When the video URL can't be reached, Central still reports the content-type and
+ * size checks, but only to say they were skipped. They add nothing, so only the
+ * reachability failure is kept in that case.
+ *
+ * @since 2.3.3
+ *
+ * @param array $results The `message.results` list from Central's HTTP 417 response.
+ *
+ * @return string The failing checks' messages and fixes, or an empty string if none failed.
+ */
+function rtgodam_get_preflight_failure_message( $results ) {
+	$failed = array_filter(
+		(array) $results,
+		function ( $check ) {
+			return is_array( $check ) && 'fail' === ( $check['status'] ?? '' );
+		}
+	);
+
+	foreach ( $failed as $check ) {
+		if ( 'check_source_reachable' === ( $check['id'] ?? '' ) ) {
+			$failed = array( $check );
+			break;
+		}
+	}
+
+	$lines = array();
+
+	foreach ( $failed as $check ) {
+		$lines[] = trim( sprintf( '%s %s', $check['message'] ?? '', $check['remediation'] ?? '' ) );
+	}
+
+	return sanitize_textarea_field( implode( "\n", $lines ) );
+}
+
+/**
  * Get the storage and bandwidth usage data.
  *
  * @return array|WP_Error

@@ -633,6 +633,12 @@ class Media_Library_Ajax {
 		// Add transcoding status to response.
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
 
+		// Say why Central refused the job, so the grid can show it on the item.
+		if ( 'failed' === $response['transcoding_status'] && 'preflight_failed' === get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code', true ) ) {
+			$response['transcoding_error_code'] = 'preflight_failed';
+			$response['transcoding_error_msg']  = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg', true );
+		}
+
 		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );
 
 		// If a GoDAM original ID exists, mark this attachment as virtual.

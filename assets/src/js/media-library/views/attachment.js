@@ -207,6 +207,14 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 
 				this.$el.addClass( 'transcoding-status' );
 				this.$el.addClass( 'transcoding-status--failed' );
+
+				// Central refused the job because the source file failed its checks: show why.
+				if ( this.model.get( 'transcoding_error_code' ) === 'preflight_failed' ) {
+					const reason = ( this.model.get( 'transcoding_error_msg' ) || '' ).replace( /\s+/g, ' ' );
+
+					this.$el.addClass( 'transcoding-status--preflight-failed' );
+					this.$el.find( '.transcoding-status__loader' ).css( '--status-text', JSON.stringify( reason ) );
+				}
 			} else if ( transcodingStatus === 'blocked' ) {
 				// Show blocked status with warning icon (same as transcoding failed)
 				this.$el.append( `
