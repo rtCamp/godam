@@ -7,6 +7,7 @@
  * `?godam-widget-preview=<state>` to wp-admin/index.php to render a state with
  * sample numbers. Outside WP_DEBUG, or for anyone but an admin, it does nothing.
  * Previews apply each tile's floor to the sample numbers and remember nothing.
+ * This file is left out of the release zip (.distignore).
  *
  * States: active, milestone (active plus the review ask), attention, light (a
  * small site that clears only some floors), no-plays, unavailable, setting-up,
@@ -88,7 +89,7 @@ class Dashboard_Widget_Preview {
 		$key_status    = Api_Key_Status::VALID;
 		$widget_state  = 'active';
 		$counts        = self::counts( 48, 31, 64, 0, 1 );
-		$library       = self::library( 402, 58, 44, 96, 12, 71, 540, 18, 431, 29 );
+		$library       = self::library( 402, 58, 44, 96, 12, 71, 540, 18, 431 );
 		$video_seconds = 75240;
 		$usage         = array(
 			'storage_used'    => 18.3,
@@ -105,7 +106,7 @@ class Dashboard_Widget_Preview {
 				break;
 			case 'light':
 				$counts        = self::counts( 12, 0, 2, 0, 0 );
-				$library       = self::library( 24, 12, 0, 2, 0, 0, 0, 0, 27, 9 );
+				$library       = self::library( 24, 12, 0, 2, 0, 0, 0, 0, 27 );
 				$video_seconds = 2880;
 				$usage         = array(
 					'storage_used'    => 3.1,
@@ -116,7 +117,7 @@ class Dashboard_Widget_Preview {
 				break;
 			case 'no-plays':
 				$counts        = self::counts( 2, 0, 0, 0, 0 );
-				$library       = self::library( 10, 2, 0, 2, 0, 1, 0, 0, null, 0 );
+				$library       = self::library( 10, 2, 0, 2, 0, 1, 0, 0, null );
 				$video_seconds = 540;
 				$usage         = array(
 					'storage_used'    => 0.4,
@@ -128,14 +129,14 @@ class Dashboard_Widget_Preview {
 			case 'setting-up':
 				$widget_state  = 'setting_up';
 				$counts        = self::counts( 0, 0, 0, 0, 1 );
-				$library       = self::library( 180, 3, 0, 29, 0, 22, 0, 0, 164, 0 );
+				$library       = self::library( 180, 3, 0, 29, 0, 22, 0, 0, 164 );
 				$video_seconds = 1260;
 				break;
 			case 'library-first':
 				$key_status    = Api_Key_Status::NO_API_KEY;
 				$widget_state  = 'not_connected';
 				$counts        = self::counts( 0, 0, 0, 0, 0 );
-				$library       = self::library( 1980, 48, 92, 190, 0, 150, 1204, 36, 918, 0 );
+				$library       = self::library( 1980, 48, 92, 190, 0, 150, 1204, 36, 918 );
 				$video_seconds = 23400;
 				$usage         = array();
 				break;
@@ -143,7 +144,7 @@ class Dashboard_Widget_Preview {
 				$key_status    = Api_Key_Status::NO_API_KEY;
 				$widget_state  = 'not_connected';
 				$counts        = self::counts( 0, 0, 0, 0, 0 );
-				$library       = self::library( 0, 0, 0, 0, 0, 0, 0, 0, null, 0 );
+				$library       = self::library( 0, 0, 0, 0, 0, 0, 0, 0, null );
 				$video_seconds = 0;
 				$usage         = array();
 				break;
@@ -264,20 +265,20 @@ class Dashboard_Widget_Preview {
 				array(
 					'video_id'  => 101,
 					'title'     => 'Onboarding walkthrough',
-					'plays'     => 812,
-					'play_time' => 51120,
+					'plays'     => 412,
+					'play_time' => 25956,
 				),
 				array(
 					'video_id'  => 102,
 					'title'     => 'Spring product launch',
-					'plays'     => 604,
-					'play_time' => 38016,
+					'plays'     => 301,
+					'play_time' => 18963,
 				),
 				array(
 					'video_id'  => 103,
 					'title'     => 'How to reset your password',
-					'plays'     => 377,
-					'play_time' => 9048,
+					'plays'     => 188,
+					'play_time' => 4512,
 				),
 			),
 			time() - 6 * MINUTE_IN_SECONDS,
@@ -321,10 +322,9 @@ class Dashboard_Widget_Preview {
 	 * @param int      $folder_files Files in a folder.
 	 * @param int      $folders      Folders.
 	 * @param int|null $in_use       Files in use, or null while the usage scan runs.
-	 * @param int      $captions     Videos with a transcript.
 	 * @return array
 	 */
-	private static function library( $images, $videos, $audio, $documents, $other, $office, $folder_files, $folders, $in_use, $captions ) {
+	private static function library( $images, $videos, $audio, $documents, $other, $office, $folder_files, $folders, $in_use ) {
 		return array(
 			'types'        => array(
 				'images'    => $images,
@@ -337,7 +337,6 @@ class Dashboard_Widget_Preview {
 			'folder_files' => $folder_files,
 			'folders'      => $folders,
 			'files_in_use' => $in_use,
-			'captions'     => $captions,
 		);
 	}
 

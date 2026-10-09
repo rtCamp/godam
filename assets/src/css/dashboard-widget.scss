@@ -292,11 +292,12 @@ $dw-mix: (
 	&__alert {
 		margin: 0 0 6px;
 		padding: 8px 10px;
-		border-left: 4px solid #dba617;
+		// The stripe sits at the start of the line in either reading direction.
+		border-inline-start: 4px solid #dba617;
 		background: #fcf9e8;
 
 		&.is-error {
-			border-left-color: #d63638;
+			border-inline-start-color: #d63638;
 			background: #fcf0f1;
 		}
 
@@ -337,13 +338,22 @@ $dw-mix: (
 		padding: 0;
 		list-style: none;
 
+		// A long title wraps, and the numbers drop below it on a narrow screen
+		// rather than being pushed out of view.
 		li {
 			display: flex;
+			flex-wrap: wrap;
 			justify-content: space-between;
-			gap: 12px;
+			gap: 2px 12px;
 			margin: 0;
 			padding: 6px 0;
 			border-top: 1px solid #f0f0f1;
+		}
+
+		a {
+			flex: 1 1 12em;
+			min-width: 0;
+			overflow-wrap: anywhere;
 		}
 
 		.rtgodam-dw__top-skeleton {
@@ -414,8 +424,9 @@ $dw-mix: (
 	}
 
 	&__top-meta {
-		flex-shrink: 0;
+		margin-inline-start: auto;
 		color: #50575e;
+		white-space: nowrap;
 	}
 
 	&__step-marker {

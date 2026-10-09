@@ -22,7 +22,24 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { playsMilestone, roundWatchTime, scaleBars } from './utils';
 
 const config = window.godamDashboardWidget || {};
-const locale = document.documentElement.lang || undefined;
+
+/**
+ * The page language, if Intl accepts it. WordPress can set a tag Intl rejects
+ * (for example pt-PT-ao90), which would stop the whole script.
+ *
+ * @return {string|undefined} The tag, or undefined for the browser's default.
+ */
+function pageLocale() {
+	const lang = document.documentElement.lang || undefined;
+
+	try {
+		return Intl.NumberFormat.supportedLocalesOf( lang ).length ? lang : undefined;
+	} catch ( error ) {
+		return undefined;
+	}
+}
+
+const locale = pageLocale();
 const wholeNumber = new Intl.NumberFormat( locale );
 const oneDecimal = new Intl.NumberFormat( locale, { maximumFractionDigits: 1 } );
 // History dates are UTC days, so format them in UTC to keep each bar on its own date.
@@ -424,14 +441,21 @@ async function load( root ) {
 	const top = renderTopVideos( root, summary.top_videos || [], show.includes( 'top_videos' ) );
 	const empty = ! tiles && ! chart && ! top;
 
-	// Only a site with no plays yet gets the hint; a few plays just wait for their floor.
-	const hint = empty && ! receipts.plays;
+	// A part that failed to load is hidden, never shown as zero, and the server retries it in 2 minutes.
+	const partial = Array.isArray( summary.unavailable ) && summary.unavailable.length > 0;
 
-	showStatus(
-		status,
-		hint ? __( 'Add a GoDAM video to a page. Plays and watch time show up here once people start watching.', 'godam' ) : '',
-	);
-	showWatching( root, ! empty || hint );
+	// Only a site with no plays yet gets the hint; a few plays just wait for their floor.
+	const hint = empty && ! receipts.plays && ! partial;
+
+	let message = '';
+	if ( partial ) {
+		message = __( 'Some of these numbers could not load right now. GoDAM will try again in a few minutes.', 'godam' );
+	} else if ( hint ) {
+		message = __( 'Add a GoDAM video to a page. Plays and watch time show up here once people start watching.', 'godam' );
+	}
+
+	showStatus( status, message );
+	showWatching( root, ! empty || hint || partial );
 	renderUpdated( root, summary.fetched_at );
 	renderReviewAsk( root, receipts );
 }

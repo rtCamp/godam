@@ -48,8 +48,13 @@ describe( 'roundWatchTime', () => {
 		expect( roundWatchTime( 3600 ) ).toEqual( { amount: 1, unit: 'hours' } );
 	} );
 
-	it( 'uses whole minutes under an hour, never below one', () => {
+	it( 'uses whole minutes under an hour, and at least one for any watch time', () => {
 		expect( roundWatchTime( 1800 ) ).toEqual( { amount: 30, unit: 'minutes' } );
 		expect( roundWatchTime( 20 ) ).toEqual( { amount: 1, unit: 'minutes' } );
+	} );
+
+	it( 'reads no watch time as 0 minutes, not 1', () => {
+		expect( roundWatchTime( 0 ) ).toEqual( { amount: 0, unit: 'minutes' } );
+		expect( roundWatchTime( -5 ) ).toEqual( { amount: 0, unit: 'minutes' } );
 	} );
 } );

@@ -88,7 +88,11 @@ class DashboardWidgetTest extends TestCase {
 		);
 	}
 
-	/** Statuses are matched case-insensitively and grouped, finished files are split by type, and every status counts toward the total. */
+	/**
+	 * Statuses are matched case-insensitively and grouped, finished files are split by type,
+	 * and every status counts toward the total. Failed counts only types GoDAM processes;
+	 * `blocked` is a storage state, not a failure.
+	 */
 	public function test_status_rows_are_grouped_and_split_by_type() {
 		$counts = Dashboard_Widget::summarize_status_rows(
 			array(
@@ -99,6 +103,7 @@ class DashboardWidgetTest extends TestCase {
 				$this->row( 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'transcoded', 1 ),
 				$this->row( 'image/jpeg', 'transcoded', 4 ),
 				$this->row( 'video/mp4', 'failed', 1 ),
+				$this->row( 'image/jpeg', 'failed', 2 ),
 				$this->row( 'audio/mpeg', 'blocked', 1 ),
 				$this->row( 'video/mp4', 'Queued', 2 ),
 				$this->row( 'video/mp4', 'transcoding', 1 ),
@@ -112,9 +117,9 @@ class DashboardWidgetTest extends TestCase {
 				'audio_ready'     => 1,
 				'documents_ready' => 3,
 				'transcoded'      => 9,
-				'failed'          => 2,
+				'failed'          => 1,
 				'processing'      => 3,
-				'total'           => 22,
+				'total'           => 24,
 			),
 			$counts
 		);
@@ -552,7 +557,6 @@ class DashboardWidgetTest extends TestCase {
 			'folder_files' => 4,
 			'folders'      => 2,
 			'files_in_use' => null,
-			'captions'     => 1,
 		);
 		$counts  = array(
 			'videos_ready'    => 2,
@@ -566,7 +570,7 @@ class DashboardWidgetTest extends TestCase {
 		$this->assertSame( 4, $values['chart_library'] );
 		$this->assertSame( 7200.0, $values['video_seconds'] );
 		$this->assertSame( 2, $values['videos_ready'] );
-		$this->assertSame( 1, $values['captions'] );
+		$this->assertArrayNotHasKey( 'captions', $values );
 		$this->assertArrayNotHasKey( 'files_in_use', $values );
 
 		$library['files_in_use'] = 6;
@@ -698,16 +702,120 @@ class DashboardWidgetTest extends TestCase {
 		}
 	}
 
-	/** Type filters use core's own keys; Documents is the key that lists PDF among its types. */
+	/** Type filters use core's own keys for images, audio and video. */
 	public function test_media_filter_key() {
-		$keys = array( 'image', 'audio', 'video', 'application/msword,application/pdf,application/rtf', 'application/vnd.ms-excel,text/csv' );
+		$keys = array( 'image', 'audio', 'video', 'application/msword,application/pdf,application/rtf' );
 
 		$this->assertSame( 'video', Dashboard_Widget::media_filter_key( 'video', $keys ) );
 		$this->assertSame( 'audio', Dashboard_Widget::media_filter_key( 'audio', $keys ) );
-		$this->assertSame( 'application/msword,application/pdf,application/rtf', Dashboard_Widget::media_filter_key( 'document', $keys ) );
 		$this->assertSame( '', Dashboard_Widget::media_filter_key( 'video', array( 'image' ) ) );
-		$this->assertSame( '', Dashboard_Widget::media_filter_key( 'document', array( 'image', 'application/pdfx' ) ) );
-		$this->assertSame( '', Dashboard_Widget::media_filter_key( 'archive', $keys ) );
+		$this->assertSame( '', Dashboard_Widget::media_filter_key( 'document', $keys ) );
+	}
+
+	/** Ready tiles are plain numbers: no list shows only the processed files. */
+	public function test_ready_tiles_do_not_link() {
+		foreach ( Dashboard_Widget::READY_TILES as $id ) {
+			$this->assertArrayNotHasKey( $id, Dashboard_Widget::TILE_LINKS );
+		}
+		$this->assertNotContains( 'captions', Dashboard_Widget::READY_TILES );
+	}
+
+	/**
+	 * Successful proxy data for the summary tests.
+	 *
+	 * @return array[] Metrics, top videos and history, in that order.
+	 */
+	private function proxy_ok() {
+		return array(
+			array(
+				'status'            => 'success',
+				'dashboard_metrics' => array(
+					'plays'     => 3412,
+					'play_time' => 187200,
+				),
+			),
+			array(
+				'status'     => 'success',
+				'top_videos' => array(
+					array(
+						'video_id' => 7,
+						'title'    => 'A',
+						'plays'    => 40,
+					),
+				),
+			),
+			array(
+				'status'                    => 'success',
+				'dashboard_metrics_history' => array(
+					array(
+						'date'  => '2026-10-09',
+						'plays' => 12,
+					),
+				),
+			),
+		);
+	}
+
+	/** With every call answered, the summary is complete. */
+	public function test_assemble_summary_complete() {
+		list( $metrics, $top, $history ) = $this->proxy_ok();
+
+		$summary = Dashboard_Widget_Summary::assemble_summary( $metrics, $top, $history, gmmktime( 12, 0, 0, 10, 9, 2026 ) );
+
+		$this->assertSame( 'success', $summary['status'] );
+		$this->assertSame( array(), $summary['unavailable'] );
+		$this->assertSame( 3412, $summary['receipts']['plays'] );
+		$this->assertSame( 12, $summary['history'][29]['plays'] );
+		$this->assertCount( 1, $summary['top_videos'] );
+	}
+
+	/** A failed top-videos or history call marks that part unavailable; it never reads as zero plays. */
+	public function test_assemble_summary_marks_failed_parts() {
+		list( $metrics ) = $this->proxy_ok();
+		$failed          = array(
+			'status'    => 'error',
+			'errorType' => 'microservice_error',
+		);
+
+		$summary = Dashboard_Widget_Summary::assemble_summary( $metrics, null, $failed, 0 );
+
+		$this->assertSame( 'success', $summary['status'] );
+		$this->assertSame( array( 'top_videos', 'history' ), $summary['unavailable'] );
+		$this->assertSame( array(), $summary['history'] );
+
+		$values = Dashboard_Widget::remote_values( $summary );
+		$this->assertArrayNotHasKey( 'chart_plays', $values );
+		$this->assertArrayNotHasKey( 'top_videos', $values );
+		$this->assertSame( 3412, $values['plays'] );
+
+		// The chart and the list were shown before: remembered, but not shown on a failed load.
+		$tiles = Dashboard_Widget_Summary::add_visible_tiles( $summary, array( 'chart_plays', 'top_videos' ) );
+		$this->assertNotContains( 'chart_plays', $tiles['summary']['show'] );
+		$this->assertNotContains( 'top_videos', $tiles['summary']['show'] );
+		$this->assertContains( 'chart_plays', $tiles['seen'] );
+	}
+
+	/** A failed metrics call fails the whole summary. */
+	public function test_assemble_summary_metrics_failure() {
+		$summary = Dashboard_Widget_Summary::assemble_summary(
+			array(
+				'status'    => 'error',
+				'errorType' => 'invalid_key',
+			),
+			null,
+			null,
+			5
+		);
+
+		$this->assertSame(
+			array(
+				'status'     => 'error',
+				'errorType'  => 'invalid_key',
+				'fetched_at' => 5,
+			),
+			$summary
+		);
+		$this->assertSame( 'microservice_error', Dashboard_Widget_Summary::assemble_summary( null, null, null, 0 )['errorType'] );
 	}
 
 	/** The summary is for authors and above, like the analytics routes; answering the review ask is for admins only. */

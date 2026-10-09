@@ -153,7 +153,8 @@ class Dashboard_Widget_Summary extends Base {
 	 * @return WP_REST_Response
 	 */
 	public function get_summary( WP_REST_Request $request ) {
-		$preview = Dashboard_Widget_Preview::sanitize_state( $request->get_param( 'preview' ) );
+		// The preview class is not in the release zip (.distignore).
+		$preview = class_exists( Dashboard_Widget_Preview::class ) ? Dashboard_Widget_Preview::sanitize_state( $request->get_param( 'preview' ) ) : '';
 		if ( $preview && Dashboard_Widget_Preview::is_allowed() ) {
 			// Preview shows each tile on its own numbers and remembers nothing.
 			return new WP_REST_Response( self::add_visible_tiles( Dashboard_Widget_Preview::summary( $preview ), array() )['summary'], 200 );
@@ -166,7 +167,9 @@ class Dashboard_Widget_Summary extends Base {
 
 		if ( ! is_array( $summary ) ) {
 			$summary = $this->build_summary( $site_url );
-			set_transient( $cache_key, $summary, 'success' === $summary['status'] ? self::CACHE_TTL : self::ERROR_CACHE_TTL );
+			// A summary with a part missing is retried as soon as a failed one.
+			$complete = 'success' === $summary['status'] && empty( $summary['unavailable'] );
+			set_transient( $cache_key, $summary, $complete ? self::CACHE_TTL : self::ERROR_CACHE_TTL );
 		}
 
 		// Worked out per request, not cached: the tiles shown before live in an option.
@@ -206,10 +209,10 @@ class Dashboard_Widget_Summary extends Base {
 	}
 
 	/**
-	 * Fetch lifetime metrics and top videos through the Analytics proxy handlers.
+	 * Fetch lifetime metrics, top videos and history through the Analytics proxy handlers.
 	 *
 	 * @param string $site_url This site's origin.
-	 * @return array
+	 * @return array From assemble_summary().
 	 */
 	private function build_summary( $site_url ) {
 		$analytics = Analytics::get_instance();
@@ -219,11 +222,7 @@ class Dashboard_Widget_Summary extends Base {
 		$metrics = $analytics->fetch_dashboard_metrics( $metrics_request )->get_data();
 
 		if ( ! is_array( $metrics ) || 'success' !== ( $metrics['status'] ?? '' ) ) {
-			return array(
-				'status'     => 'error',
-				'errorType'  => is_array( $metrics ) ? ( $metrics['errorType'] ?? 'microservice_error' ) : 'microservice_error',
-				'fetched_at' => time(),
-			);
+			return self::assemble_summary( $metrics, null, null, time() );
 		}
 
 		$top_request = new WP_REST_Request( 'GET', '/godam/v1/analytics/top-videos' );
@@ -232,27 +231,63 @@ class Dashboard_Widget_Summary extends Base {
 		$top_request->set_param( 'limit', 3 );
 		$top_request->set_param( 'start_date', gmdate( 'Y-m-d', time() - ( self::TOP_VIDEOS_DAYS - 1 ) * DAY_IN_SECONDS ) );
 		$top_request->set_param( 'end_date', gmdate( 'Y-m-d' ) );
+		// Like the GoDAM Dashboard: a deleted video is not a top video.
+		$top_request->set_param( 'hide_deleted', true );
 		$top = $analytics->fetch_top_videos( $top_request )->get_data();
-
-		$top_videos = is_array( $top ) && 'success' === ( $top['status'] ?? '' ) && is_array( $top['top_videos'] ?? null )
-			? $top['top_videos']
-			: array();
 
 		$history_request = new WP_REST_Request( 'GET', '/godam/v1/analytics/dashboard-history' );
 		$history_request->set_param( 'site_url', $site_url );
 		$history_request->set_param( 'days', self::HISTORY_DAYS );
 		$history = $analytics->fetch_dashboard_history( $history_request )->get_data();
 
-		$history_rows = is_array( $history ) && 'success' === ( $history['status'] ?? '' ) && is_array( $history['dashboard_metrics_history'] ?? null )
-			? $history['dashboard_metrics_history']
-			: array();
+		return self::assemble_summary( $metrics, $top, $history, time() );
+	}
 
-		return self::shape_summary(
-			$metrics['dashboard_metrics'] ?? array(),
-			$top_videos,
-			time(),
-			self::shape_history( $history_rows, time(), self::HISTORY_DAYS )
+	/**
+	 * Combine the three proxy responses into the summary.
+	 *
+	 * A failed metrics call fails the whole summary. A failed top-videos or
+	 * history call only marks that part as unavailable, so the script hides it
+	 * instead of showing "0 plays", and the summary is cached for the short
+	 * error TTL.
+	 *
+	 * @param mixed $metrics `dashboard-metrics` response data.
+	 * @param mixed $top     `top-videos` response data, or null when not fetched.
+	 * @param mixed $history `dashboard-history` response data, or null when not fetched.
+	 * @param int   $now     Unix time of the fetch.
+	 * @return array
+	 */
+	public static function assemble_summary( $metrics, $top, $history, $now ) {
+		if ( ! is_array( $metrics ) || 'success' !== ( $metrics['status'] ?? '' ) ) {
+			return array(
+				'status'     => 'error',
+				'errorType'  => is_array( $metrics ) ? ( $metrics['errorType'] ?? 'microservice_error' ) : 'microservice_error',
+				'fetched_at' => (int) $now,
+			);
+		}
+
+		$unavailable = array();
+
+		$top_ok = is_array( $top ) && 'success' === ( $top['status'] ?? '' ) && is_array( $top['top_videos'] ?? null );
+		if ( ! $top_ok ) {
+			$unavailable[] = 'top_videos';
+		}
+
+		$history_ok = is_array( $history ) && 'success' === ( $history['status'] ?? '' ) && is_array( $history['dashboard_metrics_history'] ?? null );
+		if ( ! $history_ok ) {
+			$unavailable[] = 'history';
+		}
+
+		$summary = self::shape_summary(
+			is_array( $metrics['dashboard_metrics'] ?? null ) ? $metrics['dashboard_metrics'] : array(),
+			$top_ok ? $top['top_videos'] : array(),
+			$now,
+			$history_ok ? self::shape_history( $history['dashboard_metrics_history'], $now, self::HISTORY_DAYS ) : array()
 		);
+
+		$summary['unavailable'] = $unavailable;
+
+		return $summary;
 	}
 
 	/**

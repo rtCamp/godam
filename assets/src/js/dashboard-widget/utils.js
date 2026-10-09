@@ -35,7 +35,8 @@ export function scaleBars( values ) {
  * Round watch time to the largest unit that reads well: hours, then minutes.
  *
  * Ten hours or more rounds to whole hours; one to ten hours keeps one decimal;
- * under an hour rounds to whole minutes, never below one.
+ * under an hour rounds to whole minutes. No watch time reads as 0 minutes, and
+ * any watch time reads as at least 1 minute.
  *
  * @param {number} seconds Watch time in seconds.
  * @return {{amount: number, unit: string}} The rounded amount and 'hours' or 'minutes'.
@@ -48,6 +49,10 @@ export function roundWatchTime( seconds ) {
 			amount: hours >= 10 ? Math.round( hours ) : Math.round( hours * 10 ) / 10,
 			unit: 'hours',
 		};
+	}
+
+	if ( ! ( seconds > 0 ) ) {
+		return { amount: 0, unit: 'minutes' };
 	}
 
 	return { amount: Math.max( 1, Math.round( seconds / 60 ) ), unit: 'minutes' };

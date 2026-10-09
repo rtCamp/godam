@@ -135,7 +135,6 @@ class Dashboard_Widget {
 		'videos_ready'    => 1,
 		'audio_ready'     => 1,
 		'documents_ready' => 1,
-		'captions'        => 1,
 	);
 
 	/**
@@ -165,30 +164,36 @@ class Dashboard_Widget {
 	 *
 	 * @var string[]
 	 */
-	const READY_TILES = array( 'videos_ready', 'audio_ready', 'documents_ready', 'captions' );
+	const READY_TILES = array( 'videos_ready', 'audio_ready', 'documents_ready' );
 
 	/**
 	 * Where each clickable tile goes: the GoDAM Dashboard (plays, viewers, the
 	 * country map, watch time), the Media Library, or the Media Library filtered
-	 * to one type. Files in use and videos with captions have no screen that
-	 * lists them, so they are not links.
+	 * to videos. Tiles with no screen that lists exactly what they count (files
+	 * in use, and the ready tiles, since no filter lists only processed files)
+	 * are not links. GoDAM Dashboard links also need `edit_pages`, the page's
+	 * own capability (see get_tile_url()).
 	 *
 	 * @var array
 	 */
 	const TILE_LINKS = array(
-		'watch_seconds'   => 'godam',
-		'plays'           => 'godam',
-		'viewers'         => 'godam',
-		'countries'       => 'godam',
-		'times_shown'     => 'godam',
-		'library_files'   => 'library',
-		'folder_files'    => 'library',
-		'folders'         => 'library',
-		'video_seconds'   => 'video',
-		'videos_ready'    => 'video',
-		'audio_ready'     => 'audio',
-		'documents_ready' => 'document',
+		'watch_seconds' => 'godam',
+		'plays'         => 'godam',
+		'viewers'       => 'godam',
+		'countries'     => 'godam',
+		'times_shown'   => 'godam',
+		'library_files' => 'library',
+		'folder_files'  => 'library',
+		'folders'       => 'library',
+		'video_seconds' => 'video',
 	);
+
+	/**
+	 * Capability of the GoDAM Dashboard and Tools pages (see Pages::add_admin_pages()).
+	 *
+	 * @var string
+	 */
+	const GODAM_PAGE_CAP = 'edit_pages';
 
 	/**
 	 * The model built for this request, so registering and rendering share it.
@@ -222,6 +227,9 @@ class Dashboard_Widget {
 		add_action( 'add_attachment', array( $this, 'flush_library_counts' ) );
 		add_action( 'delete_attachment', array( $this, 'flush_library_counts' ) );
 		add_action( 'set_object_terms', array( $this, 'flush_library_counts_on_folder_change' ), 10, 4 );
+		add_action( 'deleted_term_relationships', array( $this, 'flush_library_counts_on_term_change' ), 10, 3 );
+		add_action( 'created_term', array( $this, 'flush_library_counts_on_term_change' ), 10, 3 );
+		add_action( 'delete_term', array( $this, 'flush_library_counts_on_term_change' ), 10, 3 );
 	}
 
 	/**
@@ -231,6 +239,13 @@ class Dashboard_Widget {
 	 */
 	public function register_widget() {
 		if ( ! current_user_can( 'upload_files' ) ) {
+			return;
+		}
+
+		// WordPress still renders a widget hidden in Screen Options (and hides it with CSS),
+		// so skip every count and show one line in case it is turned back on.
+		if ( $this->is_hidden_by_user() ) {
+			wp_add_dashboard_widget( self::WIDGET_ID, esc_html__( 'GoDAM', 'godam' ), array( $this, 'render_hidden' ), null, null, 'normal', 'high' );
 			return;
 		}
 
@@ -253,6 +268,12 @@ class Dashboard_Widget {
 	 */
 	public function enqueue_assets( $hook_suffix ) {
 		if ( 'index.php' !== $hook_suffix || ! current_user_can( 'upload_files' ) ) {
+			return;
+		}
+
+		// Network Admin and User Admin dashboards are also index.php, but have no widget.
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'dashboard' !== $screen->id ) {
 			return;
 		}
 
@@ -284,7 +305,7 @@ class Dashboard_Widget {
 			'godamDashboardWidget',
 			array(
 				'path'       => '/godam/v1/dashboard-widget/summary',
-				'preview'    => Dashboard_Widget_Preview::get_requested(),
+				'preview'    => self::preview_state(),
 				'reviewAsk'  => ! empty( $model['review_ask'] ),
 				'reviewPath' => '/godam/v1/dashboard-widget/review-ask',
 			)
@@ -298,8 +319,8 @@ class Dashboard_Widget {
 
 	/**
 	 * Clear cached numbers when the meta behind them changes: the processing
-	 * counts on a status change, and the video length when a video's metadata
-	 * (which holds its length) is written or removed.
+	 * counts on a status change, and the video length when a video's
+	 * `_video_duration` is written or removed.
 	 *
 	 * @param int|int[] $meta_id   Meta ID or IDs.
 	 * @param int       $object_id Post ID.
@@ -309,7 +330,7 @@ class Dashboard_Widget {
 	public function flush_counts_on_status_change( $meta_id, $object_id, $meta_key ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundBeforeLastUsed -- hook signature.
 		if ( 'rtgodam_transcoding_status' === $meta_key ) {
 			delete_transient( self::COUNTS_TRANSIENT );
-		} elseif ( '_wp_attachment_metadata' === $meta_key && 'videos' === self::mime_family( get_post_mime_type( $object_id ) ) ) { // godam-coverage-ignore -- flush_counts_on_status_change(): a post-meta hook fires on the site that wrote the meta, so this type check reads the same site; it only decides whether to clear a cache.
+		} elseif ( '_video_duration' === $meta_key ) {
 			delete_transient( self::VIDEO_LENGTH_TRANSIENT );
 		}
 	}
@@ -339,6 +360,46 @@ class Dashboard_Widget {
 	}
 
 	/**
+	 * Clear the cached library counts when a folder is created or deleted, or
+	 * files leave a folder. These fire `created_term`, `delete_term` or
+	 * `deleted_term_relationships`, not `set_object_terms`.
+	 *
+	 * @param int    $id       Term or object ID.
+	 * @param int    $tt_id    Term taxonomy ID or IDs.
+	 * @param string $taxonomy Taxonomy.
+	 * @return void
+	 */
+	public function flush_library_counts_on_term_change( $id, $tt_id, $taxonomy ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundBeforeLastUsed -- hook signature.
+		if ( Media_Folders::SLUG === $taxonomy ) {
+			$this->flush_library_counts();
+		}
+	}
+
+	/**
+	 * Whether the widget shows the account alerts (key, storage, bandwidth) on
+	 * this screen, so GoDAM's own admin notices can stay off the Dashboard
+	 * instead of saying the same thing twice.
+	 *
+	 * @return bool
+	 */
+	public function shows_account_alerts() {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		return $screen && 'dashboard' === $screen->id && current_user_can( 'manage_options' ) && ! $this->is_hidden_by_user();
+	}
+
+	/**
+	 * The preview state requested on this page load. The preview class is
+	 * excluded from the release zip (.distignore), so production sites never
+	 * load it.
+	 *
+	 * @return string
+	 */
+	private static function preview_state() {
+		return class_exists( Dashboard_Widget_Preview::class ) ? Dashboard_Widget_Preview::get_requested() : '';
+	}
+
+	/**
 	 * Whether the current user hid the widget in the Dashboard's Screen Options.
 	 *
 	 * @return bool
@@ -358,7 +419,7 @@ class Dashboard_Widget {
 	 */
 	public function get_model() {
 		if ( null === $this->model ) {
-			$preview     = Dashboard_Widget_Preview::get_requested();
+			$preview     = self::preview_state();
 			$this->model = $preview ? Dashboard_Widget_Preview::local_model( $preview ) : $this->build_model();
 		}
 
@@ -475,8 +536,8 @@ class Dashboard_Widget {
 	/**
 	 * Count the Media Library by type, folder and use. Needs no API key.
 	 *
-	 * @return array With 'types' (from group_mime_counts()), 'folder_files', 'folders',
-	 *               'files_in_use' (null until the usage scan has finished) and 'captions'.
+	 * @return array With 'types' (from group_mime_counts()), 'folder_files', 'folders'
+	 *               and 'files_in_use' (null until the usage scan has finished).
 	 */
 	private function get_library_counts() {
 		$cached = get_transient( self::LIBRARY_TRANSIENT );
@@ -486,6 +547,15 @@ class Dashboard_Widget {
 
 		global $wpdb;
 
+		/**
+		 * Fires before counting the Media Library's files, folders and usage,
+		 * so integrations that centralize media on another site can switch
+		 * context first. Every count below reads the same library.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
 		$by_mime = array();
 		foreach ( (array) wp_count_attachments() as $mime => $count ) {
 			if ( 'trash' !== $mime ) {
@@ -493,43 +563,53 @@ class Dashboard_Widget {
 			}
 		}
 
+		// Caption files (.srt, .vtt) are stored as text/plain, but they are not documents.
+		if ( ! empty( $by_mime['text/plain'] ) ) {
+			$caption_files = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient below.
+				$wpdb->prepare(
+					"SELECT COUNT( * )
+					FROM {$wpdb->posts} p
+					INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID AND pm.meta_key = %s
+					WHERE p.post_type = 'attachment' AND p.post_status <> 'trash' AND p.post_mime_type = %s
+					AND ( pm.meta_value LIKE %s OR pm.meta_value LIKE %s )",
+					'_wp_attached_file',
+					'text/plain',
+					'%.srt',
+					'%.vtt'
+				)
+			);
+
+			$caption_files              = min( $caption_files, $by_mime['text/plain'] );
+			$by_mime['text/plain']     -= $caption_files;
+			$by_mime['text/x-captions'] = $caption_files;
+		}
+
 		$counts = array(
 			'types'        => self::group_mime_counts( $by_mime ),
 			'folder_files' => 0,
 			'folders'      => 0,
 			'files_in_use' => null,
-			'captions'     => 0,
 		);
 
-		/**
-		 * Fires before counting the Media Library's folders, usage and
-		 * captions, so integrations that centralize media on another site can
-		 * switch context first.
-		 *
-		 * @since 2.2.0
-		 */
-		do_action( 'rtgodam_before_attachment_lookup' );
+		// Folders stay in the library when folder organization is turned off, so count them anyway.
+		$folders           = wp_count_terms(
+			array(
+				'taxonomy'   => Media_Folders::SLUG,
+				'hide_empty' => false,
+			)
+		);
+		$counts['folders'] = is_wp_error( $folders ) ? 0 : (int) $folders;
 
-		if ( function_exists( 'rtgodam_is_media_library_ui_enabled' ) && rtgodam_is_media_library_ui_enabled() ) {
-			$folders           = wp_count_terms(
-				array(
-					'taxonomy'   => Media_Folders::SLUG,
-					'hide_empty' => false,
-				)
-			);
-			$counts['folders'] = is_wp_error( $folders ) ? 0 : (int) $folders;
-
-			$counts['folder_files'] = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient below.
-				$wpdb->prepare(
-					"SELECT COUNT( DISTINCT tr.object_id )
-					FROM {$wpdb->term_relationships} tr
-					INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
-					INNER JOIN {$wpdb->posts} p ON p.ID = tr.object_id
-					WHERE tt.taxonomy = %s AND p.post_type = 'attachment' AND p.post_status <> 'trash'",
-					Media_Folders::SLUG
-				)
-			);
-		}
+		$counts['folder_files'] = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient below.
+			$wpdb->prepare(
+				"SELECT COUNT( DISTINCT tr.object_id )
+				FROM {$wpdb->term_relationships} tr
+				INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
+				INNER JOIN {$wpdb->posts} p ON p.ID = tr.object_id
+				WHERE tt.taxonomy = %s AND p.post_type = 'attachment' AND p.post_status <> 'trash'",
+				Media_Folders::SLUG
+			)
+		);
 
 		// Usage is only complete once the one-off scan of existing posts has finished.
 		if ( Media_Usage_Backfill::STATUS_COMPLETED === get_option( Media_Usage_Backfill::OPT_STATUS ) ) {
@@ -544,21 +624,6 @@ class Dashboard_Widget {
 			);
 		}
 
-		$counts['captions'] = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient below.
-			$wpdb->prepare(
-				"SELECT COUNT( DISTINCT pm.post_id )
-				FROM {$wpdb->postmeta} pm
-				INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-				LEFT JOIN {$wpdb->postmeta} gone ON gone.post_id = pm.post_id AND gone.meta_key = %s
-				WHERE pm.meta_key = %s AND pm.meta_value <> '' AND p.post_type = 'attachment'
-				AND p.post_status <> 'trash' AND p.post_mime_type LIKE %s
-				AND ( gone.meta_value IS NULL OR gone.meta_value IN ( '', '0' ) )",
-				'rtgodam_transcript_deleted',
-				'rtgodam_transcript_path',
-				'video/%'
-			)
-		);
-
 		do_action( 'rtgodam_after_attachment_lookup' );
 
 		set_transient( self::LIBRARY_TRANSIENT, $counts, 15 * MINUTE_IN_SECONDS );
@@ -569,8 +634,8 @@ class Dashboard_Widget {
 	/**
 	 * The combined length of the library's videos, in seconds, refreshed twice a day.
 	 *
-	 * WordPress stores each video's length in its attachment metadata when the
-	 * file is uploaded, so this reads what is already there.
+	 * Reads `_video_duration`, which Video_Metadata stores in whole seconds for
+	 * each video, so one SUM() does the work.
 	 *
 	 * @return float
 	 */
@@ -583,34 +648,24 @@ class Dashboard_Widget {
 		global $wpdb;
 
 		/**
-		 * Fires before reading video lengths from attachment metadata, so
-		 * integrations that centralize media on another site can switch
-		 * context first.
+		 * Fires before summing video lengths, so integrations that centralize
+		 * media on another site can switch context first.
 		 *
 		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 
-		$metadata = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient below for 12 hours.
+		$seconds = (float) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient below for 12 hours.
 			$wpdb->prepare(
-				"SELECT pm.meta_value
+				"SELECT COALESCE( SUM( CAST( pm.meta_value AS UNSIGNED ) ), 0 )
 				FROM {$wpdb->postmeta} pm
 				INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-				WHERE pm.meta_key = %s AND p.post_type = 'attachment' AND p.post_status <> 'trash' AND p.post_mime_type LIKE %s",
-				'_wp_attachment_metadata',
-				'video/%'
+				WHERE pm.meta_key = %s AND p.post_type = 'attachment' AND p.post_status <> 'trash'",
+				'_video_duration'
 			)
 		);
 
 		do_action( 'rtgodam_after_attachment_lookup' );
-
-		$seconds = 0.0;
-		foreach ( (array) $metadata as $raw ) {
-			$meta = maybe_unserialize( $raw );
-			if ( is_array( $meta ) && ! empty( $meta['length'] ) ) {
-				$seconds += max( 0, (float) $meta['length'] );
-			}
-		}
 
 		set_transient( self::VIDEO_LENGTH_TRANSIENT, $seconds, 12 * HOUR_IN_SECONDS );
 
@@ -638,7 +693,6 @@ class Dashboard_Widget {
 			'videos_ready'    => (int) ( $counts['videos_ready'] ?? 0 ),
 			'audio_ready'     => (int) ( $counts['audio_ready'] ?? 0 ),
 			'documents_ready' => (int) ( $counts['documents_ready'] ?? 0 ),
-			'captions'        => (int) ( $library['captions'] ?? 0 ),
 		);
 
 		if ( isset( $library['files_in_use'] ) ) {
@@ -650,6 +704,9 @@ class Dashboard_Widget {
 
 	/**
 	 * The numbers behind the Watching tiles, the plays chart and the top videos list.
+	 *
+	 * A part the summary marks unavailable (top videos or history) has no value,
+	 * so visible_tiles() leaves it out this time without forgetting it.
 	 *
 	 * @param array $summary From Dashboard_Widget_Summary::shape_summary().
 	 * @return array Values keyed by tile ID. The chart's value is its days with plays.
@@ -663,7 +720,7 @@ class Dashboard_Widget {
 			}
 		}
 
-		return array(
+		$values = array(
 			'watch_seconds' => (float) ( $receipts['watch_seconds'] ?? 0 ),
 			'plays'         => (int) ( $receipts['plays'] ?? 0 ),
 			'viewers'       => (int) ( $receipts['unique_viewers'] ?? 0 ),
@@ -672,6 +729,16 @@ class Dashboard_Widget {
 			'chart_plays'   => $active_days,
 			'top_videos'    => count( (array) ( $summary['top_videos'] ?? array() ) ),
 		);
+
+		$unavailable = (array) ( $summary['unavailable'] ?? array() );
+		if ( in_array( 'history', $unavailable, true ) ) {
+			unset( $values['chart_plays'] );
+		}
+		if ( in_array( 'top_videos', $unavailable, true ) ) {
+			unset( $values['top_videos'] );
+		}
+
+		return $values;
 	}
 
 	/**
@@ -825,6 +892,11 @@ class Dashboard_Widget {
 	 * own progress values, so statuses are matched case-insensitively. Finished
 	 * files are split by type, because GoDAM processes audio and documents too.
 	 *
+	 * Failed counts only the types GoDAM processes, so every counted file can be
+	 * retried from Tools. `blocked` is not counted: it means storage was over the
+	 * limit at upload (the storage alert covers that), and it is also set on file
+	 * types GoDAM never processes.
+	 *
 	 * @param array $rows Rows of array( 'mime' => string, 'status' => string, 'total' => int ).
 	 * @return array Counts: videos_ready, audio_ready, documents_ready, transcoded (all three),
 	 *               failed, processing and total (every status).
@@ -840,8 +912,6 @@ class Dashboard_Widget {
 			'total'           => 0,
 		);
 		$groups = array(
-			'failed'      => 'failed',
-			'blocked'     => 'failed',
 			'queued'      => 'processing',
 			'downloading' => 'processing',
 			'downloaded'  => 'processing',
@@ -859,11 +929,16 @@ class Dashboard_Widget {
 
 			$counts['total'] += $total;
 
+			$family = self::mime_family( $row['mime'] ?? '' );
+
 			if ( 'transcoded' === $status ) {
-				$family = self::mime_family( $row['mime'] ?? '' );
 				if ( isset( $ready[ $family ] ) ) {
 					$counts[ $ready[ $family ] ] += $total;
 					$counts['transcoded']        += $total;
+				}
+			} elseif ( 'failed' === $status ) {
+				if ( isset( $ready[ $family ] ) ) {
+					$counts['failed'] += $total;
 				}
 			} elseif ( isset( $groups[ $status ] ) ) {
 				$counts[ $groups[ $status ] ] += $total;
@@ -1026,8 +1101,12 @@ class Dashboard_Widget {
 	 * @return array With 'message' and, when there is one, 'action_label' and 'action_url'.
 	 */
 	private function get_attention_copy( array $item ) {
-		$percent = isset( $item['percent'] ) ? number_format_i18n( $item['percent'], 0 ) : '';
-		$godam   = admin_url( 'admin.php?page=rtgodam' );
+		// Round a warning down, so 99.6% never reads "100% full" while uploads still transcode.
+		$percent = '';
+		if ( isset( $item['percent'] ) ) {
+			$percent = number_format_i18n( 'warning' === ( $item['tone'] ?? '' ) ? floor( $item['percent'] ) : $item['percent'], 0 );
+		}
+		$godam = admin_url( 'admin.php?page=rtgodam' );
 
 		switch ( $item['id'] ) {
 			case 'key_expired':
@@ -1070,12 +1149,18 @@ class Dashboard_Widget {
 				);
 			case 'transcode_failed':
 				$count = (int) ( $item['count'] ?? 0 );
-				return array(
+				$copy  = array(
 					/* translators: %s: number of files. */
-					'message'      => sprintf( _n( 'GoDAM could not process %s file.', 'GoDAM could not process %s files.', $count, 'godam' ), number_format_i18n( $count ) ),
-					'action_label' => __( 'Retry', 'godam' ),
-					'action_url'   => admin_url( 'admin.php?page=rtgodam_tools' ),
+					'message' => sprintf( _n( 'GoDAM could not process %s file.', 'GoDAM could not process %s files.', $count, 'godam' ), number_format_i18n( $count ) ),
 				);
+
+				// Tools only exists while the key verifies, and only for editors and above.
+				if ( rtgodam_is_api_key_valid() && current_user_can( self::GODAM_PAGE_CAP ) ) {
+					$copy['action_label'] = __( 'Retry', 'godam' );
+					$copy['action_url']   = admin_url( 'admin.php?page=rtgodam_tools' );
+				}
+
+				return $copy;
 		}
 
 		return array( 'message' => '' );
@@ -1116,15 +1201,32 @@ class Dashboard_Widget {
 		}
 
 		if ( 'not_connected' !== $model['state'] ) {
+			$open = '';
+			if ( current_user_can( self::GODAM_PAGE_CAP ) ) {
+				$open = sprintf(
+					'<a href="%1$s">%2$s%3$s</a>',
+					esc_url( admin_url( 'admin.php?page=rtgodam' ) ),
+					esc_html__( 'Open GoDAM', 'godam' ),
+					self::ARROW
+				);
+			}
+
 			printf(
-				'<p class="rtgodam-dw__footer"><a href="%1$s">%2$s%3$s</a><span class="rtgodam-dw__updated" data-rtgodam-dw="updated"></span></p>',
-				esc_url( admin_url( 'admin.php?page=rtgodam' ) ),
-				esc_html__( 'Open GoDAM', 'godam' ),
-				self::ARROW // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- constant markup.
+				'<p class="rtgodam-dw__footer">%s<span class="rtgodam-dw__updated" data-rtgodam-dw="updated"></span></p>',
+				$open // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts above.
 			);
 		}
 
 		echo '</div>';
+	}
+
+	/**
+	 * Render the widget while it is hidden in Screen Options: one line, no counts.
+	 *
+	 * @return void
+	 */
+	public function render_hidden() {
+		printf( '<p class="rtgodam-dw__status">%s</p>', esc_html__( 'Reload the page to load your GoDAM numbers.', 'godam' ) );
 	}
 
 	/**
@@ -1269,7 +1371,7 @@ class Dashboard_Widget {
 			case '':
 				return '';
 			case 'godam':
-				return admin_url( 'admin.php?page=rtgodam' );
+				return current_user_can( self::GODAM_PAGE_CAP ) ? admin_url( 'admin.php?page=rtgodam' ) : '';
 			case 'library':
 				return admin_url( 'upload.php' );
 		}
@@ -1290,31 +1392,15 @@ class Dashboard_Widget {
 	}
 
 	/**
-	 * The Media Library filter key for a file type.
+	 * The Media Library filter key for a file type: images, audio and video
+	 * have keys of their own in core's filter.
 	 *
-	 * Images, audio and video have keys of their own. Core names its Documents
-	 * filter by the MIME types it covers, so the documents key is the one that
-	 * includes PDF. That filter covers PDF and word-processor files; spreadsheets
-	 * and presentations sit under other filters.
-	 *
-	 * @param string   $target 'image', 'audio', 'video' or 'document'.
+	 * @param string   $target 'image', 'audio' or 'video'.
 	 * @param string[] $keys   Keys of get_post_mime_types().
 	 * @return string The key, or '' when there is none.
 	 */
 	public static function media_filter_key( $target, array $keys ) {
-		if ( in_array( $target, array( 'image', 'audio', 'video' ), true ) ) {
-			return in_array( $target, $keys, true ) ? $target : '';
-		}
-
-		if ( 'document' === $target ) {
-			foreach ( $keys as $key ) {
-				if ( in_array( 'application/pdf', explode( ',', (string) $key ), true ) ) {
-					return (string) $key;
-				}
-			}
-		}
-
-		return '';
+		return in_array( $target, array( 'image', 'audio', 'video' ), true ) && in_array( $target, $keys, true ) ? $target : '';
 	}
 
 	/**
@@ -1357,7 +1443,8 @@ class Dashboard_Widget {
 				$hours = $hours >= 10 ? round( $hours ) : round( $hours, 1 );
 				return array(
 					'value' => number_format_i18n( $hours, $hours >= 10 || floor( $hours ) === $hours ? 0 : 1 ),
-					'label' => _n( 'hour of video', 'hours of video', (int) ceil( $hours ), 'godam' ),
+					// Only exactly one hour is singular; "0.5 hours" and "1.5 hours" are plural.
+					'label' => _n( 'hour of video', 'hours of video', 1.0 === (float) $hours ? 1 : max( 2, (int) ceil( $hours ) ), 'godam' ),
 					'title' => __( 'The combined length of the videos in your Media Library.', 'godam' ),
 				);
 			case 'videos_ready':
@@ -1377,12 +1464,6 @@ class Dashboard_Widget {
 					'value' => number_format_i18n( $count ),
 					'label' => _n( 'document ready to preview', 'documents ready to preview', $count, 'godam' ),
 					'title' => __( 'Documents GoDAM has prepared for the on-page viewer.', 'godam' ),
-				);
-			case 'captions':
-				return array(
-					'value' => number_format_i18n( $count ),
-					'label' => _n( 'video with captions', 'videos with captions', $count, 'godam' ),
-					'title' => __( 'Videos with a GoDAM transcript, which the player shows as captions.', 'godam' ),
 				);
 		}
 

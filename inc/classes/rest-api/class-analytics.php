@@ -1460,12 +1460,25 @@ class Analytics extends Base {
 			);
 		}
 
+		$code = (int) wp_remote_retrieve_response_code( $response );
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		// An error status, or a body without the history, is a failed call, not an empty history.
+		if ( $code < 200 || $code >= 300 || ! is_array( $body ) || ! isset( $body['dashboard_metrics_history'] ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'errorType' => 'microservice_error',
+					'message'   => __( 'Could not load the analytics history.', 'godam' ),
+				),
+				200
+			);
+		}
 
 		return new WP_REST_Response(
 			array(
 				'status'                    => 'success',
-				'dashboard_metrics_history' => $body['dashboard_metrics_history'] ?? array(),
+				'dashboard_metrics_history' => is_array( $body['dashboard_metrics_history'] ) ? $body['dashboard_metrics_history'] : array(),
 			),
 			200
 		);
