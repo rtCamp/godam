@@ -124,6 +124,18 @@ $godam-tour-muted: rgba(255, 255, 255, 0.72);
 		outline-offset: 2px;
 	}
 
+	// On interactive steps the forward button is a "Skip" escape hatch, not the
+	// primary action (that's the click on the page), so tone it down to match Back.
+	&.godam-ml-tour--skippable .driver-popover-next-btn {
+		background: rgba(255, 255, 255, 0.12);
+		color: #fff;
+
+		&:hover,
+		&:focus-visible {
+			background: rgba(255, 255, 255, 0.2);
+		}
+	}
+
 	.driver-popover-close-btn {
 		color: $godam-tour-muted;
 		font-size: 18px;
