@@ -7,7 +7,7 @@
 /**
  * WordPress dependencies
  */
-import { useState, useEffect, useCallback, createPortal } from '@wordpress/element';
+import { useState, useEffect, useCallback, useRef, createPortal } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -46,6 +46,9 @@ const TourApp = ( { bulbContainer } ) => {
 	// 'welcome' | 'end' | 'finish' | null
 	const [ modal, setModal ] = useState( null );
 	const [ neverTaken, setNeverTaken ] = useState( getTourState() === TOUR_STATES.PENDING );
+	// The bulb works while the page is still loading; once it's used, the
+	// first-run welcome must not pop up over whatever the user chose.
+	const bulbUsed = useRef( false );
 
 	useEffect( () => {
 		tour.configure( {
@@ -79,7 +82,7 @@ const TourApp = ( { bulbContainer } ) => {
 
 			if ( shouldAutoStart() ) {
 				await waitForPageReady();
-				if ( ! cancelled ) {
+				if ( ! cancelled && ! bulbUsed.current && shouldAutoStart() ) {
 					setModal( 'welcome' );
 				}
 			}
@@ -107,6 +110,7 @@ const TourApp = ( { bulbContainer } ) => {
 	}, [] );
 
 	const handleBulbClick = () => {
+		bulbUsed.current = true;
 		if ( tour.isActive() ) {
 			return;
 		}
