@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-09T06:56:10+00:00\n"
+"POT-Creation-Date: 2026-10-09T07:37:42+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -2291,7 +2291,7 @@ msgid "Comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: inc/helpers/custom-functions.php:1604
+#: inc/helpers/custom-functions.php:1613
 #: assets/src/js/godam-player/engagement.js:908
 #: assets/src/js/godam-player/engagement.js:915
 msgid "Anonymous"
@@ -2553,22 +2553,22 @@ msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: admin/godam-transcoder-functions.php:416
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:190
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:193
 msgid "Transcoding failed, please try again."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:209
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:212
 msgid "Not started"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:229
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:232
 msgid "Media is transcoded"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:265
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:268
 msgid "Transcoding…"
 msgstr ""
 
@@ -5232,34 +5232,33 @@ msgid "Made with ♥ by the GoDAM Team"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: assets/build/pages/video-editor.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:881
-#: pages/godam/components/PreflightNotices.jsx:53
-#: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:581
-msgid "Details"
-msgstr ""
-
-#: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:890
-#: pages/godam/components/PreflightNotices.jsx:61
+#: admin/class-rtgodam-transcoder-admin.php:882
+#: pages/godam/components/PreflightNotices.jsx:55
 msgid "How to fix"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
+#: admin/class-rtgodam-transcoder-admin.php:885
+#: pages/godam/components/PreflightNotices.jsx:58
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:180
+msgid "Contact Support"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
 #: admin/class-rtgodam-transcoder-admin.php:844
-#: pages/godam/components/PreflightNotices.jsx:92
+#: pages/godam/components/PreflightNotices.jsx:90
 msgid "GoDAM can't reach your site"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: admin/class-rtgodam-transcoder-admin.php:845
-#: pages/godam/components/PreflightNotices.jsx:93
+#: pages/godam/components/PreflightNotices.jsx:91
 msgid "New videos may stay at \"Processing\" because GoDAM can't send updates back to this site. A firewall, security plugin or Cloudflare rule is usually blocking it."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: admin/class-rtgodam-transcoder-admin.php:853
-#: pages/godam/components/PreflightNotices.jsx:102
+#: pages/godam/components/PreflightNotices.jsx:100
 msgid "GoDAM setup check"
 msgstr ""
 
@@ -5401,11 +5400,6 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:173
 msgid "Having any issue?"
-msgstr ""
-
-#: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:180
-msgid "Contact Support"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
@@ -9192,6 +9186,11 @@ msgstr ""
 msgid "Media name"
 msgstr ""
 
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:581
+msgid "Details"
+msgstr ""
+
 #. translators: %s: human-readable date the video was last edited.
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:594
@@ -10027,19 +10026,19 @@ msgid "There is an issue with your GoDAM API key. Transcoding may not work. Plea
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:987
+#: admin/class-rtgodam-transcoder-admin.php:982
 #, php-format
 msgid "<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:995
+#: admin/class-rtgodam-transcoder-admin.php:990
 #, php-format
 msgid "<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:1003
+#: admin/class-rtgodam-transcoder-admin.php:998
 #, php-format
 msgid "<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature."
 msgstr ""
@@ -11093,7 +11092,7 @@ msgid "Leave empty to allow any duration. Example: 180 = 3 minutes."
 msgstr ""
 
 #: inc/classes/gravity-forms/class-init.php:314
-#: inc/helpers/custom-functions.php:1498
+#: inc/helpers/custom-functions.php:1507
 msgid "Gravity forms"
 msgstr ""
 
@@ -12841,45 +12840,45 @@ msgstr ""
 msgid "GoDAM refused this file."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:761
+#: inc/helpers/custom-functions.php:770
 msgid "API key not found ( try refreshing the page )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:795
+#: inc/helpers/custom-functions.php:804
 msgid "Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1394
+#: inc/helpers/custom-functions.php:1403
 msgid "Form transcoding has been disabled by the site administrator."
 msgstr ""
 
 #. translators: %s: Entry ID for which transcoding failed
-#: inc/helpers/custom-functions.php:1534
+#: inc/helpers/custom-functions.php:1543
 #, php-format
 msgid "Transcoding failed | entry Id: %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1570
+#: inc/helpers/custom-functions.php:1579
 msgid "s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1887
+#: inc/helpers/custom-functions.php:1896
 msgid "Oops! We could not locate your video"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1898
+#: inc/helpers/custom-functions.php:1907
 msgid "Note: This is a simple image preview. The image and its layers may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1900
+#: inc/helpers/custom-functions.php:1909
 msgid "Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1902
+#: inc/helpers/custom-functions.php:1911
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2066
+#: inc/helpers/custom-functions.php:2075
 msgid "Video not found"
 msgstr ""
 

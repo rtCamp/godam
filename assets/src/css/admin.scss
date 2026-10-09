@@ -1165,22 +1165,9 @@ to ensure proper responsiveness and avoid layout issues.
 }
 
 // Licence preflight notices (see RTGODAM_Transcoder_Admin::preflight_notices()).
-.godam-preflight-notice {
-
-	&__details {
-		margin: 0.5em 0;
-
-		summary {
-			cursor: pointer;
-			color: #646970;
-		}
-	}
-
-	&__technical {
-		list-style: disc;
-		margin: 0.25em 0 0 1.5em;
-		color: #646970;
-		font-size: 12px;
-		word-break: break-word;
-	}
+.godam-preflight-notice__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
 }

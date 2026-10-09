@@ -9,7 +9,8 @@ import { __ } from '@wordpress/i18n';
  */
 import { hasValidAPIKey } from '../utils/index.js';
 
-const HOW_TO_FIX_URL = 'https://godam.io/docs/troubleshooting?utm_source=wordpress-plugin&utm_medium=settings&utm_campaign=preflight-check&utm_content=how-to-fix-button';
+const TROUBLESHOOTING_URL = 'https://godam.io/docs/troubleshooting/?utm_source=wordpress-plugin&utm_medium=settings&utm_campaign=preflight-check&utm_content=troubleshooting-button';
+const SUPPORT_URL = 'https://app.godam.io/helpdesk/my-tickets';
 
 /**
  * The licence preflight checks GoDAM Central flagged for this site.
@@ -34,32 +35,29 @@ const getPreflightIssues = () => {
 };
 
 /**
- * One preflight notice: a title and a sentence for the site owner, with Central's own
- * messages (meant for support) collapsed under "Details".
+ * One preflight notice: a title and a sentence for the site owner, the troubleshooting
+ * guide as the call to action, and Contact Support as a secondary link.
  *
- * @param {Object}   props
- * @param {string}   props.status  `error` or `warning`.
- * @param {string}   props.title   Notice title.
- * @param {string}   props.message What goes wrong and why, in a sentence or two.
- * @param {Object[]} props.checks  The checks behind the notice.
+ * @param {Object} props
+ * @param {string} props.status  `error` or `warning`.
+ * @param {string} props.title   Notice title.
+ * @param {string} props.message What goes wrong and why, in a sentence or two.
+ * @param {string} props.section Section of the troubleshooting guide that covers this problem.
  *
  * @return {JSX.Element} The notice.
  */
-const PreflightNotice = ( { status, title, message, checks } ) => (
+const PreflightNotice = ( { status, title, message, section = '' } ) => (
 	<Notice className="mb-4 godam-preflight-notice" status={ status } isDismissible={ false }>
 		<p><strong>{ title }</strong></p>
 		<p>{ message }</p>
-		<details className="godam-preflight-notice__details">
-			<summary>{ __( 'Details', 'godam' ) }</summary>
-			<ul className="godam-preflight-notice__technical">
-				{ checks.map( ( check ) => (
-					<li key={ check.id }>{ `${ check.label }: ${ check.message } ${ check.remediation || '' }` }</li>
-				) ) }
-			</ul>
-		</details>
-		<Button variant="secondary" href={ HOW_TO_FIX_URL } target="_blank" rel="noopener noreferrer">
-			{ __( 'How to fix', 'godam' ) }
-		</Button>
+		<div className="godam-preflight-notice__actions">
+			<Button variant="primary" href={ TROUBLESHOOTING_URL + ( section ? `#${ section }` : '' ) } target="_blank" rel="noopener noreferrer">
+				{ __( 'How to fix', 'godam' ) }
+			</Button>
+			<Button variant="link" href={ SUPPORT_URL } target="_blank" rel="noopener noreferrer">
+				{ __( 'Contact Support', 'godam' ) }
+			</Button>
+		</div>
 	</Notice>
 );
 
@@ -91,7 +89,7 @@ const PreflightNotices = () => {
 					status={ callbackIssues.some( ( check ) => check.status === 'fail' ) ? 'error' : 'warning' }
 					title={ __( 'GoDAM can\'t reach your site', 'godam' ) }
 					message={ __( 'New videos may stay at "Processing" because GoDAM can\'t send updates back to this site. A firewall, security plugin or Cloudflare rule is usually blocking it.', 'godam' ) }
-					checks={ callbackIssues }
+					section="site-not-reachable"
 				/>
 			) }
 
@@ -101,7 +99,6 @@ const PreflightNotices = () => {
 					status={ check.status === 'fail' ? 'error' : 'warning' }
 					title={ check.label || __( 'GoDAM setup check', 'godam' ) }
 					message={ check.remediation || check.message }
-					checks={ [ check ] }
 				/>
 			) ) }
 		</>

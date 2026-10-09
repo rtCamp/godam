@@ -805,8 +805,8 @@ class RTGODAM_Transcoder_Admin {
 	 * Show the problems GoDAM Central's licence preflight found on this site.
 	 *
 	 * The notice speaks to the site owner: what goes wrong and the likely cause, in a
-	 * sentence. Central's own messages are raw connection errors meant for support, so
-	 * they sit in a collapsed "Details" section.
+	 * sentence, then where to fix it. Central's own messages are diagnostics meant for
+	 * support, so the notice links to the troubleshooting guide and to support instead.
 	 *
 	 * The four callback checks share a cause (something between Central and this site
 	 * is blocking the requests), so they make one notice. Any other failing or warning
@@ -843,7 +843,7 @@ class RTGODAM_Transcoder_Admin {
 				in_array( 'fail', wp_list_pluck( $callback_issues, 'status' ), true ) ? 'error' : 'warning',
 				__( 'GoDAM can\'t reach your site', 'godam' ),
 				__( 'New videos may stay at "Processing" because GoDAM can\'t send updates back to this site. A firewall, security plugin or Cloudflare rule is usually blocking it.', 'godam' ),
-				$callback_issues
+				'site-not-reachable'
 			);
 		}
 
@@ -851,8 +851,7 @@ class RTGODAM_Transcoder_Admin {
 			$this->display_preflight_notice(
 				'fail' === $check['status'] ? 'error' : 'warning',
 				$check['label'] ?? __( 'GoDAM setup check', 'godam' ),
-				'' !== ( $check['remediation'] ?? '' ) ? $check['remediation'] : ( $check['message'] ?? '' ),
-				array( $check )
+				'' !== ( $check['remediation'] ?? '' ) ? $check['remediation'] : ( $check['message'] ?? '' )
 			);
 		}
 	}
@@ -860,16 +859,17 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Display a single preflight notice.
 	 *
-	 * Uses the same header layout as the usage-limit notices.
+	 * Uses the same header layout as the usage-limit notices: the troubleshooting guide
+	 * is the call to action, with Contact Support as a secondary link.
 	 *
-	 * @param string  $type    Notice type: `error` or `warning`.
-	 * @param string  $title   Notice title.
-	 * @param string  $message One or two sentences for the site owner.
-	 * @param array[] $checks  The checks behind the notice, listed under "Details" for support.
+	 * @param string $type    Notice type: `error` or `warning`.
+	 * @param string $title   Notice title.
+	 * @param string $message One or two sentences for the site owner.
+	 * @param string $section Section of the troubleshooting guide that covers this problem.
 	 */
-	private function display_preflight_notice( $type, $title, $message, $checks ) {
+	private function display_preflight_notice( $type, $title, $message, $section = '' ) {
 		$logo_url  = plugins_url( 'assets/src/images/godam-logo.svg', __DIR__ );
-		$guide_url = 'https://godam.io/docs/troubleshooting?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=preflight-check&utm_content=how-to-fix-button';
+		$guide_url = 'https://godam.io/docs/troubleshooting/?utm_source=wordpress-plugin&utm_medium=admin-notice&utm_campaign=preflight-check&utm_content=troubleshooting-button' . ( '' !== $section ? '#' . $section : '' );
 		?>
 		<div class="notice notice-<?php echo esc_attr( $type ); ?> godam-preflight-notice">
 			<div class="godam-notice-header">
@@ -877,17 +877,12 @@ class RTGODAM_Transcoder_Admin {
 				<div>
 					<p><strong><?php echo esc_html( $title ); ?></strong></p>
 					<p><?php echo esc_html( $message ); ?></p>
-					<details class="godam-preflight-notice__details">
-						<summary><?php esc_html_e( 'Details', 'godam' ); ?></summary>
-						<ul class="godam-preflight-notice__technical">
-							<?php foreach ( $checks as $check ) : ?>
-								<li><?php echo esc_html( sprintf( '%s: %s %s', $check['label'] ?? '', $check['message'] ?? '', $check['remediation'] ?? '' ) ); ?></li>
-							<?php endforeach; ?>
-						</ul>
-					</details>
-					<p>
-						<a href="<?php echo esc_url( $guide_url ); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+					<p class="godam-preflight-notice__actions">
+						<a href="<?php echo esc_url( $guide_url ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary">
 							<?php esc_html_e( 'How to fix', 'godam' ); ?>
+						</a>
+						<a href="https://app.godam.io/helpdesk/my-tickets" target="_blank" rel="noopener noreferrer">
+							<?php esc_html_e( 'Contact Support', 'godam' ); ?>
 						</a>
 					</p>
 				</div>
