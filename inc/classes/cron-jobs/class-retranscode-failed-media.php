@@ -196,7 +196,7 @@ class Retranscode_Failed_Media {
 	 * wp_media_transcoding(). Writing the copy back would undo that and retry a file
 	 * Central refused, so every write re-reads the queue first.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.3.2
 	 *
 	 * @param int|string $key   The entry's key in the queue.
 	 * @param array|null $entry The new entry, or null to remove it.

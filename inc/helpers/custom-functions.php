@@ -514,7 +514,7 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
  * The quota check is left out: `usage_limit_notices()` already warns about usage,
  * from fresher numbers and at a lower threshold.
  *
- * @since n.e.x.t
+ * @since 2.3.2
  *
  * @see https://github.com/rtCamp/godam-core/issues/856
  *
@@ -553,7 +553,7 @@ function rtgodam_get_preflight_issues() {
  * size checks, but only to say they were skipped. They add nothing, so only the
  * reachability failure is kept in that case.
  *
- * @since n.e.x.t
+ * @since 2.3.2
  *
  * @param array $results The `message.results` list from Central's HTTP 417 response.
  *
@@ -604,7 +604,7 @@ function rtgodam_get_preflight_failure_message( $results ) {
  * (unknown licence, licence inactive, storage full, site not allowed). The known
  * reasons get plain wording; anything else falls back to Central's own message.
  *
- * @since n.e.x.t
+ * @since 2.3.2
  *
  * @see https://github.com/rtCamp/godam-core/issues/856
  *
@@ -689,7 +689,7 @@ function rtgodam_get_job_refusal( $status_code, $body ) {
  * Follows rtgodam_get_preflight_failure_message(): when the URL can't be reached, only
  * that check is kept.
  *
- * @since n.e.x.t
+ * @since 2.3.2
  *
  * @param array $results The `message.results` list from Central's HTTP 417 response.
  *
@@ -721,7 +721,7 @@ function rtgodam_get_preflight_failure_detail( $results ) {
  * Frappe sends it JSON-encoded twice in `_server_messages`; `exception` carries it too,
  * after the exception class name.
  *
- * @since n.e.x.t
+ * @since 2.3.2
  *
  * @param array $body Central's decoded JSON answer.
  *
@@ -755,7 +755,7 @@ function rtgodam_get_frappe_error_message( $body ) {
  * Retrying sends the same request, so the attachment is also dropped from the 5xx
  * retry queue in case an earlier attempt put it there.
  *
- * @since n.e.x.t
+ * @since 2.3.2
  *
  * @see https://github.com/rtCamp/godam-core/issues/856
  *
@@ -796,7 +796,7 @@ function rtgodam_record_job_refusal( $attachment_id, $response ) {
  * 5xx branch of wp_media_transcoding()), so a key can hold another attachment. The
  * embedded attachment_id decides; the key only counts for an entry without one.
  *
- * @since n.e.x.t
+ * @since 2.3.2
  *
  * @param int $attachment_id ID of attachment.
  *
@@ -822,7 +822,7 @@ function rtgodam_remove_from_retry_queue( $attachment_id ) {
 /**
  * Whether an attachment's failure is Central refusing its job (see rtgodam_record_job_refusal()).
  *
- * @since n.e.x.t
+ * @since 2.3.2
  *
  * @param string $error_code The attachment's `rtgodam_transcoding_error_code`.
  *
