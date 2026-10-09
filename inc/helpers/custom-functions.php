@@ -577,14 +577,14 @@ function rtgodam_get_preflight_failure_message( $results ) {
 	// Central refuses every http:// source, and "make it publicly accessible" is the wrong fix for that.
 	foreach ( $failed as $check ) {
 		if ( false !== stripos( $check['message'] ?? '', "disallowed scheme 'http'" ) ) {
-			return __( 'GoDAM only downloads files served over HTTPS. Serve your media over https:// to transcode this file.', 'godam' );
+			return __( 'Only files served over HTTPS can be transcoded. Serve your media over https://.', 'godam' );
 		}
 	}
 
 	$known = array(
-		'check_source_reachable'    => __( 'GoDAM couldn\'t download this file from your site. Make sure uploaded videos are publicly accessible.', 'godam' ),
+		'check_source_reachable'    => __( 'This file couldn\'t be downloaded from your site. Make sure uploaded videos are publicly accessible.', 'godam' ),
 		'check_source_content_type' => __( 'The file\'s link opens a web page instead of the video, often because of a login or media protection plugin.', 'godam' ),
-		'check_source_size'         => __( 'The file is empty or larger than GoDAM accepts. Try uploading it again.', 'godam' ),
+		'check_source_size'         => __( 'The file is empty or too large. Try uploading it again.', 'godam' ),
 	);
 
 	$messages = array();
@@ -652,8 +652,8 @@ function rtgodam_get_job_refusal( $status_code, $body ) {
 
 	$known = array(
 		// An unknown key fails Central's link check (HTTP 417) before its own 404 "Invalid License".
-		'Could not find License' => __( 'GoDAM didn\'t recognise this site\'s API key. Check the key in GoDAM settings.', 'godam' ),
-		'Invalid License'        => __( 'GoDAM didn\'t recognise this site\'s API key. Check the key in GoDAM settings.', 'godam' ),
+		'Could not find License' => __( 'This site\'s API key wasn\'t recognised. Check the key in GoDAM settings.', 'godam' ),
+		'Invalid License'        => __( 'This site\'s API key wasn\'t recognised. Check the key in GoDAM settings.', 'godam' ),
 		'License Inactive'       => __( 'Your GoDAM licence is inactive. Renew your plan to transcode new uploads.', 'godam' ),
 		'Storage limit exceeded' => __( 'Your GoDAM storage is full. Upgrade your plan or delete unused files.', 'godam' ),
 		'not whitelisted'        => __( 'This site isn\'t on your GoDAM account\'s list of allowed sites. Ask your GoDAM admin to add it.', 'godam' ),
@@ -669,7 +669,7 @@ function rtgodam_get_job_refusal( $status_code, $body ) {
 	}
 
 	if ( '' === $message ) {
-		$message = '' !== $reason ? $reason : __( 'GoDAM refused this file.', 'godam' );
+		$message = '' !== $reason ? $reason : __( 'This file can\'t be transcoded.', 'godam' );
 	}
 
 	$message = sanitize_text_field( $message );
@@ -817,6 +817,19 @@ function rtgodam_remove_from_retry_queue( $attachment_id ) {
 	if ( count( $remaining ) !== count( (array) $failed_transcoding_attachments ) ) {
 		update_option( 'rtgodam-failed-transcoding-attachments', $remaining );
 	}
+}
+
+/**
+ * Whether Central refused a job because of the plan: storage full or licence inactive.
+ *
+ * @since 2.3.2
+ *
+ * @param string $detail Central's own wording, from `rtgodam_transcoding_error_detail`.
+ *
+ * @return bool
+ */
+function rtgodam_refusal_needs_plan( $detail ) {
+	return false !== stripos( (string) $detail, 'Storage limit exceeded' ) || false !== stripos( (string) $detail, 'License Inactive' );
 }
 
 /**

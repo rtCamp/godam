@@ -324,7 +324,7 @@ class Transcoding extends Base {
 				// This route is public, and a refusal's message can be Central's own wording (an
 				// unknown reason), which can carry URLs. Only someone who can edit the file sees it.
 				if ( rtgodam_is_job_refusal( $error_code ) && ! $can_edit ) {
-					$error_msg = __( 'GoDAM can\'t transcode this file.', 'godam' );
+					$error_msg = __( 'This file can\'t be transcoded.', 'godam' );
 				}
 
 				return array(
@@ -988,7 +988,7 @@ class Transcoding extends Base {
 
 			if ( '' !== $detail ) {
 				// translators: %s: GoDAM Central's own wording of why it refused the file.
-				$message .= ' ' . sprintf( __( '(GoDAM said: %s)', 'godam' ), $detail );
+				$message .= ' ' . sprintf( __( '(Details: %s)', 'godam' ), $detail );
 			}
 
 			return new \WP_REST_Response(

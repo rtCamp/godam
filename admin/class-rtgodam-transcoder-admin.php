@@ -847,8 +847,8 @@ class RTGODAM_Transcoder_Admin {
 		if ( ! empty( $callback_issues ) ) {
 			$this->display_preflight_notice(
 				in_array( 'fail', wp_list_pluck( $callback_issues, 'status' ), true ) ? 'error' : 'warning',
-				__( 'GoDAM can\'t reach your site', 'godam' ),
-				__( 'New videos may stay at "Processing" because GoDAM can\'t send updates back to this site. A firewall, security plugin or Cloudflare rule is usually blocking it. After you fix it, this message can take a few hours to clear.', 'godam' ),
+				__( 'Your site can\'t receive transcoding updates', 'godam' ),
+				__( 'New videos may stay at "Processing" because transcoding updates can\'t reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it. After you fix it, this message can take a few hours to clear.', 'godam' ),
 				'site-not-reachable'
 			);
 		}
@@ -856,7 +856,7 @@ class RTGODAM_Transcoder_Admin {
 		foreach ( array_diff_key( $issues, $callback_issues ) as $check ) {
 			$this->display_preflight_notice(
 				'fail' === $check['status'] ? 'error' : 'warning',
-				$check['label'] ?? __( 'GoDAM setup check', 'godam' ),
+				$check['label'] ?? __( 'Setup check', 'godam' ),
 				'' !== ( $check['remediation'] ?? '' ) ? $check['remediation'] : ( $check['message'] ?? '' )
 			);
 		}

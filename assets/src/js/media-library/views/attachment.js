@@ -10,7 +10,6 @@ import { __ } from '@wordpress/i18n';
  */
 import { isAPIKeyValid, isDocumentModel, isFolderOrgDisabled } from '../utility';
 import GodamLogo from '../../../images/godam-logo-gradient.svg';
-import { isRefusal, markRefused } from '../transcoding-status/refusal';
 
 /**
  * SVG icons for transcoding states
@@ -208,16 +207,6 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 
 				this.$el.addClass( 'transcoding-status' );
 				this.$el.addClass( 'transcoding-status--failed' );
-
-				// Central refused the job: say why on the tile (see markRefused()).
-				const errorCode = this.model.get( 'transcoding_error_code' );
-
-				if ( isRefusal( errorCode ) ) {
-					markRefused( this.el, this.el.querySelector( '.transcoding-status__loader' ), {
-						code: errorCode,
-						reason: this.model.get( 'transcoding_error_msg' ) || '',
-					} );
-				}
 			} else if ( transcodingStatus === 'blocked' ) {
 				// Show blocked status with warning icon (same as transcoding failed)
 				this.$el.append( `

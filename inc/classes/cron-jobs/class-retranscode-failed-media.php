@@ -152,7 +152,7 @@ class Retranscode_Failed_Media {
 					$real_attachment_id,
 					'rtgodam_transcoding_error_msg',
 					// translators: %d is the maximum number of retry attempts.
-					sprintf( __( 'Transcoding failed after %d retry attempts: GoDAM Central couldn\'t accept the job on any of them. Retranscode it later, or contact support if this keeps happening.', 'godam' ), self::MAX_RETRY_ATTEMPTS )
+					sprintf( __( 'Transcoding failed after %d retry attempts. Retranscode it later, or contact support if this keeps happening.', 'godam' ), self::MAX_RETRY_ATTEMPTS )
 				);
 				do_action( 'rtgodam_after_attachment_lookup' );
 				$this->update_queue_entry( $real_attachment_id, null );

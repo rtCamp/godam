@@ -16,6 +16,7 @@ import { addIcon, trashIcon, editIcon, barChartIcon } from '../media-library-ico
 import { canManageAttachment, isDocumentModel } from '../utility';
 import { loadVideoJs, getLoadedVideoJs } from '../videojs-loader.js';
 import renderMoveToFolderField from './fields/move-to-folder-field';
+import renderTranscodingRefusalPanel from './fields/transcoding-refusal-panel';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -997,6 +998,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// the ORIGINAL Attachment.Details captured at module scope, so replacing
 		// wp.media.view.Attachment.Details does not reach this view.
 		renderMoveToFolderField( this );
+		renderTranscodingRefusalPanel( this );
 
 		// Check if the attachment is a video and render the edit buttons.
 		if ( this.model.get( 'type' ) === 'video' ) {

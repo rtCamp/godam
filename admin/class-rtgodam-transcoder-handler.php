@@ -590,13 +590,13 @@ class RTGODAM_Transcoder_Handler {
 				$status_code = is_wp_error( $upload_page ) ? 0 : intval( $upload_page['response']['code'] );
 
 				if ( 429 === $status_code ) {
-					$cause = __( 'GoDAM Central is receiving too many requests right now.', 'godam' );
+					$cause = __( 'Too many transcoding requests right now.', 'godam' );
 				} elseif ( 408 === $status_code ) {
-					$cause = __( 'GoDAM Central timed out.', 'godam' );
+					$cause = __( 'The transcoding request timed out.', 'godam' );
 				} elseif ( 0 === $status_code ) {
-					$cause = __( 'GoDAM Central couldn\'t be reached.', 'godam' );
+					$cause = __( 'The transcoding service couldn\'t be reached.', 'godam' );
 				} else {
-					$cause = __( 'GoDAM Central returned a server error.', 'godam' );
+					$cause = __( 'The transcoding service had a server error.', 'godam' );
 				}
 
 				update_post_meta(

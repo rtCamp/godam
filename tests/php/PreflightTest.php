@@ -92,7 +92,7 @@ class PreflightTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 'GoDAM couldn\'t download this file from your site. Make sure uploaded videos are publicly accessible.', $message );
+		$this->assertSame( 'This file couldn\'t be downloaded from your site. Make sure uploaded videos are publicly accessible.', $message );
 	}
 
 	/**
@@ -108,7 +108,7 @@ class PreflightTest extends TestCase {
 		);
 
 		$this->assertSame(
-			'The file is empty or larger than GoDAM accepts. Try uploading it again. Something new Central checks.',
+			'The file is empty or too large. Try uploading it again. Something new Central checks.',
 			$message
 		);
 	}
@@ -136,7 +136,7 @@ class PreflightTest extends TestCase {
 		);
 
 		$this->assertSame( 'preflight_failed', $refusal['code'] );
-		$this->assertSame( 'The file is empty or larger than GoDAM accepts. Try uploading it again.', $refusal['message'] );
+		$this->assertSame( 'The file is empty or too large. Try uploading it again.', $refusal['message'] );
 	}
 
 	/**
@@ -170,7 +170,7 @@ class PreflightTest extends TestCase {
 			'unknown licence (404, exception only)'    => array(
 				404,
 				array( 'exception' => 'frappe.exceptions.DoesNotExistError: Invalid License' ),
-				'GoDAM didn\'t recognise this site\'s API key. Check the key in GoDAM settings.',
+				'This site\'s API key wasn\'t recognised. Check the key in GoDAM settings.',
 			),
 			'storage full (403)'                       => array(
 				403,
@@ -187,7 +187,7 @@ class PreflightTest extends TestCase {
 				array( 'exception' => 'frappe.exceptions.ValidationError: Title is too long' ),
 				'Title is too long',
 			),
-			'no message at all'                        => array( 400, array(), 'GoDAM refused this file.' ),
+			'no message at all'                        => array( 400, array(), "This file can't be transcoded." ),
 		);
 	}
 
@@ -208,7 +208,7 @@ class PreflightTest extends TestCase {
 			)
 		);
 
-		$this->assertSame( 'GoDAM only downloads files served over HTTPS. Serve your media over https:// to transcode this file.', $refusal['message'] );
+		$this->assertSame( 'Only files served over HTTPS can be transcoded. Serve your media over https://.', $refusal['message'] );
 		$this->assertSame( "Could not reach video URL: Refusing to fetch source URL with disallowed scheme 'http'.", $refusal['detail'] );
 	}
 
@@ -334,9 +334,19 @@ class PreflightTest extends TestCase {
 		);
 
 		$this->assertSame( 'job_refused', $refusal['code'] );
-		$this->assertSame( "GoDAM didn't recognise this site's API key. Check the key in GoDAM settings.", $refusal['message'] );
+		$this->assertSame( "This site's API key wasn't recognised. Check the key in GoDAM settings.", $refusal['message'] );
 		$this->assertStringNotContainsString( 'abcdef1234567890', $refusal['detail'] );
 		$this->assertStringEndsWith( '7890', $refusal['detail'] );
+	}
+
+	/**
+	 * The details panel offers the plan page only when the plan is the fix.
+	 */
+	public function test_refusal_needs_plan_only_for_storage_and_inactive_licence() {
+		$this->assertTrue( rtgodam_refusal_needs_plan( 'Storage limit exceeded' ) );
+		$this->assertTrue( rtgodam_refusal_needs_plan( 'frappe.exceptions.PermissionError: License Inactive' ) );
+		$this->assertFalse( rtgodam_refusal_needs_plan( 'Site not whitelisted' ) );
+		$this->assertFalse( rtgodam_refusal_needs_plan( '' ) );
 	}
 
 	/**
@@ -375,7 +385,7 @@ class PreflightTest extends TestCase {
 	 */
 	public function status_viewers() {
 		return array(
-			'anonymous' => array( array(), "GoDAM can't transcode this file.", '' ),
+			'anonymous' => array( array(), "This file can't be transcoded.", '' ),
 			'editor'    => array( array( 'edit_post' ), 'Title is too long for https://internal.example/x', 'Title is too long for https://internal.example/x' ),
 		);
 	}

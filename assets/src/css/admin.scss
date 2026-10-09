@@ -612,8 +612,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 			opacity: 0;
 		}
 
-		&:hover::after,
-		&:focus-visible::after {
+		&:hover::after {
 			opacity: 1;
 		}
 	}
@@ -639,31 +638,6 @@ $media-frame-width: calc(300px + 2 * 24px);
 				width: 75%;
 				height: 75%;
 			}
-		}
-	}
-
-	// Central refused the job: a short, single-line label. The full reason is in list view,
-	// the Tools log and the icon's aria-label.
-	&--preflight-failed,
-	&--job-refused {
-
-		.transcoding-status__loader::after {
-			width: auto;
-			white-space: nowrap;
-		}
-	}
-
-	&--preflight-failed {
-
-		.transcoding-status__loader {
-			--status-text: "Source file check failed";
-		}
-	}
-
-	&--job-refused {
-
-		.transcoding-status__loader {
-			--status-text: "Refused by GoDAM";
 		}
 	}
 
@@ -1179,4 +1153,45 @@ to ensure proper responsiveness and avoid layout issues.
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 12px;
+}
+
+// Why GoDAM Central refused to transcode the file, at the top of the attachment details
+// sidebar (see views/fields/transcoding-refusal-panel.js).
+.godam-transcoding-refusal {
+	margin: 0 0 16px;
+	padding: 12px 14px;
+	border-left: 4px solid #d63638;
+	background: #fcf0f1;
+	text-align: left;
+
+	p {
+		margin: 0 0 8px;
+	}
+
+	&__title {
+		font-weight: 600;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-bottom: 8px;
+	}
+
+	&__status:empty {
+		display: none;
+	}
+
+	&__details {
+
+		summary {
+			cursor: pointer;
+			color: #50575e;
+		}
+
+		p {
+			margin: 8px 0 0;
+		}
+	}
 }
