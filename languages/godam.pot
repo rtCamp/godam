@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-09T06:06:16+00:00\n"
+"POT-Creation-Date: 2026-10-09T12:19:45+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -2434,10 +2434,11 @@ msgstr ""
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:325
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:329
 #: pages/godam/components/WooUnlockedNotice.jsx:202
-#: pages/media-library-tour/steps.js:228
-#: pages/media-library-tour/steps.js:250
-#: pages/media-library-tour/steps.js:265
-#: pages/media-library-tour/steps.js:281
+#: pages/media-library-tour/controller.js:333
+#: pages/media-library-tour/steps.js:234
+#: pages/media-library-tour/steps.js:256
+#: pages/media-library-tour/steps.js:271
+#: pages/media-library-tour/steps.js:287
 #: pages/video-editor/components/forms/FormPreview.js:86
 #: pages/video-editor/components/layers/CTALayer.js:265
 msgid "Skip"
@@ -2497,7 +2498,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/godam-player/managers/shareManager.js:331
 #: pages/godam/components/GoDAMHeader.jsx:107
-#: pages/media-library-tour/steps.js:414
+#: pages/media-library-tour/steps.js:420
 msgid "GoDAM Central"
 msgstr ""
 
@@ -2576,7 +2577,7 @@ msgstr ""
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
 #: assets/src/js/media-library/views/filters/media-move-to-folder.js:37
-#: pages/media-library-tour/steps.js:270
+#: pages/media-library-tour/steps.js:276
 #: pages/media-library/components/modal/MoveToFolderModal.jsx:226
 msgid "Move to folder"
 msgstr ""
@@ -6027,14 +6028,14 @@ msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/media-library-tour/controller.js:332
+#: pages/media-library-tour/controller.js:333
 #: pages/video-editor/onboarding/productGuide.js:197
 msgid "Next"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/src/js/godam-player/engagement.js:1114
-#: pages/media-library-tour/controller.js:333
+#: pages/media-library-tour/controller.js:350
 msgid "Back"
 msgstr ""
 
@@ -6059,148 +6060,148 @@ msgid "Let’s create your first folder. Click “New Folder”."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:112
+#: pages/media-library-tour/steps.js:114
 msgid "Name it"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:113
+#: pages/media-library-tour/steps.js:115
 msgid "Type a name, for example “Marketing”, and click Create."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library-tour/steps.js:118
+#: pages/media-library-tour/steps.js:120
 #: pages/media-library/components/folder-tree/FolderMenuToggle.jsx:41
 msgid "Folder options"
 msgstr ""
 
 #. translators: %s: folder name.
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:122
+#: pages/media-library-tour/steps.js:124
 #, js-format
 msgid "“%s” is ready! Click the three-dot menu next to it (or right-click the folder) to see what you can do with it."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:138
+#: pages/media-library-tour/steps.js:142
 msgid "Everything in one menu"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:140
+#: pages/media-library-tour/steps.js:144
 msgid "Rename, lock, bookmark, download as ZIP or delete folders from here. Now click “New Sub-folder” to nest a folder inside this one."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:154
+#: pages/media-library-tour/steps.js:160
 msgid "Name the sub-folder"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:155
+#: pages/media-library-tour/steps.js:161
 msgid "Give the sub-folder a name, for example “Campaign assets”, and click Create."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:163
+#: pages/media-library-tour/steps.js:169
 msgid "Nested folders"
 msgstr ""
 
 #. translators: %s: sub-folder name.
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:180
+#: pages/media-library-tour/steps.js:186
 #, js-format
 msgid "“%s” now lives inside its parent. Tip: drag and drop any folder to reorder it or move it into another folder."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:194
+#: pages/media-library-tour/steps.js:200
 msgid "Bookmarks & locked folders"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:196
+#: pages/media-library-tour/steps.js:202
 msgid "Bookmark the folders you use most and lock the ones that shouldn’t change. They are collected here for quick access."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:204
+#: pages/media-library-tour/steps.js:210
 msgid "Add media to a folder"
 msgstr ""
 
 #. translators: %s: folder name.
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:208
+#: pages/media-library-tour/steps.js:214
 #, js-format
 msgid "Drag this item and drop it on “%s” in the sidebar. You can select multiple items to move them together."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:233
+#: pages/media-library-tour/steps.js:239
 msgid "Open your folder"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:235
+#: pages/media-library-tour/steps.js:241
 msgid "Click the folder to open it and see the media inside."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:243
+#: pages/media-library-tour/steps.js:249
 msgid "Move many at once"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:245
+#: pages/media-library-tour/steps.js:251
 msgid "Prefer clicking to dragging? Click “Bulk select” to pick several items at once."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:255
+#: pages/media-library-tour/steps.js:261
 msgid "Pick your media"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:257
+#: pages/media-library-tour/steps.js:263
 msgid "Click one or more items to select them."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:272
+#: pages/media-library-tour/steps.js:278
 msgid "Now click “Move to folder”. You can keep adding items to the selection first."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:286
+#: pages/media-library-tour/steps.js:292
 msgid "Choose a destination"
 msgstr ""
 
 #. translators: %s: folder name.
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:293
+#: pages/media-library-tour/steps.js:299
 #, js-format
 msgid "Pick a folder, for example “%s”, and click Move."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:296
+#: pages/media-library-tour/steps.js:302
 msgid "Pick a destination folder and click Move."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:315
+#: pages/media-library-tour/steps.js:321
 msgid "Moved!"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:339
+#: pages/media-library-tour/steps.js:345
 msgid "the folder"
 msgstr ""
 
 #. translators: 1: number of items, 2: folder name.
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:355
+#: pages/media-library-tour/steps.js:361
 #, js-format
 msgid "%1$d item is now in “%2$s” — the count next to the folder went up. That’s all it takes to move media in bulk."
 msgid_plural "%1$d items are now in “%2$s” — the count next to the folder went up. That’s all it takes to move media in bulk."
@@ -6209,7 +6210,7 @@ msgstr[1] ""
 
 #. translators: 1: number of items, 2: folder name.
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:343
+#: pages/media-library-tour/steps.js:349
 #, js-format
 msgid "%1$d item is now in “%2$s”. Open that folder anytime to see it. That’s all it takes to move media in bulk."
 msgid_plural "%1$d items are now in “%2$s”. Open that folder anytime to see them. That’s all it takes to move media in bulk."
@@ -6217,62 +6218,62 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:376
+#: pages/media-library-tour/steps.js:382
 msgid "Leave Bulk select"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:378
+#: pages/media-library-tour/steps.js:384
 msgid "Click “Cancel” to leave Bulk select mode before we continue."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:387
+#: pages/media-library-tour/steps.js:393
 msgid "Upload straight into a folder"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:389
+#: pages/media-library-tour/steps.js:395
 msgid "Files you upload while a folder is open are saved in that folder automatically."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:396
+#: pages/media-library-tour/steps.js:402
 msgid "Find anything fast"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:398
+#: pages/media-library-tour/steps.js:404
 msgid "Filter by media type or date range, or search across your whole library."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:405
+#: pages/media-library-tour/steps.js:411
 msgid "Folder tools"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:407
+#: pages/media-library-tour/steps.js:413
 msgid "Search folders by name, sort them A–Z or Z–A, or use Bulk Select to act on several folders at once."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:416
+#: pages/media-library-tour/steps.js:422
 msgid "Open GoDAM Central for advanced media management, sharing and analytics."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:424
+#: pages/media-library-tour/steps.js:430
 msgid "Replay anytime"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:426
+#: pages/media-library-tour/steps.js:432
 msgid "That’s the tour! Click the bulb whenever you want to take it again."
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:2
-#: pages/media-library-tour/steps.js:430
+#: pages/media-library-tour/steps.js:436
 msgid "Finish"
 msgstr ""
 

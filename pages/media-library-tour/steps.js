@@ -104,6 +104,8 @@ export const getSteps = () => [
 		align: 'center',
 		advanceWhen: () => isFolderModalOpen(),
 		when: () => Boolean( document.querySelector( SELECTORS.newFolderButton ) ),
+		// Skip the whole folder-creation flow; nothing downstream needs a folder yet.
+		skipTo: 'bookmarks-locked',
 	},
 	folderNameStep( {
 		id: 'name-folder',
@@ -126,6 +128,8 @@ export const getSteps = () => [
 		align: 'center',
 		when: ( ctx ) => Boolean( ctx.folder ),
 		advanceWhen: () => isContextMenuOpen(),
+		// Skip leaps past the menu + sub-folder steps (their targets never open).
+		skipTo: 'bookmarks-locked',
 		// Remember which folder's menu was opened — the sub-folder is created there.
 		onAdvance: ( ctx ) => {
 			const toggle = document.querySelector( `${ SELECTORS.folderTree } .tree-item__menu-toggle[aria-expanded="true"]` );
@@ -144,6 +148,8 @@ export const getSteps = () => [
 		advanceWhen: () => isFolderModalOpen(),
 		abortWhen: () => ! isContextMenuOpen() && ! isFolderModalOpen(),
 		backTo: 'folder-ready',
+		// Skip leaps past the sub-folder steps (the modal is not open).
+		skipTo: 'bookmarks-locked',
 	},
 	{
 		...folderNameStep( {
