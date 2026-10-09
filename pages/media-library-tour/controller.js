@@ -324,7 +324,7 @@ const show = async () => {
 	ensureDriver().highlight( {
 		element,
 		popover: {
-			title: step.title || '',
+			title: escapeHtml( step.title ),
 			description: escapeHtml( resolve( step.text ) ),
 			side: step.side || 'bottom',
 			align: step.align || 'start',
