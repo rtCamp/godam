@@ -848,7 +848,7 @@ class RTGODAM_Transcoder_Admin {
 			$this->display_preflight_notice(
 				in_array( 'fail', wp_list_pluck( $callback_issues, 'status' ), true ) ? 'error' : 'warning',
 				__( 'Your site can\'t receive transcoding updates', 'godam' ),
-				__( 'New videos may stay at "Processing" because transcoding updates can\'t reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it. After you fix it, this message can take a few hours to clear.', 'godam' ),
+				__( 'New videos may stay at "Processing" because transcoding updates can\'t reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it.', 'godam' ),
 				'site-not-reachable'
 			);
 		}

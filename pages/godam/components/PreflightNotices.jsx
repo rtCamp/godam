@@ -88,7 +88,7 @@ const PreflightNotices = () => {
 				<PreflightNotice
 					status={ callbackIssues.some( ( check ) => check.status === 'fail' ) ? 'error' : 'warning' }
 					title={ __( 'Your site can\'t receive transcoding updates', 'godam' ) }
-					message={ __( 'New videos may stay at "Processing" because transcoding updates can\'t reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it. After you fix it, this message can take a few hours to clear.', 'godam' ) }
+					message={ __( 'New videos may stay at "Processing" because transcoding updates can\'t reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it.', 'godam' ) }
 					section="site-not-reachable"
 				/>
 			) }

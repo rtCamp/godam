@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-11T18:44:55+00:00\n"
+"POT-Creation-Date: 2026-10-11T19:08:06+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -5310,7 +5310,7 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: admin/class-rtgodam-transcoder-admin.php:851
 #: pages/godam/components/PreflightNotices.jsx:91
-msgid "New videos may stay at \"Processing\" because transcoding updates can't reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it. After you fix it, this message can take a few hours to clear."
+msgid "New videos may stay at \"Processing\" because transcoding updates can't reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
