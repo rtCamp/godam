@@ -857,7 +857,11 @@ class RTGODAM_Transcoder_Admin {
 			$this->display_preflight_notice(
 				'fail' === $check['status'] ? 'error' : 'warning',
 				$check['label'] ?? __( 'Setup check', 'godam' ),
-				'' !== ( $check['remediation'] ?? '' ) ? $check['remediation'] : ( $check['message'] ?? '' )
+				// Central's fix text is written for site owners; its raw diagnostic isn't, so a
+				// check without one gets plain copy instead.
+				'' !== ( $check['remediation'] ?? '' )
+					? $check['remediation']
+					: __( 'A setup check for this site didn\'t pass. See how to fix it, or contact support.', 'godam' )
 			);
 		}
 	}

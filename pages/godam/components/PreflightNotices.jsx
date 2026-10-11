@@ -98,7 +98,8 @@ const PreflightNotices = () => {
 					key={ check.id }
 					status={ check.status === 'fail' ? 'error' : 'warning' }
 					title={ check.label || __( 'Setup check', 'godam' ) }
-					message={ check.remediation || check.message }
+					// Central's raw diagnostic isn't for site owners: plain copy when there's no fix text.
+					message={ check.remediation || __( 'A setup check for this site didn\'t pass. See how to fix it, or contact support.', 'godam' ) }
 				/>
 			) ) }
 		</>

@@ -1458,6 +1458,59 @@ function rtgodam_get_document_download_url( $attachment_id = 0, $fallback_src = 
 }
 
 /**
+ * Deal with a form recording that couldn't be sent for transcoding.
+ *
+ * The recording is sent from inside the visitor's submission, after the entry is saved,
+ * so a failure must not end that request: the form shows its normal confirmation. The
+ * reason is kept for the site owner instead, as a note on the entry where the form
+ * plugin has notes (Gravity Forms), and through the `rtgodam_form_transcoding_failed`
+ * action for the others.
+ *
+ * @since 2.3.2
+ *
+ * @param string          $form_type Form type passed to rtgodam_send_video_to_godam_for_transcoding().
+ * @param int             $entry_id  Form entry ID.
+ * @param WP_Error|object $response  What rtgodam_send_video_to_godam_for_transcoding() returned.
+ *
+ * @return void
+ */
+function rtgodam_handle_form_transcoding_failure( $form_type, $entry_id, $response ) {
+	$error_data = is_wp_error( $response ) ? $response->get_error_data() : array();
+	$reason     = is_array( $error_data ) && ! empty( $error_data['reason'] ) ? $error_data['reason'] : '';
+
+	if ( '' === $reason && is_wp_error( $response ) && 'transcoding_disabled' === $response->get_error_code() ) {
+		$reason = $response->get_error_message();
+	}
+
+	if ( '' === $reason ) {
+		$reason = __( 'The transcoding service couldn\'t accept the recording. Try again later, or contact support if this keeps happening.', 'godam' );
+	}
+
+	if ( 'gf' === $form_type && class_exists( 'GFAPI' ) ) {
+		\GFAPI::add_note(
+			$entry_id,
+			0,
+			'GoDAM',
+			/* translators: %s: Why the recording couldn't be transcoded. */
+			sprintf( __( 'The recording couldn\'t be transcoded. %s', 'godam' ), $reason )
+		);
+	}
+
+	/**
+	 * Fires when a form recording couldn't be sent for transcoding. The submission itself
+	 * is unaffected; use this to tell the site owner, for example as an entry note.
+	 *
+	 * @since 2.3.2
+	 *
+	 * @param string          $form_type Form type, e.g. `gf`, `wpforms`, `fluentforms`.
+	 * @param int             $entry_id  Form entry ID.
+	 * @param string          $reason    Plain reason for the site owner.
+	 * @param WP_Error|object $response  What the send returned.
+	 */
+	do_action( 'rtgodam_form_transcoding_failed', $form_type, $entry_id, $reason, $response );
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.
@@ -1528,12 +1581,14 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$api_key = get_option( 'rtgodam-api-key', '' );
 
 	/**
-	 * Watermark settings.
+	 * Watermark settings. Saved settings can lack the video section, and this runs inside
+	 * the visitor's form submission, so fall back to the defaults key by key.
 	 */
-	$rtgodam_watermark           = $godam_settings['video']['watermark'];
-	$rtgodam_use_watermark_image = $godam_settings['video']['use_watermark_image'];
-	$rtgodam_watermark_text      = sanitize_text_field( $godam_settings['video']['watermark_text'] );
-	$rtgodam_watermark_url       = esc_url( $godam_settings['video']['watermark_url'] );
+	$video_settings              = array_merge( $default_settings['video'], (array) ( $godam_settings['video'] ?? array() ) );
+	$rtgodam_watermark           = $video_settings['watermark'];
+	$rtgodam_use_watermark_image = $video_settings['use_watermark_image'];
+	$rtgodam_watermark_text      = sanitize_text_field( $video_settings['watermark_text'] );
+	$rtgodam_watermark_url       = esc_url( $video_settings['watermark_url'] );
 
 	$watermark_to_use = array();
 
@@ -1624,15 +1679,21 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$response = wp_remote_post( $transcoding_url, $args );
 
 	if ( is_wp_error( $response ) || empty( $response['response']['code'] ) || 200 !== intval( $response['response']['code'] ) ) {
-		// The error answers the visitor who submitted the form, so it stays generic: an
-		// account reason (storage full, licence inactive) is for the site owner.
+		// The plain reason goes in the error's data, for the site owner (see
+		// rtgodam_handle_form_transcoding_failure()); the visitor never sees it.
+		$refusal = is_wp_error( $response ) ? array( 'message' => '' ) : rtgodam_get_job_refusal(
+			intval( wp_remote_retrieve_response_code( $response ) ),
+			json_decode( wp_remote_retrieve_body( $response ), true )
+		);
+
 		return new WP_Error(
 			400,
 			sprintf(
 				/* translators: %s: Entry ID for which transcoding failed */
 				__( 'Transcoding failed | entry Id: %s', 'godam' ),
 				$entry_id
-			)
+			),
+			array( 'reason' => $refusal['message'] )
 		);
 	}
 

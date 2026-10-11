@@ -598,21 +598,18 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		/**
 		 * Error handling.
 		 */
+		// A failed send must not end the visitor's submission: the entry is already saved.
 		if ( is_wp_error( $response_from_transcoding ) ) {
-			wp_send_json_error(
-				$response_from_transcoding->get_error_message(),
-				$response_from_transcoding->get_error_code(),
-			);
+			rtgodam_handle_form_transcoding_failure( 'ninja-forms', $entry_id, $response_from_transcoding );
+			return;
 		}
 
 		/**
 		 * If empty data or name send error.
 		 */
 		if ( empty( $response_from_transcoding->data ) || empty( $response_from_transcoding->data->name ) ) {
-			wp_send_json_error(
-				__( 'Transcoding data not set', 'godam' ),
-				404
-			);
+			rtgodam_handle_form_transcoding_failure( 'ninja-forms', $entry_id, $response_from_transcoding );
+			return;
 		}
 
 		/**

@@ -419,6 +419,8 @@ class Media_Library_Ajax {
 			)
 		);
 
+		$job_id = '';
+
 		if ( ! is_wp_error( $upload_media ) &&
 			(
 				isset( $upload_media['response']['code'] ) &&
@@ -429,17 +431,29 @@ class Media_Library_Ajax {
 
 			if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
 				$job_id = $upload_info->data->name;
-				update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
 			}
 		}
 
 		/**
-		 * Fires before recording a refusal on this attachment, so integrations that
+		 * Fires before recording the outcome on this attachment, so integrations that
 		 * centralize media on another site write it where the attachment lives.
 		 *
 		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
+		if ( '' !== $job_id ) {
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
+
+			// Accepted: drop an earlier failure (e.g. HTTP auth) and its queued retry, which
+			// the cron can't send for an image and would otherwise mark failed later.
+			if ( 'failed' === get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) ) {
+				delete_post_meta( $attachment_id, 'rtgodam_transcoding_status' );
+			}
+			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
+			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
+			rtgodam_remove_from_retry_queue( $attachment_id );
+		}
 		// Central refused the job on purpose (4xx): record why, so the file says so.
 		rtgodam_record_job_refusal( $attachment_id, $upload_media );
 		do_action( 'rtgodam_after_attachment_lookup' );
