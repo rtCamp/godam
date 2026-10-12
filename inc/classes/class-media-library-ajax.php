@@ -204,7 +204,24 @@ class Media_Library_Ajax {
 			case 'stream':
 				return 'application/dash+xml';
 			case 'audio':
-				return ! empty( $mime_type ) ? $mime_type : 'audio/mpeg';
+				if ( empty( $mime_type ) ) {
+					return 'audio/mpeg';
+				}
+
+				/*
+				 * Form recorders save audio in a WebM (Chrome) or MP4 (Safari) container and
+				 * register it with Central under the type WordPress guesses from the extension,
+				 * video/webm or video/mp4. Central processes it as audio, so report it as audio:
+				 * the GoDAM Audio block rejects a video MIME type on select, and the attachment
+				 * created from this item keeps this MIME type, which decides whether WordPress
+				 * files it under audio or video.
+				 */
+				$audio_containers = array(
+					'video/webm' => 'audio/webm',
+					'video/mp4'  => 'audio/mp4',
+				);
+
+				return $audio_containers[ $mime_type ] ?? $mime_type;
 			case 'image':
 				return ! empty( $mime_type ) ? $mime_type : 'image/jpeg';
 			case 'pdf':

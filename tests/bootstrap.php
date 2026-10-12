@@ -484,6 +484,10 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
 // Requiring the file runs no WP code.
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-engagement.php';
 
+// Loaded for get_mime_type_for_job_type(), which GodamTabAudioMimeTest reaches through
+// reflection on a constructor-less instance. Requiring the file only declares the class.
+require_once dirname( __DIR__ ) . '/inc/classes/class-media-library-ajax.php';
+
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
 require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';
