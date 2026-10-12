@@ -153,6 +153,10 @@ export default class EventsManager {
 			// Wide player: restore the default (desktop) control layout, clearing
 			// any inline positions applied for a narrow player. Needed when the
 			// container grows back — e.g. Mobile -> Desktop in the media preview.
+			// Cancel a narrow-layout move still waiting in the debounce, or it
+			// would re-apply the narrow positions after this reset.
+			clearTimeout( this.handleVideoResize.timeout );
+			this.handleVideoResize.timeout = null;
 			if ( this.onControlsReset ) {
 				this.onControlsReset();
 			}

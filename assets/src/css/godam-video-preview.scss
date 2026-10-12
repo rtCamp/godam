@@ -27,7 +27,6 @@
     border: 1px solid #e1e1e1;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-    transition: max-width .3s ease-in-out;
 
     &__title {
         font-family: inherit;
@@ -104,6 +103,13 @@
 
 .admin-bar .godam-video-preview-main {
     min-height: calc(100vh - 92px);
+}
+
+// Animate the card width only after JS has applied the initial (possibly
+// persisted) device view. Without this guard, loading with Mobile saved causes
+// a Desktop→Mobile flash on every page load.
+.godam-video-preview-main.godam-preview-ready .godam-video-preview {
+    transition: max-width .3s ease-in-out;
 }
 
 // Mobile device view: collapse the device-frame card to a phone-ish width. The

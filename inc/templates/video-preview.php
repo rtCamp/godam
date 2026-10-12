@@ -82,13 +82,13 @@ $godam_page_title = empty( $godam_video_id )
 				<?php if ( $godam_has_media ) : ?>
 					<!-- Desktop / Mobile preview toggle (shared across video, image and audio). -->
 					<div class="godam-view-toggle" role="group" aria-label="<?php esc_attr_e( 'Preview device width', 'godam' ); ?>">
-						<button type="button" class="godam-view-toggle__button is-active" data-godam-view="desktop" aria-pressed="true">
+						<button type="button" class="godam-view-toggle__button is-active" data-godam-view="desktop" aria-pressed="true" aria-label="<?php esc_attr_e( 'Desktop', 'godam' ); ?>">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M3 4h18a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-7v2h3v2H7v-2h3v-2H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm1 2v9h16V6H4Z"></path></svg>
-							<span><?php esc_html_e( 'Desktop', 'godam' ); ?></span>
+							<span aria-hidden="true"><?php esc_html_e( 'Desktop', 'godam' ); ?></span>
 						</button>
-						<button type="button" class="godam-view-toggle__button" data-godam-view="mobile" aria-pressed="false">
+						<button type="button" class="godam-view-toggle__button" data-godam-view="mobile" aria-pressed="false" aria-label="<?php esc_attr_e( 'Mobile', 'godam' ); ?>">
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm0 2v14h10V4H7Zm4 15h2v-1.5h-2V19Z"></path></svg>
-							<span><?php esc_html_e( 'Mobile', 'godam' ); ?></span>
+							<span aria-hidden="true"><?php esc_html_e( 'Mobile', 'godam' ); ?></span>
 						</button>
 					</div>
 				<?php endif; ?>

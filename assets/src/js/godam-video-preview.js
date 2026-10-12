@@ -188,8 +188,29 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		} );
 	} );
 
-	// Apply the initial (possibly persisted) view once listeners are wired up.
-	applyView( currentView );
+	// Apply the initial (possibly persisted) view without triggering the CSS
+	// transition. applyView() would start a relayoutAcrossTransition() loop and
+	// add the is-mobile-view class before the transition guard class exists,
+	// causing a Desktop→Mobile flash on every page load when Mobile is saved.
+	if ( previewMain ) {
+		previewMain.classList.toggle( 'is-mobile-view', 'mobile' === currentView );
+	}
+	toggleButtons.forEach( ( button ) => {
+		const isActive = button.dataset.godamView === currentView;
+		button.classList.toggle( 'is-active', isActive );
+		button.setAttribute( 'aria-pressed', isActive ? 'true' : 'false' );
+	} );
+	resizeHandlers.forEach( ( handler ) => handler() );
+
+	// Enable the max-width transition after two rAF ticks so the browser has
+	// committed the correct initial layout before transitions can run.
+	window.requestAnimationFrame( () => {
+		window.requestAnimationFrame( () => {
+			if ( previewMain ) {
+				previewMain.classList.add( 'godam-preview-ready' );
+			}
+		} );
+	} );
 
 	// Cleanup function to remove all resize listeners.
 	window.addEventListener( 'beforeunload', () => {
