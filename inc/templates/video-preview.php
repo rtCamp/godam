@@ -99,12 +99,13 @@ $godam_page_title = empty( $godam_video_id )
 					<?php if ( $godam_api_key_valid && ! $godam_is_image && ! $godam_is_audio ) : ?>
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_analytics&id=' . $godam_video_id ) ); ?>" class="godam-button button-secondary">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.25 5h1.5v15h-1.5V5zM6 10h1.5v10H6V10zm12 4h-1.5v6H18v-6z"></path></svg>
-						<?php esc_html_e( 'Analytics', 'godam' ); ?>
+						<span><?php esc_html_e( 'Analytics', 'godam' ); ?></span>
 					</a>
 					<?php endif; ?>
 					<!-- Edit media link (opens the same GoDAM editor). -->
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_media_editor&id=' . $godam_video_id ) ); ?>" class="godam-button button-primary">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m19 7-3-3-8.5 8.5-1 4 4-1L19 7Zm-7 11.5H5V20h7v-1.5Z"></path></svg>
+						<span>
 						<?php
 						if ( $godam_is_image ) {
 							echo esc_html__( 'Edit Image', 'godam' );
@@ -114,6 +115,7 @@ $godam_page_title = empty( $godam_video_id )
 							echo esc_html__( 'Edit Video', 'godam' );
 						}
 						?>
+						</span>
 					</a>
 				<?php endif; ?>
 			</div>

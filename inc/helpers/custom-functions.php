@@ -1680,6 +1680,7 @@ function godam_preview_page_content( $video_id ) {
 			<?php echo esc_html( $godam_notice ); ?>
 		</div>
 		<div class="godam-video-preview">
+			<h1 class="godam-video-preview__title"><?php echo esc_html( $video_attachment->post_title ); ?></h1>
 			<?php echo $godam_media_output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped inside the block / shortcode render templates. ?>
 		</div>
 		<?php
