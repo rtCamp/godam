@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.3.1
+Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -224,6 +224,11 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.3.2 (October 9, 2026) =
+
+- Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts automatically the first time you open the library and can be replayed anytime from the new button next to Manage Media.
+- Fix: Security fixes.
+
 = v2.3.1 (October 6, 2026) =
 
 - Fix: What's New refreshes after every plugin update, so it always shows the current release post.
@@ -246,10 +251,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Tweak: The Revenue and Purchase Funnel cards on the single-video page each have their own date-range picker.
 - Tweak: The layer interaction metric is now called "Interaction rate" instead of "Conversion".
 - Note: Revenue and product metrics need the GoDAM for Woo add-on 2.2.0 or later.
-
-= v2.2.4 (September 21, 2026) =
-
-- Chore: Security fixes.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
