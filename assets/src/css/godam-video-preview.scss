@@ -234,8 +234,18 @@
         @media screen and (max-width: 768px) {
             gap: 0.5rem;
 
+            // Hide the label visually but keep it for screen readers, so each
+            // icon-only link still has an accessible name (WP core .screen-reader-text).
             .godam-button span {
-                display: none;
+                border: 0;
+                clip-path: inset(50%);
+                height: 1px;
+                margin: -1px;
+                overflow: hidden;
+                padding: 0;
+                position: absolute;
+                white-space: nowrap;
+                width: 1px;
             }
         }
     }
