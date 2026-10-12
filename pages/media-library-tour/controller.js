@@ -332,8 +332,13 @@ const show = async () => {
 	const isSkip = Boolean( step.advanceOn || step.advanceWhen );
 	const forwardLabel = step.nextLabel || ( isSkip ? __( 'Skip', 'godam' ) : __( 'Next', 'godam' ) );
 	const buttons = [ 'close' ];
-	// Every step gets a forward button (Next / Skip).
-	buttons.unshift( 'next' );
+	// Every step gets a forward button (Next / Skip) unless it opts out. Modal
+	// steps opt out via `hideSkip`: skipping would advance while leaving the modal
+	// frozen above the overlay, and closing the modal already rewinds to a step
+	// that has Skip, so they are not dead-ends without it.
+	if ( ! step.hideSkip ) {
+		buttons.unshift( 'next' );
+	}
 	if ( canGoBack() ) {
 		buttons.unshift( 'previous' );
 	}
