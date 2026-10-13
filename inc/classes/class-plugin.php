@@ -15,6 +15,7 @@ use RTGODAM\Inc\Blocks;
 use RTGODAM\Inc\Assets;
 use RTGODAM\Inc\Deactivation;
 use RTGODAM\Inc\Media_Tracker;
+use RTGODAM\Inc\Review_Request;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Embed;
@@ -194,6 +195,7 @@ class Plugin {
 		Transcription::get_instance();
 		Analytics::get_instance();
 		Deactivation::get_instance();
+		Review_Request::get_instance();
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();
 		Dynamic_Gallery::get_instance();

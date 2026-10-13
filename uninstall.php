@@ -32,6 +32,7 @@ $rtgodam_uninstall_options = array(
 	'rtgodam-account-token',
 	'rtgodam-api-key-status',
 	'rtgodam-api-key-error-since',
+	'rtgodam_review_request_started',
 );
 
 $rtgodam_uninstall_transients = array(
@@ -75,3 +76,7 @@ foreach ( $rtgodam_blog_ids as $rtgodam_blog_id ) {
 // removed once rather than per site. Uninstall runs without loading the plugin, so
 // this mirrors Onboarding::MEDIA_LIBRARY_GUIDE_META_KEY — keep the two in sync.
 delete_metadata( 'user', 0, 'rtgodam_media_library_guide_state', '', true );
+
+// Per-user review-notice choices; mirrors Review_Request::NEVER_META and SNOOZED_UNTIL_META.
+delete_metadata( 'user', 0, 'rtgodam_review_request_never', '', true );
+delete_metadata( 'user', 0, 'rtgodam_review_request_snoozed_until', '', true );
