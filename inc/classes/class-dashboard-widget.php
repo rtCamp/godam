@@ -243,6 +243,10 @@ class Dashboard_Widget {
 		// Recount the library when files come, go or move between folders.
 		add_action( 'add_attachment', array( $this, 'flush_library_counts' ) );
 		add_action( 'delete_attachment', array( $this, 'flush_library_counts' ) );
+
+		// Every count excludes the trash, so a file entering or leaving it changes them all.
+		add_action( 'trashed_post', array( $this, 'flush_all_counts_for_attachment' ) );
+		add_action( 'untrashed_post', array( $this, 'flush_all_counts_for_attachment' ) );
 		add_action( 'set_object_terms', array( $this, 'flush_library_counts_on_folder_change' ), 10, 4 );
 		add_action( 'deleted_term_relationships', array( $this, 'flush_library_counts_on_term_change' ), 10, 3 );
 		add_action( 'created_term', array( $this, 'flush_library_counts_on_term_change' ), 10, 3 );
@@ -268,8 +272,11 @@ class Dashboard_Widget {
 
 		$model = $this->get_model();
 
-		// Without a key and without library tiles, only an admin can act on the connect prompt.
-		if ( 'not_connected' === $model['state'] && empty( $model['show'] ) && ! current_user_can( 'manage_options' ) ) {
+		// Only a tile that draws a section counts as content here: the library chart
+		// renders inside the library section, so chart_library alone shows nothing.
+		// Without a key and without such a tile, only an admin can act on the connect prompt.
+		$renderable = array_intersect( $model['show'], array_merge( self::LIBRARY_TILES, self::READY_TILES ) );
+		if ( 'not_connected' === $model['state'] && empty( $renderable ) && ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
@@ -296,6 +303,19 @@ class Dashboard_Widget {
 
 		// A widget the user hid in Screen Options loads nothing, and fetches nothing.
 		if ( $this->is_hidden_by_user() ) {
+			return;
+		}
+
+		// The widget shell (the library and ready sections) shows for authors and
+		// up, so its style loads for them.
+		$style_path = RTGODAM_PATH . 'assets/build/css/dashboard-widget.css';
+		if ( file_exists( $style_path ) ) {
+			wp_enqueue_style( self::HANDLE, RTGODAM_URL . 'assets/build/css/dashboard-widget.css', array(), filemtime( $style_path ) );
+		}
+
+		// Only the script fetches the Watching numbers, which are store-wide
+		// analytics (edit_pages). Authors see the widget shell but no analytics.
+		if ( ! current_user_can( self::GODAM_PAGE_CAP ) ) {
 			return;
 		}
 
@@ -327,11 +347,6 @@ class Dashboard_Widget {
 				'reviewPath' => '/godam/v1/dashboard-widget/review-ask',
 			)
 		);
-
-		$style_path = RTGODAM_PATH . 'assets/build/css/dashboard-widget.css';
-		if ( file_exists( $style_path ) ) {
-			wp_enqueue_style( self::HANDLE, RTGODAM_URL . 'assets/build/css/dashboard-widget.css', array(), filemtime( $style_path ) );
-		}
 	}
 
 	/**
@@ -360,6 +375,24 @@ class Dashboard_Widget {
 	 */
 	public function flush_library_counts() {
 		delete_transient( self::LIBRARY_TRANSIENT );
+	}
+
+	/**
+	 * Clear every cached number when an attachment is trashed or restored, since
+	 * all of the counts exclude the trash.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return void
+	 */
+	public function flush_all_counts_for_attachment( $post_id ) {
+		if ( 'attachment' !== get_post_type( $post_id ) ) {
+			return;
+		}
+
+		delete_transient( self::COUNTS_TRANSIENT );
+		delete_transient( self::FAILED_IDS_TRANSIENT );
+		delete_transient( self::LIBRARY_TRANSIENT );
+		delete_transient( self::VIDEO_LENGTH_TRANSIENT );
 	}
 
 	/**
@@ -403,7 +436,49 @@ class Dashboard_Widget {
 	public function shows_account_alerts() {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 
-		return $screen && 'dashboard' === $screen->id && current_user_can( 'manage_options' ) && ! $this->is_hidden_by_user();
+		if ( ! $screen || 'dashboard' !== $screen->id || ! current_user_can( 'manage_options' ) ) {
+			return false;
+		}
+
+		// The widget only stands in for the notices while its body is actually on
+		// screen: not hidden in Screen Options, not collapsed, and not removed by
+		// another plugin. Otherwise the alert would show nowhere.
+		return $this->is_widget_on_screen();
+	}
+
+	/**
+	 * Whether the widget's body is visible on the Dashboard right now: registered
+	 * (not removed via remove_meta_box()), not hidden in Screen Options, and not
+	 * collapsed. Runs at `admin_notices`, after `wp_dashboard_setup`, so the
+	 * meta-box registry is populated.
+	 *
+	 * @return bool
+	 */
+	private function is_widget_on_screen() {
+		if ( $this->is_hidden_by_user() ) {
+			return false;
+		}
+
+		if ( in_array( self::WIDGET_ID, (array) get_user_option( 'closedpostboxes_dashboard' ), true ) ) {
+			return false;
+		}
+
+		// If the dashboard meta boxes are registered, the widget must be among
+		// them; a plugin may have removed it with remove_meta_box().
+		global $wp_meta_boxes;
+		if ( empty( $wp_meta_boxes['dashboard'] ) || ! is_array( $wp_meta_boxes['dashboard'] ) ) {
+			return true;
+		}
+
+		foreach ( $wp_meta_boxes['dashboard'] as $contexts ) {
+			foreach ( (array) $contexts as $priorities ) {
+				if ( ! empty( $priorities[ self::WIDGET_ID ] ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -482,18 +557,20 @@ class Dashboard_Widget {
 		$attention = self::build_attention_items( $api_key_status, $counts, $usage, $can_manage );
 
 		return array(
-			'state'          => self::determine_state( $api_key_status, $counts['transcoded'] ),
-			'api_key_status' => $api_key_status,
-			'can_manage'     => $can_manage,
-			'counts'         => $counts,
-			'usage'          => $usage,
-			'attention'      => $attention,
-			'review_ask'     => self::review_ask_eligible( get_option( self::REVIEW_OPTION, array() ), time(), $can_manage, $attention ),
-			'values'         => $values,
-			'types'          => $library['types'],
-			'show'           => $tiles['show'],
-			'remote_seen'    => array_values( array_intersect( self::REMOTE_TILES, $tiles['seen'] ) ),
-			'connect'        => self::pick_connect_prompt( $library['types'] ),
+			'state'              => self::determine_state( $api_key_status, $counts['transcoded'] ),
+			'api_key_status'     => $api_key_status,
+			'can_manage'         => $can_manage,
+			// The Watching section is store-wide analytics, shown only to users who can open the GoDAM Dashboard.
+			'can_view_analytics' => current_user_can( self::GODAM_PAGE_CAP ),
+			'counts'             => $counts,
+			'usage'              => $usage,
+			'attention'          => $attention,
+			'review_ask'         => self::review_ask_eligible( get_option( self::REVIEW_OPTION, array() ), time(), $can_manage, $attention ),
+			'values'             => $values,
+			'types'              => $library['types'],
+			'show'               => $tiles['show'],
+			'remote_seen'        => array_values( array_intersect( self::REMOTE_TILES, $tiles['seen'] ) ),
+			'connect'            => self::pick_connect_prompt( $library['types'] ),
 		);
 	}
 
@@ -1089,18 +1166,20 @@ class Dashboard_Widget {
 				}
 
 				// Matches the plugin's own rule: over the limit means used > total.
+				// Keep the raw percent; get_attention_copy() floors warnings, and
+				// rounding here first would turn 99.96% into "100% full".
 				$ratio = $used / $total;
 				if ( $ratio > 1 ) {
 					$items[] = array(
 						'id'      => $meter . '_over',
 						'tone'    => 'error',
-						'percent' => round( $ratio * 100, 1 ),
+						'percent' => $ratio * 100,
 					);
 				} elseif ( $ratio >= self::USAGE_WARNING_RATIO ) {
 					$items[] = array(
 						'id'      => $meter . '_high',
 						'tone'    => 'warning',
-						'percent' => round( $ratio * 100, 1 ),
+						'percent' => $ratio * 100,
 					);
 				}
 			}
@@ -1281,7 +1360,9 @@ class Dashboard_Widget {
 
 		$this->render_attention( $model['attention'] );
 
-		if ( 'active' === $model['state'] ) {
+		// The Watching numbers are store-wide analytics, so only users who can open
+		// the GoDAM Dashboard (editors and up) see them; authors get the local sections.
+		if ( 'active' === $model['state'] && ! empty( $model['can_view_analytics'] ) ) {
 			$this->render_watching( $model );
 		}
 
@@ -1293,7 +1374,7 @@ class Dashboard_Widget {
 				$this->render_review_ask();
 			}
 		} elseif ( 'setting_up' === $model['state'] ) {
-			$this->render_checklist( $model['counts'] );
+			$this->render_checklist( $model['counts'], (int) ( $model['types']['videos'] ?? 0 ) );
 		} elseif ( $model['can_manage'] ) {
 			// Not connected: one prompt, fitted to the library when there is one to show.
 			if ( $library_shown ) {
@@ -1763,18 +1844,24 @@ class Dashboard_Widget {
 	/**
 	 * Render the setup checklist shown until the first file is ready.
 	 *
-	 * @param array $counts From summarize_status_rows().
+	 * @param array $counts      From summarize_status_rows().
+	 * @param int   $video_count Videos in the Media Library (from the library counts).
 	 * @return void
 	 */
-	private function render_checklist( array $counts ) {
-		$steps = array(
+	private function render_checklist( array $counts, $video_count = 0 ) {
+		// The step is "Upload a video", so measure videos in the library, not every
+		// attachment: a PDF or audio upload also gets a transcoding status, but it
+		// is not a video and must not tick this step.
+		$has_video = $video_count > 0;
+		$preparing = $has_video && $counts['processing'] > 0;
+		$steps     = array(
 			array(
 				'done'   => true,
 				'title'  => __( 'Connect GoDAM', 'godam' ),
 				'detail' => __( 'Your site is linked to your GoDAM account.', 'godam' ),
 			),
 			array(
-				'done'   => $counts['total'] > 0,
+				'done'   => $has_video,
 				'title'  => __( 'Upload a video', 'godam' ),
 				'detail' => __( 'Add it to the Media Library. GoDAM prepares it for streaming.', 'godam' ),
 				'url'    => admin_url( 'media-new.php' ),
@@ -1782,7 +1869,7 @@ class Dashboard_Widget {
 			array(
 				'done'   => false,
 				'title'  => __( 'Get your first video ready to stream', 'godam' ),
-				'detail' => $counts['processing'] > 0
+				'detail' => $preparing
 					? __( 'GoDAM is preparing it now, so it plays smoothly on any screen and connection.', 'godam' )
 					: __( 'GoDAM prepares it to play smoothly on any screen and connection.', 'godam' ),
 			),

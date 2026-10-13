@@ -1393,6 +1393,20 @@ class Analytics extends Base {
 			);
 		}
 
+		// Any other non-2xx answer (401/403/429, …), or a 2xx without the metrics
+		// payload, is a failed call — not an empty set of metrics. Returning
+		// success here would show real tiles as "0" and cache that for 15 minutes.
+		if ( $http_code < 200 || $http_code >= 300 || ! is_array( $body ) || ! isset( $body['dashboard_metrics'] ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'    => 'error',
+					'message'   => $detail,
+					'errorType' => 'microservice_error',
+				),
+				200
+			);
+		}
+
 		$dashboard_metrics = array_merge( $empty_metrics, $body['dashboard_metrics'] ?? array() );
 		if ( ! $this->can_view_store_data() ) {
 			$dashboard_metrics = $this->video_data_in_dashboard_metrics( $dashboard_metrics );

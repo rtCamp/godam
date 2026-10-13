@@ -113,12 +113,15 @@ class Dashboard_Widget_Summary extends Base {
 	}
 
 	/**
-	 * Same audience as the widget and the analytics routes: authors and above.
+	 * The Watching numbers are the site's store-wide analytics, so this route
+	 * matches the Dashboard analytics routes' capability (`edit_pages`, editors
+	 * and above). A user who cannot open the GoDAM Dashboard cannot read its
+	 * figures through the widget either.
 	 *
 	 * @return bool
 	 */
 	public function check_permission() {
-		return current_user_can( 'upload_files' );
+		return current_user_can( 'edit_pages' );
 	}
 
 	/**
@@ -160,8 +163,9 @@ class Dashboard_Widget_Summary extends Base {
 			return new WP_REST_Response( self::add_visible_tiles( Dashboard_Widget_Preview::summary( $preview ), array() )['summary'], 200 );
 		}
 
-		// This site's own origin, never a caller-supplied URL.
-		$site_url  = self::get_site_origin( home_url() );
+		// This site's own origin (lowercased, no default port, filtered), never a
+		// caller-supplied URL — the same value the analytics reads send.
+		$site_url  = rtgodam_get_site_origin();
 		$cache_key = self::CACHE_PREFIX . md5( $site_url );
 		$summary   = get_transient( $cache_key );
 
@@ -373,25 +377,5 @@ class Dashboard_Widget_Summary extends Base {
 			'history'    => array_values( $history ),
 			'fetched_at' => (int) $fetched_at,
 		);
-	}
-
-	/**
-	 * Reduce a URL to its origin (scheme, host and port), the form analytics records.
-	 *
-	 * @param string $url Any URL on the site, usually home_url().
-	 * @return string The origin, or '' when the URL has no host.
-	 */
-	public static function get_site_origin( $url ) {
-		$parts = wp_parse_url( (string) $url );
-		if ( empty( $parts['host'] ) ) {
-			return '';
-		}
-
-		$origin = ( $parts['scheme'] ?? 'https' ) . '://' . $parts['host'];
-		if ( ! empty( $parts['port'] ) ) {
-			$origin .= ':' . $parts['port'];
-		}
-
-		return $origin;
 	}
 }

@@ -219,6 +219,23 @@ class DashboardWidgetTest extends TestCase {
 		$this->assertSame( array( 'storage_high' ), $this->ids( $at_limit ) );
 	}
 
+	/** The warning percent is kept raw, so get_attention_copy() floors 99.96% to "99%", not "100%". */
+	public function test_usage_percent_is_kept_raw_for_flooring() {
+		$items = Dashboard_Widget::build_attention_items(
+			Api_Key_Status::VALID,
+			$this->counts(),
+			array(
+				'storage_used'  => 49.98, // 49.98 / 50 = 99.96%.
+				'total_storage' => 50,
+			),
+			true
+		);
+
+		$this->assertSame( array( 'storage_high' ), $this->ids( $items ) );
+		$this->assertLessThan( 100, $items[0]['percent'] );
+		$this->assertSame( 99, (int) floor( $items[0]['percent'] ) );
+	}
+
 	/** Without quota figures there is nothing to say about usage, rather than a divide by zero. */
 	public function test_missing_quota_is_skipped() {
 		$items = Dashboard_Widget::build_attention_items(
@@ -427,13 +444,6 @@ class DashboardWidgetTest extends TestCase {
 			),
 			$history
 		);
-	}
-
-	/** The origin keeps the port and drops any path, the form the player records. */
-	public function test_site_origin() {
-		$this->assertSame( 'http://localhost:9400', Dashboard_Widget_Summary::get_site_origin( 'http://localhost:9400/' ) );
-		$this->assertSame( 'https://example.com', Dashboard_Widget_Summary::get_site_origin( 'https://example.com/blog' ) );
-		$this->assertSame( '', Dashboard_Widget_Summary::get_site_origin( 'not a url' ) );
 	}
 
 	/** Admins are asked, once; never while something is failing, and not during a "Not now" snooze. */
@@ -822,7 +832,7 @@ class DashboardWidgetTest extends TestCase {
 		$this->assertSame( 'microservice_error', Dashboard_Widget_Summary::assemble_summary( null, null, null, 0 )['errorType'] );
 	}
 
-	/** The summary is for authors and above, like the analytics routes; answering the review ask is for admins only. */
+	/** The summary carries store-wide analytics, so it needs edit_pages (editors and above), like the Dashboard analytics routes; answering the review ask is for admins only. */
 	public function test_route_permissions() {
 		$endpoint = ( new \ReflectionClass( Dashboard_Widget_Summary::class ) )->newInstanceWithoutConstructor();
 		$routes   = array_column( $endpoint->get_rest_routes(), 'args', 'route' );
@@ -832,14 +842,17 @@ class DashboardWidgetTest extends TestCase {
 		$summary = $routes['/dashboard-widget/summary']['permission_callback'];
 		$review  = $routes['/dashboard-widget/review-ask']['permission_callback'];
 
-		$GLOBALS['rtgodam_stub']['caps'] = array( 'read', 'edit_posts' );
+		// An author (upload_files but not edit_pages) cannot read the analytics summary.
+		$GLOBALS['rtgodam_stub']['caps'] = array( 'read', 'upload_files' );
 		$this->assertFalse( call_user_func( $summary ) );
 
-		$GLOBALS['rtgodam_stub']['caps'] = array( 'read', 'edit_posts', 'upload_files' );
+		// An editor (edit_pages) can read the summary but cannot answer the review ask.
+		$GLOBALS['rtgodam_stub']['caps'] = array( 'read', 'upload_files', 'edit_pages' );
 		$this->assertTrue( call_user_func( $summary ) );
 		$this->assertFalse( call_user_func( $review ) );
 
-		$GLOBALS['rtgodam_stub']['caps'] = array( 'read', 'upload_files', 'manage_options' );
+		// An admin can answer the review ask.
+		$GLOBALS['rtgodam_stub']['caps'] = array( 'read', 'edit_pages', 'manage_options' );
 		$this->assertTrue( call_user_func( $review ) );
 	}
 }
