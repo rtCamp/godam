@@ -391,6 +391,19 @@ const pages = {
 					},
 				],
 			},
+			{
+				// Emit font files referenced from imported stylesheets (e.g. the
+				// Titan One sticker face in `godam-player.scss`) as their own
+				// files instead of inlining them, so they are fetched only when a
+				// rule actually uses the font. The `styles` config handles this
+				// via the @wordpress/scripts defaults; the `pages` config needs
+				// its own rule.
+				test: /\.woff2$/,
+				type: 'asset/resource',
+				generator: {
+					filename: 'fonts/[name].[hash][ext]',
+				},
+			},
 		],
 	},
 	externals: {

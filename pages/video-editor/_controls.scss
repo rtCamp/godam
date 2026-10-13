@@ -159,13 +159,20 @@ $ve-radius: 4px;
 	}
 
 	// SelectControl renders its label with WordPress's emotion specificity
-	// hack (`.css-x.css-x.css-x`, a 0-3-0 selector) which ties the label rule
-	// above and wins on source order. Doubling `.godam-ve-control` lifts us to
-	// 0-4-0 so the Title-Case label wins without `!important`.
+	// hack (`.css-x.css-x.css-x`, a 0-3-0 selector) which beats the single-class
+	// `.godam-ve-control` rule above (0-2-0) on specificity — not just source
+	// order — so WP's default size/weight/transform leak through. Doubling
+	// `.godam-ve-control` lifts us to 0-4-0 so the FULL label styling wins without
+	// `!important` and the SelectControl label matches the other field labels.
 	.godam-ve-control.godam-ve-control {
 
 		.components-base-control__label,
 		.components-input-control__label {
+			margin-bottom: 0.375rem;
+			font-size: 0.8125rem;
+			font-weight: 600;
+			line-height: 1.4;
+			color: inherit;
 			text-transform: none;
 			letter-spacing: normal;
 		}
