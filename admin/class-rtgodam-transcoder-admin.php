@@ -342,7 +342,7 @@ class RTGODAM_Transcoder_Admin {
 						<a href="<?php echo esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=free-plan-notice&utm_source=plugin&utm_medium=admin-notice&utm_content=dashboard' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary">
 							<?php esc_html_e( 'Get your Free Plan', 'godam' ); ?>
 						</a>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_settings#video-settings' ) ); ?>" class="button button-secondary">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_settings#api-key' ) ); ?>" class="button button-secondary">
 							<?php esc_html_e( 'Activate API Key', 'godam' ); ?>
 						</a>
 					</div>
