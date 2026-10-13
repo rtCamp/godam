@@ -36,7 +36,7 @@ class Review_Request {
 	 *
 	 * @var string
 	 */
-	const REVIEW_URL = 'https://wordpress.org/support/plugin/godam/reviews/?filter=5#new-post';
+	const REVIEW_URL = 'https://wordpress.org/support/plugin/godam/reviews/#new-post';
 
 	/**
 	 * Site option holding the Unix time the notice's week-long wait started.

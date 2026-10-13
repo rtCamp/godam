@@ -492,7 +492,7 @@ class ReviewRequestTest extends TestCase {
 		$html = ob_get_clean();
 
 		$this->assertStringContainsString( 'class="notice notice-info is-dismissible rtgodam-review-request"', $html );
-		$this->assertStringContainsString( 'href="https://wordpress.org/support/plugin/godam/reviews/?filter=5#new-post"', $html );
+		$this->assertStringContainsString( 'href="https://wordpress.org/support/plugin/godam/reviews/#new-post"', $html );
 		$this->assertStringContainsString( 'target="_blank" rel="noopener noreferrer"', $html );
 		$this->assertSame( 1, substr_count( $html, 'data-rtgodam-review-choice="review"' ) );
 		$this->assertSame( 1, substr_count( $html, 'data-rtgodam-review-choice="later"' ) );
@@ -502,6 +502,28 @@ class ReviewRequestTest extends TestCase {
 		$this->assertStringContainsString( 'I already did', $html );
 		$this->assertStringContainsString( '"nonce":"nonce-for-' . Review_Request::AJAX_ACTION . '"', $html );
 		$this->assertStringContainsString( '"action":"' . Review_Request::AJAX_ACTION . '"', $html );
+	}
+
+	/**
+	 * wordpress.org's Plugin Check rejects a link straight to the 5-star reviews
+	 * (`five_star_reviews_detected`, an error), so no PHP file may carry one. This applies the
+	 * same pattern to the plugin's own PHP, since CI only finds it after the push.
+	 */
+	public function test_no_php_file_links_to_the_five_star_reviews() {
+		$root    = dirname( __DIR__, 2 );
+		$pattern = '/(?:https?:\/\/)?(?:wordpress\.org|wp\.org)\/.*reviews\/\?filter=5/'; // phpcs:ignore WordPress.WP.CapitalPDangit.MisspelledInText -- A URL pattern, copied from Plugin Check.
+		$hits    = array();
+
+		foreach ( array( 'inc', 'admin', 'pages' ) as $dir ) {
+			foreach ( new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $root . '/' . $dir, \FilesystemIterator::SKIP_DOTS ) ) as $file ) {
+				if ( 'php' === $file->getExtension() && preg_match( $pattern, (string) file_get_contents( $file->getPathname() ) ) ) {
+					$hits[] = $file->getPathname();
+				}
+			}
+		}
+
+		$this->assertSame( array(), $hits );
+		$this->assertDoesNotMatchRegularExpression( $pattern, Review_Request::REVIEW_URL );
 	}
 
 	/**
