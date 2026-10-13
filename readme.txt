@@ -194,33 +194,26 @@ A. Yes! You can start with a 60-day free trial to explore all features. No credi
 A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
 == Screenshots ==
-1. General Settings
-2. Video Settings with valid API Key
-3. Media Editor
-4. Video Layer Selection
-5. Hotspot Layer
-6. Ads Integration
-7. Gravity Forms Integration
-8. Player Settings
-9. Enhanced Media Library (DAM)
-10. Post-Specific Video Settings
-11. Attachment Video Details
-12. Single Video Analytics
-13. Video Analytics Dashboard
-14. GoDAM Central Selector Tab
-15. GoDAM Recorder Field for Gravity Forms
-16. Automatic Video Transcription
-17. GoDAM Central
-18. Image Upload to GoDAM Central
-19. Single Video Page in  GoDAM Central
-20. Settings Page in GoDAM Central
-21. GoDAM Video Gallery Block
-22. Elementor GoDAM Gallery Widget
-23. Elementor GoDAM Video Widget
-24. Video Player Style Settings
-25. Global Ads Settings
-26. Chapters Interface
-27. Likes and Comments
+1. Video Editor: add interactive layers to a video, with its plays and watch time on top
+2. Add layer menu: CTA, Hotspot, Form, Poll, Ad and WooCommerce layers for your video
+3. Hotspot layer: place a clickable icon with a tooltip and link at a moment in the video
+4. Ad layer: play a skippable video ad inside your video, with a click-through link
+5. Gravity Forms layer: ask viewers to fill in a form mid-video, including a field to record a video answer
+6. Media Library with folders: keep your videos, audio and images organized and bookmarked
+7. Attachment details: preview a video, pick its thumbnail, and open its editor or analytics
+8. Single video analytics: engagement, play rate, watch time and plays for one video
+9. Analytics dashboard: plays, unique viewers, viewer locations and playback performance across your videos
+10. Transcription: a time-stamped transcript shown beside your video
+11. GoDAM Central media library: all your hosted videos, audio and images in one place
+12. Video Gallery block: show handpicked videos, or videos chosen by a query, as a gallery in the block editor
+13. Elementor Gallery widget: build a video gallery with a grid layout, choose videos by category, tag or date range, and Load More
+14. Elementor Video widget: add a GoDAM video with autoplay, loop and playback controls
+15. Video Player settings: choose a player skin and set your brand color and logo
+16. Chapters: split a video into titled sections on its timeline
+17. GoDAM for Woo add-on (a separate plugin): Reel Pop, a floating video on your storefront
+18. GoDAM for Woo add-on: a scrolling row of shoppable videos with product, price and Add to Cart
+19. GoDAM for Woo add-on: a product video gallery on the product page
+20. GoDAM for Woo add-on: product hotspots that show the product and its price inside the video
 
 == Changelog ==
 
