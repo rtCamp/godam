@@ -88,7 +88,7 @@ class Dashboard_Widget_Preview {
 	public static function local_model( $state ) {
 		$key_status    = Api_Key_Status::VALID;
 		$widget_state  = 'active';
-		$counts        = self::counts( 48, 31, 64, 0, 1 );
+		$counts        = self::counts( 48, 31, 64, 0, 1, 90 );
 		$library       = self::library( 402, 58, 44, 96, 12, 71, 540, 18, 431 );
 		$video_seconds = 75240;
 		$usage         = array(
@@ -100,7 +100,7 @@ class Dashboard_Widget_Preview {
 
 		switch ( $state ) {
 			case 'attention':
-				$counts                  = self::counts( 48, 31, 64, 3, 1 );
+				$counts                  = self::counts( 48, 31, 64, 3, 1, 90 );
 				$usage['storage_used']   = 43.1;
 				$usage['bandwidth_used'] = 104.2;
 				break;
@@ -294,19 +294,21 @@ class Dashboard_Widget_Preview {
 	 * @param int $documents  Documents ready to preview.
 	 * @param int $failed     Files that failed.
 	 * @param int $processing Files in progress.
+	 * @param int $images     Images GoDAM has processed.
 	 * @return array
 	 */
-	private static function counts( $videos, $audio, $documents, $failed, $processing ) {
+	private static function counts( $videos, $audio, $documents, $failed, $processing, $images = 0 ) {
 		$transcoded = $videos + $audio + $documents;
 
 		return array(
 			'videos_ready'    => $videos,
 			'audio_ready'     => $audio,
 			'documents_ready' => $documents,
+			'images_ready'    => $images,
 			'transcoded'      => $transcoded,
 			'failed'          => $failed,
 			'processing'      => $processing,
-			'total'           => $transcoded + $failed + $processing,
+			'total'           => $transcoded + $failed + $processing + $images,
 		);
 	}
 

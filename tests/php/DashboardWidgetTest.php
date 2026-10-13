@@ -103,6 +103,7 @@ class DashboardWidgetTest extends TestCase {
 				$this->row( 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'transcoded', 1 ),
 				$this->row( 'image/jpeg', 'transcoded', 4 ),
 				$this->row( 'video/mp4', 'failed', 1 ),
+				// Image failures count too: a file only fails if GoDAM submitted it.
 				$this->row( 'image/jpeg', 'failed', 2 ),
 				$this->row( 'audio/mpeg', 'blocked', 1 ),
 				$this->row( 'video/mp4', 'Queued', 2 ),
@@ -116,8 +117,9 @@ class DashboardWidgetTest extends TestCase {
 				'videos_ready'    => 5,
 				'audio_ready'     => 1,
 				'documents_ready' => 3,
+				'images_ready'    => 4,
 				'transcoded'      => 9,
-				'failed'          => 1,
+				'failed'          => 3,
 				'processing'      => 3,
 				'total'           => 24,
 			),
@@ -562,6 +564,7 @@ class DashboardWidgetTest extends TestCase {
 			'videos_ready'    => 2,
 			'audio_ready'     => 0,
 			'documents_ready' => 1,
+			'images_ready'    => 4,
 		);
 
 		$values = Dashboard_Widget::local_values( $library, $counts, 7200 );
@@ -570,6 +573,7 @@ class DashboardWidgetTest extends TestCase {
 		$this->assertSame( 4, $values['chart_library'] );
 		$this->assertSame( 7200.0, $values['video_seconds'] );
 		$this->assertSame( 2, $values['videos_ready'] );
+		$this->assertSame( 4, $values['images_ready'] );
 		$this->assertArrayNotHasKey( 'captions', $values );
 		$this->assertArrayNotHasKey( 'files_in_use', $values );
 

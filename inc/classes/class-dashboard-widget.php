@@ -135,6 +135,7 @@ class Dashboard_Widget {
 		'videos_ready'    => 1,
 		'audio_ready'     => 1,
 		'documents_ready' => 1,
+		'images_ready'    => 1,
 	);
 
 	/**
@@ -164,7 +165,7 @@ class Dashboard_Widget {
 	 *
 	 * @var string[]
 	 */
-	const READY_TILES = array( 'videos_ready', 'audio_ready', 'documents_ready' );
+	const READY_TILES = array( 'videos_ready', 'audio_ready', 'documents_ready', 'images_ready' );
 
 	/**
 	 * Where each clickable tile goes: the GoDAM Dashboard (plays, viewers, the
@@ -693,6 +694,7 @@ class Dashboard_Widget {
 			'videos_ready'    => (int) ( $counts['videos_ready'] ?? 0 ),
 			'audio_ready'     => (int) ( $counts['audio_ready'] ?? 0 ),
 			'documents_ready' => (int) ( $counts['documents_ready'] ?? 0 ),
+			'images_ready'    => (int) ( $counts['images_ready'] ?? 0 ),
 		);
 
 		if ( isset( $library['files_in_use'] ) ) {
@@ -892,20 +894,22 @@ class Dashboard_Widget {
 	 * own progress values, so statuses are matched case-insensitively. Finished
 	 * files are split by type, because GoDAM processes audio and documents too.
 	 *
-	 * Failed counts only the types GoDAM processes, so every counted file can be
-	 * retried from Tools. `blocked` is not counted: it means storage was over the
-	 * limit at upload (the storage alert covers that), and it is also set on file
-	 * types GoDAM never processes.
+	 * Failed counts every file whose processing failed, whatever its type
+	 * (images included): a file only carries a `failed` status if GoDAM actually
+	 * submitted it, so this mirrors the failures the Media Library flags.
+	 * `blocked` is not counted: it means storage was over the limit at upload
+	 * (the storage alert covers that).
 	 *
 	 * @param array $rows Rows of array( 'mime' => string, 'status' => string, 'total' => int ).
-	 * @return array Counts: videos_ready, audio_ready, documents_ready, transcoded (all three),
-	 *               failed, processing and total (every status).
+	 * @return array Counts: videos_ready, audio_ready, documents_ready, images_ready, transcoded
+	 *               (the three streamed types, not images), failed, processing and total (every status).
 	 */
 	public static function summarize_status_rows( array $rows ) {
 		$counts = array(
 			'videos_ready'    => 0,
 			'audio_ready'     => 0,
 			'documents_ready' => 0,
+			'images_ready'    => 0,
 			'transcoded'      => 0,
 			'failed'          => 0,
 			'processing'      => 0,
@@ -935,11 +939,16 @@ class Dashboard_Widget {
 				if ( isset( $ready[ $family ] ) ) {
 					$counts[ $ready[ $family ] ] += $total;
 					$counts['transcoded']        += $total;
+				} elseif ( 'images' === $family ) {
+					// Images are not streamed, so they stay out of the `transcoded`
+					// state signal, but a processed image earns its own ready tile.
+					$counts['images_ready'] += $total;
 				}
 			} elseif ( 'failed' === $status ) {
-				if ( isset( $ready[ $family ] ) ) {
-					$counts['failed'] += $total;
-				}
+				// Count every failed file, whatever its type (images included): a
+				// file only carries a `failed` status if GoDAM actually submitted
+				// it, so this matches the failures the Media Library flags.
+				$counts['failed'] += $total;
 			} elseif ( isset( $groups[ $status ] ) ) {
 				$counts[ $groups[ $status ] ] += $total;
 			}
@@ -1464,6 +1473,12 @@ class Dashboard_Widget {
 					'value' => number_format_i18n( $count ),
 					'label' => _n( 'document ready to preview', 'documents ready to preview', $count, 'godam' ),
 					'title' => __( 'Documents GoDAM has prepared for the on-page viewer.', 'godam' ),
+				);
+			case 'images_ready':
+				return array(
+					'value' => number_format_i18n( $count ),
+					'label' => _n( 'image ready', 'images ready', $count, 'godam' ),
+					'title' => __( 'Images GoDAM has finished processing.', 'godam' ),
 				);
 		}
 
