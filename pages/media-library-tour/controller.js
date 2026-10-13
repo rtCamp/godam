@@ -37,6 +37,9 @@ const POLL_INTERVAL = 150;
 // driver.js highlight transition (its default `duration` is 400ms) plus margin.
 const TRANSITION_MS = 600;
 const INTERACTIVE_CLASS = 'godam-ml-tour-interactive';
+// driver.js tags the highlighted node with this class; its overlay CSS makes
+// only that node (and its children) clickable. React can strip it — see `watch`.
+const DRIVER_ACTIVE_CLASS = 'driver-active-element';
 
 let driverObj = null;
 let steps = [];
@@ -61,6 +64,18 @@ export const configure = ( next ) => {
 };
 
 const resolve = ( value ) => ( typeof value === 'function' ? value( ctx ) : value );
+
+// driver.js renders the popover description as HTML. Tour copy is plain text but
+// interpolates user-controlled folder names, so encode it to stop a crafted
+// folder name from injecting markup or event handlers into wp-admin.
+const escapeHtml = ( value ) =>
+	String( value ?? '' ).replace( /[&<>"']/g, ( char ) => ( {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#39;',
+	}[ char ] ) );
 
 const passes = ( step ) => ! step.when || step.when( ctx );
 
@@ -213,6 +228,15 @@ const watch = ( step, element ) => {
 			show();
 			return;
 		}
+		// Clicking a highlighted folder row selects it, so React re-renders it
+		// with a `tree-item--active` class — and because React rewrites the whole
+		// `class` attribute, that wipes driver.js's `driver-active-element` marker.
+		// Without it driver.js's overlay CSS turns the row (and the three-dot menu
+		// the step asks the user to click) inert, dead-ending the step. The node is
+		// still connected, so the check above won't catch it — re-assert the class.
+		if ( ! element.classList.contains( DRIVER_ACTIVE_CLASS ) ) {
+			element.classList.add( DRIVER_ACTIVE_CLASS );
+		}
 		// Keep the popover glued to a target that moves (e.g. a modal still
 		// animating in). driver.js's refresh() re-positions against its
 		// *settled* element, which during the ~400ms highlight transition is
@@ -301,8 +325,18 @@ const show = async () => {
 	lastRect = JSON.stringify( element.getBoundingClientRect() );
 
 	const { position, total } = progress();
+	// Interactive steps advance when the user does the thing on the page. Their
+	// forward button is a "Skip" escape hatch, not the primary action, so a step
+	// is never a dead-end (e.g. if a required click doesn't take). Informational
+	// steps keep a primary "Next" (or their own `nextLabel`, e.g. "Finish").
+	const isSkip = Boolean( step.advanceOn || step.advanceWhen );
+	const forwardLabel = step.nextLabel || ( isSkip ? __( 'Skip', 'godam' ) : __( 'Next', 'godam' ) );
 	const buttons = [ 'close' ];
-	if ( step.showNext ) {
+	// Every step gets a forward button (Next / Skip) unless it opts out. Modal
+	// steps opt out via `hideSkip`: skipping would advance while leaving the modal
+	// frozen above the overlay, and closing the modal already rewinds to a step
+	// that has Skip, so they are not dead-ends without it.
+	if ( ! step.hideSkip ) {
 		buttons.unshift( 'next' );
 	}
 	if ( canGoBack() ) {
@@ -312,12 +346,12 @@ const show = async () => {
 	ensureDriver().highlight( {
 		element,
 		popover: {
-			title: step.title || '',
-			description: resolve( step.text ),
+			title: escapeHtml( step.title ),
+			description: escapeHtml( resolve( step.text ) ),
 			side: step.side || 'bottom',
 			align: step.align || 'start',
 			showButtons: buttons,
-			nextBtnText: step.nextLabel || __( 'Next', 'godam' ),
+			nextBtnText: forwardLabel,
 			prevBtnText: __( 'Back', 'godam' ),
 			showProgress: true,
 			progressText: `${ position }/${ total }`,
@@ -332,6 +366,10 @@ const show = async () => {
 				}
 			},
 			onPopoverRender: ( popover ) => {
+				// Mark the bubble so the Skip button on interactive steps reads as a
+				// secondary action (the real action is the click on the page).
+				popover.wrapper.classList.toggle( 'godam-ml-tour--skippable', isSkip );
+
 				// driver.js focuses the popover right after this callback; hand focus
 				// back to where the user types (otherwise a space typed into the folder
 				// name would "press" the focused close button).
