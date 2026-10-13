@@ -9,6 +9,8 @@ namespace RTGODAM\Inc;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Enums\Api_Key_Status;
+use RTGODAM\Inc\Helpers\Api_Key;
 use RTGODAM\Inc\Traits\Singleton;
 
 /**
@@ -17,7 +19,9 @@ use RTGODAM\Inc\Traits\Singleton;
  * A one-time, dismissible admin notice. It is shown only to administrators, only on the
  * WordPress Dashboard, Media Library and Plugins screens, and never in network admin. It
  * stays hidden until GoDAM has been on the site for a week and has finished transcoding a
- * few of the site's own videos, so the ask comes after a success and not on day one.
+ * few of the site's own videos, so the ask comes after a success and not on day one. It also
+ * stays hidden while GoDAM is showing an API key error notice, so it never asks for a review
+ * of something that is currently broken.
  *
  * The choices are stored per user: "Leave a review", "I already did" and the notice's close
  * button hide the notice for good, "Maybe later" hides it for 30 days. Clicks are not tracked
@@ -172,6 +176,10 @@ class Review_Request {
 			return false;
 		}
 
+		if ( self::has_api_key_error( Api_Key::get_key(), get_option( 'rtgodam_user_data', array() ), Api_Key::get_status() ) ) {
+			return false;
+		}
+
 		return $this->has_enough_finished_videos();
 	}
 
@@ -202,6 +210,31 @@ class Review_Request {
 		$started = (int) $started;
 
 		return $started > 0 && ( $now - $started ) >= self::MIN_DAYS * DAY_IN_SECONDS;
+	}
+
+	/**
+	 * Whether GoDAM is showing its API key error notice (Transcoder_Admin::api_key_status_notice()).
+	 *
+	 * Same condition as that notice: a key is saved and its status is not valid. It reads only
+	 * what is already stored, so it never triggers a verification request. The status comes
+	 * from the cached user data, which is where the temporary "verification failed" state lives,
+	 * and falls back to the stored status when nothing is cached.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $api_key       The saved API key (empty when none).
+	 * @param mixed $user_data     The cached `rtgodam_user_data` option.
+	 * @param mixed $stored_status The stored API key status option.
+	 * @return bool
+	 */
+	public static function has_api_key_error( $api_key, $user_data, $stored_status ) {
+		if ( empty( $api_key ) ) {
+			return false;
+		}
+
+		$status = is_array( $user_data ) && isset( $user_data['api_key_status'] ) ? $user_data['api_key_status'] : $stored_status;
+
+		return Api_Key_Status::VALID !== $status;
 	}
 
 	/**

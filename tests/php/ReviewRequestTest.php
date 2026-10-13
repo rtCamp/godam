@@ -38,6 +38,8 @@ class ReviewRequestTest extends TestCase {
 		parent::setUp();
 
 		require_once dirname( __DIR__ ) . '/stubs/review-request-functions.php';
+		require_once dirname( __DIR__, 2 ) . '/inc/classes/enums/class-api-key-status.php';
+		require_once dirname( __DIR__, 2 ) . '/inc/helpers/class-api-key.php';
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/class-review-request.php';
 
 		$GLOBALS['rtgodam_hooks'] = array();
@@ -248,6 +250,70 @@ class ReviewRequestTest extends TestCase {
 		$this->notice()->record_start();
 
 		$this->assertSame( $before - 5 * DAY_IN_SECONDS, $GLOBALS['rtgodam_stub']['options'][ Review_Request::STARTED_OPTION ] );
+	}
+
+	/**
+	 * @return array<string, array{mixed, mixed, mixed, bool}> API key, cached user data, stored status, whether the error notice shows.
+	 */
+	public function api_key_states() {
+		return array(
+			'no key (free user)'                     => array( '', array(), 'no_api_key', false ),
+			'key, valid'                             => array( 'k', array( 'api_key_status' => 'valid' ), 'valid', false ),
+			'key, expired'                           => array( 'k', array( 'api_key_status' => 'expired' ), 'expired', true ),
+			'key, verification failed (cache only)'  => array( 'k', array( 'api_key_status' => 'verification_failed' ), 'valid', true ),
+			'key, cache gone, stored expired'        => array( 'k', false, 'expired', true ),
+			'key, cache gone, stored valid'          => array( 'k', false, 'valid', false ),
+			'key, cache says valid, stored is stale' => array( 'k', array( 'api_key_status' => 'valid' ), 'expired', false ),
+			'no key but a leftover expired status'   => array( '', array( 'api_key_status' => 'expired' ), 'expired', false ),
+		);
+	}
+
+	/**
+	 * The same condition as GoDAM's API key error notice.
+	 *
+	 * @dataProvider api_key_states
+	 *
+	 * @param mixed $api_key       Saved key.
+	 * @param mixed $user_data     Cached user data.
+	 * @param mixed $stored_status Stored status.
+	 * @param bool  $expected      Whether the error notice shows.
+	 */
+	public function test_api_key_error_matches_the_error_notice( $api_key, $user_data, $stored_status, $expected ) {
+		$this->assertSame( $expected, Review_Request::has_api_key_error( $api_key, $user_data, $stored_status ) );
+	}
+
+	/**
+	 * While GoDAM shows its API key error notice the ask stays hidden, and it comes back when
+	 * the key is healthy again.
+	 */
+	public function test_hidden_while_an_api_key_error_shows() {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key']        = 'k';
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-status'] = 'valid';
+
+		$this->assertTrue( $this->notice()->should_show(), 'A valid key does not hide it.' );
+
+		$GLOBALS['rtgodam_stub']['options']['rtgodam_user_data'] = array( 'api_key_status' => 'verification_failed' );
+
+		$this->assertFalse( $this->notice()->should_show(), 'A failed verification hides it.' );
+
+		$GLOBALS['rtgodam_stub']['options']['rtgodam_user_data'] = array( 'api_key_status' => 'expired' );
+
+		$this->assertFalse( $this->notice()->should_show(), 'An expired key hides it.' );
+
+		$GLOBALS['rtgodam_stub']['options']['rtgodam_user_data'] = array( 'api_key_status' => 'valid' );
+
+		$this->assertTrue( $this->notice()->should_show(), 'It comes back once the key is healthy.' );
+	}
+
+	/**
+	 * The error check runs before the video lookup, so a broken key costs no query.
+	 */
+	public function test_no_video_lookup_while_an_api_key_error_shows() {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key']   = 'k';
+		$GLOBALS['rtgodam_stub']['options']['rtgodam_user_data'] = array( 'api_key_status' => 'expired' );
+
+		$this->assertFalse( $this->notice()->should_show() );
+		$this->assertArrayNotHasKey( 'wp_query_args', $GLOBALS['rtgodam_stub'] );
 	}
 
 	/**
