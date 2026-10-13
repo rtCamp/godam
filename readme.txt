@@ -145,7 +145,7 @@ Add video to your WooCommerce store. GoDAM works with WooCommerce through the Go
 ✓ Product hotspots, shoppable video reels and product gallery video
 ✓ Revenue analytics: see the order value credited to each video [Paid]
 
-The add-on is not part of this plugin. You install it from the Integrations Settings tab under GoDAM → Settings, and it needs WooCommerce and a valid GoDAM API key.
+The add-on is not part of this plugin. It is available from godam.io, and it needs WooCommerce and a valid GoDAM API key.
 
 = Integrations =
 
@@ -216,7 +216,7 @@ A. Yes. GoDAM adds a "Videos: GoDAM" integration to LifterLMS Advanced Videos. Y
 A. The dedicated integration today is LifterLMS. The GoDAM Video block and the [godam_video] shortcode are standard WordPress content, so you can use them in any lesson that accepts blocks or shortcodes, but the lesson-completion features are for LifterLMS.
 
 = Does GoDAM work with WooCommerce? =
-A. Yes, through the GoDAM for Woo add-on. It adds a WooCommerce layer to the video editor, product hotspots, shoppable video reels, product gallery video and revenue analytics. The add-on is not part of this plugin. You install it from the Integrations Settings tab under GoDAM → Settings, and it needs WooCommerce and a valid GoDAM API key.
+A. Yes, through the GoDAM for Woo add-on. It adds a WooCommerce layer to the video editor, product hotspots, shoppable video reels, product gallery video and revenue analytics. The add-on is not part of this plugin. It is available from godam.io, and it needs WooCommerce and a valid GoDAM API key.
 
 = Can I move my existing Vimeo videos to GoDAM? =
 A. Yes, for Vimeo videos you added with the WordPress Vimeo Embed block. The Video Migration tab under GoDAM → Tools replaces those blocks with GoDAM Video blocks, for videos you have already imported into your GoDAM account. It needs a valid API key and does not cover Vimeo videos added in the Classic Editor.
