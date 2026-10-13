@@ -89,6 +89,13 @@ class Dashboard_Widget {
 	const COUNTS_TRANSIENT = 'rtgodam_dashboard_widget_counts';
 
 	/**
+	 * Transient that holds the IDs of attachments whose processing failed.
+	 *
+	 * @var string
+	 */
+	const FAILED_IDS_TRANSIENT = 'rtgodam_dashboard_widget_failed_ids';
+
+	/**
 	 * Transient that holds the Media Library counts.
 	 *
 	 * @var string
@@ -195,6 +202,15 @@ class Dashboard_Widget {
 	 * @var string
 	 */
 	const GODAM_PAGE_CAP = 'edit_pages';
+
+	/**
+	 * Below this many failed files, the Retry link carries the file IDs so the
+	 * Tools page retranscodes exactly those; at or above it, Retry opens the
+	 * Tools page for a bulk retry.
+	 *
+	 * @var int
+	 */
+	const RETRY_IDS_THRESHOLD = 50;
 
 	/**
 	 * The model built for this request, so registering and rendering share it.
@@ -331,6 +347,7 @@ class Dashboard_Widget {
 	public function flush_counts_on_status_change( $meta_id, $object_id, $meta_key ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundBeforeLastUsed -- hook signature.
 		if ( 'rtgodam_transcoding_status' === $meta_key ) {
 			delete_transient( self::COUNTS_TRANSIENT );
+			delete_transient( self::FAILED_IDS_TRANSIENT );
 		} elseif ( '_video_duration' === $meta_key ) {
 			delete_transient( self::VIDEO_LENGTH_TRANSIENT );
 		}
@@ -532,6 +549,83 @@ class Dashboard_Widget {
 		set_transient( self::COUNTS_TRANSIENT, $counts, 15 * MINUTE_IN_SECONDS );
 
 		return $counts;
+	}
+
+	/**
+	 * The IDs of up to RETRY_IDS_THRESHOLD attachments whose processing failed,
+	 * cached until a status changes. Used to pre-select them on the Tools page
+	 * so the Retry link can retranscode exactly those files.
+	 *
+	 * @return int[]
+	 */
+	private function get_failed_ids() {
+		$cached = get_transient( self::FAILED_IDS_TRANSIENT );
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		global $wpdb;
+
+		/**
+		 * Fires before looking up the failed attachments, so integrations that
+		 * centralize media on another site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
+		$ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient below, cleared on status changes.
+			$wpdb->prepare(
+				"SELECT pm.post_id
+				FROM {$wpdb->postmeta} pm
+				INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+				WHERE pm.meta_key = %s AND LOWER( pm.meta_value ) = 'failed'
+				AND p.post_type = 'attachment' AND p.post_status <> 'trash'
+				ORDER BY pm.post_id DESC
+				LIMIT %d",
+				'rtgodam_transcoding_status',
+				self::RETRY_IDS_THRESHOLD
+			)
+		);
+
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		$ids = array_map( 'intval', (array) $ids );
+		set_transient( self::FAILED_IDS_TRANSIENT, $ids, 15 * MINUTE_IN_SECONDS );
+
+		return $ids;
+	}
+
+	/**
+	 * Where the "Retry" alert link goes. For a small number of failed files, it
+	 * links to the Tools page with those IDs pre-selected (the `media_ids` + the
+	 * `rtgodam_tools` nonce hand-off the Media Library's retranscode action uses),
+	 * so retrying exactly those files is one step. At or above the threshold, it
+	 * links to the Tools page for a bulk retry.
+	 *
+	 * @param int $count Number of failed files.
+	 * @return string
+	 */
+	private function retry_url( $count ) {
+		$tools = admin_url( 'admin.php?page=rtgodam_tools' );
+
+		if ( $count <= 0 || $count >= self::RETRY_IDS_THRESHOLD ) {
+			return $tools;
+		}
+
+		$ids = $this->get_failed_ids();
+		if ( empty( $ids ) ) {
+			return $tools;
+		}
+
+		return add_query_arg(
+			array(
+				'media_ids' => implode( ',', $ids ),
+				'goback'    => 1,
+				'_wpnonce'  => wp_create_nonce( 'rtgodam_tools' ),
+			),
+			$tools
+		);
 	}
 
 	/**
@@ -1166,7 +1260,7 @@ class Dashboard_Widget {
 				// Tools only exists while the key verifies, and only for editors and above.
 				if ( rtgodam_is_api_key_valid() && current_user_can( self::GODAM_PAGE_CAP ) ) {
 					$copy['action_label'] = __( 'Retry', 'godam' );
-					$copy['action_url']   = admin_url( 'admin.php?page=rtgodam_tools' );
+					$copy['action_url']   = $this->retry_url( $count );
 				}
 
 				return $copy;
