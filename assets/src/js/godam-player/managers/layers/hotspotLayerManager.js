@@ -795,6 +795,10 @@ export default class HotspotLayerManager {
 
 		const buttonEl = document.createElement( 'a' );
 		buttonEl.className = getButtonCtaClassName( style, { extra: 'godam-hotspot-button' } );
+		// Stable hooks for e2e: the rendered button, its index and its variant.
+		// Class names here are style-dependent, so they cannot be selected on.
+		buttonEl.setAttribute( 'data-test-id', `godam-hotspot-render-button-${ index }` );
+		buttonEl.setAttribute( 'data-button-variant', style.variant );
 
 		/* translators: %d: hotspot number */
 		const label = hotspot.tooltipText || sprintf( __( 'Hotspot %d', 'godam' ), index + 1 );

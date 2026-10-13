@@ -64,9 +64,9 @@ const CartIconOption = () => (
 // hotspot uses a map-marker glyph instead.
 // "Button" renders each point as a button, configured per hotspot.
 const STYLE_OPTIONS = [
-	{ value: 'pulse', label: __( 'Pulse', 'godam' ), icon: <PulseDotIcon /> },
-	{ value: 'icon', label: __( 'Icon', 'godam' ), icon: <CartIconOption /> },
-	{ value: 'button', label: __( 'Button', 'godam' ), icon: <ButtonCtaLayerIcon /> },
+	{ value: 'pulse', label: __( 'Pulse', 'godam' ), icon: <PulseDotIcon />, testId: 'godam-hotspot-control-style-pulse' },
+	{ value: 'icon', label: __( 'Icon', 'godam' ), icon: <CartIconOption />, testId: 'godam-hotspot-control-style-icon' },
+	{ value: 'button', label: __( 'Button', 'godam' ), icon: <ButtonCtaLayerIcon />, testId: 'godam-hotspot-control-style-button' },
 ];
 
 // Button points resize by a single lock-aspect font-size knob, so only the four
@@ -500,6 +500,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 										     (no image variant). The tooltip text becomes the button label. */ }
 										{ isButtonStyle && (
 											<ButtonVariantField
+												index={ index }
 												value={ hotspot.variant }
 												onChange={ ( val ) => updateHotspotField( index, { variant: val } ) }
 											/>
@@ -521,6 +522,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 										/>
 										{ isButtonStyle && (
 											<ButtonStyleFields
+												index={ index }
 												button={ hotspot }
 												onFieldChange={ ( changes ) => updateHotspotField( index, changes ) }
 												onColorChange={ ( field, val ) => debouncedHotspotColor( index, field, val ) }
@@ -570,6 +572,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 				{ /* Style: Pulse / Icon are shared across all points; Button is set per hotspot. */ }
 				<VeSection title={ __( 'Style', 'godam' ) }>
 					<VeSegmented
+						data-test-id="godam-hotspot-control-style"
 						options={ STYLE_OPTIONS }
 						value={ styleType }
 						onChange={ ( value ) => updateField( 'styleType', value ) }

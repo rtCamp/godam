@@ -21,6 +21,18 @@ import { useRef, useCallback } from '@wordpress/element';
  */
 import { updateLayerField } from '../../../redux/slice/videoSlice';
 import ColorPickerButton from '../color-picker/ColorPickerButton.jsx';
+
+/**
+ * Build a hotspot control test id, matching the `godam-hotspot-control-*-<index>`
+ * convention the rest of the hotspot panel uses. The index is omitted when the
+ * control is not rendered per point.
+ *
+ * @param {string} name    Control name, e.g. `button-type`.
+ * @param {number} [index] Hotspot index.
+ * @return {string} The test id.
+ */
+const testId = ( name, index ) =>
+	`godam-hotspot-control-${ name }${ index === undefined ? '' : `-${ index }` }`;
 import { VeField, VeColorList, VeSegmented, VeSelect } from '../../controls';
 import {
 	DEFAULT_BUTTON_BG,
@@ -100,12 +112,19 @@ export function useDebouncedItemColor( layerID, arrayKey ) {
  * @param {Object}   props          Props.
  * @param {string}   [props.value]  Current variant (defaults to 'text').
  * @param {Function} props.onChange Receives the chosen variant.
+ * @param {number}   [props.index]  Hotspot index, used to build the test ids.
  * @return {JSX.Element} The variant field.
  */
-export const ButtonVariantField = ( { value, onChange } ) => (
-	<VeField label={ __( 'Type', 'godam' ) }>
+export const ButtonVariantField = ( { value, onChange, index } ) => (
+	<VeField
+		label={ __( 'Type', 'godam' ) }
+		data-test-id={ testId( 'button-type', index ) }
+	>
 		<VeSegmented
-			options={ VARIANT_OPTIONS }
+			options={ VARIANT_OPTIONS.map( ( opt ) => ( {
+				...opt,
+				testId: testId( `button-type-${ opt.value }`, index ),
+			} ) ) }
 			value={ value || 'text' }
 			onChange={ onChange }
 		/>
@@ -122,9 +141,10 @@ export const ButtonVariantField = ( { value, onChange } ) => (
  * @param {Object}   props.button        The hotspot config.
  * @param {Function} props.onFieldChange Receives a partial update, e.g. `{ attention }`.
  * @param {Function} props.onColorChange Receives `( field, value )` for colour edits.
+ * @param {number}   [props.index]       Hotspot index, used to build the test ids.
  * @return {JSX.Element} The attention + colour fields.
  */
-export const ButtonStyleFields = ( { button, onFieldChange, onColorChange } ) => {
+export const ButtonStyleFields = ( { button, onFieldChange, onColorChange, index } ) => {
 	const isSticker = button?.variant === 'sticker';
 
 	const colorRow = ( field, label, fallback ) => (
@@ -140,6 +160,7 @@ export const ButtonStyleFields = ( { button, onFieldChange, onColorChange } ) =>
 	return (
 		<>
 			<VeSelect
+				data-test-id={ testId( 'button-attention', index ) }
 				label={ __( 'Attention animation', 'godam' ) }
 				value={ button?.attention || 'none' }
 				options={ ATTENTION_OPTIONS }
@@ -147,7 +168,10 @@ export const ButtonStyleFields = ( { button, onFieldChange, onColorChange } ) =>
 			/>
 
 			{ ! isSticker && (
-				<VeField label={ __( 'Colours', 'godam' ) }>
+				<VeField
+					label={ __( 'Colours', 'godam' ) }
+					data-test-id={ testId( 'button-colours', index ) }
+				>
 					<VeColorList>
 						{ colorRow( 'bgColor', __( 'Background', 'godam' ), DEFAULT_BUTTON_BG ) }
 						{ colorRow( 'textColor', __( 'Text', 'godam' ), DEFAULT_BUTTON_TEXT ) }
@@ -158,7 +182,10 @@ export const ButtonStyleFields = ( { button, onFieldChange, onColorChange } ) =>
 			) }
 
 			{ isSticker && (
-				<VeField label={ __( 'Fill colour', 'godam' ) }>
+				<VeField
+					label={ __( 'Fill colour', 'godam' ) }
+					data-test-id={ testId( 'button-fill', index ) }
+				>
 					<VeColorList>
 						{ colorRow( 'bgColor', __( 'Fill', 'godam' ), DEFAULT_BUTTON_BG ) }
 					</VeColorList>
