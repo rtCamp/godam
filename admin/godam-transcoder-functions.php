@@ -615,7 +615,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		rtgodam_clear_api_key_invalid_timestamp();
 
 		// Auto-enable PostHog tracking only when the user has never made a consent choice.
-		// If posthog_initialized is already true the user has either opted in or explicitly opted out — respect that decision.
+		// If posthog_initialized is already true, the user has either opted in or explicitly opted out. Respect that decision.
 		$settings = get_option( 'rtgodam-settings', array() );
 		if ( empty( $settings['general']['posthog_initialized'] ) ) {
 			$settings['general']['enable_posthog_tracking'] = true;
