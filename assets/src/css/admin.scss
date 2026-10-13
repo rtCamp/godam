@@ -738,6 +738,13 @@ $media-frame-width: calc(300px + 2 * 24px);
 	textarea {
 		height: 100px;
 	}
+
+	.rt-godam-modal__privacy-note {
+		margin: 0;
+		font-size: 12px;
+		line-height: 1.5;
+		color: #50575e;
+	}
 }
 
 .rt-godam-modal-wrapper {

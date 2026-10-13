@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-12T07:03:52+00:00\n"
+"POT-Creation-Date: 2026-10-13T04:56:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -1645,14 +1645,14 @@ msgid "Is the video suitable for all audiences?"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/build/js/deactivation-feedback.min.js:1
+#: assets/build/js/deactivation-feedback.min.js:2
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:308
-#: assets/src/js/deactivation-feedback.js:36
+#: assets/src/js/deactivation-feedback.js:42
 #: assets/src/js/godam-player/engagement.js:750
 #: pages/godam/components/ConfirmModal.jsx:38
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:191
@@ -2213,43 +2213,52 @@ msgid "Maximum allowed size: %s MB"
 msgstr ""
 
 #: assets/build/js/deactivation-feedback.min.js:1
-#: assets/src/js/deactivation-feedback.js:22
+#: assets/src/js/deactivation-feedback.js:27
 msgid "Select a reason"
 msgstr ""
 
 #: assets/build/js/deactivation-feedback.min.js:1
-#: assets/src/js/deactivation-feedback.js:23
+#: assets/src/js/deactivation-feedback.js:28
 msgid "I found a better plugin"
 msgstr ""
 
 #: assets/build/js/deactivation-feedback.min.js:1
-#: assets/src/js/deactivation-feedback.js:24
+#: assets/src/js/deactivation-feedback.js:29
 msgid "The plugin is not working as expected"
 msgstr ""
 
 #: assets/build/js/deactivation-feedback.min.js:1
-#: assets/src/js/deactivation-feedback.js:25
+#: assets/src/js/deactivation-feedback.js:30
 msgid "I was just testing"
 msgstr ""
 
 #: assets/build/js/deactivation-feedback.min.js:1
-#: assets/src/js/deactivation-feedback.js:26
+#: assets/src/js/deactivation-feedback.js:31
 msgid "Other"
 msgstr ""
 
 #: assets/build/js/deactivation-feedback.min.js:1
-#: assets/src/js/deactivation-feedback.js:28
+#: assets/src/js/deactivation-feedback.js:33
 msgid "Additional details…"
 msgstr ""
 
-#: assets/build/js/deactivation-feedback.min.js:1
-#: assets/src/js/deactivation-feedback.js:32
-msgid "Skip & Deactivate"
+#. translators: 1: "Submit & Deactivate" button label, 2: "Skip & Deactivate" button label, 3: opening link tag to the GoDAM privacy policy, 4: closing link tag.
+#: assets/build/js/deactivation-feedback.min.js:2
+#: assets/src/js/deactivation-privacy-note.js:16
+#, js-format
+msgid "%1$s sends your site URL, the reason you pick, your comment, and your name and email to godam.io, so the GoDAM team can reply to you. %2$s sends nothing. %3$sPrivacy Policy%4$s"
 msgstr ""
 
-#: assets/build/js/deactivation-feedback.min.js:1
-#: assets/src/js/deactivation-feedback.js:37
+#: assets/build/js/deactivation-feedback.min.js:2
+#: assets/src/js/deactivation-feedback.js:43
+#: assets/src/js/deactivation-privacy-note.js:17
 msgid "Submit & Deactivate"
+msgstr ""
+
+#: assets/build/js/deactivation-feedback.min.js:2
+#: assets/src/js/deactivation-feedback.js:38
+#: assets/src/js/deactivation-privacy-note.js:18
+msgid "Skip & Deactivate"
 msgstr ""
 
 #. translators: %d: Maximum allowed file size in MB.
@@ -10324,7 +10333,7 @@ msgstr ""
 msgid "Please let us know why you are deactivating "
 msgstr ""
 
-#: inc/classes/class-deactivation.php:90
+#: inc/classes/class-deactivation.php:91
 msgid "Invalid data."
 msgstr ""
 
