@@ -419,6 +419,8 @@ class Media_Library_Ajax {
 			)
 		);
 
+		$job_id = '';
+
 		if ( ! is_wp_error( $upload_media ) &&
 			(
 				isset( $upload_media['response']['code'] ) &&
@@ -429,9 +431,32 @@ class Media_Library_Ajax {
 
 			if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
 				$job_id = $upload_info->data->name;
-				update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
 			}
 		}
+
+		/**
+		 * Fires before recording the outcome on this attachment, so integrations that
+		 * centralize media on another site write it where the attachment lives.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		if ( '' !== $job_id ) {
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
+
+			// Accepted: drop an earlier failure (e.g. HTTP auth) and its queued retry, which
+			// the cron can't send for an image and would otherwise mark failed later.
+			if ( 'failed' === get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) ) {
+				delete_post_meta( $attachment_id, 'rtgodam_transcoding_status' );
+			}
+			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
+			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
+			rtgodam_remove_from_retry_queue( $attachment_id );
+		}
+		// Central refused the job on purpose (4xx): record why, so the file says so.
+		rtgodam_record_job_refusal( $attachment_id, $upload_media );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Note: For now media is only uploaded to the GoDAM and we are storing the transcoding job ID in the attachment meta.
 		// Todo: In future we can add more logic to handle the transcoded image URLs to provide image CDN feature.
@@ -632,6 +657,28 @@ class Media_Library_Ajax {
 
 		// Add transcoding status to response.
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
+
+		// Say why Central refused the job, so the grid can show it on the item.
+		$error_code = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code', true );
+
+		if ( 'failed' === $response['transcoding_status'] && rtgodam_is_job_refusal( $error_code ) ) {
+			// The message can be Central's own wording and the detail always is, which can carry
+			// URLs: only someone who can edit the file sees them, as on the status route.
+			$can_edit = current_user_can( 'edit_post', $attachment->ID );
+
+			$response['transcoding_error_code']   = $error_code;
+			$response['transcoding_error_msg']    = $can_edit
+				? get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg', true )
+				: __( 'This file can\'t be transcoded.', 'godam' );
+			$response['transcoding_error_detail'] = $can_edit
+				? get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_detail', true )
+				: '';
+
+			// For the attachment details panel: offer the plan page when that's the fix, and a
+			// retranscode button to whoever the retranscode route lets in.
+			$response['transcoding_error_needs_plan'] = rtgodam_refusal_needs_plan( get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_detail', true ) );
+			$response['transcoding_can_retranscode']  = current_user_can( 'edit_others_posts' );
+		}
 
 		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );
 

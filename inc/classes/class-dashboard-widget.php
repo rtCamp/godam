@@ -385,7 +385,7 @@ class Dashboard_Widget {
 	 * @return void
 	 */
 	public function flush_all_counts_for_attachment( $post_id ) {
-		if ( 'attachment' !== get_post_type( $post_id ) ) {
+		if ( 'attachment' !== get_post_type( $post_id ) ) { // godam-coverage-ignore -- flush_all_counts_for_attachment(): trashed_post/untrashed_post fire for every post type; this is the type-routing guard on the post being trashed on the current site, not attachment data access — it only decides whether to clear this site's count transients.
 			return;
 		}
 

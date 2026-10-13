@@ -18,6 +18,7 @@ import { __ } from '@wordpress/i18n';
 import Skeleton from './components/Skeleton.jsx';
 import GodamHeader from './components/GoDAMHeader.jsx';
 import GoDAMFooter from './components/GoDAMFooter.jsx';
+import PreflightNotices from './components/PreflightNotices.jsx';
 import APIKey from './components/tabs/APIKey/APIKey.jsx';
 import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.jsx';
 import IntegrationsSettings from './components/tabs/IntegrationsSettings/IntegrationsSettings.jsx';
@@ -162,6 +163,7 @@ const App = () => {
 					) ) }
 				</nav>
 				<div id="main-content" className="godam-settings__container__content" data-test-id="godam-settings-content">
+					<PreflightNotices />
 					{ activeTabData && <activeTabData.component /> }
 				</div>
 			</div>

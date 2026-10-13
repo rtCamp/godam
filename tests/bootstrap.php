@@ -56,6 +56,19 @@ if ( ! function_exists( 'sanitize_text_field' ) ) {
 	}
 }
 
+if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+
+	/**
+	 * Like sanitize_text_field(), but keeps line breaks.
+	 *
+	 * @param string $str Input.
+	 * @return string
+	 */
+	function sanitize_textarea_field( $str ) {
+		return trim( preg_replace( '/[\t ]+/', ' ', wp_strip_all_tags( (string) $str ) ) );
+	}
+}
+
 if ( ! function_exists( 'esc_url' ) ) {
 
 	/**
@@ -210,12 +223,40 @@ if ( ! class_exists( 'WP_Error' ) ) {
 	// phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed, Generic.Files.OneObjectStructurePerFile.MultipleFound -- test stub.
 	class WP_Error {
 
+		/** @var mixed */
+		private $code;
+
+		/** @var string */
+		private $message;
+
+		/** @var mixed */
+		private $data;
+
 		/**
-		 * @param mixed $code    Ignored.
-		 * @param mixed $message Ignored.
-		 * @param mixed $data    Ignored.
+		 * @param mixed  $code    Error code.
+		 * @param string $message Error message.
+		 * @param mixed  $data    Error data.
 		 */
-		public function __construct( $code = '', $message = '', $data = '' ) {} // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+		public function __construct( $code = '', $message = '', $data = '' ) {
+			$this->code    = $code;
+			$this->message = $message;
+			$this->data    = $data;
+		}
+
+		/** @return mixed */
+		public function get_error_code() {
+			return $this->code;
+		}
+
+		/** @return string */
+		public function get_error_message() {
+			return $this->message;
+		}
+
+		/** @return mixed */
+		public function get_error_data() {
+			return $this->data;
+		}
 	}
 }
 

@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import TranscodingChecker from './transcoding-checker';
+import { isRefusal } from './refusal';
 
 /**
  * SVG icons used for different transcoding states
@@ -110,7 +111,7 @@ class ListViewTranscodingStatus {
 		const statusText = element.querySelector( '.status-text' );
 		// Handle failed transcoding state
 		if ( data.status === 'failed' ) {
-			this._updateFailedStatus( element, loader, statusText, existingIcon );
+			this._updateFailedStatus( element, loader, statusText, existingIcon, data );
 			return;
 		}
 
@@ -181,13 +182,15 @@ class ListViewTranscodingStatus {
 	 * @param {HTMLElement}      loader       - The loader element
 	 * @param {HTMLElement}      statusText   - The status text element
 	 * @param {HTMLElement|null} existingIcon - Any existing icon element to replace
+	 * @param {Object}           data         - The status data; `error_code` and `error_msg` say why it failed
 	 */
-	_updateFailedStatus( element, loader, statusText, existingIcon ) {
+	_updateFailedStatus( element, loader, statusText, existingIcon, data = {} ) {
 		element.classList.add( STATUS_CLASSES.FAILED );
 
 		this._replaceIcon( loader, existingIcon, ICONS.exclamation );
 
-		const failureMessage = __( 'Transcoding failed, please try again.', 'godam' );
+		// When Central refused the job, its reason is what the admin needs, not a generic retry hint.
+		const failureMessage = isRefusal( data.error_code ) && data.error_msg ? data.error_msg : __( 'Transcoding failed, please try again.', 'godam' );
 		loader.style.setProperty( '--status-text', failureMessage );
 		statusText.textContent = failureMessage;
 	}
