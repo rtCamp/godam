@@ -1,0 +1,282 @@
+// =============================================================
+// Video Editor — Layers tab (list panel + add-layer menu)
+// Scoped under `.godam-video-editor`. Self-contained; no
+// `_common.scss` usage and NO hardcoded colours — accent comes
+// from the WordPress component accent variable and neutrals are
+// derived from `currentColor`.
+// The add-layer dropdown content is portaled to <body>, so its
+// rules live OUTSIDE the editor scope (keyed off the popover class).
+// =============================================================
+
+$ve-border: #E0E0E0;
+$ve-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+$ve-accent-tint: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 8%, transparent);
+$ve-muted: #0000008c;
+$ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
+
+.godam-video-editor {
+
+	.godam-ve-layers {
+
+		&__head {
+			padding: 1rem;
+			border-bottom: 1px solid $ve-border;
+			position: sticky;
+			top: 0;
+			background: #fff;
+			z-index: 10;
+		}
+
+		&__title {
+			margin: 0 0 0.75rem 0;
+			font-size: 0.9375rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		// Split "Add layer" button (Dropdown wrapper holds both buttons).
+		&__add {
+			display: flex;
+			align-items: stretch;
+			margin-bottom: 0.5rem;
+			gap: 1px;
+		}
+
+		&__add-button {
+			flex: 1 1 auto;
+			justify-content: center;
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
+		}
+
+		&__add-plus {
+			flex: 0 0 auto;
+			border-top-left-radius: 0;
+			border-bottom-left-radius: 0;
+			border-left: 1px solid #fff;
+		}
+
+		&__hint {
+			margin: 0;
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+			display: flex;
+			align-items: flex-start;
+
+			svg {
+				fill: $ve-muted;
+				margin-right: 0.25rem;
+				position: relative;
+				bottom: 4px;
+			}
+		}
+
+		&__empty {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			min-height: 200px;
+			padding: 1rem;
+			text-align: center;
+		}
+
+		&__empty-title {
+			margin: 0;
+			font-size: 0.875rem;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		&__empty-text {
+			margin: 0.25rem 0 0;
+			font-size: 0.75rem;
+			line-height: 1.4;
+			color: $ve-muted;
+		}
+
+		&__list {
+			width: 100%;
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			margin-bottom: 1rem;
+
+			li {
+
+				&:not(:last-child) {
+					border-bottom: 1px solid $ve-border;
+				}
+			}
+		}
+	}
+
+	.godam-ve-layer-row {
+		width: 100%;
+		margin: 0;
+
+		&__hit {
+			display: flex;
+			align-items: center;
+		}
+
+		&__main {
+			display: flex;
+			flex: 1 1 auto;
+			align-items: center;
+			gap: 0.75rem;
+			width: 100%;
+			height: auto;
+			min-height: 60px;
+			padding: 0.625rem 1rem;
+			text-align: left;
+			background: transparent;
+			outline: none;
+			box-shadow: none !important;
+		}
+
+		&__icon {
+			display: flex;
+			flex: 0 0 auto;
+			align-items: center;
+			justify-content: center;
+			width: 36px;
+			height: 36px;
+			color: var(--godam-layer-color, currentcolor);
+			background: color-mix(in srgb, var(--godam-layer-color, #{$ve-accent}) 10%, transparent);
+			border-radius: 50%;
+
+			// Filled layer icons (Ad / WooCommerce) are themed via `fill`.
+			svg {
+				fill: currentcolor;
+			}
+
+			// Outline layer icons (CTA / Hotspot / Form / Poll) are themed via
+			// `stroke`, with no fill.
+			svg.godam-ve-stroke-icon {
+				fill: none;
+				stroke: currentcolor;
+			}
+		}
+
+		&__icon-img {
+			width: 20px;
+			height: 20px;
+			object-fit: contain;
+		}
+
+		&__text {
+			display: flex;
+			flex-direction: column;
+			min-width: 0;
+			line-height: 1.5;
+		}
+
+		&__name {
+			font-size: 0.875rem;
+			font-weight: 600;
+		}
+
+		&__meta {
+			font-size: 0.75rem;
+			color: $ve-muted;
+		}
+
+		&__menu {
+			flex: 0 0 auto;
+			margin-right: 0.5rem;
+		}
+
+		&:hover {
+			background: $ve-faint;
+		}
+
+		// Active state + its tinted icon circle. Declared after the base rules
+		// so they win without descending specificity.
+		&.is-active {
+			background: $ve-accent-tint;
+			box-shadow: inset 3px 0 0 0 $ve-accent;
+			// border-left: 2px solid $ve-accent;
+		}
+	}
+}
+
+// -------------------------------------------------------------
+// Add-layer dropdown content (portaled to <body>).
+// -------------------------------------------------------------
+.godam-ve-add-menu__popover {
+
+	.godam-ve-add-menu {
+		min-width: 264px;
+	}
+
+	.godam-ve-add-menu__item {
+		height: auto;
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+
+		.components-menu-item__item {
+			display: flex;
+			gap: 0.625rem;
+			align-items: center;
+			width: 100%;
+		}
+	}
+
+	.godam-ve-add-menu__icon {
+		display: flex;
+		flex: 0 0 auto;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		color: var(--godam-layer-color, currentcolor);
+
+		img {
+			width: 20px;
+			height: 20px;
+			object-fit: contain;
+		}
+
+		// Filled layer icons (Ad / WooCommerce) are themed via `fill`.
+		svg {
+			fill: currentcolor;
+		}
+
+		// Outline layer icons (CTA / Hotspot / Form / Poll) are themed via
+		// `stroke`, with no fill.
+		svg.godam-ve-stroke-icon {
+			fill: none;
+			stroke: currentcolor;
+		}
+	}
+
+	.godam-ve-add-menu__text {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.3;
+	}
+
+	.godam-ve-add-menu__title {
+		font-size: 0.875rem;
+		font-weight: 500;
+		text-align: left;
+	}
+
+	.godam-ve-add-menu__desc {
+		font-size: 0.75rem;
+		color: color-mix(in srgb, currentcolor 55%, transparent);
+		text-align: left;
+	}
+
+	// Submenu (e.g. Form -> form plugins) opens to the side.
+	.godam-ve-add-menu__submenu {
+		display: block;
+	}
+
+	.godam-ve-add-menu__chevron {
+		flex: 0 0 auto;
+		margin-left: auto;
+	}
+}

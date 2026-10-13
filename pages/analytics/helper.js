@@ -11,6 +11,21 @@ import DurationIcon from '../../assets/src/images/duration.svg';
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Resolve the active WP admin accent colour. GoDAM 2.0 follows the admin
+ * colour scheme on the analytics surface, so data-viz that used the hardcoded
+ * brand pink reads the live `--wp-admin-theme-color` instead.
+ *
+ * @return {string} A colour string, falling back to the GoDAM pink.
+ */
+function getGodamAccent() {
+	return (
+		getComputedStyle( document.body )
+			.getPropertyValue( '--wp-admin-theme-color' )
+			.trim() || '#ab3a6c'
+	);
+}
+
 function formatTime( seconds ) {
 	const minutes = Math.floor( seconds / 60 );
 	const remainingSeconds = seconds % 60;
@@ -79,213 +94,6 @@ function showAPIActivationMessage() {
 	}
 }
 
-export function singleMetricsChart(
-	parsedData,
-	selector,
-	selectedMetric,
-	selectedDays,
-	changeTrend,
-) {
-	// Set the dimensions and margins of the graph - smaller to match card design
-	const margin = { top: 10, right: 10, bottom: 0, left: 0 },
-		width = 170 - margin.left - margin.right,
-		height = 40 - margin.top - margin.bottom;
-
-	// Define metric options to display proper labels and units with color
-	const metricsOptions = [
-		{
-			value: 'engagement_rate',
-			label: __( 'Engagement Rate', 'godam' ),
-			unit: '%',
-			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
-		},
-		{
-			value: 'play_rate',
-			label: __( 'Play Rate', 'godam' ),
-			unit: '%',
-			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
-		},
-		{
-			value: 'watch_time',
-			label: __( 'Watch Time', 'godam' ),
-			unit: 's',
-			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
-		},
-		{
-			value: 'plays',
-			label: __( 'Plays', 'godam' ),
-			unit: '',
-			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
-		},
-		{
-			value: 'total_videos',
-			label: __( 'Total Videos', 'godam' ),
-			unit: '',
-			color: changeTrend >= 0 ? '#4caf50' : '#e05252',
-		},
-	];
-
-	// Ensure the container exists - add # to the selector if it doesn't have one
-	const selectorWithHash = selector.startsWith( '#' ) ? selector : `#${ selector }`;
-	const container = d3.select( selectorWithHash );
-
-	if ( container.empty() ) {
-		return;
-	}
-
-	// Remove any existing SVG to prevent duplication
-	container.select( 'svg' ).remove();
-
-	// Create an SVG element
-	const svg = container
-		.append( 'svg' )
-		.attr(
-			'viewBox',
-			`0 0 ${ width + margin.left + margin.right } ${ height + margin.top + margin.bottom }`,
-		)
-		.attr( 'preserveAspectRatio', 'xMidYMid meet' )
-		.style( 'width', '100%' )
-		.style( 'height', 'auto' );
-
-	// Create main chart group
-	const chartGroup = svg
-		.append( 'g' )
-		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
-
-	// Ensure `parsedData` is properly formatted
-	const parseDate = d3.timeParse( '%Y-%m-%d' );
-
-	// parsedData already contains all 7 days with zeros filled in from SingleMetrics.js
-	// Just parse the dates and convert to proper format
-	const filteredData = parsedData.map( ( d ) => ( {
-		date: parseDate( d.date ),
-		engagement_rate: +d.engagement_rate,
-		play_rate: +d.play_rate || 0,
-		watch_time: +d.watch_time || 0,
-		plays: +d.plays || 0,
-		total_videos: +d.total_videos || 0,
-	} ) ).sort( ( a, b ) => a.date - b.date );
-
-	// Remove any existing chart elements before redrawing
-	chartGroup.selectAll( '*' ).remove();
-
-	// Validate data before rendering
-	if ( filteredData.length === 0 ) {
-		chartGroup
-			.append( 'text' )
-			.attr( 'x', width / 2 )
-			.attr( 'y', height / 2 )
-			.attr( 'text-anchor', 'middle' )
-			.text( __( 'No data available.', 'godam' ) );
-		return;
-	}
-
-	// Create X axis (Time)
-	const x = d3
-		.scaleTime()
-		.domain( d3.extent( filteredData, ( d ) => d.date ) )
-		.range( [ 0, width ] );
-
-	const y = d3
-		.scaleLinear()
-		.domain( [ 0, d3.max( filteredData, ( d ) => d[ selectedMetric ] ) * 1.1 ] )
-		.range( [ height, 0 ] );
-
-	const metricOption = metricsOptions.find(
-		( option ) => option.value === selectedMetric,
-	);
-
-	// Generate line function
-	const line = d3
-		.line()
-		.x( ( d ) => x( d.date ) )
-		.y( ( d ) => y( d[ selectedMetric ] ) )
-		.curve( d3.curveMonotoneX ); // Add curve for smoother line
-
-	// Add the line with metric-specific color
-	chartGroup
-		.append( 'path' )
-		.datum( filteredData )
-		.attr( 'fill', 'none' )
-		.attr( 'stroke', metricOption.color )
-		.attr( 'stroke-linecap', 'round' )
-		.attr( 'stroke-width', 1.5 )
-		.attr( 'd', line );
-
-	// Add subtle area fill below the line
-	const area = d3
-		.area()
-		.x( ( d ) => x( d.date ) )
-		.y0( height )
-		.y1( ( d ) => y( d[ selectedMetric ] ) )
-		.curve( d3.curveMonotoneX );
-
-	chartGroup
-		.append( 'path' )
-		.datum( filteredData )
-		.attr( 'fill', changeTrend >= 0 ? '#4caf50' : '#e05252' )
-		.attr( 'fill-opacity', 0.1 )
-		.attr( 'd', area );
-
-	// Tooltip container
-	const tooltip = container
-		.append( 'div' )
-		.attr( 'class', 'mini-chart-tooltip' )
-		.style( 'position', 'absolute' )
-		.style( 'background', '#fff' )
-		.style( 'padding', '4px 8px' )
-		.style( 'border', '1px solid #ccc' )
-		.style( 'border-radius', '4px' )
-		.style( 'font-size', '12px' )
-		.style( 'pointer-events', 'none' )
-		.style( 'opacity', 0 );
-
-	// Add an invisible overlay to capture mouse events
-	chartGroup
-		.append( 'rect' )
-		.attr( 'width', width )
-		.attr( 'height', height )
-		.attr( 'fill', 'transparent' )
-		.on( 'mousemove', function( event ) {
-			const [ xPos ] = d3.pointer( event );
-			const xDate = x.invert( xPos );
-
-			// Find closest point
-			const bisectDate = d3.bisector( ( d ) => d.date ).left;
-			const index = bisectDate( filteredData, xDate, 1 );
-			const d0 = filteredData[ index - 1 ];
-			const d1 = filteredData[ index ];
-			let d;
-			if ( ! d0 ) {
-				d = d1;
-			} else if ( ! d1 ) {
-				d = d0;
-			} else {
-				d = xDate - d0.date > d1.date - xDate ? d1 : d0;
-			}
-
-			// Format value
-			const val = d[ selectedMetric ];
-			const formattedVal =
-        selectedMetric === 'watch_time' ? `${ val.toFixed( 2 ) }s` : `${ val.toFixed( 2 ) }${ metricOption.unit }`;
-
-			// Position tooltip
-			const tooltipX = x( d.date );
-			const tooltipY = y( d[ selectedMetric ] ) + margin.top;
-
-			tooltip
-				.html(
-					`<strong>${ d3.timeFormat( '%b %d' )( d.date ) }</strong><br>${ formattedVal }`,
-				)
-				.style( 'left', `${ tooltipX - 10 }px` )
-				.style( 'top', `${ tooltipY }px` )
-				.style( 'opacity', 1 );
-		} )
-		.on( 'mouseleave', () => {
-			tooltip.style( 'opacity', 0 );
-		} );
-}
-
 export function calculateEngagementRate( plays, videoLength, playTime ) {
 	const engagementRate =
     plays && videoLength ? ( playTime / ( plays * videoLength ) ) * 100 : 0;
@@ -303,12 +111,16 @@ export function generateCountryHeatmap(
 	tableSelector,
 ) {
 	// Convert object to array for table sorting
-	const countryDataArray = Object.entries( countryData )
+	const countryDataArray = Object.entries( countryData || {} )
 		.map( ( [ country, views ] ) => ( {
 			country,
 			views,
 		} ) )
 		.sort( ( a, b ) => b.views - a.views );
+
+	// Clear the table container on every render (the map is rebuilt below) so a
+	// refetch replaces rows instead of appending a second <table>.
+	d3.select( tableSelector ).html( '' );
 
 	// ===== MAP VISUALIZATION =====
 	const width = 800,
@@ -321,13 +133,30 @@ export function generateCountryHeatmap(
 		.style( 'width', '100%' )
 		.style( 'height', 'auto' );
 
+	// Idempotent: clear any previous render before redrawing.
+	container.selectAll( '*' ).remove();
+
 	container
 		.append( 'h2' )
-		.text( 'Views by Location' )
+		.text( __( 'Views by Location', 'godam' ) )
 		.style( 'font-size', '16px' )
 		.style( 'font-weight', '700' )
 		.style( 'text-align', 'left' )
 		.style( 'margin-bottom', '16px' );
+
+	// Empty state — no geography recorded yet (e.g. a brand-new site).
+	if ( countryDataArray.length === 0 ) {
+		d3.select( tableSelector ).html( '' );
+		container
+			.append( 'p' )
+			.text( __( 'Views by location will show up here', 'godam' ) )
+			.style( 'color', '#757575' )
+			.style( 'font-size', '13px' )
+			.style( 'text-align', 'center' )
+			.style( 'padding', '28px 8px' )
+			.style( 'margin', '0' );
+		return;
+	}
 
 	// Create the SVG for the map
 	const svg = container
@@ -430,7 +259,7 @@ export function generateCountryHeatmap(
 		const colorScale = d3
 			.scaleSequential()
 			.domain( [ 0, maxViews ] )
-			.interpolator( ( t ) => d3.interpolateRgb( '#ddd', '#AB3A6C' )( t ) );
+			.interpolator( ( t ) => d3.interpolateRgb( '#ddd', getGodamAccent() )( t ) );
 
 		const features = worldData.features.filter(
 			( f ) => f.properties.name !== 'Antarctica',
@@ -486,7 +315,7 @@ export function generateCountryHeatmap(
 										fill="none" stroke="#eee" stroke-width="4"/>
 								<!-- progress arc -->
 								<circle cx="25" cy="25" r="${ radius }"
-										fill="none" stroke="#AB3A6C" stroke-width="4"
+										fill="none" stroke="${ getGodamAccent() }" stroke-width="4"
 										stroke-dasharray="${ dash } ${ circumference - dash }"
 										transform="rotate(-90 25 25)"/>
 								 <text
@@ -575,9 +404,17 @@ export function generateCountryHeatmap(
 
 			flagWrapper.append( 'span' ).text( d.country );
 
+			// Percentage of total views. A country with views but a sub-1%
+			// share reads as "<1%", never a rounded "0%" (which looked like
+			// "no views"). #313 item 5.
+			const sharePct = totalViews ? ( d.views / totalViews ) * 100 : 0;
+			const shareLabel = sharePct > 0 && sharePct < 1
+				? __( '<1%', 'godam' )
+				: `${ Math.round( sharePct ) }%`;
+
 			mainRow
 				.append( 'td' )
-				.text( `${ Math.round( ( d.views / totalViews ) * 100 ) }%` )
+				.text( shareLabel )
 				.style( 'text-align', 'right' )
 				.style( 'font-weight', '500' )
 				.style( 'padding', '10px' );
@@ -597,8 +434,11 @@ export function generateCountryHeatmap(
 			progressContainer
 				.append( 'div' )
 				.style( 'height', '100%' )
-				.style( 'width', `${ ( d.views / totalViews ) * 100 }%` )
-				.style( 'background-color', '#AB3A6C' )
+				.style( 'width', `${ sharePct }%` )
+				// Keep a visible sliver for a country with views but a sub-1%
+				// share, so the bar never reads as empty. #313 item 5.
+				.style( 'min-width', d.views > 0 ? '3px' : '0' )
+				.style( 'background-color', 'var(--wp-admin-theme-color)' )
 				.style( 'border-radius', '8px' );
 		} );
 }
@@ -726,3 +566,249 @@ export function generateLineChart( data, selector, videoPlayer, tooltipSelector,
 			filledArea.style( 'opacity', 0 );
 		} );
 }
+
+/**
+ * Viewer Retention Curve — a standalone area+line chart of absolute audience
+ * retention across the video timeline. It takes the same `all_time_heatmap`
+ * data the old "Views across the video" overlay used (an array where index i =
+ * views at second i) but normalises it to the % of the video's starting viewers
+ * (views[t] / views[0]), so the y-axis reads "% still watching" and is anchored
+ * at 100% at 0:00 — that is what makes it a retention metric rather than the raw
+ * count heatmap. Non-monotonic by design: dips = skip-ahead / drop-off, bumps =
+ * rewatch / skip-to (a rewatched second can exceed 100%). Self-contained:
+ * visible axes + gridlines, an always-on area fill, its own hover tooltip (which
+ * also surfaces the underlying viewer count); it does not sync a video player.
+ *
+ * Idempotent: clears the target SVG before drawing, so it is safe to re-run.
+ *
+ * @param {number[]} data              Per-second view counts (all_time_heatmap).
+ * @param {string}   selector          Target SVG selector, e.g. '#retention-curve'.
+ * @param {string}   tooltipSelector   Tooltip element selector.
+ * @param {Object}   [opts]
+ * @param {number}   [opts.width=900]  Logical viewBox width.
+ * @param {number}   [opts.height=320] Logical viewBox height.
+ */
+export function generateRetentionCurve( data, selector, tooltipSelector, opts = {} ) {
+	const { width: outerW = 900, height: outerH = 320 } = opts;
+	const svgSel = d3.select( selector );
+
+	// Idempotent re-render — drop any previous drawing first.
+	svgSel.selectAll( '*' ).remove();
+
+	if ( ! Array.isArray( data ) || data.length === 0 ) {
+		return;
+	}
+
+	// Absolute audience retention: the % of the video's starting viewers still
+	// watching at each second (views[t] / views at second 0). This is what makes
+	// it a retention *metric* rather than the old raw per-second heatmap — it's
+	// normalised to the start, so it reads "X% of viewers are still here" and is
+	// anchored at 100% at 0:00.
+	//
+	// It is intentionally NOT monotonic (a common misconception): dips mark where
+	// viewers skip ahead or drop off, and bumps mark rewatched / skipped-to
+	// moments. A heavily rewatched second can legitimately exceed 100%, since one
+	// view can watch a segment more than once.
+	const startViews = Number( data[ 0 ] ) || d3.max( data ) || 1;
+	const retention = data.map( ( v ) => ( ( Number( v ) || 0 ) / startViews ) * 100 );
+
+	const margin = { top: 16, right: 16, bottom: 28, left: 44 };
+	const width = outerW - margin.left - margin.right;
+	const height = outerH - margin.top - margin.bottom;
+
+	const svg = svgSel
+		.attr( 'viewBox', `0 0 ${ outerW } ${ outerH }` )
+		.attr( 'preserveAspectRatio', 'xMidYMid meet' )
+		.append( 'g' )
+		.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
+
+	const x = d3
+		.scaleLinear()
+		.domain( [ 0, Math.max( 1, data.length - 1 ) ] )
+		.range( [ 0, width ] );
+
+	// Cap at 100% normally, but leave headroom when rewatch spikes push a second
+	// above 100% so those bumps stay visible.
+	const maxY = d3.max( retention ) || 0;
+	const y = d3
+		.scaleLinear()
+		.domain( [ 0, Math.max( 105, maxY * 1.05 ) ] )
+		.range( [ height, 0 ] );
+
+	// Horizontal gridlines, inserted first so they sit behind the data.
+	svg
+		.append( 'g' )
+		.attr( 'class', 'godam-retention__grid' )
+		.call( d3.axisLeft( y ).ticks( 5 ).tickSize( -width ).tickFormat( () => '' ) )
+		.call( ( g ) => g.select( '.domain' ).remove() );
+
+	// Area fill under the curve (always visible).
+	const area = d3
+		.area()
+		.x( ( d, i ) => x( i ) )
+		.y0( height )
+		.y1( ( d ) => y( d ) )
+		.curve( d3.curveMonotoneX );
+	svg.append( 'path' ).datum( retention ).attr( 'class', 'godam-retention__area' ).attr( 'd', area );
+
+	// Retention line.
+	const line = d3
+		.line()
+		.x( ( d, i ) => x( i ) )
+		.y( ( d ) => y( d ) )
+		.curve( d3.curveMonotoneX );
+	svg.append( 'path' ).datum( retention ).attr( 'class', 'godam-retention__line' ).attr( 'd', line );
+
+	// Y axis — retention as a percentage of the starting viewers.
+	svg
+		.append( 'g' )
+		.attr( 'class', 'godam-retention__axis' )
+		.call( d3.axisLeft( y ).ticks( 5 ).tickFormat( ( d ) => `${ Math.round( d ) }%` ) )
+		.call( ( g ) => g.select( '.domain' ).remove() );
+
+	// X axis — video timestamps (each bucket is one second). Use integer-second
+	// tick indices at a fixed step (always including the last second) rather than
+	// d3's default (fractional) ticks: fractional ticks rounded to mm:ss can
+	// collide into duplicate labels on short videos.
+	const desiredTicks = Math.min( 8, data.length );
+	const step = Math.max( 1, Math.ceil( ( data.length - 1 ) / Math.max( 1, desiredTicks - 1 ) ) );
+	const xTicks = [];
+	for ( let i = 0; i < data.length; i += step ) {
+		xTicks.push( i );
+	}
+	if ( xTicks[ xTicks.length - 1 ] !== data.length - 1 ) {
+		xTicks.push( data.length - 1 );
+	}
+	svg
+		.append( 'g' )
+		.attr( 'class', 'godam-retention__axis' )
+		.attr( 'transform', `translate(0, ${ height })` )
+		.call(
+			d3
+				.axisBottom( x )
+				.tickValues( xTicks )
+				.tickFormat( ( i ) => formatTime( i ) ),
+		)
+		.call( ( g ) => g.select( '.domain' ).remove() );
+
+	// Hover affordances.
+	const focus = svg.append( 'circle' ).attr( 'class', 'godam-retention__focus' ).style( 'opacity', 0 );
+	const hoverLine = svg
+		.append( 'line' )
+		.attr( 'class', 'godam-retention__hover-line' )
+		.attr( 'y1', 0 )
+		.attr( 'y2', height )
+		.style( 'opacity', 0 );
+	const tooltip = d3.select( tooltipSelector );
+
+	// Cache the SVG rect once per hover session (on enter) so the mousemove
+	// handler doesn't force a synchronous layout on every pointer move.
+	let hoverScaleX = 1;
+	svg
+		.append( 'rect' )
+		.attr( 'width', width )
+		.attr( 'height', height )
+		.style( 'fill', 'none' )
+		.style( 'pointer-events', 'all' )
+		.on( 'mouseenter', function() {
+			hoverScaleX = ( svgSel.node().getBoundingClientRect().width || outerW ) / outerW;
+		} )
+		.on( 'mousemove', function( event ) {
+			const [ mouseX ] = d3.pointer( event );
+			const index = Math.max( 0, Math.min( retention.length - 1, Math.round( x.invert( mouseX ) ) ) );
+			const pctValue = retention[ index ];
+			const viewers = Number( data[ index ] ) || 0;
+
+			focus.style( 'opacity', 1 ).attr( 'cx', x( index ) ).attr( 'cy', y( pctValue ) );
+			hoverLine.style( 'opacity', 1 ).attr( 'x1', x( index ) ).attr( 'x2', x( index ) );
+
+			// Position the (container-relative) tooltip using the cached
+			// viewBox -> rendered-width scale plus the left axis margin.
+			const px = ( x( index ) + margin.left ) * hoverScaleX;
+
+			tooltip
+				.style( 'opacity', 1 )
+				.style( 'left', `${ px }px` )
+				.style( 'top', 0 )
+				.html(
+					`<div class="godam-retention__tt">
+						<span class="godam-retention__tt-value">
+							<img src="${ ViewIcon }" alt="" height="14" width="14" />
+							${ Math.round( pctValue ) }% ${ __( 'retention', 'godam' ) }
+						</span>
+						<span class="godam-retention__tt-time">
+							${ viewers.toLocaleString() } ${ __( 'viewers', 'godam' ) } · ${ formatTime( index ) }
+						</span>
+					</div>`,
+				);
+		} )
+		.on( 'mouseout', () => {
+			focus.style( 'opacity', 0 );
+			hoverLine.style( 'opacity', 0 );
+			tooltip.style( 'opacity', 0 );
+		} );
+}
+
+/**
+ * Ensure all 7 days are represented in a data array, filling missing dates with zeros.
+ *
+ * Produces an array of exactly 7 entries ordered oldest → newest, where any date
+ * absent from `dataArray` is replaced with a zero-value sentinel object.
+ *
+ * @param {Array} dataArray Array of data objects, each with at minimum a `date` (YYYY-MM-DD) field.
+ * @return {Array} Array of 7 objects spanning the last 7 days (including today).
+ */
+export function ensureAll7Days( dataArray ) {
+	const now = new Date();
+	const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
+	const last7Days = [];
+	for ( let i = 6; i >= 0; i-- ) {
+		const date = new Date( today );
+		date.setDate( today.getDate() - i );
+		const year = date.getFullYear();
+		const month = String( date.getMonth() + 1 ).padStart( 2, '0' );
+		const day = String( date.getDate() ).padStart( 2, '0' );
+		last7Days.push( `${ year }-${ month }-${ day }` );
+	}
+	const dataMap = {};
+	dataArray.forEach( ( d ) => {
+		dataMap[ d.date ] = d;
+	} );
+	return last7Days.map( ( dateStr ) => dataMap[ dateStr ] || {
+		date: dateStr,
+		plays: 0,
+		engagement_rate: 0,
+		play_rate: 0,
+		watch_time: 0,
+		total_videos: 0,
+	} );
+}
+
+/**
+ * Calculate the percentage trend between the first and last values of a sorted data array.
+ *
+ * @param {Array}  sortedData Chronologically sorted data array (oldest first).
+ * @param {string} key        The numeric property name to compare.
+ * @return {number} Trend percentage (positive = growth, negative = decline).
+ */
+export function calculateTrendPercentage( sortedData, key ) {
+	if ( sortedData.length < 2 ) {
+		return 0;
+	}
+	const first = parseFloat( sortedData[ 0 ][ key ] );
+	const last = parseFloat( sortedData[ sortedData.length - 1 ][ key ] );
+	if ( isNaN( first ) || isNaN( last ) ) {
+		return 0;
+	}
+	if ( first === 0 ) {
+		// last > 0 ? 100 : last < 0 ? -100 : 0;
+		if ( last > 0 ) {
+			return 100;
+		} else if ( last < 0 ) {
+			return -100;
+		}
+		return 0;
+	}
+	return ( ( last - first ) / first ) * 100;
+}
+

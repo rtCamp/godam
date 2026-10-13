@@ -7,6 +7,70 @@ import DOMPurify from 'isomorphic-dompurify';
 // Get the REST URL from localized data, fallback to hardcoded path.
 const galleryRestUrl = window.godamGalleryData?.restUrl || '/wp-json/godam/v1/gallery-shortcode';
 
+/*
+ * Pull pending heatmap payloads out of the iframe and POST them from
+ * THIS context. Sending from the iframe right before teardown gets
+ * cancelled by the browser; sending from here survives because the
+ * parent window is not being destroyed. Caller is responsible for
+ * tearing the iframe down after this returns.
+ *
+ * Same-origin direct call — no postMessage round-trip, fully synchronous.
+ * Cross-origin or missing function: silently no-op.
+ *
+ * `keepalive: true` is defense-in-depth here, not the primary mechanism
+ * (the parent isn't unloading). It only matters if the user closes the
+ * entire tab during the close handler's brief window — in that case
+ * keepalive lets the request still reach the wire.
+ */
+function flushIframeAnalytics( iframe ) {
+	try {
+		const win = iframe?.contentWindow;
+		if ( ! win || typeof win.godamGalleryFlushPayloads !== 'function' ) {
+			return;
+		}
+		win.godamGalleryFlushPayloads().forEach( ( payload ) => {
+			if ( ! payload?.endpoint || ! payload?.body ) {
+				return;
+			}
+			fetch( `${ payload.endpoint }/analytics/`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify( payload.body ),
+				keepalive: true,
+			} ).catch( () => {} );
+		} );
+	} catch ( e ) {
+		// Cross-origin access or function threw — silently no-op.
+	}
+}
+
+function initBlurUpPlaceholders( root = document ) {
+	root.querySelectorAll( '.godam-gallery-blurred-img' ).forEach( ( div ) => {
+		if ( div.dataset.godamGalleryBlurInit === '1' ) {
+			return;
+		}
+		div.dataset.godamGalleryBlurInit = '1';
+
+		const img = div.querySelector( 'img' );
+		if ( ! img ) {
+			return;
+		}
+
+		const markLoaded = () => div.classList.add( 'loaded' );
+		const markError = () => {
+			div.style.backgroundImage = '';
+			div.classList.add( 'loaded' );
+		};
+
+		if ( img.complete && img.naturalWidth > 0 ) {
+			markLoaded();
+		} else {
+			img.addEventListener( 'load', markLoaded, { once: true } );
+			img.addEventListener( 'error', markError, { once: true } );
+		}
+	} );
+}
+
 async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos ) {
 	const loadCount = 3 * columns;
 	const spinnerContainer = document.querySelector( '.godam-spinner-container' );
@@ -35,13 +99,13 @@ async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVi
 			custom_date_start: gallery.dataset.customDateStart || '',
 			custom_date_end: gallery.dataset.customDateEnd || '',
 			engagements: gallery.dataset.engagements === '1',
-			open_to_new_page: gallery.dataset.openToNewPage === '1',
 		} );
 		const response = await fetch( `${ galleryRestUrl }?${ params.toString() }` );
 		const data = await response.json();
 
 		if ( data.status === 'success' && data.html && data.html.trim() !== '' ) {
 			gallery.insertAdjacentHTML( 'beforeend', data.html );
+			initBlurUpPlaceholders( gallery );
 			const newOffset = offset + loadCount;
 
 			// Check if we've loaded all videos
@@ -67,6 +131,8 @@ async function loadMoreVideos( gallery, offset, columns, orderby, order, totalVi
 }
 
 document.addEventListener( 'DOMContentLoaded', function() {
+	initBlurUpPlaceholders();
+
 	// Get all galleries with infinite scroll enabled
 	document.querySelectorAll( '.godam-video-gallery[data-infinite-scroll="1"]' ).forEach( ( gallery ) => {
 		const offset = parseInt( gallery.getAttribute( 'data-offset' ), 10 );
@@ -128,12 +194,11 @@ document.addEventListener( 'click', async function( e ) {
 		const order = btn.getAttribute( 'data-order' );
 		const totalVideos = parseInt( btn.getAttribute( 'data-total' ), 10 );
 		const engagements = btn.getAttribute( 'data-engagements' ) === '1';
-		const openToNewPage = btn.getAttribute( 'data-open-to-new-page' ) === '1';
 
 		// Hide button
 		btn.style.display = 'none';
 
-		const newOffset = await loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos, engagements, openToNewPage );
+		const newOffset = await loadMoreVideos( gallery, offset, columns, orderby, order, totalVideos, engagements );
 
 		if ( newOffset ) {
 			btn.setAttribute( 'data-offset', newOffset );
@@ -158,13 +223,6 @@ document.addEventListener( 'click', function( e ) {
 		// Get the current gallery
 		const currentGallery = thumbnail.closest( '.godam-video-gallery' );
 		if ( ! currentGallery ) {
-			return;
-		}
-
-		// If the gallery is configured to open videos in a new page, do so and skip the modal
-		const openToNewPage = currentGallery.getAttribute( 'data-open-to-new-page' ) === '1';
-		if ( openToNewPage && videoUrl ) {
-			window.open( DOMPurify.sanitize( videoUrl ), '_blank' );
 			return;
 		}
 
@@ -235,8 +293,12 @@ document.addEventListener( 'click', function( e ) {
 				const animationClass = direction === 'next' ? 'slide-out-up' : 'slide-out-down';
 				modalBody.classList.add( animationClass );
 
-				// After animation, update iframe
+				// After animation, flush analytics for the outgoing video, THEN
+				// swap the iframe src. Without the flush, the previous page's
+				// pagehide handler races the navigation and its keepalive POST
+				// gets cancelled by the browser.
 				setTimeout( () => {
+					flushIframeAnalytics( _iframe );
 					_iframe.src = DOMPurify.sanitize( newVideoUrl );
 
 					modalBody.classList.remove( animationClass );
@@ -596,6 +658,11 @@ document.addEventListener( 'click', function( e ) {
 			window.removeEventListener( 'message', handlePostMessage );
 			document.removeEventListener( 'keydown', handleEscape );
 			iframe.removeEventListener( 'load', showModalContent );
+
+			// Flush analytics from the iframe BEFORE removing it. Removing the
+			// element synchronously cancels every in-flight request — including
+			// the keepalive heatmap POST from the iframe's pagehide handler.
+			flushIframeAnalytics( iframe );
 			modal.remove();
 			document.body.style.overflow = '';
 		};

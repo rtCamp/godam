@@ -58,6 +58,11 @@ class Media_Folder_Utils {
 		$cache_key     = 'attachment_count_' . $folder_id . '_' . $mime_type_key;
 
 		// Try to get cached count first (unless force refresh is requested).
+		// This fast path must run before the rtgodam_before_attachment_lookup
+		// switch below: transients are per-blog options keyed off this site's
+		// own $folder_id term, so the cache check (and the write near the end
+		// of this method) has to stay against this site's own storage instead
+		// of resolving against whatever site gets switched to.
 		if ( ! $force_refresh ) {
 			$cached_count = get_transient( $cache_key );
 
@@ -66,68 +71,91 @@ class Media_Folder_Utils {
 			}
 		}
 
-		global $wpdb;
+		/**
+		 * Fires before counting attachments in a folder, so integrations that
+		 * centralize media on another site can switch context first — the
+		 * folder taxonomy terms and the attachments assigned to them live
+		 * wherever media is centralized, not necessarily the site issuing
+		 * this call.
+		 *
+		 * This deliberately does not cover the transient cache above/below:
+		 * transients are per-blog options (and go through the per-blog
+		 * object-cache prefix), so caching must stay keyed to and stored on
+		 * the calling site rather than the site this switches to — otherwise
+		 * sites that happen to share a folder term ID would collide on the
+		 * same cached count.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			global $wpdb;
 
-		// Build query based on mime type filtering.
-		if ( empty( $mime_type ) ) {
-			// No mime type filter.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$count = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(DISTINCT p.ID)
-					FROM {$wpdb->posts} p
-					INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
-					INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-					WHERE p.post_type = 'attachment' 
-					AND p.post_status = 'inherit' 
-					AND tt.taxonomy = 'media-folder' 
-					AND tt.term_id = %d",
-					$folder_id
-				)
-			);
-		} elseif ( is_array( $mime_type ) ) {
-			// Array of mime types - use IN clause.
-			$placeholders = implode( ', ', array_fill( 0, count( $mime_type ), '%s' ) );
-			$query_params = array_merge( array( $folder_id ), $mime_type );
+			// Build query based on mime type filtering.
+			if ( empty( $mime_type ) ) {
+				// No mime type filter.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$count = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT COUNT(DISTINCT p.ID)
+						FROM {$wpdb->posts} p
+						INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
+						INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+						WHERE p.post_type = 'attachment'
+						AND p.post_status = 'inherit'
+						AND tt.taxonomy = 'media-folder'
+						AND tt.term_id = %d",
+						$folder_id
+					)
+				);
+			} elseif ( is_array( $mime_type ) ) {
+				// Array of mime types - use IN clause.
+				$placeholders = implode( ', ', array_fill( 0, count( $mime_type ), '%s' ) );
+				$query_params = array_merge( array( $folder_id ), $mime_type );
 
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$count = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(DISTINCT p.ID)
-					FROM {$wpdb->posts} p
-					INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
-					INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-					WHERE p.post_type = 'attachment' 
-					AND p.post_status = 'inherit' 
-					AND tt.taxonomy = 'media-folder' 
-					AND tt.term_id = %d 
-					AND p.post_mime_type IN ($placeholders)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$query_params
-				)
-			);
-		} else {
-			// Single mime type - use LIKE.
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			$count = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(DISTINCT p.ID)
-					FROM {$wpdb->posts} p
-					INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
-					INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
-					WHERE p.post_type = 'attachment' 
-					AND p.post_status = 'inherit' 
-					AND tt.taxonomy = 'media-folder' 
-					AND tt.term_id = %d 
-					AND p.post_mime_type LIKE %s",
-					$folder_id,
-					$wpdb->esc_like( $mime_type ) . '%'
-				)
-			);
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$count = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT COUNT(DISTINCT p.ID)
+						FROM {$wpdb->posts} p
+						INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
+						INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+						WHERE p.post_type = 'attachment'
+						AND p.post_status = 'inherit'
+						AND tt.taxonomy = 'media-folder'
+						AND tt.term_id = %d
+						AND p.post_mime_type IN ($placeholders)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+						$query_params
+					)
+				);
+			} else {
+				// Single mime type - use LIKE.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$count = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT COUNT(DISTINCT p.ID)
+						FROM {$wpdb->posts} p
+						INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
+						INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+						WHERE p.post_type = 'attachment'
+						AND p.post_status = 'inherit'
+						AND tt.taxonomy = 'media-folder'
+						AND tt.term_id = %d
+						AND p.post_mime_type LIKE %s",
+						$folder_id,
+						$wpdb->esc_like( $mime_type ) . '%'
+					)
+				);
+			}
+
+			$count = absint( $count );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
-		$count = absint( $count );
-
-		// Cache the result.
+		// Cache the result. This runs after the switch above has been unwound,
+		// so it's stored on the calling site's own options table under this
+		// site's own $cache_key rather than whatever site was switched to.
 		set_transient( $cache_key, $count, self::CACHE_EXPIRATION );
 
 		return $count;

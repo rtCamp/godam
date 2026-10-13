@@ -38,7 +38,21 @@ class WPForms_Integration {
 
 			add_action( 'wpforms_frontend_confirmation_message_before', array( $this, 'load_godam_recorder_script_on_success' ), 10, 4 );
 
-			add_action( 'wpforms_loaded', array( $this, 'init_godam_video_field' ) );
+			/**
+			 * Initialize the GoDAM video field on `init`.
+			 *
+			 * It used to initialize on `wpforms_loaded`, which fires during
+			 * `plugins_loaded`. `WPForms_Field::__construct()` calls the field's
+			 * `init()`, which translates its labels, so the field was translating
+			 * before any text domain was available, which WordPress 6.7+ reports
+			 * as `_load_textdomain_just_in_time was called incorrectly`.
+			 *
+			 * `init` is also where WPForms itself registers its own fields
+			 * (see WPForms\Loader::populate_fields()).
+			 *
+			 * @see https://github.com/rtCamp/godam/issues/465
+			 */
+			add_action( 'init', array( $this, 'init_godam_video_field' ) );
 
 			add_action( 'wpforms_process_entry_saved', array( $this, 'send_saved_files_for_transcoding' ), 10, 4 );
 
@@ -101,7 +115,7 @@ class WPForms_Integration {
 	public function enqueue_admin_assets() {
 		// GoDAM Video Editor page.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( isset( $_GET['page'] ) && 'rtgodam_video_editor' === $_GET['page'] ) {
+		if ( isset( $_GET['page'] ) && 'rtgodam_media_editor' === $_GET['page'] ) {
 			// Enqueue the WPForms styles.
 			$frontend = wpforms()->obj( 'frontend' );
 			$frontend->assets_css();
@@ -138,11 +152,24 @@ class WPForms_Integration {
 	/**
 	 * Initialize godam field video.
 	 *
+	 * `class-wpforms-field-godam-video.php` declares the class only inside
+	 * `if ( class_exists( 'WPForms_Field' ) )`, so the parent has to be present
+	 * before this runs. On `wpforms_loaded` that was guaranteed — WPForms fired
+	 * the hook, so its includes had run. On `init` it is not: `is_plugin_active()`
+	 * is true whenever the plugin file is listed in `active_plugins`, even when
+	 * WPForms aborted its own bootstrap (requirements check, license bail,
+	 * fatal-recovery mode). Without this guard that state is a fatal on every
+	 * request, front end included.
+	 *
 	 * @since 1.3.0
 	 *
 	 * @return void
 	 */
 	public function init_godam_video_field() {
+		if ( ! class_exists( 'WPForms_Field' ) ) {
+			return;
+		}
+
 		new \RTGODAM\Inc\WPForms\WPForms_Field_GoDAM_Video();
 	}
 
@@ -187,18 +214,15 @@ class WPForms_Integration {
 				$job_type
 			);
 
+			// A failed send must not end the visitor's submission: the entry is already saved.
 			if ( is_wp_error( $response ) ) {
-				return wp_send_json_error(
-					$response->get_error_message(),
-					$response->get_error_code(),
-				);
+				rtgodam_handle_form_transcoding_failure( 'wpforms', $entry_id, $response );
+				continue;
 			}
 
 			if ( empty( $response->data ) || empty( $response->data->name ) ) {
-				return wp_send_json_error(
-					__( 'Transcoding data not set', 'godam' ),
-					404
-				);
+				rtgodam_handle_form_transcoding_failure( 'wpforms', $entry_id, $response );
+				continue;
 			}
 
 			$job_id = $response->data->name;

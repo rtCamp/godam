@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { LAYER_TYPES, FORM_TYPES } from '../../utils/constants.js';
+import { getLayerValidator } from '../../utils/layer-registry.js';
 
 /**
  * Layer Validator
@@ -17,6 +18,13 @@ export default class LayerValidator {
 	static shouldProcessLayer( layer ) {
 		const dependencies = window.godamPluginDependencies;
 
+		// Check if the layer registry has a validator for this type (add-on registered layers)
+		const registryValidator = getLayerValidator( layer.type );
+		if ( registryValidator ) {
+			return registryValidator( layer, dependencies );
+		}
+
+		// Built-in layer type validators
 		const layerTypeChecks = {
 			[ LAYER_TYPES.FORM ]: () => LayerValidator.checkFormDependency( layer.form_type, dependencies ),
 			[ LAYER_TYPES.POLL ]: () => dependencies?.wpPolls,

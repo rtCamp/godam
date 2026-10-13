@@ -421,10 +421,7 @@
                 }
 
                 a {
-                    color: #E6533A;
-                    background: linear-gradient( 90deg, #AB3A6C 0%, #E6533A 100% );
-                    background-clip: text;
-                    -webkit-text-fill-color: transparent;
+                    color: var(--rtgodam-control-bar-color, #3858e9);
 
                     &:hover {
                         text-decoration: underline;
@@ -554,7 +551,7 @@
             &-number {
                 cursor: pointer;
                 background-color: transparent;
-                color: #AB3A6C;
+                color: var(--rtgodam-control-bar-color, #3858e9);
                 border: none;
                 font-size: 12px;
                 padding: 5px 8px;
@@ -613,10 +610,7 @@
         }
 
         &-time {
-            color: #E6533A;
-            background: linear-gradient( 90deg, #AB3A6C 0%, #E6533A 100% );
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--rtgodam-control-bar-color, #3858e9);
         }
 
         &-text {

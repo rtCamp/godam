@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Internal dependencies
@@ -13,12 +13,16 @@ import '../../assets/src/css/godam-player.scss';
 /**
  * WordPress dependencies
  */
-import { useDispatch } from 'react-redux';
-import AttachmentPicker from './AttachmentPicker.jsx';
+import { useDispatch, useSelector } from 'react-redux';
+import { __ } from '@wordpress/i18n';
+import VideoEditorDataView from './components/video-dataview/VideoEditorDataView.jsx';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
+import ProductGuide from './onboarding/ProductGuide.jsx';
+import { isActive as isGuideActive, dismiss as dismissGuide } from './onboarding/productGuide';
 import { useGetResolvedAttachmentQuery, attachmentAPI } from './redux/api/attachment.js';
 import { resetVideoState } from './redux/slice/videoSlice';
 import { videosAPI } from './redux/api/video';
+import { videoEditorAPI } from './redux/api/video-editor';
 import { pollsAPI } from './redux/api/polls';
 import { gravityFormsAPI } from './redux/api/gravity-forms';
 import { contactForm7Api } from './redux/api/cf7-forms';
@@ -35,6 +39,20 @@ const App = () => {
 	const dispatch = useDispatch();
 	const [ attachmentID, setAttachmentID ] = useState( null );
 	const [ rawID, setRawID ] = useState( null );
+
+	// Track the latest dirty state + current video so the (once-registered)
+	// popstate listener can read them without a stale closure.
+	const isChanged = useSelector( ( state ) => state.videoReducer.isChanged );
+	const isChangedRef = useRef( isChanged );
+	const attachmentIDRef = useRef( attachmentID );
+
+	useEffect( () => {
+		isChangedRef.current = isChanged;
+	}, [ isChanged ] );
+
+	useEffect( () => {
+		attachmentIDRef.current = attachmentID;
+	}, [ attachmentID ] );
 	const {
 		data: resolvedAttachment,
 		isSuccess,
@@ -55,6 +73,7 @@ const App = () => {
 		// Array of all API slices that need to be reset
 		const apiSlices = [
 			videosAPI,
+			videoEditorAPI,
 			pollsAPI,
 			attachmentAPI,
 			gravityFormsAPI,
@@ -97,6 +116,21 @@ const App = () => {
 
 		// Handle back/forward navigation
 		const handlePopState = () => {
+			// SPA history navigation (browser back/forward) does not fire the
+			// beforeunload guard, so confirm here before discarding unsaved layer
+			// changes. On cancel, re-push the current video URL to stay put.
+			if ( attachmentIDRef.current && isChangedRef.current ) {
+				// eslint-disable-next-line no-alert
+				const leave = window.confirm( __( 'You have unsaved changes. Are you sure you want to leave?', 'godam' ) );
+
+				if ( ! leave ) {
+					const restoredUrl = new URL( window.location );
+					restoredUrl.searchParams.set( 'id', attachmentIDRef.current );
+					window.history.pushState( {}, '', restoredUrl );
+					return;
+				}
+			}
+
 			resetStore();
 
 			const newParams = new URLSearchParams( window.location.search );
@@ -115,35 +149,49 @@ const App = () => {
 		return () => window.removeEventListener( 'popstate', handlePopState );
 	}, [ resetStore ] );
 
-	const handleAttachmentClick = ( id ) => {
+	const handleAttachmentClick = useCallback( ( id ) => {
 		resetStore();
 		setAttachmentID( id );
 		setRawID( id );
 		const newUrl = new URL( window.location );
 		newUrl.searchParams.set( 'id', id );
 		window.history.pushState( {}, '', newUrl );
-	};
+	}, [ resetStore ] );
 
-	const handleBackToAttachmentPicker = () => {
+	// Memoized so its reference is stable across App re-renders. App re-renders
+	// whenever `isChanged` toggles (see the useSelector above), and this callback
+	// is forwarded to <VideoEditor> where it sits in the dependency array of the
+	// effect that calls `initializeStore`. An unstable reference made that effect
+	// re-run on every edit, re-initializing the store from the saved meta and
+	// silently reverting the user's add/update/delete of layers.
+	const handleBackToAttachmentPicker = useCallback( () => {
+		// Leaving the editor mid-tour would strip the editor-specific coachmark
+		// targets, so end the guide cleanly.
+		if ( isGuideActive() ) {
+			dismissGuide();
+		}
 		resetStore();
 		setAttachmentID( null );
 		setRawID( null );
 		const newUrl = new URL( window.location );
 		newUrl.searchParams.delete( 'id' );
 		window.history.replaceState( {}, '', newUrl );
-	};
-
-	if ( ! attachmentID ) {
-		return (
-			<>
-				<GodamHeader />
-				<AttachmentPicker handleAttachmentClick={ handleAttachmentClick } />
-			</>
-		);
-	}
+	}, [ resetStore ] );
 
 	return (
-		<VideoEditor key={ attachmentID } attachmentID={ attachmentID } onBackToAttachmentPicker={ handleBackToAttachmentPicker } />
+		<>
+			{ ! attachmentID ? (
+				<>
+					<GodamHeader />
+					<VideoEditorDataView onEdit={ handleAttachmentClick } />
+				</>
+			) : (
+				<VideoEditor key={ attachmentID } attachmentID={ attachmentID } onBackToAttachmentPicker={ handleBackToAttachmentPicker } />
+			) }
+			{ /* Mounted once, above the list/editor switch, so navigating between
+			     views doesn't remount it and re-trigger the welcome modal. */ }
+			<ProductGuide attachmentID={ attachmentID } />
+		</>
 	);
 };
 

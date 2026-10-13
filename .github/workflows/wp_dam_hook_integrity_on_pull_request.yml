@@ -1,0 +1,44 @@
+on:
+  pull_request:
+    # Deny-list, mirroring GODAM_EXCLUDED_ROOT_DIRS in
+    # bin/hook-check/shared.php — an allow-list of specific directories here
+    # previously meant attachment-touching code added to godam.php, lib/, or
+    # any new top-level directory would never even trigger this workflow.
+    # bin/hook-check/*.php is re-included as the one exception inside the
+    # otherwise-excluded bin/: those ARE the checker's own files, and a
+    # change to them needs to re-run the checks they define.
+    paths:
+      - '**/*.php'
+      - '!.git/**'
+      - '!.github/**'
+      - '!.husky/**'
+      - '!.idea/**'
+      - '!node_modules/**'
+      - '!tests/**'
+      - '!languages/**'
+      - '!bin/**'
+      - 'bin/hook-check/*.php'
+
+name: wp-dam hook integrity
+
+permissions:
+  contents: read
+
+jobs:
+  checkHooks:
+    name: Check rtgodam_before/after_attachment_lookup hook integrity
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        coverage: none
+    - name: Run hook integrity check
+      run: php bin/hook-check/balance.php check
+    - name: Run attachment-access coverage check
+      if: always()
+      run: php bin/hook-check/coverage.php check

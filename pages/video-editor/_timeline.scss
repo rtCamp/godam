@@ -1,0 +1,295 @@
+// ============================================
+// Video editor timeline (scrubber + layer markers + ruler).
+// Rebuilt to match the "Flow 47" design: a pill track with an accent fill,
+// a white playhead handle, always-visible layer marker chips that expand to
+// a pill on hover / when active, and a time ruler with minor tick dots.
+// Rendered by the `Slider` component in `VideoJSPlayer.js`. Self-contained;
+// scoped under `.godam-video-editor` like the other new-design partials.
+// ============================================
+
+$ve-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #5d31ff));
+
+.godam-video-editor {
+
+	.godam-ve-timeline {
+		position: relative;
+		// Room above the track for the marker chips (chip + stem) to float into.
+		padding-top: 56px;
+
+		// --- Interaction + visual track ---------------------------------
+		&__track-area {
+			position: relative;
+			height: 8px;
+		}
+
+		&__track {
+			position: absolute;
+			inset: 0;
+			height: 8px;
+			border-radius: 4px;
+			background: #e0e0e0;
+			pointer-events: none;
+		}
+
+		&__fill {
+			position: absolute;
+			left: 0;
+			top: 0;
+			height: 8px;
+			border-radius: 4px;
+			background: $ve-accent;
+			pointer-events: none;
+			z-index: 1;
+		}
+
+		// Transparent native range input — drives scrubbing; the visible track,
+		// fill and playhead are drawn separately so they align to the same %.
+		&__range {
+			position: absolute;
+			left: 0;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 100%;
+			height: 24px;
+			margin: 0;
+			padding: 0;
+			border: none;
+			background: transparent;
+			-webkit-appearance: none;
+			appearance: none;
+			outline: none;
+			cursor: pointer;
+			z-index: 2;
+
+			&::-webkit-slider-runnable-track {
+				background: transparent;
+				border: none;
+			}
+
+			&::-moz-range-track {
+				background: transparent;
+				border: none;
+			}
+
+			&::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 14px;
+				height: 24px;
+				background: transparent;
+				border: none;
+				cursor: grab;
+			}
+
+			&::-moz-range-thumb {
+				width: 14px;
+				height: 24px;
+				background: transparent;
+				border: none;
+				cursor: grab;
+			}
+
+			&:active {
+
+				&::-webkit-slider-thumb {
+					cursor: grabbing;
+				}
+
+				&::-moz-range-thumb {
+					cursor: grabbing;
+				}
+			}
+
+			&[disabled] {
+				cursor: default;
+			}
+		}
+
+		&__playhead {
+			position: absolute;
+			top: 50%;
+			width: 8px;
+			height: 18px;
+			border-radius: 6px;
+			background: var( --wp-admin-theme-color, #3858e9 );
+			border: 2px solid #fff;
+			transform: translate(-50%, -50%);
+			pointer-events: none;
+			z-index: 10;
+		}
+
+		&__tooltip {
+			position: absolute;
+			bottom: calc(100% + 10px);
+			transform: translateX(-50%);
+			padding: 2px 6px;
+			font-size: 12px;
+			line-height: 1.4;
+			color: #1e1e1e;
+			background: #fff;
+			border: 1px solid #e0e0e0;
+			border-radius: 4px;
+			white-space: nowrap;
+			pointer-events: none;
+			z-index: 4;
+		}
+
+		// --- Layer markers ---------------------------------------------
+		&__marker {
+			position: absolute;
+			bottom: 8px; // anchor at the track's vertical centre
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			transform: translateX(-50%);
+			user-select: none;
+			z-index: 5;
+
+			&.is-active,
+			&.is-dragging {
+				z-index: 7;
+			}
+
+			&:hover {
+				z-index: 7;
+			}
+		}
+
+		&__chip {
+			position: relative;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			height: 32px;
+			min-width: 32px;
+			padding: 0 7px;
+			border-radius: 100px;
+			background: var(--marker-color);
+			color: #fff;
+			box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
+			white-space: nowrap;
+			transition: border-radius 0.12s ease, padding 0.12s ease;
+		}
+
+		&__chip-icon {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			flex: 0 0 auto;
+			line-height: 0;
+			color: #fff;
+			fill: #fff;
+
+			svg {
+				width: 18px;
+				height: 18px;
+				display: block;
+			}
+
+			// Outline layer icons (CTA / Hotspot / Form / Poll) are themed via
+			// `stroke`; filled icons keep the `fill: #fff` above.
+			svg.godam-ve-stroke-icon {
+				fill: none;
+				stroke: currentcolor;
+			}
+
+			img {
+				width: 18px;
+				height: 18px;
+				display: block;
+			}
+		}
+
+		&__chip-label {
+			display: none;
+			font-size: 14px;
+			font-weight: 500;
+			line-height: 1;
+			padding-right: 4px;
+		}
+
+		&__stem {
+			width: 2px;
+			height: 14px;
+			border-radius: 1px;
+			background: var(--marker-color);
+		}
+
+		// Chapter markers carry no icon — keep the label snug.
+		// (Use the literal descendant class: `&__marker--chapter &__chip` would
+		// expand each `&` to the full ancestor chain and never match.)
+		&__marker--chapter .godam-ve-timeline__chip {
+			padding: 0 14px;
+		}
+
+		// Form markers show the form-plugin logo on a white chip (the logo keeps
+		// its own colours), so the label needs dark text and the chip a border.
+		&__marker--form .godam-ve-timeline__chip {
+			background: #fff;
+			color: #1e1e1e;
+			border: 1px solid #e0e0e0;
+		}
+
+		// Expanded pill — reveal the label and widen the chip on hover, or when
+		// force-expanded (the always-on add-layer / chapter chips). A *selected*
+		// layer is intentionally NOT expanded — only hover expands a layer chip.
+		// The chip and label are referenced by literal class (not `&__chip`) so
+		// the nested selector stays a valid descendant of the marker.
+		&__marker.is-expanded,
+		&__marker:hover {
+
+			.godam-ve-timeline__chip {
+				border-radius: 16px;
+				padding: 0 14px;
+			}
+
+			.godam-ve-timeline__chip-label {
+				display: inline;
+			}
+		}
+
+		// "Click to add layer" hint — follows the cursor and is non-interactive
+		// so the click lands on the track underneath (which pins the real chip).
+		&__marker--add-ghost {
+			pointer-events: none;
+			opacity: 0.85;
+		}
+
+		// --- Time ruler ------------------------------------------------
+		&__ruler {
+			position: relative;
+			height: 18px;
+			margin-top: 14px;
+		}
+
+		&__tick {
+			position: absolute;
+			top: 50%;
+			transform: translate(-50%, -50%);
+
+			&--minor {
+				width: 4px;
+				height: 4px;
+				border-radius: 50%;
+				background: #c6c6cc;
+			}
+
+			&--major {
+				font-size: 13px;
+				font-weight: 500;
+				line-height: 1;
+				color: #6b6b70;
+				white-space: nowrap;
+
+				&.is-start {
+					transform: translate(0, -50%);
+				}
+
+				&.is-end {
+					transform: translate(-100%, -50%);
+				}
+			}
+		}
+	}
+}

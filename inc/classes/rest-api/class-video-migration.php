@@ -11,8 +11,6 @@
 
 namespace RTGODAM\Inc\REST_API;
 
-use RTGODAM\Inc\Post_Types\GoDAM_Video;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -99,9 +97,11 @@ class Video_Migration extends Base {
 		$processed_count = isset( $current_status['done'] ) ? (int) $current_status['done'] : 0;
 		$total_count     = isset( $current_status['total'] ) ? (int) $current_status['total'] : 0;
 
-		// Best-effort: unschedule pending actions for this migration. This may cancel both types if they run simultaneously.
+		// Unschedule all pending discovery and batch jobs. Core and Vimeo
+		// migrations share these two AS hooks (distinguished only by arguments),
+		// so aborting one type also cancels any concurrently queued jobs for the
+		// other. In practice only one migration runs at a time, so this is safe.
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
-			// Root discovery job (find posts) and all batch jobs.
 			as_unschedule_all_actions( 'godam_process_full_video_migration' );
 			as_unschedule_all_actions( 'godam_migrate_post_batch_video_blocks' );
 		}
@@ -109,7 +109,11 @@ class Video_Migration extends Base {
 		// Reset the status to initial state (pending) by deleting the option.
 		delete_option( $wp_option_key );
 
-		$migration_name = ( 'core' === $migration_type ) ? __( 'Core Video Migration', 'godam' ) : __( 'Vimeo Video Migration', 'godam' );
+		if ( 'core' === $migration_type ) {
+			$migration_name = __( 'Core Video Migration', 'godam' );
+		} else {
+			$migration_name = __( 'Vimeo Video Migration', 'godam' );
+		}
 
 		$response = array(
 			'status'  => 'aborted',
@@ -632,7 +636,7 @@ class Video_Migration extends Base {
 	 * @return bool True if post content was changed, false otherwise.
 	 */
 	private function migrate_single_post_video_blocks( $post_id ) {
-		$post = get_post( $post_id );
+		$post = get_post( $post_id ); // godam-coverage-ignore -- migrate_single_post_video_blocks(): $post_id is the HOST post being scanned for an embedded core/video block, not an attachment — the attachment ID parsed from the block is already wrapped in traverse_and_migrate_core_video_blocks_recursive().
 
 		if ( ! $post || ! has_blocks( $post->post_content ) ) {
 			return false;
@@ -645,7 +649,7 @@ class Video_Migration extends Base {
 
 		if ( $changed ) {
 			$new_content = serialize_blocks( $blocks );
-			wp_update_post(
+			wp_update_post( // godam-coverage-ignore -- migrate_single_post_video_blocks(): rewrites the HOST post's own post_content after migrating its embedded core/video block, not attachment data — see the get_post( $post_id ) call above.
 				array(
 					'ID'           => $post_id,
 					'post_content' => $new_content,
@@ -673,6 +677,16 @@ class Video_Migration extends Base {
 			if ( 'core/video' === $block_name ) {
 				$attrs         = $block['attrs'] ?? array();
 				$attachment_id = isset( $attrs['id'] ) ? (int) $attrs['id'] : 0;
+
+				/**
+				 * Fires before reading this attachment's URL/sources/SEO
+				 * data, so integrations that centralize media on another
+				 * site can switch context first.
+				 *
+				 * @since 2.2.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
+
 				if ( $attachment_id ) {
 					$attrs['src'] = wp_get_attachment_url( $attachment_id );
 				}
@@ -681,6 +695,15 @@ class Video_Migration extends Base {
 
 				// Build default SEO data so the migrated block has SEO populated.
 				$seo_data = $this->build_default_seo_data( $attachment_id, $attrs, $sources );
+
+				/**
+				 * Fires after reading this attachment's data, so
+				 * integrations can restore the site context switched in
+				 * `rtgodam_before_attachment_lookup`.
+				 *
+				 * @since 2.2.0
+				 */
+				do_action( 'rtgodam_after_attachment_lookup' );
 
 				// Transform to custom block with attributes.
 				$block = array(
@@ -720,7 +743,7 @@ class Video_Migration extends Base {
 	 */
 	private function migrate_single_post_vimeo_blocks( $post_id ) {
 
-		$post = get_post( $post_id );
+		$post = get_post( $post_id ); // godam-coverage-ignore -- migrate_single_post_vimeo_blocks(): $post_id is the HOST post being scanned for an embedded Vimeo block, not an attachment — the attachment ID resolved from the embed is already wrapped in traverse_and_migrate_vimeo_blocks_recursive().
 
 		if ( ! $post || ! has_blocks( $post->post_content ) ) {
 			return false;
@@ -735,7 +758,7 @@ class Video_Migration extends Base {
 
 		if ( $changed ) {
 			$new_content = serialize_blocks( $blocks );
-			wp_update_post(
+			wp_update_post( // godam-coverage-ignore -- migrate_single_post_vimeo_blocks(): rewrites the HOST post's own post_content after migrating its embedded Vimeo block, not attachment data — see the get_post( $post_id ) call above.
 				array(
 					'ID'           => $post_id,
 					'post_content' => $new_content,
@@ -778,13 +801,43 @@ class Video_Migration extends Base {
 						$attachment_id = $this->create_attachment_from_vimeo_video( $vimeo_url );
 
 						if ( ! is_wp_error( $attachment_id ) ) {
+							/**
+							 * Fires before reading the migrated attachment's
+							 * URL/sources/SEO data, so integrations that
+							 * centralize media on another site can switch
+							 * context first — this runs after
+							 * create_attachment_from_vimeo_video()'s own
+							 * wrap has already restored.
+							 *
+							 * @since 2.2.0
+							 */
+							do_action( 'rtgodam_before_attachment_lookup' );
 							$video_url = wp_get_attachment_url( $attachment_id );
+							$sources   = array();
+							$seo_data  = array();
+
 							if ( ! empty( $video_url ) ) {
 								$sources = $this->build_video_sources_array( $attachment_id );
 
 								// Build default SEO data so the migrated block has SEO populated.
 								$seo_data = $this->build_default_seo_data( $attachment_id, $attrs, $sources );
+							}
 
+							/**
+							 * Fires after reading the migrated attachment's
+							 * data, so integrations can restore the site
+							 * context switched in
+							 * `rtgodam_before_attachment_lookup`. Fired
+							 * unconditionally — unlike the block-building
+							 * below, which only runs when $video_url
+							 * resolved — so the switch is always restored
+							 * regardless of that outcome.
+							 *
+							 * @since 2.2.0
+							 */
+							do_action( 'rtgodam_after_attachment_lookup' );
+
+							if ( ! empty( $video_url ) ) {
 								$block = array(
 									'blockName'    => 'godam/video',
 									'attrs'        => array(
@@ -952,9 +1005,26 @@ class Video_Migration extends Base {
 			}
 		}
 
-		$headline    = $attachment instanceof \WP_Post ? get_the_title( $attachment_id ) : '';
+		$headline = $attachment instanceof \WP_Post ? get_the_title( $attachment_id ) : '';
+
+		/**
+		 * Fires before reading this attachment's excerpt/content for the
+		 * SEO description fallback, so integrations that centralize media
+		 * on another site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
 		$desc_field  = $attachment instanceof \WP_Post ? get_post_field( 'post_excerpt', $attachment_id ) : '';
 		$description = ! empty( $desc_field ) ? $desc_field : ( $attachment instanceof \WP_Post ? get_post_field( 'post_content', $attachment_id ) : '' );
+		/**
+		 * Fires after reading this attachment's data, so integrations can
+		 * restore the site context switched in
+		 * `rtgodam_before_attachment_lookup`.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return array(
 			'contentUrl'       => $content_url,
@@ -1012,7 +1082,7 @@ class Video_Migration extends Base {
 			'post_title'   => $video_info['title'] ?? $video_info['orignal_file_name'] ?? '',
 			'post_content' => $video_info['description'] ?? '',
 		);
-		wp_update_post( $attachment_data );
+		wp_update_post( $attachment_data ); // godam-coverage-ignore -- update_video_metadata_from_vimeo_info(): covered transitively — both call sites run inside create_attachment_from_vimeo_video()'s own before/after try/finally pair, same as the $wpdb->update() call below.
 
 		// Update attachment metadata with dimensions.
 		$metadata = array(
@@ -1075,7 +1145,7 @@ class Video_Migration extends Base {
 		// Change the guid of the attachment to the transcoded file path.
 		global $wpdb;
 		//phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->update(
+		$wpdb->update( // godam-coverage-ignore -- update_video_metadata_from_vimeo_info(): covered transitively — both call sites run inside create_attachment_from_vimeo_video()'s own before/after try/finally pair.
 			$wpdb->posts,
 			array(
 				'guid' => ! empty( $video_info['transcoded_mp4_url'] ) ? $video_info['transcoded_mp4_url'] : $video_info['transcoded_file_path'],
@@ -1167,41 +1237,54 @@ class Video_Migration extends Base {
 		// Check if job ID exists in the response and look for existing attachment.
 		$job_id = $video_info['name'] ?? null;
 
-		if ( ! empty( $job_id ) ) {
-			// Check if attachment with this job ID already exists.
-			if ( class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
-				$transcoder_handler = new \RTGODAM_Transcoder_Handler();
-				if ( method_exists( $transcoder_handler, 'get_post_id_by_meta_key_and_value' ) ) {
-					$existing_attachment_id = $transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
+		/**
+		 * Fires before the dedupe lookup and the eventual wp_insert_attachment()
+		 * call, so integrations that centralize media on another site can
+		 * switch context first — deliberately fired only after the SaaS
+		 * HTTP call above returns, so the switch isn't held open across it.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			if ( ! empty( $job_id ) ) {
+				// Check if attachment with this job ID already exists.
+				if ( class_exists( 'RTGODAM_Transcoder_Handler' ) ) {
+					$transcoder_handler = new \RTGODAM_Transcoder_Handler();
+					if ( method_exists( $transcoder_handler, 'get_post_id_by_meta_key_and_value' ) ) {
+						$existing_attachment_id = $transcoder_handler->get_post_id_by_meta_key_and_value( 'rtgodam_transcoding_job_id', $job_id );
 
-					if ( $existing_attachment_id ) {
-						// Replace all video metadata for existing attachment when JOB ID is present.
-						$this->update_video_metadata_from_vimeo_info( $existing_attachment_id, $video_info, $job_id );
-						return $existing_attachment_id;
+						if ( $existing_attachment_id ) {
+							// Replace all video metadata for existing attachment when JOB ID is present.
+							$this->update_video_metadata_from_vimeo_info( $existing_attachment_id, $video_info, $job_id );
+							return $existing_attachment_id;
+						}
 					}
 				}
 			}
-		}
 
-		// Prepare attachment data for new attachment.
-		$attachment = array(
-			'post_mime_type' => 'video/mp4',
-			'post_title'     => $video_info['title'] ?? $video_info['orignal_file_name'] ?? '',
-			'post_content'   => $video_info['description'] ?? '',
-			'post_status'    => 'inherit',
-		);
+			// Prepare attachment data for new attachment.
+			$attachment = array(
+				'post_mime_type' => 'video/mp4',
+				'post_title'     => $video_info['title'] ?? $video_info['orignal_file_name'] ?? '',
+				'post_content'   => $video_info['description'] ?? '',
+				'post_status'    => 'inherit',
+			);
 
-		// Insert the attachment.
-		$attachment_id = wp_insert_attachment( $attachment );
+			// Insert the attachment.
+			$attachment_id = wp_insert_attachment( $attachment );
 
-		if ( is_wp_error( $attachment_id ) ) {
+			if ( is_wp_error( $attachment_id ) ) {
+				return $attachment_id;
+			}
+
+			// Update video metadata using the new reusable function.
+			$this->update_video_metadata_from_vimeo_info( $attachment_id, $video_info, $job_id );
+
 			return $attachment_id;
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
 		}
-
-		// Update video metadata using the new reusable function.
-		$this->update_video_metadata_from_vimeo_info( $attachment_id, $video_info, $job_id );
-
-		return $attachment_id;
 	}
 
 	/**
@@ -1252,7 +1335,7 @@ class Video_Migration extends Base {
 
 		foreach ( $post_types as $post_type ) {
 			// Check if post type supports editor and Gutenberg is not disabled.
-			if ( post_type_supports( $post_type->name, 'editor' ) && use_block_editor_for_post_type( $post_type->name ) && GoDAM_Video::SLUG !== $post_type->name ) {
+			if ( post_type_supports( $post_type->name, 'editor' ) && use_block_editor_for_post_type( $post_type->name ) ) {
 				$gutenberg_post_types[] = $post_type->name;
 			}
 		}

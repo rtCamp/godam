@@ -6,16 +6,14 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { Button, Notice } from '@wordpress/components';
-import { chevronRight, pencil } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
-import LayerControl from '../LayerControls';
-import FormSelector from './FormSelector';
+import FormFields from './FormFields';
+import FormPreview from './FormPreview';
 import { useState } from 'react';
 import clsx from 'clsx';
 
@@ -36,90 +34,40 @@ const MetForm = ( { layerID } ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'metform_id', value: formID } ) );
 	};
 
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.valid_api_key;
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
-
 	const isMetFormPluginActive = Boolean( window?.videoData?.metformActive );
 
 	return (
 		<>
-			{
-				! isMetFormPluginActive &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'Please activate the MetForm plugin to use this feature.', 'godam' ) }
-				</Notice>
-			}
+			<FormFields
+				isActive={ isMetFormPluginActive }
+				pluginLabel={ __( 'MetForm', 'godam' ) }
+				formID={ layer.metform_id }
+				formType={ layer.form_type }
+				forms={ forms }
+				onSelectForm={ changeFormID }
+				selectorClassName="met-form-selector"
+				editUrl={ `${ window?.videoData?.adminUrl }?post=${ layer.metform_id }&action=elementor` }
+				showEditButton={ Boolean( layer.metform_id ) && ! isFetching }
+			/>
 
-			{
-				<FormSelector
-					disabled={ ! isValidAPIKey || ! isMetFormPluginActive }
-					className="met-form-selector mb-4"
-					formID={ layer.metform_id }
-					forms={ forms }
-					handleChange={ changeFormID }
-				/>
-			}
-
-			<LayerControl>
-				<>
-					<div
-						style={ {
-							backgroundColor: layer.bg_color,
-						} }
-						className="easydam-layer"
-					>
-
-						{
-							layer?.metform_id && (
-								<div className={ clsx( 'form-container', 'metform', { loading: isFetching } ) }>
-									<iframe
-										src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=metform&rtgodam-layer-id=' + layer?.metform_id }
-										title="Met Form"
-										scrolling="auto"
-										width="100%"
-										className={ isFetching ? 'hidden' : '' }
-										onLoad={ () => setIsFetching( false ) }
-									></iframe>
-									{ isFetching && <p>{ __( 'Loading form…', 'godam' ) }</p> }
-								</div>
-							)
-						}
-
-						{
-							! isValidAPIKey &&
-							<p className="text-sm text-gray-500">{ __( 'This features is available in premium version', 'godam' ) }</p>
-						}
-
-						{
-							! isFetching &&
-							<Button
-								href={ `${ window?.videoData?.adminUrl }?post=${ layer.metform_id }&action=elementor` }
-								target="_blank"
-								variant="secondary"
-								icon={ pencil }
-								className="absolute top-2 right-2"
-							>{ __( 'Edit form', 'godam' ) }</Button>
-						}
+			<FormPreview
+				bgColor={ layer.bg_color }
+				allowSkip={ layer.allow_skip }
+			>
+				{ layer?.metform_id && (
+					<div className={ clsx( 'form-container', 'metform', { loading: isFetching } ) }>
+						<iframe
+							src={ window.godamRestRoute.homeUrl + '?rtgodam-render-layer=metform&rtgodam-layer-id=' + layer?.metform_id }
+							title="Met Form"
+							scrolling="auto"
+							width="100%"
+							className={ isFetching ? 'hidden' : '' }
+							onLoad={ () => setIsFetching( false ) }
+						></iframe>
+						{ isFetching && <p>{ __( 'Loading form…', 'godam' ) }</p> }
 					</div>
-					{ layer.allow_skip &&
-						<Button
-							className="skip-button"
-							variant="primary"
-							icon={ chevronRight }
-							iconSize="18"
-							iconPosition="right"
-						>
-							{ __( 'Skip', 'godam' ) }
-						</Button>
-					}
-				</>
-			</LayerControl>
+				) }
+			</FormPreview>
 		</>
 	);
 };

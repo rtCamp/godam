@@ -1,0 +1,24 @@
+/**
+ * GoDAM Image block — shared (editor + front-end) styles.
+ *
+ * The hotspot markers/tooltips themselves are styled by the global player
+ * stylesheet (`godam-player.css`, enqueued via the `godam-player-style` handle),
+ * which is not scoped to the video container. Here we only style the block
+ * wrapper and the positioned frame that hosts the single shared overlay.
+ */
+.godam-image {
+	margin: 0;
+
+	&__frame {
+		position: relative;
+		display: inline-block;
+		max-width: 100%;
+		line-height: 0;
+	}
+
+	&__img {
+		display: block;
+		max-width: 100%;
+		height: auto;
+	}
+}

@@ -237,6 +237,39 @@ if ( class_exists( 'GF_Field' ) ) {
 		}
 
 		/**
+		 * Returns the files submitted for this field, keeping only the newest recording.
+		 *
+		 * Gravity Forms 2.9.18+ saves the field's file to its temp folder on a page change or a
+		 * failed submit, then counts that saved copy together with any file sent in the current
+		 * request. The field takes one recording, so a recording sent now replaces the saved one
+		 * instead of failing with "Number of files (2) exceeds limit (1)".
+		 *
+		 * Older Gravity Forms versions have no submission-files methods and never call this one;
+		 * there it returns empty lists instead of calling the missing parent method.
+		 *
+		 * @since 2.3.1
+		 *
+		 * @return array[] The 'existing' and 'new' files, as returned by Gravity Forms.
+		 */
+		public function get_submission_files() {
+			if ( ! method_exists( \GF_Field_FileUpload::class, 'get_submission_files' ) ) {
+				return array(
+					'existing' => array(),
+					'new'      => array(),
+				);
+			}
+
+			$files = parent::get_submission_files();
+
+			if ( ! $this->multipleFiles && ! empty( $files['new'] ) && ! empty( $files['existing'] ) ) {
+				$files['existing'] = array();
+				$this->set_submission_files( $files );
+			}
+
+			return $files;
+		}
+
+		/**
 		 * Returns the field value for the entry list.
 		 *
 		 * @param string $value The field value.

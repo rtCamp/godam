@@ -15,6 +15,11 @@ import GoldenRetriever from '@uppy/golden-retriever';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
+ * Internal dependencies
+ */
+import { forgetGravityFormsSavedFile, hasGravityFormsSavedFile } from './gravity-forms-saved-file';
+
+/**
  * Class to handle Uppy video uploads within Gravity Forms.
  * Supports webcam, screen capture, and local file uploads with preview,
  * localStorage restoration, and integration with existing file input fields.
@@ -286,6 +291,11 @@ class UppyVideoUploader {
 			await this.uppy.getPlugin( 'Dashboard' ).closeModal();
 		} );
 
+		// A removed recording must not be submitted from the copy Gravity Forms saved earlier.
+		this.uppy.on( 'file-removed', () => {
+			forgetGravityFormsSavedFile( this.fileInput );
+		} );
+
 		// Handle modal close without upload: clear UI preview.
 		this.uppy.on( 'dashboard:modal-closed', () => {
 			const selectedFiles = this.uppy.getFiles();
@@ -385,6 +395,12 @@ class UppyVideoUploader {
 					handleRemove();
 				}
 			} );
+		}
+
+		// Gravity Forms already saved this recording on a page change or a failed submit.
+		// Sending it again makes Gravity Forms count it twice and reject the form.
+		if ( 'restored' === action && hasGravityFormsSavedFile( this.fileInput ) ) {
+			return;
 		}
 
 		// Prepare file for the Gravity Forms file input for submission.

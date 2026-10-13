@@ -14,7 +14,13 @@
 			const paramName = $button.data( 'param' );
 			const $container = $button.closest( '.audio_selector_block' );
 			const $input = $container.find( '.audio_selector_field' );
-			const $srcInput = $attributeContainer.find( '.textfield_hidden_field' );
+			// Target the `src` hidden param specifically so other hidden fields
+			// are never touched.
+			const $srcInput = $attributeContainer.find( '.textfield_hidden_field[name="src"]' );
+			// Sibling params to auto-populate from the attachment, mirroring the
+			// Gutenberg block's onSelectAudio (Audio Title + Description).
+			const $audioTitleInput = $attributeContainer.find( '[name="audio_title"]' );
+			const $descriptionInput = $attributeContainer.find( '[name="description"]' );
 
 			// Create WordPress media frame
 			const frame = wp.media( {
@@ -36,13 +42,27 @@
 				$input.val( attachment.id ).trigger( 'change' );
 				$srcInput.val( attachment.url ).trigger( 'change' );
 
+				// Auto-populate Audio Title and Description from the attachment on
+				// every select/replace, matching the block's onSelectAudio — so
+				// swapping the audio file refreshes the title/description to the
+				// newly selected attachment's values.
+				if ( $audioTitleInput.length ) {
+					$audioTitleInput.val( attachment.title || '' ).trigger( 'change' );
+				}
+				if ( $descriptionInput.length ) {
+					const attachmentDescription = typeof attachment.description === 'string'
+						? attachment.description
+						: '';
+					$descriptionInput.val( attachmentDescription ).trigger( 'change' );
+				}
+
 				// Update button text
 				$button.text( 'Replace' );
 
 				// Add or update preview
 				let $preview = $container.find( '.audio-selector-preview' );
 				if ( $preview.length === 0 ) {
-					$preview = $( '<div class="audio-selector-preview" style="margin-top: 10px;"></div>' );
+					$preview = $( '<div class="audio-selector-preview" data-test-id="godam-wpb-preview-audio" style="margin-top: 10px;"></div>' );
 					$container.append( $preview );
 				}
 
@@ -56,7 +76,7 @@
 				const $buttonsWrapper = $container.find( '.audio_selector-buttons-wrapper' );
 				let $removeButton = $buttonsWrapper.find( '.audio-selector-remove' );
 				if ( $removeButton.length === 0 ) {
-					$removeButton = $( '<button class="button audio-selector-remove" data-param="' + paramName + '" style="margin-left: 5px;">Remove</button>' );
+					$removeButton = $( '<button class="button audio-selector-remove" data-test-id="godam-wpb-button-remove-audio" data-param="' + paramName + '" style="margin-left: 5px;">Remove</button>' );
 					$buttonsWrapper.append( $removeButton );
 				}
 
@@ -81,7 +101,7 @@
 			const $container = $button.closest( '.audio_selector_block' );
 			const $input = $container.find( '.audio_selector_field' );
 			const $selectButton = $container.find( '.audio-selector-button' );
-			const $srcInput = $attributeContainer.find( '.textfield_hidden_field' );
+			const $srcInput = $attributeContainer.find( '.textfield_hidden_field[name="src"]' );
 
 			// Clear the input value
 			$input.val( '' ).trigger( 'change' );

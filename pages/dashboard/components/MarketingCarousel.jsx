@@ -80,7 +80,7 @@ const MarketingCarousel = () => {
 								}
 							} }
 							className={ `w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${
-								index === currentIndex ? 'bg-[#AB3A6C]' : 'bg-[#D9CDB5]'
+								index === currentIndex ? 'bg-[var(--wp-admin-theme-color)]' : 'bg-[#D9CDB5]'
 							}` }
 						></span>
 					) ) }

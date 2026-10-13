@@ -1,6 +1,11 @@
 .snackbar {
 	position: fixed;
-	z-index: 9999;
+	// Above BOTH the media modal (160000) and the folder picker, which modal.scss
+	// lifts to calc(160000 * 2) so it can open on top of the media modal. A move
+	// that fails leaves the picker open, and its message has to be readable over it.
+	// This only takes effect because SnackbarComp portals to <body>: inside the
+	// sidebar root (a z-index: 1000 stacking context) any value here is inert.
+	z-index: calc(160000 * 2 + 1);
 	bottom: 1rem;
 	right: 1rem;
 

@@ -24,6 +24,10 @@ const initialState = {
 			fullscreenToggle: true, // Full-screen button
 			subsCapsButton: true,
 			pictureInPictureToggle: false,
+			skipButtons: {
+				forward: 10,
+				backward: 10,
+			},
 			//custom controls
 			brandingIcon: true,
 			appearanceColor: godamSettings?.brandColor ? godamSettings?.brandColor : '#2b333fb3',
@@ -40,6 +44,12 @@ const initialState = {
 	isChanged: false,
 	currentLayer: null,
 	currentTab: 'layers',
+	// Media-type awareness. Seeded from the attachment MIME via `setMediaType`;
+	// `allowedTabs` gates `setCurrentTab` and `allowedLayerTypes` gates the
+	// "Add layer" menu. Defaults reproduce the historic video-only behaviour.
+	mediaType: 'video',
+	allowedTabs: [ 'layers', 'player-settings', 'transcription', 'chapters' ],
+	allowedLayerTypes: '*',
 	loading: false,
 	gforms: [],
 	jetpackForms: [],
@@ -73,15 +83,17 @@ const slice = createSlice( {
 		},
 		initializeStore: ( state, action ) => {
 			const { videoConfig, layers, chapters } = action.payload;
+			// Audio (and other non-video) meta may omit `videoConfig` entirely;
+			// guard the nested merge so it doesn't throw on `.controlBar`.
 			state.videoConfig = {
 				...state.videoConfig,
-				...videoConfig,
+				...( videoConfig || {} ),
 				controlBar: {
 					...state.videoConfig.controlBar,
-					...videoConfig.controlBar, // Nested merge for controlBar
+					...( videoConfig?.controlBar || {} ), // Nested merge for controlBar
 				},
 			};
-			state.layers = layers;
+			state.layers = layers || [];
 			state.isChanged = false;
 			state.chapters = chapters || [];
 		},
@@ -130,9 +142,21 @@ const slice = createSlice( {
 			state.currentLayer = action.payload;
 		},
 		setCurrentTab: ( state, action ) => {
-			// check if action.payload is either 'layers' or 'player-settings'.
-			if ( action.payload === 'layers' || action.payload === 'player-settings' || action.payload === 'chapters' ) {
+			// Only accept tabs the current media type allows.
+			if ( state.allowedTabs.includes( action.payload ) ) {
 				state.currentTab = action.payload;
+			}
+		},
+		// Apply a media-type capability to the store: records the media type,
+		// the allowed tabs / layer types, and snaps `currentTab` to a supported
+		// tab if the current one isn't available for this media type.
+		setMediaType: ( state, action ) => {
+			const { mediaType, tabs, defaultTab, allowedLayerTypes } = action.payload;
+			state.mediaType = mediaType;
+			state.allowedTabs = tabs;
+			state.allowedLayerTypes = allowedLayerTypes;
+			if ( ! tabs.includes( state.currentTab ) ) {
+				state.currentTab = defaultTab;
 			}
 		},
 		setLoading: ( state, action ) => {
@@ -210,6 +234,7 @@ export const {
 	updateVideoConfig,
 	setCurrentLayer,
 	setCurrentTab,
+	setMediaType,
 	setLoading,
 	setGravityForms,
 	setGravityFormsPluginActive,

@@ -6,6 +6,9 @@ import videojs from 'video.js';
 /**
  * Internal dependencies
  */
+// Initialize layer registry early so add-ons can register custom layers
+import './utils/layer-registry-init.js';
+
 import ConfigurationManager from './managers/configurationManager.js';
 import ControlsManager from './managers/controlsManager.js';
 import PreviewManager from './managers/previewManager.js';
@@ -17,6 +20,7 @@ import HoverManager from './managers/hoverManager.js';
 import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
 import TranscriptManager from './managers/transcriptManager.js';
+import TranscriptPanelManager from './managers/transcriptPanelManager.js';
 import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
 
 /**
@@ -29,6 +33,8 @@ export default class GodamVideoPlayer {
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = video.dataset.instanceId;
 		this.player = null;
+		this.metadataPreloadObserver = null;
+		this.deferMetadataPreloadUntilInView = false;
 
 		// Initialize managers
 		this.configManager = new ConfigurationManager( video );
@@ -40,6 +46,7 @@ export default class GodamVideoPlayer {
 		this.adsManager = null;
 		this.hoverManager = null;
 		this.transcriptManager = null;
+		this.transcriptPanelManager = null;
 		this.shareManager = null;
 	}
 
@@ -86,10 +93,10 @@ export default class GodamVideoPlayer {
 
 		if ( needsAds ) {
 			loadPromises.push(
-				loadAdsPlugins().catch( ( error ) => {
-					// eslint-disable-next-line no-console
-					console.error( 'Failed to load ads plugins:', error );
-				} ),
+				// Ads are optional and loadAdsPlugins() already warns once when
+				// the chunk is blocked (e.g. by an ad blocker). Swallow here so a
+				// blocked ad script doesn't reject Promise.all and halt init.
+				loadAdsPlugins().catch( () => {} ),
 			);
 		}
 
@@ -156,15 +163,82 @@ export default class GodamVideoPlayer {
 			this.player = videojs( this.video, this.configManager.videoSetupControls );
 		}
 
+		this.setupDeferredMetadataPreload();
+
 		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
-		this.adsManager?.setupAdsIntegration().catch( ( error ) => {
-			// eslint-disable-next-line no-console
-			console.error( 'Ads integration failed:', error );
+		this.adsManager?.setupAdsIntegration().catch( () => {
+			// Ads are optional (the ads chunk is commonly blocked by ad
+			// blockers); pluginLoader already warns once. Don't surface a hard
+			// error — playback is unaffected.
 		} );
 
 		this.setupAspectRatio();
 		this.setupPlayerReady();
+	}
+
+	/**
+	 * Defer metadata loading until the player is at least 10% visible
+	 * when preload is explicitly disabled.
+	 */
+	setupDeferredMetadataPreload() {
+		const preload = this.configManager.videoSetupControls?.preload;
+
+		if ( preload !== 'none' ) {
+			this.deferMetadataPreloadUntilInView = false;
+			return;
+		}
+
+		this.deferMetadataPreloadUntilInView = true;
+
+		if ( ! ( 'IntersectionObserver' in window ) ) {
+			this.preloadVideoMetadata();
+			return;
+		}
+
+		this.metadataPreloadObserver = new IntersectionObserver(
+			( entries ) => {
+				entries.forEach( ( entry ) => {
+					if ( entry.intersectionRatio >= 0.1 ) {
+						this.preloadVideoMetadata();
+					}
+				} );
+			},
+			{
+				root: null,
+				rootMargin: '0px',
+				threshold: 0.1,
+			},
+		);
+
+		this.metadataPreloadObserver.observe( this.video );
+		this.player.one( 'dispose', () => this.cleanupMetadataPreloadObserver() );
+	}
+
+	/**
+	 * Upgrade preload mode to metadata and start loading video metadata.
+	 */
+	preloadVideoMetadata() {
+		if ( ! this.deferMetadataPreloadUntilInView ) {
+			return;
+		}
+
+		this.deferMetadataPreloadUntilInView = false;
+		this.cleanupMetadataPreloadObserver();
+
+		this.player.preload( 'metadata' );
+		this.video.setAttribute( 'preload', 'metadata' );
+		this.player.load();
+	}
+
+	/**
+	 * Disconnect the metadata preload observer when it is no longer needed.
+	 */
+	cleanupMetadataPreloadObserver() {
+		if ( this.metadataPreloadObserver ) {
+			this.metadataPreloadObserver.disconnect();
+			this.metadataPreloadObserver = null;
+		}
 	}
 
 	/**
@@ -225,6 +299,7 @@ export default class GodamVideoPlayer {
 			this.initializeChapters();
 			this.setupQualitySelector();
 			this.initializeTranscript();
+			this.setupDefaultSubtitle();
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
@@ -249,18 +324,18 @@ export default class GodamVideoPlayer {
 		const isInModal = this.video.closest( '.godam-modal' ) !== null;
 
 		if ( ! isInModal ) {
-			const aspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
+			const currentAspectRatio = this.configManager.videoSetupOptions?.aspectRatio || '16:9';
 
 			// Handle responsive aspect ratio - detect from video dimensions
-			if ( aspectRatio === 'responsive' ) {
+			if ( currentAspectRatio === 'responsive' ) {
 				this.detectAndSetAspectRatio();
-			} else if ( /^\d+:\d+$/.test( aspectRatio ) ) {
+			} else if ( /^\d+:\d+$/.test( currentAspectRatio ) ) {
 				// Valid x:y format
-				this.player.aspectRatio( aspectRatio );
+				this.player.aspectRatio( currentAspectRatio );
 			} else {
 				// Invalid format - fall back to 16:9
 				// eslint-disable-next-line no-console
-				console.warn( `Invalid aspect ratio format: "${ aspectRatio }". Falling back to "16:9".` );
+				console.warn( `Invalid aspect ratio format: "${ currentAspectRatio }". Falling back to "16:9".` );
 				this.player.aspectRatio( '16:9' );
 			}
 		}
@@ -317,6 +392,12 @@ export default class GodamVideoPlayer {
 			onControlsMove: () => this.controlsManager.moveVideoControls(),
 		} );
 
+		// Suppress layers while an uncommitted hover preview ("Start Preview")
+		// is playing – the preview is meant to show playback, not layers.
+		this.layersManager.setSuppressionCheck(
+			() => this.hoverManager?.isPreviewActive() === true,
+		);
+
 		// Set up preview state change callback
 		if ( this.previewManager.getPreviewWatcher() ) {
 			this.previewManager.setPreviewStateChangeCallback(
@@ -358,6 +439,64 @@ export default class GodamVideoPlayer {
 
 		// Attach to player for external access
 		this.player.transcriptManager = this.transcriptManager;
+
+		// Initialize the on-video transcript panel (toggle button + side panel).
+		// Reads its own config (`showTranscription`, `showShareBtn`) and resolves
+		// the transcript independently, so it works regardless of subtitle state.
+		this.transcriptPanelManager = new TranscriptPanelManager(
+			this.player,
+			this.video,
+			this.configManager.videoSetupOptions,
+		);
+		this.player.transcriptPanelManager = this.transcriptPanelManager;
+	}
+
+	/**
+	 * When "Show caption" is enabled, turn on the first available
+	 * subtitle/caption track by default. Re-checks as tracks are added (the
+	 * AI transcript track loads asynchronously) and never overrides a track
+	 * the viewer has already enabled.
+	 */
+	setupDefaultSubtitle() {
+		if ( ! this.configManager.videoSetupOptions?.showCaption ) {
+			return;
+		}
+
+		const textTracks = this.player.textTracks();
+		if ( ! textTracks ) {
+			return;
+		}
+
+		// Auto-enable at most once. After the first track is turned on (or one is
+		// already showing), a viewer who turns captions back off must be respected
+		// even when a late-loading track (the async AI transcript) fires `addtrack`.
+		let hasAutoEnabled = false;
+		const enableFirstSubtitle = () => {
+			if ( hasAutoEnabled ) {
+				return;
+			}
+			const subtitleTracks = [];
+			for ( let i = 0; i < textTracks.length; i++ ) {
+				const track = textTracks[ i ];
+				if ( track.kind === 'subtitles' || track.kind === 'captions' ) {
+					// A subtitle track is already active — respect the viewer's choice.
+					if ( track.mode === 'showing' ) {
+						hasAutoEnabled = true;
+						return;
+					}
+					subtitleTracks.push( track );
+				}
+			}
+			if ( subtitleTracks.length > 0 ) {
+				subtitleTracks[ 0 ].mode = 'showing';
+				hasAutoEnabled = true;
+			}
+		};
+
+		enableFirstSubtitle();
+		textTracks.addEventListener( 'addtrack', enableFirstSubtitle );
+		// Avoid leaking the listener on SPA / infinite-scroll teardowns.
+		this.player.one( 'dispose', () => textTracks.removeEventListener( 'addtrack', enableFirstSubtitle ) );
 	}
 
 	/**
@@ -385,6 +524,9 @@ export default class GodamVideoPlayer {
 
 		// Handle hotspot layers
 		this.layersManager.handleHotspotLayersTimeUpdate( currentTime );
+
+		// Handle custom add-on layers (WooCommerce, etc.)
+		this.layersManager.handleCustomLayersTimeUpdate( currentTime );
 	}
 
 	/**
@@ -411,6 +553,14 @@ export default class GodamVideoPlayer {
 	 * Setup quality selector button in control bar.
 	 */
 	setupQualitySelector() {
+		if ( this.deferMetadataPreloadUntilInView ) {
+			this.player.one( 'loadedmetadata', () => this.renderQualitySelectorButton() );
+			if ( ! this.hasQualitySelectorButton() ) {
+				this.eventsManager.onQualityLevelsAvailable( () => this.renderQualitySelectorButton() );
+			}
+			return;
+		}
+
 		// Force load. Required.
 		if ( this.player.readyState() === 0 ) {
 			this.player.load();

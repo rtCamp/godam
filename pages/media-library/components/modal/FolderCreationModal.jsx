@@ -75,6 +75,12 @@ const FolderCreationModal = () => {
 
 			dispatch( createFolder( { name: folderName, id: response.id, parent: response.parent } ) );
 
+			// Broadcast the new folder so decoupled listeners (e.g. the Media Library
+			// guided tour, a separate bundle) can react without reaching into the store.
+			document.dispatchEvent( new CustomEvent( 'godam-media-library:folder-created', {
+				detail: { id: response.id, parent: response.parent, name: folderName },
+			} ) );
+
 			updateSelectDropdown( response.id, folderName );
 		} catch ( error ) {
 			if ( error?.status === 400 ) {
@@ -109,7 +115,8 @@ const FolderCreationModal = () => {
 			<Modal
 				title={ __( 'Create a new folder', 'godam' ) }
 				onRequestClose={ () => dispatch( closeModal( 'folderCreation' ) ) }
-				className="modal__container"
+				// `folder-creation-modal` is a stable hook for the Media Library tour.
+				className="modal__container folder-creation-modal"
 				bodyOpenClassName="folder-creation-modal-open"
 			>
 				<TextControl

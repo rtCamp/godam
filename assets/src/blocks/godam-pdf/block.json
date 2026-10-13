@@ -2,10 +2,10 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "godam/pdf",
-	"title": "GoDAM PDF",
+	"title": "Document",
 	"category": "media",
-	"description": "Embed a PDF file with preview.",
-	"keywords": [ "document", "pdf", "file", "preview" ],
+	"description": "Embed a document with a preview. Supports PDF, Word, Excel, PowerPoint, OpenDocument, TXT and CSV.",
+	"keywords": [ "document", "pdf", "doc", "docx", "word", "excel", "xlsx", "powerpoint", "pptx", "spreadsheet", "csv", "file", "preview", "godam" ],
 	"textdomain": "godam",
 	"attributes": {
 		"blob": {
@@ -27,6 +27,40 @@
 		"height": {
 			"type": "number",
 			"default": 600
+		},
+		"docTitle": {
+			"type": "string",
+			"default": ""
+		},
+		"description": {
+			"type": "string",
+			"default": ""
+		},
+		"previewMode": {
+			"type": "string",
+			"default": "default"
+		},
+		"showCover": {
+			"type": "boolean",
+			"default": false
+		},
+		"customCover": {
+			"type": "string",
+			"default": ""
+		},
+		"customCoverId": {
+			"type": "number"
+		},
+		"coverImages": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "object"
+			}
+		},
+		"pageCount": {
+			"type": "number",
+			"default": 0
 		}
 	},
 	"supports": {

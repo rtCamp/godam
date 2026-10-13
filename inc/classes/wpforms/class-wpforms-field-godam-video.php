@@ -67,8 +67,19 @@ if ( class_exists( 'WPForms_Field' ) ) {
 				'type' => true,
 			);
 
+			// Player wrapper styles are enqueued as a stylesheet, so the player
+			// markup no longer carries an inline <style>. The allowance stays for
+			// player variants that still emit one (e.g. the audio no-JS block):
+			// wp_kses_post() strips <style> by default while keeping its CSS text,
+			// which then leaks onto the page as a raw string.
+			$allowed_tags['style'] = array(
+				'id'    => true,
+				'type'  => true,
+				'media' => true,
+			);
+
 			$allowed_tags['svg'] = array(
-				'xlmns'   => true,
+				'xmlns'   => true,
 				'width'   => true,
 				'height'  => true,
 				'src'     => true,
@@ -347,6 +358,11 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		/**
 		 * Save godam video file.
 		 *
+		 * Files are routed through wp_handle_upload() (with a restricted `mimes`
+		 * override) rather than moved directly, so the file's real content/extension
+		 * is validated the same way core validates every other WordPress upload.
+		 * The client-supplied Content-Type header ($file['type']) is never trusted.
+		 *
 		 * @since 1.3.0
 		 *
 		 * @param array $entry Entry submitted data.
@@ -355,60 +371,142 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 * @return array
 		 */
 		public function save_video_file( $entry, $form_data ) {
-			global $wp_filesystem;
+			// Only handle uploads for fields actually configured as GoDAM Record fields on this form.
+			$godam_field_ids = $this->get_godam_record_field_ids( $form_data );
+
+			if ( empty( $godam_field_ids ) ) {
+				return $entry;
+			}
 
 			require_once ABSPATH . 'wp-admin/includes/file.php';
-
-			WP_Filesystem();
-
-			if ( null === $wp_filesystem ) {
-				return $entry;
-			}
-
-			$upload_dir  = wp_get_upload_dir();
-			$wpforms_dir = untrailingslashit( $upload_dir['basedir'] ) . '/godam/wpforms';
-
-			if ( false === wp_mkdir_p( $wpforms_dir ) ) {
-				return $entry;
-			}
 
 			// No need to perform nonce verification as this is already done by the WPForms forms processor.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$files = $this->format_global_files_array( $_FILES );
 
-			// Loop through each file, and creates attachments for video files.
-			foreach ( $files as $field_id => $file ) {
-				// Bail if there is not error set.
-				if ( ! isset( $file['error'] ) ) {
-					continue;
+			// Route GoDAM uploads to `uploads/godam/wpforms`. The filter is registered once
+			// around the whole loop and torn down in `finally`, so the global `upload_dir`
+			// filter is always removed even if wp_handle_upload() (or a callback hooked into
+			// it) throws.
+			add_filter( 'upload_dir', array( $this, 'filter_upload_dir_to_godam_wpforms' ) );
+
+			try {
+				// Loop through each file, and creates attachments for video files.
+				foreach ( $files as $field_id => $file ) {
+					// Only process files submitted through an actual GoDAM Record field.
+					if ( ! in_array( (int) $field_id, $godam_field_ids, true ) ) {
+						continue;
+					}
+
+					// Bail if there is not error set.
+					if ( ! isset( $file['error'] ) ) {
+						continue;
+					}
+
+					// Check for upload errors.
+					if ( UPLOAD_ERR_OK !== $file['error'] ) {
+						$entry['fields'][ $field_id ] = '';
+						continue;
+					}
+
+					if ( empty( $file['tmp_name'] ) || ! is_uploaded_file( $file['tmp_name'] ) ) {
+						continue;
+					}
+
+					// wp_handle_upload() validates the file's real type/extension against
+					// $overrides['mimes'] instead of trusting $file['type'] or the original filename.
+					$moved_file = wp_handle_upload(
+						$file,
+						array(
+							'test_form' => false,
+							'mimes'     => $this->get_allowed_video_audio_mimes(),
+						)
+					);
+
+					if ( ! empty( $moved_file['url'] ) && empty( $moved_file['error'] ) ) {
+						$entry['fields'][ $field_id ] = $moved_file['url'];
+					}
 				}
-
-				// Check for upload errors.
-				if ( UPLOAD_ERR_OK !== $file['error'] ) {
-					$entry['fields'][ $field_id ] = '';
-					continue;
-				}
-
-				// Check if the file is a video or audio.
-				$mime_type = ! empty( $file['type'] ) ? $file['type'] : '';
-				$is_video  = ! empty( $mime_type ) && str_starts_with( $mime_type, 'video/' );
-				$is_audio  = godam_is_audio_file( $file['name'] );
-				
-				if ( ! $is_video && ! $is_audio ) {
-					continue;
-				}
-
-				$filename = wp_unique_filename( $wpforms_dir, $file['name'] );
-
-				$moved_file = $wp_filesystem->move( $file['tmp_name'], "{$wpforms_dir}/{$filename}" );
-
-				if ( $moved_file ) {
-					$saved_file_url               = untrailingslashit( $upload_dir['baseurl'] ) . "/godam/wpforms/{$filename}";
-					$entry['fields'][ $field_id ] = $saved_file_url;
-				}
+			} finally {
+				remove_filter( 'upload_dir', array( $this, 'filter_upload_dir_to_godam_wpforms' ) );
 			}
 
 			return $entry;
+		}
+
+		/**
+		 * Route GoDAM WPForms uploads to the `godam/wpforms` sub-directory.
+		 *
+		 * Registered as an `upload_dir` filter callback in {@see save_video_file()}.
+		 *
+		 * @since 1.12.3
+		 *
+		 * @param array $dirs Upload directory data.
+		 *
+		 * @return array
+		 */
+		public function filter_upload_dir_to_godam_wpforms( $dirs ) {
+			$dirs['subdir'] = '/godam/wpforms';
+			$dirs['path']   = $dirs['basedir'] . $dirs['subdir'];
+			$dirs['url']    = $dirs['baseurl'] . $dirs['subdir'];
+
+			return $dirs;
+		}
+
+		/**
+		 * Get the field IDs configured as GoDAM Record fields on the given form.
+		 *
+		 * @since 1.12.3
+		 *
+		 * @param array $form_data Form data and settings.
+		 *
+		 * @return array<int> Field IDs.
+		 */
+		protected function get_godam_record_field_ids( $form_data ) {
+			if ( empty( $form_data['fields'] ) || ! is_array( $form_data['fields'] ) ) {
+				return array();
+			}
+
+			$field_ids = array();
+
+			foreach ( $form_data['fields'] as $form_field ) {
+				if ( isset( $form_field['type'], $form_field['id'] ) && 'godam_record' === $form_field['type'] ) {
+					$field_ids[] = (int) $form_field['id'];
+				}
+			}
+
+			return $field_ids;
+		}
+
+		/**
+		 * Get the allowlist of video/audio mime types accepted for WPForms GoDAM Record uploads.
+		 *
+		 * Derived from WordPress core's own mime map (the same one wp_handle_upload()
+		 * validates against by default) so it stays in sync with whatever the current
+		 * WordPress version recognizes, narrowed to only audio/video types since this
+		 * field has no legitimate reason to accept documents, archives, or images.
+		 *
+		 * @since 1.12.3
+		 *
+		 * @return array Map of extension(s) => mime type.
+		 */
+		protected function get_allowed_video_audio_mimes() {
+			$allowed_mimes = array();
+
+			foreach ( wp_get_mime_types() as $extensions => $mime_type ) {
+				if ( str_starts_with( $mime_type, 'video/' ) || str_starts_with( $mime_type, 'audio/' ) ) {
+					$allowed_mimes[ $extensions ] = $mime_type;
+				}
+			}
+
+			/**
+			 * Filters the allowlist of mime types accepted for WPForms GoDAM Record uploads.
+			 *
+			 * @since 1.12.3
+			 *
+			 * @param array $allowed_mimes Map of extension(s) => mime type.
+			 */
+			return apply_filters( 'godam_wpforms_record_allowed_mimes', $allowed_mimes );
 		}
 
 		/**
@@ -422,7 +520,7 @@ if ( class_exists( 'WPForms_Field' ) ) {
 		 *
 		 * @return mixed
 		 */
-		public function format_field_value_for_plaintext( $value, $field, $form_data ) {
+		public function format_field_value_for_plaintext( $value, $field, $form_data ) { // phpcs:ignore WordPressVIPMinimum.Hooks.AlwaysReturnInFilter.MissingReturnStatement -- every path returns a value (two direct returns, plus two more inside the try block below); this sniff doesn't trace returns through try/finally.
 			// Check if the field is not a video field.
 			if ( ! isset( $field['type'] ) || 'godam_record' !== $field['type'] ) {
 				return $value;
@@ -434,13 +532,24 @@ if ( class_exists( 'WPForms_Field' ) ) {
 
 			}
 
-			$attachment = get_post( $value );
+			/**
+			 * Fires before resolving this attachment's URL, so integrations
+			 * that centralize media on another site can switch context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+			try {
+				$attachment = get_post( $value );
 
-			if ( null === $attachment || 'attachment' !== $attachment->post_type ) {
-				return $value;
+				if ( null === $attachment || 'attachment' !== $attachment->post_type ) {
+					return $value;
+				}
+
+				return wp_get_attachment_url( $value ) . PHP_EOL . PHP_EOL;
+			} finally {
+				do_action( 'rtgodam_after_attachment_lookup' );
 			}
-
-			return wp_get_attachment_url( $value ) . PHP_EOL . PHP_EOL;
 		}
 
 		/**

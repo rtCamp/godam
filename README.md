@@ -1,16 +1,16 @@
 ![Banner V3](https://github.com/user-attachments/assets/73cfb2c2-0779-44c2-85e7-67e812dd82b6)
 
 # GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more
-Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20), [mi5t4n](https://profiles.wordpress.org/mi5t4n), [abhinavbelhekar03](https://profiles.wordpress.org/abhinavbelhekar03), [gautam23](https://profiles.wordpress.org/gautam23), [mukulsingh27](https://profiles.wordpress.org/mukulsingh27), [hbhalodia](https://profiles.wordpress.org/hbhalodia), [kishu7270](https://profiles.wordpress.org/kishu7270), [opurockey](https://profiles.wordpress.org/opurockey), [utsavladani](https://profiles.wordpress.org/utsavladani), [whiteshadow01](https://profiles.wordpress.org/whiteshadow01), [ahmarzaidi](https://profiles.wordpress.org/ahmarzaidi)
+Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20), [mi5t4n](https://profiles.wordpress.org/mi5t4n), [abhinavbelhekar03](https://profiles.wordpress.org/abhinavbelhekar03), [gautam23](https://profiles.wordpress.org/gautam23), [mukulsingh27](https://profiles.wordpress.org/mukulsingh27), [hbhalodia](https://profiles.wordpress.org/hbhalodia), [kishu7270](https://profiles.wordpress.org/kishu7270), [opurockey](https://profiles.wordpress.org/opurockey), [utsavladani](https://profiles.wordpress.org/utsavladani), [whiteshadow01](https://profiles.wordpress.org/whiteshadow01), [ahmarzaidi](https://profiles.wordpress.org/ahmarzaidi), [im3dabasia1](https://profiles.wordpress.org/im3dabasia1), [akrocks](https://profiles.wordpress.org/akrocks)
 Tags: transcoder, video, media library, folders, file manager
 
 Requires at least: 6.5
 
-Tested up to: 6.9
+Tested up to: 7.1
 
 Requires PHP: 7.4
 
-Stable tag: 1.7.1
+Stable tag: 2.3.2
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -50,6 +50,11 @@ Organize your media library for better workflow efficiency with:
 - Image, video, audio, and PDF are supported
 
 Check full description [here](https://godam.io/features/wordpress-advanced-media-management/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=advanced-media-management)
+
+#### 📌 Image & Audio Editors
+- Image editor – add clickable, interactive hotspot & product hotspot layers directly to your images
+- GoDAM Image block – embed interactive images in the block editor, Elementor, and WPBakery
+- Audio editor – manage and customize audio attachments from a dedicated editor, paired with the GoDAM Audio block
 
 #### 📌 GoDAM Central (Digital Asset Management for WordPress) [Paid]
 - Centralized media library with unified cloud storage & CDN delivery
@@ -103,7 +108,7 @@ WordPress native video hosting solution, perfect for creators, marketing teams, 
 #### 📌 Advanced Video Analytics [Paid]
 - Get first-party video insights to understand viewer behavior, make data-driven decisions, and refine your content strategy.
 - Play rate, watch time, engagement
-- Heatmaps to understand dropoffs
+- Viewer retention curve to see where viewers drop off
 - Geo-based traffic data
 - Performance comparison
 
@@ -150,7 +155,7 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 ### Pricing Plans
 [View Pricing Plans](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link)
 
-- **7-Day Free Trial** available for each subscription plan.
+- **60-day Free Trial** with all features included
 - **Flexible pricing** options to suit different needs.
 - **Upgrade or cancel anytime** based on usage.
 
@@ -203,16 +208,16 @@ Adaptive bitrate streaming ensures that viewers get the best possible video qual
 Yes, our customizable player allows you to tailor the controls, branding, and features to match your unique requirements and branding guidelines.
 
 ### 7. Is there a free trial available?
-Yes! You can start with a 7-day free trial to explore all features. If you decide not to continue with the subscribed plan, you can cancel anytime and remove your credit card.
+Yes! You can start with a 60-day free trial to explore all features. No credit card is required, and you can cancel anytime.
 
 ### 8. Can I track video engagement and analytics?
-Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and heatmaps to see which parts of your videos are most engaging. These insights help you optimize your content strategy.
+Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
 ### Screenshots
 
 1. General Settings
 2. Video Settings with valid API Key
-3. Video Editor
+3. Media Editor
 4. Video Layer Selection
 5. Hotspot Layer
 6. Ads Integration

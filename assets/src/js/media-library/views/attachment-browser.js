@@ -6,8 +6,9 @@
 import MediaLibraryTaxonomyFilter from './filters/media-library-taxonomy-filter';
 import MediaDateRangeFilter from './filters/media-date-range-filter';
 import MediaRetranscode from './filters/media-retranscode';
+import MediaMoveToFolder from './filters/media-move-to-folder';
 
-import { isAPIKeyValid, isUploadPage } from '../utility';
+import { isAPIKeyValid, isUploadPage, isFolderOrgDisabled } from '../utility';
 
 const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 
@@ -20,7 +21,9 @@ const AttachmentsBrowser = wp?.media?.view?.AttachmentsBrowser;
 export default AttachmentsBrowser?.extend( {
 
 	initialize() {
-		// Initialize the parent class.
+		// Initialize the parent class. AttachmentsBrowser's own initialize()
+		// does NOT call bindEvents() (that belongs to wp.media.view.Attachments,
+		// a different view), so the override below has to be invoked explicitly.
 		AttachmentsBrowser.prototype.initialize.apply( this, arguments );
 
 		this.updateCollectionObserve();
@@ -29,34 +32,74 @@ export default AttachmentsBrowser?.extend( {
 	},
 
 	bindEvents() {
-		this.collection.props.on( 'change', this.updateCollectionObserve, this );
-		this.collection.props.on( 'change', this.addUploadParam, this );
+		// Chain to the parent's bindEvents (if any) so other code extending
+		// the same wp.media.view.AttachmentsBrowser (e.g. wp-dam) isn't
+		// silently dropped by this override.
+		if ( AttachmentsBrowser.prototype.bindEvents ) {
+			AttachmentsBrowser.prototype.bindEvents.apply( this, arguments );
+		}
+
+		// listenTo (not .on): Backbone's View.remove() tears down listenTo
+		// subscriptions automatically, but not direct .on() handlers. Binding
+		// directly would retain this view whenever the media frame switches
+		// states and replaces the browser, since these are bound on the shared
+		// collection.props, which outlives the view.
+		this.listenTo( this.collection.props, 'change', this.updateCollectionObserve );
+		this.listenTo( this.collection.props, 'change', this.addUploadParam );
 	},
 
 	async createToolbar() {
 		// Make sure to load the original toolbar
 		AttachmentsBrowser.prototype.createToolbar.call( this );
 
-		if ( MediaLibraryTaxonomyFilter ) {
-			this.toolbar.set(
-				'MediaLibraryTaxonomyFilter',
-				new MediaLibraryTaxonomyFilter( {
-					controller: this.controller,
-					model: this.collection.props,
-					priority: -75,
-				} ).render(),
-			);
-		}
+		// Additive mode (folder organization off): skip GoDAM's folder/date toolbar filters so the
+		// toolbar stays native. The retranscode bulk action below is intentionally NOT skipped —
+		// transcoding is a core feature, so it stays available on the media grid page (upload.php)
+		// regardless of folder organization.
+		if ( ! isFolderOrgDisabled() ) {
+			if ( MediaLibraryTaxonomyFilter ) {
+				this.toolbar.set(
+					'MediaLibraryTaxonomyFilter',
+					new MediaLibraryTaxonomyFilter( {
+						controller: this.controller,
+						model: this.collection.props,
+						priority: -75,
+					} ).render(),
+				);
+			}
 
-		if ( MediaDateRangeFilter ) {
-			this.toolbar.set(
-				'MediaDateRangeFilter',
-				new MediaDateRangeFilter( {
-					controller: this.controller,
-					model: this.collection.props,
-					priority: -80,
-				} ).render(),
-			);
+			if ( MediaDateRangeFilter ) {
+				this.toolbar.set(
+					'MediaDateRangeFilter',
+					new MediaDateRangeFilter( {
+						controller: this.controller,
+						model: this.collection.props,
+						priority: -80,
+					} ).render(),
+				);
+			}
+
+			// Negative priority puts this in .media-toolbar-secondary with core's own
+			// bulk affordances. -72 specifically, so it lands after Transcode Media
+			// (-75) but ahead of the Bulk Select toggle's "Cancel" (-70), which
+			// belongs last. It must NOT tie with -70: PriorityList.set() inserts
+			// before the first view of strictly greater priority, so an equal
+			// priority appends *after* the tied view — and core's buttons are always
+			// registered first, since the parent createToolbar() runs above.
+			//
+			// Restricted to the media grid page (upload.php): in picker frames — e.g.
+			// the "Select a Watermark" media modal — the toolbar is for choosing an
+			// attachment, not filing it, so the button is left out there.
+			if ( MediaMoveToFolder && isUploadPage() ) {
+				this.toolbar.set(
+					'MediaMoveToFolder',
+					new MediaMoveToFolder( {
+						controller: this.controller,
+						model: this.collection.props,
+						priority: -72,
+					} ).render(),
+				);
+			}
 		}
 
 		if ( isAPIKeyValid() && isUploadPage() ) {

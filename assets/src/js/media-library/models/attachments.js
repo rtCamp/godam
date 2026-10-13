@@ -8,6 +8,39 @@
  */
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
+ * Derive a clear, user-facing message from a failed GoDAM tab request.
+ *
+ * The GoDAM tab proxies to Central with the stored API key. When that key is missing,
+ * invalid, or was revoked, the request fails with a 401/403 (or the REST proxy returns
+ * `success:false` carrying the upstream status). Without this the tab either span forever
+ * or showed a misleading "No items found", so we translate the failure into an actionable
+ * message the UI can display.
+ *
+ * @param {Object} source The failed jqXHR, or the `{ success:false, message }` response body.
+ * @return {string} A human-readable error message.
+ */
+function deriveGodamTabError( source ) {
+	const status = source?.status ?? null;
+	const message = source?.responseJSON?.message || source?.message || '';
+
+	// Authentication/authorization failures → the API key is the problem. Trust the HTTP
+	// status when present; on the `success:false` path there is no status, so match only the
+	// REST proxy's own phrasing ("GoDAM API returned HTTP status: 401") rather than any bare
+	// 401/403 token, which could otherwise appear in an unrelated id/count and misclassify a
+	// valid key.
+	if ( 401 === status || 403 === status || /HTTP status:\s*40[13]\b/i.test( message ) ) {
+		return __( 'Invalid or expired GoDAM API key. Please verify your API key on the GoDAM settings page.', 'godam' );
+	}
+
+	return message || __( 'Could not load your GoDAM media. Please try again.', 'godam' );
+}
+
+/**
  * Extended Attachments Collection to override the default `_requery` behavior.
  * It mirrors the query with a custom query model (`wp.media.godamQuery`).
  */
@@ -52,8 +85,20 @@ const Attachments = wp?.media?.model?.Attachments.extend( {
 			return deferred.resolveWith( this ).promise();
 		}
 
-		mirroring.more( options ).done( function() {
+		// Resolve on BOTH success and failure. Previously only `.done()` was handled, so a
+		// failed GoDAM request (e.g. an invalid/expired API key returning 401/403) left this
+		// deferred pending forever — which is exactly what kept the media modal's GoDAM tab
+		// stuck on an infinite loading spinner. `.always()` guarantees the browser view is
+		// always told the fetch finished, so the spinner clears either way.
+		mirroring.more( options ).always( function() {
+			// Surface any error the query captured so the tab can show a clear message
+			// rather than an endless spinner or a misleading "No items found". Read it from
+			// the query and pass it straight through — no need to stash it on the collection.
+			const godamError = mirroring._godamError || null;
+
 			deferred.resolveWith( attachments );
+
+			attachments.trigger( 'godam:fetched', attachments, godamError );
 			// Used for the search results.
 			attachments.trigger( 'attachments:received', attachments );
 		} );
@@ -113,6 +158,9 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 			}
 
 			if ( ! this.hasMore() ) {
+				// No fetch will run on this short-circuit, so drop any error from a previous
+				// page load — otherwise the caller's `.always()` would re-emit a stale message.
+				this._godamError = null;
 				return jQuery.Deferred().resolveWith( this ).promise();
 			}
 
@@ -166,6 +214,9 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 							hasMore = response.has_more;
 						}
 
+						// Successful response — clear any error from a previous failed fetch.
+						this._godamError = null;
+
 						// Update pagination state - stop loading if no more results or empty response.
 						this._hasMore = hasMore && items.length > 0;
 
@@ -194,12 +245,17 @@ const GODAMAttachmentCollection = wp?.media?.model?.Query?.extend(
 						return items;
 					}
 
+					// Reached on `success:false` (e.g. the REST proxy relaying an upstream
+					// 401/403 for an invalid key, or an unexpected response format).
 					this._hasMore = false;
 					this.total = 0;
+					this._godamError = deriveGodamTabError( response );
 					options.error?.( response );
 				},
 				error: ( xhr ) => {
+					// Reached on an HTTP-level failure (401/403, network error, etc.).
 					this._hasMore = false;
+					this._godamError = deriveGodamTabError( xhr );
 					options.error?.( xhr );
 				},
 			} );

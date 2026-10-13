@@ -251,21 +251,18 @@ class Form_Submit {
 		/**
 		 * Error handling.
 		 */
+		// A failed send must not end the visitor's submission: the entry is already saved.
 		if ( is_wp_error( $response_from_transcoding ) ) {
-			return wp_send_json_error(
-				$response_from_transcoding->get_error_message(),
-				$response_from_transcoding->get_error_code(),
-			);
+			rtgodam_handle_form_transcoding_failure( 'sureforms', $entry_id, $response_from_transcoding );
+			return;
 		}
 
 		/**
 		 * If empty data or name send error.
 		 */
 		if ( empty( $response_from_transcoding->data ) || empty( $response_from_transcoding->data->name ) ) {
-			return wp_send_json_error(
-				__( 'Transcoding data not set', 'godam' ),
-				404
-			);
+			rtgodam_handle_form_transcoding_failure( 'sureforms', $entry_id, $response_from_transcoding );
+			return;
 		}
 
 		/**
@@ -347,7 +344,7 @@ class Form_Submit {
 		 * Fetch the transcoding URL from meta.
 		 */
 		$transcoded_url_meta_key = 'rtgodam_transcoded_url_sureforms_' . $form_id . '_' . $entry_id;
-		$transcoded_url          = get_post_meta( $form_id, $transcoded_url_meta_key, true );
+		$transcoded_url          = get_post_meta( $form_id, $transcoded_url_meta_key, true ); // godam-coverage-ignore -- render_custom_field_markup(): $form_id is a SureForms form ID used as a postmeta key, not an attachment ID.
 		$transcoded_url_output   = '';
 
 		if ( ! empty( $transcoded_url ) ) {

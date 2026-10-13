@@ -1,12 +1,14 @@
 
 .godam-video-placeholder {
+	position: relative;
+	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 
 	&.hidden {
 		display: none !important;
 	}
 
 	.godam-player-poster-image {
-		position:absolute;
+		position: absolute;
 		aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 		width: 100%;
 		height: auto;
@@ -14,12 +16,6 @@
 		object-fit: contain;
 		background-color: #000;
 	}
-}
-
-.godam-animate-video-loading {
-	position: relative;
-	animation: godam_pulse_animation 2s cubic-bezier(.4, 0, .6, 1) infinite;
-	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
 
 	.animate-play-btn {
 		width: 50px;
@@ -53,10 +49,68 @@
 	}
 }
 
+.godam-animate-video-loading {
+	animation: godam_pulse_animation 2s cubic-bezier(.4, 0, .6, 1) infinite;
+}
+
 .easydam-video-container {
 
 	&.loading {
 		display: none;
+	}
+}
+
+// Blur-up LQIP loading: placeholder background fades to full-quality poster.
+// Matches the Web Dev Simplified technique: tiny blurred bg-image → pulse shimmer → full img fades in.
+.godam-blurred-img {
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+
+	// Pulse shimmer overlay shown while the full-quality poster is downloading.
+	&::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		animation: godam_blur_pulse 2.5s infinite;
+		background-color: #fff;
+		z-index: 1;
+		pointer-events: none;
+	}
+
+	.godam-player-poster-image {
+		opacity: 0;
+		transition: opacity 250ms ease-in-out;
+		z-index: 2; // render above ::before shimmer; base absolute positioning preserved
+	}
+
+	&.loaded {
+
+		.godam-player-poster-image {
+			opacity: 1;
+		}
+
+		// Stop shimmer once the full image has arrived.
+		&::before {
+			animation: none;
+			content: none;
+		}
+	}
+}
+
+@keyframes godam_blur_pulse {
+
+	0% {
+		opacity: 0;
+	}
+
+	50% {
+		opacity: 0.15;
+	}
+
+	100% {
+		opacity: 0;
 	}
 }
 

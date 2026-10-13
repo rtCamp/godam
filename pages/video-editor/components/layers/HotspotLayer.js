@@ -3,26 +3,22 @@
  */
 import { Rnd } from 'react-rnd';
 import { useDispatch, useSelector } from 'react-redux';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * WordPress dependencies
  */
 import {
 	Button,
-	TextControl,
-	ToggleControl,
-	DropdownMenu,
-	MenuItem,
-	ColorPalette,
 	Notice,
+	Icon,
 } from '@wordpress/components';
 import {
 	trash,
 	plus,
 	chevronDown,
-	chevronUp,
-	moreVertical,
-	check,
+	chevronRight,
+	dragHandle,
 } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
@@ -32,18 +28,50 @@ import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import { isValidURL } from '../../utils';
-import { v4 as uuidv4 } from 'uuid';
+import { formatClock, parseClock } from '../../utils/time';
 import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
+import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from './LayersHeader';
 import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
+import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR, DEFAULT_HOTSPOT_ICON_COLOR, DEFAULT_HOTSPOT_CUSTOM_ICON_BG } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
+import { VeSection, VeColorList, VeSegmented, VeTextInput, VeToggle } from '../controls';
+
+/**
+ * Small purple pulse-dot glyph for the Style segmented control, matching the
+ * WooCommerce hotspot layer's "Pulse" option.
+ *
+ * @return {JSX.Element} The pulse-dot icon.
+ */
+const PulseDotIcon = () => (
+	<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+		<circle cx="9" cy="9" r="4" fill="#7c3aed" />
+		<circle cx="9" cy="9" r="7.5" stroke="#7c3aed" strokeWidth="1.5" strokeOpacity="0.35" />
+	</svg>
+);
+
+const CartIconOption = () => (
+	<FontAwesomeIcon icon={ faShoppingCart } style={ { fontSize: '1rem' } } />
+);
+
+// Icon-on-top segmented cards, matching the WooCommerce hotspot layer's Style
+// field. Woo uses a cart for its "Icon" option (product-specific); a generic
+// hotspot uses a map-marker glyph instead.
+const STYLE_OPTIONS = [
+	{ value: 'pulse', label: __( 'Pulse', 'godam' ), icon: <PulseDotIcon /> },
+	{ value: 'icon', label: __( 'Icon', 'godam' ), icon: <CartIconOption /> },
+];
 
 const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
+	// Images have no timeline, so the Start Time / Layer Duration controls are
+	// hidden and layers are always visible (displayTime defaults to 0).
+	const mediaType = useSelector( ( state ) => state.videoReducer.mediaType );
 
 	const hotspots = layer?.hotspots || [];
 	// Track expanded hotspot
@@ -67,6 +95,48 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	const updateField = useCallback( ( field, value ) => {
 		dispatch( updateLayerField( { id: layer.id, field, value } ) );
 	}, [ dispatch, layer?.id ] );
+
+	const styleType = layer?.styleType || 'pulse';
+
+	/**
+	 * Migrate legacy layers (saved with per-hotspot style and no `styleType`)
+	 * to the shared style model on open: seed the shared Style controls from the
+	 * first hotspot so the new UI is populated. Mirrors the WooCommerce hotspot
+	 * layer's migration exactly — only `styleType` + `backgroundColor` are
+	 * seeded; `pulseColor` / `iconColor` are left unset so their pickers show the
+	 * default swatch, while resolveHotspotStyle still falls back to each
+	 * hotspot's own `backgroundColor` for the rendered colour. The frontend
+	 * renders legacy layers correctly until they are re-saved.
+	 */
+	useEffect( () => {
+		if ( ! layer || layer.styleType ) {
+			return;
+		}
+		const first = layer.hotspots?.[ 0 ] || {};
+		const hasIcon = !! ( first.icon || first.customIconUrl );
+
+		dispatch( updateLayerField( { id: layer.id, field: 'styleType', value: hasIcon ? 'icon' : 'pulse' } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'backgroundColor', value: first.backgroundColor || DEFAULT_HOTSPOT_COLOR } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'icon', value: first.icon || '' } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'customIconUrl', value: first.customIconUrl || null } ) );
+		dispatch( updateLayerField( { id: layer.id, field: 'customIconId', value: first.customIconId || null } ) );
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ layer?.id ] );
+
+	/**
+	 * Handle the shared Start Time change (the layer's displayTime), clamped to
+	 * the video length.
+	 *
+	 * @param {string} value - The `m:ss` (or plain seconds) input value.
+	 */
+	const handleStartTimeChange = ( value ) => {
+		let seconds = parseClock( value );
+		if ( duration ) {
+			seconds = Math.min( seconds, Math.floor( duration ) );
+		}
+		seconds = Math.max( 0, seconds );
+		updateField( 'displayTime', seconds );
+	};
 
 	/**
 	 * Handle duration input change - allows typing but filters non-numeric input.
@@ -143,7 +213,8 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			: HOTSPOT_CONSTANTS.DEFAULT_DIAMETER_PERCENT;
 	}, [ contentRect?.width, pxToPercent ] );
 
-	// Add a new hotspot
+	// Add a new hotspot. Style now lives at the layer level (shared), so a
+	// hotspot only carries its position, size, tooltip and link.
 	const handleAddHotspot = useCallback( () => {
 		// Calculate percentage dynamically to maintain a consistent physical size (approx 48px)
 		const diameterPercent = getDefaultDiameter( 'percent' );
@@ -156,8 +227,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			size: { diameter: diameterPercent },
 			oSize: { diameter: diameterPercent },
 			oPosition: { x: 50, y: 50 },
-			backgroundColor: '#0c80dfa6',
-			icon: '',
 			unit: 'percent',
 		};
 		updateField( 'hotspots', [ ...hotspots, newHotspot ] );
@@ -176,6 +245,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			'hotspots',
 			hotspots.filter( ( _, i ) => i !== index ),
 		);
+		setExpandedHotspotIndex( null );
 	};
 
 	// Expand/hide a hotspot’s panel
@@ -183,17 +253,29 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 		setExpandedHotspotIndex( expandedHotspotIndex === index ? null : index );
 	};
 
+	// Update a single hotspot's field by index.
+	const updateHotspotField = ( index, changes ) => {
+		updateField(
+			'hotspots',
+			hotspots.map( ( h2, j ) => ( j === index ? { ...h2, ...changes } : h2 ) ),
+		);
+	};
+
 	const computeContentRect = () => {
-		const videoEl = document.querySelector( 'video' );
+		// Resolve the media element generically: video for the player stage,
+		// img for the image editor stage. `videoWidth`/`naturalWidth` give the
+		// intrinsic size in each case so the aspect math below is shared.
+		const mediaEl = document.querySelector( '#easydam-video-player video' ) ||
+			document.querySelector( '#easydam-video-player img' );
 		const containerEl = document.getElementById( 'easydam-video-player' );
 
-		if ( ! videoEl || ! containerEl ) {
+		if ( ! mediaEl || ! containerEl ) {
 			setContentRect( null );
 			return;
 		}
 
-		const nativeW = videoEl.videoWidth || 0;
-		const nativeH = videoEl.videoHeight || 0;
+		const nativeW = mediaEl.videoWidth || mediaEl.naturalWidth || 0;
+		const nativeH = mediaEl.videoHeight || mediaEl.naturalHeight || 0;
 
 		const elW = containerEl.offsetWidth;
 		const elH = containerEl.offsetHeight;
@@ -239,32 +321,77 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 	};
 
 	useEffect( () => {
-		computeContentRect();
+		let resizeObserver = null;
+		let rafId = null;
+		let cancelled = false;
+		let stageWaitFrames = 0;
+
+		// Cap the wait for the stage container so a layer selected while the
+		// preview never mounts can't spin requestAnimationFrame for the
+		// component's whole lifetime. ~300 frames (~5s at 60fps) is far beyond
+		// the frame-or-two the normal path needs; past that the stage isn't
+		// coming and there is nothing to position against.
+		const MAX_STAGE_WAIT_FRAMES = 300;
+
+		// The stage preview may not be in the DOM yet when this layer mounts (a
+		// layer can be selected before the attachment finishes loading). A one-shot
+		// computeContentRect() would then find no media element, set contentRect to
+		// null and never recover, collapsing hotspots to 0x0 at (0,0). So retry
+		// until the stage container exists, then observe it: ResizeObserver fires on
+		// observe and whenever the media box gets/changes a laid-out size (0 -> WxH
+		// on image load), reliably (re)computing contentRect regardless of mount
+		// order.
+		const start = () => {
+			if ( cancelled ) {
+				return;
+			}
+
+			const containerEl = document.getElementById( 'easydam-video-player' );
+			if ( ! containerEl ) {
+				if ( stageWaitFrames++ < MAX_STAGE_WAIT_FRAMES ) {
+					rafId = requestAnimationFrame( start );
+				}
+				return;
+			}
+
+			computeContentRect();
+
+			resizeObserver = new ResizeObserver( computeContentRect );
+			resizeObserver.observe( containerEl );
+
+			// `loadedmetadata` for a video, `load` for an image; cached images may
+			// already be complete (no future load event), so compute now too.
+			const mediaEl = containerEl.querySelector( 'video, img' );
+			if ( mediaEl ) {
+				videoRef.current = mediaEl;
+				const loadEvent = mediaEl.tagName === 'IMG' ? 'load' : 'loadedmetadata';
+				mediaEl.addEventListener( loadEvent, computeContentRect );
+				if ( 'IMG' === mediaEl.tagName && mediaEl.complete ) {
+					computeContentRect();
+				}
+			}
+		};
+
+		start();
 		window.addEventListener( 'resize', computeContentRect );
 		document.addEventListener( 'fullscreenchange', computeContentRect );
 
-		// Also listen for video metadata loaded
-		const videoEl = document.querySelector( 'video' );
-		videoRef.current = videoEl;
-
-		if ( videoEl ) {
-			videoEl.addEventListener( 'loadedmetadata', computeContentRect );
-		}
-
 		return () => {
+			cancelled = true;
+			if ( rafId ) {
+				cancelAnimationFrame( rafId );
+			}
+			if ( resizeObserver ) {
+				resizeObserver.disconnect();
+			}
 			window.removeEventListener( 'resize', computeContentRect );
 			document.removeEventListener( 'fullscreenchange', computeContentRect );
 			if ( videoRef.current ) {
-				videoRef.current.removeEventListener( 'loadedmetadata', computeContentRect );
+				const loadEvent = videoRef.current.tagName === 'IMG' ? 'load' : 'loadedmetadata';
+				videoRef.current.removeEventListener( loadEvent, computeContentRect );
 			}
 		};
 	}, [] );
-
-	// If we want to disable the premium layers the we can use this code
-	// const isValidAPIKey = window?.videoData?.validApiKey;
-
-	// For now we are enabling all the features
-	const isValidAPIKey = true;
 
 	// Validate existing hotspot links on component load
 	useEffect( () => {
@@ -296,17 +423,6 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			{
-				! isValidAPIKey &&
-				<Notice
-					className="mb-4"
-					status="warning"
-					isDismissible={ false }
-				>
-					{ __( 'This features is available in premium version', 'godam' ) }
-				</Notice>
-			}
-
-			{
 				durationNotice &&
 				<Notice
 					className="mb-4"
@@ -317,207 +433,171 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 				</Notice>
 			}
 
-			{ /* Duration */ }
-			<div className="mb-6">
-				<TextControl
-					label={ __( 'Layer Duration (seconds)', 'godam' ) }
-					className="godam-input"
-					type="number"
-					min="1"
-					max="36000"
-					value={ durationInput }
-					onChange={ ( value ) => handleDurationInputChange( value ) }
-					onBlur={ validateDuration }
-					help={ __( 'Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)', 'godam' ) }
-					disabled={ ! isValidAPIKey }
-				/>
-			</div>
-
-			{ /* Pause on hover */ }
-			<div className="mb-4">
-				<ToggleControl
-					className="godam-toggle"
-					label={ __( 'Pause video on hover', 'godam' ) }
-					checked={ layer?.pauseOnHover || false }
-					onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
-					disabled={ ! isValidAPIKey }
-				/>
-				<p className="text-xs text-gray-500 mt-1">
-					{ __(
-						'Player will pause the video while the layer is displayed and users hover over the hotspots.',
-						'godam',
+			<div className="godam-ve-config">
+				{ /* Add Hotspots: one card per point with tooltip + link. */ }
+				<VeSection title={ __( 'Add Hotspots', 'godam' ) }>
+					{ hotspots.length > 0 && (
+						<p className="godam-ve-hint">
+							<Icon className="godam-ve-hint__icon" icon={ dragHandle } size={ 18 } />
+							{ __( 'Drag the hotspot in video to reposition it.', 'godam' ) }
+						</p>
 					) }
-				</p>
-			</div>
 
-			{ /* Hotspots list */ }
-			<div className="flex items-center flex-col gap-4 pb-4">
-				{ hotspots.map( ( hotspot, index ) => (
-					<div key={ hotspot.id } className="p-2 w-full border rounded">
-						<div className="flex justify-between items-center">
-							<Button
-								icon={ expandedHotspotIndex === index ? chevronUp : chevronDown }
-								className="flex-1 text-left"
-								onClick={ () => toggleHotspotExpansion( index ) }
-							>
-								{
-									/* translators: %d is the hotspot index */
-									sprintf( __( 'Hotspot %d', 'godam' ), index + 1 )
-								}
-							</Button>
-							<DropdownMenu
-								icon={ moreVertical }
-								label={ `Hotspot ${ index + 1 } options` }
-								/* translators: %d is the hotspot index */
-								toggleProps={ { 'aria-label': sprintf( __( 'Options for Hotspot %d', 'godam' ), index + 1 ) } }
+					<div className="godam-ve-hotspot-list">
+						{ hotspots.map( ( hotspot, index ) => (
+							<div key={ hotspot.id } className="godam-ve-hotspot-card">
+								<div className="godam-ve-hotspot-card__head">
+									<Button
+										data-test-id={ `godam-hotspot-control-select-${ index }` }
+										icon={ expandedHotspotIndex === index ? chevronDown : chevronRight }
+										className="godam-ve-hotspot-card__toggle"
+										onClick={ () => toggleHotspotExpansion( index ) }
+									>
+										{
+											/* translators: %d is the hotspot index */
+											sprintf( __( 'Hotspot %d', 'godam' ), index + 1 )
+										}
+									</Button>
+									<Button
+										data-test-id={ `godam-hotspot-button-delete-${ index }` }
+										icon={ trash }
+										label={
+											/* translators: %d is the hotspot index */
+											sprintf( __( 'Delete Hotspot %d', 'godam' ), index + 1 )
+										}
+										onClick={ () => handleDeleteHotspot( index ) }
+									/>
+								</div>
 
-							>
-								{ () => (
-									<>
-										<MenuItem
-											icon={ hotspot.showStyle ? check : '' }
-											onClick={ () => {
-												updateField(
-													'hotspots',
-													hotspots.map( ( h2, j ) =>
-														j === index
-															? {
-																...h2,
-																showStyle: ! h2.showStyle,
-																showIcon: ! h2.showStyle ? false : h2.showIcon,
-																icon: ! h2.showStyle ? '' : h2.icon,
-															}
-															: h2,
-													),
-												);
-											} }
-										>
-											{ __( 'Show Style', 'godam' ) }
-										</MenuItem>
-										<MenuItem
-											icon={ hotspot.showIcon ? check : '' }
-											onClick={ () => {
-												updateField(
-													'hotspots',
-													hotspots.map( ( h2, j ) =>
-														j === index
-															? {
-																...h2,
-																showIcon: ! h2.showIcon, // Enable icon
-																showStyle: ! h2.showIcon ? false : h2.showStyle, // Disable style
-															}
-															: h2,
-													),
-												);
-											} }
-										>
-											{ __( 'Show Icon', 'godam' ) }
-										</MenuItem>
-										<MenuItem
-											icon={ trash }
-											onClick={ () => handleDeleteHotspot( index ) }
-											className="text-red-500"
-										>
-											{ __( 'Delete Hotspot', 'godam' ) }
-										</MenuItem>
-									</>
-								) }
-							</DropdownMenu>
-						</div>
-
-						{ expandedHotspotIndex === index && (
-							<div className="mt-3">
-								<TextControl
-									className="godam-input"
-									label={ __( 'Tooltip Text', 'godam' ) }
-									placeholder={ __( 'Click Me!', 'godam' ) }
-									value={ hotspot.tooltipText }
-									onChange={ ( val ) =>
-										updateField(
-											'hotspots',
-											hotspots.map( ( h2, j ) =>
-												j === index ? { ...h2, tooltipText: val } : h2,
-											),
-										)
-									}
-									disabled={ ! isValidAPIKey }
-								/>
-								<TextControl
-									label={ __( 'Link', 'godam' ) }
-									placeholder="https://www.example.com"
-									value={ hotspot.link }
-									onChange={ ( val ) => {
-										const updated = hotspots.map( ( h2, j ) =>
-											j === index
-												? { ...h2, link: val, linkInvalid: val && ! isValidURL( val ) }
-												: h2,
-										);
-										updateField( 'hotspots', updated );
-									} }
-									className="godam-input"
-									disabled={ ! isValidAPIKey }
-								/>
-								{ hotspot.linkInvalid && (
-									<div className="text-yellow-600 text-sm mt-1 flex items-center gap-1">
-										{ __( 'Please enter a valid URL (e.g., https://example.com)', 'godam' ) }
-									</div>
-								) }
-								{ hotspot.showIcon && (
-									<div className="flex flex-col gap-2 mt-2">
-										<FontAwesomeIconPicker
-											hotspot={ hotspot }
-											index={ index }
-											updateField={ updateField }
-											hotspots={ hotspots }
-											disabled={ ! isValidAPIKey }
+								{ expandedHotspotIndex === index && (
+									<div className="godam-ve-hotspot-card__body">
+										<VeTextInput
+											data-test-id={ `godam-hotspot-control-tooltip-text-${ index }` }
+											label={ __( 'Tooltip Text', 'godam' ) }
+											placeholder={ __( 'Click Me!', 'godam' ) }
+											value={ hotspot.tooltipText }
+											onChange={ ( val ) => updateHotspotField( index, { tooltipText: val } ) }
 										/>
-									</div>
-								) }
-								{ hotspot.showStyle && (
-									<div className="flex flex-col gap-2 mt-2">
-										<label
-											htmlFor={ `hotspot-color-${ index }` }
-											className="text-xs text-gray-700"
-										>
-											{ __( 'BACKGROUND COLOR', 'godam' ) }
-										</label>
-										<ColorPalette
-											id={ `hotspot-color-${ index }` }
-											value={ hotspot.backgroundColor || '#0c80dfa6' }
-											className={ ! isValidAPIKey ? 'pointer-events-none opacity-50' : '' }
-											onChange={ ( newColor ) => {
-												updateField(
-													'hotspots',
-													hotspots.map( ( h2, j ) =>
-														j === index
-															? {
-																...h2,
-																backgroundColor: newColor,
-															}
-															: h2,
-													),
-												);
-											} }
-											enableAlpha
+										<VeTextInput
+											data-test-id={ `godam-hotspot-control-link-${ index }` }
+											label={ __( 'Link', 'godam' ) }
+											placeholder="https://www.example.com"
+											value={ hotspot.link }
+											error={ hotspot.linkInvalid ? __( 'Please enter a valid URL (e.g., https://example.com)', 'godam' ) : '' }
+											onChange={ ( val ) => updateHotspotField( index, { link: val, linkInvalid: !! val && ! isValidURL( val ) } ) }
 										/>
 									</div>
 								) }
 							</div>
-						) }
-					</div>
-				) ) }
+						) ) }
 
-				<Button
-					variant="primary"
-					id="add-hotspot-btn"
-					icon={ plus }
-					iconPosition="left"
-					className="godam-button"
-					onClick={ handleAddHotspot }
-					disabled={ ! isValidAPIKey }
-				>
-					{ __( 'Add Hotspot', 'godam' ) }
-				</Button>
+						<Button
+							data-test-id="godam-hotspot-button-add"
+							id="add-hotspot-btn"
+							className="godam-ve-add-hotspot"
+							icon={ plus }
+							iconPosition="left"
+							onClick={ handleAddHotspot }
+						>
+							{ __( 'Add Hotspot', 'godam' ) }
+						</Button>
+					</div>
+				</VeSection>
+
+				{ /* Duration: shared Start Time + Layer Duration. Timeline-only; hidden for images. */ }
+				{ mediaType !== 'image' && (
+					<VeSection title={ __( 'Duration', 'godam' ) }>
+						<VeTextInput
+							label={ __( 'Start Time', 'godam' ) }
+							value={ formatClock( layer?.displayTime ) }
+							onChange={ handleStartTimeChange }
+							placeholder="0:00"
+						/>
+						<VeTextInput
+							data-test-id="godam-hotspot-control-duration"
+							label={ __( 'Layer Duration (seconds)', 'godam' ) }
+							type="number"
+							min="1"
+							max="36000"
+							value={ durationInput }
+							onChange={ handleDurationInputChange }
+							onBlur={ validateDuration }
+							help={ __( 'Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)', 'godam' ) }
+						/>
+					</VeSection>
+				) }
+
+				{ /* Style: shared across all hotspot points. */ }
+				<VeSection title={ __( 'Style', 'godam' ) }>
+					<VeSegmented
+						options={ STYLE_OPTIONS }
+						value={ styleType }
+						onChange={ ( value ) => updateField( 'styleType', value ) }
+					/>
+
+					{ styleType === 'icon' && (
+						<FontAwesomeIconPicker
+							icon={ layer?.icon }
+							customIconUrl={ layer?.customIconUrl }
+							customIconId={ layer?.customIconId }
+							onChange={ ( { icon, customIconUrl, customIconId } ) => {
+								updateField( 'icon', icon ?? '' );
+								updateField( 'customIconUrl', customIconUrl ?? null );
+								updateField( 'customIconId', customIconId ?? null );
+							} }
+						/>
+					) }
+
+					{ styleType === 'pulse' && (
+						<VeColorList>
+							<ColorPickerButton
+								value={ layer?.pulseColor || DEFAULT_HOTSPOT_COLOR }
+								label={ __( 'Pulse colour', 'godam' ) }
+								enableAlpha={ true }
+								onChange={ ( value ) => updateField( 'pulseColor', value ) }
+							/>
+						</VeColorList>
+					) }
+
+					{ /* Icon-mode colours mirror the WooCommerce hotspot layer: a
+					     glyph "Icon" colour (library icons only — a custom uploaded
+					     image can't be recoloured) plus a circle "Background". The
+					     Background picker is always shown in icon mode — even before
+					     an icon is chosen — so the circle colour is never stuck at an
+					     unchangeable (and, on light content, invisible) default. */ }
+					{ styleType === 'icon' && (
+						<VeColorList>
+							{ layer?.icon && (
+								<ColorPickerButton
+									value={ layer?.iconColor || DEFAULT_HOTSPOT_ICON_COLOR }
+									label={ __( 'Icon', 'godam' ) }
+									enableAlpha={ true }
+									onChange={ ( value ) => updateField( 'iconColor', value ) }
+								/>
+							) }
+							<ColorPickerButton
+								value={ layer?.backgroundColor || ( layer?.customIconUrl ? DEFAULT_HOTSPOT_CUSTOM_ICON_BG : DEFAULT_HOTSPOT_COLOR ) }
+								label={ __( 'Background', 'godam' ) }
+								enableAlpha={ true }
+								onChange={ ( value ) => updateField( 'backgroundColor', value ) }
+							/>
+						</VeColorList>
+					) }
+				</VeSection>
+
+				{ /* Behaviour: pause-on-hover is video-only, so hidden for images. */ }
+				{ mediaType !== 'image' && (
+					<VeSection title={ __( 'Behaviour', 'godam' ) }>
+						<div data-test-id="godam-hotspot-control-pause-on-hover">
+							<VeToggle
+								label={ __( 'Pause video when hotspot is hovered', 'godam' ) }
+								checked={ layer?.pauseOnHover || false }
+								onChange={ ( isChecked ) => updateField( 'pauseOnHover', isChecked ) }
+								help={ __( 'Player will pause the video while the layer is displayed and users hover over the hotspots.', 'godam' ) }
+							/>
+						</div>
+					</VeSection>
+				) }
 			</div>
 
 			<LayerControls>
@@ -538,6 +618,12 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 						const posX = hotspot.oPosition?.x ?? hotspot.position?.x ?? 50;
 						const posY = hotspot.oPosition?.y ?? hotspot.position?.y ?? 50;
 						const diameter = hotspot.oSize?.diameter ?? hotspot.size?.diameter ?? getDefaultDiameter( hotspot.unit );
+
+						// Resolve the effective style (shared for new layers,
+						// per-hotspot for legacy layers) so the preview matches
+						// the published player.
+						const effective = resolveHotspotStyle( layer, hotspot );
+						const hasIcon = !! ( effective.icon || effective.customIconUrl );
 
 						let pixelX, pixelY, pixelDiameter;
 
@@ -662,24 +748,24 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 								onClick={ () => setExpandedHotspotIndex( index ) }
 								className="hotspot circle"
 								style={ {
-									backgroundColor: ( hotspot.icon || hotspot.customIconUrl ) ? 'white' : hotspot.backgroundColor || '#0c80dfa6',
+									backgroundColor: effective.color || DEFAULT_HOTSPOT_COLOR,
 								} }
 							>
-								<div className={ `hotspot-content flex items-center justify-center ${ ! ( hotspot.icon || hotspot.customIconUrl ) ? 'no-icon' : '' }` }>
+								<div className={ `hotspot-content flex items-center justify-center ${ ! hasIcon ? 'no-icon' : '' }` }>
 									{ /* eslint-disable-next-line no-nested-ternary */ }
-									{ hotspot.icon ? (
+									{ effective.icon ? (
 										<FontAwesomeIcon
-											icon={ [ 'fas', hotspot.icon ] }
+											icon={ [ 'fas', effective.icon ] }
 											className="pointer-events-none"
 											style={ {
 												width: '50%',
 												height: '50%',
-												color: '#000',
+												color: effective.iconColor,
 											} }
 										/>
-									) : hotspot.customIconUrl ? (
+									) : effective.customIconUrl ? (
 										<img
-											src={ hotspot.customIconUrl }
+											src={ effective.customIconUrl }
 											alt={ __( 'Custom Icon', 'godam' ) }
 											className="pointer-events-none"
 											style={ {

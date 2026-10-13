@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { cog, video, alignJustify, close } from '@wordpress/icons';
+import { cog, video, alignJustify, close, blockDefault, chevronRight } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -18,7 +18,10 @@ import { __ } from '@wordpress/i18n';
 import Skeleton from './components/Skeleton.jsx';
 import GodamHeader from './components/GoDAMHeader.jsx';
 import GoDAMFooter from './components/GoDAMFooter.jsx';
+import PreflightNotices from './components/PreflightNotices.jsx';
+import APIKey from './components/tabs/APIKey/APIKey.jsx';
 import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.jsx';
+import IntegrationsSettings from './components/tabs/IntegrationsSettings/IntegrationsSettings.jsx';
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
 import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
 import AdsSettings from './components/tabs/AdsSettings/AdsSettings.jsx';
@@ -28,6 +31,15 @@ import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
 import { setMediaSettings } from './redux/slice/media-settings.js';
 
 const TABS = [
+	{
+		id: 'api-key',
+		label: __( 'API Key', 'godam' ),
+		component: APIKey,
+		icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-key" viewBox="0 0 16 16">
+			<path d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8m4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9H7.5l.646-.646a.5.5 0 0 1 .708 0L9.5 9l.646-.646a.5.5 0 0 1 .708 0L11.5 9l.646-.646a.5.5 0 0 1 .708 0l.646.646.793-.793-1-1H6.873a.5.5 0 0 1-.471-.332A3 3 0 0 0 4 5" />
+			<path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+		</svg>,
+	},
 	{
 		id: 'general-settings',
 		label: __( 'General Settings', 'godam' ),
@@ -57,6 +69,12 @@ const TABS = [
 			<path d="m3.7 11 .47-1.542h2.004L6.644 11h1.261L5.901 5.001H4.513L2.5 11zm1.503-4.852.734 2.426H4.416l.734-2.426zm4.759.128c-1.059 0-1.753.765-1.753 2.043v.695c0 1.279.685 2.043 1.74 2.043.677 0 1.222-.33 1.367-.804h.057V11h1.138V4.685h-1.16v2.36h-.053c-.18-.475-.68-.77-1.336-.77zm.387.923c.58 0 1.002.44 1.002 1.138v.602c0 .76-.396 1.2-.984 1.2-.598 0-.972-.449-.972-1.248v-.453c0-.795.37-1.24.954-1.24z" />
 			<path d="M14 3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
 		</svg>,
+	},
+	{
+		id: 'integrations-settings',
+		label: __( 'Integrations Settings', 'godam' ),
+		component: IntegrationsSettings,
+		icon: blockDefault,
 	},
 ];
 
@@ -115,7 +133,7 @@ const App = () => {
 			) }
 
 			<div className="godam-settings__container">
-				<nav className={ `godam-settings__container__tabs ${ isSidebarOpen ? 'open' : '' } ${ isSafari() ? 'is-safari' : '' }` }>
+				<nav className={ `godam-settings__container__tabs ${ isSidebarOpen ? 'open' : '' } ${ isSafari() ? 'is-safari' : '' }` } data-test-id="godam-settings-nav">
 					<button
 						className={ `godam-settings__close-btn ${ isSidebarOpen ? 'open' : '' }` }
 						onClick={ () => setIsSidebarOpen( false ) }
@@ -130,6 +148,7 @@ const App = () => {
 							key={ id }
 							href={ `#${ id }` }
 							className={ `sidebar-nav-item whitespace-nowrap ${ activeTab === id ? 'active' : '' }` }
+							data-test-id={ `godam-settings-nav-${ id }` }
 							onClick={ () => {
 								setActiveTab( id );
 								setIsSidebarOpen( false );
@@ -137,10 +156,14 @@ const App = () => {
 						>
 							<Icon icon={ icon } />
 							{ label }
+							{ activeTab === id && (
+								<Icon icon={ chevronRight } className="sidebar-nav-item__chevron ml-auto" />
+							) }
 						</a>
 					) ) }
 				</nav>
-				<div id="main-content" className="godam-settings__container__content">
+				<div id="main-content" className="godam-settings__container__content" data-test-id="godam-settings-content">
+					<PreflightNotices />
 					{ activeTabData && <activeTabData.component /> }
 				</div>
 			</div>

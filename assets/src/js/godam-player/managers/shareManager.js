@@ -24,6 +24,7 @@ import Complete from '../../../../../assets/src/images/check.svg';
 
 import videojs from 'video.js';
 import { formatTime, parseTime, validateTimeString } from '../utils/dataHelpers.js';
+import { setupFullscreenReparenting, isPlayerFullscreen } from '../utils/fullscreenReparent.js';
 
 import { KEYBOARD_CONTROLS } from '../utils/constants';
 
@@ -90,6 +91,15 @@ class ShareManager {
 		this.video = video;
 		this.videoSetupOptions = videoSetupOptions;
 		this.Button = videojs.getComponent( 'Button' );
+
+		this.container = null;
+		this.shareButtonEl = null;
+		this.buttonInControlBar = false;
+
+		// The share modal is transient; while it is open its reparenting listeners
+		// are tracked here so they can be removed when it closes.
+		this.modalContainer = null;
+		this.modalFullscreenDispose = null;
 
 		this.init();
 	}
@@ -261,13 +271,28 @@ class ShareManager {
 			return null;
 		}
 
+		// The GoDAM Central and embed links are SaaS routes keyed on the transcoding
+		// job, so they always use the job ID — the SaaS knows nothing of WordPress
+		// attachment IDs.
 		const videoLink = `${ baseUrl }/web/video/${ jobId }`;
 		const embedUrl = `${ baseUrl }/web/embed/${ jobId }`;
 		const embedCode = `<iframe src="${ embedUrl }"></iframe>`;
 		const encodedLink = encodeURI( videoLink );
 		const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
-		return { videoLink, embedUrl, embedCode, encodedLink, message };
+		// The WP page link is resolved by this site, so prefer the WordPress
+		// attachment ID: it is the ID authors recognise and the one they write into
+		// triggers. Fall back to the job ID for virtual media, which has no local
+		// attachment. Either spelling resolves — see findVideoById().
+		const pageId = this.video?.dataset?.id || jobId;
+
+		// Current WP page URL with an anchor pointing at this video. Use the URL API
+		// so existing query params survive and only the hash is replaced.
+		const pageUrl = new URL( window.location.href );
+		pageUrl.hash = `godam-video-${ pageId }`;
+		const pageLink = pageUrl.toString();
+
+		return { videoLink, embedUrl, embedCode, encodedLink, message, pageLink };
 	}
 
 	/**
@@ -302,7 +327,8 @@ class ShareManager {
 					</div>
 				</div>
 				<div class="${ MODAL_POPUP_CLASS }__footer">
-					${ this.renderCopySection( 'page-link', videoLink, __( 'Page Link', 'godam' ) ) }
+					${ this.renderCopySection( 'wp-page-link', '', __( 'Page Link', 'godam' ) ) }
+					${ this.renderCopySection( 'page-link', videoLink, __( 'GoDAM Central', 'godam' ) ) }
 					${ this.renderCopySection( 'embed-code', embedCode, __( 'Embed', 'godam' ) ) }
 				</div>
 				<div class="${ MODAL_POPUP_CLASS }__timestamp-container">
@@ -336,10 +362,38 @@ class ShareManager {
 		container.className = MODAL_CONTAINER_CLASS;
 		container.innerHTML = DOMPurify.sanitize( modalHtml, { ADD_ATTR: [ 'target', 'rel' ] } );
 
-		document.body.appendChild( container );
+		// In fullscreen only the player element's subtree renders (the fullscreen
+		// top layer), so a modal on `<body>` would be invisible. Mount it inside
+		// the fullscreen element instead; otherwise use `<body>` as before.
+		this.getModalParent().appendChild( container );
 		document.body.classList.add( BODY_MODAL_OPEN_CLASS );
 
+		this.modalContainer = container;
+		// Keep the modal in the right layer if the user enters/exits fullscreen
+		// while it is open: into `.video-js` in fullscreen, back to `<body>` on
+		// exit. Torn down in `setupModalCloseHandlers` when the modal closes.
+		this.modalFullscreenDispose = setupFullscreenReparenting( {
+			player: this.player,
+			getElement: () => this.modalContainer,
+			getRestoreParent: () => document.body,
+			runNow: false,
+		} );
+
 		this.setupModalEventListeners( container, socialLinks, urls );
+	}
+
+	/**
+	 * Resolve where the share modal should mount: the fullscreen player element
+	 * when in fullscreen, otherwise the document body.
+	 *
+	 * @return {HTMLElement} The element to append the modal to.
+	 */
+	getModalParent() {
+		const fullscreenEl = this.player?.el?.();
+		if ( isPlayerFullscreen( this.player ) && fullscreenEl ) {
+			return fullscreenEl;
+		}
+		return document.body;
 	}
 
 	/**
@@ -352,11 +406,12 @@ class ShareManager {
 	setupModalEventListeners( container, socialLinks, urls ) {
 		const cancelButton = container.querySelector( '.share-modal-popup__close-button' );
 		const copyPageLink = container.querySelector( '.copy-page-link' );
+		const copyWpPageLink = container.querySelector( '.copy-wp-page-link' );
 		const copyEmbedCode = container.querySelector( '.copy-embed-code' );
 
 		this.setupSocialLinkUrls( container, socialLinks, urls );
 		this.setupModalCloseHandlers( container, cancelButton );
-		this.setupCopyButtonHandlers( copyPageLink, copyEmbedCode );
+		this.setupCopyButtonHandlers( copyPageLink, copyWpPageLink, copyEmbedCode );
 		this.setupTimestampControls( container, socialLinks, urls );
 	}
 
@@ -387,6 +442,11 @@ class ShareManager {
 			container.classList.add( `${ MODAL_CONTAINER_CLASS }${ CLOSING_CLASS_SUFFIX }` );
 			container.querySelector( `.${ MODAL_POPUP_CLASS }` )
 				.classList.add( `${ MODAL_POPUP_CLASS }${ CLOSING_CLASS_SUFFIX }` );
+
+			// Stop tracking the modal for fullscreen reparenting before it is gone.
+			this.modalFullscreenDispose?.();
+			this.modalFullscreenDispose = null;
+			this.modalContainer = null;
 
 			setTimeout( () => {
 				container.remove();
@@ -423,12 +483,14 @@ class ShareManager {
 	/**
 	 * Sets up copy button event handlers.
 	 *
-	 * @param {HTMLElement} copyPageLink  - Page link copy button.
-	 * @param {HTMLElement} copyEmbedCode - Embed code copy button.
+	 * @param {HTMLElement} copyPageLink   - GoDAM Central link copy button.
+	 * @param {HTMLElement} copyWpPageLink - WP page link copy button.
+	 * @param {HTMLElement} copyEmbedCode  - Embed code copy button.
 	 */
-	setupCopyButtonHandlers( copyPageLink, copyEmbedCode ) {
+	setupCopyButtonHandlers( copyPageLink, copyWpPageLink, copyEmbedCode ) {
 		const copyButtons = [
 			{ button: copyPageLink, inputSelector: '.page-link' },
+			{ button: copyWpPageLink, inputSelector: '.wp-page-link' },
 			{ button: copyEmbedCode, inputSelector: '.embed-code' },
 		];
 
@@ -468,6 +530,25 @@ class ShareManager {
 		const fullEmbed = timestamp ? `<iframe src="${ urls.embedUrl }?t=${ timestamp }"></iframe>` : urls.embedCode;
 		const encodedHref = encodeURI( fullPage );
 
+		const wpPageLinkInput = container.querySelector( '.wp-page-link' );
+
+		// WP page link: update/append the timestamp query param while preserving
+		// any existing query params and the hash anchor.
+		if ( wpPageLinkInput ) {
+			const wpPageBase = urls.pageLink || '';
+			if ( timestamp && wpPageBase ) {
+				try {
+					const wpPageUrl = new URL( wpPageBase, window.location.origin );
+					wpPageUrl.searchParams.set( 't', timestamp );
+					wpPageLinkInput.value = wpPageUrl.toString();
+				} catch ( error ) {
+					wpPageLinkInput.value = wpPageBase;
+				}
+			} else {
+				wpPageLinkInput.value = wpPageBase;
+			}
+		}
+
 		pageLinkInput.value = fullPage;
 		embedInput.value = fullEmbed;
 
@@ -496,6 +577,13 @@ class ShareManager {
 
 		if ( ! checkbox || ! input || ! pageLinkInput || ! embedInput ) {
 			return;
+		}
+
+		const wpPageLinkInput = container.querySelector( '.wp-page-link' );
+
+		// Initialize wp-page-link input value via JS (DOMPurify may strip it from HTML attributes).
+		if ( wpPageLinkInput ) {
+			wpPageLinkInput.value = urls.pageLink || '';
 		}
 
 		input.readOnly = ! checkbox.checked;
@@ -616,6 +704,8 @@ class ShareManager {
 			return;
 		}
 
+		this.container = container;
+
 		const ShareButton = videojs.getComponent( 'GodamShareButton' );
 		const shareButtonInstance = new ShareButton( this.player );
 		const buttonElement = shareButtonInstance.createEl();
@@ -624,9 +714,34 @@ class ShareManager {
 
 		if ( this.shouldAddBubbleToControlBar( container ) ) {
 			this.player.controlBar.addChild( 'GodamShareButton', {} );
+			this.buttonInControlBar = true;
 		} else {
 			container.appendChild( buttonElement );
+			this.shareButtonEl = buttonElement;
+			this.buttonInControlBar = false;
 		}
+
+		this.setupFullscreenReparenting();
+	}
+
+	/**
+	 * Keep the overlay share button visible in fullscreen.
+	 *
+	 * Video.js fullscreens the player element (`.video-js`); only its subtree
+	 * renders in the fullscreen top layer. The overlay button lives in
+	 * `.easydam-video-container` (an ancestor of `.video-js`), so it vanishes in
+	 * fullscreen unless moved inside it. Reparent on enter, restore on exit.
+	 * Control-bar buttons (Bubble skin) are already inside `.video-js`, so they
+	 * are left in place.
+	 */
+	setupFullscreenReparenting() {
+		// Control-bar buttons (Bubble skin) are already inside `.video-js`, so the
+		// getter returns null for them and only the overlay button is moved.
+		setupFullscreenReparenting( {
+			player: this.player,
+			getElement: () => ( this.buttonInControlBar ? null : this.shareButtonEl ),
+			getRestoreParent: () => this.container,
+		} );
 	}
 
 	/**

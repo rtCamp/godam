@@ -44,8 +44,7 @@ export const useFetchForms = () => {
 	} );
 	const { data: metforms = [], isFetching: isFetchingMetforms = false } = useGetMetformsQuery( undefined, {
 		skip: ! FormLayerComponentType?.metform.isActive,
-	});
-
+	} );
 
 	const isFetching =
 		isFetchingCF7 ||

@@ -4,7 +4,6 @@
  * External dependencies
  */
 import DOMPurify from 'isomorphic-dompurify';
-import videojs from 'video.js';
 /**
  * WordPress dependencies
  */
@@ -14,7 +13,10 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { addIcon, trashIcon, editIcon, barChartIcon } from '../media-library-icons';
-import { canManageAttachment } from '../utility';
+import { canManageAttachment, isDocumentModel } from '../utility';
+import { loadVideoJs, getLoadedVideoJs } from '../videojs-loader.js';
+import renderMoveToFolderField from './fields/move-to-folder-field';
+import renderTranscodingRefusalPanel from './fields/transcoding-refusal-panel';
 
 const AttachmentDetailsTwoColumn = wp?.media?.view?.Attachment?.Details?.TwoColumn;
 
@@ -536,8 +538,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		const virtual = this.model.get( 'virtual' );
 
 		// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
-		if ( undefined !== virtual && virtual ) {
-			const videoPlayer = videojs( 'videojs-player-' + this.model.get( 'id' ) );
+		// The player was created earlier, so Video.js is already loaded and cached here.
+		const posterVideojs = getLoadedVideoJs();
+		if ( undefined !== virtual && virtual && posterVideojs ) {
+			const videoPlayer = posterVideojs( 'videojs-player-' + this.model.get( 'id' ) );
 			videoPlayer.poster( selected );
 		}
 
@@ -589,6 +593,18 @@ export default AttachmentDetailsTwoColumn?.extend( {
 
 		containerDiv.appendChild( heading );
 		div.appendChild( containerDiv );
+
+		// Optional guide message, supplied via the
+		// `rtgodam_video_thumbnails_guide_message` PHP filter with a 'media-library'
+		// context (empty by default). Sanitized server-side too, but sanitized again
+		// here because it may carry markup.
+		const guideMessage = window.easydamMediaLibrary?.videoThumbnailsGuideMessage;
+		if ( guideMessage ) {
+			const guide = document.createElement( 'div' );
+			guide.className = 'attachment-video-thumbnails__guide';
+			guide.innerHTML = DOMPurify.sanitize( guideMessage );
+			div.appendChild( guide );
+		}
 
 		div.appendChild( ul );
 
@@ -709,8 +725,10 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				const virtual = model.get( 'virtual' );
 
 				// If the attachment is virtual (e.g. a GoDAM proxy video), override default preview.
-				if ( undefined !== virtual && virtual ) {
-					const videoPlayer = videojs( 'videojs-player-' + model.get( 'id' ) );
+				// The player was created earlier, so Video.js is already loaded and cached here.
+				const posterVideojs = getLoadedVideoJs();
+				if ( undefined !== virtual && virtual && posterVideojs ) {
+					const videoPlayer = posterVideojs( 'videojs-player-' + model.get( 'id' ) );
 					videoPlayer.poster( thumbnailURL );
 				}
 
@@ -738,12 +756,24 @@ export default AttachmentDetailsTwoColumn?.extend( {
 	},
 
 	/**
+	 * Renders the "Edit Image" button for image attachments. Images reach the
+	 * GoDAM editor via the same page as video/audio; the editor resolves the
+	 * image capability from the MIME type. No Analytics button (images have no
+	 * stats).
+	 */
+	renderImageActions() {
+		const editImageURL = `admin.php?page=rtgodam_media_editor&id=${ this.model.get( 'id' ) }`;
+		const buttonHTML = `<a href="${ editImageURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Image', 'godam' ) }</a>`;
+		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-video-actions">${ buttonHTML }</div>` ) );
+	},
+
+	/**
 	 * Generates HTML for the Edit Video and Analytics buttons.
 	 *
 	 * @return {string} - The generated button HTML.
 	 */
 	getButtonsHTML() {
-		const editVideoURL = `admin.php?page=rtgodam_video_editor&id=${ this.model.get( 'id' ) }`;
+		const editVideoURL = `admin.php?page=rtgodam_media_editor&id=${ this.model.get( 'id' ) }`;
 		const analyticsURL = `admin.php?page=rtgodam_analytics&id=${ this.model.get( 'id' ) }`;
 
 		const activeUser = window?.MediaLibrary?.userData?.validApiKey;
@@ -771,6 +801,24 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		buttons.push( analyticsButtonHTML );
 
 		return buttons.join( '' );
+	},
+
+	/**
+	 * Renders the Edit Audio button in the attachment details view.
+	 *
+	 * Audio uses the same editor as video (in audio mode) and has no analytics,
+	 * so this is a single "Edit Audio" button shown only to users who can manage
+	 * the attachment.
+	 */
+	renderAudioActions() {
+		if ( ! canManageAttachment( this.model.get( 'author' ) ) ) {
+			return;
+		}
+
+		const editAudioURL = `admin.php?page=rtgodam_media_editor&id=${ this.model.get( 'id' ) }`;
+		const buttonHTML = `<a href="${ editAudioURL }" class="button button-primary" target="_blank">${ editIcon } ${ __( 'Edit Audio', 'godam' ) }</a>`;
+
+		this.$el.find( '.attachment-actions' ).append( DOMPurify.sanitize( `<div class="attachment-audio-actions">${ buttonHTML }</div>` ) );
 	},
 
 	/**
@@ -946,6 +994,12 @@ export default AttachmentDetailsTwoColumn?.extend( {
 		// Call the parent render method.
 		AttachmentDetailsTwoColumn.prototype.render.apply( this, arguments );
 
+		// Needed here as well as in attachment-details.js: core builds TwoColumn from
+		// the ORIGINAL Attachment.Details captured at module scope, so replacing
+		// wp.media.view.Attachment.Details does not reach this view.
+		renderMoveToFolderField( this );
+		renderTranscodingRefusalPanel( this );
+
 		// Check if the attachment is a video and render the edit buttons.
 		if ( this.model.get( 'type' ) === 'video' ) {
 			this.$el.find( '.attachment-video-actions, .attachment-video-thumbnails' ).remove();
@@ -972,9 +1026,25 @@ export default AttachmentDetailsTwoColumn?.extend( {
 				` );
 
 				// Wait for DOM to fully render the core preview container.
-				setTimeout( () => {
+				setTimeout( async () => {
 					const videoElement = document.getElementById( videoId );
-					if ( videoElement && typeof videojs !== 'undefined' ) {
+					if ( ! videoElement ) {
+						return;
+					}
+
+					// Lazy-load Video.js only now that a video player is actually needed.
+					// Guard the async import: if the chunk fails to load (stale cache after an
+					// update, network hiccup) don't leave an unhandled rejection.
+					let videojs = null;
+					try {
+						videojs = await loadVideoJs();
+					} catch ( e ) {
+						return;
+					}
+
+					// The modal may have closed while the chunk was loading — re-check the
+					// element is still attached before initialising a player on it.
+					if ( videojs && videoElement.isConnected ) {
 						// Calculate initial dimensions using 16:9 aspect ratio as default
 						const viewContainer = this.$el.closest( '.media-modal-content' ).find( '.attachment-media-view' );
 						const availableWidth = viewContainer.length ? viewContainer.width() : window.innerWidth * 0.65;
@@ -1099,7 +1169,24 @@ export default AttachmentDetailsTwoColumn?.extend( {
 			);
 		}
 
-		if ( this.model.get( 'type' ) === 'application' && this.model.get( 'subtype' ) === 'pdf' ) {
+		// Image attachments get an "Edit Image" button linking to the GoDAM editor,
+		// where Hotspot / WooCommerce hotspot layers can be placed on the image.
+		if ( this.model.get( 'type' ) === 'image' ) {
+			this.$el.find( '.attachment-video-actions' ).remove();
+			if ( canManageAttachment( this.model.get( 'author' ) ) ) {
+				this.renderImageActions();
+			}
+		}
+		// Audio: show an "Edit Audio" button (opens the editor in audio mode).
+		if ( this.model.get( 'type' ) === 'audio' ) {
+			this.$el.find( '.attachment-audio-actions' ).remove();
+			this.renderAudioActions();
+		}
+
+		// Any convertible document, not just PDF: Central rasterises page 0 of the preview for
+		// all of them, and set_media_library_thumbnail() puts it on `image`, so an .xlsx has a
+		// real preview to show here instead of the generic document icon.
+		if ( isDocumentModel( this.model ) ) {
 			const imagePreview = this.model.get( 'image' );
 
 			if ( imagePreview && imagePreview.src ) {
@@ -1111,7 +1198,7 @@ export default AttachmentDetailsTwoColumn?.extend( {
 						<img
 							class="details-image"
 							src="${ DOMPurify.sanitize( imagePreview.src ) }"
-							alt="PDF Preview"
+							alt="${ __( 'Document preview', 'godam' ) }"
 						/>
 					` );
 				}

@@ -1,12 +1,25 @@
 /**
- * GoDAM Video Block - Editor styles
+ * Video Block - Editor styles
  * These styles ensure the block works correctly in the editor,
  * including in flex layouts (Row/Stack).
  */
+
+// WP 7.0+ collapses ToggleControl bottom margin to zero (the
+// `__nextHasNoMarginBottom` prop is now a no-op). Restore consistent
+// vertical spacing for toggles rendered in the block inspector sidebar.
+.block-editor-block-inspector .components-panel__body .components-toggle-control {
+	margin-bottom: 12px;
+}
+
 .wp-block-godam-video {
-	width: 100%;
 	min-width: 0; // Allow shrinking in flex layouts (Row/Stack)
-	
+
+	// Only apply 100% width when no block-level alignment is set.
+	// alignfull/alignwide rely on editor CSS for their own width.
+	&:not(.alignfull):not(.alignwide) {
+		width: 100%;
+	}
+
 	// Ensure the figure takes full width
 	> figure {
 		width: 100%;
@@ -18,25 +31,48 @@
 		position: relative;
 		width: 100%;
 	}
-}
 
-.wp-block-godam-video .godam-editor-video-placeholder {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: #e5e5e5;
-	border-radius: 6px;
-	position: relative;
-	aspect-ratio: 16 / 9;
-}
+	// Presentational share + transcript buttons reflecting the "Show share
+	// button" / "Show transcription" settings on the editor canvas. The real
+	// interactive controls run on the frontend, so these are non-interactive
+	// (pointer-events disabled) to avoid interfering with block selection.
+	// They stack vertically at the top-right: share on top, transcript below.
+	.godam-editor-share-button,
+	.godam-editor-transcript-button {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 8px;
+		color: #fff;
+		background-color: rgba(0, 0, 0, 0.7);
+		border-radius: 50%;
+		pointer-events: none;
 
-.wp-block-godam-video {
+		svg {
+			display: block;
+		}
+	}
 
-	.godam-video-container {
-		position: relative;
+	// The transcript button sits on top; the share button drops below it when
+	// a transcript is also shown.
+	.godam-editor-share-button--below {
+		top: 58px;
+	}
+
+	.godam-editor-video-placeholder {
 		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: #e5e5e5;
+		border-radius: 6px;
+		position: relative;
+		aspect-ratio: 16 / 9;
 	}
 
 	.godam-video-loading {
@@ -65,15 +101,442 @@
 			}
 		}
 	}
+}
 
-	@keyframes godam-spin {
+@keyframes godam-spin {
 
-		0% {
-			transform: rotate(0deg);
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+// Video Thumbnail panel in the block Inspector sidebar
+.godam-thumbnail-panel {
+	margin-bottom: 16px;
+
+	&__label {
+		font-size: 11px;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #1e1e1e;
+		margin: 0 0 8px;
+	}
+
+	&__guide {
+		font-size: 12px;
+		line-height: 1.5;
+		color: #757575;
+		margin: 0 0 8px;
+
+		a {
+			color: #2271b1;
 		}
 
-		100% {
-			transform: rotate(360deg);
+		p {
+			margin: 0 0 4px;
 		}
+	}
+
+	&__spinner {
+		display: flex;
+		justify-content: center;
+		padding: 8px 0;
+	}
+
+	.godam-thumbnail-grid {
+		display: flex !important;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		gap: 6px;
+		padding: 4px 2px;
+		margin: 0;
+		scrollbar-width: thin;
+		scrollbar-color: #ccc transparent;
+
+		&::-webkit-scrollbar {
+			height: 4px;
+		}
+
+		&::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		&::-webkit-scrollbar-thumb {
+			background: #ccc;
+			border-radius: 2px;
+		}
+	}
+
+	.godam-thumbnail-tile {
+		flex: 0 0 auto;
+		width: 72px;
+		height: 48px;
+		border: 2px solid transparent;
+		border-radius: 4px;
+		overflow: hidden;
+		cursor: pointer;
+		transition: border-color 0.1s ease, box-shadow 0.1s ease;
+		padding: 0;
+		background: #f0f0f0;
+		position: relative;
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			pointer-events: none;
+		}
+
+		&:hover {
+			border-color: #a0a0a0;
+		}
+
+		&:focus {
+			outline: none;
+			border-color: var(--wp-admin-theme-color, #007cba);
+			box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #007cba);
+		}
+
+		&.is-selected {
+			border-color: var(--wp-admin-theme-color, #007cba);
+			box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #007cba), inset 0 0 0 1px #fff;
+
+			&::after {
+				content: '\2713';
+				position: absolute;
+				bottom: 3px;
+				right: 3px;
+				width: 14px;
+				height: 14px;
+				background: var(--wp-admin-theme-color, #007cba);
+				color: #fff;
+				font-size: 9px;
+				font-weight: 700;
+				line-height: 1.56;
+				text-align: center;
+				border-radius: 50%;
+				z-index: 1;
+			}
+		}
+
+		.godam-thumbnail-ai-badge {
+			position: absolute;
+			bottom: 3px;
+			right: 3px;
+			width: 14px;
+			height: 14px;
+			background: var(--wp-admin-theme-color, #3858e9);
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: #fff;
+		}
+
+		&.godam-thumbnail-upload-tile {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-style: dashed;
+			border-color: #949494;
+			background: transparent;
+
+			&:hover {
+				border-color: var(--wp-admin-theme-color, #007cba);
+			}
+		}
+
+		/* Block-level custom thumbnail uploaded via the block editor "+" button */
+		&.godam-thumbnail-custom-block-tile {
+			cursor: default;
+
+			/* When selected, push checkmark to bottom-right so it doesn't overlap the delete btn */
+			&.is-selected::after {
+				bottom: 3px;
+				right: 3px;
+				top: auto;
+			}
+		}
+	}
+
+	/* Wrapper for the custom-uploaded tile — provides the positioning context for the X button */
+	.godam-thumbnail-custom-block-wrapper {
+		position: relative;
+		flex: 0 0 auto;
+		width: 72px;
+		height: 48px;
+
+		.godam-thumbnail-delete-btn {
+			position: absolute;
+			top: 4px;
+			right: 4px;
+			width: 16px;
+			height: 16px;
+			padding: 0;
+			background: rgba(0, 0, 0, 0.55);
+			color: #fff;
+			border: none;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			font-size: 10px;
+			line-height: 1;
+			z-index: 2;
+			transition: background 0.1s ease;
+
+			&:hover {
+				background: #cc1818;
+			}
+		}
+	}
+}
+
+.godam-thumbnail-upload-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	font-size: 22px;
+	font-weight: 300;
+	color: #757575;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	line-height: 1;
+
+	&:hover {
+		color: var(--wp-admin-theme-color, #007cba);
+	}
+}
+
+.godam-video-canvas-frame {
+	background-color: #F2F2FF;
+	border: 2px dashed #5A13D51A;
+	border-radius: 6px;
+	padding: 24px;
+}
+
+.godam-video-add-placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 16px;
+	padding: 24px;
+	background-color: #F2F2FF;
+	border: 2px dashed #5A13D51A;
+	border-radius: 6px;
+
+
+	&__preview {
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		background-color: #fff;
+		border-radius: 4px;
+		box-shadow: 0 6px 6px 0 #94A3B81F;
+	}
+
+	&__title {
+		margin: 0;
+		font-size: 18px;
+		font-weight: 500;
+		color: #111;
+		line-height: 1.33;
+	}
+
+	&__description {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.38;
+		color: #646970;
+		max-width: 400px;
+	}
+
+	&__btn.components-button.is-primary {
+		border-radius: 2px;
+		background-color: var(--wp-admin-theme-color, #3858e9);
+		border-color: var(--wp-admin-theme-color, #3858e9);
+
+		&:hover:not(:disabled) {
+			background-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+			border-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+		}
+	}
+}
+
+.godam-playback-controls {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.godam-components-disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.godam-video-selection {
+
+	&__description {
+		font-size: 12px;
+		color: #646970;
+		margin: 0 0 16px;
+		line-height: 1.33;
+	}
+
+	&__add-btn.components-button,
+	&__customize-btn.components-button {
+		width: 100%;
+		justify-content: center;
+		border-radius: 2px;
+		padding: 8px;
+		font-size: 13px;
+		line-height: 1.15;
+		font-weight: 500;
+	}
+
+	&__add-btn.components-button {
+		border: 1px solid var(--wp-admin-theme-color, #3858e9);
+		color: var(--wp-admin-theme-color, #3858e9);
+		background: transparent;
+
+		&:hover:not(:disabled) {
+			background: color-mix(in srgb, var(--wp-admin-theme-color, #5D31FF) 5%, transparent);
+			border-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+			color: var(--wp-admin-theme-color-darker-10, #2145e6);
+		}
+	}
+
+	&__customize-btn.components-button {
+		background-color: var(--wp-admin-theme-color, #3858e9);
+		border-color: var(--wp-admin-theme-color, #3858e9);
+		color: #fff;
+		margin-bottom: 10px;
+
+		&:hover:not(:disabled) {
+			background-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+			border-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+			color: #fff;
+		}
+	}
+
+	&__item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px;
+		border: 1px solid #DDD;
+		border-radius: 4px;
+	}
+
+	&__item-thumbnail {
+		width: 40px;
+		height: 40px !important; // To override default height: auto css.
+		object-fit: cover;
+		border-radius: 2px;
+
+		&--placeholder {
+			background: #DDD;
+			display: block;
+		}
+	}
+
+	&__item-title {
+		flex: 1;
+		font-size: 13px;
+		line-height: 1.15;
+		font-weight: 400;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: #061014;
+	}
+
+	&__item-delete.components-button {
+		color: #061014;
+		padding: 0;
+		min-width: unset;
+
+		&:hover {
+			color: #cc1818;
+		}
+	}
+}
+
+.godam-upgrade-notice {
+	padding: 16px;
+	background-color: #F2F2FF;
+	border-top: 1px solid #ddd;
+	border-bottom: 1px solid #ddd;
+
+	&__header {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 8px;
+	}
+
+	&__icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+
+	&__title {
+		font-size: 13px;
+		font-weight: 500;
+		color: #111;
+		line-height: 1.54;
+	}
+
+	&__description {
+		font-size: 12px;
+		line-height: 1.5;
+		color: #646970;
+		margin: 0 0 12px;
+	}
+
+	&__button.components-button.is-primary {
+		width: 100%;
+		justify-content: center;
+		border-radius: 2px;
+		font-size: 13px;
+		font-weight: 500;
+		background-color: var(--wp-admin-theme-color, #3858e9);
+		border-color: var(--wp-admin-theme-color, #3858e9);
+
+		&:hover:not(:disabled) {
+			background-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+			border-color: var(--wp-admin-theme-color-darker-10, #2145e6);
+		}
+	}
+}
+
+
+// Add missing border to ToggleGroupControl in the block inspector sidebar when it is isDeselectable.
+.block-editor-block-inspector .components-toggle-group-control {
+	border: 1px solid #ddd;
+}
+
+.godam-thumbnail-actions {
+	display: flex;
+	gap: 12px;
+	margin-top: 20px;
+
+	&__btn.components-button {
+		flex: 1;
+		justify-content: center;
 	}
 }

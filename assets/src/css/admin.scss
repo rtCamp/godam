@@ -95,30 +95,83 @@ $media-frame-width: calc(300px + 2 * 24px);
 	left: $media-frame-width;
 }
 
-/**
-* Admin page CSS changes for the top-level EasyDAM page.
-*/
+// GoDAM 2.0: the analytics surface (dashboard + per-video analytics) follows
+// the user's WP admin colour scheme; the rest of the plugin keeps the brand
+// pink for now (migrated in a later phase). Capture the real scheme accent on
+// the analytics page bodies *before* the brand pink is applied below, so we can
+// restore it once .godam-admin-root has overridden --wp-admin-theme-color.
 .toplevel_page_rtgodam,
-.godam_page_rtgodam_video_editor,
-.godam_page_rtgodam_help,
-.godam-analytics-container,
-.godam-dashboard-container,
+.godam_page_rtgodam_analytics {
+	--godam-scheme-accent: var(--wp-admin-theme-color);
+}
+
+/* Style for GoDAM admin pages container */
 .godam-admin-root {
-	--wp-admin-theme-color: #ab3a6c;
+	margin-left: -20px;
+
+	&.not-safari {
+		color: #000;
+		min-height: calc(100vh - var(--wp-admin--admin-bar--height, 0));
+		padding-top: var(--wp-admin--admin-bar--height, 0);
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		margin-left: 160px;
+		overflow: auto;
+
+		&.godam-video-editor-page {
+			background-color: #fff;
+		}
+	}
+
+	#root-video-help {
+		margin-left: 20px;
+	}
+}
+
+// Analytics surface (dashboard + per-video analytics) opts back into the WP
+// admin colour scheme. Higher specificity than the base .godam-admin-root rule
+// and placed after it, so it wins without descending-specificity churn.
+.toplevel_page_rtgodam .godam-admin-root,
+.godam_page_rtgodam_analytics .godam-admin-root {
+	--wp-admin-theme-color: var(--godam-scheme-accent);
 
 	button,
 	a,
 	input {
 
 		&:not(.is-destructive) {
-			--wp-components-color-accent: #ab3a6c;
-			--wp-components-color-accent-darker-10: #9a2d5e;
-			--wp-components-color-accent-darker-20: #6e2445;
+			--wp-components-color-accent: var(--godam-scheme-accent);
+			// Fall back to the captured scheme accent when the admin scheme
+			// doesn't define darker shades, so hover/active never reverts to the
+			// pinned brand pink (mirrors the guard in godam-for-woo #152).
+			--wp-components-color-accent-darker-10: var(--wp-admin-theme-color-darker-10, var(--godam-scheme-accent));
+			--wp-components-color-accent-darker-20: var(--wp-admin-theme-color-darker-20, var(--godam-scheme-accent));
 		}
 	}
+}
 
-	.circle {
-		--wp-components-color-accent: #e6533a;
+.folded .godam-admin-root.not-safari {
+	margin-left: 36px;
+}
+
+@media screen and (max-width: 960px) {
+
+	.auto-fold .godam-admin-root.not-safari {
+		margin-left: 36px;
+	}
+}
+
+@media screen and (max-width: 782px) {
+
+	.godam-admin-root {
+		margin-left: -10px;
+	}
+
+	.auto-fold .godam-admin-root.not-safari {
+		margin-left: 0;
 	}
 }
 
@@ -447,7 +500,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 		.attachment-actions {
 
 			.button {
-				background: linear-gradient(83.85deg, #AB3A6C -9.3%, #E6533A 120.31%);
+				background: var(--wp-admin-theme-color, #AB3A6C);
 					border-radius: 0.25rem;
 					border: none;
 					color: $media-library-sidebar-bg;
@@ -457,7 +510,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 		.media-menu-item.active {
 			border: none !important;
-			border-bottom: 2px solid #AB3A6C !important;
+			border-bottom: 2px solid var(--wp-admin-theme-color, #AB3A6C) !important;
 		}
 	}
 
@@ -512,6 +565,11 @@ $media-frame-width: calc(300px + 2 * 24px);
 		border-radius: 50%;
 
 		--status-text: "Not Started";
+
+		img {
+			position: relative;
+			right: 2px; // optical centering for the GoDAM logo
+		}
 
 		&__progress {
 			transform: rotate(-90deg); /* Rotates the circle so progress starts from top */
@@ -649,7 +707,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 		.submit-feedback {
 			border: none;
-			background-color: #ab3a6c;
+			background-color: var(--wp-admin-theme-color, #ab3a6c);
 			color: #fff;
 			padding: 5px 12px;
 			border-radius: 4px;
@@ -744,7 +802,7 @@ $media-frame-width: calc(300px + 2 * 24px);
 		transform: translateY(-50%);
 		pointer-events: none;
 		font-size: 18px;
-		color: #ab3a6c;
+		color: var(--wp-admin-theme-color, #ab3a6c);
 	}
 }
 
@@ -759,7 +817,7 @@ to ensure proper responsiveness and avoid layout issues.
 	margin: 0;
 	margin-left: -2rem;
 	padding: 0;
-	background: #AB3A6C;
+	background: var(--wp-admin-theme-color, #AB3A6C);
 	display: flex;
 	justify-content: center;
 	position: relative;
@@ -823,6 +881,7 @@ to ensure proper responsiveness and avoid layout issues.
 	}
 }
 
+
 /**
  * Center custom icon images in media library thumbnails.
  *
@@ -839,4 +898,300 @@ to ensure proper responsiveness and avoid layout issues.
  */
 .wp-core-ui .attachments-browser .attachment .thumbnail .centered img.icon {
 		transform: translate(-50%, -50%);
+}
+
+/*
+ * Pro badge shown next to premium layer titles.
+ */
+.godam-pro-badge {
+	display: inline-block;
+	margin-left: 0.5rem;
+	padding: 0.125rem 0.5rem;
+	font-size: 0.65rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: #fff;
+	background: var(--wp-admin-theme-color, #5D31FF);
+	border-radius: 0.25rem;
+	vertical-align: middle;
+	line-height: 1.5;
+}
+
+/*
+ * Disabled UI state
+ */
+.godam-disabled-ui {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+/*
+ * Help-tip tooltip shown on hover/focus in metabox titles.
+ */
+.godam-help-tip {
+	position: relative;
+	display: inline-block;
+	vertical-align: middle;
+	line-height: 1;
+	margin-left: 6px;
+
+	&__icon {
+		// Reset button styles.
+		appearance: none;
+		border: none;
+		padding: 0;
+		margin: 0;
+		font-family: inherit;
+
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		background: #9ca3af;
+		color: #fff;
+		font-size: 10px;
+		font-weight: 700;
+		line-height: 1;
+		cursor: help;
+		transition: background 0.15s ease;
+
+		&:hover {
+			background: #6b7280;
+		}
+
+		&:focus {
+			outline: 2px solid #3b82f6;
+			outline-offset: 2px;
+			background: #6b7280;
+		}
+
+		&:focus:not(:focus-visible) {
+			outline: none;
+		}
+	}
+
+	&__popup {
+		display: none;
+		position: absolute;
+		top: calc(100% + 8px);
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 100001;
+		width: 280px;
+		padding: 0;
+		background: #fff;
+		border-radius: 8px;
+		box-shadow: 0 4px 24px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+		overflow: hidden;
+	}
+
+	&:hover &__popup,
+	&:focus-within &__popup {
+		display: block;
+	}
+
+	&__preview {
+		display: block;
+		width: 100%;
+		height: auto;
+		object-fit: cover;
+		border-bottom: 1px solid #e5e7eb;
+	}
+
+	&__text {
+		display: block;
+		padding: 10px 12px;
+		font-size: 12px;
+		line-height: 1.5;
+		color: #374151;
+		font-weight: 400;
+		width: 100%;
+	}
+}
+
+.godam-dummy-card {
+	opacity: 0.85;
+}
+
+.text-\[\#AB3A6C\] {
+	color: var(--wp-admin-theme-color, #AB3A6C);
+}
+
+.no-underline {
+	text-decoration: none;
+}
+
+.godam-featured-video-gallery-notice {
+	margin-left: 8px !important;
+    margin-right: 8px !important;
+}
+
+// GoDAM Video — Elementor widget thumbnail picker
+// Renders an auto-generated thumbnail grid in the Elementor panel for the
+// godam-video widget. Hydrated by assets/src/js/elementor/editor.js.
+.godam-elementor-thumbnail-picker {
+	margin-top: 8px;
+
+	&__label {
+		font-size: 12px;
+		color: #757575;
+		margin: 0 0 6px;
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 6px;
+	}
+
+	&__spinner {
+		display: inline-block;
+		width: 16px;
+		height: 16px;
+		border: 2px solid #ccc;
+		border-top-color: #2271b1;
+		border-radius: 50%;
+		animation: godam-elementor-thumbnail-spin 0.8s linear infinite;
+	}
+
+	&__empty {
+		font-size: 12px;
+		color: #757575;
+		margin: 6px 0 0;
+	}
+}
+
+.godam-elementor-thumbnail-tile {
+	position: relative;
+	padding: 0;
+	background: none;
+	border: 2px solid transparent;
+	border-radius: 4px;
+	cursor: pointer;
+	overflow: hidden;
+	aspect-ratio: 16 / 9;
+	transition: border-color 120ms ease;
+
+	&:hover,
+	&:focus {
+		border-color: #2271b1;
+		outline: none;
+	}
+
+	&.is-selected {
+		border-color: #2271b1;
+		box-shadow: 0 0 0 1px #2271b1 inset;
+	}
+
+	img {
+		display: block;
+		width: 100%;
+		height: 100% !important;
+		object-fit: cover;
+	}
+}
+
+.godam-video-thumb-wrapper {
+	position: relative;
+	display: block;
+
+	&.godam-locked img {
+		filter: blur(3px) brightness(0.7);
+	}
+
+	.godam-lock-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 28px;
+		color: #fff;
+		background: rgba(0,0,0,0.25);
+		border-radius: 4px;
+		pointer-events: none;
+
+		filter: drop-shadow(0 2px 4px rgba(0,0,0,0.55));
+
+		svg {
+			filter: drop-shadow(0 2px 4px rgba(0,0,0,0.55));
+		}
+	}
+}
+
+@keyframes godam-elementor-thumbnail-spin {
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+// Visual "disabled" state for Elementor controls another setting has taken over
+// — autoplay locks Muted + Hover Option, "Show in lightbox" locks Hover Option.
+// editor.js decides which lock owns which control and adds
+// `godam-control-is-disabled`. Mirrors the block's disabled SelectControl:
+// visible, low-contrast, non-interactive.
+.elementor-control.godam-elementor-autoplay-locked.godam-control-is-disabled,
+.elementor-control.godam-elementor-lightbox-locked.godam-control-is-disabled {
+	opacity: 0.5;
+	pointer-events: none;
+
+	.elementor-control-input-wrapper,
+	input,
+	select,
+	.elementor-switch {
+		cursor: not-allowed;
+	}
+}
+
+// Licence preflight notices (see RTGODAM_Transcoder_Admin::preflight_notices()).
+.godam-preflight-notice__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+}
+
+// Why GoDAM Central refused to transcode the file, at the top of the attachment details
+// sidebar (see views/fields/transcoding-refusal-panel.js).
+.godam-transcoding-refusal {
+	margin: 0 0 16px;
+	padding: 12px 14px;
+	border-left: 4px solid #d63638;
+	background: #fcf0f1;
+	text-align: left;
+
+	p {
+		margin: 0 0 8px;
+	}
+
+	&__title {
+		font-weight: 600;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-bottom: 8px;
+	}
+
+	&__status:empty {
+		display: none;
+	}
+
+	&__details {
+
+		summary {
+			cursor: pointer;
+			color: #50575e;
+		}
+
+		p {
+			margin: 8px 0 0;
+		}
+	}
 }

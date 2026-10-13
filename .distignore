@@ -23,7 +23,6 @@ tailwind.config.js
 webpack.config.js
 .github/
 .git/
-composer.json
 composer.lock
 README.md
 wp-assets/
@@ -31,3 +30,15 @@ bin/
 .husky/
 .packagejsonignore
 .distignore
+
+# Tests + their config — never ship in the distribution build.
+# (Tests under assets/src/js are already covered by that dir's exclusion above;
+# the *.test.js patterns also catch co-located tests under pages/.)
+jest.config.js
+*.test.js
+*.spec.js
+__tests__/
+phpunit.xml.dist
+# Leading slash anchors this to the plugin root: an unanchored `tests/` would
+# also strip vendor/**/tests/, which is not this file's call to make.
+/tests/

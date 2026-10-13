@@ -50,18 +50,36 @@ const DeleteModal = () => {
 		setIsLoading( true );
 
 		try {
+			// `.unwrap()` is required: RTK Query mutations RESOLVE (do not throw) on
+			// HTTP 4xx/5xx, so without it a server rejection would fall through to the
+			// success path below — showing "deleted successfully" and dropping the
+			// folder from the tree even though it still exists on the server. unwrap()
+			// re-throws the error payload so failures reach the catch (matching how
+			// Rename/Create already handle their mutations).
+			let partialMessage = null;
+
 			if ( ! isMultiSelecting ) {
-				await deleteFolderMutation( selectedFolder.id );
+				await deleteFolderMutation( selectedFolder.id ).unwrap();
 			} else if ( multiSelectedFolderIds && multiSelectedFolderIds.length ) {
-				await bulkDeleteFoldersMutation( multiSelectedFolderIds );
+				// The bulk endpoint returns HTTP 200 with `errors` on *partial* failure, so
+				// .unwrap() alone won't throw. On a partial failure we still remove the whole
+				// selection optimistically and surface a WARNING (not "deleted successfully");
+				// the invalidation refetch below re-adds any folder that wasn't actually
+				// deleted, so successfully-deleted folders don't linger (even on load-more
+				// pages, where the reducer removes them from the flat list).
+				const bulkResult = await bulkDeleteFoldersMutation( multiSelectedFolderIds ).unwrap();
+
+				if ( bulkResult?.errors?.length ) {
+					partialMessage = bulkResult.message || __( 'Some folders could not be deleted', 'godam' );
+				}
 			}
 
 			dispatch( deleteFolder() );
 
 			dispatch( updateSnackbar(
 				{
-					message: isMultiSelecting ? __( 'Folders deleted successfully', 'godam' ) : __( 'Folder deleted successfully', 'godam' ),
-					type: 'success',
+					message: partialMessage || ( isMultiSelecting ? __( 'Folders deleted successfully', 'godam' ) : __( 'Folder deleted successfully', 'godam' ) ),
+					type: partialMessage ? 'fail' : 'success',
 				},
 			) );
 
@@ -69,7 +87,7 @@ const DeleteModal = () => {
 		} catch ( error ) {
 			dispatch( updateSnackbar(
 				{
-					message: __( 'Failed to delete folder', 'godam' ),
+					message: error?.message || error?.data?.message || __( 'Failed to delete folder', 'godam' ),
 					type: 'fail',
 				},
 			) );

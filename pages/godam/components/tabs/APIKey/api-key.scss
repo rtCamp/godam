@@ -1,0 +1,147 @@
+.godam-api-key-verified {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	margin: 0;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: #15803D;
+
+	svg {
+		fill: currentcolor;
+	}
+}
+
+// API Key input row: field on the left, copy + remove icon buttons on the right.
+.godam-api-key-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.5rem;
+
+	&__field {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	&__actions {
+		display: flex;
+		gap: 0.5rem;
+		// Push the icon buttons down so they line up with the input, not its label.
+		margin-top: 1.6rem;
+	}
+
+	.components-button.is-secondary {
+		color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 12%, transparent);
+		background-color: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 8%, transparent);
+	}
+}
+
+// Plan Usage: heading + two side-by-side cards (Bandwidth / Storage), shown inside the API Settings card.
+.godam-plan-usage {
+	margin-top: 1rem;
+
+	&__title {
+		margin: 0 0 1rem;
+		font-size: 1rem;
+		font-weight: 500;
+		color: #6b7280;
+	}
+
+	&__cards {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+
+		@container godamvideoplayer (max-width: 640px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	&__card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding: 1rem 1.25rem;
+		background-color: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 8%, transparent);
+		border-radius: 0.5rem;
+	}
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	&__label {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #1e1e1e;
+		text-transform: capitalize;
+	}
+
+	&__pct {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	&__bar {
+		position: relative;
+		width: 100%;
+		height: 6px;
+		overflow: hidden;
+		background-color: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 15%, transparent);
+		border-radius: 999px;
+	}
+
+	&__bar-fill {
+		position: absolute;
+		inset: 0 auto 0 0;
+		height: 100%;
+		border-radius: 999px;
+		background-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+		transition: width 0.3s ease;
+
+		&.is-over {
+			background-color: #d14949;
+		}
+	}
+
+	&__meta {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	&__used {
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: #1e1e1e;
+		line-height: 1.2;
+	}
+
+	&__avail {
+		font-size: 0.8125rem;
+		color: #757575;
+
+		strong {
+			color: #1e1e1e;
+		}
+	}
+}
+
+// Footer row inside the API Settings card: account link (left) + support link (right).
+.godam-api-key-footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem 1.5rem;
+	margin-top: 0.5rem;
+
+	.description {
+		margin: 0;
+	}
+}

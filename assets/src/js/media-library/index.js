@@ -1,18 +1,12 @@
-/* global jQuery */
-
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
 
 /**
- * External dependencies
- */
-import videojs from 'video.js';
-
-/**
  * Internal dependencies
  */
+import { getLoadedVideoJs } from './videojs-loader.js';
 import '../../libs/jquery-ui-1.14.2.draggable/jquery-ui';
 import './transcoding-status';
 
@@ -24,10 +18,9 @@ import GoDAMMediaFrameShared from './views/godam-media-frame-shared.js';
 
 import MediaDateRangeFilter from './views/filters/media-date-range-filter-list-view.js';
 import MediaListViewTableDragHandler from './views/attachment-list.js';
+import ListViewBulkActions from './list-view-bulk-actions.js';
 
-import { isFolderOrgDisabled, isUploadPage, addManageMediaButton } from './utility.js';
-
-const $ = jQuery;
+import { isFolderOrgDisabled, shouldReplaceAttachmentsViews, isUploadPage, addManageMediaButton } from './utility.js';
 
 /**
  * Destroys all Video.js player instances found within a given DOM element.
@@ -40,6 +33,10 @@ const $ = jQuery;
  * @param {HTMLElement} container - The DOM element to search for Video.js players.
  */
 function destroyVideoJSPlayersInContainer( container ) {
+	// Only relevant if Video.js was actually loaded (i.e. a player was created this
+	// session). If it was never loaded there are no Video.js players to dispose.
+	const videojs = getLoadedVideoJs();
+
 	if ( ! container || ! videojs ) {
 		return;
 	}
@@ -60,6 +57,117 @@ function destroyVideoJSPlayersInContainer( container ) {
 }
 
 /**
+ * Media frames render their menu asynchronously (the Elementor editor especially),
+ * so poll for it before mounting the folder sidebar. MAX_ATTEMPTS × RETRY_DELAY_MS
+ * (≈ 2s) covers the frame render without spinning indefinitely.
+ */
+const MEDIA_FRAME_MENU_MAX_ATTEMPTS = 40;
+const MEDIA_FRAME_MENU_RETRY_DELAY_MS = 50;
+
+/**
+ * Width at or below which the folder sidebar is a full-screen overlay rather than a
+ * column. Applied through a `max-width` media query so it matches the inclusive
+ * `max-width: 900px` breakpoint in media-library.scss exactly.
+ */
+const MOBILE_SIDEBAR_BREAKPOINT = 900;
+
+/**
+ * Inject the folder-sidebar root into a media frame's menu and tell the React
+ * app to render into it. Shared by the Select and Post media frames so the
+ * mounting logic (and its retry tuning) lives in one place instead of being
+ * duplicated per frame.
+ *
+ * @param {Object} frame A wp.media MediaFrame view (Select or Post).
+ */
+function initializeMediaLibrarySidebar( frame ) {
+	const hasActiveSortable = frame.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
+
+	if ( isUploadPage() || isFolderOrgDisabled() || hasActiveSortable ) {
+		return;
+	}
+
+	if ( window.elementor ) {
+		// Mount the sidebar into THIS frame's own menu, retrying until
+		// Elementor has rendered it. The previous single 100ms timer plus a
+		// "last visible .supports-drag-drop" guess was racy — it often fired
+		// before the frame menu existed, or targeted the wrong frame, so the
+		// folder sidebar frequently never appeared in the Elementor editor.
+		let attempts = 0;
+		const mountElementorSidebar = () => {
+			const menu = frame.$el.find( '.media-frame-menu' ).get( 0 );
+			if ( menu ) {
+				frame.$el.removeClass( 'hide-menu' );
+				menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
+				const div = document.createElement( 'div' );
+				div.id = 'rt-transcoder-media-library-root';
+				// Keep a per-frame reference to the wp.media frame on its own root,
+				// so the React sidebar can filter THIS frame's collection directly
+				// (via Backbone props) instead of poking shared grid-only DOM.
+				div._godamFrame = frame;
+				// Append into the menu's first element child (the .media-menu
+				// container). firstChild could be a whitespace text node, which
+				// cannot take children and would throw a HierarchyRequestError.
+				( menu.firstElementChild || menu ).appendChild( div );
+				// Pass the exact root so the React app renders into THIS frame's
+				// sidebar instead of guessing which frame/container is active.
+				document.dispatchEvent( new CustomEvent( 'media-frame-opened', { detail: { root: div } } ) );
+				return;
+			}
+			if ( attempts < MEDIA_FRAME_MENU_MAX_ATTEMPTS ) {
+				attempts++;
+				setTimeout( mountElementorSidebar, MEDIA_FRAME_MENU_RETRY_DELAY_MS );
+			}
+		};
+		mountElementorSidebar();
+		return;
+	}
+
+	// Non-Elementor (WP admin / block editor / classic editor). Mount into THIS
+	// frame's own menu, retrying until it renders, then hand the exact root to the
+	// React app. The previous single 100ms timer + "last visible .media-frame" guess
+	// was racy: it fired before the menu existed, targeted the wrong frame when the
+	// grid and a picker coexisted, and — because it only ran on `initialize` — never
+	// re-ran when a reused frame was closed and reopened, so the folder sidebar
+	// vanished on the second open of the media-selector popup.
+	let attempts = 0;
+	const mountSidebar = () => {
+		const menu = frame.$el.find( '.media-frame-menu .media-menu' ).get( 0 );
+		if ( menu ) {
+			frame.$el.removeClass( 'hide-menu' );
+			menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => {
+				// Unmount a stale React root before discarding its node so repeated
+				// open/close cycles don't leak detached roots.
+				if ( el._reactRoot ) {
+					try {
+						el._reactRoot.unmount();
+					} catch ( e ) {
+						// Ignore unmount errors for an already-torn-down root.
+					}
+					el._reactRoot = null;
+				}
+				el.remove();
+			} );
+			const div = document.createElement( 'div' );
+			div.id = 'rt-transcoder-media-library-root';
+			// Keep a per-frame reference to the wp.media frame on its own root, so
+			// the React sidebar can filter THIS frame's collection directly (via
+			// Backbone props) instead of poking shared grid-only DOM.
+			div._godamFrame = frame;
+			menu.appendChild( div );
+			// Pass the exact root so the React app renders into THIS frame's sidebar
+			// instead of guessing which frame is active.
+			document.dispatchEvent( new CustomEvent( 'media-frame-opened', { detail: { root: div } } ) );
+			return;
+		}
+		if ( attempts < MEDIA_FRAME_MENU_MAX_ATTEMPTS ) {
+			attempts++;
+			setTimeout( mountSidebar, MEDIA_FRAME_MENU_RETRY_DELAY_MS );
+		}
+	};
+	mountSidebar();
+}
+
+/**
  * MediaLibrary class.
  */
 class MediaLibrary {
@@ -69,17 +177,36 @@ class MediaLibrary {
 
 	initialize() {
 		this.setupAttachmentBrowser();
-		this.setupModalCloseCleanup();
+
+		// setupModalCloseCleanup patches wp.media.view.Modal.prototype.close globally. In additive
+		// mode keep GoDAM's footprint minimal alongside another DAM plugin and skip it; the GoDAM
+		// media-modal tab still works without it.
+		if ( ! isFolderOrgDisabled() ) {
+			this.setupModalCloseCleanup();
+		}
+
 		document.addEventListener( 'DOMContentLoaded', () => this.onDOMContentLoaded() );
 	}
 
 	onDOMContentLoaded() {
 		this.setupMediaLibraryRoot();
+		this.handleBannerClose();
+
+		// Additive mode (folder organization off): suppress GoDAM's WP media-library takeover
+		// (date-range filter, "Manage Media" button, search override, delete-refresh listeners).
+		// The GoDAM media-modal tab, wired in setupAttachmentBrowser(), is intentionally left intact.
+		if ( isFolderOrgDisabled() ) {
+			return;
+		}
+
 		this.initializeDateRangeFilter();
 		addManageMediaButton();
 		this.addInputPlaceholder();
-		this.handleBannerClose();
 		this.setupDeleteEventListeners();
+
+		// Runs here, not in setupAttachmentBrowser(), because it needs the list
+		// table in the DOM to find the bulk-action selects.
+		this.listViewBulkActions = new ListViewBulkActions();
 	}
 
 	addInputPlaceholder() {
@@ -141,12 +268,24 @@ class MediaLibrary {
 	}
 
 	setupAttachmentBrowser() {
-		if ( wp?.media?.view?.AttachmentsBrowser && AttachmentsBrowser ) {
-			wp.media.view.AttachmentsBrowser = AttachmentsBrowser;
-		}
+		// Additive mode (folder organization off): do NOT replace WordPress's library browser/grid
+		// views. Those global replacements are the main clash surface with another DAM/media
+		// plugin's directory UI. The detail-pane views and the GoDAM media-modal tab (below) are
+		// kept — they don't conflict with a folder plugin and preserve transcoding info + the cloud
+		// picker, which render on the native browser/grid.
+		//
+		// Exception: the media library grid page (upload.php). Transcoding status badges and the
+		// retranscode bulk action are core GoDAM features that live on these browser/grid views, so
+		// keep the custom views there even in additive mode. Their folder-only behaviour (drag to
+		// folder, folder/date toolbar filters) is separately gated on isFolderOrgDisabled().
+		if ( shouldReplaceAttachmentsViews() ) {
+			if ( wp?.media?.view?.AttachmentsBrowser && AttachmentsBrowser ) {
+				wp.media.view.AttachmentsBrowser = AttachmentsBrowser;
+			}
 
-		if ( wp?.media?.view?.Attachments && Attachments ) {
-			wp.media.view.Attachments = Attachments;
+			if ( wp?.media?.view?.Attachments && Attachments ) {
+				wp.media.view.Attachments = Attachments;
+			}
 		}
 
 		if ( wp?.media?.view?.Attachment?.Details && AttachmentDetails ) {
@@ -167,65 +306,11 @@ class MediaLibrary {
 					// Initialize GoDAM functionality
 					this.on( 'content:render:godam', this.GoDAMCreate, this );
 
-					// Initialize sidebar immediately
-					this.initializeMediaLibrarySidebar();
-				},
-
-				initializeMediaLibrarySidebar() {
-					const hasActiveSortable = this.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
-
-					if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable ) {
-						/**
-						 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
-						 */
-						setTimeout( () => {
-							$( '.media-frame' ).removeClass( 'hide-menu' );
-
-							if ( window.elementor ) {
-								const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) ).filter(
-									( container ) => getComputedStyle( container ).display !== 'none',
-								);
-
-								const activeContainer = visibleContainers[ visibleContainers.length - 1 ]; // most recently opened visible one
-
-								if ( activeContainer ) {
-									const menu = activeContainer.querySelector( '.media-frame-menu' );
-									if ( menu ) {
-										menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
-										const div = document.createElement( 'div' );
-										div.id = 'rt-transcoder-media-library-root';
-										if ( menu.firstChild ) {
-											menu.firstChild.appendChild( div );
-										} else {
-											menu.appendChild( div );
-										}
-									}
-								}
-							} else {
-								// Find all visible media frames (same logic as Elementor)
-								const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) ).filter(
-									( frame ) => getComputedStyle( frame ).display !== 'none',
-								);
-
-								const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // most recently opened visible one
-
-								if ( activeFrame ) {
-									const menu = activeFrame.querySelector( '.media-frame-menu .media-menu' );
-									if ( menu ) {
-										// Remove any existing instances
-										menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
-										// Create and append new div
-										const div = document.createElement( 'div' );
-										div.id = 'rt-transcoder-media-library-root';
-										menu.appendChild( div );
-									}
-								}
-							}
-
-							const event = new CustomEvent( 'media-frame-opened' );
-							document.dispatchEvent( event );
-						}, 100 );
-					}
+					// Mount the folder sidebar on every open, not just construction.
+					// The frame is reused across opens (initialize runs once), and the
+					// modal-close cleanup unmounts the sidebar's React root — so binding
+					// to `open` is what restores the sidebar when the popup is reopened.
+					this.on( 'open', () => initializeMediaLibrarySidebar( this ) );
 				},
 
 				// Include all other GoDAM methods from the shared object
@@ -243,64 +328,11 @@ class MediaLibrary {
 					// Initialize GoDAM functionality
 					this.on( 'content:render:godam', this.GoDAMCreate, this );
 
-					this.initializeMediaLibrarySidebar();
-				},
-
-				initializeMediaLibrarySidebar() {
-					const hasActiveSortable = this.$el.find( 'ul.ui-sortable:not(.ui-sortable-disabled)' ).length > 0;
-
-					if ( ! isUploadPage() && ! isFolderOrgDisabled() && ! hasActiveSortable ) {
-						/**
-						 * This timeout with the custom event is necessary to ensure that the media frame is fully loaded before dispatching the event.
-						 */
-						setTimeout( () => {
-							$( '.media-frame' ).removeClass( 'hide-menu' );
-
-							if ( window.elementor ) {
-								const visibleContainers = Array.from( document.querySelectorAll( '.supports-drag-drop' ) ).filter(
-									( container ) => getComputedStyle( container ).display !== 'none',
-								);
-
-								const activeContainer = visibleContainers[ visibleContainers.length - 1 ]; // most recently opened visible one
-
-								if ( activeContainer ) {
-									const menu = activeContainer.querySelector( '.media-frame-menu' );
-									if ( menu ) {
-										menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
-										const div = document.createElement( 'div' );
-										div.id = 'rt-transcoder-media-library-root';
-										if ( menu.firstChild ) {
-											menu.firstChild.appendChild( div );
-										} else {
-											menu.appendChild( div );
-										}
-									}
-								}
-							} else {
-								// Find all visible media frames (same logic as Elementor)
-								const visibleFrames = Array.from( document.querySelectorAll( '.media-frame' ) ).filter(
-									( frame ) => getComputedStyle( frame ).display !== 'none',
-								);
-
-								const activeFrame = visibleFrames[ visibleFrames.length - 1 ]; // most recently opened visible one
-
-								if ( activeFrame ) {
-									const menu = activeFrame.querySelector( '.media-frame-menu .media-menu' );
-									if ( menu ) {
-										// Remove any existing instances
-										menu.querySelectorAll( '#rt-transcoder-media-library-root' ).forEach( ( el ) => el.remove() );
-										// Create and append new div
-										const div = document.createElement( 'div' );
-										div.id = 'rt-transcoder-media-library-root';
-										menu.appendChild( div );
-									}
-								}
-							}
-
-							const event = new CustomEvent( 'media-frame-opened' );
-							document.dispatchEvent( event );
-						}, 100 );
-					}
+					// Mount the folder sidebar on every open, not just construction.
+					// The frame is reused across opens (initialize runs once), and the
+					// modal-close cleanup unmounts the sidebar's React root — so binding
+					// to `open` is what restores the sidebar when the popup is reopened.
+					this.on( 'open', () => initializeMediaLibrarySidebar( this ) );
 				},
 
 				// Include all other GoDAM methods from the shared object
@@ -308,13 +340,24 @@ class MediaLibrary {
 			} );
 		}
 
-		new MediaListViewTableDragHandler();
+		// List-view drag-to-folder is a folder-organization feature; skip it in additive mode.
+		if ( ! isFolderOrgDisabled() ) {
+			new MediaListViewTableDragHandler();
+		}
 	}
 
 	setupMediaLibraryRoot() {
 		if ( ! isFolderOrgDisabled() && isUploadPage() ) {
 			const mediaLibraryRoot = document.createElement( 'div' );
 			mediaLibraryRoot.id = 'rt-transcoder-media-library-root';
+			// Resolve the collapsed state before the node is inserted: the React sidebar
+			// mounts later, so setting the class only from there would paint the expanded
+			// layout first and visibly snap shut on every page load. Below the mobile
+			// breakpoint the sidebar is a full-screen overlay that always starts collapsed;
+			// above it, the user's saved preference decides.
+			if ( window.matchMedia( `(max-width: ${ MOBILE_SIDEBAR_BREAKPOINT }px)` ).matches || window.easydamMediaLibrary?.sidebarHidden ) {
+				mediaLibraryRoot.classList.add( 'hide-sidebar' );
+			}
 			const wpbody = document.querySelector( '#wpbody' );
 			wpbody.insertBefore( mediaLibraryRoot, wpbody.firstChild );
 		}

@@ -50,7 +50,7 @@ class Media_Tracker {
 		);
 
 		// Check if the attachment is a video.
-		update_option( 'rtgodam_new_attachment', $attachment_data, '', true );
+		update_option( 'rtgodam_new_attachment', $attachment_data, true );
 
 		// Trigger cache invalidation for attachment counts in folders.
 		do_action( 'godam_attachment_added', $attachment_id );
@@ -101,7 +101,7 @@ class Media_Tracker {
 			}
 
 			$attachment_data['transcoding_status'] = $transcoding_status;
-			update_option( 'rtgodam_new_attachment', $attachment_data, '', true );
+			update_option( 'rtgodam_new_attachment', $attachment_data, true );
 		}
 	}
 

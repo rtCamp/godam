@@ -10,10 +10,19 @@ import { useEffect, useRef, useState } from 'react';
 import { useFetchProcessedAnalyticsHistoryQuery } from './redux/api/analyticsApi';
 import { useFetchDashboardMetricsHistoryQuery } from '../dashboard/redux/api/dashboardAnalyticsApi';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
+import DateRangePicker, { fromISO } from './components/DateRangePicker';
 /**
  * WordPress dependencies
  */
-import { __, _x } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
+
+// Distinct multi-series palette for the chart lines + legend dots (Figma:
+// Play Rate cyan, Engagement Rate pink). Not the admin accent — these must stay
+// distinguishable from each other.
+const METRIC_COLORS = {
+	play_rate: '#06B6D4',
+	engagement_rate: '#EC4899',
+};
 
 export default function PlaybackPerformanceDashboard( {
 	attachmentID,
@@ -21,7 +30,12 @@ export default function PlaybackPerformanceDashboard( {
 	mode = 'analytics',
 } ) {
 	const chartRef = useRef( null );
-	const [ selectedPeriod, setSelectedPeriod ] = useState( '7D' );
+	// Shared date-range picker value. Defaults to All Time (`{ null, null }`)
+	// so this chart matches every other analytics card's default rather than
+	// starting on "Last 7 days" (godam-analytics #313 item 7). The d3 x-axis
+	// already adapts its tick density to the span, so any range renders
+	// correctly.
+	const [ range, setRange ] = useState( { startDate: null, endDate: null } );
 	const [ selectedMetrics, setSelectedMetrics ] = useState( [
 		'engagement_rate',
 		'play_rate',
@@ -32,30 +46,13 @@ export default function PlaybackPerformanceDashboard( {
 	const apiKeyErrorType = apiKeyError?.type || null;
 	const shouldSkipAnalytics = ! hasAPIKey || !! apiKeyErrorType;
 
-	// Get days value from selected period
-	const getDaysFromPeriod = ( period ) => {
-		switch ( period ) {
-			case '7D':
-				return 7;
-			case '1M':
-				return 30;
-			case '6M':
-				return 180;
-			case '1Y':
-				return 365;
-			case 'All':
-				return null; // Return null to fetch all available days
-			default:
-				return 7;
-		}
-	};
-
-	// Fetch analytics data based on selected period
-	const days = getDaysFromPeriod( selectedPeriod );
+	// The history queries take the range directly (start_date/end_date win over
+	// `days`; both null = full history).
 	const dashboardHistoryResult = useFetchDashboardMetricsHistoryQuery(
 		{
-			...( days !== null && { days } ),
 			siteUrl: window.location.origin,
+			startDate: range.startDate,
+			endDate: range.endDate,
 		},
 		{ skip: mode !== 'dashboard' || shouldSkipAnalytics },
 	);
@@ -64,7 +61,8 @@ export default function PlaybackPerformanceDashboard( {
 		{
 			videoId: attachmentID,
 			siteUrl: window.location.origin,
-			...( days !== null && { days } ),
+			startDate: range.startDate,
+			endDate: range.endDate,
 		},
 		{ skip: mode === 'dashboard' || ! attachmentID || shouldSkipAnalytics },
 	);
@@ -153,66 +151,33 @@ export default function PlaybackPerformanceDashboard( {
 			.append( 'g' )
 			.attr( 'transform', `translate(${ margin.left },${ margin.top })` );
 
-		// Filter data based on selected period
-		const filterData = ( data, period ) => {
-			const now = new Date();
-			const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
-			let cutoffDate = new Date( today );
-
-			switch ( period ) {
-				case '7D':
-					cutoffDate.setDate( today.getDate() - 6 ); // 6 days ago + today = 7 days
-					break;
-				case '1M':
-					cutoffDate.setMonth( today.getMonth() - 1 );
-					break;
-				case '6M':
-					cutoffDate.setMonth( today.getMonth() - 6 );
-					break;
-				case '1Y':
-					cutoffDate.setFullYear( today.getFullYear() - 1 );
-					break;
-				case 'All':
-				default:
-					// For "All", use the earliest date in data if available
-					if ( data && data.length > 0 ) {
-						cutoffDate = d3.min( data, ( d ) => d.date );
-					}
-					return data;
-			}
-
-			return data.filter( ( d ) => new Date( d.date ) >= cutoffDate );
-		};
-
-		const filteredData = filterData( parsedData, selectedPeriod );
-
-		// Calculate date range based on the selected period, not just the available data
+		// Derive the chart's date domain from the picked range. When a bounded
+		// range is set the domain is exactly [start, end]; All Time spans the
+		// data's own extent up to today. Data is filtered to the domain so
+		// generateDateRange can backfill missing days with zeros.
 		const now = new Date();
 		const today = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
+		const rangeActive = Boolean( range.startDate && range.endDate );
+
 		let startDate;
+		let endDate;
+		let filteredData;
 
-		if ( selectedPeriod === 'All' && filteredData.length > 0 ) {
-			startDate = d3.min( filteredData, ( d ) => d.date );
+		if ( rangeActive ) {
+			startDate = fromISO( range.startDate );
+			endDate = fromISO( range.endDate );
+			filteredData = parsedData.filter( ( d ) => {
+				const t = new Date( d.date );
+				return t >= startDate && t <= endDate;
+			} );
 		} else {
-			// Calculate start date based on period to ensure all days are included
-			startDate = new Date( today );
-			switch ( selectedPeriod ) {
-				case '7D':
-					startDate.setDate( today.getDate() - 6 ); // 6 days ago + today = 7 days
-					break;
-				case '1M':
-					startDate.setMonth( today.getMonth() - 1 );
-					break;
-				case '6M':
-					startDate.setMonth( today.getMonth() - 6 );
-					break;
-				case '1Y':
-					startDate.setFullYear( today.getFullYear() - 1 );
-					break;
-			}
+			filteredData = parsedData;
+			startDate =
+				filteredData.length > 0
+					? d3.min( filteredData, ( d ) => d.date )
+					: today;
+			endDate = today;
 		}
-
-		const endDate = today; // Always end at today
 
 		const allDates = generateDateRange( startDate, endDate );
 
@@ -330,6 +295,39 @@ export default function PlaybackPerformanceDashboard( {
 			.domain( [ 0, maxValue * 1.1 ] )
 			.range( [ height, 0 ] );
 
+		// Faint dashed gridlines (horizontal + vertical), inserted first so they
+		// sit behind the axes and the data lines.
+		svg
+			.insert( 'g', ':first-child' )
+			.attr( 'class', 'godam-chart-grid' )
+			.call( d3.axisLeft( y ).ticks( 5 ).tickSize( -width ).tickFormat( () => '' ) )
+			.call( ( g ) => g.select( '.domain' ).remove() )
+			.call( ( g ) =>
+				g
+					.selectAll( '.tick line' )
+					.attr( 'stroke', '#e5e7eb' )
+					.attr( 'stroke-dasharray', '4 4' ),
+			);
+
+		svg
+			.insert( 'g', ':first-child' )
+			.attr( 'class', 'godam-chart-grid' )
+			.attr( 'transform', `translate(0, ${ height })` )
+			.call(
+				d3
+					.axisBottom( x )
+					.tickValues( tickValues )
+					.tickSize( -height )
+					.tickFormat( () => '' ),
+			)
+			.call( ( g ) => g.select( '.domain' ).remove() )
+			.call( ( g ) =>
+				g
+					.selectAll( '.tick line' )
+					.attr( 'stroke', '#e5e7eb' )
+					.attr( 'stroke-dasharray', '4 4' ),
+			);
+
 		svg
 			.append( 'g' )
 			.call( d3.axisLeft( y ) )
@@ -352,9 +350,12 @@ export default function PlaybackPerformanceDashboard( {
 		const colorScale = d3
 			.scaleOrdinal()
 			.domain( [ 'engagement_rate', 'play_rate' ] )
-			.range( [ '#9333EA', '#5CC8BE' ] );
+			.range( [ METRIC_COLORS.engagement_rate, METRIC_COLORS.play_rate ] );
 
-		// Create a tooltip div
+		// Create a tooltip div. Remove any prior one first: the ResizeObserver
+		// below re-runs renderChart without a cleanup, so appending unconditionally
+		// leaked a fresh #chart-tooltip (duplicate id) on every resize.
+		d3.select( 'body' ).select( '#chart-tooltip' ).remove();
 		const tooltip = d3
 			.select( 'body' )
 			.append( 'div' )
@@ -374,23 +375,11 @@ export default function PlaybackPerformanceDashboard( {
 		selectedMetrics.forEach( ( metric ) => {
 			const color = colorScale( metric );
 
-			// Add filled area
-			const area = d3
-				.area()
-				.x( ( d ) => x( d.date ) )
-				.y0( height )
-				.y1( ( d ) => y( d[ metric ] ) );
-
-			svg
-				.append( 'path' )
-				.datum( completeData )
-				.attr( 'fill', color )
-				.attr( 'fill-opacity', 0.2 )
-				.attr( 'd', area );
-
-			// Add the line
+			// Smooth line, no filled area (matches the Figma chart). curveMonotoneX
+			// keeps the curve passing through each point without dipping below 0.
 			const line = d3
 				.line()
+				.curve( d3.curveMonotoneX )
 				.x( ( d ) => x( d.date ) )
 				.y( ( d ) => y( d[ metric ] ) );
 
@@ -423,29 +412,44 @@ export default function PlaybackPerformanceDashboard( {
 						.html(
 							`
               <div class="text-zinc-500">
-                ${ d.date.getDate() } ${ d.date.toLocaleString( 'default', { month: 'short' } ) } ${ d.date.getFullYear() }
+                ${ d.date.getDate() } ${ d3.timeFormat( '%b' )( d.date ) } ${ d.date.getFullYear() }
               </div>
               <hr />
 				<div class="flex flex-col min-w-[250px]">
 					<div class="flex justify-between items-center h-9">
 						<div class="flex items-center gap-2">
-							<span style="color: #9333EA">●</span>
-							<p class="text-zinc-500">${ __( 'Engagement Rate', 'godam' ) }</p>
-						</div>
-						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
-					</div>
-					<div class="flex justify-between items-center h-9">
-						<div class="flex items-center gap-2">
-							<span style="color: #5CC8BE">●</span>
+							<span style="color: ${ METRIC_COLORS.play_rate }">●</span>
 							<p class="text-zinc-500">${ __( 'Play Rate', 'godam' ) }</p>
 						</div>
 						<span class="text-zinc-950 font-medium">${ d.play_rate.toFixed( 2 ) }${ unit }</span>
 					</div>
+					<div class="flex justify-between items-center h-9">
+						<div class="flex items-center gap-2">
+							<span style="color: ${ METRIC_COLORS.engagement_rate }">●</span>
+							<p class="text-zinc-500">${ __( 'Engagement Rate', 'godam' ) }</p>
+						</div>
+						<span class="text-zinc-950 font-medium">${ d.engagement_rate.toFixed( 2 ) }${ unit }</span>
+					</div>
 				</div>
 
             `,
-						)
-						.style( 'left', event.pageX + 10 + 'px' )
+						);
+
+					// Position beside the cursor, flipping to the left when the
+					// tooltip would overflow the viewport's right edge so it is
+					// never clipped by the screen. #313 item 1.
+					const ttNode = tooltip.node();
+					const ttWidth = ttNode ? ttNode.offsetWidth : 300;
+					const viewportRight = window.scrollX + document.documentElement.clientWidth;
+					let ttLeft = event.pageX + 10;
+					if ( ttLeft + ttWidth > viewportRight - 8 ) {
+						ttLeft = event.pageX - ttWidth - 10;
+					}
+					if ( ttLeft < window.scrollX + 8 ) {
+						ttLeft = window.scrollX + 8;
+					}
+					tooltip
+						.style( 'left', ttLeft + 'px' )
 						.style( 'top', event.pageY - 30 + 'px' );
 
 					d3.select( this ).attr( 'r', 6 ).attr( 'stroke-width', 2 );
@@ -460,7 +464,10 @@ export default function PlaybackPerformanceDashboard( {
 					d3.select( this ).attr( 'r', 4 ).attr( 'stroke-width', 1 );
 					vertical.style( 'opacity', 0 );
 				} )
-				.on( 'mousemove', function() {
+				.on( 'mousemove', function( event ) {
+					// Take the event from the handler arg (d3 passes it), not the
+					// deprecated global `window.event` — which is undefined in Firefox,
+					// so d3.pointer() threw and the follow-line broke there.
 					const [ mouseX ] = d3.pointer( event );
 					vertical.attr( 'x1', mouseX ).attr( 'x2', mouseX );
 				} );
@@ -488,7 +495,7 @@ export default function PlaybackPerformanceDashboard( {
 			clearInterval( interval );
 			d3.select( '#chart-tooltip' ).remove();
 		};
-	}, [ selectedPeriod, selectedMetrics, parsedData ] );
+	}, [ range.startDate, range.endDate, selectedMetrics, parsedData ] );
 
 	useEffect( () => {
 		if ( ! chartRef.current ) {
@@ -507,111 +514,44 @@ export default function PlaybackPerformanceDashboard( {
 		return () => {
 			resizeObserver.disconnect();
 		};
-	}, [ parsedData, selectedMetrics, selectedPeriod ] );
+	}, [ parsedData, selectedMetrics, range.startDate, range.endDate ] );
+
+	// Dot-style legend item that toggles its metric on the chart.
+	const renderLegendItem = ( metricKey, label ) => {
+		const active = selectedMetrics.includes( metricKey );
+		return (
+			<button
+				type="button"
+				className="godam-chart-legend__item"
+				onClick={ () => toggleMetric( metricKey ) }
+				aria-pressed={ active }
+			>
+				<span
+					className="godam-legend-dot"
+					style={ { backgroundColor: active ? METRIC_COLORS[ metricKey ] : '#d1d5db' } }
+				/>
+				<span className={ active ? '' : 'godam-chart-legend__label--off' }>{ label }</span>
+			</button>
+		);
+	};
 
 	return (
-		<div className="w-full border rounded-lg p-4 shadow-sm h-[400px]">
+		<div className="godam-card playback-performance-card w-full h-[400px]">
 			<div className="flex flex-col justify-between gap-2 lg:gap-8 lg:flex-row lg:w-full">
-				<h2 className="text-base font-bold text-gray-800 m-0 whitespace-nowrap">
+				<h2 className="text-base font-semibold text-gray-800 m-0 whitespace-nowrap">
 					{ __( 'Playback Performance', 'godam' ) }
 				</h2>
-				<div className="flex gap-4 flex-col">
-					<div className="flex">
-						<button
-							className={ `flex items-center gap-1 rounded-md bg-transparent` }
-							onClick={ () => toggleMetric( 'engagement_rate' ) }
-						>
-							<div
-								className={ `w-4 h-4 rounded ${
-									selectedMetrics.includes( 'engagement_rate' )
-										? 'bg-[#AB3A6C]'
-										: 'bg-gray-300'
-								} flex items-center justify-center` }
-							>
-								{ selectedMetrics.includes( 'engagement_rate' ) && (
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="10"
-										height="10"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="3"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										className="text-white"
-									>
-										<polyline points="20 6 9 17 4 12"></polyline>
-									</svg>
-								) }
-							</div>
-							<span className="whitespace-nowrap">{ __( 'Engagement Rate', 'godam' ) }</span>
-						</button>
-
-						<button
-							className={ `flex items-center gap-1 rounded-md bg-transparent` }
-							onClick={ () => toggleMetric( 'play_rate' ) }
-						>
-							<div
-								className={ `w-4 h-4 rounded ${
-									selectedMetrics.includes( 'play_rate' )
-										? 'bg-[#AB3A6C]'
-										: 'bg-gray-300'
-								} flex items-center justify-center` }
-							>
-								{ selectedMetrics.includes( 'play_rate' ) && (
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="10"
-										height="10"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="3"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										className="text-white"
-									>
-										<polyline points="20 6 9 17 4 12"></polyline>
-									</svg>
-								) }
-							</div>
-							<span className="whitespace-nowrap">{ __( 'Play Rate', 'godam' ) }</span>
-						</button>
+				<div className="godam-chart-controls">
+					<div className="godam-chart-legend">
+						{ renderLegendItem( 'play_rate', __( 'Play Rate', 'godam' ) ) }
+						{ renderLegendItem( 'engagement_rate', __( 'Engagement Rate', 'godam' ) ) }
 					</div>
 
-					<div className="flex gap-1 text-sm">
-						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === 'All' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
-							onClick={ () => setSelectedPeriod( 'All' ) }
-						>
-							{ _x( 'All', 'All time period', 'godam' ) }
-						</button>
-						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '7D' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
-							onClick={ () => setSelectedPeriod( '7D' ) }
-						>
-							{ _x( '7D', '7 days period', 'godam' ) }
-						</button>
-						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1M' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
-							onClick={ () => setSelectedPeriod( '1M' ) }
-						>
-							{ _x( '1M', '1 month period', 'godam' ) }
-						</button>
-						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '6M' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
-							onClick={ () => setSelectedPeriod( '6M' ) }
-						>
-							{ _x( '6M', '6 months period', 'godam' ) }
-						</button>
-						<button
-							className={ `px-3 py-1 rounded-md cursor-pointer ${ selectedPeriod === '1Y' ? 'bg-[#AB3A6C1A] text-[#AB3A6C]' : 'bg-zinc-50' }` }
-							onClick={ () => setSelectedPeriod( '1Y' ) }
-						>
-							{ _x( '1Y', '1 year period', 'godam' ) }
-						</button>
-					</div>
+					<DateRangePicker
+						value={ range }
+						onChange={ setRange }
+						testIdPrefix="godam-playback-performance-daterange"
+					/>
 				</div>
 			</div>
 

@@ -13,7 +13,9 @@ const Features = ( { releaseData } ) => {
 	const [ isModalOpen, setIsModalOpen ] = useState( false );
 	const [ activeFeatureId, setActiveFeatureId ] = useState( null );
 
-	const version = releaseData.version ? releaseData.version : window.headerData?.version;
+	// Banner badge shows the INSTALLED plugin version (localized as headerData),
+	// not the release feed's newest entry; the feed version is only a fallback.
+	const version = window.headerData?.version || releaseData.version;
 	const primaryUpdates = releaseData.features ? releaseData.features.slice( 0, 3 ) : [];
 	const otherUpdates = releaseData.features ? releaseData.features.slice( 3 ) : [];
 

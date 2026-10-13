@@ -16,12 +16,23 @@
 
 	<rule ref="WordPress-Extra" />
 
+	<!-- Test classes follow PHPUnit's ClassNameTest.php naming, not the WP file-name rule. -->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>tests/*</exclude-pattern>
+	</rule>
+
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
 				<element value="godam"/>
 			</property>
 		</properties>
+		<!--
+		tests/stubs/ stands in for core's own translation functions, so its calls
+		forward $text and $domain by variable. The sniff's requirement that they be
+		string literals applies to callers, not to the functions themselves.
+		-->
+		<exclude-pattern>tests/stubs/*</exclude-pattern>
 	</rule>
 
 	<rule ref="WordPress-VIP-Go">
@@ -75,6 +86,7 @@
 	<exclude-pattern>*.asset.php</exclude-pattern>
 	<exclude-pattern>*/.github/*</exclude-pattern>
 	<exclude-pattern>*/.lando/*</exclude-pattern>
+	<exclude-pattern>*/lib/*</exclude-pattern>
 
 	<!-- Exclude wordpress dir if using Lando -->
 	<exclude-pattern>/wordpress/*</exclude-pattern>

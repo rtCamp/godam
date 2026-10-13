@@ -105,6 +105,19 @@ const mediaLibrary = {
 	entry: {
 		'media-library': path.resolve( process.cwd(), 'assets', 'src', 'js', 'media-library', 'index.js' ),
 	},
+	// This entry now code-splits video.js into an async chunk (see videojs-loader). It
+	// shares the assets/build/js output dir and the default `webpackChunkgodam` global
+	// with godamPlayerFrontend / godamImageLayersFrontend, which ALSO emit video.js-family
+	// async chunks. Give this compilation its own runtime global (uniqueName) and prefixed,
+	// content-hashed chunk filenames so its async chunks can't collide with theirs on disk
+	// or clobber each other's chunk-loading runtime (the "TypeError: o[t] is not a function"
+	// class of bug documented on godamImageLayersFrontend below). The content hash also
+	// avoids a browser serving a stale videojs chunk after a plugin update.
+	output: {
+		...sharedConfig.output,
+		uniqueName: 'godamMediaLibrary',
+		chunkFilename: 'media-library-[name].[contenthash].min.js',
+	},
 };
 
 const godamPlayerFrontend = {
@@ -114,10 +127,34 @@ const godamPlayerFrontend = {
 	},
 };
 
+const godamImageLayersFrontend = {
+	...sharedConfig,
+	entry: {
+		'godam-image-layers-frontend': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-image-layers', 'frontend.js' ),
+	},
+	// This is a separate webpack compilation that shares the output dir with
+	// godam-player-frontend, and BOTH code-split FontAwesome into async chunks
+	// named `fontawesome-core`/`fontawesome-icons` (via loadFontAwesome). With the
+	// default settings the two builds emit identically-named chunks that clobber
+	// each other on disk AND share the default `webpackChunkgodam` chunk-loading
+	// global, so this entry ends up loading the player build's FA chunk under its
+	// own runtime -> "TypeError: o[t] is not a function" and icons never render.
+	// Give this entry its own runtime global (uniqueName) and chunk filenames so
+	// its async chunks stay independent of the player's.
+	output: {
+		...sharedConfig.output,
+		uniqueName: 'godamImageLayers',
+		chunkFilename: 'godam-image-layers-[name].min.js',
+	},
+};
+
 const godamPlayerAnalytics = {
 	...sharedConfig,
 	entry: {
 		'godam-player-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'analytics.js' ),
+		// Standalone layer-analytics runtime for pages without the video player
+		// (e.g. the GoDAM Image block with product hotspots).
+		'godam-layer-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'layer-analytics.js' ),
 	},
 };
 
@@ -264,6 +301,27 @@ const wpBakeryImageSrcSelectorParam = {
 		'wpbakery-image-src-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-image-src-selector-param.js' ),
 	},
 };
+
+const wpBakeryImageSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-image-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-image-selector-param.js' ),
+	},
+};
+
+const wpBakeryDocumentSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-document-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-document-selector-param.js' ),
+	},
+};
+
+const wpBakeryDocumentCoverSelectorParam = {
+	...sharedConfig,
+	entry: {
+		'wpbakery-document-cover-selector-param': path.resolve( process.cwd(), 'assets', 'src', 'js', 'wpbakery', 'wpbakery-document-cover-selector-param.js' ),
+	},
+};
 const ninjaFormsSubmissionsList = {
 	...sharedConfig,
 	entry: {
@@ -315,6 +373,10 @@ const pages = {
 			},
 			{
 				test: /\.(css|scss)$/, // Handle CSS files
+				// `sideEffects: true` keeps bare CSS imports (e.g.
+				// `@wordpress/dataviews/build-style/style.css`) from being
+				// tree-shaken out of the bundle in production mode.
+				sideEffects: true,
 				use: [ 'style-loader', 'css-loader', 'postcss-loader', 'sass-loader' ],
 			},
 			{
@@ -336,6 +398,20 @@ const pages = {
 		'react-dom': 'ReactDOM',
 		'@wordpress/element': [ 'wp', 'element' ], // For WordPress compatibility
 		'@wordpress/i18n': [ 'wp', 'i18n' ],
+		'@wordpress/components': [ 'wp', 'components' ],
+		'@wordpress/api-fetch': [ 'wp', 'apiFetch' ],
+		'@wordpress/primitives': [ 'wp', 'primitives' ],
+		'@wordpress/data': [ 'wp', 'data' ],
+		'@wordpress/notices': [ 'wp', 'notices' ],
+		// `@wordpress/dataviews` reaches into `@wordpress/components` private
+		// APIs through `@wordpress/private-apis`. The lock store is keyed on a
+		// per-module-instance WeakMap, so a locally bundled copy of
+		// private-apis would fail to unlock the WP-provided components build
+		// ("Cannot unlock an object that was not locked before"). Externalize
+		// it to wp.privateApis so the bundled DataViews shares the same
+		// instance core registered. DataViews itself is still bundled because
+		// core ships no `wp-dataviews` script handle.
+		'@wordpress/private-apis': [ 'wp', 'privateApis' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
@@ -349,6 +425,7 @@ module.exports = [
 	adminJS,
 	mediaLibrary,
 	godamPlayerFrontend,
+	godamImageLayersFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
 	httpAuthDetector,
@@ -372,6 +449,9 @@ module.exports = [
 	wpBakeryVideoSelectorParam,
 	wpBakeryAudioSelectorParam,
 	wpBakeryImageSrcSelectorParam,
+	wpBakeryImageSelectorParam,
+	wpBakeryDocumentSelectorParam,
+	wpBakeryDocumentCoverSelectorParam,
 	ninjaFormsSubmissionsList,
 	blockExtensions,
 ];

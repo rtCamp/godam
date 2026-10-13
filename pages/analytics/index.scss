@@ -138,7 +138,7 @@
 	}
 
 	.godam-analytics-back-btn:hover {
-		color: #AB3A6C;
+		color: var(--wp-admin-theme-color, #ab3a6c);
 	}
 
 	.godam-analytics-back-btn:focus {
@@ -317,17 +317,6 @@
 	}
 }
 
-.metrics-chart {
-	position: relative;
-}
-
-.mini-chart-tooltip {
-	position: absolute;
-	pointer-events: none;
-	z-index: 100;
-	left: 0;
-}
-
 .blurred {
 	filter: blur(5px);
 	pointer-events: none;
@@ -364,7 +353,7 @@
 }
 
 .api-key-message a {
-	color: #ab3a6c;
+	color: var(--wp-admin-theme-color, #ab3a6c);
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -432,7 +421,12 @@
 #root-video-dashboard #tooltip-container .tooltip-text {
 	position: absolute;
 	top: 100%;
-    left: -95%;
+	// Anchor to the icon's right edge and grow leftward (inward) instead of
+	// rightward. The last Insights card sits at the row's right edge, so a
+	// right-growing tooltip ran off the screen and clipped; growing inward keeps
+	// it on-screen for the rightmost card while the others still have room.
+	right: 0;
+	left: auto;
 	visibility: hidden;
 	background-color: rgba(0, 0, 0, 0.8);
 	color: #fff;
@@ -491,7 +485,7 @@
 	cursor: pointer;
 	position: relative;
 	font-weight: 500;
-	border-bottom: 2px solid #AB3A6C;
+	border-bottom: 2px solid var(--wp-admin-theme-color, #ab3a6c);
 	padding: 8px 0;
 }
 
@@ -661,3 +655,314 @@
 		}
 	}
 }
+
+// GoDAM 2.0 (analytics surface): Playback Performance header controls —
+// dot-style legend + date-range dropdown.
+.godam-chart-controls {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.godam-chart-legend {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+
+	&__item {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		cursor: pointer;
+		font-size: 13px;
+		color: #1e1e1e;
+		white-space: nowrap;
+	}
+
+	&__label--off {
+		color: #a1a1aa;
+	}
+}
+
+.godam-legend-dot {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 9999px;
+	flex-shrink: 0;
+}
+
+.godam-period-dropdown__toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+}
+
+// Primary CTAs in the shared GoDAM header (Manage Media / Upgrade plan) use a
+// plugin-wide brand gradient. Scope an admin-scheme override to the analytics
+// surfaces only, so the rest of GoDAM keeps the brand gradient for now.
+.toplevel_page_rtgodam,
+.godam_page_rtgodam_analytics {
+
+	.godam-button.is-primary:not(:disabled) {
+		background: var(--wp-admin-theme-color) !important;
+	}
+}
+
+// =====================================================================
+// GoDAM 2.0 shared card primitives (P0, FE-only).
+// Defined here (not dashboard/index.scss) so the per-video Analytics page
+// — which only bundles this stylesheet — can use them. The dashboard bundle
+// imports this file too, so both surfaces share one definition.
+// =====================================================================
+.godam-card {
+	background: #fff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	padding: 20px;
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		margin-bottom: 16px;
+
+		h2 {
+			margin: 0;
+			font-size: 16px;
+			font-weight: 600;
+			color: #1e1e1e;
+		}
+	}
+}
+
+.godam-pill {
+	font-size: 12px;
+	font-weight: 500;
+	color: #50575e;
+	border: 1px solid #e5e7eb;
+	border-radius: 6px;
+	padding: 4px 10px;
+	white-space: nowrap;
+}
+
+// Insights card: the KPI cards keep their existing responsive flex layout
+// (4-across at desktop, wrapping below). Just let them shrink within the card.
+.godam-insights-card {
+
+	.single-metrics-info-container > * {
+		min-width: 0;
+	}
+}
+
+// =====================================================================
+// GoDAM 2.0 per-video analytics page reskin (P0, FE-only).
+// Stacks the existing content into the shared card aesthetic.
+// =====================================================================
+#root-video-analytics {
+
+	// Stack the "All Time Insights" card + the video card vertically inside the
+	// reveal/blur wrapper (#video-analytics-container) instead of the old 2-col row.
+	.video-analytics-container {
+		display: block;
+
+		.godam-analytics-stack {
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+			width: 100%;
+		}
+	}
+
+	// The video + heatmap overlay sit inside a card; keep the player centred.
+	.godam-video-card {
+
+		.video-container {
+			margin: 0 auto;
+		}
+	}
+
+	// Video hero (thumbnail + title + layer count) — visual reference for the
+	// video now that the inline player was replaced by the retention curve.
+	.godam-video-hero {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+
+		&__thumb {
+			width: 72px;
+			height: 72px;
+			flex-shrink: 0;
+			object-fit: cover;
+			background: #e5e7eb;
+			border-radius: 10px;
+		}
+
+		&__meta {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			min-width: 0;
+		}
+
+		&__title {
+			margin: 0;
+			font-size: 24px;
+			font-weight: 700;
+			line-height: 1.2;
+			color: #1e1e1e;
+			overflow-wrap: anywhere;
+		}
+
+		&__badge {
+			align-self: flex-start;
+			padding: 4px 12px;
+			font-size: 13px;
+			color: #52525b;
+			background: #fff;
+			border: 1px solid #e5e7eb;
+			border-radius: 8px;
+		}
+	}
+
+	// Viewer Retention Curve — standalone area+line chart that replaced the
+	// "Views across the video" overlay. Neutral greys for the curve; the WP
+	// admin accent only for the hover focus dot.
+	.godam-retention-card {
+
+		// Lay the date picker out to the right of the title. #2028 adds a global
+		// .godam-card__head style; this scoped rule keeps the head tidy on its own.
+		.godam-card__head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 12px;
+		}
+
+		.godam-retention {
+			position: relative;
+			width: 100%;
+			padding: 8px 4px 0;
+		}
+
+		#retention-curve {
+			display: block;
+			width: 100%;
+			height: 320px;
+			overflow: visible;
+		}
+
+		.godam-retention__area {
+			fill: #e5e7eb;
+			opacity: 0.55;
+		}
+
+		.godam-retention__line {
+			fill: none;
+			stroke: #6b7280;
+			stroke-width: 2px;
+		}
+
+		.godam-retention__grid .tick line {
+			stroke: #eef0f2;
+		}
+
+		.godam-retention__grid .tick text {
+			display: none;
+		}
+
+		.godam-retention__axis .tick text {
+			fill: #71717a;
+			font-size: 11px;
+		}
+
+		.godam-retention__axis .tick line {
+			stroke: transparent;
+		}
+
+		.godam-retention__focus {
+			r: 4;
+			fill: var(--wp-admin-theme-color, #3858e9);
+			stroke: #fff;
+			stroke-width: 2px;
+		}
+
+		.godam-retention__hover-line {
+			stroke: #9ca3af;
+			stroke-width: 1px;
+			stroke-dasharray: 4 2;
+		}
+
+		.retention-curve-tooltip {
+			position: absolute;
+			top: 0;
+			z-index: 2;
+			transform: translateX(-50%);
+			padding: 6px 10px;
+			background: #fff;
+			border: 1px solid #e5e7eb;
+			border-radius: 6px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+			font-size: 12px;
+			white-space: nowrap;
+			pointer-events: none;
+			opacity: 0;
+
+			.godam-retention__tt {
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+			}
+
+			.godam-retention__tt-value {
+				display: flex;
+				gap: 6px;
+				align-items: center;
+				font-weight: 600;
+				color: #18181b;
+			}
+
+			.godam-retention__tt-time {
+				color: #71717a;
+			}
+		}
+
+		// Only present to keep charts.js's per-video render triggering.
+		.godam-retention__trigger {
+			display: none;
+		}
+
+		.godam-retention__empty {
+			padding: 32px 8px;
+			color: #71717a;
+			font-size: 13px;
+			text-align: center;
+		}
+	}
+
+	// Three-up metrics row (playback / country / sources) — make every card use
+	// the shared .godam-card look so the row is visually uniform.
+	.metrics-container {
+
+		.country-heatmap-container,
+		.posts-count-container {
+			height: 400px;
+			overflow: auto;
+		}
+
+		// Drop the bespoke heading weight in favour of the .godam-card__head style.
+		.posts-count-container h2 {
+			color: #1e1e1e;
+			font-size: 16px;
+			font-weight: 600;
+		}
+	}
+}
+
+// .godam-analytics-unavailable moved to pages/shared/analytics-unavailable.scss (shared via AnalyticsUnavailableNotice).

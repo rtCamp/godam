@@ -4,54 +4,60 @@
 import clsx from 'clsx';
 
 /**
+ * Internal dependencies
+ */
+import { CustomizeVideoIcon, CrownIcon } from './icons';
+
+/**
  * WordPress dependencies
  */
 import { isBlobURL } from '@wordpress/blob';
 import {
-	BaseControl,
 	Button,
 	Disabled,
 	PanelBody,
 	Spinner,
-	Placeholder,
 	ToggleControl,
 	RangeControl,
 	SelectControl,
 	ToolbarButton,
 	ToolbarGroup,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalUnitControl as UnitControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalToggleGroupControl as ToggleGroupControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
 import {
 	BlockControls,
 	InspectorControls,
 	MediaUpload,
-	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
 	InnerBlocks,
+	// eslint-disable-next-line import/no-unresolved -- resolver false positive: package resolves fine at build time, eslint-plugin-import can't parse @wordpress/block-editor's exports map.
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { __, _x, sprintf } from '@wordpress/i18n';
-import { useInstanceId } from '@wordpress/compose';
 import { useDispatch } from '@wordpress/data';
-import { edit, trendingUp } from '@wordpress/icons';
+import { edit, trendingUp, trash, plus } from '@wordpress/icons';
 import { store as noticesStore } from '@wordpress/notices';
 
 /**
  * Internal dependencies
  */
-import VideoCommonSettings from './edit-common-settings';
+import { PlaybackControls, PerformanceControl, LikesAndComments } from './edit-common-settings';
 import Video from './VideoJS';
-import TracksEditor from './track-uploader';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
+import ThumbnailPanel from './components/ThumbnailPanel.js';
 import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601, stripHtmlTags } from './utils/index.js';
 import './editor.scss';
-import { ReactComponent as icon } from '../../images/godam-video-filled.svg';
 import { canManageAttachment } from '../../js/media-library/utility';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
-const VIDEO_POSTER_ALLOWED_MEDIA_TYPES = [ 'image' ];
 
 // Define allowed blocks for the overlay.
 const ALLOWED_BLOCKS = [
@@ -104,9 +110,7 @@ function VideoEdit( {
 	insertBlocksAfter,
 	context,
 } ) {
-	const instanceId = useInstanceId( VideoEdit );
 	const videoPlayer = useRef();
-	const posterImageButton = useRef();
 
 	const {
 		id,
@@ -115,7 +119,6 @@ function VideoEdit( {
 		autoplay,
 		poster,
 		src,
-		tracks,
 		sources,
 		muted,
 		loop,
@@ -126,13 +129,19 @@ function VideoEdit( {
 		aspectRatio,
 		videoWidth,
 		videoHeight,
+		playerHeight,
+		showShareButton,
+		showTranscription,
+		showInLightbox,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState( attributes.blob );
 	const [ defaultPoster, setDefaultPoster ] = useState( '' );
 	const [ isSEOModalOpen, setIsSEOModelOpen ] = useState( false );
 	const [ duration, setDuration ] = useState( 0 );
+
 	const [ isVideoSelecting, setIsVideoSelecting ] = useState( false );
 	const [ attachmentAuthorId, setattachmentAuthorId ] = useState( null );
+	const [ videoTitle, setVideoTitle ] = useState( '' );
 	const isInsideQueryLoop = context?.hasOwnProperty( 'queryId' );
 
 	const dispatch = useDispatch();
@@ -147,15 +156,61 @@ function VideoEdit( {
 			return aspectRatio;
 		}
 
+		// Fallback to 16:9 while intrinsic dimensions are still loading, so the
+		// player reserves vertical space instead of collapsing to the controls.
+		if ( aspectRatio === 'responsive' ) {
+			return '16:9';
+		}
+
 		return '';
 	}, [ aspectRatio, videoWidth, videoHeight ] );
 
+	// When a player height is set, derive a max-width from the height + aspect ratio.
+	// This mirrors the video-editor pattern: width = height × (arW / arH).
+	// Applying max-width lets Video.js fill that width with fluid: true, which naturally
+	// produces the desired height via the aspect-ratio padding trick.
+	const computedMaxWidth = useMemo( () => {
+		if ( ! playerHeight || ! calculatedAspectRatio ) {
+			return null;
+		}
+		const heightMatch = playerHeight.match( /^(\d+(?:\.\d+)?)([a-z%]*)$/ );
+		if ( ! heightMatch ) {
+			return null;
+		}
+
+		const unit = heightMatch[ 2 ] || 'px';
+
+		// Skip width derivation for percentage units: % resolves against different
+		// axes for width vs. height, so the computed max-width would be meaningless.
+		if ( '%' === unit ) {
+			return null;
+		}
+
+		const arMatch = calculatedAspectRatio.match( /^(\d+(?:\.\d+)?):(\d+(?:\.\d+)?)$/ );
+		if ( ! arMatch ) {
+			return null;
+		}
+		const arH = parseFloat( arMatch[ 2 ] );
+		if ( ! arH ) {
+			return null;
+		}
+
+		const heightValue = parseFloat( heightMatch[ 1 ] );
+		const arW = parseFloat( arMatch[ 1 ] );
+		return `${ Math.round( heightValue * ( arW / arH ) ) }${ unit }`;
+	}, [ playerHeight, calculatedAspectRatio ] );
+
 	// Memoize video options to prevent unnecessary rerenders.
 	const videoOptions = useMemo( () => {
+		// In the editor, always preload at least metadata so `loadedmetadata`
+		// fires and we can capture intrinsic videoWidth/videoHeight/duration.
+		// The saved `preload` attribute still drives the frontend.
+		const editorPreload = preload === 'none' ? 'metadata' : preload;
+
 		const options = {
 			controls,
 			autoplay,
-			preload,
+			preload: editorPreload,
 			fluid: true,
 			playsinline: true,
 			flvjs: {
@@ -248,11 +303,23 @@ function VideoEdit( {
 						setattachmentAuthorId( response.author );
 					}
 
-					if ( response.meta.rtgodam_media_video_thumbnail !== '' ) {
-						setDefaultPoster( response.meta.rtgodam_media_video_thumbnail );
-					}
+					setVideoTitle( stripHtmlTags( response.title?.rendered || '' ) );
+
+					// Keep the auto-generated poster in sync with the current
+					// attachment: apply its thumbnail when present, and clear any
+					// stale one (e.g. carried over from a previously selected
+					// video) when this attachment has none.
+					setDefaultPoster( response.meta?.rtgodam_media_video_thumbnail || '' );
 
 					if ( response ) {
+						// Default "Show caption" from the attachment's Display-captions
+						// setting (Video Editor > Display Settings) the first time, unless
+						// already set on the block. The block value then overrides it.
+						if ( attributes.showCaption === undefined ) {
+							const attachmentSubsCaps = response?.rtgodam_meta?.videoConfig?.controlBar?.subsCapsButton;
+							setAttributes( { showCaption: attachmentSubsCaps !== false } );
+						}
+
 						// Set dimensions if available.
 						if ( response.media_details?.width && response.media_details?.height ) {
 							setAttributes( {
@@ -304,6 +371,10 @@ function VideoEdit( {
 				}
 			} )();
 		}
+		// Intentionally runs only when the selected video (`id`) changes; the
+		// `attributes.showCaption` read is a one-time default guarded by
+		// `=== undefined`, so it must not re-trigger this attachment fetch.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ id, setAttributes, dispatch ] );
 
 	// Backward compatibility: Initialize SEO data for existing blocks
@@ -360,6 +431,27 @@ function VideoEdit( {
 		}
 	}, [ id, src, attributes.seo, isVideoSelecting, setAttributes ] );
 
+	// hoverSelect is incompatible with both autoplay and "Show in lightbox" (the
+	// lightbox poster shows nothing but the play icon) — reset it to 'none'.
+	// Only apply this when one of them is toggled on after mount so older content
+	// is not rewritten as a side effect of opening the editor.
+	const previousHoverBlockersRef = useRef( { autoplay, showInLightbox } );
+
+	useEffect( () => {
+		const previous = previousHoverBlockersRef.current;
+		if ( previous.autoplay === autoplay && previous.showInLightbox === showInLightbox ) {
+			return;
+		}
+		previousHoverBlockersRef.current = { autoplay, showInLightbox };
+
+		const turnedOn = ( ! previous.autoplay && autoplay ) ||
+			( ! previous.showInLightbox && showInLightbox );
+
+		if ( turnedOn && attributes.hoverSelect !== 'none' ) {
+			setAttributes( { hoverSelect: 'none' } );
+		}
+	}, [ autoplay, showInLightbox ] ); // eslint-disable-line react-hooks/exhaustive-deps
+
 	// Keep overridden SEO thumbnail synced with block poster.
 	useEffect( () => {
 		if ( ! attributes?.seoOverride || ! poster ) {
@@ -394,7 +486,25 @@ function VideoEdit( {
 				blob: undefined,
 				seo: undefined, // Clear SEO data when no media selected
 			} );
+			setVideoTitle( '' );
 			setTemporaryURL();
+			setIsVideoSelecting( false );
+			return;
+		}
+
+		// Guard against non-video selections. The media library lets users pick
+		// any attachment type even when allowedTypes is set, so re-check here.
+		// Derive the type from the MIME string: `media.type` is the top-level
+		// type ("video") only for library selections — for freshly uploaded
+		// files it is the REST post type ("attachment"), so trusting it would
+		// reject every uploaded video. `mime` is set on library selections,
+		// `mime_type` on uploads.
+		const mediaType = ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
+		if ( mediaType && mediaType !== 'video' ) {
+			createErrorNotice(
+				__( 'Only video files are allowed in the GoDAM Video block.', 'godam' ),
+				{ type: 'snackbar' },
+			);
 			setIsVideoSelecting( false );
 			return;
 		}
@@ -405,11 +515,25 @@ function VideoEdit( {
 			return;
 		}
 
-		if ( media.image?.src !== media.icon ) {
-			setDefaultPoster( media.image?.src );
+		// Clear the previously selected video's auto-generated poster. The
+		// displayed thumbnail is `poster || defaultPoster`; since `poster` is
+		// reset to undefined below, a stale `defaultPoster` would otherwise keep
+		// showing the old video's thumbnail when the replacement has none (a
+		// freshly uploaded / not-yet-transcoded video, or a video with no
+		// thumbnail). The paths below set it again when a real thumbnail exists.
+		setDefaultPoster( '' );
+
+		if ( media.image?.src && media.image.src !== media.icon ) {
+			setDefaultPoster( media.image.src );
 		}
 
 		if ( media?.origin === 'godam' ) {
+			// GoDAM media carries its thumbnail directly, so apply it right away
+			// (the numeric-id meta fetch may not run for virtual attachments).
+			if ( media?.thumbnail_url ) {
+				setDefaultPoster( media.thumbnail_url );
+			}
+
 			// Create new SEO data from GoDAM media
 			const newSEOData = {
 				contentUrl: media?.url,
@@ -451,6 +575,7 @@ function VideoEdit( {
 				videoHeight: media.height ? `${ media.height }` : undefined,
 			} );
 
+			setVideoTitle( stripHtmlTags( media.title || '' ) );
 			setTemporaryURL();
 			setIsVideoSelecting( false );
 		} else {
@@ -530,6 +655,7 @@ function VideoEdit( {
 							],
 						} );
 					}
+					setVideoTitle( stripHtmlTags( response.title?.rendered || '' ) );
 				} catch ( error ) {
 					// Create basic SEO data on error
 					const fallbackSEOData = {
@@ -572,6 +698,9 @@ function VideoEdit( {
 				poster: undefined,
 				seo: undefined, // Clear SEO data when new URL is selected
 			} );
+			// No attachment id here, so the id-based effect can't clear the
+			// previous video's auto-generated poster — do it explicitly.
+			setDefaultPoster( '' );
 			setTemporaryURL();
 
 			// Reset flag after a brief delay to allow attribute changes to settle
@@ -594,34 +723,8 @@ function VideoEdit( {
 
 	const blockProps = useBlockProps( {
 		className: classes,
+		...( computedMaxWidth ? { style: { maxWidth: computedMaxWidth } } : {} ),
 	} );
-
-	if ( ! src && ! temporaryURL && ! isInsideQueryLoop ) {
-		return (
-			<div { ...blockProps }>
-				<Placeholder
-					className="block-editor-media-placeholder"
-					withIllustration={ ! isSingleSelected }
-					icon={ icon }
-					label={ __( 'GoDAM video', 'godam' ) }
-					instructions={ __(
-						'Drag and drop a video, upload, or choose from your library.',
-						'godam',
-					) }
-				>
-					<MediaUpload
-						onSelect={ onSelectVideo }
-						allowedTypes={ ALLOWED_MEDIA_TYPES }
-						render={ ( { open } ) => (
-							<Button onClick={ open } variant="primary">
-								{ __( 'Select Video', 'godam' ) }
-							</Button>
-						) }
-					/>
-				</Placeholder>
-			</div>
-		);
-	}
 
 	function onSelectPoster( image ) {
 		const nextAttributes = {
@@ -651,12 +754,7 @@ function VideoEdit( {
 		}
 
 		setAttributes( nextAttributes );
-
-		// Move focus back to the Media Upload button.
-		posterImageButton.current.focus();
 	}
-
-	const videoPosterDescription = `video-block__poster-image-description-${ instanceId }`;
 
 	// Add function to handle vertical alignment change.
 	const onChangeVerticalAlignment = ( alignment ) => {
@@ -692,6 +790,174 @@ function VideoEdit( {
 		return timeString;
 	};
 
+	const videoSelectionPanelContent = (
+		<>
+			<p className="godam-video-selection__description">
+				{ __( 'Add subtitles, layers, and more to make your video stand out.', 'godam' ) }
+			</p>
+			{ ( ! src && ! temporaryURL ) ? (
+				<MediaUpload
+					onSelect={ onSelectVideo }
+					allowedTypes={ ALLOWED_MEDIA_TYPES }
+					render={ ( { open } ) => (
+						<Button
+							onClick={ open }
+							icon={ plus }
+							className="godam-video-selection__add-btn"
+							data-test-id="godam-video-button-add-video"
+						>
+							{ __( 'Add Video', 'godam' ) }
+						</Button>
+					) }
+				/>
+			) : (
+				<>
+					<Button
+						href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_media_editor&id=${ undefined !== id ? id : cmmId }` }
+						target="_blank"
+						className="godam-video-selection__customize-btn"
+						icon={ CustomizeVideoIcon }
+						iconSize={ 14 }
+						data-test-id="godam-video-button-customize"
+					>
+						{ __( 'Customize Video', 'godam' ) }
+					</Button>
+					<div className="godam-video-selection__item">
+						{ ( poster || defaultPoster ) ? (
+							<img
+								src={ poster || defaultPoster }
+								alt=""
+								className="godam-video-selection__item-thumbnail"
+							/>
+						) : (
+							<span className="godam-video-selection__item-thumbnail godam-video-selection__item-thumbnail--placeholder" />
+						) }
+						<span className="godam-video-selection__item-title">
+							{ videoTitle || src }
+						</span>
+						<Button
+							icon={ trash }
+							iconSize={ 16 }
+							label={ __( 'Remove video', 'godam' ) }
+							onClick={ () => onSelectVideo( undefined ) }
+							className="godam-video-selection__item-delete"
+							data-test-id="godam-video-button-remove-video"
+						/>
+					</div>
+				</>
+			) }
+		</>
+	);
+
+	// Autoplay plays the video where it stands and the lightbox turns it into a
+	// click-to-open poster; either way hovering has nothing left to do. Mirrors
+	// the frontend guard in inc/templates/godam-player.php.
+	const hoverOptionsLockedReason = ( () => {
+		if ( autoplay ) {
+			return __( 'Hover option is disabled when autoplay is on.', 'godam' );
+		}
+		if ( showInLightbox ) {
+			return __( 'Hover option is disabled when the video opens in a lightbox.', 'godam' );
+		}
+		return null;
+	} )();
+
+	const hoverOptionsPanelContent = (
+		<ToggleGroupControl
+			__nextHasNoMarginBottom
+			isBlock
+			isDeselectable
+			data-test-id="godam-video-control-hover-select"
+			value={ attributes.hoverSelect || 'none' }
+			onChange={ ( value ) => setAttributes( { hoverSelect: value ?? 'none' } ) }
+			help={ hoverOptionsLockedReason ?? __( 'Choose the action to perform on video hover.', 'godam' ) }
+		>
+			<ToggleGroupControlOption value="show-player-controls" label={ __( 'Show player', 'godam' ) } />
+			<ToggleGroupControlOption value="start-preview" label={ __( 'Start Preview', 'godam' ) } />
+		</ToggleGroupControl>
+	);
+
+	const layoutPanelContent = (
+		<>
+			<ToggleGroupControl
+				__nextHasNoMarginBottom
+				isBlock
+				label={ __( 'Aspect Ratio', 'godam' ) }
+				data-test-id="godam-video-control-aspect-ratio"
+				value={ attributes.aspectRatio || 'responsive' }
+				onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
+				help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
+			>
+				<ToggleGroupControlOption value="responsive" label={ __( 'Original', 'godam' ) } />
+				<ToggleGroupControlOption value="16:9" label={ __( '16:9', 'godam' ) } />
+			</ToggleGroupControl>
+		</>
+	);
+
+	const advancedPanelContent = (
+		<>
+			{ ! isInsideQueryLoop && (
+				<>
+					<UnitControl
+						__nextHasNoMarginBottom
+						label={ __( 'Height', 'godam' ) }
+						data-test-id="godam-video-control-player-height"
+						value={ playerHeight || '' }
+						onChange={ ( value ) => setAttributes( { playerHeight: value || '' } ) }
+						help={ __( 'Set the video height. Width is auto-calculated from the aspect ratio.', 'godam' ) }
+					/>
+					<div data-test-id="godam-video-control-show-overlay" style={ { marginBottom: '16px' } }>
+						<ToggleControl
+							label={ __( 'Show overlay blocks', 'godam' ) }
+							checked={ showOverlay }
+							onChange={ ( value ) => setAttributes( { showOverlay: value } ) }
+							help={ __( 'Display blocks on top of the video player.', 'godam' ) }
+						/>
+					</div>
+					{ showOverlay && (
+						<>
+							<SelectControl
+								label={ __( 'Vertical alignment', 'godam' ) }
+								data-test-id="godam-video-control-vertical-alignment"
+								value={ verticalAlignment }
+								options={ [
+									{ label: __( 'Top', 'godam' ), value: 'top' },
+									{ label: __( 'Center', 'godam' ), value: 'center' },
+									{ label: __( 'Bottom', 'godam' ), value: 'bottom' },
+								] }
+								onChange={ onChangeVerticalAlignment }
+								help={ __( 'Choose where to position the overlay blocks vertically.', 'godam' ) }
+							/>
+							<RangeControl
+								label={ __( 'Time range', 'godam' ) }
+								data-test-id="godam-video-control-overlay-time-range"
+								value={ overlayTimeRange }
+								onChange={ ( value ) => setAttributes( { overlayTimeRange: value } ) }
+								min={ 0 }
+								max={ duration || 100 }
+								step={ 0.1 }
+								help={ sprintf(
+									/* translators: %s: formatted time */
+									__( 'Overlay will be visible for %s from the start of the video.', 'godam' ),
+									formatTime( overlayTimeRange || 0 ),
+								) }
+							/>
+							{ duration > 0 && (
+								<p style={ { fontSize: '12px', color: '#757575', marginTop: '8px' } }>
+									{ sprintf(
+										/* translators: %s: formatted time */
+										__( 'Video duration: %s', 'godam' ),
+										formatTime( duration ),
+									) }
+								</p>
+							) }
+						</>
+					) }
+				</>
+			) }
+		</>
+	);
+
 	return (
 		<>
 			{ isSingleSelected && (
@@ -701,8 +967,9 @@ function VideoEdit( {
 							<ToolbarButton
 								icon={ edit }
 								label={ __( 'Edit Video', 'godam' ) }
-								href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_video_editor&id=${ undefined !== id ? id : cmmId }` }
+								href={ `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_media_editor&id=${ undefined !== id ? id : cmmId }` }
 								target="_blank"
+								data-test-id="godam-video-toolbar-edit"
 							/>
 						</ToolbarGroup>
 					) }
@@ -711,6 +978,7 @@ function VideoEdit( {
 							icon={ trendingUp }
 							label={ __( 'Video SEO', 'godam' ) }
 							onClick={ () => setIsSEOModelOpen( true ) }
+							data-test-id="godam-video-toolbar-seo"
 						>
 							{ __( 'SEO', 'godam' ) }
 						</ToolbarButton>
@@ -732,197 +1000,168 @@ function VideoEdit( {
 				</BlockControls>
 			) }
 			<InspectorControls>
-				<PanelBody title={ __( 'Settings', 'godam' ) }>
-					<VideoCommonSettings
-						setAttributes={ setAttributes }
-						attributes={ attributes }
-						isInsideQueryLoop={ isInsideQueryLoop }
-					/>
-					{
-						! isInsideQueryLoop && (
-							<>
-								<BaseControl
-									id={ `video-block__hover-${ instanceId }` }
-									__nextHasNoMarginBottom
-								>
-									<SelectControl
-										__nextHasNoMarginBottom
-										label={ __( 'Hover Option', 'godam' ) }
-										help={ __( 'Choose the action to perform on video hover.', 'godam' ) }
-										value={ attributes.hoverSelect || 'none' }
-										onChange={ ( value ) => setAttributes( { hoverSelect: value } ) }
-										options={
-											[
-												{ label: __( 'None', 'godam' ), value: 'none' },
-												{ label: __( 'Show Player Controls', 'godam' ), value: 'show-player-controls' },
-												{ label: __( 'Start Preview', 'godam' ), value: 'start-preview' },
-												{ label: __( 'Shadow Overlay', 'godam' ), value: 'shadow-overlay' },
-											]
-										}
-									/>
-								</BaseControl>
-
-								<BaseControl
-									id={ `video-block__poster-image-${ instanceId }` }
-									label={ __( 'Video Thumbnail', 'godam' ) }
-									__nextHasNoMarginBottom
-								>
-									<MediaUploadCheck>
-										<div className="editor-video-poster-control">
-											<MediaUpload
-												title={ __( 'Select Video Thumbnail', 'godam' ) }
-												onSelect={ onSelectPoster }
-												allowedTypes={ VIDEO_POSTER_ALLOWED_MEDIA_TYPES }
-												render={ ( { open } ) => (
-													<Button
-														__next40pxDefaultSize
-														variant="primary"
-														onClick={ open }
-														ref={ posterImageButton }
-														aria-describedby={ videoPosterDescription }
-													>
-														{ ! poster ? __( 'Select', 'godam' ) : __( 'Replace', 'godam' ) }
-													</Button>
-												) }
-											/>
-											<p id={ videoPosterDescription } hidden>
-												{ poster
-													? sprintf(
-														/* translators: %s: poster image URL. */
-														__( 'The current poster image url is %s', 'godam' ),
-														poster,
-													)
-													: __( 'There is no poster image currently selected', 'godam' ) }
-											</p>
-											{ !! poster && (
-												<Button
-													__next40pxDefaultSize
-													onClick={ onRemovePoster }
-													variant="tertiary"
-												>
-													{ __( 'Remove', 'godam' ) }
-												</Button>
-											) }
-										</div>
-									</MediaUploadCheck>
-								</BaseControl>
-
-								<ToggleControl
-									__nextHasNoMarginBottom
-									label={ __( 'Preload Video Thumbnail', 'godam' ) }
-									help={ __( 'Enable to show the video thumbnail faster when the page loads. Recommended for videos placed near the top of your page.', 'godam' ) }
-									onChange={ ( value ) => setAttributes( { preloadPoster: value } ) }
-									checked={ attributes?.preloadPoster }
-								/>
-
-								<BaseControl
-									id={ `video-block__video--selected-aspect-ratio-${ instanceId }` }
-									label={ __( 'Aspect Ratio', 'godam' ) }
-									__nextHasNoMarginBottom
-								>
-									<SelectControl
-										value={ attributes.aspectRatio || 'responsive' }
-										options={ [
-											{ label: __( 'Original', 'godam' ), value: 'responsive' },
-											{ label: __( '16:9 (Standard)', 'godam' ), value: '16:9' },
-										] }
-										onChange={ ( value ) => setAttributes( { aspectRatio: value } ) }
-										help={ __( 'Choose the aspect ratio for the video player.', 'godam' ) }
-									/>
-								</BaseControl>
-
-								<BaseControl
-									id={ `video-block__tracks-editor-${ instanceId }` }
-									label={ __( 'Subtitles & Captions', 'godam' ) }
-									__nextHasNoMarginBottom
-								>
-									<TracksEditor
-										tracks={ tracks }
-										onChange={ ( newTracks ) => {
-											setAttributes( { tracks: newTracks } );
-										} }
-									/>
-								</BaseControl>
-							</>
-						)
-					}
-				</PanelBody>
-
-				{ /* Only show additional settings when not inside a Query Loop */ }
+				{ ! window.pluginInfo?.validApiKey && (
+					<div className="godam-upgrade-notice">
+						<div className="godam-upgrade-notice__header">
+							<span className="godam-upgrade-notice__icon" aria-hidden="true">
+								{ CrownIcon }
+							</span>
+							<strong className="godam-upgrade-notice__title">
+								{ __( 'Upgrade to Pro', 'godam' ) }
+							</strong>
+						</div>
+						<p className="godam-upgrade-notice__description">
+							{ __( "You don't have an active plan to use this feature. Upgrade now to use unlimited features as part of GoDAM suite.", 'godam' ) }
+						</p>
+						<Button
+							variant="primary"
+							href="https://godam.io/pricing/"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="godam-upgrade-notice__button"
+							data-test-id="godam-video-button-upgrade"
+						>
+							{ __( 'Upgrade Now', 'godam' ) }
+						</Button>
+					</div>
+				) }
 				{ ! isInsideQueryLoop && (
-					<PanelBody title={ __( 'Overlay Blocks', 'godam' ) }>
-						<ToggleControl
-							label={ __( 'Show overlay blocks', 'godam' ) }
-							checked={ showOverlay }
-							onChange={ ( value ) => setAttributes( { showOverlay: value } ) }
-							help={ __( 'Display blocks on top of the video player.', 'godam' ) }
-						/>
-
-						{ showOverlay && (
-							<>
-								<SelectControl
-									label={ __( 'Vertical alignment', 'godam' ) }
-									value={ verticalAlignment }
-									options={ [
-										{ label: __( 'Top', 'godam' ), value: 'top' },
-										{ label: __( 'Center', 'godam' ), value: 'center' },
-										{ label: __( 'Bottom', 'godam' ), value: 'bottom' },
-									] }
-									onChange={ onChangeVerticalAlignment }
-									help={ __( 'Choose where to position the overlay blocks vertically.', 'godam' ) }
-								/>
-
-								<RangeControl
-									label={ __( 'Time range', 'godam' ) }
-									value={ overlayTimeRange }
-									onChange={ ( value ) => setAttributes( { overlayTimeRange: value } ) }
-									min={ 0 }
-									max={ duration || 100 }
-									step={ 0.1 }
-									help={ sprintf(
-										/* translators: %s: formatted time */
-										__( 'Overlay will be visible for %s from the start of the video.', 'godam' ),
-										formatTime( overlayTimeRange || 0 ),
-									) }
-								/>
-
-								{ duration > 0 && (
-									<p style={ { fontSize: '12px', color: '#757575', marginTop: '8px' } }>
-										{ sprintf(
-											/* translators: %s: formatted time */
-											__( 'Video duration: %s', 'godam' ),
-											formatTime( duration ),
-										) }
-									</p>
-								) }
-							</>
-						) }
+					<PanelBody title={ __( 'Video Selection', 'godam' ) } data-test-id="godam-video-panel-video-selection">
+						{ window.pluginInfo?.validApiKey
+							? videoSelectionPanelContent
+							: <div className="godam-components-disabled"><Disabled>{ videoSelectionPanelContent }</Disabled></div>
+						}
 					</PanelBody>
 				) }
-			</InspectorControls>
-			{
-				isInsideQueryLoop ? (
-					<div { ...blockProps }>
-						<div className="godam-editor-video-placeholder">
-							<span className="godam-editor-video-label">
-								{ __( 'GoDAM Video', 'godam' ) }
-							</span>
-						</div>
-					</div>
-				) : (
-					<>
-						<VideoSEOModal
-							isOpen={ isSEOModalOpen }
-							setIsOpen={ setIsSEOModelOpen }
-							attributes={ attributes }
-							setAttributes={ setAttributes }
-						/>
+				{ ! isInsideQueryLoop && (
+					<PanelBody title={ __( 'Layout', 'godam' ) } data-test-id="godam-video-panel-layout">
+						{ window.pluginInfo?.validApiKey
+							? layoutPanelContent
+							: <div className="godam-components-disabled"><Disabled>{ layoutPanelContent }</Disabled></div>
+						}
+					</PanelBody>
+				) }
+				{ ! isInsideQueryLoop && (
+					<PanelBody title={ __( 'Playback Controls', 'godam' ) } data-test-id="godam-video-panel-playback-controls">
+						{ window.pluginInfo?.validApiKey
+							? <PlaybackControls setAttributes={ setAttributes } attributes={ attributes } />
+							: <div className="godam-components-disabled"><Disabled><PlaybackControls setAttributes={ setAttributes } attributes={ attributes } /></Disabled></div>
+						}
+					</PanelBody>
+				) }
+				{ ! isInsideQueryLoop && (
+					<PanelBody title={ __( 'Performance', 'godam' ) } data-test-id="godam-video-panel-performance">
+						{ window.pluginInfo?.validApiKey
+							? <PerformanceControl setAttributes={ setAttributes } attributes={ attributes } />
+							: <div className="godam-components-disabled"><Disabled><PerformanceControl setAttributes={ setAttributes } attributes={ attributes } /></Disabled></div>
+						}
+					</PanelBody>
+				) }
+				{ ! isInsideQueryLoop && (
+					<PanelBody title={ __( 'Hover Options', 'godam' ) } data-test-id="godam-video-panel-hover-options">
+						{ /* Hover Options are disabled when autoplay or "Show in lightbox" is enabled, or the API key is invalid */ }
+						{ ( ! window.pluginInfo?.validApiKey || hoverOptionsLockedReason )
+							? <div className="godam-components-disabled"><Disabled>{ hoverOptionsPanelContent }</Disabled></div>
+							: hoverOptionsPanelContent
+						}
+					</PanelBody>
+				) }
+				{ ! isInsideQueryLoop && (
+					<PanelBody title={ __( 'Thumbnail', 'godam' ) } data-test-id="godam-video-panel-thumbnail">
+						{ window.pluginInfo?.validApiKey
+							? (
+								<ThumbnailPanel
+									attachmentId={ id }
+									poster={ poster }
+									defaultPoster={ defaultPoster }
+									onSelect={ onSelectPoster }
+									onRemove={ onRemovePoster }
+								/>
+							)
+							: (
+								<div className="godam-components-disabled">
+									<Disabled>
+										<ThumbnailPanel
+											attachmentId={ id }
+											poster={ poster }
+											defaultPoster={ defaultPoster }
+											onSelect={ onSelectPoster }
+											onRemove={ onRemovePoster }
+										/>
+									</Disabled>
+								</div>
+							)
+						}
+					</PanelBody>
+				) }
+				<LikesAndComments
+					setAttributes={ setAttributes }
+					attributes={ attributes }
+					isInsideQueryLoop={ isInsideQueryLoop }
+				/>
 
-						<figure { ...blockProps }>
+			</InspectorControls>
+			<InspectorControls group="advanced">
+				<div>
+					{ window.pluginInfo?.validApiKey
+						? advancedPanelContent
+						: <div className="godam-components-disabled"><Disabled>{ advancedPanelContent }</Disabled></div>
+					}
+				</div>
+			</InspectorControls>
+			{ ( ! src && ! temporaryURL && ! isInsideQueryLoop ) && (
+				<div { ...blockProps }>
+					<div className="godam-video-add-placeholder">
+						<div className="godam-video-add-placeholder__preview" />
+						<h2 className="godam-video-add-placeholder__title">
+							{ __( 'Add Video Here', 'godam' ) }
+						</h2>
+						<p className="godam-video-add-placeholder__description">
+							{ __( 'Upload or select a video from your media library to get started.', 'godam' ) }
+						</p>
+						<MediaUpload
+							onSelect={ onSelectVideo }
+							allowedTypes={ ALLOWED_MEDIA_TYPES }
+							render={ ( { open } ) => (
+								<Button
+									onClick={ open }
+									icon={ plus }
+									variant="primary"
+									className="godam-video-add-placeholder__btn"
+									data-test-id="godam-video-button-select-video"
+								>
+									{ __( 'Add Video', 'godam' ) }
+								</Button>
+							) }
+						/>
+					</div>
+				</div>
+			) }
+			{ isInsideQueryLoop && (
+				<div { ...blockProps }>
+					<div className="godam-editor-video-placeholder">
+						<span className="godam-editor-video-label" data-test-id="godam-video-element-query-label">
+							{ __( 'Video', 'godam' ) }
+						</span>
+					</div>
+				</div>
+			) }
+			{ ( ! isInsideQueryLoop && ( src || temporaryURL ) ) && (
+				<>
+					<VideoSEOModal
+						isOpen={ isSEOModalOpen }
+						setIsOpen={ setIsSEOModelOpen }
+						attributes={ attributes }
+						setAttributes={ setAttributes }
+					/>
+
+					<figure { ...blockProps } data-test-id="godam-video-canvas">
+						<div className="godam-video-canvas-frame">
 							<div className="godam-video-wrapper">
 								{ showOverlay && (
 									<div
 										className={ `godam-video-overlay-container godam-overlay-alignment-${ verticalAlignment }` }
+										data-test-id="godam-video-canvas-overlay"
 									>
 										<InnerBlocks
 											allowedBlocks={ ALLOWED_BLOCKS }
@@ -937,20 +1176,43 @@ function VideoEdit( {
 									</div>
 								) }
 								{ videoComponent }
+								{ showShareButton && (
+									<span
+										className={ `godam-editor-share-button${ showTranscription !== false ? ' godam-editor-share-button--below' : '' }` }
+										aria-hidden="true"
+										data-test-id="godam-video-element-share-button"
+									>
+										<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" focusable="false">
+											<path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
+										</svg>
+									</span>
+								) }
+								{ showTranscription !== false && (
+									<span
+										className="godam-transcript-button godam-editor-transcript-button"
+										aria-hidden="true"
+										data-test-id="godam-video-element-transcript-button"
+									>
+										<svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+											<path d="M5 3.5h14a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5Z" stroke="currentColor" strokeWidth="1.6" />
+											<path d="M7 8h10M7 12h10M7 16h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+										</svg>
+									</span>
+								) }
 								{ !! temporaryURL && <Spinner /> }
 							</div>
-							<Caption
-								attributes={ attributes }
-								setAttributes={ setAttributes }
-								isSelected={ isSingleSelected }
-								insertBlocksAfter={ insertBlocksAfter }
-								label={ __( 'Video caption text', 'godam' ) }
-								showToolbarButton={ isSingleSelected }
-							/>
-						</figure>
-					</>
-				)
-			}
+						</div>
+						<Caption
+							attributes={ attributes }
+							setAttributes={ setAttributes }
+							isSelected={ isSingleSelected }
+							insertBlocksAfter={ insertBlocksAfter }
+							label={ __( 'Video caption text', 'godam' ) }
+							showToolbarButton={ isSingleSelected }
+						/>
+					</figure>
+				</>
+			) }
 		</>
 	);
 }

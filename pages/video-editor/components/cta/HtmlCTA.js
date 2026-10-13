@@ -13,6 +13,7 @@ import Editor from '@monaco-editor/react';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { VeSection } from '../controls';
 
 const HtmlCTA = ( { layerID } ) => {
 	const layer = useSelector( ( state ) =>
@@ -21,21 +22,21 @@ const HtmlCTA = ( { layerID } ) => {
 	const dispatch = useDispatch();
 
 	return (
-		<>
-			<label htmlFor="custom-css" className="text-[11px] uppercase font-medium mb-2">{ __( 'Custom HTML', 'godam' ) }</label>
-			<Editor
-				id="custom-css"
-				className="code-editor"
-				defaultLanguage="html"
-				defaultValue={ layer.html }
-				options={ {
-					minimap: { enabled: false },
-				} }
-				onChange={ ( value ) =>
-					dispatch( updateLayerField( { id: layer.id, field: 'html', value } ) )
-				}
-			/>
-		</>
+		<VeSection title={ __( 'Custom HTML', 'godam' ) }>
+			<div data-test-id="godam-cta-editor-html">
+				<Editor
+					className="code-editor"
+					defaultLanguage="html"
+					defaultValue={ layer.html }
+					options={ {
+						minimap: { enabled: false },
+					} }
+					onChange={ ( value ) =>
+						dispatch( updateLayerField( { id: layer.id, field: 'html', value } ) )
+					}
+				/>
+			</div>
+		</VeSection>
 	);
 };
 

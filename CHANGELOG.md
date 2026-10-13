@@ -1,5 +1,183 @@
 # Changelog #
 
+## v2.3.2 (October 12, 2026) ##
+
+- Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts automatically the first time you open the library and can be replayed anytime from the new button next to Manage Media.
+- Feat: GoDAM now tells you when it can't reach your site to send back transcoding updates, on admin screens and in GoDAM settings, so videos no longer sit at "Processing" without explanation.
+- Fix: Uploads that GoDAM refuses (the file can't be downloaded, isn't a video, is empty or too large, or the licence is inactive, storage is full or the site isn't allowed) are now marked as failed with the reason in the Media Library and on the Tools page, instead of showing no status at all.
+- Fix: Security fixes.
+
+## v2.3.1 (October 6, 2026) ##
+
+- Fix: What's New refreshes after every plugin update, so it always shows the current release post.
+- Fix: A video's hotspot, call-to-action, form and poll analytics are now stored with the same video ID as its plays, so they stay together in Top Products.
+- Fix: Revenue tooltips now say that revenue is after discounts and excludes tax, shipping and fees.
+- Fix: Top Products explains why grouped and external products show no add-to-carts or revenue, and shows "-" instead of a misleading 0.0% add-to-cart rate.
+- Fix: Video to Cart, Video to Purchase and the funnels now count each day in the store's time zone, matching the Revenue card.
+- Fix: Editors and Authors see video analytics only; store data (products, add-to-carts, orders, revenue) needs WooCommerce's report permission.
+- Fix: A GoDAM Record field on a Gravity Forms form no longer fails with "Number of files (2) exceeds limit (1)" after moving between pages or fixing a failed submit, on Gravity Forms 2.9.18 and later.
+- Fix: Security fixes.
+
+## v2.3.0 (September 24, 2026) ##
+
+- Feat: Revenue Analytics for WooCommerce. See how much order value is credited to each video, split into Direct (added to cart inside the video) and Assisted (clicked the product in a video, image hotspot or Reel Pop, then added it to cart on its product page). Influenced revenue is reported separately and is never added to the headline.
+- Feat: Top Products, a new dashboard tab showing per-product views, add-to-cart counts split into in-video and product-page, revenue, and where in your videos each product appeared.
+- Feat: Video to Cart and Video to Purchase rates, measured against the people who actually played the video.
+- Feat: Two new funnels: Play to Cart to Purchase, and the same funnel broken down by placement.
+- Feat: Per-hotspot revenue in layer analytics, showing the revenue from in-video add-to-carts made through each product hotspot.
+- Feat: A Google Analytics 4 status widget on the analytics dashboard, showing whether GoDAM for Woo is pushing video-driven add_to_cart and purchase events to your Google Tag Manager dataLayer.
+- Tweak: The Revenue and Purchase Funnel cards on the single-video page each have their own date-range picker.
+- Tweak: The layer interaction metric is now called "Interaction rate" instead of "Conversion".
+- Note: Revenue and product metrics need the GoDAM for Woo add-on 2.2.0 or later.
+
+## v2.2.4 (September 21, 2026) ##
+
+- Chore: Security fixes.
+
+## v2.2.3 (September 16, 2026) ##
+
+- Fix: Resolved content and display issues on the What's New page.
+
+## v2.2.2 (September 15, 2026) ##
+
+- Feat: Organize media into folders in bulk — the media library list view now has a "Move to folder…" bulk action, and each user's folder sidebar remembers its own open/closed state.
+- Tweak: The Video Editor's player preview now mirrors the real front-end control bar — skip buttons, volume panel, branding, and appearance settings — and restores skip buttons that were missing on older videos.
+- Fix: GoDAM media can now be set as a post's featured image in both the block and classic editors, with the placeholder swapped for the real attachment once it is created.
+- Fix: Interactive layers (forms, CTAs, hotspots) no longer trigger while a video is only being previewed on hover.
+- Fix: Skip buttons in the video player now always appear with a valid skip duration, and the picture-in-picture control has been removed across all player skins.
+- Fix: The GoDAM tab in the media picker now shows a clear error when the API key is missing, invalid, or revoked, instead of spinning forever or showing a misleading "No items found".
+- Fix: Long or tall HTML CTA layers no longer overflow their container — they fill it and scroll when needed.
+- Fix: Deleting the GoDAM plugin no longer throws a 502 / "Deletion failed" error.
+
+## v2.2.1 (September 8, 2026) ##
+
+- Fix: Authors can now create and rename media folders.
+- Fix: Site Icon / favicon no longer 404s on sites using GoDAM CDN offload.
+- Fix: Resolved open Dependabot security advisories (npm + Composer).
+
+## v2.2.0 (August 27, 2026) ##
+
+- Feat: The Document block now handles far more than PDFs. You can embed and preview Word, Excel, PowerPoint, OpenDocument, and plain-text files.
+- Feat: Added the same document preview support to the Elementor and WPBakery GoDAM Document widgets.
+- Feat: Show in lightbox — a new option opens a video in a centered lightbox overlay when its poster is clicked, instead of playing it in place. Available in the GoDAM Video block, the Elementor widget, and the WPBakery element.
+- Tweak: The GoDAM media transcoding tool now supports bulk transcoding of all media types supported by GoDAM.
+- Fix: Resolved bugs in the GoDAM Media Library module.
+- Fix: Fixed the transcription source issue for GoDAM videos.
+- Fix: Layer analytics now records a view for each hotspot in its own right, so a hotspot's views, conversion, and "No Action" describe that hotspot rather than the whole layer. This stays correct even as hotspots are added or removed over time.
+
+## v2.1.1 (August 6, 2026) ##
+
+- Fix: GoDAM no longer fills the debug log with `Function _load_textdomain_just_in_time was called incorrectly` on WordPress 6.7 and later. On sites that display errors, the warning could also appear on the page itself, in the admin and on the front end.
+- Fix: 34 more pieces of on-screen text can now be translated, covering the video player's transcript, chapters, comments, sharing and sign-in prompts, which no language pack could reach before.
+- Tweak: GoDAM no longer contacts the GoDAM service to re-check your API key during front-end page views, REST requests or scheduled tasks. That happens only on the Media Library screen, which is the one place the transcode status column needs it.
+
+## v2.1.0 (July 30, 2026) ##
+
+- Feat: Interactive Image Hotspots — turn any image into an interactive, shoppable visual. The new Image editor lets you add clickable Hotspot layers to any image, then embed it anywhere with the new GoDAM Image block.
+- Feat: Viewer Retention Curve — a new analytics graph shows exactly where viewers drop off across a video, replacing the previous per-video heatmap.
+- Feat: Placements analytics — see everywhere a video is embedded across your site, with per-video breakdowns.
+- Feat: Added an Audio editor for managing audio attachments.
+- Feat: Expanded Elementor support with Video, Video Gallery, Audio, and Image blocks and a Document widget.
+- Feat: Expanded WPBakery Page Builder support with a Document block, an Image block, and updated GoDAM blocks.
+- Feat: Added render-time video SEO schema (JSON-LD) for block templates, template parts, and patterns.
+- Tweak: Added a date-range picker to the analytics dashboard, filtering metrics by period.
+- Tweak: Made the Video Editor canvas responsive so the video scales to its wrapper width.
+- Fix: Security fixes.
+- Fix: Resolved video transcript UI/UX issues.
+- Fix: Fixed the Elementor Select option colour and the media picker popup in Elementor.
+- Chore: Resolved open Dependabot npm security advisories.
+
+## v2.0.0 (July 14, 2026) ##
+
+- Feat: GoDAM 2.0 brings a complete visual redesign across the admin and front end, with refreshed branding, new logos, and updated block icons.
+- Feat: Rebuilt the Video Editor with a streamlined layout for managing layers, hotspots, CTAs, and forms.
+- Feat: Added a guided onboarding experience, embedded in the plugin and integrated with GoDAM Central.
+- Feat: Redesigned the analytics dashboard with a cleaner layout, a Layer Timeline range control, and Top Videos improvements.
+- Feat: Redesigned the Video Player, Video Gallery, Audio, and Document blocks.
+- Tweak: The admin UI now follows the WordPress admin colour scheme, and the front end follows the configured brand colour.
+- Tweak: The Video Layer editor now warns before leaving with unsaved changes.
+- Tweak: The WooCommerce integration toggle is disabled when no valid API key is present, as it is a Pro feature.
+- Fix: Various QA fixes across blocks, the video editor, and the media gallery.
+
+## v1.13.0 (June 18, 2026) ##
+
+- Feat: Track GoDAM media usage across post content, blocks, shortcodes, Elementor, block widgets, and featured images — recording where each asset is used and notifying GoDAM Central.
+- Feat: Automatically backfill media usage for existing content in the background, via the migration runner in Action Scheduler batches, on upgrade.
+- Tweak: Authenticate GoDAM Central media-usage logging and retry failed notifications with backoff so transient outages do not lose events.
+
+## v1.12.2 (June 16, 2026) ##
+
+- Tweak: Aligned `[godam_video]` and `[godam_video_gallery]` shortcode attributes with responsive block attributes.
+- Tweak: Refactored GoDAM Video and GoDAM Video Gallery widgets for both Elementor and WPBakery.
+- Fix: Resolved hotspot layer popup overlapping issues.
+- Fix: Added validation to prevent non-video file selections in the GoDAM Video block.
+- Fix: Added validation to prevent non-audio file selections in the GoDAM Audio block.
+- Fix: Restored vertical spacing for toggle controls in the block inspector across audio, gallery, and player blocks.
+- Fix: Resolved style and spacing issues in the video editor.
+
+## v1.12.1 (June 12, 2026) ##
+
+- Fix: Resolved security issues.
+
+## v1.12.0 (June 11, 2026) ##
+
+- Feat: Added Layer Analytics feature to track how viewers interact with video layers (CTAs, hotspots, forms, and more), with per-layer engagement and conversion metrics in the analytics dashboard.
+
+## v1.11.2 (June 8, 2026) ##
+
+- Feat: Added a setting to disable GoDAM's media library features, allowing GoDAM to coexist with another media or DAM plugin without changing the WordPress media library.
+
+## v1.11.1 (June 3, 2026) ##
+
+- Fix: GoDAM Video block aspect ratio for editor and frontend.
+- Fix: Silent PHP Linter errors.
+- Fix: Broken Admin Notice when WooCommerce is not present on a site in a multisite network.
+
+## v1.11.0 (May 27, 2026) ##
+
+- Tweak: Extended GoDAM analytics scripts to track Reel Pop interactions from GoDAM for Woo.
+- Tweak: Added a migration script to sync existing virtual media to GoDAM Central.
+- Fix: Improved video selection UX in the handpicked mode of the Video Gallery block.
+
+## v1.10.2 (May 22, 2026) ##
+
+- Feat: Enhanced Type 1 video analytics tracking with viewport detection.
+- Fix: Resolved cancelled Type 2 Analytics requests for Gallery iframe.
+
+## v1.10.1 (May 19, 2026) ##
+
+- Fix: Added patch for plugin deployment.
+
+## v1.10.0 (May 19, 2026) ##
+
+- Feat: Added Unique Viewers and Replay Ratio metrics in Analytics.
+- Feat: Extended Video SEO schema with Shoppable Video support.
+
+## v1.9.0 (May 8, 2026) ##
+
+- Feat: Introduced WooCommerce integration — first beta release of GoDAM for WooCommerce support.
+- Fix: Disabled hover option when autoplay is enabled in the Video block.
+- Fix: Resolved Gallery Carousel scroll issue on iOS devices.
+- Tweak: Revamped GoDAM blocks to Video, Video Gallery, Audio and Document blocks.
+
+## v1.8.0 (April 29, 2026) ##
+
+- Feat: Enhanced GoDAM Gallery block with improved layouts and controls.
+- Feat: Introduced Performance Mode settings for video and gallery blocks.
+- Feat: Implemented blur-up thumbnail optimization in Video and Video Gallery blocks.
+- Tweak: Replaced gallery item width range input with S/M/L size selector.
+- Tweak: Performance improvements for GoDAM blocks.
+- Fix: Improved GoDAM Video and Video Gallery Block UX.
+- Fix: Added GoDAM Gallery migration support.
+- Fix: Removed GoDAM CPT and added migration for existing data.
+- Fix: Fixed alignment issues on GoDAM blocks.
+- Fix: Addressed security vulnerabilities.
+
+## v1.7.2 (March 20, 2026) ##
+
+- Fix: Fixed video data collection in analytics.
+- Fix: Improved image optimization to support all registered image sizes.
+
 ## v1.7.1 (March 17, 2026) ##
 
 - Fix: Resolved invalid duration issue for hotspot layer in the video editor.

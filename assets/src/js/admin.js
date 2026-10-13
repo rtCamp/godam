@@ -2,6 +2,30 @@
  * Write your JS code here for admin.
  */
 
+/**
+ * Tag `.godam-admin-root` wrappers with `.not-safari` outside Safari so the
+ * fixed-position admin layout in admin.scss can apply. Runs on every admin
+ * page so add-ons (e.g. godam-for-woo) get the same treatment.
+ */
+( function() {
+	const isSafari = /Safari/.test( navigator.userAgent ) && ! /Chrome|Chromium|Edg|CriOS|FxiOS|OPR/.test( navigator.userAgent );
+	if ( isSafari ) {
+		return;
+	}
+
+	const addClass = function() {
+		document.querySelectorAll( '.godam-admin-root' ).forEach( function( el ) {
+			el.classList.add( 'not-safari' );
+		} );
+	};
+
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', addClass );
+	} else {
+		addClass();
+	}
+}() );
+
 // Utility function to join URL paths
 window.pathJoin = function( parts, sep = '/' ) {
 	return parts

@@ -36,6 +36,15 @@ const GeneralSettings = () => {
 	const [ saveMediaSettings, { isLoading: saveMediaSettingsLoading } ] = useSaveMediaSettingsMutation();
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 
+	// The "folder organization" toggle is GoDAM's media-library integration kill-switch.
+	// When set from code (constant/filter) the toggle is locked and the effective value
+	// comes from the server; otherwise it reflects the saved setting.
+	const mediaLibraryUICodeManaged = window?.godamSettings?.mediaLibraryUICodeManaged || false;
+	const mediaLibraryUIEffective = window?.godamSettings?.mediaLibraryUIEffective ?? true;
+	const folderOrgEnabled = mediaLibraryUICodeManaged
+		? mediaLibraryUIEffective
+		: mediaSettings?.general?.enable_folder_organization;
+
 	// Function to show a notice message
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
@@ -89,39 +98,48 @@ const GeneralSettings = () => {
 				</Notice>
 			) }
 
-			<Panel header={ __( 'General Settings', 'godam' ) } className="godam-panel">
+			<Panel header={ __( 'General Settings', 'godam' ) } className="godam-panel godam-margin-bottom">
 				<PanelBody opened>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						className="godam-toggle godam-margin-bottom"
+						className="godam-margin-bottom"
 						label={ __( 'Enable folder organization in media library.', 'godam' ) }
-						help={ __( 'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.', 'godam' ) }
-						checked={ mediaSettings?.general?.enable_folder_organization }
+						help={
+							mediaLibraryUICodeManaged
+								? __( 'This setting is managed by your site administrator and can’t be changed here.', 'godam' )
+								: __( 'Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization.', 'godam' )
+						}
+						checked={ folderOrgEnabled }
+						disabled={ mediaLibraryUICodeManaged }
 						onChange={ ( value ) => handleSettingChange( 'enable_folder_organization', value ) }
+						data-test-id="godam-settings-general-control-folder-org"
 					/>
 
 					<ToggleControl
 						__nextHasNoMarginBottom
-						className="godam-toggle godam-margin-bottom"
+						className="godam-margin-bottom"
 						label={ __( 'Enable GTM Tracking', 'godam' ) }
 						help={ __( 'Enable Google Tag Manager video tracking for analytics and conversion tracking.', 'godam' ) }
 						checked={ mediaSettings?.general?.enable_gtm_tracking }
 						onChange={ ( value ) => handleSettingChange( 'enable_gtm_tracking', value ) }
+						data-test-id="godam-settings-general-control-gtm"
 					/>
 
 				</PanelBody>
 			</Panel>
 
-			<Button
-				variant="primary"
-				className="godam-button"
-				onClick={ handleSaveSettings }
-				icon={ saveMediaSettingsLoading && <Spinner /> }
-				isBusy={ saveMediaSettingsLoading }
-				disabled={ saveMediaSettingsLoading || ! isChanged }
-			>
-				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
-			</Button>
+			<div className="godam-settings__save-row">
+				<Button
+					variant="primary"
+					onClick={ handleSaveSettings }
+					icon={ saveMediaSettingsLoading && <Spinner /> }
+					isBusy={ saveMediaSettingsLoading }
+					disabled={ saveMediaSettingsLoading || ! isChanged }
+					data-test-id="godam-settings-general-button-save"
+				>
+					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
+				</Button>
+			</div>
 		</>
 	);
 };

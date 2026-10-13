@@ -7,6 +7,7 @@ import videojs from 'video.js';
  * Internal dependencies
  */
 import Player from './player.js';
+import { getLightbox, openLightboxForId } from '../managers/modalManager.js';
 
 window.GoDAMAPI = {
 	/**
@@ -129,6 +130,45 @@ window.GoDAMAPI = {
 	 */
 	getAllReadyPlayers() {
 		return this.getAllPlayers().filter( ( playerObj ) => playerObj.isReady );
+	},
+
+	/**
+	 * Open a video in the lightbox.
+	 *
+	 * The programmatic equivalent of a `data-godam-lightbox` trigger element. If
+	 * the video is rendered on the page as a "Show in lightbox" player, that
+	 * player is moved into the lightbox; otherwise the video's embed page is shown
+	 * in an iframe. Either way the page URL gains a `#godam-video-{id}` hash, so
+	 * the open lightbox is shareable and Back closes it.
+	 *
+	 * Unlike getPlayer(), this never throws for an unknown ID.
+	 *
+	 * @param {string|number} attachmentID        - Attachment ID or transcoding job ID.
+	 * @param {Object}        [options]           - Open options.
+	 * @param {number}        [options.startTime] - Seconds to seek to.
+	 * @param {string}        [options.title]     - Iframe title, when not on the page.
+	 * @return {boolean} True when the lightbox opened.
+	 */
+	openLightbox( attachmentID, options = {} ) {
+		return openLightboxForId( attachmentID, options );
+	},
+
+	/**
+	 * Close the lightbox if it is open.
+	 *
+	 * @return {void}
+	 */
+	closeLightbox() {
+		getLightbox().close();
+	},
+
+	/**
+	 * Whether the lightbox is currently showing a video.
+	 *
+	 * @return {boolean} True when open.
+	 */
+	isLightboxOpen() {
+		return getLightbox().isOpen();
 	},
 
 };

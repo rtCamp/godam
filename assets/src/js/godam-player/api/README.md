@@ -6,6 +6,9 @@ The GoDAM Player API provides a simple and powerful interface for developers to 
 
 - [Getting Started](#getting-started)
 - [Main API Methods](#main-api-methods)
+- [Lightbox Methods](#lightbox-methods)
+- [Lightbox Trigger Elements](#lightbox-trigger-elements)
+- [Deep Linking](#deep-linking)
 - [Player Instance Methods](#player-instance-methods)
   - [Custom Layer Management](#custom-layer-management)
   - [Native Layer Management](#native-layer-management)
@@ -149,6 +152,140 @@ readyPlayers.forEach(playerObj => {
     playerObj.player.play();
 });
 ```
+
+## Lightbox Methods
+
+Open a video in a centered overlay instead of playing it in place. These are the
+programmatic equivalent of a [lightbox trigger element](#lightbox-trigger-elements).
+
+### `openLightbox(attachmentID, options?)`
+
+Open a video in the lightbox.
+
+If the video is rendered on the page as a **Show in lightbox** player, that player
+is moved into the lightbox — so its layers, chapters, ads and analytics all behave
+exactly as they do when the inline player is clicked. Otherwise the video's embed
+page is shown in an iframe, which means you can open a video that is not on the
+page at all.
+
+Either way the page URL gains a `#godam-video-{id}` hash, so the open lightbox is
+shareable and the browser's Back button closes it.
+
+**Parameters:**
+
+- `attachmentID` (string|number) - Attachment ID or transcoding job ID
+- `options.startTime` (number, optional) - Seconds to seek to
+- `options.title` (string, optional) - Iframe title, used when the video is not on the page
+- `options.pushHistory` (boolean, optional) - Set `false` to leave the URL untouched
+
+**Returns:** `boolean` — `true` when the lightbox opened
+
+Unlike `getPlayer()`, this never throws for an unknown ID.
+
+**Example:**
+
+```javascript
+// Open a video, 42 seconds in.
+window.GoDAMAPI.openLightbox('1641', { startTime: 42 });
+```
+
+### `closeLightbox()`
+
+Close the lightbox if it is open. Moves the player back to its original position
+in the page and pauses it.
+
+### `isLightboxOpen()`
+
+**Returns:** `boolean` — whether the lightbox is currently showing a video.
+
+```javascript
+document.querySelector('#my-cta').addEventListener('click', () => {
+    if (!window.GoDAMAPI.isLightboxOpen()) {
+        window.GoDAMAPI.openLightbox('1641');
+    }
+});
+```
+
+## Lightbox Trigger Elements
+
+You usually do not need JavaScript at all: any element carrying a
+`data-godam-lightbox` attribute opens the lightbox for that video ID. The
+listener is delegated from `document`, so markup injected later by a page builder
+or by AJAX works with no re-binding.
+
+```html
+<button data-godam-lightbox="1641">Watch the demo</button>
+
+<!-- A link degrades to the embed page when JavaScript is unavailable. -->
+<a href="/?godam_page=video-embed&id=1641" data-godam-lightbox="1641" data-godam-lightbox-t="42">
+    Watch from 0:42
+</a>
+
+<!-- Any element works; role="button" and tabindex are added automatically. -->
+<img src="poster.jpg" alt="Watch the demo" data-godam-lightbox="1641" />
+```
+
+**Attributes:**
+
+| Attribute | Description |
+| --- | --- |
+| `data-godam-lightbox` | Required. Attachment ID or transcoding job ID. |
+| `data-godam-lightbox-t` | Optional. Seconds to seek to. |
+| `data-godam-lightbox-title` | Optional. Iframe title, used when the video is not on the page. |
+
+Write this markup wherever the editor allows raw HTML — a Custom HTML block, an
+Elementor HTML widget, a WPBakery Raw HTML element, or a theme template. For a
+click target with no start time, the [hash link](#deep-linking) below needs no
+markup at all and works in the Button block and any rich-text link.
+
+**Loading the runtime.** A rendered player enqueues the player JavaScript itself.
+A trigger is markup only, so on a page whose *only* GoDAM content is a trigger the
+plugin sniffs the post content (and Elementor's stored layout) for
+`data-godam-lightbox` / `#godam-video-` and enqueues the runtime when it finds
+either. A trigger in a theme template, sidebar widget or nav menu is invisible to
+that sniff — enqueue it yourself with:
+
+```php
+add_filter( 'rtgodam_enqueue_lightbox_runtime', '__return_true' );
+```
+
+## Deep Linking
+
+A `#godam-video-{id}` URL opens the video when the page loads — this is what the
+share button's "WP page link" produces. It uses the **WordPress attachment ID**,
+falling back to the transcoding job ID for virtual media, which has no local
+attachment. (The "GoDAM Central" and "Embed" links in the same modal are SaaS
+routes and always use the job ID.)
+
+Both spellings resolve, so links shared before this became the default keep
+working. An optional `?t={seconds}` query parameter seeks:
+
+```
+https://example.com/my-page/?t=42#godam-video-1641
+```
+
+For a **Show in lightbox** video the lightbox opens automatically. Any other
+video is scrolled into view and seeked, as before.
+
+The URL is the source of truth for the whole life of the page, not just at load,
+so an ordinary in-page anchor works as a trigger with no attribute at all:
+
+```html
+<a href="#godam-video-1641">Watch the demo</a>
+```
+
+The same reconciliation makes Back and Forward symmetric: Back closes the
+lightbox, Forward reopens it.
+
+Two limits worth knowing:
+
+- The video has to be **rendered on the page**. A bare job ID cannot be mapped
+  back to an attachment ID in the browser, so there is no iframe fallback on this
+  path. In practice the share button only exists on a rendered player, so a link
+  produced by sharing always resolves.
+- The share modal itself needs a transcoding job ID, so videos that have not been
+  transcoded have no share modal — and therefore no share link to deep-link with.
+  A hand-written `#godam-video-{attachmentID}` link still works.
 
 ## Player Instance Methods
 

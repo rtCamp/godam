@@ -1,0 +1,87 @@
+/**
+ * GoDAM admin top-bar (GoDAMHeader) styling.
+ *
+ * Shared across all GoDAM admin pages. Matches the refreshed design: a clean
+ * white bar with the brand-purple primary CTA (Upgrade Plan / Get GoDAM) and a
+ * de-emphasised "Manage Media" action. The logo, version label and the round
+ * Help / Chrome-recorder icon buttons are left untouched.
+ */
+
+// Accent comes from the WordPress component accent variable (same convention as
+// the video-editor styles) — no hardcoded brand colours.
+$accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+$accent-hover: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 88%, #000);
+
+.godam-settings-header {
+
+	// Compact single-row bar — design spec caps the header at 65px and centres
+	// every element vertically. The logo keeps its existing size.
+	.godam-settings-header-content {
+		min-height: 70px;
+		max-height: 70px;
+	}
+
+	// Brand block (logo + version + plan badge). The version/plan column stays
+	// compact so the whole block fits inside the 65px bar.
+	.godam-settings-header-brand {
+		line-height: 1.2;
+
+		.godam-version-label {
+			padding-bottom: 2px;
+		}
+	}
+
+	// Primary CTA — Upgrade Plan / Get GoDAM. Self-contained styling (does NOT
+	// use the shared `.godam-button` from _common.scss, which forces a pink/orange
+	// gradient via !important). Accent-filled to match the design.
+	.godam-header-cta.components-button {
+		height: auto;
+		padding: 0.5rem 1rem;
+		border-radius: 0.5rem;
+		font-weight: 600;
+		background: $accent;
+		border-color: $accent;
+		color: #fff;
+		box-shadow: none;
+
+		&:hover:not(:disabled),
+		&:focus:not(:disabled) {
+			background: $accent-hover;
+			border-color: $accent-hover;
+			color: #fff;
+			transform: none;
+		}
+
+		svg {
+			fill: #fff;
+		}
+	}
+
+	// "Manage Media" — de-emphasised text action next to the primary CTA. The
+	// inline white paper-plane icon would be invisible here (and the design shows
+	// text only), so it's hidden.
+	.godam-header-manage-media.components-button {
+		height: auto;
+		padding: 0.5rem 0.75rem;
+		border-radius: 0.5rem;
+		font-weight: 600;
+		background: transparent;
+		border-color: transparent;
+		box-shadow: none;
+		color: #1c1c1c;
+
+		&:hover:not(:disabled),
+		&:focus:not(:disabled) {
+			background: #f3f3f4;
+			color: #1c1c1c;
+		}
+
+		&.disabled {
+			color: #8a8a8a;
+		}
+
+		svg {
+			display: none;
+		}
+	}
+}

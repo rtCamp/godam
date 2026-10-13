@@ -7,37 +7,165 @@
  */
 
 /**
+ * WordPress dependencies
+ */
+import apiFetch from '@wordpress/api-fetch';
+import { select, dispatch } from '@wordpress/data';
+
+/**
  * Internal dependencies
  */
 import { getQuery } from '../utility.js';
+import { isSameId } from '../ids.js';
+import { setupClassicFeaturedImage, resolveClassicFeaturedImage, clearDeferredFeaturedImage } from '../classic-featured-image.js';
+import { ALLOWED_MEDIA_TYPES as DOCUMENT_MIME_TYPES } from '../../../blocks/godam-pdf/constants.js';
 
 const l10n = wp?.media?.view?.l10n;
-const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 /**
- * Check if the current frame is a featured image context.
+ * Collapse a media-frame `type` filter into the single token the GoDAM tab endpoint expects.
  *
- * Note: This will not cover the media modal opened from the core feature image block.
+ * The frame's `type` prop is whatever the opener asked for, and the GoDAM tab passes it
+ * straight through to Central as `job_type`. That works for a single value, but the Document
+ * block requests a dozen MIME types at once — joined with "-" that produces a token Central
+ * has never heard of, and the tab comes back empty.
  *
- * @since 1.4.8
+ * Any request made up purely of document MIME types is therefore reported as
+ * `application/pdf`, which the REST handler already expands to `pdf,document`.
  *
- * @param {wp.media.view.MediaFrame} frame
- * @return {boolean} True if featured image context, false otherwise.
+ * @param {string|string[]} mimeTypes The frame's `type` prop.
+ * @return {string} A token the GoDAM tab endpoint understands.
  */
-const checkIfFeatureImage = ( frame ) => {
-	// Check if this is a featured image context.
-	if ( frame && frame.state && frame.state() ) {
-		const state = frame.state();
-		const stateId = state.id || '';
-
-		// Featured image context
-		if ( stateId === 'featured-image' || frame.id === 'featured-image' ) {
-			return true;
-		}
+function normalizeGoDAMTabType( mimeTypes ) {
+	if ( ! mimeTypes ) {
+		return 'all';
 	}
 
-	return false;
-};
+	const types = Array.isArray( mimeTypes ) ? mimeTypes : [ mimeTypes ];
+
+	if ( types.length && types.every( ( type ) => DOCUMENT_MIME_TYPES.includes( type ) ) ) {
+		return 'application/pdf';
+	}
+
+	return types.join( '-' );
+}
+
+/**
+ * Recursively collects all blocks (including inner blocks at any depth) into a flat array.
+ *
+ * @param {Array} blocks - Top-level blocks from the block editor store.
+ * @return {Array} Flat list of all blocks.
+ */
+function getAllBlocksFlat( blocks ) {
+	const result = [];
+	for ( const block of blocks ) {
+		result.push( block );
+		if ( block.innerBlocks?.length ) {
+			result.push( ...getAllBlocksFlat( block.innerBlocks ) );
+		}
+	}
+	return result;
+}
+
+/**
+ * Replaces the virtual GoDAM ID with the real WP attachment ID on any core/image block
+ * that is currently holding the virtual ID. Handles modern core/gallery inner blocks
+ * synchronously at the point of attachment creation, avoiding event-listener timing issues.
+ *
+ * @param {string|number} virtualMediaId - The GoDAM item ID used as a placeholder.
+ * @param {number}        realId         - The newly created WP attachment ID.
+ */
+function replaceVirtualIdInCoreImageBlocks( virtualMediaId, realId ) {
+	let blocks;
+	let blockEditorDispatch;
+
+	try {
+		blocks = select( 'core/block-editor' ).getBlocks();
+		blockEditorDispatch = dispatch( 'core/block-editor' );
+	} catch {
+		// Not in a block-editor context (e.g. classic editor / media library screen).
+		return;
+	}
+
+	if ( ! Array.isArray( blocks ) || blocks.length === 0 ) {
+		return;
+	}
+
+	const allBlocks = getAllBlocksFlat( blocks );
+
+	for ( const block of allBlocks ) {
+		if (
+			block.name === 'core/image' &&
+			block.attributes?.id !== undefined &&
+			block.attributes?.id !== null &&
+			isSameId( block.attributes.id, virtualMediaId )
+		) {
+			blockEditorDispatch.updateBlockAttributes( block.clientId, { id: realId } );
+		}
+	}
+}
+
+/**
+ * Repoints the post's featured image from the virtual GoDAM ID to the real WP
+ * attachment ID.
+ *
+ * The featured image is not a block attribute — `core/post-featured-image` (and the
+ * document sidebar's Featured image panel) writes it to the post entity's
+ * `featured_media` field. So the block-attribute swap performed by
+ * core-media-blocks-extension.js never reaches it: the field keeps the GoDAM job ID,
+ * `getEntityRecord( 'postType', 'attachment', <job id> )` 404s, and the block renders
+ * an empty placeholder with no preview.
+ *
+ * Core sets `featured_media` synchronously from the frame's `select` event, while the
+ * attachment is created asynchronously — so by the time this runs the field already
+ * holds the virtual ID and can simply be replaced. The classic editor offers no such
+ * window and is handled by classic-featured-image.js instead.
+ *
+ * @param {string|number} virtualMediaId - The GoDAM item ID used as a placeholder.
+ * @param {number}        realId         - The newly created WP attachment ID.
+ */
+function replaceVirtualIdInFeaturedImage( virtualMediaId, realId ) {
+	let currentFeaturedMedia;
+
+	try {
+		// Undefined outside the post editor (media library screen, classic editor).
+		currentFeaturedMedia = select( 'core/editor' )?.getEditedPostAttribute?.( 'featured_media' );
+	} catch {
+		return;
+	}
+
+	if ( currentFeaturedMedia === undefined || currentFeaturedMedia === null ) {
+		return;
+	}
+
+	if ( ! isSameId( currentFeaturedMedia, virtualMediaId ) ) {
+		return;
+	}
+
+	try {
+		dispatch( 'core/editor' ).editPost( { featured_media: realId } );
+	} catch {
+		// Guarded like the read above. A throw here would unwind into processGoDAMItem's
+		// swallow-all catch and take out resolveClassicFeaturedImage() along with both
+		// custom events for this item, which other code depends on.
+	}
+}
+
+/**
+ * Release a classic-editor featured image pick whose attachment was never created.
+ *
+ * The pick is lost either way — there is no ID to set — but clearing the park keeps the
+ * failure to this one item instead of jamming every subsequent pick, and the warning
+ * gives the silent drop a trace, since the meta box just keeps its previous value.
+ *
+ * @param {string|number} virtualMediaId The GoDAM item ID whose creation failed.
+ */
+function releaseParkedFeaturedImage( virtualMediaId ) {
+	if ( clearDeferredFeaturedImage( virtualMediaId ) ) {
+		// eslint-disable-next-line no-console
+		console.warn( 'GoDAM: could not create the attachment for the selected featured image, so the featured image was left unchanged.' );
+	}
+}
 
 /**
  * Check if the current frame is an analytics context.
@@ -61,10 +189,9 @@ const checkIfAnalyticsContext = ( frame ) => {
  */
 const GoDAMMediaFrameShared = {
 	browseRouter( routerView ) {
-		const isFeatureImage = checkIfFeatureImage( this );
 		const isAnalyticsContext = checkIfAnalyticsContext( this );
 
-		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isFeatureImage && ! isAnalyticsContext ) {
+		if ( window.godamTabCallback && window.godamTabCallback.validAPIKey && ! isAnalyticsContext ) {
 			routerView.set( {
 				upload: {
 					text: l10n.uploadFilesTitle,
@@ -96,13 +223,13 @@ const GoDAMMediaFrameShared = {
 	GoDAMCreate() {
 		const state = this.state();
 
-		let mimeTypes = state.get( 'library' )?.props?.get( 'type' );
+		// Hold back a classic-editor featured image pick until its attachment exists.
+		// Scoped to the Featured image frame; every other frame is left untouched.
+		setupClassicFeaturedImage( this );
 
-		if ( ! mimeTypes ) {
-			mimeTypes = 'all';
-		} else {
-			mimeTypes = Array.isArray( mimeTypes ) ? mimeTypes.join( '-' ) : mimeTypes;
-		}
+		const mimeTypes = normalizeGoDAMTabType(
+			state.get( 'library' )?.props?.get( 'type' ),
+		);
 
 		this.$el.removeClass( 'hide-toolbar' );
 
@@ -115,21 +242,98 @@ const GoDAMMediaFrameShared = {
 		}
 
 		// Browse our library of attachments.
+		const collection = getQuery( { controller: this, type: mimeTypes } );
+
 		const RenderedContent = new wp.media.view.AttachmentsBrowser( {
 			controller: this,
-			collection: getQuery( { controller: this, type: mimeTypes } ),
+			collection,
 			selection: state.get( 'selection' ),
 			model: state,
 		} );
 
 		this.content.set( RenderedContent );
 
+		// Surface GoDAM fetch failures (e.g. an invalid/expired API key) as a clear notice in
+		// the tab instead of leaving it on an infinite spinner or a misleading "No items found".
+		// The collection triggers 'godam:fetched' with the error message (or null) after every
+		// fetch; see models/attachments.js.
+		collection.off( 'godam:fetched', this.renderGoDAMTabNotice, this );
+		collection.on( 'godam:fetched', this.renderGoDAMTabNotice, this );
+
 		// Attaches callback to create attachment entry in WordPress for GoDAM Video.
 		state.off( 'select', this.onGoDAMSelect, this );
 		state.on( 'select', this.onGoDAMSelect, this );
+
+		// Track models added to the selection while on GoDAM tab (for gallery workflow).
+		// GalleryLibrary never fires 'select' — it calls setState('gallery-edit') directly.
+		// We need to know which items came from GoDAM before that transition happens.
+		if ( ! this._godamTrackedModels ) {
+			this._godamTrackedModels = new WeakSet();
+		}
+		const selection = state.get( 'selection' );
+		selection.off( 'add', this._onGoDAMSelectionAdd, this );
+		selection.on( 'add', this._onGoDAMSelectionAdd, this );
+
+		// GalleryEdit fires frame-level 'update' (not 'select') when "Insert gallery" is clicked.
+		this.off( 'update', this.onGoDAMGalleryUpdate, this );
+		this.on( 'update', this.onGoDAMGalleryUpdate, this );
 	},
 
-	onGoDAMSelect() {
+	/**
+	 * Show or clear a clear error notice inside the GoDAM tab.
+	 *
+	 * Bound to the collection's 'godam:fetched' event. `errorMessage` is a human-readable
+	 * string when the fetch failed (e.g. invalid API key) or null on success. Rendering here
+	 * — rather than relying on the extended AttachmentsBrowser view — keeps it working in
+	 * additive mode, where the native browser view is used.
+	 *
+	 * @param {Object}      collection   The collection that emitted the event.
+	 * @param {string|null} errorMessage The error to show, or null to clear.
+	 */
+	renderGoDAMTabNotice( collection, errorMessage ) {
+		// Only touch the DOM while the GoDAM tab is the active content mode.
+		if ( ! this.content || this.content.mode() !== 'godam' ) {
+			return;
+		}
+
+		const view = this.content.get();
+		const $el = view && view.$el;
+
+		if ( ! $el || ! $el.length ) {
+			return;
+		}
+
+		// Ignore a late event from a previous tab activation's collection. Re-opening the tab
+		// builds a fresh collection/view, but an in-flight request from the old one can resolve
+		// afterwards — without this guard its (stale) result could overwrite the current tab.
+		if ( view.collection && collection && view.collection !== collection ) {
+			return;
+		}
+
+		// Remove any previous notice so success clears it and errors don't stack.
+		$el.find( '.godam-tab-notice' ).remove();
+
+		if ( ! errorMessage ) {
+			return;
+		}
+
+		// Styling lives in CSS (see media-library styles) so the notice inherits core's
+		// `notice notice-error` theming — including the dark admin colour scheme — instead of
+		// baking in light-mode colours here.
+		const $notice = window.jQuery(
+			'<div class="godam-tab-notice notice notice-error" role="alert" />',
+		).text( errorMessage );
+
+		// Place it above the attachments grid so it's the first thing the user sees.
+		const $attachments = $el.find( '.attachments-browser' ).first();
+		if ( $attachments.length ) {
+			$attachments.prepend( $notice );
+		} else {
+			$el.prepend( $notice );
+		}
+	},
+
+	async onGoDAMSelect() {
 		// Use the actual content mode instead of stale state
 		const isGodamTab = this.content.mode() === 'godam';
 
@@ -138,58 +342,119 @@ const GoDAMMediaFrameShared = {
 		}
 
 		const selection = this.state().get( 'selection' );
-		const selected = selection?.first();
+
+		// Process every selected item (supports multi-select).
+		selection.each( ( selected ) => {
+			this.processGoDAMItem( selected );
+		} );
+	},
+
+	async processGoDAMItem( selected ) {
 		const data = selected.attributes;
 
-		// API call to website to create the attachment in the current site context.
-		fetch( window.pathJoin( [ restURL, '/godam/v1/media-library/create-media-entry' ] ), {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': window.wpApiSettings?.nonce,
-			},
-			body: JSON.stringify( {
-				id: data.id,
-				title: data.title,
-				filename: data.filename,
-				name: data.title,
-				url: data.url,
-				hls_url: data.hls_url,
-				mpd_url: data.mpd_url,
-				mime: data.mime,
-				type: data.type,
-				subtype: data.subtype,
-				status: data.status,
-				date: data.date,
-				modified: data.modified,
-				filesizeInBytes: data.filesizeInBytes,
-				filesizeHumanReadable: data.filesizeHumanReadable,
-				owner: data.owner,
-				label: data.label,
-				icon: data.icon,
-				thumbnail_url: data.thumbnail_url,
-				caption: data.caption,
-				description: data.description,
-				video_duration: data.video_duration || 0,
-			} ),
-		} )
-			.then( ( res ) => res.json() )
-			.then( ( response ) => {
-				if ( response && response.success ) {
-					const attachment = response.attachment;
-
-					// Trigger custom JS event godam-virtual-attachment-created
-					const event = new CustomEvent( 'godam-virtual-attachment-created', {
-						detail: { virtualMediaId: data.id, attachment },
-					} );
-
-					document.dispatchEvent( event );
-
-					// Also trigger count refresh for React components
-					const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
-					document.dispatchEvent( countRefreshEvent );
-				}
+		try {
+			// apiFetch uses the WordPress REST API configuration, including nonce handling.
+			const response = await apiFetch( {
+				path: '/godam/v1/media-library/create-media-entry',
+				method: 'POST',
+				data: {
+					id: data.id,
+					title: data.title,
+					filename: data.filename,
+					name: data.title,
+					url: data.url,
+					hls_url: data.hls_url,
+					mpd_url: data.mpd_url,
+					mime: data.mime,
+					type: data.type,
+					subtype: data.subtype,
+					status: data.status,
+					date: data.date,
+					modified: data.modified,
+					filesizeInBytes: data.filesizeInBytes,
+					filesizeHumanReadable: data.filesizeHumanReadable,
+					owner: data.owner,
+					label: data.label,
+					icon: data.icon,
+					thumbnail_url: data.thumbnail_url,
+					caption: data.caption,
+					description: data.description,
+					video_duration: data.video_duration || 0,
+					width: data.width || 0,
+					height: data.height || 0,
+					chapters: data.chapters || [],
+					// The renderable PDF for a document. Must travel separately from mpd_url,
+					// which for a converted document holds the original .docx/.xlsx.
+					preview_pdf_url: data.preview_pdf_url || '',
+				},
 			} );
+
+			if ( response && response.success ) {
+				const attachment = response.attachment;
+
+				// Directly update any core/image blocks (e.g. inside core/gallery) that still
+				// carry the virtual GoDAM ID. This runs synchronously before the custom event
+				// so that inner blocks are resolved without relying on React effect timing.
+				replaceVirtualIdInCoreImageBlocks( data.id, attachment.id );
+
+				// The featured image lives on the post entity rather than on block
+				// attributes, so it needs its own swap. The classic editor gets no
+				// placeholder at all — its pick was parked, and is released here.
+				replaceVirtualIdInFeaturedImage( data.id, attachment.id );
+				resolveClassicFeaturedImage( data.id, attachment.id );
+
+				// Trigger custom JS event godam-virtual-attachment-created
+				const event = new CustomEvent( 'godam-virtual-attachment-created', {
+					detail: { virtualMediaId: data.id, attachment },
+				} );
+
+				document.dispatchEvent( event );
+
+				// Also trigger count refresh for React components
+				const countRefreshEvent = new CustomEvent( 'godam-attachment-browser:changed' );
+				document.dispatchEvent( countRefreshEvent );
+			} else {
+				// There is no attachment to point the pick at, so a parked classic-editor
+				// featured image has to be released — otherwise the park is held for the
+				// life of the page and every later pick is swallowed too.
+				releaseParkedFeaturedImage( data.id );
+			}
+		} catch {
+			// Swallow request failures so one item does not break the rest of the selection flow.
+			releaseParkedFeaturedImage( data.id );
+		}
+	},
+
+	// Tracks Backbone models added to the selection while the GoDAM tab is active.
+	// Called via selection.on('add', ...) registered in GoDAMCreate().
+	_onGoDAMSelectionAdd( model ) {
+		if ( this.content.mode() === 'godam' ) {
+			if ( ! this._godamTrackedModels ) {
+				this._godamTrackedModels = new WeakSet();
+			}
+			this._godamTrackedModels.add( model );
+		}
+	},
+
+	// Handles the gallery workflow: GalleryEdit fires frame-level 'update' (not 'select')
+	// when the user clicks "Insert gallery". GalleryLibrary never fires 'select' — it
+	// transitions directly to gallery-edit via setState() without any select event.
+	async onGoDAMGalleryUpdate( library ) {
+		if ( ! this._godamTrackedModels || ! library || typeof library.each !== 'function' ) {
+			return;
+		}
+
+		// Snapshot and reset so the next gallery session starts with a clean slate.
+		const trackedModels = this._godamTrackedModels;
+		this._godamTrackedModels = new WeakSet();
+
+		// Only call create-media-entry for items that originated from the GoDAM tab.
+		// Native WP attachments selected from the browse tab are NOT in the WeakSet.
+		library.each( ( selected ) => {
+			if ( trackedModels.has( selected ) ) {
+				this.processGoDAMItem( selected );
+			}
+		} );
 	},
 };
 

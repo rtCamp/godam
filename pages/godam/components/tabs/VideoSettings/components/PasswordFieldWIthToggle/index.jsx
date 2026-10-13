@@ -1,10 +1,9 @@
 /**
  * WordPress dependencies
  */
-import { useState } from '@wordpress/element';
-import { TextControl, Button } from '@wordpress/components';
+import { TextControl, Icon } from '@wordpress/components';
+import { check, warning } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { seen, unseen } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -13,24 +12,26 @@ import './style.scss';
 import { API_KEY_STATUS } from '../../../../../../shared/enums';
 
 /**
- * PasswordFieldWithToggle component
+ * API Key input field.
  *
- * @param {Object}   param0                - Props passed to the PasswordFieldWithToggle component.
- * @param {boolean}  param0.hasValidAPIKey - Indicates if the API key is valid.
- * @param {boolean}  param0.hasAPIKey      - Indicates if any API key exists (valid or invalid).
- * @param {string}   param0.apiKey         - The current API key value.
- * @param {Function} param0.setAPIKey      - Function to update the API key value.
- * @param {string}   param0.apiKeyStatus   - The current status of the API key (valid, expired, invalid, verification_failed).
+ * Renders the API key text input with contextual help text. The copy / remove
+ * actions live in the parent (APISettings) so they can sit beside the field.
+ *
+ * @param {Object}   param0                 - Props.
+ * @param {boolean}  param0.hasValidAPIKey  - Indicates if the API key is valid.
+ * @param {boolean}  param0.hasAPIKey       - Indicates if any API key exists (valid or invalid).
+ * @param {string}   param0.apiKey          - The current API key value.
+ * @param {Function} param0.setAPIKey       - Function to update the API key value.
+ * @param {string}   param0.apiKeyStatus    - The current status of the API key.
+ * @param {string}   param0.validationError - Inline error message to show below the field.
  *
  * @return {JSX.Element} the rendered component.
  */
-const PasswordFieldWithToggle = ( { hasValidAPIKey, hasAPIKey, apiKey, setAPIKey, apiKeyStatus } ) => {
-	const [ showPassword, setShowPassword ] = useState( false );
-
+const PasswordFieldWithToggle = ( { hasValidAPIKey, hasAPIKey, apiKey, setAPIKey, apiKeyStatus, validationError } ) => {
 	/**
-	 * Function to render help text based on the API key validity.
+	 * Render the help text based on the API key state.
 	 *
-	 * @return {JSX.Element|null} Returns help text if API key is not valid, otherwise null.
+	 * @return {JSX.Element|null} Help text node, or null.
 	 */
 	const renderHelpText = () => {
 		const accountLink = () => {
@@ -44,70 +45,69 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, hasAPIKey, apiKey, setAPIKey
 			);
 		};
 
+		if ( validationError ) {
+			return (
+				<span className="invalid-api-key godam-api-key-msg">
+					<Icon icon={ warning } size={ 18 } />
+					<span>{ validationError }</span>
+				</span>
+			);
+		}
+
 		if ( ! hasAPIKey ) {
 			return (
 				<>
-					{ __( 'Your API key is required to access the features. You can get your active API key from your', 'godam' ) }
+					{ __( 'Your API key is required to access the features. You can get your active API key from', 'godam' ) }
 					{ accountLink() }
 				</>
 			);
 		}
 
-		if ( hasAPIKey && ! hasValidAPIKey ) {
-			if ( apiKeyStatus === API_KEY_STATUS.EXPIRED ) {
-				return (
-					<span className="invalid-api-key">
+		if ( hasValidAPIKey ) {
+			return (
+				<span className="valid-api-key godam-api-key-msg">
+					<Icon icon={ check } size={ 18 } />
+					<span>{ __( 'API key verified', 'godam' ) }</span>
+				</span>
+			);
+		}
+
+		if ( apiKeyStatus === API_KEY_STATUS.EXPIRED ) {
+			return (
+				<span className="invalid-api-key godam-api-key-msg">
+					<Icon icon={ warning } size={ 18 } />
+					<span>
 						{ __( 'Your API Key has expired. You can renew it from your', 'godam' ) }
 						{ accountLink() }
 					</span>
-				);
-			} else if ( apiKeyStatus === API_KEY_STATUS.VERIFICATION_FAILED ) {
-				return (
-					<span className="invalid-api-key">
-						{ __( 'Unable to verify API key. Please click "Refresh Status" to try again.', 'godam' ) }
-					</span>
-				);
-			}
+				</span>
+			);
+		}
+
+		if ( apiKeyStatus === API_KEY_STATUS.VERIFICATION_FAILED ) {
+			return (
+				<span className="invalid-api-key godam-api-key-msg">
+					<Icon icon={ warning } size={ 18 } />
+					<span>{ __( 'Unable to verify API key. Please click "Refresh Status" to try again.', 'godam' ) }</span>
+				</span>
+			);
 		}
 
 		return null;
 	};
 
-	/**
-	 * Renders the TextControl component with shared props
-	 *
-	 * @param {string} inputType - The input type ('text' or 'password')
-	 * @return {JSX.Element} The TextControl component
-	 */
-	const renderTextControl = ( inputType = 'text' ) => (
+	return (
 		<TextControl
 			label={ __( 'API Key', 'godam' ) }
 			value={ apiKey }
 			onChange={ setAPIKey }
 			help={ renderHelpText() }
 			placeholder={ __( 'Enter your API key here', 'godam' ) }
-			className={ `godam-input godam-input__api-key ${ hasAPIKey && ! hasValidAPIKey ? 'invalid-api-key' : '' }` }
+			className={ `godam-input__api-key godam-form-group ${ ( validationError || ( hasAPIKey && ! hasValidAPIKey ) ) ? 'invalid-api-key' : '' }` }
 			disabled={ hasAPIKey }
-			type={ inputType }
+			type="text"
+			data-test-id="godam-settings-api-key-control-key"
 		/>
-	);
-
-	// If API key is valid, render simple TextControl without toggle
-	if ( hasAPIKey ) {
-		return renderTextControl();
-	}
-
-	// If API key is not valid, render with password toggle
-	return (
-		<div className="godam-password-field-wrapper">
-			{ renderTextControl( showPassword ? 'text' : 'password' ) }
-			<Button
-				icon={ showPassword ? seen : unseen }
-				onClick={ () => setShowPassword( ! showPassword ) }
-				className="godam-password-toggle"
-				aria-label={ showPassword ? __( 'Hide password', 'godam' ) : __( 'Show password', 'godam' ) }
-			/>
-		</div>
 	);
 };
 

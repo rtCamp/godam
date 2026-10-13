@@ -20,13 +20,22 @@ $godam_alt_text      = '';
 if ( $godam_video_post_id ) {
 
 	// Get attachment ID from post meta.
-	$godam_attachment_id = get_post_meta( $godam_video_post_id, '_godam_attachment_id', true );
+	$godam_attachment_id = get_post_meta( $godam_video_post_id, '_godam_attachment_id', true ); // godam-coverage-ignore -- Reads '_godam_attachment_id' off the host post (get_the_ID()), not off the attachment — the actual attachment meta read a few lines below already has its own before/after pair.
 
+	/**
+	 * Fires before reading this attachment's thumbnail meta, so
+	 * integrations that centralize media on another site can switch context
+	 * first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
 	// Get thumbnail URL directly from attachment's meta.
 	$godam_thumbnail_url = get_post_meta( $godam_attachment_id, 'rtgodam_media_video_thumbnail', true );
+	do_action( 'rtgodam_after_attachment_lookup' );
 
 	// Set alt text to the post title.
-	$godam_alt_text = get_the_title();
+	$godam_alt_text = get_the_title(); // godam-coverage-ignore -- No argument: reads the title of the host post ($godam_video_post_id above), the same host-post distinction as the _godam_attachment_id read above — not the attachment.
 }
 
 $godam_wrapper_classes = 'godam-video-thumbnail__container';

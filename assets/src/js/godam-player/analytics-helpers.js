@@ -1,0 +1,392 @@
+/**
+ * Shared helpers for video analytics.
+ *
+ * Both the analytics plugin (async path) and the keepalive path
+ * (sendPlayerHeatmap) must send identical request bodies.  This module
+ * is the single source of truth for the request schema.
+ */
+
+/**
+ * External dependencies
+ */
+import { v4 as uuidv4 } from 'uuid';
+
+// Module-scope cache. Generated once on first event, reused for the rest of
+// the page load. Every type=1/2/3/4 event from the same page load shares this
+// UUID so the microservice can dedup with uniqExact(page_load_session_id).
+let _pageLoadSessionId = null;
+
+/**
+ * Return a stable UUID v4 for this page load.
+ *
+ * @return {string} UUID v4 (36 chars).
+ */
+export function getPageLoadSessionId() {
+	if ( ! _pageLoadSessionId ) {
+		_pageLoadSessionId = uuidv4();
+	}
+	return _pageLoadSessionId;
+}
+
+/**
+ * Normalized browser name (e.g. "Google Chrome", "Apple Safari").
+ *
+ * Wraps getUserAgent so callers outside this module can produce the same
+ * config_browser_name string buildAnalyticsRequestBody emits — guarantees
+ * type=1/2/3 and reel-pop type=4 device buckets line up.
+ *
+ * @return {string} Browser name.
+ */
+export function getBrowserName() {
+	return getUserAgent( window.navigator.userAgent ).name;
+}
+
+/**
+ * Normalized OS / platform name (e.g. "Macintosh", "Windows", "Linux").
+ *
+ * @return {string} OS / platform name.
+ */
+export function getOSName() {
+	return getUserAgent( window.navigator.userAgent ).platform;
+}
+
+/**
+ * Check if we should skip analytics tracking.
+ *
+ * @return {boolean} True if analytics should be skipped, false otherwise.
+ */
+export function shouldSkipAnalytics() {
+	const { isAdminPage } = window.videoAnalyticsParams || {};
+
+	if ( isAdminPage ) {
+		return true;
+	}
+
+	const urlParams = new URLSearchParams( window.location.search );
+	if ( urlParams.get( 'godam_page' ) === 'video-preview' ) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Parse the browser's user-agent string into structured data.
+ *
+ * @param {string} userAgent - Raw navigator.userAgent string.
+ * @return {Object} Parsed data with userAgent, name, version, and platform.
+ */
+export function getUserAgent( userAgent ) {
+	const uAgent = userAgent;
+	let bname = 'Unknown';
+	let platform = 'Unknown';
+	let version = '';
+	let ub = '';
+
+	if ( /(linux)/i.test( uAgent ) ) {
+		platform = 'Linux';
+	} else if ( /(macintosh|mac os x)/i.test( uAgent ) ) {
+		platform = 'Macintosh';
+	} else if ( /(windows|win32)/i.test( uAgent ) ) {
+		platform = 'Windows';
+	}
+
+	if ( /(MSIE)/i.test( uAgent ) && ! /(Opera)/i.test( uAgent ) ) {
+		bname = 'Internet Explorer';
+		ub = 'MSIE';
+	} else if ( /(Firefox)/i.test( uAgent ) ) {
+		bname = 'Mozilla Firefox';
+		ub = 'Firefox';
+	} else if ( /(Chrome)/i.test( uAgent ) ) {
+		bname = 'Google Chrome';
+		ub = 'Chrome';
+	} else if ( /(Safari)/i.test( uAgent ) ) {
+		bname = 'Apple Safari';
+		ub = 'Safari';
+	} else if ( /(Opera)/i.test( uAgent ) ) {
+		bname = 'Opera';
+		ub = 'Opera';
+	} else if ( /(Netscape)/i.test( uAgent ) ) {
+		bname = 'Netscape';
+		ub = 'Netscape';
+	}
+
+	const known = [ 'Version', ub, 'other' ];
+	const pattern = new RegExp( '(?<browser>' + known.join( '|' ) + ')[/ ]+(?<version>[0-9.|a-zA-Z.]*)', 'g' );
+	const matches = uAgent.matchAll( pattern );
+	const matchArray = Array.from( matches );
+	const i = matchArray.length;
+
+	if ( i !== 1 ) {
+		if ( uAgent.lastIndexOf( 'Version' ) < uAgent.lastIndexOf( ub ) ) {
+			version = matchArray[ 0 ].groups.version;
+		} else {
+			version = matchArray[ 1 ].groups.version;
+		}
+	} else {
+		version = matchArray[ 0 ].groups.version;
+	}
+
+	if ( version === null || version === '' ) {
+		version = '?';
+	}
+
+	return {
+		userAgent: uAgent,
+		name: bname,
+		version,
+		platform,
+		pattern,
+	};
+}
+
+/**
+ * Build the canonical request body for the analytics endpoint.
+ *
+ * Every field that the microservice accepts is included so that both
+ * the async plugin path and the keepalive path produce identical payloads.
+ *
+ * @param {Object} opts
+ * @param {number} opts.type               Event type (1 = page load, 2 = heatmap, 3 = layer interaction).
+ * @param {string} opts.userToken          Anonymous visitor ID (from analytics library).
+ * @param {number} [opts.visitorTimestamp] Epoch-ms timestamp; defaults to Date.now().
+ * @param {number} [opts.videoId]          Single video ID (type 2/3).
+ * @param {string} [opts.jobId]            Transcoding job ID.
+ * @param {Array}  [opts.videoIds]         Array of [videoId, jobId] pairs (type 1).
+ * @param {Array}  [opts.ranges]           Played time-range pairs (type 2).
+ * @param {number} [opts.videoLength]      Duration in seconds (type 2).
+ * @param {Array}  [opts.layers]           Array of layer interaction event objects (type 3). Each entry must include layer_id, layer_type, action_type, layer_timestamp. Optional: layer_name, page_url, layer_metadata.
+ * @param {number} [opts.reelPopId]        Reel Pop CPT post ID (when event originates from a reel-pop modal).
+ * @param {string} [opts.blockSource]      Placement slug for the surface rendering the video (e.g. 'video-block', 'video-gallery').
+ * @param {number} [opts.hostPostId]       Post ID of the page hosting an embed iframe; when > 0 it overrides post_id so plays attribute to the host page.
+ * @return {{ endpoint: string|null, body: Object|null }} Object with `endpoint` (the base
+ * API URL) and `body` (the request payload). Both are `null` when the plugin token is
+ * missing or unverified — callers must check `endpoint` before sending.
+ */
+/**
+ * Split a page_load batch into one group per host post ID.
+ *
+ * `post_id` is a single top-level field per request, so entries carrying
+ * different host attributions cannot share one send. Host attribution is
+ * per-element (`data-host-post-id` comes from the `host_post_id` shortcode att
+ * as well as the embed page), so reading it once per page would let a single
+ * stamped player re-attribute every other video's page_load on that page.
+ *
+ * @param {Array} batch Queue entries ({ videoId, jobId, blockSource, hostPostId }).
+ * @return {Map<number, Array>} hostPostId (0 = none) -> array of wire triples.
+ */
+export function groupBatchByHostPostId( batch ) {
+	const groups = new Map();
+
+	( Array.isArray( batch ) ? batch : [] ).forEach( ( entry ) => {
+		const parsed = parseInt( entry?.hostPostId, 10 );
+		const key = parsed > 0 ? parsed : 0;
+		if ( ! groups.has( key ) ) {
+			groups.set( key, [] );
+		}
+		groups.get( key ).push( [
+			entry?.videoId,
+			entry?.jobId || '',
+			entry?.blockSource || '',
+		] );
+	} );
+
+	return groups;
+}
+
+export function buildAnalyticsRequestBody( {
+	type,
+	userToken = '',
+	visitorTimestamp,
+	videoId = 0,
+	jobId = '',
+	videoIds = [],
+	ranges = [],
+	videoLength = 0,
+	layers = [],
+	reelPopId = 0,
+	blockSource = '',
+	hostPostId = 0,
+} ) {
+	const {
+		endpoint,
+		token,
+		userId,
+		emailId,
+		locationIP,
+		isPost,
+		isPage,
+		isArchive,
+		postType,
+		postId,
+		postTitle,
+		categories,
+		tags,
+		author,
+	} = window.videoAnalyticsParams || {};
+
+	const campaignData = window.campaign_data || {};
+
+	// If the token is unverified or endpoint is missing, signal callers to bail
+	// by returning a null endpoint.
+	if ( ! endpoint || token === 'unverified' ) {
+		return { endpoint: null, body: null };
+	}
+
+	const ua = getUserAgent( window.navigator.userAgent );
+
+	const body = {
+		site_url: window.location.origin,
+		user_token: userToken,
+		wp_user_id: parseInt( userId, 10 ) || 0,
+		account_token: token || '',
+		email: emailId || '',
+		visitor_timestamp: visitorTimestamp || Date.now(),
+		visit_entry_action_url: window.location.href,
+		visit_entry_action_name: document.title,
+		referer_type: '',
+		referer_name: document.referrer || '',
+		referer_url: document.referrer || '',
+		referer_keyword: '',
+		campaign_keyword: campaignData.keyword || '',
+		campaign_medium: campaignData.medium || '',
+		campaign_name: campaignData.name || '',
+		campaign_source: campaignData.source || '',
+		campaign_content: campaignData.content || '',
+		campaign_token: campaignData.id || '',
+		config_token: ua.userAgent,
+		config_os: ua.platform,
+		config_browser_name: ua.name,
+		config_browser_version: ua.version,
+		config_resolution: window.innerWidth + 'x' + window.innerHeight,
+		location_browser_lang: navigator.language,
+		location_ip: locationIP || '',
+		config_cookie: navigator.cookieEnabled,
+		param_vars: '',
+		is_post: isPost === '1',
+		is_page: isPage === '1',
+		is_archive: isArchive === '1',
+		post_type: postType,
+		post_id: parseInt( postId, 10 ) || 0,
+		post_title: postTitle,
+		categories,
+		tags,
+		author,
+		type,
+		video_id: videoId ? parseInt( videoId, 10 ) : 0,
+		video_ids: type === 1 ? videoIds : [],
+		ranges,
+		video_length: videoLength || 0,
+		page_load_session_id: getPageLoadSessionId(),
+		block_source: blockSource || '',
+	};
+
+	// Embed-iframe attribution: when the render carries the host page's post
+	// ID, plays count against that page rather than the embed page itself.
+	const hostPostIdInt = parseInt( hostPostId, 10 );
+	if ( hostPostIdInt > 0 ) {
+		body.post_id = hostPostIdInt;
+	}
+
+	// Only include job_id when it has a value — an empty string triggers
+	// server-side validation that returns HTTP 400.
+	if ( jobId ) {
+		body.job_id = jobId;
+	}
+
+	// Layer interactions (type=3) — array of {layer_id, layer_type, action_type,
+	// layer_timestamp, layer_name?, page_url?, layer_metadata?}. The microservice
+	// enforces a whitelist on layer_type and a max of 100 entries per request;
+	// callers (storage.js / flushLayerInteractions) chunk if needed.
+	if ( type === 3 && Array.isArray( layers ) && layers.length > 0 ) {
+		body.layers = layers;
+	}
+
+	const reelPopIdInt = parseInt( reelPopId, 10 );
+	if ( reelPopIdInt > 0 ) {
+		body.reel_pop_id = reelPopIdInt;
+	}
+
+	return { endpoint, body };
+}
+
+/**
+ * Coarse device-type classification from the User-Agent string.
+ *
+ * 'mobile' / 'tablet' / 'desktop'. UA-string sniffing is imperfect — the
+ * goal here is "good enough to slice analytics by form factor," not
+ * device fingerprinting. Future improvement: switch to navigator.userAgentData
+ * Client Hints API where available.
+ *
+ * @return {'mobile'|'tablet'|'desktop'} The detected device class.
+ */
+export function getDeviceType() {
+	try {
+		const ua = window.navigator.userAgent || '';
+		if ( /iPad|Android(?!.*Mobile)|Tablet|Kindle/i.test( ua ) ) {
+			return 'tablet';
+		}
+		if ( /Mobile|iPhone|iPod|Android.*Mobile|Mobi|webOS|BlackBerry/i.test( ua ) ) {
+			return 'mobile';
+		}
+		return 'desktop';
+	} catch ( e ) {
+		return 'desktop';
+	}
+}
+
+// Memoized first-view answers per (videoKey, page-session). The decision
+// is locked at first call: that call reads localStorage, sets the persistent
+// flag if missing, and caches the answer. Subsequent calls in this page
+// session for the same videoKey return the same answer — so all events
+// for a given video in a single session agree on whether it's the
+// viewer's first time seeing the video.
+const _videoFirstViewCache = {};
+
+/**
+ * Has this browser previously seen the given video?
+ *
+ * First-time-ever lookup, scoped per browser via localStorage. Returns true
+ * the first time it's called for a videoKey (and sets the persistent flag);
+ * returns false on every subsequent call across all future sessions.
+ * Useful for slicing first-touch vs returning-viewer conversion rates.
+ *
+ * Storage key: `godamVideoSeen:<videoKey>`.
+ *
+ * @param {string} videoKey data-id or job_id identifying the video.
+ * @return {boolean} true on the very first call ever in this browser; false thereafter.
+ */
+export function wasFirstViewForVideo( videoKey ) {
+	if ( ! videoKey ) {
+		return false;
+	}
+	if ( _videoFirstViewCache[ videoKey ] !== undefined ) {
+		return _videoFirstViewCache[ videoKey ];
+	}
+	try {
+		const storageKey = `godamVideoSeen:${ videoKey }`;
+		const seen = localStorage.getItem( storageKey );
+		if ( ! seen ) {
+			_videoFirstViewCache[ videoKey ] = true;
+			localStorage.setItem( storageKey, '1' );
+		} else {
+			_videoFirstViewCache[ videoKey ] = false;
+		}
+	} catch ( e ) {
+		// localStorage unavailable (private mode, quota). Treat as not-first
+		// rather than fabricating a true that would inflate first-view metrics.
+		_videoFirstViewCache[ videoKey ] = false;
+	}
+	return _videoFirstViewCache[ videoKey ];
+}
+
+// Expose helpers on a global namespace so sibling plugins (e.g. godam-for-woo)
+// that are bundled separately can reuse them without a shared import path.
+// Reusing these guarantees parity between type=1/2/3 and type=4 envelopes.
+window.GoDAM = window.GoDAM || {};
+window.GoDAM.getPageLoadSessionId = getPageLoadSessionId;
+window.GoDAM.getBrowserName = getBrowserName;
+window.GoDAM.getOSName = getOSName;
+window.GoDAM.getDeviceType = getDeviceType;
+window.GoDAM.wasFirstViewForVideo = wasFirstViewForVideo;
+window.GoDAM.shouldSkipAnalytics = shouldSkipAnalytics;

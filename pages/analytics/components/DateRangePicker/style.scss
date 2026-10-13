@@ -1,0 +1,182 @@
+/**
+ * Analytics date-range picker.
+ *
+ * Reuses the shared `.godam-period-dropdown` toggle styling; adds the popover
+ * body layout (custom calendar on the left, preset list on the right) matching
+ * the Figma "Analytics Final" flow: two separate rounded panels side by side, a
+ * 7 x 40px fixed-track day grid, and a continuous shaded band across a range.
+ * Accent colour follows the WP admin scheme via `--wp-admin-theme-color`
+ * (never a hard-coded brand value).
+ */
+
+// Figma proportions: calendar panel ~314px, preset list ~188px, 8px apart. The
+// panels are border-box, so the calendar width has to carry its padding AND its
+// border for the seven columns to land on exact 40px pixel boundaries.
+$godam-daterange-cell: 40px;
+$godam-daterange-calendar-padding: 16px;
+$godam-daterange-border-width: 1px;
+$godam-daterange-calendar-chrome: $godam-daterange-calendar-padding + $godam-daterange-border-width;
+$godam-daterange-calendar-width: ($godam-daterange-cell * 7) + ($godam-daterange-calendar-chrome * 2);
+$godam-daterange-presets-width: 188px;
+$godam-daterange-border: #e0e0e0;
+
+// The popover chrome is neutralised so the calendar and the preset list read as
+// two separate panels (Figma), each carrying its own border and shadow. The
+// padding keeps those shadows clear of the popover's own `overflow: auto` box,
+// which WP sets inline alongside the flip/shift max-height — and needs the
+// extra `.components-popover` class to outrank WP's own zero-padding rule.
+.components-popover.godam-daterange-popover .components-popover__content {
+	background: transparent;
+	box-shadow: none;
+	border-radius: 0;
+	padding: 4px;
+}
+
+.godam-daterange {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+
+	// Both columns are fixed-width and must never flex. WP sizes the popover
+	// content to `width: min-content`, so a shrinkable column collapses to its
+	// own min-content width: that is what squeezed the calendar down to ~140px
+	// (19px-wide day cells) while the preset list kept ~400px of dead space.
+	&__calendar,
+	&__presets {
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		background: #fff;
+		border: $godam-daterange-border-width solid $godam-daterange-border;
+		border-radius: 8px;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+	}
+
+	// Preset list on the right, sized to its labels.
+	&__presets {
+		width: $godam-daterange-presets-width;
+		padding: 8px;
+
+		// WP floors every menu item at 160px and pushes a trailing icon to the
+		// far edge with `margin-right: auto`; both fight a fixed-width column.
+		.components-menu-item__item {
+			min-width: 0;
+		}
+
+		// Figma spaces the preset rows more generously than the WP default.
+		.components-menu-item__button {
+			min-height: 40px;
+		}
+	}
+
+	// Calendar sits to the left of the presets when custom mode is open.
+	&__calendar {
+		width: $godam-daterange-calendar-width;
+		padding: $godam-daterange-calendar-padding;
+	}
+
+	&__cal-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 12px;
+
+		// Figma frames both month steppers in a bordered 30px square.
+		.components-button.has-icon {
+			width: 30px;
+			height: 30px;
+			min-width: 30px;
+			border: 1px solid $godam-daterange-border;
+			border-radius: 6px;
+		}
+	}
+
+	&__cal-title {
+		font-weight: 600;
+		font-size: 14px;
+		color: #1e1e1e;
+	}
+
+	// Same fixed track width as the day grid below, so each label sits dead
+	// centre over its column instead of drifting on fractional `1fr` tracks.
+	&__weekdays {
+		display: grid;
+		grid-template-columns: repeat(7, $godam-daterange-cell);
+		margin-bottom: 8px;
+
+		span {
+			text-align: center;
+			font-size: 12px;
+			color: #757575;
+			padding: 4px 0;
+		}
+	}
+
+	// Fixed 40px tracks, not `1fr`: fractional track widths put the shaded
+	// range band's edges on sub-pixel boundaries, which shows up as hairlines
+	// between adjacent days. No column gap either, so the band reads as one
+	// continuous run (Figma), like the row bands.
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(7, $godam-daterange-cell);
+		row-gap: 8px;
+	}
+
+	&__day {
+		all: unset;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 13px;
+		height: 36px;
+		border-radius: 6px;
+		cursor: pointer;
+		color: #1e1e1e;
+
+		// `all: unset` above strips the default outline, so restore a visible
+		// keyboard focus ring (mouse clicks stay clean via :focus-visible).
+		// Declared before :hover to keep selector specificity non-descending.
+		&:focus-visible {
+			outline: 2px solid var(--wp-admin-theme-color, #3a58bf);
+			outline-offset: 1px;
+		}
+
+		// Endpoints are excluded: their label is white, and a 12% tint behind it
+		// is unreadable, so hovering a selected day used to blank out its number.
+		&:hover:not(.is-disabled):not(.is-endpoint) {
+			background: color-mix(in srgb, var(--wp-admin-theme-color, #3a58bf) 12%, transparent);
+		}
+
+		&.is-outside {
+			color: #b0b0b0;
+		}
+
+		&.is-disabled {
+			color: #dcdcde;
+			cursor: default;
+		}
+
+		// Shaded band between the two endpoints.
+		&.is-in-range {
+			background: color-mix(in srgb, var(--wp-admin-theme-color, #3a58bf) 14%, transparent);
+			border-radius: 0;
+		}
+
+		// Selected start / end days.
+		&.is-endpoint {
+			background: var(--wp-admin-theme-color, #3a58bf);
+			color: #fff;
+			border-radius: 6px;
+
+			// Darken instead of tinting, so the white label keeps its contrast.
+			&:hover {
+				background: color-mix(in srgb, var(--wp-admin-theme-color, #3a58bf) 85%, #000);
+			}
+		}
+	}
+
+	&__custom-toggle {
+		border-top: 1px solid $godam-daterange-border;
+		margin-top: 4px;
+	}
+}

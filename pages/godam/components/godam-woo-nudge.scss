@@ -1,0 +1,105 @@
+/* "You've unlocked Woo features" nudge (O10). Accent colors follow the
+   WordPress admin theme color (--wp-admin-theme-color) so the modal matches the
+   user's color scheme, with the default "Fresh" blue as a fallback. */
+.godam-woo-nudge {
+
+	&__mark {
+		color: var( --wp-admin-theme-color, #3858e9 );
+	}
+
+	&__chip {
+		color: var( --wp-admin-theme-color, #3858e9 );
+		background: #eef0fb; /* fallback when color-mix is unsupported */
+		background: color-mix( in srgb, var( --wp-admin-theme-color, #3858e9 ) 12%, #fff );
+	}
+
+	&__media {
+		background: var( --wp-admin-theme-color, #3858e9 ); /* fallback solid */
+		background: linear-gradient(
+			to bottom right,
+			var( --wp-admin-theme-color, #3858e9 ),
+			color-mix( in srgb, var( --wp-admin-theme-color, #3858e9 ) 55%, #fff )
+		);
+	}
+
+	&__carousel {
+		position: relative;
+		flex: 1;
+		align-self: stretch;
+		min-height: 320px;
+		width: 100%;
+	}
+
+	// White preview panel — inset from the left, with a purple margin below it for
+	// the caption + dots. Bleeds off the top/right edges of the rail (the modal
+	// card clips the overflow), so purple frames only the left and bottom.
+	&__frame {
+		position: absolute;
+		top: 0;
+		right: -18px;
+		left: 28px;
+		bottom: 96px;
+		background: #fff;
+		border-radius: 0 0 0 1rem;
+		overflow: hidden;
+	}
+
+	&__slide {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		transition: opacity 0.4s ease;
+		pointer-events: none;
+
+		&.is-active {
+			opacity: 1;
+		}
+	}
+
+	&__slide-img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		object-position: center;
+		display: block;
+		padding: 1rem;
+	}
+
+	// Caption + dots sit in the bottom-left purple margin, left-aligned.
+	&__caption {
+		position: absolute;
+		left: 24px;
+		right: 20px;
+		bottom: 46px;
+		font-size: 13px;
+		font-weight: 500;
+		line-height: 1.4;
+		color: rgba(255, 255, 255, 0.9);
+		text-align: left;
+	}
+
+	&__dots {
+		position: absolute;
+		left: 24px;
+		bottom: 22px;
+		display: flex;
+		justify-content: flex-start;
+		gap: 6px;
+	}
+
+	&__dot {
+		width: 7px;
+		height: 7px;
+		padding: 0;
+		background: rgba(255, 255, 255, 0.45);
+		border: 0;
+		border-radius: 999px;
+		cursor: pointer;
+		transition: width 0.25s ease, background 0.25s ease;
+
+		&.is-active {
+			width: 18px;
+			background: #fff;
+		}
+	}
+}

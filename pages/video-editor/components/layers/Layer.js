@@ -1,5 +1,11 @@
 
 /**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+import { Suspense } from '@wordpress/element';
+
+/**
  * Internal dependencies
  */
 import FormLayer from './FormLayer';
@@ -7,11 +13,13 @@ import CTALayer from './CTALayer';
 import HotspotLayer from './HotspotLayer';
 import Ads from './AdsLayer';
 import PollLayer from './PollLayer';
+import LayerErrorBoundary from './LayerErrorBoundary';
 
 /**
- * Layer Component that needs to be used.
+ * Core Layer Components.
+ * Additional layer types can be registered via PHP filters.
  */
-const LayerComponents = {
+const coreLayerComponents = {
 	form: {
 		component: FormLayer,
 	},
@@ -30,6 +38,32 @@ const LayerComponents = {
 };
 
 /**
+ * Get all registered layer components (core + PHP filtered).
+ * PHP filtered components are loaded from window.godamVideoEditorConfig and
+ * their actual components are loaded from window.godamLayerComponents.
+ *
+ * @return {Object} Object containing all registered layer components.
+ */
+const getLayerComponents = () => {
+	const components = { ...coreLayerComponents };
+
+	// Merge with PHP-filtered components (e.g., WooCommerce)
+	const phpComponents = window.godamVideoEditorConfig?.layerComponents || {};
+	const loadedComponents = window.godamLayerComponents || {};
+
+	Object.keys( phpComponents ).forEach( ( key ) => {
+		const componentName = phpComponents[ key ];
+		if ( loadedComponents[ componentName ] ) {
+			components[ key ] = {
+				component: loadedComponents[ componentName ],
+			};
+		}
+	} );
+
+	return components;
+};
+
+/**
  * Component to add the layer based on the type.
  *
  * @param {Object}   param0          - Props for the Layer component.
@@ -40,9 +74,24 @@ const LayerComponents = {
  * @return {JSX.Element} The rendered Layer component.
  */
 const Layer = ( { layer, goBack, duration } ) => {
-	const Component = LayerComponents[ layer?.type ?? 'cta' ]?.component;
+	const LayerComponents = getLayerComponents();
+	const layerType = layer?.type ?? 'cta';
+	// Fall back to the CTA layer when the requested type has no registered component.
+	const Component = LayerComponents[ layerType ]?.component ?? LayerComponents.cta?.component;
 
-	return <Component layerID={ layer.id } goBack={ goBack } duration={ duration } />;
+	// The boundary wraps every return path (including the fallback) so no layer
+	// editor — core or add-on — can throw and white-screen the whole editor.
+	return (
+		<LayerErrorBoundary resetKey={ layer.id } goBack={ goBack }>
+			<Suspense fallback={ <div>{ __( 'Loading layer…', 'godam' ) }</div> }>
+				{ Component ? (
+					<Component layerID={ layer.id } goBack={ goBack } duration={ duration } />
+				) : (
+					<div>{ __( 'Error: No layer components registered', 'godam' ) }</div>
+				) }
+			</Suspense>
+		</LayerErrorBoundary>
+	);
 };
 
 /**

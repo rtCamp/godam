@@ -598,21 +598,18 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 		/**
 		 * Error handling.
 		 */
+		// A failed send must not end the visitor's submission: the entry is already saved.
 		if ( is_wp_error( $response_from_transcoding ) ) {
-			wp_send_json_error(
-				$response_from_transcoding->get_error_message(),
-				$response_from_transcoding->get_error_code(),
-			);
+			rtgodam_handle_form_transcoding_failure( 'ninja-forms', $entry_id, $response_from_transcoding );
+			return;
 		}
 
 		/**
 		 * If empty data or name send error.
 		 */
 		if ( empty( $response_from_transcoding->data ) || empty( $response_from_transcoding->data->name ) ) {
-			wp_send_json_error(
-				__( 'Transcoding data not set', 'godam' ),
-				404
-			);
+			rtgodam_handle_form_transcoding_failure( 'ninja-forms', $entry_id, $response_from_transcoding );
+			return;
 		}
 
 		/**
@@ -660,7 +657,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 					return;
 				}
 
-				$form_id = get_post_meta( $entry_id, '_form_id', true );
+				$form_id = get_post_meta( $entry_id, '_form_id', true ); // godam-coverage-ignore -- handle_transcoding_callback(): $entry_id is a Ninja Forms entry ID used as a postmeta key (not the function's own unused $attachment_id parameter).
 
 				if ( empty( $form_id ) ) {
 					return;
@@ -669,7 +666,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 				$meta_key   = 'rtgodam_transcoded_url_ninja-forms_' . $form_id . '_' . $entry_id;
 				$meta_value = $post_array['download_url'] ?? '';
 
-				update_post_meta( $entry_id, $meta_key, $meta_value );
+				update_post_meta( $entry_id, $meta_key, $meta_value ); // godam-coverage-ignore -- handle_transcoding_callback(): $entry_id is a Ninja Forms entry ID used as a postmeta key (not the function's own unused $attachment_id parameter).
 			}
 		}
 	}

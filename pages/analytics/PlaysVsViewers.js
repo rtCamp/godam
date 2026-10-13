@@ -1,0 +1,114 @@
+/**
+ * External dependencies
+ */
+import React from 'react';
+
+/**
+ * Internal dependencies
+ */
+import './charts.js';
+
+/**
+ * WordPress dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
+ * PlaysVsViewers — combined stat card that replaces the standalone "Total Plays" card.
+ * Inherits the sparkline chart and percentage-change badge from SingleMetrics (plays),
+ * and adds Unique Viewers and a "Sessions per user" footer.
+ *
+ * unique_viewers is a deduplicated all-time distinct-person count (Model B).
+ * The "Sessions per user" ratio is always plays / uniqueViewers — the industry-standard
+ * "Average views per viewer" formula. Never summed across per-video rows.
+ *
+ * @param {Object}  props
+ * @param {string}  [props.mode='analytics'] 'analytics' | 'dashboard'
+ * @param {number}  props.plays              Total plays count.
+ * @param {number}  props.uniqueViewers      Deduplicated distinct-person count.
+ * @param {boolean} [props.showRatio=true]   Whether to render the ratio footer.
+ * @param {boolean} [props.isLoading=false]  Show skeleton state when true.
+ * @param {string}  [props.dataLabel]        Active range label (e.g. "All time").
+ */
+const PlaysVsViewers = ( {
+	mode = 'analytics',
+	plays = 0,
+	uniqueViewers = 0,
+	showRatio = true,
+	isLoading = false,
+	dataLabel,
+} ) => {
+	// Range mode returns a live range-scoped unique count (0 is valid), so only
+	// a null/undefined means genuinely unavailable, shown as "—" with no
+	// sessions-per-user ratio. Kept as a defensive guard for older/erroring APIs.
+	const viewersUnavailable = uniqueViewers === null || uniqueViewers === undefined;
+
+	// Plays / deduplicated unique viewers (industry-standard "avg views per viewer").
+	// Guard against division by zero (and unavailable uniques) only.
+	const sessionsPerUser =
+		! viewersUnavailable && uniqueViewers > 0
+			? ( plays / uniqueViewers ).toFixed( 2 )
+			: null;
+
+	const formattedPlays = Number( plays ).toLocaleString();
+	const formattedViewers = viewersUnavailable ? '—' : Number( uniqueViewers ).toLocaleString();
+
+	return (
+		<div className="analytics-info plays-vs-viewers-card flex justify-between max-lg:flex-col border border-zinc-200 w-full md:w-[calc(50%-0.5rem)] lg:w-full">
+			<div className="analytics-single-info">
+				<div className="flex justify-between items-center flex-row w-full">
+					<div className="analytics-info-heading">
+						<p className="text-xs text-[#525252]">{ __( 'Plays / Unique viewers', 'godam' ) }</p>
+					</div>
+				</div>
+
+				{ isLoading ? (
+					<div className="flex flex-row justify-between gap-2 items-end mt-2">
+						<div className="flex flex-col gap-3">
+							<div className="flex flex-row items-baseline gap-2">
+								<div className="skeleton h-8 w-16"></div>
+								<span className="text-zinc-300 text-xl select-none" aria-hidden="true">/</span>
+								<div className="skeleton h-8 w-16"></div>
+							</div>
+							<div className="skeleton h-3 w-32"></div>
+						</div>
+					</div>
+				) : (
+					<div className="flex flex-row justify-between gap-2 items-end">
+						<div className="flex flex-col gap-2">
+							<div className="flex flex-row items-baseline gap-2">
+								<span className="single-metrics-value">{ formattedPlays }</span>
+								<span className="text-zinc-300 text-xl select-none" aria-hidden="true">/</span>
+								<span className="single-metrics-value text-zinc-400">{ formattedViewers }</span>
+							</div>
+							<div className="flex flex-row gap-6">
+								<p className="text-zinc-500 text-xs">{ __( 'Plays', 'godam' ) }</p>
+								<p className="text-zinc-500 text-xs">{ __( 'Unique viewers', 'godam' ) }</p>
+							</div>
+						</div>
+					</div>
+				) }
+
+				{ mode !== 'dashboard' && (
+					<p className="text-zinc-500 text-xs">{ dataLabel || __( 'All time', 'godam' ) }</p>
+				) }
+
+				{ showRatio && (
+					<>
+						<p className="text-xs text-zinc-500">
+							{ __( 'Sessions per user:', 'godam' ) }{ ' ' }
+							{ sessionsPerUser !== null ? (
+								<strong className="text-zinc-700">{ sessionsPerUser }×</strong>
+							) : (
+								<span>—</span>
+							) }
+						</p>
+					</>
+				) }
+			</div>
+		</div>
+	);
+};
+
+export default PlaysVsViewers;
+

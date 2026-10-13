@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import 'video.js/dist/video-js.css';
 
 /**
@@ -15,26 +15,35 @@ import {
 	useFetchAnalyticsDataQuery,
 	useFetchProcessedAnalyticsHistoryQuery,
 } from './redux/api/analyticsApi';
-import { calculateEngagementRate, calculatePlayRate, generateLineChart } from './helper';
+import { calculateEngagementRate, calculatePlayRate, generateLineChart, generateRetentionCurve } from './helper';
 import DOMPurify from 'isomorphic-dompurify';
-import './charts.js';
+import { main as renderVideoAnalyticsCharts } from './charts.js';
+import DateRangePicker, { triggerLabelFor } from './components/DateRangePicker';
 
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { Button, Spinner } from '@wordpress/components';
-import { addQueryArgs } from '@wordpress/url';
+import { __, sprintf, _n } from '@wordpress/i18n';
+import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
+import VideoToCartCard from './VideoToCartCard.js';
+import VideoToPurchaseCard from './VideoToPurchaseCard.js';
+import RevenueCard from './RevenueCard.js';
+import RevenueTips from './RevenueTips.js';
+import PurchaseFunnelCard from './PurchaseFunnelCard.js';
+import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
+import VideoLayerTimeline from './VideoLayerTimeline.js';
+import Placements from './components/Placements';
 import videojs from 'video.js';
-import { arrowLeft } from '@wordpress/icons';
-import { API_KEY_STATUS, ERROR_TYPE } from '../shared/enums';
-import { formatNumber, formatWatchTime } from '../utils/formatters';
+import { arrowLeft, info } from '@wordpress/icons';
+import { ERROR_TYPE } from '../shared/enums';
+import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
+import { canViewStoreData } from '../shared/canViewStoreData';
+import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
+import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
 
-const adminUrl =
-  window.videoData?.adminUrl;
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 const RenderVideo = ( { attachmentID, attachmentData, className, videoId } ) => {
@@ -78,33 +87,137 @@ const Analytics = ( { attachmentID } ) => {
 	const [ mediaLibraryAttachment, setMediaLibraryAttachment ] = useState( null );
 	const [ mediaNotFound, setMediaNotFound ] = useState( false );
 
+	// Date range scoping the Viewer Retention Curve. Null start/end = all-time.
+	// The range-scoped heatmap is summed server-side (godam-analytics #235).
+	const [ retentionRange, setRetentionRange ] = useState( { startDate: null, endDate: null } );
+	const retentionRangeActive = Boolean( retentionRange.startDate && retentionRange.endDate );
+
+	// Back-link target depends on where the user entered from. Top Videos on the
+	// Dashboard links here with `&from=dashboard`, so Back returns to the
+	// Dashboard; any other entry (the Media Editor) keeps the editor target, now
+	// carrying the video id so it reopens this video instead of the generic media
+	// grid. godam-analytics #313 item 2.
+	const cameFromDashboard =
+		new URLSearchParams( window.location.search ).get( 'from' ) === 'dashboard';
+	const backHref = cameFromDashboard
+		? 'admin.php?page=rtgodam'
+		: `admin.php?page=rtgodam_media_editor&id=${ encodeURIComponent( attachmentID ) }`;
+	const backLabel = cameFromDashboard
+		? __( 'Back to Dashboard', 'godam' )
+		: __( 'Back to Media Editor', 'godam' );
+
 	// RTK Query hooks
 	const siteUrl = window.location.origin;
+	// Video-to-Cart, Video-to-Purchase, Revenue and the funnel are WooCommerce
+	// features; the cards are shown only on Woo sites (otherwise they would read a
+	// permanent, misleading "0"). They are store data, so they also need
+	// WooCommerce's report permission: editors and authors see video data only, and
+	// the route strips the store fields for them.
+	const isWoo = !! window.videoData?.isWoo && canViewStoreData();
 	const apiKeyError = getAPIKeyErrorInfo();
 	const apiKeyErrorType = apiKeyError?.type || null;
 
 	// Skip all analytics queries when there is no API key or there is a locally-known key error.
 	const shouldSkipAnalytics = ! hasAPIKey || !! apiKeyErrorType;
 
+	// Page-level date range. All Time by default. Drives the KPIs, geography
+	// map and Views-by-Source (all from the ranged metrics query). The "Views
+	// across the video" heatmap stays all-time (the microservice nulls
+	// all_time_heatmap in range mode), so it reads the unranged query below.
+	const [ range, setRange ] = useState( { startDate: null, endDate: null } );
+	const rangeActive = Boolean( range.startDate && range.endDate );
+	const rangeLabel = rangeActive ? triggerLabelFor( range ) : __( 'All time', 'godam' );
+
+	// All-time query — feeds the always-all-time surfaces: the heatmap, the
+	// video length used by the layer timeline, and the A/B comparison baseline.
 	const {
 		data: analyticsDataFetched,
+		isLoading: isAnalyticsDataLoading,
+		isError: isAnalyticsDataError,
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID || shouldSkipAnalytics },
 	);
-	const shouldShowUpgradeMessage =
-		apiKeyErrorType === ERROR_TYPE.MISSING_KEY ||
-		( apiKeyErrorType === null &&
-			( analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
-				analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ) );
 
-	window.analyticsDataFetched = analyticsDataFetched;
+	// Range-scoped copy of the analytics payload, used only for the retention
+	// curve. Skipped unless a range is picked, so the all-time request above keeps
+	// its own cache key. Range threading (start_date/end_date) is added by #2028.
+	const { data: retentionRangeDataFetched } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( retentionRange.startDate ? { startDate: retentionRange.startDate } : {} ),
+			...( retentionRange.endDate ? { endDate: retentionRange.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics || ! retentionRangeActive },
+	);
+
+	// Range-scoped query — feeds the KPIs, geography map and Views-by-Source
+	// (via charts.js reading window.analyticsDataFetched). The date args are
+	// omitted at All Time so this shares the all-time query's cache key (RTK
+	// dedups — one request) and only forks into its own request once a range
+	// is picked.
+	const { data: rangedAnalyticsData } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( range.startDate ? { startDate: range.startDate } : {} ),
+			...( range.endDate ? { endDate: range.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics },
+	);
+
+	// Per-card independent ranges for the two Woo cards, matching the dashboard's
+	// standalone Revenue and Purchase Funnel cards: each carries its own date
+	// picker and its own fetch, decoupled from the page range and from each other.
+	// Both default to All Time, so they share the all-time query's cache key until
+	// a range is picked on that specific card.
+	const [ revenueRange, setRevenueRange ] = useState( { startDate: null, endDate: null } );
+	const revenueRangeLabel = revenueRange.startDate && revenueRange.endDate
+		? triggerLabelFor( revenueRange )
+		: __( 'All time', 'godam' );
+	const { data: revenueRangeData } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( revenueRange.startDate ? { startDate: revenueRange.startDate } : {} ),
+			...( revenueRange.endDate ? { endDate: revenueRange.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics },
+	);
+
+	const [ purchaseFunnelRange, setPurchaseFunnelRange ] = useState( { startDate: null, endDate: null } );
+	const purchaseFunnelRangeLabel = purchaseFunnelRange.startDate && purchaseFunnelRange.endDate
+		? triggerLabelFor( purchaseFunnelRange )
+		: __( 'All time', 'godam' );
+	const { data: purchaseFunnelRangeData } = useFetchAnalyticsDataQuery(
+		{
+			videoId: attachmentID,
+			siteUrl,
+			...( purchaseFunnelRange.startDate ? { startDate: purchaseFunnelRange.startDate } : {} ),
+			...( purchaseFunnelRange.endDate ? { endDate: purchaseFunnelRange.endDate } : {} ),
+		},
+		{ skip: ! attachmentID || shouldSkipAnalytics },
+	);
+
+	// Connected, but the analytics backend is unreachable (server down) or returned
+	// a microservice error. Gated on a valid key so it never shows for a
+	// disconnected site — that case is handled by the onboarding overlay.
+	const analyticsUnreachable = !! window.userData?.validApiKey && !! attachmentID && ! shouldSkipAnalytics && ( isAnalyticsDataError || analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
+
+	// charts.js (KPIs + geography + Views-by-Source) renders from this global.
+	window.analyticsDataFetched = rangedAnalyticsData ?? analyticsDataFetched;
 
 	// Skip secondary queries until the primary analytics call has returned without an error.
 	// This prevents parallel requests being sent when the server rejects the API key.
 	const shouldSkipSecondaryQueries = ! attachmentID || shouldSkipAnalytics || ! analyticsDataFetched || !! analyticsDataFetched?.errorType;
 
-	// Query for last 30 days of processed analytics history
+	// Processed analytics history feeds the "vs prev 7 days" trend badges +
+	// sparklines, which are inherently a fixed last-7-days window (SingleMetrics
+	// / PlaysVsViewers rebuild a today-6..today grid via ensureAll7Days). So it
+	// stays pinned to `days: 7` and is NOT range-scoped — range-scoping it made
+	// the badge read a false +0.00% for any range not overlapping the last 7
+	// days. The KPI values re-scope via the range-scoped query above instead.
 	const {
 		data: processedAnalyticsHistory,
 	} = useFetchProcessedAnalyticsHistoryQuery(
@@ -124,33 +237,32 @@ const Analytics = ( { attachmentID } ) => {
 		{ skip: ! abTestComparisonAttachmentData?.id || !! apiKeyErrorType || !! analyticsDataFetched?.errorType },
 	);
 
-	// Sync main analytics data
+	// Sync main analytics data. The onboarding overlay handles the disconnected
+	// case, so on a key/backend error we just stop the loader; otherwise render.
 	useEffect( () => {
 		const loadingEl = document.getElementById( 'loading-analytics-animation' );
-		const container = document.getElementById( 'video-analytics-container' );
-		const overlay = document.getElementById( 'api-key-overlay' );
-
-		// Check for server-side errors OR local API key status issues
-		const shouldShowOverlay =
-			analyticsDataFetched?.errorType === ERROR_TYPE.INVALID_KEY ||
-			analyticsDataFetched?.errorType === ERROR_TYPE.MISSING_KEY ||
-			analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR ||
-			apiKeyErrorType !== null;
-
-		if ( shouldShowOverlay ) {
+		if ( apiKeyErrorType !== null || analyticsDataFetched?.errorType || isAnalyticsDataError ) {
 			if ( loadingEl ) {
 				loadingEl.style.display = 'none';
 			}
-			if ( container ) {
-				container.classList.add( 'blurred' );
-			}
-			if ( overlay ) {
-				overlay.classList.remove( 'hidden' );
-			}
-		} else if ( analyticsDataFetched ) {
+			return;
+		}
+		if ( analyticsDataFetched ) {
 			setAnalyticsData( analyticsDataFetched );
 		}
-	}, [ analyticsDataFetched, apiKeyErrorType ] );
+	}, [ analyticsDataFetched, apiKeyErrorType, isAnalyticsDataError ] );
+
+	// Re-render the imperative charts (KPIs + geography + Views-by-Source) when
+	// the range-scoped data changes. charts.js reads window.analyticsDataFetched
+	// (set above during render) and is idempotent, so this safely re-scopes
+	// those surfaces on every range change. The heatmap + video are React-driven
+	// from the all-time query and are intentionally left untouched here.
+	useEffect( () => {
+		if ( ! rangedAnalyticsData || rangedAnalyticsData?.errorType || ! processedAnalyticsHistory ) {
+			return;
+		}
+		renderVideoAnalyticsCharts();
+	}, [ rangedAnalyticsData, processedAnalyticsHistory ] );
 
 	// Sync A/B test comparison data
 	useEffect( () => {
@@ -306,88 +418,49 @@ const Analytics = ( { attachmentID } ) => {
 		};
 	}, [ analyticsData, abTestComparisonAnalyticsData, attachmentData, abTestComparisonAttachmentData, isABTestCompleted, mediaLibraryAttachment ] );
 
-	useEffect( () => {
-		const analyticsVideoEl = document.getElementById( 'analytics-video' );
+	// Per-second heatmap feeding the retention curve. When a range is picked we
+	// use the range-scoped payload (summed daily heatmaps, godam-analytics #235);
+	// otherwise the all-time payload. Parsed once and reused for the empty state
+	// and the chart render (avoids parsing the JSON twice per render).
+	const retentionHeatmapSource = retentionRangeActive
+		? retentionRangeDataFetched?.all_time_heatmap
+		: analyticsData?.all_time_heatmap;
+	const retentionHeatmap = useMemo( () => {
+		if ( ! retentionHeatmapSource ) {
+			return [];
+		}
+		try {
+			const parsed = JSON.parse( retentionHeatmapSource );
+			return Array.isArray( parsed ) ? parsed : [];
+		} catch {
+			return [];
+		}
+	}, [ retentionHeatmapSource ] );
 
-		if ( ! analyticsVideoEl ) {
+	// Whether the heatmap has any real views (drives the empty state).
+	const retentionHasData = retentionHeatmap.some( ( v ) => v > 0 );
+
+	// Video hero (thumbnail + title + layer count). The visible player was
+	// replaced by the retention curve, so this gives the user a visual reference
+	// for which video they're looking at (matches the Figma "Video Detail" head).
+	const videoThumbnail = attachmentData?.meta?.rtgodam_media_video_thumbnail || DefaultThumbnail;
+	const videoLayers = attachmentData?.meta?.rtgodam_meta?.layers;
+	const layerCount = Array.isArray( videoLayers ) ? videoLayers.length : 0;
+
+	// Render the Viewer Retention Curve from the parsed heatmap.
+	// (Replaces the old video-overlay line chart — see generateRetentionCurve.)
+	// The SVG is viewBox-scaled, so it stays responsive without a resize handler.
+	useEffect( () => {
+		if ( ! retentionHasData || ! document.getElementById( 'retention-curve' ) ) {
 			return;
 		}
-
-		const existingPlayer = videojs.getPlayer( 'analytics-video' );
-		if ( existingPlayer ) {
-			existingPlayer.dispose();
-		}
-
-		const player = videojs( 'analytics-video', {
-			fluid: false,
-			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
-			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
-			html5: {
-				vhs: {
-					bandwidth: 14_000_000, // Pretend network can do ~14 Mbps at startup
-					bandwidthVariance: 1.0, // allow renditions close to estimate
-					limitRenditionByPlayerDimensions: false, // don't cap by video element size
-				},
-			},
-		} );
-
-		let resizeHandler = null;
-
-		// When video metadata loads, get actual dimensions and set aspect ratio
-		player.on( 'loadedmetadata', () => {
-			const videoWidth = player.videoWidth();
-			const videoHeight = player.videoHeight();
-
-			if ( videoWidth && videoHeight ) {
-				// Calculate aspect ratio
-				const aspectRatio = `${ videoWidth }:${ videoHeight }`;
-				player.aspectRatio( aspectRatio );
-
-				const container = document.querySelector( '.video-container' );
-				if ( container ) {
-					// Function to update container width based on aspect ratio
-					resizeHandler = () => {
-						// Get available width (parent width or viewport width - padding)
-						const parentWidth = container.parentElement?.offsetWidth || window.innerWidth;
-						const maxWidth = Math.min( parentWidth - 40, 640 ); // 40px for padding
-						const calculatedWidth = 360 * ( videoWidth / videoHeight );
-
-						// Use the smaller of calculated width or available space
-						const finalWidth = Math.min( calculatedWidth, maxWidth );
-						container.style.width = `${ finalWidth }px`;
-					};
-
-					resizeHandler();
-
-					// Update on window resize
-					window.addEventListener( 'resize', resizeHandler );
-
-					// Generate line chart after container is set
-					if ( analyticsData?.all_time_heatmap ) {
-						const heatmapData = JSON.parse( analyticsData.all_time_heatmap );
-						generateLineChart(
-							heatmapData,
-							'#line-chart',
-							player,
-							'.line-chart-tooltip',
-							640,
-							300,
-						);
-					}
-				}
-			}
-		} );
-
-		// Add cleanup for when this specific effect unmounts
-		return () => {
-			if ( resizeHandler ) {
-				window.removeEventListener( 'resize', resizeHandler );
-			}
-			if ( player ) {
-				player.dispose();
-			}
-		};
-	}, [ analyticsData ] );
+		generateRetentionCurve(
+			retentionHeatmap,
+			'#retention-curve',
+			'.retention-curve-tooltip',
+			{ width: 900, height: 320 },
+		);
+	}, [ retentionHeatmap, retentionHasData ] );
 
 	const openVideoUploader = () => {
 		const fileFrame = wp.media( {
@@ -479,74 +552,6 @@ const Analytics = ( { attachmentID } ) => {
 		return () => window.removeEventListener( 'resize', handleResize );
 	}, [] );
 
-	/**
-	 * Renders the appropriate overlay content based on API key status.
-	 *
-	 * @return {JSX.Element} The overlay content to display.
-	 */
-	const renderOverlayContent = () => {
-		// Check for local API key status first (expired, verification_failed)
-		if ( apiKeyError?.type === API_KEY_STATUS.EXPIRED || apiKeyError?.type === API_KEY_STATUS.VERIFICATION_FAILED ) {
-			return (
-				<div className="api-key-overlay-banner">
-					<p className="api-key-overlay-banner-header">
-						{ apiKeyError.title }
-					</p>
-					<p className="api-key-overlay-banner-footer">
-						{ apiKeyError.message }
-						{ ' ' }
-						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'Go to plugin settings', 'godam' ) }
-						</a>
-					</p>
-				</div>
-			);
-		}
-
-		// Show upgrade message for missing/invalid keys
-		if ( shouldShowUpgradeMessage ) {
-			return (
-				<div className="api-key-overlay-banner">
-					<p className="api-key-overlay-banner-header">
-						{ __( 'Upgrade to unlock the media performance report.', 'godam' ) }
-					</p>
-
-					<p className="api-key-overlay-banner-footer">
-						{ __( 'If you already have a premium plan, connect your', 'godam' ) }
-						{ ' ' }
-						<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-							{ __( 'API in the settings', 'godam' ) }
-						</a>
-					</p>
-
-					<a
-						href={ addQueryArgs( 'https://godam.io/pricing', {
-							utm_campaign: 'buy-plan',
-							utm_source: window?.location?.host || '',
-							utm_medium: 'plugin',
-							utm_content: 'analytics',
-						} ) }
-						className="components-button godam-button is-primary"
-						target="_blank"
-						rel="noopener noreferrer"
-					>{ __( 'Buy Plan', 'godam' ) }</a>
-				</div>
-			);
-		}
-
-		// Default error message for microservice errors or other issues
-		return (
-			<div className="api-key-overlay-banner">
-				<p>
-					{ analyticsDataFetched?.message || __( 'An unknown error occurred. Please check your plugin settings.', 'godam' ) }
-				</p>
-				<a href={ adminUrl } target="_blank" rel="noopener noreferrer">
-					{ __( 'Go to plugin settings', 'godam' ) }
-				</a>
-			</div>
-		);
-	};
-
 	return (
 		<div className="godam-analytics-container">
 			<GodamHeader />
@@ -558,6 +563,8 @@ const Analytics = ( { attachmentID } ) => {
 					</div>
 				</div>
 			</div>
+
+			{ analyticsUnreachable && <AnalyticsUnavailableNotice area="analytics" /> }
 
 			<div
 				id="media-not-found-overlay"
@@ -574,121 +581,262 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			<div
-				id="api-key-overlay"
-				className="api-key-overlay api-key-overlay--upgrade hidden"
-				style={ { backgroundImage: `url(${ UpgradePlanAnalyticsBg })` } }
-			>
-				<div className="api-key-message">
-					{ renderOverlayContent() }
-				</div>
-			</div>
-
 			{ attachmentData && ! mediaNotFound && (
 				<div id="analytics-content" className="hidden">
 					<div>
 						<div className="subheading-container flex flex-row max-md:flex-row-reverse pt-6">
-							{ attachmentData?.title?.rendered
-								? <div className="subheading">{ __( 'Analytics report of', 'godam' ) }{ ' ' }
-									<span dangerouslySetInnerHTML={ {
-										__html: DOMPurify.sanitize( attachmentData?.title?.rendered ),
-									} }></span></div> : <div className="subheading">{ __( 'Analytics report', 'godam' ) }</div>
-							}
-							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => window.location.href = 'admin.php?page=rtgodam_video_editor' }><span className="max-md:hidden">{ __( 'Back to Video Editor', 'godam' ) }</span></Button>
+							{ /* Generic page label — the video name now lives in the hero
+							    below, so don't repeat it here. */ }
+							<div className="subheading">{ __( 'Single Video Analytics', 'godam' ) }</div>
+							<Button className="godam-analytics-back-btn" icon={ arrowLeft } onClick={ () => {
+								window.location.href = backHref;
+							} }><span className="max-md:hidden">{ backLabel }</span></Button>
 
 						</div>
 					</div>
+
+					{ /* Page-level FYI — analytics aren't real-time. */ }
+					<div className="godam-analytics-fyi flex items-center gap-1.5 mx-10 mt-2 text-xs text-zinc-500">
+						<Icon icon={ info } size={ 15 } />
+						<span>
+							{ __(
+								'Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here.',
+								'godam',
+							) }
+						</span>
+					</div>
+
+					{ /* Video hero — thumbnail + title + layer count (Figma "Video
+					    Detail" head). Gives a visual reference now that the inline
+					    player was replaced by the retention curve. */ }
+					<div className="godam-video-hero mx-10 mt-4">
+						<img
+							className="godam-video-hero__thumb"
+							src={ videoThumbnail }
+							alt={ __( 'Video thumbnail', 'godam' ) }
+							onError={ ( e ) => {
+								if ( e.currentTarget.src !== DefaultThumbnail ) {
+									e.currentTarget.src = DefaultThumbnail;
+								}
+							} }
+						/>
+						<div className="godam-video-hero__meta">
+							<h2
+								className="godam-video-hero__title"
+								dangerouslySetInnerHTML={ {
+									__html: DOMPurify.sanitize(
+										attachmentData?.title?.rendered || __( 'Untitled video', 'godam' ),
+									),
+								} }
+							/>
+							{ layerCount > 0 && (
+								<span className="godam-video-hero__badge">
+									{ sprintf(
+										/* translators: %d: number of interactive layers on the video. */
+										_n( '%d layer', '%d layers', layerCount, 'godam' ),
+										layerCount,
+									) }
+								</span>
+							) }
+						</div>
+					</div>
+
 					<div
 						id="video-analytics-container"
 						className="video-analytics-container hidden"
 					>
-						<div>
-							<div className="flex gap-6 items-center flex-wrap lg:flex-nowrap flex-row">
-								<div className="flex-grow w-full lg:w-auto">
-									<div className="w-full analytics-info-container flex flex-wrap flex-row items-center lg:flex-col lg:items-start lg:gap-4">
-										<SingleMetrics
-											metricType={ 'engagement-rate' }
-											label={ __( 'Average Engagement', 'godam' ) }
-											tooltipText={ __(
-												'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)',
-												'godam',
-											) }
-											processedAnalyticsHistory={ processedAnalyticsHistory }
-											analyticsDataFetched={ analyticsDataFetched }
-										/>
-
-										<SingleMetrics
-											metricType={ 'plays' }
-											label={ __( 'Total Plays', 'godam' ) }
-											tooltipText={ __(
-												'Plays represent the total number of times the video has been viewed',
-												'godam',
-											) }
-											processedAnalyticsHistory={ processedAnalyticsHistory }
-											analyticsDataFetched={ analyticsDataFetched }
-										/>
-
-										<SingleMetrics
-											metricType={ 'play-rate' }
-											label={ __( 'Play Rate', 'godam' ) }
-											tooltipText={ __(
-												'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
-												'godam',
-											) }
-											processedAnalyticsHistory={ processedAnalyticsHistory }
-											analyticsDataFetched={ analyticsDataFetched }
-										/>
-
-										<SingleMetrics
-											metricType={ 'watch-time' }
-											label={ __( 'Watch Time', 'godam' ) }
-											tooltipText={ __(
-												'Total time the video has been watched, aggregated across all plays',
-												'godam',
-											) }
-											processedAnalyticsHistory={ processedAnalyticsHistory }
-											analyticsDataFetched={ analyticsDataFetched }
-										/>
-									</div>
+						<div className="godam-analytics-stack">
+							{ /* All Time Insights — existing KPIs grouped into the shared card. */ }
+							<div className="godam-card godam-insights-card">
+								<div className="godam-card__head">
+									<h2>{ __( 'Insights', 'godam' ) }</h2>
+									<DateRangePicker
+										value={ range }
+										onChange={ setRange }
+										testIdPrefix="godam-video-insights-daterange"
+									/>
 								</div>
-								<div className="w-full lg:w-auto lg:flex-grow lg:min-w-[650px] 2xl:min-w-[750px]">
-									<div>
-										<div className="video-container">
-											<RenderVideo
-												attachmentData={ attachmentData }
-												attachmentID={ attachmentID }
-												videoId={ 'analytics-video' }
-											/>
-											<div className="video-chart-container">
-												<div id="chart-container">
-													<svg id="line-chart" width="640" height="300"></svg>
-													<div className="line-chart-tooltip"></div>
-												</div>
-											</div>
-										</div>
-										<div className="video-container">
-										</div>
-									</div>
+								<div className="analytics-info-container single-metrics-info-container flex max-lg:flex-row items-stretch flex-wrap justify-center lg:flex-wrap lg:[&>*]:grow lg:[&>*]:basis-40">
+									<SingleMetrics
+										metricType={ 'engagement-rate' }
+										label={ __( 'Average Engagement', 'godam' ) }
+										tooltipText={ __(
+											'Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)',
+											'godam',
+										) }
+										analyticsDataFetched={ rangedAnalyticsData }
+										dataLabel={ rangeLabel }
+									/>
+
+									<SingleMetrics
+										metricType={ 'play-rate' }
+										label={ __( 'Play Rate', 'godam' ) }
+										tooltipText={ __(
+											'Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads',
+											'godam',
+										) }
+										analyticsDataFetched={ rangedAnalyticsData }
+										dataLabel={ rangeLabel }
+									/>
+
+									<SingleMetrics
+										metricType={ 'watch-time' }
+										label={ __( 'Watch Time', 'godam' ) }
+										tooltipText={ __(
+											'Total time the video has been watched, aggregated across all plays',
+											'godam',
+										) }
+										analyticsDataFetched={ rangedAnalyticsData }
+										dataLabel={ rangeLabel }
+									/>
+
+									{ isWoo && (
+										<VideoToCartCard
+											videoToCart={ rangedAnalyticsData?.video_to_cart }
+											dataLabel={ rangeLabel }
+										/>
+									) }
+
+									{ /* Video-to-Purchase: the purchase sibling of Video-to-Cart.
+									    Woo-gated; renders nothing when the payload is absent. */ }
+									{ isWoo && (
+										<VideoToPurchaseCard
+											videoToPurchase={ rangedAnalyticsData?.video_to_purchase }
+											dataLabel={ rangeLabel }
+										/>
+									) }
+
+									<PlaysVsViewers
+										plays={ rangedAnalyticsData?.plays ?? 0 }
+										uniqueViewers={ rangedAnalyticsData?.unique_viewers ?? null }
+										showRatio={ true }
+										isLoading={ isAnalyticsDataLoading }
+										dataLabel={ rangeLabel }
+									/>
 								</div>
 							</div>
+
+							{ /* Per-video Video-Attributed Revenue (single store currency),
+							    split Direct/Assisted. Full-width card; Influenced is
+							    account-level so the per-video payload omits it and the
+							    card hides that box. Woo-gated. */ }
+							{ isWoo && revenueRangeData?.revenue !== undefined && revenueRangeData?.revenue !== null && (
+								<RevenueCard
+									revenue={ {
+										revenue_minor: revenueRangeData.revenue,
+										currency: revenueRangeData.revenue_currency,
+										excluded_orders: revenueRangeData.revenue_excluded_orders,
+										direct_minor: revenueRangeData.revenue_direct_minor,
+										assisted_minor: revenueRangeData.revenue_assisted_minor,
+									} }
+									dataLabel={ revenueRangeLabel }
+									rangeControl={
+										<DateRangePicker
+											value={ revenueRange }
+											onChange={ setRevenueRange }
+											testIdPrefix="godam-video-revenue-daterange"
+										/>
+									}
+								/>
+							) }
+
+							{ /* Comparative revenue tips (EASY WIN B), Woo-gated. The
+							    component renders only the favourable comparisons and
+							    nothing when there is nothing worth saying. Follows the
+							    Revenue card's own range. */ }
+							{ isWoo && revenueRangeData?.revenue_tips && (
+								<RevenueTips tips={ revenueRangeData.revenue_tips } />
+							) }
+
+							{ /* Purchase Funnel — Viewers -> Added to cart -> Purchased.
+							    Woo-gated; carries its own independent date picker and
+							    fetch, renders nothing when the funnel payload is absent. */ }
+							{ isWoo && (
+								<PurchaseFunnelCard
+									funnel={ purchaseFunnelRangeData?.video_funnel }
+									dataLabel={ purchaseFunnelRangeLabel }
+									scope="video"
+									rangeControl={
+										<DateRangePicker
+											value={ purchaseFunnelRange }
+											onChange={ setPurchaseFunnelRange }
+											testIdPrefix="godam-video-purchase-funnel-daterange"
+										/>
+									}
+								/>
+							) }
+
+							{ /* Viewer Retention Curve — standalone chart of per-second
+							    viewer counts across the video timeline (converted from
+							    the old "Views across the video" per-second video overlay).
+							    Scoped by the date picker; the range-scoped heatmap is
+							    summed server-side (godam-analytics #235). */ }
+							<div className="godam-card godam-retention-card">
+								<div className="godam-card__head">
+									<h2>{ __( 'Viewer Retention Curve', 'godam' ) }</h2>
+									<DateRangePicker
+										value={ retentionRange }
+										onChange={ setRetentionRange }
+										testIdPrefix="godam-retention-daterange"
+									/>
+								</div>
+								{ retentionHasData ? (
+									<div className="godam-retention">
+										<svg id="retention-curve"></svg>
+										<div className="retention-curve-tooltip"></div>
+									</div>
+								) : (
+									<p className="godam-retention__empty">
+										{ __( 'Viewer retention will appear here once this video receives views.', 'godam' ) }
+									</p>
+								) }
+								{ /* Hidden trigger marker: on develop, charts.js keys its
+								    per-video render (KPIs / geography / Views-by-Source) off
+								    the presence of #analytics-video + its data-id. The visible
+								    player is gone (replaced by the curve above), so this is a
+								    neutral hidden marker — charts.js only reads the id + data-id,
+								    never treats it as a media element. The proper fix (an
+								    explicit exported init keyed on attachmentID) lands with the
+								    charts.js refactor in the date-range PR (#2028). */ }
+								<div
+									id="analytics-video"
+									data-id={ attachmentID }
+									className="godam-retention__trigger"
+									aria-hidden="true"
+									hidden
+								/>
+							</div>
+
+							{ /* Placements: where this video is embedded and how each placement performs. */ }
+							<Placements
+								videoId={ attachmentID }
+								siteUrl={ siteUrl }
+								shouldSkip={ shouldSkipAnalytics }
+							/>
 						</div>
 					</div>
+					<VideoLayerTimeline
+						attachmentID={ attachmentID }
+						videoDuration={ analyticsData?.video_length || 0 }
+					/>
+
 					<div className="grid grid-cols-[4fr_2fr_2fr] gap-4 px-10 metrics-container">
 						<PlaybackPerformanceDashboard
 							attachmentID={ attachmentID }
 							initialData={ processedAnalyticsHistory }
 						/>
 						<div
-							className="country-heatmap-container text-center bg-white border border-zinc-200 rounded p-4"
+							className="godam-card country-heatmap-container text-center"
 							id="country-heatmap-container"
 						>
+							{ /* The "Views by Location" heading + map are injected here by the map helper. */ }
 							<div id="map-container"></div>
 							<div id="table-container" className="px-12"></div>
 						</div>
-						<div className="posts-count-container lg:col-span-1 bg-white border border-zinc-200 rounded p-4">
-							<h2 className="text-base font-medium text-zinc-700 mb-2">
-								{ __( 'Views by Source', 'godam' ) }
-							</h2>
+						<div className="godam-card posts-count-container lg:col-span-1">
+							<div className="godam-card__head">
+								<h2>{ __( 'Views by Source', 'godam' ) }</h2>
+							</div>
 							<div id="post-views-count-chart" className="text-center"></div>
 							<div className="legend" id="legend"></div>
 							<div className="total-views" id="total-views"></div>
@@ -844,12 +992,12 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.plays ?? 0,
 												) }
 											>
-												<td title={ analyticsData?.plays?.toLocaleString() }>
-													{ formatNumber( analyticsData?.plays ) }
+												<td>
+													{ Number( analyticsData?.plays ?? 0 ).toLocaleString() }
 												</td>
 												<td>{ __( 'Views', 'godam' ) }</td>
-												<td title={ abTestComparisonAnalyticsData?.plays?.toLocaleString() }>
-													{ formatNumber( abTestComparisonAnalyticsData?.plays ?? 0 ) }
+												<td>
+													{ Number( abTestComparisonAnalyticsData?.plays ?? 0 ).toLocaleString() }
 												</td>
 											</tr>
 											<tr
@@ -858,33 +1006,25 @@ const Analytics = ( { attachmentID } ) => {
 													comparisonEngagementRate,
 												) }
 											>
-												<td title={ `${ engagementRate }%` }>
-													{ engagementRate }%
-												</td>
+												<td>{ engagementRate }%</td>
 												<td>{ __( 'Average Engagement', 'godam' ) }</td>
-												<td title={ `${ comparisonEngagementRate }%` }>
-													{ comparisonEngagementRate }%
-												</td>
+												<td>{ comparisonEngagementRate }%</td>
 											</tr>
 											<tr className={ highlightClass( plays, comparisonPlays ) }>
-												<td title={ plays?.toLocaleString() }>
-													{ formatNumber( plays ) }
+												<td>
+													{ Number( plays ?? 0 ).toLocaleString() }
 												</td>
 												<td>{ __( 'Total Plays', 'godam' ) }</td>
-												<td title={ comparisonPlays?.toLocaleString() }>
-													{ formatNumber( comparisonPlays ?? 0 ) }
+												<td>
+													{ Number( comparisonPlays ?? 0 ).toLocaleString() }
 												</td>
 											</tr>
 											<tr
 												className={ highlightClass( playRate, comparisonPlayRate ) }
 											>
-												<td title={ `${ playRate }%` }>
-													{ playRate }%
-												</td>
+												<td>{ playRate }%</td>
 												<td>{ __( 'Play Rate', 'godam' ) }</td>
-												<td title={ `${ comparisonPlayRate }%` }>
-													{ comparisonPlayRate }%
-												</td>
+												<td>{ comparisonPlayRate }%</td>
 											</tr>
 											<tr
 												className={ highlightClass(
@@ -892,12 +1032,12 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.page_load,
 												) }
 											>
-												<td title={ analyticsData?.page_load?.toLocaleString() }>
-													{ formatNumber( analyticsData?.page_load ) }
+												<td>
+													{ Number( analyticsData?.page_load ?? 0 ).toLocaleString() }
 												</td>
 												<td>{ __( 'Page Loads', 'godam' ) }</td>
-												<td title={ abTestComparisonAnalyticsData?.page_load?.toLocaleString() }>
-													{ formatNumber( abTestComparisonAnalyticsData?.page_load ) }
+												<td>
+													{ Number( abTestComparisonAnalyticsData?.page_load ?? 0 ).toLocaleString() }
 												</td>
 											</tr>
 											<tr
@@ -906,11 +1046,11 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.play_time,
 												) }
 											>
-												<td title={ `${ analyticsData?.play_time?.toFixed( 2 ) }s` }>
+												<td>
 													{ formatWatchTime( analyticsData?.play_time ) }
 												</td>
 												<td>{ __( 'Play Time', 'godam' ) }</td>
-												<td title={ `${ abTestComparisonAnalyticsData?.play_time?.toFixed( 2 ) }s` }>
+												<td>
 													{ formatWatchTime( abTestComparisonAnalyticsData?.play_time ) }
 												</td>
 											</tr>
@@ -920,11 +1060,11 @@ const Analytics = ( { attachmentID } ) => {
 													abTestComparisonAnalyticsData?.video_length,
 												) }
 											>
-												<td title={ `${ analyticsData?.video_length }s` }>
+												<td>
 													{ formatWatchTime( analyticsData?.video_length ) }
 												</td>
 												<td>{ __( 'Video Length', 'godam' ) }</td>
-												<td title={ `${ abTestComparisonAnalyticsData?.video_length }s` }>
+												<td>
 													{ formatWatchTime( abTestComparisonAnalyticsData?.video_length ) }
 												</td>
 											</tr>

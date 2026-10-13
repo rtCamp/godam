@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\REST_API\Media_Library;
 
 /**
  * Class Assets
@@ -109,22 +110,31 @@ class Assets {
 		$is_ninja_forms_active     = is_plugin_active( 'ninja-forms/ninja-forms.php' );
 		$is_met_form_active        = is_plugin_active( 'metform/metform.php' );
 
+		$plugin_dependencies = array(
+			'gravityforms' => $is_gf_active,
+			'wpPolls'      => $is_wp_polls_active,
+			'cf7'          => $is_cf7_active,
+			'wpforms'      => $is_wpforms_active,
+			'jetpack'      => $is_jetpack_active,
+			'sureforms'    => $is_sure_form_active,
+			'forminator'   => $is_forminator_form_active,
+			'fluentForms'  => $is_fluent_forms_active,
+			'everestForms' => $is_everest_forms_active,
+			'ninjaForms'   => $is_ninja_forms_active,
+			'metform'      => $is_met_form_active,
+		);
+
+		/**
+		 * Filter the plugin dependencies data exposed to the frontend player.
+		 *
+		 * @param array $plugin_dependencies Associative array of plugin dependency flags.
+		 */
+		$plugin_dependencies = apply_filters( 'godam_plugin_dependencies', $plugin_dependencies );
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamPluginDependencies',
-			array(
-				'gravityforms' => $is_gf_active,
-				'wpPolls'      => $is_wp_polls_active,
-				'cf7'          => $is_cf7_active,
-				'wpforms'      => $is_wpforms_active,
-				'jetpack'      => $is_jetpack_active,
-				'sureforms'    => $is_sure_form_active,
-				'forminator'   => $is_forminator_form_active,
-				'fluentForms'  => $is_fluent_forms_active,
-				'everestForms' => $is_everest_forms_active,
-				'ninjaForms'   => $is_ninja_forms_active,
-				'metform'      => $is_met_form_active,
-			)
+			$plugin_dependencies
 		);
 
 		wp_localize_script(
@@ -135,6 +145,20 @@ class Assets {
 			)
 		);
 
+		/**
+		 * Filter the add-on settings data exposed to the frontend.
+		 * Add-ons can hook into this to provide their own settings.
+		 *
+		 * @param array $addon_settings Add-on settings data.
+		 */
+		$godam_addon_settings = apply_filters( 'godam_addon_settings_data', array() );
+
+		wp_localize_script(
+			'rtgodam-script',
+			'godamAddonSettings',
+			$godam_addon_settings
+		);
+
 		$this->enqueue_godam_settings();
 
 		wp_set_script_translations( 'rtgodam-script', 'godam', RTGODAM_PATH . 'languages' );
@@ -143,13 +167,46 @@ class Assets {
 	}
 
 	/**
+	 * Get the guide message to show alongside video thumbnails, for a given screen.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param string $context Where the message will render. One of 'block-editor'
+	 *                        (the godam/video block Inspector's "Video Thumbnail"
+	 *                        panel) or 'media-library' (the attachment-details popup).
+	 * @return string Sanitized guide message HTML, or an empty string.
+	 */
+	private function get_video_thumbnails_guide_message( $context ) {
+		/**
+		 * Filter the guide message shown alongside video thumbnails.
+		 *
+		 * Empty by default. Add-ons/extensions can hook in to surface guidance about
+		 * video thumbnails (how they are generated, links to docs, upgrade prompts,
+		 * etc.). Return an empty string to show nothing.
+		 *
+		 * The message renders in more than one place; switch on `$context` to vary
+		 * the copy, or ignore it to use the same message everywhere.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param string $message Guide message HTML. Default empty string.
+		 * @param string $context Where the message will render: 'block-editor' or
+		 *                        'media-library'.
+		 */
+		$message = apply_filters( 'rtgodam_video_thumbnails_guide_message', '', $context );
+
+		// The client sanitizes again before rendering, but doing it here means the
+		// trust boundary does not rest entirely on JavaScript.
+		return wp_kses_post( $message );
+	}
+
+	/**
 	 * To enqueue scripts and styles. in admin.
 	 *
 	 * @return void
 	 */
 	public function admin_enqueue_scripts() {
-		$screen           = get_current_screen();
-		$is_upload_screen = ( $screen && 'upload' === $screen->id );
+		$screen = get_current_screen();
 
 		// Ensure WordPress media modal assets are available on admin pages where we open wp.media.
 		if ( function_exists( 'wp_enqueue_media' ) ) {
@@ -164,13 +221,17 @@ class Assets {
 			true
 		);
 
+		$block_video_thumbnails_guide_message = $this->get_video_thumbnails_guide_message( 'block-editor' );
+
 		wp_localize_script(
 			'rtgodam-script',
 			'pluginInfo',
 			array(
-				'version'   => RTGODAM_VERSION,
-				'adminUrl'  => admin_url(),
-				'uploadUrl' => wp_upload_dir()['baseurl'],
+				'version'                     => RTGODAM_VERSION,
+				'adminUrl'                    => admin_url(),
+				'uploadUrl'                   => wp_upload_dir()['baseurl'],
+				'validApiKey'                 => rtgodam_is_api_key_valid(),
+				'videoThumbnailsGuideMessage' => $block_video_thumbnails_guide_message,
 			)
 		);
 
@@ -183,6 +244,7 @@ class Assets {
 				'adminUrl' => admin_url(),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
 				'apiBase'  => RTGODAM_API_BASE,
+				'isAdmin'  => current_user_can( 'manage_options' ),
 			)
 		);
 
@@ -198,7 +260,13 @@ class Assets {
 		wp_enqueue_script( 'rtgodam-script' );
 		wp_enqueue_style( 'rtgodam-style' );
 
-		$easydam_media_library_script_assets = include RTGODAM_PATH . 'assets/build/js/media-library.min.asset.php';
+		$media_library_asset_path            = RTGODAM_PATH . 'assets/build/js/media-library.min.asset.php';
+		$easydam_media_library_script_assets = file_exists( $media_library_asset_path )
+			? include $media_library_asset_path
+			: array(
+				'dependencies' => array(),
+				'version'      => RTGODAM_VERSION,
+			);
 
 		wp_register_script(
 			'easydam-media-library',
@@ -215,16 +283,27 @@ class Assets {
 			filemtime( RTGODAM_PATH . 'assets/build/css/media-library.css' )
 		);
 
+		// The folder-organization toggle is GoDAM's media-library integration kill-switch.
+		// When off (additive mode), the WP media-library takeover is gated in JS; the bundle
+		// still loads so the GoDAM media-modal tab survives.
+		$enable_folder_organization = rtgodam_is_media_library_ui_enabled();
+		$folder_terms               = array();
+
+		// Folder taxonomy terms power the folder filter UI only; skip the query when suppressed.
+		if ( $enable_folder_organization ) {
+			$folder_terms = get_terms(
+				array(
+					'taxonomy'   => 'media-folder',
+					'hide_empty' => false,
+				)
+			);
+		}
+
 		wp_localize_script(
 			'easydam-media-library',
 			'MediaLibraryTaxonomyFilterData',
 			array(
-				'terms' => get_terms(
-					array(
-						'taxonomy'   => 'media-folder',
-						'hide_empty' => false,
-					)
-				),
+				'terms' => $folder_terms,
 			)
 		);
 
@@ -247,39 +326,57 @@ class Assets {
 			)
 		);
 
-		$enable_folder_organization = get_option( 'rtgodam-settings', array() )['general']['enable_folder_organization'] ?? true;
-		$current_user_id            = get_current_user_id();
+		$current_user_id = get_current_user_id();
+
+		$media_library_video_thumbnails_guide_message = $this->get_video_thumbnails_guide_message( 'media-library' );
+
+		$easydam_media_library_data = array(
+			'ajaxUrl'                     => admin_url( 'admin-ajax.php' ),
+			'nonce'                       => wp_create_nonce( 'easydam_media_library' ),
+			'godamToolsNonce'             => wp_create_nonce( 'rtgodam_tools' ),
+			'enableFolderOrganization'    => $enable_folder_organization,
+			'isPollPluginActive'          => is_plugin_active( 'wp-polls/wp-polls.php' ),
+			'page'                        => $screen ? $screen->id : '',
+			'userId'                      => $current_user_id,
+			'canEditOthersMedia'          => current_user_can( 'edit_others_posts' ),
+			'canManageOptions'            => current_user_can( 'manage_options' ),
+			'canEditPages'                => current_user_can( 'edit_pages' ),
+			'videoThumbnailsGuideMessage' => $media_library_video_thumbnails_guide_message,
+			'sidebarHidden'               => Media_Library::is_sidebar_hidden(),
+		);
+
+		/** This filter is documented in inc/classes/class-pages.php */
+		$easydam_media_library_data = apply_filters( 'godam_easydam_media_library_data', $easydam_media_library_data );
 
 		wp_localize_script(
 			'easydam-media-library',
 			'easydamMediaLibrary',
-			array(
-				'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
-				'nonce'                    => wp_create_nonce( 'easydam_media_library' ),
-				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
-				'enableFolderOrganization' => $enable_folder_organization,
-				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
-				'page'                     => $screen ? $screen->id : '',
-				'userId'                   => $current_user_id,
-				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
-				'canManageOptions'         => current_user_can( 'manage_options' ),
-				'canEditPages'             => current_user_can( 'edit_pages' ),
-			)
+			$easydam_media_library_data
 		);
 
-		if ( $is_upload_screen ) {
+		wp_set_script_translations( 'easydam-media-library', 'godam', RTGODAM_PATH . 'languages' );
+
+		// Only load the heavy media-library bundle (~2.65 MB, bundles video.js) where the
+		// media library / wp.media modal is actually used. It was previously enqueued on
+		// every admin screen. Registration + localization above stay unconditional (cheap,
+		// and inert unless the handle is enqueued). The stylesheet loads on the same gate:
+		// the toolbar button and folder controls are created wherever the script runs (post,
+		// page, attachment, widgets, site-editor — not just the upload screen), so scoping
+		// the CSS to `upload` left them unstyled everywhere else.
+		if ( godam_should_load_media_library_assets( $screen ) ) {
+			wp_enqueue_script( 'easydam-media-library' );
 			wp_enqueue_style( 'easydam-media-library' );
 		}
 
-		wp_set_script_translations( 'easydam-media-library', 'godam', RTGODAM_PATH . 'languages' );
-		wp_enqueue_script( 'easydam-media-library' );
-
 		/**
-		 * Dependency library for date range picker.
+		 * Dependency library for the date range picker. Its only consumers (the media-library
+		 * date-range filters) are suppressed in additive mode, so skip the payload when disabled.
 		 */
-		wp_enqueue_script( 'moment-js', RTGODAM_URL . 'assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/moment-js.min.js' ), true );
-		wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . 'assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.min.js' ), true );
-		wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . 'assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.css' ) );
+		if ( $enable_folder_organization ) {
+			wp_enqueue_script( 'moment-js', RTGODAM_URL . 'assets/src/libs/moment-js.min.js', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/moment-js.min.js' ), true );
+			wp_enqueue_script( 'daterangepicker-js', RTGODAM_URL . 'assets/src/libs/daterangepicker.min.js', array( 'moment-js' ), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.min.js' ), true );
+			wp_enqueue_style( 'daterangepicker-css', RTGODAM_URL . 'assets/src/libs/daterangepicker.css', array(), filemtime( RTGODAM_PATH . 'assets/src/libs/daterangepicker.css' ) );
+		}
 
 		// Only enqueue HTTP auth detector on uploads page or pages where media uploading is possible.
 		if ( godam_should_load_auth_detector_script( $screen ) ) {
@@ -351,6 +448,7 @@ class Assets {
 		$brand_image                    = $godam_settings['video_player']['brand_image'] ?? '';
 		$brand_color                    = $godam_settings['video_player']['brand_color'] ?? '';
 		$enable_gtm_tracking            = $godam_settings['general']['enable_gtm_tracking'] ?? false;
+		$engagement_feature_enabled     = rtgodam_is_engagement_feature_enabled();
 		$enable_global_video_engagement = $godam_settings['video']['enable_global_video_engagement'] ?? true;
 		$enable_global_share            = $godam_settings['video']['enable_global_video_share'] ?? true;
 
@@ -361,8 +459,13 @@ class Assets {
 			'apiBase'                     => RTGODAM_API_BASE,
 			'enableGTMTracking'           => $enable_gtm_tracking,
 			'videoPostSettings'           => get_option( 'rtgodam_video_post_settings', array() ),
-			'enableGlobalVideoEngagement' => $enable_global_video_engagement,
+			'engagementFeatureEnabled'    => $engagement_feature_enabled,
+			'enableGlobalVideoEngagement' => $engagement_feature_enabled ? $enable_global_video_engagement : false,
 			'enableGlobalVideoShare'      => $enable_global_share,
+
+			// Media-library UI kill-switch: effective value + whether it's locked from code (constant/filter).
+			'mediaLibraryUIEffective'     => rtgodam_is_media_library_ui_enabled(),
+			'mediaLibraryUICodeManaged'   => rtgodam_is_media_library_ui_code_managed(),
 
 		);
 

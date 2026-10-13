@@ -90,44 +90,51 @@ const AdsSettings = () => {
 				</Notice>
 			) }
 
-			<Panel header={ __( 'Video Ads Settings', 'godam' ) } className="godam-panel">
-				<PanelBody opened>
-					<ToggleControl
-						className="godam-toggle mb-4"
-						label={ __( 'Enable Global Video Ads', 'godam' ) }
-						help={ __( 'Enable or disable video ads on all videos across the site', 'godam' ) }
-						checked={ mediaSettings?.ads_settings?.enable_global_video_ads }
-						onChange={ ( value ) => handleSettingChange( 'enable_global_video_ads', value ) }
-					/>
+			<div>
+				<Panel header={ __( 'Video Ads Settings', 'godam' ) } className="godam-panel">
+					<PanelBody opened>
+						<div data-test-id="godam-settings-ads-control-enable">
+							<ToggleControl
+								className="mb-4"
+								label={ __( 'Enable Global Video Ads', 'godam' ) }
+								help={ __( 'Enable or disable video ads on all videos across the site', 'godam' ) }
+								checked={ mediaSettings?.ads_settings?.enable_global_video_ads }
+								onChange={ ( value ) => handleSettingChange( 'enable_global_video_ads', value ) }
+							/>
+						</div>
 
-					{
-						mediaSettings?.ads_settings?.enable_global_video_ads &&
-						<TextareaControl
-							className="godam-input mb-4"
-							label={ __( 'Ad Tag URL', 'godam' ) }
-							help={
-								<div>
-									{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads ', 'godam' ) }
-									<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'godam' ) }</a>
-								</div>
-							}
-							value={ mediaSettings?.ads_settings?.adTagUrl || '' }
-							onChange={ ( value ) => handleSettingChange( 'adTagUrl', value ) }
-						/>
-					}
-				</PanelBody>
-			</Panel>
+						{
+							mediaSettings?.ads_settings?.enable_global_video_ads &&
+							<TextareaControl
+								className="mb-4"
+								data-test-id="godam-settings-ads-control-tag-url"
+								label={ __( 'Ad Tag URL', 'godam' ) }
+								help={
+									<div>
+										{ __( 'A VAST ad tag URL is used by a player to retrieve video and audio ads', 'godam' ) }{ ' ' }
+										<a href="https://support.google.com/admanager/answer/177207?hl=en" target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{ __( 'Learn more.', 'godam' ) }</a>
+									</div>
+								}
+								value={ mediaSettings?.ads_settings?.adTagUrl || '' }
+								onChange={ ( value ) => handleSettingChange( 'adTagUrl', value ) }
+							/>
+						}
+					</PanelBody>
+				</Panel>
 
-			<Button
-				variant="primary"
-				className="godam-button"
-				onClick={ handleSaveSettings }
-				icon={ saveMediaSettingsLoading && <Spinner /> }
-				isBusy={ saveMediaSettingsLoading }
-				disabled={ saveMediaSettingsLoading || ! isChanged }
-			>
-				{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
-			</Button>
+				<div className="godam-settings__save-row">
+					<Button
+						variant="primary"
+						onClick={ handleSaveSettings }
+						icon={ saveMediaSettingsLoading && <Spinner /> }
+						isBusy={ saveMediaSettingsLoading }
+						disabled={ saveMediaSettingsLoading || ! isChanged }
+						data-test-id="godam-settings-ads-button-save"
+					>
+						{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
+					</Button>
+				</div>
+			</div>
 		</>
 	);
 };

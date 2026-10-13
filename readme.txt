@@ -1,10 +1,10 @@
 === GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more ===
-Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi
+Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, joelabreo, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1, rudrakshigupta, sabbir1991, shreyasikhar26, akrocks
 Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
-Tested up to: 6.9
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.1
+Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -45,6 +45,11 @@ Organize your media library for better workflow efficiency with:
 ✓ Image, video, audio, and PDF are supported
 
 Check full description [here](https://godam.io/features/wordpress-advanced-media-management/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=advanced-media-management)
+
+📌 **Image & Audio Editors**
+✓ Image editor – add clickable, interactive hotspot layers directly to your images
+✓ GoDAM Image block – embed interactive images in the block editor, Elementor, and WPBakery
+✓ Audio editor – manage and customize audio attachments from a dedicated editor, paired with the GoDAM Audio block
 
 📌 **GoDAM Central (Digital Asset Management for WordPress) [Paid]**
 ✓ Centralized media library with unified cloud storage & CDN delivery
@@ -96,7 +101,7 @@ WordPress native video hosting solution, perfect for creators, marketing teams, 
 📌 **Advanced Video Analytics [Paid]**
 ✓ Get first-party video insights to understand viewer behavior, make data-driven decisions, and refine your content strategy.
 ✓ Play rate, watch time, engagement
-✓ Heatmaps to understand dropoffs
+✓ Viewer retention curve to see where viewers drop off
 ✓ Geo-based traffic data
 ✓ Performance comparison
 
@@ -141,7 +146,7 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 = Pricing Plans =
 [View Pricing Plans](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link)
 
-✓ **7-Day Free Trial** available for each subscription plan.
+✓ **60-day Free Trial** with all features included
 ✓ Flexible pricing options to suit different needs.
 ✓ Upgrade or cancel anytime based on usage.
 
@@ -183,15 +188,15 @@ A. Adaptive bitrate streaming ensures that viewers get the best possible video q
 A. Yes, our customizable player allows you to tailor the controls, branding, and features to match your unique requirements and branding guidelines.
 
 = Is there a free trial available? =
-A. Yes! You can start with a 7-day free trial to explore all features. If you decide not to continue with the subscribed plan, you can cancel anytime and remove your credit card.
+A. Yes! You can start with a 60-day free trial to explore all features. No credit card is required, and you can cancel anytime.
 
 = Can I track video engagement and analytics? =
-A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and heatmaps to see which parts of your videos are most engaging. These insights help you optimize your content strategy.
+A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
 == Screenshots ==
 1. General Settings
 2. Video Settings with valid API Key
-3. Video Editor
+3. Media Editor
 4. Video Layer Selection
 5. Hotspot Layer
 6. Ads Integration
@@ -219,46 +224,35 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v1.7.1 (March 17, 2026) =
+= v2.3.2 (October 12, 2026) =
 
-- Fix: Resolved invalid duration issue for hotspot layer in the video editor.
-- Fix: Improved transcoding failure flow for plugin-based transcoding.
-- Fix: Reset state in the video editor on load to prevent stale data.
-- Fix: Resolved inconsistent transcoding job failure state caused by HTTP authentication.
-- Fix: Fixed Analytics overlay message loading and background image rendering.
-- Fix: Fixed security issues
+- Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts automatically the first time you open the library and can be replayed anytime from the new button next to Manage Media.
+- Feat: GoDAM now tells you when it can't reach your site to send back transcoding updates, on admin screens and in GoDAM settings, so videos no longer sit at "Processing" without explanation.
+- Fix: Uploads that GoDAM refuses (the file can't be downloaded, isn't a video, is empty or too large, or the licence is inactive, storage is full or the site isn't allowed) are now marked as failed with the reason in the Media Library and on the Tools page, instead of showing no status at all.
+- Fix: Security fixes.
 
-= v1.7.0 (February 26, 2026) =
+= v2.3.1 (October 6, 2026) =
 
-- Feat: Added GoDAM CDN image support with srcset integration for images uploaded from WordPress.
-- Feat: Implemented auto-sync of Video SEO metadata with Media Library media item details.
-- Tweak: Improved video player loading performance.
-- Tweak: Improved UI/UX of GoDAM plugin pages and components.
-- Tweak: Overwrite thumbnails by default and persist selected custom thumbnails.
-- Fix: Resolved skip button visibility issue when Skippable option is enabled for Ad Layer.
-- Fix: Preserved video aspect ratio consistently across admin and frontend.
-- Fix: Improved API Key verification error handling.
-- Fix: Fixed mixed content issues for images loaded over HTTP on HTTPS sites.
-- Fix: Fixed input validation for the video thumbnail count field.
-- Fix: Fixed pagination display for GoDAM videos in the GoDAM tab.
-- Fix: Resolved custom and existing thumbnail selection issues for Vimeo videos.
-- Fix: Resolved endpoint routing issues on subdomain-based multisite setups.
-- Fix: Fixed audio duration display issue in audio preview.
-- Fix: Improved video transcript path fetching.
-- Fix: Addressed security vulnerabilities.
+- Fix: What's New refreshes after every plugin update, so it always shows the current release post.
+- Fix: A video's hotspot, call-to-action, form and poll analytics are now stored with the same video ID as its plays, so they stay together in Top Products.
+- Fix: Revenue tooltips now say that revenue is after discounts and excludes tax, shipping and fees.
+- Fix: Top Products explains why grouped and external products show no add-to-carts or revenue, and shows "-" instead of a misleading 0.0% add-to-cart rate.
+- Fix: Video to Cart, Video to Purchase and the funnels now count each day in the store's time zone, matching the Revenue card.
+- Fix: Editors and Authors see video analytics only; store data (products, add-to-carts, orders, revenue) needs WooCommerce's report permission.
+- Fix: A GoDAM Record field on a Gravity Forms form no longer fails with "Number of files (2) exceeds limit (1)" after moving between pages or fixing a failed submit, on Gravity Forms 2.9.18 and later.
+- Fix: Security fixes.
 
-= v1.6.0 (February 05, 2026) =
+= v2.3.0 (September 24, 2026) =
 
-- Feat: Added WPBakery Page Builder integration for GoDAM Video, Audio, and Gallery blocks.
-- Feat: Added new Card CTA featuring multiple layout options, responsive design, and image width customization.
-- Feat: Added support for custom SVG and image icons for hotspot layers.
-- Feat: Extended audio recording capabilities for WPForms, SureForms, and Everest Forms GoDAM Recorder.
-- Feat: Added Video Duration Limit option to Gravity Forms Recorder.
-- Tweak: Unified URL validation guide messages across CTA, Ads, and Hotspot layers.
-- Fix: Improved video SEO with proper HTML content stripping, warning messages for empty descriptions, and video duration metadata storage.
-- Fix: Addressed admin pages styling and media library UI issues.
-- Fix: Fixed issues with Analytics.
-- Fix: Addressed security vulnerabilities.
+- Feat: Revenue Analytics for WooCommerce. See how much order value is credited to each video, split into Direct (added to cart inside the video) and Assisted (clicked the product in a video, image hotspot or Reel Pop, then added it to cart on its product page). Influenced revenue is reported separately and is never added to the headline.
+- Feat: Top Products, a new dashboard tab showing per-product views, add-to-cart counts split into in-video and product-page, revenue, and where in your videos each product appeared.
+- Feat: Video to Cart and Video to Purchase rates, measured against the people who actually played the video.
+- Feat: Two new funnels: Play to Cart to Purchase, and the same funnel broken down by placement.
+- Feat: Per-hotspot revenue in layer analytics, showing the revenue from in-video add-to-carts made through each product hotspot.
+- Feat: A Google Analytics 4 status widget on the analytics dashboard, showing whether GoDAM for Woo is pushing video-driven add_to_cart and purchase events to your Google Tag Manager dataLayer.
+- Tweak: The Revenue and Purchase Funnel cards on the single-video page each have their own date-range picker.
+- Tweak: The layer interaction metric is now called "Interaction rate" instead of "Conversion".
+- Note: Revenue and product metrics need the GoDAM for Woo add-on 2.2.0 or later.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

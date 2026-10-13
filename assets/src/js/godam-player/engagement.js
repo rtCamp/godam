@@ -614,11 +614,17 @@ function CommentForm( props ) {
 			comment_type: commentType,
 		};
 		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
-		const result = await apiFetch( {
-			path: addQueryArgs( '/godam/v1/engagement/user-comment' ),
-			method: 'POST',
-			data: queryParams,
-		} );
+		let result;
+		try {
+			result = await apiFetch( {
+				path: addQueryArgs( '/godam/v1/engagement/user-comment' ),
+				method: 'POST',
+				data: queryParams,
+			} );
+		} catch ( error ) {
+			// The server refuses to change a comment the viewer did not write.
+			result = { status: 'error', message: error?.message };
+		}
 
 		if ( 'error' === result.status ) {
 			setIsSending( false );
@@ -824,13 +830,13 @@ function TimeLinkedText( { text, onJump } ) {
  *
  * @return {JSX.Element} A single comment component.
  */
-function Comment( props ) {
+export function Comment( props ) {
 	const { comment, setCommentsData, storeObj, videoAttachmentId, siteUrl, isUserLoggedIn, videoContainerRef } = props;
 	const {
 		text,
 		author_name: authorName,
 		author_image: authorImg,
-		author_email: authorEmail,
+		is_own: isOwnComment,
 		created_at_date: createdAtDate,
 		created_at_time: createdAtTime,
 		children,
@@ -839,10 +845,6 @@ function Comment( props ) {
 	const [ commentType, setCommentType ] = useState( 'new' );
 	const [ showChildComments, setShowChildComments ] = useState( false );
 	const [ isDeleting, setIsDeleting ] = useState( false );
-	const {
-		email: userEmail,
-		type: userType,
-	} = storeObj.select.getUserData();
 	const isDeletedComment = '--soft-deleted-content--' === text.trim();
 
 	async function handleDelete() {
@@ -855,13 +857,20 @@ function Comment( props ) {
 			delete_type: deleteType,
 		};
 		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
-		const result = await apiFetch( {
-			path: addQueryArgs( '/godam/v1/engagement/user-delete-comment' ),
-			method: 'POST',
-			data: queryParams,
-		} );
+		let result;
+		try {
+			result = await apiFetch( {
+				path: addQueryArgs( '/godam/v1/engagement/user-delete-comment' ),
+				method: 'POST',
+				data: queryParams,
+			} );
+		} catch ( error ) {
+			// The server refuses to delete a comment the viewer did not write.
+			result = { status: 'error', message: error?.message };
+		}
 
 		if ( 'error' === result.status ) {
+			setIsDeleting( false );
 			storeObj.dispatch.errorHappened( result.message );
 			return;
 		}
@@ -928,7 +937,7 @@ function Comment( props ) {
 								{ __( 'Reply', 'godam' ) }
 							</button>
 							{
-								userType === 'user' && userEmail === authorEmail && ! isDeletedComment && (
+								isOwnComment && ! isDeletedComment && (
 									<>
 										<button
 											className={ 'rtgodam-video-engagement--comment-button comment-button-delete' + ( isDeleting ? ' is-deleting' : '' ) }

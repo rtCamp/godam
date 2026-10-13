@@ -1,8 +1,22 @@
+// WP 7.0+ collapses ToggleControl bottom margin to zero (the
+// `__nextHasNoMarginBottom` prop is now a no-op). Restore consistent
+// vertical spacing for toggles rendered in the block inspector sidebar.
+.block-editor-block-inspector .components-panel__body .components-toggle-control {
+	margin-bottom: 12px;
+}
+
 .wp-block-godam-audio {
 	// Remove the left and right margin the figure is born with.
 	margin-left: 0;
 	margin-right: 0;
 	position: relative;
+
+	&:not(:has(.godam-audio-empty)) {
+		padding: 30px;
+		border: 3px dotted #b2aeff;
+		background: #f2f2ff;
+		border-radius: 6px;
+	}
 
 	&.is-transient audio {
 		opacity: 0.3;
@@ -17,3 +31,218 @@
 		margin-left: -9px;
 	}
 }
+
+// ── Empty state ──────────────────────────────────────────────────────────────
+.godam-audio-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 40px 24px;
+	background: #eef2ff;
+	border: 2px dashed #a5b4fc;
+	border-radius: 6px;
+	text-align: center;
+
+	&__title {
+		margin: 0;
+		font-size: 16px;
+		font-weight: 600;
+		color: var(--wp-components-color-foreground, #1e1e1e);
+	}
+
+	&__subtitle {
+		margin: 0;
+		font-size: 13px;
+		color: var(--wp-components-color-foreground-muted, #757575);
+	}
+
+	&__btn {
+		margin-top: 8px;
+		letter-spacing: 1px;
+	}
+}
+
+// ── Deleted-attachment error state ─────────────────────────────────────────────
+.godam-audio-error {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+
+	.components-notice {
+		margin: 0;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+}
+
+// ── Inspector: full-width action buttons ──────────────────────────────────────
+// Customize Audio (primary), Add Audio File / Upload Image / Edit (secondary).
+// Colour comes from the Gutenberg Button variant (admin theme colour).
+.godam-audio__btn.components-button {
+	width: 100%;
+	justify-content: center;
+	margin-bottom: 12px;
+}
+
+// ── Inspector: selected audio file row ────────────────────────────────────────
+.godam-audio-file {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 12px;
+	margin-bottom: 16px;
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
+
+	// The icon + name/size, wrapped in a button so clicking the row opens the
+	// media picker to replace the audio file.
+	&__main {
+		display: flex;
+		flex: 1 1 auto;
+		align-items: center;
+		gap: 12px;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	&__icon {
+		flex: 0 0 auto;
+		width: 40px;
+		height: 40px;
+		border-radius: 4px;
+		background: #f0f0f1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		.dashicons {
+			color: #a7aaad;
+			font-size: 22px;
+			width: 22px;
+			height: 22px;
+		}
+	}
+
+	&__meta {
+		flex: 1 1 auto;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__name {
+		font-size: 13px;
+		color: #1e1e1e;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+
+		// Tint the file name when the row (button) is hovered.
+		.godam-audio-file__main:hover & {
+			color: var(--wp-admin-theme-color, #3858e9);
+		}
+	}
+
+	&__size {
+		font-size: 12px;
+		color: #757575;
+	}
+
+	&__delete.components-button {
+		flex: 0 0 auto;
+		color: #1e1e1e;
+
+		&:hover {
+			color: #cc1818;
+		}
+	}
+}
+
+// ── Inspector: thumbnail (mirrors the core/video "PosterImage" control) ─────
+// The image is a button that opens the media picker to replace it; the Replace
+// and Remove actions reveal as a frosted overlay on hover / focus. When there
+// is no thumbnail, a "Set thumbnail" button shows in place of the overlay.
+/* stylelint-disable no-descending-specificity */
+.godam-audio-thumbnail__container {
+	position: relative;
+
+	&:hover,
+	&:focus,
+	&:focus-within {
+
+		.godam-audio-thumbnail__actions {
+			opacity: 1;
+		}
+	}
+
+	.godam-audio-thumbnail__actions.godam-audio-thumbnail__actions-select {
+		opacity: 1;
+		margin-top: 16px;
+	}
+
+	.components-spinner {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin-top: -9px;
+		margin-left: -9px;
+	}
+}
+
+.godam-audio-thumbnail__preview {
+	width: 100%;
+	min-height: 40px;
+	padding: 0;
+	overflow: hidden;
+	outline: 1px solid rgba(0, 0, 0, 0.1);
+	outline-offset: -1px;
+	display: flex;
+	justify-content: center;
+	height: auto !important;
+
+	.godam-audio-thumbnail__preview-image {
+		width: 100%;
+		object-fit: cover;
+		object-position: 50% 50%;
+		aspect-ratio: 2 / 1;
+	}
+}
+
+.godam-audio-thumbnail__actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+
+	&:not( .godam-audio-thumbnail__actions-select ) {
+		position: absolute;
+		bottom: 0;
+		padding: 8px;
+		opacity: 0;
+
+		@media (prefers-reduced-motion: no-preference) {
+			transition: opacity 50ms ease-out;
+		}
+
+		.godam-audio-thumbnail__action {
+			background: rgba(255, 255, 255, 0.75);
+			-webkit-backdrop-filter: blur(16px) saturate(180%);
+			backdrop-filter: blur(16px) saturate(180%);
+		}
+	}
+
+	.godam-audio-thumbnail__action {
+		flex-grow: 1;
+		justify-content: center;
+	}
+}
+/* stylelint-enable no-descending-specificity */

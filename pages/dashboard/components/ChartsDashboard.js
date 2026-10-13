@@ -1,10 +1,5 @@
 /* global d3 */
 
-/**
- * Internal dependencies
- */
-import { formatNumber, formatWatchTime } from '../../utils/formatters';
-
 export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'bandwidth', label = 'Used' ) {
 	const used = parseFloat( usedRaw ) || 0;
 	const total = parseFloat( totalRaw ) || 0;
@@ -47,13 +42,17 @@ export function generateUsageDonutChart( selector, usedRaw, totalRaw, type = 'ba
 			.attr( 'x2', '100%' )
 			.attr( 'y2', '0%' );
 
+		// GoDAM 2.0: storage gradient follows the active WP admin colour scheme.
+		const accent = getComputedStyle( document.body ).getPropertyValue( '--wp-admin-theme-color' ).trim() || '#ab3a6c';
+		const accentDark = getComputedStyle( document.body ).getPropertyValue( '--wp-admin-theme-color-darker-20' ).trim() || accent;
+
 		gradient.append( 'stop' )
 			.attr( 'offset', '0%' )
-			.attr( 'stop-color', '#AB3A6C' );
+			.attr( 'stop-color', accent );
 
 		gradient.append( 'stop' )
 			.attr( 'offset', '100%' )
-			.attr( 'stop-color', '#E6533A' );
+			.attr( 'stop-color', accentDark );
 	}
 
 	const fillColor = ( d ) => {
@@ -148,40 +147,11 @@ function main() {
 		return;
 	}
 
-	const {
-		plays,
-		page_load: pageLoad,
-		play_time: playTime,
-		total_videos: totalVideos,
-	} = dashboardMetrics;
-
-	const totalVideosEl = document.getElementById( 'total-videos' );
-	if ( totalVideosEl ) {
-		const formattedVideos = formatNumber( totalVideos ?? 0 );
-		totalVideosEl.innerText = formattedVideos;
-		totalVideosEl.setAttribute( 'title', ( totalVideos ?? 0 ).toLocaleString() );
-	}
-
-	const playRate = pageLoad ? ( plays / pageLoad ) * 100 : 0;
-
-	const playRateEl = document.getElementById( 'play-rate' );
-	if ( playRateEl ) {
-		playRateEl.innerText = `${ playRate?.toFixed( 2 ) }%`;
-	}
-
-	const playsEl = document.getElementById( 'plays' );
-	if ( playsEl ) {
-		const formattedPlays = formatNumber( plays ?? 0 );
-		playsEl.innerText = formattedPlays;
-		playsEl.setAttribute( 'title', ( plays ?? 0 ).toLocaleString() );
-	}
-
-	const watchTimeEl = document.getElementById( 'watch-time' );
-	if ( watchTimeEl ) {
-		const formattedTime = formatWatchTime( playTime );
-		watchTimeEl.innerText = formattedTime;
-		watchTimeEl.setAttribute( 'title', `${ playTime?.toFixed( 2 ) }s` );
-	}
+	// The "Insights" KPI values + deltas are now rendered by SingleMetrics
+	// (React), so they can react to each card's date range. Setting them here
+	// via innerText would detach React's text nodes and freeze range updates,
+	// so the imperative KPI writes were removed. This function only keeps the
+	// (dashboard-inert) container reveal below.
 
 	const analyticsContainer = document.getElementById( 'video-analytics-container' );
 	if ( analyticsContainer ) {
@@ -205,7 +175,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
 		const requiredIds = [
 			'play-rate',
-			'plays',
 			'watch-time',
 		];
 

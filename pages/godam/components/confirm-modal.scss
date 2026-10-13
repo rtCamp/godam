@@ -1,0 +1,21 @@
+// The modal renders in a portal outside #godam-settings, so these rules are
+// intentionally not scoped under the settings-page wrapper.
+.godam-confirm-modal {
+
+	&.components-modal__frame {
+		max-width: 420px;
+	}
+
+	.godam-confirm-modal__body {
+		margin-bottom: 1.5rem;
+		font-size: 0.875rem;
+		line-height: 1.6;
+		color: #1e1e1e;
+	}
+
+	.godam-confirm-modal__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.5rem;
+	}
+}

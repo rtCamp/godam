@@ -67,9 +67,17 @@ class Init {
 	public function load_fluentforms_classes() {
 
 		/**
-		 * Load the new field on `fluentform/loaded`.
+		 * Load the field on `init`.
+		 *
+		 * It used to load on `fluentform/loaded`, which fires during
+		 * `plugins_loaded`. The recorder field translates its labels in the
+		 * constructor, so the field was translating before any text domain was
+		 * available, which WordPress 6.7+ reports as
+		 * `_load_textdomain_just_in_time was called incorrectly`.
+		 *
+		 * @see https://github.com/rtCamp/godam/issues/465
 		 */
-		add_action( 'fluentform/loaded', array( $this, 'on_fluentforms_loaded' ) );
+		add_action( 'init', array( $this, 'on_fluentforms_loaded' ) );
 
 		/**
 		 * Filter to exclude godam scripts on fluent forms pages.
@@ -80,9 +88,19 @@ class Init {
 	/**
 	 * Add functionality on loaded.
 	 *
+	 * `Recorder_Field extends BaseFieldManager` unconditionally, so loading it
+	 * before FluentForms has declared that class is a fatal. On
+	 * `fluentform/loaded` that could not happen. On `init` it can: the constructor
+	 * only checked that the plugin is in `active_plugins`, which stays true when
+	 * FluentForms aborts its own bootstrap.
+	 *
 	 * @return void
 	 */
 	public function on_fluentforms_loaded() {
+
+		if ( ! class_exists( 'FluentForm\App\Services\FormBuilder\BaseFieldManager' ) ) {
+			return;
+		}
 
 		/**
 		 * Add recorder field.

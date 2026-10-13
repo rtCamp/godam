@@ -4,12 +4,13 @@
 import React from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-
-// Only import qualityMenu if not already registered (this will also load qualityLevels as dependency)
-if ( ! videojs.getPlugin( 'qualityMenu' ) ) {
-	import( 'videojs-contrib-quality-menu' );
-}
-
+// Register the quality-menu plugin with a static (synchronous) side-effect
+// import so it's guaranteed to be registered before the player is created.
+// A dynamic import() resolves asynchronously, so `player.qualityMenu()` could
+// run before the plugin registered and throw "qualityMenu is not a function".
+// (This also pulls in qualityLevels as a dependency.) Re-importing is a no-op:
+// video.js only warns on duplicate registration, so no guard is needed.
+import 'videojs-contrib-quality-menu';
 import 'videojs-flvjs-es6';
 
 /**
@@ -75,8 +76,11 @@ export const VideoJS = ( props ) => {
 				}, 500 );
 			} );
 
-			// Add quality menu
-			playerRef.current.qualityMenu();
+			// Add quality menu. Guard against the plugin being unavailable so a
+			// missing plugin degrades gracefully instead of throwing.
+			if ( typeof playerRef.current.qualityMenu === 'function' ) {
+				playerRef.current.qualityMenu();
+			}
 
 			// You could update an existing player in the `else` block here
 			// on prop change, for example:

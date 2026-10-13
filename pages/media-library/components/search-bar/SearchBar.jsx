@@ -144,11 +144,14 @@ const SearchBar = () => {
 	 * Triggers filter changes, updates selected folder, expands parent folders,
 	 * and resets the search UI.
 	 *
-	 * @param {string} folderId The ID of the selected folder.
+	 * @param {Object} folder The selected folder object (including its meta).
 	 */
-	const handleFolderSelect = ( folderId ) => {
+	const handleFolderSelect = ( folder ) => {
+		const folderId = folder?.id;
 		triggerFilterChange( folderId );
-		dispatch( changeSelectedFolder( { item: { id: folderId } } ) );
+		// Pass the whole folder (incl. meta) so its lock/bookmark state is preserved in
+		// state — selecting by id alone stripped the meta and defeated lock checks.
+		dispatch( changeSelectedFolder( { item: folder } ) );
 		dispatch( expandParents( { id: folderId } ) );
 
 		setSearchTerm( '' );
@@ -196,7 +199,7 @@ const SearchBar = () => {
 										<li key={ folder.id }>
 											<Button
 												className="search-result-item"
-												onClick={ () => handleFolderSelect( folder.id ) }
+												onClick={ () => handleFolderSelect( folder ) }
 											>
 												{ folder.name }
 											</Button>

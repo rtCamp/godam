@@ -32,6 +32,71 @@ if ( window.elementor ) {
 		initialize() {
 			// eslint-disable-next-line no-undef
 			elementor.modules.controls.BaseMultiple.prototype.initialize.apply( this, arguments );
+
+			// When a GoDAM virtual media item is picked from the media library's
+			// "GoDAM" tab, onGoDAMSelect() creates the real WordPress attachment
+			// and dispatches `godam-virtual-attachment-created` with the original
+			// attachment. Each control view (including every repeater row) listens
+			// and swaps the temporary virtual id it currently holds for the real
+			// attachment id — mirroring how the Gutenberg blocks handle it.
+			this.onGodamVirtualAttachmentCreated = this.handleGodamVirtualAttachment.bind( this );
+			document.addEventListener( 'godam-virtual-attachment-created', this.onGodamVirtualAttachmentCreated );
+		},
+
+		handleGodamVirtualAttachment( event ) {
+			const detail = event?.detail || {};
+			const attachment = detail.attachment;
+			const virtualMediaId = detail.virtualMediaId;
+
+			if ( ! attachment || ! attachment.id ) {
+				return;
+			}
+
+			// Only the control that currently holds this virtual id should adopt
+			// the freshly-created real attachment. In a repeater each row is its
+			// own control view, so this targets exactly the row the user selected
+			// the virtual media in — and never touches other rows or widgets.
+			if ( String( this.getControlValue( 'id' ) ) !== String( virtualMediaId ) ) {
+				return;
+			}
+
+			if ( attachment.mime && 'application/dash+xml' === attachment.mime ) {
+				this.setValue( {
+					id: attachment.id,
+					url: attachment.url,
+					title: attachment.title,
+					name: attachment.filename,
+					icon: attachment.icon || '',
+					sources: [
+						{
+							src: attachment.url,
+							type: attachment.mime,
+						},
+					],
+				} );
+			} else {
+				this.setValue( {
+					id: attachment.id,
+					url: attachment.url,
+					title: attachment.title,
+					name: attachment.filename,
+					icon: '',
+				} );
+			}
+
+			this.applySavedValue();
+		},
+
+		onDestroy() {
+			if ( this.onGodamVirtualAttachmentCreated ) {
+				document.removeEventListener( 'godam-virtual-attachment-created', this.onGodamVirtualAttachmentCreated );
+			}
+
+			// eslint-disable-next-line no-undef
+			const parentProto = elementor.modules.controls.BaseMultiple.prototype;
+			if ( 'function' === typeof parentProto.onDestroy ) {
+				parentProto.onDestroy.apply( this, arguments );
+			}
 		},
 
 		applySavedValue() {
@@ -84,12 +149,40 @@ if ( window.elementor ) {
 		},
 
 		getMediaType() {
-			return this.mediaType || this.model.get( 'media_type' ) || this.model.get( 'media_types' )[ 0 ];
+			const mediaType = this.mediaType || this.model.get( 'media_type' );
+
+			// A control may declare several types at once (the Document widget accepts a dozen).
+			// Callers here want one value to branch the control's own rendering on, so use the
+			// first — they all render through the same file-picker branch anyway.
+			return this.splitMediaTypes( mediaType )[ 0 ] || this.model.get( 'media_types' )[ 0 ];
+		},
+
+		/**
+		 * Normalise a control's `media_type` into an array of MIME types.
+		 *
+		 * Accepts a single type, a comma-separated list, or an array, so a control can restrict
+		 * the library to more than one format. Previously this was always wrapped as
+		 * `[ mediaType ]`, which turned a multi-type value into one nonsense entry and left the
+		 * library unfiltered.
+		 *
+		 * @param {string|string[]} mediaType Raw `media_type` value.
+		 * @return {string[]} MIME types, empty entries removed.
+		 */
+		splitMediaTypes( mediaType ) {
+			if ( ! mediaType ) {
+				return [];
+			}
+
+			const types = Array.isArray( mediaType )
+				? mediaType
+				: String( mediaType ).split( ',' );
+
+			return types.map( ( type ) => type.trim() ).filter( Boolean );
 		},
 
 		async openFrame() {
 			const control = this;
-			const mediaType = this.model.get( 'media_type' );
+			const mediaTypes = this.splitMediaTypes( this.model.get( 'media_type' ) );
 			const currentId = this.getControlValue( 'id' );
 
 			const frame = wp.media( {
@@ -98,7 +191,7 @@ if ( window.elementor ) {
 					text: 'Insert File',
 				},
 				library: {
-					type: [ mediaType ] || [ '' ],
+					type: mediaTypes.length ? mediaTypes : [ '' ],
 				},
 				multiple: false,
 			} );

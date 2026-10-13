@@ -26,11 +26,22 @@ class Pages {
 	private $menu_slug = 'rtgodam';
 
 	/**
-	 * Slug for the video editor page.
+	 * Slug for the media editor page.
+	 *
+	 * Renamed from `rtgodam_video_editor` to `rtgodam_media_editor` (the editor is
+	 * multi-media). A redirect from the old slug is registered in
+	 * `redirect_legacy_video_editor_slug()` so existing bookmarks keep working.
 	 *
 	 * @var string
 	 */
-	private $video_editor_slug = 'rtgodam_video_editor';
+	private $video_editor_slug = 'rtgodam_media_editor';
+
+	/**
+	 * The previous admin slug, kept only to redirect old links to the new one.
+	 *
+	 * @var string
+	 */
+	private $legacy_video_editor_slug = 'rtgodam_video_editor';
 
 	/**
 	 * Slug for the analytics page.
@@ -75,11 +86,11 @@ class Pages {
 	private $menu_page_id = 'toplevel_page_rtgodam';
 
 	/**
-	 * Video editor page ID.
+	 * Media editor page ID (WordPress derives this from the slug).
 	 *
 	 * @var string
 	 */
-	private $video_editor_page_id = 'godam_page_rtgodam_video_editor';
+	private $video_editor_page_id = 'godam_page_rtgodam_media_editor';
 
 	/**
 	 * Analytics page ID.
@@ -133,8 +144,16 @@ class Pages {
 		 * Action
 		 */
 		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
+		// Priority 5: register the shared-components bundle before add-ons
+		// (default priority 10) enqueue scripts that depend on it.
+		add_action( 'admin_enqueue_scripts', array( $this, 'register_shared_components' ), 5 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_media_library_tour' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+		// The old slug is no longer a registered menu page, so WordPress' menu
+		// access check (wp-admin/menu.php) wp_die()s before `admin_init` fires.
+		// `admin_page_access_denied` runs at that exact point, so redirect there.
+		add_action( 'admin_page_access_denied', array( $this, 'redirect_legacy_video_editor_slug' ) );
 
 		// "What's New" page related actions.
 		add_action( 'current_screen', array( $this, 'redirect_to_whats_new' ) );
@@ -168,7 +187,7 @@ class Pages {
 			'edit_pages',
 			$this->menu_slug,
 			array( $this, 'render_dashboard_page' ),
-			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTI1LjU1NzggMjAuMDkxMUw4LjA1NTg3IDM3LjU5M0wzLjQ2Mzk3IDMzLjAwMTFDMC44MTg1MjEgMzAuMzU1NiAyLjA4MjEgMjUuODMzNiA1LjcyMjI4IDI0Ljk0NjRMMjUuNTYzMiAyMC4wOTY0TDI1LjU1NzggMjAuMDkxMVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00Ny4zNzczIDIxLjg4NjdMNDUuNTQzOCAyOS4zODc1TDIyLjY5NzIgNTIuMjM0MUwxMS4yNjA1IDQwLjc5NzRMMzQuMTY2MiAxNy44OTE2TDQxLjU3MDMgMTYuMDc5NkM0NS4wNzA2IDE1LjIyNDcgNDguMjMyMyAxOC4zODYzIDQ3LjM3MiAyMS44ODEzTDQ3LjM3NzMgMjEuODg2N1oiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00My41MDU5IDM4LjEwMzZMMzguNjY2NyA1Ny44OTA3QzM3Ljc3NDEgNjEuNTI1NSAzMy4yNTIxIDYyLjc4OTEgMzAuNjA2NiA2MC4xNDM2TDI2LjAzNjMgNTUuNTczMkw0My41MDU5IDM4LjEwMzZaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K',
+			'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTcuNzY3MDEgMy42MDcwN0M3LjcxODY3IDMuNTUyNzMgNy42Mzk2NiAzLjUzOTA1IDcuNTcxNDIgMy41NzM5TDEuNjU2ODIgNi43MTc2OEMxLjMxNSA2LjkwMTExIDEuMDQ4NzMgNy4yMTA0NSAxLjAwNjY4IDcuNTczMDFDMC45NTc1MjkgOC4wMTI1NyAxLjE4MjM2IDguNDE3ODQgMS41ODc1NSA4LjYzNDI1TDIuNTgzMTYgOS4xNjZDMi42MTAxOCA5LjE4MDQzIDIuNjQwNjQgOS4xNzI5MyAyLjY2MTc3IDkuMTU1N0w3Ljc2ODYzIDMuNzkzMzFDNy44MTgxOSAzLjczODk3IDcuODE5MjEgMy42NjM0NiA3Ljc3NDczIDMuNjExMTlMNy43NjcwMSAzLjYwNzA3WiIgZmlsbD0iI0ZGRkNFRiIvPgo8cGF0aCBkPSJNMTQuODAwNyAyLjQxNTY0QzE0LjgwMjkgMS44NzAyMiAxNC40Njk4IDEuNDQwNCAxNC4wMTMzIDEuMjE1NTZDMTMuNTc0NiAwLjk2MjIzNSAxMy4wMDQ3IDAuOTA5NzcgMTIuNDk1MyAxLjE3OTU3TDEwLjMxNDUgMi4zMzkxN0MxMC4wNTc2IDIuNDc3NjMgOS44NDg0MiAyLjY3OTYxIDkuNzEyNTQgMi45MjA3NUw1LjMyNTI1IDEwLjM1NDhDNS4yNTI1NCAxMC40ODcxIDUuMzAxOSAxMC42NDY2IDUuNDQwODIgMTAuNzIwOEw5LjM0OTk0IDEyLjgwODZDOS40ODg4NiAxMi44ODI4IDkuNjYzMzMgMTIuODQyOSA5Ljc1MTQ4IDEyLjcxODlMMTQuNTU1NSA1LjUwNzM2QzE0LjcxNDYgNS4yNzg1OSAxNC44MDAzIDUuMDEwNjYgMTQuODAyNSA0LjczNjE3TDE0LjgwNjggMi40MTQxNEwxNC44MDA3IDIuNDE1NjRaIiBmaWxsPSIjRkZGQ0VGIi8+CjxwYXRoIGQ9Ik0xNC45OTM0IDEzLjg0MDdMMTQuOTk5OSA3LjU0MTQxQzE1LjAwMjYgNy40NzE1MyAxNC45NDY1IDcuNDEzMDcgMTQuODcxMyA3LjQwMTQ1QzE0Ljc5NjIgNy4zODk4MyAxNC43MjU3IDcuNDI4MjQgMTQuNzAzMiA3LjQ5NzAxTDEyLjIwNSAxNC4yNTI3QzEyLjE5MzIgMTQuMjc5NiAxMi4yMDc0IDE0LjMwNjIgMTIuMjM0NCAxNC4zMjA3TDEzLjIzIDE0Ljg1MjRDMTMuNjM1MiAxNS4wNjg4IDE0LjEyODEgMTUuMDQ2OSAxNC41MTY5IDE0Ljc4ODdDMTQuODM2OCAxNC41NzQ2IDE0Ljk5ODkgMTQuMjA5NiAxNC45OTcyIDEzLjg0MjdMMTQuOTkzNCAxMy44NDA3WiIgZmlsbD0iI0ZGRkNFRiIvPgo8L3N2Zz4K',
 			11
 		);
 
@@ -188,9 +207,9 @@ class Pages {
 
 		add_submenu_page(
 			$this->menu_slug,
-			__( 'Video Editor', 'godam' ),
-			__( 'Video Editor', 'godam' ),
-			'upload_files', // Video Editor is accessible to authors and above.
+			__( 'Media Editor', 'godam' ),
+			__( 'Media Editor', 'godam' ),
+			'upload_files', // Media Editor is accessible to authors and above.
 			$this->video_editor_slug,
 			array( $this, 'render_video_editor_page' ),
 			3
@@ -239,6 +258,9 @@ class Pages {
 			7
 		);
 
+		// GoDAM 2.0 onboarding has no menu item — it overlays the Dashboard when
+		// the site isn't connected (see render_dashboard_page()).
+
 		// Only add "What's New" submenu page if we are on a GoDAM menu.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['page'] ) && false !== strpos( sanitize_key( $_GET['page'] ), $this->menu_slug ) ) {
@@ -252,6 +274,39 @@ class Pages {
 				8
 			);
 		}
+	}
+
+	/**
+	 * Redirect the old Video Editor admin URL to the renamed Media Editor page.
+	 *
+	 * The admin slug changed from `rtgodam_video_editor` to `rtgodam_media_editor`,
+	 * so existing bookmarks / deep links (media-library "Edit" buttons, block
+	 * inspectors, analytics) would otherwise 404. Preserve `id` and `tab`. The URL
+	 * fragment (`#layer=`) is not sent to the server, but browsers re-apply it
+	 * across the redirect, so analytics deep links keep working.
+	 *
+	 * @return void
+	 */
+	public function redirect_legacy_video_editor_slug() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only routing of a GET page request; no state change.
+		if ( ! isset( $_GET['page'] ) || sanitize_key( wp_unslash( $_GET['page'] ) ) !== $this->legacy_video_editor_slug ) {
+			return;
+		}
+
+		$args = array( 'page' => $this->video_editor_slug );
+
+		if ( isset( $_GET['id'] ) ) {
+			// id may be numeric or a GoDAM Central slug — keep it as a text field.
+			$args['id'] = sanitize_text_field( wp_unslash( $_GET['id'] ) );
+		}
+
+		if ( isset( $_GET['tab'] ) ) {
+			$args['tab'] = sanitize_key( wp_unslash( $_GET['tab'] ) );
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
+		exit;
 	}
 
 	/**
@@ -368,7 +423,22 @@ class Pages {
 		// Check if user can edit media with given id.
 		$attachment_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		if ( $attachment_id && ! current_user_can( 'edit_post', $attachment_id ) ) {
+		$can_edit = true;
+
+		if ( $attachment_id ) {
+			/**
+			 * Fires before this attachment-specific capability check, so
+			 * integrations that centralize media on another site can switch
+			 * context first.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+			$can_edit = current_user_can( 'edit_post', $attachment_id );
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+
+		if ( ! $can_edit ) {
 			?>
 			<p class="godam-page-error"><?php echo esc_html( __( 'Sorry, you are not allowed to edit this item.', 'godam' ) ); ?></p>
 			<?php
@@ -402,6 +472,11 @@ class Pages {
 			<div id="root-video-dashboard" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
+		// When the site isn't connected, overlay the 2.0 onboarding modal on the
+		// (empty-state) dashboard that renders behind it.
+		if ( $this->should_overlay_onboarding() ) {
+			echo '<div id="root-godam-onboarding"></div>';
+		}
 	}
 
 	/**
@@ -416,6 +491,11 @@ class Pages {
 			<div id="root-video-analytics" class="<?php echo $is_premium_user ? '' : 'free-user'; ?>"></div>
 		</div>
 		<?php
+		// When the site isn't connected, overlay the onboarding modal here too —
+		// the analytics view sits behind it (same gate as the dashboard).
+		if ( $this->should_overlay_onboarding() ) {
+			echo '<div id="root-godam-onboarding"></div>';
+		}
 	}
 
 	/**
@@ -430,6 +510,46 @@ class Pages {
 	}
 
 	/**
+	 * Whether to overlay the onboarding modal on the current GoDAM screen.
+	 *
+	 * True when the site isn't connected and the user can manage options
+	 * (matching the onboarding REST routes' capability).
+	 *
+	 * @return bool
+	 */
+	private function should_overlay_onboarding() {
+		return ! rtgodam_is_api_key_valid() && current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Register the shared GoDAM admin components bundle.
+	 *
+	 * Exposes `window.GoDAM` (e.g. `window.GoDAM.DateRangePicker`) so separate
+	 * plugins — currently godam-for-woo's Reel Pop analytics — can reuse GoDAM
+	 * admin components without duplicating the source. Registered (not enqueued)
+	 * on every admin page at an early priority so add-ons can list
+	 * `godam-shared-components` as a script dependency; GoDAM's own bundles
+	 * import the components directly and so do not need it enqueued.
+	 *
+	 * @return void
+	 */
+	public function register_shared_components() {
+		$asset = RTGODAM_PATH . 'assets/build/pages/shared-components.min.js';
+
+		if ( ! file_exists( $asset ) ) {
+			return;
+		}
+
+		wp_register_script(
+			'godam-shared-components',
+			RTGODAM_URL . 'assets/build/pages/shared-components.min.js',
+			array( 'wp-element', 'wp-components', 'wp-i18n' ),
+			filemtime( $asset ),
+			true
+		);
+	}
+
+	/**
 	 * To enqueue scripts and styles in admin.
 	 *
 	 * @return void
@@ -437,7 +557,7 @@ class Pages {
 	public function admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id ), true ) ) {
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->video_editor_page_id, $this->analytics_page_id, $this->settings_page_id, $this->help_page_id, $this->tools_page_id, $this->whats_new_page_id ), true ) ) {
 
 			wp_register_script(
 				'rtgodam-page-style',
@@ -460,12 +580,65 @@ class Pages {
 			wp_enqueue_style( 'easydam-media-library' );
 
 		}
+		// GoDAM 2.0 onboarding SPA — overlays the Dashboard + Analytics when not connected.
+		if ( $screen && in_array( $screen->id, array( $this->menu_page_id, $this->analytics_page_id ), true ) && $this->should_overlay_onboarding() ) {
+			$onboarding_asset = RTGODAM_PATH . 'assets/build/pages/onboarding.min.js';
+
+			wp_register_script(
+				'godam-page-script-onboarding',
+				RTGODAM_URL . 'assets/build/pages/onboarding.min.js',
+				array( 'wp-element', 'wp-i18n', 'wp-components' ),
+				file_exists( $onboarding_asset ) ? filemtime( $onboarding_asset ) : RTGODAM_VERSION,
+				true
+			);
+
+			wp_set_script_translations( 'godam-page-script-onboarding', 'godam' );
+			wp_enqueue_script( 'godam-page-script-onboarding' );
+
+			$current_user = wp_get_current_user();
+
+			// Origin of the GoDAM app host — the SPA pins the Google popup's
+			// postMessage to this origin before trusting the handoff code.
+			$api_parts  = wp_parse_url( defined( 'RTGODAM_API_BASE' ) ? RTGODAM_API_BASE : '' );
+			$app_origin = ( ! empty( $api_parts['scheme'] ) && ! empty( $api_parts['host'] ) )
+				? $api_parts['scheme'] . '://' . $api_parts['host'] . ( empty( $api_parts['port'] ) ? '' : ':' . $api_parts['port'] )
+				: '';
+
+			wp_localize_script(
+				'godam-page-script-onboarding',
+				'godamOnboarding',
+				array(
+					'restUrl'      => esc_url_raw( rest_url() ),
+					'nonce'        => wp_create_nonce( 'wp_rest' ),
+					'siteUrl'      => home_url(),
+					'adminUrl'     => admin_url(),
+					'dashboardUrl' => admin_url( 'admin.php?page=' . $this->menu_slug ),
+					'isConnected'  => rtgodam_is_api_key_valid(),
+					'displayName'  => $current_user->display_name,
+					'appOrigin'    => $app_origin,
+					'isE2E'        => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
+					// O9: WooCommerce active → the entry screen shows the Woo signup variant.
+					'isWoo'        => class_exists( 'WooCommerce' ),
+				)
+			);
+
+			wp_localize_script(
+				'godam-page-script-onboarding',
+				'posthogConfig',
+				$this->get_posthog_config()
+			);
+		}
+
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
 			wp_register_script(
 				'transcoder-page-script-video-editor',
 				RTGODAM_URL . 'assets/build/pages/video-editor.min.js',
-				array( 'wp-element', 'wp-i18n' ),
+				// `@wordpress/dataviews` (used by the videos list view) is bundled
+				// but depends on the WP-provided builds of these packages being
+				// present. `wp-private-apis` in particular must load so the
+				// bundled DataViews can unlock `@wordpress/components` private APIs.
+				array( 'wp-element', 'wp-components', 'wp-primitives', 'wp-api-fetch', 'wp-data', 'wp-notices', 'wp-private-apis', 'wp-i18n' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.min.js' ),
 				true
 			);
@@ -494,6 +667,7 @@ class Pages {
 					'currentUserId'      => get_current_user_id(),          // Current user ID.
 					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
 					'validApiKey'        => rtgodam_is_api_key_valid(),
+					'productGuideState'  => \RTGODAM\Inc\REST_API\Onboarding::get_product_guide_state(),
 					'adminUrl'           => admin_url(),
 					'godamBaseUrl'       => RTGODAM_IO_API_BASE,
 					'gfActive'           => $is_gf_active,
@@ -506,6 +680,12 @@ class Pages {
 					'everestFormsActive' => $is_everest_forms_active,
 					'ninjaFormsActive'   => $is_ninja_forms_active,
 					'metformActive'      => $is_met_form_active,
+					// O9: Woo empty-state copy on the connected Video Editor.
+					'wooActive'          => class_exists( 'WooCommerce' ),
+					// Woo product-guide entry: only when GoDAM-for-Woo ships the
+					// Shoppable Video tour (capability gate, not just plugin-active),
+					// so the Woo card never leads to a missing block or dead-end page.
+					'wooGuideActive'     => \RTGODAM\Inc\REST_API\Onboarding::is_woo_guide_available(),
 				)
 			);
 
@@ -553,8 +733,70 @@ class Pages {
 				$rtgodam_user_data
 			);
 
+			// Localize easydamMediaLibrary data for the video editor.
+			// Resolve through the helper so the code-level constant/filter override applies here too,
+			// keeping this global consistent on the video-editor page.
+			$enable_folder_organization = rtgodam_is_media_library_ui_enabled();
+			$current_user_id            = get_current_user_id();
+
+			$easydam_media_library_data = array(
+				'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+				'nonce'                    => wp_create_nonce( 'easydam_media_library' ),
+				'godamToolsNonce'          => wp_create_nonce( 'rtgodam_tools' ),
+				'enableFolderOrganization' => $enable_folder_organization,
+				'isPollPluginActive'       => is_plugin_active( 'wp-polls/wp-polls.php' ),
+				'page'                     => $screen ? $screen->id : '',
+				'userId'                   => $current_user_id,
+				'canEditOthersMedia'       => current_user_can( 'edit_others_posts' ),
+				'canManageOptions'         => current_user_can( 'manage_options' ),
+				'canEditPages'             => current_user_can( 'edit_pages' ),
+			);
+
+			/**
+			 * Filters the easydamMediaLibrary localized data on the video editor page.
+			 * Add-ons can use this to provide additional data (e.g., WooCommerce status).
+			 *
+			 * @since 1.8.0
+			 *
+			 * @param array $easydam_media_library_data The data array.
+			 */
+			$easydam_media_library_data = apply_filters( 'godam_easydam_media_library_data', $easydam_media_library_data );
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'easydamMediaLibrary',
+				$easydam_media_library_data
+			);
+
+			// Localize video editor layer options and components via PHP filters.
+			$layer_options    = apply_filters( 'godam_video_editor_layer_options', array() );
+			$layer_components = apply_filters( 'godam_video_editor_layer_components', array() );
+
+			wp_localize_script(
+				'transcoder-page-script-video-editor',
+				'godamVideoEditorConfig',
+				array(
+					'layerOptions'    => $layer_options,
+					'layerComponents' => $layer_components,
+				)
+			);
+
 			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
+
+			// The "Edit metadata" action reuses the native two-column attachment
+			// details modal (wp.media.view.MediaFrame.EditAttachments), which is
+			// defined in core's media-grid script. wp_enqueue_media() does not
+			// pull it in, so enqueue it explicitly on the video editor screen.
+			wp_enqueue_script( 'media-grid' );
+
+			/**
+			 * Fires after the video editor scripts are enqueued.
+			 * Add-ons can use this to enqueue their own scripts on the video editor page.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'godam_enqueue_video_editor_scripts' );
 
 			if ( is_plugin_active( 'gravityforms/gravityforms.php' ) ) {
 				$this->enqueue_gravity_forms_styles();
@@ -630,6 +872,19 @@ class Pages {
 					'adminUrl'              => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
 					'godamBaseUrl'          => RTGODAM_IO_API_BASE,
 					'showNewYearSaleBanner' => ( $current_time <= $end_time ),
+					// Top Products and Video to Cart are paid GoDAM for Woo add-on
+					// features. Gate them on the same check the add-on uses for its
+					// own Pro blocks: the add-on active (function_exists) plus a
+					// valid GoDAM license (godam_woo_should_show_premium_blocks).
+					// A plain WooCommerce store without the paid add-on does not
+					// see them.
+					'isWoo'                 => function_exists( 'godam_woo_should_show_premium_blocks' ) && godam_woo_should_show_premium_blocks(),
+					// Store data (products, add-to-carts, orders, revenue) follows
+					// WooCommerce's own report permission (shop managers and
+					// administrators). Editors see video data only. The analytics
+					// routes refuse or strip the store fields for everyone else; this
+					// flag lets the screen leave out the matching cards and tables.
+					'canViewStoreData'      => current_user_can( 'view_woocommerce_reports' ), // phpcs:ignore WordPress.WP.Capabilities.Unknown -- WooCommerce registers this capability itself.
 				)
 			);
 
@@ -640,6 +895,19 @@ class Pages {
 					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
 				)
 			);
+
+			/**
+			 * Allow add-ons to enqueue scripts that extend the GoDAM dashboard page.
+			 *
+			 * Add-ons can register their own JS bundles here that register React
+			 * components on `window.godamDashboardSections` to extend the
+			 * dashboard with additional sections. This hook must fire before the
+			 * main dashboard bundle is enqueued so those registrations are
+			 * available when the dashboard app mounts.
+			 *
+			 * @since 1.11.0
+			 */
+			do_action( 'godam_enqueue_dashboard_page_scripts' );
 
 			wp_enqueue_script( 'godam-page-script-dashboard' );
 			wp_enqueue_script( 'd3-js' );
@@ -679,6 +947,13 @@ class Pages {
 					'currentUserRoles' => wp_get_current_user()->roles,     // Current user roles.
 					'adminUrl'         => admin_url( 'admin.php?page=rtgodam_settings#video-settings' ),
 					'godamBaseUrl'     => RTGODAM_IO_API_BASE,
+					// Video to Cart is a paid GoDAM for Woo add-on feature; show the
+					// per-video card on the same gate as the dashboard: the add-on
+					// active plus a valid GoDAM license.
+					'isWoo'            => function_exists( 'godam_woo_should_show_premium_blocks' ) && godam_woo_should_show_premium_blocks(),
+					// Same rule as the dashboard: store data needs WooCommerce's
+					// report permission, and the routes strip it for everyone else.
+					'canViewStoreData' => current_user_can( 'view_woocommerce_reports' ), // phpcs:ignore WordPress.WP.Capabilities.Unknown -- WooCommerce registers this capability itself.
 				)
 			);
 
@@ -701,6 +976,106 @@ class Pages {
 				'godamPluginData',
 				array(
 					'flagBasePath' => RTGODAM_URL . 'assets/src/images/flags',
+				)
+			);
+
+			// Add-on layer options (e.g. WooCommerce) so the analytics timeline
+			// renders the same marker icons the video editor seekbar does. The
+			// editor uses `godam_video_editor_layer_options` to let add-ons
+			// supply `iconUrl` for their layer type — we reuse that filter
+			// result here so analytics doesn't have a parallel registration
+			// surface. Built-in types (cta/form/hotspot/poll) have icons
+			// hardcoded in the React bundle; this exposes only the URL-based
+			// icons that come from PHP land.
+			$addon_layer_options = apply_filters( 'godam_video_editor_layer_options', array() );
+
+			// Published layer config for the analytics page's "active vs
+			// removed" rendering. The analytics service stores events
+			// indefinitely (plan §5.8), so a layer the marketer deletes
+			// still appears in analytics. We separate it out in the UI by
+			// reading the current postmeta and tagging each layer's
+			// presence — anything in analytics but missing from postmeta
+			// reads as "removed."
+			//
+			// Source of truth: published postmeta (rtgodam_meta.layers).
+			// Mid-edit unsaved changes don't count; the marketer has to
+			// save for the active set to change.
+			$active_layer_config = array();
+			$analytics_video_id  = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( $analytics_video_id > 0 ) {
+				/**
+				 * Fires before reading this attachment's saved layer meta,
+				 * so integrations that centralize media on another site can
+				 * switch context first.
+				 *
+				 * @since 2.2.0
+				 */
+				do_action( 'rtgodam_before_attachment_lookup' );
+				$rtgodam_meta = get_post_meta( $analytics_video_id, 'rtgodam_meta', true );
+				do_action( 'rtgodam_after_attachment_lookup' );
+
+				$saved_layers = is_array( $rtgodam_meta ) && ! empty( $rtgodam_meta['layers'] ) && is_array( $rtgodam_meta['layers'] )
+					? $rtgodam_meta['layers']
+					: array();
+				foreach ( $saved_layers as $saved_layer ) {
+					if ( empty( $saved_layer['id'] ) || empty( $saved_layer['type'] ) ) {
+						continue;
+					}
+					$entry = array(
+						'id'   => (string) $saved_layer['id'],
+						'type' => (string) $saved_layer['type'],
+					);
+					// Sub-hotspot IDs by layer type. Composite ids on the
+					// tracker side are `parent.id::<subId>` for hotspot
+					// (where subId is hotspot.id) or `parent.id::p<productId>`
+					// for woo. We expose the trailing suffix as `subIds`
+					// (without the `::` prefix) so the frontend can do a
+					// simple endsWith / split match.
+					if ( 'hotspot' === $saved_layer['type'] && ! empty( $saved_layer['hotspots'] ) && is_array( $saved_layer['hotspots'] ) ) {
+						$sub_ids = array();
+						foreach ( $saved_layer['hotspots'] as $sub ) {
+							if ( ! empty( $sub['id'] ) ) {
+								$sub_ids[] = (string) $sub['id'];
+							}
+						}
+						$entry['subIds'] = $sub_ids;
+					} elseif ( 'woo' === $saved_layer['type'] && ! empty( $saved_layer['productHotspots'] ) && is_array( $saved_layer['productHotspots'] ) ) {
+						$sub_ids = array();
+						foreach ( $saved_layer['productHotspots'] as $product ) {
+							if ( ! empty( $product['productId'] ) ) {
+								$sub_ids[] = 'p' . (int) $product['productId'];
+							}
+						}
+						$entry['subIds'] = $sub_ids;
+					}
+
+					// For form / poll layers, expose a deep link to the
+					// integration's entries (or the poll's results) admin page,
+					// when one exists. Built here because PHP has admin_url() and
+					// the saved integration ids; the React detail panel just
+					// renders it.
+					$entries_url = $this->get_layer_entries_url( $saved_layer );
+					if ( ! empty( $entries_url ) ) {
+						$entry['entries_url'] = $entries_url;
+					}
+
+					$active_layer_config[] = $entry;
+				}
+			}
+
+			wp_localize_script(
+				'transcoder-page-script-analytics',
+				'godamAnalyticsConfig',
+				array(
+					'addonLayerOptions' => is_array( $addon_layer_options ) ? array_values( $addon_layer_options ) : array(),
+					// null means "config unknown" — the frontend fails open
+					// (treats everything as active). That's the case when the
+					// page loads without a video id: the media-selector flow
+					// sets the id client-side via history.replaceState with no
+					// reload, so this localization never re-runs. An empty
+					// ARRAY is meaningful: valid id, zero published layers —
+					// the frontend then renders every layer as removed.
+					'activeLayerConfig' => $analytics_video_id > 0 ? $active_layer_config : null,
 				)
 			);
 
@@ -744,7 +1119,7 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-godam',
 				RTGODAM_URL . 'assets/build/pages/godam.min.js',
-				array( 'wp-element', 'wp-i18n' ),
+				array( 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/godam.min.js' ),
 				true
 			);
@@ -775,7 +1150,62 @@ class Pages {
 			);
 
 			wp_set_script_translations( 'transcoder-page-script-godam', 'godam', RTGODAM_PATH . 'languages' );
+
+			if ( ! function_exists( 'is_plugin_active' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/plugin.php';
+			}
+
+			$addon_slugs = array( 'godam-for-woo/godam-for-woo.php' );
+
+			/**
+			 * Filter the list of recognised add-on plugin slugs.
+			 *
+			 * @param string[] $addon_slugs Plugin file slugs (e.g. 'godam-for-woo/godam-for-woo.php').
+			 */
+			$addon_slugs = apply_filters( 'godam_addon_plugin_slugs', $addon_slugs );
+
+			$addon_statuses = array();
+			foreach ( $addon_slugs as $slug ) {
+				$file_exists             = file_exists( WP_PLUGIN_DIR . '/' . $slug );
+				$addon_statuses[ $slug ] = array(
+					'installed' => $file_exists ? '1' : '',
+					'active'    => ( $file_exists && is_plugin_active( $slug ) ) ? '1' : '',
+				);
+			}
+
+			// Required / dependency plugins (e.g. WooCommerce itself).
+			$required_slugs = array( 'woocommerce/woocommerce.php' );
+
+			/**
+			 * Filter the list of required dependency plugin slugs to check.
+			 *
+			 * @param string[] $required_slugs Plugin file slugs.
+			 */
+			$required_slugs = apply_filters( 'godam_required_plugin_slugs', $required_slugs );
+
+			foreach ( $required_slugs as $slug ) {
+				$file_exists             = file_exists( WP_PLUGIN_DIR . '/' . $slug );
+				$addon_statuses[ $slug ] = array(
+					'installed' => $file_exists ? '1' : '',
+					'active'    => ( $file_exists && is_plugin_active( $slug ) ) ? '1' : '',
+				);
+			}
+
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'godamAddonStatuses',
+				$addon_statuses
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-godam' );
+
+			/**
+			 * Fires after the GoDAM settings page scripts are enqueued.
+			 * Add-ons can use this to enqueue their own settings scripts.
+			 *
+			 * @since 1.8.0
+			 */
+			do_action( 'godam_enqueue_settings_page_scripts' );
 		} elseif ( $screen && $this->tools_page_id === $screen->id ) {
 
 			wp_register_script(
@@ -843,10 +1273,39 @@ class Pages {
 
 		wp_enqueue_style( 'wp-components' );
 
+		// The media-library React sidebar bundle (~1.1 MB) is the remaining work in this
+		// method; skip it on screens that never open the media library / wp.media modal.
+		// It was previously enqueued on every admin screen.
+		if ( ! godam_should_load_media_library_assets( $screen ) ) {
+			return;
+		}
+
+		// The bundle externalizes several @wordpress packages to wp.* globals
+		// (see the `pages` externals in webpack.config.js). On WP admin / the
+		// block editor these globals are already present, but in other contexts
+		// (e.g. the Elementor editor) they are not — a missing wp.primitives
+		// crashed the app ("Cannot read properties of undefined (reading 'SVG')")
+		// so the folder sidebar never rendered. Declare them as dependencies, but
+		// only the handles actually registered in the current context: a handle
+		// missing on older WP / non-standard admin screens would otherwise block
+		// the enqueue entirely.
+		// `media-views` is included so the bundle's modal-close hook (which patches
+		// wp.media.view.Modal in pages/media-library/index.js) has wp.media defined by the
+		// time it runs — otherwise the ordering is incidental and the hook can silently
+		// no-op, leaving React roots unmounted and UI state un-reset.
+		$media_library_deps = array_values(
+			array_filter(
+				array( 'wp-element', 'wp-i18n', 'wp-components', 'wp-api-fetch', 'wp-primitives', 'wp-data', 'wp-notices', 'media-views' ),
+				static function ( $handle ) {
+					return wp_script_is( $handle, 'registered' );
+				}
+			)
+		);
+
 		wp_register_script(
 			'media-library-react',
 			RTGODAM_URL . 'assets/build/pages/media-library.min.js',
-			array( 'wp-element', 'wp-i18n' ),
+			$media_library_deps,
 			filemtime( RTGODAM_PATH . 'assets/build/pages/media-library.min.js' ),
 			true
 		);
@@ -865,9 +1324,18 @@ class Pages {
 			'media-library-react',
 			'MediaLibrary',
 			array(
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'userData' => rtgodam_get_user_data( true ),
-				'roles'    => $roles,
+				'nonce'        => wp_create_nonce( 'wp_rest' ),
+				'userData'     => rtgodam_get_user_data( true ),
+				'roles'        => $roles,
+				// Folder permissions resolved from the SAME capabilities the server
+				// authorizes on, so the UI stays in lockstep with REST rather than gating
+				// on hardcoded role slugs (which mismatch for custom roles such as
+				// shop_manager or membership-plugin roles). See issue #1239 review.
+				'capabilities' => array(
+					'manageFolders' => current_user_can( 'upload_files' ),     // Create + rename (manage_terms/edit_terms).
+					'lockFolders'   => current_user_can( 'manage_categories' ), // Lock + bookmark (Editors and above).
+					'deleteFolders' => current_user_can( 'manage_options' ),    // Delete (administrators only).
+				),
 			)
 		);
 
@@ -876,6 +1344,136 @@ class Pages {
 			'posthogConfig',
 			$this->get_posthog_config()
 		);
+	}
+
+	/**
+	 * Enqueue the Media Library guided tour (folder organization walkthrough).
+	 *
+	 * A small standalone bundle, loaded only on the Media Library screen and only
+	 * while GoDAM's folder organization is enabled, so it never adds weight to the
+	 * shared media-library bundle or to any other admin screen. It adds the "Take a
+	 * tour" bulb button next to Manage Media and auto-starts the tour once per user.
+	 *
+	 * @return void
+	 */
+	public function enqueue_media_library_tour() {
+		$screen = get_current_screen();
+
+		if ( ! $screen || 'upload' !== $screen->id ) {
+			return;
+		}
+
+		if ( ! rtgodam_is_media_library_ui_enabled() || ! current_user_can( 'upload_files' ) ) {
+			return;
+		}
+
+		/**
+		 * Filter whether the Media Library guided tour is available.
+		 *
+		 * @param bool $enabled Whether to load the tour. Default true.
+		 */
+		if ( ! apply_filters( 'godam_media_library_tour_enabled', true ) ) {
+			return;
+		}
+
+		$asset = RTGODAM_PATH . 'assets/build/pages/media-library-tour.min.js';
+
+		if ( ! file_exists( $asset ) ) {
+			return;
+		}
+
+		wp_register_script(
+			'godam-media-library-tour',
+			RTGODAM_URL . 'assets/build/pages/media-library-tour.min.js',
+			array( 'wp-element', 'wp-components', 'wp-i18n' ),
+			filemtime( $asset ),
+			true
+		);
+
+		wp_set_script_translations( 'godam-media-library-tour', 'godam', RTGODAM_PATH . 'languages' );
+
+		wp_localize_script(
+			'godam-media-library-tour',
+			'godamMediaLibraryTour',
+			array(
+				'restUrl'       => esc_url_raw( rest_url() ),
+				'nonce'         => wp_create_nonce( 'wp_rest' ),
+				'state'         => \RTGODAM\Inc\REST_API\Onboarding::get_media_library_guide_state(),
+				// Auto-start is suppressed in E2E runs so existing Media Library tests
+				// aren't blocked by the welcome modal; the bulb button still works.
+				'autoStart'     => ! ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
+				'isApiKeyValid' => rtgodam_is_api_key_valid(),
+				'gridUrl'       => admin_url( 'upload.php?mode=grid' ),
+			)
+		);
+
+		wp_enqueue_script( 'godam-media-library-tour' );
+	}
+
+	/**
+	 * Build the wp-admin URL to a form layer's entries page (or a poll layer's
+	 * results), based on the integration the layer points to.
+	 *
+	 * Returns '' when there is no native entries view (e.g. Contact Form 7,
+	 * which stores nothing without an add-on) or the layer has no saved id —
+	 * the analytics detail panel hides the link in that case. SureForms and
+	 * Jetpack expose SPA entries screens with no reliable per-form URL filter,
+	 * so they link to the list rather than a specific form.
+	 *
+	 * @param array $layer Saved layer array from rtgodam_meta['layers'].
+	 * @return string Absolute admin URL, or '' if not linkable.
+	 */
+	private function get_layer_entries_url( $layer ) {
+		$type = isset( $layer['type'] ) ? (string) $layer['type'] : '';
+
+		if ( 'poll' === $type ) {
+			$poll_id = isset( $layer['poll_id'] ) ? absint( $layer['poll_id'] ) : 0;
+			return $poll_id
+				? admin_url( 'admin.php?page=wp-polls/polls-manager.php&mode=edit&id=' . $poll_id )
+				: '';
+		}
+
+		if ( 'form' !== $type ) {
+			return '';
+		}
+
+		$form_type = isset( $layer['form_type'] ) ? (string) $layer['form_type'] : '';
+
+		// form_type => array( saved-id field, admin URL template with {id} ).
+		// Integrations without a native entries page (Contact Form 7) are
+		// intentionally absent so no link renders. SureForms deep-links to a
+		// specific form via its entries SPA hash route (#/?form={id}); Jetpack's
+		// responses screen has no per-form URL filter, so it uses an empty id
+		// field and links to the list.
+		$map = array(
+			'gravity'      => array( 'gf_id', 'admin.php?page=gf_entries&id={id}' ),
+			'wpforms'      => array( 'wpform_id', 'admin.php?page=wpforms-entries&view=list&form_id={id}' ),
+			'fluentforms'  => array( 'fluent_form_id', 'admin.php?page=fluent_forms&route=entries&form_id={id}' ),
+			'forminator'   => array( 'forminator_id', 'admin.php?page=forminator-entries&form_type=forminator_forms&form_id={id}' ),
+			'everestforms' => array( 'everest_form_id', 'admin.php?page=evf-entries&form_id={id}' ),
+			'ninjaforms'   => array( 'ninja_form_id', 'admin.php?page=nf-submissions&form_id={id}' ),
+			'metform'      => array( 'metform_id', 'edit.php?post_type=metform-entry&mf_form_id={id}' ),
+			'sureforms'    => array( 'sureform_id', 'admin.php?page=sureforms_entries#/?form={id}' ),
+			'jetpack'      => array( '', 'admin.php?page=jetpack-forms-admin#/responses' ),
+		);
+
+		if ( ! isset( $map[ $form_type ] ) ) {
+			return '';
+		}
+
+		list( $id_field, $template ) = $map[ $form_type ];
+
+		// List-style screens take no form id.
+		if ( '' === $id_field ) {
+			return admin_url( $template );
+		}
+
+		$form_id = isset( $layer[ $id_field ] ) ? absint( $layer[ $id_field ] ) : 0;
+		if ( ! $form_id ) {
+			return '';
+		}
+
+		return admin_url( str_replace( '{id}', (string) $form_id, $template ) );
 	}
 
 	/**
@@ -1118,9 +1716,9 @@ class Pages {
 			return;
 		}
 
-		if ( get_transient( 'rtgodam_show_whats_new' ) ) {
-			// Redirect only once, then clean up any related transient data.
-			delete_transient( 'rtgodam_show_whats_new' );
+		if ( get_option( 'rtgodam_show_whats_new' ) ) {
+			// Redirect only once, then clean up any related data.
+			delete_option( 'rtgodam_show_whats_new' );
 			delete_transient( 'rtgodam_release_data' );
 
 			// Redirect to "What's New" admin page.

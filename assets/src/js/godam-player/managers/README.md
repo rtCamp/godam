@@ -20,6 +20,77 @@ This directory contains the refactored video player manager components that supp
 - **`hoverManager.js`** - Existing hover functionality
 - **`shareManager.js`** - Existing share functionality
 
+### Lightbox
+- **`modalManager.js`** - The "Show in lightbox" overlay, shared page-wide
+
+## Lightbox
+
+`modalManager.js` owns one body-level overlay for the whole page. Get it with the
+`getLightbox()` singleton — never `new ModalManager()`, since a second instance
+means a second overlay stacked on the first.
+
+Two content modes share that overlay:
+
+- **`openElement( playerRoot, options )`** moves an on-page player into the
+  overlay and puts it back on close, leaving a comment anchor behind to restore
+  its exact position. Used by an inline click on a lightbox player, by a trigger
+  pointing at one, and by the deep-link handler. Because the player instance is
+  the same one, layers, chapters, ads and analytics all keep working.
+- **`openIframe( src, options )`** renders the embed page instead. Used when the
+  requested video is not on the page, so there is no player to move.
+
+`openLightboxForId( id, options )` is the entry point that picks between them, and
+is what both element triggers and `GoDAMAPI.openLightbox()` call.
+
+Only a player rendered with `data-show-in-lightbox="true"` is ever moved. An
+ordinary visible inline player is deliberately left alone: moving it would tear a
+hole in the page layout and hijack a player the visitor may already be watching.
+
+### Addressing a video
+
+`utils/lightboxTargets.js` holds the shared, unit-tested resolution logic. A video
+is looked up by `data-job_id` first and `data-id` (the WordPress attachment ID)
+second — share links carry the job ID, while hand-written triggers usually carry
+the attachment ID.
+
+Always match on `video[data-*]`, never on `.easydam-player.video-js`: Video.js
+wraps the `<video>` in a generated div that inherits those classes, so the class
+selector matches different nodes before and after initialisation.
+
+### Triggers and deep links
+
+- **`../lightboxTriggers.js`** binds one delegated, capture-phase listener pair on
+  `document` for `[data-godam-lightbox]` elements, so markup injected later needs
+  no re-binding. It also gives non-interactive triggers (`<div>`, `<img>`) the
+  `role="button"` / `tabindex="0"` they need for keyboard use.
+- **`../frontend.js`** handles `#godam-video-{id}` URLs on load. It waits for the
+  per-player `godamPlayerReady` event (not `godamAllPlayersReady`, which can fire
+  before Video.js has created the instance) and then opens the lightbox for a
+  lightbox video, or scrolls to and seeks any other video.
+
+### The URL is the source of truth
+
+Opening pushes `#godam-video-{id}` so the view is shareable and Back closes it. A
+deep-link *entry* passes `pushHistory: false`, since the hash is already there and
+a duplicate entry would make Back a no-op. Exactly one history entry ever means "a
+lightbox is open" — switching videos replaces the hash rather than stacking, so
+closing never needs more than one Back.
+
+Closing always clears the hash. When the pushed entry is ours, `close()` steps off
+it with `history.back()`; otherwise (a deep-link arrival or an anchor click, where
+the entry belongs to the browser) `stripLightboxHash()` removes it in place. That
+strip matches *any* `#godam-video-` hash rather than the one the entry recorded,
+because the two differ whenever a visitor follows a link written with the job ID
+while the canonical hash uses the attachment ID.
+
+`initLightboxUrlSync()` then keeps the two in step for the life of the page,
+reconciling on both `popstate` (Back/Forward) and `hashchange` (anchor links,
+which push an entry without firing `popstate`). This is deliberately a *persistent*
+listener rather than a while-open one: the interesting case is the visitor arriving
+*at* a lightbox URL — pressing Forward after closing, or following an in-page
+`<a href="#godam-video-{id}">` — which a while-open listener can never see. A
+plain anchor is therefore a working trigger with no data attribute at all.
+
 ## Refactoring Benefits
 
 ### 1. **Single Responsibility Principle**

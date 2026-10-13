@@ -16,7 +16,7 @@ const AjaxWarning = ( { formType, formId } ) => {
 	return (
 		<p className="text-sm text-gray-500 mb-4">
 			<Icon icon={ error } className="w-5 h-5 inline mr-1" style={ { fill: '#EAB308', verticalAlign: 'text-bottom' } } />
-			{ __( 'AJAX submission is required to prevent the form from reloading the video page on submit. ', 'godam' ) }
+			{ __( 'AJAX submission is required to prevent the form from reloading the video page on submit.', 'godam' ) }
 			{ __( 'Make sure it\'s enabled in your', 'godam' ) }
 			{ ' ' }
 			<a

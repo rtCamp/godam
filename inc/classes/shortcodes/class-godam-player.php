@@ -25,9 +25,83 @@ class GoDAM_Player {
 	final protected function __construct() {
 		add_shortcode( 'godam_video', array( $this, 'render' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
+		// Priority 20: must run after register_scripts() above has registered the handles.
+		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue_lightbox_runtime' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'godam_skin_styles_enqueue' ) );
+
+		// Invalidate video render cache when rtgodam_meta changes.
+		add_action( 'updated_post_meta', array( $this, 'invalidate_video_cache_on_meta_change' ), 10, 3 );
+		add_action( 'added_post_meta', array( $this, 'invalidate_video_cache_on_meta_change' ), 10, 3 );
+		add_action( 'deleted_post_meta', array( $this, 'invalidate_video_cache_on_meta_change' ), 10, 3 );
+
+		// Fallback: invalidate on attachment save/delete.
+		add_action( 'edit_attachment', array( $this, 'invalidate_video_cache_for_post' ) );
+		add_action( 'delete_attachment', array( $this, 'invalidate_video_cache_for_post' ) );
+	}
+
+	/**
+	 * Return the work-cache index key for a given video post ID.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param int $post_id Post/attachment ID.
+	 * @return string
+	 */
+	public function get_video_cache_index_key( $post_id ) {
+		return 'work_cache_godam_meta_' . absint( $post_id );
+	}
+
+	/**
+	 * Invalidate the render cache for a video when its rtgodam_meta post meta changes.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param int    $meta_id    Meta entry ID (unused).
+	 * @param int    $object_id  Post ID the meta belongs to.
+	 * @param string $meta_key   Meta key being updated.
+	 */
+	public function invalidate_video_cache_on_meta_change( $meta_id, $object_id, $meta_key ) {
+		// Only invalidate for attachment posts (GoDAM videos are stored as attachments).
+		if ( 'attachment' !== get_post_type( $object_id ) ) { // godam-coverage-ignore -- invalidate_video_cache_on_meta_change(): updated_post_meta/added_post_meta/deleted_post_meta fire for every post type; this is the type-routing check that filters down to attachments — the actual work (invalidate_video_cache_for_post()) only clears a private cache key, not attachment data.
+			return;
+		}
+
+		$watched_keys = array(
+			'rtgodam_meta',
+			'rtgodam_transcoded_url',
+			'rtgodam_hls_transcoded_url',
+			'rtgodam_media_video_thumbnail',
+			'rtgodam_media_video_placeholder_thumbnail',
+			'rtgodam_media_placeholder_thumbnails',
+			'rtgodam_transcript_path',
+			'rtgodam_transcript_deleted',
+		);
+
+		if ( ! in_array( $meta_key, $watched_keys, true ) ) {
+			return;
+		}
+
+		$this->invalidate_video_cache_for_post( $object_id );
+	}
+
+	/**
+	 * Clear all cached render output for a given post/video ID.
+	 *
+	 * Only acts on attachment post types to avoid unnecessary cache work on
+	 * unrelated post deletions/edits.
+	 *
+	 * @since 1.8.0
+	 *
+	 * @param int $post_id Post ID.
+	 */
+	public function invalidate_video_cache_for_post( $post_id ) {
+		if ( 'attachment' !== get_post_type( $post_id ) ) { // godam-coverage-ignore -- invalidate_video_cache_for_post(): type-routing check (also reachable directly via edit_attachment/delete_attachment, which only ever fire for attachments); rtgodam_work_cache_index_clear() below only clears a private cache key, not attachment data.
+			return;
+		}
+
+		rtgodam_work_cache_index_clear( $this->get_video_cache_index_key( $post_id ) );
 	}
 
 	/**
@@ -49,29 +123,65 @@ class GoDAM_Player {
 		// Allow external stylesheets to be enqueued.
 		do_action( 'godam_player_enqueue_styles' );
 
-		$godam_player_frontend_assets = include RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.asset.php';
+		$player_frontend_asset_path   = RTGODAM_PATH . 'assets/build/js/godam-player-frontend.min.asset.php';
+		$godam_player_frontend_assets = file_exists( $player_frontend_asset_path )
+			? include $player_frontend_asset_path
+			: array(
+				'dependencies' => array(),
+				'version'      => RTGODAM_VERSION,
+			);
+
+		// Add WooCommerce Blocks data store as a dependency if WooCommerce is active.
+		// This is required for the WooCommerce cart store (wc/store/cart) to be available.
+		$dependencies = $godam_player_frontend_assets['dependencies'];
+		$dependencies = apply_filters( 'godam_player_frontend_dependencies', $dependencies );
 
 		// Register your scripts and styles here.
 		wp_register_script(
 			'godam-player-frontend-script',
 			RTGODAM_URL . 'assets/build/js/godam-player-frontend.min.js',
-			$godam_player_frontend_assets['dependencies'],
+			$dependencies,
 			$godam_player_frontend_assets['version'],
 			true
 		);
 
-		wp_register_script(
-			'godam-player-analytics-script',
-			RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
-			array( 'godam-player-frontend-script', 'wp-i18n' ),
-			filemtime( RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js' ),
-			true
+		$player_analytics_path = RTGODAM_PATH . 'assets/build/js/godam-player-analytics.min.js';
+
+		if ( file_exists( $player_analytics_path ) ) {
+			wp_register_script(
+				'godam-player-analytics-script',
+				RTGODAM_URL . 'assets/build/js/godam-player-analytics.min.js',
+				array( 'godam-player-frontend-script', 'wp-i18n' ),
+				filemtime( $player_analytics_path ),
+				true
+			);
+		}
+
+		/**
+		 * Player wrapper styles (placeholder / poster / loading states).
+		 *
+		 * Shipped as a real stylesheet rather than an inline <style> emitted by
+		 * inc/templates/godam-player.php: the style tag rendered as a sibling of
+		 * the player markup, so in a flow-layout container (core/column, core/group)
+		 * the player became the second child and picked up the container's
+		 * `margin-block-start` blockGap rule, adding phantom spacing above the video.
+		 * The CSS is static — nothing per-video — so there is nothing to inline.
+		 *
+		 * Registered as a dependency of `godam-player-style` so every existing
+		 * enqueue point (block.json `style`, shortcodes, Elementor `depended_styles`,
+		 * gallery) pulls it in with no further changes.
+		 */
+		wp_register_style(
+			'godam-player-wrapper-style',
+			RTGODAM_URL . 'assets/build/css/godam-player-wrapper.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css' )
 		);
 
 		wp_register_style(
 			'godam-player-style',
 			RTGODAM_URL . 'assets/build/css/godam-player.css',
-			array(),
+			array( 'godam-player-wrapper-style' ),
 			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
 		);
 
@@ -108,6 +218,10 @@ class GoDAM_Player {
 			'godamData',
 			array(
 				'apiBase'                 => RTGODAM_API_BASE,
+				// Used by lightbox element triggers to build the embed-page URL when
+				// the requested video is not rendered on the page.
+				'embedBaseUrl'            => home_url( '/' ),
+				'hostPostId'              => get_the_ID() ? get_the_ID() : '',
 				'currentLoggedInUserData' => rtgodam_get_current_logged_in_user_data(),
 				'loginUrl'                => apply_filters( 'rtgodam_site_login_url', wp_login_url() . '?redirect_to=' . rawurlencode( get_permalink() ) ),
 				'registrationUrl'         => apply_filters( 'rtgodam_site_registration_url', wp_registration_url() . '&redirect_to=' . rawurlencode( get_permalink() ) ),
@@ -115,6 +229,60 @@ class GoDAM_Player {
 				'nonce'                   => wp_create_nonce( 'wp_rest' ),
 			)
 		);
+	}
+
+	/**
+	 * Load the player runtime on pages that only contain a lightbox trigger.
+	 *
+	 * A rendered player (block, shortcode, gallery, widget) enqueues the runtime
+	 * itself. A trigger is markup only — a `data-godam-lightbox` element or an
+	 * `<a href="#godam-video-{id}">` — so a page whose sole GoDAM content is a
+	 * trigger would otherwise ship no JavaScript and the trigger would do nothing.
+	 *
+	 * Only singular views are sniffed, since that is where the content is cheaply
+	 * available. Triggers placed in a theme template, a widget or a nav menu are
+	 * invisible here; use the `rtgodam_enqueue_lightbox_runtime` filter for those.
+	 *
+	 * @return void
+	 */
+	public function maybe_enqueue_lightbox_runtime() {
+		// Already on its way in — a player on the page did it.
+		if ( wp_script_is( 'godam-player-frontend-script', 'enqueued' ) ) {
+			return;
+		}
+
+		$godam_needs_runtime = false;
+
+		if ( is_singular() ) {
+			$godam_post = get_post(); // godam-coverage-ignore -- maybe_enqueue_lightbox_runtime(): bare get_post() resolves to the current singular post, not an attachment.
+
+			if ( $godam_post instanceof \WP_Post ) {
+				// Elementor keeps its layout in post meta rather than post_content.
+				$godam_haystack = $godam_post->post_content . (string) get_post_meta( $godam_post->ID, '_elementor_data', true ); // godam-coverage-ignore -- maybe_enqueue_lightbox_runtime(): reads the current post's own '_elementor_data', not attachment data.
+
+				$godam_needs_runtime = false !== strpos( $godam_haystack, 'data-godam-lightbox' )
+					|| false !== strpos( $godam_haystack, '#godam-video-' );
+			}
+		}
+
+		/**
+		 * Filters whether to load the lightbox runtime on the current request.
+		 *
+		 * Use this when a trigger lives somewhere the content sniff cannot see, such
+		 * as a theme template, a sidebar widget or a nav-menu item.
+		 *
+		 * @since 2.2.0
+		 *
+		 * @param bool $godam_needs_runtime Whether the runtime is needed.
+		 */
+		$godam_needs_runtime = apply_filters( 'rtgodam_enqueue_lightbox_runtime', $godam_needs_runtime );
+
+		if ( ! $godam_needs_runtime ) {
+			return;
+		}
+
+		wp_enqueue_script( 'godam-player-frontend-script' );
+		wp_enqueue_style( 'godam-player-style' );
 	}
 
 	/**
@@ -138,44 +306,79 @@ class GoDAM_Player {
 	/**
 	 * Render the GoDAM player shortcode.
 	 *
+	 * HTML output is NOT cached here by design.  Caching the full rendered blob
+	 * would suppress per-request side effects that the template performs on every
+	 * call: enqueueing the player wrapper stylesheet, suppressing Gravity Forms autoscroll,
+	 * conditionally initialising the IMA SDK for ad-enabled videos, and generating
+	 * a unique per-render $godam_instance_id used in DOM IDs.
+	 *
+	 * Performance is instead improved at the data layer: the template bundles all
+	 * expensive attachment meta calls (rtgodam_meta, transcoded URLs, thumbnails,
+	 * etc.) into a single persistent cache entry (work_cache_godam_meta_{id}) that
+	 * is invalidated precisely when the underlying meta changes.  This avoids the
+	 * heavy DB work on warm requests while keeping HTML generation stateless and
+	 * side-effect-safe on every render.
+	 * 
+	 * @since 1.8.0
+	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output of the player.
 	 */
 	public function render( $atts ) {
 		$attributes = shortcode_atts(
 			array(
-				'id'                => '',
-				'autoplay'          => false,
-				'controls'          => true,
-				'loop'              => false,
-				'muted'             => false,
-				'hoverSelect'       => 'none',
-				'hover_select'      => 'none', // WPBakery format (lowercase with underscore).
-				'poster'            => '',
-				'preload'           => 'metadata',
-				'src'               => '',
-				'sources'           => '',
-				'transcoded_url'    => '',
-				'aspectRatio'       => 'responsive',
-				'aspect_ratio'      => '', // WPBakery format (lowercase with underscore).
-				'tracks'            => '',
-				'caption'           => '',
-				'engagements'       => false,
-				'preview'           => false,
-				'showShareButton'   => false,
-				'show_share_button' => false, // WPBakery format (lowercase with underscore).
-				'css'               => '',
+				'id'                 => '',
+				'autoplay'           => false,
+				'controls'           => true,
+				'loop'               => false,
+				'muted'              => false,
+				'hoverSelect'        => 'none',
+				'hover_select'       => 'none', // WPBakery format (lowercase with underscore).
+				'poster'             => '',
+				'performanceMode'    => 'balanced',
+				'performance_mode'   => 'balanced',
+				'src'                => '',
+				'sources'            => '',
+				'transcoded_url'     => '',
+				'hls_transcoded_url' => '',
+				'aspectratio'        => 'responsive',
+				'aspect_ratio'       => '', // WPBakery format (lowercase with underscore).
+				'tracks'             => '',
+				'caption'            => '',
+				'engagements'        => false,
+				'preview'            => false,
+				'showShareButton'    => false,
+				'show_share_button'  => false, // WPBakery format (lowercase with underscore).
+				'showInLightbox'     => false,
+				'show_in_lightbox'   => false, // WPBakery format (lowercase with underscore).
+				'playerHeight'       => '',
+				'player_height'      => '', // WPBakery format (lowercase with underscore).
+				'show_transcription' => '', // WPBakery toggle → maps to showTranscription.
+				'show_caption'       => '', // WPBakery toggle → maps to showCaption.
+				'css'                => '',
+				'godam_context'      => '',
+				'block_source'       => '', // Analytics placement slug; overrides the godam_context-derived mapping (embed iframes).
+				'host_post_id'       => 0, // Post ID of the page hosting an embed iframe, for analytics attribution.
 			),
 			$atts,
 			'godam_video'
 		);
 
 		// Handle boolean attributes passed as strings (do this before mapping).
-		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'engagements', 'preview', 'showShareButton', 'show_share_button' );
+		$boolean_attributes = array( 'autoplay', 'controls', 'loop', 'muted', 'preview', 'showShareButton', 'show_share_button', 'showInLightbox', 'show_in_lightbox' );
 		foreach ( $boolean_attributes as $bool_attr ) {
 			if ( isset( $attributes[ $bool_attr ] ) ) {
 				$attributes[ $bool_attr ] = filter_var( $attributes[ $bool_attr ], FILTER_VALIDATE_BOOLEAN );
 			}
+		}
+
+		// Normalize 'engagements' separately: the embed page passes 'show' as a truthy value,
+		// which filter_var() would incorrectly map to false. Treat 'show' as true, then fall
+		// back to standard boolean parsing for all other string representations.
+		if ( isset( $attributes['engagements'] ) && is_string( $attributes['engagements'] ) ) {
+			$attributes['engagements'] = 'show' === $attributes['engagements']
+				? true
+				: filter_var( $attributes['engagements'], FILTER_VALIDATE_BOOLEAN );
 		}
 
 		// Map WPBakery format (lowercase_underscore) to camelCase for backward compatibility.
@@ -189,6 +392,30 @@ class GoDAM_Player {
 		if ( isset( $attributes['show_share_button'] ) && '' !== $attributes['show_share_button'] && ( ! isset( $attributes['showShareButton'] ) || false === $attributes['showShareButton'] ) ) {
 			$attributes['showShareButton'] = $attributes['show_share_button'];
 		}
+		if ( isset( $attributes['show_in_lightbox'] ) && '' !== $attributes['show_in_lightbox'] && ( ! isset( $attributes['showInLightbox'] ) || false === $attributes['showInLightbox'] ) ) {
+			$attributes['showInLightbox'] = $attributes['show_in_lightbox'];
+		}
+		if ( isset( $attributes['player_height'] ) && '' !== $attributes['player_height'] && ( ! isset( $attributes['playerHeight'] ) || '' === $attributes['playerHeight'] ) ) {
+			$attributes['playerHeight'] = $attributes['player_height'];
+		}
+		$raw_has_performance_mode            = is_array( $atts ) && array_key_exists( 'performance_mode', $atts );
+		$raw_has_performance_mode_camel_case = is_array( $atts ) && array_key_exists( 'performanceMode', $atts );
+		if ( $raw_has_performance_mode && ! $raw_has_performance_mode_camel_case && isset( $attributes['performance_mode'] ) && '' !== $attributes['performance_mode'] ) {
+			$attributes['performanceMode'] = $attributes['performance_mode'];
+		}
+
+		// Map the WPBakery caption/transcription toggles to the block's camelCase
+		// attributes, but only when explicitly provided with a non-empty value.
+		// A bare/empty flag (e.g. [godam_video show_transcription=""]) must NOT be
+		// read as `false` — leaving the attribute unset preserves the template's
+		// own defaults (showTranscription on; showCaption derived from the
+		// attachment). '0'/'false' are still honoured as an explicit "off".
+		if ( is_array( $atts ) && isset( $atts['show_transcription'] ) && '' !== $atts['show_transcription'] ) {
+			$attributes['showTranscription'] = filter_var( $atts['show_transcription'], FILTER_VALIDATE_BOOLEAN );
+		}
+		if ( is_array( $atts ) && isset( $atts['show_caption'] ) && '' !== $atts['show_caption'] ) {
+			$attributes['showCaption'] = filter_var( $atts['show_caption'], FILTER_VALIDATE_BOOLEAN );
+		}
 
 		// Get WPBakery Design Options CSS class if available.
 		$attributes['css_class'] = '';
@@ -197,7 +424,10 @@ class GoDAM_Player {
 		}
 
 		// If autoplay is true, muted must be true for most browsers to allow autoplay.
-		if ( $attributes['autoplay'] ) {
+		// Skipped for "Show in lightbox", which suppresses inline autoplay (see the
+		// template): forcing a mute there would carry into the lightbox and play the
+		// video silently, which is not what the author asked for.
+		if ( $attributes['autoplay'] && empty( $attributes['showInLightbox'] ) ) {
 			$attributes['muted'] = true;
 		}
 
@@ -233,7 +463,6 @@ class GoDAM_Player {
 
 		ob_start();
 		require RTGODAM_PATH . 'inc/templates/godam-player.php';
-		$player_html = ob_get_clean();
-		return $player_html;
+		return ob_get_clean();
 	}
 }
