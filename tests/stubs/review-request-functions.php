@@ -12,7 +12,7 @@
  * - options: read by the get_option() stub, written by add_option() here
  * - finished_video_ids: what the video lookup would return
  * - wp_query_args: the args of the last WP_Query, for assertions
- * - nonce_ok: whether check_ajax_referer() passes
+ * - nonce_ok: whether check_ajax_referer() passes; nonce_checked: its last arguments
  * - json: the last wp_send_json_* call, array( 'success', 'data', 'status' )
  *
  * @package GoDAM
@@ -106,7 +106,9 @@ if ( ! function_exists( 'check_ajax_referer' ) ) {
 	 * @return int
 	 * @throws \Rtgodam_Json_Done Like wp_die(), when the nonce is bad.
 	 */
-	function check_ajax_referer( $action, $query_arg = false ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound, Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- stub mirroring the WP function.
+	function check_ajax_referer( $action, $query_arg = false ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_stub']['nonce_checked'] = array( $action, $query_arg );
+
 		if ( empty( $GLOBALS['rtgodam_stub']['nonce_ok'] ) ) {
 			$GLOBALS['rtgodam_stub']['json'] = array(
 				'success' => false,

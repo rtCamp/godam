@@ -130,6 +130,7 @@ class ReviewRequestTest extends TestCase {
 		$args = $GLOBALS['rtgodam_stub']['wp_query_args'];
 
 		$this->assertSame( 'attachment', $args['post_type'] );
+		$this->assertSame( 'inherit', $args['post_status'], 'Attachments are stored as inherit; any other status finds none.' );
 		$this->assertSame( 'video', $args['post_mime_type'] );
 		$this->assertSame( 3, $args['posts_per_page'] );
 		$this->assertSame( 'ids', $args['fields'] );
@@ -355,14 +356,16 @@ class ReviewRequestTest extends TestCase {
 	 */
 	public function permanent_choices() {
 		return array(
-			'Leave a review' => array( 'review' ),
-			'I already did'  => array( 'done' ),
+			'Leave a review'   => array( 'review' ),
+			'I already did'    => array( 'done' ),
+			'Close (x) button' => array( 'dismiss' ),
 		);
 	}
 
 	/**
-	 * Both buttons store the same thing for the current user, so a click on the review
-	 * button cannot be told apart from "I already did".
+	 * All three store the same thing for the current user, so a click on the review button
+	 * cannot be told apart from "I already did". The close button is a permanent dismissal
+	 * too, so there is an exit that does not claim a review was written.
 	 *
 	 * @dataProvider permanent_choices
 	 *
@@ -377,6 +380,40 @@ class ReviewRequestTest extends TestCase {
 			$GLOBALS['rtgodam_stub']['user_meta']
 		);
 		$this->assertFalse( $this->notice()->should_show() );
+	}
+
+	/**
+	 * The handler checks the nonce the script sends, under the field name the script uses.
+	 */
+	public function test_handler_checks_the_nonce_field_the_script_sends() {
+		ob_start();
+		$this->notice()->render_notice();
+		$html = ob_get_clean();
+
+		$this->dismiss( 'later' );
+
+		$this->assertSame( array( Review_Request::AJAX_ACTION, 'nonce' ), $GLOBALS['rtgodam_stub']['nonce_checked'] );
+
+		// The script posts exactly the three fields the handler reads, and the close button
+		// sends a choice the handler accepts.
+		$this->assertStringContainsString( 'body.append( "action", config.action )', $html );
+		$this->assertStringContainsString( 'body.append( "nonce", config.nonce )', $html );
+		$this->assertStringContainsString( 'body.append( "choice", choice )', $html );
+		$this->assertStringContainsString( '"notice-dismiss" ) ? "dismiss"', $html );
+		// Posts to the page's own relative ajaxurl first, so a host or scheme mismatch cannot lose it.
+		$this->assertStringContainsString( 'window.fetch( window.ajaxurl || config.url', $html );
+	}
+
+	/**
+	 * Deleting the plugin removes what this class stored. uninstall.php runs without the
+	 * plugin loaded, so it repeats the names as strings; this keeps them from drifting.
+	 */
+	public function test_uninstall_removes_what_the_class_stores() {
+		$uninstall = file_get_contents( dirname( __DIR__, 2 ) . '/uninstall.php' );
+
+		foreach ( array( Review_Request::STARTED_OPTION, Review_Request::NEVER_META, Review_Request::SNOOZED_UNTIL_META ) as $name ) {
+			$this->assertStringContainsString( "'" . $name . "'", $uninstall, $name . ' is not removed on uninstall.' );
+		}
 	}
 
 	/**

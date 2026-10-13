@@ -19,9 +19,9 @@ use RTGODAM\Inc\Traits\Singleton;
  * stays hidden until GoDAM has been on the site for a week and has finished transcoding a
  * few of the site's own videos, so the ask comes after a success and not on day one.
  *
- * The three buttons are stored per user: "Leave a review" and "I already did" hide the
- * notice for good, "Maybe later" (and the notice's close button) hides it for 30 days.
- * Clicks are not tracked or reported anywhere.
+ * The choices are stored per user: "Leave a review", "I already did" and the notice's close
+ * button hide the notice for good, "Maybe later" hides it for 30 days. Clicks are not tracked
+ * or reported anywhere.
  *
  * @since n.e.x.t
  */
@@ -30,7 +30,7 @@ class Review_Request {
 	use Singleton;
 
 	/**
-	 * Where the "Leave a review" button goes (five stars pre-selected).
+	 * Where the "Leave a review" button goes: the plugin's reviews page, at the new-review form.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -282,7 +282,8 @@ class Review_Request {
 		</div>
 		<?php
 
-		// The close button WordPress adds to the notice counts as "Maybe later".
+		// The close button WordPress adds to the notice is a permanent dismissal, so there is an
+		// exit that does not claim a review was written. "Maybe later" is the only repeating choice.
 		$config = array(
 			'url'    => admin_url( 'admin-ajax.php' ),
 			'action' => self::AJAX_ACTION,
@@ -300,13 +301,13 @@ class Review_Request {
 					if ( ! target ) {
 						return;
 					}
-					var choice = target.classList.contains( "notice-dismiss" ) ? "later" : target.getAttribute( "data-rtgodam-review-choice" );
+					var choice = target.classList.contains( "notice-dismiss" ) ? "dismiss" : target.getAttribute( "data-rtgodam-review-choice" );
 					var body = new FormData();
 					body.append( "action", config.action );
 					body.append( "nonce", config.nonce );
 					body.append( "choice", choice );
 					notice.style.display = "none";
-					window.fetch( config.url, { method: "POST", body: body, credentials: "same-origin", keepalive: true } );
+					window.fetch( window.ajaxurl || config.url, { method: "POST", body: body, credentials: "same-origin", keepalive: true } );
 				} );
 			} )( ' . wp_json_encode( $config ) . ' );',
 			array( 'id' => 'rtgodam-review-request-js' )
@@ -316,8 +317,8 @@ class Review_Request {
 	/**
 	 * Store the current user's choice.
 	 *
-	 * `review` and `done` are stored the same way on purpose: GoDAM does not track whether
-	 * the review button was clicked.
+	 * `review`, `done` and `dismiss` (the close button) are stored the same way on purpose:
+	 * GoDAM does not track whether the review button was clicked.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -333,7 +334,7 @@ class Review_Request {
 		$choice  = isset( $_POST['choice'] ) ? sanitize_key( wp_unslash( $_POST['choice'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by check_ajax_referer() above.
 		$user_id = get_current_user_id();
 
-		if ( 'review' === $choice || 'done' === $choice ) {
+		if ( in_array( $choice, array( 'review', 'done', 'dismiss' ), true ) ) {
 			update_user_meta( $user_id, self::NEVER_META, 1 );
 		} elseif ( 'later' === $choice ) {
 			update_user_meta( $user_id, self::SNOOZED_UNTIL_META, time() + self::SNOOZE_DAYS * DAY_IN_SECONDS );
