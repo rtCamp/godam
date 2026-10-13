@@ -97,7 +97,8 @@ class PostHogOptOutTest extends TestCase {
 
 		$this->assertSame( 'success', $result['status'] ?? null );
 		$this->assertSame( $opted_out, get_option( 'rtgodam-settings' ), 'Verifying the API key changed the PostHog choice.' );
-		$this->assertSame( array(), $GLOBALS['rtgodam_usage'], 'A check with nothing to save must not store anything.' );
+		$this->assertFalse( get_option( 'rtgodam-api-key' ), 'A check with nothing to save must not store the key.' );
+		$this->assertSame( array(), $GLOBALS['rtgodam_usage'], 'A check with nothing to save must not refresh the usage.' );
 	}
 
 	/**
@@ -108,51 +109,61 @@ class PostHogOptOutTest extends TestCase {
 		$opted_in['general']['enable_posthog_tracking'] = true;
 		$this->set_settings( $opted_in );
 
-		rtgodam_verify_api_key( self::API_KEY, true );
+		$result = rtgodam_verify_api_key( self::API_KEY, true );
 
+		$this->assertSame( 'success', $result['status'] ?? null, 'The save did not go through, so it proves nothing.' );
 		$this->assertSame( $opted_in, get_option( 'rtgodam-settings' ) );
 	}
 
 	/**
 	 * A site that never chose still has tracking switched on by its first verified key.
 	 *
-	 * That is the existing default, not something this fix changes.
+	 * That is the existing default, not something this fix changes. It holds for a
+	 * plain re-check of the key as well as for a save.
 	 *
 	 * @dataProvider never_chosen_settings
 	 *
 	 * @param mixed $settings What `rtgodam-settings` holds before the first verified key, or null for no option at all.
+	 * @param bool  $save     Whether the key is saved or only checked.
 	 */
-	public function test_first_verified_key_enables_tracking_when_no_choice_was_made( $settings ) {
+	public function test_first_verified_key_enables_tracking_when_no_choice_was_made( $settings, $save ) {
 		if ( null !== $settings ) {
 			$this->set_settings( $settings );
 		}
 
-		rtgodam_verify_api_key( self::API_KEY, true );
+		$result = rtgodam_verify_api_key( self::API_KEY, $save );
 
+		$this->assertSame( 'success', $result['status'] ?? null );
 		$saved = get_option( 'rtgodam-settings' );
 		$this->assertTrue( $saved['general']['enable_posthog_tracking'] );
 		$this->assertTrue( $saved['general']['posthog_initialized'] );
 	}
 
 	/**
-	 * The states in which an admin has not yet made a PostHog choice.
+	 * The states in which an admin has not yet made a PostHog choice, each for a save and for a plain check.
 	 *
 	 * @return array<string, array>
 	 */
 	public function never_chosen_settings() {
-		return array(
-			'no settings saved yet'       => array( null ),
-			'settings without a general'  => array( array() ),
-			'general without a choice'    => array( array( 'general' => array( 'enable_posthog_tracking' => false ) ) ),
+		$states = array(
+			'no settings saved yet'       => null,
+			'settings without a general'  => array(),
+			'general without a choice'    => array( 'general' => array( 'enable_posthog_tracking' => false ) ),
 			'choice recorded as not made' => array(
-				array(
-					'general' => array(
-						'enable_posthog_tracking' => false,
-						'posthog_initialized'     => false,
-					),
+				'general' => array(
+					'enable_posthog_tracking' => false,
+					'posthog_initialized'     => false,
 				),
 			),
 		);
+
+		$cases = array();
+		foreach ( $states as $name => $settings ) {
+			$cases[ $name . ', key saved' ]   = array( $settings, true );
+			$cases[ $name . ', key checked' ] = array( $settings, false );
+		}
+
+		return $cases;
 	}
 
 	/**

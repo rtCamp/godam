@@ -50,9 +50,10 @@ describe( 'posthog bootstrap', () => {
 	it.each( [ [ '0' ], [ 0 ], [ false ], [ '' ], [ null ], [ 'yes' ] ] )(
 		'does not start PostHog when enabled is %p',
 		( enabled ) => {
-			const posthog = loadWith( { key: KEY, host: HOST, enabled } );
+			const posthog = loadWith( { key: KEY, host: HOST, enabled, properties: { plugin_version: '2.3.2' } } );
 
 			expect( posthog.init ).not.toHaveBeenCalled();
+			expect( posthog.register ).not.toHaveBeenCalled();
 		},
 	);
 
