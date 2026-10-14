@@ -5,6 +5,11 @@
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import { getPrivacyNoteMarkup } from './deactivation-privacy-note';
+
 jQuery( document ).ready( function( $ ) {
 	( 'use strict' );
 
@@ -26,6 +31,7 @@ jQuery( document ).ready( function( $ ) {
                         <option value="Other">${ __( 'Other', 'godam' ) }</option>
                     </select>
                     <textarea id="deactivation-feedback" placeholder="${ __( 'Additional details…', 'godam' ) }" style="display: none;"></textarea>
+                    ${ getPrivacyNoteMarkup( GoDAMDeactivation?.privacyUrl ) }
                     <div class='button-container'>
                     <button class="skip-feedback" id="godam-skip-feedback">
                         <a href="${ deactivateLink[ 0 ].href }">

@@ -692,6 +692,8 @@ $media-frame-width: calc(300px + 2 * 24px);
 	border-radius: 20px;
 	position: fixed;
 	width: 400px;
+	// Keep a 16px gutter on narrow screens: 60px of side padding plus 2 x 16px.
+	max-width: calc(100vw - 92px);
 	height: auto;
 	background: #fff;
 	top: 25%;
@@ -737,6 +739,13 @@ $media-frame-width: calc(300px + 2 * 24px);
 
 	textarea {
 		height: 100px;
+	}
+
+	.rt-godam-modal__privacy-note {
+		margin: 0;
+		font-size: 12px;
+		line-height: 1.5;
+		color: #50575e;
 	}
 }
 
