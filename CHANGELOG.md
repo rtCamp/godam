@@ -6,7 +6,6 @@
 - Feat: The Hotspot layer has a new Button style: each hotspot can show as a text or sticker button, with its own colours and link.
 - Fix: Usage tracking now follows the admin's choice.
 - Fix: The GoDAM Audio block now accepts .webm audio, such as form recordings, from the GoDAM tab and from uploads.
-- Tweak: The deactivation feedback form now says what "Submit & Deactivate" sends to godam.io, and that "Skip & Deactivate" sends nothing.
 - Tweak: The media preview page can switch between Desktop and Mobile views, for videos, images and audio.
 
 ## v2.3.2 (October 12, 2026) ##
