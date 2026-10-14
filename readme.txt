@@ -1,6 +1,6 @@
-=== GoDAM - Video Hosting, Player & Media Library Folders ===
+=== GoDAM - Video Hosting for LMS & Online Courses ===
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, joelabreo, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1, rudrakshigupta, sabbir1991, shreyasikhar26, akrocks
-Tags: video hosting, woocommerce, lms, lifterlms, media library
+Tags: video hosting, lms, online courses, lifterlms, courses
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -8,16 +8,16 @@ Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Video hosting and player for WordPress: adaptive streaming, video analytics, media library folders. Works with LifterLMS and WooCommerce.
+Video hosting for LMS and course sites: LifterLMS lesson video, adaptive streaming and video analytics. Also works with WooCommerce.
 
 == Description ==
-[GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) is a video hosting plugin for WordPress with a built-in media library manager. It combines multiple media tools into one plugin and provides three key features:
+[GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) is a video hosting plugin for LMS and online course sites on WordPress, with a built-in media library manager. It combines multiple media tools into one plugin and provides three key features:
 
-✓ **Video Hosting** – WordPress-native video hosting with a customizable player. Upload large videos that get automatically transcoded, stored in the cloud, and delivered through a global CDN with adaptive bitrate streaming.
+✓ **Video Hosting for courses** – WordPress-native video hosting with a customizable player, built for LMS and course sites. Upload large videos that get automatically transcoded, stored in the cloud, and delivered through a global CDN with adaptive bitrate streaming.
 ✓ **Interactive Video for better conversion** – Embed video layers with in-video forms to capture leads directly from videos, add polls and CTAs to prompt user action, and use hotspots to tag and identify products during playback.
 ✓ **Advanced Media Manager / Digital Asset Management** – Create unlimited folders and sub-folders to organize your media, manage everything from a central media repository, add advanced metadata, and serve automatically transcoded media optimized for each device.
 
-GoDAM works with LifterLMS for course videos and, through the GoDAM for Woo add-on, with WooCommerce for product videos, alongside Elementor, WPBakery and popular form plugins.
+GoDAM works with LifterLMS for course videos, and, through the GoDAM for Woo add-on, with WooCommerce, alongside Elementor, WPBakery and popular form plugins.
 
 Let’s dive into each of these in detail.
 
@@ -33,6 +33,25 @@ Check out our source code and contribute to the plugin on GitHub: [Official GoDA
 
 
 [youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
+
+= Video Hosting for LMS & Online Courses =
+
+Host and stream your course videos from WordPress, with a branded player and no ads or redirects. GoDAM has a native integration with LifterLMS, so lesson videos behave the way your students expect.
+
+📌 **LifterLMS Integration**
+✓ GoDAM shows up as a video integration ("Videos: GoDAM") in LifterLMS Advanced Videos
+✓ Require students to finish the video before they can complete the lesson, start the quiz or start the assignment
+✓ Students resume where they left off (progress is saved in their browser)
+✓ Optional lesson autoplay (the video starts muted), turned on with the LifterLMS Advanced Videos autoplay setting
+
+Needs the LifterLMS plugin and the LifterLMS Advanced Videos add-on.
+
+📌 **Make Lessons Interactive and Measurable**
+✓ With the GoDAM Video block in a lesson, add polls, CTAs and forms inside the video
+✓ See where viewers drop off with the viewer retention curve [Paid]
+✓ Adaptive bitrate streaming and CDN delivery [Paid]
+
+Using another LMS plugin? The GoDAM Video block and the [godam_video] shortcode are standard WordPress content, so you can use them in any lesson that accepts blocks or shortcodes. The lesson features above are for LifterLMS.
 
 = Video Hosting =
 
@@ -71,25 +90,6 @@ WordPress native video hosting solution, perfect for creators, marketing teams, 
 ✓ Likes, comments & view counts for videos [Paid]
 ✓ Migrate Vimeo videos to GoDAM with essential metadata
 ✓ Use Screen Recorder Chrome extension to record videos & embed into WordPress [Paid]
-
-= Video Hosting for LMS & Online Courses =
-
-Host and stream your course videos from WordPress, with a branded player and no ads or redirects. GoDAM has a native integration with LifterLMS, so lesson videos behave the way your students expect.
-
-📌 **LifterLMS Integration**
-✓ GoDAM shows up as a video integration ("Videos: GoDAM") in LifterLMS Advanced Videos
-✓ Require students to finish the video before they can complete the lesson, start the quiz or start the assignment
-✓ Students resume where they left off (progress is saved in their browser)
-✓ Optional lesson autoplay (the video starts muted), turned on with the LifterLMS Advanced Videos autoplay setting
-
-Needs the LifterLMS plugin and the LifterLMS Advanced Videos add-on.
-
-📌 **Make Lessons Interactive and Measurable**
-✓ With the GoDAM Video block in a lesson, add polls, CTAs and forms inside the video
-✓ See where viewers drop off with the viewer retention curve [Paid]
-✓ Adaptive bitrate streaming and CDN delivery [Paid]
-
-Using another LMS plugin? The GoDAM Video block and the [godam_video] shortcode are standard WordPress content, so you can use them in any lesson that accepts blocks or shortcodes. The lesson features above are for LifterLMS.
 
 = Advanced Media Manager =
 
@@ -137,15 +137,9 @@ Check the full description [here](https://godam.io/features/interactive-video-la
 📌 **Ad Monetization (Video ads)**
 ✓ Earn from your WordPress videos by displaying ads, including self-hosted ads and third-party networks like Google AdSense. Check full description [here](https://godam.io/features/ads-integration/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=ads-integration).
 
-= WooCommerce =
+= WooCommerce Compatibility =
 
-Add video to your WooCommerce store. GoDAM works with WooCommerce through the GoDAM for Woo add-on:
-
-✓ WooCommerce layer in the video editor to show products inside a video
-✓ Product hotspots, shoppable video reels and product gallery video
-✓ Revenue analytics: see the order value credited to each video [Paid]
-
-The add-on is not part of this plugin. It is available from godam.io, and it needs WooCommerce and a valid GoDAM API key.
+GoDAM works with WooCommerce stores through the GoDAM for Woo add-on, which adds a WooCommerce layer to the video editor, product hotspots, shoppable video reels, product gallery video and revenue analytics. The add-on is not part of this plugin. It is available from godam.io, and it needs WooCommerce and a valid GoDAM API key.
 
 = Integrations =
 
