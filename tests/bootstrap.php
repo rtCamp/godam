@@ -484,8 +484,14 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
 // Requiring the file runs no WP code.
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-engagement.php';
 
-// Loaded for get_mime_type_for_job_type(), which GodamTabAudioMimeTest reaches through
-// reflection on a constructor-less instance. Requiring the file only declares the class.
+// Loaded for the Dashboard widget's rules and summary shaping (DashboardWidgetTest).
+// Each file only declares a class, so requiring them runs no WP code.
+require_once dirname( __DIR__ ) . '/inc/classes/enums/class-api-key-status.php';
+require_once dirname( __DIR__ ) . '/inc/classes/class-dashboard-widget.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-dashboard-widget-summary.php';
+
+// Loaded for GodamTabAudioMimeTest: get_mime_type_for_job_type() through reflection on a
+// constructor-less instance, and the static MIME helpers. Requiring the file only declares the class.
 require_once dirname( __DIR__ ) . '/inc/classes/class-media-library-ajax.php';
 
 // Helper functions under test (godam_is_supported_document). The file only
