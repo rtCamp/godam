@@ -1,14 +1,13 @@
 <?php
 /**
- * Verifying or saving an API key never touches the PostHog settings.
+ * An admin's PostHog choice has to survive an API key save.
  *
- * `rtgodam_verify_api_key()` used to switch tracking on every time a key was
- * saved, even for an admin who had turned it off, and switched it on for a site
- * that had never been asked. Now only the notice on the WordPress Dashboard and
- * the toggle on the Help page change `enable_posthog_tracking` and
- * `posthog_initialized`.
+ * `rtgodam_verify_api_key()` used to switch tracking back on every time a key
+ * was saved, even for an admin who had turned it off. It now only switches
+ * tracking on when the admin has never made a choice (`posthog_initialized` is
+ * empty), and records that the key did it.
  *
- * @see https://github.com/rtCamp/godam-core/issues/936
+ * @see https://github.com/rtCamp/godam-core/issues/1068
  *
  * @package GoDAM
  */
@@ -118,34 +117,48 @@ class PostHogOptOutTest extends TestCase {
 	}
 
 	/**
-	 * A site that never chose keeps tracking off after its first verified key.
+	 * A site that never chose has tracking switched on by its first verified key, and the source is recorded.
 	 *
-	 * The key used to switch tracking on, so a site was tracked without ever being asked.
-	 * Tracking now starts only when an admin clicks Allow in the notice or turns on the
-	 * Help page toggle, so verifying a key, with or without saving it, changes nothing.
+	 * Connecting a GoDAM account is the opt-in. The source ('api_key') is what lets tracking stop again if the
+	 * key is removed, so it must be written together with the switch. It holds for a plain re-check of the key
+	 * as well as for a save.
 	 *
 	 * @dataProvider never_chosen_settings
 	 *
 	 * @param mixed $settings What `rtgodam-settings` holds before the first verified key, or null for no option at all.
 	 * @param bool  $save     Whether the key is saved or only checked.
 	 */
-	public function test_a_verified_key_leaves_tracking_off_when_no_choice_was_made( $settings, $save ) {
+	public function test_first_verified_key_enables_tracking_when_no_choice_was_made( $settings, $save ) {
 		if ( null !== $settings ) {
 			$this->set_settings( $settings );
 		}
 
 		$result = rtgodam_verify_api_key( self::API_KEY, $save );
 
-		$this->assertSame( 'success', $result['status'] ?? null, 'The key did not verify, so this proves nothing.' );
-		$this->assertSame(
-			null === $settings ? false : $settings,
-			get_option( 'rtgodam-settings' ),
-			'Verifying the API key changed the PostHog settings.'
-		);
+		$this->assertSame( 'success', $result['status'] ?? null );
+		$saved = get_option( 'rtgodam-settings' );
+		$this->assertTrue( $saved['general']['enable_posthog_tracking'] );
+		$this->assertTrue( $saved['general']['posthog_initialized'] );
+		$this->assertSame( 'api_key', $saved['general']['posthog_consent_source'] );
+	}
 
-		$general = get_option( 'rtgodam-settings' )['general'] ?? array();
-		$this->assertEmpty( $general['enable_posthog_tracking'] ?? false, 'Tracking was switched on without an opt-in.' );
-		$this->assertEmpty( $general['posthog_initialized'] ?? false, 'A choice was recorded that the admin never made.' );
+	/**
+	 * A site switched on before the source was recorded is left exactly as it is.
+	 *
+	 * It has a choice recorded, so the key does not touch it; the page treats a missing source as "not explicit".
+	 */
+	public function test_verifying_the_api_key_leaves_a_site_from_before_the_source_was_recorded_alone() {
+		$old_site = array(
+			'general' => array(
+				'enable_posthog_tracking' => true,
+				'posthog_initialized'     => true,
+			),
+		);
+		$this->set_settings( $old_site );
+
+		rtgodam_verify_api_key( self::API_KEY, true );
+
+		$this->assertSame( $old_site, get_option( 'rtgodam-settings' ) );
 	}
 
 	/**
@@ -203,6 +216,7 @@ class PostHogOptOutTest extends TestCase {
 			'general' => array(
 				'enable_posthog_tracking'    => false,
 				'posthog_initialized'        => true,
+				'posthog_consent_source'     => 'explicit',
 				'enable_folder_organization' => true,
 			),
 		);

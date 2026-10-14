@@ -31,9 +31,15 @@ const App = () => {
 	const { isLoading: isSettingsLoading } = useGetMediaSettingsQuery();
 	const [ saveMediaSettings ] = useSaveMediaSettingsMutation();
 
+	// Show what is really happening on this page, not the stored setting: tracking switched on by an API key
+	// stops when the key is removed, and the page was told so through posthogConfig.enabled.
+	const [ isTrackingOn, setIsTrackingOn ] = useState( [ '1', 1 ].includes( window.posthogConfig?.enabled ) );
+
 	const handlePostHogToggle = async ( value ) => {
+		setIsTrackingOn( value );
 		dispatch( updateMediaSetting( { category: 'general', key: 'enable_posthog_tracking', value } ) );
 		dispatch( updateMediaSetting( { category: 'general', key: 'posthog_initialized', value: true } ) );
+		dispatch( updateMediaSetting( { category: 'general', key: 'posthog_consent_source', value: 'explicit' } ) );
 
 		// Save immediately since it's a single toggle in help page
 		const updatedSettings = {
@@ -42,6 +48,7 @@ const App = () => {
 				...mediaSettings.general,
 				enable_posthog_tracking: value,
 				posthog_initialized: true,
+				posthog_consent_source: 'explicit',
 			},
 		};
 		await saveMediaSettings( { settings: updatedSettings } );
@@ -220,7 +227,7 @@ const App = () => {
 					<ToggleControl
 						__nextHasNoMarginBottom
 						className="godam-toggle-small mb-0"
-						checked={ mediaSettings?.general?.enable_posthog_tracking }
+						checked={ isTrackingOn }
 						onChange={ handlePostHogToggle }
 						disabled={ isSettingsLoading }
 					/>

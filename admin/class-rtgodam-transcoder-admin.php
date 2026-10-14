@@ -689,9 +689,14 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		$settings = get_option( 'rtgodam-settings', array() );
+		$api_key  = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 
-		// Tracking starts only after an admin answers this notice (or sets the toggle on the Help page).
-		// Once they have, posthog_initialized is true and the notice stays hidden, whether they chose Allow or No thanks.
+		// If API key is present, we don't show the notice (it's auto-enabled or already handled).
+		if ( ! empty( $api_key ) ) {
+			return;
+		}
+
+		// If posthog_initialized is true, it means the user has already made a choice or it was auto-enabled.
 		if ( ! empty( $settings['general']['posthog_initialized'] ) ) {
 			return;
 		}
@@ -925,9 +930,11 @@ class RTGODAM_Transcoder_Admin {
 		if ( isset( $_GET['godam_tracker_optin'] ) && 'true' === $_GET['godam_tracker_optin'] ) {
 			$settings['general']['enable_posthog_tracking'] = true;
 			$settings['general']['posthog_initialized']     = true;
+			$settings['general']['posthog_consent_source']  = 'explicit';
 		} elseif ( isset( $_GET['godam_tracker_optout'] ) && 'true' === $_GET['godam_tracker_optout'] ) {
 			$settings['general']['enable_posthog_tracking'] = false;
 			$settings['general']['posthog_initialized']     = true;
+			$settings['general']['posthog_consent_source']  = 'explicit';
 		}
 
 		update_option( 'rtgodam-settings', $settings );

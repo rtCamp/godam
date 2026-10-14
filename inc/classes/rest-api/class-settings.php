@@ -51,6 +51,8 @@ class Settings extends Base {
 				'enable_gtm_tracking'        => false,
 				'enable_posthog_tracking'    => false,
 				'posthog_initialized'        => false,
+				// Where an "on" came from: 'api_key' (a verified key), 'explicit' (an admin chose), or '' (unknown, e.g. a site from before this was recorded).
+				'posthog_consent_source'     => '',
 			),
 			'video_player' => array(
 				'brand_image'    => '',
@@ -357,6 +359,27 @@ class Settings extends Base {
 	}
 
 	/**
+	 * Sanitize where the PostHog choice came from.
+	 *
+	 * Left out of the result when the request did not send it, so a client that does not know about it (an older cached
+	 * settings page, say) cannot reset the stored value to the default when it saves its other settings.
+	 *
+	 * @param array $settings Settings sent with the request.
+	 * @return array Either array( 'posthog_consent_source' => 'api_key' | 'explicit' | '' ) or an empty array.
+	 */
+	private function sanitize_posthog_consent_source( $settings ) {
+		if ( ! isset( $settings['general']['posthog_consent_source'] ) ) {
+			return array();
+		}
+
+		$source = $settings['general']['posthog_consent_source'];
+
+		return array(
+			'posthog_consent_source' => in_array( $source, array( 'api_key', 'explicit' ), true ) ? $source : '',
+		);
+	}
+
+	/**
 	 * Sanitize easydam settings.
 	 *
 	 * @param array $settings EasyDAM settings to sanitize.
@@ -387,7 +410,7 @@ class Settings extends Base {
 				'enable_gtm_tracking'        => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
 				'enable_posthog_tracking'    => rest_sanitize_boolean( $settings['general']['enable_posthog_tracking'] ?? $default['general']['enable_posthog_tracking'] ),
 				'posthog_initialized'        => rest_sanitize_boolean( $settings['general']['posthog_initialized'] ?? $default['general']['posthog_initialized'] ),
-			),
+			) + $this->sanitize_posthog_consent_source( $settings ),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
 				'brand_color'    => $this->sanitize_color_value( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),
