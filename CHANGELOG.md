@@ -4,7 +4,7 @@
 
 - Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.
 - Feat: The Hotspot layer has a new Button style: each hotspot can show as a text or sticker button, with its own colours and link.
-- Fix: PostHog usage tracking now starts only after an admin clicks Allow in the Dashboard notice or turns on "Help us improve GoDAM" on the GoDAM Help page. Connecting an API key no longer switches it on or undoes an opt-out, and the notice is now shown on sites that already have an API key. Sites that an earlier version switched on are asked again and stay off until an admin clicks Allow. PostHog is now listed under External Services in the readme.
+- Fix: Usage tracking now follows the admin's choice.
 - Fix: The GoDAM Audio block now accepts .webm audio, such as form recordings, from the GoDAM tab and from uploads.
 - Tweak: The deactivation feedback form now says what "Submit & Deactivate" sends to godam.io, and that "Skip & Deactivate" sends nothing.
 - Tweak: The screenshot captions on WordPress.org now match their screenshots.
