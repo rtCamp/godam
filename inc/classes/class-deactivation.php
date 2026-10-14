@@ -63,6 +63,7 @@ class Deactivation {
 				'userEmail'  => $current_user->user_email,
 				'headerText' => esc_html__( 'Please let us know why you are deactivating ', 'godam' ),
 				'apiUrl'     => esc_url( $this->api_url ),
+				'privacyUrl' => esc_url( 'https://godam.io/privacy-policy/' ),
 			);
 
 			wp_localize_script( 'godam-deactivation-survey-script', 'GoDAMDeactivation', $rtgodam_deactivate );
