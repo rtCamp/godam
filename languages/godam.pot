@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-14T08:14:56+00:00\n"
+"POT-Creation-Date: 2026-10-14T08:22:35+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -1926,7 +1926,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
 #: assets/build/js/media-library.min.js:1
-#: inc/templates/video-preview.php:94
+#: inc/templates/video-preview.php:115
 #: assets/src/blocks/godam-player/edit.js:969
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:783
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:791
@@ -1945,7 +1945,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
 #: assets/build/pages/godam.min.js:2
-#: inc/templates/video-preview.php:147
+#: inc/templates/video-preview.php:169
 #: assets/src/blocks/godam-player/edit.js:1010
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:310
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:55
@@ -2753,7 +2753,7 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-admin.php:337
 #: admin/godam-transcoder-functions.php:381
 #: inc/classes/class-media-library-ajax.php:1694
-#: inc/templates/video-preview.php:71
+#: inc/templates/video-preview.php:77
 #: assets/src/js/media-library/views/attachment.js:184
 #: pages/godam/components/GoDAMHeader.jsx:74
 #: pages/whats-new/components/Header.js:19
@@ -2887,7 +2887,7 @@ msgid "Video Thumbnails"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: inc/templates/video-preview.php:90
+#: inc/templates/video-preview.php:111
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:766
 msgid "Edit Image"
 msgstr ""
@@ -2896,7 +2896,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/class-pages.php:220
 #: inc/classes/class-pages.php:221
-#: inc/templates/video-preview.php:82
+#: inc/templates/video-preview.php:102
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:785
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:792
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:320
@@ -2904,7 +2904,7 @@ msgid "Analytics"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: inc/templates/video-preview.php:92
+#: inc/templates/video-preview.php:113
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:819
 msgid "Edit Audio"
 msgstr ""
@@ -13491,7 +13491,7 @@ msgstr ""
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2226
+#: inc/helpers/custom-functions.php:2224
 msgid "Video not found"
 msgstr ""
 
@@ -13506,61 +13506,75 @@ msgstr ""
 msgid "Video Embed: Attachment(%s)"
 msgstr ""
 
-#: inc/templates/video-preview.php:34
+#: inc/templates/video-preview.php:40
 msgid "Image Preview"
 msgstr ""
 
-#: inc/templates/video-preview.php:36
+#: inc/templates/video-preview.php:42
 msgid "Audio Preview"
 msgstr ""
 
-#: inc/templates/video-preview.php:38
+#: inc/templates/video-preview.php:44
 msgid "Video Preview"
 msgstr ""
 
 #. translators: 1: media type label (e.g. "Image Preview"), 2: attachment ID.
-#: inc/templates/video-preview.php:49
+#: inc/templates/video-preview.php:55
 #, php-format
 msgid "%1$s: Attachment(%2$s)"
 msgstr ""
 
-#: inc/templates/video-preview.php:112
+#: inc/templates/video-preview.php:84
+msgid "Preview device width"
+msgstr ""
+
+#: inc/templates/video-preview.php:85
+#: inc/templates/video-preview.php:87
+msgid "Desktop"
+msgstr ""
+
+#: inc/templates/video-preview.php:89
+#: inc/templates/video-preview.php:91
+msgid "Mobile"
+msgstr ""
+
+#: inc/templates/video-preview.php:134
 msgid "Our Pro Features"
 msgstr ""
 
-#: inc/templates/video-preview.php:116
+#: inc/templates/video-preview.php:138
 msgid "Smart media offloading"
 msgstr ""
 
-#: inc/templates/video-preview.php:117
+#: inc/templates/video-preview.php:139
 msgid "Global CDN-powered delivery"
 msgstr ""
 
-#: inc/templates/video-preview.php:118
+#: inc/templates/video-preview.php:140
 msgid "Adaptive bitrate video streaming"
 msgstr ""
 
-#: inc/templates/video-preview.php:119
+#: inc/templates/video-preview.php:141
 msgid "Advanced video performance analytics"
 msgstr ""
 
-#: inc/templates/video-preview.php:120
+#: inc/templates/video-preview.php:142
 msgid "Automatic video transcoding"
 msgstr ""
 
-#: inc/templates/video-preview.php:121
+#: inc/templates/video-preview.php:143
 msgid "AI-powered video transcription"
 msgstr ""
 
-#: inc/templates/video-preview.php:122
+#: inc/templates/video-preview.php:144
 msgid "Video watermarking"
 msgstr ""
 
-#: inc/templates/video-preview.php:123
+#: inc/templates/video-preview.php:145
 msgid "Multi-thumbnail generation"
 msgstr ""
 
-#: inc/templates/video-preview.php:124
+#: inc/templates/video-preview.php:146
 msgid "Unified GoDAM Central media library"
 msgstr ""
 
