@@ -195,7 +195,7 @@ class Media_Library_Ajax {
 	 * Video container types that form recorders save audio in, mapped to the audio type the
 	 * GoDAM tab reports for an audio job stored in them.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.4.0
 	 *
 	 * @return array<string, string> Container MIME type => audio MIME type.
 	 */
@@ -215,7 +215,7 @@ class Media_Library_Ajax {
 	 * get_audio_container_mimes() (video/webm to audio/webm, video/mp4 to audio/mp4) and to a
 	 * user who may edit the attachment.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.4.0
 	 *
 	 * @param string $current_mime MIME type the attachment has now.
 	 * @param string $picked_mime  MIME type of the picked GoDAM-tab item.

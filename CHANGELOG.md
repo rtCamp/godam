@@ -1,5 +1,14 @@
 # Changelog #
 
+## v2.4.0 (October 15, 2026) ##
+
+- Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.
+- Feat: The Hotspot layer has a new Button style: each hotspot can show as a text or sticker button, with its own colours and link.
+- Fix: PostHog usage tracking now starts only after an admin clicks Allow in the Dashboard notice or turns on "Help us improve GoDAM" on the GoDAM Help page. Connecting an API key no longer switches it on or undoes an opt-out, and the notice is now shown on sites that already have an API key. Sites that an earlier version switched on are asked again and stay off until an admin clicks Allow. PostHog is now listed under External Services in the readme.
+- Fix: The GoDAM Audio block now accepts .webm audio, such as form recordings, from the GoDAM tab and from uploads.
+- Tweak: The deactivation feedback form now says what "Submit & Deactivate" sends to godam.io, and that "Skip & Deactivate" sends nothing.
+- Tweak: The screenshot captions on WordPress.org now match their screenshots.
+
 ## v2.3.2 (October 12, 2026) ##
 
 - Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts automatically the first time you open the library and can be replayed anytime from the new button next to Manage Media.

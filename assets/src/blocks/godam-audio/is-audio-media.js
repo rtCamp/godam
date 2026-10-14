@@ -13,7 +13,7 @@
  * picker is refused: an .mp4 is usually real video. GoDAM-tab recordings are not affected,
  * because the server already reports them as audio/webm or audio/mp4.
  *
- * @since n.e.x.t
+ * @since 2.4.0
  *
  * @param {Object} media Media object from the media modal or an upload.
  * @return {boolean} False when the MIME type names a non-audio format, except video/webm.
