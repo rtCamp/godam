@@ -49,7 +49,8 @@ class Posthog_Consent_Reset {
 
 		$settings = get_option( 'rtgodam-settings', array() );
 
-		if ( is_array( $settings ) && ! empty( $settings['general']['enable_posthog_tracking'] ) ) {
+		// Same test the admin pages use for "tracking is on" (an integer cast), so a value they read as off is left alone.
+		if ( is_array( $settings ) && (int) ( $settings['general']['enable_posthog_tracking'] ?? 0 ) ) {
 			$settings['general']['enable_posthog_tracking'] = false;
 			$settings['general']['posthog_initialized']     = false;
 			update_option( 'rtgodam-settings', $settings );

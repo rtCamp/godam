@@ -92,6 +92,7 @@ class PostHogConsentResetTest extends TestCase {
 		$this->assertTrue( Posthog_Consent_Reset::maybe_run() );
 
 		$this->assertSame( null === $settings ? false : $settings, get_option( 'rtgodam-settings' ) );
+		$this->assertSame( 'done', get_option( Posthog_Consent_Reset::OPTION_KEY ), 'The run was not recorded, so a later Allow could be reset.' );
 	}
 
 	/**
@@ -101,8 +102,8 @@ class PostHogConsentResetTest extends TestCase {
 	 */
 	public function tracking_off() {
 		return array(
-			'nothing saved yet' => array( null ),
-			'never chose'       => array(
+			'nothing saved yet'       => array( null ),
+			'never chose'             => array(
 				array(
 					'general' => array(
 						'enable_posthog_tracking' => false,
@@ -110,7 +111,7 @@ class PostHogConsentResetTest extends TestCase {
 					),
 				),
 			),
-			'opted out'         => array(
+			'opted out'               => array(
 				array(
 					'general' => array(
 						'enable_posthog_tracking' => false,
@@ -118,7 +119,34 @@ class PostHogConsentResetTest extends TestCase {
 					),
 				),
 			),
+			'the text "false" stored as the switch, which the pages read as off' => array(
+				array(
+					'general' => array(
+						'enable_posthog_tracking' => 'false',
+						'posthog_initialized'     => true,
+					),
+				),
+			),
+			'general is not an array' => array( array( 'general' => 'on' ) ),
 		);
+	}
+
+	/**
+	 * The migration runner knows about it, under a version the update reaches, and calls the method this class defines.
+	 *
+	 * Every other test here calls maybe_run() directly, so without this a wrong map entry would leave them all green
+	 * while the reset never ran.
+	 */
+	public function test_the_migration_runner_runs_it() {
+		require_once dirname( __DIR__, 2 ) . '/inc/classes/migrations/class-runner.php';
+
+		$map = ( new \ReflectionClass( \RTGODAM\Inc\Migrations\Runner::class ) )->getProperty( 'migrations' );
+		$map->setAccessible( true );
+		$migrations = $map->getValue();
+
+		$this->assertArrayHasKey( '2.4.0', $migrations, 'No migration batch for the release this ships in.' );
+		$this->assertContains( Posthog_Consent_Reset::class, $migrations['2.4.0'] );
+		$this->assertTrue( ( new \ReflectionMethod( Posthog_Consent_Reset::class, 'maybe_run' ) )->isStatic(), 'The runner calls $class::maybe_run().' );
 	}
 
 	/**

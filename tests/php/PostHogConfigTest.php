@@ -78,9 +78,9 @@ class PostHogConfigTest extends TestCase {
 	 */
 	public function not_opted_in() {
 		return array(
-			'no settings saved yet' => array( null ),
-			'no general section'    => array( array() ),
-			'never chose'           => array(
+			'no settings saved yet'                    => array( null ),
+			'no general section'                       => array( array() ),
+			'never chose'                              => array(
 				array(
 					'general' => array(
 						'enable_posthog_tracking' => false,
@@ -88,7 +88,7 @@ class PostHogConfigTest extends TestCase {
 					),
 				),
 			),
-			'opted out'             => array(
+			'opted out'                                => array(
 				array(
 					'general' => array(
 						'enable_posthog_tracking' => false,
@@ -96,6 +96,24 @@ class PostHogConfigTest extends TestCase {
 					),
 				),
 			),
+			'switched on, but no choice recorded'      => array( array( 'general' => array( 'enable_posthog_tracking' => true ) ) ),
+			'switched on, choice recorded as not made' => array(
+				array(
+					'general' => array(
+						'enable_posthog_tracking' => true,
+						'posthog_initialized'     => false,
+					),
+				),
+			),
+			'the text "false" stored as the switch'    => array(
+				array(
+					'general' => array(
+						'enable_posthog_tracking' => 'false',
+						'posthog_initialized'     => true,
+					),
+				),
+			),
+			'general is not an array'                  => array( array( 'general' => 'on' ) ),
 		);
 	}
 

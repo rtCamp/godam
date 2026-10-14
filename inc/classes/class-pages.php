@@ -1483,8 +1483,12 @@ class Pages {
 	 * @return array PostHog configuration array with 'key', 'host', and 'enabled' settings.
 	 */
 	private function get_posthog_config() {
-		$settings        = get_option( 'rtgodam-settings', array() );
-		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : false;
+		$settings = get_option( 'rtgodam-settings', array() );
+		$general  = isset( $settings['general'] ) && is_array( $settings['general'] ) ? $settings['general'] : array();
+
+		// Tracking runs only when it is switched on AND an admin's choice is recorded (the notice's Allow, or the Help
+		// page toggle, set both). A switch with no recorded choice does not count, so nothing but an explicit opt-in starts it.
+		$enable_tracking = (bool) (int) ( $general['enable_posthog_tracking'] ?? 0 ) && ! empty( $general['posthog_initialized'] );
 
 		$config = array(
 			'key'     => 'phc_9P3X3py1SfwrF78SXXkIyL2cHjkRTpvWzqf8RZJDaSk',
