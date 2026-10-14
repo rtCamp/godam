@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
+import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/utils/index.js';
 
 ( function( $ ) {
 	'use strict';
@@ -206,9 +206,80 @@ import { stripHtmlTags } from '../../blocks/godam-player/utils/index.js';
 		$( document ).on( 'change', '.video_selector_field[name="id"]', function() {
 			const $scope = getSeoScope( $( this ) );
 			prefillSeoFieldsFromAttachment( $scope, false );
+			updateFilenameTitleWarning( $scope );
+		} );
+
+		$( document ).on( 'change', '.wpb_vc_param_value[name="seo_override"]', function() {
+			updateFilenameTitleWarning( getSeoScope( $( this ) ) );
+		} );
+
+		$( document ).on( 'input change', '.wpb_vc_param_value[name="seo_headline"]', function() {
+			updateFilenameTitleWarning( getSeoScope( $( this ) ) );
+		} );
+
+		// Check the title whenever an element's edit panel opens.
+		$( document ).on( 'vc.reload', function() {
+			$( '.wpb_vc_param_value[name="seo_override"]' ).each( function() {
+				updateFilenameTitleWarning( getSeoScope( $( this ) ) );
+			} );
 		} );
 
 		isSeoPrefillListenerBound = true;
+	}
+
+	/**
+	 * Show or hide a warning in the SEO Settings tab when the video's SEO title
+	 * looks like a raw file name (hyphens/underscores and no spaces, or the
+	 * file name itself).
+	 *
+	 * Uses the custom headline when SEO is overridden, otherwise the Media
+	 * Library title the schema is built from.
+	 *
+	 * @param {Object} $scope - Edit panel scope (jQuery object).
+	 */
+	function updateFilenameTitleWarning( $scope ) {
+		const $overrideField = getParamField( $scope, 'seo_override' );
+
+		if ( ! $overrideField.length ) {
+			return;
+		}
+
+		const $overrideParam = $overrideField.closest( '.vc_shortcode-param' );
+		const $anchor = $overrideParam.length ? $overrideParam : $overrideField.parent();
+		let $warning = $anchor.siblings( '.godam-wpb-seo-filename-warning' );
+
+		if ( ! $warning.length ) {
+			$warning = $( '<div class="godam-wpb-seo-filename-warning vc_col-xs-12" style="display:none;margin:8px 0;padding:8px 12px;border-left:4px solid #dba617;background:#fcf9e8;"></div>' );
+			$anchor.after( $warning );
+		}
+
+		const attachmentId = parseInt( getParamField( $scope, 'id' ).val(), 10 );
+		if ( ! attachmentId ) {
+			$warning.hide();
+			return;
+		}
+
+		const seoOverrideEnabled = '1' === String( $overrideField.val() );
+
+		fetchAttachmentData( attachmentId ).then( ( attachmentData ) => {
+			const fileName = getFirstNonEmpty( attachmentData?.source_url, attachmentData?.url, attachmentData?.filename );
+			const title = seoOverrideEnabled
+				? String( getParamField( $scope, 'seo_headline' ).val() || '' )
+				: stripHtmlTags( getFirstNonEmpty( attachmentData?.title?.rendered, attachmentData?.title ) );
+
+			if ( ! isFilenameLikeTitle( title, fileName ) ) {
+				$warning.hide();
+				return;
+			}
+
+			$warning.text(
+				seoOverrideEnabled
+					? __( 'This title looks like a file name. Search engines show it as the video title, so use a descriptive title with spaces instead.', 'godam' )
+					: __( 'This video\'s title looks like a file name. Search engines show it as the video title. Edit the title in the Media Library, or set "Override SEO" to Yes and enter a descriptive headline.', 'godam' ),
+			).show();
+		} ).catch( () => {
+			$warning.hide();
+		} );
 	}
 
 	function getSeoScope( $element ) {
