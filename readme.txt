@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.3.2
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -217,6 +217,15 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.4.0 (October 15, 2026) =
+
+- Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.
+- Feat: The Hotspot layer has a new Button style: each hotspot can show as a text or sticker button, with its own colours and link.
+- Fix: Usage tracking now follows the admin's choice.
+- Fix: The GoDAM Audio block now accepts .webm audio, such as form recordings, from the GoDAM tab and from uploads.
+- Tweak: The deactivation feedback form now says what "Submit & Deactivate" sends to godam.io, and that "Skip & Deactivate" sends nothing.
+- Tweak: The media preview page can switch between Desktop and Mobile views, for videos, images and audio.
+
 = v2.3.2 (October 12, 2026) =
 
 - Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts automatically the first time you open the library and can be replayed anytime from the new button next to Manage Media.
@@ -234,18 +243,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Editors and Authors see video analytics only; store data (products, add-to-carts, orders, revenue) needs WooCommerce's report permission.
 - Fix: A GoDAM Record field on a Gravity Forms form no longer fails with "Number of files (2) exceeds limit (1)" after moving between pages or fixing a failed submit, on Gravity Forms 2.9.18 and later.
 - Fix: Security fixes.
-
-= v2.3.0 (September 24, 2026) =
-
-- Feat: Revenue Analytics for WooCommerce. See how much order value is credited to each video, split into Direct (added to cart inside the video) and Assisted (clicked the product in a video, image hotspot or Reel Pop, then added it to cart on its product page). Influenced revenue is reported separately and is never added to the headline.
-- Feat: Top Products, a new dashboard tab showing per-product views, add-to-cart counts split into in-video and product-page, revenue, and where in your videos each product appeared.
-- Feat: Video to Cart and Video to Purchase rates, measured against the people who actually played the video.
-- Feat: Two new funnels: Play to Cart to Purchase, and the same funnel broken down by placement.
-- Feat: Per-hotspot revenue in layer analytics, showing the revenue from in-video add-to-carts made through each product hotspot.
-- Feat: A Google Analytics 4 status widget on the analytics dashboard, showing whether GoDAM for Woo is pushing video-driven add_to_cart and purchase events to your Google Tag Manager dataLayer.
-- Tweak: The Revenue and Purchase Funnel cards on the single-video page each have their own date-range picker.
-- Tweak: The layer interaction metric is now called "Interaction rate" instead of "Conversion".
-- Note: Revenue and product metrics need the GoDAM for Woo add-on 2.2.0 or later.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 

@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
  *   wp option delete rtgodam_posthog_consent_reset_done
  *   wp option delete rtgodam_db_version
  *
- * @since n.e.x.t
+ * @since 2.4.0
  */
 class Posthog_Consent_Reset {
 
@@ -38,7 +38,7 @@ class Posthog_Consent_Reset {
 	/**
 	 * Run the migration once for the current site.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.4.0
 	 *
 	 * @return bool Always true: there is nothing to retry.
 	 */
