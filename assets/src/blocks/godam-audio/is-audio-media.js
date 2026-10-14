@@ -9,10 +9,14 @@
  * WordPress types every .webm file video/webm, audio-only recordings included (Chrome
  * records audio as WebM), so that one video type is accepted as well.
  *
+ * video/mp4 is not accepted, so a Safari audio recording (.mp4) uploaded straight into the
+ * picker is refused: an .mp4 is usually real video. GoDAM-tab recordings are not affected,
+ * because the server already reports them as audio/webm or audio/mp4.
+ *
  * @since n.e.x.t
  *
  * @param {Object} media Media object from the media modal or an upload.
- * @return {boolean} False only when the MIME type names a non-audio format.
+ * @return {boolean} False when the MIME type names a non-audio format, except video/webm.
  */
 export default function isAudioMedia( media ) {
 	const mime = media?.mime || media?.mime_type || '';

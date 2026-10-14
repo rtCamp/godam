@@ -192,6 +192,47 @@ class Media_Library_Ajax {
 	}
 
 	/**
+	 * Video container types that form recorders save audio in, mapped to the audio type the
+	 * GoDAM tab reports for an audio job stored in them.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return array<string, string> Container MIME type => audio MIME type.
+	 */
+	public static function get_audio_container_mimes() {
+		return array(
+			'video/webm' => 'audio/webm',
+			'video/mp4'  => 'audio/mp4',
+		);
+	}
+
+	/**
+	 * Whether an attachment reused for a GoDAM-tab pick should take the audio type the tab now
+	 * reports for it.
+	 *
+	 * The picked type comes from the browser and the create-media-entry route only needs
+	 * `upload_files`, so the change is limited to the exact pairs in
+	 * get_audio_container_mimes() (video/webm to audio/webm, video/mp4 to audio/mp4) and to a
+	 * user who may edit the attachment.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $current_mime MIME type the attachment has now.
+	 * @param string $picked_mime  MIME type of the picked GoDAM-tab item.
+	 * @param bool   $can_edit     Whether the current user may edit the attachment.
+	 * @return bool True when the attachment's MIME type should become $picked_mime.
+	 */
+	public static function should_correct_audio_mime( $current_mime, $picked_mime, $can_edit ) {
+		if ( ! $can_edit ) {
+			return false;
+		}
+
+		$audio_containers = self::get_audio_container_mimes();
+
+		return isset( $audio_containers[ $current_mime ] ) && $audio_containers[ $current_mime ] === $picked_mime;
+	}
+
+	/**
 	 * Get appropriate MIME type based on job type.
 	 *
 	 * @param string $job_type  Job type from GoDAM API.
@@ -216,10 +257,7 @@ class Media_Library_Ajax {
 				 * created from this item keeps this MIME type, which decides whether WordPress
 				 * files it under audio or video.
 				 */
-				$audio_containers = array(
-					'video/webm' => 'audio/webm',
-					'video/mp4'  => 'audio/mp4',
-				);
+				$audio_containers = self::get_audio_container_mimes();
 
 				return $audio_containers[ $mime_type ] ?? $mime_type;
 			case 'image':
