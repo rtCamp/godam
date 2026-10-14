@@ -323,3 +323,32 @@ When Data is Sent:
 Service Provider: analytics.godam.io
 
 [Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
+
+=== PostHog (us.i.posthog.com) ===
+Purpose: This service provides product analytics for GoDAM's own screens in the WordPress admin. It helps us see how GoDAM is used and where it fails, so we can improve the plugin.
+
+Data Sent:
+
+1. Details about the site: PHP version, MySQL version, web server software, WordPress version, site language, number of active plugins, total number of plugins, and number of users
+
+2. How GoDAM's admin screens are used: page views, clicks, and errors
+
+3. Session replays and heatmaps of GoDAM's admin screens
+
+4. The address of the admin screen being used, and an ID that PostHog stores in the browser
+
+5. The IP address and browser details that every web request carries
+
+When Data is Sent:
+
+1. Only after a site administrator has clicked "Allow" in the notice shown on the WordPress Dashboard, or turned on "Help us improve GoDAM" on the GoDAM Help page. Nothing is sent before one of these, and connecting a GoDAM account (an API key) does not switch it on.
+
+2. Only while someone is using GoDAM's screens in the WordPress admin. It is never sent for visitors to your site.
+
+3. An administrator can turn it off at any time with "Help us improve GoDAM" on the GoDAM Help page, and that choice is kept, including when an API key is saved. It stops from the next page load.
+
+PostHog's code also loads its own settings and scripts from us-assets.i.posthog.com, at the same times as the data above is sent.
+
+Service Provider: [posthog.com](https://posthog.com)
+
+[Terms of Service](https://posthog.com/terms) | [Privacy Policy](https://posthog.com/privacy)
