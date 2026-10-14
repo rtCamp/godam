@@ -195,7 +195,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Screenshots ==
 1. Video Editor: add interactive layers to a video, with its plays and watch time on top
-2. Add layer menu: CTA, Hotspot, Form, Poll, Ad and WooCommerce layers for your video
+2. Add layer menu: CTA, Hotspot, Form, Poll and Ad layers (WooCommerce with the GoDAM for Woo add-on)
 3. Hotspot layer: place a clickable icon with a tooltip and link at a moment in the video
 4. Ad layer: play a skippable video ad inside your video, with a click-through link
 5. Gravity Forms layer: ask viewers to fill in a form mid-video, including a field to record a video answer
