@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-14T05:28:47+00:00\n"
+"POT-Creation-Date: 2026-10-12T07:03:52+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -52,7 +52,7 @@ msgstr ""
 #: assets/build/blocks/godam-audio/render.php:164
 #: assets/build/blocks/godam-audio/index.js:2
 #: assets/src/blocks/godam-audio/render.php:164
-#: assets/src/blocks/godam-audio/edit.js:681
+#: assets/src/blocks/godam-audio/edit.js:686
 msgid "Audio thumbnail"
 msgstr ""
 
@@ -60,7 +60,7 @@ msgstr ""
 #: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-audio/render.php:171
-#: assets/src/blocks/godam-audio/edit.js:687
+#: assets/src/blocks/godam-audio/edit.js:692
 #: pages/video-editor/components/audio/AudioCardPreview.js:70
 #: pages/video-editor/VideoEditor.js:674
 msgid "Untitled audio"
@@ -253,43 +253,43 @@ msgid "Copy transcript"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/src/blocks/godam-audio/edit.js:153
+#: assets/src/blocks/godam-audio/edit.js:158
 msgid "Only audio files are allowed in the GoDAM Audio block."
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/src/blocks/godam-audio/edit.js:247
+#: assets/src/blocks/godam-audio/edit.js:252
 msgid "Only image files are allowed for the GoDAM Audio thumbnail."
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/src/blocks/godam-audio/edit.js:368
+#: assets/src/blocks/godam-audio/edit.js:373
 msgid "Customize Audio"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:385
-#: assets/src/blocks/godam-audio/edit.js:661
+#: assets/src/blocks/godam-audio/edit.js:390
+#: assets/src/blocks/godam-audio/edit.js:666
 msgid "Replace audio file"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:401
-#: assets/src/blocks/godam-audio/edit.js:672
+#: assets/src/blocks/godam-audio/edit.js:406
+#: assets/src/blocks/godam-audio/edit.js:677
 msgid "Remove audio"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
 #: inc/classes/elementor-widgets/class-godam-audio.php:70
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:101
-#: assets/src/blocks/godam-audio/edit.js:411
+#: assets/src/blocks/godam-audio/edit.js:416
 msgid "Audio Title"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/src/blocks/godam-audio/edit.js:412
+#: assets/src/blocks/godam-audio/edit.js:417
 msgid "Add a title…"
 msgstr ""
 
@@ -304,7 +304,7 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:115
 #: inc/classes/wpbakery-elements/class-wpb-godam-document.php:149
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:366
-#: assets/src/blocks/godam-audio/edit.js:420
+#: assets/src/blocks/godam-audio/edit.js:425
 #: assets/src/blocks/godam-pdf/edit.js:826
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:264
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:183
@@ -313,19 +313,19 @@ msgid "Description"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/src/blocks/godam-audio/edit.js:421
+#: assets/src/blocks/godam-audio/edit.js:426
 msgid "Add a short description…"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/src/blocks/godam-audio/edit.js:350
+#: assets/src/blocks/godam-audio/edit.js:355
 msgid "Add Audio File"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:434
-#: assets/src/blocks/godam-audio/edit.js:493
+#: assets/src/blocks/godam-audio/edit.js:439
+#: assets/src/blocks/godam-audio/edit.js:498
 msgid "Audio Selection"
 msgstr ""
 
@@ -334,7 +334,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-audio.php:95
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:129
-#: assets/src/blocks/godam-audio/edit.js:498
+#: assets/src/blocks/godam-audio/edit.js:503
 #: assets/src/blocks/godam-player/edit.js:1070
 #: pages/video-editor/components/appearance/Appearance.js:233
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:503
@@ -343,18 +343,18 @@ msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/blocks/godam-audio/edit.js:501
+#: assets/src/blocks/godam-audio/edit.js:506
 #: pages/video-editor/components/appearance/ThumbnailSelector.jsx:126
 msgid "Select thumbnail"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/src/blocks/godam-audio/edit.js:512
+#: assets/src/blocks/godam-audio/edit.js:517
 msgid "Edit or replace the thumbnail."
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/src/blocks/godam-audio/edit.js:518
+#: assets/src/blocks/godam-audio/edit.js:523
 msgid "Thumbnail preview"
 msgstr ""
 
@@ -369,7 +369,7 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:196
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:230
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:310
-#: assets/src/blocks/godam-audio/edit.js:538
+#: assets/src/blocks/godam-audio/edit.js:543
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:201
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:246
 #: assets/src/js/wpbakery/wpbakery-document-selector-param.js:68
@@ -381,19 +381,19 @@ msgid "Replace"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/src/blocks/godam-audio/edit.js:538
+#: assets/src/blocks/godam-audio/edit.js:543
 msgid "Set thumbnail"
 msgstr ""
 
 #. translators: %s: thumbnail image URL.
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:544
+#: assets/src/blocks/godam-audio/edit.js:549
 #, js-format
 msgid "The current thumbnail url is %s."
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:547
+#: assets/src/blocks/godam-audio/edit.js:552
 msgid "There is no thumbnail currently selected."
 msgstr ""
 
@@ -414,7 +414,7 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:251
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:330
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-edit.php:70
-#: assets/src/blocks/godam-audio/edit.js:559
+#: assets/src/blocks/godam-audio/edit.js:564
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:216
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:262
 #: assets/src/blocks/godam-gallery-v2/edit.js:247
@@ -428,19 +428,19 @@ msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/blocks/godam-audio/edit.js:571
+#: assets/src/blocks/godam-audio/edit.js:576
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:20
 #: pages/video-editor/components/transcription/Transcription.js:176
 msgid "Transcription"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:574
+#: assets/src/blocks/godam-audio/edit.js:579
 msgid "Show transcript"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:581
+#: assets/src/blocks/godam-audio/edit.js:586
 msgid "Show chapters"
 msgstr ""
 
@@ -448,7 +448,7 @@ msgstr ""
 #: assets/build/blocks/godam-player/index.js:2
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/blocks/godam-audio/edit.js:597
+#: assets/src/blocks/godam-audio/edit.js:602
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:252
 #: assets/src/blocks/godam-player/track-uploader.js:57
 #: assets/src/js/godam-player/engagement.js:955
@@ -461,7 +461,7 @@ msgstr ""
 #: godam.php:108
 #: inc/classes/class-pages.php:243
 #: inc/classes/class-pages.php:244
-#: assets/src/blocks/godam-audio/edit.js:602
+#: assets/src/blocks/godam-audio/edit.js:607
 #: pages/video-editor/components/appearance/Appearance.js:113
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:19
 msgid "Settings"
@@ -473,7 +473,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:268
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:143
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:77
-#: assets/src/blocks/godam-audio/edit.js:606
+#: assets/src/blocks/godam-audio/edit.js:611
 #: assets/src/blocks/godam-player/edit-common-settings.js:94
 msgid "Autoplay"
 msgstr ""
@@ -483,7 +483,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-audio.php:112
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:150
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:84
-#: assets/src/blocks/godam-audio/edit.js:135
+#: assets/src/blocks/godam-audio/edit.js:134
 #: assets/src/blocks/godam-player/edit-common-settings.js:61
 msgid "Autoplay may cause usability issues for some users."
 msgstr ""
@@ -493,26 +493,26 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:280
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:159
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:93
-#: assets/src/blocks/godam-audio/edit.js:615
+#: assets/src/blocks/godam-audio/edit.js:620
 msgid "Loop"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:623
+#: assets/src/blocks/godam-audio/edit.js:628
 msgctxt "noun; Audio block parameter"
 msgid "Preload"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:178
-#: assets/src/blocks/godam-audio/edit.js:630
+#: assets/src/blocks/godam-audio/edit.js:635
 msgid "Browser default"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
 #: inc/classes/elementor-widgets/class-godam-audio.php:141
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:181
-#: assets/src/blocks/godam-audio/edit.js:631
+#: assets/src/blocks/godam-audio/edit.js:636
 msgid "Auto"
 msgstr ""
 
@@ -520,36 +520,36 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-audio.php:142
 #: inc/classes/elementor-widgets/class-godam-video.php:111
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:179
-#: assets/src/blocks/godam-audio/edit.js:632
+#: assets/src/blocks/godam-audio/edit.js:637
 #: assets/src/blocks/godam-player/track-uploader.js:33
 msgid "Metadata"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
 #: inc/classes/elementor-widgets/class-godam-audio.php:143
-#: assets/src/blocks/godam-audio/edit.js:633
+#: assets/src/blocks/godam-audio/edit.js:638
 msgctxt "Preload value"
 msgid "None"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:645
+#: assets/src/blocks/godam-audio/edit.js:650
 msgid "The audio file for this block was deleted from the Media Library. Replace it with another file or remove the block."
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
 #: inc/classes/elementor-widgets/class-godam-audio.php:263
-#: assets/src/blocks/godam-audio/edit.js:442
+#: assets/src/blocks/godam-audio/edit.js:447
 msgid "Add an audio file"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:445
+#: assets/src/blocks/godam-audio/edit.js:450
 msgid "Upload an audio file to embed a player on your page or post."
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
-#: assets/src/blocks/godam-audio/edit.js:460
+#: assets/src/blocks/godam-audio/edit.js:465
 msgid "+ Upload Audio"
 msgstr ""
 
@@ -2589,7 +2589,7 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-admin.php:193
 #: admin/class-rtgodam-transcoder-admin.php:337
 #: admin/godam-transcoder-functions.php:381
-#: inc/classes/class-media-library-ajax.php:1694
+#: inc/classes/class-media-library-ajax.php:1639
 #: inc/templates/video-preview.php:71
 #: assets/src/js/media-library/views/attachment.js:184
 #: pages/godam/components/GoDAMHeader.jsx:74
@@ -2600,7 +2600,7 @@ msgstr ""
 #: assets/build/js/media-library.min.js:1
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
-#: inc/classes/class-media-library-ajax.php:922
+#: inc/classes/class-media-library-ajax.php:867
 #: assets/src/js/media-library/views/fields/move-to-folder-field.js:79
 #: pages/media-library-tour/dom.js:215
 #: pages/media-library/App.js:329
@@ -2644,7 +2644,7 @@ msgid "This file couldn't be transcoded"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: inc/classes/class-media-library-ajax.php:727
+#: inc/classes/class-media-library-ajax.php:672
 #: inc/classes/rest-api/class-transcoding.php:327
 #: inc/helpers/custom-functions.php:672
 #: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:116
@@ -9923,17 +9923,17 @@ msgid "Welcome to GoDAM! Thank you for using our product."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:277
-#: inc/classes/class-media-library-ajax.php:1056
+#: inc/classes/class-media-library-ajax.php:1001
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:279
-#: inc/classes/class-media-library-ajax.php:1058
+#: inc/classes/class-media-library-ajax.php:1003
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:280
-#: inc/classes/class-media-library-ajax.php:1059
+#: inc/classes/class-media-library-ajax.php:1004
 msgid "Dismiss banner"
 msgstr ""
 
@@ -10109,7 +10109,7 @@ msgid "Please upgrade your plan to continue transcoding."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:340
-#: inc/classes/class-media-library-ajax.php:390
+#: inc/classes/class-media-library-ajax.php:335
 msgid "HTTP authentication is enabled on your site, preventing transcoding."
 msgstr ""
 
@@ -10336,44 +10336,44 @@ msgstr ""
 msgid "Demo asset not found."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:926
+#: inc/classes/class-media-library-ajax.php:871
 msgid "All collections"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1008
+#: inc/classes/class-media-library-ajax.php:953
 msgid "Offer banner dismissed successfully."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1102
+#: inc/classes/class-media-library-ajax.php:1047
 msgid "Invalid attachment ID or URL."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1124
+#: inc/classes/class-media-library-ajax.php:1069
 #: inc/classes/rest-api/class-media-library.php:889
 msgid "Invalid attachment ID."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1136
+#: inc/classes/class-media-library-ajax.php:1081
 msgid "Could not initialize WordPress filesystem."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1156
+#: inc/classes/class-media-library-ajax.php:1101
 msgid "Could not move file into uploads directory."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1646
+#: inc/classes/class-media-library-ajax.php:1591
 msgid "Insufficient permissions."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1663
+#: inc/classes/class-media-library-ajax.php:1608
 msgid "HTTP auth status saved."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1696
+#: inc/classes/class-media-library-ajax.php:1641
 msgid "GoDAM Transcoding Blocked"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1699
+#: inc/classes/class-media-library-ajax.php:1644
 msgid "HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding."
 msgstr ""
 
@@ -12010,7 +12010,7 @@ msgstr ""
 msgid "Attachment ready"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2636
+#: inc/classes/rest-api/class-media-library.php:2611
 msgid "A Folder ID is required"
 msgstr ""
 
