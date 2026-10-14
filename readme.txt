@@ -8,7 +8,7 @@ Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Video hosting for LMS and course sites: LifterLMS lesson video, adaptive streaming and video analytics. Also works with WooCommerce.
+Video hosting for LMS and course sites: LifterLMS lesson video, adaptive streaming and video analytics. Also works with WooCommerce via an add-on.
 
 == Description ==
 [GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) is a video hosting plugin for LMS and online course sites on WordPress, with a built-in media library manager. It combines multiple media tools into one plugin and provides three key features:
@@ -311,6 +311,8 @@ Data Sent:
 3. Name
 
 4. Email ID
+
+5. Additional feedback (if entered)
 
 When Data is Sent:
 Data is sent only when a user submits the deactivation feedback form after clicking the deactivate button.
