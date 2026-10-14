@@ -51,7 +51,7 @@ Needs the LifterLMS plugin and the LifterLMS Advanced Videos add-on.
 ✓ See where viewers drop off with the viewer retention curve [Paid]
 ✓ Adaptive bitrate streaming and CDN delivery [Paid]
 
-Using another LMS plugin? The GoDAM Video block and the [godam_video] shortcode are standard WordPress content, so you can use them in any lesson that accepts blocks or shortcodes. The lesson features above are for LifterLMS.
+Using another LMS plugin? Integrations with more LMS plugins are on the way, so [contact us](https://godam.io/contact/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=lms-description) and tell us which one you use. Meanwhile, the GoDAM Video block and the [godam_video] shortcode work in any lesson that accepts blocks or shortcodes.
 
 = Video Hosting =
 
