@@ -165,6 +165,13 @@ const deactivationJS = {
 	},
 };
 
+const dashboardWidgetJS = {
+	...sharedConfig,
+	entry: {
+		'dashboard-widget': path.resolve( process.cwd(), 'assets', 'src', 'js', 'dashboard-widget', 'index.js' ),
+	},
+};
+
 const httpAuthDetector = {
 	...sharedConfig,
 	entry: {
@@ -441,6 +448,7 @@ module.exports = [
 	godamImageLayersFrontend,
 	godamPlayerAnalytics,
 	deactivationJS,
+	dashboardWidgetJS,
 	httpAuthDetector,
 	godamGallery,
 	godamVideoEmbed,
