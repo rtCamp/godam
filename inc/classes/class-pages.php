@@ -1480,18 +1480,11 @@ class Pages {
 	 * Get PostHog configuration for internal GoDAM analytics tracking.
 	 * These are hardcoded public keys - clients don't need to configure anything.
 	 *
-	 * Tracking runs only while it is switched on AND either an admin said so (the notice's Allow or the Help page
-	 * toggle) or the site has a GoDAM API key, which is what switched it on the first time. A site whose tracking
-	 * was switched on by its key therefore stops when the key is removed, and a site from before the source was
-	 * recorded counts as not explicit.
-	 *
 	 * @return array PostHog configuration array with 'key', 'host', and 'enabled' settings.
 	 */
 	private function get_posthog_config() {
 		$settings        = get_option( 'rtgodam-settings', array() );
-		$general         = isset( $settings['general'] ) && is_array( $settings['general'] ) ? $settings['general'] : array();
-		$enable_tracking = ! empty( $general['enable_posthog_tracking'] )
-			&& ( 'explicit' === ( $general['posthog_consent_source'] ?? '' ) || ! empty( \RTGODAM\Inc\Helpers\Api_Key::get_key() ) );
+		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : false;
 
 		$config = array(
 			'key'     => 'phc_9P3X3py1SfwrF78SXXkIyL2cHjkRTpvWzqf8RZJDaSk',

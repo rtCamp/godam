@@ -51,8 +51,6 @@ class Settings extends Base {
 				'enable_gtm_tracking'        => false,
 				'enable_posthog_tracking'    => false,
 				'posthog_initialized'        => false,
-				// Where an "on" came from: 'api_key' (a verified key), 'explicit' (an admin chose), or '' (unknown, e.g. a site from before this was recorded).
-				'posthog_consent_source'     => '',
 			),
 			'video_player' => array(
 				'brand_image'    => '',
@@ -359,33 +357,6 @@ class Settings extends Base {
 	}
 
 	/**
-	 * Sanitize the PostHog consent settings.
-	 *
-	 * Each one is left out of the result when the request did not send it. The result is merged into the saved
-	 * settings, so a client that omits them (an older cached settings page, say) cannot reset an admin's choice to
-	 * the defaults when it saves its other settings.
-	 *
-	 * @param array $settings Settings sent with the request.
-	 * @return array Only the PostHog keys the request carried: enable_posthog_tracking and posthog_initialized (booleans), and posthog_consent_source ('api_key', 'explicit' or '').
-	 */
-	private function sanitize_posthog_settings( $settings ) {
-		$general   = isset( $settings['general'] ) && is_array( $settings['general'] ) ? $settings['general'] : array();
-		$sanitized = array();
-
-		foreach ( array( 'enable_posthog_tracking', 'posthog_initialized' ) as $key ) {
-			if ( isset( $general[ $key ] ) ) {
-				$sanitized[ $key ] = rest_sanitize_boolean( $general[ $key ] );
-			}
-		}
-
-		if ( isset( $general['posthog_consent_source'] ) ) {
-			$sanitized['posthog_consent_source'] = in_array( $general['posthog_consent_source'], array( 'api_key', 'explicit' ), true ) ? $general['posthog_consent_source'] : '';
-		}
-
-		return $sanitized;
-	}
-
-	/**
 	 * Sanitize easydam settings.
 	 *
 	 * @param array $settings EasyDAM settings to sanitize.
@@ -414,7 +385,9 @@ class Settings extends Base {
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 				'enable_gtm_tracking'        => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
-			) + $this->sanitize_posthog_settings( $settings ),
+				'enable_posthog_tracking'    => rest_sanitize_boolean( $settings['general']['enable_posthog_tracking'] ?? $default['general']['enable_posthog_tracking'] ),
+				'posthog_initialized'        => rest_sanitize_boolean( $settings['general']['posthog_initialized'] ?? $default['general']['posthog_initialized'] ),
+			),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
 				'brand_color'    => $this->sanitize_color_value( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),

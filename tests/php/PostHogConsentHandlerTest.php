@@ -2,8 +2,7 @@
 /**
  * The notice's Allow and No thanks links.
  *
- * Only an admin's click sets the PostHog choice from the notice, and it records that the
- * choice was explicit, so it survives the API key being removed.
+ * Only an admin's click sets the PostHog choice from the notice.
  *
  * @see https://github.com/rtCamp/godam-core/issues/1068
  *
@@ -59,9 +58,9 @@ class PostHogConsentHandlerTest extends TestCase {
 	}
 
 	/**
-	 * Allow switches tracking on, records the choice, and marks it explicit.
+	 * Allow switches tracking on and records the choice.
 	 */
-	public function test_allow_records_an_explicit_opt_in() {
+	public function test_allow_records_an_opt_in() {
 		$_GET = array(
 			'godam_tracker_optin' => 'true',
 			'_wpnonce'            => 'valid',
@@ -73,16 +72,15 @@ class PostHogConsentHandlerTest extends TestCase {
 			array(
 				'enable_posthog_tracking' => true,
 				'posthog_initialized'     => true,
-				'posthog_consent_source'  => 'explicit',
 			),
 			get_option( 'rtgodam-settings' )['general']
 		);
 	}
 
 	/**
-	 * No thanks keeps tracking off, records the choice, and marks it explicit.
+	 * No thanks keeps tracking off and records the choice.
 	 */
-	public function test_no_thanks_records_an_explicit_opt_out() {
+	public function test_no_thanks_records_an_opt_out() {
 		$_GET = array(
 			'godam_tracker_optout' => 'true',
 			'_wpnonce'             => 'valid',
@@ -94,7 +92,6 @@ class PostHogConsentHandlerTest extends TestCase {
 			array(
 				'enable_posthog_tracking' => false,
 				'posthog_initialized'     => true,
-				'posthog_consent_source'  => 'explicit',
 			),
 			get_option( 'rtgodam-settings' )['general']
 		);

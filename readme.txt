@@ -348,11 +348,11 @@ Data Sent:
 
 When Data is Sent:
 
-1. Only while the site has a connected GoDAM API key, or after a site administrator has clicked "Allow" in the notice shown on the WordPress Dashboard or turned on "Help us improve GoDAM" on the GoDAM Help page. Connecting a GoDAM account (verifying an API key) switches it on once, if an administrator has not already chosen. If the API key is removed, it stops again, unless an administrator allowed it themselves.
+1. Only after a site administrator has clicked "Allow" in the notice shown on the WordPress Dashboard, or turned on "Help us improve GoDAM" on the GoDAM Help page. Nothing is sent before one of these, and connecting a GoDAM account (an API key) does not switch it on.
 
 2. Only while someone is using GoDAM's screens in the WordPress admin. It is never sent for visitors to your site.
 
-3. An administrator can turn it off at any time with "Help us improve GoDAM" on the GoDAM Help page, and that choice is kept, including when an API key is saved again. It stops from the next page load.
+3. An administrator can turn it off at any time with "Help us improve GoDAM" on the GoDAM Help page, and that choice is kept, including when an API key is saved. It stops from the next page load.
 
 PostHog's code also loads its own settings and scripts from us-assets.i.posthog.com, at the same times as the data above is sent.
 

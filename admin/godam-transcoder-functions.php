@@ -614,18 +614,6 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		rtgodam_set_api_key_status( Api_Key_Status::VALID );
 		rtgodam_clear_api_key_invalid_timestamp();
 
-		// Connecting a GoDAM account (a verified API key) is the opt-in to PostHog tracking, but only for a site
-		// that has never made a choice. If posthog_initialized is already true, the user has either opted in or
-		// explicitly opted out. Respect that decision.
-		// The source is recorded so that tracking stops again if the key is removed (see Pages::get_posthog_config()).
-		$settings = get_option( 'rtgodam-settings', array() );
-		if ( empty( $settings['general']['posthog_initialized'] ) ) {
-			$settings['general']['enable_posthog_tracking'] = true;
-			$settings['general']['posthog_initialized']     = true;
-			$settings['general']['posthog_consent_source']  = 'api_key';
-			update_option( 'rtgodam-settings', $settings );
-		}
-
 		if ( $save ) {
 			// Save the API key in the site options only if it is verified.
 			update_option( 'rtgodam-api-key', $api_key );
