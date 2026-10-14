@@ -207,7 +207,7 @@ A. Both. The plugin adds the player, the media manager and the settings to WordP
 A. Yes. GoDAM adds a "Videos: GoDAM" integration to LifterLMS Advanced Videos. You can require students to finish the video before they complete the lesson, start the quiz or start the assignment, let them resume where they left off, and turn on lesson autoplay (the video starts muted). It needs the LifterLMS plugin and the LifterLMS Advanced Videos add-on.
 
 = Does GoDAM work with LearnDash, Tutor LMS or other LMS plugins? =
-A. The dedicated integration today is LifterLMS. The GoDAM Video block and the [godam_video] shortcode are standard WordPress content, so you can use them in any lesson that accepts blocks or shortcodes, but the lesson-completion features are for LifterLMS.
+A. LifterLMS has a dedicated integration today, and integrations with more LMS plugins are on the way. If you use another LMS, [contact us](https://godam.io/contact/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=lms-faq) and tell us which one. Meanwhile, the GoDAM Video block and the [godam_video] shortcode work in any lesson that accepts blocks or shortcodes.
 
 = Does GoDAM work with WooCommerce? =
 A. Yes, through the GoDAM for Woo add-on. It adds a WooCommerce layer to the video editor, product hotspots, shoppable video reels, product gallery video and revenue analytics. The add-on is not part of this plugin. It is available from godam.io, and it needs WooCommerce and a valid GoDAM API key.
