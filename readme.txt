@@ -342,7 +342,7 @@ Data Sent:
 
 3. Session replays and heatmaps of GoDAM's admin screens
 
-4. The address of the admin screen being used, and an anonymous ID that PostHog stores in the browser
+4. The address of the admin screen being used, and an ID that PostHog stores in the browser
 
 5. The IP address and browser details that every web request carries
 

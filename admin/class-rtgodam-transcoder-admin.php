@@ -720,7 +720,7 @@ class RTGODAM_Transcoder_Admin {
 		printf(
 			wp_kses(
 				/* translators: %s: PostHog privacy policy URL */
-				__( 'We are using PostHog to collect this data. <a href="%s" target="_blank">Learn more</a>. This can be disabled from the settings on the Help page.', 'godam' ),
+				__( 'We use PostHog to collect this data. <a href="%s" target="_blank">Learn more</a>. This can be disabled from the settings on the Help page.', 'godam' ),
 				array(
 					'a' => array(
 						'href'   => array(),

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-14T06:01:19+00:00\n"
+"POT-Creation-Date: 2026-10-12T07:03:52+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -1132,11 +1132,11 @@ msgstr ""
 #: assets/build/js/godam-player-frontend.min.js:5
 #: assets/build/js/godam-player-frontend.min.js:7
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:804
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:1005
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:1012
-#: pages/video-editor/components/layers/HotspotLayer.js:483
-#: pages/video-editor/components/layers/HotspotLayer.js:700
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:793
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:970
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:977
+#: pages/video-editor/components/layers/HotspotLayer.js:467
+#: pages/video-editor/components/layers/HotspotLayer.js:679
 #, js-format
 msgid "Hotspot %d"
 msgstr ""
@@ -1145,9 +1145,9 @@ msgstr ""
 #: assets/build/js/godam-image-layers-frontend.min.js:3
 #: assets/build/js/godam-player-frontend.min.js:3
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:963
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:928
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:200
-#: pages/video-editor/components/layers/HotspotLayer.js:911
+#: pages/video-editor/components/layers/HotspotLayer.js:841
 msgid "Custom Icon"
 msgstr ""
 
@@ -1616,7 +1616,7 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:128
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:283
 #: pages/analytics/helper.js:548
-#: pages/video-editor/components/layers/HotspotLayer.js:551
+#: pages/video-editor/components/layers/HotspotLayer.js:533
 msgid "Duration"
 msgstr ""
 
@@ -5291,38 +5291,38 @@ msgid "Made with ♥ by the GoDAM Team"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:887
+#: admin/class-rtgodam-transcoder-admin.php:892
 #: pages/godam/components/PreflightNotices.jsx:55
 msgid "How to fix"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:890
+#: admin/class-rtgodam-transcoder-admin.php:895
 #: pages/godam/components/PreflightNotices.jsx:58
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:180
 msgid "Contact Support"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:845
+#: admin/class-rtgodam-transcoder-admin.php:850
 #: pages/godam/components/PreflightNotices.jsx:90
 msgid "Your site can't receive transcoding updates"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:846
+#: admin/class-rtgodam-transcoder-admin.php:851
 #: pages/godam/components/PreflightNotices.jsx:91
 msgid "New videos may stay at \"Processing\" because transcoding updates can't reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:854
+#: admin/class-rtgodam-transcoder-admin.php:859
 #: pages/godam/components/PreflightNotices.jsx:100
 msgid "Setup check"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:859
+#: admin/class-rtgodam-transcoder-admin.php:864
 #: pages/godam/components/PreflightNotices.jsx:102
 msgid "A setup check for this site didn't pass. See how to fix it, or contact support."
 msgstr ""
@@ -8352,7 +8352,7 @@ msgstr ""
 #: pages/video-editor/components/ads/CustomAdSettings.js:268
 #: pages/video-editor/components/cta/CardCTA.js:274
 #: pages/video-editor/components/cta/CardCTA.js:284
-#: pages/video-editor/components/layers/HotspotLayer.js:520
+#: pages/video-editor/components/layers/HotspotLayer.js:503
 msgid "Please enter a valid URL (e.g., https://example.com)"
 msgstr ""
 
@@ -8482,17 +8482,17 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/cta/CardCTA.js:477
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:54
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:177
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:42
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:153
 msgid "Text"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/cta/CardCTA.js:484
 #: pages/video-editor/components/layers/FormLayer.js:147
-#: pages/video-editor/components/layers/HotspotLayer.js:629
+#: pages/video-editor/components/layers/HotspotLayer.js:610
 #: pages/video-editor/components/layers/PollLayer.js:72
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:176
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:152
 msgid "Background"
 msgstr ""
 
@@ -8552,7 +8552,7 @@ msgid "Another CTA already uses On Pause — only one CTA per video can."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:553
+#: pages/video-editor/components/layers/HotspotLayer.js:535
 #: pages/video-editor/components/layers/shared/TriggerSection.jsx:107
 msgid "Start Time"
 msgstr ""
@@ -8602,69 +8602,69 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:353
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:180
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:189
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:46
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:34
 msgid "None"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/layers/HotspotLayer.js:67
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:47
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:35
 msgid "Pulse"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:48
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:36
 msgid "Border waves"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:49
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:37
 msgid "Glow"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:55
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:43
 msgid "Sticker"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:120
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:106
 msgid "Type"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:164
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:143
 msgid "Attention animation"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:172
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:150
 msgid "Colours"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:178
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:154
 msgid "Hover Background"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:179
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:155
 msgid "Hover Text"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:186
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:161
 msgid "Fill colour"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:190
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:163
 msgid "Fill"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/layers/HotspotLayer.js:68
-#: pages/video-editor/components/layers/HotspotLayer.js:622
+#: pages/video-editor/components/layers/HotspotLayer.js:603
 msgid "Icon"
 msgstr ""
 
@@ -8770,7 +8770,7 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/layers/FormLayer.js:128
-#: pages/video-editor/components/layers/HotspotLayer.js:639
+#: pages/video-editor/components/layers/HotspotLayer.js:620
 #: pages/video-editor/components/layers/PollLayer.js:54
 msgid "Behaviour"
 msgstr ""
@@ -8839,95 +8839,95 @@ msgid "No Image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:249
+#: pages/video-editor/components/layers/HotspotLayer.js:233
 msgid "New Hotspot"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:463
+#: pages/video-editor/components/layers/HotspotLayer.js:447
 msgid "Add Hotspots"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:467
+#: pages/video-editor/components/layers/HotspotLayer.js:451
 msgid "Drag the hotspot in video to reposition it."
 msgstr ""
 
 #. translators: %d is the hotspot index
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:491
+#: pages/video-editor/components/layers/HotspotLayer.js:475
 #, js-format
 msgid "Delete Hotspot %d"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:509
-#: pages/video-editor/components/layers/HotspotLayer.js:510
+#: pages/video-editor/components/layers/HotspotLayer.js:493
 msgid "Button Text"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:510
+#: pages/video-editor/components/layers/HotspotLayer.js:493
 msgid "Tooltip Text"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:511
+#: pages/video-editor/components/layers/HotspotLayer.js:494
 msgid "Click here"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:511
+#: pages/video-editor/components/layers/HotspotLayer.js:494
 msgid "Click Me!"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:517
+#: pages/video-editor/components/layers/HotspotLayer.js:500
 msgid "Link"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:544
+#: pages/video-editor/components/layers/HotspotLayer.js:526
 msgid "Add Hotspot"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:560
+#: pages/video-editor/components/layers/HotspotLayer.js:542
 msgid "Layer Duration (seconds)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:201
+#: pages/video-editor/components/layers/HotspotLayer.js:185
 msgid "Layer duration exceeds the remaining video length. Please reduce the duration."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:567
+#: pages/video-editor/components/layers/HotspotLayer.js:549
 msgid "Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:573
+#: pages/video-editor/components/layers/HotspotLayer.js:555
 msgid "Style"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:583
+#: pages/video-editor/components/layers/HotspotLayer.js:564
 msgid "Each hotspot is a button. Set its type, text, colours and animation in the hotspot cards above."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:604
+#: pages/video-editor/components/layers/HotspotLayer.js:585
 msgid "Pulse colour"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:642
+#: pages/video-editor/components/layers/HotspotLayer.js:623
 msgid "Pause video when hotspot is hovered"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:645
+#: pages/video-editor/components/layers/HotspotLayer.js:626
 msgid "Player will pause the video while the layer is displayed and users hover over the hotspots."
 msgstr ""
 
@@ -10108,80 +10108,80 @@ msgstr ""
 msgid "Transcoding will continue to work."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:703
-msgid "Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect diagnostic data and usage information."
-msgstr ""
-
-#: admin/class-rtgodam-transcoder-admin.php:710
-msgid "what we collect"
-msgstr ""
-
-#: admin/class-rtgodam-transcoder-admin.php:712
-msgid "Data we collect:"
-msgstr ""
-
-#: admin/class-rtgodam-transcoder-admin.php:714
-msgid "Server environment details (PHP, MySQL, Server, and WordPress versions)"
+#: admin/class-rtgodam-transcoder-admin.php:708
+msgid "Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect anonymous diagnostic data and usage information."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:715
-msgid "Site and user count (Language and number of users)"
-msgstr ""
-
-#: admin/class-rtgodam-transcoder-admin.php:716
-msgid "Plugin details (Number of active and inactive plugins)"
+msgid "what we collect"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:717
+msgid "Data we collect:"
+msgstr ""
+
+#: admin/class-rtgodam-transcoder-admin.php:719
+msgid "Server environment details (PHP, MySQL, Server, and WordPress versions)"
+msgstr ""
+
+#: admin/class-rtgodam-transcoder-admin.php:720
+msgid "Site and user count (Language and number of users)"
+msgstr ""
+
+#: admin/class-rtgodam-transcoder-admin.php:721
+msgid "Plugin details (Number of active and inactive plugins)"
+msgstr ""
+
+#: admin/class-rtgodam-transcoder-admin.php:722
 msgid "Usage data (Interactions, navigation, session replays, heatmaps, and errors via PostHog)"
 msgstr ""
 
 #. translators: %s: PostHog privacy policy URL
-#: admin/class-rtgodam-transcoder-admin.php:723
+#: admin/class-rtgodam-transcoder-admin.php:728
 #, php-format
-msgid "We are using PostHog to collect this data. <a href=\"%s\" target=\"_blank\">Learn more</a>. This can be disabled from the settings on the Help page."
+msgid "We are using PostHog to collect anonymous data. <a href=\"%s\" target=\"_blank\">Learn more</a>. This can be disabled from the settings on the Help page."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:735
+#: admin/class-rtgodam-transcoder-admin.php:740
 msgid "Allow"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:736
+#: admin/class-rtgodam-transcoder-admin.php:741
 msgid "No thanks"
-msgstr ""
-
-#. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:774
-#, php-format
-msgid "Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href=\"%s\">renew your subscription</a> to restore access."
 msgstr ""
 
 #. translators: %s: URL to settings page
 #: admin/class-rtgodam-transcoder-admin.php:779
 #, php-format
+msgid "Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href=\"%s\">renew your subscription</a> to restore access."
+msgstr ""
+
+#. translators: %s: URL to settings page
+#: admin/class-rtgodam-transcoder-admin.php:784
+#, php-format
 msgid "Temporarily unable to verify your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a> or try refreshing the status."
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:788
+#: admin/class-rtgodam-transcoder-admin.php:793
 #, php-format
 msgid "There is an issue with your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a>."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:987
+#: admin/class-rtgodam-transcoder-admin.php:992
 #, php-format
 msgid "<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:995
+#: admin/class-rtgodam-transcoder-admin.php:1000
 #, php-format
 msgid "<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:1003
+#: admin/class-rtgodam-transcoder-admin.php:1008
 #, php-format
 msgid "<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature."
 msgstr ""
@@ -10357,11 +10357,11 @@ msgstr ""
 msgid "The provided API key does not match the RTGODAM_API_KEY constant defined in wp-config.php."
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:631
+#: admin/godam-transcoder-functions.php:643
 msgid "API key verified and stored successfully!"
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:638
+#: admin/godam-transcoder-functions.php:650
 #: inc/classes/enums/class-api-key-status.php:84
 msgid "Unable to verify API key. Please try again later."
 msgstr ""
@@ -11073,6 +11073,10 @@ msgstr ""
 #: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:495
 #: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:510
 msgid "Text for the start recording button"
+msgstr ""
+
+#: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:509
+msgid "Button Text"
 msgstr ""
 
 #: inc/classes/everest-forms/class-everest-forms-rest-api.php:57
