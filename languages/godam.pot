@@ -2,7 +2,7 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 2.3.2\n"
+"Project-Id-Version: GoDAM 2.3.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1926,7 +1926,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
 #: assets/build/js/media-library.min.js:1
-#: inc/templates/video-preview.php:94
+#: inc/templates/video-preview.php:114
 #: assets/src/blocks/godam-player/edit.js:969
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:783
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:791
@@ -1945,7 +1945,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
 #: assets/build/pages/godam.min.js:2
-#: inc/templates/video-preview.php:147
+#: inc/templates/video-preview.php:167
 #: assets/src/blocks/godam-player/edit.js:1010
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:310
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:55
@@ -13490,61 +13490,73 @@ msgstr ""
 msgid "Video Embed: Attachment(%s)"
 msgstr ""
 
-#: inc/templates/video-preview.php:34
+#: inc/templates/video-preview.php:40
 msgid "Image Preview"
 msgstr ""
 
-#: inc/templates/video-preview.php:36
+#: inc/templates/video-preview.php:42
 msgid "Audio Preview"
 msgstr ""
 
-#: inc/templates/video-preview.php:38
+#: inc/templates/video-preview.php:44
 msgid "Video Preview"
 msgstr ""
 
 #. translators: 1: media type label (e.g. "Image Preview"), 2: attachment ID.
-#: inc/templates/video-preview.php:49
+#: inc/templates/video-preview.php:55
 #, php-format
 msgid "%1$s: Attachment(%2$s)"
 msgstr ""
 
-#: inc/templates/video-preview.php:112
+#: inc/templates/video-preview.php:84
+msgid "Preview device width"
+msgstr ""
+
+#: inc/templates/video-preview.php:87
+msgid "Desktop"
+msgstr ""
+
+#: inc/templates/video-preview.php:91
+msgid "Mobile"
+msgstr ""
+
+#: inc/templates/video-preview.php:132
 msgid "Our Pro Features"
 msgstr ""
 
-#: inc/templates/video-preview.php:116
+#: inc/templates/video-preview.php:136
 msgid "Smart media offloading"
 msgstr ""
 
-#: inc/templates/video-preview.php:117
+#: inc/templates/video-preview.php:137
 msgid "Global CDN-powered delivery"
 msgstr ""
 
-#: inc/templates/video-preview.php:118
+#: inc/templates/video-preview.php:138
 msgid "Adaptive bitrate video streaming"
 msgstr ""
 
-#: inc/templates/video-preview.php:119
+#: inc/templates/video-preview.php:139
 msgid "Advanced video performance analytics"
 msgstr ""
 
-#: inc/templates/video-preview.php:120
+#: inc/templates/video-preview.php:140
 msgid "Automatic video transcoding"
 msgstr ""
 
-#: inc/templates/video-preview.php:121
+#: inc/templates/video-preview.php:141
 msgid "AI-powered video transcription"
 msgstr ""
 
-#: inc/templates/video-preview.php:122
+#: inc/templates/video-preview.php:142
 msgid "Video watermarking"
 msgstr ""
 
-#: inc/templates/video-preview.php:123
+#: inc/templates/video-preview.php:143
 msgid "Multi-thumbnail generation"
 msgstr ""
 
-#: inc/templates/video-preview.php:124
+#: inc/templates/video-preview.php:144
 msgid "Unified GoDAM Central media library"
 msgstr ""
 
