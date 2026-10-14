@@ -359,24 +359,30 @@ class Settings extends Base {
 	}
 
 	/**
-	 * Sanitize where the PostHog choice came from.
+	 * Sanitize the PostHog consent settings.
 	 *
-	 * Left out of the result when the request did not send it, so a client that does not know about it (an older cached
-	 * settings page, say) cannot reset the stored value to the default when it saves its other settings.
+	 * Each one is left out of the result when the request did not send it. The result is merged into the saved
+	 * settings, so a client that omits them (an older cached settings page, say) cannot reset an admin's choice to
+	 * the defaults when it saves its other settings.
 	 *
 	 * @param array $settings Settings sent with the request.
-	 * @return array Either array( 'posthog_consent_source' => 'api_key' | 'explicit' | '' ) or an empty array.
+	 * @return array Only the PostHog keys the request carried: enable_posthog_tracking and posthog_initialized (booleans), and posthog_consent_source ('api_key', 'explicit' or '').
 	 */
-	private function sanitize_posthog_consent_source( $settings ) {
-		if ( ! isset( $settings['general']['posthog_consent_source'] ) ) {
-			return array();
+	private function sanitize_posthog_settings( $settings ) {
+		$general   = isset( $settings['general'] ) && is_array( $settings['general'] ) ? $settings['general'] : array();
+		$sanitized = array();
+
+		foreach ( array( 'enable_posthog_tracking', 'posthog_initialized' ) as $key ) {
+			if ( isset( $general[ $key ] ) ) {
+				$sanitized[ $key ] = rest_sanitize_boolean( $general[ $key ] );
+			}
 		}
 
-		$source = $settings['general']['posthog_consent_source'];
+		if ( isset( $general['posthog_consent_source'] ) ) {
+			$sanitized['posthog_consent_source'] = in_array( $general['posthog_consent_source'], array( 'api_key', 'explicit' ), true ) ? $general['posthog_consent_source'] : '';
+		}
 
-		return array(
-			'posthog_consent_source' => in_array( $source, array( 'api_key', 'explicit' ), true ) ? $source : '',
-		);
+		return $sanitized;
 	}
 
 	/**
@@ -408,9 +414,7 @@ class Settings extends Base {
 			'general'      => array(
 				'enable_folder_organization' => rest_sanitize_boolean( $settings['general']['enable_folder_organization'] ?? $default['general']['enable_folder_organization'] ),
 				'enable_gtm_tracking'        => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
-				'enable_posthog_tracking'    => rest_sanitize_boolean( $settings['general']['enable_posthog_tracking'] ?? $default['general']['enable_posthog_tracking'] ),
-				'posthog_initialized'        => rest_sanitize_boolean( $settings['general']['posthog_initialized'] ?? $default['general']['posthog_initialized'] ),
-			) + $this->sanitize_posthog_consent_source( $settings ),
+			) + $this->sanitize_posthog_settings( $settings ),
 			'video_player' => array(
 				'brand_image'    => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),
 				'brand_color'    => $this->sanitize_color_value( $settings['video_player']['brand_color'] ?? $default['video_player']['brand_color'] ),

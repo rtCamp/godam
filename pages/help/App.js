@@ -51,7 +51,12 @@ const App = () => {
 				posthog_consent_source: 'explicit',
 			},
 		};
-		await saveMediaSettings( { settings: updatedSettings } );
+		const result = await saveMediaSettings( { settings: updatedSettings } );
+
+		// The save did not go through, so tracking did not change. Show that.
+		if ( result?.error ) {
+			setIsTrackingOn( ! value );
+		}
 	};
 
 	const content = [

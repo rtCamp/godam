@@ -189,11 +189,19 @@ class PostHogOptOutTest extends TestCase {
 	}
 
 	/**
-	 * A key Central rejects touches nothing, opt-out included.
+	 * A key Central rejects touches nothing: no choice is recorded, tracking is not switched on.
+	 *
+	 * The site has never chosen, which is the one state the verification would switch on, so this
+	 * fails if the switch-on ever moves above the check of Central's answer.
+	 *
+	 * @dataProvider rejected_key_starting_points
+	 *
+	 * @param mixed $settings What `rtgodam-settings` holds, or null for no option at all.
 	 */
-	public function test_a_rejected_key_does_not_change_the_posthog_choice() {
-		$opted_out = $this->opted_out_settings();
-		$this->set_settings( $opted_out );
+	public function test_a_rejected_key_does_not_change_the_posthog_choice( $settings ) {
+		if ( null !== $settings ) {
+			$this->set_settings( $settings );
+		}
 
 		$GLOBALS['rtgodam_stub']['http'] = array(
 			'code' => 200,
@@ -203,7 +211,27 @@ class PostHogOptOutTest extends TestCase {
 		$result = rtgodam_verify_api_key( self::API_KEY, true );
 
 		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( $opted_out, get_option( 'rtgodam-settings' ) );
+		$this->assertSame( null === $settings ? false : $settings, get_option( 'rtgodam-settings' ) );
+	}
+
+	/**
+	 * Sites that have never chosen, and one that opted out.
+	 *
+	 * @return array<string, array>
+	 */
+	public function rejected_key_starting_points() {
+		return array(
+			'nothing saved yet' => array( null ),
+			'never chose'       => array(
+				array(
+					'general' => array(
+						'enable_posthog_tracking' => false,
+						'posthog_initialized'     => false,
+					),
+				),
+			),
+			'opted out'         => array( $this->opted_out_settings() ),
+		);
 	}
 
 	/**

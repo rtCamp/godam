@@ -342,13 +342,15 @@ Data Sent:
 
 3. Session replays and heatmaps of GoDAM's admin screens
 
-4. The IP address and browser details that every web request carries
+4. The address of the admin screen being used, and an anonymous ID that PostHog stores in the browser
+
+5. The IP address and browser details that every web request carries
 
 When Data is Sent:
 
 1. Only while the site has a connected GoDAM API key, or after a site administrator has clicked "Allow" in the notice shown on the WordPress Dashboard or turned on "Help us improve GoDAM" on the GoDAM Help page. Connecting a GoDAM account (verifying an API key) switches it on once, if an administrator has not already chosen. If the API key is removed, it stops again, unless an administrator allowed it themselves.
 
-2. Only while an administrator is using GoDAM's screens in the WordPress admin. It is never sent for visitors to your site.
+2. Only while someone is using GoDAM's screens in the WordPress admin. It is never sent for visitors to your site.
 
 3. An administrator can turn it off at any time with "Help us improve GoDAM" on the GoDAM Help page, and that choice is kept, including when an API key is saved again. It stops from the next page load.
 
