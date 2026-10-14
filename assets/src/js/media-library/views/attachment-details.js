@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { createAttachmentField, createTable } from './fields/compat-fields';
 import renderMoveToFolderField from './fields/move-to-folder-field';
+import renderTranscodingRefusalPanel from './fields/transcoding-refusal-panel';
 
 /**
  * Reference to the WordPress media Attachment Details view.
@@ -47,6 +48,7 @@ export default AttachmentDetails?.extend( {
 		// Before the early returns below: the folder control belongs on every
 		// attachment, not just transcoded videos.
 		renderMoveToFolderField( this );
+		renderTranscodingRefusalPanel( this );
 
 		const mime = this.model.get( 'mime' );
 

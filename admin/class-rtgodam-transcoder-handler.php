@@ -515,6 +515,7 @@ class RTGODAM_Transcoder_Handler {
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'Queued' );
 					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
 
 					if ( 'document' === $job_type ) {
 						/*
@@ -530,17 +531,18 @@ class RTGODAM_Transcoder_Handler {
 					}
 
 					if ( $manual_retranscode ) {
-						$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
-
-						if ( isset( $failed_transcoding_attachments[ $attachment_id ] ) ) {
-							unset( $failed_transcoding_attachments[ $attachment_id ] );
-							update_option( 'rtgodam-failed-transcoding-attachments', $failed_transcoding_attachments );
-						}
+						// Matches legacy, numerically indexed entries too, so the cron doesn't
+						// keep retrying a job Central has already accepted.
+						rtgodam_remove_from_retry_queue( $attachment_id );
 					}
 				}
 			}
 
-			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) ) {
+			// Central refused the job on purpose (4xx): record why, and don't retry.
+			rtgodam_record_job_refusal( $attachment_id, $upload_page );
+
+			// Server errors, timeouts (408) and rate limits (429) are transient: queue a retry.
+			if ( is_wp_error( $upload_page ) || 500 <= intval( $upload_page['response']['code'] ) || in_array( intval( $upload_page['response']['code'] ), array( 408, 429 ), true ) ) {
 				$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
 
 				// Preserve the existing retry_count so the cron-job retry limiter is not reset
@@ -577,16 +579,33 @@ class RTGODAM_Transcoder_Handler {
 				// error state right away (the cron will clear this once retries succeed or are exhausted).
 				update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
 
+				// A server error replaces any earlier refusal: drop its code and Central's wording.
+				delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+				delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
+
 				$max_retries = class_exists( '\RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media' )
 					? \RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media::MAX_RETRY_ATTEMPTS
 					: 3;
+
+				$status_code = is_wp_error( $upload_page ) ? 0 : intval( $upload_page['response']['code'] );
+
+				if ( 429 === $status_code ) {
+					$cause = __( 'Too many transcoding requests right now.', 'godam' );
+				} elseif ( 408 === $status_code ) {
+					$cause = __( 'The transcoding request timed out.', 'godam' );
+				} elseif ( 0 === $status_code ) {
+					$cause = __( 'The transcoding service couldn\'t be reached.', 'godam' );
+				} else {
+					$cause = __( 'The transcoding service had a server error.', 'godam' );
+				}
 
 				update_post_meta(
 					$attachment_id,
 					'rtgodam_transcoding_error_msg',
 					sprintf(
-						/* translators: 1: max retry attempts, 2: retry interval in minutes */
-						__( 'GoDAM Central returned a server error. Transcoding will be retried automatically (up to %1$d times, every %2$d minutes).', 'godam' ),
+						/* translators: 1: why the job couldn't be sent, 2: max retry attempts, 3: retry interval in minutes */
+						__( '%1$s Transcoding will be retried automatically (up to %2$d times, every %3$d minutes).', 'godam' ),
+						$cause,
 						$max_retries,
 						10
 					)
