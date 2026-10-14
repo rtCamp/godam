@@ -689,14 +689,9 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		$settings = get_option( 'rtgodam-settings', array() );
-		$api_key  = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 
-		// If API key is present, we don't show the notice (it's auto-enabled or already handled).
-		if ( ! empty( $api_key ) ) {
-			return;
-		}
-
-		// If posthog_initialized is true, it means the user has already made a choice or it was auto-enabled.
+		// Tracking starts only after an admin answers this notice (or sets the toggle on the Help page).
+		// Once they have, posthog_initialized is true and the notice stays hidden, whether they chose Allow or No thanks.
 		if ( ! empty( $settings['general']['posthog_initialized'] ) ) {
 			return;
 		}

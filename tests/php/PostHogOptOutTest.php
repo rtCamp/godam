@@ -1,10 +1,12 @@
 <?php
 /**
- * An admin's PostHog choice has to survive an API key save.
+ * Verifying or saving an API key never touches the PostHog settings.
  *
- * `rtgodam_verify_api_key()` used to switch tracking back on every time a key
- * was saved, even for an admin who had turned it off. It now only auto-enables
- * tracking when the admin has never made a choice (`posthog_initialized` is empty).
+ * `rtgodam_verify_api_key()` used to switch tracking on every time a key was
+ * saved, even for an admin who had turned it off, and switched it on for a site
+ * that had never been asked. Now only the notice on the WordPress Dashboard and
+ * the toggle on the Help page change `enable_posthog_tracking` and
+ * `posthog_initialized`.
  *
  * @see https://github.com/rtCamp/godam-core/issues/936
  *
@@ -116,27 +118,34 @@ class PostHogOptOutTest extends TestCase {
 	}
 
 	/**
-	 * A site that never chose still has tracking switched on by its first verified key.
+	 * A site that never chose keeps tracking off after its first verified key.
 	 *
-	 * That is the existing default, not something this fix changes. It holds for a
-	 * plain re-check of the key as well as for a save.
+	 * The key used to switch tracking on, so a site was tracked without ever being asked.
+	 * Tracking now starts only when an admin clicks Allow in the notice or turns on the
+	 * Help page toggle, so verifying a key, with or without saving it, changes nothing.
 	 *
 	 * @dataProvider never_chosen_settings
 	 *
 	 * @param mixed $settings What `rtgodam-settings` holds before the first verified key, or null for no option at all.
 	 * @param bool  $save     Whether the key is saved or only checked.
 	 */
-	public function test_first_verified_key_enables_tracking_when_no_choice_was_made( $settings, $save ) {
+	public function test_a_verified_key_leaves_tracking_off_when_no_choice_was_made( $settings, $save ) {
 		if ( null !== $settings ) {
 			$this->set_settings( $settings );
 		}
 
 		$result = rtgodam_verify_api_key( self::API_KEY, $save );
 
-		$this->assertSame( 'success', $result['status'] ?? null );
-		$saved = get_option( 'rtgodam-settings' );
-		$this->assertTrue( $saved['general']['enable_posthog_tracking'] );
-		$this->assertTrue( $saved['general']['posthog_initialized'] );
+		$this->assertSame( 'success', $result['status'] ?? null, 'The key did not verify, so this proves nothing.' );
+		$this->assertSame(
+			null === $settings ? false : $settings,
+			get_option( 'rtgodam-settings' ),
+			'Verifying the API key changed the PostHog settings.'
+		);
+
+		$general = get_option( 'rtgodam-settings' )['general'] ?? array();
+		$this->assertEmpty( $general['enable_posthog_tracking'] ?? false, 'Tracking was switched on without an opt-in.' );
+		$this->assertEmpty( $general['posthog_initialized'] ?? false, 'A choice was recorded that the admin never made.' );
 	}
 
 	/**
