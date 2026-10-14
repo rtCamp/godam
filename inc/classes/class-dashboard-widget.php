@@ -254,12 +254,14 @@ class Dashboard_Widget {
 	}
 
 	/**
-	 * Register the widget for users who can see GoDAM (authors and above).
+	 * Register the widget for users who can open the GoDAM Dashboard (editors and
+	 * above). Authors can upload media but not see the Dashboard, so the widget —
+	 * whose main value is store-wide analytics — stays off their screen.
 	 *
 	 * @return void
 	 */
 	public function register_widget() {
-		if ( ! current_user_can( 'upload_files' ) ) {
+		if ( ! current_user_can( self::GODAM_PAGE_CAP ) ) {
 			return;
 		}
 
@@ -291,7 +293,8 @@ class Dashboard_Widget {
 	 * @return void
 	 */
 	public function enqueue_assets( $hook_suffix ) {
-		if ( 'index.php' !== $hook_suffix || ! current_user_can( 'upload_files' ) ) {
+		// Same audience as the widget: users who can open the GoDAM Dashboard.
+		if ( 'index.php' !== $hook_suffix || ! current_user_can( self::GODAM_PAGE_CAP ) ) {
 			return;
 		}
 
@@ -306,17 +309,9 @@ class Dashboard_Widget {
 			return;
 		}
 
-		// The widget shell (the library and ready sections) shows for authors and
-		// up, so its style loads for them.
 		$style_path = RTGODAM_PATH . 'assets/build/css/dashboard-widget.css';
 		if ( file_exists( $style_path ) ) {
 			wp_enqueue_style( self::HANDLE, RTGODAM_URL . 'assets/build/css/dashboard-widget.css', array(), filemtime( $style_path ) );
-		}
-
-		// Only the script fetches the Watching numbers, which are store-wide
-		// analytics (edit_pages). Authors see the widget shell but no analytics.
-		if ( ! current_user_can( self::GODAM_PAGE_CAP ) ) {
-			return;
 		}
 
 		$model      = $this->get_model();
@@ -557,20 +552,18 @@ class Dashboard_Widget {
 		$attention = self::build_attention_items( $api_key_status, $counts, $usage, $can_manage );
 
 		return array(
-			'state'              => self::determine_state( $api_key_status, $counts['transcoded'] ),
-			'api_key_status'     => $api_key_status,
-			'can_manage'         => $can_manage,
-			// The Watching section is store-wide analytics, shown only to users who can open the GoDAM Dashboard.
-			'can_view_analytics' => current_user_can( self::GODAM_PAGE_CAP ),
-			'counts'             => $counts,
-			'usage'              => $usage,
-			'attention'          => $attention,
-			'review_ask'         => self::review_ask_eligible( get_option( self::REVIEW_OPTION, array() ), time(), $can_manage, $attention ),
-			'values'             => $values,
-			'types'              => $library['types'],
-			'show'               => $tiles['show'],
-			'remote_seen'        => array_values( array_intersect( self::REMOTE_TILES, $tiles['seen'] ) ),
-			'connect'            => self::pick_connect_prompt( $library['types'] ),
+			'state'          => self::determine_state( $api_key_status, $counts['transcoded'] ),
+			'api_key_status' => $api_key_status,
+			'can_manage'     => $can_manage,
+			'counts'         => $counts,
+			'usage'          => $usage,
+			'attention'      => $attention,
+			'review_ask'     => self::review_ask_eligible( get_option( self::REVIEW_OPTION, array() ), time(), $can_manage, $attention ),
+			'values'         => $values,
+			'types'          => $library['types'],
+			'show'           => $tiles['show'],
+			'remote_seen'    => array_values( array_intersect( self::REMOTE_TILES, $tiles['seen'] ) ),
+			'connect'        => self::pick_connect_prompt( $library['types'] ),
 		);
 	}
 
@@ -1360,9 +1353,7 @@ class Dashboard_Widget {
 
 		$this->render_attention( $model['attention'] );
 
-		// The Watching numbers are store-wide analytics, so only users who can open
-		// the GoDAM Dashboard (editors and up) see them; authors get the local sections.
-		if ( 'active' === $model['state'] && ! empty( $model['can_view_analytics'] ) ) {
+		if ( 'active' === $model['state'] ) {
 			$this->render_watching( $model );
 		}
 

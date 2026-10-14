@@ -156,22 +156,20 @@ class Dashboard_Widget_Preview {
 			: array();
 
 		return array(
-			'state'              => $widget_state,
-			'api_key_status'     => $key_status,
-			'can_manage'         => true,
-			// Previews are admin-only (WP_DEBUG), so the Watching section always shows.
-			'can_view_analytics' => true,
-			'counts'             => $counts,
-			'usage'              => $usage,
-			'attention'          => Dashboard_Widget::build_attention_items( $key_status, $counts, $usage, true ),
+			'state'          => $widget_state,
+			'api_key_status' => $key_status,
+			'can_manage'     => true,
+			'counts'         => $counts,
+			'usage'          => $usage,
+			'attention'      => Dashboard_Widget::build_attention_items( $key_status, $counts, $usage, true ),
 			// Only the milestone preview asks, so the other previews show the widget as most visits will.
-			'review_ask'         => 'milestone' === $state,
-			'values'             => $values,
-			'types'              => $library['types'],
-			'show'               => Dashboard_Widget::visible_tiles( $values, array() )['show'],
+			'review_ask'     => 'milestone' === $state,
+			'values'         => $values,
+			'types'          => $library['types'],
+			'show'           => Dashboard_Widget::visible_tiles( $values, array() )['show'],
 			// Placeholders for exactly the Watching tiles the sample summary will fill.
-			'remote_seen'        => $remote['show'] ?? array(),
-			'connect'            => Dashboard_Widget::pick_connect_prompt( $library['types'] ),
+			'remote_seen'    => $remote['show'] ?? array(),
+			'connect'        => Dashboard_Widget::pick_connect_prompt( $library['types'] ),
 		);
 	}
 
