@@ -350,7 +350,9 @@ When Data is Sent:
 
 2. Only while an administrator is using GoDAM's screens in the WordPress admin. It is never sent for visitors to your site.
 
-3. An administrator can stop it at any time by turning off "Help us improve GoDAM" on the GoDAM Help page.
+3. An administrator can turn it off at any time with "Help us improve GoDAM" on the GoDAM Help page. It stops from the next page load.
+
+PostHog's code also loads its own settings and scripts from us-assets.i.posthog.com, at the same times as the data above is sent.
 
 Service Provider: [posthog.com](https://posthog.com)
 
