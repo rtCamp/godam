@@ -18,7 +18,7 @@ describe( 'deactivation modal privacy note', () => {
 	it( 'says what Submit & Deactivate sends and why', () => {
 		const text = renderNote().textContent;
 
-		expect( text ).toContain( 'Submit & Deactivate sends your site URL, the reason you pick, your comment, and your name and email to godam.io' );
+		expect( text ).toContain( 'Submit & Deactivate sends your site URL, the reason you pick, your comment, and your username and email to godam.io' );
 		expect( text ).toContain( 'so the GoDAM team can reply to you' );
 	} );
 
