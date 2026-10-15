@@ -354,49 +354,43 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 		return $no_key_data;
 	}
 
-	// Check if we should skip verification.
-	// Skip only for expired keys that are past their grace period.
-	$skip_verification = false;
-	if ( ! $force_refresh && \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status && ! rtgodam_is_api_key_in_grace_period() ) {
-		// Grace period expired for expired key, pause automatic checks until manual refresh.
-		$skip_verification = true;
+	$has_cached_data = is_array( $rtgodam_user_data ) && isset( $rtgodam_user_data['timestamp'] );
+	$cache_age       = $has_cached_data ? time() - (int) $rtgodam_user_data['timestamp'] : PHP_INT_MAX;
+
+	// An expired key past its grace period is still re-checked, just rarely, so a
+	// renewed subscription comes back on its own without a manual refresh.
+	$refresh_after = $timeout;
+	if ( \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status && ! rtgodam_is_api_key_in_grace_period() ) {
+		$refresh_after = max( $timeout, \RTGODAM\Inc\Helpers\Api_Key::EXPIRED_RECHECK_INTERVAL );
 	}
 
-	$should_verify = (
-		empty( $rtgodam_user_data ) ||
-		( isset( $rtgodam_user_data['timestamp'] ) && ( time() - $rtgodam_user_data['timestamp'] ) > $timeout )
-	) && ! $skip_verification;
+	// After a check Central could not answer, wait for the retry time instead of
+	// hitting Central again on every request.
+	$retry_pending = $has_cached_data && isset( $rtgodam_user_data['retry_at'] ) && time() < (int) $rtgodam_user_data['retry_at'];
 
-	// Allow force refresh to bypass timeout and skip checks.
-	if ( $force_refresh ) {
-		$should_verify = true;
+	$should_verify = $force_refresh || ( $cache_age > $refresh_after && ! $retry_pending );
+
+	// Verifying can take a while on a cold Central cache, so while the cached data is
+	// only a little out of date, serve it and refresh in WP-Cron instead of making this
+	// request (often a visitor's page load) wait.
+	if ( $should_verify && ! $force_refresh && ! wp_doing_cron() && $cache_age <= $refresh_after + \RTGODAM\Inc\Helpers\Api_Key::BACKGROUND_REFRESH_WINDOW ) {
+		rtgodam_schedule_user_data_refresh();
+		$should_verify = false;
 	}
 
-	if ( $should_verify ) {
-		// Verify the user's API Key.
-		$result = rtgodam_verify_api_key( $api_key );
+	$result = $should_verify ? rtgodam_verify_api_key( $api_key ) : null;
 
-		$valid_api_key    = false;
-		$user_data        = array();
-		$transient_status = null; // For temporary verification_failed state.
+	if ( $should_verify && rtgodam_is_verification_unavailable( $result ) ) {
+		$rtgodam_user_data = rtgodam_keep_user_data_after_failed_check( $api_key, $rtgodam_user_data );
+	} elseif ( $should_verify ) {
+		$valid_api_key = false;
+		$user_data     = array();
 
 		if ( is_wp_error( $result ) ) {
-			// API Key shouldn't be invalid if there is a server error.
-			$error_data  = $result->get_error_data();
-			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR;
-
-			if ( \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR === $status_code && ! empty( $api_key ) ) {
-				// Server error with existing API key - DON'T change DB status, just show verification_failed to user.
-				// DON'T set error timestamp - this is temporary and we should keep checking.
-				$transient_status = \RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED;
-				$valid_api_key    = false;
-			} elseif ( \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR !== $status_code ) {
-				$valid_api_key = false;
-				// Preserve existing user data for expired/invalid keys.
-				$existing_usage = get_option( 'rtgodam-usage', array() );
-				if ( ! empty( $existing_usage ) && isset( $existing_usage[ $api_key ] ) ) {
-					$user_data = is_object( $existing_usage[ $api_key ] ) ? (array) $existing_usage[ $api_key ] : $existing_usage[ $api_key ];
-				}
+			// Preserve existing user data for expired/invalid keys.
+			$existing_usage = get_option( 'rtgodam-usage', array() );
+			if ( ! empty( $existing_usage ) && isset( $existing_usage[ $api_key ] ) ) {
+				$user_data = is_object( $existing_usage[ $api_key ] ) ? (array) $existing_usage[ $api_key ] : $existing_usage[ $api_key ];
 			}
 		} else {
 			$valid_api_key = true;
@@ -407,11 +401,6 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 
 		// Get updated status after verification.
 		$api_key_status = rtgodam_get_api_key_status();
-
-		// If there's a transient status (verification_failed), use it instead of DB status.
-		if ( ! is_null( $transient_status ) ) {
-			$api_key_status = $transient_status;
-		}
 
 		$rtgodam_user_data = array(
 			'currentUserId'  => get_current_user_id(),
@@ -503,6 +492,82 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 
 	return $rtgodam_user_data;
 }
+
+/**
+ * Whether a verify result means Central could not answer (timeout, network error,
+ * 5xx) rather than giving an answer about the key.
+ *
+ * @since 2.4.0
+ *
+ * @param array|\WP_Error $result Result of rtgodam_verify_api_key().
+ *
+ * @return bool
+ */
+function rtgodam_is_verification_unavailable( $result ) {
+	if ( ! is_wp_error( $result ) ) {
+		return false;
+	}
+
+	$error_data = $result->get_error_data();
+	$status     = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR;
+
+	return \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR === $status;
+}
+
+/**
+ * Store the user data to use after a check Central could not answer.
+ *
+ * A key that verified as valid within Api_Key::LAST_KNOWN_GOOD_WINDOW keeps its
+ * cached data and stays valid, so one slow or failed request no longer switches
+ * GoDAM off. Otherwise the key is shown as `verification_failed`. Either way the
+ * check is retried after Api_Key::RETRY_INTERVAL instead of a full refresh period,
+ * and `timestamp` keeps the time of the last successful check.
+ *
+ * @since 2.4.0
+ *
+ * @param string     $api_key  The stored API key.
+ * @param array|bool $previous The cached user data, or false when there is none.
+ *
+ * @return array The user data now cached.
+ */
+function rtgodam_keep_user_data_after_failed_check( $api_key, $previous ) {
+	$last_checked  = is_array( $previous ) && isset( $previous['timestamp'] ) ? (int) $previous['timestamp'] : 0;
+	$was_valid     = is_array( $previous ) && ! empty( $previous['valid_api_key'] );
+	$still_trusted = $was_valid
+		&& \RTGODAM\Inc\Enums\Api_Key_Status::VALID === rtgodam_get_api_key_status()
+		&& ( time() - $last_checked ) < \RTGODAM\Inc\Helpers\Api_Key::LAST_KNOWN_GOOD_WINDOW;
+
+	if ( $still_trusted ) {
+		$user_data = $previous;
+	} else {
+		$user_data = array(
+			'currentUserId'  => get_current_user_id(),
+			'valid_api_key'  => false,
+			'api_key_status' => \RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED,
+			'user_data'      => array( 'masked_api_key' => rtgodam_mask_string( $api_key ) ),
+			'timestamp'      => $last_checked,
+		);
+	}
+
+	$user_data['retry_at'] = time() + \RTGODAM\Inc\Helpers\Api_Key::RETRY_INTERVAL;
+
+	update_option( 'rtgodam_user_data', $user_data );
+
+	return $user_data;
+}
+
+/**
+ * Queue a one-off WP-Cron refresh of the cached user data, unless one is queued.
+ *
+ * @since 2.4.0
+ */
+function rtgodam_schedule_user_data_refresh() {
+	if ( ! wp_next_scheduled( 'rtgodam_refresh_user_data' ) ) {
+		wp_schedule_single_event( time(), 'rtgodam_refresh_user_data' );
+	}
+}
+
+add_action( 'rtgodam_refresh_user_data', 'rtgodam_get_user_data', 10, 0 );
 
 /**
  * Get the licence preflight checks GoDAM Central flagged for this site.
