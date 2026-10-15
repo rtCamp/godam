@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-12T07:03:52+00:00\n"
+"POT-Creation-Date: 2026-10-15T10:58:35+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -2291,7 +2291,7 @@ msgid "Comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: inc/helpers/custom-functions.php:1764
+#: inc/helpers/custom-functions.php:1861
 #: assets/src/js/godam-player/engagement.js:908
 #: assets/src/js/godam-player/engagement.js:915
 msgid "Anonymous"
@@ -2646,7 +2646,7 @@ msgstr ""
 #: assets/build/js/media-library.min.js:1
 #: inc/classes/class-media-library-ajax.php:672
 #: inc/classes/rest-api/class-transcoding.php:327
-#: inc/helpers/custom-functions.php:672
+#: inc/helpers/custom-functions.php:769
 #: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:116
 msgid "This file can't be transcoded."
 msgstr ""
@@ -10204,7 +10204,7 @@ msgid "Transcription callback received."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-rest-routes.php:696
-#: admin/godam-transcoder-functions.php:529
+#: admin/godam-transcoder-functions.php:530
 #: inc/classes/rest-api/class-media-library.php:560
 #: inc/classes/rest-api/class-transcoding.php:449
 msgid "API key is required."
@@ -10261,21 +10261,22 @@ msgstr ""
 msgid "Media is transcoded."
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:538
+#: admin/godam-transcoder-functions.php:539
 msgid "API key verification is blocked for localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define('RTGODAM_API_KEY', 'your-api-key-here');"
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:547
+#: admin/godam-transcoder-functions.php:548
 msgid "The provided API key does not match the RTGODAM_API_KEY constant defined in wp-config.php."
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:643
-msgid "API key verified and stored successfully!"
-msgstr ""
-
-#: admin/godam-transcoder-functions.php:650
+#: admin/godam-transcoder-functions.php:595
+#: admin/godam-transcoder-functions.php:659
 #: inc/classes/enums/class-api-key-status.php:84
 msgid "Unable to verify API key. Please try again later."
+msgstr ""
+
+#: admin/godam-transcoder-functions.php:652
+msgid "API key verified and stored successfully!"
 msgstr ""
 
 #: inc/classes/addons/class-addon-registry.php:106
@@ -11154,7 +11155,7 @@ msgid "Leave empty to allow any duration. Example: 180 = 3 minutes."
 msgstr ""
 
 #: inc/classes/gravity-forms/class-init.php:314
-#: inc/helpers/custom-functions.php:1650
+#: inc/helpers/custom-functions.php:1747
 msgid "Gravity forms"
 msgstr ""
 
@@ -12871,99 +12872,99 @@ msgid "CTA Card Image"
 msgstr ""
 
 #. translators: %s: storage usage percentage
-#: inc/helpers/custom-functions.php:440
+#: inc/helpers/custom-functions.php:453
 #, php-format
 msgid "Storage limit exceeded (%s%%). Please upgrade your plan to continue."
 msgstr ""
 
 #. translators: %s: bandwidth usage percentage
-#: inc/helpers/custom-functions.php:449
+#: inc/helpers/custom-functions.php:462
 #, php-format
 msgid "Bandwidth limit exceeded (%s%%). Please upgrade your plan to continue."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:580
+#: inc/helpers/custom-functions.php:677
 msgid "Only files served over HTTPS can be transcoded. Serve your media over https://."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:585
+#: inc/helpers/custom-functions.php:682
 msgid "This file couldn't be downloaded from your site. Make sure uploaded videos are publicly accessible."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:586
+#: inc/helpers/custom-functions.php:683
 msgid "The file's link opens a web page instead of the video, often because of a login or media protection plugin."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:587
+#: inc/helpers/custom-functions.php:684
 msgid "The file is empty or too large. Try uploading it again."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:655
-#: inc/helpers/custom-functions.php:656
+#: inc/helpers/custom-functions.php:752
+#: inc/helpers/custom-functions.php:753
 msgid "This site's API key wasn't recognised. Check the key in GoDAM settings."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:657
+#: inc/helpers/custom-functions.php:754
 msgid "Your GoDAM licence is inactive. Renew your plan to transcode new uploads."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:658
+#: inc/helpers/custom-functions.php:755
 msgid "Your GoDAM storage is full. Upgrade your plan or delete unused files."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:659
+#: inc/helpers/custom-functions.php:756
 msgid "This site isn't on your GoDAM account's list of allowed sites. Ask your GoDAM admin to add it."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:858
+#: inc/helpers/custom-functions.php:955
 msgid "API key not found ( try refreshing the page )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:892
+#: inc/helpers/custom-functions.php:989
 msgid "Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1486
+#: inc/helpers/custom-functions.php:1583
 msgid "The transcoding service couldn't accept the recording. Try again later, or contact support if this keeps happening."
 msgstr ""
 
 #. translators: %s: Why the recording couldn't be transcoded.
-#: inc/helpers/custom-functions.php:1495
+#: inc/helpers/custom-functions.php:1592
 #, php-format
 msgid "The recording couldn't be transcoded. %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1544
+#: inc/helpers/custom-functions.php:1641
 msgid "Form transcoding has been disabled by the site administrator."
 msgstr ""
 
 #. translators: %s: Entry ID for which transcoding failed
-#: inc/helpers/custom-functions.php:1693
+#: inc/helpers/custom-functions.php:1790
 #, php-format
 msgid "Transcoding failed | entry Id: %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1730
+#: inc/helpers/custom-functions.php:1827
 msgid "s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2047
+#: inc/helpers/custom-functions.php:2144
 msgid "Oops! We could not locate your video"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2058
+#: inc/helpers/custom-functions.php:2155
 msgid "Note: This is a simple image preview. The image and its layers may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2060
+#: inc/helpers/custom-functions.php:2157
 msgid "Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2062
+#: inc/helpers/custom-functions.php:2159
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2226
+#: inc/helpers/custom-functions.php:2323
 msgid "Video not found"
 msgstr ""
 
