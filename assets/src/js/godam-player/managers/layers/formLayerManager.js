@@ -461,6 +461,10 @@ export default class FormLayerManager {
 			'.contact-form-success',
 			'.forminator-success.forminator-show',
 			'.everest-forms-notice--success',
+			// HubSpot (leadin) embedded forms swap the form for this node on a
+			// successful inline submission.
+			'.submitted-message',
+			'.hs-form__submitted-message',
 		];
 
 		// Check for standard selectors

@@ -18,6 +18,7 @@ import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
+import HubSpotIcon from '../assets/layers/HubSpotIcon.svg';
 import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from './editor-shell/icons';
 import { LAYER_TYPE_COLORS } from '../utils/layerTypes';
 import { notify as notifyGuide } from '../onboarding/productGuide';
@@ -110,6 +111,12 @@ export const layerTypes = [
 				icon: MetformIcon,
 				isActive: window?.videoData?.metformActive ?? false,
 				tooltipMessage: __( 'MetForm plugin is not active', 'godam' ),
+			},
+			hubspot: {
+				layerText: __( 'HubSpot', 'godam' ),
+				icon: HubSpotIcon,
+				isActive: window?.videoData?.hubspotActive ?? false,
+				tooltipMessage: __( 'Activate and connect the HubSpot plugin to use this form', 'godam' ),
 			},
 		},
 	},

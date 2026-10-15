@@ -110,6 +110,13 @@ class Assets {
 		$is_ninja_forms_active     = is_plugin_active( 'ninja-forms/ninja-forms.php' );
 		$is_met_form_active        = is_plugin_active( 'metform/metform.php' );
 
+		// HubSpot ("HubSpot All-In-One Marketing" / leadin): the form layer needs
+		// the plugin active AND connected (portal ID + refresh token present), the
+		// same check leadin's own Connection::is_connected() makes.
+		$is_hubspot_active = is_plugin_active( 'leadin/leadin.php' )
+			&& ! empty( get_option( 'leadin_portalId', '' ) )
+			&& ! empty( get_option( 'leadin_refresh_token', '' ) );
+
 		$plugin_dependencies = array(
 			'gravityforms' => $is_gf_active,
 			'wpPolls'      => $is_wp_polls_active,
@@ -122,6 +129,7 @@ class Assets {
 			'everestForms' => $is_everest_forms_active,
 			'ninjaForms'   => $is_ninja_forms_active,
 			'metform'      => $is_met_form_active,
+			'hubspot'      => $is_hubspot_active,
 		);
 
 		/**
