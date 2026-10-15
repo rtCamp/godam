@@ -48,11 +48,12 @@ describe( 'AnalyticsUnavailableNotice', () => {
 		expect( renderToString( <AnalyticsUnavailableNotice /> ) ).not.toContain( 'Try again' );
 	} );
 
-	it( 'shows a disabled "Checking…" button while a retry is in flight', () => {
+	it( 'shows an aria-disabled "Checking…" button while a retry is in flight', () => {
 		const html = renderToString( <AnalyticsUnavailableNotice onRetry={ () => {} } checking /> );
 		expect( html ).toContain( 'Checking…' );
 		expect( html ).not.toContain( 'Try again' );
-		expect( html ).toMatch( /<button[^>]*\sdisabled[\s=>]/ );
+		expect( html ).toContain( 'aria-disabled="true"' );
+		expect( html ).not.toMatch( /<button[^>]*\sdisabled[\s=>]/ );
 	} );
 
 	it( 'shows the last-checked time and the error code to quote to support', () => {

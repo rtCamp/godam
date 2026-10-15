@@ -17,7 +17,7 @@ import BackButton from '../BackButton';
 import { usePasswordLoginMutation } from '../../redux/api/onboarding';
 import { goToStep, setEmail, setNotice } from '../../redux/slice/onboarding';
 import { STEPS, config } from '../../utils/constants';
-import { isValidEmail } from '../../utils/validators';
+import { isValidEmail, isUserInputRejection } from '../../utils/validators';
 import { useProceedToWorkspace } from '../../utils/use-connect';
 
 /**
@@ -41,10 +41,8 @@ const LoginScreen = () => {
 			dispatch( setEmail( email.trim().toLowerCase() ) );
 			await proceedToWorkspace( session );
 		} catch ( error ) {
-			// GoDAM answering with a 4xx means it rejected the credentials, which is the user's own input. An
-			// outage or network failure is a real failure, so it keeps the Contact Support link.
-			const rejected = error?.status >= 400 && error?.status < 500;
-			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Invalid email or password.', 'godam' ), support: ! rejected } ) );
+			// Wrong credentials are the user's own input; an outage or network failure keeps the link.
+			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Invalid email or password.', 'godam' ), support: ! isUserInputRejection( error ) } ) );
 		}
 	};
 

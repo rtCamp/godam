@@ -59,10 +59,11 @@ const AnalyticsUnavailableNotice = ( {
 
 	return (
 		<div className="godam-analytics-unavailable" data-test-id={ `godam-${ area }-notice-analytics-unavailable` }>
-			<section className="godam-analytics-unavailable__card" role="alert" aria-labelledby={ titleId }>
+			<section className="godam-analytics-unavailable__card" aria-labelledby={ titleId }>
 				<UnavailableIllustration />
 
-				<div className="godam-analytics-unavailable__text">
+				{ /* Only the message is a live region, so "Try again" / "Checking…" don't re-announce the card. */ }
+				<div className="godam-analytics-unavailable__text" role="alert">
 					<h2 id={ titleId } className="godam-analytics-unavailable__title">
 						{ __( 'We can’t reach your analytics right now', 'godam' ) }
 					</h2>
@@ -76,9 +77,9 @@ const AnalyticsUnavailableNotice = ( {
 						<button
 							type="button"
 							className="godam-analytics-unavailable__retry"
-							onClick={ onRetry }
-							disabled={ checking }
-							aria-busy={ checking }
+							// aria-disabled, not disabled, so keyboard focus stays on the button.
+							onClick={ checking ? undefined : onRetry }
+							aria-disabled={ checking }
 							data-test-id={ `godam-${ area }-button-analytics-retry` }
 						>
 							<Icon icon={ update } size={ 18 } className={ checking ? 'is-spinning' : '' } />
@@ -93,9 +94,9 @@ const AnalyticsUnavailableNotice = ( {
 						{ lastChecked && (
 							<span>
 								{ sprintf(
-									/* translators: %s: time of the last failed request, e.g. 12:19 PM. */
+									/* translators: %s: time of the last failed request, e.g. 12:19:05 PM. */
 									__( 'Last checked %s', 'godam' ),
-									lastChecked.toLocaleTimeString( [], { hour: 'numeric', minute: '2-digit' } ),
+									lastChecked.toLocaleTimeString( [], { hour: 'numeric', minute: '2-digit', second: '2-digit' } ),
 								) }
 							</span>
 						) }

@@ -71,3 +71,19 @@ export const validateSignup = ( { firstName, email, password, confirm, tnc } ) =
 	}
 	return errors;
 };
+
+/**
+ * HTTP statuses GoDAM uses to turn down what the user typed (bad request, wrong
+ * credentials or key, already taken, invalid fields). Those errors are the
+ * user's own input, so they get no Contact Support link; anything else
+ * (outage, rate limit, missing route, network) is a real failure and does.
+ */
+const USER_INPUT_STATUSES = [ 400, 401, 403, 409, 422 ];
+
+/**
+ * Whether a failed onboarding request was GoDAM rejecting the user's input.
+ *
+ * @param {Object} error Rejected value of an RTK Query mutation (`{ status, data }`).
+ * @return {boolean} True for a rejection of the input, false for a real failure.
+ */
+export const isUserInputRejection = ( error ) => USER_INPUT_STATUSES.includes( error?.status );

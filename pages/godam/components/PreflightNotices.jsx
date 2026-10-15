@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { hasValidAPIKey } from '../utils/index.js';
-import { SUPPORT_URL } from '../../shared/ContactSupportLink';
+import { SUPPORT_URL } from '../../shared/support';
 
 const TROUBLESHOOTING_URL = 'https://godam.io/docs/troubleshooting/?utm_source=wordpress-plugin&utm_medium=settings&utm_campaign=preflight-check&utm_content=troubleshooting-button';
 

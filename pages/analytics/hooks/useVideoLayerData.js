@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 /**
  * WordPress dependencies
@@ -588,13 +588,14 @@ export function groupRows( rows, layerType, configIndex ) {
  * to render against.
  *
  * @param {Object}        params
- * @param {number|string} params.videoId   WP attachment ID.
- * @param {string}        params.siteUrl   site_url query param.
- * @param {?string}       params.startDate ISO start date (null = All Time).
- * @param {?string}       params.endDate   ISO end date (null = All Time).
+ * @param {number|string} params.videoId     WP attachment ID.
+ * @param {string}        params.siteUrl     site_url query param.
+ * @param {?string}       params.startDate   ISO start date (null = All Time).
+ * @param {?string}       params.endDate     ISO end date (null = All Time).
+ * @param {number}        params.recoveryKey Bumped when the page's analytics outage ends; refetches.
  * @return {Object} { parents, isLoading, errorType, errorMessage }.
  */
-export function useVideoLayerData( { videoId, siteUrl, startDate, endDate } ) {
+export function useVideoLayerData( { videoId, siteUrl, startDate, endDate, recoveryKey = 0 } ) {
 	// One RTK Query hook per layer type. React's rules-of-hooks forbid
 	// looping `useFetchProcessedLayerAnalyticsQuery` over LAYER_TYPES, so
 	// we expand explicitly — five calls, fixed at compile time, each
@@ -629,6 +630,15 @@ export function useVideoLayerData( { videoId, siteUrl, startDate, endDate } ) {
 		{ startDate, endDate, videoId, siteUrl },
 		{ skip: ! videoId },
 	);
+
+	// The page's analytics outage just ended: refetch, or the failures cached
+	// while the service was down stay on screen until a reload.
+	useEffect( () => {
+		if ( ! recoveryKey || ! videoId ) {
+			return;
+		}
+		[ cta, form, hotspot, poll, woo, history ].forEach( ( query ) => query.refetch() );
+	}, [ recoveryKey ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const videoConversion = useMemo( () => {
 		const rows = Array.isArray( history.data ) ? history.data : [];

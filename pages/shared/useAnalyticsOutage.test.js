@@ -114,6 +114,14 @@ describe( 'useAnalyticsOutage', () => {
 
 		expect( probe.result().unreachable ).toBe( false );
 		expect( probe.result().checking ).toBe( false );
+		expect( probe.result().recoveries ).toBe( 1 );
+		probe.unmount();
+	} );
+
+	it( 'counts no recovery for a page that loads fine', () => {
+		const probe = mountOutage( { enabled: true, isError: false, isFetching: true, data: undefined } );
+		probe.update( { enabled: true, isError: false, isFetching: false, data: { status: 'success' } } );
+		expect( probe.result().recoveries ).toBe( 0 );
 		probe.unmount();
 	} );
 

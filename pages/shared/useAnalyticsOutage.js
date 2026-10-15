@@ -35,7 +35,7 @@ export const getAnalyticsErrorCode = ( data, error ) => {
  * @param {boolean} query.isFetching RTK Query `isFetching`.
  * @param {Object}  query.data       RTK Query `data`.
  * @param {Object}  query.error      RTK Query `error`.
- * @return {{unreachable: boolean, checking: boolean, lastChecked: ?Date, errorCode: string}} Outage state.
+ * @return {{unreachable: boolean, checking: boolean, lastChecked: ?Date, errorCode: string, recoveries: number}} Outage state.
  */
 const useAnalyticsOutage = ( { enabled, isError, isFetching, data, error } ) => {
 	const failed = !! enabled && ( !! isError || data?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
@@ -50,6 +50,17 @@ const useAnalyticsOutage = ( { enabled, isError, isFetching, data, error } ) => 
 	const [ lastChecked, setLastChecked ] = useState( null );
 	const [ errorCode, setErrorCode ] = useState( '' );
 
+	// Bumped each time an outage ends, so cards that fetch on their own (and
+	// cached a failure while the service was down) know to fetch again.
+	const [ recoveries, setRecoveries ] = useState( 0 );
+	const wasUnreachable = useRef( false );
+	useEffect( () => {
+		if ( wasUnreachable.current && ! unreachable ) {
+			setRecoveries( ( count ) => count + 1 );
+		}
+		wasUnreachable.current = unreachable;
+	}, [ unreachable ] );
+
 	useEffect( () => {
 		if ( isFetching || ! failed ) {
 			return;
@@ -63,6 +74,7 @@ const useAnalyticsOutage = ( { enabled, isError, isFetching, data, error } ) => 
 		checking: unreachable && !! isFetching,
 		lastChecked,
 		errorCode,
+		recoveries,
 	};
 };
 

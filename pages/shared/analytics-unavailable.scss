@@ -86,7 +86,7 @@ $godam-unavailable-accent-hover: color-mix(in srgb, var(--wp-components-color-ac
 			fill: currentcolor;
 		}
 
-		&:disabled {
+		&[aria-disabled="true"] {
 			cursor: progress;
 			opacity: 0.85;
 		}
@@ -96,8 +96,8 @@ $godam-unavailable-accent-hover: color-mix(in srgb, var(--wp-components-color-ac
 			outline-offset: 2px;
 		}
 
-		&:hover:not(:disabled),
-		&:focus:not(:disabled) {
+		&:hover:not([aria-disabled="true"]),
+		&:focus:not([aria-disabled="true"]) {
 			border-color: $godam-unavailable-accent-hover;
 			background: $godam-unavailable-accent-hover;
 		}

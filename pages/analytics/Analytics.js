@@ -216,6 +216,15 @@ const Analytics = ( { attachmentID } ) => {
 	} );
 	const analyticsUnreachable = analyticsOutage.unreachable;
 
+	// "Try again" just worked: bring the loading bar back (the outage hid it)
+	// until the charts have drawn and hide it again.
+	useEffect( () => {
+		const loadingEl = document.getElementById( 'loading-analytics-animation' );
+		if ( analyticsOutage.recoveries && loadingEl ) {
+			loadingEl.style.display = '';
+		}
+	}, [ analyticsOutage.recoveries ] );
+
 	// charts.js (KPIs + geography + Views-by-Source) renders from this global.
 	window.analyticsDataFetched = rangedAnalyticsData ?? analyticsDataFetched;
 
@@ -837,6 +846,7 @@ const Analytics = ( { attachmentID } ) => {
 					<VideoLayerTimeline
 						attachmentID={ attachmentID }
 						videoDuration={ analyticsData?.video_length || 0 }
+						recoveryKey={ analyticsOutage.recoveries }
 					/>
 
 					<div className="grid grid-cols-[4fr_2fr_2fr] gap-4 px-10 metrics-container">

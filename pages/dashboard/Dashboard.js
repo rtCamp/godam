@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 /**
  * WordPress dependencies
@@ -17,7 +18,7 @@ import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
 import AnalyticsSectionError from '../shared/AnalyticsSectionError';
 import useAnalyticsOutage from '../shared/useAnalyticsOutage';
 import { generateCountryHeatmap } from '../analytics/helper';
-import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchRevenueSummaryQuery, useFetchVideoFunnelQuery } from './redux/api/dashboardAnalyticsApi';
+import { dashboardAnalyticsApi, useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchRevenueSummaryQuery, useFetchVideoFunnelQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import { canViewStoreData } from '../shared/canViewStoreData';
@@ -373,6 +374,20 @@ const Dashboard = () => {
 		error: dashboardMetricsError,
 	} );
 	const analyticsUnreachable = analyticsOutage.unreachable;
+
+	// "Try again" just worked. PlacementFunnelCard fetches its own data, and the
+	// failure it cached while the service was down would stay on screen until a
+	// reload, so fetch it again (same args as the card, so the card picks it up).
+	const dispatch = useDispatch();
+	useEffect( () => {
+		if ( ! analyticsOutage.recoveries ) {
+			return;
+		}
+		dispatch( dashboardAnalyticsApi.endpoints.fetchPlacementFunnels.initiate(
+			{ siteUrl, startDate: placementFunnelRange.startDate, endDate: placementFunnelRange.endDate },
+			{ forceRefetch: true, subscribe: false },
+		) );
+	}, [ analyticsOutage.recoveries ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Reveal the dashboard once the primary metrics call settles. The onboarding
 	// overlay handles the disconnected case, so there's no in-dashboard overlay.

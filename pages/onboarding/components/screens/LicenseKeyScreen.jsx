@@ -18,6 +18,7 @@ import BackButton from '../BackButton';
 import { useVerifyLicenseKeyMutation } from '../../redux/api/onboarding';
 import { goToStep, setConnected, setNotice } from '../../redux/slice/onboarding';
 import { config, STEPS } from '../../utils/constants';
+import { isUserInputRejection } from '../../utils/validators';
 
 /**
  * O5 — "Activate with license key" (reuses the existing verify_api_key flow;
@@ -40,7 +41,7 @@ const LicenseKeyScreen = () => {
 			await verifyLicenseKey( key.trim() ).unwrap();
 			dispatch( setConnected() );
 		} catch ( error ) {
-			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'That license key could not be verified.', 'godam' ) } ) );
+			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'That license key could not be verified.', 'godam' ), support: ! isUserInputRejection( error ) } ) );
 		}
 	};
 
