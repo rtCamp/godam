@@ -8,7 +8,7 @@ import clsx from 'clsx';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef, useState } from '@wordpress/element';
+import { useCallback, useEffect, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -76,8 +76,15 @@ const HubSpotForm = ( { layerID } ) => {
 	const region = window?.videoData?.hubspotHublet || 'na1';
 
 	const formId = layer?.hubspot_id || '';
-	const containerRef = useRef( null );
 	const containerId = `godam-hubspot-form-${ layer.id }`;
+
+	// The preview target lives inside a portal (LayerControls) that only mounts
+	// after it finds its placeholder asynchronously, so a plain ref can still be
+	// null when the effect first runs — leaving the form unrendered. A callback
+	// ref stored in state re-runs the render effect the moment the node attaches
+	// (and again when the portal remounts it after switching layers).
+	const [ container, setContainer ] = useState( null );
+	const setContainerRef = useCallback( ( node ) => setContainer( node ), [] );
 
 	const [ isLoading, setIsLoading ] = useState( false );
 
@@ -91,25 +98,35 @@ const HubSpotForm = ( { layerID } ) => {
 	};
 
 	useEffect( () => {
-		let cancelled = false;
-
-		if ( ! isActive || ! portalId || ! formId || ! containerRef.current ) {
-			if ( containerRef.current ) {
-				containerRef.current.innerHTML = '';
+		if ( ! isActive || ! portalId || ! formId || ! container ) {
+			if ( container ) {
+				container.innerHTML = '';
 			}
 			setIsLoading( false );
 			return undefined;
 		}
 
+		let cancelled = false;
 		setIsLoading( true );
 
+		// HubSpot renders the form asynchronously and its onFormReady callback is
+		// not always delivered, which left "Loading form…" showing forever. Watch
+		// the container and clear the loading state as soon as the form markup
+		// actually appears.
+		const observer = new MutationObserver( () => {
+			if ( ! cancelled && container.querySelector( 'iframe, form' ) ) {
+				setIsLoading( false );
+			}
+		} );
+		observer.observe( container, { childList: true, subtree: true } );
+
 		loadHubSpotScript().then( () => {
-			if ( cancelled || ! window.hbspt || ! containerRef.current ) {
+			if ( cancelled || ! window.hbspt?.forms?.create || ! container ) {
 				return;
 			}
 
 			// Rebuild the target node so switching form IDs never stacks forms.
-			containerRef.current.innerHTML = '';
+			container.innerHTML = '';
 
 			window.hbspt.forms.create( {
 				portalId,
@@ -126,8 +143,9 @@ const HubSpotForm = ( { layerID } ) => {
 
 		return () => {
 			cancelled = true;
+			observer.disconnect();
 		};
-	}, [ isActive, portalId, region, formId, containerId ] );
+	}, [ isActive, portalId, region, formId, containerId, container ] );
 
 	return (
 		<>
@@ -135,7 +153,6 @@ const HubSpotForm = ( { layerID } ) => {
 				isActive={ isActive }
 				pluginLabel={ __( 'HubSpot', 'godam' ) }
 				formID={ formId }
-				formType={ layer.form_type }
 				forms={ forms }
 				onSelectForm={ changeFormID }
 				selectorClassName="hubspot-form-selector"
@@ -147,8 +164,11 @@ const HubSpotForm = ( { layerID } ) => {
 			>
 				{ isActive && formId && (
 					<div className={ clsx( 'form-container', 'hubspot-form', { loading: isLoading } ) }>
-						<div ref={ containerRef } id={ containerId } className={ isLoading ? 'hidden' : '' } />
 						{ isLoading && <p>{ __( 'Loading form…', 'godam' ) }</p> }
+						{ /* The target must stay visible: HubSpot's embed does not
+						     render into (or fire onFormReady for) a display:none
+						     container. */ }
+						<div ref={ setContainerRef } id={ containerId } />
 					</div>
 				) }
 			</FormPreview>

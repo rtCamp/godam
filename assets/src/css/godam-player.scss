@@ -261,6 +261,24 @@
 	padding: 32px 10%;
 }
 
+// HubSpot renders its form inside an embed wrapper / iframe. Unlike the inline
+// markup the other form plugins output, that wrapper gives the `fit-content`
+// form-container no intrinsic width, so in fullscreen the form collapses toward
+// one side / mis-places. Lay the HubSpot form out at a fixed, centred width and
+// let its wrapper and iframe fill it, matching the other providers.
+.fullscreen-layer.hubspot .form-container {
+	width: 100%;
+	max-width: 640px;
+	padding: 32px;
+}
+
+.easydam-layer.hubspot .form-container .hbspt-form,
+.easydam-layer.hubspot .form-container .hs-form-frame,
+.easydam-layer.hubspot .form-container iframe {
+	width: 100%;
+	max-width: 100%;
+}
+
 .poll-container,
 .fullscreen-layer .poll-container {
 	color: #000;
