@@ -434,8 +434,24 @@ class HoverManager {
 
 		const played = this.player.play();
 		Promise.resolve( played )
-			.then( () => this.applyPreviewMute() )
+			.then( () => {
+				// A click may have committed real playback while this preview
+				// play() was still pending; re-applying the preview mute would
+				// then silence the real video the viewer just started.
+				if ( this.isVideoClicked ) {
+					return;
+				}
+				this.applyPreviewMute();
+			} )
 			.catch( () => {
+				// A click may have committed real playback while this preview
+				// play() was still pending (e.g. autoplay was refused, then the
+				// viewer clicked to play with a gesture). Tearing the preview
+				// down now would pause that real playback, reset it to frame 0
+				// and restore the poster, so leave it alone.
+				if ( this.isVideoClicked ) {
+					return;
+				}
 				// Autoplay was refused (e.g. iOS Low Power Mode), so no `play`
 				// event will fire to clear `isPreviewInitiatedPlay`. Roll the
 				// flags back and fully tear the preview down – otherwise the
