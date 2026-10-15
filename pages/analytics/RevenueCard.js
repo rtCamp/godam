@@ -1,6 +1,7 @@
 /**
  * Internal dependencies
  */
+import ContactSupportLink from '../shared/ContactSupportLink';
 import Tooltip from './Tooltip';
 import MetricTrend from './MetricTrend';
 import { formatRevenue } from '../dashboard/components/TopProductsTable';
@@ -52,6 +53,8 @@ export default function RevenueCard( { revenue, dataLabel, deltaLabel, rangeCont
 				</div>
 				<p className="text-[13px] text-[#b32d2e]" data-test-id="godam-revenue-error">
 					{ __( 'Couldn’t load revenue for this range. Please try again.', 'godam' ) }
+					{ ' ' }
+					<ContactSupportLink testId="godam-revenue-link-contact-support" />
 				</p>
 			</div>
 		);

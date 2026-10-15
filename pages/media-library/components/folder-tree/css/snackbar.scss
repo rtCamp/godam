@@ -13,7 +13,23 @@
 		background-color: #4CAF50;
 	}
 
-	&.fail {
+	// `fail` is the user's own doing (a locked folder, a name in use) and hides on its
+	// own; `error` is a real failure, stays open and carries the Contact Support link.
+	&.fail,
+	&.error {
 		background-color: #f44336;
+	}
+
+	// White on red like the message, instead of the accent colour the link has elsewhere.
+	.godam-contact-support {
+		flex-shrink: 0;
+		margin-left: 20px;
+		color: #fff;
+
+		&:hover,
+		&:focus {
+			color: #fff;
+			text-decoration: none;
+		}
 	}
 }

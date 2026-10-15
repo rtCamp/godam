@@ -13,6 +13,7 @@ import { Icon } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import ContactSupportLink from '../shared/ContactSupportLink';
 import { useVideoLayerData } from './hooks/useVideoLayerData';
 import LayerTimelineStrip from './timeline/LayerTimelineStrip';
 import LayerDetailPanel from './timeline/LayerDetailPanel';
@@ -94,9 +95,10 @@ function TimelineSkeleton() {
  * @param {Object}        props
  * @param {number|string} props.attachmentID  WP attachment ID of the video.
  * @param {number}        props.videoDuration Total video length in seconds.
+ * @param {number}        props.recoveryKey   Bumped when the page's analytics outage ends; refetches.
  * @return {JSX.Element} The full timeline section.
  */
-const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
+const VideoLayerTimeline = ( { attachmentID, videoDuration, recoveryKey = 0 } ) => {
 	// Shared date-range picker value. Defaults to All Time so this surface
 	// matches every other analytics card's default instead of starting on
 	// "Last 7 days" (godam-analytics #313 item 7). Replaces the timeline's old
@@ -110,6 +112,7 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 			siteUrl,
 			startDate: range.startDate,
 			endDate: range.endDate,
+			recoveryKey,
 		} );
 
 	// Cumulative video conversion — same metric as the Dashboard's per-video
@@ -224,6 +227,8 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 							'Unable to load layer analytics. Please try again.',
 							'godam',
 						) }
+					{ ' ' }
+					<ContactSupportLink testId="godam-layer-timeline-link-contact-support" />
 				</div>
 			) }
 			{ ! isLoading && ! errorType && (

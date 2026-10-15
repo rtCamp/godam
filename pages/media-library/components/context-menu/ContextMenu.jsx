@@ -257,7 +257,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			dispatch(
 				updateSnackbar( {
 					message: errorMessage,
-					type: 'fail',
+					type: 'error',
 				} ),
 			);
 		}
@@ -312,7 +312,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 			} catch ( error ) {
 				dispatch( updateSnackbar( {
 					message: __( 'Failed to update bookmark status', 'godam' ),
-					type: 'fail',
+					type: 'error',
 				} ) );
 			}
 		}
@@ -374,7 +374,7 @@ const ContextMenu = ( { x, y, folderId, onClose } ) => {
 				dispatch(
 					updateSnackbar( {
 						message: __( 'Failed to update folder lock status', 'godam' ),
-						type: 'fail',
+						type: 'error',
 					} ),
 				);
 			}

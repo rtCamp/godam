@@ -27,6 +27,7 @@ import { scrollToTop, hasValidAPIKey } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import { getPricingUrl } from '../../../../shared/premium-layers.js';
+import ContactSupportLink from '../../../../shared/ContactSupportLink';
 import IntegrationToggle from './IntegrationToggle.jsx';
 import IntegrationActionButton from './IntegrationActionButton.jsx';
 import integrationTabs from './integration-tabs.js';
@@ -216,6 +217,9 @@ const IntegrationSettings = () => {
 					// dangerouslySetInnerHTML={ { __html: notice.message } }
 				>
 					<div dangerouslySetInnerHTML={ { __html: notice.message } } />
+					{ 'error' === notice.status && (
+						<ContactSupportLink testId="godam-settings-link-contact-support" />
+					) }
 				</Notice>
 			) }
 
@@ -261,6 +265,7 @@ const IntegrationSettings = () => {
 									>
 										<p>
 											{ __( 'Installation failed. Please download the ZIP and install it like any other WordPress plugin.', 'godam' ) }
+											<ContactSupportLink className="godam-support-link-inline" testId="godam-settings-link-contact-support-install" />
 										</p>
 										<div style={ { display: 'flex', gap: '12px', marginTop: '8px' } }>
 											{ installError.downloadLink && (

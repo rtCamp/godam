@@ -17,6 +17,7 @@ import { closeModal, deleteFolder, updateSnackbar } from '../../redux/slice/fold
 import { useDeleteFolderMutation, useBulkDeleteFoldersMutation } from '../../redux/api/folders';
 import './scss/modal.scss';
 import { triggerFilterChange } from '../../data/media-grid';
+import { getFailureSnackbarType } from '../../data/utilities';
 
 const DeleteModal = () => {
 	const [ isLoading, setIsLoading ] = useState( false );
@@ -79,7 +80,7 @@ const DeleteModal = () => {
 			dispatch( updateSnackbar(
 				{
 					message: partialMessage || ( isMultiSelecting ? __( 'Folders deleted successfully', 'godam' ) : __( 'Folder deleted successfully', 'godam' ) ),
-					type: partialMessage ? 'fail' : 'success',
+					type: partialMessage ? 'error' : 'success',
 				},
 			) );
 
@@ -88,7 +89,7 @@ const DeleteModal = () => {
 			dispatch( updateSnackbar(
 				{
 					message: error?.message || error?.data?.message || __( 'Failed to delete folder', 'godam' ),
-					type: 'fail',
+					type: getFailureSnackbarType( error ),
 				},
 			) );
 		} finally {

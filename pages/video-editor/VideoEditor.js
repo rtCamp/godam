@@ -47,6 +47,7 @@ import { useFetchForms } from './components/forms/fetchForms';
 import Chapters from './components/chapters/Chapters';
 import Transcription from './components/transcription/Transcription';
 import { formatBytes } from './components/transcription/utils';
+import ContactSupportLink from '../shared/ContactSupportLink';
 import Timeline from './components/timeline/Timeline';
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from './utils/index';
 import { openAttachmentDetailsModal } from './utils/openAttachmentDetails';
@@ -79,6 +80,9 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	const [ sources, setSources ] = useState( [] );
 	const [ duration, setDuration ] = useState( 0 );
 	const [ snackbarMessage, setSnackbarMessage ] = useState( '' );
+	// True for a real failure: the toast then carries a Contact Support link and stays
+	// open until the user closes it. Every other message hides on its own.
+	const [ snackbarSupport, setSnackbarSupport ] = useState( false );
 	const [ showSnackbar, setShowSnackbar ] = useState( false );
 	const [ aspectRatio, setAspectRatio ] = useState( '16:9' );
 	const [ videoTitle, setVideoTitle ] = useState( '' );
@@ -494,6 +498,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		if ( invalidLayers.length > 0 ) {
 			const layerTimes = invalidLayers.join( ', ' );
 			setSnackbarMessage( _n( 'Please select a form for the layer at timestamp:', 'Please select a form for the layers at timestamps:', invalidLayers.length, 'godam' ) + layerTimes );
+			setSnackbarSupport( false );
 			setShowSnackbar( true );
 			setTimeout( () => {
 				setShowSnackbar( false );
@@ -544,9 +549,11 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 		if ( result ) {
 			setSnackbarMessage( __( 'GoDAM block copied to clipboard', 'godam' ) );
+			setSnackbarSupport( false );
 			setShowSnackbar( true );
 		} else {
 			setSnackbarMessage( __( 'Failed to copy GoDAM block', 'godam' ) );
+			setSnackbarSupport( false );
 			setShowSnackbar( true );
 		}
 	};
@@ -622,10 +629,12 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			}
 
 			setSnackbarMessage( __( 'Title updated', 'godam' ) );
+			setSnackbarSupport( false );
 			setShowSnackbar( true );
 		} catch ( error ) {
 			setVideoTitle( previousTitle );
 			setSnackbarMessage( __( 'Failed to update title', 'godam' ) );
+			setSnackbarSupport( true );
 			setShowSnackbar( true );
 		}
 	};
@@ -740,9 +749,13 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 
 					{ showSnackbar && (
 						<Snackbar className="absolute bottom-4 right-4 opacity-70 z-50"
+							explicitDismiss={ snackbarSupport }
+							// Announce the message alone, not the "Contact Support" link after it.
+							spokenMessage={ snackbarMessage }
 							onRemove={ handleOnSnackbarRemove }
 						>
 							{ snackbarMessage }
+							{ snackbarSupport && <ContactSupportLink testId="godam-video-editor-link-contact-support" /> }
 						</Snackbar>
 					) }
 

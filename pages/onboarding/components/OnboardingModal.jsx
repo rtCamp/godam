@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
  * Internal dependencies
  */
 import SidePanel from './SidePanel';
+import ContactSupportLink from '../../shared/ContactSupportLink';
 import { clearNotice } from '../redux/slice/onboarding';
 
 /**
@@ -77,6 +78,10 @@ const OnboardingModal = ( { children, layout = 'split', sidePanel = 'features' }
 							className="godam-onboarding__notice"
 						>
 							{ notice.message }
+							{ /* Errors get a Contact Support link unless the screen set `support: false` (the user's own input or browser setting). */ }
+							{ 'error' === ( notice.status || 'error' ) && false !== notice.support && (
+								<ContactSupportLink testId="godam-onboarding-link-contact-support" />
+							) }
 						</Notice>
 					) }
 					{ children }

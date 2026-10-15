@@ -345,3 +345,17 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 	// Video stage player controls (the reel progress stripe and the front-end
 	// control-bar preview) live in `_player-controls.scss`.
 }
+
+// A failed save shows a toast with a "Contact Support" link. The toast is dark, so the
+// link is white rather than the accent colour it has elsewhere.
+.godam-video-editor .components-snackbar .godam-contact-support {
+	flex-shrink: 0;
+	margin-left: 20px;
+	color: #fff;
+
+	&:hover,
+	&:focus {
+		color: #fff;
+		text-decoration: none;
+	}
+}

@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import './style.scss';
 import { API_KEY_STATUS } from '../../../../../../shared/enums';
+import ContactSupportLink from '../../../../../../shared/ContactSupportLink';
 
 /**
  * API Key input field.
@@ -79,6 +80,7 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, hasAPIKey, apiKey, setAPIKey
 					<span>
 						{ __( 'Your API Key has expired. You can renew it from your', 'godam' ) }
 						{ accountLink() }
+						<ContactSupportLink className="godam-support-link-inline" testId="godam-settings-link-contact-support-api-key" />
 					</span>
 				</span>
 			);
@@ -88,7 +90,10 @@ const PasswordFieldWithToggle = ( { hasValidAPIKey, hasAPIKey, apiKey, setAPIKey
 			return (
 				<span className="invalid-api-key godam-api-key-msg">
 					<Icon icon={ warning } size={ 18 } />
-					<span>{ __( 'Unable to verify API key. Please click "Refresh Status" to try again.', 'godam' ) }</span>
+					<span>
+						{ __( 'Unable to verify API key. Please click "Refresh Status" to try again.', 'godam' ) }
+						<ContactSupportLink className="godam-support-link-inline" testId="godam-settings-link-contact-support-api-key" />
+					</span>
 				</span>
 			);
 		}

@@ -17,7 +17,7 @@ import BackButton from '../BackButton';
 import { usePasswordLoginMutation } from '../../redux/api/onboarding';
 import { goToStep, setEmail, setNotice } from '../../redux/slice/onboarding';
 import { STEPS, config } from '../../utils/constants';
-import { isValidEmail } from '../../utils/validators';
+import { isValidEmail, isUserInputRejection } from '../../utils/validators';
 import { useProceedToWorkspace } from '../../utils/use-connect';
 
 /**
@@ -33,7 +33,7 @@ const LoginScreen = () => {
 
 	const handleSubmit = async () => {
 		if ( ! isValidEmail( email ) || ! password ) {
-			dispatch( setNotice( { status: 'error', message: __( 'Enter a valid email and password.', 'godam' ) } ) );
+			dispatch( setNotice( { status: 'error', message: __( 'Enter a valid email and password.', 'godam' ), support: false } ) );
 			return;
 		}
 		try {
@@ -41,7 +41,8 @@ const LoginScreen = () => {
 			dispatch( setEmail( email.trim().toLowerCase() ) );
 			await proceedToWorkspace( session );
 		} catch ( error ) {
-			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Invalid email or password.', 'godam' ) } ) );
+			// Wrong credentials are the user's own input; an outage or network failure keeps the link.
+			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Invalid email or password.', 'godam' ), support: ! isUserInputRejection( error ) } ) );
 		}
 	};
 

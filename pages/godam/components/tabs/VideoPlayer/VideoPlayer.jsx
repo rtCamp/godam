@@ -18,6 +18,7 @@ import { useState, useRef, useEffect } from '@wordpress/element';
 import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
+import ContactSupportLink from '../../../../shared/ContactSupportLink';
 import BrandImageSelector from '../GeneralSettings/BrandImageSelector.jsx';
 import SettingsButton from '../../../../../assets/src/js/godam-player/masterSettings.js';
 import ColorPickerButton from '../../../../video-editor/components/shared/color-picker/ColorPickerButton.jsx';
@@ -402,6 +403,9 @@ const VideoPlayer = () => {
 					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
 				>
 					{ notice.message }
+					{ 'error' === notice.status && (
+						<ContactSupportLink className="godam-support-link-inline" testId="godam-settings-link-contact-support" />
+					) }
 				</Notice>
 			) }
 

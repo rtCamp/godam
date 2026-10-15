@@ -1699,6 +1699,7 @@ class Media_Library_Ajax {
 						esc_html_e( 'HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding.', 'godam' );
 						?>
 					</p>
+					<p><?php echo wp_kses_post( rtgodam_get_contact_support_link() ); ?></p>
 				</div>
 			</div>
 		</div>

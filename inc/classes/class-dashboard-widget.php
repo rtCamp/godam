@@ -1274,6 +1274,7 @@ class Dashboard_Widget {
 	 *
 	 * @param array $item From build_attention_items().
 	 * @return array With 'message' and, when there is one, 'action_label' and 'action_url'.
+	 *                'support' is true when the item is a failure that gets a Contact Support link.
 	 */
 	private function get_attention_copy( array $item ) {
 		// Round a warning down, so 99.6% never reads "100% full" while uploads still transcode.
@@ -1289,10 +1290,12 @@ class Dashboard_Widget {
 					'message'      => __( 'Your GoDAM API key has expired.', 'godam' ),
 					'action_label' => __( 'Update key', 'godam' ),
 					'action_url'   => admin_url( 'admin.php?page=rtgodam_settings' ),
+					'support'      => true,
 				);
 			case 'key_unverified':
 				return array(
 					'message' => __( 'GoDAM could not verify your API key just now. It will try again automatically.', 'godam' ),
+					'support' => true,
 				);
 			case 'storage_over':
 				return array(
@@ -1300,6 +1303,7 @@ class Dashboard_Widget {
 					'message'      => sprintf( __( 'Storage is full (%s%%). New uploads are not being transcoded.', 'godam' ), $percent ),
 					'action_label' => __( 'View plan', 'godam' ),
 					'action_url'   => $godam,
+					'support'      => true,
 				);
 			case 'storage_high':
 				return array(
@@ -1314,6 +1318,7 @@ class Dashboard_Widget {
 					'message'      => sprintf( __( 'Bandwidth is over this period\'s limit (%s%%).', 'godam' ), $percent ),
 					'action_label' => __( 'View plan', 'godam' ),
 					'action_url'   => $godam,
+					'support'      => true,
 				);
 			case 'bandwidth_high':
 				return array(
@@ -1327,6 +1332,7 @@ class Dashboard_Widget {
 				$copy  = array(
 					/* translators: %s: number of files. */
 					'message' => sprintf( _n( 'GoDAM could not process %s file.', 'GoDAM could not process %s files.', $count, 'godam' ), number_format_i18n( $count ) ),
+					'support' => true,
 				);
 
 				// Tools only exists while the key verifies, and only for editors and above.
@@ -1816,16 +1822,20 @@ class Dashboard_Widget {
 				continue;
 			}
 
-			$action = '';
+			// The action stays first; Contact Support trails it on a failure.
+			$links = '';
 			if ( ! empty( $copy['action_url'] ) ) {
-				$action = sprintf( ' <a href="%1$s">%2$s</a>', esc_url( $copy['action_url'] ), esc_html( $copy['action_label'] ) );
+				$links .= sprintf( ' <a href="%1$s">%2$s</a>', esc_url( $copy['action_url'] ), esc_html( $copy['action_label'] ) );
+			}
+			if ( ! empty( $copy['support'] ) ) {
+				$links .= ' ' . rtgodam_get_contact_support_link();
 			}
 
 			printf(
 				'<li class="rtgodam-dw__alert is-%1$s">%2$s%3$s</li>',
 				esc_attr( $item['tone'] ),
 				esc_html( $copy['message'] ),
-				$action // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts above.
+				wp_kses_post( $links )
 			);
 		}
 

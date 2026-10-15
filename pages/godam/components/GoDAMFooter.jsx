@@ -12,12 +12,13 @@ import { Tooltip } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { SUPPORT_URL } from '../../shared/support.js';
 import './godam-footer.scss';
 
 const DOCS_LINKS = [
 	{
 		title: __( 'Support', 'godam' ),
-		url: 'http://app.godam.io/helpdesk/my-tickets',
+		url: SUPPORT_URL,
 	},
 	{
 		title: __( 'Docs', 'godam' ),

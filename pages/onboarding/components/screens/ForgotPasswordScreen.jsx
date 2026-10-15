@@ -31,7 +31,7 @@ const ForgotPasswordScreen = () => {
 
 	const handleSubmit = async () => {
 		if ( ! isValidEmail( email ) ) {
-			dispatch( setNotice( { status: 'error', message: __( 'Enter a valid email address.', 'godam' ) } ) );
+			dispatch( setNotice( { status: 'error', message: __( 'Enter a valid email address.', 'godam' ), support: false } ) );
 			return;
 		}
 		try {

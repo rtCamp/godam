@@ -18,9 +18,10 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import TreeItem from './TreeItem.jsx';
 import TreeItemPreview from './TreeItemPreview.jsx';
+import ContactSupportLink from '../../../shared/ContactSupportLink';
 
 import { setTree, updatePage, updateSnackbar } from '../../redux/slice/folders.js';
-import { utilities } from '../../data/utilities';
+import { utilities, getFailureSnackbarType } from '../../data/utilities';
 import useMoveAttachments from '../../hooks/useMoveAttachments.js';
 
 import { useGetFoldersQuery, useUpdateFolderMutation } from '../../redux/api/folders.js';
@@ -185,7 +186,7 @@ const FolderTree = ( { handleContextMenu } ) => {
 			} catch ( moveError ) {
 				dispatch( updateSnackbar( {
 					message: moveError?.data?.message || __( 'Failed to move folder', 'godam' ),
-					type: 'fail',
+					type: getFailureSnackbarType( moveError ),
 				} ) );
 				return;
 			}
@@ -335,7 +336,14 @@ const FolderTree = ( { handleContextMenu } ) => {
 
 	if ( error ) {
 		/* translators: %s is the error message */
-		return <div>{ sprintf( __( 'Error: %s', 'godam' ), error.message ) }</div>;
+		const errorMessage = sprintf( __( 'Error: %s', 'godam' ), error.message );
+
+		return (
+			<div className="tree-error">
+				{ errorMessage }
+				<ContactSupportLink testId="godam-media-library-folder-tree-link-contact-support" />
+			</div>
+		);
 	}
 
 	return (

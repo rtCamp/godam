@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { isValidEmail, isValidPassword, passwordsMatch, validateSignup } from './validators';
+import { isValidEmail, isValidPassword, passwordsMatch, validateSignup, isUserInputRejection } from './validators';
 
 describe( 'onboarding validators', () => {
 	it( 'validates email shape', () => {
@@ -29,5 +29,16 @@ describe( 'onboarding validators', () => {
 	it( 'returns no errors for a valid signup form', () => {
 		const errors = validateSignup( { firstName: 'Jane', email: 'jane@doe.com', password: 'password1', confirm: 'password1', tnc: true } );
 		expect( errors ).toEqual( {} );
+	} );
+} );
+
+describe( 'isUserInputRejection', () => {
+	it( 'treats GoDAM turning down the input as the user\'s own error', () => {
+		[ 400, 401, 403, 409, 422 ].forEach( ( status ) => expect( isUserInputRejection( { status } ) ).toBe( true ) );
+	} );
+
+	it( 'treats outages, rate limits, missing routes and network errors as real failures', () => {
+		[ 404, 408, 429, 500, 502, 503, 'FETCH_ERROR' ].forEach( ( status ) => expect( isUserInputRejection( { status } ) ).toBe( false ) );
+		expect( isUserInputRejection( undefined ) ).toBe( false );
 	} );
 } );

@@ -13,6 +13,7 @@ import { external } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import ContactSupportLink from '../../../shared/ContactSupportLink';
 import { useFetchAnalyticsDataQuery } from '../../redux/api/analyticsApi';
 import DateRangePicker from '../DateRangePicker';
 import { formatWatchTime } from '../../../utils/formatters';
@@ -382,6 +383,8 @@ const Placements = ( { videoId, siteUrl, shouldSkip } ) => {
 			{ ! showSkeleton && hasError && (
 				<div className="px-6 py-10 text-center text-sm text-zinc-500">
 					{ __( 'Unable to load placement analytics. Please try again.', 'godam' ) }
+					{ ' ' }
+					<ContactSupportLink testId="godam-placements-link-contact-support" />
 				</div>
 			) }
 

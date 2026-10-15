@@ -239,4 +239,24 @@ const getCurrentMimeTypeFilter = ( paramName = 'post_mime_type' ) => {
 	return {};
 };
 
-export { utilities, getCurrentMimeTypeFilter };
+/**
+ * Server error codes for a request the user's own choice caused: the folder is
+ * locked, or the folder name is already taken.
+ */
+const REFUSED_REQUEST_CODES = [ 'godam_folder_locked', 'term_exists' ];
+
+/**
+ * Snackbar type for a failed folder request.
+ *
+ * `error` is a real failure (service, network, unknown): it stays open and carries
+ * a "Contact Support" link. `fail` is the server turning down something the user
+ * asked for (a locked folder, a name already in use): a plain notice with no link.
+ *
+ * @param {Object} error Rejected value of an RTK Query mutation (`{ status, data }`).
+ * @return {string} `fail` or `error`.
+ */
+const getFailureSnackbarType = ( error ) => (
+	REFUSED_REQUEST_CODES.includes( error?.data?.code ) ? 'fail' : 'error'
+);
+
+export { utilities, getCurrentMimeTypeFilter, getFailureSnackbarType };

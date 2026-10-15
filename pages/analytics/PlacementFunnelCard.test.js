@@ -69,6 +69,7 @@ describe( 'PlacementFunnelCard', () => {
 		expect( html ).not.toBe( '' ); // not silently hidden like a store with no placements
 		expect( html ).toContain( 'godam-placement-funnel-error' );
 		expect( html ).toContain( 'Could not load placement data' );
+		expect( html ).toContain( 'godam-placement-funnel-link-contact-support' );
 	} );
 
 	it( 'renders rangeControl in the head instead of the dataLabel pill when given', () => {

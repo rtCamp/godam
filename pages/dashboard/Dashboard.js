@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 /**
  * WordPress dependencies
@@ -13,11 +14,11 @@ import { info } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
 import AnalyticsSectionError from '../shared/AnalyticsSectionError';
+import useAnalyticsOutage from '../shared/useAnalyticsOutage';
 import { generateCountryHeatmap } from '../analytics/helper';
-import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchRevenueSummaryQuery, useFetchVideoFunnelQuery } from './redux/api/dashboardAnalyticsApi';
+import { dashboardAnalyticsApi, useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchRevenueSummaryQuery, useFetchVideoFunnelQuery } from './redux/api/dashboardAnalyticsApi';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import { canViewStoreData } from '../shared/canViewStoreData';
@@ -230,7 +231,14 @@ const Dashboard = () => {
 	// Skip all analytics queries when there is no API key or there is a locally-known key error.
 	const shouldSkipAnalytics = ! hasAPIKey || !! apiKeyErrorType;
 
-	const { data: dashboardMetrics, isLoading: isDashboardMetricsLoading, isError: isDashboardMetricsError } = useFetchDashboardMetricsQuery( { siteUrl }, { skip: shouldSkipAnalytics } );
+	const {
+		data: dashboardMetrics,
+		error: dashboardMetricsError,
+		isLoading: isDashboardMetricsLoading,
+		isFetching: isDashboardMetricsFetching,
+		isError: isDashboardMetricsError,
+		refetch: refetchDashboardMetrics,
+	} = useFetchDashboardMetricsQuery( { siteUrl }, { skip: shouldSkipAnalytics } );
 	window.dashboardMetrics = dashboardMetrics;
 
 	// Per-card date range for the "Total Plays / Unique Viewers" card (gauge +
@@ -356,8 +364,30 @@ const Dashboard = () => {
 
 	// Connected, but the analytics backend is unreachable (server down) or returned
 	// a microservice error. Gated on a valid key so it never shows for a
-	// disconnected site — that case is handled by the onboarding overlay.
-	const analyticsUnreachable = !! window.userData?.validApiKey && ! shouldSkipAnalytics && ( isDashboardMetricsError || dashboardMetrics?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
+	// disconnected site — that case is handled by the onboarding overlay. Held
+	// steady while "Try again" is in flight, so the page doesn't flash empty.
+	const analyticsOutage = useAnalyticsOutage( {
+		enabled: !! window.userData?.validApiKey && ! shouldSkipAnalytics,
+		isError: isDashboardMetricsError,
+		isFetching: isDashboardMetricsFetching,
+		data: dashboardMetrics,
+		error: dashboardMetricsError,
+	} );
+	const analyticsUnreachable = analyticsOutage.unreachable;
+
+	// "Try again" just worked. PlacementFunnelCard fetches its own data, and the
+	// failure it cached while the service was down would stay on screen until a
+	// reload, so fetch it again (same args as the card, so the card picks it up).
+	const dispatch = useDispatch();
+	useEffect( () => {
+		if ( ! analyticsOutage.recoveries ) {
+			return;
+		}
+		dispatch( dashboardAnalyticsApi.endpoints.fetchPlacementFunnels.initiate(
+			{ siteUrl, startDate: placementFunnelRange.startDate, endDate: placementFunnelRange.endDate },
+			{ forceRefetch: true, subscribe: false },
+		) );
+	}, [ analyticsOutage.recoveries ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Reveal the dashboard once the primary metrics call settles. The onboarding
 	// overlay handles the disconnected case, so there's no in-dashboard overlay.
@@ -425,7 +455,15 @@ const Dashboard = () => {
 				</div>
 			</div>
 
-			{ analyticsUnreachable && <AnalyticsUnavailableNotice area="dashboard" /> }
+			{ analyticsUnreachable && (
+				<AnalyticsUnavailableNotice
+					area="dashboard"
+					onRetry={ refetchDashboardMetrics }
+					checking={ analyticsOutage.checking }
+					lastChecked={ analyticsOutage.lastChecked }
+					errorCode={ analyticsOutage.errorCode }
+				/>
+			) }
 
 			<div id="dashboard-container" className="dashboard-container hidden">
 				<div className="godam-dashboard-head">

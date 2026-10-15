@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { isRefusal } from '../../transcoding-status/refusal';
+import { createSupportLink } from '../../../../../../pages/shared/support';
 
 const PANEL_CLASS = 'godam-transcoding-refusal';
 
@@ -93,8 +94,8 @@ const retranscode = async ( model, button, status ) => {
 
 /**
  * Show why GoDAM Central refused to transcode an attachment, at the top of the
- * attachment details sidebar: the plain reason, what to do about it, and Central's own
- * wording for support.
+ * attachment details sidebar: the plain reason, what to do about it, a Contact Support
+ * link, and Central's own wording for support.
  *
  * @param {Object} view An Attachment.Details view (one- or two-column).
  */
@@ -139,6 +140,11 @@ const renderTranscodingRefusalPanel = ( view ) => {
 	}
 
 	panel.append( status );
+
+	// After the status line, so it follows a failed retranscode answer as well as the reason.
+	const support = el( 'p', `${ PANEL_CLASS }__support` );
+	support.append( createSupportLink( 'godam-media-library-link-contact-support' ) );
+	panel.append( support );
 
 	const detail = model.get( 'transcoding_error_detail' );
 

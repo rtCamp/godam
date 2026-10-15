@@ -16,6 +16,7 @@ import { select, dispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import { getQuery } from '../utility.js';
+import { createSupportLink } from '../../../../../pages/shared/support';
 import { isSameId } from '../ids.js';
 import { setupClassicFeaturedImage, resolveClassicFeaturedImage, clearDeferredFeaturedImage } from '../classic-featured-image.js';
 import { ALLOWED_MEDIA_TYPES as DOCUMENT_MIME_TYPES } from '../../../blocks/godam-pdf/constants.js';
@@ -322,7 +323,7 @@ const GoDAMMediaFrameShared = {
 		// baking in light-mode colours here.
 		const $notice = window.jQuery(
 			'<div class="godam-tab-notice notice notice-error" role="alert" />',
-		).text( errorMessage );
+		).text( errorMessage ).append( ' ', createSupportLink( 'godam-media-library-link-contact-support' ) );
 
 		// Place it above the attachments grid so it's the first thing the user sees.
 		const $attachments = $el.find( '.attachments-browser' ).first();

@@ -14,6 +14,7 @@ import { useState, useEffect, useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import ProgressBar from '../ProgressBar.jsx';
+import ContactSupportLink from '../../../shared/ContactSupportLink';
 
 const apiBase = () => `${ window.godamRestRoute?.url }godam/v1/media-backfill`;
 const headers = () => ( {
@@ -194,6 +195,9 @@ const MediaUsageSyncTab = () => {
 						onRemove={ () => setNotice( { ...notice, visible: false } ) }
 					>
 						{ notice.message }
+						{ 'error' === notice.type && (
+							<ContactSupportLink className="godam-support-link-inline" testId="godam-tools-link-contact-support" />
+						) }
 					</Notice>
 				) }
 			</div>

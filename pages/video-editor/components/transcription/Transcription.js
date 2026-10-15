@@ -20,6 +20,7 @@ import {
 	useDeleteTranscriptionMutation,
 } from '../../redux/api/transcription';
 import { parseCaptions, formatClock, formatBytes, isTranscribingStatus } from './utils';
+import ContactSupportLink from '../../../shared/ContactSupportLink';
 
 const BoltIcon = (
 	<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -49,7 +50,9 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	const [ isGenerating, setIsGenerating ] = useState( false );
 	const [ cues, setCues ] = useState( [] );
 	const [ cuesLoading, setCuesLoading ] = useState( false );
-	const [ error, setError ] = useState( '' );
+	// `{ message, showSupport }`: `showSupport` is false for a message the user caused
+	// (the wrong kind of file), true for a real failure, which gets a Contact Support link.
+	const [ error, setError ] = useState( null );
 	const [ confirmDelete, setConfirmDelete ] = useState( false );
 
 	const { data: transcription } = useGetTranscriptionQuery( attachmentID, {
@@ -71,7 +74,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 		if ( isGenerating && ( isReady || status === 'Failed' ) ) {
 			setIsGenerating( false );
 			if ( status === 'Failed' ) {
-				setError( __( 'Transcription failed. Please try again.', 'godam' ) );
+				setError( { message: __( 'Transcription failed. Please try again.', 'godam' ), showSupport: true } );
 			}
 		}
 	}, [ isGenerating, isReady, status ] );
@@ -107,7 +110,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	}, [ transcriptPath ] );
 
 	const handleGenerate = async () => {
-		setError( '' );
+		setError( null );
 		setIsGenerating( true );
 		try {
 			const result = await generateTranscription( attachmentID ).unwrap();
@@ -117,11 +120,11 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 			} else if ( result?.success === false && result?.error && ! isTranscribingStatus( result?.current_status ) ) {
 				// Anything other than "already in progress" surfaces as an error.
 				setIsGenerating( false );
-				setError( result.error );
+				setError( { message: result.error, showSupport: true } );
 			}
 		} catch ( err ) {
 			setIsGenerating( false );
-			setError( err?.data?.message || __( 'Could not start transcription. Please try again.', 'godam' ) );
+			setError( { message: err?.data?.message || __( 'Could not start transcription. Please try again.', 'godam' ), showSupport: true } );
 		}
 	};
 
@@ -129,7 +132,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	// Used by both "Upload File" (empty state) and "Replace" (ready state) — a
 	// quiet action with no progress/success messaging; the panel just updates.
 	const handleUpload = () => {
-		setError( '' );
+		setError( null );
 		const frame = wp.media( {
 			title: __( 'Select a caption file', 'godam' ),
 			button: { text: __( 'Use this file', 'godam' ) },
@@ -141,13 +144,13 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 			const attachment = frame.state().get( 'selection' ).first().toJSON();
 			const url = attachment?.url || '';
 			if ( ! /\.(vtt|srt)$/i.test( url ) ) {
-				setError( __( 'Please choose a .vtt or .srt caption file.', 'godam' ) );
+				setError( { message: __( 'Please choose a .vtt or .srt caption file.', 'godam' ), showSupport: false } );
 				return;
 			}
 			try {
 				await uploadTranscription( { attachmentID, url } ).unwrap();
 			} catch ( err ) {
-				setError( err?.data?.message || __( 'Could not attach the caption file.', 'godam' ) );
+				setError( { message: err?.data?.message || __( 'Could not attach the caption file.', 'godam' ), showSupport: true } );
 			}
 		} );
 
@@ -156,12 +159,12 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 
 	const handleDelete = async () => {
 		setConfirmDelete( false );
-		setError( '' );
+		setError( null );
 		try {
 			await deleteTranscription( attachmentID ).unwrap();
 			setCues( [] );
 		} catch ( err ) {
-			setError( err?.data?.message || __( 'Could not remove the transcript.', 'godam' ) );
+			setError( { message: err?.data?.message || __( 'Could not remove the transcript.', 'godam' ), showSupport: true } );
 		}
 	};
 
@@ -183,8 +186,9 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 
 			<div className="godam-ve-transcription__body">
 				{ error && (
-					<Notice status="error" isDismissible onRemove={ () => setError( '' ) }>
-						{ error }
+					<Notice status="error" isDismissible onRemove={ () => setError( null ) }>
+						{ error.message }
+						{ error.showSupport && <ContactSupportLink testId="godam-video-editor-transcription-link-contact-support" /> }
 					</Notice>
 				) }
 

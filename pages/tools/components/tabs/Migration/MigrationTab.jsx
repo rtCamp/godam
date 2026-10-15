@@ -15,6 +15,7 @@ import { useState, useEffect, useCallback } from '@wordpress/element';
 import CoreVideoMigration from './CoreVideoMigration.jsx';
 import VimeoVideoMigration from './VimeoVideoMigration.jsx';
 import { Notice } from '@wordpress/components';
+import ContactSupportLink from '../../../../shared/ContactSupportLink';
 import { scrollToTop } from '../../../../godam/utils';
 
 const MigrationTab = () => {
@@ -77,6 +78,9 @@ const MigrationTab = () => {
 						onRemove={ () => setCoreMigrationNotice( ( prev ) => ( { ...prev, isVisible: false } ) ) }
 					>
 						{ coreMigrationNotice.message }
+						{ 'error' === coreMigrationNotice.status && (
+							<ContactSupportLink className="godam-support-link-inline" testId="godam-tools-link-contact-support-core-migration" />
+						) }
 					</Notice>
 				) }
 				{ vimeoMigrationNotice.isVisible && (
@@ -87,6 +91,9 @@ const MigrationTab = () => {
 						onRemove={ () => setVimeoMigrationNotice( ( prev ) => ( { ...prev, isVisible: false } ) ) }
 					>
 						{ vimeoMigrationNotice.message }
+						{ 'error' === vimeoMigrationNotice.status && (
+							<ContactSupportLink className="godam-support-link-inline" testId="godam-tools-link-contact-support-vimeo-migration" />
+						) }
 					</Notice>
 				) }
 			</div>

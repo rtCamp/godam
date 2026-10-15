@@ -14,7 +14,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  */
 import { setTree, updateSnackbar } from '../redux/slice/folders';
 import { useAssignFolderMutation } from '../redux/api/folders';
-import { utilities } from '../data/utilities';
+import { utilities, getFailureSnackbarType } from '../data/utilities';
 import { refreshAfterMove } from '../data/media-grid';
 
 /**
@@ -195,7 +195,7 @@ const useMoveAttachments = () => {
 			// an ownership failure, and a generic string would hide which one it was.
 			const notice = {
 				message: error?.data?.message || error?.message || __( 'Failed to move items', 'godam' ),
-				type: 'fail',
+				type: getFailureSnackbarType( error ),
 			};
 
 			dispatch( updateSnackbar( notice ) );

@@ -6,6 +6,11 @@ import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
 /**
+ * Internal dependencies
+ */
+import ContactSupportLink from '../../../shared/ContactSupportLink';
+
+/**
  * Error boundary for individual layer editors.
  *
  * Layer editor components can be provided by add-ons (e.g. GoDAM for
@@ -48,6 +53,7 @@ class LayerErrorBoundary extends Component {
 							'godam',
 						) }
 					</p>
+					<ContactSupportLink testId="godam-video-editor-layer-link-contact-support" />
 					{ this.props.goBack && (
 						<Button variant="secondary" onClick={ this.props.goBack }>
 							{ __( 'Back to layers', 'godam' ) }

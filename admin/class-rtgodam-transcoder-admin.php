@@ -139,7 +139,8 @@ class RTGODAM_Transcoder_Admin {
 					'error',
 					true,
 					false,
-					'activate'
+					'activate',
+					true
 				);
 				return;
 			} else {
@@ -178,8 +179,9 @@ class RTGODAM_Transcoder_Admin {
 	 * @param bool   $include_buttons Whether to include action buttons (default: false).
 	 * @param bool   $show_godam_message Whether to show the GoDAM update message (default: false).
 	 * @param string $button_type The type of button to display (default: 'editor').
+	 * @param bool   $show_support Whether to add a Contact Support link, for notices that report an error (default: false).
 	 */
-	private function render_admin_notice( $message, $notice_type = 'warning', $include_buttons = false, $show_godam_message = false, $button_type = 'editor' ) {
+	private function render_admin_notice( $message, $notice_type = 'warning', $include_buttons = false, $show_godam_message = false, $button_type = 'editor', $show_support = false ) {
 		// Get the GoDAM logo URL.
 		$logo_url = plugins_url( 'assets/src/images/godam-logo.svg', __DIR__ );
 
@@ -221,7 +223,14 @@ class RTGODAM_Transcoder_Admin {
 						<a href="https://godam.io/" class="button button-secondary" target="_blank">
 							<?php esc_html_e( 'Learn More', 'godam' ); ?>
 						</a>
+						<?php
+						if ( $show_support ) {
+							echo wp_kses_post( rtgodam_get_contact_support_link() );
+						}
+						?>
 					</p>
+				<?php elseif ( $show_support ) : ?>
+					<p><?php echo wp_kses_post( rtgodam_get_contact_support_link() ); ?></p>
 				<?php endif; ?>
 			</div>
 		</div>
@@ -567,6 +576,7 @@ class RTGODAM_Transcoder_Admin {
 						<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'clear_godam_cache', '1' ), 'clear_godam_cache' ) ); ?>" class="button button-secondary">
 							<?php esc_html_e( 'Refresh Status', 'godam' ); ?>
 						</a>
+						<?php echo wp_kses_post( rtgodam_get_contact_support_link() ); ?>
 					</p>
 				</div>
 			</div>
@@ -669,6 +679,7 @@ class RTGODAM_Transcoder_Admin {
 						<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'clear_godam_cache', '1' ), 'clear_godam_cache' ) ); ?>" class="button button-secondary">
 							<?php esc_html_e( 'Refresh Status', 'godam' ); ?>
 						</a>
+						<?php echo wp_kses_post( rtgodam_get_contact_support_link() ); ?>
 					</p>
 				</div>
 			</div>
@@ -802,7 +813,7 @@ class RTGODAM_Transcoder_Admin {
 		$notice_type = ( \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status ) ? 'error' : 'warning';
 
 		echo '<div class="notice notice-' . esc_attr( $notice_type ) . ' is-dismissible">';
-		echo '<p>' . wp_kses_post( $message ) . '</p>';
+		echo '<p>' . wp_kses_post( $message ) . ' ' . wp_kses_post( rtgodam_get_contact_support_link() ) . '</p>';
 		echo '</div>';
 	}
 
@@ -896,7 +907,7 @@ class RTGODAM_Transcoder_Admin {
 						<a href="<?php echo esc_url( $guide_url ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary">
 							<?php esc_html_e( 'How to fix', 'godam' ); ?>
 						</a>
-						<a href="https://app.godam.io/helpdesk/my-tickets" target="_blank" rel="noopener noreferrer">
+						<a href="<?php echo esc_url( rtgodam_get_support_url() ); ?>" target="_blank" rel="noopener noreferrer">
 							<?php esc_html_e( 'Contact Support', 'godam' ); ?>
 						</a>
 					</p>

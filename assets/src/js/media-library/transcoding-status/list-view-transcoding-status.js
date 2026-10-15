@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import TranscodingChecker from './transcoding-checker';
 import { isRefusal } from './refusal';
+import { createSupportLink } from '../../../../../pages/shared/support';
 
 /**
  * SVG icons used for different transcoding states
@@ -108,6 +109,9 @@ class ListViewTranscodingStatus {
 		// Reset all status classes before applying new ones
 		this._resetStatusClasses( element );
 
+		// The Contact Support link belongs to the failed state only (see _updateFailedStatus).
+		element.querySelectorAll( '.godam-contact-support' ).forEach( ( link ) => link.remove() );
+
 		const statusText = element.querySelector( '.status-text' );
 		// Handle failed transcoding state
 		if ( data.status === 'failed' ) {
@@ -193,6 +197,8 @@ class ListViewTranscodingStatus {
 		const failureMessage = isRefusal( data.error_code ) && data.error_msg ? data.error_msg : __( 'Transcoding failed, please try again.', 'godam' );
 		loader.style.setProperty( '--status-text', failureMessage );
 		statusText.textContent = failureMessage;
+
+		element.append( createSupportLink( 'godam-media-library-link-contact-support' ) );
 	}
 
 	/**

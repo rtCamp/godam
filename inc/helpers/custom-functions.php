@@ -1584,13 +1584,16 @@ function rtgodam_handle_form_transcoding_failure( $form_type, $entry_id, $respon
 	}
 
 	if ( 'gf' === $form_type && class_exists( 'GFAPI' ) ) {
-		\GFAPI::add_note(
-			$entry_id,
-			0,
-			'GoDAM',
-			/* translators: %s: Why the recording couldn't be transcoded. */
-			sprintf( __( 'The recording couldn\'t be transcoded. %s', 'godam' ), $reason )
-		);
+		/* translators: %s: Why the recording couldn't be transcoded. */
+		$note = sprintf( __( 'The recording couldn\'t be transcoded. %s', 'godam' ), $reason );
+
+		// Gravity Forms shows notes through wp_kses_post(), so the link renders. Turning
+		// transcoding off is the site owner's own choice, so that note has no link.
+		if ( ! ( is_wp_error( $response ) && 'transcoding_disabled' === $response->get_error_code() ) ) {
+			$note .= ' ' . rtgodam_get_contact_support_link();
+		}
+
+		\GFAPI::add_note( $entry_id, 0, 'GoDAM', $note );
 	}
 
 	/**
@@ -3027,4 +3030,37 @@ function rtgodam_get_request_site_origin( $requested_origin ) {
 	}
 
 	return $origin;
+}
+
+/**
+ * URL of the GoDAM helpdesk, where a site owner opens or follows a support ticket.
+ *
+ * Every admin-facing error message links here. The React side reads the same URL
+ * from pages/shared/support.js.
+ *
+ * @since n.e.x.t
+ *
+ * @return string Helpdesk URL.
+ */
+function rtgodam_get_support_url() {
+	return 'https://app.godam.io/helpdesk/my-tickets';
+}
+
+/**
+ * "Contact Support" link that goes with every admin-facing error message, so
+ * there is always a way to reach a person.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $extra_class Extra class names for the link.
+ * @return string Link HTML, already escaped.
+ */
+function rtgodam_get_contact_support_link( $extra_class = '' ) {
+	return sprintf(
+		'<a class="%1$s" href="%2$s" target="_blank" rel="noopener noreferrer">%3$s<span class="screen-reader-text"> %4$s</span></a>',
+		esc_attr( trim( 'godam-contact-support ' . $extra_class ) ),
+		esc_url( rtgodam_get_support_url() ),
+		esc_html__( 'Contact Support', 'godam' ),
+		esc_html__( '(opens in a new tab)', 'godam' )
+	);
 }

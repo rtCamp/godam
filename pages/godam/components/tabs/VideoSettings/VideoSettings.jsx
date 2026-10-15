@@ -22,6 +22,7 @@ import { __ } from '@wordpress/i18n';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
 import { scrollToTop, hasAPIKey } from '../../../utils/index.js';
+import ContactSupportLink from '../../../../shared/ContactSupportLink';
 import VideoCompressQuality from './VideoCompressQuality.jsx';
 import VideoThumbnails from './VideoThumbnails.jsx';
 import VideoWatermark from './VideoWatermark.jsx';
@@ -94,6 +95,9 @@ const VideoSettings = () => {
 					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
 				>
 					{ notice.message }
+					{ 'error' === notice.status && (
+						<ContactSupportLink className="godam-support-link-inline" testId="godam-settings-link-contact-support" />
+					) }
 				</Notice>
 			) }
 

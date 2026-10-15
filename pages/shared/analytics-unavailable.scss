@@ -1,7 +1,267 @@
-/* Analytics-backend-unreachable notice (connected user). Shared by the
-   Dashboard and Analytics apps via AnalyticsUnavailableNotice. */
+// Same accent chain as the GoDAM header CTA, so it follows the admin colour scheme.
+$godam-unavailable-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+$godam-unavailable-accent-hover: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 82%, #000);
+
+/* Analytics-backend-unreachable card (connected user). Shared by the Dashboard
+   and Analytics apps via AnalyticsUnavailableNotice; it takes the place of the
+   page content, which stays hidden while the service is down. The card floats
+   over a faded outline of the page. */
 .godam-analytics-unavailable {
-	margin: 16px 0;
+	position: relative;
+	max-width: 1440px;
+	min-height: 620px;
+	box-sizing: border-box;
+	margin: 0 auto;
+	padding: 24px;
+
+	&__outline {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		opacity: 0.45;
+		pointer-events: none;
+		user-select: none;
+	}
+
+	&__outline-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 16px;
+	}
+
+	&__outline-title {
+		font-size: 20px;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	&__outline-tiles {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 16px;
+	}
+
+	&__outline-tile,
+	&__outline-panel {
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		padding: 18px;
+		background: #fff;
+		border: 1px solid #e4e4e7;
+		border-radius: 10px;
+	}
+
+	&__outline-tile {
+		height: 96px;
+	}
+
+	&__outline-panels {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+		gap: 16px;
+	}
+
+	&__outline-panel {
+		height: 300px;
+	}
+
+	&__bar {
+		display: block;
+		height: 10px;
+		border-radius: 6px;
+		background: #e4e4e7;
+
+		&--head {
+			width: 320px;
+			max-width: 60%;
+			background: #dcdcde;
+		}
+
+		&--value {
+			width: 35%;
+			height: 22px;
+			background: #dcdcde;
+		}
+
+		&--row {
+			height: 14px;
+			background: #f0f0f1;
+		}
+	}
+
+	&__overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		padding: 120px 16px 32px;
+		background: rgba(240, 240, 241, 0.35);
+	}
+
+	&__card {
+		width: 100%;
+		max-width: 520px;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 18px;
+		padding: 36px 36px 24px;
+		background: #fff;
+		border: 1px solid #e4e4e7;
+		border-radius: 12px;
+		box-shadow: 0 2px 4px rgba(16, 24, 40, 0.06), 0 20px 48px rgba(16, 24, 40, 0.14);
+		color: #1e1e1e;
+		text-align: center;
+	}
+
+	// On a phone the outline would sit under a taller card, so show the card alone.
+	@media (max-width: 600px) {
+		min-height: 0;
+		padding: 24px 16px;
+
+		&__outline {
+			display: none;
+		}
+
+		&__overlay {
+			position: static;
+			padding: 0;
+			background: none;
+		}
+
+		&__card {
+			padding: 32px 20px 24px;
+		}
+	}
+
+	&__illustration {
+		display: block;
+		max-width: 100%;
+		height: auto;
+	}
+
+	&__text {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	&__title {
+		margin: 0;
+		padding: 0;
+		font-size: 20px;
+		line-height: 1.3;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	&__message {
+		margin: 0;
+		font-size: 14px;
+		line-height: 1.6;
+		color: #50575e;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 12px;
+	}
+
+	&__retry {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 44px;
+		padding: 0 20px;
+		border: 1px solid $godam-unavailable-accent;
+		border-radius: 8px;
+		background: $godam-unavailable-accent;
+		color: #fff;
+		font: inherit;
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 1.2;
+		cursor: pointer;
+
+		svg {
+			fill: currentcolor;
+		}
+
+		&[aria-disabled="true"] {
+			cursor: progress;
+			opacity: 0.85;
+		}
+
+		&:focus-visible {
+			outline: 2px solid $godam-unavailable-accent;
+			outline-offset: 2px;
+		}
+
+		&:hover:not([aria-disabled="true"]),
+		&:focus:not([aria-disabled="true"]) {
+			border-color: $godam-unavailable-accent-hover;
+			background: $godam-unavailable-accent-hover;
+		}
+	}
+
+	&__meta {
+		width: 100%;
+		box-sizing: border-box;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 6px 16px;
+		margin: 0;
+		padding-top: 16px;
+		border-top: 1px solid #f0f0f1;
+		font-size: 12px;
+		color: #646970;
+
+		code {
+			padding: 1px 6px;
+			border-radius: 4px;
+			background: #f6f7f7;
+			color: #50575e;
+			font-size: 12px;
+		}
+	}
+
+	.is-spinning {
+		animation: godam-analytics-unavailable-spin 0.9s linear infinite;
+	}
+
+	&__flow {
+		animation: godam-analytics-unavailable-flow 1.4s linear infinite;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+
+		.is-spinning,
+		&__flow {
+			animation: none;
+		}
+	}
+}
+
+@keyframes godam-analytics-unavailable-spin {
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes godam-analytics-unavailable-flow {
+
+	to {
+		stroke-dashoffset: -14;
+	}
 }
 
 /* Scoped, inline error for a single analytics section (gauge / Insights KPIs /
@@ -25,6 +285,13 @@
 
 	&__message {
 		flex: 1 1 auto;
+	}
+
+	&__actions {
+		flex: 0 0 auto;
+		display: inline-flex;
+		align-items: center;
+		gap: 16px;
 	}
 
 	&__retry {

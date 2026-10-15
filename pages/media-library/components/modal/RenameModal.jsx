@@ -15,6 +15,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { closeModal, renameFolder, updateSnackbar } from '../../redux/slice/folders';
 import { useUpdateFolderMutation } from '../../redux/api/folders';
+import { getFailureSnackbarType } from '../../data/utilities';
 import './scss/modal.scss';
 
 const RenameModal = () => {
@@ -62,7 +63,7 @@ const RenameModal = () => {
 			dispatch( updateSnackbar(
 				{
 					message: __( 'Failed to rename folder', 'godam' ),
-					type: 'fail',
+					type: getFailureSnackbarType( error ),
 				},
 			) );
 		} finally {

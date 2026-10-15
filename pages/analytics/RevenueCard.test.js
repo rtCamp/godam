@@ -181,6 +181,7 @@ describe( 'RevenueCard — single store currency', () => {
 		);
 		expect( html ).toContain( 'godam-revenue-error' );
 		expect( html ).toContain( 'my-picker' ); // picker kept so the viewer can retry
+		expect( html ).toContain( 'godam-revenue-link-contact-support' );
 		expect( html ).not.toContain( 'NaN' );
 	} );
 } );

@@ -167,7 +167,7 @@ class Media_Tracker {
 							$raw_html = '<p>For detailed guidance, please refer to our <a href="%1$s" target="_blank">CDN Integration Guide</a> or contact our <a href="%2$s" target="_blank">Support Team</a> for assistance.</p>';
 
 							$cdn_guide_url = esc_url( 'https://godam.io/docs' );
-							$support_url   = esc_url( 'https://app.godam.io/helpdesk/my-tickets' );
+							$support_url   = esc_url( rtgodam_get_support_url() );
 
 							// Allowed HTML tags for wp_kses.
 							$allowed_tags = array(

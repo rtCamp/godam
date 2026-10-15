@@ -16,6 +16,7 @@ import { changeSelectedFolder, expandParents } from '../../redux/slice/folders';
 import { useSearchFoldersQuery } from '../../redux/api/folders';
 import { triggerFilterChange } from '../../data/media-grid';
 import { useDispatch } from 'react-redux';
+import ContactSupportLink from '../../../shared/ContactSupportLink';
 import './css/searchbar.scss';
 
 /**
@@ -221,7 +222,12 @@ const SearchBar = () => {
 							</div>
 						) }
 						{ isFetching && <div className="search-loading">{ currentPage <= 1 ? __( 'Searching…', 'godam' ) : __( 'Loading more results…', 'godam' ) }</div> }
-						{ ! isFetching && isError && <div className="search-error">{ __( 'Error fetching results.', 'godam' ) }</div> }
+						{ ! isFetching && isError && (
+							<div className="search-error">
+								{ __( 'Error fetching results.', 'godam' ) }
+								<ContactSupportLink testId="godam-media-library-search-link-contact-support" />
+							</div>
+						) }
 					</div>
 				</Popover>
 			) }

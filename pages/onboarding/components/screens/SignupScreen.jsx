@@ -18,7 +18,7 @@ import { GoogleIcon } from '../icons';
 import { useSignupMutation } from '../../redux/api/onboarding';
 import { goToStep, setEmail, setNotice } from '../../redux/slice/onboarding';
 import { STEPS } from '../../utils/constants';
-import { validateSignup } from '../../utils/validators';
+import { validateSignup, isUserInputRejection } from '../../utils/validators';
 import { useGoogleSignIn } from '../../utils/use-google-signin';
 
 const Required = () => <span className="godam-onboarding__required">*</span>;
@@ -54,7 +54,7 @@ const SignupScreen = () => {
 			dispatch( setEmail( fields.email.trim().toLowerCase() ) );
 			dispatch( goToStep( STEPS.VERIFY_EMAIL ) );
 		} catch ( error ) {
-			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Could not create your account. Please try again.', 'godam' ) } ) );
+			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Could not create your account. Please try again.', 'godam' ), support: ! isUserInputRejection( error ) } ) );
 		}
 	};
 
