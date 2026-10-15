@@ -7,7 +7,6 @@
 - Tweak: The media preview page can switch between Desktop and Mobile views, for videos, images and audio.
 - Fix: Usage tracking now follows the admin's choice.
 - Fix: The GoDAM Audio block now accepts .webm audio, such as form recordings, from the GoDAM tab and from uploads.
-- Fix: GoDAM stays connected when its servers are slow to respond.
 
 ## v2.3.2 (October 12, 2026) ##
 
