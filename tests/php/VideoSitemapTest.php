@@ -278,6 +278,177 @@ class VideoSitemapTest extends TestCase {
 		$this->assertCount( 1, $sitemap->get_url_entries( 1 )[0]['videos'] );
 	}
 
+	public function test_long_titles_are_cut_to_googles_100_character_limit() {
+		$sitemap = $this->sitemap_with_pages( array( 10 => array( $this->video( 1, array( 'headline' => str_repeat( 'Long title ', 20 ) ) ) ) ) );
+		$title   = $sitemap->get_url_entries( 1 )[0]['videos'][0]['title'];
+
+		$this->assertLessThanOrEqual( 100, mb_strlen( $title ) );
+		$this->assertStringEndsWith( '…', $title );
+	}
+
+	public function test_index_skips_pages_that_end_up_empty_and_reports_real_counts() {
+		// Page 1: one listable page. Page 2: only a noindexed page.
+		$GLOBALS['rtgodam_stub']['posts'][10]                             = (object) array( 'post_type' => 'page' );
+		$GLOBALS['rtgodam_stub']['posts'][20]                             = (object) array( 'post_type' => 'page' );
+		$GLOBALS['rtgodam_stub']['yoast_meta'][20]['meta-robots-noindex'] = '1';
+
+		$sitemap = new class( array(
+			1 => array( 10 => array( $this->video( 1 ) ) ),
+			2 => array( 20 => array( $this->video( 2 ) ) ),
+		) ) extends Video_Sitemap {
+
+			/**
+			 * @var array
+			 */
+			private $pages_by_number;
+
+			/**
+			 * @param array $pages_by_number Page number => post ID => entries.
+			 */
+			public function __construct( array $pages_by_number ) { // phpcs:ignore -- no parent constructor: it would register hooks.
+				$this->pages_by_number = $pages_by_number;
+			}
+
+			/**
+			 * @return int
+			 */
+			public function get_max_pages() {
+				return 2;
+			}
+
+			/**
+			 * @return string
+			 */
+			public function get_last_modified() {
+				return '2026-10-01T08:00:00+00:00';
+			}
+
+			/**
+			 * @param int $page Page.
+			 * @return int[]
+			 */
+			protected function query_post_ids( $page ) {
+				return array_keys( $this->pages_by_number[ $page ] );
+			}
+
+			/**
+			 * @param int $post_id Post ID.
+			 * @return array
+			 */
+			protected function get_cached_videos( $post_id ) {
+				foreach ( $this->pages_by_number as $posts ) {
+					if ( isset( $posts[ $post_id ] ) ) {
+						return $posts[ $post_id ];
+					}
+				}
+				return array();
+			}
+
+			/**
+			 * @param int $post_id Post ID.
+			 * @return string
+			 */
+			protected function get_post_url( $post_id ) {
+				return 'https://example.test/?p=' . $post_id;
+			}
+
+			/**
+			 * @param int $post_id Post ID.
+			 * @return string
+			 */
+			protected function get_post_lastmod( $post_id ) {
+				return '';
+			}
+		};
+
+		$GLOBALS['rtgodam_stub']['options']['permalink_structure'] = '';
+		$items = $sitemap->get_index_items();
+
+		$this->assertCount( 1, $items );
+		$this->assertSame( 'https://example.test?godam_video_sitemap=1', $items[0]['loc'] );
+		$this->assertSame( 1, $items[0]['count'] );
+
+		// The WordPress core sitemap index (no SEO plugin) lists the same pages.
+		require_once dirname( __DIR__, 2 ) . '/inc/classes/class-video-sitemap-core-provider.php';
+		$provider = new \RTGODAM\Inc\Video_Sitemap_Core_Provider( $sitemap );
+
+		$this->assertSame(
+			array( array( 'loc' => 'https://example.test?godam_video_sitemap=1' ) ),
+			$provider->get_sitemap_entries()
+		);
+	}
+
+	// -----------------------------------------------------------------------------------
+	// Cache invalidation.
+	// -----------------------------------------------------------------------------------
+
+	/**
+	 * Current cache version.
+	 *
+	 * @return int
+	 */
+	private function cache_version() {
+		return (int) ( $GLOBALS['rtgodam_stub']['options'][ Video_Sitemap::CACHE_VERSION_OPTION ] ?? 1 );
+	}
+
+	public function test_settings_save_invalidates_only_when_seo_settings_change() {
+		$sitemap = $this->sitemap_with_pages( array() );
+
+		$sitemap->maybe_invalidate_on_settings_update(
+			array(
+				'seo'          => array( 'enable_video_sitemap' => true ),
+				'video_player' => array( 'brand_color' => '#000' ),
+			),
+			array(
+				'seo'          => array( 'enable_video_sitemap' => true ),
+				'video_player' => array( 'brand_color' => '#fff' ),
+			)
+		);
+		$this->assertSame( 1, $this->cache_version() );
+
+		$sitemap->maybe_invalidate_on_settings_update(
+			array( 'seo' => array( 'enable_video_sitemap' => false ) ),
+			array( 'seo' => array( 'enable_video_sitemap' => true ) )
+		);
+		$this->assertSame( 2, $this->cache_version() );
+	}
+
+	public function test_attachment_edit_invalidates_only_for_videos_in_use() {
+		$sitemap = $this->sitemap_with_pages( array() );
+
+		// An image edit (e.g. alt text): no invalidation.
+		$GLOBALS['rtgodam_stub']['mime'] = 'image/jpeg';
+		$GLOBALS['rtgodam_stub']['meta_exists'][5][ Seo::ATTACHMENT_POSTS_MAP_META_KEY ] = true;
+		$sitemap->maybe_invalidate_on_attachment_edit( 5 );
+		$this->assertSame( 1, $this->cache_version() );
+
+		// A video no page uses: no invalidation.
+		$GLOBALS['rtgodam_stub']['mime'] = 'video/mp4';
+		$sitemap->maybe_invalidate_on_attachment_edit( 6 );
+		$this->assertSame( 1, $this->cache_version() );
+
+		// A video a listed page uses: invalidated.
+		$sitemap->maybe_invalidate_on_attachment_edit( 5 );
+		$this->assertSame( 2, $this->cache_version() );
+	}
+
+	public function test_hls_url_update_on_a_used_video_invalidates() {
+		$sitemap = $this->sitemap_with_pages( array() );
+		$GLOBALS['rtgodam_stub']['meta_exists'][5][ Seo::ATTACHMENT_POSTS_MAP_META_KEY ] = true;
+
+		// Unrelated meta on a used video: no invalidation.
+		$sitemap->maybe_invalidate_on_attachment_meta( 1, 5, '_wp_attachment_image_alt' );
+		$this->assertSame( 1, $this->cache_version() );
+
+		// HLS URL on a video no page uses: no invalidation.
+		$sitemap->maybe_invalidate_on_attachment_meta( 1, 6, 'rtgodam_hls_transcoded_url' );
+		$this->assertSame( 1, $this->cache_version() );
+
+		// HLS URL written by the transcoding callback on a used video: invalidated.
+		$sitemap->maybe_invalidate_on_attachment_meta( 1, 5, 'rtgodam_hls_transcoded_url' );
+		$this->assertSame( 2, $this->cache_version() );
+	}
+
 	// -----------------------------------------------------------------------------------
 	// Exclusion rules.
 	// -----------------------------------------------------------------------------------

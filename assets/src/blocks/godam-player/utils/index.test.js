@@ -6,13 +6,31 @@ import { getFileNameFromUrl, isFilenameLikeTitle } from './index';
 describe( 'isFilenameLikeTitle', () => {
 	it.each( [
 		[ 'product-demo_v2', '' ],
-		[ 'IMG_2041', '' ],
-		[ 'my-video', '' ],
+		[ 'my-video-final', '' ],
 		[ 'final_cut_FINAL', '' ],
+		[ 'Mike-was-impressed-by-Harvey_s-influence', '' ],
+		[ 'IMG_2041', '' ],
+		[ 'DSC-0001', '' ],
+		[ 'VID_20240115', '' ],
 		[ 'IMG2041.mp4', '' ],
 		[ 'clip.MOV', '' ],
-	] )( 'flags "%s" (hyphens/underscores and no spaces, or a file extension)', ( title, fileName ) => {
+	] )( 'flags "%s" (2+ separators, camera-style name or file extension, no spaces)', ( title, fileName ) => {
 		expect( isFilenameLikeTitle( title, fileName ) ).toBe( true );
+	} );
+
+	it.each( [
+		'Spider-Man',
+		'COVID-19',
+		'e-commerce',
+		'Add-ons',
+		'Q3_review',
+		'Self-hosting',
+	] )( 'does not flag the real one-separator title "%s"', ( title ) => {
+		expect( isFilenameLikeTitle( title ) ).toBe( false );
+	} );
+
+	it( 'flags a one-separator title when it is the file name', () => {
+		expect( isFilenameLikeTitle( 'my-video', 'https://example.test/uploads/my-video.mp4' ) ).toBe( true );
 	} );
 
 	it( 'flags a title that matches the file name, with or without extension', () => {

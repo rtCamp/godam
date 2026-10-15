@@ -168,6 +168,37 @@ namespace {
 		}
 	}
 
+	if ( ! function_exists( 'update_option' ) ) {
+
+		/**
+		 * Writes into $GLOBALS['rtgodam_stub']['options'], which the get_option() stub reads.
+		 *
+		 * @param string $option   Option name.
+		 * @param mixed  $value    Value.
+		 * @param mixed  $autoload Ignored.
+		 * @return bool
+		 */
+		function update_option( $option, $value, $autoload = null ) {
+			$GLOBALS['rtgodam_stub']['options'][ $option ] = $value;
+			return true;
+		}
+	}
+
+	if ( ! function_exists( 'metadata_exists' ) ) {
+
+		/**
+		 * True when $GLOBALS['rtgodam_stub']['meta_exists'][ $object_id ][ $meta_key ] is set.
+		 *
+		 * @param string $meta_type Ignored.
+		 * @param int    $object_id Object ID.
+		 * @param string $meta_key  Meta key.
+		 * @return bool
+		 */
+		function metadata_exists( $meta_type, $object_id, $meta_key ) {
+			return ! empty( $GLOBALS['rtgodam_stub']['meta_exists'][ (int) $object_id ][ $meta_key ] );
+		}
+	}
+
 	if ( ! function_exists( 'get_the_post_thumbnail_url' ) ) {
 
 		/**
@@ -192,6 +223,39 @@ namespace {
 				'page'       => 'page',
 				'attachment' => 'attachment',
 			);
+		}
+	}
+
+	if ( ! class_exists( 'WP_Sitemaps_Provider' ) ) {
+
+		/**
+		 * Minimal core sitemap provider base, for Video_Sitemap_Core_Provider.
+		 */
+		abstract class WP_Sitemaps_Provider {
+ // phpcs:ignore Generic.Classes.DuplicateClassName.Found -- test stub.
+
+			/**
+			 * @var string
+			 */
+			protected $name = '';
+
+			/**
+			 * @var string
+			 */
+			protected $object_type = '';
+
+			/**
+			 * @param int    $page_num       Page.
+			 * @param string $object_subtype Subtype.
+			 * @return array
+			 */
+			abstract public function get_url_list( $page_num, $object_subtype = '' );
+
+			/**
+			 * @param string $object_subtype Subtype.
+			 * @return int
+			 */
+			abstract public function get_max_num_pages( $object_subtype = '' );
 		}
 	}
 

@@ -38,6 +38,13 @@ class VideoSeoSchemaTest extends TestCase {
 	 */
 	private $seo;
 
+	/**
+	 * Temporary directories created by a test, removed in tearDown().
+	 *
+	 * @var string[]
+	 */
+	private $temp_dirs = array();
+
 	protected function setUp(): void {
 		parent::setUp();
 		$GLOBALS['rtgodam_stub']  = array();
@@ -46,6 +53,9 @@ class VideoSeoSchemaTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
+		foreach ( $this->temp_dirs as $dir ) {
+			$this->remove_dir( $dir );
+		}
 		unset( $GLOBALS['rtgodam_stub'] );
 		$GLOBALS['rtgodam_hooks'] = array();
 		parent::tearDown();
@@ -368,7 +378,75 @@ class VideoSeoSchemaTest extends TestCase {
 	public function test_transcript_to_text_handles_webvtt() {
 		$vtt = "\xEF\xBB\xBFWEBVTT - Demo\nKind: captions\n\nNOTE This is a comment\n\nSTYLE\n::cue { color: red }\n\nintro\n00:00:00.000 --> 00:00:02.500 align:start\n<v Roo>Hi <b>there</b>,</v> &amp; welcome!\n\n00:00:02.500 --> 00:00:05.000\nThis is line one\nand line two.\n";
 
-		$this->assertSame( 'intro Hi there, & welcome! This is line one and line two.', Seo::transcript_to_text( $vtt ) );
+		// "intro" is a WebVTT cue identifier, not spoken text.
+		$this->assertSame( 'Hi there, & welcome! This is line one and line two.', Seo::transcript_to_text( $vtt ) );
+	}
+
+	public function test_transcript_keeps_cue_text_that_looks_like_a_header_or_a_number() {
+		$vtt = "WEBVTT\n\nchapter-1\n00:00:00.000 --> 00:00:02.000\nNote this down.\n\n2\n00:00:02.000 --> 00:00:04.000\n2024\nRegion four results.\n";
+
+		$this->assertSame( 'Note this down. 2024 Region four results.', Seo::transcript_to_text( $vtt ) );
+	}
+
+	public function test_transcript_skips_note_style_and_region_blocks() {
+		$vtt = "WEBVTT\n\nNOTE\nThis is a comment\nover two lines\n\nREGION\nid:fred width:40%\n\nSTYLE\n::cue { color: red }\n\n00:00:00.000 --> 00:00:02.000\nOnly this.\n";
+
+		$this->assertSame( 'Only this.', Seo::transcript_to_text( $vtt ) );
+	}
+
+	public function test_transcript_in_uploads_is_read_from_disk() {
+		$base = $this->make_uploads_dir();
+		file_put_contents( $base . '/uploads/2026/t.vtt', "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nFrom disk.\n" );
+
+		$GLOBALS['rtgodam_stub']['post_meta'] = array( 'rtgodam_transcript_path' => 'https://example.com/wp-content/uploads/2026/t.vtt' );
+
+		$this->assertSame( 'From disk.', $this->seo->get_transcript_excerpt( 42, true ) );
+		$this->assertEmpty( $GLOBALS['rtgodam_stub']['remote_get_urls'] ?? array() );
+	}
+
+	public function test_transcript_path_escaping_the_uploads_dir_is_not_read_from_disk() {
+		$base = $this->make_uploads_dir();
+		// A sibling directory whose name starts with "uploads".
+		mkdir( $base . '/uploads-private' );
+		file_put_contents( $base . '/uploads-private/secret.vtt', "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nSecret.\n" );
+
+		$GLOBALS['rtgodam_stub']['post_meta'] = array( 'rtgodam_transcript_path' => 'https://example.com/wp-content/uploads/../uploads-private/secret.vtt' );
+
+		$this->assertSame( '', $this->seo->get_transcript_excerpt( 42, true ) );
+		// It fell through to the (stubbed, 404) remote fetch instead of reading the file.
+		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['remote_get_urls'] );
+	}
+
+	/**
+	 * Recursively remove a temporary directory.
+	 *
+	 * @param string $dir Directory.
+	 * @return void
+	 */
+	private function remove_dir( $dir ) {
+		if ( ! is_dir( $dir ) ) {
+			return;
+		}
+		foreach ( new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $dir, \FilesystemIterator::SKIP_DOTS ), \RecursiveIteratorIterator::CHILD_FIRST ) as $item ) {
+			$item->isDir() ? rmdir( $item->getPathname() ) : unlink( $item->getPathname() ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- test cleanup.
+		}
+		rmdir( $dir ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- test cleanup.
+	}
+
+	/**
+	 * Create a temporary wp-content with an uploads dir and point the stubs at it.
+	 *
+	 * @return string wp-content path.
+	 */
+	private function make_uploads_dir() {
+		$base = sys_get_temp_dir() . '/godam-seo-test-' . uniqid();
+		mkdir( $base . '/uploads/2026', 0777, true );
+		$this->temp_dirs[] = $base;
+
+		$GLOBALS['rtgodam_stub']['uploads_baseurl'] = 'https://example.com/wp-content/uploads';
+		$GLOBALS['rtgodam_stub']['uploads_basedir'] = $base . '/uploads';
+
+		return $base;
 	}
 
 	public function test_transcript_to_text_handles_srt() {

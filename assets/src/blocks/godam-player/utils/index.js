@@ -143,9 +143,14 @@ function stripFileExtension( name ) {
 /**
  * Whether a video title looks like a raw file name rather than a real title.
  *
- * True when the title has hyphens or underscores and no spaces
- * (e.g. "product-demo_v2", "IMG_2041.mov"), or when it matches the video's
- * file name with or without its extension.
+ * A single hyphen or underscore is not enough on its own: real titles such as
+ * "Spider-Man", "COVID-19", "e-commerce", "Add-ons" or "Q3_review" have one.
+ * A title is only flagged when it has no spaces and shows a stronger sign of
+ * being a file name:
+ * - two or more hyphens/underscores (e.g. "product-demo_v2", "my-video-final");
+ * - a camera-style name (e.g. "IMG_2041", "DSC-0001", "VID_20240115");
+ * - a video file extension (e.g. "clip.mp4");
+ * or, with or without spaces, when it matches the video's file name.
  *
  * @param {string} title      - Video title / SEO headline.
  * @param {string} [fileName] - The video's file name or URL, if known.
@@ -158,17 +163,6 @@ function isFilenameLikeTitle( title, fileName = '' ) {
 		return false;
 	}
 
-	const hasSpaces = /\s/.test( trimmed );
-
-	if ( ! hasSpaces && /[-_]/.test( trimmed ) ) {
-		return true;
-	}
-
-	// A single word ending in a file extension, e.g. "IMG2041.mp4".
-	if ( ! hasSpaces && /\.(mp4|mov|m4v|webm|mkv|avi|wmv|flv|mpe?g|3gp|ogv|m3u8|mpd)$/i.test( trimmed ) ) {
-		return true;
-	}
-
 	const baseName = getFileNameFromUrl( fileName );
 	if ( baseName ) {
 		const normalizedTitle = trimmed.toLowerCase();
@@ -177,6 +171,25 @@ function isFilenameLikeTitle( title, fileName = '' ) {
 		if ( normalizedTitle === normalizedFile || normalizedTitle === stripFileExtension( normalizedFile ) ) {
 			return true;
 		}
+	}
+
+	if ( /\s/.test( trimmed ) ) {
+		return false;
+	}
+
+	// Two or more separators, e.g. "product-demo_v2".
+	if ( ( trimmed.match( /[-_]/g ) || [] ).length >= 2 ) {
+		return true;
+	}
+
+	// Camera / phone naming, e.g. "IMG_2041", "DSC-0001", "VID_20240115".
+	if ( /^[a-z]{2,5}[-_]\d{3,}$/i.test( trimmed ) ) {
+		return true;
+	}
+
+	// A single word ending in a video file extension, e.g. "IMG2041.mp4".
+	if ( /\.(mp4|mov|m4v|webm|mkv|avi|wmv|flv|mpe?g|3gp|ogv|m3u8|mpd)$/i.test( trimmed ) ) {
+		return true;
 	}
 
 	return false;

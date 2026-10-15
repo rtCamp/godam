@@ -601,7 +601,9 @@ class Seo {
 			$real     = realpath( $file );
 			$base     = realpath( $uploads['basedir'] );
 
-			if ( $real && $base && 0 === strpos( $real, $base ) && is_readable( $real ) ) {
+			// Compare against the uploads dir *with* a trailing separator, so a
+			// sibling such as "/uploads-other/" can't pass the prefix check.
+			if ( $real && $base && 0 === strpos( $real, trailingslashit( $base ) ) && is_file( $real ) && is_readable( $real ) ) {
 				$contents = file_get_contents( $real ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown -- local uploads file, path validated above.
 				return false === $contents ? false : (string) $contents;
 			}
@@ -644,21 +646,25 @@ class Seo {
 				continue;
 			}
 
-			// Header and metadata blocks carry no spoken text.
-			if ( preg_match( '/^(WEBVTT|NOTE|STYLE|REGION)\b/', $lines[0] ) ) {
+			// Only cue blocks carry spoken text, and a cue block always has a
+			// timing line ("00:00:01.000 --> 00:00:04.000", or "," in SRT).
+			// Header, NOTE, STYLE and REGION blocks have none and are skipped.
+			$timing_index = null;
+			foreach ( $lines as $index => $line ) {
+				if ( false !== strpos( $line, '-->' ) ) {
+					$timing_index = $index;
+					break;
+				}
+			}
+
+			if ( null === $timing_index ) {
 				continue;
 			}
 
-			foreach ( $lines as $line ) {
-				// Cue timing line, e.g. "00:00:01.000 --> 00:00:04.000" (VTT) or "00:00:01,000 --> …" (SRT).
-				if ( false !== strpos( $line, '-->' ) ) {
-					continue;
-				}
-				// Numeric SRT/VTT cue identifier.
-				if ( preg_match( '/^\d+$/', $line ) ) {
-					continue;
-				}
-
+			// Lines before the timing line are the cue identifier (numeric in
+			// SRT, any text in WebVTT); the cue text is everything after it.
+			// Text that merely starts with "Note" or is a number is kept.
+			foreach ( array_slice( $lines, $timing_index + 1 ) as $line ) {
 				$text = trim( preg_replace( '/<[^>]*>/', '', $line ) );
 				if ( '' !== $text ) {
 					$parts[] = html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
