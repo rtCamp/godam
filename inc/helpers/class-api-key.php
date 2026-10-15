@@ -53,57 +53,6 @@ class Api_Key {
 	const GRACE_PERIOD = 4 * HOUR_IN_SECONDS;
 
 	/**
-	 * How often an expired key past its grace period is still re-checked, so a
-	 * renewed subscription is picked up without a manual refresh.
-	 *
-	 * @var int
-	 */
-	const EXPIRED_RECHECK_INTERVAL = 12 * HOUR_IN_SECONDS;
-
-	/**
-	 * Delay before retrying a check that failed because Central could not answer.
-	 *
-	 * @var int
-	 */
-	const RETRY_INTERVAL = 5 * MINUTE_IN_SECONDS;
-
-	/**
-	 * How long a key that last verified as valid keeps working while Central
-	 * cannot be reached (timeouts, 5xx). A definitive answer from Central
-	 * (expired, invalid) still takes effect immediately.
-	 *
-	 * @var int
-	 */
-	const LAST_KNOWN_GOOD_WINDOW = DAY_IN_SECONDS;
-
-	/**
-	 * How long past the refresh time, counted from the last attempt, checks are
-	 * left to WP-Cron. Past that the request checks itself, which covers sites
-	 * where WP-Cron never runs.
-	 *
-	 * @var int
-	 */
-	const BACKGROUND_REFRESH_WINDOW = 2 * HOUR_IN_SECONDS;
-
-	/**
-	 * Timeout in seconds for the verify request. On a cold cache Central runs
-	 * its preflight checks before answering, which can take longer than the
-	 * WordPress default of 5 seconds.
-	 *
-	 * @var int
-	 */
-	const VERIFY_TIMEOUT = 30;
-
-	/**
-	 * Timeout in seconds for a verify request made inside a page load, which only
-	 * happens when WP-Cron has not checked for a long time. Kept short so a hanging
-	 * Central cannot hold the request for VERIFY_TIMEOUT.
-	 *
-	 * @var int
-	 */
-	const INLINE_VERIFY_TIMEOUT = 10;
-
-	/**
 	 * Get the stored API key.
 	 *
 	 * @since 1.7.0
@@ -200,19 +149,5 @@ class Api_Key {
 	 */
 	public static function clear_error_timestamp() {
 		delete_option( self::ERROR_SINCE_OPTION_KEY );
-	}
-
-	/**
-	 * Whether an HTTP status from Central means "try again later" rather than
-	 * an answer about the key: any 5xx, a timeout (408) or a rate limit (429).
-	 *
-	 * @param int|string $status_code HTTP status code.
-	 *
-	 * @return bool
-	 */
-	public static function is_retryable_status( $status_code ) {
-		$status_code = (int) $status_code;
-
-		return $status_code >= 500 || in_array( $status_code, array( 408, 429 ), true );
 	}
 }
