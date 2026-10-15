@@ -156,6 +156,7 @@ class ApiKeyVerificationResilienceTest extends TestCase {
 		$this->assertSame( 'valid', $data['api_key_status'] );
 		$this->assertSame( $last_checked, $data['timestamp'] );
 		$this->assertEqualsWithDelta( time() + 5 * MINUTE_IN_SECONDS, $data['retry_at'], 2 );
+		$this->assertEqualsWithDelta( time(), $data['checked_at'], 2 );
 		$this->assertSame( 'valid', $this->option( 'rtgodam-api-key-status' ) );
 	}
 
@@ -216,6 +217,102 @@ class ApiKeyVerificationResilienceTest extends TestCase {
 	}
 
 	/**
+	 * A check inside a page load waits less than one in WP-Cron, so a hanging
+	 * Central cannot hold a visitor for the full 30 s.
+	 */
+	public function test_check_in_the_request_uses_a_shorter_timeout() {
+		$this->store_key( 'valid', $this->cached( true, time() - 5 * HOUR_IN_SECONDS ) );
+		$this->queue_response( 200, $this->licence() );
+
+		rtgodam_get_user_data();
+
+		$this->assertSame( 10, $GLOBALS['rtgodam_stub']['posts'][0]['args']['timeout'] );
+	}
+
+	/**
+	 * An elapsed retry time triggers the check even when the cache is younger than
+	 * the normal refresh period (e.g. a Refresh Status that failed 30 minutes in).
+	 */
+	public function test_elapsed_retry_checks_before_the_normal_refresh_time() {
+		$cached             = $this->cached( true, time() - 30 * MINUTE_IN_SECONDS );
+		$cached['retry_at'] = time() - 1;
+		$this->store_key( 'valid', $cached );
+		$this->queue_response( 200, $this->licence() );
+		$GLOBALS['rtgodam_stub']['cron'] = true;
+
+		rtgodam_get_user_data();
+
+		$this->assertCount( 2, $GLOBALS['rtgodam_stub']['posts'] );
+	}
+
+	/**
+	 * The short retry only lasts while Central keeps failing: once a check succeeds
+	 * the site is back on the hourly check.
+	 */
+	public function test_successful_check_ends_the_short_retry() {
+		$cached             = $this->cached( true, time() - 2 * HOUR_IN_SECONDS );
+		$cached['retry_at'] = time() - 1;
+		$this->store_key( 'valid', $cached );
+		$this->queue_response( 200, $this->licence() );
+		$GLOBALS['rtgodam_stub']['cron'] = true;
+
+		$data = rtgodam_get_user_data();
+
+		$this->assertArrayNotHasKey( 'retry_at', $data );
+		$this->assertArrayNotHasKey( 'retry_at', $this->option( 'rtgodam_user_data' ) );
+		$this->assertSame( $data['timestamp'], $data['checked_at'] );
+	}
+
+	/**
+	 * What a successful check saves (no `retry_at`) is not checked again for an hour.
+	 */
+	public function test_after_recovery_the_check_is_hourly_again() {
+		$cached               = $this->cached( true, time() - 10 * MINUTE_IN_SECONDS );
+		$cached['checked_at'] = $cached['timestamp'];
+		$this->store_key( 'valid', $cached );
+		$GLOBALS['rtgodam_stub']['cron'] = true;
+
+		rtgodam_get_user_data();
+
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['posts'] );
+	}
+
+	/**
+	 * While Central keeps failing, WP-Cron does the retries: a visitor's request does
+	 * not check inline just because the last *successful* check is hours old.
+	 */
+	public function test_ongoing_failures_are_retried_in_the_background() {
+		$cached               = $this->cached( true, time() - 4 * HOUR_IN_SECONDS );
+		$cached['checked_at'] = time() - 6 * MINUTE_IN_SECONDS;
+		$cached['retry_at']   = time() - MINUTE_IN_SECONDS;
+		$this->store_key( 'valid', $cached );
+
+		$data = rtgodam_get_user_data();
+
+		$this->assertTrue( $data['valid_api_key'] );
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['posts'] );
+		$this->assertArrayHasKey( 'rtgodam_refresh_user_data', $GLOBALS['rtgodam_stub']['scheduled'] );
+	}
+
+	/**
+	 * A request calls Central at most once, even if another request overwrote the
+	 * saved data with an older copy in between.
+	 */
+	public function test_central_is_called_at_most_once_per_request() {
+		$stale = $this->cached( true, time() - 5 * HOUR_IN_SECONDS );
+		$this->store_key( 'valid', $stale );
+		$this->queue_timeout();
+		$this->queue_timeout();
+
+		rtgodam_get_user_data();
+		$GLOBALS['rtgodam_stub']['options']['rtgodam_user_data'] = $stale;
+		$data = rtgodam_get_user_data();
+
+		$this->assertCount( 1, $this->verify_calls() );
+		$this->assertArrayHasKey( 'retry_at', $data );
+	}
+
+	/**
 	 * An expired key past its grace period is re-checked twice a day, so a renewal
 	 * is picked up without a manual refresh.
 	 */
@@ -242,6 +339,20 @@ class ApiKeyVerificationResilienceTest extends TestCase {
 		rtgodam_get_user_data();
 
 		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['posts'] );
+	}
+
+	/**
+	 * The verify calls made so far (the usage call is left out).
+	 *
+	 * @return array
+	 */
+	private function verify_calls() {
+		return array_filter(
+			$GLOBALS['rtgodam_stub']['posts'],
+			function ( $post ) {
+				return false !== strpos( $post['url'], 'verify_api_key' );
+			}
+		);
 	}
 
 	/**

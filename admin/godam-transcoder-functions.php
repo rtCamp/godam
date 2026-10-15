@@ -521,10 +521,11 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
  *
  * @param string $api_key The api key to verify.
  * @param bool   $save        Whether to save the API key in the site options.
+ * @param int    $timeout     Seconds to wait for Central. Defaults to Api_Key::VERIFY_TIMEOUT.
  *
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
-function rtgodam_verify_api_key( $api_key, $save = false ) {
+function rtgodam_verify_api_key( $api_key, $save = false, $timeout = Api_Key::VERIFY_TIMEOUT ) {
 	if ( empty( $api_key ) ) {
 		return new \WP_Error( 'missing_api_key', __( 'API key is required.', 'godam' ), array( 'status' => 400 ) );
 	}
@@ -568,7 +569,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		'headers' => array(
 			'Content-Type' => 'application/json',
 		),
-		'timeout' => Api_Key::VERIFY_TIMEOUT,
+		'timeout' => $timeout,
 	);
 
 	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
