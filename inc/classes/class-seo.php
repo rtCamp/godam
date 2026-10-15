@@ -979,6 +979,15 @@ class Seo {
 			$schema['duration'] = sanitize_text_field( $video['duration'] );
 		}
 
+		// Key moments: the video's chapters as Clip entries, so Google can show
+		// "jump to" links in search. Needs the host page to build each clip's URL.
+		if ( $attachment_id > 0 && $post_id > 0 ) {
+			$clips = $this->get_key_moment_clips( $attachment_id, $post_id, $schema['duration'] ?? '' );
+			if ( ! empty( $clips ) ) {
+				$schema['hasPart'] = $clips;
+			}
+		}
+
 		/**
 		 * Filter an individual video SEO schema entry before output.
 		 *
@@ -995,6 +1004,240 @@ class Seo {
 		 *                       using it (e.g. get_post_type( $post_id )).
 		 */
 		return apply_filters( 'godam_video_seo_schema', $schema, $video, $post_id );
+	}
+
+	/**
+	 * Build Google "key moments" for a video from its GoDAM chapters.
+	 *
+	 * Each chapter becomes a schema.org `Clip` with a deep link that seeks the
+	 * player on the host page (`?t=<seconds>#godam-video-<id>`, handled by the
+	 * GoDAM player). Read at output time from the attachment's `rtgodam_meta`,
+	 * so editing chapters updates the schema without re-saving the page.
+	 *
+	 * @see https://developers.google.com/search/docs/appearance/structured-data/video#clip
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param int    $post_id       Host post ID (the page the video is on).
+	 * @param string $duration      Video duration (ISO 8601), used to end the last clip.
+	 * @return array[] Clip entries for `hasPart`, or an empty array.
+	 */
+	public function get_key_moment_clips( $attachment_id, $post_id, $duration = '' ) {
+		$attachment_id = absint( $attachment_id );
+		$post_id       = absint( $post_id );
+
+		if ( ! $attachment_id || ! $post_id ) {
+			return array();
+		}
+
+		/**
+		 * Filters whether chapters are output as key moments (`hasPart` Clips).
+		 *
+		 * @since 2.4.0
+		 *
+		 * @param bool $enabled       Default true.
+		 * @param int  $attachment_id Attachment ID.
+		 * @param int  $post_id       Host post ID.
+		 */
+		if ( ! apply_filters( 'godam_video_seo_key_moments_enabled', true, $attachment_id, $post_id ) ) {
+			return array();
+		}
+
+		/**
+		 * Fires before reading this attachment's chapters (rtgodam_meta), so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.4.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$meta = get_post_meta( $attachment_id, 'rtgodam_meta', true );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		$chapters = ( is_array( $meta ) && ! empty( $meta['chapters'] ) && is_array( $meta['chapters'] ) ) ? $meta['chapters'] : array();
+		if ( empty( $chapters ) ) {
+			return array();
+		}
+
+		$page_url = (string) get_permalink( $post_id ); // godam-coverage-ignore -- get_key_moment_clips(): $post_id is the host page, never an attachment.
+		if ( '' === $page_url ) {
+			return array();
+		}
+
+		$clips = self::chapters_to_clips( $chapters, $page_url, $attachment_id, self::iso8601_to_seconds( $duration ) );
+
+		/**
+		 * Filters the key moment Clip entries output in a video's `hasPart`.
+		 *
+		 * @since 2.4.0
+		 *
+		 * @param array[] $clips         Clip entries.
+		 * @param int     $attachment_id Attachment ID.
+		 * @param int     $post_id       Host post ID.
+		 * @param array   $chapters      Raw chapters from rtgodam_meta.
+		 */
+		$clips = apply_filters( 'godam_video_seo_key_moments', $clips, $attachment_id, $post_id, $chapters );
+
+		return is_array( $clips ) ? array_values( $clips ) : array();
+	}
+
+	/**
+	 * Convert GoDAM chapters into schema.org Clip entries.
+	 *
+	 * Chapters are sorted by start time. A chapter's end is its own `endTime`
+	 * when set, otherwise the next chapter's start, otherwise the video
+	 * duration. Chapters without a title, with an unreadable start, starting
+	 * at or after the end of the video, or with no length are skipped, as are
+	 * duplicate start times.
+	 *
+	 * Pure: no WordPress calls.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param array  $chapters         Chapters (`text`, `startTime`, optional `endTime`, `originalTime`).
+	 * @param string $page_url         Host page URL.
+	 * @param int    $attachment_id    Attachment ID, for the `#godam-video-<id>` anchor.
+	 * @param int    $duration_seconds Video length in seconds, or 0 when unknown.
+	 * @return array[] Clip entries.
+	 */
+	public static function chapters_to_clips( array $chapters, $page_url, $attachment_id, $duration_seconds = 0 ) {
+		$rows = array();
+
+		foreach ( $chapters as $chapter ) {
+			$chapter = (array) $chapter;
+			$name    = trim( wp_strip_all_tags( (string) ( $chapter['text'] ?? '' ) ) );
+
+			$start_raw = ( isset( $chapter['startTime'] ) && '' !== (string) $chapter['startTime'] )
+				? $chapter['startTime']
+				: ( $chapter['originalTime'] ?? null );
+			$start     = self::parse_time_to_seconds( $start_raw );
+
+			if ( '' === $name || null === $start || $start < 0 ) {
+				continue;
+			}
+
+			$end = ( isset( $chapter['endTime'] ) && '' !== (string) $chapter['endTime'] )
+				? self::parse_time_to_seconds( $chapter['endTime'] )
+				: null;
+
+			$rows[] = array(
+				'name'  => $name,
+				'start' => $start,
+				'end'   => $end,
+			);
+		}
+
+		usort(
+			$rows,
+			function ( $a, $b ) {
+				return $a['start'] <=> $b['start'];
+			}
+		);
+
+		// Strip any fragment from the page URL; the clip adds its own.
+		$base = (string) preg_replace( '/#.*$/', '', (string) $page_url );
+		$sep  = ( false === strpos( $base, '?' ) ) ? '?' : '&';
+
+		$clips       = array();
+		$seen_starts = array();
+		$count       = count( $rows );
+
+		for ( $i = 0; $i < $count; $i++ ) {
+			$start_offset = (int) floor( $rows[ $i ]['start'] );
+
+			if ( isset( $seen_starts[ $start_offset ] ) ) {
+				continue;
+			}
+
+			if ( $duration_seconds > 0 && $start_offset >= $duration_seconds ) {
+				continue;
+			}
+
+			$end = $rows[ $i ]['end'];
+			if ( null === $end ) {
+				$end = ( $i + 1 < $count ) ? $rows[ $i + 1 ]['start'] : ( $duration_seconds > 0 ? $duration_seconds : null );
+			}
+
+			$clip = array(
+				'@type'       => 'Clip',
+				'name'        => $rows[ $i ]['name'],
+				'startOffset' => $start_offset,
+			);
+
+			if ( null !== $end ) {
+				$end_offset = (int) ceil( $end );
+				if ( $duration_seconds > 0 ) {
+					$end_offset = min( $end_offset, (int) $duration_seconds );
+				}
+				if ( $end_offset <= $start_offset ) {
+					continue;
+				}
+				$clip['endOffset'] = $end_offset;
+			}
+
+			$clip['url'] = $base . $sep . 't=' . $start_offset . '#godam-video-' . (int) $attachment_id;
+
+			$seen_starts[ $start_offset ] = true;
+			$clips[]                      = $clip;
+		}
+
+		return $clips;
+	}
+
+	/**
+	 * Parse a chapter time: plain seconds ("90", "12.5"), "mm:ss" or "hh:mm:ss(.ms)".
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param mixed $value Time value.
+	 * @return float|null Seconds, or null when unreadable.
+	 */
+	public static function parse_time_to_seconds( $value ) {
+		if ( null === $value || is_array( $value ) || is_object( $value ) ) {
+			return null;
+		}
+
+		$value = trim( (string) $value );
+
+		if ( '' === $value ) {
+			return null;
+		}
+
+		if ( is_numeric( $value ) ) {
+			return (float) $value;
+		}
+
+		if ( ! preg_match( '/^(?:(\d+):)?(\d{1,2}):(\d{1,2}(?:\.\d+)?)$/', $value, $m ) ) {
+			return null;
+		}
+
+		$hours   = '' !== $m[1] ? (int) $m[1] : 0;
+		$minutes = (int) $m[2];
+		$seconds = (float) $m[3];
+
+		return $hours * 3600 + $minutes * 60 + $seconds;
+	}
+
+	/**
+	 * Convert an ISO 8601 duration (e.g. "PT1H2M3S") to whole seconds.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param string $duration ISO 8601 duration.
+	 * @return int Seconds, or 0 when unparseable.
+	 */
+	public static function iso8601_to_seconds( $duration ) {
+		if ( ! is_string( $duration ) || ! preg_match( '/^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/i', trim( $duration ), $m ) ) {
+			return 0;
+		}
+
+		$days    = isset( $m[1] ) ? (int) $m[1] : 0;
+		$hours   = isset( $m[2] ) ? (int) $m[2] : 0;
+		$minutes = isset( $m[3] ) ? (int) $m[3] : 0;
+		$seconds = isset( $m[4] ) ? (float) $m[4] : 0;
+
+		return (int) round( $days * 86400 + $hours * 3600 + $minutes * 60 + $seconds );
 	}
 
 	/**

@@ -168,6 +168,20 @@ namespace {
 		}
 	}
 
+	if ( ! function_exists( 'get_permalink' ) ) {
+
+		/**
+		 * Same shape as tests/stubs/product-lookup-functions.php's get_permalink()
+		 * (default "shop" site), so results match whichever stub loads first.
+		 *
+		 * @param int $post Post ID.
+		 * @return string
+		 */
+		function get_permalink( $post = 0 ) {
+			return 'https://shop.test/?p=' . (int) $post;
+		}
+	}
+
 	if ( ! function_exists( 'get_the_post_thumbnail_url' ) ) {
 
 		/**
