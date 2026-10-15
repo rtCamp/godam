@@ -32,6 +32,7 @@ use RTGODAM\Inc\REST_API\WPForms;
 use RTGODAM\Inc\REST_API\Forminator_Forms;
 use RTGODAM\INC\REST_API\SureForms;
 use RTGODAM\Inc\REST_API\Fluent_Forms;
+use RTGODAM\Inc\REST_API\Hubspot_Forms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Onboarding;
 use RTGODAM\Inc\REST_API\Marketo_Integration;
@@ -190,6 +191,7 @@ class Plugin {
 		Fluent_Forms::get_instance();
 		Ninja_Forms_Rest_Api::get_instance();
 		Metform_Rest_Api::get_instance();
+		Hubspot_Forms::get_instance();
 		Settings::get_instance();
 		Onboarding::get_instance();
 		Marketo_Integration::get_instance();

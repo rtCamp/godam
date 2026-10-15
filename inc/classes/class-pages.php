@@ -715,6 +715,16 @@ class Pages {
 						'instanceHost' => \RTGODAM\Inc\Marketo::get_instance_host(),
 						'munchkinId'   => \RTGODAM\Inc\Marketo::get_munchkin_id(),
 					),
+					// HubSpot form layer. "Active" means enabled and the admin's
+					// chosen source (GoDAM Central or the HubSpot/leadin plugin) is
+					// actually connected. Portal ID + region drive the in-editor live
+					// preview and come from whichever source is active; they are not
+					// secret (the frontend embed exposes them too). `hubspotSource`
+					// lets the editor tailor its copy (central / leadin / empty).
+					'hubspotActive'      => \RTGODAM\Inc\Hubspot::is_configured(),
+					'hubspotPortalId'    => \RTGODAM\Inc\Hubspot::get_effective_portal_id(),
+					'hubspotHublet'      => \RTGODAM\Inc\Hubspot::get_effective_region(),
+					'hubspotSource'      => \RTGODAM\Inc\Hubspot::get_active_source(),
 					// O9: Woo empty-state copy on the connected Video Editor.
 					'wooActive'          => class_exists( 'WooCommerce' ),
 					// Woo product-guide entry: only when GoDAM-for-Woo ships the

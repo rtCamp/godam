@@ -19,6 +19,7 @@ import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
 import MarketoIcon from '../assets/layers/MarketoIcon.svg';
+import HubSpotIcon from '../assets/layers/HubSpotIcon.svg';
 import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from './editor-shell/icons';
 import { LAYER_TYPE_COLORS } from '../utils/layerTypes';
 import { notify as notifyGuide } from '../onboarding/productGuide';
@@ -120,6 +121,12 @@ export const layerTypes = [
 				// to Settings → Integrations → Marketo when credentials are missing.
 				isActive: true,
 				tooltipMessage: '',
+			},
+			hubspot: {
+				layerText: __( 'HubSpot', 'godam' ),
+				icon: HubSpotIcon,
+				isActive: window?.videoData?.hubspotActive ?? false,
+				tooltipMessage: __( 'Connect HubSpot in Settings → Integrations, or activate the HubSpot plugin, to use this form', 'godam' ),
 			},
 		},
 	},
