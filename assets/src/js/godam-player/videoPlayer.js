@@ -390,6 +390,7 @@ export default class GodamVideoPlayer {
 			onVideoResize: () => this.layersManager.handleVideoResize(),
 			onPlay: () => this.layersManager.handlePlay(),
 			onControlsMove: () => this.controlsManager.moveVideoControls(),
+			onControlsReset: () => this.controlsManager.resetVideoControls(),
 		} );
 
 		// Suppress layers while an uncommitted hover preview ("Start Preview")

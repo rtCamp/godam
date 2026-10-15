@@ -465,6 +465,43 @@ export default class ControlsManager {
 	}
 
 	/**
+	 * Reset the play / skip controls to the default (wide) layout.
+	 *
+	 * moveVideoControls() positions these controls with inline styles computed
+	 * from the player's pixel size for a narrow (<= 480px) player. When the
+	 * container grows back above that threshold — e.g. switching the media
+	 * preview from Mobile to Desktop — those inline styles must be cleared so the
+	 * default CSS layout takes over again.
+	 */
+	resetVideoControls() {
+		try {
+			const playerElement = this.player.el_;
+
+			// Pills: the central-controls wrapper is positioned absolutely for a
+			// narrow player. Clearing its inline styles lets it flow inline again.
+			const controlWrapper = playerElement.querySelector( '.godam-central-controls' );
+			if ( controlWrapper ) {
+				[ 'position', 'left', 'bottom', 'width' ].forEach( ( prop ) =>
+					controlWrapper.style.removeProperty( prop ),
+				);
+			}
+
+			const playButton = playerElement.querySelector( '.vjs-play-control' );
+			if ( playButton ) {
+				playButton.style.removeProperty( 'left' );
+				playButton.style.removeProperty( 'bottom' );
+			}
+
+			const skipButtons = playerElement.querySelectorAll(
+				'.vjs-skip-backward-5, .vjs-skip-backward-10, .vjs-skip-backward-30, .vjs-skip-forward-5, .vjs-skip-forward-10, .vjs-skip-forward-30',
+			);
+			skipButtons.forEach( ( button ) => button.style.removeProperty( 'bottom' ) );
+		} catch {
+			// Silently fail
+		}
+	}
+
+	/**
 	 * Setup Pills control layout
 	 *
 	 * @param {HTMLElement} playerElement - Player element

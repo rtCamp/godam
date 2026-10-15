@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.3.2
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -194,35 +194,37 @@ A. Yes! You can start with a 60-day free trial to explore all features. No credi
 A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
 == Screenshots ==
-1. General Settings
-2. Video Settings with valid API Key
-3. Media Editor
-4. Video Layer Selection
-5. Hotspot Layer
-6. Ads Integration
-7. Gravity Forms Integration
-8. Player Settings
-9. Enhanced Media Library (DAM)
-10. Post-Specific Video Settings
-11. Attachment Video Details
-12. Single Video Analytics
-13. Video Analytics Dashboard
-14. GoDAM Central Selector Tab
-15. GoDAM Recorder Field for Gravity Forms
-16. Automatic Video Transcription
-17. GoDAM Central
-18. Image Upload to GoDAM Central
-19. Single Video Page in  GoDAM Central
-20. Settings Page in GoDAM Central
-21. GoDAM Video Gallery Block
-22. Elementor GoDAM Gallery Widget
-23. Elementor GoDAM Video Widget
-24. Video Player Style Settings
-25. Global Ads Settings
-26. Chapters Interface
-27. Likes and Comments
+1. Video Editor: add interactive layers to a video, with its plays and watch time on top
+2. Add layer menu: CTA, Hotspot, Form, Poll and Ad layers (WooCommerce with the GoDAM for Woo add-on)
+3. Hotspot layer: place a clickable icon with a tooltip and link at a moment in the video
+4. Ad layer: play a skippable video ad inside your video, with a click-through link
+5. Gravity Forms layer: ask viewers to fill in a form mid-video, including a field to record a video answer
+6. Media Library with folders: keep your videos, audio and images organized and bookmarked
+7. Attachment details: preview a video, pick its thumbnail, and open its editor or analytics
+8. Single video analytics: engagement, play rate, watch time and plays for one video
+9. Analytics dashboard: plays, unique viewers, viewer locations and playback performance across your videos
+10. Transcription: a time-stamped transcript shown beside your video
+11. GoDAM Central media library: all your hosted videos, audio and images in one place
+12. Video Gallery block: show handpicked videos, or videos chosen by a query, as a gallery in the block editor
+13. Elementor Gallery widget: build a video gallery with a grid layout, choose videos by category, tag or date range, and Load More
+14. Elementor Video widget: add a GoDAM video with autoplay, loop and playback controls
+15. Video Player settings: choose a player skin and set your brand color and logo
+16. Chapters: split a video into titled sections on its timeline
+17. GoDAM for Woo add-on (a separate plugin): Reel Pop, a floating video on your storefront
+18. GoDAM for Woo add-on: a scrolling row of shoppable videos with product, price and Add to Cart
+19. GoDAM for Woo add-on: a product video gallery on the product page
+20. GoDAM for Woo add-on: product hotspots that show the product and its price inside the video
 
 == Changelog ==
+
+= v2.4.0 (October 15, 2026) =
+
+- Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.
+- Feat: The Hotspot layer has a new Button style: each hotspot can show as a text or sticker button, with its own colours and link.
+- Tweak: The media preview page can switch between Desktop and Mobile views, for videos, images and audio.
+- Fix: Usage tracking now follows the admin's choice.
+- Fix: The GoDAM Audio block now accepts .webm audio, such as form recordings, from the GoDAM tab and from uploads.
+- Fix: GoDAM stays connected when its servers are slow to respond.
 
 = v2.3.2 (October 12, 2026) =
 
@@ -241,18 +243,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Editors and Authors see video analytics only; store data (products, add-to-carts, orders, revenue) needs WooCommerce's report permission.
 - Fix: A GoDAM Record field on a Gravity Forms form no longer fails with "Number of files (2) exceeds limit (1)" after moving between pages or fixing a failed submit, on Gravity Forms 2.9.18 and later.
 - Fix: Security fixes.
-
-= v2.3.0 (September 24, 2026) =
-
-- Feat: Revenue Analytics for WooCommerce. See how much order value is credited to each video, split into Direct (added to cart inside the video) and Assisted (clicked the product in a video, image hotspot or Reel Pop, then added it to cart on its product page). Influenced revenue is reported separately and is never added to the headline.
-- Feat: Top Products, a new dashboard tab showing per-product views, add-to-cart counts split into in-video and product-page, revenue, and where in your videos each product appeared.
-- Feat: Video to Cart and Video to Purchase rates, measured against the people who actually played the video.
-- Feat: Two new funnels: Play to Cart to Purchase, and the same funnel broken down by placement.
-- Feat: Per-hotspot revenue in layer analytics, showing the revenue from in-video add-to-carts made through each product hotspot.
-- Feat: A Google Analytics 4 status widget on the analytics dashboard, showing whether GoDAM for Woo is pushing video-driven add_to_cart and purchase events to your Google Tag Manager dataLayer.
-- Tweak: The Revenue and Purchase Funnel cards on the single-video page each have their own date-range picker.
-- Tweak: The layer interaction metric is now called "Interaction rate" instead of "Conversion".
-- Note: Revenue and product metrics need the GoDAM for Woo add-on 2.2.0 or later.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
@@ -330,3 +320,32 @@ When Data is Sent:
 Service Provider: analytics.godam.io
 
 [Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
+
+=== PostHog (us.i.posthog.com) ===
+Purpose: This service provides product analytics for GoDAM's own screens in the WordPress admin. It helps us see how GoDAM is used and where it fails, so we can improve the plugin.
+
+Data Sent:
+
+1. Details about the site: PHP version, MySQL version, web server software, WordPress version, site language, number of active plugins, total number of plugins, and number of users
+
+2. How GoDAM's admin screens are used: page views, clicks, and errors
+
+3. Session replays and heatmaps of GoDAM's admin screens
+
+4. The address of the admin screen being used, and an ID that PostHog stores in the browser
+
+5. The IP address and browser details that every web request carries
+
+When Data is Sent:
+
+1. Only after a site administrator has clicked "Allow" in the notice shown on the WordPress Dashboard, or turned on "Help us improve GoDAM" on the GoDAM Help page. Nothing is sent before one of these, and connecting a GoDAM account (an API key) does not switch it on.
+
+2. Only while someone is using GoDAM's screens in the WordPress admin. It is never sent for visitors to your site.
+
+3. An administrator can turn it off at any time with "Help us improve GoDAM" on the GoDAM Help page, and that choice is kept, including when an API key is saved. It stops from the next page load.
+
+PostHog's code also loads its own settings and scripts from us-assets.i.posthog.com, at the same times as the data above is sent.
+
+Service Provider: [posthog.com](https://posthog.com)
+
+[Terms of Service](https://posthog.com/terms) | [Privacy Policy](https://posthog.com/privacy)

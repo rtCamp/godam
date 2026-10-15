@@ -2363,7 +2363,32 @@ class Media_Library extends Base {
 		);
 
 		if ( $existing->have_posts() ) {
-			return (int) $existing->posts[0];
+			$existing_id = (int) $existing->posts[0];
+
+			/*
+			 * A form recording picked before the GoDAM tab reported it as audio was saved
+			 * as video/webm or video/mp4. Correct it when it is picked again, or the media
+			 * editor keeps opening it as a video. The new type comes from the browser, so
+			 * should_correct_audio_mime() allows only the exact container pairs, for a user
+			 * who may edit the attachment. A failed update leaves the attachment as it was,
+			 * which the block still accepts.
+			 */
+			$mime           = sanitize_mime_type( $data['mime'] );
+			$should_correct = Media_Library_Ajax::should_correct_audio_mime(
+				(string) get_post_mime_type( $existing_id ), // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively, the caller (create_virtual_attachment) wraps the entire call in try/finally.
+				$mime,
+				current_user_can( 'edit_post', $existing_id ) // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively, the caller (create_virtual_attachment) wraps the entire call in try/finally.
+			);
+			if ( $should_correct ) {
+				wp_update_post( // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively, the caller (create_virtual_attachment) wraps the entire call in try/finally.
+					array(
+						'ID'             => $existing_id,
+						'post_mime_type' => $mime,
+					)
+				);
+			}
+
+			return $existing_id;
 		}
 
 		// Prepare post data for the virtual media entry.
