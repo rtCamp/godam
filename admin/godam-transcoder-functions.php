@@ -568,6 +568,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		'headers' => array(
 			'Content-Type' => 'application/json',
 		),
+		'timeout' => Api_Key::VERIFY_TIMEOUT,
 	);
 
 	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
@@ -586,7 +587,14 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	$status_code = wp_remote_retrieve_response_code( $response );
 	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
-	// Central sends 200 status code with error if API Key is invalid.
+	// Central puts an `error` in its 5xx bodies too ("Service temporarily unavailable",
+	// "Account setup is still in progress"). Those say nothing about the key, so they
+	// must not mark it expired: report a temporary failure and keep the stored status.
+	if ( Api_Key::is_retryable_status( $status_code ) ) {
+		return new \WP_Error( 'verification_error', __( 'Unable to verify API key. Please try again later.', 'godam' ), array( 'status' => 500 ) );
+	}
+
+	// Central answers an invalid or inactive key with an `error` (HTTP 401/403, or 200 on older versions).
 	if ( isset( $body['message']['error'] ) ) {
 		$error_message = $body['message']['error'];
 
