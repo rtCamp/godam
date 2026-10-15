@@ -4,6 +4,11 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { Tooltip } from '@wordpress/components';
 
+/**
+ * Internal dependencies
+ */
+import ContactSupportLink from '../shared/ContactSupportLink';
+
 // Direct = added in-video (dark blue); Assisted = clicked out then added (light
 // blue); the rest of each track stays grey ("did not reach this stage").
 const COLOR_DIRECT = '#2563eb';
@@ -129,6 +134,8 @@ export default function PurchaseFunnelCard( { funnel, dataLabel, scope = 'accoun
 				</div>
 				<p className="text-[13px] text-[#b32d2e]" data-test-id="godam-purchase-funnel-error">
 					{ __( 'Couldn’t load the funnel for this range. Please try again.', 'godam' ) }
+					{ ' ' }
+					<ContactSupportLink testId="godam-purchase-funnel-link-contact-support" />
 				</p>
 			</div>
 		);

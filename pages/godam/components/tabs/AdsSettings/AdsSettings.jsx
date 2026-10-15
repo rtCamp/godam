@@ -24,6 +24,7 @@ import { useState, useEffect } from '@wordpress/element';
 import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
+import ContactSupportLink from '../../../../shared/ContactSupportLink';
 
 const AdsSettings = () => {
 	const dispatch = useDispatch();
@@ -87,6 +88,9 @@ const AdsSettings = () => {
 					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
 				>
 					{ notice.message }
+					{ 'error' === notice.status && (
+						<ContactSupportLink className="godam-support-link-inline" testId="godam-settings-link-contact-support" />
+					) }
 				</Notice>
 			) }
 

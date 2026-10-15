@@ -415,6 +415,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 			<?php else : ?>
 				<span class="status-text"><?php esc_html_e( 'Transcoding failed, please try again.', 'godam' ); ?></span>
 			<?php endif; ?>
+			<?php echo wp_kses_post( rtgodam_get_contact_support_link( 'godam-contact-support--link' ) ); ?>
 		</div>
 		<?php
 	} elseif ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {

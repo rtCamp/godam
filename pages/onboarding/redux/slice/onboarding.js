@@ -17,7 +17,7 @@ const initialState = {
 	organizations: [],
 	selectedOrganization: null,
 	connected: false,
-	notice: null, // { message, status }
+	notice: null, // { message, status, support }: `support: false` hides the Contact Support link on an error
 };
 
 const onboardingSlice = createSlice( {

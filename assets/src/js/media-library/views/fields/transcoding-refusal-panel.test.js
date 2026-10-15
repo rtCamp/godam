@@ -11,6 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import renderTranscodingRefusalPanel from './transcoding-refusal-panel';
+import { SUPPORT_URL } from '../../../../../../pages/shared/support';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -45,6 +46,18 @@ describe( 'transcoding refusal panel', () => {
 		expect( [ ...panel().querySelectorAll( '.button' ) ].map( ( b ) => b.textContent ) ).toEqual( [ 'Upgrade plan', 'Retranscode' ] );
 		expect( panel().querySelector( 'a.button' ).href ).toContain( 'app.godam.io/web/billing' );
 		expect( panel().querySelector( 'details' ).textContent ).toContain( 'Storage limit exceeded' );
+	} );
+
+	it( 'always offers Contact Support, after the status line and before the details', () => {
+		renderTranscodingRefusalPanel( view( { ...refused, transcoding_can_retranscode: false, transcoding_error_needs_plan: false } ) );
+
+		const link = panel().querySelector( 'a.godam-contact-support' );
+		expect( link.href ).toBe( SUPPORT_URL );
+		expect( link.getAttribute( 'data-test-id' ) ).toBe( 'godam-media-library-link-contact-support' );
+
+		const order = [ ...panel().children ].map( ( node ) => node.className || node.tagName );
+		expect( order.indexOf( 'godam-transcoding-refusal__support' ) ).toBe( order.indexOf( 'godam-transcoding-refusal__status' ) + 1 );
+		expect( order.indexOf( 'godam-transcoding-refusal__support' ) ).toBeLessThan( order.indexOf( 'godam-transcoding-refusal__details' ) );
 	} );
 
 	it( 'leaves out what the user can\'t use or doesn\'t need', () => {

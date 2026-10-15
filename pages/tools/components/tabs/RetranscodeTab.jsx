@@ -19,6 +19,7 @@ import { useState, useRef, useEffect, useMemo } from '@wordpress/element';
  * Internal dependencies
  */
 import ProgressBar from '../ProgressBar.jsx';
+import ContactSupportLink from '../../../shared/ContactSupportLink';
 import { scrollToTop } from '../../../godam/utils';
 import { SUPPORTED_DOCUMENT_EXTENSIONS } from '../../../../assets/src/blocks/godam-pdf/constants';
 
@@ -117,7 +118,7 @@ const RetranscodeTab = () => {
 					setSelectedIds( idsArr );
 				}
 			} else {
-				showNotice( __( 'The requested operation is not allowed. The nonce provided in the URL is invalid or expired.', 'godam' ), 'error' );
+				showNotice( __( 'The requested operation is not allowed. The nonce provided in the URL is invalid or expired.', 'godam' ), 'error', { support: false } );
 			}
 		}
 	}, [] );
@@ -350,8 +351,10 @@ const RetranscodeTab = () => {
 		window.history.replaceState( {}, '', url.toString() );
 	};
 
-	const showNotice = ( message, status = 'success' ) => {
-		setNotice( { message, status, isVisible: true } );
+	// An error notice carries a Contact Support link unless the caller opts out with `support: false`
+	// (used when the error comes from the admin's own input, such as a bad URL).
+	const showNotice = ( message, status = 'success', { support = true } = {} ) => {
+		setNotice( { message, status, isVisible: true, support } );
 		if ( window.scrollY > 0 ) {
 			scrollToTop();
 		}
@@ -448,6 +451,9 @@ const RetranscodeTab = () => {
 						onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
 					>
 						{ notice.message }
+						{ 'error' === notice.status && false !== notice.support && (
+							<ContactSupportLink className="godam-support-link-inline" testId="godam-tools-link-contact-support" />
+						) }
 					</Notice>
 				) }
 			</div>
@@ -484,6 +490,7 @@ const RetranscodeTab = () => {
 										__( 'Your storage usage has exceeded your plan limit (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue.', 'godam' ),
 										( ( Number( window?.userData?.storageUsed || 0 ) / Math.max( 1, Number( window?.userData?.totalStorage || 0 ) ) ) * 100 ).toFixed( 1 ),
 									) }
+									<ContactSupportLink className="godam-support-link-inline" testId="godam-tools-link-contact-support-storage" />
 								</p>
 							</div>
 						)
@@ -608,6 +615,11 @@ const RetranscodeTab = () => {
 									</div>
 								) ) }
 							</pre>
+							{ failureCount > 0 && (
+								<div className="mt-2">
+									<ContactSupportLink testId="godam-tools-link-contact-support-log" />
+								</div>
+							) }
 						</div>
 					}
 

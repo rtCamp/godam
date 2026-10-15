@@ -26,6 +26,12 @@ $godam-support-accent-hover: color-mix(in srgb, var(--wp-components-color-accent
 		text-underline-offset: 2px;
 	}
 
+	// Inside a WP error notice the accent reads too faint on the red background,
+	// so the link follows the notice's own text colour.
+	.components-notice.is-error & {
+		color: inherit;
+	}
+
 	&--button {
 		min-height: 44px;
 		box-sizing: border-box;
@@ -49,4 +55,9 @@ $godam-support-accent-hover: color-mix(in srgb, var(--wp-components-color-accent
 			box-shadow: none;
 		}
 	}
+}
+
+/* A Contact Support link that follows an error message on the same line. */
+.godam-support-link-inline {
+	margin-left: 8px;
 }

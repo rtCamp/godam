@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-14T08:22:35+00:00\n"
+"POT-Creation-Date: 2026-10-15T07:39:19+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -64,7 +64,7 @@ msgstr ""
 #: assets/src/blocks/godam-audio/render.php:171
 #: assets/src/blocks/godam-audio/edit.js:687
 #: pages/video-editor/components/audio/AudioCardPreview.js:70
-#: pages/video-editor/VideoEditor.js:674
+#: pages/video-editor/VideoEditor.js:683
 msgid "Untitled audio"
 msgstr ""
 
@@ -118,7 +118,7 @@ msgstr ""
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:298
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:365
 #: pages/video-editor/components/audio/AudioCardPreview.js:253
-#: pages/video-editor/components/transcription/Transcription.js:170
+#: pages/video-editor/components/transcription/Transcription.js:173
 msgid "Transcript"
 msgstr ""
 
@@ -337,7 +337,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-audio.php:95
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:129
 #: assets/src/blocks/godam-audio/edit.js:498
-#: assets/src/blocks/godam-player/edit.js:1070
+#: assets/src/blocks/godam-player/edit.js:1083
 #: pages/video-editor/components/appearance/Appearance.js:233
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:503
 msgid "Thumbnail"
@@ -432,7 +432,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-audio/edit.js:571
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:20
-#: pages/video-editor/components/transcription/Transcription.js:176
+#: pages/video-editor/components/transcription/Transcription.js:179
 msgid "Transcription"
 msgstr ""
 
@@ -575,8 +575,8 @@ msgstr ""
 #: inc/templates/godam-video-gallery.php:261
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:163
 #: assets/src/blocks/godam-gallery-v2/edit.js:716
-#: pages/analytics/Analytics.js:628
-#: pages/video-editor/VideoEditor.js:676
+#: pages/analytics/Analytics.js:647
+#: pages/video-editor/VideoEditor.js:685
 msgid "Untitled video"
 msgstr ""
 
@@ -607,8 +607,8 @@ msgstr ""
 #: assets/build/pages/media-library.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-gallery-v2/edit.js:207
-#: pages/media-library/components/folder-tree/FolderTree.jsx:333
-#: pages/media-library/components/folder-tree/FolderTree.jsx:376
+#: pages/media-library/components/folder-tree/FolderTree.jsx:334
+#: pages/media-library/components/folder-tree/FolderTree.jsx:384
 #: pages/video-editor/components/cta/CardCTA.js:369
 msgid "Loading…"
 msgstr ""
@@ -639,8 +639,8 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/src/blocks/godam-gallery-v2/edit.js:767
-#: pages/dashboard/components/TopProductsTable.js:308
-#: pages/dashboard/components/TopProductsTable.js:571
+#: pages/dashboard/components/TopProductsTable.js:309
+#: pages/dashboard/components/TopProductsTable.js:572
 msgid "Source"
 msgstr ""
 
@@ -662,7 +662,7 @@ msgstr ""
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:5
 #: assets/src/blocks/godam-gallery-v2/edit.js:797
-#: assets/src/blocks/godam-player/edit.js:1029
+#: assets/src/blocks/godam-player/edit.js:1042
 msgid "Video Selection"
 msgstr ""
 
@@ -689,7 +689,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-gallery.php:297
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:240
 #: assets/src/blocks/godam-gallery-v2/edit.js:867
-#: assets/src/blocks/godam-player/edit.js:1037
+#: assets/src/blocks/godam-player/edit.js:1050
 msgid "Layout"
 msgstr ""
 
@@ -817,7 +817,7 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: assets/src/blocks/godam-gallery-v2/edit.js:1004
 #: assets/src/blocks/godam-gallery-v2/edit.js:1008
-#: assets/src/blocks/godam-player/edit.js:1053
+#: assets/src/blocks/godam-player/edit.js:1066
 #: pages/analytics/PlaybackPerformance.js:344
 msgid "Performance"
 msgstr ""
@@ -895,7 +895,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-gallery.php:142
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:127
 #: assets/src/blocks/godam-gallery-v2/edit.js:1065
-#: pages/dashboard/components/TopVideosTable.js:222
+#: pages/dashboard/components/TopVideosTable.js:223
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:117
 msgid "Title"
 msgstr ""
@@ -1089,9 +1089,9 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:399
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-view.php:30
 #: assets/src/blocks/godam-gallery-v2/edit.js:1352
-#: assets/src/blocks/godam-player/edit.js:1144
+#: assets/src/blocks/godam-player/edit.js:1157
 #: assets/src/js/godam-player/managers/modalManager.js:507
-#: pages/tools/components/tabs/RetranscodeTab.jsx:35
+#: pages/tools/components/tabs/RetranscodeTab.jsx:36
 msgid "Video"
 msgstr ""
 
@@ -1255,7 +1255,7 @@ msgstr ""
 #: assets/src/blocks/godam-pdf/edit.js:480
 #: assets/src/blocks/godam-pdf/edit.js:552
 #: assets/src/js/wpbakery/wpbakery-document-selector-param.js:70
-#: pages/tools/components/tabs/RetranscodeTab.jsx:37
+#: pages/tools/components/tabs/RetranscodeTab.jsx:38
 msgid "Document"
 msgstr ""
 
@@ -1433,7 +1433,7 @@ msgstr ""
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/blocks/godam-player/index.js:3
 #: assets/src/blocks/godam-pdf/edit.js:984
-#: assets/src/blocks/godam-player/edit.js:903
+#: assets/src/blocks/godam-player/edit.js:916
 msgid "Height"
 msgstr ""
 
@@ -1662,15 +1662,15 @@ msgstr ""
 #: assets/src/js/deactivation-feedback.js:42
 #: assets/src/js/godam-player/engagement.js:750
 #: pages/godam/components/ConfirmModal.jsx:38
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:191
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:192
 #: pages/media-library/App.js:293
-#: pages/media-library/components/modal/DeleteModal.jsx:139
-#: pages/media-library/components/modal/FolderCreationModal.jsx:139
+#: pages/media-library/components/modal/DeleteModal.jsx:140
+#: pages/media-library/components/modal/FolderCreationModal.jsx:140
 #: pages/media-library/components/modal/MoveToFolderModal.jsx:335
-#: pages/media-library/components/modal/RenameModal.jsx:104
+#: pages/media-library/components/modal/RenameModal.jsx:105
 #: pages/video-editor/components/chapters/ChapterForm.js:124
 #: pages/video-editor/components/layers/LayersHeader.js:105
-#: pages/video-editor/components/transcription/Transcription.js:295
+#: pages/video-editor/components/transcription/Transcription.js:299
 msgid "Cancel"
 msgstr ""
 
@@ -1679,11 +1679,11 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:311
 #: assets/src/js/godam-player/engagement.js:1124
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:134
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:140
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:360
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:493
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:130
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:138
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:144
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:365
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:497
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:134
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:191
 msgid "Save"
 msgstr ""
@@ -1751,7 +1751,7 @@ msgstr ""
 #: assets/build/blocks/godam-player/index.js:2
 #: assets/build/pages/tools.min.js:2
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:264
-#: pages/tools/components/tabs/RetranscodeTab.jsx:667
+#: pages/tools/components/tabs/RetranscodeTab.jsx:679
 msgid "Reset"
 msgstr ""
 
@@ -1770,156 +1770,177 @@ msgid "Could not load your GoDAM media. Please try again."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:2
-#: assets/src/blocks/godam-player/edit.js:87
+#: assets/src/blocks/godam-player/edit.js:88
 msgid "Add a heading…"
 msgstr ""
 
 #. translators: %d: Label of the video text track e.g: "French subtitles".
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:366
+#: assets/src/blocks/godam-player/edit.js:367
 #, js-format
 msgctxt "video caption"
 msgid "Failed to load video data with id: %d"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:505
+#: assets/build/js/dashboard-widget.min.js:5
+#: assets/build/js/media-library.min.js:1
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/media-library.min.js:2
+#: assets/build/pages/onboarding.min.js:2
+#: assets/build/pages/tools.min.js:2
+#: assets/build/pages/video-editor.min.js:2
+#: assets/build/pages/whats-new.min.js:2
+#: admin/class-rtgodam-transcoder-admin.php:911
+#: inc/helpers/custom-functions.php:2966
+#: assets/src/blocks/godam-player/edit.js:379
+#: pages/godam/components/PreflightNotices.jsx:58
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:181
+#: pages/shared/ContactSupportLink.jsx:43
+#: pages/shared/support.js:32
+msgid "Contact Support"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:3
+#: assets/src/blocks/godam-player/edit.js:518
 msgid "Only video files are allowed in the GoDAM Video block."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:796
+#: assets/src/blocks/godam-player/edit.js:809
 msgid "Add subtitles, layers, and more to make your video stand out."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:823
+#: assets/src/blocks/godam-player/edit.js:836
 msgid "Customize Video"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/blocks/godam-player/edit.js:841
+#: assets/src/blocks/godam-player/edit.js:854
 #: pages/video-editor/components/ads/CustomAdSettings.js:219
 msgid "Remove video"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/src/blocks/godam-player/edit.js:809
-#: assets/src/blocks/godam-player/edit.js:1133
+#: assets/src/blocks/godam-player/edit.js:822
+#: assets/src/blocks/godam-player/edit.js:1146
 msgid "Add Video"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:857
+#: assets/src/blocks/godam-player/edit.js:870
 msgid "Hover option is disabled when autoplay is on."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:860
+#: assets/src/blocks/godam-player/edit.js:873
 msgid "Hover option is disabled when the video opens in a lightbox."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:873
+#: assets/src/blocks/godam-player/edit.js:886
 msgid "Choose the action to perform on video hover."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:875
+#: assets/src/blocks/godam-player/edit.js:888
 msgid "Show player"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
 #: inc/classes/elementor-widgets/class-godam-video.php:355
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:191
-#: assets/src/blocks/godam-player/edit.js:876
+#: assets/src/blocks/godam-player/edit.js:889
 msgid "Start Preview"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
 #: inc/classes/elementor-widgets/class-godam-video.php:411
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:206
-#: assets/src/blocks/godam-player/edit.js:885
+#: assets/src/blocks/godam-player/edit.js:898
 msgid "Aspect Ratio"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
 #: inc/classes/elementor-widgets/class-godam-video.php:418
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:213
-#: assets/src/blocks/godam-player/edit.js:889
+#: assets/src/blocks/godam-player/edit.js:902
 msgid "Choose the aspect ratio for the video player."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
 #: inc/classes/elementor-widgets/class-godam-video.php:415
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:209
-#: assets/src/blocks/godam-player/edit.js:891
+#: assets/src/blocks/godam-player/edit.js:904
 msgid "Original"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
 #: inc/classes/elementor-widgets/class-godam-gallery.php:329
-#: assets/src/blocks/godam-player/edit.js:892
+#: assets/src/blocks/godam-player/edit.js:905
 msgid "16:9"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:907
+#: assets/src/blocks/godam-player/edit.js:920
 msgid "Set the video height. Width is auto-calculated from the aspect ratio."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:911
+#: assets/src/blocks/godam-player/edit.js:924
 msgid "Show overlay blocks"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:914
+#: assets/src/blocks/godam-player/edit.js:927
 msgid "Display blocks on top of the video player."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:920
+#: assets/src/blocks/godam-player/edit.js:933
 msgid "Vertical alignment"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:924
+#: assets/src/blocks/godam-player/edit.js:937
 msgid "Top"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:925
+#: assets/src/blocks/godam-player/edit.js:938
 msgid "Center"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:926
+#: assets/src/blocks/godam-player/edit.js:939
 msgid "Bottom"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:929
+#: assets/src/blocks/godam-player/edit.js:942
 msgid "Choose where to position the overlay blocks vertically."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-player/edit.js:932
+#: assets/src/blocks/godam-player/edit.js:945
 msgid "Time range"
 msgstr ""
 
 #. translators: %s: formatted time
 #: assets/build/blocks/godam-player/index.js:4
-#: assets/src/blocks/godam-player/edit.js:941
+#: assets/src/blocks/godam-player/edit.js:954
 #, js-format
 msgid "Overlay will be visible for %s from the start of the video."
 msgstr ""
 
 #. translators: %s: formatted time
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/src/blocks/godam-player/edit.js:949
+#: assets/src/blocks/godam-player/edit.js:962
 #, js-format
 msgid "Video duration: %s"
 msgstr ""
@@ -1927,33 +1948,33 @@ msgstr ""
 #: assets/build/blocks/godam-player/index.js:5
 #: assets/build/js/media-library.min.js:1
 #: inc/templates/video-preview.php:115
-#: assets/src/blocks/godam-player/edit.js:969
+#: assets/src/blocks/godam-player/edit.js:982
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:783
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:791
 msgid "Edit Video"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/src/blocks/godam-player/edit.js:979
+#: assets/src/blocks/godam-player/edit.js:992
 msgid "Video SEO"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/src/blocks/godam-player/edit.js:983
+#: assets/src/blocks/godam-player/edit.js:996
 msgid "SEO"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
 #: assets/build/pages/godam.min.js:2
 #: inc/templates/video-preview.php:169
-#: assets/src/blocks/godam-player/edit.js:1010
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:310
+#: assets/src/blocks/godam-player/edit.js:1023
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:315
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:55
 msgid "Upgrade to Pro"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/src/blocks/godam-player/edit.js:1014
+#: assets/src/blocks/godam-player/edit.js:1027
 msgid "You don't have an active plan to use this feature. Upgrade now to use unlimited features as part of GoDAM suite."
 msgstr ""
 
@@ -1964,35 +1985,35 @@ msgstr ""
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/blocks/godam-player/edit.js:1024
+#: assets/src/blocks/godam-player/edit.js:1037
 #: pages/godam/components/TrialCountdownBanner.jsx:78
 msgid "Upgrade Now"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:125
-#: assets/src/blocks/godam-player/edit.js:1045
+#: assets/src/blocks/godam-player/edit.js:1058
 msgid "Playback Controls"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/src/blocks/godam-player/edit.js:1061
+#: assets/src/blocks/godam-player/edit.js:1074
 msgid "Hover Options"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
 #: inc/classes/elementor-widgets/class-godam-video.php:693
-#: assets/src/blocks/godam-player/edit.js:1117
+#: assets/src/blocks/godam-player/edit.js:1130
 msgid "Add Video Here"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/src/blocks/godam-player/edit.js:1120
+#: assets/src/blocks/godam-player/edit.js:1133
 msgid "Upload or select a video from your media library to get started."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/src/blocks/godam-player/edit.js:1210
+#: assets/src/blocks/godam-player/edit.js:1223
 msgid "Video caption text"
 msgstr ""
 
@@ -2159,7 +2180,7 @@ msgstr ""
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:207
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-view.php:30
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:235
-#: pages/tools/components/tabs/RetranscodeTab.jsx:36
+#: pages/tools/components/tabs/RetranscodeTab.jsx:37
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:73
 msgid "Audio"
 msgstr ""
@@ -2220,75 +2241,75 @@ msgid "Maximum allowed size: %s MB"
 msgstr ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:72
+#: assets/src/js/dashboard-widget/index.js:73
 msgid "hour watched"
 msgid_plural "hours watched"
 msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:73
+#: assets/src/js/dashboard-widget/index.js:74
 msgid "minute watched"
 msgid_plural "minutes watched"
 msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:97
+#: assets/src/js/dashboard-widget/index.js:98
 msgid "Time people actually spent watching. Pauses, buffering and skipped parts are not counted."
 msgstr ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:102
+#: assets/src/js/dashboard-widget/index.js:103
 msgid "play"
 msgid_plural "plays"
 msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:103
+#: assets/src/js/dashboard-widget/index.js:104
 msgid "A play is one viewer watching a video on a given day."
 msgstr ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:107
+#: assets/src/js/dashboard-widget/index.js:108
 msgid "viewer"
 msgid_plural "viewers"
 msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:108
+#: assets/src/js/dashboard-widget/index.js:109
 msgid "Counted once per browser that played a video."
 msgstr ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:112
+#: assets/src/js/dashboard-widget/index.js:113
 msgid "country reached"
 msgid_plural "countries reached"
 msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:113
+#: assets/src/js/dashboard-widget/index.js:114
 msgid "Countries your videos were watched in."
 msgstr ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:117
+#: assets/src/js/dashboard-widget/index.js:118
 msgid "time shown on a page"
 msgid_plural "times shown on pages"
 msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/js/dashboard-widget.min.js:1
-#: assets/src/js/dashboard-widget/index.js:118
+#: assets/src/js/dashboard-widget/index.js:119
 msgid "Times one of your videos came into view on a page, played or not."
 msgstr ""
 
 #. translators: 1: a date such as "Sep 12", 2: number of plays.
 #: assets/build/js/dashboard-widget.min.js:2
-#: assets/src/js/dashboard-widget/index.js:210
+#: assets/src/js/dashboard-widget/index.js:211
 #, js-format
 msgid "%1$s: %2$s play"
 msgid_plural "%1$s: %2$s plays"
@@ -2297,7 +2318,7 @@ msgstr[1] ""
 
 #. translators: %s: number of plays.
 #: assets/build/js/dashboard-widget.min.js:3
-#: assets/src/js/dashboard-widget/index.js:223
+#: assets/src/js/dashboard-widget/index.js:224
 #, js-format
 msgid "%s play in the last 30 days"
 msgid_plural "%s plays in the last 30 days"
@@ -2305,13 +2326,13 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/js/dashboard-widget.min.js:3
-#: assets/src/js/dashboard-widget/index.js:264
+#: assets/src/js/dashboard-widget/index.js:265
 msgid "No plays in the last 30 days."
 msgstr ""
 
 #. translators: %s: number of plays.
 #: assets/build/js/dashboard-widget.min.js:4
-#: assets/src/js/dashboard-widget/index.js:275
+#: assets/src/js/dashboard-widget/index.js:276
 #, js-format
 msgid "%s play"
 msgid_plural "%s plays"
@@ -2320,39 +2341,56 @@ msgstr[1] ""
 
 #. translators: %d: attachment ID.
 #: assets/build/js/dashboard-widget.min.js:5
-#: assets/src/js/dashboard-widget/index.js:288
+#: assets/src/js/dashboard-widget/index.js:289
 #, js-format
 msgid "Video %d"
 msgstr ""
 
 #: assets/build/js/dashboard-widget.min.js:5
-#: assets/src/js/dashboard-widget/index.js:430
+#: assets/build/js/media-library.min.js:1
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/media-library.min.js:2
+#: assets/build/pages/onboarding.min.js:2
+#: assets/build/pages/tools.min.js:2
+#: assets/build/pages/video-editor.min.js:2
+#: assets/build/pages/whats-new.min.js:2
+#: inc/classes/class-dashboard-widget.php:1800
+#: inc/helpers/custom-functions.php:2967
+#: pages/shared/ContactSupportLink.jsx:45
+#: pages/shared/support.js:36
+msgid "(opens in a new tab)"
+msgstr ""
+
+#: assets/build/js/dashboard-widget.min.js:5
+#: assets/src/js/dashboard-widget/index.js:437
 msgid "GoDAM analytics is unavailable right now. Your videos keep playing as usual."
 msgstr ""
 
 #: assets/build/js/dashboard-widget.min.js:5
-#: assets/src/js/dashboard-widget/index.js:431
+#: assets/src/js/dashboard-widget/index.js:438
 msgid "GoDAM analytics could not load right now."
 msgstr ""
 
 #: assets/build/js/dashboard-widget.min.js:5
-#: assets/src/js/dashboard-widget/index.js:452
+#: assets/src/js/dashboard-widget/index.js:460
 msgid "Some of these numbers could not load right now. GoDAM will try again in a few minutes."
 msgstr ""
 
 #: assets/build/js/dashboard-widget.min.js:5
-#: assets/src/js/dashboard-widget/index.js:454
+#: assets/src/js/dashboard-widget/index.js:462
 msgid "Add a GoDAM video to a page. Plays and watch time show up here once people start watching."
 msgstr ""
 
 #: assets/build/js/dashboard-widget.min.js:5
-#: assets/src/js/dashboard-widget/index.js:330
+#: assets/src/js/dashboard-widget/index.js:331
 msgid "Updated just now"
 msgstr ""
 
 #. translators: %s: minutes since the numbers were fetched.
 #: assets/build/js/dashboard-widget.min.js:6
-#: assets/src/js/dashboard-widget/index.js:333
+#: assets/src/js/dashboard-widget/index.js:334
 #, js-format
 msgid "Updated %s minute ago"
 msgid_plural "Updated %s minutes ago"
@@ -2361,7 +2399,7 @@ msgstr[1] ""
 
 #. translators: %s: a round number of plays the site has passed, e.g. "2,500".
 #: assets/build/js/dashboard-widget.min.js:7
-#: assets/src/js/dashboard-widget/index.js:359
+#: assets/src/js/dashboard-widget/index.js:360
 #, js-format
 msgid "Your videos have passed %s plays. If GoDAM has earned it, a quick review on WordPress.org helps other site owners find it."
 msgstr ""
@@ -2454,7 +2492,7 @@ msgid "Comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: inc/helpers/custom-functions.php:1764
+#: inc/helpers/custom-functions.php:1767
 #: assets/src/js/godam-player/engagement.js:908
 #: assets/src/js/godam-player/engagement.js:915
 msgid "Anonymous"
@@ -2470,9 +2508,9 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/godam-player/engagement.js:947
 #: pages/media-library/components/context-menu/ContextMenu.jsx:518
-#: pages/media-library/components/modal/DeleteModal.jsx:132
+#: pages/media-library/components/modal/DeleteModal.jsx:133
 #: pages/video-editor/components/SidebarLayers.js:750
-#: pages/video-editor/components/transcription/Transcription.js:304
+#: pages/video-editor/components/transcription/Transcription.js:308
 msgid "Delete"
 msgstr ""
 
@@ -2505,7 +2543,7 @@ msgstr ""
 #: assets/build/pages/onboarding.min.js:2
 #: assets/src/js/godam-player/engagement.js:1097
 #: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:58
-#: pages/onboarding/components/screens/LoginScreen.jsx:54
+#: pages/onboarding/components/screens/LoginScreen.jsx:57
 #: pages/onboarding/components/screens/SignupScreen.jsx:77
 msgid "Email"
 msgstr ""
@@ -2557,7 +2595,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/godam-player/managers/controlsManager.js:394
 #: assets/src/js/godam-player/managers/controlsManager.js:411
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:429
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:433
 #: pages/video-editor/VideoJSPlayer.js:144
 msgid "Branding"
 msgstr ""
@@ -2713,22 +2751,22 @@ msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: admin/godam-transcoder-functions.php:416
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:193
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:197
 msgid "Transcoding failed, please try again."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:212
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:218
 msgid "Not started"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:232
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:238
 msgid "Media is transcoded"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:268
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:274
 msgid "Transcoding…"
 msgstr ""
 
@@ -2749,8 +2787,8 @@ msgstr ""
 #: assets/build/pages/tools.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/build/pages/whats-new.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:193
-#: admin/class-rtgodam-transcoder-admin.php:337
+#: admin/class-rtgodam-transcoder-admin.php:195
+#: admin/class-rtgodam-transcoder-admin.php:346
 #: admin/godam-transcoder-functions.php:381
 #: inc/classes/class-media-library-ajax.php:1694
 #: inc/templates/video-preview.php:77
@@ -2777,32 +2815,32 @@ msgid "Folder"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:44
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:45
 msgid "Transcoding has started."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:53
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:54
 msgid "Transcoding isn't available on a localhost site."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:55
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:56
 msgid "Your GoDAM storage is full. Upgrade your plan to continue transcoding."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:57
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:58
 msgid "HTTP authentication is enabled on this site. Disable it to allow transcoding."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:59
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:60
 msgid "The request failed. Try again."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:115
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:116
 msgid "This file couldn't be transcoded"
 msgstr ""
 
@@ -2810,7 +2848,7 @@ msgstr ""
 #: inc/classes/class-media-library-ajax.php:727
 #: inc/classes/rest-api/class-transcoding.php:327
 #: inc/helpers/custom-functions.php:672
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:116
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:117
 msgid "This file can't be transcoded."
 msgstr ""
 
@@ -2821,25 +2859,25 @@ msgstr ""
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:123
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:124
 #: pages/godam/components/GoDAMHeader.jsx:118
 msgid "Upgrade plan"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:131
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:132
 msgid "Retranscode"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: assets/build/pages/onboarding.min.js:2
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:72
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:73
 #: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:61
 msgid "Sending…"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:148
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:154
 msgid "Details for support"
 msgstr ""
 
@@ -3433,13 +3471,13 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/Analytics.js:129
-#: pages/analytics/Analytics.js:178
-#: pages/analytics/Analytics.js:192
+#: pages/analytics/Analytics.js:181
+#: pages/analytics/Analytics.js:195
 #: pages/analytics/PlaysVsViewers.js:93
 #: pages/analytics/SingleMetrics.js:122
-#: pages/dashboard/components/GA4ConnectionWidget.js:174
-#: pages/dashboard/Dashboard.js:288
-#: pages/dashboard/Dashboard.js:324
+#: pages/dashboard/components/GA4ConnectionWidget.js:175
+#: pages/dashboard/Dashboard.js:295
+#: pages/dashboard/Dashboard.js:331
 msgid "All time"
 msgstr ""
 
@@ -3485,53 +3523,53 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:31
+#: pages/dashboard/components/TopProductsTable.js:32
 msgid "Video Woo Layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/components/Placements/index.js:34
-#: pages/dashboard/components/TopProductsTable.js:32
+#: pages/analytics/components/Placements/index.js:35
+#: pages/dashboard/components/TopProductsTable.js:33
 msgid "Shoppable Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/components/Placements/index.js:37
-#: pages/dashboard/components/TopProductsTable.js:33
+#: pages/analytics/components/Placements/index.js:38
+#: pages/dashboard/components/TopProductsTable.js:34
 msgid "Reel Pop"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:34
+#: pages/dashboard/components/TopProductsTable.js:35
 msgid "Product Gallery"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:35
+#: pages/dashboard/components/TopProductsTable.js:36
 msgid "Image Woo Layer"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:304
-#: pages/dashboard/components/TopProductsTable.js:568
+#: pages/dashboard/components/TopProductsTable.js:305
+#: pages/dashboard/components/TopProductsTable.js:569
 msgid "Product"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:305
+#: pages/dashboard/components/TopProductsTable.js:306
 msgid "Product ID"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:306
+#: pages/dashboard/components/TopProductsTable.js:307
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:18
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:601
 msgid "Layers"
@@ -3542,135 +3580,135 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:99
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:92
-#: pages/dashboard/components/TopProductsTable.js:307
+#: pages/dashboard/components/TopProductsTable.js:308
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:71
 msgid "Videos"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:309
-#: pages/dashboard/components/TopProductsTable.js:582
+#: pages/dashboard/components/TopProductsTable.js:310
+#: pages/dashboard/components/TopProductsTable.js:583
 msgid "Product Views"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:310
+#: pages/dashboard/components/TopProductsTable.js:311
 msgid "Product Views Rate"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:311
-#: pages/dashboard/components/TopProductsTable.js:593
+#: pages/dashboard/components/TopProductsTable.js:312
+#: pages/dashboard/components/TopProductsTable.js:594
 msgid "Add to Cart"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:312
+#: pages/dashboard/components/TopProductsTable.js:313
 msgid "Add to Cart (in-video)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:313
+#: pages/dashboard/components/TopProductsTable.js:314
 msgid "Add to Cart (assisted)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:314
-#: pages/dashboard/components/TopProductsTable.js:604
+#: pages/dashboard/components/TopProductsTable.js:315
+#: pages/dashboard/components/TopProductsTable.js:605
 msgid "Revenue"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:315
+#: pages/dashboard/components/TopProductsTable.js:316
 msgid "Revenue (direct)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:316
+#: pages/dashboard/components/TopProductsTable.js:317
 msgid "Revenue (assisted)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:317
+#: pages/dashboard/components/TopProductsTable.js:318
 msgid "Currency"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:318
+#: pages/dashboard/components/TopProductsTable.js:319
 msgid "Orders"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:319
+#: pages/dashboard/components/TopProductsTable.js:320
 msgid "Influenced Revenue"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:320
+#: pages/dashboard/components/TopProductsTable.js:321
 msgid "Influenced Currency"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:321
+#: pages/dashboard/components/TopProductsTable.js:322
 msgid "Influenced Orders"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:322
+#: pages/dashboard/components/TopProductsTable.js:323
 msgid "Influenced Provisional"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:323
+#: pages/dashboard/components/TopProductsTable.js:324
 msgid "Revenue by Placement"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:48
-#: pages/analytics/RevenueCard.js:104
+#: pages/analytics/RevenueCard.js:49
+#: pages/analytics/RevenueCard.js:107
 msgid "Video-Attributed Revenue"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:54
+#: pages/analytics/RevenueCard.js:55
 msgid "Couldn’t load revenue for this range. Please try again."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:138
-#: pages/analytics/PurchaseFunnelCard.js:212
-#: pages/analytics/RevenueCard.js:106
+#: pages/analytics/PlacementFunnelCard.js:141
+#: pages/analytics/PurchaseFunnelCard.js:219
+#: pages/analytics/RevenueCard.js:109
 msgid "NEW"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:108
+#: pages/analytics/RevenueCard.js:111
 msgid "Order value traced back to the video that earned it, in the store's base currency. Direct means added to cart inside the video; Assisted means the shopper clicked through to the product page and bought there. Orders in other currencies are counted separately, not converted. Shown after discounts and before refunds, excluding tax, shipping and fees."
 msgstr ""
 
 #. translators: %s: number of orders placed in other currencies, not included in the total.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:134
+#: pages/analytics/RevenueCard.js:137
 #, js-format
 msgid "before refunds · excluding %s order in other currencies"
 msgid_plural "before refunds · excluding %s orders in other currencies"
@@ -3679,37 +3717,37 @@ msgstr[1] ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:142
+#: pages/analytics/RevenueCard.js:145
 msgid "before refunds"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:162
+#: pages/analytics/RevenueCard.js:165
 msgid "Direct · added to cart in-video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:169
+#: pages/analytics/RevenueCard.js:172
 msgid "Assisted · clicked through, then bought"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:182
+#: pages/analytics/RevenueCard.js:185
 msgid "Influenced"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:184
+#: pages/analytics/RevenueCard.js:187
 msgid "Bought on a product page after playing its video, with no click to prove the video caused the sale. Worked out at the product level, shown on its own, and never added to the Direct + Assisted figure."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/RevenueCard.js:192
+#: pages/analytics/RevenueCard.js:195
 msgid "Bought on a product page after playing its video. Reported separately because there is no click-through to prove intent, so it is not added to the figure on the left."
 msgstr ""
 
@@ -3730,28 +3768,28 @@ msgstr ""
 #. translators: %s: percentage of visitors that advanced to the next stage.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:85
+#: pages/analytics/PurchaseFunnelCard.js:90
 #, js-format
 msgid "↓ %s advanced"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:125
-#: pages/analytics/PurchaseFunnelCard.js:210
+#: pages/analytics/PurchaseFunnelCard.js:130
+#: pages/analytics/PurchaseFunnelCard.js:217
 msgid "Purchase Funnel"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:131
+#: pages/analytics/PurchaseFunnelCard.js:136
 msgid "Couldn’t load the funnel for this range. Please try again."
 msgstr ""
 
 #. translators: 1: tier name (Direct/Assisted), 2: count, 3: stage total, 4: stage verb (added to cart/purchased), 5: percentage.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:165
+#: pages/analytics/PurchaseFunnelCard.js:172
 #, js-format
 msgid "%1$s: %2$s of %3$s %4$s (%5$s)"
 msgstr ""
@@ -3759,113 +3797,113 @@ msgstr ""
 #. translators: 1: number who did not reach this stage, 2: number of players.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:167
+#: pages/analytics/PurchaseFunnelCard.js:174
 #, js-format
 msgid "Did not reach this stage: %1$s of %2$s players"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:168
+#: pages/analytics/PurchaseFunnelCard.js:175
 msgid "Direct (added in-video)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:169
+#: pages/analytics/PurchaseFunnelCard.js:176
 msgid "Assisted only (clicked out)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:170
+#: pages/analytics/PurchaseFunnelCard.js:177
 msgid "added to cart"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:171
+#: pages/analytics/PurchaseFunnelCard.js:178
 msgid "purchased"
 msgstr ""
 
 #. translators: %s: number of visitors who purchased.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:184
+#: pages/analytics/PurchaseFunnelCard.js:191
 #, js-format
 msgid "%s purchased"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:200
+#: pages/analytics/PurchaseFunnelCard.js:207
 msgid "this video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:201
+#: pages/analytics/PurchaseFunnelCard.js:208
 msgid "any GoDAM video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:203
+#: pages/analytics/PurchaseFunnelCard.js:210
 msgid "Distinct viewers of this video. Covers Direct and Assisted."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:204
+#: pages/analytics/PurchaseFunnelCard.js:211
 msgid "Distinct visitors, counted across page visits. Covers Direct and Assisted."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:225
+#: pages/analytics/PurchaseFunnelCard.js:232
 msgid "Played a video"
 msgstr ""
 
 #. translators: %s: number of visitors who played a video.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:231
+#: pages/analytics/PurchaseFunnelCard.js:238
 #, js-format
 msgid "%s visitors played a video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:234
+#: pages/analytics/PurchaseFunnelCard.js:241
 msgid "visitors"
 msgstr ""
 
 #. translators: %s: number of visitors who did not add to cart.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:241
+#: pages/analytics/PurchaseFunnelCard.js:248
 #, js-format
 msgid "%s did not add to cart"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:72
-#: pages/analytics/PurchaseFunnelCard.js:246
+#: pages/analytics/PlacementFunnelCard.js:73
+#: pages/analytics/PurchaseFunnelCard.js:253
 msgid "Added to cart"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:247
+#: pages/analytics/PurchaseFunnelCard.js:254
 msgid "in-video or after clicking out"
 msgstr ""
 
 #. translators: %s: percentage of players.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:256
-#: pages/analytics/PurchaseFunnelCard.js:278
+#: pages/analytics/PurchaseFunnelCard.js:263
+#: pages/analytics/PurchaseFunnelCard.js:285
 #, js-format
 msgid "%s of players"
 msgstr ""
@@ -3873,53 +3911,53 @@ msgstr ""
 #. translators: %s: number of visitors who added to cart but did not buy.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:266
+#: pages/analytics/PurchaseFunnelCard.js:273
 #, js-format
 msgid "%s abandoned after adding"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:73
-#: pages/analytics/PurchaseFunnelCard.js:271
+#: pages/analytics/PlacementFunnelCard.js:74
+#: pages/analytics/PurchaseFunnelCard.js:278
 msgid "Purchased"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:272
+#: pages/analytics/PurchaseFunnelCard.js:279
 msgid "of those who added"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:286
+#: pages/analytics/PurchaseFunnelCard.js:293
 msgid "Direct, added to cart in-video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:287
+#: pages/analytics/PurchaseFunnelCard.js:294
 msgid "Assisted, clicked out then bought"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:288
+#: pages/analytics/PurchaseFunnelCard.js:295
 msgid "did not reach this stage"
 msgstr ""
 
 #. translators: %s: the selected date range label.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:299
+#: pages/analytics/PurchaseFunnelCard.js:306
 #, js-format
 msgid "Still counting — purchases for %s keep settling for up to 30 days."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PurchaseFunnelCard.js:300
+#: pages/analytics/PurchaseFunnelCard.js:307
 msgid "this range"
 msgstr ""
 
@@ -3947,13 +3985,13 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:673
-#: pages/analytics/Analytics.js:1026
-#: pages/analytics/components/Placements/index.js:230
+#: pages/analytics/Analytics.js:692
+#: pages/analytics/Analytics.js:1045
+#: pages/analytics/components/Placements/index.js:231
 #: pages/analytics/PlaybackPerformance.js:422
 #: pages/analytics/PlaybackPerformance.js:546
-#: pages/dashboard/components/TopVideosTable.js:225
-#: pages/dashboard/components/TopVideosTable.js:338
+#: pages/dashboard/components/TopVideosTable.js:226
+#: pages/dashboard/components/TopVideosTable.js:339
 msgid "Play Rate"
 msgstr ""
 
@@ -3961,8 +3999,8 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/PlaybackPerformance.js:429
 #: pages/analytics/PlaybackPerformance.js:547
-#: pages/dashboard/components/TopVideosTable.js:228
-#: pages/dashboard/Dashboard.js:562
+#: pages/dashboard/components/TopVideosTable.js:229
+#: pages/dashboard/Dashboard.js:585
 msgid "Engagement Rate"
 msgstr ""
 
@@ -4311,183 +4349,210 @@ msgid "No longer in the video; historical analytics preserved."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:35
+#: pages/analytics/VideoLayerTimeline.js:36
 msgid "Add an interactive layer in the video editor to start tracking performance."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:45
+#: pages/analytics/VideoLayerTimeline.js:46
 msgid "Click on any hotspot on the left to see its performance."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:50
+#: pages/analytics/VideoLayerTimeline.js:51
 msgid "Click on any layer above to view its performance details."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:163
+#: pages/analytics/VideoLayerTimeline.js:164
 msgid "Video Layer Timeline"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:167
+#: pages/analytics/VideoLayerTimeline.js:168
 msgid "Each marker represents an interactive layer in this video. Click a marker to see how viewers interacted with it."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:174
+#: pages/analytics/VideoLayerTimeline.js:175
 msgid "See when interactive layers appeared in your video and how they performed."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:190
+#: pages/analytics/VideoLayerTimeline.js:191
 msgid "Interaction rate"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:194
+#: pages/analytics/VideoLayerTimeline.js:195
 msgid "Share of plays where the viewer interacted with any layer (clicked a CTA, submitted a form, voted in a poll, or added a product to cart). A play counts once even if the viewer interacts with several layers, so this never exceeds 100%."
 msgstr ""
 
 #. translators: 1: interacting sessions, 2: total plays.
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:207
+#: pages/analytics/VideoLayerTimeline.js:208
 #, js-format
 msgid "%1$s of %2$s plays"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:223
+#: pages/analytics/VideoLayerTimeline.js:224
 msgid "Unable to load layer analytics. Please try again."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:32
+#: pages/analytics/components/Placements/index.js:33
 msgid "Video Block"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:369
-#: pages/analytics/components/Placements/index.js:33
+#: pages/analytics/components/Placements/index.js:34
 msgid "Video Gallery"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:35
+#: pages/analytics/components/Placements/index.js:36
 msgid "WooCommerce Product Gallery"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:36
+#: pages/analytics/components/Placements/index.js:37
 msgid "Product Reels"
 msgstr ""
 
 #. translators: %d: WordPress post ID.
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/rest-api/class-analytics.php:980
-#: pages/analytics/components/Placements/index.js:173
+#: pages/analytics/components/Placements/index.js:174
 #, js-format,php-format
 msgid "Post #%d"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:174
+#: pages/analytics/components/Placements/index.js:175
 msgid "Unknown page"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:228
+#: pages/analytics/components/Placements/index.js:229
 msgid "Unique Views"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:1017
-#: pages/analytics/components/Placements/index.js:229
-#: pages/dashboard/components/TopVideosTable.js:226
-#: pages/dashboard/components/TopVideosTable.js:349
+#: pages/analytics/Analytics.js:1036
+#: pages/analytics/components/Placements/index.js:230
+#: pages/dashboard/components/TopVideosTable.js:227
+#: pages/dashboard/components/TopVideosTable.js:350
 #: pages/dashboard/components/ViewersGauge.js:95
 #: pages/video-editor/components/editor-shell/EditorStatsRow.js:105
 msgid "Total Plays"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:232
+#: pages/analytics/components/Placements/index.js:233
 msgid "Avg Watch Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:238
+#: pages/analytics/components/Placements/index.js:239
 msgid "<1s"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:266
+#: pages/analytics/components/Placements/index.js:267
 msgid "Displayed on:"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/rest-api/class-analytics.php:981
 #: inc/classes/rest-api/class-analytics.php:1042
-#: pages/analytics/components/Placements/index.js:273
+#: pages/analytics/components/Placements/index.js:274
 msgid "Deleted page"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:287
+#: pages/analytics/components/Placements/index.js:288
 msgid "Edit Page"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/components/Placements/index.js:372
-#: pages/dashboard/components/TopVideosTable.js:230
-#: pages/dashboard/components/TopVideosTable.js:393
+#: pages/analytics/components/Placements/index.js:373
+#: pages/dashboard/components/TopVideosTable.js:231
+#: pages/dashboard/components/TopVideosTable.js:394
 msgid "Placements"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:384
+#: pages/analytics/components/Placements/index.js:385
 msgid "Unable to load placement analytics. Please try again."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:396
+#: pages/analytics/components/Placements/index.js:399
 msgid "No placements in this date range"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:399
+#: pages/analytics/components/Placements/index.js:402
 msgid "This video had no placement activity in the selected range."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:411
+#: pages/analytics/components/Placements/index.js:414
 msgid "View all time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:416
+#: pages/analytics/components/Placements/index.js:419
 msgid "No placement data for this video yet"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/components/Placements/index.js:474
+#: pages/analytics/components/Placements/index.js:477
 msgid "Placement breakdown reflects activity since v2.1.0. Totals above include the video's full history."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/shared/AnalyticsUnavailableNotice.jsx:24
-msgid "Analytics is temporarily unavailable."
+#: pages/shared/AnalyticsUnavailableNotice.jsx:67
+msgid "We can’t reach your analytics right now"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/shared/AnalyticsUnavailableNotice.jsx:25
-msgid "We couldn’t reach the GoDAM analytics service. This is usually temporary. Please refresh in a few minutes."
+#: pages/shared/AnalyticsUnavailableNotice.jsx:70
+msgid "The GoDAM analytics service isn’t responding. Your videos keep playing as usual, and this is usually temporary."
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: pages/shared/AnalyticsUnavailableNotice.jsx:85
+msgid "Checking…"
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: pages/shared/AnalyticsSectionError.jsx:47
+#: pages/shared/AnalyticsUnavailableNotice.jsx:85
+msgid "Try again"
+msgstr ""
+
+#. translators: %s: time of the last failed request, e.g. 12:19 PM.
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: pages/shared/AnalyticsUnavailableNotice.jsx:97
+#, js-format
+msgid "Last checked %s"
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: pages/shared/AnalyticsUnavailableNotice.jsx:104
+msgid "Error code:"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
@@ -4511,42 +4576,42 @@ msgid "viewers"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:467
+#: pages/analytics/Analytics.js:478
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:469
+#: pages/analytics/Analytics.js:480
 msgid "Use this Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:576
+#: pages/analytics/Analytics.js:595
 msgid "This media doesn't exist."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:578
+#: pages/analytics/Analytics.js:597
 msgid "Go to Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:590
+#: pages/analytics/Analytics.js:609
 msgid "Single Video Analytics"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:602
-#: pages/dashboard/Dashboard.js:437
+#: pages/analytics/Analytics.js:621
+#: pages/dashboard/Dashboard.js:460
 msgid "Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:616
-#: pages/dashboard/components/TopVideosTable.js:426
-#: pages/dashboard/components/TopVideosTable.js:438
+#: pages/analytics/Analytics.js:635
+#: pages/dashboard/components/TopVideosTable.js:427
+#: pages/dashboard/components/TopVideosTable.js:439
 msgid "Video thumbnail"
 msgstr ""
 
@@ -4554,7 +4619,7 @@ msgstr ""
 #. translators: %d is the number of layers.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:636
+#: pages/analytics/Analytics.js:655
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:233
 #, js-format
 msgid "%d layer"
@@ -4564,124 +4629,124 @@ msgstr[1] ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:652
-#: pages/dashboard/Dashboard.js:499
+#: pages/analytics/Analytics.js:671
+#: pages/dashboard/Dashboard.js:522
 msgid "Insights"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:662
-#: pages/analytics/Analytics.js:1010
-#: pages/dashboard/components/TopVideosTable.js:371
+#: pages/analytics/Analytics.js:681
+#: pages/analytics/Analytics.js:1029
+#: pages/dashboard/components/TopVideosTable.js:372
 msgid "Average Engagement"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:663
+#: pages/analytics/Analytics.js:682
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:674
-#: pages/dashboard/Dashboard.js:535
+#: pages/analytics/Analytics.js:693
+#: pages/dashboard/Dashboard.js:558
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:684
-#: pages/dashboard/components/TopVideosTable.js:227
-#: pages/dashboard/Dashboard.js:548
+#: pages/analytics/Analytics.js:703
+#: pages/dashboard/components/TopVideosTable.js:228
+#: pages/dashboard/Dashboard.js:571
 msgid "Watch Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:685
-#: pages/dashboard/Dashboard.js:549
+#: pages/analytics/Analytics.js:704
+#: pages/dashboard/Dashboard.js:572
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:776
+#: pages/analytics/Analytics.js:795
 msgid "Viewer Retention Curve"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:790
+#: pages/analytics/Analytics.js:809
 msgid "Viewer retention will appear here once this video receives views."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:838
+#: pages/analytics/Analytics.js:857
 msgid "Views by Source"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:849
+#: pages/analytics/Analytics.js:868
 msgid "Performance Comparison"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:870
+#: pages/analytics/Analytics.js:889
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:860
+#: pages/analytics/Analytics.js:879
 msgid "In Progress"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:865
+#: pages/analytics/Analytics.js:884
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:882
+#: pages/analytics/Analytics.js:901
 msgid "Start Test"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:901
+#: pages/analytics/Analytics.js:920
 msgid "Choose Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:913
+#: pages/analytics/Analytics.js:932
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:922
+#: pages/analytics/Analytics.js:941
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:927
+#: pages/analytics/Analytics.js:946
 msgid "Choose"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:998
+#: pages/analytics/Analytics.js:1017
 msgid "Views"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1038
+#: pages/analytics/Analytics.js:1057
 msgid "Page Loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1052
+#: pages/analytics/Analytics.js:1071
 msgid "Play Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1066
+#: pages/analytics/Analytics.js:1085
 msgid "Video Length"
 msgstr ""
 
@@ -4701,18 +4766,13 @@ msgid "Select Video to Edit"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/shared/AnalyticsSectionError.jsx:30
+#: pages/shared/AnalyticsSectionError.jsx:31
 msgid "These metrics couldn’t load. This is usually temporary."
-msgstr ""
-
-#: assets/build/pages/dashboard.min.js:2
-#: pages/shared/AnalyticsSectionError.jsx:45
-msgid "Try again"
 msgstr ""
 
 #. translators: %s: number of layers the product appears in.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:96
+#: pages/dashboard/components/TopProductsTable.js:97
 #, js-format
 msgid "%s layer"
 msgid_plural "%s layers"
@@ -4723,10 +4783,10 @@ msgstr[1] ""
 #. translators: %s: number of videos the product appears in.
 #. translators: %s: number of videos (already locale-formatted).
 #: assets/build/pages/dashboard.min.js:2
-#: inc/classes/class-dashboard-widget.php:1684
-#: pages/analytics/PlacementFunnelCard.js:48
-#: pages/dashboard/components/TopProductsTable.js:98
-#: pages/dashboard/components/TopVideosTable.js:273
+#: inc/classes/class-dashboard-widget.php:1690
+#: pages/analytics/PlacementFunnelCard.js:49
+#: pages/dashboard/components/TopProductsTable.js:99
+#: pages/dashboard/components/TopVideosTable.js:274
 #, js-format,php-format
 msgid "%s video"
 msgid_plural "%s videos"
@@ -4734,30 +4794,30 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:125
+#: pages/dashboard/components/TopProductsTable.js:126
 msgid "A grouped product is never added to the cart itself: shoppers add the products it lists. Those products' own rows show the adds and revenue."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:127
+#: pages/dashboard/components/TopProductsTable.js:128
 msgid "External products are bought on another site, so they are never added to this store's cart and earn no revenue here."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:130
+#: pages/dashboard/components/TopProductsTable.js:131
 msgid "Variable products cannot be added to cart inside a video, so in-video (Direct) is always 0; they convert on the product page (Assisted)."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:135
+#: pages/dashboard/components/TopProductsTable.js:136
 msgid "This product cannot be added to cart inside a video, so in-video (Direct) is always 0."
 msgstr ""
 
 #. translators: %s: number of distinct orders contributing to this product's revenue.
 #. translators: %s: number of distinct orders influenced by a product-page view of a video.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:247
-#: pages/dashboard/components/TopProductsTable.js:263
+#: pages/dashboard/components/TopProductsTable.js:248
+#: pages/dashboard/components/TopProductsTable.js:264
 #, js-format
 msgid "%s order"
 msgid_plural "%s orders"
@@ -4786,7 +4846,7 @@ msgstr[1] ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:300
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:340
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:382
-#: pages/dashboard/components/TopProductsTable.js:332
+#: pages/dashboard/components/TopProductsTable.js:333
 msgid "Yes"
 msgstr ""
 
@@ -4805,19 +4865,19 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:301
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:339
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:383
-#: pages/dashboard/components/TopProductsTable.js:332
+#: pages/dashboard/components/TopProductsTable.js:333
 msgid "No"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:510
+#: pages/dashboard/components/TopProductsTable.js:511
 #: pages/dashboard/Dashboard.js:215
 msgid "Top Products"
 msgstr ""
 
 #. translators: %s: number of products (already locale-formatted).
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:515
+#: pages/dashboard/components/TopProductsTable.js:516
 #, js-format
 msgid "%s product"
 msgid_plural "%s products"
@@ -4826,207 +4886,207 @@ msgstr[1] ""
 
 #. translators: %s: ISO 4217 currency code, e.g. USD.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:529
+#: pages/dashboard/components/TopProductsTable.js:530
 #, js-format
 msgid "Revenue is shown only in your store’s base currency (%s). Orders in other currencies are not converted or counted here."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:541
 #: pages/dashboard/components/TopProductsTable.js:542
+#: pages/dashboard/components/TopProductsTable.js:543
 msgid "Search products"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:548
+#: pages/dashboard/components/TopProductsTable.js:549
 msgid "Show deleted products"
 msgstr ""
 
 #. translators: %d: number of export pages that failed to load.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:495
+#: pages/dashboard/components/TopProductsTable.js:496
 #, js-format
 msgid "Export is incomplete: %d page(s) could not be loaded, so some products are missing from the CSV."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:559
-#: pages/dashboard/components/TopVideosTable.js:305
+#: pages/dashboard/components/TopProductsTable.js:560
+#: pages/dashboard/components/TopVideosTable.js:306
 msgid "Exporting…"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:559
-#: pages/dashboard/components/TopVideosTable.js:305
+#: pages/dashboard/components/TopProductsTable.js:560
+#: pages/dashboard/components/TopVideosTable.js:306
 msgid "Export"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:573
+#: pages/dashboard/components/TopProductsTable.js:574
 msgid "Where in your videos this product appeared: a Woo layer, a shoppable video, a reel pop, and so on."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:584
+#: pages/dashboard/components/TopProductsTable.js:585
 msgid "How many times shoppers opened this product from a video, with the click-through rate beside it (product opens / times the product was shown)."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:595
+#: pages/dashboard/components/TopProductsTable.js:596
 msgid "How many times the product was added to cart from a video, with the add-to-cart rate. In-video means added inside the player; via product page means added after clicking through."
 msgstr ""
 
 #. translators: %s: ISO 4217 currency code, e.g. USD.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:609
+#: pages/dashboard/components/TopProductsTable.js:610
 #, js-format
 msgid "Order value traced to this product's videos, in the store's base currency (%s), after discounts and before refunds, excluding tax, shipping and fees. Orders in other currencies are not converted or counted. Direct means added to cart in-video; Assisted means bought after clicking through to the product page."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:612
+#: pages/dashboard/components/TopProductsTable.js:613
 msgid "Order value traced to this product's videos, in the store's base currency, after discounts and before refunds, excluding tax, shipping and fees. Direct means added to cart in-video; Assisted means bought after clicking through to the product page."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:646
+#: pages/dashboard/components/TopProductsTable.js:647
 msgid "Product image"
 msgstr ""
 
 #. translators: %d: WooCommerce product ID, shown when the product name is unavailable.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:662
+#: pages/dashboard/components/TopProductsTable.js:663
 #, js-format
 msgid "Product ID: %d"
 msgstr ""
 
 #. translators: 1: in-video adds, 2: assisted adds.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:689
+#: pages/dashboard/components/TopProductsTable.js:690
 #, js-format
 msgid "%1$s in-video, %2$s via product page"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:706
+#: pages/dashboard/components/TopProductsTable.js:707
 msgid "No rate: this product has adds but was not counted as shown in this date range. That happens when it was added from a grouped product's page, from a Reel Pop, or after a video click before this date range."
 msgstr ""
 
 #. translators: %s: in-video (Direct) add-to-cart count.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:720
+#: pages/dashboard/components/TopProductsTable.js:721
 #, js-format
 msgid "%s in-video"
 msgstr ""
 
 #. translators: %s: assisted (via product page) add-to-cart count.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:727
+#: pages/dashboard/components/TopProductsTable.js:728
 #, js-format
 msgid "%s via product page"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:747
+#: pages/dashboard/components/TopProductsTable.js:748
 msgid "No data"
 msgstr ""
 
 #. translators: 1: direct (in-video) revenue amount, 2: assisted (via product page) revenue amount.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:761
+#: pages/dashboard/components/TopProductsTable.js:762
 #, js-format
 msgid "%1$s direct · %2$s assisted"
 msgstr ""
 
 #. translators: 1: formatted influenced revenue amount, 2: order count phrase (e.g. "3 orders").
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:777
+#: pages/dashboard/components/TopProductsTable.js:778
 #, js-format
 msgid "Influenced %1$s · %2$s"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:784
+#: pages/dashboard/components/TopProductsTable.js:785
 msgid "(provisional)"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:820
+#: pages/dashboard/components/TopProductsTable.js:821
 msgid "Couldn’t load top products"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:823
-#: pages/dashboard/components/TopVideosTable.js:486
+#: pages/dashboard/components/TopProductsTable.js:824
+#: pages/dashboard/components/TopVideosTable.js:487
 msgid "Something went wrong loading this data. Please refresh the page to try again."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:836
+#: pages/dashboard/components/TopProductsTable.js:838
 msgid "No products match your search"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:837
+#: pages/dashboard/components/TopProductsTable.js:839
 msgid "No product activity yet"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:841
+#: pages/dashboard/components/TopProductsTable.js:843
 msgid "Try a different name, or clear the search to see all products."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:842
+#: pages/dashboard/components/TopProductsTable.js:844
 msgid "Once shoppers interact with products in your videos, your top products will show up here."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:853
+#: pages/dashboard/components/TopProductsTable.js:855
 msgid "Top products pagination"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:859
-#: pages/dashboard/components/TopVideosTable.js:522
+#: pages/dashboard/components/TopProductsTable.js:861
+#: pages/dashboard/components/TopVideosTable.js:524
 msgid "Previous page"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopProductsTable.js:885
-#: pages/dashboard/components/TopVideosTable.js:548
+#: pages/dashboard/components/TopProductsTable.js:887
+#: pages/dashboard/components/TopVideosTable.js:550
 msgid "Next page"
 msgstr ""
 
 #. translators: %s: play-to-purchase conversion rate.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:65
+#: pages/analytics/PlacementFunnelCard.js:66
 #, js-format
 msgid "Play to purchase %s"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:71
+#: pages/analytics/PlacementFunnelCard.js:72
 msgid "Played"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:113
+#: pages/analytics/PlacementFunnelCard.js:114
 msgid "Could not load placement data. Please try again."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:119
+#: pages/analytics/PlacementFunnelCard.js:122
 msgid "Loading placements…"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:136
+#: pages/analytics/PlacementFunnelCard.js:139
 msgid "Funnel by placement"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/PlacementFunnelCard.js:148
+#: pages/analytics/PlacementFunnelCard.js:151
 msgid "Different placements do different jobs, so averaging them hides both winners and losers. Each stage counts distinct visitors, so these figures will not sum to the Top Products totals."
 msgstr ""
 
@@ -5050,216 +5110,216 @@ msgid "Unique Viewers"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:268
+#: pages/dashboard/components/TopVideosTable.js:269
 #: pages/dashboard/Dashboard.js:206
 msgid "Top Videos"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:287
 #: pages/dashboard/components/TopVideosTable.js:288
+#: pages/dashboard/components/TopVideosTable.js:289
 msgid "Search videos"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:294
+#: pages/dashboard/components/TopVideosTable.js:295
 msgid "Show deleted videos"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:223
+#: pages/dashboard/components/TopVideosTable.js:224
 msgid "Media ID"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:144
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:129
-#: pages/dashboard/components/TopVideosTable.js:224
-#: pages/dashboard/components/TopVideosTable.js:327
+#: pages/dashboard/components/TopVideosTable.js:225
+#: pages/dashboard/components/TopVideosTable.js:328
 msgid "Size"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:229
-#: pages/dashboard/components/TopVideosTable.js:382
+#: pages/dashboard/components/TopVideosTable.js:230
+#: pages/dashboard/components/TopVideosTable.js:383
 msgid "Interaction Rate"
 msgstr ""
 
 #. translators: %d: number of export pages that failed to load.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:253
+#: pages/dashboard/components/TopVideosTable.js:254
 #, js-format
 msgid "Export is incomplete: %d page(s) could not be loaded, so some videos are missing from the CSV."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:316
+#: pages/dashboard/components/TopVideosTable.js:317
 msgid "Name"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:318
+#: pages/dashboard/components/TopVideosTable.js:319
 msgid "The video's title. Open it to see this video's own analytics."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:329
+#: pages/dashboard/components/TopVideosTable.js:330
 msgid "The video file's size."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:340
+#: pages/dashboard/components/TopVideosTable.js:341
 msgid "The share of people who, after the video loaded, actually pressed play."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:351
+#: pages/dashboard/components/TopVideosTable.js:352
 msgid "How many times this video was played."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:360
+#: pages/dashboard/components/TopVideosTable.js:361
 msgid "Total Watch Time"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:362
+#: pages/dashboard/components/TopVideosTable.js:363
 msgid "The total time everyone spent watching this video."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:373
+#: pages/dashboard/components/TopVideosTable.js:374
 msgid "On average, how much of the video people watch before leaving."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:384
+#: pages/dashboard/components/TopVideosTable.js:385
 msgid "The share of viewing sessions that acted on an interactive layer: clicked a hotspot or CTA, submitted a form, voted in a poll, or added to cart. Hovers are not counted."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:395
+#: pages/dashboard/components/TopVideosTable.js:396
 msgid "How many different pages this video appears on."
 msgstr ""
 
 #. translators: 1: interacting sessions, 2: total plays.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:459
+#: pages/dashboard/components/TopVideosTable.js:460
 #, js-format
 msgid "%1$s of %2$s sessions interacted with a layer"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:463
+#: pages/dashboard/components/TopVideosTable.js:464
 msgid "No layer interactions in this period"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:483
+#: pages/dashboard/components/TopVideosTable.js:484
 msgid "Couldn’t load top videos"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:499
+#: pages/dashboard/components/TopVideosTable.js:501
 msgid "No videos match your search"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:500
+#: pages/dashboard/components/TopVideosTable.js:502
 msgid "No video plays yet"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:504
+#: pages/dashboard/components/TopVideosTable.js:506
 msgid "Try a different title, or clear the search to see all videos."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:505
+#: pages/dashboard/components/TopVideosTable.js:507
 msgid "Once your videos start getting views, your top performers will show up here."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/TopVideosTable.js:516
+#: pages/dashboard/components/TopVideosTable.js:518
 msgid "Top videos pagination"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:35
+#: pages/dashboard/components/GA4ConnectionWidget.js:36
 msgid "a custom GA4 integration"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:36
+#: pages/dashboard/components/GA4ConnectionWidget.js:37
 msgid "a manually configured GA4 integration"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:57
+#: pages/dashboard/components/GA4ConnectionWidget.js:58
 msgid "Add To Cart and Purchase are GA4’s default ecommerce events, already tracked by many stores."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:195
+#: pages/dashboard/components/GA4ConnectionWidget.js:196
 msgid "Add to Cart events"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:201
+#: pages/dashboard/components/GA4ConnectionWidget.js:202
 msgid "Purchase events"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:232
+#: pages/dashboard/components/GA4ConnectionWidget.js:233
 msgid "GA4 Tracking off"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:237
+#: pages/dashboard/components/GA4ConnectionWidget.js:238
 msgid "Enable"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:250
+#: pages/dashboard/components/GA4ConnectionWidget.js:251
 msgid "Checking GA4 status…"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:263
+#: pages/dashboard/components/GA4ConnectionWidget.js:264
 msgid "GA4 unavailable"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:264
+#: pages/dashboard/components/GA4ConnectionWidget.js:265
 msgid "Could not reach the GA4 status endpoint. This can happen right after an update — try refreshing in a moment."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:268
-#: pages/dashboard/components/GA4ConnectionWidget.js:301
-#: pages/dashboard/components/GA4ConnectionWidget.js:325
+#: pages/dashboard/components/GA4ConnectionWidget.js:269
+#: pages/dashboard/components/GA4ConnectionWidget.js:303
+#: pages/dashboard/components/GA4ConnectionWidget.js:327
 msgid "Manage"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:47
+#: pages/dashboard/components/GA4ConnectionWidget.js:48
 msgid "another GA4 integration"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:288
+#: pages/dashboard/components/GA4ConnectionWidget.js:290
 msgid "GoDAM is standing down"
 msgstr ""
 
 #. translators: %s: name of the other active GA4 integration.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:291
+#: pages/dashboard/components/GA4ConnectionWidget.js:293
 #, js-format
 msgid "%s is already sending these events, so GoDAM is not pushing them to avoid duplicates."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/components/GA4ConnectionWidget.js:316
+#: pages/dashboard/components/GA4ConnectionWidget.js:318
 msgid "Sending to GA4"
 msgstr ""
 
@@ -5270,8 +5330,8 @@ msgstr ""
 
 #. translators: %d: number of days in the compared previous window.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:285
-#: pages/dashboard/Dashboard.js:334
+#: pages/dashboard/Dashboard.js:292
+#: pages/dashboard/Dashboard.js:341
 #, js-format
 msgid "vs prev %d days"
 msgstr ""
@@ -5279,60 +5339,60 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: inc/classes/class-pages.php:200
 #: inc/classes/class-pages.php:201
-#: pages/dashboard/Dashboard.js:432
+#: pages/dashboard/Dashboard.js:455
 msgid "Dashboard"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:448
+#: pages/dashboard/Dashboard.js:471
 msgid "See Reel Pop Analytics"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:460
+#: pages/dashboard/Dashboard.js:483
 msgid "Analytics docs"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:469
+#: pages/dashboard/Dashboard.js:492
 msgid "Total Plays / Unique Viewers"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:518
+#: pages/dashboard/Dashboard.js:541
 msgid "Active Videos"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:519
+#: pages/dashboard/Dashboard.js:542
 msgid "Number of unique videos that received user interactions each day, such as views or plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:534
+#: pages/dashboard/Dashboard.js:557
 msgid "Avg. Play Rate"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:563
+#: pages/dashboard/Dashboard.js:586
 msgid "Average share of each video that viewers watched, across all plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:586
+#: pages/dashboard/Dashboard.js:609
 msgid "WooCommerce metrics couldn’t load. This is usually temporary."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/App.js:36
-#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:101
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:106
 msgid "API Key"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: pages/godam/App.js:45
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:101
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:105
 #: pages/help/App.js:55
 msgid "General Settings"
 msgstr ""
@@ -5340,15 +5400,15 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: pages/godam/App.js:51
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:101
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:110
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:105
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:114
 #: pages/help/App.js:59
 msgid "Video Settings"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/App.js:57
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:408
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:412
 msgid "Video Player"
 msgstr ""
 
@@ -5365,21 +5425,21 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:19
+#: pages/godam/components/GoDAMFooter.jsx:20
 msgid "Support"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:23
+#: pages/godam/components/GoDAMFooter.jsx:24
 msgid "Docs"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:27
+#: pages/godam/components/GoDAMFooter.jsx:28
 msgid "Newsletter"
 msgstr ""
 
@@ -5389,131 +5449,124 @@ msgstr ""
 #: inc/classes/class-pages.php:269
 #: inc/classes/class-pages.php:270
 #: pages/dashboard/components/MarketingCarousel.jsx:94
-#: pages/godam/components/GoDAMFooter.jsx:31
+#: pages/godam/components/GoDAMFooter.jsx:32
 msgid "What's New"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:39
+#: pages/godam/components/GoDAMFooter.jsx:40
 msgid "Twitter X"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:44
+#: pages/godam/components/GoDAMFooter.jsx:45
 msgid "Facebook"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:49
+#: pages/godam/components/GoDAMFooter.jsx:50
 msgid "Linkedin"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:54
+#: pages/godam/components/GoDAMFooter.jsx:55
 msgid "Instagram"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:59
+#: pages/godam/components/GoDAMFooter.jsx:60
 msgid "Youtube"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:64
+#: pages/godam/components/GoDAMFooter.jsx:65
 msgid "WordPress.org"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:67
+#: pages/godam/components/GoDAMFooter.jsx:68
 msgid "Rate us on WordPress.org"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: pages/godam/components/GoDAMFooter.jsx:77
+#: pages/godam/components/GoDAMFooter.jsx:78
 msgid "Made with ♥ by the GoDAM Team"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:897
+#: admin/class-rtgodam-transcoder-admin.php:908
 #: pages/godam/components/PreflightNotices.jsx:55
 msgid "How to fix"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:900
-#: pages/godam/components/PreflightNotices.jsx:58
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:180
-msgid "Contact Support"
-msgstr ""
-
-#: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:855
+#: admin/class-rtgodam-transcoder-admin.php:866
 #: pages/godam/components/PreflightNotices.jsx:90
 msgid "Your site can't receive transcoding updates"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:856
+#: admin/class-rtgodam-transcoder-admin.php:867
 #: pages/godam/components/PreflightNotices.jsx:91
 msgid "New videos may stay at \"Processing\" because transcoding updates can't reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:864
+#: admin/class-rtgodam-transcoder-admin.php:875
 #: pages/godam/components/PreflightNotices.jsx:100
 msgid "Setup check"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:869
+#: admin/class-rtgodam-transcoder-admin.php:880
 #: pages/godam/components/PreflightNotices.jsx:102
 msgid "A setup check for this site didn't pass. See how to fix it, or contact support."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:168
-#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:42
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:169
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:43
 msgid "Account"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:70
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:71
 msgid "API key verified"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:80
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:81
 msgid "Your API Key has expired. You can renew it from your"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:91
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:94
 msgid "Unable to verify API key. Please click \"Refresh Status\" to try again."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:60
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:61
 msgid "Your API key is required to access the features. You can get your active API key from"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:105
+#: pages/godam/components/tabs/VideoSettings/components/PasswordFieldWIthToggle/index.jsx:110
 msgid "Enter your API key here"
 msgstr ""
 
@@ -5557,182 +5610,182 @@ msgid "Storage"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:104
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:105
 msgid "API Settings"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:125
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:126
 msgid "Remove API key"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:50
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:51
 msgid "The API key you’ve entered is incorrect. Please enter a valid key"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:39
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:40
 msgid "Please enter a valid API key"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:134
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:140
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:360
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:493
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:141
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:130
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:138
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:144
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:365
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:497
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:142
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:134
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:302
 msgid "Saving…"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:141
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:142
 msgid "Save API Key"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:84
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:85
 msgid "API key status refreshed!"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:94
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:95
 msgid "Failed to refresh API key status"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:151
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:152
 msgid "Refreshing…"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:568
-#: admin/class-rtgodam-transcoder-admin.php:631
-#: admin/class-rtgodam-transcoder-admin.php:670
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:151
+#: admin/class-rtgodam-transcoder-admin.php:577
+#: admin/class-rtgodam-transcoder-admin.php:641
+#: admin/class-rtgodam-transcoder-admin.php:680
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:152
 msgid "Refresh Status"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:161
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:162
 msgid "Access your active API key from"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:173
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:174
 msgid "Having any issue?"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:189
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:190
 msgid "Remove API Key?"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:190
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:191
 msgid "Yes, Remove"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:60
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:61
 msgid "API key deactivated successfully!"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:69
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:70
 msgid "Failed to deactivate API key"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:198
+#: pages/godam/components/tabs/VideoSettings/APISettings.jsx:199
 msgid "If you remove the API key, your account will be deactivated and you’ll lose access to the platform."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/APIKey/APIKey.jsx:40
+#: pages/godam/components/tabs/APIKey/APIKey.jsx:44
 msgid "Ensure Smooth Video Playback"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/APIKey/APIKey.jsx:42
+#: pages/godam/components/tabs/APIKey/APIKey.jsx:46
 msgid "Start with GoDAM Free for 60 days, or plans starting from $9/mo."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/APIKey/APIKey.jsx:51
+#: pages/godam/components/tabs/APIKey/APIKey.jsx:55
 msgid "Choose GoDAM Plan"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:74
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:82
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:197
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:387
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:81
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:75
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:83
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:198
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:388
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:82
 #: pages/video-editor/App.js:124
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:206
-#: pages/video-editor/VideoEditor.js:137
+#: pages/video-editor/VideoEditor.js:141
 msgid "You have unsaved changes. Are you sure you want to leave?"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:94
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:98
 msgid "Video Ads Settings"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:99
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:103
 msgid "Enable Global Video Ads"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:100
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:104
 msgid "Enable or disable video ads on all videos across the site"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:111
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:115
 #: pages/video-editor/components/appearance/Appearance.js:216
 msgid "Ad Tag URL"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:114
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:118
 msgid "A VAST ad tag URL is used by a player to retrieve video and audio ads"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:115
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:119
 #: pages/video-editor/components/appearance/Appearance.js:225
 msgid "Learn more."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:59
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:67
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:182
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:98
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:66
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:60
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:68
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:183
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:99
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:67
 msgid "Settings saved successfully."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:62
-#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:65
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:70
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:73
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:185
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:188
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:101
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:104
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:69
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:72
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:63
+#: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:66
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:71
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:74
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:186
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:189
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:102
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:105
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:70
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:73
 msgid "Failed to save settings."
 msgstr ""
 
@@ -5784,27 +5837,27 @@ msgid "Selected custom brand"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:106
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:110
 msgid "Enable folder organization in media library."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:109
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:113
 msgid "This setting is managed by your site administrator and can’t be changed here."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:110
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:114
 msgid "Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:121
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:125
 msgid "Enable GTM Tracking"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:122
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:126
 msgid "Enable Google Tag Manager video tracking for analytics and conversion tracking."
 msgstr ""
 
@@ -5823,13 +5876,13 @@ msgid "Enable or disable the %s integration."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:302
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:307
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:47
 msgid "This is a Pro feature."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:314
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:319
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationToggle.jsx:59
 msgid "to use this integration."
 msgstr ""
@@ -5847,10 +5900,10 @@ msgid "Install %s"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:222
-#: admin/class-rtgodam-transcoder-admin.php:565
-#: admin/class-rtgodam-transcoder-admin.php:628
-#: admin/class-rtgodam-transcoder-admin.php:667
+#: admin/class-rtgodam-transcoder-admin.php:224
+#: admin/class-rtgodam-transcoder-admin.php:574
+#: admin/class-rtgodam-transcoder-admin.php:638
+#: admin/class-rtgodam-transcoder-admin.php:677
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationActionButton.jsx:82
 msgid "Learn More"
 msgstr ""
@@ -5877,55 +5930,55 @@ msgid "Pro"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:223
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:227
 msgid "Integration Settings"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:148
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:149
 msgid "Add-on installed successfully! Reloading…"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:156
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:157
 msgid "Installation failed."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:263
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:267
 msgid "Installation failed. Please download the ZIP and install it like any other WordPress plugin."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:272
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:277
 msgid "Download ZIP"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:282
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:287
 msgid "View Installation Guide"
 msgstr ""
 
 #. translators: %s: Integration name, e.g. "WooCommerce".
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:293
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:298
 #, js-format
 msgid "The %s add-on plugin is not installed. Please install it to enable this integration."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:110
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:111
 msgid "Integration status updated successfully."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:119
+#: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:120
 msgid "Failed to toggle add-on."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/VideoPlayer/CustomVideoPlayerCSS.jsx:50
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:473
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:477
 msgid "Custom CSS"
 msgstr ""
 
@@ -5933,59 +5986,59 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-video.php:64
 #: inc/classes/elementor-widgets/class-godam-video.php:126
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:29
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:30
 #: pages/video-editor/components/forms/CF7.js:26
 msgid "Default"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:30
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:31
 msgid "Classic"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:31
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:32
 msgid "Minimal"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:32
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:33
 msgid "Pills"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:33
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:34
 msgid "Bubble"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:414
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:420
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:418
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:424
 msgid "Player Skin"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:435
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:439
 msgid "Brand color"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:447
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:451
 msgid "Clear"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:456
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:460
 msgid "The brand color will not be applied to the player skin."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:461
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:465
 msgid "Applied to the video block. Can be overridden per video."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:478
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:482
 msgid "Any custom CSS you add will be applied to all player skins. It's global and not tied to a specific skin style."
 msgstr ""
 
@@ -6125,7 +6178,7 @@ msgid "If disabled, sharing options (such as social sharing buttons) will not be
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:104
+#: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:108
 msgid "Connect your GoDAM API key from the API Key tab to configure video settings."
 msgstr ""
 
@@ -6600,31 +6653,31 @@ msgstr ""
 
 #. translators: %s is the error message
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/folder-tree/FolderTree.jsx:338
+#: pages/media-library/components/folder-tree/FolderTree.jsx:339
 #, js-format
 msgid "Error: %s"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/folder-tree/FolderTree.jsx:134
+#: pages/media-library/components/folder-tree/FolderTree.jsx:135
 msgid "The parent folder is locked, so this folder cannot be moved."
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/folder-tree/FolderTree.jsx:164
+#: pages/media-library/components/folder-tree/FolderTree.jsx:165
 msgid "The destination folder is locked and cannot be modified"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/folder-tree/FolderTree.jsx:187
+#: pages/media-library/components/folder-tree/FolderTree.jsx:188
 msgid "Failed to move folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
 #: inc/templates/godam-video-gallery.php:487
 #: inc/templates/godam-video-gallery.php:498
-#: pages/media-library/components/folder-tree/FolderTree.jsx:376
-#: pages/media-library/components/search-bar/SearchBar.jsx:216
+#: pages/media-library/components/folder-tree/FolderTree.jsx:384
+#: pages/media-library/components/search-bar/SearchBar.jsx:217
 msgid "Load More"
 msgstr ""
 
@@ -6736,7 +6789,7 @@ msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
 #: pages/media-library/components/context-menu/ContextMenu.jsx:473
-#: pages/media-library/components/modal/RenameModal.jsx:98
+#: pages/media-library/components/modal/RenameModal.jsx:99
 msgid "Rename"
 msgstr ""
 
@@ -6766,118 +6819,118 @@ msgid "Download Zip"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:71
+#: pages/media-library/components/modal/FolderCreationModal.jsx:72
 msgid "Folder created successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:89
+#: pages/media-library/components/modal/FolderCreationModal.jsx:90
 msgid "Folder with that name already exists."
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:96
+#: pages/media-library/components/modal/FolderCreationModal.jsx:97
 msgid "Failed to create folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:116
+#: pages/media-library/components/modal/FolderCreationModal.jsx:117
 msgid "Create a new folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:125
-#: pages/media-library/components/modal/RenameModal.jsx:88
+#: pages/media-library/components/modal/FolderCreationModal.jsx:126
+#: pages/media-library/components/modal/RenameModal.jsx:89
 msgid "Folder Name"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/FolderCreationModal.jsx:133
+#: pages/media-library/components/modal/FolderCreationModal.jsx:134
 msgid "Create"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/RenameModal.jsx:57
+#: pages/media-library/components/modal/RenameModal.jsx:58
 msgid "Folder renamed successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/RenameModal.jsx:64
+#: pages/media-library/components/modal/RenameModal.jsx:65
 msgid "Failed to rename folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/RenameModal.jsx:83
+#: pages/media-library/components/modal/RenameModal.jsx:84
 msgid "Rename folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:73
+#: pages/media-library/components/modal/DeleteModal.jsx:74
 msgid "Some folders could not be deleted"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:81
+#: pages/media-library/components/modal/DeleteModal.jsx:82
 msgid "Folders deleted successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:81
+#: pages/media-library/components/modal/DeleteModal.jsx:82
 msgid "Folder deleted successfully"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:90
+#: pages/media-library/components/modal/DeleteModal.jsx:91
 msgid "Failed to delete folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:109
+#: pages/media-library/components/modal/DeleteModal.jsx:110
 msgid "Confirm Delete"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:116
+#: pages/media-library/components/modal/DeleteModal.jsx:117
 msgid "Deleting"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:116
+#: pages/media-library/components/modal/DeleteModal.jsx:117
 msgid "these"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:116
+#: pages/media-library/components/modal/DeleteModal.jsx:117
 msgid "folders"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:116
+#: pages/media-library/components/modal/DeleteModal.jsx:117
 msgid "will remove them and all its subfolders, but"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:116
+#: pages/media-library/components/modal/DeleteModal.jsx:117
 msgid "media associated with them will not be deleted"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:120
+#: pages/media-library/components/modal/DeleteModal.jsx:121
 msgid "Deleting the folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:120
+#: pages/media-library/components/modal/DeleteModal.jsx:121
 msgid "will remove it and all its subfolders, but"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:120
+#: pages/media-library/components/modal/DeleteModal.jsx:121
 msgid "media associated with it will not be deleted"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/modal/DeleteModal.jsx:125
+#: pages/media-library/components/modal/DeleteModal.jsx:126
 msgid "Are you sure you want to proceed? This action cannot be undone."
 msgstr ""
 
@@ -6913,13 +6966,13 @@ msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
 #: pages/media-library/components/modal/MoveToFolderModal.jsx:296
-#: pages/media-library/components/search-bar/SearchBar.jsx:223
+#: pages/media-library/components/search-bar/SearchBar.jsx:224
 msgid "Searching…"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
 #: pages/media-library/components/modal/MoveToFolderModal.jsx:301
-#: pages/media-library/components/search-bar/SearchBar.jsx:193
+#: pages/media-library/components/search-bar/SearchBar.jsx:194
 msgid "No folders found."
 msgstr ""
 
@@ -6963,17 +7016,17 @@ msgid "No locked folders yet"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/search-bar/SearchBar.jsx:176
+#: pages/media-library/components/search-bar/SearchBar.jsx:177
 msgid "Search folder"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/search-bar/SearchBar.jsx:223
+#: pages/media-library/components/search-bar/SearchBar.jsx:224
 msgid "Loading more results…"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: pages/media-library/components/search-bar/SearchBar.jsx:224
+#: pages/media-library/components/search-bar/SearchBar.jsx:227
 msgid "Error fetching results."
 msgstr ""
 
@@ -7048,7 +7101,7 @@ msgid "Used by forward thinking teams"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/OnboardingModal.jsx:71
+#: pages/onboarding/components/OnboardingModal.jsx:72
 msgid "GoDAM onboarding"
 msgstr ""
 
@@ -7118,7 +7171,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/onboarding/components/screens/EntryScreen.jsx:49
 #: pages/onboarding/components/screens/SignupScreen.jsx:70
-#: pages/video-editor/components/transcription/Transcription.js:254
+#: pages/video-editor/components/transcription/Transcription.js:258
 msgid "OR"
 msgstr ""
 
@@ -7154,7 +7207,7 @@ msgid "Last Name"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:55
+#: pages/onboarding/components/screens/LoginScreen.jsx:58
 #: pages/onboarding/components/screens/SignupScreen.jsx:78
 msgid "Password"
 msgstr ""
@@ -7170,7 +7223,7 @@ msgid "Confirm Password"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:55
+#: pages/onboarding/components/screens/LoginScreen.jsx:58
 #: pages/onboarding/components/screens/SignupScreen.jsx:79
 msgid "Enter Password"
 msgstr ""
@@ -7238,7 +7291,7 @@ msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
 #: pages/onboarding/components/screens/LicenseKeyScreen.jsx:82
-#: pages/onboarding/components/screens/LoginScreen.jsx:62
+#: pages/onboarding/components/screens/LoginScreen.jsx:65
 #: pages/onboarding/components/screens/SignupScreen.jsx:91
 msgid "Sign in"
 msgstr ""
@@ -7286,17 +7339,17 @@ msgid "Resend email"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:51
+#: pages/onboarding/components/screens/LoginScreen.jsx:54
 msgid "Sign in to your account"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:57
+#: pages/onboarding/components/screens/LoginScreen.jsx:60
 msgid "Forgot Password?"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:44
+#: pages/onboarding/components/screens/LoginScreen.jsx:47
 msgid "Invalid email or password."
 msgstr ""
 
@@ -7306,27 +7359,27 @@ msgid "Enter a valid email and password."
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:62
+#: pages/onboarding/components/screens/LoginScreen.jsx:65
 msgid "Signing in…"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:66
+#: pages/onboarding/components/screens/LoginScreen.jsx:69
 msgid "Don't have an account?"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:67
+#: pages/onboarding/components/screens/LoginScreen.jsx:70
 msgid "Sign up"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:70
+#: pages/onboarding/components/screens/LoginScreen.jsx:73
 msgid "Got a licence key?"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:71
+#: pages/onboarding/components/screens/LoginScreen.jsx:74
 msgid "Login with key"
 msgstr ""
 
@@ -7561,7 +7614,7 @@ msgid "Migration is in progress. Please wait…"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:34
+#: pages/tools/components/tabs/RetranscodeTab.jsx:35
 msgid "All media"
 msgstr ""
 
@@ -7569,7 +7622,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-image.php:61
 #: inc/classes/wpbakery-elements/class-wpb-godam-image.php:66
-#: pages/tools/components/tabs/RetranscodeTab.jsx:38
+#: pages/tools/components/tabs/RetranscodeTab.jsx:39
 #: pages/video-editor/components/cta/CardCTA.js:347
 #: pages/video-editor/components/cta/CardCTA.js:391
 msgid "Image"
@@ -7581,203 +7634,203 @@ msgstr ""
 #: admin/class-rtgodam-retranscodemedia.php:312
 #: admin/js/godam-retranscode-media.js:6
 #: pages/tools/App.js:22
-#: pages/tools/components/tabs/RetranscodeTab.jsx:455
+#: pages/tools/components/tabs/RetranscodeTab.jsx:461
 msgid "Retranscode Media"
 msgstr ""
 
 #. translators: %s is a comma-separated list of file extensions, e.g. "PDF, DOCX".
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:91
+#: pages/tools/components/tabs/RetranscodeTab.jsx:92
 #, js-format
 msgid "Fetches %s files. GoDAM converts each one to a preview PDF."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:94
+#: pages/tools/components/tabs/RetranscodeTab.jsx:95
 msgid "Choose which type of media to fetch for transcoding."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:120
+#: pages/tools/components/tabs/RetranscodeTab.jsx:121
 msgid "The requested operation is not allowed. The nonce provided in the URL is invalid or expired."
 msgstr ""
 
 #. translators: %d is the number of selected media files to be transcoded.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:150
-#: pages/tools/components/tabs/RetranscodeTab.jsx:175
+#: pages/tools/components/tabs/RetranscodeTab.jsx:151
+#: pages/tools/components/tabs/RetranscodeTab.jsx:176
 #, js-format
 msgid "%d selected media file(s) will be transcoded."
 msgstr ""
 
 #. translators: %d is the number of selected media files to be retranscoded.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:160
+#: pages/tools/components/tabs/RetranscodeTab.jsx:161
 #, js-format
 msgid "%d selected media file(s) will be retranscoded."
 msgstr ""
 
 #. translators: %d is the number of virtual media files found.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:370
+#: pages/tools/components/tabs/RetranscodeTab.jsx:373
 #, js-format
 msgid "%d virtual media file(s) found, which need to be retranscoded on GoDAM Central."
 msgstr ""
 
 #. translators: %d is the number of media files retranscoded.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:379
+#: pages/tools/components/tabs/RetranscodeTab.jsx:382
 #, js-format
 msgid "Successfully sent %d media file(s) for retranscoding."
 msgstr ""
 
 #. translators: %d is the number of media files that failed to retranscode.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:394
+#: pages/tools/components/tabs/RetranscodeTab.jsx:397
 #, js-format
 msgid "Failed to send %d media file(s) for retranscoding."
 msgstr ""
 
 #. translators: %d is the number of media files that were skipped.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:412
+#: pages/tools/components/tabs/RetranscodeTab.jsx:415
 #, js-format
 msgid "%d media file(s) were skipped and not sent for retranscoding."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:425
+#: pages/tools/components/tabs/RetranscodeTab.jsx:428
 msgid "Operation completed without any media files to retranscode."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:458
+#: pages/tools/components/tabs/RetranscodeTab.jsx:464
 msgid "This tool allows you to retranscode your media files. You can either retranscode specific files selected from the Media Library, or pick a media type below and fetch the files of that type that are not yet transcoded."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:465
+#: pages/tools/components/tabs/RetranscodeTab.jsx:471
 msgid "Checking the \"Force retranscode\" option will retranscode all media files regardless of their current state."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:470
+#: pages/tools/components/tabs/RetranscodeTab.jsx:476
 msgid "Note: Transcoding and retranscoding will use your bandwidth allowance. Use the force retranscode option carefully."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:481
+#: pages/tools/components/tabs/RetranscodeTab.jsx:487
 msgid "Storage Limit Exceeded:"
 msgstr ""
 
 #. translators: %s is the storage usage percentage.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:484
+#: pages/tools/components/tabs/RetranscodeTab.jsx:490
 #, js-format
 msgid "Your storage usage has exceeded your plan limit (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:500
+#: pages/tools/components/tabs/RetranscodeTab.jsx:507
 msgid "Media type"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:517
+#: pages/tools/components/tabs/RetranscodeTab.jsx:524
 msgid "Force retranscode (even if already transcoded)"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:533
+#: pages/tools/components/tabs/RetranscodeTab.jsx:540
 msgid "Fetching media that require retranscoding…"
 msgstr ""
 
 #. translators: %d is the number of untranscoded media files.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:552
+#: pages/tools/components/tabs/RetranscodeTab.jsx:559
 #, js-format
 msgid "%d untranscoded media file(s) selected"
 msgstr ""
 
 #. translators: %d is the number of transcoded media files.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:561
+#: pages/tools/components/tabs/RetranscodeTab.jsx:568
 #, js-format
 msgid "%d transcoded media file(s) selected"
 msgstr ""
 
 #. translators: 1: number of media files that require retranscoding, 2: total number of media files.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:574
+#: pages/tools/components/tabs/RetranscodeTab.jsx:581
 #, js-format
 msgid "%1$d/%2$d media file(s) require retranscoding."
 msgstr ""
 
 #. translators: 1: number of media files that will be retranscoded regardless of their current state, 2: total number of media files.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:580
+#: pages/tools/components/tabs/RetranscodeTab.jsx:587
 #, js-format
 msgid "%1$d/%2$d media file(s) will be retranscoded regardless of their current state."
 msgstr ""
 
 #. translators: 1: number of media files sent for retranscoding, 2: total number of media files selected.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:593
+#: pages/tools/components/tabs/RetranscodeTab.jsx:600
 #, js-format
 msgid "%1$d/%2$d media files sent for retranscoding…"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:217
+#: pages/tools/components/tabs/RetranscodeTab.jsx:218
 msgid "No media files found for retranscoding. Please ensure you have media files that require retranscoding."
 msgstr ""
 
 #. translators: %s is the selected media type label, e.g. Video.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:222
+#: pages/tools/components/tabs/RetranscodeTab.jsx:223
 #, js-format
 msgid "No media files of the selected type (%s) found for retranscoding. Please ensure you have media files of this type that require retranscoding."
 msgstr ""
 
 #. translators: %s is the error message.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:233
+#: pages/tools/components/tabs/RetranscodeTab.jsx:234
 #, js-format
 msgid "Failed to fetch media for retranscoding: %s"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:631
+#: pages/tools/components/tabs/RetranscodeTab.jsx:643
 msgid "Fetch Media"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:641
+#: pages/tools/components/tabs/RetranscodeTab.jsx:653
 msgid "Restart Transcoding"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:643
+#: pages/tools/components/tabs/RetranscodeTab.jsx:655
 msgid "Restart Retranscoding"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:635
+#: pages/tools/components/tabs/RetranscodeTab.jsx:647
 msgid "Start Transcoding"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:637
+#: pages/tools/components/tabs/RetranscodeTab.jsx:649
 msgid "Start Retranscoding"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:250
+#: pages/tools/components/tabs/RetranscodeTab.jsx:251
 msgid "Aborting operation to send media for retranscoding."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/RetranscodeTab.jsx:656
+#: pages/tools/components/tabs/RetranscodeTab.jsx:668
 msgid "Abort Operation"
 msgstr ""
 
@@ -7788,110 +7841,110 @@ msgstr ""
 
 #: assets/build/pages/tools.min.js:2
 #: pages/tools/App.js:34
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:201
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:205
 msgid "Media Usage Sync"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:70
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:71
 msgid "Media usage sync completed successfully."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:204
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:208
 msgid "Scans all existing posts and pages to record which media files are used where. GoDAM starts this scan automatically in the background — use this page to monitor progress or trigger it manually if needed."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:210
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:214
 msgid "This sync is completely non-destructive."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:212
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:216
 msgid "It will not alter, move, or delete any of your existing media files."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:216
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:220
 msgid "Processing runs in small background batches so your site stays fully responsive throughout."
 msgstr ""
 
 #. translators: 1: posts synced so far, 2: total posts to sync.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:167
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:168
 #, js-format
 msgid "%1$d of %2$d posts synced…"
 msgstr ""
 
 #. translators: 1: posts synced so far, 2: total posts to sync.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:175
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:176
 #, js-format
 msgid "%1$d of %2$d posts synced (stopped)."
 msgstr ""
 
 #. translators: %d: total number of posts synced.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:182
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:183
 #, js-format
 msgid "%d posts synced."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:232
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:236
 msgid "Only administrators can start or stop the media usage sync."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:102
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:103
 msgid "All posts are already synced — nothing to do."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:110
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:111
 msgid "Failed to start the sync. Please try again."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:150
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:151
 msgid "Syncing…"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:153
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:154
 msgid "Resume Sync"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:156
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:157
 msgid "Sync Completed"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:158
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:159
 msgid "Start Sync"
 msgstr ""
 
 #. translators: 1: posts synced so far, 2: total posts to sync.
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:129
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:130
 #, js-format
 msgid "Sync stopped. %1$d of %2$d posts were synced. You can resume at any time."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:139
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:140
 msgid "Failed to stop the sync. Please try again."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:255
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:259
 msgid "Stopping…"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:256
+#: pages/tools/components/tabs/MediaUsageSyncTab.jsx:260
 msgid "Stop Sync"
 msgstr ""
 
@@ -8918,12 +8971,12 @@ msgid "URL to open when the ad is clicked"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/LayerErrorBoundary.js:46
+#: pages/video-editor/components/layers/LayerErrorBoundary.js:51
 msgid "This layer could not be opened. It may be provided by an add-on that needs updating to work with this version of GoDAM."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/LayerErrorBoundary.js:53
+#: pages/video-editor/components/layers/LayerErrorBoundary.js:59
 msgid "Back to layers"
 msgstr ""
 
@@ -9106,12 +9159,12 @@ msgid "If enabled, the user will be able to skip the poll."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/Layer.js:86
+#: pages/video-editor/components/layers/Layer.js:87
 msgid "Loading layer…"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/Layer.js:90
+#: pages/video-editor/components/layers/Layer.js:92
 msgid "Error: No layer components registered"
 msgstr ""
 
@@ -9243,83 +9296,83 @@ msgid "Delete chapter"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:74
+#: pages/video-editor/components/transcription/Transcription.js:77
 msgid "Transcription failed. Please try again."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:134
+#: pages/video-editor/components/transcription/Transcription.js:137
 msgid "Select a caption file"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:135
+#: pages/video-editor/components/transcription/Transcription.js:138
 msgid "Use this file"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:150
+#: pages/video-editor/components/transcription/Transcription.js:153
 msgid "Could not attach the caption file."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:144
+#: pages/video-editor/components/transcription/Transcription.js:147
 msgid "Please choose a .vtt or .srt caption file."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:199
+#: pages/video-editor/components/transcription/Transcription.js:203
 msgid "Replace transcription file"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:206
-#: pages/video-editor/components/transcription/Transcription.js:285
+#: pages/video-editor/components/transcription/Transcription.js:210
+#: pages/video-editor/components/transcription/Transcription.js:289
 msgid "Delete transcription"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:230
+#: pages/video-editor/components/transcription/Transcription.js:234
 msgid "No cues found in this caption file."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:240
+#: pages/video-editor/components/transcription/Transcription.js:244
 msgid "Automatically transcribe the audio using GoDAM's AI engine"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:124
+#: pages/video-editor/components/transcription/Transcription.js:127
 msgid "Could not start transcription. Please try again."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:250
+#: pages/video-editor/components/transcription/Transcription.js:254
 msgid "Generate Transcription"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:261
+#: pages/video-editor/components/transcription/Transcription.js:265
 msgid "Generating transcription…"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:264
+#: pages/video-editor/components/transcription/Transcription.js:268
 msgid "This usually takes 10–15 minutes. We'll notify you once it's ready"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:276
+#: pages/video-editor/components/transcription/Transcription.js:280
 msgid "Upload File"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:288
+#: pages/video-editor/components/transcription/Transcription.js:292
 msgid "Delete this transcription? This cannot be undone."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:164
+#: pages/video-editor/components/transcription/Transcription.js:167
 msgid "Could not remove the transcript."
 msgstr ""
 
@@ -9334,12 +9387,12 @@ msgid "Add layer at this time"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:675
+#: pages/video-editor/VideoEditor.js:684
 msgid "Untitled image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:496
+#: pages/video-editor/VideoEditor.js:500
 msgid "Please select a form for the layer at timestamp:"
 msgid_plural "Please select a form for the layers at timestamps:"
 msgstr[0] ""
@@ -9347,48 +9400,48 @@ msgstr[1] ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:487
-#: pages/video-editor/VideoEditor.js:546
+#: pages/video-editor/VideoEditor.js:551
 msgid "GoDAM block copied to clipboard"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:488
-#: pages/video-editor/VideoEditor.js:549
+#: pages/video-editor/VideoEditor.js:555
 msgid "Failed to copy GoDAM block"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:592
+#: pages/video-editor/VideoEditor.js:599
 msgid "Edit video metadata"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:594
+#: pages/video-editor/VideoEditor.js:601
 msgid "Edit image metadata"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:596
+#: pages/video-editor/VideoEditor.js:603
 msgid "Edit audio metadata"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:598
+#: pages/video-editor/VideoEditor.js:605
 msgid "Edit metadata"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:624
+#: pages/video-editor/VideoEditor.js:631
 msgid "Title updated"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:628
+#: pages/video-editor/VideoEditor.js:636
 msgid "Failed to update title"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:736
+#: pages/video-editor/VideoEditor.js:745
 msgid "Changes saved successfully"
 msgstr ""
 
@@ -9656,7 +9709,7 @@ msgid "Yes, Continue"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/class-dashboard-widget.php:1795
+#: inc/classes/class-dashboard-widget.php:1801
 #: pages/video-editor/onboarding/ProductGuide.jsx:237
 msgid "Not now"
 msgstr ""
@@ -10139,8 +10192,8 @@ msgstr ""
 
 #. translators: %s is the URL to the plugin settings page where the API key can be activated.
 #: admin/class-rtgodam-transcoder-admin.php:87
-#: admin/class-rtgodam-transcoder-admin.php:149
-#: admin/class-rtgodam-transcoder-admin.php:164
+#: admin/class-rtgodam-transcoder-admin.php:150
+#: admin/class-rtgodam-transcoder-admin.php:165
 #, php-format
 msgid "Enjoy using our <strong>DAM and Media Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href=\"%s\">please activate your API key.</a>"
 msgstr ""
@@ -10157,192 +10210,192 @@ msgstr ""
 msgid "Your subscription has ended. No further transcoding can be done. Transcoded videos will be removed after <strong>%d days</strong>, and Pro features will not be accessible. After the 30-day grace period, already transcoded videos will no longer be served from the CDN. Renew your subscription to keep it up and running."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:186
-#: admin/class-rtgodam-transcoder-admin.php:347
+#: admin/class-rtgodam-transcoder-admin.php:188
+#: admin/class-rtgodam-transcoder-admin.php:356
 msgid "Activate API Key"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:186
+#: admin/class-rtgodam-transcoder-admin.php:188
 msgid "Use Media Editor"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:197
+#: admin/class-rtgodam-transcoder-admin.php:199
 msgid "Welcome to GoDAM! Thank you for using our product."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:277
+#: admin/class-rtgodam-transcoder-admin.php:286
 #: inc/classes/class-media-library-ajax.php:1056
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:279
+#: admin/class-rtgodam-transcoder-admin.php:288
 #: inc/classes/class-media-library-ajax.php:1058
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:280
+#: admin/class-rtgodam-transcoder-admin.php:289
 #: inc/classes/class-media-library-ajax.php:1059
 msgid "Dismiss banner"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:340
+#: admin/class-rtgodam-transcoder-admin.php:349
 msgid "Unlock Video Analytics, Transcoding and more with GoDAM Pro. Start with a free 60-day trial."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:344
+#: admin/class-rtgodam-transcoder-admin.php:353
 msgid "Get your Free Plan"
 msgstr ""
 
 #. translators: %1$s: bandwidth percentage, %2$s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:528
+#: admin/class-rtgodam-transcoder-admin.php:537
 #, php-format
 msgid "Your bandwidth (%1$s%%) and storage (%2$s%%) usage have exceeded your plan limits."
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:535
+#: admin/class-rtgodam-transcoder-admin.php:544
 #, php-format
 msgid "Your bandwidth usage (%s%%) has exceeded your plan limit."
 msgstr ""
 
 #. translators: %s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:541
+#: admin/class-rtgodam-transcoder-admin.php:550
 #, php-format
 msgid "Your storage usage (%s%%) has exceeded your plan limit."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:546
+#: admin/class-rtgodam-transcoder-admin.php:555
 msgid "Transcoding requests may be blocked until you upgrade your plan."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:558
+#: admin/class-rtgodam-transcoder-admin.php:567
 msgid "GoDAM Usage Limit Exceeded"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:562
-#: admin/class-rtgodam-transcoder-admin.php:664
+#: admin/class-rtgodam-transcoder-admin.php:571
+#: admin/class-rtgodam-transcoder-admin.php:674
 msgid "Upgrade Your Plan"
 msgstr ""
 
 #. translators: %1$s: bandwidth percentage, %2$s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:591
+#: admin/class-rtgodam-transcoder-admin.php:601
 #, php-format
 msgid "Your bandwidth (%1$s%%) and storage (%2$s%%) usage are approaching your plan limits."
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:598
+#: admin/class-rtgodam-transcoder-admin.php:608
 #, php-format
 msgid "Your bandwidth usage (%s%%) is approaching your plan limit."
 msgstr ""
 
 #. translators: %s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:604
+#: admin/class-rtgodam-transcoder-admin.php:614
 #, php-format
 msgid "Your storage usage (%s%%) is approaching your plan limit."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:609
+#: admin/class-rtgodam-transcoder-admin.php:619
 msgid "Consider upgrading your plan to avoid service interruptions."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:621
+#: admin/class-rtgodam-transcoder-admin.php:631
 msgid "GoDAM Usage Warning"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:625
+#: admin/class-rtgodam-transcoder-admin.php:635
 msgid "View Plans"
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:648
+#: admin/class-rtgodam-transcoder-admin.php:658
 #, php-format
 msgid "Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:660
+#: admin/class-rtgodam-transcoder-admin.php:670
 msgid "GoDAM Bandwidth Exceeded"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:661
+#: admin/class-rtgodam-transcoder-admin.php:671
 msgid "Transcoding will continue to work."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:708
+#: admin/class-rtgodam-transcoder-admin.php:719
 msgid "Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect diagnostic data and usage information."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:715
+#: admin/class-rtgodam-transcoder-admin.php:726
 msgid "what we collect"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:717
+#: admin/class-rtgodam-transcoder-admin.php:728
 msgid "Data we collect:"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:719
+#: admin/class-rtgodam-transcoder-admin.php:730
 msgid "Server environment details (PHP, MySQL, Server, and WordPress versions)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:720
+#: admin/class-rtgodam-transcoder-admin.php:731
 msgid "Site and user count (Language and number of users)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:721
+#: admin/class-rtgodam-transcoder-admin.php:732
 msgid "Plugin details (Number of active and inactive plugins)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:722
+#: admin/class-rtgodam-transcoder-admin.php:733
 msgid "Usage data (Interactions, navigation, session replays, heatmaps, and errors via PostHog)"
 msgstr ""
 
 #. translators: %s: PostHog privacy policy URL
-#: admin/class-rtgodam-transcoder-admin.php:728
+#: admin/class-rtgodam-transcoder-admin.php:739
 #, php-format
 msgid "We use PostHog to collect this data. <a href=\"%s\" target=\"_blank\">Learn more</a>. This can be disabled from the settings on the Help page."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:740
+#: admin/class-rtgodam-transcoder-admin.php:751
 msgid "Allow"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:741
-#: inc/classes/class-dashboard-widget.php:1796
+#: admin/class-rtgodam-transcoder-admin.php:752
+#: inc/classes/class-dashboard-widget.php:1802
 msgid "No thanks"
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:784
+#: admin/class-rtgodam-transcoder-admin.php:795
 #, php-format
 msgid "Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href=\"%s\">renew your subscription</a> to restore access."
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:789
+#: admin/class-rtgodam-transcoder-admin.php:800
 #, php-format
 msgid "Temporarily unable to verify your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a> or try refreshing the status."
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:798
+#: admin/class-rtgodam-transcoder-admin.php:809
 #, php-format
 msgid "There is an issue with your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a>."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:997
+#: admin/class-rtgodam-transcoder-admin.php:1008
 #, php-format
 msgid "<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:1005
+#: admin/class-rtgodam-transcoder-admin.php:1016
 #, php-format
 msgid "<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:1013
+#: admin/class-rtgodam-transcoder-admin.php:1024
 #, php-format
 msgid "<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature."
 msgstr ""
@@ -10453,7 +10506,7 @@ msgid "Transcription callback received."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-rest-routes.php:696
-#: admin/godam-transcoder-functions.php:529
+#: admin/godam-transcoder-functions.php:530
 #: inc/classes/rest-api/class-media-library.php:560
 #: inc/classes/rest-api/class-transcoding.php:449
 msgid "API key is required."
@@ -10505,24 +10558,24 @@ msgid "Transcode Status"
 msgstr ""
 
 #: admin/godam-transcoder-functions.php:383
-#: admin/godam-transcoder-functions.php:440
+#: admin/godam-transcoder-functions.php:441
 #: inc/classes/rest-api/class-transcoding.php:365
 msgid "Media is transcoded."
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:538
+#: admin/godam-transcoder-functions.php:539
 msgid "API key verification is blocked for localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define('RTGODAM_API_KEY', 'your-api-key-here');"
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:547
+#: admin/godam-transcoder-functions.php:548
 msgid "The provided API key does not match the RTGODAM_API_KEY constant defined in wp-config.php."
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:631
+#: admin/godam-transcoder-functions.php:632
 msgid "API key verified and stored successfully!"
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:638
+#: admin/godam-transcoder-functions.php:639
 #: inc/classes/enums/class-api-key-status.php:84
 msgid "Unable to verify API key. Please try again later."
 msgstr ""
@@ -10569,182 +10622,182 @@ msgstr ""
 msgid "No video found for attachment ID"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1289
+#: inc/classes/class-dashboard-widget.php:1290
 msgid "Your GoDAM API key has expired."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1290
+#: inc/classes/class-dashboard-widget.php:1291
 msgid "Update key"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1295
+#: inc/classes/class-dashboard-widget.php:1297
 msgid "GoDAM could not verify your API key just now. It will try again automatically."
 msgstr ""
 
 #. translators: %s: storage used, as a percentage of the plan.
-#: inc/classes/class-dashboard-widget.php:1300
+#: inc/classes/class-dashboard-widget.php:1303
 #, php-format
 msgid "Storage is full (%s%%). New uploads are not being transcoded."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1301
-#: inc/classes/class-dashboard-widget.php:1308
-#: inc/classes/class-dashboard-widget.php:1315
-#: inc/classes/class-dashboard-widget.php:1322
+#: inc/classes/class-dashboard-widget.php:1304
+#: inc/classes/class-dashboard-widget.php:1312
+#: inc/classes/class-dashboard-widget.php:1319
+#: inc/classes/class-dashboard-widget.php:1327
 msgid "View plan"
 msgstr ""
 
 #. translators: %s: storage used, as a percentage of the plan.
-#: inc/classes/class-dashboard-widget.php:1307
+#: inc/classes/class-dashboard-widget.php:1311
 #, php-format
 msgid "Storage is %s%% full. At 100%%, new uploads stop transcoding."
 msgstr ""
 
 #. translators: %s: bandwidth used this billing period, as a percentage of the plan.
-#: inc/classes/class-dashboard-widget.php:1314
+#: inc/classes/class-dashboard-widget.php:1318
 #, php-format
 msgid "Bandwidth is over this period's limit (%s%%)."
 msgstr ""
 
 #. translators: %s: bandwidth used this billing period, as a percentage of the plan.
-#: inc/classes/class-dashboard-widget.php:1321
+#: inc/classes/class-dashboard-widget.php:1326
 #, php-format
 msgid "Bandwidth is %s%% used this billing period."
 msgstr ""
 
 #. translators: %s: number of files.
-#: inc/classes/class-dashboard-widget.php:1329
+#: inc/classes/class-dashboard-widget.php:1334
 #, php-format
 msgid "GoDAM could not process %s file."
 msgid_plural "GoDAM could not process %s files."
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/classes/class-dashboard-widget.php:1334
+#: inc/classes/class-dashboard-widget.php:1340
 msgid "Retry"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1360
+#: inc/classes/class-dashboard-widget.php:1366
 msgid "Your library"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1361
+#: inc/classes/class-dashboard-widget.php:1367
 msgid "Ready to stream and preview"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1384
+#: inc/classes/class-dashboard-widget.php:1390
 msgid "Open GoDAM"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1404
-#: inc/classes/class-dashboard-widget.php:1773
+#: inc/classes/class-dashboard-widget.php:1410
+#: inc/classes/class-dashboard-widget.php:1779
 msgid "Reload the page to load your GoDAM numbers."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1425
+#: inc/classes/class-dashboard-widget.php:1431
 msgid "Watching"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1447
+#: inc/classes/class-dashboard-widget.php:1453
 msgid "Plays, last 30 days"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1455
+#: inc/classes/class-dashboard-widget.php:1461
 msgid "Top videos, last 30 days"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1595
+#: inc/classes/class-dashboard-widget.php:1601
 msgid "file"
 msgid_plural "files"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/classes/class-dashboard-widget.php:1596
+#: inc/classes/class-dashboard-widget.php:1602
 msgid "Everything in your Media Library."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1601
+#: inc/classes/class-dashboard-widget.php:1607
 msgid "file in folders"
 msgid_plural "files in folders"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/classes/class-dashboard-widget.php:1602
+#: inc/classes/class-dashboard-widget.php:1608
 msgid "Files sorted into a GoDAM folder."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1607
+#: inc/classes/class-dashboard-widget.php:1613
 msgid "folder"
 msgid_plural "folders"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/classes/class-dashboard-widget.php:1608
+#: inc/classes/class-dashboard-widget.php:1614
 msgid "Folders in your Media Library."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1613
+#: inc/classes/class-dashboard-widget.php:1619
 msgid "file in use on your site"
 msgid_plural "files in use on your site"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/classes/class-dashboard-widget.php:1614
+#: inc/classes/class-dashboard-widget.php:1620
 msgid "Files that appear in at least one post, page or widget. Drafts count too."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1622
+#: inc/classes/class-dashboard-widget.php:1628
 msgid "hour of video"
 msgid_plural "hours of video"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/classes/class-dashboard-widget.php:1623
+#: inc/classes/class-dashboard-widget.php:1629
 msgid "The combined length of the videos in your Media Library."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1628
+#: inc/classes/class-dashboard-widget.php:1634
 msgid "video ready to stream"
 msgid_plural "videos ready to stream"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/classes/class-dashboard-widget.php:1629
+#: inc/classes/class-dashboard-widget.php:1635
 msgid "Videos GoDAM has transcoded into adaptive streams."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1634
+#: inc/classes/class-dashboard-widget.php:1640
 msgid "audio file ready to stream"
 msgid_plural "audio files ready to stream"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/classes/class-dashboard-widget.php:1635
+#: inc/classes/class-dashboard-widget.php:1641
 msgid "Audio files GoDAM has prepared for streaming."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1640
+#: inc/classes/class-dashboard-widget.php:1646
 msgid "document ready to preview"
 msgid_plural "documents ready to preview"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/classes/class-dashboard-widget.php:1641
+#: inc/classes/class-dashboard-widget.php:1647
 msgid "Documents GoDAM has prepared for the on-page viewer."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1646
+#: inc/classes/class-dashboard-widget.php:1652
 msgid "image ready"
 msgid_plural "images ready"
 msgstr[0] ""
 msgstr[1] ""
 
-#: inc/classes/class-dashboard-widget.php:1647
+#: inc/classes/class-dashboard-widget.php:1653
 msgid "Images GoDAM has finished processing."
 msgstr ""
 
 #. translators: %s: number of images.
-#: inc/classes/class-dashboard-widget.php:1682
+#: inc/classes/class-dashboard-widget.php:1688
 #, php-format
 msgid "%s image"
 msgid_plural "%s images"
@@ -10752,7 +10805,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: number of documents.
-#: inc/classes/class-dashboard-widget.php:1686
+#: inc/classes/class-dashboard-widget.php:1692
 #, php-format
 msgid "%s document"
 msgid_plural "%s documents"
@@ -10760,7 +10813,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: number of audio files.
-#: inc/classes/class-dashboard-widget.php:1688
+#: inc/classes/class-dashboard-widget.php:1694
 #, php-format
 msgid "%s audio file"
 msgid_plural "%s audio files"
@@ -10768,7 +10821,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: number of other files.
-#: inc/classes/class-dashboard-widget.php:1690
+#: inc/classes/class-dashboard-widget.php:1696
 #, php-format
 msgid "%s other file"
 msgid_plural "%s other files"
@@ -10776,81 +10829,77 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: the library's file counts by type, such as "1,980 images, 48 videos".
-#: inc/classes/class-dashboard-widget.php:1711
+#: inc/classes/class-dashboard-widget.php:1717
 #, php-format
 msgid "Your Media Library: %s"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1729
+#: inc/classes/class-dashboard-widget.php:1735
 msgid "Connect GoDAM to stream all your videos in the right quality for every screen."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1732
+#: inc/classes/class-dashboard-widget.php:1738
 msgid "Connect GoDAM to turn all your Word, Excel and PowerPoint files into previews visitors can read on the page."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1735
+#: inc/classes/class-dashboard-widget.php:1741
 msgid "Connect GoDAM to stream all your audio files in a player that can show chapters and transcripts."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1738
+#: inc/classes/class-dashboard-widget.php:1744
 msgid "Connect GoDAM to use this library on your other sites and share it with your team."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1746
+#: inc/classes/class-dashboard-widget.php:1752
 msgid "Connect"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1759
+#: inc/classes/class-dashboard-widget.php:1765
 msgid "Connect GoDAM to stream your videos in the right quality for every screen."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1761
-#: inc/classes/class-dashboard-widget.php:1851
+#: inc/classes/class-dashboard-widget.php:1767
+#: inc/classes/class-dashboard-widget.php:1861
 msgid "Connect GoDAM"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1778
+#: inc/classes/class-dashboard-widget.php:1784
 msgid "Loading your numbers..."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1793
+#: inc/classes/class-dashboard-widget.php:1799
 msgid "Leave a review"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1794
-msgid "(opens in a new tab)"
-msgstr ""
-
-#: inc/classes/class-dashboard-widget.php:1811
+#: inc/classes/class-dashboard-widget.php:1817
 msgid "Needs attention"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1852
+#: inc/classes/class-dashboard-widget.php:1862
 msgid "Your site is linked to your GoDAM account."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1856
+#: inc/classes/class-dashboard-widget.php:1866
 msgid "Upload a video"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1857
+#: inc/classes/class-dashboard-widget.php:1867
 msgid "Add it to the Media Library. GoDAM prepares it for streaming."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1862
+#: inc/classes/class-dashboard-widget.php:1872
 msgid "Get your first video ready to stream"
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1864
+#: inc/classes/class-dashboard-widget.php:1874
 msgid "GoDAM is preparing it now, so it plays smoothly on any screen and connection."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1865
+#: inc/classes/class-dashboard-widget.php:1875
 msgid "GoDAM prepares it to play smoothly on any screen and connection."
 msgstr ""
 
-#: inc/classes/class-dashboard-widget.php:1869
+#: inc/classes/class-dashboard-widget.php:1879
 msgid "Get set up"
 msgstr ""
 
@@ -11678,7 +11727,7 @@ msgid "Leave empty to allow any duration. Example: 180 = 3 minutes."
 msgstr ""
 
 #: inc/classes/gravity-forms/class-init.php:314
-#: inc/helpers/custom-functions.php:1650
+#: inc/helpers/custom-functions.php:1653
 msgid "Gravity forms"
 msgstr ""
 
@@ -13456,42 +13505,42 @@ msgid "The transcoding service couldn't accept the recording. Try again later, o
 msgstr ""
 
 #. translators: %s: Why the recording couldn't be transcoded.
-#: inc/helpers/custom-functions.php:1495
+#: inc/helpers/custom-functions.php:1491
 #, php-format
 msgid "The recording couldn't be transcoded. %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1544
+#: inc/helpers/custom-functions.php:1547
 msgid "Form transcoding has been disabled by the site administrator."
 msgstr ""
 
 #. translators: %s: Entry ID for which transcoding failed
-#: inc/helpers/custom-functions.php:1693
+#: inc/helpers/custom-functions.php:1696
 #, php-format
 msgid "Transcoding failed | entry Id: %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1730
+#: inc/helpers/custom-functions.php:1733
 msgid "s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2047
+#: inc/helpers/custom-functions.php:2050
 msgid "Oops! We could not locate your video"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2058
+#: inc/helpers/custom-functions.php:2061
 msgid "Note: This is a simple image preview. The image and its layers may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2060
+#: inc/helpers/custom-functions.php:2063
 msgid "Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2062
+#: inc/helpers/custom-functions.php:2065
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2224
+#: inc/helpers/custom-functions.php:2227
 msgid "Video not found"
 msgstr ""
 

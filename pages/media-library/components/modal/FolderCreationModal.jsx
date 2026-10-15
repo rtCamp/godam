@@ -15,6 +15,7 @@ import { TextControl, Button, Modal } from '@wordpress/components';
 import { closeModal, createFolder, updateSnackbar } from '../../redux/slice/folders';
 import { useCreateFolderMutation } from '../../redux/api/folders';
 import { updateSelectDropdown } from '../../data/media-grid';
+import { getFailureSnackbarType } from '../../data/utilities';
 import './scss/modal.scss';
 import { __ } from '@wordpress/i18n';
 
@@ -94,7 +95,7 @@ const FolderCreationModal = () => {
 				dispatch( updateSnackbar(
 					{
 						message: __( 'Failed to create folder', 'godam' ),
-						type: 'fail',
+						type: getFailureSnackbarType( error ),
 					},
 				) );
 			}

@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import APISettings from '../VideoSettings/APISettings.jsx';
 import { hasAPIKey } from '../../../utils/index.js';
+import ContactSupportLink from '../../../../shared/ContactSupportLink';
 
 /**
  * API Key tab.
@@ -31,6 +32,9 @@ const APIKey = () => {
 					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
 				>
 					{ notice.message }
+					{ 'error' === notice.status && (
+						<ContactSupportLink className="godam-support-link-inline" testId="godam-settings-link-contact-support" />
+					) }
 				</Notice>
 			) }
 

@@ -9,6 +9,7 @@ import { decodeEntities } from '@wordpress/html-entities';
 /**
  * Internal dependencies
  */
+import ContactSupportLink from '../../shared/ContactSupportLink';
 import { useFetchTopVideosQuery, useLazyFetchTopVideosQuery } from '../redux/api/dashboardAnalyticsApi';
 import DateRangePicker from '../../analytics/components/DateRangePicker';
 import Tooltip from '../../analytics/Tooltip';
@@ -485,6 +486,7 @@ export default function TopVideosTable( { siteUrl, skip = false, tabSwitcher = n
 										<p className="godam-empty-state__hint">
 											{ error?.message || __( 'Something went wrong loading this data. Please refresh the page to try again.', 'godam' ) }
 										</p>
+										<ContactSupportLink testId="godam-top-videos-link-contact-support" />
 									</div>
 								</td>
 							</tr>

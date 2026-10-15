@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Header from './Header';
+import ContactSupportLink from '../../shared/ContactSupportLink';
 
 const Error = ( { hasError } ) => {
 	return (
@@ -26,6 +27,7 @@ const Error = ( { hasError } ) => {
 						? __( 'Unable to load the latest updates. Please try again later.' )
 						: __( 'There are no new features to display at the moment.' )
 					}
+					{ hasError && <ContactSupportLink testId="godam-whats-new-link-contact-support" /> }
 				</p>
 				<button
 					className="retry-button"

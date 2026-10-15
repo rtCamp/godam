@@ -23,6 +23,7 @@ import { __ } from '@wordpress/i18n';
 import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
+import ContactSupportLink from '../../../../shared/ContactSupportLink';
 
 const GeneralSettings = () => {
 	const dispatch = useDispatch();
@@ -95,6 +96,9 @@ const GeneralSettings = () => {
 					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
 				>
 					{ notice.message }
+					{ 'error' === notice.status && (
+						<ContactSupportLink className="godam-support-link-inline" testId="godam-settings-link-contact-support" />
+					) }
 				</Notice>
 			) }
 

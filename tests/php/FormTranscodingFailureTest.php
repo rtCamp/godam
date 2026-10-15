@@ -54,7 +54,8 @@ class FormTranscodingFailureTest extends TestCase {
 
 		$this->assertCount( 1, $GLOBALS['rtgodam_notes'] );
 		$this->assertSame( 12, $GLOBALS['rtgodam_notes'][0]['entry_id'] );
-		$this->assertSame( "The recording couldn't be transcoded. Your GoDAM storage is full. Upgrade your plan or delete unused files.", $GLOBALS['rtgodam_notes'][0]['note'] );
+		$this->assertStringStartsWith( "The recording couldn't be transcoded. Your GoDAM storage is full. Upgrade your plan or delete unused files.", $GLOBALS['rtgodam_notes'][0]['note'] );
+		$this->assertStringContainsString( 'Contact Support', $GLOBALS['rtgodam_notes'][0]['note'] );
 		$this->assertSame( array( array( 'gf', 12, 'Your GoDAM storage is full. Upgrade your plan or delete unused files.' ) ), $GLOBALS['rtgodam_failed'] );
 	}
 

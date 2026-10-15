@@ -7,14 +7,10 @@ import { Icon, commentContent, external } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import { SUPPORT_URL } from './support';
 import './contact-support.scss';
 
-/**
- * GoDAM helpdesk, where a site owner opens or follows a support ticket.
- *
- * @type {string}
- */
-export const SUPPORT_URL = 'https://app.godam.io/helpdesk/my-tickets';
+export { SUPPORT_URL };
 
 /**
  * "Contact Support" link that goes with every error message GoDAM shows to a

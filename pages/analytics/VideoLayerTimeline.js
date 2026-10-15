@@ -13,6 +13,7 @@ import { Icon } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import ContactSupportLink from '../shared/ContactSupportLink';
 import { useVideoLayerData } from './hooks/useVideoLayerData';
 import LayerTimelineStrip from './timeline/LayerTimelineStrip';
 import LayerDetailPanel from './timeline/LayerDetailPanel';
@@ -224,6 +225,8 @@ const VideoLayerTimeline = ( { attachmentID, videoDuration } ) => {
 							'Unable to load layer analytics. Please try again.',
 							'godam',
 						) }
+					{ ' ' }
+					<ContactSupportLink testId="godam-layer-timeline-link-contact-support" />
 				</div>
 			) }
 			{ ! isLoading && ! errorType && (

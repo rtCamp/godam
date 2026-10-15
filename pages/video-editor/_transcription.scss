@@ -40,6 +40,13 @@ $ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
 			padding: 1rem;
 		}
 
+		// "Contact Support" goes on its own line under the error text in the notice.
+		.components-notice .godam-contact-support {
+			display: flex;
+			width: fit-content;
+			margin-top: 0.25rem;
+		}
+
 		// ---- Empty / busy state (Flow 32 + 33) ----
 		&__generate {
 			display: flex;

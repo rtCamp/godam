@@ -18,6 +18,7 @@ import { hasValidAPIKey, hasAPIKey, maskedAPIKey, apiKeyStatus, scrollToTop } fr
 import PasswordFieldWithToggle from './components/PasswordFieldWIthToggle/index.jsx';
 import ConfirmModal from '../../ConfirmModal.jsx';
 import UsageData from './UsageData.jsx';
+import { SUPPORT_URL } from '../../../../shared/support.js';
 
 const APISettings = ( { setNotice } ) => {
 	const [ apiKey, setAPIKey ] = useState( hasAPIKey ? maskedAPIKey : '' );
@@ -172,7 +173,7 @@ const APISettings = ( { setNotice } ) => {
 						<p className="description">
 							{ __( 'Having any issue?', 'godam' ) } { ' ' }
 							<a
-								href="https://app.godam.io/helpdesk/my-tickets"
+								href={ SUPPORT_URL }
 								target="_blank"
 								rel="noopener noreferrer"
 								className="text-blue-500 underline"

@@ -67,6 +67,13 @@
 			.search-no-results, .search-loading, .search-error {
 				margin: 1rem;
 			}
+
+			// The "Contact Support" link goes on its own line under the error.
+			.search-error .godam-contact-support {
+				display: flex;
+				width: fit-content;
+				margin-top: 0.5rem;
+			}
 		}
 	}
 }

@@ -8,6 +8,7 @@ import { check, warning, chevronRight } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import ContactSupportLink from '../../shared/ContactSupportLink';
 import Tooltip from '../../analytics/Tooltip';
 import { useFetchGa4CountsQuery } from '../redux/api/dashboardAnalyticsApi';
 
@@ -268,6 +269,7 @@ const GA4ConnectionWidget = () => {
 					label={ __( 'Manage', 'godam' ) }
 					testId="godam-ga4-connection-manage-link"
 				/>
+				<ContactSupportLink testId="godam-ga4-connection-link-contact-support" />
 			</WidgetShell>
 		);
 	}

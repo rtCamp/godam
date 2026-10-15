@@ -14,6 +14,7 @@ import HotspotLayer from './HotspotLayer';
 import Ads from './AdsLayer';
 import PollLayer from './PollLayer';
 import LayerErrorBoundary from './LayerErrorBoundary';
+import ContactSupportLink from '../../../shared/ContactSupportLink';
 
 /**
  * Core Layer Components.
@@ -87,7 +88,10 @@ const Layer = ( { layer, goBack, duration } ) => {
 				{ Component ? (
 					<Component layerID={ layer.id } goBack={ goBack } duration={ duration } />
 				) : (
-					<div>{ __( 'Error: No layer components registered', 'godam' ) }</div>
+					<div className="godam-layer-error-registry">
+						{ __( 'Error: No layer components registered', 'godam' ) }
+						<ContactSupportLink testId="godam-video-editor-layer-link-contact-support" />
+					</div>
 				) }
 			</Suspense>
 		</LayerErrorBoundary>

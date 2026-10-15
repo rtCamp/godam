@@ -572,6 +572,7 @@ describe( 'TopProductsTable — error vs empty state', () => {
 		const html = renderHTML( <TopProductsTable siteUrl="https://example.test" /> );
 
 		expect( html ).toContain( 'godam-top-products-error' );
+		expect( html ).toContain( 'godam-top-products-link-contact-support' );
 		expect( html ).not.toContain( 'No product activity yet' );
 	} );
 

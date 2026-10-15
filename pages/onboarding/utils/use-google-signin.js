@@ -64,7 +64,7 @@ export const useGoogleSignIn = () => {
 		// Open the popup synchronously on the click, or the browser blocks it.
 		const popup = window.open( 'about:blank', 'godam_google', 'width=480,height=640' );
 		if ( ! popup ) {
-			dispatch( setNotice( { status: 'error', message: __( 'Popup blocked. Allow popups for this site and try again.', 'godam' ) } ) );
+			dispatch( setNotice( { status: 'error', message: __( 'Popup blocked. Allow popups for this site and try again.', 'godam' ), support: false } ) );
 			return;
 		}
 		setIsLoading( true );
@@ -81,7 +81,7 @@ export const useGoogleSignIn = () => {
 				clearInterval( poll );
 			}
 		};
-		const fail = ( message ) => {
+		const fail = ( message, support = true ) => {
 			if ( settled ) {
 				return;
 			}
@@ -91,7 +91,7 @@ export const useGoogleSignIn = () => {
 			if ( ! popup.closed ) {
 				popup.close();
 			}
-			dispatch( setNotice( { status: 'error', message } ) );
+			dispatch( setNotice( { status: 'error', message, support } ) );
 		};
 
 		async function onMessage( event ) {
@@ -122,7 +122,7 @@ export const useGoogleSignIn = () => {
 		// User closed the popup without finishing.
 		poll = setInterval( () => {
 			if ( popup.closed && ! settled ) {
-				fail( __( 'Google sign-in was cancelled.', 'godam' ) );
+				fail( __( 'Google sign-in was cancelled.', 'godam' ), false );
 			}
 		}, 500 );
 

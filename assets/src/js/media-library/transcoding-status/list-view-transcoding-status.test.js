@@ -54,4 +54,32 @@ describe( 'ListViewTranscodingStatus — failed state', () => {
 
 		expect( statusText.textContent ).toBe( 'Transcoding failed, please try again.' );
 	} );
+
+	it( 'adds one Contact Support link to a failure, however many times it is polled', () => {
+		render();
+		const status = new ListViewTranscodingStatus();
+		const failed = { status: 'failed', progress: 0, error_code: 'transcoder_error' };
+
+		status.updateAttachmentStatus( '55', failed );
+		status.updateAttachmentStatus( '55', failed );
+
+		const links = document.querySelectorAll( '#list-transcoder-status-55 .godam-contact-support' );
+		expect( links ).toHaveLength( 1 );
+		expect( links[ 0 ].getAttribute( 'data-test-id' ) ).toBe( 'godam-media-library-link-contact-support' );
+	} );
+
+	it( 'drops the link, including a server-rendered one, once the file is transcoding or done', () => {
+		render();
+		document.querySelector( '#list-transcoder-status-55' ).insertAdjacentHTML( 'beforeend', '<a class="godam-contact-support" href="#">Contact Support</a>' );
+		const status = new ListViewTranscodingStatus();
+
+		status.updateAttachmentStatus( '55', { status: 'in_progress', progress: 40, message: 'Transcoding…' } );
+		expect( document.querySelector( '.godam-contact-support' ) ).toBeNull();
+
+		status.updateAttachmentStatus( '55', { status: 'failed', progress: 0 } );
+		expect( document.querySelector( '.godam-contact-support' ) ).not.toBeNull();
+
+		status.updateAttachmentStatus( '55', { status: 'transcoded', progress: 100 } );
+		expect( document.querySelector( '.godam-contact-support' ) ).toBeNull();
+	} );
 } );

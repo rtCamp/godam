@@ -56,6 +56,7 @@ import ThumbnailPanel from './components/ThumbnailPanel.js';
 import { appendTimezoneOffsetToUTC, isSEODataEmpty, secondsToISO8601, stripHtmlTags } from './utils/index.js';
 import './editor.scss';
 import { canManageAttachment } from '../../js/media-library/utility';
+import { SUPPORT_URL } from '../../../../pages/shared/support';
 
 const ALLOWED_MEDIA_TYPES = [ 'video' ];
 
@@ -367,7 +368,19 @@ function VideoEdit( {
 						id,
 					);
 					const { createErrorNotice } = dispatch( noticesStore );
-					createErrorNotice( message, { type: 'snackbar' } );
+					// A real failure: the notice stays open until closed, and its "Contact
+					// Support" action opens a new tab so the editor (and any unsaved post)
+					// is not navigated away. A `url` action would open in the same tab.
+					createErrorNotice( message, {
+						type: 'snackbar',
+						explicitDismiss: true,
+						actions: [
+							{
+								label: __( 'Contact Support', 'godam' ),
+								onClick: () => window.open( SUPPORT_URL, '_blank', 'noopener,noreferrer' ),
+							},
+						],
+					} );
 				}
 			} )();
 		}

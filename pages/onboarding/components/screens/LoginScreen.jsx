@@ -33,7 +33,7 @@ const LoginScreen = () => {
 
 	const handleSubmit = async () => {
 		if ( ! isValidEmail( email ) || ! password ) {
-			dispatch( setNotice( { status: 'error', message: __( 'Enter a valid email and password.', 'godam' ) } ) );
+			dispatch( setNotice( { status: 'error', message: __( 'Enter a valid email and password.', 'godam' ), support: false } ) );
 			return;
 		}
 		try {
@@ -41,7 +41,10 @@ const LoginScreen = () => {
 			dispatch( setEmail( email.trim().toLowerCase() ) );
 			await proceedToWorkspace( session );
 		} catch ( error ) {
-			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Invalid email or password.', 'godam' ) } ) );
+			// GoDAM answering with a 4xx means it rejected the credentials, which is the user's own input. An
+			// outage or network failure is a real failure, so it keeps the Contact Support link.
+			const rejected = error?.status >= 400 && error?.status < 500;
+			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Invalid email or password.', 'godam' ), support: ! rejected } ) );
 		}
 	};
 

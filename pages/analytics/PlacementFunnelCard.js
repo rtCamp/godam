@@ -6,6 +6,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import ContactSupportLink from '../shared/ContactSupportLink';
 import { useFetchPlacementFunnelsQuery } from '../dashboard/redux/api/dashboardAnalyticsApi';
 
 const fmt = ( n ) => Number( n || 0 ).toLocaleString();
@@ -111,6 +112,8 @@ export default function PlacementFunnelCard( { siteUrl, startDate, endDate, data
 		body = (
 			<div className="text-[13px] text-[#B91C1C] py-6 text-center" data-test-id="godam-placement-funnel-error">
 				{ __( 'Could not load placement data. Please try again.', 'godam' ) }
+				{ ' ' }
+				<ContactSupportLink testId="godam-placement-funnel-link-contact-support" />
 			</div>
 		);
 	} else if ( isFetching && placements.length === 0 ) {

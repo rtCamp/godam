@@ -33,7 +33,7 @@ const LicenseKeyScreen = () => {
 
 	const handleSubmit = async () => {
 		if ( ! key.trim() ) {
-			dispatch( setNotice( { status: 'error', message: __( 'Please enter your license key.', 'godam' ) } ) );
+			dispatch( setNotice( { status: 'error', message: __( 'Please enter your license key.', 'godam' ), support: false } ) );
 			return;
 		}
 		try {

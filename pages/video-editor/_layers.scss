@@ -200,6 +200,14 @@ $ve-faint: color-mix(in srgb, currentcolor 5%, transparent);
 			// border-left: 2px solid $ve-accent;
 		}
 	}
+
+	// "Contact Support" under the message when a layer editor cannot open.
+	.godam-layer-error .godam-contact-support,
+	.godam-layer-error-registry .godam-contact-support {
+		display: flex;
+		width: fit-content;
+		margin: 0 0 0.75rem;
+	}
 }
 
 // -------------------------------------------------------------

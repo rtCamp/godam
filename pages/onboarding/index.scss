@@ -95,6 +95,11 @@
 
 	&__modal--dialog &__content { padding: 32px; }
 
+	// Contact Support link after an error message (its colour comes from the shared styles).
+	&__notice.is-error .godam-contact-support {
+		margin-left: 8px;
+	}
+
 	// --- brand ---
 	&__brand {
 		display: inline-flex;

@@ -29,3 +29,10 @@
 		}
 	}
 }
+
+// The "Contact Support" link goes on its own line under the load error.
+.tree-error .godam-contact-support {
+	display: flex;
+	width: fit-content;
+	margin-top: 0.5rem;
+}

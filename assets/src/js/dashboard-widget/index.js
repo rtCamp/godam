@@ -19,6 +19,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { createSupportLink } from '../../../../pages/shared/support';
 import { playsMilestone, roundWatchTime, scaleBars } from './utils';
 
 const config = window.godamDashboardWidget || {};
@@ -382,15 +383,21 @@ function renderReviewAsk( root, receipts ) {
 /**
  * Show a message in the status line, or clear it.
  *
- * @param {HTMLElement|null} status  Status element.
- * @param {string}           message Message, or '' to clear.
+ * @param {HTMLElement|null} status      Status element.
+ * @param {string}           message     Message, or '' to clear.
+ * @param {boolean}          withSupport Whether the message reports a failure, so a Contact Support link follows it.
  */
-function showStatus( status, message ) {
+function showStatus( status, message, withSupport = false ) {
 	if ( ! status ) {
 		return;
 	}
 
 	status.textContent = message;
+
+	if ( message && withSupport ) {
+		status.append( ' ', createSupportLink( 'godam-dashboard-widget-link-contact-support' ) );
+	}
+
 	status.classList.toggle( 'screen-reader-text', ! message );
 }
 
@@ -429,6 +436,7 @@ async function load( root ) {
 			serviceDown
 				? __( 'GoDAM analytics is unavailable right now. Your videos keep playing as usual.', 'godam' )
 				: __( 'GoDAM analytics could not load right now.', 'godam' ),
+			true,
 		);
 		showWatching( root, true );
 		return;
@@ -454,7 +462,7 @@ async function load( root ) {
 		message = __( 'Add a GoDAM video to a page. Plays and watch time show up here once people start watching.', 'godam' );
 	}
 
-	showStatus( status, message );
+	showStatus( status, message, partial );
 	showWatching( root, ! empty || hint || partial );
 	renderUpdated( root, summary.fetched_at );
 	renderReviewAsk( root, receipts );

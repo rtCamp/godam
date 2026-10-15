@@ -129,6 +129,13 @@ $grey-text: #5f6368;
 		margin-bottom: 2rem;
 		max-width: 500px;
 		line-height: 1.6;
+
+		// "Contact Support" under the error message.
+		.godam-contact-support {
+			display: flex;
+			width: fit-content;
+			margin: 0.75rem auto 0;
+		}
 	}
 }
 
