@@ -58,19 +58,27 @@ const part = ( root, name ) => root.querySelector( `[data-rtgodam-dw="${ name }"
 /**
  * Watch time, rounded and formatted, with its label.
  *
- * @param {number} seconds Watch time in seconds.
+ * @param {number}  seconds                      Watch time in seconds.
+ * @param {Object}  [options]                    Options passed through to roundWatchTime().
+ * @param {boolean} [options.allowSeconds=false] Read a sub-minute time in seconds, not minutes.
  * @return {{amount: number, unit: string, value: string, label: string}} Formatted watch time.
  */
-function formatWatchTime( seconds ) {
-	const time = roundWatchTime( seconds );
-	const hours = 'hours' === time.unit;
+function formatWatchTime( seconds, { allowSeconds = false } = {} ) {
+	const time = roundWatchTime( seconds, { allowSeconds } );
+
+	let label;
+	if ( 'hours' === time.unit ) {
+		label = _n( 'hour watched', 'hours watched', time.amount, 'godam' );
+	} else if ( 'seconds' === time.unit ) {
+		label = _n( 'second watched', 'seconds watched', time.amount, 'godam' );
+	} else {
+		label = _n( 'minute watched', 'minutes watched', time.amount, 'godam' );
+	}
 
 	return {
 		...time,
-		value: hours ? oneDecimal.format( time.amount ) : wholeNumber.format( time.amount ),
-		label: hours
-			? _n( 'hour watched', 'hours watched', time.amount, 'godam' )
-			: _n( 'minute watched', 'minutes watched', time.amount, 'godam' ),
+		value: 'hours' === time.unit ? oneDecimal.format( time.amount ) : wholeNumber.format( time.amount ),
+		label,
 	};
 }
 
@@ -278,7 +286,9 @@ function renderTopVideos( root, videos, visible ) {
 		];
 
 		if ( video.watch_seconds > 0 ) {
-			const time = formatWatchTime( video.watch_seconds );
+			// Per video, a sub-minute view reads in seconds, so a 1-second view is
+			// not shown as "1 minute watched".
+			const time = formatWatchTime( video.watch_seconds, { allowSeconds: true } );
 			details.push( `${ time.value } ${ time.label }` );
 		}
 

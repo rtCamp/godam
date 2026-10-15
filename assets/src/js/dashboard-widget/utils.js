@@ -38,10 +38,17 @@ export function scaleBars( values ) {
  * under an hour rounds to whole minutes. No watch time reads as 0 minutes, and
  * any watch time reads as at least 1 minute.
  *
- * @param {number} seconds Watch time in seconds.
- * @return {{amount: number, unit: string}} The rounded amount and 'hours' or 'minutes'.
+ * With `allowSeconds`, a single video's sub-minute watch time reads in whole
+ * seconds instead, so a 1-second view is not rounded up to "1 minute watched",
+ * which would overstate it on a per-video receipt. The aggregate headline leaves
+ * this off: a total worth showing is always at least a minute.
+ *
+ * @param {number}  seconds                      Watch time in seconds.
+ * @param {Object}  [options]                    Options.
+ * @param {boolean} [options.allowSeconds=false] Read a sub-minute time in seconds, not minutes.
+ * @return {{amount: number, unit: string}} The rounded amount and 'hours', 'minutes' or 'seconds'.
  */
-export function roundWatchTime( seconds ) {
+export function roundWatchTime( seconds, { allowSeconds = false } = {} ) {
 	const hours = seconds / 3600;
 
 	if ( hours >= 1 ) {
@@ -53,6 +60,10 @@ export function roundWatchTime( seconds ) {
 
 	if ( ! ( seconds > 0 ) ) {
 		return { amount: 0, unit: 'minutes' };
+	}
+
+	if ( allowSeconds && seconds < 60 ) {
+		return { amount: Math.max( 1, Math.round( seconds ) ), unit: 'seconds' };
 	}
 
 	return { amount: Math.max( 1, Math.round( seconds / 60 ) ), unit: 'minutes' };

@@ -176,24 +176,31 @@ class Dashboard_Widget {
 
 	/**
 	 * Where each clickable tile goes: the GoDAM Dashboard (plays, viewers, the
-	 * country map, watch time), the Media Library, or the Media Library filtered
-	 * to videos. Tiles with no screen that lists exactly what they count (files
-	 * in use, and the ready tiles, since no filter lists only processed files)
-	 * are not links. GoDAM Dashboard links also need `edit_pages`, the page's
-	 * own capability (see get_tile_url()).
+	 * country map, watch time), the Media Library, or the Media Library with its
+	 * type filter on (videos, audio, documents or images). The only tiles with no
+	 * screen that lists what they count are files in use and videos with captions,
+	 * so those are not links. GoDAM Dashboard links also need `edit_pages`, the
+	 * page's own capability (see get_tile_url()).
+	 *
+	 * A ready tile's filter lists every file of its type, not only the ones GoDAM
+	 * has processed, which is the screen the spec points it at.
 	 *
 	 * @var array
 	 */
 	const TILE_LINKS = array(
-		'watch_seconds' => 'godam',
-		'plays'         => 'godam',
-		'viewers'       => 'godam',
-		'countries'     => 'godam',
-		'times_shown'   => 'godam',
-		'library_files' => 'library',
-		'folder_files'  => 'library',
-		'folders'       => 'library',
-		'video_seconds' => 'video',
+		'watch_seconds'   => 'godam',
+		'plays'           => 'godam',
+		'viewers'         => 'godam',
+		'countries'       => 'godam',
+		'times_shown'     => 'godam',
+		'library_files'   => 'library',
+		'folder_files'    => 'library',
+		'folders'         => 'library',
+		'video_seconds'   => 'video',
+		'videos_ready'    => 'video',
+		'audio_ready'     => 'audio',
+		'documents_ready' => 'document',
+		'images_ready'    => 'image',
 	);
 
 	/**
@@ -1551,31 +1558,51 @@ class Dashboard_Widget {
 				return admin_url( 'upload.php' );
 		}
 
-		$type = self::media_filter_key( $target, array_keys( get_post_mime_types() ) );
-		if ( '' === $type ) {
+		$key = self::media_filter_key( $target, array_keys( get_post_mime_types() ) );
+		if ( '' === $key ) {
 			return admin_url( 'upload.php' );
 		}
 
-		return add_query_arg(
-			array(
-				'attachment-filter' => rawurlencode( 'post_mime_type:' . $type ),
-				'type'              => rawurlencode( $type ),
-				'order'             => 'DESC',
-			),
-			admin_url( 'upload.php' )
+		$args = array(
+			'attachment-filter' => rawurlencode( 'post_mime_type:' . $key ),
+			'order'             => 'DESC',
 		);
+
+		// Grid view's own dropdown keys off the simple image, audio and video
+		// types; documents have no such key there, so for them only list view's
+		// attachment-filter applies and grid view opens unfiltered.
+		if ( in_array( $target, array( 'image', 'audio', 'video' ), true ) ) {
+			$args['type'] = rawurlencode( $target );
+		}
+
+		return add_query_arg( $args, admin_url( 'upload.php' ) );
 	}
 
 	/**
-	 * The Media Library filter key for a file type: images, audio and video
-	 * have keys of their own in core's filter.
+	 * The Media Library filter key for a file type. Images, audio and video have
+	 * keys of their own in core's filter; documents appear under a key that is the
+	 * comma-joined list of their MIME types (not the word "document"), so that key
+	 * is found by the one that covers PDFs.
 	 *
-	 * @param string   $target 'image', 'audio' or 'video'.
+	 * @param string   $target 'image', 'audio', 'video' or 'document'.
 	 * @param string[] $keys   Keys of get_post_mime_types().
 	 * @return string The key, or '' when there is none.
 	 */
 	public static function media_filter_key( $target, array $keys ) {
-		return in_array( $target, array( 'image', 'audio', 'video' ), true ) && in_array( $target, $keys, true ) ? $target : '';
+		if ( in_array( $target, array( 'image', 'audio', 'video' ), true ) ) {
+			return in_array( $target, $keys, true ) ? $target : '';
+		}
+
+		if ( 'document' === $target ) {
+			foreach ( $keys as $key ) {
+				$mimes = array_map( 'trim', explode( ',', (string) $key ) );
+				if ( in_array( 'application/pdf', $mimes, true ) ) {
+					return (string) $key;
+				}
+			}
+		}
+
+		return '';
 	}
 
 	/**

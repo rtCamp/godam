@@ -57,4 +57,21 @@ describe( 'roundWatchTime', () => {
 		expect( roundWatchTime( 0 ) ).toEqual( { amount: 0, unit: 'minutes' } );
 		expect( roundWatchTime( -5 ) ).toEqual( { amount: 0, unit: 'minutes' } );
 	} );
+
+	it( 'reads a sub-minute time in seconds when allowSeconds is set', () => {
+		expect( roundWatchTime( 1, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'seconds' } );
+		expect( roundWatchTime( 15, { allowSeconds: true } ) ).toEqual( { amount: 15, unit: 'seconds' } );
+		expect( roundWatchTime( 32, { allowSeconds: true } ) ).toEqual( { amount: 32, unit: 'seconds' } );
+	} );
+
+	it( 'still rounds a minute or more to minutes with allowSeconds', () => {
+		expect( roundWatchTime( 60, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'minutes' } );
+		expect( roundWatchTime( 1800, { allowSeconds: true } ) ).toEqual( { amount: 30, unit: 'minutes' } );
+		expect( roundWatchTime( 3600, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'hours' } );
+	} );
+
+	it( 'reads any positive sub-minute time as at least 1 second, and zero stays 0 minutes', () => {
+		expect( roundWatchTime( 0.4, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'seconds' } );
+		expect( roundWatchTime( 0, { allowSeconds: true } ) ).toEqual( { amount: 0, unit: 'minutes' } );
+	} );
 } );
