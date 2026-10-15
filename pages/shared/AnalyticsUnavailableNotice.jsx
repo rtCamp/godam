@@ -31,6 +31,46 @@ const UnavailableIllustration = () => (
 );
 
 /**
+ * A faded outline of the page behind the card, so it reads as "your analytics
+ * live here and will come back" rather than an empty page. Decorative.
+ *
+ * @param {Object} props
+ * @param {string} props.area Page area; the Dashboard keeps its real title.
+ * @return {JSX.Element} The outline.
+ */
+const PageOutline = ( { area } ) => (
+	<div className="godam-analytics-unavailable__outline" aria-hidden="true">
+		<div className="godam-analytics-unavailable__outline-head">
+			{ 'dashboard' === area && <span className="godam-analytics-unavailable__outline-title">{ __( 'Dashboard', 'godam' ) }</span> }
+			<span className="godam-analytics-unavailable__bar godam-analytics-unavailable__bar--head" />
+		</div>
+		<div className="godam-analytics-unavailable__outline-tiles">
+			{ [ 50, 60, 45, 55 ].map( ( width ) => (
+				<div key={ width } className="godam-analytics-unavailable__outline-tile">
+					<span className="godam-analytics-unavailable__bar" style={ { width: `${ width }%` } } />
+					<span className="godam-analytics-unavailable__bar godam-analytics-unavailable__bar--value" />
+				</div>
+			) ) }
+		</div>
+		<div className="godam-analytics-unavailable__outline-panels">
+			<div className="godam-analytics-unavailable__outline-panel">
+				<span className="godam-analytics-unavailable__bar" style={ { width: '30%' } } />
+				<svg width="100%" height="160" viewBox="0 0 400 160" preserveAspectRatio="none" fill="none" focusable="false">
+					<path d="M0 150H400M0 110H400M0 70H400M0 30H400" stroke="#f0f0f1" strokeWidth="1" />
+					<path d="M0 130C60 122 90 92 150 98S240 52 290 64 360 36 400 44" stroke="#c3c4c7" strokeWidth="3" strokeDasharray="6 8" strokeLinecap="round" />
+				</svg>
+			</div>
+			<div className="godam-analytics-unavailable__outline-panel">
+				<span className="godam-analytics-unavailable__bar" style={ { width: '40%' } } />
+				{ [ 100, 85, 92, 70, 80 ].map( ( width ) => (
+					<span key={ width } className="godam-analytics-unavailable__bar godam-analytics-unavailable__bar--row" style={ { width: `${ width }%` } } />
+				) ) }
+			</div>
+		</div>
+	</div>
+);
+
+/**
  * Shown to a connected user in place of the Dashboard or single-video Analytics
  * page when the GoDAM analytics service can't be reached (server down, or it
  * returned a microservice error). Offers a retry in place and Contact Support.
@@ -46,7 +86,7 @@ const UnavailableIllustration = () => (
  * @param {boolean}  [props.checking]         A retry is in flight.
  * @param {?Date}    [props.lastChecked]      When the last request failed.
  * @param {string}   [props.errorCode]        Code to quote to support (errorType or HTTP status).
- * @return {JSX.Element} The error card.
+ * @return {JSX.Element} The error card over a faded outline of the page.
  */
 const AnalyticsUnavailableNotice = ( {
 	area = 'dashboard',
@@ -59,55 +99,58 @@ const AnalyticsUnavailableNotice = ( {
 
 	return (
 		<div className="godam-analytics-unavailable" data-test-id={ `godam-${ area }-notice-analytics-unavailable` }>
-			<section className="godam-analytics-unavailable__card" aria-labelledby={ titleId }>
-				<UnavailableIllustration />
+			<PageOutline area={ area } />
+			<div className="godam-analytics-unavailable__overlay">
+				<section className="godam-analytics-unavailable__card" aria-labelledby={ titleId }>
+					<UnavailableIllustration />
 
-				{ /* Only the message is a live region, so "Try again" / "Checking…" don't re-announce the card. */ }
-				<div className="godam-analytics-unavailable__text" role="alert">
-					<h2 id={ titleId } className="godam-analytics-unavailable__title">
-						{ __( 'We can’t reach your analytics right now', 'godam' ) }
-					</h2>
-					<p className="godam-analytics-unavailable__message">
-						{ __( 'The GoDAM analytics service isn’t responding. Your videos keep playing as usual, and this is usually temporary.', 'godam' ) }
-					</p>
-				</div>
+					{ /* Only the message is a live region, so "Try again" / "Checking…" don't re-announce the card. */ }
+					<div className="godam-analytics-unavailable__text" role="alert">
+						<h2 id={ titleId } className="godam-analytics-unavailable__title">
+							{ __( 'Analytics are temporarily unavailable', 'godam' ) }
+						</h2>
+						<p className="godam-analytics-unavailable__message">
+							{ __( 'We can’t connect to GoDAM Analytics right now, but your videos are playing normally. This is usually temporary. Try again in a moment.', 'godam' ) }
+						</p>
+					</div>
 
-				<div className="godam-analytics-unavailable__actions">
-					{ onRetry && (
-						<button
-							type="button"
-							className="godam-analytics-unavailable__retry"
-							// aria-disabled, not disabled, so keyboard focus stays on the button.
-							onClick={ checking ? undefined : onRetry }
-							aria-disabled={ checking }
-							data-test-id={ `godam-${ area }-button-analytics-retry` }
-						>
-							<Icon icon={ update } size={ 18 } className={ checking ? 'is-spinning' : '' } />
-							<span>{ checking ? __( 'Checking…', 'godam' ) : __( 'Try again', 'godam' ) }</span>
-						</button>
-					) }
-					<ContactSupportLink variant="button" testId={ `godam-${ area }-link-contact-support` } />
-				</div>
+					<div className="godam-analytics-unavailable__actions">
+						{ onRetry && (
+							<button
+								type="button"
+								className="godam-analytics-unavailable__retry"
+								// aria-disabled, not disabled, so keyboard focus stays on the button.
+								onClick={ checking ? undefined : onRetry }
+								aria-disabled={ checking }
+								data-test-id={ `godam-${ area }-button-analytics-retry` }
+							>
+								<Icon icon={ update } size={ 18 } className={ checking ? 'is-spinning' : '' } />
+								<span>{ checking ? __( 'Checking…', 'godam' ) : __( 'Try again', 'godam' ) }</span>
+							</button>
+						) }
+						<ContactSupportLink variant="button" testId={ `godam-${ area }-link-contact-support` } />
+					</div>
 
-				{ ( lastChecked || errorCode ) && (
-					<p className="godam-analytics-unavailable__meta">
-						{ lastChecked && (
-							<span>
-								{ sprintf(
+					{ ( lastChecked || errorCode ) && (
+						<p className="godam-analytics-unavailable__meta">
+							{ lastChecked && (
+								<span>
+									{ sprintf(
 									/* translators: %s: time of the last failed request, e.g. 12:19:05 PM. */
-									__( 'Last checked %s', 'godam' ),
-									lastChecked.toLocaleTimeString( [], { hour: 'numeric', minute: '2-digit', second: '2-digit' } ),
-								) }
-							</span>
-						) }
-						{ errorCode && (
-							<span>
-								{ __( 'Error code:', 'godam' ) } <code>{ errorCode }</code>
-							</span>
-						) }
-					</p>
-				) }
-			</section>
+										__( 'Last checked %s', 'godam' ),
+										lastChecked.toLocaleTimeString( [], { hour: 'numeric', minute: '2-digit', second: '2-digit' } ),
+									) }
+								</span>
+							) }
+							{ errorCode && (
+								<span>
+									{ __( 'Error code:', 'godam' ) } <code>{ errorCode }</code>
+								</span>
+							) }
+						</p>
+					) }
+				</section>
+			</div>
 		</div>
 	);
 };

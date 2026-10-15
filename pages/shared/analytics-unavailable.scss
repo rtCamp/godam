@@ -4,29 +4,137 @@ $godam-unavailable-accent-hover: color-mix(in srgb, var(--wp-components-color-ac
 
 /* Analytics-backend-unreachable card (connected user). Shared by the Dashboard
    and Analytics apps via AnalyticsUnavailableNotice; it takes the place of the
-   page content, which stays hidden while the service is down. */
+   page content, which stays hidden while the service is down. The card floats
+   over a faded outline of the page. */
 .godam-analytics-unavailable {
-	display: flex;
-	justify-content: center;
-	padding: 48px 16px 64px;
+	position: relative;
+	max-width: 1440px;
+	min-height: 620px;
+	box-sizing: border-box;
+	margin: 0 auto;
+	padding: 24px;
+
+	&__outline {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+		opacity: 0.45;
+		pointer-events: none;
+		user-select: none;
+	}
+
+	&__outline-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 16px;
+	}
+
+	&__outline-title {
+		font-size: 20px;
+		font-weight: 600;
+		color: #1e1e1e;
+	}
+
+	&__outline-tiles {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 16px;
+	}
+
+	&__outline-tile,
+	&__outline-panel {
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		padding: 18px;
+		background: #fff;
+		border: 1px solid #e4e4e7;
+		border-radius: 10px;
+	}
+
+	&__outline-tile {
+		height: 96px;
+	}
+
+	&__outline-panels {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+		gap: 16px;
+	}
+
+	&__outline-panel {
+		height: 300px;
+	}
+
+	&__bar {
+		display: block;
+		height: 10px;
+		border-radius: 6px;
+		background: #e4e4e7;
+
+		&--head {
+			width: 320px;
+			max-width: 60%;
+			background: #dcdcde;
+		}
+
+		&--value {
+			width: 35%;
+			height: 22px;
+			background: #dcdcde;
+		}
+
+		&--row {
+			height: 14px;
+			background: #f0f0f1;
+		}
+	}
+
+	&__overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		padding: 120px 16px 32px;
+		background: rgba(240, 240, 241, 0.35);
+	}
 
 	&__card {
 		width: 100%;
-		max-width: 560px;
+		max-width: 520px;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 20px;
-		padding: 44px 40px 28px;
+		gap: 18px;
+		padding: 36px 36px 24px;
 		background: #fff;
 		border: 1px solid #e4e4e7;
 		border-radius: 12px;
-		box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 12px 32px rgba(16, 24, 40, 0.06);
+		box-shadow: 0 2px 4px rgba(16, 24, 40, 0.06), 0 20px 48px rgba(16, 24, 40, 0.14);
 		color: #1e1e1e;
 		text-align: center;
+	}
 
-		@media (max-width: 600px) {
+	// On a phone the outline would sit under a taller card, so show the card alone.
+	@media (max-width: 600px) {
+		min-height: 0;
+		padding: 24px 16px;
+
+		&__outline {
+			display: none;
+		}
+
+		&__overlay {
+			position: static;
+			padding: 0;
+			background: none;
+		}
+
+		&__card {
 			padding: 32px 20px 24px;
 		}
 	}
@@ -46,7 +154,7 @@ $godam-unavailable-accent-hover: color-mix(in srgb, var(--wp-components-color-ac
 	&__title {
 		margin: 0;
 		padding: 0;
-		font-size: 22px;
+		font-size: 20px;
 		line-height: 1.3;
 		font-weight: 600;
 		color: #1e1e1e;

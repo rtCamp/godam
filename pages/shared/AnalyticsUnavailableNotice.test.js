@@ -21,10 +21,19 @@ import AnalyticsUnavailableNotice from './AnalyticsUnavailableNotice';
 import { SUPPORT_URL } from './ContactSupportLink';
 
 describe( 'AnalyticsUnavailableNotice', () => {
-	it( 'says analytics is unreachable and that videos keep playing', () => {
+	it( 'says analytics is unavailable and that videos keep playing', () => {
 		const html = renderToString( <AnalyticsUnavailableNotice /> );
-		expect( html ).toMatch( /We can.t reach your analytics right now/ );
-		expect( html ).toContain( 'Your videos keep playing as usual' );
+		expect( html ).toContain( 'Analytics are temporarily unavailable' );
+		expect( html ).toContain( 'your videos are playing normally' );
+	} );
+
+	it( 'floats over a faded, hidden-from-screen-readers outline of the page', () => {
+		const dashboard = renderToString( <AnalyticsUnavailableNotice /> );
+		expect( dashboard ).toMatch( /class="godam-analytics-unavailable__outline" aria-hidden="true"/ );
+		expect( dashboard ).toContain( 'godam-analytics-unavailable__outline-title' );
+
+		// The single-video page is not the Dashboard, so its outline has no title.
+		expect( renderToString( <AnalyticsUnavailableNotice area="analytics" /> ) ).not.toContain( 'godam-analytics-unavailable__outline-title' );
 	} );
 
 	it( 'keeps the area test id on the root', () => {
@@ -42,16 +51,17 @@ describe( 'AnalyticsUnavailableNotice', () => {
 
 	it( 'offers "Try again" only when a retry handler is supplied', () => {
 		const withRetry = renderToString( <AnalyticsUnavailableNotice onRetry={ () => {} } /> );
-		expect( withRetry ).toContain( 'Try again' );
+		expect( withRetry ).toContain( '<span>Try again</span>' );
 		expect( withRetry ).toContain( 'data-test-id="godam-dashboard-button-analytics-retry"' );
 
-		expect( renderToString( <AnalyticsUnavailableNotice /> ) ).not.toContain( 'Try again' );
+		// The message itself says "Try again in a moment", so check for the button.
+		expect( renderToString( <AnalyticsUnavailableNotice /> ) ).not.toContain( 'godam-analytics-unavailable__retry' );
 	} );
 
 	it( 'shows an aria-disabled "Checking…" button while a retry is in flight', () => {
 		const html = renderToString( <AnalyticsUnavailableNotice onRetry={ () => {} } checking /> );
-		expect( html ).toContain( 'Checking…' );
-		expect( html ).not.toContain( 'Try again' );
+		expect( html ).toContain( '<span>Checking…</span>' );
+		expect( html ).not.toContain( '<span>Try again</span>' );
 		expect( html ).toContain( 'aria-disabled="true"' );
 		expect( html ).not.toMatch( /<button[^>]*\sdisabled[\s=>]/ );
 	} );

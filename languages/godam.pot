@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-15T09:44:14+00:00\n"
+"POT-Creation-Date: 2026-10-15T09:55:24+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -575,7 +575,7 @@ msgstr ""
 #: inc/templates/godam-video-gallery.php:261
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:163
 #: assets/src/blocks/godam-gallery-v2/edit.js:716
-#: pages/analytics/Analytics.js:647
+#: pages/analytics/Analytics.js:656
 #: pages/video-editor/VideoEditor.js:685
 msgid "Untitled video"
 msgstr ""
@@ -2543,7 +2543,7 @@ msgstr ""
 #: assets/build/pages/onboarding.min.js:2
 #: assets/src/js/godam-player/engagement.js:1097
 #: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:58
-#: pages/onboarding/components/screens/LoginScreen.jsx:57
+#: pages/onboarding/components/screens/LoginScreen.jsx:55
 #: pages/onboarding/components/screens/SignupScreen.jsx:77
 msgid "Email"
 msgstr ""
@@ -3476,8 +3476,8 @@ msgstr ""
 #: pages/analytics/PlaysVsViewers.js:93
 #: pages/analytics/SingleMetrics.js:122
 #: pages/dashboard/components/GA4ConnectionWidget.js:175
-#: pages/dashboard/Dashboard.js:295
-#: pages/dashboard/Dashboard.js:331
+#: pages/dashboard/Dashboard.js:296
+#: pages/dashboard/Dashboard.js:332
 msgid "All time"
 msgstr ""
 
@@ -3985,8 +3985,8 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:692
-#: pages/analytics/Analytics.js:1045
+#: pages/analytics/Analytics.js:701
+#: pages/analytics/Analytics.js:1055
 #: pages/analytics/components/Placements/index.js:231
 #: pages/analytics/PlaybackPerformance.js:422
 #: pages/analytics/PlaybackPerformance.js:546
@@ -4000,7 +4000,7 @@ msgstr ""
 #: pages/analytics/PlaybackPerformance.js:429
 #: pages/analytics/PlaybackPerformance.js:547
 #: pages/dashboard/components/TopVideosTable.js:229
-#: pages/dashboard/Dashboard.js:585
+#: pages/dashboard/Dashboard.js:600
 msgid "Engagement Rate"
 msgstr ""
 
@@ -4364,39 +4364,39 @@ msgid "Click on any layer above to view its performance details."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:164
+#: pages/analytics/VideoLayerTimeline.js:166
 msgid "Video Layer Timeline"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:168
+#: pages/analytics/VideoLayerTimeline.js:170
 msgid "Each marker represents an interactive layer in this video. Click a marker to see how viewers interacted with it."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:175
+#: pages/analytics/VideoLayerTimeline.js:177
 msgid "See when interactive layers appeared in your video and how they performed."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:191
+#: pages/analytics/VideoLayerTimeline.js:193
 msgid "Interaction rate"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:195
+#: pages/analytics/VideoLayerTimeline.js:197
 msgid "Share of plays where the viewer interacted with any layer (clicked a CTA, submitted a form, voted in a poll, or added a product to cart). A play counts once even if the viewer interacts with several layers, so this never exceeds 100%."
 msgstr ""
 
 #. translators: 1: interacting sessions, 2: total plays.
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:208
+#: pages/analytics/VideoLayerTimeline.js:210
 #, js-format
 msgid "%1$s of %2$s plays"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/VideoLayerTimeline.js:224
+#: pages/analytics/VideoLayerTimeline.js:226
 msgid "Unable to load layer analytics. Please try again."
 msgstr ""
 
@@ -4442,7 +4442,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:1036
+#: pages/analytics/Analytics.js:1046
 #: pages/analytics/components/Placements/index.js:230
 #: pages/dashboard/components/TopVideosTable.js:227
 #: pages/dashboard/components/TopVideosTable.js:350
@@ -4518,40 +4518,49 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/shared/AnalyticsUnavailableNotice.jsx:67
-msgid "We can’t reach your analytics right now"
+#: inc/classes/class-pages.php:200
+#: inc/classes/class-pages.php:201
+#: pages/dashboard/Dashboard.js:470
+#: pages/shared/AnalyticsUnavailableNotice.jsx:44
+msgid "Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/shared/AnalyticsUnavailableNotice.jsx:70
-msgid "The GoDAM analytics service isn’t responding. Your videos keep playing as usual, and this is usually temporary."
+#: pages/shared/AnalyticsUnavailableNotice.jsx:110
+msgid "Analytics are temporarily unavailable"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/shared/AnalyticsUnavailableNotice.jsx:85
+#: pages/shared/AnalyticsUnavailableNotice.jsx:113
+msgid "We can’t connect to GoDAM Analytics right now, but your videos are playing normally. This is usually temporary. Try again in a moment."
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: pages/shared/AnalyticsUnavailableNotice.jsx:128
 msgid "Checking…"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/shared/AnalyticsSectionError.jsx:47
-#: pages/shared/AnalyticsUnavailableNotice.jsx:85
+#: pages/shared/AnalyticsUnavailableNotice.jsx:128
 msgid "Try again"
 msgstr ""
 
-#. translators: %s: time of the last failed request, e.g. 12:19 PM.
+#. translators: %s: time of the last failed request, e.g. 12:19:05 PM.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/shared/AnalyticsUnavailableNotice.jsx:97
+#: pages/shared/AnalyticsUnavailableNotice.jsx:140
 #, js-format
 msgid "Last checked %s"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/shared/AnalyticsUnavailableNotice.jsx:104
+#: pages/shared/AnalyticsUnavailableNotice.jsx:147
 msgid "Error code:"
 msgstr ""
 
@@ -4576,40 +4585,40 @@ msgid "viewers"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:478
+#: pages/analytics/Analytics.js:487
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:480
+#: pages/analytics/Analytics.js:489
 msgid "Use this Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:595
+#: pages/analytics/Analytics.js:604
 msgid "This media doesn't exist."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:597
+#: pages/analytics/Analytics.js:606
 msgid "Go to Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:609
+#: pages/analytics/Analytics.js:618
 msgid "Single Video Analytics"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:621
-#: pages/dashboard/Dashboard.js:460
+#: pages/analytics/Analytics.js:630
+#: pages/dashboard/Dashboard.js:475
 msgid "Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:635
+#: pages/analytics/Analytics.js:644
 #: pages/dashboard/components/TopVideosTable.js:427
 #: pages/dashboard/components/TopVideosTable.js:439
 msgid "Video thumbnail"
@@ -4619,7 +4628,7 @@ msgstr ""
 #. translators: %d is the number of layers.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:655
+#: pages/analytics/Analytics.js:664
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:233
 #, js-format
 msgid "%d layer"
@@ -4629,124 +4638,124 @@ msgstr[1] ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:671
-#: pages/dashboard/Dashboard.js:522
+#: pages/analytics/Analytics.js:680
+#: pages/dashboard/Dashboard.js:537
 msgid "Insights"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:681
-#: pages/analytics/Analytics.js:1029
+#: pages/analytics/Analytics.js:690
+#: pages/analytics/Analytics.js:1039
 #: pages/dashboard/components/TopVideosTable.js:372
 msgid "Average Engagement"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:682
+#: pages/analytics/Analytics.js:691
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:693
-#: pages/dashboard/Dashboard.js:558
+#: pages/analytics/Analytics.js:702
+#: pages/dashboard/Dashboard.js:573
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:703
+#: pages/analytics/Analytics.js:712
 #: pages/dashboard/components/TopVideosTable.js:228
-#: pages/dashboard/Dashboard.js:571
+#: pages/dashboard/Dashboard.js:586
 msgid "Watch Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:704
-#: pages/dashboard/Dashboard.js:572
+#: pages/analytics/Analytics.js:713
+#: pages/dashboard/Dashboard.js:587
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:795
+#: pages/analytics/Analytics.js:804
 msgid "Viewer Retention Curve"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:809
+#: pages/analytics/Analytics.js:818
 msgid "Viewer retention will appear here once this video receives views."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:857
+#: pages/analytics/Analytics.js:867
 msgid "Views by Source"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:868
+#: pages/analytics/Analytics.js:878
 msgid "Performance Comparison"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:889
+#: pages/analytics/Analytics.js:899
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:879
+#: pages/analytics/Analytics.js:889
 msgid "In Progress"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:884
+#: pages/analytics/Analytics.js:894
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:901
+#: pages/analytics/Analytics.js:911
 msgid "Start Test"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:920
+#: pages/analytics/Analytics.js:930
 msgid "Choose Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:932
+#: pages/analytics/Analytics.js:942
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:941
+#: pages/analytics/Analytics.js:951
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:946
+#: pages/analytics/Analytics.js:956
 msgid "Choose"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1017
+#: pages/analytics/Analytics.js:1027
 msgid "Views"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1057
+#: pages/analytics/Analytics.js:1067
 msgid "Page Loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1071
+#: pages/analytics/Analytics.js:1081
 msgid "Play Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1085
+#: pages/analytics/Analytics.js:1095
 msgid "Video Length"
 msgstr ""
 
@@ -4871,7 +4880,7 @@ msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
 #: pages/dashboard/components/TopProductsTable.js:511
-#: pages/dashboard/Dashboard.js:215
+#: pages/dashboard/Dashboard.js:216
 msgid "Top Products"
 msgstr ""
 
@@ -5111,7 +5120,7 @@ msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
 #: pages/dashboard/components/TopVideosTable.js:269
-#: pages/dashboard/Dashboard.js:206
+#: pages/dashboard/Dashboard.js:207
 msgid "Top Videos"
 msgstr ""
 
@@ -5324,62 +5333,55 @@ msgid "Sending to GA4"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:198
+#: pages/dashboard/Dashboard.js:199
 msgid "Top content"
 msgstr ""
 
 #. translators: %d: number of days in the compared previous window.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:292
-#: pages/dashboard/Dashboard.js:341
+#: pages/dashboard/Dashboard.js:293
+#: pages/dashboard/Dashboard.js:342
 #, js-format
 msgid "vs prev %d days"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: inc/classes/class-pages.php:200
-#: inc/classes/class-pages.php:201
-#: pages/dashboard/Dashboard.js:455
-msgid "Dashboard"
-msgstr ""
-
-#: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:471
+#: pages/dashboard/Dashboard.js:486
 msgid "See Reel Pop Analytics"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:483
+#: pages/dashboard/Dashboard.js:498
 msgid "Analytics docs"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:492
+#: pages/dashboard/Dashboard.js:507
 msgid "Total Plays / Unique Viewers"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:541
+#: pages/dashboard/Dashboard.js:556
 msgid "Active Videos"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:542
+#: pages/dashboard/Dashboard.js:557
 msgid "Number of unique videos that received user interactions each day, such as views or plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:557
+#: pages/dashboard/Dashboard.js:572
 msgid "Avg. Play Rate"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:586
+#: pages/dashboard/Dashboard.js:601
 msgid "Average share of each video that viewers watched, across all plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:609
+#: pages/dashboard/Dashboard.js:624
 msgid "WooCommerce metrics couldn’t load. This is usually temporary."
 msgstr ""
 
@@ -7207,7 +7209,7 @@ msgid "Last Name"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:58
+#: pages/onboarding/components/screens/LoginScreen.jsx:56
 #: pages/onboarding/components/screens/SignupScreen.jsx:78
 msgid "Password"
 msgstr ""
@@ -7223,7 +7225,7 @@ msgid "Confirm Password"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:58
+#: pages/onboarding/components/screens/LoginScreen.jsx:56
 #: pages/onboarding/components/screens/SignupScreen.jsx:79
 msgid "Enter Password"
 msgstr ""
@@ -7290,8 +7292,8 @@ msgid "Already have an account?"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:82
-#: pages/onboarding/components/screens/LoginScreen.jsx:65
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:83
+#: pages/onboarding/components/screens/LoginScreen.jsx:63
 #: pages/onboarding/components/screens/SignupScreen.jsx:91
 msgid "Sign in"
 msgstr ""
@@ -7339,17 +7341,17 @@ msgid "Resend email"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:54
+#: pages/onboarding/components/screens/LoginScreen.jsx:52
 msgid "Sign in to your account"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:60
+#: pages/onboarding/components/screens/LoginScreen.jsx:58
 msgid "Forgot Password?"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:47
+#: pages/onboarding/components/screens/LoginScreen.jsx:45
 msgid "Invalid email or password."
 msgstr ""
 
@@ -7359,27 +7361,27 @@ msgid "Enter a valid email and password."
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:65
+#: pages/onboarding/components/screens/LoginScreen.jsx:63
 msgid "Signing in…"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:69
+#: pages/onboarding/components/screens/LoginScreen.jsx:67
 msgid "Don't have an account?"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:70
+#: pages/onboarding/components/screens/LoginScreen.jsx:68
 msgid "Sign up"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:73
+#: pages/onboarding/components/screens/LoginScreen.jsx:71
 msgid "Got a licence key?"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LoginScreen.jsx:74
+#: pages/onboarding/components/screens/LoginScreen.jsx:72
 msgid "Login with key"
 msgstr ""
 
@@ -7414,57 +7416,57 @@ msgid "Go back to sign in"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:50
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:51
 msgid "Sign in with license key"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:57
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:58
 msgid "License key"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:58
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:59
 msgid "Enter your license key"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:67
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:68
 msgid "Hide license key"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:67
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:68
 msgid "Show license key"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:43
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:44
 msgid "That license key could not be verified."
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:36
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:37
 msgid "Please enter your license key."
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:74
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:75
 msgid "Verifying…"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:74
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:75
 msgid "Verify to Sign in"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:78
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:79
 msgid "Lost your key? Find it on your GoDAM app"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:81
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:82
 msgid "Login with email instead?"
 msgstr ""
 
