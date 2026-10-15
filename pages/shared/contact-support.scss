@@ -1,0 +1,52 @@
+/* "Contact Support" link shown with every admin-facing error (ContactSupportLink). */
+
+// Same accent chain as the GoDAM header CTA, so it follows the admin colour scheme.
+$godam-support-accent: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+$godam-support-accent-hover: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 82%, #000);
+
+.godam-contact-support {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: $godam-support-accent;
+	font-weight: 600;
+	text-decoration: underline;
+
+	svg {
+		flex: 0 0 auto;
+		fill: currentcolor;
+	}
+
+	&:hover,
+	&:focus {
+		color: $godam-support-accent-hover;
+	}
+
+	&--link {
+		text-underline-offset: 2px;
+	}
+
+	&--button {
+		min-height: 44px;
+		box-sizing: border-box;
+		padding: 0 20px;
+		border: 1px solid $godam-support-accent;
+		border-radius: 8px;
+		background: #fff;
+		font-size: 14px;
+		line-height: 1.2;
+		text-decoration: none;
+
+		&:hover,
+		&:focus {
+			border-color: $godam-support-accent-hover;
+			background: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 6%, #fff);
+		}
+
+		&:focus-visible {
+			outline: 2px solid $godam-support-accent;
+			outline-offset: 2px;
+			box-shadow: none;
+		}
+	}
+}

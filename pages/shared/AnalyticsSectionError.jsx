@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import ContactSupportLink from './ContactSupportLink';
 import './analytics-unavailable.scss';
 
 /**
@@ -36,15 +37,18 @@ const AnalyticsSectionError = ( {
 		role="alert"
 	>
 		<span className="godam-analytics-section-error__message">{ message }</span>
-		{ onRetry && (
-			<button
-				type="button"
-				className="godam-analytics-section-error__retry"
-				onClick={ onRetry }
-			>
-				{ __( 'Try again', 'godam' ) }
-			</button>
-		) }
+		<span className="godam-analytics-section-error__actions">
+			{ onRetry && (
+				<button
+					type="button"
+					className="godam-analytics-section-error__retry"
+					onClick={ onRetry }
+				>
+					{ __( 'Try again', 'godam' ) }
+				</button>
+			) }
+			<ContactSupportLink testId={ `${ testId }-contact-support` } />
+		</span>
 	</div>
 );
 

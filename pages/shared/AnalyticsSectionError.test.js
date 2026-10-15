@@ -42,6 +42,15 @@ describe( 'AnalyticsSectionError', () => {
 		expect( withoutRetry ).not.toContain( 'Try again' );
 	} );
 
+	it( 'always offers Contact Support, with or without a retry', () => {
+		const withRetry = renderToString( <AnalyticsSectionError onRetry={ () => {} } testId="godam-dashboard-gauge-error" /> );
+		expect( withRetry ).toContain( 'Contact Support' );
+		expect( withRetry ).toContain( 'href="https://app.godam.io/helpdesk/my-tickets"' );
+		expect( withRetry ).toContain( 'data-test-id="godam-dashboard-gauge-error-contact-support"' );
+
+		expect( renderToString( <AnalyticsSectionError /> ) ).toContain( 'Contact Support' );
+	} );
+
 	it( 'honours a custom message', () => {
 		const html = renderToString(
 			<AnalyticsSectionError message="WooCommerce metrics couldn’t load." />,

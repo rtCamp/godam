@@ -37,8 +37,8 @@ import VideoLayerTimeline from './VideoLayerTimeline.js';
 import Placements from './components/Placements';
 import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
-import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
+import useAnalyticsOutage from '../shared/useAnalyticsOutage';
 import { canViewStoreData } from '../shared/canViewStoreData';
 import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
@@ -132,8 +132,11 @@ const Analytics = ( { attachmentID } ) => {
 	// video length used by the layer timeline, and the A/B comparison baseline.
 	const {
 		data: analyticsDataFetched,
+		error: analyticsDataError,
 		isLoading: isAnalyticsDataLoading,
+		isFetching: isAnalyticsDataFetching,
 		isError: isAnalyticsDataError,
+		refetch: refetchAnalyticsData,
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID || shouldSkipAnalytics },
@@ -202,8 +205,16 @@ const Analytics = ( { attachmentID } ) => {
 
 	// Connected, but the analytics backend is unreachable (server down) or returned
 	// a microservice error. Gated on a valid key so it never shows for a
-	// disconnected site — that case is handled by the onboarding overlay.
-	const analyticsUnreachable = !! window.userData?.validApiKey && !! attachmentID && ! shouldSkipAnalytics && ( isAnalyticsDataError || analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
+	// disconnected site — that case is handled by the onboarding overlay. Held
+	// steady while "Try again" is in flight, so the page doesn't flash empty.
+	const analyticsOutage = useAnalyticsOutage( {
+		enabled: !! window.userData?.validApiKey && !! attachmentID && ! shouldSkipAnalytics,
+		isError: isAnalyticsDataError,
+		isFetching: isAnalyticsDataFetching,
+		data: analyticsDataFetched,
+		error: analyticsDataError,
+	} );
+	const analyticsUnreachable = analyticsOutage.unreachable;
 
 	// charts.js (KPIs + geography + Views-by-Source) renders from this global.
 	window.analyticsDataFetched = rangedAnalyticsData ?? analyticsDataFetched;
@@ -564,7 +575,15 @@ const Analytics = ( { attachmentID } ) => {
 				</div>
 			</div>
 
-			{ analyticsUnreachable && <AnalyticsUnavailableNotice area="analytics" /> }
+			{ analyticsUnreachable && (
+				<AnalyticsUnavailableNotice
+					area="analytics"
+					onRetry={ refetchAnalyticsData }
+					checking={ analyticsOutage.checking }
+					lastChecked={ analyticsOutage.lastChecked }
+					errorCode={ analyticsOutage.errorCode }
+				/>
+			) }
 
 			<div
 				id="media-not-found-overlay"
