@@ -77,9 +77,9 @@ class Api_Key {
 	const LAST_KNOWN_GOOD_WINDOW = DAY_IN_SECONDS;
 
 	/**
-	 * How far past its refresh time cached user data may be served while a
-	 * background refresh runs. Older data is re-verified in the request, which
-	 * covers sites where WP-Cron never runs.
+	 * How long past the refresh time, counted from the last attempt, checks are
+	 * left to WP-Cron. Past that the request checks itself, which covers sites
+	 * where WP-Cron never runs.
 	 *
 	 * @var int
 	 */
@@ -93,6 +93,15 @@ class Api_Key {
 	 * @var int
 	 */
 	const VERIFY_TIMEOUT = 30;
+
+	/**
+	 * Timeout in seconds for a verify request made inside a page load, which only
+	 * happens when WP-Cron has not checked for a long time. Kept short so a hanging
+	 * Central cannot hold the request for VERIFY_TIMEOUT.
+	 *
+	 * @var int
+	 */
+	const INLINE_VERIFY_TIMEOUT = 10;
 
 	/**
 	 * Get the stored API key.
