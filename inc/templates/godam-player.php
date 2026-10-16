@@ -1073,6 +1073,31 @@ do_action( 'rtgodam_after_attachment_lookup' );
 										</div>
 									</div>
 									<?php
+								elseif ( 'hubspot' === $godam_form_type && ! empty( $godam_layer['hubspot_id'] ) ) :
+									// The HubSpot form layer renders through the connected HubSpot
+									// (leadin) plugin's own [hubspot] shortcode, which loads the HubSpot
+									// forms script and renders the form on the page itself (first-party,
+									// so HubSpot can associate the visitor). The portal ID comes from the
+									// connected plugin, never from the layer; render nothing when the
+									// plugin is not active/configured.
+									$godam_hubspot_portal_id = get_option( 'leadin_portalId', '' );
+									if ( ! empty( $godam_hubspot_portal_id ) && shortcode_exists( 'hubspot' ) ) :
+										?>
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden hubspot" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<div class="form-container">
+											<?php
+												echo do_shortcode(
+													sprintf(
+														"[hubspot type='form' portal='%s' id='%s']",
+														esc_attr( $godam_hubspot_portal_id ),
+														esc_attr( $godam_layer['hubspot_id'] )
+													)
+												);
+											?>
+										</div>
+									</div>
+										<?php
+									endif;
 								endif;
 									// Poll layer.
 							elseif ( isset( $godam_layer['type'] ) && 'poll' === $godam_layer['type'] ) :

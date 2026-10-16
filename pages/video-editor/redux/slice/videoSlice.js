@@ -61,6 +61,7 @@ const initialState = {
 	wpforms: [],
 	everestForms: [],
 	ninjaForms: [],
+	hubspotForms: [],
 	gformPluginActive: true,
 	jetpackPluginActive: false,
 	sureformsPlugnActive: false,
@@ -213,6 +214,9 @@ const slice = createSlice( {
 		setMetforms: ( state, action ) => {
 			state.metforms = action.payload;
 		},
+		setHubspotForms: ( state, action ) => {
+			state.hubspotForms = action.payload;
+		},
 		setMetformPluginActive: ( state, action ) => {
 			state.metformPlugnActive = action.payload;
 		},
@@ -254,6 +258,7 @@ export const {
 	setNinjaPluginActive,
 	setMetforms,
 	setMetformPluginActive,
+	setHubspotForms,
 	setAddLayerModalTime,
 } = slice.actions;
 export default slice.reducer;
