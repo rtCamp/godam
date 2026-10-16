@@ -248,7 +248,7 @@ class Media_Library_Ajax {
 	 * Hooked to `wp_handle_upload`, which media uploads, sideloads and REST uploads all pass
 	 * through before the attachment is created, after WordPress has checked the file type.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.4.0
 	 *
 	 * @param array $upload The uploaded file: 'file' (path), 'url' and 'type' (MIME type).
 	 * @return array The upload, with 'type' switched to audio when the file holds only audio.
@@ -281,7 +281,7 @@ class Media_Library_Ajax {
 	 * The audio type an upload should be stored as, given the type WordPress gave it and the
 	 * type read from the file's content.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.4.0
 	 *
 	 * @param string $type          MIME type WordPress gave the upload (from its extension).
 	 * @param string $content_mime  MIME type read from the file's content, or '' if unread.
@@ -301,7 +301,7 @@ class Media_Library_Ajax {
 	 * The MIME type WordPress reads from a media file's content, the same reading
 	 * wp_generate_attachment_metadata() stores as the attachment's `mime_type`.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.4.0
 	 *
 	 * @param string $file Absolute path to the file.
 	 * @return string The MIME type, or '' when the file cannot be read.
