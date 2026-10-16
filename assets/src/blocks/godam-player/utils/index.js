@@ -109,4 +109,90 @@ function stripHtmlTags( html ) {
 	return doc.body.textContent || '';
 }
 
-export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601, isSEODataEmpty, stripHtmlTags };
+/**
+ * Get the file name (without folders or query string) from a URL or path.
+ *
+ * @param {string} url - URL or path.
+ * @return {string} File name, e.g. "my-video_final.mp4", or ''.
+ */
+function getFileNameFromUrl( url ) {
+	if ( ! url || typeof url !== 'string' ) {
+		return '';
+	}
+
+	const path = url.split( /[?#]/ )[ 0 ];
+	const name = path.substring( path.lastIndexOf( '/' ) + 1 );
+
+	try {
+		return decodeURIComponent( name );
+	} catch {
+		return name;
+	}
+}
+
+/**
+ * Remove a trailing file extension, e.g. "clip.final.mp4" -> "clip.final".
+ *
+ * @param {string} name - File name.
+ * @return {string} Name without the last extension.
+ */
+function stripFileExtension( name ) {
+	return String( name || '' ).replace( /\.[a-z0-9]{2,5}$/i, '' );
+}
+
+/**
+ * Whether a video title looks like a raw file name rather than a real title.
+ *
+ * A single hyphen or underscore is not enough on its own: real titles such as
+ * "Spider-Man", "COVID-19", "e-commerce", "Add-ons" or "Q3_review" have one.
+ * A title is only flagged when it has no spaces and shows a stronger sign of
+ * being a file name:
+ * - two or more hyphens/underscores (e.g. "product-demo_v2", "my-video-final");
+ * - a camera-style name (e.g. "IMG_2041", "DSC-0001", "VID_20240115");
+ * - a video file extension (e.g. "clip.mp4");
+ * or, with or without spaces, when it matches the video's file name.
+ *
+ * @param {string} title      - Video title / SEO headline.
+ * @param {string} [fileName] - The video's file name or URL, if known.
+ * @return {boolean} True when the title looks like a file name.
+ */
+function isFilenameLikeTitle( title, fileName = '' ) {
+	const trimmed = String( title || '' ).trim();
+
+	if ( ! trimmed ) {
+		return false;
+	}
+
+	const baseName = getFileNameFromUrl( fileName );
+	if ( baseName ) {
+		const normalizedTitle = trimmed.toLowerCase();
+		const normalizedFile = baseName.trim().toLowerCase();
+
+		if ( normalizedTitle === normalizedFile || normalizedTitle === stripFileExtension( normalizedFile ) ) {
+			return true;
+		}
+	}
+
+	if ( /\s/.test( trimmed ) ) {
+		return false;
+	}
+
+	// Two or more separators, e.g. "product-demo_v2".
+	if ( ( trimmed.match( /[-_]/g ) || [] ).length >= 2 ) {
+		return true;
+	}
+
+	// Camera / phone naming, e.g. "IMG_2041", "DSC-0001", "VID_20240115".
+	if ( /^[a-z]{2,5}[-_]\d{3,}$/i.test( trimmed ) ) {
+		return true;
+	}
+
+	// A single word ending in a video file extension, e.g. "IMG2041.mp4".
+	if ( /\.(mp4|mov|m4v|webm|mkv|avi|wmv|flv|mpe?g|3gp|ogv|m3u8|mpd)$/i.test( trimmed ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601, isSEODataEmpty, stripHtmlTags, getFileNameFromUrl, isFilenameLikeTitle };

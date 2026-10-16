@@ -391,6 +391,23 @@ class WPB_GoDAM_Video {
 						'value'   => '1',
 					),
 				),
+				array(
+					'type'        => 'dropdown',
+					'heading'     => esc_html__( 'Exclude from video sitemap', 'godam' ),
+					'param_name'  => 'seo_exclude_from_sitemap',
+					'value'       => array(
+						esc_html__( 'No', 'godam' )  => '0',
+						esc_html__( 'Yes', 'godam' ) => '1',
+					),
+					'std'         => '0',
+					'description' => esc_html__( 'Leave this video out of the GoDAM video sitemap. The video schema on this page is not affected.', 'godam' ),
+					'group'       => esc_html__( 'SEO Settings', 'godam' ),
+					'save_always' => true,
+					'dependency'  => array(
+						'element'   => 'id',
+						'not_empty' => true,
+					),
+				),
 			),
 		);
 
