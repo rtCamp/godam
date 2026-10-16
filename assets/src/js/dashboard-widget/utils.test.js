@@ -64,6 +64,12 @@ describe( 'roundWatchTime', () => {
 		expect( roundWatchTime( 32, { allowSeconds: true } ) ).toEqual( { amount: 32, unit: 'seconds' } );
 	} );
 
+	it( 'truncates sub-minute seconds so it never overstates', () => {
+		expect( roundWatchTime( 32.6, { allowSeconds: true } ) ).toEqual( { amount: 32, unit: 'seconds' } );
+		expect( roundWatchTime( 59.9, { allowSeconds: true } ) ).toEqual( { amount: 59, unit: 'seconds' } );
+		expect( roundWatchTime( 1.9, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'seconds' } );
+	} );
+
 	it( 'still rounds a minute or more to minutes with allowSeconds', () => {
 		expect( roundWatchTime( 60, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'minutes' } );
 		expect( roundWatchTime( 1800, { allowSeconds: true } ) ).toEqual( { amount: 30, unit: 'minutes' } );
