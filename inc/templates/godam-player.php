@@ -1116,7 +1116,27 @@ do_action( 'rtgodam_after_attachment_lookup' );
 												 */
 												$godam_cta_html = apply_filters( 'rtgodam_cta_html_content', $godam_cta_html, $godam_layer );
 
-												echo wp_kses_post( $godam_cta_html );
+												/**
+												 * Filters the allowed HTML tags/attributes CTA content is sanitized
+												 * against, after shortcode expansion. Starts from wp_kses_post()'s
+												 * own 'post'-context defaults, which don't include every tag a
+												 * legitimate CTA shortcode's own output might need (e.g. <form>,
+												 * for a placeholder a form-embed script hydrates client-side).
+												 *
+												 * This sanitizer is the last line of defense for CTA HTML at render
+												 * time. wp_kses() is a pure allowlist with no hardcoded blocklist, so
+												 * adding tags/attributes here (e.g. `script`, `iframe`, `on*` event
+												 * attributes) removes the protection those defaults provide. Hook
+												 * implementers are responsible for the safety of anything they add.
+												 *
+												 * @since n.e.x.t
+												 *
+												 * @param array $godam_cta_allowed_tags Allowed tags/attributes, same shape as wp_kses_allowed_html().
+												 * @param array $godam_layer            The layer configuration array.
+												 */
+												$godam_cta_allowed_tags = apply_filters( 'rtgodam_cta_html_allowed_tags', wp_kses_allowed_html( 'post' ), $godam_layer );
+
+												echo wp_kses( $godam_cta_html, $godam_cta_allowed_tags );
 												?>
 											</div>
 										<?php else : ?>
