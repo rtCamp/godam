@@ -217,7 +217,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v2.4.0 (October 15, 2026) =
+= v2.4.0 (October 16, 2026) =
 
 - Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.
 - Feat: The Hotspot layer has a new Button style: each hotspot can show as a text or sticker button, with its own colours and link.
