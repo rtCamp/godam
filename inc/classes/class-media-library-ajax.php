@@ -40,6 +40,8 @@ class Media_Library_Ajax {
 			add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 		}
 
+		// Before the attachment exists, so its type, and the transcoding request sent on add_attachment, say audio.
+		add_filter( 'wp_handle_upload', array( $this, 'store_audio_only_upload_as_audio' ), 10, 1 );
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
 		add_action( 'add_attachment', array( $this, 'upload_media_to_frappe_backend' ), 10, 1 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
@@ -193,7 +195,8 @@ class Media_Library_Ajax {
 
 	/**
 	 * Video container types that form recorders save audio in, mapped to the audio type the
-	 * GoDAM tab reports for an audio job stored in them.
+	 * GoDAM tab reports for an audio job stored in them, and that an audio-only upload in
+	 * them is stored as (see store_audio_only_upload_as_audio()).
 	 *
 	 * @since 2.4.0
 	 *
@@ -230,6 +233,86 @@ class Media_Library_Ajax {
 		$audio_containers = self::get_audio_container_mimes();
 
 		return isset( $audio_containers[ $current_mime ] ) && $audio_containers[ $current_mime ] === $picked_mime;
+	}
+
+	/**
+	 * Store an uploaded WebM or MP4 file that holds only audio as audio/webm or audio/mp4.
+	 *
+	 * WordPress types an upload by its extension, so every .webm is video/webm and every .mp4
+	 * is video/mp4, even a voice recording with no picture. Typed as video, such a file is
+	 * listed under the Media Library's Video filter, left out of the GoDAM Audio block's
+	 * library (an MP4 is refused by the block outright), opened in the video editor, and sent
+	 * to GoDAM Central as a video job. This reads the file the way WordPress itself does when
+	 * it builds the attachment metadata, and switches the type when the file has no video.
+	 *
+	 * Hooked to `wp_handle_upload`, which media uploads, sideloads and REST uploads all pass
+	 * through before the attachment is created, after WordPress has checked the file type.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $upload The uploaded file: 'file' (path), 'url' and 'type' (MIME type).
+	 * @return array The upload, with 'type' switched to audio when the file holds only audio.
+	 */
+	public function store_audio_only_upload_as_audio( $upload ) {
+		if ( ! is_array( $upload ) || ! empty( $upload['error'] ) || empty( $upload['file'] ) || empty( $upload['type'] ) ) {
+			return $upload;
+		}
+
+		// Only the container types; reading every upload would slow down image uploads for nothing.
+		if ( ! isset( self::get_audio_container_mimes()[ $upload['type'] ] ) ) {
+			return $upload;
+		}
+
+		$audio_type = self::get_audio_type_for_upload( $upload['type'], self::read_media_mime_type( $upload['file'] ) );
+		if ( '' !== $audio_type ) {
+			$upload['type'] = $audio_type;
+		}
+
+		return $upload;
+	}
+
+	/**
+	 * The audio type an upload should be stored as, given the type WordPress gave it and the
+	 * type read from the file's content.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $type          MIME type WordPress gave the upload (from its extension).
+	 * @param string $content_mime  MIME type read from the file's content, or '' if unread.
+	 * @return string audio/webm or audio/mp4 for an audio-only WebM or MP4, otherwise ''.
+	 */
+	public static function get_audio_type_for_upload( $type, $content_mime ) {
+		$audio_containers = self::get_audio_container_mimes();
+
+		if ( ! isset( $audio_containers[ $type ] ) || 0 !== strpos( (string) $content_mime, 'audio/' ) ) {
+			return '';
+		}
+
+		return $audio_containers[ $type ];
+	}
+
+	/**
+	 * The MIME type WordPress reads from a media file's content, the same reading
+	 * wp_generate_attachment_metadata() stores as the attachment's `mime_type`.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $file Absolute path to the file.
+	 * @return string The MIME type, or '' when the file cannot be read.
+	 */
+	private static function read_media_mime_type( $file ) {
+		if ( ! is_readable( $file ) ) {
+			return '';
+		}
+
+		// wp_read_video_metadata() lives in an admin include that front-end and REST uploads may not have loaded.
+		if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/media.php';
+		}
+
+		$metadata = wp_read_video_metadata( $file );
+
+		return is_array( $metadata ) && ! empty( $metadata['mime_type'] ) ? (string) $metadata['mime_type'] : '';
 	}
 
 	/**

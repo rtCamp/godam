@@ -494,6 +494,23 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-dashboard-widget-
 // constructor-less instance, and the static MIME helpers. Requiring the file only declares the class.
 require_once dirname( __DIR__ ) . '/inc/classes/class-media-library-ajax.php';
 
+if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+
+	/**
+	 * Narrow stub for AudioOnlyUploadTypeTest: returns `$GLOBALS['rtgodam_stub']['video_metadata'][ $file ]`
+	 * (an array with 'mime_type', or false) and records each path read in
+	 * `$GLOBALS['rtgodam_stub']['video_metadata_reads']`.
+	 *
+	 * @param string $file Path to the file.
+	 * @return array|false
+	 */
+	function wp_read_video_metadata( $file ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_stub']['video_metadata_reads'][] = $file;
+
+		return $GLOBALS['rtgodam_stub']['video_metadata'][ $file ] ?? false;
+	}
+}
+
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
 require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';
