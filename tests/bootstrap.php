@@ -498,14 +498,20 @@ if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 
 	/**
 	 * Narrow stub for AudioOnlyUploadTypeTest: returns `$GLOBALS['rtgodam_stub']['video_metadata'][ $file ]`
-	 * (an array with 'mime_type', or false) and records each path read in
+	 * (an array with 'mime_type', or false; the string 'throw' throws a TypeError the way getID3
+	 * does on some damaged files) and records each path read in
 	 * `$GLOBALS['rtgodam_stub']['video_metadata_reads']`.
 	 *
 	 * @param string $file Path to the file.
 	 * @return array|false
+	 * @throws TypeError When the stubbed value is 'throw'.
 	 */
 	function wp_read_video_metadata( $file ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
 		$GLOBALS['rtgodam_stub']['video_metadata_reads'][] = $file;
+
+		if ( 'throw' === ( $GLOBALS['rtgodam_stub']['video_metadata'][ $file ] ?? null ) ) {
+			throw new TypeError( 'Unsupported operand types: string + int' );
+		}
 
 		return $GLOBALS['rtgodam_stub']['video_metadata'][ $file ] ?? false;
 	}

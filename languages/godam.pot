@@ -2752,7 +2752,7 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-admin.php:193
 #: admin/class-rtgodam-transcoder-admin.php:337
 #: admin/godam-transcoder-functions.php:381
-#: inc/classes/class-media-library-ajax.php:1777
+#: inc/classes/class-media-library-ajax.php:1788
 #: inc/templates/video-preview.php:77
 #: assets/src/js/media-library/views/attachment.js:184
 #: pages/godam/components/GoDAMHeader.jsx:74
@@ -2763,7 +2763,7 @@ msgstr ""
 #: assets/build/js/media-library.min.js:1
 #: assets/build/pages/media-library-tour.min.js:2
 #: assets/build/pages/media-library.min.js:2
-#: inc/classes/class-media-library-ajax.php:1005
+#: inc/classes/class-media-library-ajax.php:1016
 #: assets/src/js/media-library/views/fields/move-to-folder-field.js:79
 #: pages/media-library-tour/dom.js:215
 #: pages/media-library/App.js:329
@@ -2807,7 +2807,7 @@ msgid "This file couldn't be transcoded"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: inc/classes/class-media-library-ajax.php:810
+#: inc/classes/class-media-library-ajax.php:821
 #: inc/classes/rest-api/class-transcoding.php:327
 #: inc/helpers/custom-functions.php:769
 #: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:116
@@ -10171,17 +10171,17 @@ msgid "Welcome to GoDAM! Thank you for using our product."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:277
-#: inc/classes/class-media-library-ajax.php:1139
+#: inc/classes/class-media-library-ajax.php:1150
 msgid "Claim the GoDAM New Year Sale 2026 offer"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:279
-#: inc/classes/class-media-library-ajax.php:1141
+#: inc/classes/class-media-library-ajax.php:1152
 msgid "New Year Sale 2026 offer from GoDAM"
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:280
-#: inc/classes/class-media-library-ajax.php:1142
+#: inc/classes/class-media-library-ajax.php:1153
 msgid "Dismiss banner"
 msgstr ""
 
@@ -10358,7 +10358,7 @@ msgid "Please upgrade your plan to continue transcoding."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:340
-#: inc/classes/class-media-library-ajax.php:473
+#: inc/classes/class-media-library-ajax.php:484
 msgid "HTTP authentication is enabled on your site, preventing transcoding."
 msgstr ""
 
@@ -10871,44 +10871,44 @@ msgstr ""
 msgid "Demo asset not found."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1009
+#: inc/classes/class-media-library-ajax.php:1020
 msgid "All collections"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1091
+#: inc/classes/class-media-library-ajax.php:1102
 msgid "Offer banner dismissed successfully."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1185
+#: inc/classes/class-media-library-ajax.php:1196
 msgid "Invalid attachment ID or URL."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1207
+#: inc/classes/class-media-library-ajax.php:1218
 #: inc/classes/rest-api/class-media-library.php:889
 msgid "Invalid attachment ID."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1219
+#: inc/classes/class-media-library-ajax.php:1230
 msgid "Could not initialize WordPress filesystem."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1239
+#: inc/classes/class-media-library-ajax.php:1250
 msgid "Could not move file into uploads directory."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1729
+#: inc/classes/class-media-library-ajax.php:1740
 msgid "Insufficient permissions."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1746
+#: inc/classes/class-media-library-ajax.php:1757
 msgid "HTTP auth status saved."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1779
+#: inc/classes/class-media-library-ajax.php:1790
 msgid "GoDAM Transcoding Blocked"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1782
+#: inc/classes/class-media-library-ajax.php:1793
 msgid "HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding."
 msgstr ""
 

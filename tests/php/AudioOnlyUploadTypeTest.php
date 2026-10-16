@@ -43,6 +43,7 @@ class AudioOnlyUploadTypeTest extends TestCase {
 		$GLOBALS['rtgodam_stub']['video_metadata']       = array();
 		$GLOBALS['rtgodam_stub']['video_metadata_reads'] = array();
 		$GLOBALS['rtgodam_hooks']                        = array();
+		$GLOBALS['rtgodam_stub']['caps']                 = array( 'upload_files' );
 	}
 
 	/**
@@ -60,11 +61,16 @@ class AudioOnlyUploadTypeTest extends TestCase {
 	 * Run the filter callback on an upload whose content reads as $content_mime.
 	 *
 	 * @param string      $type         Type WordPress gave the upload.
-	 * @param string|null $content_mime Type read from the content, or null for "unreadable".
+	 * @param string|null $content_mime Type read from the content, null for "unreadable", or
+	 *                                  'throw' for a reader that throws.
 	 * @return array The filtered upload.
 	 */
 	private function filter_upload( $type, $content_mime ) {
-		$GLOBALS['rtgodam_stub']['video_metadata'][ $this->file ] = null === $content_mime ? false : array( 'mime_type' => $content_mime );
+		if ( null === $content_mime || 'throw' === $content_mime ) {
+			$GLOBALS['rtgodam_stub']['video_metadata'][ $this->file ] = null === $content_mime ? false : 'throw';
+		} else {
+			$GLOBALS['rtgodam_stub']['video_metadata'][ $this->file ] = array( 'mime_type' => $content_mime );
+		}
 
 		$instance = ( new \ReflectionClass( Media_Library_Ajax::class ) )->newInstanceWithoutConstructor();
 
@@ -164,6 +170,30 @@ class AudioOnlyUploadTypeTest extends TestCase {
 		$this->assertSame( '', Media_Library_Ajax::get_audio_type_for_upload( 'video/mp4', '' ) );
 		$this->assertSame( '', Media_Library_Ajax::get_audio_type_for_upload( 'video/quicktime', 'audio/mp4' ) );
 		$this->assertSame( '', Media_Library_Ajax::get_audio_type_for_upload( 'audio/mpeg', 'audio/mpeg' ) );
+	}
+
+	/**
+	 * A user who cannot add media (a visitor uploading through a form, say) gets the upload back
+	 * untouched, and the file is never read.
+	 *
+	 * @return void
+	 */
+	public function test_upload_by_a_user_who_cannot_add_media_is_not_read() {
+		$GLOBALS['rtgodam_stub']['caps'] = array();
+
+		$this->assertSame( 'video/webm', $this->filter_upload( 'video/webm', 'audio/webm' )['type'] );
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['video_metadata_reads'] );
+	}
+
+	/**
+	 * A reader error on a damaged file (getID3 can throw a TypeError) keeps the upload's type
+	 * instead of failing the upload.
+	 *
+	 * @return void
+	 */
+	public function test_reader_error_keeps_the_type() {
+		$this->assertSame( 'video/webm', $this->filter_upload( 'video/webm', 'throw' )['type'] );
+		$this->assertSame( 'video/mp4', $this->filter_upload( 'video/mp4', 'throw' )['type'] );
 	}
 
 	/**

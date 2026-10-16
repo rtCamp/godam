@@ -263,6 +263,12 @@ class Media_Library_Ajax {
 			return $upload;
 		}
 
+		// Only for someone who can add media, or WP-CLI. Visitor uploads through forms never become
+		// attachments, and reading them would let anyone make the site parse a file.
+		if ( ! ( ( defined( 'WP_CLI' ) && WP_CLI ) || current_user_can( 'upload_files' ) ) ) {
+			return $upload;
+		}
+
 		$audio_type = self::get_audio_type_for_upload( $upload['type'], self::read_media_mime_type( $upload['file'] ) );
 		if ( '' !== $audio_type ) {
 			$upload['type'] = $audio_type;
@@ -310,7 +316,12 @@ class Media_Library_Ajax {
 			require_once ABSPATH . 'wp-admin/includes/media.php';
 		}
 
-		$metadata = wp_read_video_metadata( $file );
+		// getID3 can throw an Error (not only an Exception) on a damaged file; keep the upload's type then.
+		try {
+			$metadata = wp_read_video_metadata( $file );
+		} catch ( \Throwable $e ) {
+			return '';
+		}
 
 		return is_array( $metadata ) && ! empty( $metadata['mime_type'] ) ? (string) $metadata['mime_type'] : '';
 	}
