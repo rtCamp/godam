@@ -1538,10 +1538,11 @@ class Dashboard_Widget {
 	/**
 	 * The page a tile links to, or '' when it is not a link.
 	 *
-	 * Type filters use the Media Library's own filter, set from the URL so it
-	 * works in grid and list view alike: `attachment-filter` drives list view,
-	 * and `type` with `order` makes grid view select the same filter in its
-	 * dropdown. Neither saves anything, unlike `mode`.
+	 * A type tile links to the Media Library filtered to its type, using whichever
+	 * URL parameter the user's current view reads (see tile_filter_args()). The
+	 * view comes from `media_library_mode`, the per-user option core sets from the
+	 * grid/list toggle; it is read, never written, so the link leaves the user's
+	 * saved view as it is.
 	 *
 	 * @param string $id Tile ID.
 	 * @return string
@@ -1563,19 +1564,33 @@ class Dashboard_Widget {
 			return admin_url( 'upload.php' );
 		}
 
-		$args = array(
-			'attachment-filter' => rawurlencode( 'post_mime_type:' . $key ),
-			'order'             => 'DESC',
-		);
+		// Core defaults to grid view when the option is unset.
+		$mode = 'list' === get_user_option( 'media_library_mode', get_current_user_id() ) ? 'list' : 'grid';
 
-		// Grid view's own dropdown keys off the simple image, audio and video
-		// types; documents have no such key there, so for them only list view's
-		// attachment-filter applies and grid view opens unfiltered.
-		if ( in_array( $target, array( 'image', 'audio', 'video' ), true ) ) {
-			$args['type'] = rawurlencode( $target );
-		}
+		return add_query_arg( self::tile_filter_args( $key, $mode ), admin_url( 'upload.php' ) );
+	}
 
-		return add_query_arg( $args, admin_url( 'upload.php' ) );
+	/**
+	 * The Media Library query args that filter it to a type, for the user's view.
+	 *
+	 * List view reads `attachment-filter`; grid view (core's default) reads `type`
+	 * into its filter dropdown. The two cannot be combined: a grid-view
+	 * `attachment-filter` is folded into a raw `post_mime_type` query the dropdown
+	 * can neither show nor clear with "All media items", and list view ignores
+	 * `type`. So each view is given only its own parameter.
+	 *
+	 * @param string $key  The Media Library filter key, from media_filter_key().
+	 * @param string $mode 'list' or 'grid'.
+	 * @return array
+	 */
+	public static function tile_filter_args( $key, $mode ) {
+		$args = 'list' === $mode
+			? array( 'attachment-filter' => rawurlencode( 'post_mime_type:' . $key ) )
+			: array( 'type' => rawurlencode( $key ) );
+
+		$args['order'] = 'DESC';
+
+		return $args;
 	}
 
 	/**
@@ -1583,6 +1598,11 @@ class Dashboard_Widget {
 	 * keys of their own in core's filter; documents appear under a key that is the
 	 * comma-joined list of their MIME types (not the word "document"), so that key
 	 * is found by the one that covers PDFs.
+	 *
+	 * Core's Documents filter does not list every type GoDAM counts as a document:
+	 * spreadsheets and CSV sit under the separate Spreadsheets filter, and
+	 * presentations, plain text and OpenDocument presentations are in no core
+	 * filter. The key is still the closest single screen for the documents tile.
 	 *
 	 * @param string   $target 'image', 'audio', 'video' or 'document'.
 	 * @param string[] $keys   Keys of get_post_mime_types().

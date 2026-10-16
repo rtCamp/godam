@@ -70,10 +70,17 @@ describe( 'roundWatchTime', () => {
 		expect( roundWatchTime( 1.9, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'seconds' } );
 	} );
 
-	it( 'still rounds a minute or more to minutes with allowSeconds', () => {
+	it( 'floors a minute or more to minutes with allowSeconds, so it never overstates', () => {
 		expect( roundWatchTime( 60, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'minutes' } );
+		expect( roundWatchTime( 90, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'minutes' } );
+		expect( roundWatchTime( 150, { allowSeconds: true } ) ).toEqual( { amount: 2, unit: 'minutes' } );
 		expect( roundWatchTime( 1800, { allowSeconds: true } ) ).toEqual( { amount: 30, unit: 'minutes' } );
 		expect( roundWatchTime( 3600, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'hours' } );
+	} );
+
+	it( 'rounds the aggregate headline minutes to the nearest (no allowSeconds)', () => {
+		expect( roundWatchTime( 90 ) ).toEqual( { amount: 2, unit: 'minutes' } );
+		expect( roundWatchTime( 150 ) ).toEqual( { amount: 3, unit: 'minutes' } );
 	} );
 
 	it( 'reads any positive sub-minute time as at least 1 second, and zero stays 0 minutes', () => {

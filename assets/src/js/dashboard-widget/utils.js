@@ -40,10 +40,11 @@ export function scaleBars( values ) {
  *
  * With `allowSeconds`, a single video's sub-minute watch time reads in whole
  * seconds instead, so a 1-second view is not rounded up to "1 minute watched",
- * which would overstate it on a per-video receipt. Those seconds are truncated,
- * not rounded, so the receipt never reads more than the time actually watched
- * (any positive time still reads as at least 1 second). The aggregate headline
- * leaves this off: a total worth showing is always at least a minute.
+ * which would overstate it on a per-video receipt. In that mode both seconds and
+ * minutes are truncated, not rounded, so the receipt never reads more than the
+ * time actually watched (any positive time still reads as at least 1 second).
+ * The aggregate headline leaves this off: a total worth showing is always at
+ * least a minute, and its minutes round to the nearest.
  *
  * @param {number}  seconds                      Watch time in seconds.
  * @param {Object}  [options]                    Options.
@@ -68,5 +69,9 @@ export function roundWatchTime( seconds, { allowSeconds = false } = {} ) {
 		return { amount: Math.max( 1, Math.floor( seconds ) ), unit: 'seconds' };
 	}
 
-	return { amount: Math.max( 1, Math.round( seconds / 60 ) ), unit: 'minutes' };
+	// Per video, floor the minutes too so a 90-second view reads "1 minute", not
+	// "2 minutes"; the aggregate headline rounds to the nearest minute.
+	const minutes = allowSeconds ? Math.floor( seconds / 60 ) : Math.round( seconds / 60 );
+
+	return { amount: Math.max( 1, minutes ), unit: 'minutes' };
 }
