@@ -6,21 +6,28 @@
  * uploaded files, which would reject every uploaded audio file. `mime` is set on library
  * selections, `mime_type` on uploads.
  *
- * WordPress types every .webm file video/webm, audio-only recordings included (Chrome
- * records audio as WebM), so that one video type is accepted as well.
- *
- * video/mp4 is not accepted, so a Safari audio recording (.mp4) uploaded straight into the
- * picker is refused: an .mp4 is usually real video. GoDAM-tab recordings are not affected,
- * because the server already reports them as audio/webm or audio/mp4.
+ * Audio-only .webm and .mp4 uploads are stored as audio/webm and audio/mp4 (see
+ * Media_Library_Ajax::store_audio_only_upload_as_audio()), and GoDAM-tab recordings are
+ * reported as audio, so both pass as audio. One video type is still accepted: a .webm
+ * uploaded before that, stored as video/webm, that has no picture size. WordPress gives a
+ * video's width and height only when the file has a picture, so a WebM with video is
+ * refused like any other video.
  *
  * @since 2.4.0
  *
  * @param {Object} media Media object from the media modal or an upload.
- * @return {boolean} False when the MIME type names a non-audio format, except video/webm.
+ * @return {boolean} False when the MIME type names a non-audio format, or a video/webm with a picture.
  */
 export default function isAudioMedia( media ) {
 	const mime = media?.mime || media?.mime_type || '';
 	const mediaType = mime.split( '/' )[ 0 ];
 
-	return ! mediaType || 'audio' === mediaType || 'video/webm' === mime;
+	if ( 'video/webm' === mime ) {
+		const width = media?.width || media?.media_details?.width;
+		const height = media?.height || media?.media_details?.height;
+
+		return ! width && ! height;
+	}
+
+	return ! mediaType || 'audio' === mediaType;
 }
