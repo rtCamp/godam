@@ -705,7 +705,7 @@ class DashboardWidgetTest extends TestCase {
 		);
 	}
 
-	/** Only real tiles link, and the two with no screen that lists them (files in use, captions) do not. */
+	/** Only real tiles link, and files in use (which has no screen that lists it) does not. */
 	public function test_tile_links() {
 		$this->assertSame( array(), array_diff( array_keys( Dashboard_Widget::TILE_LINKS ), array_keys( Dashboard_Widget::FLOORS ) ) );
 		$this->assertArrayNotHasKey( 'files_in_use', Dashboard_Widget::TILE_LINKS );
@@ -716,20 +716,56 @@ class DashboardWidgetTest extends TestCase {
 		}
 	}
 
-	/** Type filters use core's own keys for images, audio and video. */
+	/** Type filters use core's own keys for images, audio and video, and its MIME-list key for documents. */
 	public function test_media_filter_key() {
 		$keys = array( 'image', 'audio', 'video', 'application/msword,application/pdf,application/rtf' );
 
 		$this->assertSame( 'video', Dashboard_Widget::media_filter_key( 'video', $keys ) );
 		$this->assertSame( 'audio', Dashboard_Widget::media_filter_key( 'audio', $keys ) );
 		$this->assertSame( '', Dashboard_Widget::media_filter_key( 'video', array( 'image' ) ) );
-		$this->assertSame( '', Dashboard_Widget::media_filter_key( 'document', $keys ) );
+
+		// Documents live under the key that covers PDFs, not the word "document".
+		$this->assertSame( 'application/msword,application/pdf,application/rtf', Dashboard_Widget::media_filter_key( 'document', $keys ) );
+		$this->assertSame( '', Dashboard_Widget::media_filter_key( 'document', array( 'image', 'audio', 'video' ) ) );
 	}
 
-	/** Ready tiles are plain numbers: no list shows only the processed files. */
-	public function test_ready_tiles_do_not_link() {
+	/** Each view gets only its own filter parameter: list reads attachment-filter, grid reads type. */
+	public function test_tile_filter_args() {
+		$this->assertSame(
+			array(
+				'attachment-filter' => rawurlencode( 'post_mime_type:video' ),
+				'order'             => 'DESC',
+			),
+			Dashboard_Widget::tile_filter_args( 'video', 'list' )
+		);
+
+		$this->assertSame(
+			array(
+				'type'  => rawurlencode( 'video' ),
+				'order' => 'DESC',
+			),
+			Dashboard_Widget::tile_filter_args( 'video', 'grid' )
+		);
+
+		// A grid-view link never carries attachment-filter (it pins a filter the dropdown can't clear).
+		$docs = 'application/msword,application/pdf';
+		$this->assertArrayNotHasKey( 'attachment-filter', Dashboard_Widget::tile_filter_args( $docs, 'grid' ) );
+		$this->assertSame( rawurlencode( $docs ), Dashboard_Widget::tile_filter_args( $docs, 'grid' )['type'] );
+		$this->assertSame( rawurlencode( 'post_mime_type:' . $docs ), Dashboard_Widget::tile_filter_args( $docs, 'list' )['attachment-filter'] );
+	}
+
+	/** Each ready tile links to the Media Library with its type filter on. */
+	public function test_ready_tiles_link_to_type_filter() {
+		$expected = array(
+			'videos_ready'    => 'video',
+			'audio_ready'     => 'audio',
+			'documents_ready' => 'document',
+			'images_ready'    => 'image',
+		);
+
 		foreach ( Dashboard_Widget::READY_TILES as $id ) {
-			$this->assertArrayNotHasKey( $id, Dashboard_Widget::TILE_LINKS );
+			$this->assertArrayHasKey( $id, Dashboard_Widget::TILE_LINKS );
+			$this->assertSame( $expected[ $id ], Dashboard_Widget::TILE_LINKS[ $id ] );
 		}
 		$this->assertNotContains( 'captions', Dashboard_Widget::READY_TILES );
 	}

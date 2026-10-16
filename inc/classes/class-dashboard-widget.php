@@ -176,24 +176,31 @@ class Dashboard_Widget {
 
 	/**
 	 * Where each clickable tile goes: the GoDAM Dashboard (plays, viewers, the
-	 * country map, watch time), the Media Library, or the Media Library filtered
-	 * to videos. Tiles with no screen that lists exactly what they count (files
-	 * in use, and the ready tiles, since no filter lists only processed files)
-	 * are not links. GoDAM Dashboard links also need `edit_pages`, the page's
-	 * own capability (see get_tile_url()).
+	 * country map, watch time), the Media Library, or the Media Library with its
+	 * type filter on (videos, audio, documents or images). The only tiles with no
+	 * screen that lists what they count are files in use and videos with captions,
+	 * so those are not links. GoDAM Dashboard links also need `edit_pages`, the
+	 * page's own capability (see get_tile_url()).
+	 *
+	 * A ready tile's filter lists every file of its type, not only the ones GoDAM
+	 * has processed, which is the screen the spec points it at.
 	 *
 	 * @var array
 	 */
 	const TILE_LINKS = array(
-		'watch_seconds' => 'godam',
-		'plays'         => 'godam',
-		'viewers'       => 'godam',
-		'countries'     => 'godam',
-		'times_shown'   => 'godam',
-		'library_files' => 'library',
-		'folder_files'  => 'library',
-		'folders'       => 'library',
-		'video_seconds' => 'video',
+		'watch_seconds'   => 'godam',
+		'plays'           => 'godam',
+		'viewers'         => 'godam',
+		'countries'       => 'godam',
+		'times_shown'     => 'godam',
+		'library_files'   => 'library',
+		'folder_files'    => 'library',
+		'folders'         => 'library',
+		'video_seconds'   => 'video',
+		'videos_ready'    => 'video',
+		'audio_ready'     => 'audio',
+		'documents_ready' => 'document',
+		'images_ready'    => 'image',
 	);
 
 	/**
@@ -1531,10 +1538,11 @@ class Dashboard_Widget {
 	/**
 	 * The page a tile links to, or '' when it is not a link.
 	 *
-	 * Type filters use the Media Library's own filter, set from the URL so it
-	 * works in grid and list view alike: `attachment-filter` drives list view,
-	 * and `type` with `order` makes grid view select the same filter in its
-	 * dropdown. Neither saves anything, unlike `mode`.
+	 * A type tile links to the Media Library filtered to its type, using whichever
+	 * URL parameter the user's current view reads (see tile_filter_args()). The
+	 * view comes from `media_library_mode`, the per-user option core sets from the
+	 * grid/list toggle; it is read, never written, so the link leaves the user's
+	 * saved view as it is.
 	 *
 	 * @param string $id Tile ID.
 	 * @return string
@@ -1551,31 +1559,70 @@ class Dashboard_Widget {
 				return admin_url( 'upload.php' );
 		}
 
-		$type = self::media_filter_key( $target, array_keys( get_post_mime_types() ) );
-		if ( '' === $type ) {
+		$key = self::media_filter_key( $target, array_keys( get_post_mime_types() ) );
+		if ( '' === $key ) {
 			return admin_url( 'upload.php' );
 		}
 
-		return add_query_arg(
-			array(
-				'attachment-filter' => rawurlencode( 'post_mime_type:' . $type ),
-				'type'              => rawurlencode( $type ),
-				'order'             => 'DESC',
-			),
-			admin_url( 'upload.php' )
-		);
+		// Core defaults to grid view when the option is unset.
+		$mode = 'list' === get_user_option( 'media_library_mode', get_current_user_id() ) ? 'list' : 'grid';
+
+		return add_query_arg( self::tile_filter_args( $key, $mode ), admin_url( 'upload.php' ) );
 	}
 
 	/**
-	 * The Media Library filter key for a file type: images, audio and video
-	 * have keys of their own in core's filter.
+	 * The Media Library query args that filter it to a type, for the user's view.
 	 *
-	 * @param string   $target 'image', 'audio' or 'video'.
+	 * List view reads `attachment-filter`; grid view (core's default) reads `type`
+	 * into its filter dropdown. The two cannot be combined: a grid-view
+	 * `attachment-filter` is folded into a raw `post_mime_type` query the dropdown
+	 * can neither show nor clear with "All media items", and list view ignores
+	 * `type`. So each view is given only its own parameter.
+	 *
+	 * @param string $key  The Media Library filter key, from media_filter_key().
+	 * @param string $mode 'list' or 'grid'.
+	 * @return array
+	 */
+	public static function tile_filter_args( $key, $mode ) {
+		$args = 'list' === $mode
+			? array( 'attachment-filter' => rawurlencode( 'post_mime_type:' . $key ) )
+			: array( 'type' => rawurlencode( $key ) );
+
+		$args['order'] = 'DESC';
+
+		return $args;
+	}
+
+	/**
+	 * The Media Library filter key for a file type. Images, audio and video have
+	 * keys of their own in core's filter; documents appear under a key that is the
+	 * comma-joined list of their MIME types (not the word "document"), so that key
+	 * is found by the one that covers PDFs.
+	 *
+	 * Core's Documents filter does not list every type GoDAM counts as a document:
+	 * spreadsheets and CSV sit under the separate Spreadsheets filter, and
+	 * presentations, plain text and OpenDocument presentations are in no core
+	 * filter. The key is still the closest single screen for the documents tile.
+	 *
+	 * @param string   $target 'image', 'audio', 'video' or 'document'.
 	 * @param string[] $keys   Keys of get_post_mime_types().
 	 * @return string The key, or '' when there is none.
 	 */
 	public static function media_filter_key( $target, array $keys ) {
-		return in_array( $target, array( 'image', 'audio', 'video' ), true ) && in_array( $target, $keys, true ) ? $target : '';
+		if ( in_array( $target, array( 'image', 'audio', 'video' ), true ) ) {
+			return in_array( $target, $keys, true ) ? $target : '';
+		}
+
+		if ( 'document' === $target ) {
+			foreach ( $keys as $key ) {
+				$mimes = array_map( 'trim', explode( ',', (string) $key ) );
+				if ( in_array( 'application/pdf', $mimes, true ) ) {
+					return (string) $key;
+				}
+			}
+		}
+
+		return '';
 	}
 
 	/**
