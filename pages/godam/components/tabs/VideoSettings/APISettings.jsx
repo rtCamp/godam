@@ -195,7 +195,7 @@ const APISettings = ( { setNotice } ) => {
 				onConfirm={ handleDeactivateAPIKey }
 				data-test-id="godam-settings-api-key-button-confirm-remove"
 			>
-				{ __( 'This site will be disconnected from GoDAM. Your GoDAM account and media are not affected, and you can reconnect any time by adding an API key again.', 'godam' ) }
+				{ __( 'This site will be disconnected from GoDAM. New uploads won’t be transcoded, and analytics and other GoDAM features will stop working here until you add an API key again. Videos already on GoDAM keep playing, and your GoDAM account and media are not affected.', 'godam' ) }
 			</ConfirmModal>
 		</Panel>
 	);
