@@ -899,7 +899,7 @@ class RTGODAM_Transcoder_Handler {
 
 							$download_url                  = urldecode( urldecode( $file ) );
 							$new_wp_attached_file_pathinfo = pathinfo( $download_url );
-							$post_mime_type                = 'mp4' === $new_wp_attached_file_pathinfo['extension'] ? 'video/mp4' : 'audio/mp3';
+							$post_mime_type                = 'mp4' === $new_wp_attached_file_pathinfo['extension'] ? 'video/mp4' : 'audio/mpeg';
 							$attachemnt_url                = wp_get_attachment_url( $attachment_id );
 
 							$timeout = 5;
@@ -958,7 +958,8 @@ class RTGODAM_Transcoder_Handler {
 										wp_update_post( // godam-coverage-ignore -- add_transcoded_files(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 											array(
 												'ID' => $attachment_id,
-												'post_mime_type' => 'audio/mp3',
+												// WordPress registers MP3 as audio/mpeg; audio/mp3 is missed by REST media_type=audio and wp_get_mime_types().
+												'post_mime_type' => 'audio/mpeg',
 											)
 										);
 									} else {
