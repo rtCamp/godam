@@ -257,7 +257,7 @@ class Settings extends Base {
 			return new \WP_REST_Response(
 				array(
 					'status'  => 'success',
-					'message' => __( 'API key deactivated successfully.', 'godam' ),
+					'message' => __( 'API key removed. This site is now disconnected from GoDAM.', 'godam' ),
 				),
 				200
 			);
@@ -266,7 +266,7 @@ class Settings extends Base {
 		return new \WP_REST_Response(
 			array(
 				'status'  => 'error',
-				'message' => __( 'Failed to deactivate the API key. It might not exist.', 'godam' ),
+				'message' => __( 'Failed to remove the API key. It might not exist.', 'godam' ),
 			),
 			400
 		);
