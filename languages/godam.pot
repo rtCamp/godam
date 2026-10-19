@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-16T07:12:39+00:00\n"
+"POT-Creation-Date: 2026-10-19T11:00:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -1108,7 +1108,7 @@ msgstr ""
 #: assets/build/pages/onboarding.min.js:2
 #: assets/src/blocks/godam-gallery-v2/view.js:142
 #: assets/src/js/godam-player/managers/modalManager.js:345
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:85
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:132
 msgid "Close"
 msgstr ""
 
@@ -2620,7 +2620,7 @@ msgstr ""
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:413
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:416
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:507
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:123
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:170
 msgid "Continue"
 msgstr ""
 
@@ -3272,9 +3272,11 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
+#: assets/build/pages/onboarding.min.js:2
 #: assets/build/pages/tools.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/GoDAMHeader.jsx:92
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:118
 msgid "Need help?"
 msgstr ""
 
@@ -7060,6 +7062,7 @@ msgid "GoDAM onboarding"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:75
 #: pages/onboarding/utils/use-connect.js:37
 msgid "Could not load your workspaces. Please try again."
 msgstr ""
@@ -7423,42 +7426,62 @@ msgid "Login with email instead?"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:64
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:71
+msgid "Still no workspaces on this account. Create one in the GoDAM app, then refresh again."
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:100
 msgid "No workspaces yet"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:67
-msgid "This account has no workspaces. <a>Create one in the GoDAM app</a>, then come back."
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:103
+msgid "This account has no workspaces. <a>Create one in the GoDAM app</a>, then come back here and select Refresh."
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:82
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:113
+msgid "Checking…"
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:113
+msgid "Refresh"
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:119
+msgid "Contact support"
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:129
 msgid "Select a workspace"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:83
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:130
 msgid "Choose a workspace to start working!"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:89
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:136
 msgid "Select a Workspace"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:118
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:165
 msgid "Please note that you won't be able to switch to another workspace after logging in."
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:54
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:89
 msgid "Could not get the workspace key."
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:123
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:170
 msgid "Connecting…"
 msgstr ""
 
