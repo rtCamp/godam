@@ -283,9 +283,9 @@ Two limits worth knowing:
   back to an attachment ID in the browser, so there is no iframe fallback on this
   path. In practice the share button only exists on a rendered player, so a link
   produced by sharing always resolves.
-- The share modal itself needs a transcoding job ID, so videos that have not been
-  transcoded have no share modal — and therefore no share link to deep-link with.
-  A hand-written `#godam-video-{attachmentID}` link still works.
+- The share modal shares the WordPress page link (`#godam-video-{attachmentID}`),
+  so it works for every rendered video regardless of transcoding status. A
+  hand-written `#godam-video-{attachmentID}` link resolves the same way.
 
 ## Player Instance Methods
 
