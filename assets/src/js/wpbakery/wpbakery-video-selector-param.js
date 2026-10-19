@@ -217,12 +217,9 @@ import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/ut
 			updateFilenameTitleWarning( getSeoScope( $( this ) ) );
 		} );
 
-		// Check the title whenever an element's edit panel opens.
-		$( document ).on( 'vc.reload', function() {
-			$( '.wpb_vc_param_value[name="seo_override"]' ).each( function() {
-				updateFilenameTitleWarning( getSeoScope( $( this ) ) );
-			} );
-		} );
+		// No panel-open hook needed: WPBakery fires `change` on dependent params
+		// (seo_override, id) while it sets up the edit panel, which runs the
+		// handlers above. (`vc.reload` is never triggered by WPBakery.)
 
 		isSeoPrefillListenerBound = true;
 	}

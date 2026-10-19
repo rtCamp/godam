@@ -391,6 +391,48 @@ class VideoSitemapTest extends TestCase {
 		return (int) ( $GLOBALS['rtgodam_stub']['options'][ Video_Sitemap::CACHE_VERSION_OPTION ] ?? 1 );
 	}
 
+	public function test_saving_a_post_without_videos_does_not_invalidate() {
+		$sitemap = $this->sitemap_with_pages( array() );
+
+		$sitemap->maybe_invalidate_on_cleared( 99, false );
+		$this->assertSame( 1, $this->cache_version() );
+
+		// A post that had videos and no longer does: invalidated.
+		$sitemap->maybe_invalidate_on_cleared( 10, true );
+		$this->assertSame( 2, $this->cache_version() );
+	}
+
+	public function test_enabled_filter_added_after_load_is_respected() {
+		$sitemap = $this->sitemap_with_pages( array() );
+
+		// Off: nothing served or listed.
+		$sitemap->register_sitemap_hooks();
+		$this->assertArrayNotHasKey( 'parse_request', $GLOBALS['rtgodam_hooks'] );
+
+		// A theme's functions.php turns it on (runs before after_setup_theme).
+		add_filter(
+			'godam_video_sitemap_enabled',
+			function () {
+				return true;
+			}
+		);
+		$sitemap->register_sitemap_hooks();
+
+		$this->assertArrayHasKey( 'parse_request', $GLOBALS['rtgodam_hooks'] );
+		$this->assertArrayHasKey( 'robots_txt', $GLOBALS['rtgodam_hooks'] );
+	}
+
+	public function test_robots_txt_lists_the_sitemap_on_public_sites_only() {
+		$sitemap = $this->sitemap_with_pages( array() );
+		$GLOBALS['rtgodam_stub']['options']['permalink_structure'] = '';
+
+		$this->assertSame(
+			"User-agent: *\nDisallow:\nSitemap: https://example.test?godam_video_sitemap=1\n",
+			$sitemap->add_robots_txt_sitemap( "User-agent: *\nDisallow:\n", true )
+		);
+		$this->assertSame( 'User-agent: *', $sitemap->add_robots_txt_sitemap( 'User-agent: *', false ) );
+	}
+
 	public function test_settings_save_invalidates_only_when_seo_settings_change() {
 		$sitemap = $this->sitemap_with_pages( array() );
 

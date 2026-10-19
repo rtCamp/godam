@@ -184,6 +184,54 @@ namespace {
 		}
 	}
 
+	if ( ! function_exists( 'wp_next_scheduled' ) ) {
+
+		/**
+		 * @param string $hook Hook.
+		 * @param array  $args Args.
+		 * @return int|false
+		 */
+		function wp_next_scheduled( $hook, $args = array() ) {
+			foreach ( $GLOBALS['rtgodam_stub']['scheduled'] ?? array() as $event ) {
+				if ( $event['hook'] === $hook && $event['args'] === $args ) {
+					return $event['timestamp'];
+				}
+			}
+			return false;
+		}
+	}
+
+	if ( ! function_exists( 'wp_schedule_single_event' ) ) {
+
+		/**
+		 * Records the event in $GLOBALS['rtgodam_stub']['scheduled'].
+		 *
+		 * @param int    $timestamp Timestamp.
+		 * @param string $hook      Hook.
+		 * @param array  $args      Args.
+		 * @return bool
+		 */
+		function wp_schedule_single_event( $timestamp, $hook, $args = array() ) {
+			$GLOBALS['rtgodam_stub']['scheduled'][] = array(
+				'timestamp' => $timestamp,
+				'hook'      => $hook,
+				'args'      => $args,
+			);
+			return true;
+		}
+	}
+
+	if ( ! function_exists( 'did_action' ) ) {
+
+		/**
+		 * @param string $hook Hook.
+		 * @return int
+		 */
+		function did_action( $hook ) {
+			return (int) ( $GLOBALS['rtgodam_stub']['did_action'][ $hook ] ?? 0 );
+		}
+	}
+
 	if ( ! function_exists( 'metadata_exists' ) ) {
 
 		/**

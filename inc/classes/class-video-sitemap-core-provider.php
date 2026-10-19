@@ -11,7 +11,7 @@
  * Only loaded from the `wp_sitemaps_init` action, when WP_Sitemaps_Provider exists.
  *
  * @package GoDAM
- * @since   2.4.0
+ * @since   2.4.1
  */
 
 namespace RTGODAM\Inc;
