@@ -63,7 +63,7 @@ class VideoSeoSchemaTest extends TestCase {
 
 	/**
 	 * A cached SEO entry as Seo::get_seo_from_attachment() used to store it
-	 * before 2.4.1: DASH contentUrl, empty description, no embedUrl.
+	 * by an older version: DASH contentUrl, empty description, no embedUrl.
 	 *
 	 * @param array $overrides Fields to override.
 	 * @return array
@@ -278,6 +278,37 @@ class VideoSeoSchemaTest extends TestCase {
 		$this->assertArrayNotHasKey( 'description', $schema );
 	}
 
+	/**
+	 * @dataProvider non_public_status_provider
+	 *
+	 * @param string $status Post status.
+	 */
+	public function test_non_public_post_text_is_not_used( $status ) {
+		$GLOBALS['rtgodam_stub']['posts'][7] = (object) array(
+			'post_type'     => 'post',
+			'post_status'   => $status,
+			'post_excerpt'  => '',
+			'post_password' => '',
+			'post_content'  => 'Internal: do not share.',
+		);
+
+		$schema = $this->seo->build_video_object_schema( $this->legacy_entry(), 7 );
+
+		$this->assertArrayNotHasKey( 'description', $schema );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function non_public_status_provider() {
+		return array(
+			'private' => array( 'private' ),
+			'draft'   => array( 'draft' ),
+			'pending' => array( 'pending' ),
+			'future'  => array( 'future' ),
+		);
+	}
+
 	public function test_null_byte_in_transcript_url_does_not_break_the_save() {
 		$this->make_uploads_dir();
 		$GLOBALS['rtgodam_stub']['post_meta'] = array( 'rtgodam_transcript_path' => 'https://example.com/wp-content/uploads/2026/t%00.vtt' );
@@ -287,15 +318,69 @@ class VideoSeoSchemaTest extends TestCase {
 	}
 
 	public function test_legacy_entry_without_attachment_queues_one_resave() {
-		// Elementor / WPBakery cache from before 2.4.1: no attachment_id, DASH URL.
+		// Elementor / WPBakery cache from an older version: no attachment_id, DASH URL.
 		$entry = $this->legacy_entry( array( 'attachment_id' => 0 ) );
 
 		$this->seo->build_video_object_schema( $entry, 10 );
 		$this->seo->build_video_object_schema( $entry, 10 );
+		$this->seo->flush_legacy_resave_queue();
 
+		$this->assertSame( array( 10 ), $GLOBALS['rtgodam_stub']['options'][ Seo::LEGACY_RESAVE_QUEUE_OPTION ] );
 		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['scheduled'] );
-		$this->assertSame( 'godam_video_seo_resave_post', $GLOBALS['rtgodam_stub']['scheduled'][0]['hook'] );
-		$this->assertSame( array( 10 ), $GLOBALS['rtgodam_stub']['scheduled'][0]['args'] );
+		$this->assertSame( Seo::LEGACY_RESAVE_CRON_HOOK, $GLOBALS['rtgodam_stub']['scheduled'][0]['hook'] );
+	}
+
+	public function test_many_legacy_pages_share_one_queue_write_and_one_cron_event() {
+		for ( $post_id = 1; $post_id <= 30; $post_id++ ) {
+			// The post meta stub isn't per post: clear the previous page's flag.
+			unset( $GLOBALS['rtgodam_stub']['post_meta'][ Seo::LEGACY_RESAVE_META_KEY ] );
+			$this->seo->build_video_object_schema( $this->legacy_entry( array( 'attachment_id' => 0 ) ), $post_id );
+		}
+
+		// Nothing is written until shutdown.
+		$this->assertArrayNotHasKey( 'scheduled', $GLOBALS['rtgodam_stub'] );
+
+		$this->seo->flush_legacy_resave_queue();
+		$this->seo->flush_legacy_resave_queue(); // A second flush is a no-op.
+
+		$this->assertSame( range( 1, 30 ), $GLOBALS['rtgodam_stub']['options'][ Seo::LEGACY_RESAVE_QUEUE_OPTION ] );
+		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['scheduled'] );
+	}
+
+	public function test_resave_queue_is_processed_in_batches() {
+		$seo = new class() extends Seo {
+			/**
+			 * @var int[]
+			 */
+			public $resaved = array();
+
+			public function __construct() {}
+
+			/**
+			 * @param int $post_id Post ID.
+			 */
+			public function resave_post_video_seo( $post_id ) {
+				$this->resaved[] = $post_id;
+			}
+		};
+
+		$GLOBALS['rtgodam_stub']['options'][ Seo::LEGACY_RESAVE_QUEUE_OPTION ] = range( 1, 25 );
+
+		$seo->process_legacy_resave_queue();
+
+		$this->assertSame( range( 1, Seo::LEGACY_RESAVE_BATCH_SIZE ), $seo->resaved );
+		$this->assertSame( range( Seo::LEGACY_RESAVE_BATCH_SIZE + 1, 25 ), $GLOBALS['rtgodam_stub']['options'][ Seo::LEGACY_RESAVE_QUEUE_OPTION ] );
+		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['scheduled'] );
+
+		// Work through the rest; the last run schedules nothing new.
+		unset( $GLOBALS['rtgodam_stub']['scheduled'] );
+		$seo->process_legacy_resave_queue();
+		unset( $GLOBALS['rtgodam_stub']['scheduled'] );
+		$seo->process_legacy_resave_queue();
+
+		$this->assertSame( range( 1, 25 ), $seo->resaved );
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['options'][ Seo::LEGACY_RESAVE_QUEUE_OPTION ] );
+		$this->assertArrayNotHasKey( 'scheduled', $GLOBALS['rtgodam_stub'] );
 	}
 
 	public function test_current_entries_do_not_queue_a_resave() {
@@ -309,6 +394,8 @@ class VideoSeoSchemaTest extends TestCase {
 			),
 			10 
 		);
+
+		$this->seo->flush_legacy_resave_queue();
 
 		$this->assertArrayNotHasKey( 'scheduled', $GLOBALS['rtgodam_stub'] );
 	}

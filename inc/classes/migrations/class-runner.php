@@ -51,6 +51,7 @@ defined( 'ABSPATH' ) || exit;
  *   wp option delete rtgodam_gallery_v1_v2_migration_done
  *   wp option delete rtgodam_godam_cpt_cleanup_done
  *   wp option delete godam_media_backfill_status
+ *   wp option delete rtgodam_posthog_consent_reset_done
  *
  * Multisite (also clear the network-level fast-path flag):
  *   wp network meta delete 1 rtgodam_db_version_network
@@ -112,6 +113,9 @@ class Runner {
 		),
 		'1.13.0' => array(
 			Media_Usage_Backfill_Trigger::class,
+		),
+		'2.4.0'  => array(
+			Posthog_Consent_Reset::class,
 		),
 	);
 

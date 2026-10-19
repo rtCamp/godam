@@ -343,7 +343,7 @@ class RTGODAM_Transcoder_Admin {
 						<a href="<?php echo esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=free-plan-notice&utm_source=plugin&utm_medium=admin-notice&utm_content=dashboard' ); ?>" target="_blank" rel="noopener noreferrer" class="button button-primary">
 							<?php esc_html_e( 'Get your Free Plan', 'godam' ); ?>
 						</a>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_settings#video-settings' ) ); ?>" class="button button-secondary">
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_settings#api-key' ) ); ?>" class="button button-secondary">
 							<?php esc_html_e( 'Activate API Key', 'godam' ); ?>
 						</a>
 					</div>
@@ -455,6 +455,11 @@ class RTGODAM_Transcoder_Admin {
 
 		// Only show to users who can manage options.
 		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// On the Dashboard, the GoDAM widget shows storage and bandwidth alerts itself.
+		if ( \RTGODAM\Inc\Dashboard_Widget::get_instance()->shows_account_alerts() ) {
 			return;
 		}
 
@@ -689,14 +694,9 @@ class RTGODAM_Transcoder_Admin {
 		}
 
 		$settings = get_option( 'rtgodam-settings', array() );
-		$api_key  = \RTGODAM\Inc\Helpers\Api_Key::get_key();
 
-		// If API key is present, we don't show the notice (it's auto-enabled or already handled).
-		if ( ! empty( $api_key ) ) {
-			return;
-		}
-
-		// If posthog_initialized is true, it means the user has already made a choice or it was auto-enabled.
+		// Tracking starts only after an admin answers this notice (or sets the toggle on the Help page).
+		// Once they have, posthog_initialized is true and the notice stays hidden, whether they chose Allow or No thanks.
 		if ( ! empty( $settings['general']['posthog_initialized'] ) ) {
 			return;
 		}
@@ -705,7 +705,7 @@ class RTGODAM_Transcoder_Admin {
 		$optout_url = wp_nonce_url( add_query_arg( 'godam_tracker_optout', 'true' ), 'godam_tracker_action' );
 
 		$notice = sprintf(
-			__( 'Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect anonymous diagnostic data and usage information.', 'godam' )
+			__( 'Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect diagnostic data and usage information.', 'godam' )
 		);
 
 		$policy_url = 'https://posthog.com/privacy';
@@ -725,7 +725,7 @@ class RTGODAM_Transcoder_Admin {
 		printf(
 			wp_kses(
 				/* translators: %s: PostHog privacy policy URL */
-				__( 'We are using PostHog to collect anonymous data. <a href="%s" target="_blank">Learn more</a>. This can be disabled from the settings on the Help page.', 'godam' ),
+				__( 'We use PostHog to collect this data. <a href="%s" target="_blank">Learn more</a>. This can be disabled from the settings on the Help page.', 'godam' ),
 				array(
 					'a' => array(
 						'href'   => array(),
@@ -751,6 +751,11 @@ class RTGODAM_Transcoder_Admin {
 		// Only show on dashboard, media library pages.
 		$screen = get_current_screen();
 		if ( ! $screen || ! in_array( $screen->id, array( 'dashboard', 'upload', 'media' ), true ) ) {
+			return;
+		}
+
+		// On the Dashboard, the GoDAM widget shows the key alert itself.
+		if ( \RTGODAM\Inc\Dashboard_Widget::get_instance()->shows_account_alerts() ) {
 			return;
 		}
 

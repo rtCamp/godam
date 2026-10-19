@@ -150,6 +150,7 @@ class Pages {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_media_library_tour' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+		add_filter( 'admin_body_class', array( $this, 'fold_admin_menu_in_media_editor' ) );
 		// The old slug is no longer a registered menu page, so WordPress' menu
 		// access check (wp-admin/menu.php) wp_die()s before `admin_init` fires.
 		// `admin_page_access_denied` runs at that exact point, so redirect there.
@@ -330,6 +331,29 @@ class Pages {
 			// Remove the WordPress version number.
 			add_filter( 'update_footer', '__return_empty_string', 11 );
 		}
+	}
+
+	/**
+	 * Fold the admin menu when the Media Editor opens with a file.
+	 *
+	 * The editor also folds it from React, but that runs after the page has painted, so the
+	 * menu showed at full width and then collapsed.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $classes Space-separated admin body classes.
+	 *
+	 * @return string
+	 */
+	public function fold_admin_menu_in_media_editor( $classes ) {
+		$screen = get_current_screen();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only check of which file the page opens.
+		if ( $screen && $this->video_editor_page_id === $screen->id && ! empty( $_GET['id'] ) ) {
+			$classes .= ' folded';
+		}
+
+		return $classes;
 	}
 
 	/**
@@ -1495,8 +1519,12 @@ class Pages {
 	 * @return array PostHog configuration array with 'key', 'host', and 'enabled' settings.
 	 */
 	private function get_posthog_config() {
-		$settings        = get_option( 'rtgodam-settings', array() );
-		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : false;
+		$settings = get_option( 'rtgodam-settings', array() );
+		$general  = isset( $settings['general'] ) && is_array( $settings['general'] ) ? $settings['general'] : array();
+
+		// Tracking runs only when it is switched on AND an admin's choice is recorded (the notice's Allow, or the Help
+		// page toggle, set both). A switch with no recorded choice does not count, so nothing but an explicit opt-in starts it.
+		$enable_tracking = (bool) (int) ( $general['enable_posthog_tracking'] ?? 0 ) && ! empty( $general['posthog_initialized'] );
 
 		$config = array(
 			'key'     => 'phc_9P3X3py1SfwrF78SXXkIyL2cHjkRTpvWzqf8RZJDaSk',

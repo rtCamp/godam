@@ -1,0 +1,17 @@
+/**
+ * Self-hosted Titan One (Google Fonts, OFL) — the rounded display face used by
+ * the hotspot Button style's "sticker" variant. Shipped as its own woff2 file
+ * (latin subset, ~10.5KB) rather than a data URI, so the browser fetches it
+ * only when a sticker actually renders — not on every player/image page that
+ * loads `godam-player.css`. `@use`d by `godam-player.scss`, so it is available
+ * to both the frontend player and the editor preview (which import the same
+ * stylesheet). See `webpack.config.js` for the `.woff2` asset rules that emit
+ * the file and rewrite this URL for both the `styles` and `pages` builds.
+ */
+@font-face {
+	font-family: "Titan One";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url(../fonts/titan-one-latin.woff2) format("woff2");
+}

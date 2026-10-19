@@ -521,10 +521,11 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
  *
  * @param string $api_key The api key to verify.
  * @param bool   $save        Whether to save the API key in the site options.
+ * @param int    $timeout     Seconds to wait for Central. Defaults to Api_Key::VERIFY_TIMEOUT.
  *
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
-function rtgodam_verify_api_key( $api_key, $save = false ) {
+function rtgodam_verify_api_key( $api_key, $save = false, $timeout = Api_Key::VERIFY_TIMEOUT ) {
 	if ( empty( $api_key ) ) {
 		return new \WP_Error( 'missing_api_key', __( 'API key is required.', 'godam' ), array( 'status' => 400 ) );
 	}
@@ -568,6 +569,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		'headers' => array(
 			'Content-Type' => 'application/json',
 		),
+		'timeout' => $timeout,
 	);
 
 	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
@@ -586,7 +588,14 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	$status_code = wp_remote_retrieve_response_code( $response );
 	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
-	// Central sends 200 status code with error if API Key is invalid.
+	// Central puts an `error` in its 5xx bodies too ("Service temporarily unavailable",
+	// "Account setup is still in progress"). Those say nothing about the key, so they
+	// must not mark it expired: report a temporary failure and keep the stored status.
+	if ( Api_Key::is_retryable_status( $status_code ) ) {
+		return new \WP_Error( 'verification_error', __( 'Unable to verify API key. Please try again later.', 'godam' ), array( 'status' => 500 ) );
+	}
+
+	// Central answers an invalid or inactive key with an `error` (HTTP 401/403, or 200 on older versions).
 	if ( isset( $body['message']['error'] ) ) {
 		$error_message = $body['message']['error'];
 
@@ -613,18 +622,6 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		// Mark API key as valid and clear any invalid timestamp.
 		rtgodam_set_api_key_status( Api_Key_Status::VALID );
 		rtgodam_clear_api_key_invalid_timestamp();
-
-		// Enable PostHog tracking once API key is activated or plugin is updated with active API key.
-		$settings = get_option( 'rtgodam-settings', array() );
-		if ( $save || empty( $settings['general']['posthog_initialized'] ) ) {
-			$settings['general']['enable_posthog_tracking'] = true;
-			$settings['general']['posthog_initialized']     = true;
-			update_option( 'rtgodam-settings', $settings );
-		} elseif ( ! empty( $settings['general']['posthog_initialized'] ) && ! $settings['general']['enable_posthog_tracking'] && $save ) {
-			// If user previously opted out but is now activating an API key, re-enable tracking.
-			$settings['general']['enable_posthog_tracking'] = true;
-			update_option( 'rtgodam-settings', $settings );
-		}
 
 		if ( $save ) {
 			// Save the API key in the site options only if it is verified.

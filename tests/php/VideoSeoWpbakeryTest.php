@@ -82,6 +82,16 @@ class VideoSeoWpbakeryTest extends TestCase {
 		$this->assertSame( array(), $this->seo->godam_get_video_seo_data_from_wpbakery( $this->synced_shortcode( 7 ) ) );
 	}
 
+	public function test_override_off_with_an_empty_media_title_still_tracks_the_video() {
+		// So filling in the title later re-syncs the page.
+		$this->seo->media[7]['headline'] = '';
+
+		$result = $this->seo->godam_get_video_seo_data_from_wpbakery( '[godam_video id="7" seo_override="0"]', true );
+
+		$this->assertSame( array(), $result['schemas'] );
+		$this->assertSame( array( 7 ), $result['attachments'] );
+	}
+
 	public function test_override_on_uses_the_custom_values_and_media_technical_values() {
 		$content = '[godam_video id="7" seo_override="1" seo_headline="Custom title" seo_description="Custom description."'
 			. ' seo_content_url="https://cdn.example.test/old/master.m3u8" seo_family_friendly="0"]';

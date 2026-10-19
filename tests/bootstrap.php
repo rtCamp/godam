@@ -492,6 +492,39 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
 // Requiring the file runs no WP code.
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-engagement.php';
 
+// Loaded for the Dashboard widget's rules and summary shaping (DashboardWidgetTest).
+// Each file only declares a class, so requiring them runs no WP code.
+require_once dirname( __DIR__ ) . '/inc/classes/enums/class-api-key-status.php';
+require_once dirname( __DIR__ ) . '/inc/classes/class-dashboard-widget.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-dashboard-widget-summary.php';
+
+// Loaded for GodamTabAudioMimeTest: get_mime_type_for_job_type() through reflection on a
+// constructor-less instance, and the static MIME helpers. Requiring the file only declares the class.
+require_once dirname( __DIR__ ) . '/inc/classes/class-media-library-ajax.php';
+
+if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+
+	/**
+	 * Narrow stub for AudioOnlyUploadTypeTest: returns `$GLOBALS['rtgodam_stub']['video_metadata'][ $file ]`
+	 * (an array with 'mime_type', or false; the string 'throw' throws a TypeError the way getID3
+	 * does on some damaged files) and records each path read in
+	 * `$GLOBALS['rtgodam_stub']['video_metadata_reads']`.
+	 *
+	 * @param string $file Path to the file.
+	 * @return array|false
+	 * @throws TypeError When the stubbed value is 'throw'.
+	 */
+	function wp_read_video_metadata( $file ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_stub']['video_metadata_reads'][] = $file;
+
+		if ( 'throw' === ( $GLOBALS['rtgodam_stub']['video_metadata'][ $file ] ?? null ) ) {
+			throw new TypeError( 'Unsupported operand types: string + int' );
+		}
+
+		return $GLOBALS['rtgodam_stub']['video_metadata'][ $file ] ?? false;
+	}
+}
+
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
 require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';
