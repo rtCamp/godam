@@ -886,7 +886,7 @@ class RTGODAM_Transcoder_Handler {
 	 * @param string $job_for           Whether media uploaded through rtmedia plugin or WordPress media.
 	 */
 	public function add_transcoded_files( $file_post_array, $attachment_id, $job_for = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
-		$transcoded_files = false;
+		$transcoded_files = array();
 		global $wpdb;
 
 		do_action( 'rtgodam_before_transcoded_media_store', $attachment_id, $file_post_array );

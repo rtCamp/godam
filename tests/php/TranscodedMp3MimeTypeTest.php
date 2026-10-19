@@ -62,6 +62,20 @@ class TranscodedMp3MimeTypeTest extends TestCase {
 			public $fail_update = false;
 
 			/**
+			 * When true, the SELECT fails the way $wpdb->get_col() does: an empty list and an error.
+			 *
+			 * @var bool
+			 */
+			public $fail_select = false;
+
+			/**
+			 * The last database error, as $wpdb keeps it.
+			 *
+			 * @var string
+			 */
+			public $last_error = '';
+
+			/**
 			 * Number of UPDATE queries run.
 			 *
 			 * @var int
@@ -89,6 +103,10 @@ class TranscodedMp3MimeTypeTest extends TestCase {
 			 * @return string[]
 			 */
 			public function get_col( $prepared ) {
+				if ( $this->fail_select ) {
+					$this->last_error = 'Lost connection to MySQL server during query';
+					return array();
+				}
 				$ids = array();
 				foreach ( $this->rows as $id => $row ) {
 					if ( 'attachment' === $row[0] && $prepared['args'][0] === $row[1] ) {
@@ -178,6 +196,19 @@ class TranscodedMp3MimeTypeTest extends TestCase {
 	}
 
 	/**
+	 * A failed SELECT looks like "no MP3 attachments"; it must not mark the site done.
+	 */
+	public function test_a_failed_select_is_retried() {
+		$GLOBALS['wpdb']->rows        = array( 10 => array( 'attachment', 'audio/mp3' ) );
+		$GLOBALS['wpdb']->fail_select = true;
+
+		$this->assertFalse( Transcoded_Mp3_Mime_Type::maybe_run() );
+
+		$this->assertFalse( get_option( Transcoded_Mp3_Mime_Type::OPTION_KEY ) );
+		$this->assertSame( 0, $GLOBALS['wpdb']->updates );
+	}
+
+	/**
 	 * Once done, it never queries again.
 	 */
 	public function test_it_runs_only_once() {
@@ -205,6 +236,9 @@ class TranscodedMp3MimeTypeTest extends TestCase {
 
 		$this->assertArrayHasKey( '2.4.1', $migrations, 'No migration batch for the release this ships in.' );
 		$this->assertContains( Transcoded_Mp3_Mime_Type::class, $migrations['2.4.1'] );
-		$this->assertSame( '2.4.1', array_key_last( $migrations ), 'Batches must stay ordered oldest to newest.' );
+		$versions = array_keys( $migrations );
+		$ordered  = $versions;
+		usort( $ordered, 'version_compare' );
+		$this->assertSame( $ordered, $versions, 'Batches must stay ordered oldest to newest.' );
 	}
 }

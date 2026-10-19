@@ -51,16 +51,21 @@ class Transcoded_Mp3_Mime_Type {
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-time migration.
-		$ids = $wpdb->get_col(
+		$ids = $wpdb->get_col( // godam-coverage-ignore -- maybe_run(): the runner calls this once per site (switch_to_blog on multisite) to fix that site's own attachments; switching to a media-centralising site would fix another site's table instead.
 			$wpdb->prepare(
 				"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'attachment' AND post_mime_type = %s",
 				'audio/mp3'
 			)
 		);
 
+		// A failed SELECT returns an empty list; retry later rather than mark the site done.
+		if ( '' !== $wpdb->last_error ) {
+			return false;
+		}
+
 		if ( ! empty( $ids ) ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-time migration; caches are cleared below.
-			$updated = $wpdb->query(
+			$updated = $wpdb->query( // godam-coverage-ignore -- maybe_run(): same per-site UPDATE of this site's own attachments as the SELECT above.
 				$wpdb->prepare(
 					"UPDATE {$wpdb->posts} SET post_mime_type = %s WHERE post_type = 'attachment' AND post_mime_type = %s",
 					'audio/mpeg',
