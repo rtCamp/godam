@@ -186,6 +186,20 @@ import { stripHtmlTags, isFilenameLikeTitle, appendTimezoneOffsetToUTC } from '.
 					$removes
 						.off( 'click.godam-vs' )
 						.on( 'click.godam-vs', removeVideoSelector );
+
+					// An element's edit panel was rendered: check the title and fill
+					// the SEO fields. Deferred so WPBakery finishes setting up the
+					// params (dependencies, select2) first.
+					$( node )
+						.find( '.wpb_vc_param_value[name="seo_override"]' )
+						.add( $( node ).filter( '.wpb_vc_param_value[name="seo_override"]' ) )
+						.each( function() {
+							const $scope = getSeoScope( $( this ) );
+							setTimeout( () => {
+								updateFilenameTitleWarning( $scope );
+								syncSeoPanel( $scope );
+							}, 0 );
+						} );
 				}
 			}
 		} );
@@ -240,14 +254,9 @@ import { stripHtmlTags, isFilenameLikeTitle, appendTimezoneOffsetToUTC } from '.
 			updateFilenameTitleWarning( getSeoScope( $( this ) ) );
 		} );
 
-		// Check the title and fill the SEO fields whenever an element's edit panel opens.
-		$( document ).on( 'vc.reload', function() {
-			$( '.wpb_vc_param_value[name="seo_override"]' ).each( function() {
-				const $scope = getSeoScope( $( this ) );
-				updateFilenameTitleWarning( $scope );
-				syncSeoPanel( $scope );
-			} );
-		} );
+		// The panel-open sync runs from setupParamGroupObserver() when the SEO
+		// params are added to the DOM. WPBakery never triggers `vc.reload`, so
+		// that can't be relied on.
 
 		isSeoPrefillListenerBound = true;
 	}
@@ -267,6 +276,17 @@ import { stripHtmlTags, isFilenameLikeTitle, appendTimezoneOffsetToUTC } from '.
 	 * Make a param read-only (or editable again) without disabling it, so
 	 * WPBakery still saves its value.
 	 *
+	 * Dropdowns: WPBakery 9 hides the native <select> behind its select2
+	 * widget (`wpbselect2`), so the lock goes on the widget: a CSS rule on
+	 * the wrapper class blocks clicks (it also covers a widget created after
+	 * this runs), `select2:opening` is cancelled for keyboard access, and the
+	 * widget's focusable box is taken out of the tab order. The hidden
+	 * <select> itself is never touched: select2 copies its tabindex when it
+	 * is created and re-applies it whenever the <select>'s attributes change,
+	 * which would leave the dropdown out of the tab order after unlocking.
+	 * A plain <select> (older WPBakery) is locked directly; its original
+	 * tabindex is restored when it becomes editable.
+	 *
 	 * @param {Object}  $field   - The param's value field (jQuery object).
 	 * @param {boolean} readOnly - Whether the field should be read-only.
 	 */
@@ -278,9 +298,38 @@ import { stripHtmlTags, isFilenameLikeTitle, appendTimezoneOffsetToUTC } from '.
 		const $wrapper = getParamWrapper( $field );
 
 		if ( $field.is( 'select' ) ) {
-			$field.css( 'pointer-events', readOnly ? 'none' : '' );
-			$field.attr( 'tabindex', readOnly ? '-1' : null );
-			$field.attr( 'aria-readonly', readOnly ? 'true' : null );
+			ensureReadOnlyStyles();
+
+			$field.data( 'godamSeoReadOnly', readOnly );
+			$field
+				.off( 'select2:opening.godam-seo' )
+				.on( 'select2:opening.godam-seo', function( event ) {
+					if ( $( this ).data( 'godamSeoReadOnly' ) ) {
+						event.preventDefault();
+					}
+				} );
+
+			// `wpb-form-select` dropdowns become select2 widgets, possibly after
+			// this runs.
+			if ( $field.hasClass( 'wpb-form-select' ) || $field.data( 'select2' ) ) {
+				const select2 = $field.data( 'select2' );
+				const $select2 = $field.next( '.select2-container' );
+
+				if ( $select2.length ) {
+					// select2's own tab position, or the default when it has none.
+					const ownTabindex = select2?.selection?._tabindex;
+					const editableTabindex = undefined === ownTabindex || null === ownTabindex || '-1' === String( ownTabindex ) ? '0' : ownTabindex;
+					$select2.find( '.select2-selection' ).attr( 'tabindex', readOnly ? '-1' : editableTabindex );
+					$select2.attr( 'aria-readonly', readOnly ? 'true' : null );
+				}
+			} else {
+				if ( undefined === $field.data( 'godamSeoTabindex' ) ) {
+					$field.data( 'godamSeoTabindex', $field.attr( 'tabindex' ) ?? null );
+				}
+				$field.attr( 'aria-readonly', readOnly ? 'true' : null );
+				$field.css( 'pointer-events', readOnly ? 'none' : '' );
+				$field.attr( 'tabindex', readOnly ? '-1' : $field.data( 'godamSeoTabindex' ) );
+			}
 		} else {
 			$field.prop( 'readonly', readOnly );
 		}
@@ -288,6 +337,20 @@ import { stripHtmlTags, isFilenameLikeTitle, appendTimezoneOffsetToUTC } from '.
 		$wrapper.toggleClass( 'godam-wpb-seo-readonly', readOnly );
 		$field.css( 'background-color', readOnly ? '#f0f0f1' : '' );
 		$wrapper.css( 'opacity', readOnly ? '0.75' : '' );
+	}
+
+	/**
+	 * Add the stylesheet that blocks clicks on read-only select2 dropdowns.
+	 * Added once per page.
+	 */
+	function ensureReadOnlyStyles() {
+		if ( document.getElementById( 'godam-wpb-seo-readonly-styles' ) ) {
+			return;
+		}
+
+		$( '<style id="godam-wpb-seo-readonly-styles"></style>' )
+			.text( '.godam-wpb-seo-readonly .select2-container{pointer-events:none;}.godam-wpb-seo-readonly .select2-container .select2-selection{background-color:#f0f0f1;}' )
+			.appendTo( document.head );
 	}
 
 	/**
@@ -411,6 +474,10 @@ import { stripHtmlTags, isFilenameLikeTitle, appendTimezoneOffsetToUTC } from '.
 
 			const values = getSeoParamValuesFromAttachment( attachmentData );
 			const overrideNow = '1' === String( $overrideField.val() );
+
+			// Apply the lock again: when the panel has just opened, WPBakery may
+			// only now have created the select2 widget for Family Friendly.
+			SEO_OVERRIDABLE_FIELDS.forEach( ( name ) => setParamReadOnly( getParamField( $scope, name ), ! overrideNow ) );
 
 			SEO_READONLY_FIELDS.forEach( ( name ) => setParamValue( getParamField( $scope, name ), values[ name ] ) );
 

@@ -141,16 +141,34 @@ function stripFileExtension( name ) {
 }
 
 /**
+ * Normalize a title or file name for comparison: lower case, and runs of
+ * spaces, hyphens and underscores collapsed to "-".
+ *
+ * WordPress builds the title from the uploaded name with its spaces but saves
+ * the file with hyphens, e.g. title "Screen Recording 2024-01-15 at 10.30.45"
+ * and file "Screen-Recording-2024-01-15-at-10.30.45.mov"; both normalize to
+ * the same string.
+ *
+ * @param {string} value - Title or file name.
+ * @return {string} Normalized value.
+ */
+function normalizeForFileNameComparison( value ) {
+	return String( value || '' ).trim().toLowerCase()
+		.replace( /[\s_-]+/g, '-' )
+		.replace( /^-+|-+$/g, '' );
+}
+
+/**
  * Whether a video title looks like a raw file name rather than a real title.
  *
  * A single hyphen or underscore is not enough on its own: real titles such as
- * "Spider-Man", "COVID-19", "e-commerce", "Add-ons" or "Q3_review" have one.
- * A title is only flagged when it has no spaces and shows a stronger sign of
- * being a file name:
- * - two or more hyphens/underscores (e.g. "product-demo_v2", "my-video-final");
- * - a camera-style name (e.g. "IMG_2041", "DSC-0001", "VID_20240115");
- * - a video file extension (e.g. "clip.mp4");
- * or, with or without spaces, when it matches the video's file name.
+ * "Spider-Man", "COVID-19", "e-commerce", "Add-ons", "Q3_review" or
+ * "Paris-2024" have one. A title is flagged when it matches the video's file
+ * name (ignoring case, the extension, and the difference between spaces,
+ * hyphens and underscores). A title with no spaces is also flagged when it
+ * has two or more hyphens/underscores ("product-demo_v2"), is a camera or
+ * phone file name ("IMG_2041", "DSC-0001", "PXL_20240115"), or ends in a
+ * video file extension ("clip.mp4").
  *
  * @param {string} title      - Video title / SEO headline.
  * @param {string} [fileName] - The video's file name or URL, if known.
@@ -165,10 +183,11 @@ function isFilenameLikeTitle( title, fileName = '' ) {
 
 	const baseName = getFileNameFromUrl( fileName );
 	if ( baseName ) {
-		const normalizedTitle = trimmed.toLowerCase();
-		const normalizedFile = baseName.trim().toLowerCase();
+		const normalizedTitle = normalizeForFileNameComparison( trimmed );
+		const normalizedFile = normalizeForFileNameComparison( baseName );
+		const normalizedFileNoExtension = normalizeForFileNameComparison( stripFileExtension( baseName ) );
 
-		if ( normalizedTitle === normalizedFile || normalizedTitle === stripFileExtension( normalizedFile ) ) {
+		if ( normalizedTitle && ( normalizedTitle === normalizedFile || normalizedTitle === normalizedFileNoExtension ) ) {
 			return true;
 		}
 	}
@@ -182,8 +201,8 @@ function isFilenameLikeTitle( title, fileName = '' ) {
 		return true;
 	}
 
-	// Camera / phone naming, e.g. "IMG_2041", "DSC-0001", "VID_20240115".
-	if ( /^[a-z]{2,5}[-_]\d{3,}$/i.test( trimmed ) ) {
+	// Camera / phone naming, e.g. "IMG_2041", "DSC-0001", "VID_20240115", "PXL_20240115".
+	if ( /^(img|vid|dsc|dscn|mvi|pxl|mov|dji|gopr|gp)[-_]?\d{3,}$/i.test( trimmed ) ) {
 		return true;
 	}
 

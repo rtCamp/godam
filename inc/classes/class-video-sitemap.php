@@ -14,7 +14,7 @@
  * those is active, in the WordPress core sitemap index (/wp-sitemap.xml).
  *
  * @package GoDAM
- * @since   2.4.0
+ * @since   2.4.1
  */
 
 namespace RTGODAM\Inc;
@@ -80,7 +80,7 @@ class Video_Sitemap {
 	 */
 	protected function setup_hooks() {
 		add_action( 'godam_video_seo_schema_saved', array( $this, 'invalidate_cache' ) );
-		add_action( 'godam_video_seo_schema_cleared', array( $this, 'invalidate_cache' ) );
+		add_action( 'godam_video_seo_schema_cleared', array( $this, 'maybe_invalidate_on_cleared' ), 10, 2 );
 		add_action( 'transition_post_status', array( $this, 'maybe_invalidate_on_status_change' ), 10, 3 );
 		add_action( 'before_delete_post', array( $this, 'maybe_invalidate_on_delete' ) );
 		add_action( 'edit_attachment', array( $this, 'maybe_invalidate_on_attachment_edit' ) );
@@ -95,11 +95,34 @@ class Video_Sitemap {
 		add_action( 'add_option_rtgodam-settings', array( $this, 'maybe_invalidate_on_settings_add' ), 10, 2 );
 		add_action( 'update_option_rtgodam-settings', array( $this, 'maybe_invalidate_on_settings_update' ), 10, 2 );
 
+		// The plugin loads while godam.php is included, before the theme and any
+		// plugin loaded after GoDAM have added their filters. Decide whether the
+		// sitemap is on at after_setup_theme, so `godam_video_sitemap_enabled`
+		// works from a theme's functions.php or any plugin, and still before
+		// `init` / `wp_sitemaps_init`.
+		if ( did_action( 'after_setup_theme' ) ) {
+			$this->register_sitemap_hooks();
+		} else {
+			add_action( 'after_setup_theme', array( $this, 'register_sitemap_hooks' ), 20 );
+		}
+	}
+
+	/**
+	 * Register the hooks that serve and list the sitemap, when it's enabled.
+	 *
+	 * @return void
+	 */
+	public function register_sitemap_hooks() {
 		if ( ! self::is_enabled() ) {
 			return;
 		}
 
 		add_filter( 'query_vars', array( $this, 'add_query_var' ) );
+
+		// Also list the sitemap in robots.txt, so search engines find it on
+		// sites whose SEO plugin GoDAM doesn't integrate with, or with core
+		// sitemaps turned off.
+		add_filter( 'robots_txt', array( $this, 'add_robots_txt_sitemap' ), 20, 2 ); // phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.robots_txt -- core builds robots.txt on each request; nothing to flush outside VIP.
 
 		// Priority 1: before All in One SEO (parse_request), Rank Math
 		// (parse_query), Yoast (pre_get_posts) and core (template_redirect)
@@ -127,7 +150,7 @@ class Video_Sitemap {
 		/**
 		 * Filters whether the GoDAM video sitemap is enabled.
 		 *
-		 * @since 2.4.0
+		 * @since 2.4.1
 		 *
 		 * @param bool $enabled Whether the sitemap is enabled in settings.
 		 */
@@ -143,7 +166,7 @@ class Video_Sitemap {
 		/**
 		 * Filters the number of pages listed per video sitemap file.
 		 *
-		 * @since 2.4.0
+		 * @since 2.4.1
 		 *
 		 * @param int $entries Entries per sitemap page. Default 1000.
 		 */
@@ -380,7 +403,7 @@ class Video_Sitemap {
 			 *
 			 * Return an empty value to drop the page from the sitemap.
 			 *
-			 * @since 2.4.0
+			 * @since 2.4.1
 			 *
 			 * @param array $entry   Entry with 'loc', 'lastmod' and 'videos'.
 			 * @param int   $post_id Host post ID.
@@ -585,7 +608,7 @@ class Video_Sitemap {
 		/**
 		 * Filters the post types whose pages may appear in the video sitemap.
 		 *
-		 * @since 2.4.0
+		 * @since 2.4.1
 		 *
 		 * @param string[] $post_types Public post types, minus attachment.
 		 */
@@ -630,7 +653,15 @@ class Video_Sitemap {
 			)
 		);
 
-		return array_map( 'intval', $query->posts );
+		$post_ids = array_map( 'intval', $query->posts );
+
+		// 'fields' => 'ids' skips priming the post and meta caches; do it in one
+		// go so building the page doesn't run per-post queries.
+		if ( ! empty( $post_ids ) && function_exists( '_prime_post_caches' ) ) {
+			_prime_post_caches( $post_ids, false, true );
+		}
+
+		return $post_ids;
 	}
 
 	/**
@@ -727,7 +758,7 @@ class Video_Sitemap {
 		/**
 		 * Filters whether a page is left out of the GoDAM video sitemap.
 		 *
-		 * @since 2.4.0
+		 * @since 2.4.1
 		 *
 		 * @param bool $excluded Whether the page is excluded (true when noindexed).
 		 * @param int  $post_id  Host post ID.
@@ -962,13 +993,72 @@ class Video_Sitemap {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 2.4.0
+		 * @since 2.4.1
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$in_use = metadata_exists( 'post', (int) $attachment_id, Seo::ATTACHMENT_POSTS_MAP_META_KEY );
 		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return $in_use;
+	}
+
+	/**
+	 * Invalidate when a post's video SEO is cleared, but only if it had any.
+	 *
+	 * `godam_video_seo_schema_cleared` fires on every save of a post with no
+	 * GoDAM video (pages, products, orders…); those don't affect the sitemap.
+	 *
+	 * @param int  $post_id    Post ID.
+	 * @param bool $had_schema Whether the post had cached video SEO before. Defaults
+	 *                         to true for callers that don't pass it.
+	 * @return void
+	 */
+	public function maybe_invalidate_on_cleared( $post_id, $had_schema = true ) {
+		unset( $post_id );
+
+		if ( $had_schema ) {
+			$this->invalidate_cache();
+		}
+	}
+
+	/**
+	 * Add a `Sitemap:` line for the video sitemap to robots.txt.
+	 *
+	 * @param string $output    robots.txt content.
+	 * @param bool   $is_public Whether the site is public (Settings > Reading).
+	 * @return string
+	 */
+	public function add_robots_txt_sitemap( $output, $is_public ) {
+		if ( ! $is_public ) {
+			return $output;
+		}
+
+		$line = 'Sitemap: ' . esc_url_raw( self::get_sitemap_url( 1 ) );
+
+		if ( false !== strpos( (string) $output, $line ) ) {
+			return $output;
+		}
+
+		return rtrim( (string) $output ) . "\n" . $line . "\n";
+	}
+
+	/**
+	 * Whether WordPress core sitemaps (/wp-sitemap.xml) are enabled.
+	 *
+	 * They're off when "Discourage search engines" is set, or when a plugin
+	 * filters `wp_sitemaps_enabled`.
+	 *
+	 * @return bool
+	 */
+	public static function are_core_sitemaps_enabled() {
+		if ( function_exists( 'wp_sitemaps_get_server' ) ) {
+			$server = wp_sitemaps_get_server();
+			if ( is_object( $server ) && method_exists( $server, 'sitemaps_enabled' ) ) {
+				return (bool) $server->sitemaps_enabled();
+			}
+		}
+
+		return false;
 	}
 
 	/**

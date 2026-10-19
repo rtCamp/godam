@@ -25,8 +25,24 @@ describe( 'isFilenameLikeTitle', () => {
 		'Add-ons',
 		'Q3_review',
 		'Self-hosting',
+		'Paris-2024',
+		'Euro-2024',
+		'CES-2025',
 	] )( 'does not flag the real one-separator title "%s"', ( title ) => {
 		expect( isFilenameLikeTitle( title ) ).toBe( false );
+	} );
+
+	it( 'flags a title WordPress made from the uploaded file name', () => {
+		expect(
+			isFilenameLikeTitle( 'Screen Recording 2024-01-15 at 10.30.45', 'https://example.test/uploads/Screen-Recording-2024-01-15-at-10.30.45.mov' ),
+		).toBe( true );
+		expect( isFilenameLikeTitle( 'my video final', 'my_video_final.mp4' ) ).toBe( true );
+	} );
+
+	it( 'flags camera-style names', () => {
+		[ 'PXL_20240115', 'MVI_0042', 'DJI_0001', 'GOPR0123' ].forEach( ( title ) => {
+			expect( isFilenameLikeTitle( title ) ).toBe( true );
+		} );
 	} );
 
 	it( 'flags a one-separator title when it is the file name', () => {
