@@ -1,0 +1,90 @@
+/**
+ * Internal dependencies
+ */
+import { playsMilestone, roundWatchTime, scaleBars } from './utils';
+
+describe( 'scaleBars', () => {
+	it( 'scales each day against the busiest one', () => {
+		expect( scaleBars( [ 0, 25, 50 ] ) ).toEqual( [ 0, 0.5, 1 ] );
+	} );
+
+	it( 'returns zeros for a month with no plays', () => {
+		expect( scaleBars( [ 0, 0, 0 ] ) ).toEqual( [ 0, 0, 0 ] );
+	} );
+
+	it( 'handles an empty series and ignores negative values', () => {
+		expect( scaleBars( [] ) ).toEqual( [] );
+		expect( scaleBars( [ -5, 10 ] ) ).toEqual( [ 0, 1 ] );
+	} );
+} );
+
+describe( 'playsMilestone', () => {
+	it( 'is 0 below the first milestone', () => {
+		expect( playsMilestone( 0 ) ).toBe( 0 );
+		expect( playsMilestone( 99 ) ).toBe( 0 );
+	} );
+
+	it( 'counts a milestone once it is reached', () => {
+		expect( playsMilestone( 100 ) ).toBe( 100 );
+	} );
+
+	it( 'rounds down to the largest milestone passed', () => {
+		expect( playsMilestone( 3412 ) ).toBe( 2500 );
+		expect( playsMilestone( 9999 ) ).toBe( 5000 );
+	} );
+
+	it( 'tops out at the last milestone', () => {
+		expect( playsMilestone( 2000000 ) ).toBe( 100000 );
+	} );
+} );
+
+describe( 'roundWatchTime', () => {
+	it( 'uses whole hours from ten hours up', () => {
+		expect( roundWatchTime( 187560 ) ).toEqual( { amount: 52, unit: 'hours' } );
+	} );
+
+	it( 'keeps one decimal between one and ten hours', () => {
+		expect( roundWatchTime( 9048 ) ).toEqual( { amount: 2.5, unit: 'hours' } );
+		expect( roundWatchTime( 3600 ) ).toEqual( { amount: 1, unit: 'hours' } );
+	} );
+
+	it( 'uses whole minutes under an hour, and at least one for any watch time', () => {
+		expect( roundWatchTime( 1800 ) ).toEqual( { amount: 30, unit: 'minutes' } );
+		expect( roundWatchTime( 20 ) ).toEqual( { amount: 1, unit: 'minutes' } );
+	} );
+
+	it( 'reads no watch time as 0 minutes, not 1', () => {
+		expect( roundWatchTime( 0 ) ).toEqual( { amount: 0, unit: 'minutes' } );
+		expect( roundWatchTime( -5 ) ).toEqual( { amount: 0, unit: 'minutes' } );
+	} );
+
+	it( 'reads a sub-minute time in seconds when allowSeconds is set', () => {
+		expect( roundWatchTime( 1, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'seconds' } );
+		expect( roundWatchTime( 15, { allowSeconds: true } ) ).toEqual( { amount: 15, unit: 'seconds' } );
+		expect( roundWatchTime( 32, { allowSeconds: true } ) ).toEqual( { amount: 32, unit: 'seconds' } );
+	} );
+
+	it( 'truncates sub-minute seconds so it never overstates', () => {
+		expect( roundWatchTime( 32.6, { allowSeconds: true } ) ).toEqual( { amount: 32, unit: 'seconds' } );
+		expect( roundWatchTime( 59.9, { allowSeconds: true } ) ).toEqual( { amount: 59, unit: 'seconds' } );
+		expect( roundWatchTime( 1.9, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'seconds' } );
+	} );
+
+	it( 'floors a minute or more to minutes with allowSeconds, so it never overstates', () => {
+		expect( roundWatchTime( 60, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'minutes' } );
+		expect( roundWatchTime( 90, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'minutes' } );
+		expect( roundWatchTime( 150, { allowSeconds: true } ) ).toEqual( { amount: 2, unit: 'minutes' } );
+		expect( roundWatchTime( 1800, { allowSeconds: true } ) ).toEqual( { amount: 30, unit: 'minutes' } );
+		expect( roundWatchTime( 3600, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'hours' } );
+	} );
+
+	it( 'rounds the aggregate headline minutes to the nearest (no allowSeconds)', () => {
+		expect( roundWatchTime( 90 ) ).toEqual( { amount: 2, unit: 'minutes' } );
+		expect( roundWatchTime( 150 ) ).toEqual( { amount: 3, unit: 'minutes' } );
+	} );
+
+	it( 'reads any positive sub-minute time as at least 1 second, and zero stays 0 minutes', () => {
+		expect( roundWatchTime( 0.4, { allowSeconds: true } ) ).toEqual( { amount: 1, unit: 'seconds' } );
+		expect( roundWatchTime( 0, { allowSeconds: true } ) ).toEqual( { amount: 0, unit: 'minutes' } );
+	} );
+} );

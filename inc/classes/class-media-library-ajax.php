@@ -40,6 +40,8 @@ class Media_Library_Ajax {
 			add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 		}
 
+		// Before the attachment exists, so its type, and the transcoding request sent on add_attachment, say audio.
+		add_filter( 'wp_handle_upload', array( $this, 'store_audio_only_upload_as_audio' ), 10, 1 );
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
 		add_action( 'add_attachment', array( $this, 'upload_media_to_frappe_backend' ), 10, 1 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
@@ -192,6 +194,139 @@ class Media_Library_Ajax {
 	}
 
 	/**
+	 * Video container types that form recorders save audio in, mapped to the audio type the
+	 * GoDAM tab reports for an audio job stored in them, and that an audio-only upload in
+	 * them is stored as (see store_audio_only_upload_as_audio()).
+	 *
+	 * @since 2.4.0
+	 *
+	 * @return array<string, string> Container MIME type => audio MIME type.
+	 */
+	public static function get_audio_container_mimes() {
+		return array(
+			'video/webm' => 'audio/webm',
+			'video/mp4'  => 'audio/mp4',
+		);
+	}
+
+	/**
+	 * Whether an attachment reused for a GoDAM-tab pick should take the audio type the tab now
+	 * reports for it.
+	 *
+	 * The picked type comes from the browser and the create-media-entry route only needs
+	 * `upload_files`, so the change is limited to the exact pairs in
+	 * get_audio_container_mimes() (video/webm to audio/webm, video/mp4 to audio/mp4) and to a
+	 * user who may edit the attachment.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param string $current_mime MIME type the attachment has now.
+	 * @param string $picked_mime  MIME type of the picked GoDAM-tab item.
+	 * @param bool   $can_edit     Whether the current user may edit the attachment.
+	 * @return bool True when the attachment's MIME type should become $picked_mime.
+	 */
+	public static function should_correct_audio_mime( $current_mime, $picked_mime, $can_edit ) {
+		if ( ! $can_edit ) {
+			return false;
+		}
+
+		$audio_containers = self::get_audio_container_mimes();
+
+		return isset( $audio_containers[ $current_mime ] ) && $audio_containers[ $current_mime ] === $picked_mime;
+	}
+
+	/**
+	 * Store an uploaded WebM or MP4 file that holds only audio as audio/webm or audio/mp4.
+	 *
+	 * WordPress types an upload by its extension, so every .webm is video/webm and every .mp4
+	 * is video/mp4, even a voice recording with no picture. Typed as video, such a file is
+	 * listed under the Media Library's Video filter, left out of the GoDAM Audio block's
+	 * library (an MP4 is refused by the block outright), opened in the video editor, and sent
+	 * to GoDAM Central as a video job. This reads the file the way WordPress itself does when
+	 * it builds the attachment metadata, and switches the type when the file has no video.
+	 *
+	 * Hooked to `wp_handle_upload`, which media uploads, sideloads and REST uploads all pass
+	 * through before the attachment is created, after WordPress has checked the file type.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param array $upload The uploaded file: 'file' (path), 'url' and 'type' (MIME type).
+	 * @return array The upload, with 'type' switched to audio when the file holds only audio.
+	 */
+	public function store_audio_only_upload_as_audio( $upload ) {
+		if ( ! is_array( $upload ) || ! empty( $upload['error'] ) || empty( $upload['file'] ) || empty( $upload['type'] ) ) {
+			return $upload;
+		}
+
+		// Only the container types; reading every upload would slow down image uploads for nothing.
+		if ( ! isset( self::get_audio_container_mimes()[ $upload['type'] ] ) ) {
+			return $upload;
+		}
+
+		// Only for someone who can add media, or WP-CLI. Visitor uploads through forms never become
+		// attachments, and reading them would let anyone make the site parse a file.
+		if ( ! ( ( defined( 'WP_CLI' ) && WP_CLI ) || current_user_can( 'upload_files' ) ) ) {
+			return $upload;
+		}
+
+		$audio_type = self::get_audio_type_for_upload( $upload['type'], self::read_media_mime_type( $upload['file'] ) );
+		if ( '' !== $audio_type ) {
+			$upload['type'] = $audio_type;
+		}
+
+		return $upload;
+	}
+
+	/**
+	 * The audio type an upload should be stored as, given the type WordPress gave it and the
+	 * type read from the file's content.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param string $type          MIME type WordPress gave the upload (from its extension).
+	 * @param string $content_mime  MIME type read from the file's content, or '' if unread.
+	 * @return string audio/webm or audio/mp4 for an audio-only WebM or MP4, otherwise ''.
+	 */
+	public static function get_audio_type_for_upload( $type, $content_mime ) {
+		$audio_containers = self::get_audio_container_mimes();
+
+		if ( ! isset( $audio_containers[ $type ] ) || 0 !== strpos( (string) $content_mime, 'audio/' ) ) {
+			return '';
+		}
+
+		return $audio_containers[ $type ];
+	}
+
+	/**
+	 * The MIME type WordPress reads from a media file's content, the same reading
+	 * wp_generate_attachment_metadata() stores as the attachment's `mime_type`.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param string $file Absolute path to the file.
+	 * @return string The MIME type, or '' when the file cannot be read.
+	 */
+	private static function read_media_mime_type( $file ) {
+		if ( ! is_readable( $file ) ) {
+			return '';
+		}
+
+		// wp_read_video_metadata() lives in an admin include that front-end and REST uploads may not have loaded.
+		if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/media.php';
+		}
+
+		// getID3 can throw an Error (not only an Exception) on a damaged file; keep the upload's type then.
+		try {
+			$metadata = wp_read_video_metadata( $file );
+		} catch ( \Throwable $e ) {
+			return '';
+		}
+
+		return is_array( $metadata ) && ! empty( $metadata['mime_type'] ) ? (string) $metadata['mime_type'] : '';
+	}
+
+	/**
 	 * Get appropriate MIME type based on job type.
 	 *
 	 * @param string $job_type  Job type from GoDAM API.
@@ -204,7 +339,21 @@ class Media_Library_Ajax {
 			case 'stream':
 				return 'application/dash+xml';
 			case 'audio':
-				return ! empty( $mime_type ) ? $mime_type : 'audio/mpeg';
+				if ( empty( $mime_type ) ) {
+					return 'audio/mpeg';
+				}
+
+				/*
+				 * Form recorders save audio in a WebM (Chrome) or MP4 (Safari) container and
+				 * register it with Central under the type WordPress guesses from the extension,
+				 * video/webm or video/mp4. Central processes it as audio, so report it as audio:
+				 * the GoDAM Audio block rejects a video MIME type on select, and the attachment
+				 * created from this item keeps this MIME type, which decides whether WordPress
+				 * files it under audio or video.
+				 */
+				$audio_containers = self::get_audio_container_mimes();
+
+				return $audio_containers[ $mime_type ] ?? $mime_type;
 			case 'image':
 				return ! empty( $mime_type ) ? $mime_type : 'image/jpeg';
 			case 'pdf':

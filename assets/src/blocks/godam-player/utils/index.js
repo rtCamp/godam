@@ -165,7 +165,11 @@ function normalizeForFileNameComparison( value ) {
  * "Spider-Man", "COVID-19", "e-commerce", "Add-ons", "Q3_review" or
  * "Paris-2024" have one. A title is flagged when it matches the video's file
  * name (ignoring case, the extension, and the difference between spaces,
- * hyphens and underscores). A title with no spaces is also flagged when it
+ * hyphens and underscores) *and* also looks machine-made: no spaces, or a
+ * date or time in it ("Screen Recording 2024-01-15 at 10.30.45"). WordPress
+ * builds the title from the uploaded file name, so a well-named upload
+ * ("Product Demo.mp4" → "Product Demo") always matches its file and must
+ * not be flagged for that alone. A title with no spaces is also flagged when it
  * has two or more hyphens/underscores ("product-demo_v2"), is a camera or
  * phone file name ("IMG_2041", "DSC-0001", "PXL_20240115"), or ends in a
  * video file extension ("clip.mp4").
@@ -187,7 +191,9 @@ function isFilenameLikeTitle( title, fileName = '' ) {
 		const normalizedFile = normalizeForFileNameComparison( baseName );
 		const normalizedFileNoExtension = normalizeForFileNameComparison( stripFileExtension( baseName ) );
 
-		if ( normalizedTitle && ( normalizedTitle === normalizedFile || normalizedTitle === normalizedFileNoExtension ) ) {
+		const looksGenerated = ! /\s/.test( trimmed ) || /\d{4}-\d{2}-\d{2}|\d{1,2}\.\d{2}\.\d{2}/.test( trimmed );
+
+		if ( looksGenerated && normalizedTitle && ( normalizedTitle === normalizedFile || normalizedTitle === normalizedFileNoExtension ) ) {
 			return true;
 		}
 	}

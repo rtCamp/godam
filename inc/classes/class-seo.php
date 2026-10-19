@@ -27,24 +27,53 @@ class Seo {
 	/**
 	 * Maximum length of a fallback description (transcript or page excerpt).
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 */
 	const DESCRIPTION_MAX_LENGTH = 160;
 
 	/**
 	 * Seconds before a failed transcript fetch is retried.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 */
 	const TRANSCRIPT_RETRY_AFTER = HOUR_IN_SECONDS;
 
 	/**
-	 * Post meta marking that a page with pre-2.4.1 cached video SEO has been
+	 * Post meta marking that a page with video SEO cached by an older GoDAM version has been
 	 * queued for a one-time re-save (see {@see Seo::maybe_queue_legacy_resave()}).
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 */
 	const LEGACY_RESAVE_META_KEY = '_godam_seo_legacy_resave';
+
+	/**
+	 * Option holding the IDs of pages waiting for that re-save.
+	 *
+	 * @since n.e.x.t
+	 */
+	const LEGACY_RESAVE_QUEUE_OPTION = 'godam_video_seo_resave_queue';
+
+	/**
+	 * WP-Cron hook that works through the re-save queue.
+	 *
+	 * @since n.e.x.t
+	 */
+	const LEGACY_RESAVE_CRON_HOOK = 'godam_video_seo_resave_batch';
+
+	/**
+	 * Pages re-saved per WP-Cron run; the rest wait for the next run.
+	 *
+	 * @since n.e.x.t
+	 */
+	const LEGACY_RESAVE_BATCH_SIZE = 10;
+
+	/**
+	 * Page IDs queued during this request, written to the queue option once
+	 * at shutdown.
+	 *
+	 * @var int[]
+	 */
+	private $pending_legacy_resaves = array();
 
 	/**
 	 * Content URLs already emitted by the cached wp_head schema output.
@@ -118,9 +147,10 @@ class Seo {
 		add_action( 'edit_attachment', array( $this, 'schedule_seo_sync_for_attachment' ) );
 		add_action( 'godam_sync_attachment_seo', array( $this, 'sync_seo_for_attachment_posts' ) );
 
-		// One-time background re-save of pages whose cached video SEO predates
-		// 2.4.1 and can't be resolved at output time (see maybe_queue_legacy_resave()).
-		add_action( 'godam_video_seo_resave_post', array( $this, 'resave_post_video_seo' ) );
+		// One-time background re-save of pages whose cached video SEO was saved
+		// by an older version and can't be resolved at output time (see
+		// maybe_queue_legacy_resave()).
+		add_action( self::LEGACY_RESAVE_CRON_HOOK, array( $this, 'process_legacy_resave_queue' ) );
 	}
 
 	/**
@@ -261,7 +291,7 @@ class Seo {
 			 * Fired after video SEO schema is cleared from a post.
 			 *
 			 * @since 1.10.0
-			 * @since 2.4.1 Added `$had_schema`.
+			 * @since n.e.x.t Added `$had_schema`.
 			 *
 			 * @param int  $post_ID    The post ID.
 			 * @param bool $had_schema Whether the post had cached video SEO before
@@ -349,7 +379,7 @@ class Seo {
 	 * Get SEO data from a media library attachment.
 	 *
 	 * @since 1.7.0
-	 * @since 2.4.1 contentUrl is the HLS stream (or original file), never the
+	 * @since n.e.x.t contentUrl is the HLS stream (or original file), never the
 	 *              DASH manifest; adds embedUrl; falls back to the transcript
 	 *              for an empty description. Added `$allow_remote`.
 	 *
@@ -433,7 +463,7 @@ class Seo {
 	 * prefers the HLS stream and falls back to the original uploaded file.
 	 * `rtgodam_transcoded_url` (the DASH manifest) is deliberately never used.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @return string The HLS URL, the original file URL, or '' when neither exists.
@@ -461,7 +491,7 @@ class Seo {
 			 * integrations that centralize media on another site can switch
 			 * context first.
 			 *
-			 * @since 2.4.1
+			 * @since n.e.x.t
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
 			$original_url = wp_get_attachment_url( $attachment_id );
@@ -474,7 +504,7 @@ class Seo {
 		 * Filters the URL used as a video's schema `contentUrl` and sitemap
 		 * `<video:content_loc>`.
 		 *
-		 * @since 2.4.1
+		 * @since n.e.x.t
 		 *
 		 * @param string $content_url   HLS URL, original file URL, or ''.
 		 * @param int    $attachment_id Attachment ID.
@@ -489,7 +519,7 @@ class Seo {
 	 * Uses GoDAM's existing video-embed page (`?godam_page=video-embed&id=…`),
 	 * so no new public URL is created.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @return string The embed URL, or '' for an invalid ID.
@@ -513,7 +543,7 @@ class Seo {
 		 *
 		 * Return '' to leave `embedUrl` out.
 		 *
-		 * @since 2.4.1
+		 * @since n.e.x.t
 		 *
 		 * @param string $embed_url     The embed page URL.
 		 * @param int    $attachment_id Attachment ID.
@@ -524,7 +554,7 @@ class Seo {
 	/**
 	 * Whether a URL points at a DASH (.mpd) manifest.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param string $url URL to check.
 	 * @return bool
@@ -548,7 +578,7 @@ class Seo {
 	 * transcript path, so a new transcript is picked up automatically). Pass
 	 * `$allow_remote = false` on page renders to only ever read that cache.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param int  $attachment_id Attachment ID.
 	 * @param bool $allow_remote  Whether the transcript file may be fetched when not cached.
@@ -565,7 +595,7 @@ class Seo {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since 2.4.1
+		 * @since n.e.x.t
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$transcript_path = (string) get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
@@ -632,7 +662,7 @@ class Seo {
 	 * works on local sites whose hostnames don't resolve from PHP); anything
 	 * else is fetched with wp_safe_remote_get().
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param string $url Transcript URL.
 	 * @return string|false File contents, or false on failure.
@@ -679,7 +709,7 @@ class Seo {
 	 * Drops the WEBVTT header, NOTE/STYLE/REGION blocks, cue identifiers,
 	 * timing lines and inline tags, then joins the cue text with spaces.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param string $raw Transcript file contents.
 	 * @return string Plain text.
@@ -732,7 +762,7 @@ class Seo {
 	 * ellipsis when shortened. The result, ellipsis included, never exceeds
 	 * `$max_length` characters.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param string $text       Plain text.
 	 * @param int    $max_length Maximum number of characters.
@@ -763,7 +793,7 @@ class Seo {
 	 * ("True", "false", "1", "yes", ""), and a plain (bool) cast would turn
 	 * "false" into true.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param mixed $value Stored value.
 	 * @return bool
@@ -982,7 +1012,7 @@ class Seo {
 	 * the schema always agree.
 	 *
 	 * @since 2.1.0
-	 * @since 2.4.1 Public. HLS contentUrl, embedUrl, description fallbacks, and
+	 * @since n.e.x.t Public. HLS contentUrl, embedUrl, description fallbacks, and
 	 *              empty description/uploadDate are left out instead of output empty.
 	 *
 	 * @param array $video   Raw video SEO data (headline, contentUrl, etc.).
@@ -1013,7 +1043,7 @@ class Seo {
 
 		$content_url = $this->resolve_schema_content_url( $video, $attachment_id );
 
-		// Elementor and WPBakery entries cached before 2.4.1 have no attachment
+		// Elementor and WPBakery entries cached by older GoDAM versions have no attachment
 		// ID and a DASH contentUrl, so neither contentUrl nor embedUrl can be
 		// resolved for them here. Re-save the page once in the background to
 		// rebuild its cache in the current shape.
@@ -1067,15 +1097,21 @@ class Seo {
 
 	/**
 	 * Queue a one-time background re-save of a page whose cached video SEO
-	 * predates 2.4.1.
+	 * was cached by an older GoDAM version.
 	 *
-	 * Before 2.4.1 only the block stored an attachment ID in each cached entry;
+	 * In older GoDAM versions only the block stored an attachment ID in each cached entry;
 	 * Elementor and WPBakery entries kept just the DASH (.mpd) contentUrl. Such
 	 * entries can't be resolved to an HLS contentUrl or an embedUrl at output
 	 * time, so the page's cache is rebuilt once via WP-Cron. A post meta flag
 	 * makes sure each page is only ever queued once.
 	 *
-	 * @since 2.4.1
+	 * Built for sites with many such pages, since the first sitemap index
+	 * request can hit all of them: IDs are collected for the request and
+	 * written to one queue option at shutdown, a single cron event is
+	 * scheduled, and each run re-saves {@see Seo::LEGACY_RESAVE_BATCH_SIZE}
+	 * pages.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param int $post_id Host post ID.
 	 * @return void
@@ -1092,15 +1128,85 @@ class Seo {
 
 		update_post_meta( $post_id, self::LEGACY_RESAVE_META_KEY, time() ); // godam-coverage-ignore -- maybe_queue_legacy_resave(): flag on the host page, never an attachment.
 
-		if ( ! wp_next_scheduled( 'godam_video_seo_resave_post', array( $post_id ) ) ) {
-			wp_schedule_single_event( time(), 'godam_video_seo_resave_post', array( $post_id ) );
+		if ( empty( $this->pending_legacy_resaves ) ) {
+			add_action( 'shutdown', array( $this, 'flush_legacy_resave_queue' ) );
+		}
+
+		$this->pending_legacy_resaves[] = $post_id;
+	}
+
+	/**
+	 * Add the pages queued during this request to the re-save queue and make
+	 * sure a cron run is scheduled. Runs once, at shutdown.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function flush_legacy_resave_queue() {
+		if ( empty( $this->pending_legacy_resaves ) ) {
+			return;
+		}
+
+		$queue = get_option( self::LEGACY_RESAVE_QUEUE_OPTION, array() );
+		$queue = is_array( $queue ) ? array_map( 'absint', $queue ) : array();
+		$queue = array_values( array_unique( array_filter( array_merge( $queue, $this->pending_legacy_resaves ) ) ) );
+
+		$this->pending_legacy_resaves = array();
+
+		update_option( self::LEGACY_RESAVE_QUEUE_OPTION, $queue, false );
+		$this->schedule_legacy_resave_run();
+	}
+
+	/**
+	 * Re-save the next batch of queued pages (WP-Cron callback), and schedule
+	 * another run while pages remain.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function process_legacy_resave_queue() {
+		$queue = get_option( self::LEGACY_RESAVE_QUEUE_OPTION, array() );
+		$queue = is_array( $queue ) ? array_values( array_filter( array_map( 'absint', $queue ) ) ) : array();
+
+		if ( empty( $queue ) ) {
+			return;
+		}
+
+		$batch     = array_slice( $queue, 0, self::LEGACY_RESAVE_BATCH_SIZE );
+		$remaining = array_slice( $queue, self::LEGACY_RESAVE_BATCH_SIZE );
+
+		// Save the shorter queue first, so a fatal error on one page can't
+		// make every later run retry the same batch.
+		update_option( self::LEGACY_RESAVE_QUEUE_OPTION, $remaining, false );
+
+		foreach ( $batch as $post_id ) {
+			$this->resave_post_video_seo( $post_id );
+		}
+
+		if ( ! empty( $remaining ) ) {
+			$this->schedule_legacy_resave_run();
 		}
 	}
 
 	/**
-	 * Rebuild a page's cached video SEO (WP-Cron callback).
+	 * Schedule the next queue run, unless one is already scheduled.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	private function schedule_legacy_resave_run() {
+		if ( ! wp_next_scheduled( self::LEGACY_RESAVE_CRON_HOOK ) ) {
+			wp_schedule_single_event( time(), self::LEGACY_RESAVE_CRON_HOOK );
+		}
+	}
+
+	/**
+	 * Rebuild a page's cached video SEO (one page of the re-save queue).
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param int $post_id Host post ID.
 	 * @return void
@@ -1122,11 +1228,11 @@ class Seo {
 	 * Resolve the `contentUrl` for a cached SEO entry.
 	 *
 	 * Resolved at output time rather than trusted from the cache, so pages saved
-	 * before 2.4.1 (whose cache holds the DASH .mpd URL) are fixed without a
+	 * by older GoDAM versions (whose cache holds the DASH .mpd URL) are fixed without a
 	 * re-save, and a video that finishes HLS transcoding after the page was
 	 * saved starts pointing at the HLS stream straight away.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param array $video         Cached SEO entry.
 	 * @param int   $attachment_id Attachment ID, or 0.
@@ -1150,7 +1256,7 @@ class Seo {
 	 * Resolve the description for a cached SEO entry: the entry's own
 	 * description, else the transcript excerpt, else the page excerpt.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param array $video         Cached SEO entry.
 	 * @param int   $attachment_id Attachment ID, or 0.
@@ -1174,7 +1280,7 @@ class Seo {
 		 *
 		 * Return '' to leave the description out.
 		 *
-		 * @since 2.4.1
+		 * @since n.e.x.t
 		 *
 		 * @param string $description   Resolved description.
 		 * @param array  $video         Cached SEO entry.
@@ -1188,7 +1294,7 @@ class Seo {
 	 * else the start of its text content. Block markup and shortcodes are
 	 * stripped without rendering them.
 	 *
-	 * @since 2.4.1
+	 * @since n.e.x.t
 	 *
 	 * @param int $post_id Host post ID.
 	 * @return string Up to {@see self::DESCRIPTION_MAX_LENGTH} characters, or ''.

@@ -74,3 +74,10 @@ export const PollLayerIcon = () => (
 		<path d="M6.66602 14.166V11.666" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
 	</svg>
 );
+
+export const ButtonCtaLayerIcon = () => (
+	<svg className="godam-ve-stroke-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+		<rect x="1.66667" y="4.16667" width="12.5" height="7.5" rx="2" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M11.6667 11.25L13.3333 18.3333L15.0833 14.9167L18.3333 14.1667L11.6667 11.25Z" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
+	</svg>
+);
