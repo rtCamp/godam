@@ -301,15 +301,13 @@ Data Sent:
 
 1. IP Address
 
-2. Email
+2. Author of the post's display name
 
-3. Author of the post's display name
+3. Browser version, name, and browser language
 
-4. Browser version, name, and browser language
+4. User Agent String
 
-5. User Agent String
-
-6. The operating system of the user's device (e.g., Windows, macOS, Android)
+5. The operating system of the user's device (e.g., Windows, macOS, Android)
 
 When Data is Sent:
 
