@@ -128,6 +128,9 @@ class Plugin {
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
 		Everest_Forms_Integration::get_instance()->init();
 
+		// Marketo integration (settings fields + form-layer support).
+		Marketo::get_instance();
+
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 

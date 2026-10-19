@@ -9,6 +9,7 @@
 
 use RTGODAM\Inc\Assets\IMA_Assets;
 use RTGODAM\Inc\Assets\Jetpack_Form_Assets;
+use RTGODAM\Inc\Assets\Marketo_Form_Assets;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -1072,8 +1073,21 @@ do_action( 'rtgodam_after_attachment_lookup' );
 											?>
 										</div>
 									</div>
-									<?php
-								endif;
+										<?php
+									elseif ( 'marketo' === $godam_form_type && ! empty( $godam_layer['marketo_id'] ) ) :
+										// Marketo has no shortcode: render an empty form node that the
+										// forms2 library fills on the frontend (see Marketo_Form_Assets
+										// and assets/src/js/marketo-form.js). Enqueue the library only
+										// when a Marketo layer is actually present on the page.
+										Marketo_Form_Assets::get_instance();
+										?>
+										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden marketo" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+											<div class="form-container marketo-form-container">
+												<form id="mktoForm_<?php echo esc_attr( intval( $godam_layer['marketo_id'] ) ); ?>"></form>
+											</div>
+										</div>
+										<?php
+									endif;
 									// Poll layer.
 							elseif ( isset( $godam_layer['type'] ) && 'poll' === $godam_layer['type'] ) :
 								?>

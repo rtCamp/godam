@@ -681,6 +681,10 @@ class Pages {
 
 			$is_ninja_forms_active = is_plugin_active( 'ninja-forms/ninja-forms.php' );
 
+			// Marketo credentials for the in-editor form preview (podId / munchkinId
+			// are not secret — they are exposed on the frontend embed too).
+			$godam_marketo_settings = \RTGODAM\Inc\Marketo::get_settings();
+
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -704,6 +708,15 @@ class Pages {
 					'everestFormsActive' => $is_everest_forms_active,
 					'ninjaFormsActive'   => $is_ninja_forms_active,
 					'metformActive'      => $is_met_form_active,
+					// Marketo is a SaaS (no plugin): "active" means enabled with
+					// Pod ID + Munchkin ID configured in Settings → Integrations.
+					'marketoActive'      => \RTGODAM\Inc\Marketo::is_configured(),
+					// Credentials for the in-editor Marketo form preview. `instanceHost`
+					// is the normalized forms2 base URL (pod or mktoweb domain).
+					'marketoConfig'      => array(
+						'instanceHost' => \RTGODAM\Inc\Marketo::get_instance_host(),
+						'munchkinId'   => $godam_marketo_settings['munchkinId'],
+					),
 					// O9: Woo empty-state copy on the connected Video Editor.
 					'wooActive'          => class_exists( 'WooCommerce' ),
 					// Woo product-guide entry: only when GoDAM-for-Woo ships the

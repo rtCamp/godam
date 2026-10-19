@@ -47,6 +47,12 @@ const initialState = {
 		woocommerce: {
 			enable: true,
 		},
+		marketo: {
+			enable: true,
+			podId: '',
+			munchkinId: '',
+			recaptchaKey: '',
+		},
 	},
 	isChanged: false,
 };

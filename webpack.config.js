@@ -221,6 +221,13 @@ const jetpackFormJS = {
 	},
 };
 
+const marketoFormJS = {
+	...sharedConfig,
+	entry: {
+		'marketo-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'marketo-form.js' ),
+	},
+};
+
 const elementorWidgetJS = {
 	...sharedConfig,
 	entry: {
@@ -456,6 +463,7 @@ module.exports = [
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
+	marketoFormJS,
 	styles, // Do not remove this.
 	pages,
 	elementorWidgetJS,

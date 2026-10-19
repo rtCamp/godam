@@ -122,6 +122,9 @@ class Assets {
 			'everestForms' => $is_everest_forms_active,
 			'ninjaForms'   => $is_ninja_forms_active,
 			'metform'      => $is_met_form_active,
+			// Marketo has no WP plugin; it is "available" when enabled and
+			// configured (Pod ID + Munchkin ID) in Settings → Integrations.
+			'marketo'      => \RTGODAM\Inc\Marketo::is_configured(),
 		);
 
 		/**

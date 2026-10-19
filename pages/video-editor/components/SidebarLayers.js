@@ -18,6 +18,7 @@ import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
+import MarketoIcon from '../assets/layers/MarketoIcon.svg';
 import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from './editor-shell/icons';
 import { LAYER_TYPE_COLORS } from '../utils/layerTypes';
 import { notify as notifyGuide } from '../onboarding/productGuide';
@@ -110,6 +111,15 @@ export const layerTypes = [
 				icon: MetformIcon,
 				isActive: window?.videoData?.metformActive ?? false,
 				tooltipMessage: __( 'MetForm plugin is not active', 'godam' ),
+			},
+			marketo: {
+				layerText: __( 'Marketo', 'godam' ),
+				icon: MarketoIcon,
+				// Marketo has no plugin to activate: it is always offered in the
+				// Add-layer menu. The layer's settings panel shows a notice linking
+				// to Settings → Integrations → Marketo when credentials are missing.
+				isActive: true,
+				tooltipMessage: '',
 			},
 		},
 	},
