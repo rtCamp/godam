@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/utils/index.js';
+import { stripHtmlTags, isFilenameLikeTitle, appendTimezoneOffsetToUTC } from '../../blocks/godam-player/utils/index.js';
 
 ( function( $ ) {
 	'use strict';
@@ -38,6 +38,18 @@ import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/ut
 	}
 
 	const attachmentDataCache = new LRUCache( ATTACHMENT_CACHE_MAX_ENTRIES );
+
+	/**
+	 * SEO fields that always come from the selected video and can't be edited,
+	 * as in the Gutenberg "Video SEO Schema" modal and the Elementor popover.
+	 */
+	const SEO_READONLY_FIELDS = [ 'seo_content_url', 'seo_upload_date', 'seo_duration', 'seo_thumbnail_url' ];
+
+	/**
+	 * SEO fields that show the Media Library values and become editable only
+	 * when "Override SEO" is Yes.
+	 */
+	const SEO_OVERRIDABLE_FIELDS = [ 'seo_headline', 'seo_description', 'seo_family_friendly' ];
 
 	// Initialize video selector on document ready and when WPBakery reloads the params
 	$( document ).ready( initVideoSelector );
@@ -210,21 +222,229 @@ import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/ut
 		} );
 
 		$( document ).on( 'change', '.wpb_vc_param_value[name="seo_override"]', function() {
-			updateFilenameTitleWarning( getSeoScope( $( this ) ) );
+			const $scope = getSeoScope( $( this ) );
+			updateFilenameTitleWarning( $scope );
+			syncSeoPanel( $scope );
+		} );
+
+		$( document ).on( 'change', '.video_selector_field[name="id"]', function() {
+			syncSeoPanel( getSeoScope( $( this ) ) );
+		} );
+
+		$( document ).on( 'click', '.godam-wpb-seo-reset', function( event ) {
+			event.preventDefault();
+			resetSeoToMediaDefaults( getSeoScope( $( this ) ) );
 		} );
 
 		$( document ).on( 'input change', '.wpb_vc_param_value[name="seo_headline"]', function() {
 			updateFilenameTitleWarning( getSeoScope( $( this ) ) );
 		} );
 
-		// Check the title whenever an element's edit panel opens.
+		// Check the title and fill the SEO fields whenever an element's edit panel opens.
 		$( document ).on( 'vc.reload', function() {
 			$( '.wpb_vc_param_value[name="seo_override"]' ).each( function() {
-				updateFilenameTitleWarning( getSeoScope( $( this ) ) );
+				const $scope = getSeoScope( $( this ) );
+				updateFilenameTitleWarning( $scope );
+				syncSeoPanel( $scope );
 			} );
 		} );
 
 		isSeoPrefillListenerBound = true;
+	}
+
+	/**
+	 * Get the editor wrapper of a param (label, field and description).
+	 *
+	 * @param {Object} $field - The param's value field (jQuery object).
+	 * @return {Object} jQuery object.
+	 */
+	function getParamWrapper( $field ) {
+		const $wrapper = $field.closest( '.vc_shortcode-param' );
+		return $wrapper.length ? $wrapper : $field.parent();
+	}
+
+	/**
+	 * Make a param read-only (or editable again) without disabling it, so
+	 * WPBakery still saves its value.
+	 *
+	 * @param {Object}  $field   - The param's value field (jQuery object).
+	 * @param {boolean} readOnly - Whether the field should be read-only.
+	 */
+	function setParamReadOnly( $field, readOnly ) {
+		if ( ! $field.length ) {
+			return;
+		}
+
+		const $wrapper = getParamWrapper( $field );
+
+		if ( $field.is( 'select' ) ) {
+			$field.css( 'pointer-events', readOnly ? 'none' : '' );
+			$field.attr( 'tabindex', readOnly ? '-1' : null );
+			$field.attr( 'aria-readonly', readOnly ? 'true' : null );
+		} else {
+			$field.prop( 'readonly', readOnly );
+		}
+
+		$wrapper.toggleClass( 'godam-wpb-seo-readonly', readOnly );
+		$field.css( 'background-color', readOnly ? '#f0f0f1' : '' );
+		$wrapper.css( 'opacity', readOnly ? '0.75' : '' );
+	}
+
+	/**
+	 * Set a param's value and notify WPBakery, only when it changed.
+	 *
+	 * @param {Object} $field - The param's value field (jQuery object).
+	 * @param {string} value  - New value.
+	 */
+	function setParamValue( $field, value ) {
+		if ( ! $field.length ) {
+			return;
+		}
+
+		const next = undefined === value || null === value ? '' : String( value );
+		if ( String( $field.val() ?? '' ) !== next ) {
+			$field.val( next ).trigger( 'change' );
+		}
+	}
+
+	/**
+	 * SEO values for a video, the same way the Gutenberg modal builds them.
+	 *
+	 * @param {Object} attachmentData - `/wp/v2/media/<id>` response.
+	 * @return {Object} SEO values keyed by WPBakery param name.
+	 */
+	function getSeoParamValuesFromAttachment( attachmentData ) {
+		return {
+			// Google indexes HLS (.m3u8) but not DASH (.mpd), so prefer the HLS stream.
+			seo_content_url: getFirstNonEmpty( attachmentData?.meta?.rtgodam_hls_transcoded_url, attachmentData?.source_url ),
+			seo_headline: stripHtmlTags( getFirstNonEmpty( attachmentData?.title?.rendered, attachmentData?.title ) ),
+			seo_description: stripHtmlTags( getFirstNonEmpty( attachmentData?.description?.rendered, attachmentData?.description ) ),
+			seo_upload_date: attachmentData?.date_gmt ? appendTimezoneOffsetToUTC( attachmentData.date_gmt ) : '',
+			seo_duration: getFirstNonEmpty( attachmentData?.video_duration_iso8601 ),
+			seo_thumbnail_url: getFirstNonEmpty( attachmentData?.meta?.rtgodam_media_video_thumbnail ),
+			seo_family_friendly: '1',
+		};
+	}
+
+	/**
+	 * Show the sync / override notice under "Override SEO", like the Gutenberg
+	 * modal: an info notice when synced, a warning with "Reset to media library
+	 * defaults" when overridden.
+	 *
+	 * @param {Object}  $scope     - Edit panel scope (jQuery object).
+	 * @param {boolean} isOverride - Whether "Override SEO" is Yes.
+	 * @param {boolean} hasVideo   - Whether a video is selected.
+	 */
+	function renderSeoNotice( $scope, isOverride, hasVideo ) {
+		const $overrideField = getParamField( $scope, 'seo_override' );
+		if ( ! $overrideField.length ) {
+			return;
+		}
+
+		const $anchor = getParamWrapper( $overrideField );
+		let $notice = $anchor.siblings( '.godam-wpb-seo-notice' );
+
+		if ( ! $notice.length ) {
+			$notice = $( '<div class="godam-wpb-seo-notice vc_col-xs-12" style="margin:8px 0;padding:8px 12px;border-left:4px solid #72aee6;background:#f0f6fc;"></div>' );
+			$anchor.after( $notice );
+		}
+
+		if ( ! hasVideo ) {
+			$notice.hide();
+			return;
+		}
+
+		if ( isOverride ) {
+			$notice
+				.css( { borderLeftColor: '#dba617', background: '#fcf9e8' } )
+				.empty()
+				.append( document.createTextNode( __( 'You have overridden the default SEO. Changes to this video in the media library will not update the SEO for this element.', 'godam' ) + ' ' ) )
+				.append(
+					$( '<a href="#" class="godam-wpb-seo-reset"></a>' ).text( __( 'Reset to media library defaults', 'godam' ) ),
+				)
+				.show();
+		} else {
+			$notice
+				.css( { borderLeftColor: '#72aee6', background: '#f0f6fc' } )
+				.text( __( 'SEO data is automatically synced from the media library. Any changes made to the video in the media library will be reflected here.', 'godam' ) )
+				.show();
+		}
+	}
+
+	/**
+	 * Fill and lock the SEO Settings fields to match the Gutenberg modal.
+	 *
+	 * Content URL, Upload Date, Duration and Thumbnail URL always come from
+	 * the selected video and are read-only. Headline, Description and Is
+	 * Family Friendly show the Media Library values and are read-only while
+	 * "Override SEO" is No; they become editable (keeping their values) when
+	 * it is Yes.
+	 *
+	 * @param {Object} $scope - Edit panel scope (jQuery object).
+	 */
+	function syncSeoPanel( $scope ) {
+		const $overrideField = getParamField( $scope, 'seo_override' );
+		if ( ! $overrideField.length ) {
+			return;
+		}
+
+		const isOverride = '1' === String( $overrideField.val() );
+		const attachmentId = parseInt( getParamField( $scope, 'id' ).val(), 10 );
+
+		SEO_READONLY_FIELDS.forEach( ( name ) => setParamReadOnly( getParamField( $scope, name ), true ) );
+		SEO_OVERRIDABLE_FIELDS.forEach( ( name ) => setParamReadOnly( getParamField( $scope, name ), ! isOverride ) );
+		renderSeoNotice( $scope, isOverride, !! attachmentId );
+
+		if ( ! attachmentId ) {
+			return;
+		}
+
+		// Only the latest call may write, so a slow lookup for a previously
+		// selected video can't overwrite the current one.
+		const requestId = ( $overrideField.data( 'godamSeoSyncId' ) || 0 ) + 1;
+		$overrideField.data( 'godamSeoSyncId', requestId );
+
+		fetchAttachmentData( attachmentId ).then( ( attachmentData ) => {
+			if ( ! attachmentData || $overrideField.data( 'godamSeoSyncId' ) !== requestId ) {
+				return;
+			}
+
+			const values = getSeoParamValuesFromAttachment( attachmentData );
+			const overrideNow = '1' === String( $overrideField.val() );
+
+			SEO_READONLY_FIELDS.forEach( ( name ) => setParamValue( getParamField( $scope, name ), values[ name ] ) );
+
+			if ( ! overrideNow ) {
+				SEO_OVERRIDABLE_FIELDS.forEach( ( name ) => setParamValue( getParamField( $scope, name ), values[ name ] ) );
+			}
+		} ).catch( () => {
+			// Leave the fields as they are; the schema is built server-side anyway.
+		} );
+	}
+
+	/**
+	 * "Reset to media library defaults": restore the Media Library values and
+	 * switch "Override SEO" back to No.
+	 *
+	 * @param {Object} $scope - Edit panel scope (jQuery object).
+	 */
+	function resetSeoToMediaDefaults( $scope ) {
+		const attachmentId = parseInt( getParamField( $scope, 'id' ).val(), 10 );
+		const $overrideField = getParamField( $scope, 'seo_override' );
+
+		if ( ! attachmentId || ! $overrideField.length ) {
+			return;
+		}
+
+		fetchAttachmentData( attachmentId ).then( ( attachmentData ) => {
+			if ( ! attachmentData ) {
+				return;
+			}
+
+			const values = getSeoParamValuesFromAttachment( attachmentData );
+			SEO_OVERRIDABLE_FIELDS.forEach( ( name ) => setParamValue( getParamField( $scope, name ), values[ name ] ) );
+			setParamValue( $overrideField, '0' );
+		} ).catch( () => {} );
 	}
 
 	/**
