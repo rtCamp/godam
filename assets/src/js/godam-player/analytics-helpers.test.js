@@ -17,8 +17,6 @@ const setParams = ( overrides = {} ) => {
 		endpoint: 'https://analytics.test',
 		token: 'tok',
 		userId: 1,
-		// A page cached by an older plugin version still carries this field;
-		// the sender must ignore it.
 		emailId: 'a@b.test',
 		locationIP: '10.0.0.1',
 		isPost: false,
@@ -42,6 +40,8 @@ describe( 'buildAnalyticsRequestBody — viewer identity', () => {
 	} );
 
 	it( 'does not send the viewer email, even when the page still carries one', () => {
+		// setParams() leaves emailId on the page, as a page cached by an older
+		// plugin version would.
 		const { body } = build( {} );
 		expect( body ).not.toHaveProperty( 'email' );
 		expect( JSON.stringify( body ) ).not.toContain( 'a@b.test' );
