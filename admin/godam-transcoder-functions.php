@@ -725,12 +725,11 @@ function rtgodam_get_localize_array() {
 
 	$localize_array = array();
 
-	$localize_array['endpoint']   = RTGODAM_ANALYTICS_BASE;
-	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
-	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
-	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
-	$localize_array['postTitle']  = get_the_title(); // godam-coverage-ignore -- No argument: reads the title of whatever post/page the current front-end request is viewing (this fn runs unconditionally on every page load via Assets::enqueue_scripts()), not an explicit attachment lookup.
-	$localize_array['locationIP'] = rtgodam_get_user_ip();
+	$localize_array['endpoint']  = RTGODAM_ANALYTICS_BASE;
+	$localize_array['isPost']    = empty( is_single() ) ? 0 : is_single();
+	$localize_array['isPage']    = empty( is_page() ) ? 0 : is_page();
+	$localize_array['isArchive'] = empty( is_archive() ) ? 0 : is_archive();
+	$localize_array['postTitle'] = get_the_title(); // godam-coverage-ignore -- No argument: reads the title of whatever post/page the current front-end request is viewing (this fn runs unconditionally on every page load via Assets::enqueue_scripts()), not an explicit attachment lookup.
 
 	/**
 	 * Get Current User.

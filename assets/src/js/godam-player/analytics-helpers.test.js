@@ -18,6 +18,8 @@ const setParams = ( overrides = {} ) => {
 		token: 'tok',
 		userId: 1,
 		emailId: 'a@b.test',
+		// A page cached by an older plugin version still carries this field;
+		// the sender must ignore it.
 		locationIP: '10.0.0.1',
 		isPost: false,
 		isPage: true,
@@ -33,6 +35,23 @@ const setParams = ( overrides = {} ) => {
 };
 
 const build = ( opts ) => buildAnalyticsRequestBody( { type: 1, ...opts } );
+
+describe( 'buildAnalyticsRequestBody — location', () => {
+	beforeEach( () => {
+		setParams();
+	} );
+
+	it( 'sends no location field, even when the page still carries one', () => {
+		const { body } = build( {} );
+		expect( body ).not.toHaveProperty( 'location_ip' );
+		expect( JSON.stringify( body ) ).not.toContain( '10.0.0.1' );
+	} );
+
+	it( 'still sends the browser language', () => {
+		const { body } = build( {} );
+		expect( body.location_browser_lang ).toBe( window.navigator.language );
+	} );
+} );
 
 describe( 'buildAnalyticsRequestBody — placement attribution', () => {
 	beforeEach( () => {
