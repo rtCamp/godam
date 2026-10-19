@@ -2503,21 +2503,29 @@ body.godam-share-modal-open {
 		gap: 4px;
 	}
 
-	&__copy,
-	&__close {
+	// Scoped under the panel (two classes) so a theme's `button` /
+	// `[type="button"]` reset, which loads later, cannot restyle them.
+	.godam-transcript-panel__copy,
+	.godam-transcript-panel__close {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		width: auto;
+		min-width: 0;
+		min-height: 0;
 		padding: 4px;
 		margin: 0;
+		font-size: inherit;
 		color: var(--godam-transcript-text-muted);
 		background: none;
 		border: none;
 		border-radius: 4px;
+		box-shadow: none;
 		cursor: pointer;
 		line-height: 1;
 
-		&:hover {
+		&:hover,
+		&:focus {
 			color: var(--godam-transcript-text);
 			background-color: var(--godam-transcript-surface-hover);
 		}
@@ -2584,6 +2592,15 @@ body.godam-share-modal-open {
 		outline: none;
 		appearance: none;
 
+		// Themes restyle `input[type="search"]:focus` too.
+		&:focus {
+			color: var(--godam-transcript-text);
+			background: transparent;
+			border: 0;
+			box-shadow: none;
+			outline: none;
+		}
+
 		&::placeholder {
 			color: var(--godam-transcript-text-muted);
 			opacity: 1;
@@ -2626,21 +2643,34 @@ body.godam-share-modal-open {
 	}
 }
 
-.godam-transcript-cue {
+// Scoped under the panel (two classes) so a theme's `button` /
+// `[type="button"]` reset, which loads later, cannot restyle the rows.
+.godam-transcript-panel .godam-transcript-cue {
 	display: flex;
 	gap: 10px;
 	width: 100%;
+	min-height: 0;
 	margin: 0;
 	padding: 8px 10px;
+	font: inherit;
+	font-weight: 400;
+	line-height: 1.5;
+	letter-spacing: normal;
 	text-align: left;
+	text-transform: none;
+	white-space: normal;
+	color: var(--godam-transcript-text);
 	background: none;
 	border: none;
 	border-left: 3px solid transparent;
 	border-radius: var(--godam-transcript-row-radius);
+	box-shadow: none;
 	cursor: pointer;
 	transition: background-color 0.2s ease;
 
-	&:hover {
+	&:hover,
+	&:focus {
+		color: var(--godam-transcript-text);
 		background-color: var(--godam-transcript-surface);
 	}
 
@@ -2649,41 +2679,42 @@ body.godam-share-modal-open {
 		outline-offset: -2px;
 	}
 
-	&--active {
-		background-color: var(--godam-transcript-active);
-		border-left-color: var(--godam-transcript-accent);
-	}
-
 	&[hidden] {
 		display: none;
 	}
+}
 
-	&__time {
-		flex-shrink: 0;
-		min-width: 3.2em;
-		padding-top: 1px;
-		font-size: 12px;
-		font-weight: 600;
-		font-variant-numeric: tabular-nums;
-		color: var(--godam-transcript-text-muted);
-	}
+.godam-transcript-panel .godam-transcript-cue--active,
+.godam-transcript-panel .godam-transcript-cue--active:hover {
+	background-color: var(--godam-transcript-active);
+	border-left-color: var(--godam-transcript-accent);
+}
 
-	&--active &__time {
-		color: var(--godam-transcript-text);
-	}
+.godam-transcript-panel .godam-transcript-cue__time {
+	flex-shrink: 0;
+	min-width: 3.2em;
+	padding-top: 1px;
+	font-size: 12px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--godam-transcript-text-muted);
+}
 
-	&__text {
-		font-size: 13px;
-		line-height: 1.5;
-		color: var(--godam-transcript-text);
-	}
+.godam-transcript-panel .godam-transcript-cue--active .godam-transcript-cue__time {
+	color: var(--godam-transcript-text);
+}
 
-	&__match {
-		padding: 0 1px;
-		color: inherit;
-		background-color: var(--godam-transcript-match);
-		border-radius: 2px;
-	}
+.godam-transcript-panel .godam-transcript-cue__text {
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--godam-transcript-text);
+}
+
+.godam-transcript-panel .godam-transcript-cue__match {
+	padding: 0 1px;
+	color: inherit;
+	background-color: var(--godam-transcript-match);
+	border-radius: 2px;
 }
 
 // Skin palettes. The panel sits next to the skinned container, so it carries
@@ -2826,7 +2857,7 @@ body.godam-share-modal-open {
 		animation: none;
 	}
 
-	.godam-transcript-cue {
+	.godam-transcript-panel .godam-transcript-cue {
 		transition: none;
 	}
 }
