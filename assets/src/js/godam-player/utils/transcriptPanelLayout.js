@@ -9,9 +9,11 @@ export const PANEL_MIN_WIDTH = 260;
 export const PANEL_MAX_WIDTH = 420;
 export const PANEL_WIDTH_RATIO = 0.32;
 
-// Below this width the video would be too small to watch beside the panel, so
-// the panel drops beneath the video instead.
-export const MIN_PLAYER_WIDTH = 280;
+// The video only shrinks beside the panel while it stays at least this wide
+// (below 480px the player switches to its compact, mobile control layout) or
+// keeps this share of its full size; otherwise the panel drops beneath it.
+export const MIN_PLAYER_WIDTH = 480;
+export const MIN_PLAYER_SCALE = 0.75;
 
 // Height of the panel when it sits beneath the video.
 export const BELOW_MIN_HEIGHT = 220;
@@ -32,8 +34,8 @@ const clamp = ( value, min, max ) => Math.min( Math.max( value, min ), max );
  * grows toward 16:9 and keeps its full size); otherwise the video scales down
  * to fit beside the panel, letterboxed and never cropped.
  *
- * `below`: there is not enough width for both, so the panel stacks beneath
- * the video, which keeps its full size.
+ * `below`: the video would get too small beside the panel (a 16:9 video in a
+ * typical content column), so the panel stacks beneath the full-size video.
  *
  * @param {Object} geometry             Closed-state geometry, in px.
  * @param {number} geometry.stageWidth  Width of the video stage.
@@ -60,7 +62,7 @@ export function computeTranscriptLayout( { stageWidth, stageHeight, ratio, room 
 	const width = Math.max( stageWidth, Math.min( fullPlayerWidth + panelWidth, reach ) );
 	const playerWidth = Math.min( fullPlayerWidth, width - panelWidth );
 
-	if ( playerWidth < Math.min( MIN_PLAYER_WIDTH, fullPlayerWidth ) ) {
+	if ( playerWidth < Math.min( MIN_PLAYER_WIDTH, fullPlayerWidth * MIN_PLAYER_SCALE ) ) {
 		return { mode: 'below', panelHeight: belowHeight };
 	}
 

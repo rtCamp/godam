@@ -59,7 +59,7 @@ describe( 'computeTranscriptLayout', () => {
 
 	it( 'only widens as far as the column allows', () => {
 		// 597.5px would fit the full-size video; the column only has 580px, so
-		// the video scales down a little rather than being covered.
+		// the video scales down a little (to 95%) and stays beside the panel.
 		const layout = computeTranscriptLayout( { stageWidth: 337.5, stageHeight: 600, ratio: 9 / 16, room: 580 } );
 
 		expect( layout.mode ).toBe( 'side' );
@@ -70,6 +70,7 @@ describe( 'computeTranscriptLayout', () => {
 	} );
 
 	it( 'stacks the panel beneath a 9:16 video when the column has no room to widen', () => {
+		// Beside the panel the video would shrink to a quarter of its size.
 		const layout = computeTranscriptLayout( { stageWidth: 337.5, stageHeight: 600, ratio: 9 / 16, room: 337.5 } );
 
 		expect( layout ).toEqual( { mode: 'below', panelHeight: BELOW_MAX_HEIGHT } );
@@ -81,8 +82,8 @@ describe( 'computeTranscriptLayout', () => {
 		expect( layout ).toEqual( { mode: 'below', panelHeight: BELOW_MIN_HEIGHT } );
 	} );
 
-	it( 'never returns a side layout that would make the video narrower than the minimum', () => {
-		const layouts = [ 400, 480, 520, 540, 560, 640, 720, 960, 1200 ].map( ( stageWidth ) => computeTranscriptLayout( {
+	it( 'stacks the panel under a 16:9 video in a typical content column, and goes beside it on wider players', () => {
+		const layouts = [ 400, 480, 600, 645, 720, 740, 760, 960, 1200 ].map( ( stageWidth ) => computeTranscriptLayout( {
 			stageWidth,
 			stageHeight: stageWidth * 9 / 16,
 			ratio: 16 / 9,
@@ -91,10 +92,11 @@ describe( 'computeTranscriptLayout', () => {
 		const side = layouts.filter( ( layout ) => layout.mode === 'side' );
 
 		expect( layouts.map( ( layout ) => layout.mode ) ).toEqual( [
-			'below', 'below', 'below', 'side', 'side', 'side', 'side', 'side', 'side',
+			'below', 'below', 'below', 'below', 'below', 'side', 'side', 'side', 'side',
 		] );
 		side.forEach( ( layout ) => {
-			expect( layout.playerWidth ).toBeGreaterThanOrEqual( 280 );
+			// Keeps the desktop control layout (the compact one starts below 480px).
+			expect( layout.playerWidth ).toBeGreaterThanOrEqual( 480 );
 			expectNoOverlap( layout );
 		} );
 	} );
