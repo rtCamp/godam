@@ -1866,20 +1866,20 @@ function rtgodam_get_current_logged_in_user_data() {
 /**
  * Retrieves the current user's details for printing into a front-end page.
  *
- * The same data as rtgodam_get_current_logged_in_user_data() without the email
- * address: the page only needs the display name and whether someone is signed in,
- * and the REST routes that need the email read it on the server.
+ * Only the display name and whether someone is signed in: the page needs nothing
+ * else, and the REST routes that need the email read it on the server. The list
+ * of fields is fixed here, so a field added later to
+ * rtgodam_get_current_logged_in_user_data() is not printed by accident.
  *
  * @since n.e.x.t
  *
  * @return array An associative array containing 'name' and 'type' of the user or guest.
  */
 function rtgodam_get_current_user_data_for_page() {
-	$user_data = rtgodam_get_current_logged_in_user_data();
-
-	unset( $user_data['email'] );
-
-	return $user_data;
+	return array_intersect_key(
+		rtgodam_get_current_logged_in_user_data(),
+		array_flip( array( 'name', 'type' ) )
+	);
 }
 
 /**
