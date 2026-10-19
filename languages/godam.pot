@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-16T07:12:39+00:00\n"
+"POT-Creation-Date: 2026-10-19T06:20:26+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -20,8 +20,8 @@ msgstr ""
 #: inc/classes/class-dashboard-widget.php:278
 #: inc/classes/class-dashboard-widget.php:293
 #: inc/classes/class-elementor-widgets.php:240
-#: inc/classes/class-pages.php:185
 #: inc/classes/class-pages.php:186
+#: inc/classes/class-pages.php:187
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:68
 #: inc/classes/wpbakery-elements/class-wpb-godam-document.php:102
 #: inc/classes/wpbakery-elements/class-wpb-godam-image.php:68
@@ -461,8 +461,8 @@ msgstr ""
 #: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: godam.php:108
-#: inc/classes/class-pages.php:243
 #: inc/classes/class-pages.php:244
+#: inc/classes/class-pages.php:245
 #: assets/src/blocks/godam-audio/edit.js:602
 #: pages/video-editor/components/appearance/Appearance.js:113
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:19
@@ -2901,8 +2901,8 @@ msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/class-pages.php:220
 #: inc/classes/class-pages.php:221
+#: inc/classes/class-pages.php:222
 #: inc/templates/video-preview.php:102
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:785
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:792
@@ -5284,8 +5284,8 @@ msgid "vs prev %d days"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: inc/classes/class-pages.php:200
 #: inc/classes/class-pages.php:201
+#: inc/classes/class-pages.php:202
 #: pages/dashboard/Dashboard.js:432
 msgid "Dashboard"
 msgstr ""
@@ -5393,8 +5393,8 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:2
-#: inc/classes/class-pages.php:269
 #: inc/classes/class-pages.php:270
+#: inc/classes/class-pages.php:271
 #: pages/dashboard/components/MarketingCarousel.jsx:94
 #: pages/godam/components/GoDAMFooter.jsx:31
 msgid "What's New"
@@ -9508,8 +9508,8 @@ msgid "Last edited %s"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/class-pages.php:210
 #: inc/classes/class-pages.php:211
+#: inc/classes/class-pages.php:212
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:648
 msgid "Media Editor"
 msgstr ""
@@ -10955,29 +10955,29 @@ msgstr ""
 msgid "Action Scheduler is required to run the GoDAM media usage backfill."
 msgstr ""
 
-#: inc/classes/class-pages.php:232
 #: inc/classes/class-pages.php:233
+#: inc/classes/class-pages.php:234
 msgid "Tools"
 msgstr ""
 
-#: inc/classes/class-pages.php:253
 #: inc/classes/class-pages.php:254
+#: inc/classes/class-pages.php:255
 msgid "Help"
 msgstr ""
 
-#: inc/classes/class-pages.php:443
+#: inc/classes/class-pages.php:467
 msgid "Sorry, you are not allowed to edit this item."
 msgstr ""
 
-#: inc/classes/class-pages.php:825
+#: inc/classes/class-pages.php:849
 msgid "Your last request is still being processed. Please wait a while ..."
 msgstr ""
 
-#: inc/classes/class-pages.php:826
+#: inc/classes/class-pages.php:850
 msgid "Please choose a valid poll answer."
 msgstr ""
 
-#: inc/classes/class-pages.php:827
+#: inc/classes/class-pages.php:851
 msgid "Maximum number of choices allowed: "
 msgstr ""
 
