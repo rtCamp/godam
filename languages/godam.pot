@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-16T07:12:39+00:00\n"
+"POT-Creation-Date: 2026-10-19T18:08:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -2707,14 +2707,14 @@ msgstr ""
 
 #. translators: %d: Maximum allowed duration in seconds
 #: assets/build/js/godam-recorder.min.js:2
-#: assets/src/js/godam-recorder/index.js:276
+#: assets/src/js/godam-recorder/index.js:305
 #, js-format
 msgid "Maximum allowed duration is %d seconds. Please upload or record a shorter file."
 msgstr ""
 
 #: assets/build/js/godam-recorder.min.js:2
-#: assets/src/js/godam-recorder/index.js:380
-#: assets/src/js/godam-recorder/index.js:383
+#: assets/src/js/godam-recorder/index.js:409
+#: assets/src/js/godam-recorder/index.js:412
 msgid "Remove recording"
 msgstr ""
 
