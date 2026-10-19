@@ -6,12 +6,13 @@ import videojs from 'video.js';
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { setupFullscreenReparenting } from '../utils/fullscreenReparent.js';
+import { isPlayerFullscreen, setupFullscreenReparenting } from '../utils/fullscreenReparent.js';
+import { computeTranscriptLayout, findMatchRanges, normaliseQuery } from '../utils/transcriptPanelLayout.js';
 
 // Minimum container width (px) at which the Bubble skin routes the button into
 // the control bar instead of overlaying it — matches ShareManager.
@@ -26,6 +27,9 @@ const CHECK_ICON_SVG = `<svg class="godam-transcript-panel__copy-icon" viewBox="
 // WordPress "close" icon (matches @wordpress/icons `close`).
 const CLOSE_ICON_SVG = `<svg class="godam-transcript-panel__close-icon" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z" fill="currentColor"/></svg>`;
 
+// WordPress "search" icon (matches @wordpress/icons `search`).
+const SEARCH_ICON_SVG = `<svg class="godam-transcript-panel__search-icon" viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z" fill="currentColor"/></svg>`;
+
 // Transcript button icon (a document with text lines).
 const TRANSCRIPT_ICON_SVG = `<svg class="godam-transcript-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
 		<path d="M5 3.5h14a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5Z" stroke="currentColor" stroke-width="1.6"/>
@@ -36,12 +40,31 @@ const TRANSCRIPT_ICON_SVG = `<svg class="godam-transcript-icon" viewBox="0 0 24 
 const BUTTON_CLASS = 'godam-transcript-button';
 const PANEL_CLASS = 'godam-transcript-panel';
 const CUE_CLASS = 'godam-transcript-cue';
-// Added to the video wrapper so the video + panel share the block width.
+// Added to the video wrapper while the panel is open.
 const OPEN_CLASS = 'godam-transcript-open';
-// Added to the wrapper while a panel is present so its overflow/shadow can be
-// clipped without relying on `:has()` (unsupported in some browsers).
+// Added to the wrapper while a panel is present (a plain class instead of
+// `:has()`, which some browsers lack).
 const HAS_PANEL_CLASS = 'godam-has-transcript-panel';
+// How the open panel shares space with the video (see computeTranscriptLayout).
+const LAYOUT_SIDE_CLASS = 'godam-transcript-layout--side';
+const LAYOUT_BELOW_CLASS = 'godam-transcript-layout--below';
+// Added to the block root while it is widened to fit the panel beside the video.
+const EXPANDED_CLASS = 'godam-transcript-expanded';
 const ACTIVE_CUE_CLASS = 'godam-transcript-cue--active';
+const HIDDEN_CUE_CLASS = 'godam-transcript-cue--hidden';
+
+// CSS custom properties the layout writes on the wrapper.
+const LAYOUT_VARS = [
+	'--godam-transcript-panel-width',
+	'--godam-transcript-panel-height',
+	'--godam-transcript-stage-height',
+	'--godam-transcript-player-width',
+	'--godam-transcript-player-height',
+	'--godam-transcript-player-top',
+];
+
+// Inline styles the layout overrides on the block root while it is widened.
+const ROOT_STYLE_PROPS = [ 'width', 'max-width', 'aspect-ratio' ];
 
 // Copy feedback duration in ms.
 const COPY_FEEDBACK_DELAY = 2000;
@@ -52,7 +75,11 @@ const COPY_FEEDBACK_DELAY = 2000;
  * Adds an on-video transcript toggle button (top-right corner, just before the
  * share button) that opens a side panel listing the video's transcription as
  * timestamped, clickable cues. Clicking a cue seeks the player; the cue under
- * the playhead is highlighted as the video plays.
+ * the playhead is highlighted as the video plays, and a search field narrows
+ * the list to matching cues.
+ *
+ * The open panel never covers the video: it takes its own space beside the
+ * video (or beneath it when there is no room), see `applyLayout()`.
  *
  * The transcript text is resolved the same way TranscriptManager resolves it —
  * the attachment's stored transcript first, the public API by job id as a
@@ -82,13 +109,27 @@ export default class TranscriptPanelManager {
 		this.buttonInControlBar = false;
 		this.panel = null;
 		this.bodyEl = null;
+		this.searchInput = null;
+		this.searchStatus = null;
 		this.cues = [];
 		this.cueElements = [];
+		this.cueTextElements = [];
 		this.activeCueIndex = -1;
 		this.copyResetTimeout = null;
 		this.isOpen = false;
 
+		// Layout state while the panel is open.
+		this.root = null;
+		this.rootStyleBackup = null;
+		this.lightboxWrapper = null;
+		this.lightboxRatioBackup = null;
+		this.layoutSignature = '';
+		this.resizeObserver = null;
+		this.observedParent = null;
+		this.reducedMotion = window.matchMedia?.( '(prefers-reduced-motion: reduce)' ) || null;
+
 		this.handleTimeUpdate = this.handleTimeUpdate.bind( this );
+		this.applyLayout = this.applyLayout.bind( this );
 
 		this.init();
 	}
@@ -117,9 +158,8 @@ export default class TranscriptPanelManager {
 		if ( ! this.container ) {
 			return;
 		}
-		// The panel overlays the video (absolutely positioned inside the
-		// wrapper) so the video keeps its full width when the transcript opens;
-		// the wrapper is the positioned parent and the element we toggle.
+		// The panel lives in the wrapper, next to the video container; the
+		// wrapper is also the element that carries the open/layout state.
 		this.wrapper = this.container.closest( '.godam-video-wrapper' ) || this.container.parentElement;
 
 		// Resolve the transcript and only render the UI once we know cues exist.
@@ -266,6 +306,10 @@ export default class TranscriptPanelManager {
 		this.createPanel();
 		this.setupFullscreenReparenting();
 		this.player.on( 'timeupdate', this.handleTimeUpdate );
+		// Fullscreen lays the panel out with CSS alone; entering it drops the
+		// inline layout and leaving it measures the page again.
+		this.player.on( 'fullscreenchange', this.applyLayout );
+		this.player.on( 'customfullscreenchange', this.applyLayout );
 		this.player.one( 'dispose', () => this.destroy() );
 	}
 
@@ -354,8 +398,13 @@ export default class TranscriptPanelManager {
 	 */
 	createPanel() {
 		const panel = document.createElement( 'div' );
-		panel.className = PANEL_CLASS;
+		// The panel is a sibling of the skinned container, so it carries the
+		// skin itself; its palette comes from per-skin tokens in the CSS.
+		const skin = String( this.videoSetupOptions?.playerSkin || 'Default' ).toLowerCase();
+		panel.className = `${ PANEL_CLASS } ${ PANEL_CLASS }--${ skin }`;
 		panel.setAttribute( 'data-test-id', 'godam-video-transcript-panel' );
+		panel.setAttribute( 'role', 'region' );
+		panel.setAttribute( 'aria-label', __( 'Transcript', 'godam' ) );
 
 		const header = document.createElement( 'div' );
 		header.className = `${ PANEL_CLASS }__header`;
@@ -390,9 +439,12 @@ export default class TranscriptPanelManager {
 		header.appendChild( title );
 		header.appendChild( actions );
 
+		const search = this.createSearchField();
+
 		const body = document.createElement( 'div' );
 		body.className = `${ PANEL_CLASS }__body`;
 
+		this.cueTextElements = [];
 		this.cueElements = this.cues.map( ( cue, index ) => {
 			const row = document.createElement( 'button' );
 			row.type = 'button';
@@ -407,6 +459,7 @@ export default class TranscriptPanelManager {
 			const text = document.createElement( 'span' );
 			text.className = `${ CUE_CLASS }__text`;
 			text.textContent = cue.text;
+			this.cueTextElements.push( text );
 
 			row.appendChild( time );
 			row.appendChild( text );
@@ -417,16 +470,139 @@ export default class TranscriptPanelManager {
 		} );
 
 		panel.appendChild( header );
+		panel.appendChild( search );
 		panel.appendChild( body );
 
-		// Append inside the wrapper as an overlay so it sits above the video
-		// without taking layout space (the video keeps its full width).
+		// Append inside the wrapper, after the video container. It stays hidden
+		// until opened; `applyLayout()` then gives it its own space.
 		this.wrapper.appendChild( panel );
-		// Flag the wrapper so its overflow/shadow clip can be scoped with a plain
-		// class selector instead of `:has()` (which some browsers lack).
 		this.wrapper.classList.add( HAS_PANEL_CLASS );
 		this.panel = panel;
 		this.bodyEl = body;
+	}
+
+	/**
+	 * Build the search field that narrows the cue list.
+	 *
+	 * @return {HTMLElement} The search row (label, input and result count).
+	 */
+	createSearchField() {
+		const field = document.createElement( 'div' );
+		field.className = `${ PANEL_CLASS }__search`;
+
+		const label = document.createElement( 'label' );
+		label.className = `${ PANEL_CLASS }__search-field`;
+		label.insertAdjacentHTML( 'afterbegin', SEARCH_ICON_SVG );
+
+		const input = document.createElement( 'input' );
+		input.type = 'search';
+		input.className = `${ PANEL_CLASS }__search-input`;
+		input.placeholder = __( 'Search transcript', 'godam' );
+		input.setAttribute( 'aria-label', __( 'Search transcript', 'godam' ) );
+		input.setAttribute( 'data-test-id', 'godam-video-transcript-search' );
+		input.autocomplete = 'off';
+		input.spellcheck = false;
+		input.addEventListener( 'input', () => this.filterCues( input.value ) );
+		input.addEventListener( 'keydown', ( event ) => {
+			// Escape clears a query first; only an empty field lets it through
+			// (so the lightbox can still close on a second press).
+			if ( event.key === 'Escape' && input.value !== '' ) {
+				event.preventDefault();
+				event.stopPropagation();
+				input.value = '';
+				this.filterCues( '' );
+			}
+		} );
+
+		const status = document.createElement( 'span' );
+		status.className = `${ PANEL_CLASS }__search-status`;
+		status.setAttribute( 'role', 'status' );
+		status.setAttribute( 'aria-live', 'polite' );
+		status.setAttribute( 'data-test-id', 'godam-video-transcript-search-status' );
+
+		label.appendChild( input );
+		field.appendChild( label );
+		field.appendChild( status );
+
+		this.searchInput = input;
+		this.searchStatus = status;
+		return field;
+	}
+
+	/**
+	 * Show only the cues that contain the query, with each match highlighted.
+	 * An empty query restores the full list. Results keep click-to-seek.
+	 *
+	 * @param {string} rawQuery The text typed in the search field.
+	 */
+	filterCues( rawQuery ) {
+		const query = normaliseQuery( rawQuery );
+		let matches = 0;
+
+		this.cues.forEach( ( cue, index ) => {
+			const row = this.cueElements[ index ];
+			const textEl = this.cueTextElements[ index ];
+			if ( ! row || ! textEl ) {
+				return;
+			}
+
+			const ranges = findMatchRanges( cue.text, query );
+			const visible = ! query || ranges.length > 0;
+			row.classList.toggle( HIDDEN_CUE_CLASS, ! visible );
+			row.hidden = ! visible;
+			if ( visible && query ) {
+				matches += 1;
+			}
+			this.renderCueText( textEl, cue.text, ranges );
+		} );
+
+		if ( ! this.searchStatus ) {
+			return;
+		}
+
+		if ( ! query ) {
+			this.searchStatus.textContent = '';
+		} else if ( matches === 0 ) {
+			this.searchStatus.textContent = __( 'No matches', 'godam' );
+		} else {
+			/* translators: %d: number of transcript lines that match the search. */
+			this.searchStatus.textContent = sprintf( _n( '%d match', '%d matches', matches, 'godam' ), matches );
+		}
+	}
+
+	/**
+	 * Write a cue's text, wrapping each matched range in `<mark>`. Built from
+	 * text nodes, never HTML, since the text comes from the caption file.
+	 *
+	 * @param {HTMLElement}             textEl The cue's text element.
+	 * @param {string}                  text   The cue text.
+	 * @param {Array<[number, number]>} ranges Matched `[start, end)` ranges.
+	 */
+	renderCueText( textEl, text, ranges ) {
+		if ( ranges.length === 0 ) {
+			if ( textEl.childElementCount > 0 || textEl.textContent !== text ) {
+				textEl.textContent = text;
+			}
+			return;
+		}
+
+		const fragment = document.createDocumentFragment();
+		let cursor = 0;
+		ranges.forEach( ( [ start, end ] ) => {
+			if ( start > cursor ) {
+				fragment.appendChild( document.createTextNode( text.slice( cursor, start ) ) );
+			}
+			const mark = document.createElement( 'mark' );
+			mark.className = `${ CUE_CLASS }__match`;
+			mark.textContent = text.slice( start, end );
+			fragment.appendChild( mark );
+			cursor = end;
+		} );
+		if ( cursor < text.length ) {
+			fragment.appendChild( document.createTextNode( text.slice( cursor ) ) );
+		}
+
+		textEl.replaceChildren( fragment );
 	}
 
 	/**
@@ -479,6 +655,8 @@ export default class TranscriptPanelManager {
 		this.wrapper.classList.add( OPEN_CLASS );
 		this.button?.setAttribute( 'aria-expanded', 'true' );
 		this.button?.classList.add( `${ BUTTON_CLASS }--active` );
+		this.applyLayout();
+		this.observeLayout();
 		// Sync the active-cue highlight to the current playhead.
 		this.handleTimeUpdate();
 	}
@@ -491,9 +669,239 @@ export default class TranscriptPanelManager {
 			return;
 		}
 		this.isOpen = false;
+		this.unobserveLayout();
+		this.clearLayout();
 		this.wrapper.classList.remove( OPEN_CLASS );
 		this.button?.setAttribute( 'aria-expanded', 'false' );
 		this.button?.classList.remove( `${ BUTTON_CLASS }--active` );
+		this.notifyPlayerResize();
+	}
+
+	/**
+	 * The block root: the element that carries the block's width (and, from
+	 * Player Height, its inline max-width). Markup is root > figure > wrapper.
+	 *
+	 * @return {HTMLElement|null} The root, or null when the markup differs.
+	 */
+	getRoot() {
+		const figure = this.wrapper?.parentElement;
+		return figure?.tagName === 'FIGURE' ? figure.parentElement : null;
+	}
+
+	/**
+	 * Measure the closed-state geometry the layout is computed from. Call with
+	 * the layout cleared, so the stage reports its natural size.
+	 *
+	 * @return {Object} `{ stageWidth, stageHeight, ratio, room }` in px.
+	 */
+	measureLayout() {
+		const stageWidth = this.container.offsetWidth;
+		const stageHeight = this.container.offsetHeight;
+		const playerEl = this.player.el();
+		const ratio = playerEl?.offsetWidth && playerEl?.offsetHeight
+			? playerEl.offsetWidth / playerEl.offsetHeight
+			: 16 / 9;
+
+		// Room the stage can widen into: the column the block sits in, less
+		// whatever the root wraps around the stage (padding, borders).
+		let room = stageWidth;
+		const root = this.getRoot();
+		const column = root?.parentElement;
+		if ( column ) {
+			const style = window.getComputedStyle( column );
+			const columnWidth = column.clientWidth -
+				( parseFloat( style.paddingLeft ) || 0 ) -
+				( parseFloat( style.paddingRight ) || 0 );
+			room = Math.max( stageWidth, columnWidth - ( root.offsetWidth - stageWidth ) );
+		}
+
+		return { stageWidth, stageHeight, ratio, room };
+	}
+
+	/**
+	 * Give the open panel its own space so it never covers the video.
+	 *
+	 * Inline and in the lightbox, the stage either keeps its height with the
+	 * panel beside the video, or stacks the panel beneath it; see
+	 * computeTranscriptLayout(). Fullscreen is laid out by CSS alone.
+	 */
+	applyLayout() {
+		if ( ! this.isOpen || ! this.panel ) {
+			return;
+		}
+
+		this.clearLayout();
+
+		if ( isPlayerFullscreen( this.player ) ) {
+			this.setLayoutSignature( 'fullscreen' );
+			return;
+		}
+
+		const layout = computeTranscriptLayout( this.measureLayout() );
+		const px = ( value ) => `${ Math.round( value ) }px`;
+
+		if ( layout.mode === 'below' ) {
+			this.wrapper.classList.add( LAYOUT_BELOW_CLASS );
+			this.wrapper.style.setProperty( '--godam-transcript-panel-height', px( layout.panelHeight ) );
+			this.setLayoutSignature( `below:${ Math.round( layout.panelHeight ) }` );
+			return;
+		}
+
+		this.wrapper.classList.add( LAYOUT_SIDE_CLASS );
+		this.wrapper.style.setProperty( '--godam-transcript-panel-width', px( layout.panelWidth ) );
+		this.wrapper.style.setProperty( '--godam-transcript-stage-height', px( layout.stageHeight ) );
+		this.wrapper.style.setProperty( '--godam-transcript-player-width', px( layout.playerWidth ) );
+		this.wrapper.style.setProperty( '--godam-transcript-player-height', px( layout.playerHeight ) );
+		this.wrapper.style.setProperty( '--godam-transcript-player-top', px( layout.playerTop ) );
+
+		if ( layout.expandBy >= 1 ) {
+			this.expandRoot( layout.expandBy, layout.width / layout.stageHeight );
+		}
+
+		this.setLayoutSignature( `side:${ Math.round( layout.width ) }x${ Math.round( layout.playerWidth ) }` );
+	}
+
+	/**
+	 * Remove everything `applyLayout()` set, back to the closed geometry.
+	 */
+	clearLayout() {
+		if ( ! this.wrapper ) {
+			return;
+		}
+		this.wrapper.classList.remove( LAYOUT_SIDE_CLASS, LAYOUT_BELOW_CLASS );
+		LAYOUT_VARS.forEach( ( name ) => this.wrapper.style.removeProperty( name ) );
+		this.restoreRoot();
+	}
+
+	/**
+	 * Widen the block root so the panel fits beside a full-size video (a
+	 * portrait video grows toward 16:9). Its inline styles are saved first and
+	 * put back exactly by `restoreRoot()`.
+	 *
+	 * @param {number} expandBy   Extra width needed, in px.
+	 * @param {number} stageRatio Width / height of the widened stage.
+	 */
+	expandRoot( expandBy, stageRatio ) {
+		const root = this.getRoot();
+		if ( ! root ) {
+			return;
+		}
+
+		const width = root.offsetWidth + expandBy;
+		this.root = root;
+		this.rootStyleBackup = ROOT_STYLE_PROPS.map( ( prop ) => [
+			prop,
+			root.style.getPropertyValue( prop ),
+			root.style.getPropertyPriority( prop ),
+		] );
+		// `important` so this also beats the lightbox's own `!important` sizing.
+		root.style.setProperty( 'width', `${ Math.round( width ) }px`, 'important' );
+		root.style.setProperty( 'max-width', 'none', 'important' );
+		root.style.setProperty( 'aspect-ratio', 'auto', 'important' );
+		root.classList.add( EXPANDED_CLASS );
+
+		// In the lightbox, the close button finds the video's corner from this
+		// ratio; point it at the widened stage while the panel is open.
+		const lightbox = root.closest( '.godam-player-modal-wrapper' );
+		if ( lightbox ) {
+			this.lightboxWrapper = lightbox;
+			this.lightboxRatioBackup = lightbox.style.getPropertyValue( '--godam-lightbox-ratio' );
+			lightbox.style.setProperty( '--godam-lightbox-ratio', String( stageRatio ) );
+		}
+	}
+
+	/**
+	 * Undo `expandRoot()`.
+	 */
+	restoreRoot() {
+		if ( this.root && this.rootStyleBackup ) {
+			this.rootStyleBackup.forEach( ( [ prop, value, priority ] ) => {
+				if ( value ) {
+					this.root.style.setProperty( prop, value, priority );
+				} else {
+					this.root.style.removeProperty( prop );
+				}
+			} );
+			this.root.classList.remove( EXPANDED_CLASS );
+		}
+
+		if ( this.lightboxWrapper ) {
+			if ( this.lightboxRatioBackup ) {
+				this.lightboxWrapper.style.setProperty( '--godam-lightbox-ratio', this.lightboxRatioBackup );
+			} else {
+				this.lightboxWrapper.style.removeProperty( '--godam-lightbox-ratio' );
+			}
+		}
+
+		this.root = null;
+		this.rootStyleBackup = null;
+		this.lightboxWrapper = null;
+		this.lightboxRatioBackup = null;
+	}
+
+	/**
+	 * Record the layout just applied, and tell the player when it changed.
+	 *
+	 * @param {string} signature Short description of the layout.
+	 */
+	setLayoutSignature( signature ) {
+		if ( signature === this.layoutSignature ) {
+			return;
+		}
+		this.layoutSignature = signature;
+		this.notifyPlayerResize();
+	}
+
+	/**
+	 * Let the player's resize handlers (hotspot positions, the narrow-player
+	 * control layout) re-measure after the player changed size. Video.js has
+	 * no event for an element-size change, so this reuses `resize`, which those
+	 * handlers already listen to.
+	 */
+	notifyPlayerResize() {
+		window.requestAnimationFrame?.( () => this.player?.trigger?.( 'resize' ) );
+	}
+
+	/**
+	 * Re-run the layout while open when the column or the block changes size
+	 * (window resize, the player moving into or out of the lightbox).
+	 */
+	observeLayout() {
+		if ( typeof window.ResizeObserver !== 'function' ) {
+			window.addEventListener( 'resize', this.applyLayout );
+			return;
+		}
+
+		if ( ! this.resizeObserver ) {
+			this.resizeObserver = new window.ResizeObserver( () => {
+				// The lightbox moves the block to another parent; follow it.
+				const column = this.getRoot()?.parentElement || null;
+				if ( column && column !== this.observedParent ) {
+					this.observeTargets();
+				}
+				this.applyLayout();
+			} );
+		}
+		this.observeTargets();
+	}
+
+	/**
+	 * Point the resize observer at the block root and its column.
+	 */
+	observeTargets() {
+		const root = this.getRoot();
+		this.resizeObserver.disconnect();
+		this.observedParent = root?.parentElement || null;
+		[ root, this.observedParent ].filter( Boolean ).forEach( ( el ) => this.resizeObserver.observe( el ) );
+	}
+
+	/**
+	 * Stop following size changes (panel closed or player disposed).
+	 */
+	unobserveLayout() {
+		this.resizeObserver?.disconnect();
+		this.observedParent = null;
+		window.removeEventListener( 'resize', this.applyLayout );
 	}
 
 	/**
@@ -544,10 +952,44 @@ export default class TranscriptPanelManager {
 		if ( el ) {
 			el.classList.add( ACTIVE_CUE_CLASS );
 			if ( scroll ) {
-				el.scrollIntoView( { block: 'nearest', behavior: 'smooth' } );
+				this.scrollCueIntoView( el );
 			}
 		}
 		this.activeCueIndex = index;
+	}
+
+	/**
+	 * Scroll the panel's own list so a cue is in view. Unlike
+	 * `scrollIntoView()`, this never scrolls the page, which would yank the
+	 * reader away mid-video. Instant when the visitor prefers reduced motion.
+	 *
+	 * @param {HTMLElement} el The cue row.
+	 */
+	scrollCueIntoView( el ) {
+		const body = this.bodyEl;
+		if ( ! body || el.hidden ) {
+			return;
+		}
+
+		// Row position within the list's scrollable content.
+		const top = el.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop;
+		const bottom = top + el.offsetHeight;
+		let target = null;
+		if ( top < body.scrollTop ) {
+			target = top;
+		} else if ( bottom > body.scrollTop + body.clientHeight ) {
+			target = bottom - body.clientHeight;
+		}
+		if ( target === null ) {
+			return;
+		}
+
+		const behavior = this.reducedMotion?.matches ? 'auto' : 'smooth';
+		if ( typeof body.scrollTo === 'function' ) {
+			body.scrollTo( { top: target, behavior } );
+		} else {
+			body.scrollTop = target;
+		}
 	}
 
 	/**
@@ -578,8 +1020,12 @@ export default class TranscriptPanelManager {
 	destroy() {
 		clearTimeout( this.copyResetTimeout );
 		this.player.off( 'timeupdate', this.handleTimeUpdate );
-		// Fullscreen listeners are removed by the reparenting helper on player
-		// `dispose`; nothing to detach here.
+		this.player.off( 'fullscreenchange', this.applyLayout );
+		this.player.off( 'customfullscreenchange', this.applyLayout );
+		// The reparenting helper removes its own fullscreen listeners on dispose.
+		this.isOpen = false;
+		this.unobserveLayout();
+		this.clearLayout();
 		this.wrapper?.classList.remove( OPEN_CLASS );
 		this.wrapper?.classList.remove( HAS_PANEL_CLASS );
 		this.container?.classList.remove( 'godam-has-transcript' );
