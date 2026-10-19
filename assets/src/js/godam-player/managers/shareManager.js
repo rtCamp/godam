@@ -281,7 +281,11 @@ class ShareManager {
 		const pageUrl = new URL( window.location.href );
 		pageUrl.hash = `godam-video-${ pageId }`;
 		const pageLink = pageUrl.toString();
-		const encodedLink = encodeURI( pageLink );
+		// Encode the whole link as a single value: encodeURI() would leave `#`,
+		// `?` and `&` intact, so appended after `?u=`/`&url=` the `#godam-video-{id}`
+		// anchor (and any query param) would split off the shared link instead of
+		// travelling with it.
+		const encodedLink = encodeURIComponent( pageLink );
 		const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
 		return { pageLink, encodedLink, message };
@@ -526,7 +530,9 @@ class ShareManager {
 		wpPageLinkInput.value = wpPageLink;
 
 		// Social links share the WP page link so recipients land on the public page.
-		const encodedHref = encodeURI( wpPageLink );
+		// encodeURIComponent so the `#godam-video-{id}` anchor and any query param
+		// travel with the link instead of splitting off (see generateShareUrls).
+		const encodedHref = encodeURIComponent( wpPageLink );
 		socialLinks.forEach( ( { className, href } ) => {
 			const el = container.querySelector( `.${ className }` );
 			if ( el ) {
@@ -669,10 +675,17 @@ class ShareManager {
 
 		const container = this.player.el().closest( '.easydam-video-container' );
 
-		// The share button no longer depends on transcoding: it shows for every
-		// video whenever sharing is enabled in the block settings, because the
-		// shared link is the WordPress page link, not a SaaS transcoding route.
+		// The share button no longer depends on transcoding, so non-transcoded
+		// Media Library videos get it too. But the shared link is a page anchor
+		// (#godam-video-{id}), so the player still needs an ID to point at — a WP
+		// attachment ID or a transcoding job ID.
 		if ( ! container || ! this.videoSetupOptions.showShareBtn ) {
+			return;
+		}
+
+		// "Insert from URL" players have neither ID, so their share link could not
+		// target the video (#godam-video-). Keep the button hidden for them.
+		if ( ! this.video.dataset.id && ! jobId ) {
 			return;
 		}
 
