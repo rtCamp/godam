@@ -11,7 +11,7 @@
  * Only loaded from the `wp_sitemaps_init` action, when WP_Sitemaps_Provider exists.
  *
  * @package GoDAM
- * @since   2.4.0
+ * @since   2.4.1
  */
 
 namespace RTGODAM\Inc;
@@ -51,6 +51,29 @@ class Video_Sitemap_Core_Provider extends \WP_Sitemaps_Provider {
 	public function get_sitemap_url( $name, $page ) {
 		unset( $name );
 		return Video_Sitemap::get_sitemap_url( $page );
+	}
+
+	/**
+	 * Index entries for /wp-sitemap.xml.
+	 *
+	 * Overrides core's default (one entry per page from 1 to the page count)
+	 * so pages that end up empty — every post on them noindexed, or all their
+	 * videos excluded or invalid — aren't listed, matching the Yoast, Rank
+	 * Math and AIOSEO indexes ({@see Video_Sitemap::get_index_items()}).
+	 *
+	 * @return array[] Entries, each with a 'loc' key.
+	 */
+	public function get_sitemap_entries() {
+		$entries = array();
+
+		foreach ( $this->video_sitemap->get_index_items() as $item ) {
+			$entry = array( 'loc' => $item['loc'] );
+
+			/** This filter is documented in wp-includes/sitemaps/class-wp-sitemaps-provider.php */
+			$entries[] = apply_filters( 'wp_sitemaps_index_entry', $entry, $this->object_type, '', $item['page'] );
+		}
+
+		return $entries;
 	}
 
 	/**

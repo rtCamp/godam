@@ -14,7 +14,7 @@
  * those is active, in the WordPress core sitemap index (/wp-sitemap.xml).
  *
  * @package GoDAM
- * @since   2.4.0
+ * @since   2.4.1
  */
 
 namespace RTGODAM\Inc;
@@ -59,6 +59,7 @@ class Video_Sitemap {
 	 * Google's limits for <video:description> and <video:duration>.
 	 */
 	const MAX_DESCRIPTION_LENGTH = 2048;
+	const MAX_TITLE_LENGTH       = 100;
 	const MAX_DURATION_SECONDS   = 28800;
 
 	/**
@@ -79,18 +80,49 @@ class Video_Sitemap {
 	 */
 	protected function setup_hooks() {
 		add_action( 'godam_video_seo_schema_saved', array( $this, 'invalidate_cache' ) );
-		add_action( 'godam_video_seo_schema_cleared', array( $this, 'invalidate_cache' ) );
+		add_action( 'godam_video_seo_schema_cleared', array( $this, 'maybe_invalidate_on_cleared' ), 10, 2 );
 		add_action( 'transition_post_status', array( $this, 'maybe_invalidate_on_status_change' ), 10, 3 );
 		add_action( 'before_delete_post', array( $this, 'maybe_invalidate_on_delete' ) );
-		add_action( 'edit_attachment', array( $this, 'invalidate_cache' ) );
-		add_action( 'add_option_rtgodam-settings', array( $this, 'invalidate_cache' ) );
-		add_action( 'update_option_rtgodam-settings', array( $this, 'invalidate_cache' ) );
+		add_action( 'edit_attachment', array( $this, 'maybe_invalidate_on_attachment_edit' ) );
 
+		// Values the sitemap resolves live from the attachment (HLS URL, original
+		// file, transcript excerpt) can change without the attachment being
+		// "edited" — e.g. the transcoding callback writes the HLS URL directly.
+		add_action( 'added_post_meta', array( $this, 'maybe_invalidate_on_attachment_meta' ), 10, 3 );
+		add_action( 'updated_post_meta', array( $this, 'maybe_invalidate_on_attachment_meta' ), 10, 3 );
+		add_action( 'deleted_post_meta', array( $this, 'maybe_invalidate_on_attachment_meta' ), 10, 3 );
+
+		add_action( 'add_option_rtgodam-settings', array( $this, 'maybe_invalidate_on_settings_add' ), 10, 2 );
+		add_action( 'update_option_rtgodam-settings', array( $this, 'maybe_invalidate_on_settings_update' ), 10, 2 );
+
+		// The plugin loads while godam.php is included, before the theme and any
+		// plugin loaded after GoDAM have added their filters. Decide whether the
+		// sitemap is on at after_setup_theme, so `godam_video_sitemap_enabled`
+		// works from a theme's functions.php or any plugin, and still before
+		// `init` / `wp_sitemaps_init`.
+		if ( did_action( 'after_setup_theme' ) ) {
+			$this->register_sitemap_hooks();
+		} else {
+			add_action( 'after_setup_theme', array( $this, 'register_sitemap_hooks' ), 20 );
+		}
+	}
+
+	/**
+	 * Register the hooks that serve and list the sitemap, when it's enabled.
+	 *
+	 * @return void
+	 */
+	public function register_sitemap_hooks() {
 		if ( ! self::is_enabled() ) {
 			return;
 		}
 
 		add_filter( 'query_vars', array( $this, 'add_query_var' ) );
+
+		// Also list the sitemap in robots.txt, so search engines find it on
+		// sites whose SEO plugin GoDAM doesn't integrate with, or with core
+		// sitemaps turned off.
+		add_filter( 'robots_txt', array( $this, 'add_robots_txt_sitemap' ), 20, 2 ); // phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.robots_txt -- core builds robots.txt on each request; nothing to flush outside VIP.
 
 		// Priority 1: before All in One SEO (parse_request), Rank Math
 		// (parse_query), Yoast (pre_get_posts) and core (template_redirect)
@@ -118,7 +150,7 @@ class Video_Sitemap {
 		/**
 		 * Filters whether the GoDAM video sitemap is enabled.
 		 *
-		 * @since 2.4.0
+		 * @since 2.4.1
 		 *
 		 * @param bool $enabled Whether the sitemap is enabled in settings.
 		 */
@@ -134,7 +166,7 @@ class Video_Sitemap {
 		/**
 		 * Filters the number of pages listed per video sitemap file.
 		 *
-		 * @since 2.4.0
+		 * @since 2.4.1
 		 *
 		 * @param int $entries Entries per sitemap page. Default 1000.
 		 */
@@ -258,18 +290,46 @@ class Video_Sitemap {
 	 * @return string
 	 */
 	public function get_page_xml( $page ) {
+		return $this->get_page_data( $page )['xml'];
+	}
+
+	/**
+	 * Number of <url> entries a sitemap page actually contains, after noindexed
+	 * pages, excluded videos and invalid videos are dropped.
+	 *
+	 * @param int $page 1-based page number.
+	 * @return int
+	 */
+	public function get_page_url_count( $page ) {
+		return $this->get_page_data( $page )['count'];
+	}
+
+	/**
+	 * Build (or read from cache) one sitemap page's XML and its entry count.
+	 *
+	 * @param int $page 1-based page number.
+	 * @return array{xml:string,count:int}
+	 */
+	private function get_page_data( $page ) {
 		$cache_key = $this->get_cache_key( 'page_' . (int) $page );
 		$cached    = get_transient( $cache_key );
 
-		if ( is_string( $cached ) && '' !== $cached ) {
-			return $cached;
+		if ( is_array( $cached ) && isset( $cached['xml'], $cached['count'] ) && is_string( $cached['xml'] ) ) {
+			return array(
+				'xml'   => $cached['xml'],
+				'count' => (int) $cached['count'],
+			);
 		}
 
-		$xml = self::build_urlset_xml( $this->get_url_entries( $page ) );
+		$entries = $this->get_url_entries( $page );
+		$data    = array(
+			'xml'   => self::build_urlset_xml( $entries ),
+			'count' => count( $entries ),
+		);
 
-		set_transient( $cache_key, $xml, DAY_IN_SECONDS );
+		set_transient( $cache_key, $data, DAY_IN_SECONDS );
 
-		return $xml;
+		return $data;
 	}
 
 	/**
@@ -343,7 +403,7 @@ class Video_Sitemap {
 			 *
 			 * Return an empty value to drop the page from the sitemap.
 			 *
-			 * @since 2.4.0
+			 * @since 2.4.1
 			 *
 			 * @param array $entry   Entry with 'loc', 'lastmod' and 'videos'.
 			 * @param int   $post_id Host post ID.
@@ -413,7 +473,7 @@ class Video_Sitemap {
 
 		$video = array(
 			'thumbnail_loc'    => $thumbnail,
-			'title'            => $title,
+			'title'            => Seo::trim_to_length( $title, self::MAX_TITLE_LENGTH ),
 			'description'      => Seo::trim_to_length( $description, self::MAX_DESCRIPTION_LENGTH ),
 			'content_loc'      => ! empty( $schema['contentUrl'] ) ? (string) $schema['contentUrl'] : '',
 			'player_loc'       => ! empty( $schema['embedUrl'] ) ? (string) $schema['embedUrl'] : '',
@@ -539,7 +599,7 @@ class Video_Sitemap {
 		/**
 		 * Filters the post types whose pages may appear in the video sitemap.
 		 *
-		 * @since 2.4.0
+		 * @since 2.4.1
 		 *
 		 * @param string[] $post_types Public post types, minus attachment.
 		 */
@@ -584,7 +644,15 @@ class Video_Sitemap {
 			)
 		);
 
-		return array_map( 'intval', $query->posts );
+		$post_ids = array_map( 'intval', $query->posts );
+
+		// 'fields' => 'ids' skips priming the post and meta caches; do it in one
+		// go so building the page doesn't run per-post queries.
+		if ( ! empty( $post_ids ) && function_exists( '_prime_post_caches' ) ) {
+			_prime_post_caches( $post_ids, false, true );
+		}
+
+		return $post_ids;
 	}
 
 	/**
@@ -681,7 +749,7 @@ class Video_Sitemap {
 		/**
 		 * Filters whether a page is left out of the GoDAM video sitemap.
 		 *
-		 * @since 2.4.0
+		 * @since 2.4.1
 		 *
 		 * @param bool $excluded Whether the page is excluded (true when noindexed).
 		 * @param int  $post_id  Host post ID.
@@ -849,20 +917,29 @@ class Video_Sitemap {
 	/**
 	 * One item per sitemap page, for the SEO plugins' indexes.
 	 *
-	 * @return array[] Each with 'loc', 'lastmod' and 'count'.
+	 * @return array[] Each with 'loc', 'lastmod', 'count' and 'page'.
 	 */
 	public function get_index_items() {
-		$count     = $this->get_total_count();
-		$per_page  = self::get_entries_per_page();
-		$max_pages = $count > 0 ? (int) ceil( $count / $per_page ) : 0;
+		$max_pages = $this->get_max_pages();
 		$lastmod   = $max_pages ? $this->get_last_modified() : '';
 		$items     = array();
 
 		for ( $page = 1; $page <= $max_pages; $page++ ) {
+			// Pages are sized on candidate posts; noindexed pages and excluded
+			// or invalid videos are only dropped while building the page. Don't
+			// advertise a page that ends up empty (Search Console flags empty
+			// sitemaps), and report the real number of URLs it holds. The page
+			// data is cached, so this costs one build per cache version.
+			$url_count = $this->get_page_url_count( $page );
+			if ( $url_count < 1 ) {
+				continue;
+			}
+
 			$items[] = array(
 				'loc'     => self::get_sitemap_url( $page ),
 				'lastmod' => $lastmod,
-				'count'   => ( $page < $max_pages ) ? $per_page : $count - ( $per_page * ( $max_pages - 1 ) ),
+				'count'   => $url_count,
+				'page'    => $page,
 			);
 		}
 
@@ -893,6 +970,172 @@ class Video_Sitemap {
 	public function invalidate_cache() {
 		$version = (int) get_option( self::CACHE_VERSION_OPTION, 1 );
 		update_option( self::CACHE_VERSION_OPTION, $version + 1, false );
+	}
+
+	/**
+	 * Whether an attachment is used by at least one page with cached video SEO.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return bool
+	 */
+	private function is_attachment_in_use( $attachment_id ) {
+		/**
+		 * Fires before reading this attachment's reverse-index meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.4.1
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$in_use = metadata_exists( 'post', (int) $attachment_id, Seo::ATTACHMENT_POSTS_MAP_META_KEY );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		return $in_use;
+	}
+
+	/**
+	 * Invalidate when a post's video SEO is cleared, but only if it had any.
+	 *
+	 * `godam_video_seo_schema_cleared` fires on every save of a post with no
+	 * GoDAM video (pages, products, orders…); those don't affect the sitemap.
+	 *
+	 * @param int  $post_id    Post ID.
+	 * @param bool $had_schema Whether the post had cached video SEO before. Defaults
+	 *                         to true for callers that don't pass it.
+	 * @return void
+	 */
+	public function maybe_invalidate_on_cleared( $post_id, $had_schema = true ) {
+		unset( $post_id );
+
+		if ( $had_schema ) {
+			$this->invalidate_cache();
+		}
+	}
+
+	/**
+	 * Add a `Sitemap:` line for the video sitemap to robots.txt.
+	 *
+	 * @param string $output    robots.txt content.
+	 * @param bool   $is_public Whether the site is public (Settings > Reading).
+	 * @return string
+	 */
+	public function add_robots_txt_sitemap( $output, $is_public ) {
+		if ( ! $is_public ) {
+			return $output;
+		}
+
+		$line = 'Sitemap: ' . esc_url_raw( self::get_sitemap_url( 1 ) );
+
+		if ( false !== strpos( (string) $output, $line ) ) {
+			return $output;
+		}
+
+		return rtrim( (string) $output ) . "\n" . $line . "\n";
+	}
+
+	/**
+	 * Whether WordPress core sitemaps (/wp-sitemap.xml) are enabled.
+	 *
+	 * They're off when "Discourage search engines" is set, or when a plugin
+	 * filters `wp_sitemaps_enabled`.
+	 *
+	 * @return bool
+	 */
+	public static function are_core_sitemaps_enabled() {
+		if ( function_exists( 'wp_sitemaps_get_server' ) ) {
+			$server = wp_sitemaps_get_server();
+			if ( is_object( $server ) && method_exists( $server, 'sitemaps_enabled' ) ) {
+				return (bool) $server->sitemaps_enabled();
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Invalidate on `edit_attachment` only for a video that a listed page uses,
+	 * not for every media edit (e.g. alt text on an unrelated image).
+	 *
+	 * The page-level data itself is refreshed by Seo's background re-sync,
+	 * which fires `godam_video_seo_schema_saved`; this keeps the sitemap from
+	 * serving stale data until that runs.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return void
+	 */
+	public function maybe_invalidate_on_attachment_edit( $attachment_id ) {
+		/** This action is documented in inc/classes/class-video-sitemap.php */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$mime = (string) get_post_mime_type( $attachment_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( 0 !== strpos( $mime, 'video/' ) ) {
+			return;
+		}
+
+		if ( $this->is_attachment_in_use( $attachment_id ) ) {
+			$this->invalidate_cache();
+		}
+	}
+
+	/**
+	 * Invalidate when attachment meta the sitemap reads live changes on a video
+	 * that a listed page uses: the HLS URL (written by the transcoding
+	 * callback), the original file, or the cached transcript excerpt.
+	 *
+	 * @param int|int[] $meta_ids  Meta ID(s). Unused.
+	 * @param int       $object_id Post ID the meta belongs to.
+	 * @param string    $meta_key  Meta key.
+	 * @return void
+	 */
+	public function maybe_invalidate_on_attachment_meta( $meta_ids, $object_id, $meta_key ) {
+		unset( $meta_ids );
+
+		$watched = array(
+			'rtgodam_hls_transcoded_url',
+			'_wp_attached_file',
+			Seo::TRANSCRIPT_EXCERPT_META_KEY,
+		);
+
+		if ( ! in_array( $meta_key, $watched, true ) ) {
+			return;
+		}
+
+		if ( $this->is_attachment_in_use( $object_id ) ) {
+			$this->invalidate_cache();
+		}
+	}
+
+	/**
+	 * Invalidate when the GoDAM settings option is first created with SEO settings.
+	 *
+	 * @param string $option Option name. Unused.
+	 * @param mixed  $value  New value.
+	 * @return void
+	 */
+	public function maybe_invalidate_on_settings_add( $option, $value ) {
+		unset( $option );
+
+		if ( is_array( $value ) && ! empty( $value['seo'] ) ) {
+			$this->invalidate_cache();
+		}
+	}
+
+	/**
+	 * Invalidate on a GoDAM settings save only when the SEO settings changed,
+	 * not on unrelated saves (player, ads, …).
+	 *
+	 * @param mixed $old_value Previous value.
+	 * @param mixed $value     New value.
+	 * @return void
+	 */
+	public function maybe_invalidate_on_settings_update( $old_value, $value ) {
+		$old_seo = ( is_array( $old_value ) && isset( $old_value['seo'] ) ) ? $old_value['seo'] : null;
+		$new_seo = ( is_array( $value ) && isset( $value['seo'] ) ) ? $value['seo'] : null;
+
+		if ( $old_seo !== $new_seo ) {
+			$this->invalidate_cache();
+		}
 	}
 
 	/**

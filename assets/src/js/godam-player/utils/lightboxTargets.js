@@ -128,6 +128,22 @@ export function findVideoById( id, doc = document ) {
 }
 
 /**
+ * Find the first ordinary (non-lightbox) GoDAM video on the page.
+ *
+ * Used when a URL carries `?t=` but no `#godam-video-{id}` hash, so the start
+ * time still applies to the page's main video. Lightbox players are skipped:
+ * their inline render is only a poster, and opening an overlay for a link
+ * that never named a video would be surprising.
+ *
+ * @param {Document} doc - Document to search (defaults to `document`).
+ * @return {HTMLElement|null} The video element, or null when there is none.
+ */
+export function findFirstInlineVideo( doc = document ) {
+	const videos = doc.querySelectorAll( 'video[data-id], video[data-job_id]' );
+	return [ ...videos ].find( ( video ) => ! isLightboxVideo( video ) ) || null;
+}
+
+/**
  * Get the element to move into the lightbox for a given video.
  *
  * The template nests `div > figure > div.godam-video-wrapper > … > video`, and it

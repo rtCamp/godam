@@ -86,7 +86,7 @@ class VideoSeoKeyMomentsTest extends TestCase {
 					'@type'       => 'Clip',
 					'name'        => 'On-page basics',
 					'startOffset' => 60,
-					'endOffset'   => 301,
+					'endOffset'   => 300,
 					'url'         => 'https://example.test/demo/?t=60#godam-video-42',
 				),
 				array(
@@ -190,6 +190,65 @@ class VideoSeoKeyMomentsTest extends TestCase {
 		$this->assertSame( array( 'First', 'Second' ), array_column( $clips, 'name' ) );
 	}
 
+	public function test_duplicate_is_dropped_before_ends_are_worked_out() {
+		// "Recap" floors to the same second as "Intro" and is dropped. Intro must
+		// still end at Main's start, not at the dropped row's start (0).
+		$chapters = array(
+			array(
+				'text'      => 'Intro',
+				'startTime' => '0',
+			),
+			array(
+				'text'      => 'Recap',
+				'startTime' => '0.4',
+			),
+			array(
+				'text'      => 'Main',
+				'startTime' => '30',
+			),
+		);
+
+		$clips = Seo::chapters_to_clips( $chapters, self::PAGE, 1, 120 );
+
+		$this->assertSame( array( 'Intro', 'Main' ), array_column( $clips, 'name' ) );
+		$this->assertSame( array( 0, 30 ), array_column( $clips, 'startOffset' ) );
+		$this->assertSame( array( 30, 120 ), array_column( $clips, 'endOffset' ) );
+	}
+
+	public function test_neighbouring_clips_never_overlap() {
+		$chapters = array(
+			array(
+				'text'      => 'A',
+				'startTime' => '10.2',
+				'endTime'   => '20.7',
+			),
+			array(
+				'text'      => 'B',
+				'startTime' => '20.5',
+			),
+			array(
+				'text'      => 'C',
+				'startTime' => '40',
+				'endTime'   => '90',
+			),
+			array(
+				'text'      => 'D',
+				'startTime' => '60',
+			),
+		);
+
+		$clips = Seo::chapters_to_clips( $chapters, self::PAGE, 1, 100 );
+
+		$this->assertSame( array( 10, 20, 40, 60 ), array_column( $clips, 'startOffset' ) );
+		// A's end rounds down; C's explicit end is capped at D's start.
+		$this->assertSame( array( 20, 40, 60, 100 ), array_column( $clips, 'endOffset' ) );
+
+		$count = count( $clips );
+		for ( $i = 1; $i < $count; $i++ ) {
+			$this->assertLessThanOrEqual( $clips[ $i ]['startOffset'], $clips[ $i - 1 ]['endOffset'] );
+		}
+	}
+
 	public function test_chapter_names_are_stripped_of_html() {
 		$chapters = array(
 			array(
@@ -289,6 +348,30 @@ class VideoSeoKeyMomentsTest extends TestCase {
 		$this->assertSame( 'https://shop.test/?p=10&t=60#godam-video-42', $schema['hasPart'][1]['url'] );
 		// Last clip ends at the video duration (PT10M).
 		$this->assertSame( 600, $schema['hasPart'][2]['endOffset'] );
+	}
+
+	public function test_no_has_part_for_videos_under_30_seconds() {
+		$GLOBALS['rtgodam_stub']['post_meta']['rtgodam_meta'] = array( 'chapters' => $this->chapters() );
+
+		$entry             = $this->entry();
+		$entry['duration'] = 'PT29S';
+
+		$this->assertArrayNotHasKey( 'hasPart', $this->seo->build_video_object_schema( $entry, 10 ) );
+
+		$entry['duration'] = 'PT30S';
+		$schema            = $this->seo->build_video_object_schema( $entry, 10 );
+
+		// 30 seconds is enough; the 60s and 300s chapters are past the end.
+		$this->assertSame( array( 'Introduction' ), array_column( $schema['hasPart'], 'name' ) );
+	}
+
+	public function test_has_part_kept_when_duration_is_unknown() {
+		$GLOBALS['rtgodam_stub']['post_meta']['rtgodam_meta'] = array( 'chapters' => $this->chapters() );
+
+		$entry = $this->entry();
+		unset( $entry['duration'] );
+
+		$this->assertCount( 3, $this->seo->build_video_object_schema( $entry, 10 )['hasPart'] );
 	}
 
 	public function test_no_has_part_without_chapters() {

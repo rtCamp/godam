@@ -38,6 +38,13 @@ class VideoSeoSchemaTest extends TestCase {
 	 */
 	private $seo;
 
+	/**
+	 * Temporary directories created by a test, removed in tearDown().
+	 *
+	 * @var string[]
+	 */
+	private $temp_dirs = array();
+
 	protected function setUp(): void {
 		parent::setUp();
 		$GLOBALS['rtgodam_stub']  = array();
@@ -46,6 +53,9 @@ class VideoSeoSchemaTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
+		foreach ( $this->temp_dirs as $dir ) {
+			$this->remove_dir( $dir );
+		}
 		unset( $GLOBALS['rtgodam_stub'] );
 		$GLOBALS['rtgodam_hooks'] = array();
 		parent::tearDown();
@@ -53,7 +63,7 @@ class VideoSeoSchemaTest extends TestCase {
 
 	/**
 	 * A cached SEO entry as Seo::get_seo_from_attachment() used to store it
-	 * before 2.4.0: DASH contentUrl, empty description, no embedUrl.
+	 * before 2.4.1: DASH contentUrl, empty description, no embedUrl.
 	 *
 	 * @param array $overrides Fields to override.
 	 * @return array
@@ -229,6 +239,80 @@ class VideoSeoSchemaTest extends TestCase {
 		$this->assertSame( 'Hello & welcome.', $schema['description'] );
 	}
 
+	public function test_page_text_cannot_close_the_json_ld_script_tag() {
+		// An Author's paragraph, stored with entities (kses allows this).
+		$GLOBALS['rtgodam_stub']['posts'][7] = (object) array(
+			'post_type'     => 'page',
+			'post_excerpt'  => '',
+			'post_password' => '',
+			'post_content'  => '<p>Watch &lt;/script&gt;&lt;img src=x onerror=alert(document.domain)&gt; now</p>',
+		);
+
+		$schema = $this->seo->build_video_object_schema( $this->legacy_entry(), 7 );
+
+		$this->assertStringNotContainsString( '<', $schema['description'] );
+		$this->assertStringNotContainsString( '</script>', $schema['description'] );
+
+		// And the JSON output flags escape < > & in any value, as a second line of defence.
+		$json = json_encode( array( 'description' => 'a </script> b & c' ), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- tests PHP's own flag behaviour.
+		$this->assertStringNotContainsString( '</script>', $json );
+		$this->assertStringContainsString( '\\u003C/script\\u003E', $json );
+	}
+
+	public function test_transcript_text_cannot_contain_tags_after_decoding() {
+		$vtt = "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nHi &lt;/script&gt;&lt;b&gt;there&lt;/b&gt;\n";
+
+		$this->assertSame( 'Hi there', Seo::transcript_to_text( $vtt ) );
+	}
+
+	public function test_password_protected_page_text_is_not_used() {
+		$GLOBALS['rtgodam_stub']['posts'][7] = (object) array(
+			'post_type'     => 'page',
+			'post_excerpt'  => 'Secret members-only notes.',
+			'post_password' => 'hunter2',
+			'post_content'  => 'Secret members-only content.',
+		);
+
+		$schema = $this->seo->build_video_object_schema( $this->legacy_entry(), 7 );
+
+		$this->assertArrayNotHasKey( 'description', $schema );
+	}
+
+	public function test_null_byte_in_transcript_url_does_not_break_the_save() {
+		$this->make_uploads_dir();
+		$GLOBALS['rtgodam_stub']['post_meta'] = array( 'rtgodam_transcript_path' => 'https://example.com/wp-content/uploads/2026/t%00.vtt' );
+
+		// realpath() would throw a ValueError on the NUL byte.
+		$this->assertSame( '', $this->seo->get_transcript_excerpt( 42, true ) );
+	}
+
+	public function test_legacy_entry_without_attachment_queues_one_resave() {
+		// Elementor / WPBakery cache from before 2.4.1: no attachment_id, DASH URL.
+		$entry = $this->legacy_entry( array( 'attachment_id' => 0 ) );
+
+		$this->seo->build_video_object_schema( $entry, 10 );
+		$this->seo->build_video_object_schema( $entry, 10 );
+
+		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['scheduled'] );
+		$this->assertSame( 'godam_video_seo_resave_post', $GLOBALS['rtgodam_stub']['scheduled'][0]['hook'] );
+		$this->assertSame( array( 10 ), $GLOBALS['rtgodam_stub']['scheduled'][0]['args'] );
+	}
+
+	public function test_current_entries_do_not_queue_a_resave() {
+		$this->seo->build_video_object_schema( $this->legacy_entry(), 10 );
+		$this->seo->build_video_object_schema(
+			$this->legacy_entry(
+				array(
+					'attachment_id' => 0,
+					'contentUrl'    => 'https://videos.example.test/clip.mp4',
+				) 
+			),
+			10 
+		);
+
+		$this->assertArrayNotHasKey( 'scheduled', $GLOBALS['rtgodam_stub'] );
+	}
+
 	// -----------------------------------------------------------------------------------
 	// isFamilyFriendly and other fields.
 	// -----------------------------------------------------------------------------------
@@ -331,7 +415,7 @@ class VideoSeoSchemaTest extends TestCase {
 		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['remote_get_urls'] );
 	}
 
-	public function test_failed_transcript_fetch_is_not_cached() {
+	public function test_failed_transcript_fetch_is_remembered_for_an_hour() {
 		$GLOBALS['rtgodam_stub']['post_meta'] = array(
 			'rtgodam_transcript_path' => 'https://cdn.example.test/job_1/transcript.vtt',
 		);
@@ -341,7 +425,33 @@ class VideoSeoSchemaTest extends TestCase {
 		);
 
 		$this->assertSame( '', $this->seo->get_transcript_excerpt( 42, true ) );
-		$this->assertArrayNotHasKey( 'meta_writes', $GLOBALS['rtgodam_stub'] );
+		$this->assertSame( '', $GLOBALS['rtgodam_stub']['meta_writes'][ Seo::TRANSCRIPT_EXCERPT_META_KEY ]['text'] );
+
+		// A save right after doesn't wait on the dead URL again.
+		$this->seo->get_transcript_excerpt( 42, true );
+		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['remote_get_urls'] );
+	}
+
+	public function test_failed_transcript_fetch_is_retried_after_an_hour() {
+		$GLOBALS['rtgodam_stub']['post_meta'] = array(
+			'rtgodam_transcript_path'        => 'https://cdn.example.test/job_1/transcript.vtt',
+			Seo::TRANSCRIPT_EXCERPT_META_KEY => array(
+				'path'      => 'https://cdn.example.test/job_1/transcript.vtt',
+				'text'      => '',
+				'failed_at' => time() - HOUR_IN_SECONDS - 1,
+			),
+		);
+		$GLOBALS['rtgodam_stub']['http']      = array(
+			'code' => 200,
+			'body' => "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nWorks now.\n",
+		);
+
+		$this->assertSame( 'Works now.', $this->seo->get_transcript_excerpt( 42, true ) );
+
+		// A page render (no remote fetches) still just reads the cache.
+		$GLOBALS['rtgodam_stub']['post_meta'][ Seo::TRANSCRIPT_EXCERPT_META_KEY ]['failed_at'] = time() - HOUR_IN_SECONDS - 1;
+		$GLOBALS['rtgodam_stub']['post_meta'][ Seo::TRANSCRIPT_EXCERPT_META_KEY ]['text']      = '';
+		$this->assertSame( '', $this->seo->get_transcript_excerpt( 42, false ) );
 	}
 
 	public function test_deleted_transcript_is_not_used() {
@@ -368,7 +478,75 @@ class VideoSeoSchemaTest extends TestCase {
 	public function test_transcript_to_text_handles_webvtt() {
 		$vtt = "\xEF\xBB\xBFWEBVTT - Demo\nKind: captions\n\nNOTE This is a comment\n\nSTYLE\n::cue { color: red }\n\nintro\n00:00:00.000 --> 00:00:02.500 align:start\n<v Roo>Hi <b>there</b>,</v> &amp; welcome!\n\n00:00:02.500 --> 00:00:05.000\nThis is line one\nand line two.\n";
 
-		$this->assertSame( 'intro Hi there, & welcome! This is line one and line two.', Seo::transcript_to_text( $vtt ) );
+		// "intro" is a WebVTT cue identifier, not spoken text.
+		$this->assertSame( 'Hi there, & welcome! This is line one and line two.', Seo::transcript_to_text( $vtt ) );
+	}
+
+	public function test_transcript_keeps_cue_text_that_looks_like_a_header_or_a_number() {
+		$vtt = "WEBVTT\n\nchapter-1\n00:00:00.000 --> 00:00:02.000\nNote this down.\n\n2\n00:00:02.000 --> 00:00:04.000\n2024\nRegion four results.\n";
+
+		$this->assertSame( 'Note this down. 2024 Region four results.', Seo::transcript_to_text( $vtt ) );
+	}
+
+	public function test_transcript_skips_note_style_and_region_blocks() {
+		$vtt = "WEBVTT\n\nNOTE\nThis is a comment\nover two lines\n\nREGION\nid:fred width:40%\n\nSTYLE\n::cue { color: red }\n\n00:00:00.000 --> 00:00:02.000\nOnly this.\n";
+
+		$this->assertSame( 'Only this.', Seo::transcript_to_text( $vtt ) );
+	}
+
+	public function test_transcript_in_uploads_is_read_from_disk() {
+		$base = $this->make_uploads_dir();
+		file_put_contents( $base . '/uploads/2026/t.vtt', "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nFrom disk.\n" );
+
+		$GLOBALS['rtgodam_stub']['post_meta'] = array( 'rtgodam_transcript_path' => 'https://example.com/wp-content/uploads/2026/t.vtt' );
+
+		$this->assertSame( 'From disk.', $this->seo->get_transcript_excerpt( 42, true ) );
+		$this->assertEmpty( $GLOBALS['rtgodam_stub']['remote_get_urls'] ?? array() );
+	}
+
+	public function test_transcript_path_escaping_the_uploads_dir_is_not_read_from_disk() {
+		$base = $this->make_uploads_dir();
+		// A sibling directory whose name starts with "uploads".
+		mkdir( $base . '/uploads-private' );
+		file_put_contents( $base . '/uploads-private/secret.vtt', "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nSecret.\n" );
+
+		$GLOBALS['rtgodam_stub']['post_meta'] = array( 'rtgodam_transcript_path' => 'https://example.com/wp-content/uploads/../uploads-private/secret.vtt' );
+
+		$this->assertSame( '', $this->seo->get_transcript_excerpt( 42, true ) );
+		// It fell through to the (stubbed, 404) remote fetch instead of reading the file.
+		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['remote_get_urls'] );
+	}
+
+	/**
+	 * Recursively remove a temporary directory.
+	 *
+	 * @param string $dir Directory.
+	 * @return void
+	 */
+	private function remove_dir( $dir ) {
+		if ( ! is_dir( $dir ) ) {
+			return;
+		}
+		foreach ( new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $dir, \FilesystemIterator::SKIP_DOTS ), \RecursiveIteratorIterator::CHILD_FIRST ) as $item ) {
+			$item->isDir() ? rmdir( $item->getPathname() ) : unlink( $item->getPathname() ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- test cleanup.
+		}
+		rmdir( $dir ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- test cleanup.
+	}
+
+	/**
+	 * Create a temporary wp-content with an uploads dir and point the stubs at it.
+	 *
+	 * @return string wp-content path.
+	 */
+	private function make_uploads_dir() {
+		$base = sys_get_temp_dir() . '/godam-seo-test-' . uniqid();
+		mkdir( $base . '/uploads/2026', 0777, true );
+		$this->temp_dirs[] = $base;
+
+		$GLOBALS['rtgodam_stub']['uploads_baseurl'] = 'https://example.com/wp-content/uploads';
+		$GLOBALS['rtgodam_stub']['uploads_basedir'] = $base . '/uploads';
+
+		return $base;
 	}
 
 	public function test_transcript_to_text_handles_srt() {

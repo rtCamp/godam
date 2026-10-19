@@ -4,6 +4,7 @@
 import {
 	buildEmbedUrl,
 	buildLightboxHash,
+	findFirstInlineVideo,
 	findVideoById,
 	getLightboxId,
 	getLightboxRoot,
@@ -290,5 +291,29 @@ describe( 'isLightboxVideo', () => {
 	it( 'is false for a missing video', () => {
 		expect( isLightboxVideo( null ) ).toBe( false );
 		expect( isLightboxVideo( undefined ) ).toBe( false );
+	} );
+} );
+
+describe( 'findFirstInlineVideo', () => {
+	afterEach( () => {
+		document.body.innerHTML = '';
+	} );
+
+	it( 'returns the first GoDAM video on the page', () => {
+		document.body.innerHTML =
+			'<video id="a" data-id="10"></video><video id="b" data-id="20"></video>';
+		expect( findFirstInlineVideo()?.id ).toBe( 'a' );
+	} );
+
+	it( 'skips lightbox players', () => {
+		document.body.innerHTML =
+			'<video id="a" data-id="10" data-show-in-lightbox="true"></video>' +
+			'<video id="b" data-job_id="job-2"></video>';
+		expect( findFirstInlineVideo()?.id ).toBe( 'b' );
+	} );
+
+	it( 'ignores videos that are not GoDAM players', () => {
+		document.body.innerHTML = '<video id="plain"></video>';
+		expect( findFirstInlineVideo() ).toBeNull();
 	} );
 } );

@@ -1202,9 +1202,10 @@ class Pages {
 				'transcoder-page-script-godam',
 				'godamVideoSitemap',
 				array(
-					'sitemapUrl'      => Video_Sitemap::get_sitemap_url( 1 ),
-					'activeSeoPlugin' => Video_Sitemap::get_active_seo_sitemap(),
-					'coreIndexUrl'    => home_url( '/wp-sitemap.xml' ),
+					'sitemapUrl'          => Video_Sitemap::get_sitemap_url( 1 ),
+					'activeSeoPlugin'     => Video_Sitemap::get_active_seo_sitemap(),
+					'coreSitemapsEnabled' => Video_Sitemap::are_core_sitemaps_enabled(),
+					'coreIndexUrl'        => home_url( '/wp-sitemap.xml' ),
 				)
 			);
 

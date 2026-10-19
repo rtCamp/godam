@@ -83,7 +83,12 @@ const SeoSettings = () => {
 		return () => window.removeEventListener( 'beforeunload', handleBeforeUnload );
 	}, [ isChanged ] );
 
-	let whereListed = __( 'No supported SEO plugin sitemap is active, so it is listed in the WordPress sitemap index (/wp-sitemap.xml).', 'godam' );
+	// With no supported SEO plugin, it's listed in /wp-sitemap.xml — but only
+	// when core sitemaps are on. They're off with "Discourage search engines"
+	// or when a plugin disables them, and then nothing lists it.
+	let whereListed = sitemapData.coreSitemapsEnabled
+		? __( 'No supported SEO plugin sitemap is active, so it is listed in the WordPress sitemap index (/wp-sitemap.xml).', 'godam' )
+		: __( 'No sitemap index lists it on this site (no supported SEO plugin is active and WordPress sitemaps are turned off). Submit this URL in Google Search Console. It is also added to robots.txt when the site is visible to search engines.', 'godam' );
 	if ( activeSeoPlugin ) {
 		whereListed = sprintf(
 			/* translators: %s: SEO plugin name, e.g. Yoast SEO. */

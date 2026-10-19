@@ -67,7 +67,7 @@ import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/ut
 	 * Shared by both the direct-bind path (top-level params) and
 	 * the delegated path (param_group rows).
 	 *
-	 * @param {jQuery.Event} e
+	 * @param {Event} e - jQuery click event.
 	 */
 	function openVideoSelectorFrame( e ) {
 		e.preventDefault();
@@ -120,7 +120,7 @@ import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/ut
 	/**
 	 * Remove the selected video from a video-selector field.
 	 *
-	 * @param {jQuery.Event} e
+	 * @param {Event} e - jQuery click event.
 	 */
 	function removeVideoSelector( e ) {
 		e.preventDefault();
@@ -217,12 +217,9 @@ import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/ut
 			updateFilenameTitleWarning( getSeoScope( $( this ) ) );
 		} );
 
-		// Check the title whenever an element's edit panel opens.
-		$( document ).on( 'vc.reload', function() {
-			$( '.wpb_vc_param_value[name="seo_override"]' ).each( function() {
-				updateFilenameTitleWarning( getSeoScope( $( this ) ) );
-			} );
-		} );
+		// No panel-open hook needed: WPBakery fires `change` on dependent params
+		// (seo_override, id) while it sets up the edit panel, which runs the
+		// handlers above. (`vc.reload` is never triggered by WPBakery.)
 
 		isSeoPrefillListenerBound = true;
 	}
@@ -253,6 +250,13 @@ import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/ut
 			$anchor.after( $warning );
 		}
 
+		// Sequence the async lookup: only the latest call for this panel may
+		// update the warning, so a slow earlier request (e.g. for the previous
+		// video) can't overwrite a newer result.
+		const requestId = ( $warning.data( 'godamRequestId' ) || 0 ) + 1;
+		$warning.data( 'godamRequestId', requestId );
+		const isStale = () => $warning.data( 'godamRequestId' ) !== requestId;
+
 		const attachmentId = parseInt( getParamField( $scope, 'id' ).val(), 10 );
 		if ( ! attachmentId ) {
 			$warning.hide();
@@ -262,6 +266,10 @@ import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/ut
 		const seoOverrideEnabled = '1' === String( $overrideField.val() );
 
 		fetchAttachmentData( attachmentId ).then( ( attachmentData ) => {
+			if ( isStale() ) {
+				return;
+			}
+
 			const fileName = getFirstNonEmpty( attachmentData?.source_url, attachmentData?.url, attachmentData?.filename );
 			const title = seoOverrideEnabled
 				? String( getParamField( $scope, 'seo_headline' ).val() || '' )
@@ -278,7 +286,9 @@ import { stripHtmlTags, isFilenameLikeTitle } from '../../blocks/godam-player/ut
 					: __( 'This video\'s title looks like a file name. Search engines show it as the video title. Edit the title in the Media Library, or set "Override SEO" to Yes and enter a descriptive headline.', 'godam' ),
 			).show();
 		} ).catch( () => {
-			$warning.hide();
+			if ( ! isStale() ) {
+				$warning.hide();
+			}
 		} );
 	}
 
