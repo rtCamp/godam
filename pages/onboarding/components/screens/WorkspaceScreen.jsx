@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { useState, createInterpolateElement } from '@wordpress/element';
+import { useState, useEffect, useRef, createInterpolateElement } from '@wordpress/element';
 import { Button, Dropdown } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -47,18 +47,33 @@ const WorkspaceScreen = () => {
 	const [ chosen, setSelected ] = useState( null );
 	const selected = chosen || organizations[ 0 ] || null;
 
+	// Back unmounts this screen while a Refresh may still be in flight; its late
+	// answer must not land on whatever screen the user went back to.
+	const isMounted = useRef( false );
+	useEffect( () => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, [] );
+
 	// The JWT from sign-in is still held server-side, so re-fetching the list
 	// needs no new sign-in. A found workspace re-renders this screen as the picker.
 	const handleRefresh = async () => {
 		try {
 			const { organizations: latest = [] } = await listOrganizations().unwrap();
+			if ( ! isMounted.current ) {
+				return;
+			}
 			dispatch( clearNotice() );
 			dispatch( setOrganizations( latest ) );
 			if ( ! latest.length ) {
 				dispatch( setNotice( { status: 'info', message: __( 'Still no workspaces on this account. Create one in the GoDAM app, then refresh again.', 'godam' ) } ) );
 			}
 		} catch ( error ) {
-			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Could not load your workspaces. Please try again.', 'godam' ) } ) );
+			if ( isMounted.current ) {
+				dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Could not load your workspaces. Please try again.', 'godam' ) } ) );
+			}
 		}
 	};
 

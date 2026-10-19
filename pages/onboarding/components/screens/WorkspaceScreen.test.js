@@ -16,7 +16,7 @@
  * External dependencies
  */
 import { act } from 'react';
-import { Provider } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
 /**
@@ -39,6 +39,12 @@ jest.mock( '../../redux/api/onboarding', () => ( {
 
 const WORKSPACE = { name: 'acme-ws', organization_name: 'Acme Videos', role: 'Owner' };
 
+// Like App.js: the screen is only on screen while the step is `workspace`.
+const Harness = () => {
+	const step = useSelector( ( state ) => state.onboarding.step );
+	return STEPS.WORKSPACE === step ? <WorkspaceScreen /> : null;
+};
+
 describe( 'WorkspaceScreen empty state', () => {
 	let container;
 	let root;
@@ -48,11 +54,12 @@ describe( 'WorkspaceScreen empty state', () => {
 	/**
 	 * Make the next Refresh resolve or reject like the RTK mutation's `unwrap()`.
 	 *
-	 * @param {Function} unwrap Called when the screen unwraps the mutation result.
+	 * @param {Function} unwrap    Called when the screen unwraps the mutation result.
+	 * @param {boolean}  isLoading What the hook reports while the request is in flight.
 	 */
-	const mockListOrganizations = ( unwrap ) => {
+	const mockListOrganizations = ( unwrap, isLoading = false ) => {
 		listOrganizations = jest.fn( () => ( { unwrap } ) );
-		useListOrganizationsMutation.mockReturnValue( [ listOrganizations, { isLoading: false } ] );
+		useListOrganizationsMutation.mockReturnValue( [ listOrganizations, { isLoading } ] );
 	};
 
 	const byTestId = ( id ) => container.querySelector( `[data-test-id="${ id }"]` );
@@ -67,7 +74,7 @@ describe( 'WorkspaceScreen empty state', () => {
 		await act( async () => {
 			root.render(
 				<Provider store={ store }>
-					<WorkspaceScreen />
+					<Harness />
 				</Provider>,
 			);
 		} );
@@ -144,6 +151,32 @@ describe( 'WorkspaceScreen empty state', () => {
 		await click( 'godam-onboarding-button-refresh' );
 
 		expect( store.getState().onboarding.notice ).toBeNull();
+	} );
+
+	it( 'the button reads Checking… and is disabled while the request is in flight', async () => {
+		mockListOrganizations( () => new Promise( () => {} ), true );
+		await mount();
+
+		const button = byTestId( 'godam-onboarding-button-refresh' );
+		expect( button.textContent ).toBe( 'Checking…' );
+		expect( button.disabled ).toBe( true );
+	} );
+
+	it( 'an answer that arrives after Back does not touch the first screen', async () => {
+		let answer;
+		mockListOrganizations( () => new Promise( ( resolve ) => {
+			answer = resolve;
+		} ) );
+		await mount();
+
+		await click( 'godam-onboarding-button-refresh' );
+		await click( 'godam-onboarding-button-back' );
+		expect( store.getState().onboarding.step ).toBe( STEPS.ENTRY );
+
+		await act( async () => answer( { organizations: [] } ) );
+
+		expect( store.getState().onboarding.notice ).toBeNull();
+		expect( store.getState().onboarding.organizations ).toEqual( [] );
 	} );
 
 	it( 'Back returns to the first screen', async () => {
