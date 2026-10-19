@@ -17,6 +17,8 @@ const setParams = ( overrides = {} ) => {
 		endpoint: 'https://analytics.test',
 		token: 'tok',
 		userId: 1,
+		// A page cached by an older plugin version still carries this field;
+		// the sender must ignore it.
 		emailId: 'a@b.test',
 		locationIP: '10.0.0.1',
 		isPost: false,
@@ -33,6 +35,23 @@ const setParams = ( overrides = {} ) => {
 };
 
 const build = ( opts ) => buildAnalyticsRequestBody( { type: 1, ...opts } );
+
+describe( 'buildAnalyticsRequestBody — viewer identity', () => {
+	beforeEach( () => {
+		setParams();
+	} );
+
+	it( 'does not send the viewer email, even when the page still carries one', () => {
+		const { body } = build( {} );
+		expect( body ).not.toHaveProperty( 'email' );
+		expect( JSON.stringify( body ) ).not.toContain( 'a@b.test' );
+	} );
+
+	it( 'still sends the WordPress user id', () => {
+		const { body } = build( {} );
+		expect( body.wp_user_id ).toBe( 1 );
+	} );
+} );
 
 describe( 'buildAnalyticsRequestBody — placement attribution', () => {
 	beforeEach( () => {
