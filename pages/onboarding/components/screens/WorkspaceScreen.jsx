@@ -13,10 +13,11 @@ import { useDispatch, useSelector } from 'react-redux';
 /**
  * Internal dependencies
  */
-import { useGetOrganizationApiKeyMutation } from '../../redux/api/onboarding';
-import { selectOrganization, setConnected, setNotice, reset } from '../../redux/slice/onboarding';
+import BackButton from '../BackButton';
+import { useGetOrganizationApiKeyMutation, useListOrganizationsMutation } from '../../redux/api/onboarding';
+import { selectOrganization, setConnected, setNotice, clearNotice, setOrganizations, reset } from '../../redux/slice/onboarding';
 import { CheckIcon } from '../icons';
-import { config } from '../../utils/constants';
+import { config, SUPPORT_URL } from '../../utils/constants';
 
 const WorkspaceRow = ( { org } ) => (
 	<span className="godam-onboarding__ws-row">
@@ -40,7 +41,26 @@ const WorkspaceScreen = () => {
 	const dispatch = useDispatch();
 	const organizations = useSelector( ( state ) => state.onboarding.organizations );
 	const [ getOrganizationApiKey, { isLoading } ] = useGetOrganizationApiKeyMutation();
-	const [ selected, setSelected ] = useState( organizations[ 0 ] || null );
+	const [ listOrganizations, { isLoading: isRefreshing } ] = useListOrganizationsMutation();
+	// Nothing is chosen until the user picks one; the default follows the list so
+	// it also fills in when a Refresh finds the account's first workspace.
+	const [ chosen, setSelected ] = useState( null );
+	const selected = chosen || organizations[ 0 ] || null;
+
+	// The JWT from sign-in is still held server-side, so re-fetching the list
+	// needs no new sign-in. A found workspace re-renders this screen as the picker.
+	const handleRefresh = async () => {
+		try {
+			const { organizations: latest = [] } = await listOrganizations().unwrap();
+			dispatch( clearNotice() );
+			dispatch( setOrganizations( latest ) );
+			if ( ! latest.length ) {
+				dispatch( setNotice( { status: 'info', message: __( 'Still no workspaces on this account. Create one in the GoDAM app, then refresh again.', 'godam' ) } ) );
+			}
+		} catch ( error ) {
+			dispatch( setNotice( { status: 'error', message: error?.data?.message || __( 'Could not load your workspaces. Please try again.', 'godam' ) } ) );
+		}
+	};
 
 	const handleContinue = async () => {
 		if ( ! selected ) {
@@ -61,15 +81,27 @@ const WorkspaceScreen = () => {
 		const plansUrl = `${ config.appOrigin || 'https://app.godam.io' }/web/billing?tab=Plans`;
 		return (
 			<>
+				<BackButton onClick={ () => dispatch( reset() ) } />
 				<h1 className="godam-onboarding__title">{ __( 'No workspaces yet', 'godam' ) }</h1>
 				<p className="godam-onboarding__subtitle">
 					{ createInterpolateElement(
-						__( 'This account has no workspaces. <a>Create one in the GoDAM app</a>, then come back.', 'godam' ),
+						__( 'This account has no workspaces. <a>Create one in the GoDAM app</a>, then come back here and select Refresh.', 'godam' ),
 						{
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
 							a: <a className="godam-onboarding__link" href={ plansUrl } target="_blank" rel="noreferrer" data-test-id="godam-onboarding-link-create-workspace" />,
 						},
 					) }
+				</p>
+
+				<div className="godam-onboarding__dialog-footer">
+					<Button variant="primary" className="godam-onb-btn godam-onb-btn--primary godam-onboarding__cta" onClick={ handleRefresh } disabled={ isRefreshing } isBusy={ isRefreshing } data-test-id="godam-onboarding-button-refresh">
+						{ isRefreshing ? __( 'Checking…', 'godam' ) : __( 'Refresh', 'godam' ) }
+					</Button>
+				</div>
+
+				<p className="godam-onboarding__alt">
+					{ __( 'Need help?', 'godam' ) }{ ' ' }
+					<a className="godam-onboarding__link" href={ SUPPORT_URL } target="_blank" rel="noreferrer" data-test-id="godam-onboarding-link-support">{ __( 'Contact support', 'godam' ) }</a>
 				</p>
 			</>
 		);
