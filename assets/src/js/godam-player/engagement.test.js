@@ -29,7 +29,7 @@ jest.mock( '@wordpress/api-fetch', () => {
 
 // engagement.js reads window.godamData once, when it loads.
 window.godamData = {
-	currentLoggedInUserData: { email: 'viewer@example.com', name: 'Viewer', type: 'user' },
+	currentLoggedInUserData: { name: 'Viewer', type: 'user' },
 	loginUrl: '/wp-login.php',
 	registrationUrl: '/wp-login.php?action=register',
 	defaultAvatar: 'https://avatar.test/default',

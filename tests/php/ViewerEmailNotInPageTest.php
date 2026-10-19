@@ -58,6 +58,20 @@ class ViewerEmailNotInPageTest extends TestCase {
 		$this->assertStringNotContainsString( self::VIEWER_EMAIL, (string) wp_json_encode( $params ) );
 	}
 
+	public function test_player_page_data_for_a_signed_in_viewer_has_no_email(): void {
+		$data = rtgodam_get_current_user_data_for_page();
+
+		$this->assertArrayNotHasKey( 'email', $data );
+		$this->assertStringNotContainsString( self::VIEWER_EMAIL, (string) wp_json_encode( $data ) );
+		$this->assertSame( 'Viewer', $data['name'] );
+		$this->assertSame( 'user', $data['type'] );
+	}
+
+	public function test_the_server_side_user_data_still_has_the_email(): void {
+		// The comments routes read the address on the server; only the page copy drops it.
+		$this->assertSame( self::VIEWER_EMAIL, rtgodam_get_current_logged_in_user_data()['email'] );
+	}
+
 	public function test_page_params_keep_what_analytics_still_needs(): void {
 		$params = rtgodam_get_localize_array();
 
