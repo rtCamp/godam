@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-16T07:12:39+00:00\n"
+"POT-Creation-Date: 2026-10-19T10:23:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -5644,18 +5644,19 @@ msgid "Yes, Remove"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
+#: inc/classes/rest-api/class-settings.php:260
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:60
-msgid "API key deactivated successfully!"
+msgid "API key removed. This site is now disconnected from GoDAM."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:69
-msgid "Failed to deactivate API key"
+msgid "Failed to remove the API key"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:198
-msgid "If you remove the API key, your account will be deactivated and you’ll lose access to the platform."
+msgid "This site will be disconnected from GoDAM. New uploads won’t be transcoded, and analytics and other GoDAM features will stop working here until you add an API key again. Videos already on GoDAM keep playing, and your GoDAM account and media are not affected."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
@@ -12609,12 +12610,8 @@ msgstr ""
 msgid "GoDAM API key is not set on this site."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:260
-msgid "API key deactivated successfully."
-msgstr ""
-
 #: inc/classes/rest-api/class-settings.php:269
-msgid "Failed to deactivate the API key. It might not exist."
+msgid "Failed to remove the API key. It might not exist."
 msgstr ""
 
 #: inc/classes/rest-api/class-settings.php:288
