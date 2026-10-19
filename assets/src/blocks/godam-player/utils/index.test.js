@@ -36,7 +36,16 @@ describe( 'isFilenameLikeTitle', () => {
 		expect(
 			isFilenameLikeTitle( 'Screen Recording 2024-01-15 at 10.30.45', 'https://example.test/uploads/Screen-Recording-2024-01-15-at-10.30.45.mov' ),
 		).toBe( true );
-		expect( isFilenameLikeTitle( 'my video final', 'my_video_final.mp4' ) ).toBe( true );
+		expect( isFilenameLikeTitle( 'Screen Recording 2024-01-15 at 10.30.45', 'Screen_Recording_2024-01-15_at_10.30.45.mp4' ) ).toBe( true );
+	} );
+
+	it.each( [
+		[ 'Product Demo', 'https://example.test/uploads/Product-Demo.mp4' ],
+		[ 'How to Set Up Your Store', 'https://example.test/uploads/How-to-Set-Up-Your-Store.mp4' ],
+		[ 'my video final', 'my_video_final.mp4' ],
+		[ 'My Clip', 'https://example.test/uploads/My%20Clip.mov?ver=2' ],
+	] )( 'does not flag the well-named upload "%s" just because it matches its file name', ( title, fileName ) => {
+		expect( isFilenameLikeTitle( title, fileName ) ).toBe( false );
 	} );
 
 	it( 'flags camera-style names', () => {
@@ -52,7 +61,6 @@ describe( 'isFilenameLikeTitle', () => {
 	it( 'flags a title that matches the file name, with or without extension', () => {
 		expect( isFilenameLikeTitle( 'Intro', 'https://example.test/wp-content/uploads/2026/10/intro.mp4' ) ).toBe( true );
 		expect( isFilenameLikeTitle( 'intro.mp4', 'intro.mp4' ) ).toBe( true );
-		expect( isFilenameLikeTitle( 'My Clip', 'https://example.test/uploads/My%20Clip.mov?ver=2' ) ).toBe( true );
 	} );
 
 	it.each( [

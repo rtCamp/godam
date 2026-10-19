@@ -21,12 +21,10 @@ import PlayerManager from './managers/playerManager.js';
 import { getLightbox, initLightboxUrlSync } from './managers/modalManager.js';
 import { initLightboxTriggers, prepareTriggers } from './lightboxTriggers.js';
 import {
-	findFirstInlineVideo,
 	findVideoById,
 	getLightboxRoot,
 	isLightboxVideo,
-	parseLightboxHash,
-	parseStartTime,
+	resolveDeepLinkTarget,
 } from './utils/lightboxTargets.js';
 import { seekPlayer } from './utils/seekPlayer.js';
 
@@ -68,23 +66,12 @@ const initGodamPlayers = () => {
  * page instead.
  */
 const applyDeepLink = () => {
-	const searchParams = new URLSearchParams( window.location.search );
-	const startTime = parseStartTime( searchParams.get( 't' ) );
-
-	let targetId = parseLightboxHash( window.location.hash );
-
-	if ( ! targetId ) {
-		if ( startTime === null ) {
-			return;
-		}
-		const firstVideo = findFirstInlineVideo();
-		targetId = firstVideo?.dataset?.id || firstVideo?.dataset?.job_id || null;
-		if ( ! targetId ) {
-			return;
-		}
+	const target = resolveDeepLinkTarget( window.location );
+	if ( ! target ) {
+		return;
 	}
 
-	const fromHash = Boolean( parseLightboxHash( window.location.hash ) );
+	const { targetId, startTime, fromHash } = target;
 
 	// Match on either ID, so a link built from an attachment ID works too.
 	const isTarget = ( videoElement ) =>

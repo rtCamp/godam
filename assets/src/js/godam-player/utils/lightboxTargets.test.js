@@ -11,6 +11,7 @@ import {
 	isLightboxVideo,
 	parseLightboxHash,
 	parseStartTime,
+	resolveDeepLinkTarget,
 } from './lightboxTargets';
 
 describe( 'parseLightboxHash', () => {
@@ -315,5 +316,50 @@ describe( 'findFirstInlineVideo', () => {
 	it( 'ignores videos that are not GoDAM players', () => {
 		document.body.innerHTML = '<video id="plain"></video>';
 		expect( findFirstInlineVideo() ).toBeNull();
+	} );
+} );
+
+describe( 'resolveDeepLinkTarget', () => {
+	beforeEach( () => {
+		document.body.innerHTML =
+			'<video data-id="10" data-show-in-lightbox="true"></video>' +
+			'<video data-id="20"></video>' +
+			'<video data-id="30"></video>';
+	} );
+
+	afterEach( () => {
+		document.body.innerHTML = '';
+	} );
+
+	it( 'uses the video named in the hash, with the start time', () => {
+		expect( resolveDeepLinkTarget( { search: '?t=60', hash: '#godam-video-30' } ) )
+			.toEqual( { targetId: '30', startTime: 60, fromHash: true } );
+	} );
+
+	it( 'uses the hash without a start time', () => {
+		expect( resolveDeepLinkTarget( { search: '', hash: '#godam-video-10' } ) )
+			.toEqual( { targetId: '10', startTime: null, fromHash: true } );
+	} );
+
+	it( 'falls back to the first inline video when only ?t= is present', () => {
+		expect( resolveDeepLinkTarget( { search: '?t=45', hash: '' } ) )
+			.toEqual( { targetId: '20', startTime: 45, fromHash: false } );
+	} );
+
+	it( 'reads t alongside other query args', () => {
+		expect( resolveDeepLinkTarget( { search: '?p=7&t=5&utm_source=x', hash: '#comments' } ) )
+			.toEqual( { targetId: '20', startTime: 5, fromHash: false } );
+	} );
+
+	it( 'does nothing without a hash or a usable start time', () => {
+		expect( resolveDeepLinkTarget( { search: '', hash: '' } ) ).toBeNull();
+		expect( resolveDeepLinkTarget( { search: '?t=abc', hash: '' } ) ).toBeNull();
+		expect( resolveDeepLinkTarget( { search: '?t=0', hash: '' } ) ).toBeNull();
+	} );
+
+	it( 'does nothing when ?t= is present but the page has no inline video', () => {
+		document.body.innerHTML = '<video data-id="10" data-show-in-lightbox="true"></video>';
+
+		expect( resolveDeepLinkTarget( { search: '?t=45', hash: '' } ) ).toBeNull();
 	} );
 } );
