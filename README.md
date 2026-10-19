@@ -2,7 +2,7 @@
 
 # GoDAM - Video Hosting for LMS & Online Courses
 Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20), [mi5t4n](https://profiles.wordpress.org/mi5t4n), [abhinavbelhekar03](https://profiles.wordpress.org/abhinavbelhekar03), [gautam23](https://profiles.wordpress.org/gautam23), [mukulsingh27](https://profiles.wordpress.org/mukulsingh27), [hbhalodia](https://profiles.wordpress.org/hbhalodia), [kishu7270](https://profiles.wordpress.org/kishu7270), [opurockey](https://profiles.wordpress.org/opurockey), [utsavladani](https://profiles.wordpress.org/utsavladani), [whiteshadow01](https://profiles.wordpress.org/whiteshadow01), [ahmarzaidi](https://profiles.wordpress.org/ahmarzaidi), [im3dabasia1](https://profiles.wordpress.org/im3dabasia1), [akrocks](https://profiles.wordpress.org/akrocks)
-Tags: video hosting, lms, online courses, lifterlms, courses
+Tags: video hosting, vimeo, lms, online courses, lifterlms
 
 Requires at least: 6.5
 
@@ -14,7 +14,7 @@ Stable tag: 2.3.2
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
-Manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, and video analytics.
+Media hosting for WordPress. Move course, LMS and membership videos off Vimeo: free migration for up to 100 videos on one site. Works with LifterLMS.
 
 ## Description
 [GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) combines multiple media tools into one WordPress plugin and provides three key features:

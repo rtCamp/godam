@@ -1,6 +1,6 @@
 === GoDAM - Video Hosting for LMS & Online Courses ===
 Contributors: rtcamp, elifvish, subodhrajpopat, kuldipchaudhary, prachigarg19, juzar, geekofshire, nazmulhassann20, joelabreo, mi5t4n, abhinavbelhekar03, gautam23, mukulsingh27, hbhalodia, kishu7270, opurockey, utsavladani, whiteshadow01, ahmarzaidi, im3dabasia1, rudrakshigupta, sabbir1991, shreyasikhar26, akrocks
-Tags: video hosting, lms, online courses, lifterlms, courses
+Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -8,10 +8,10 @@ Stable tag: 2.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Video hosting for LMS and course sites: LifterLMS lesson video, adaptive streaming and video analytics. Also works with WooCommerce via an add-on.
+Media hosting for WordPress. Move course, LMS and membership videos off Vimeo: free migration for up to 100 videos on one site. Works with LifterLMS.
 
 == Description ==
-[GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) is a video hosting plugin for LMS and online course sites on WordPress, with a built-in media library manager. It combines multiple media tools into one plugin and provides three key features:
+[GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) is the media layer for WordPress. It is built first for course, LMS and membership sites, including sites moving their videos off Vimeo, and it combines multiple media tools into one plugin with three key features:
 
 ✓ **Video Hosting for courses** – WordPress-native video hosting with a customizable player, built for LMS and course sites. Upload large videos that get automatically transcoded, stored in the cloud, and delivered through a global CDN with adaptive bitrate streaming.
 ✓ **Interactive Video for better conversion** – Embed video layers with in-video forms to capture leads directly from videos, add polls and CTAs to prompt user action, and use hotspots to tag and identify products during playback.
@@ -19,7 +19,7 @@ Video hosting for LMS and course sites: LifterLMS lesson video, adaptive streami
 
 GoDAM works with LifterLMS for course videos, and, through the GoDAM for Woo add-on, with WooCommerce, alongside Elementor, WPBakery and popular form plugins.
 
-Let’s dive into each of these in detail.
+Let’s dive into the details, starting with moving your videos off Vimeo.
 
 Paid plans start at $7.5 per month (annual subscription) (for unlimited sites) or [Start for free](https://godam.io/pricing/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=start-free).
 
@@ -33,6 +33,17 @@ Check out our source code and contribute to the plugin on GitHub: [Official GoDA
 
 
 [youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
+
+= Move Your Course and Membership Videos Off Vimeo =
+
+If your course, LMS or membership site hosts its videos on Vimeo, GoDAM moves them to WordPress-native hosting for you.
+
+📌 **Free migration for up to 100 videos on one WordPress site**
+✓ Our team imports your videos with their titles, descriptions, thumbnails, tags and folders
+✓ We replace the Vimeo embeds in your content, and you review each step
+✓ For a library above 100 videos, or for more than one site, we give you a fixed quote before we start
+
+[See how the free migration works](https://godam.io/vimeo-alternative/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=vimeo-migration#h-we-move-your-vimeo-library)
 
 = Video Hosting for LMS & Online Courses =
 
@@ -171,9 +182,9 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 = Pricing Plans =
 [View Pricing Plans](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link)
 
-✓ **60-day Free Trial** with all features included
-✓ Flexible pricing options to suit different needs.
-✓ Upgrade or cancel anytime based on usage.
+✓ **60-day free trial** with every feature included, and no credit card needed
+✓ No overage billing: uploads stop when you reach your plan's storage cap
+✓ Upgrade or cancel anytime
 
 == Installation ==
 Method 1: WordPress Dashboard
@@ -190,7 +201,7 @@ The GoDAM menu should appear on your admin dashboard!
 
 == Frequently Asked Questions ==
 = What is GoDAM, and how does it work? =
-A. GoDAM is a media management service that seamlessly integrates with your WordPress site to optimize and enhance your audio and video content. It automatically converts uploaded audio files to MP3 and video files to MPD format. Additionally, GoDAM offers a suite of powerful features, including thumbnail generation, shortcode support, customizable video layers (like Gravity Forms, text/image CTAs, video hotspots, and ads), adaptive bitrate streaming for smooth playback, and advanced asset management tools.
+A. GoDAM is the media layer for WordPress: a media management service that integrates with your site to host, optimize and enhance your audio and video content. It automatically converts uploaded audio files to MP3 and video files to MPD format. Additionally, GoDAM offers a suite of powerful features, including thumbnail generation, shortcode support, customizable video layers (like Gravity Forms, text/image CTAs, video hotspots, and ads), adaptive bitrate streaming for smooth playback, and advanced asset management tools.
 
 To get started, you just need to install the GoDAM plugin on your WordPress website and subscribe to a plan. Once set up, GoDAM helps you manage, edit, and deliver media content more efficiently, making it a perfect solution for creators, educators, and businesses.
 
@@ -203,6 +214,11 @@ Supported input formats:
 = Is GoDAM a video hosting plugin or a video hosting service? =
 A. Both. The plugin adds the player, the media manager and the settings to WordPress. Cloud storage, transcoding, adaptive bitrate streaming and CDN delivery run on GoDAM's service and need a valid API key. See Pricing Plans above, which include a 60-day free trial.
 
+= Can I move my existing Vimeo videos to GoDAM? =
+A. Yes. We move up to 100 videos on one WordPress site for free. Our team imports your videos with their titles, descriptions, thumbnails, tags and folders, replaces the Vimeo embeds in your content, and you review each step. For a larger library, or for more than one site, we give you a fixed quote first. [See how the free migration works](https://godam.io/vimeo-alternative/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=vimeo-faq#h-we-move-your-vimeo-library)
+
+You can also switch part of it yourself. For Vimeo videos you added with the WordPress Vimeo Embed block, the Video Migration tab under GoDAM → Tools replaces those blocks with GoDAM Video blocks, for videos you have already imported into your GoDAM account. That tab needs a valid API key. It does not cover Vimeo videos added in the Classic Editor, in page builders or in LMS lesson video fields.
+
 = Does GoDAM work with LifterLMS? =
 A. Yes. GoDAM adds a "Videos: GoDAM" integration to LifterLMS Advanced Videos. You can require students to finish the video before they complete the lesson, start the quiz or start the assignment, let them resume where they left off, and turn on lesson autoplay (the video starts muted). It needs the LifterLMS plugin and the LifterLMS Advanced Videos add-on.
 
@@ -212,11 +228,8 @@ A. LifterLMS has a dedicated integration today, and integrations with more LMS p
 = Does GoDAM work with WooCommerce? =
 A. Yes, through the GoDAM for Woo add-on. It adds a WooCommerce layer to the video editor, product hotspots, shoppable video reels, product gallery video and revenue analytics. The add-on is not part of this plugin. It is available from godam.io, and it needs WooCommerce and a valid GoDAM API key.
 
-= Can I move my existing Vimeo videos to GoDAM? =
-A. Yes, for Vimeo videos you added with the WordPress Vimeo Embed block. The Video Migration tab under GoDAM → Tools replaces those blocks with GoDAM Video blocks, for videos you have already imported into your GoDAM account. It needs a valid API key and does not cover Vimeo videos added in the Classic Editor.
-
 = Who is GoDAM designed for? =
-A. Our solution is perfect for content creators, marketers, educators, e-commerce businesses, and anyone looking to enhance their video strategy with customizable and interactive features.
+A. GoDAM is built first for course, LMS and membership sites, including sites moving their videos off Vimeo. Educators, content creators and marketing teams use it too, and it works with page builders such as Elementor and WPBakery, and with WooCommerce stores through the GoDAM for Woo add-on.
 
 = What are Video Layers, and how do they work? =
 A. Video Layers allow you to add interactive elements like forms, CTAs, ads, and hotspots directly onto your videos. For example, you can pause a video to collect leads using Gravity Forms or display a call-to-action at a specific timestamp.
