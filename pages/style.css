@@ -11,7 +11,14 @@
 	}
 }
 
-*, ::before, ::after {
+/*
+ * Tailwind's border reset (preflight is off), kept off WordPress's admin menu and admin bar.
+ * This file is injected after the page paints, and core's `a { transition: border .05s }` then
+ * animates every menu link's border from 3px to 0, which made the whole menu jump.
+ */
+:where(*:not(#adminmenumain, #adminmenumain *, #wpadminbar, #wpadminbar *)),
+:where(*:not(#adminmenumain, #adminmenumain *, #wpadminbar, #wpadminbar *))::before,
+:where(*:not(#adminmenumain, #adminmenumain *, #wpadminbar, #wpadminbar *))::after {
     box-sizing: border-box;
     border-width: 0;
     border-style: solid;
