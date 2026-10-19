@@ -278,6 +278,37 @@ class VideoSeoSchemaTest extends TestCase {
 		$this->assertArrayNotHasKey( 'description', $schema );
 	}
 
+	/**
+	 * @dataProvider non_public_status_provider
+	 *
+	 * @param string $status Post status.
+	 */
+	public function test_non_public_post_text_is_not_used( $status ) {
+		$GLOBALS['rtgodam_stub']['posts'][7] = (object) array(
+			'post_type'     => 'post',
+			'post_status'   => $status,
+			'post_excerpt'  => '',
+			'post_password' => '',
+			'post_content'  => 'Internal: do not share.',
+		);
+
+		$schema = $this->seo->build_video_object_schema( $this->legacy_entry(), 7 );
+
+		$this->assertArrayNotHasKey( 'description', $schema );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function non_public_status_provider() {
+		return array(
+			'private' => array( 'private' ),
+			'draft'   => array( 'draft' ),
+			'pending' => array( 'pending' ),
+			'future'  => array( 'future' ),
+		);
+	}
+
 	public function test_null_byte_in_transcript_url_does_not_break_the_save() {
 		$this->make_uploads_dir();
 		$GLOBALS['rtgodam_stub']['post_meta'] = array( 'rtgodam_transcript_path' => 'https://example.com/wp-content/uploads/2026/t%00.vtt' );

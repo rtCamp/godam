@@ -88,6 +88,19 @@ namespace {
 		}
 	}
 
+	if ( ! function_exists( 'is_post_publicly_viewable' ) ) {
+
+		/**
+		 * Published posts are viewable; a post stub without a status counts as published.
+		 *
+		 * @param WP_Post|object $post Post.
+		 * @return bool
+		 */
+		function is_post_publicly_viewable( $post = null ) {
+			return is_object( $post ) && 'publish' === ( $post->post_status ?? 'publish' );
+		}
+	}
+
 	if ( ! function_exists( 'get_post_type' ) ) {
 
 		/**

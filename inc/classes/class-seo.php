@@ -1305,6 +1305,12 @@ class Seo {
 			return '';
 		}
 
+		// Only a publicly viewable post may feed the description: never a
+		// draft, pending, scheduled or private one.
+		if ( ! is_post_publicly_viewable( $post ) ) {
+			return '';
+		}
+
 		// Never expose a password-protected page's text to visitors who haven't
 		// entered the password (core's get_the_excerpt() follows the same rule).
 		if ( ! empty( $post->post_password ) ) {
@@ -1474,7 +1480,10 @@ class Seo {
 			return;
 		}
 
-		$post_id = get_queried_object_id();
+		// Only a singular view has a host post. On term and author archives the
+		// queried object ID is a term or user ID, which would otherwise be read
+		// as an unrelated post (description fallback, re-save queue, clip URLs).
+		$post_id = is_singular() ? get_queried_object_id() : 0;
 
 		$output_schemas = array();
 		foreach ( $this->render_collected_schemas as $video ) {
