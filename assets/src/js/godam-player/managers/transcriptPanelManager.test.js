@@ -77,3 +77,71 @@ describe( 'TranscriptPanelManager.measureLayout', () => {
 		},
 	);
 } );
+
+/**
+ * A manager with a toggle button and a panel that has a close button. The
+ * layout work open() and close() trigger is stubbed out.
+ *
+ * @return {TranscriptPanelManager} A manager with only its DOM fields set.
+ */
+const setupToggle = () => {
+	document.body.innerHTML = `
+		<div class="godam-video-wrapper">
+			<div class="easydam-video-container">
+				<button class="godam-transcript-button" aria-expanded="false"></button>
+			</div>
+			<div class="godam-transcript-panel" hidden>
+				<input type="search" />
+				<button class="godam-transcript-panel__close"></button>
+			</div>
+		</div>`;
+	const manager = Object.create( TranscriptPanelManager.prototype );
+	manager.wrapper = document.querySelector( '.godam-video-wrapper' );
+	manager.container = document.querySelector( '.easydam-video-container' );
+	manager.button = document.querySelector( '.godam-transcript-button' );
+	manager.panel = document.querySelector( '.godam-transcript-panel' );
+	manager.closeButton = document.querySelector( '.godam-transcript-panel__close' );
+	manager.player = { el: () => null };
+	[ 'applyLayout', 'observeLayout', 'handleTimeUpdate', 'unobserveLayout', 'clearLayout', 'notifyPlayerResize' ].forEach( ( name ) => {
+		manager[ name ] = jest.fn();
+	} );
+	return manager;
+};
+
+describe( 'TranscriptPanelManager toggle button', () => {
+	it( 'is hidden while the panel is open and shown again when it closes', () => {
+		const manager = setupToggle();
+
+		manager.open();
+		expect( manager.panel.hidden ).toBe( false );
+		expect( manager.button.hidden ).toBe( true );
+
+		manager.close();
+		expect( manager.panel.hidden ).toBe( true );
+		expect( manager.button.hidden ).toBe( false );
+	} );
+
+	it( 'hands focus to the close button when the toggle had it, and back when closed', () => {
+		const manager = setupToggle();
+
+		manager.button.focus();
+		manager.open();
+		expect( document.activeElement ).toBe( manager.closeButton );
+
+		manager.close();
+		expect( manager.button.hidden ).toBe( false );
+		expect( document.activeElement ).toBe( manager.button );
+	} );
+
+	it( 'leaves focus alone when the toggle did not have it', () => {
+		const manager = setupToggle();
+		const search = manager.panel.querySelector( 'input' );
+
+		manager.open();
+		expect( document.activeElement ).toBe( document.body );
+
+		search.focus();
+		manager.close();
+		expect( document.activeElement ).toBe( manager.button );
+	} );
+} );

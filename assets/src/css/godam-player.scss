@@ -1953,6 +1953,12 @@ body.godam-share-modal-open {
 			filter: brightness(0.9);
 		}
 
+		// Hidden while the panel is open (its close button takes over). The
+		// skins set `display`, so the attribute alone would not hide it.
+		&[hidden] {
+			display: none !important;
+		}
+
 		.godam-transcript-icon {
 			display: block;
 			flex-shrink: 0;
@@ -2533,6 +2539,13 @@ body.godam-share-modal-open {
 		&:focus-visible {
 			outline: 2px solid var(--godam-transcript-text);
 			outline-offset: 1px;
+		}
+
+		// Focus from a click (or handed over when the panel opens from a
+		// click) keeps the resting look, so it does not read as hovered.
+		&:focus:not(:focus-visible):not(:hover) {
+			color: var(--godam-transcript-text-muted);
+			background-color: transparent;
 		}
 
 		/* stylelint-disable-next-line no-descending-specificity */

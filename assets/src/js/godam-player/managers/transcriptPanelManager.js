@@ -110,6 +110,7 @@ export default class TranscriptPanelManager {
 		this.button = null;
 		this.buttonInControlBar = false;
 		this.panel = null;
+		this.closeButton = null;
 		this.bodyEl = null;
 		this.searchInput = null;
 		this.searchStatus = null;
@@ -440,6 +441,7 @@ export default class TranscriptPanelManager {
 		closeButton.title = __( 'Close transcript', 'godam' );
 		closeButton.innerHTML = CLOSE_ICON_SVG;
 		closeButton.addEventListener( 'click', () => this.close() );
+		this.closeButton = closeButton;
 
 		actions.appendChild( copyButton );
 		actions.appendChild( closeButton );
@@ -661,12 +663,22 @@ export default class TranscriptPanelManager {
 		if ( ! this.panel ) {
 			return;
 		}
+		const buttonHadFocus = !! this.button && this.button.ownerDocument.activeElement === this.button;
 		this.isOpen = true;
 		this.panel.hidden = false;
 		this.panel.inert = false;
 		this.wrapper.classList.add( OPEN_CLASS );
 		this.button?.setAttribute( 'aria-expanded', 'true' );
 		this.button?.classList.add( `${ BUTTON_CLASS }--active` );
+		// The panel's own close button takes over while it is open, so the
+		// toggle is hidden. If it had focus, hand focus to the close button
+		// rather than let it drop to the page (behind the lightbox, if open).
+		if ( this.button ) {
+			this.button.hidden = true;
+		}
+		if ( buttonHadFocus ) {
+			this.closeButton?.focus( { preventScroll: true } );
+		}
 		this.applyLayout();
 		this.observeLayout();
 		// Sync the active-cue highlight to the current playhead.
@@ -691,16 +703,22 @@ export default class TranscriptPanelManager {
 		this.panel.hidden = true;
 		this.panel.inert = true;
 		this.button?.setAttribute( 'aria-expanded', 'false' );
-		this.button?.classList.remove( `${ BUTTON_CLASS }--active` );
+		// Show the toggle again before it can take focus below. It keeps its
+		// active class until then: without it, the overlay toggle is hidden
+		// until the player is hovered and cannot take focus.
+		if ( this.button ) {
+			this.button.hidden = false;
+		}
 		// Closing from inside the panel would drop focus to the page (behind the
 		// lightbox, if open). Hand it to the toggle, or the player if the toggle
-		// cannot take it (it is hidden until hovered).
+		// cannot take it.
 		if ( hadFocus ) {
 			this.button?.focus?.( { preventScroll: true } );
 			if ( this.panel.ownerDocument.activeElement !== this.button ) {
 				this.player.el()?.focus?.( { preventScroll: true } );
 			}
 		}
+		this.button?.classList.remove( `${ BUTTON_CLASS }--active` );
 		this.notifyPlayerResize();
 	}
 
