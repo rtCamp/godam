@@ -150,6 +150,7 @@ class Pages {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_media_library_tour' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+		add_filter( 'admin_body_class', array( $this, 'fold_admin_menu_in_media_editor' ) );
 		// The old slug is no longer a registered menu page, so WordPress' menu
 		// access check (wp-admin/menu.php) wp_die()s before `admin_init` fires.
 		// `admin_page_access_denied` runs at that exact point, so redirect there.
@@ -330,6 +331,29 @@ class Pages {
 			// Remove the WordPress version number.
 			add_filter( 'update_footer', '__return_empty_string', 11 );
 		}
+	}
+
+	/**
+	 * Fold the admin menu when the Media Editor opens with a file.
+	 *
+	 * The editor also folds it from React, but that runs after the page has painted, so the
+	 * menu showed at full width and then collapsed.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $classes Space-separated admin body classes.
+	 *
+	 * @return string
+	 */
+	public function fold_admin_menu_in_media_editor( $classes ) {
+		$screen = get_current_screen();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only check of which file the page opens.
+		if ( $screen && $this->video_editor_page_id === $screen->id && ! empty( $_GET['id'] ) ) {
+			$classes .= ' folded';
+		}
+
+		return $classes;
 	}
 
 	/**
@@ -1195,6 +1219,18 @@ class Pages {
 				'transcoder-page-script-godam',
 				'godamAddonStatuses',
 				$addon_statuses
+			);
+
+			// Video sitemap details for the SEO settings tab.
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'godamVideoSitemap',
+				array(
+					'sitemapUrl'          => Video_Sitemap::get_sitemap_url( 1 ),
+					'activeSeoPlugin'     => Video_Sitemap::get_active_seo_sitemap(),
+					'coreSitemapsEnabled' => Video_Sitemap::are_core_sitemaps_enabled(),
+					'coreIndexUrl'        => home_url( '/wp-sitemap.xml' ),
+				)
 			);
 
 			wp_enqueue_script( 'transcoder-page-script-godam' );

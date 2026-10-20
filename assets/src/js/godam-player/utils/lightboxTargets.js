@@ -128,6 +128,52 @@ export function findVideoById( id, doc = document ) {
 }
 
 /**
+ * Find the first ordinary (non-lightbox) GoDAM video on the page.
+ *
+ * Used when a URL carries `?t=` but no `#godam-video-{id}` hash, so the start
+ * time still applies to the page's main video. Lightbox players are skipped:
+ * their inline render is only a poster, and opening an overlay for a link
+ * that never named a video would be surprising.
+ *
+ * @param {Document} doc - Document to search (defaults to `document`).
+ * @return {HTMLElement|null} The video element, or null when there is none.
+ */
+export function findFirstInlineVideo( doc = document ) {
+	const videos = doc.querySelectorAll( 'video[data-id], video[data-job_id]' );
+	return [ ...videos ].find( ( video ) => ! isLightboxVideo( video ) ) || null;
+}
+
+/**
+ * Work out which video a page URL deep-links to, and where it should start.
+ *
+ * `#godam-video-{id}` names the video. Without it, a `?t=` start time
+ * (for example a key-moment link whose fragment was dropped) applies to the
+ * first ordinary GoDAM video on the page; see {@link findFirstInlineVideo}.
+ *
+ * @param {Object}   location - `{ search, hash }`, e.g. `window.location`.
+ * @param {Document} doc      - Document to search (defaults to `document`).
+ * @return {Object|null} `{ targetId, startTime, fromHash }`, or null when the URL doesn't deep-link to a video.
+ */
+export function resolveDeepLinkTarget( location, doc = document ) {
+	const searchParams = new URLSearchParams( location?.search || '' );
+	const startTime = parseStartTime( searchParams.get( 't' ) );
+	const hashId = parseLightboxHash( location?.hash || '' );
+
+	if ( hashId ) {
+		return { targetId: hashId, startTime, fromHash: true };
+	}
+
+	if ( startTime === null ) {
+		return null;
+	}
+
+	const firstVideo = findFirstInlineVideo( doc );
+	const targetId = getLightboxId( firstVideo );
+
+	return targetId ? { targetId, startTime, fromHash: false } : null;
+}
+
+/**
  * Get the element to move into the lightbox for a given video.
  *
  * The template nests `div > figure > div.godam-video-wrapper > … > video`, and it
