@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  *   wp option delete rtgodam_transcoded_mp3_mime_type_done
  *   wp option delete rtgodam_db_version
  *
- * @since n.e.x.t
+ * @since 2.5.0
  */
 class Transcoded_Mp3_Mime_Type {
 
@@ -39,7 +39,7 @@ class Transcoded_Mp3_Mime_Type {
 	/**
 	 * Run the migration once for the current site.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @return bool True when done; false when the update failed, so the runner retries on a later request.
 	 */

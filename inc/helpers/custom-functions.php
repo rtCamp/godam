@@ -1871,7 +1871,7 @@ function rtgodam_get_current_logged_in_user_data() {
  * of fields is fixed here, so a field added later to
  * rtgodam_get_current_logged_in_user_data() is not printed by accident.
  *
- * @since n.e.x.t
+ * @since 2.5.0
  *
  * @return array An associative array containing 'name' and 'type' of the user or guest.
  */

@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.4.1
+Stable tag: 2.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -217,6 +217,20 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.5.0 (October 21, 2026) =
+
+- Feat: GoDAM can add a video sitemap that lists every page with a GoDAM video, through Yoast SEO, Rank Math, All in One SEO or the WordPress sitemap. Turn it on in GoDAM > Settings > SEO; single videos can be left out.
+- Feat: Video chapters are added to the video's search data as key moments, so Google can show links that jump to each chapter.
+- Tweak: The video schema GoDAM adds for search engines now uses a video URL Google can index, adds the player's embed link, and leaves out empty fields.
+- Tweak: Editors see a warning when a video's title looks like a raw file name.
+- Tweak: The WPBakery GoDAM Video element's SEO Settings tab shows the same Video SEO fields as the block editor and Elementor.
+- Tweak: The video share popup now shares the page link. The GoDAM Central and Embed links are gone, and the share button shows on every video when sharing is turned on.
+- Tweak: GoDAM no longer adds the signed-in viewer's email address to the page or to video analytics.
+- Fix: Audio converted to MP3 now shows in the block editor's audio list, including files converted before this update.
+- Fix: The Gravity Forms Record field keeps working after an AJAX page change or a failed submit.
+- Fix: The WordPress admin menu no longer flashes and jumps when a GoDAM page loads.
+- Fix: The form layer preview in the video editor now accepts only a valid form ID.
+
 = v2.4.1 (October 20, 2026) =
 
 - Fix: The video transcript no longer covers the video. It opens beside the video, or below it on narrow screens, matches the player skin, and can be searched.
@@ -232,13 +246,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Usage tracking now follows the admin's choice.
 - Fix: The GoDAM Audio block now accepts .webm audio, such as form recordings, from the GoDAM tab and from uploads.
 - Fix: GoDAM stays connected when its servers are slow to respond.
-
-= v2.3.2 (October 12, 2026) =
-
-- Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts automatically the first time you open the library and can be replayed anytime from the new button next to Manage Media.
-- Feat: GoDAM now tells you when it can't reach your site to send back transcoding updates, on admin screens and in GoDAM settings, so videos no longer sit at "Processing" without explanation.
-- Fix: Uploads that GoDAM refuses (the file can't be downloaded, isn't a video, is empty or too large, or the licence is inactive, storage is full or the site isn't allowed) are now marked as failed with the reason in the Media Library and on the Tools page, instead of showing no status at all.
-- Fix: Security fixes.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
