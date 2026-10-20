@@ -520,3 +520,8 @@ if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
 require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';
+
+// Loaded for MapTrackerValidationTest: the static request-shape checks shared by
+// Map_Tracker and the map-events REST route. Requiring the file only declares the
+// class (the Singleton trait above is its only dependency), so no WP code runs.
+require_once dirname( __DIR__ ) . '/inc/classes/class-map-tracker.php';
