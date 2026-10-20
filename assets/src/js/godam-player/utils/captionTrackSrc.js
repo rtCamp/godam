@@ -42,8 +42,10 @@ function toVttStamp( seconds ) {
  */
 export function cuesToWebVtt( cues ) {
 	const blocks = cues.map( ( cue ) => {
-		// "-->" inside cue text would end the cue early.
-		const text = String( cue.text ).replace( /-->/g, '->' );
+		// The WebVTT timing arrow "-->" inside cue text would end the cue
+		// early. (A plain split rather than a regex: this is cue syntax, not
+		// HTML filtering.)
+		const text = String( cue.text ).split( '-->' ).join( '->' );
 		return `${ toVttStamp( cue.start ) } --> ${ toVttStamp( Math.max( cue.end, cue.start ) ) }\n${ text }`;
 	} );
 	return `WEBVTT\n\n${ blocks.join( '\n\n' ) }\n`;
