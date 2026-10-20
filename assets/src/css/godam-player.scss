@@ -1908,6 +1908,15 @@ body.godam-share-modal-open {
 		bottom: 4em !important;
 	}
 
+	// On a narrow Default-skin player the control bar is two rows (the progress
+	// bar above the buttons) and 6em tall, so lift the captions clear of it.
+	@container godam-player-default-skin (max-width: 480px) {
+
+		.vjs-text-track-display {
+			bottom: 6em !important;
+		}
+	}
+
 	// Share and transcript buttons share the same on-video circular UI. The
 	// transcript button is a custom Video.js Button (like GodamShareButton), so
 	// it reuses these styles for consistency and stacks directly below share.
