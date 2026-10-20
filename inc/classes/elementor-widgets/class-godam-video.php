@@ -176,7 +176,7 @@ class GoDAM_Video extends Base {
 				'label'       => esc_html__( 'Content URL', 'godam' ),
 				'type'        => Controls_Manager::TEXT,
 				'label_block' => true,
-				'description' => esc_html__( 'URL of the video content can be MOV, MP4, MPD. Example: https://www.example.com/video.mp4', 'godam' ),
+				'description' => esc_html__( 'URL of the video file or HLS (.m3u8) stream that search engines index. Example: https://www.example.com/video.mp4', 'godam' ),
 				'classes'     => 'godam-readonly-field',
 				'attributes'  => array(
 					'readonly' => 'readonly',
@@ -190,7 +190,8 @@ class GoDAM_Video extends Base {
 				'label'       => esc_html__( 'Headline', 'godam' ),
 				'type'        => Controls_Manager::TEXT,
 				'label_block' => true,
-				'description' => esc_html__( 'Title of the video', 'godam' ),
+				// Filled in by the editor script, which warns when the title looks like a file name.
+				'description' => '<span class="godam-seo-headline-help">' . esc_html__( 'Title of the video', 'godam' ) . '</span>',
 				'classes'     => 'godam-seo-field',
 			)
 		);
@@ -257,6 +258,16 @@ class GoDAM_Video extends Base {
 				'description' => esc_html__( 'Is the video suitable for all audiences?', 'godam' ),
 				'default'     => 'yes',
 				'classes'     => 'godam-seo-field',
+			)
+		);
+
+		$this->add_control(
+			'seo_exclude_from_sitemap',
+			array(
+				'label'       => esc_html__( 'Exclude from video sitemap', 'godam' ),
+				'type'        => Controls_Manager::SWITCHER,
+				'description' => esc_html__( 'Leave this video out of the GoDAM video sitemap. The video schema on this page is not affected.', 'godam' ),
+				'default'     => '',
 			)
 		);
 
