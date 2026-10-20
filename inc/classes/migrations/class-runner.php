@@ -118,7 +118,7 @@ class Runner {
 		'2.4.0'  => array(
 			Posthog_Consent_Reset::class,
 		),
-		'2.4.1'  => array(
+		'2.5.0'  => array(
 			Transcoded_Mp3_Mime_Type::class,
 		),
 	);

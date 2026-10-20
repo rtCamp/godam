@@ -234,8 +234,10 @@ class TranscodedMp3MimeTypeTest extends TestCase {
 		$map->setAccessible( true );
 		$migrations = $map->getValue();
 
-		$this->assertArrayHasKey( '2.4.1', $migrations, 'No migration batch for the release this ships in.' );
-		$this->assertContains( Transcoded_Mp3_Mime_Type::class, $migrations['2.4.1'] );
+		// 2.4.1 shipped without this fix but still stores 2.4.1 as the site's version, and the runner skips
+		// batches at or below the stored version, so a batch keyed 2.4.1 or lower would never run on those sites.
+		$this->assertArrayHasKey( '2.5.0', $migrations, 'No migration batch for the release this ships in.' );
+		$this->assertContains( Transcoded_Mp3_Mime_Type::class, $migrations['2.5.0'] );
 		$versions = array_keys( $migrations );
 		$ordered  = $versions;
 		usort( $ordered, 'version_compare' );
