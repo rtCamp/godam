@@ -1,5 +1,9 @@
 # Changelog #
 
+## v2.4.1 (October 20, 2026) ##
+
+- Fix: The video transcript no longer covers the video.
+
 ## v2.4.0 (October 16, 2026) ##
 
 - Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.
