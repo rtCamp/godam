@@ -3126,10 +3126,13 @@ body.godam-player-modal-open {
  * the width leaves height to come from aspect-ratio alone, so a 9:16 reel renders
  * ~1778px tall and its control bar lands far below the fold. With an explicit
  * ratio and a height cap, the width resolves from whichever constraint binds
- * first — the wrapper width for wide videos, the height cap for tall ones. */
+ * first — the wrapper width for wide videos, the height cap for tall ones.
+ * Safari does not carry the height cap through the aspect ratio into the width,
+ * so the width is also capped at the height cap times the ratio: the same width
+ * the close button's offset uses. */
 .godam-player-modal-item {
 	width: auto !important;
-	max-width: 100% !important;
+	max-width: min(100%, calc(var(--godam-lightbox-max-h, 90vh) * (var(--godam-lightbox-ratio, 16 / 9)))) !important;
 
 	/* Shared with the wrapper, so the close button's offset maths (which uses the
 	 * same value) always matches the video actually rendered. */

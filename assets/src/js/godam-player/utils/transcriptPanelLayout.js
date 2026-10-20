@@ -27,6 +27,12 @@ const WIDE_RATIO = 16 / 9;
 // share of it when it has to shrink to make room for the panel beneath.
 const MIN_STAGE_SHARE = 0.5;
 
+// There, a video shrunk for the panel also stays at least this wide (or its
+// closed width, if narrower), so a portrait video keeps room for its controls:
+// the panel gives up height for it, down to its own minimum.
+export const CAPPED_MIN_PLAYER_WIDTH = 300;
+export const CAPPED_MIN_PANEL_HEIGHT = 160;
+
 const clamp = ( value, min, max ) => Math.min( Math.max( value, min ), max );
 
 /**
@@ -59,7 +65,14 @@ export function computeTranscriptLayout( { stageWidth, stageHeight, ratio, room,
 		}
 		// Too tall for the cap: shrink the video, but not below half the cap,
 		// and give the panel what is left.
-		const fitHeight = Math.max( maxHeight - panelHeight, maxHeight * MIN_STAGE_SHARE );
+		let fitHeight = Math.max( maxHeight - panelHeight, maxHeight * MIN_STAGE_SHARE );
+		// A portrait video shrunk that far is too narrow for its controls (on a
+		// phone its skip buttons overlap): widen it to the floor, taking height
+		// from the panel until the panel reaches its minimum.
+		const minWidth = Math.min( stageWidth, CAPPED_MIN_PLAYER_WIDTH );
+		if ( fitHeight * ratio < minWidth ) {
+			fitHeight = Math.max( fitHeight, Math.min( minWidth / ratio, maxHeight - CAPPED_MIN_PANEL_HEIGHT ) );
+		}
 		return { mode: 'below', width: Math.min( stageWidth, fitHeight * ratio ), panelHeight: Math.round( maxHeight - fitHeight ) };
 	};
 

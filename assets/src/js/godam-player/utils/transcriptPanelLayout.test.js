@@ -4,6 +4,8 @@
 import {
 	BELOW_MAX_HEIGHT,
 	BELOW_MIN_HEIGHT,
+	CAPPED_MIN_PANEL_HEIGHT,
+	CAPPED_MIN_PLAYER_WIDTH,
 	PANEL_MAX_WIDTH,
 	PANEL_MIN_WIDTH,
 	computeTranscriptLayout,
@@ -84,24 +86,50 @@ describe( 'computeTranscriptLayout', () => {
 		expect( layout ).toEqual( { mode: 'below', width: 375, panelHeight: BELOW_MIN_HEIGHT } );
 	} );
 
-	it( 'keeps a stacked layout inside the lightbox height by shrinking the video', () => {
-		// Phone lightbox: a 9:16 video fills 359x638 of a 710px cap.
-		const layout = computeTranscriptLayout( { stageWidth: 359, stageHeight: 638, ratio: 9 / 16, room: 359, maxHeight: 710 } );
+	it( 'keeps a stacked layout inside the lightbox height by shrinking the video, but not below 300px wide', () => {
+		// Phone lightbox (393x852): a 9:16 video fills 362x643 of a 716.8px cap.
+		// Shrunk to half the cap it would be 202px wide, with its skip buttons
+		// overlapping; it stays 300px wide and the panel takes the rest.
+		const layout = computeTranscriptLayout( { stageWidth: 362, stageHeight: 643, ratio: 9 / 16, room: 362, maxHeight: 716.8 } );
 
 		expect( layout.mode ).toBe( 'below' );
+		expect( layout.width ).toBeCloseTo( CAPPED_MIN_PLAYER_WIDTH );
 		const stageHeight = layout.width / ( 9 / 16 );
-		expect( stageHeight + layout.panelHeight ).toBeLessThanOrEqual( 710.5 );
-		// 638 + 360 would overflow; the video keeps half the cap, the panel the rest.
-		expect( stageHeight ).toBeCloseTo( 355 );
-		expect( layout.panelHeight ).toBe( 355 );
+		expect( stageHeight ).toBeCloseTo( 533.3, 1 );
+		expect( layout.panelHeight ).toBe( 183 );
+		expect( stageHeight + layout.panelHeight ).toBeLessThanOrEqual( 717.3 );
+	} );
+
+	it( 'leaves a 16:9 video in a phone lightbox at its full width', () => {
+		expect( computeTranscriptLayout( { stageWidth: 362, stageHeight: 203.6, ratio: 16 / 9, room: 362, maxHeight: 716.8 } ) )
+			.toEqual( { mode: 'below', width: 362, panelHeight: BELOW_MIN_HEIGHT } );
+	} );
+
+	it( 'keeps the panel at least 160px tall on a short cap, shrinking the video for it', () => {
+		// A landscape phone: a 9:16 video 203x360 under a 360px cap.
+		const layout = computeTranscriptLayout( { stageWidth: 203, stageHeight: 360, ratio: 9 / 16, room: 203, maxHeight: 360 } );
+		const stageHeight = layout.width / ( 9 / 16 );
+
+		expect( layout.panelHeight ).toBe( CAPPED_MIN_PANEL_HEIGHT );
+		expect( stageHeight ).toBeCloseTo( 200 );
+		expect( layout.width ).toBeLessThan( 203 );
+	} );
+
+	it( 'uses the closed width as the floor when the video is already narrower than 300px', () => {
+		const layout = computeTranscriptLayout( { stageWidth: 250, stageHeight: 444.4, ratio: 9 / 16, room: 250, maxHeight: 700 } );
+
+		expect( layout.width ).toBeCloseTo( 250 );
+		expect( layout.panelHeight ).toBe( 256 );
 	} );
 
 	it( 'never shrinks the video below half the lightbox height', () => {
-		const layout = computeTranscriptLayout( { stageWidth: 300, stageHeight: 533, ratio: 9 / 16, room: 300, maxHeight: 500 } );
+		// So small a cap that even the panel minimum would leave the video
+		// under half of it: the video keeps half, the panel the rest.
+		const layout = computeTranscriptLayout( { stageWidth: 300, stageHeight: 533, ratio: 9 / 16, room: 300, maxHeight: 300 } );
 		const stageHeight = layout.width / ( 9 / 16 );
 
-		expect( stageHeight ).toBeCloseTo( 250 );
-		expect( layout.panelHeight ).toBe( 250 );
+		expect( stageHeight ).toBeCloseTo( 150 );
+		expect( layout.panelHeight ).toBe( 150 );
 	} );
 
 	it( 'leaves a stacked layout alone when it already fits the cap', () => {
