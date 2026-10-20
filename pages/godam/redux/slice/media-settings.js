@@ -43,6 +43,9 @@ const initialState = {
 		enable_global_video_ads: false,
 		adTagUrl: '',
 	},
+	seo: {
+		enable_video_sitemap: false,
+	},
 	integrations: {
 		woocommerce: {
 			enable: true,

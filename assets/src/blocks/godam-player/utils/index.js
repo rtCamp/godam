@@ -109,4 +109,115 @@ function stripHtmlTags( html ) {
 	return doc.body.textContent || '';
 }
 
-export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601, isSEODataEmpty, stripHtmlTags };
+/**
+ * Get the file name (without folders or query string) from a URL or path.
+ *
+ * @param {string} url - URL or path.
+ * @return {string} File name, e.g. "my-video_final.mp4", or ''.
+ */
+function getFileNameFromUrl( url ) {
+	if ( ! url || typeof url !== 'string' ) {
+		return '';
+	}
+
+	const path = url.split( /[?#]/ )[ 0 ];
+	const name = path.substring( path.lastIndexOf( '/' ) + 1 );
+
+	try {
+		return decodeURIComponent( name );
+	} catch {
+		return name;
+	}
+}
+
+/**
+ * Remove a trailing file extension, e.g. "clip.final.mp4" -> "clip.final".
+ *
+ * @param {string} name - File name.
+ * @return {string} Name without the last extension.
+ */
+function stripFileExtension( name ) {
+	return String( name || '' ).replace( /\.[a-z0-9]{2,5}$/i, '' );
+}
+
+/**
+ * Normalize a title or file name for comparison: lower case, and runs of
+ * spaces, hyphens and underscores collapsed to "-".
+ *
+ * WordPress builds the title from the uploaded name with its spaces but saves
+ * the file with hyphens, e.g. title "Screen Recording 2024-01-15 at 10.30.45"
+ * and file "Screen-Recording-2024-01-15-at-10.30.45.mov"; both normalize to
+ * the same string.
+ *
+ * @param {string} value - Title or file name.
+ * @return {string} Normalized value.
+ */
+function normalizeForFileNameComparison( value ) {
+	return String( value || '' ).trim().toLowerCase()
+		.replace( /[\s_-]+/g, '-' )
+		.replace( /^-+|-+$/g, '' );
+}
+
+/**
+ * Whether a video title looks like a raw file name rather than a real title.
+ *
+ * A single hyphen or underscore is not enough on its own: real titles such as
+ * "Spider-Man", "COVID-19", "e-commerce", "Add-ons", "Q3_review" or
+ * "Paris-2024" have one. A title is flagged when it matches the video's file
+ * name (ignoring case, the extension, and the difference between spaces,
+ * hyphens and underscores) *and* also looks machine-made: no spaces, or a
+ * date or time in it ("Screen Recording 2024-01-15 at 10.30.45"). WordPress
+ * builds the title from the uploaded file name, so a well-named upload
+ * ("Product Demo.mp4" → "Product Demo") always matches its file and must
+ * not be flagged for that alone. A title with no spaces is also flagged when it
+ * has two or more hyphens/underscores ("product-demo_v2"), is a camera or
+ * phone file name ("IMG_2041", "DSC-0001", "PXL_20240115"), or ends in a
+ * video file extension ("clip.mp4").
+ *
+ * @param {string} title      - Video title / SEO headline.
+ * @param {string} [fileName] - The video's file name or URL, if known.
+ * @return {boolean} True when the title looks like a file name.
+ */
+function isFilenameLikeTitle( title, fileName = '' ) {
+	const trimmed = String( title || '' ).trim();
+
+	if ( ! trimmed ) {
+		return false;
+	}
+
+	const baseName = getFileNameFromUrl( fileName );
+	if ( baseName ) {
+		const normalizedTitle = normalizeForFileNameComparison( trimmed );
+		const normalizedFile = normalizeForFileNameComparison( baseName );
+		const normalizedFileNoExtension = normalizeForFileNameComparison( stripFileExtension( baseName ) );
+
+		const looksGenerated = ! /\s/.test( trimmed ) || /\d{4}-\d{2}-\d{2}|\d{1,2}\.\d{2}\.\d{2}/.test( trimmed );
+
+		if ( looksGenerated && normalizedTitle && ( normalizedTitle === normalizedFile || normalizedTitle === normalizedFileNoExtension ) ) {
+			return true;
+		}
+	}
+
+	if ( /\s/.test( trimmed ) ) {
+		return false;
+	}
+
+	// Two or more separators, e.g. "product-demo_v2".
+	if ( ( trimmed.match( /[-_]/g ) || [] ).length >= 2 ) {
+		return true;
+	}
+
+	// Camera / phone naming, e.g. "IMG_2041", "DSC-0001", "VID_20240115", "PXL_20240115".
+	if ( /^(img|vid|dsc|dscn|mvi|pxl|mov|dji|gopr|gp)[-_]?\d{3,}$/i.test( trimmed ) ) {
+		return true;
+	}
+
+	// A single word ending in a video file extension, e.g. "IMG2041.mp4".
+	if ( /\.(mp4|mov|m4v|webm|mkv|avi|wmv|flv|mpe?g|3gp|ogv|m3u8|mpd)$/i.test( trimmed ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601, isSEODataEmpty, stripHtmlTags, getFileNameFromUrl, isFilenameLikeTitle };

@@ -22,6 +22,66 @@ class Seo {
 	const VIDEO_SEO_SCHEMA_UPDATED_META_KEY = 'godam_video_seo_schema_updated';
 	const ATTACHMENT_POSTS_MAP_META_KEY     = 'godam_posts_using_attachment';
 	const POST_ATTACHMENTS_META_KEY         = '_godam_seo_attachments';
+	const TRANSCRIPT_EXCERPT_META_KEY       = '_godam_seo_transcript_excerpt';
+
+	/**
+	 * Maximum length of a fallback description (transcript or page excerpt).
+	 *
+	 * @since n.e.x.t
+	 */
+	const DESCRIPTION_MAX_LENGTH = 160;
+
+	/**
+	 * Seconds before a failed transcript fetch is retried.
+	 *
+	 * @since n.e.x.t
+	 */
+	const TRANSCRIPT_RETRY_AFTER = HOUR_IN_SECONDS;
+
+	/**
+	 * Post meta marking that a page with video SEO cached by an older GoDAM version has been
+	 * queued for a one-time re-save (see {@see Seo::maybe_queue_legacy_resave()}).
+	 *
+	 * @since n.e.x.t
+	 */
+	const LEGACY_RESAVE_META_KEY = '_godam_seo_legacy_resave';
+
+	/**
+	 * Option holding the IDs of pages waiting for that re-save.
+	 *
+	 * @since n.e.x.t
+	 */
+	const LEGACY_RESAVE_QUEUE_OPTION = 'godam_video_seo_resave_queue';
+
+	/**
+	 * WP-Cron hook that works through the re-save queue.
+	 *
+	 * @since n.e.x.t
+	 */
+	const LEGACY_RESAVE_CRON_HOOK = 'godam_video_seo_resave_batch';
+
+	/**
+	 * Pages re-saved per WP-Cron run; the rest wait for the next run.
+	 *
+	 * @since n.e.x.t
+	 */
+	const LEGACY_RESAVE_BATCH_SIZE = 10;
+
+	/**
+	 * Page IDs queued during this request, written to the queue option once
+	 * at shutdown.
+	 *
+	 * @var int[]
+	 */
+	private $pending_legacy_resaves = array();
+
+	/**
+	 * Shortest video (seconds) that gets key moments. Google ignores clips on
+	 * videos under 30 seconds.
+	 *
+	 * @since n.e.x.t
+	 */
+	const KEY_MOMENTS_MIN_DURATION = 30;
 
 	/**
 	 * Content URLs already emitted by the cached wp_head schema output.
@@ -94,6 +154,11 @@ class Seo {
 		// Hook to update SEO when attachment is edited.
 		add_action( 'edit_attachment', array( $this, 'schedule_seo_sync_for_attachment' ) );
 		add_action( 'godam_sync_attachment_seo', array( $this, 'sync_seo_for_attachment_posts' ) );
+
+		// One-time background re-save of pages whose cached video SEO was saved
+		// by an older version and can't be resolved at output time (see
+		// maybe_queue_legacy_resave()).
+		add_action( self::LEGACY_RESAVE_CRON_HOOK, array( $this, 'process_legacy_resave_queue' ) );
 	}
 
 	/**
@@ -222,18 +287,27 @@ class Seo {
 			 */
 			do_action( 'godam_video_seo_schema_saved', $post_ID, $video_seo_schema );
 		} else {
+			// Whether this post had video SEO before. Most saves are of posts with
+			// no video at all; listeners (e.g. the sitemap cache) can skip those.
+			$had_schema = metadata_exists( 'post', $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
+
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); clears its own cached video SEO schema meta, not attachment data.
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); clears its own cached-schema-updated timestamp meta, not attachment data.
-			$this->update_attachment_post_mapping( $post_ID, array() );
+			// Keep tracking videos that produced no schema yet (e.g. an empty
+			// Media Library title), so editing them later re-syncs this page.
+			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
 
 			/**
 			 * Fired after video SEO schema is cleared from a post.
 			 *
 			 * @since 1.10.0
+			 * @since n.e.x.t Added `$had_schema`.
 			 *
-			 * @param int $post_ID The post ID.
+			 * @param int  $post_ID    The post ID.
+			 * @param bool $had_schema Whether the post had cached video SEO before
+			 *                         this save. False for posts with no video.
 			 */
-			do_action( 'godam_video_seo_schema_cleared', $post_ID );
+			do_action( 'godam_video_seo_schema_cleared', $post_ID, $had_schema );
 		}
 	}
 
@@ -254,8 +328,9 @@ class Seo {
 		if ( isset( $block['blockName'] ) && 'godam/video' === $block['blockName'] ) {
 			$seo_override  = isset( $block['attrs']['seoOverride'] ) ? $block['attrs']['seoOverride'] : false;
 			$attachment_id = isset( $block['attrs']['id'] ) ? (int) $block['attrs']['id'] : 0;
+			$seo_entry     = null;
 
-			if ( $seo_override && isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) ) {
+			if ( $seo_override && isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) && is_array( $block['attrs']['seo'] ) ) {
 				// Use overridden SEO from block attributes.
 				$seo_entry = $block['attrs']['seo'];
 
@@ -264,21 +339,27 @@ class Seo {
 				if ( $attachment_id > 0 ) {
 					$seo_entry['attachment_id'] = $attachment_id;
 				}
-
-				$schemas[] = $seo_entry;
 			} elseif ( $attachment_id > 0 ) {
-				// Fetch SEO from media library attachment.
-				$media_seo = $this->get_seo_from_attachment( $attachment_id );
+				// Fetch SEO from media library attachment. Only allow a remote
+				// transcript fetch on save, never during a page render.
+				$media_seo = $this->get_seo_from_attachment( $attachment_id, $track_attachments );
 				if ( ! empty( $media_seo ) ) {
 					$media_seo['attachment_id'] = $attachment_id;
-					$schemas[]                  = $media_seo;
+					$seo_entry                  = $media_seo;
 					if ( $track_attachments ) {
 						$attachments[] = $attachment_id;
 					}
 				}
-			} elseif ( isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) ) {
+			} elseif ( isset( $block['attrs']['seo'] ) && ! empty( $block['attrs']['seo'] ) && is_array( $block['attrs']['seo'] ) ) {
 				// Fallback to block SEO if no attachment ID.
-				$schemas[] = $block['attrs']['seo'];
+				$seo_entry = $block['attrs']['seo'];
+			}
+
+			if ( null !== $seo_entry ) {
+				// Per-video "Exclude from video sitemap" toggle. Kept on the block,
+				// independent of the SEO override, and carried into the cache.
+				$seo_entry['excludeFromSitemap'] = ! empty( $block['attrs']['excludeFromVideoSitemap'] );
+				$schemas[]                       = $seo_entry;
 			}
 		}
 
@@ -308,11 +389,16 @@ class Seo {
 	 * Get SEO data from a media library attachment.
 	 *
 	 * @since 1.7.0
+	 * @since n.e.x.t contentUrl is the HLS stream (or original file), never the
+	 *              DASH manifest; adds embedUrl; falls back to the transcript
+	 *              for an empty description. Added `$allow_remote`.
 	 *
-	 * @param int $attachment_id The attachment ID.
+	 * @param int  $attachment_id The attachment ID.
+	 * @param bool $allow_remote  Whether an uncached transcript may be fetched for
+	 *                            the description fallback. False on page renders.
 	 * @return array The SEO data from the attachment.
 	 */
-	public function get_seo_from_attachment( $attachment_id ) {
+	public function get_seo_from_attachment( $attachment_id, $allow_remote = true ) {
 		/**
 		 * Fires before resolving/reading this attachment's post object,
 		 * postmeta, canonical URL and video metadata for SEO schema
@@ -334,19 +420,15 @@ class Seo {
 
 			$meta = get_post_meta( $attachment_id );
 
-			// Get transcoded URL or fallback to attachment URL.
-			$content_url = '';
-			if ( ! empty( $meta['rtgodam_transcoded_url'][0] ) ) {
-				$content_url = $meta['rtgodam_transcoded_url'][0];
-			} else {
-				$content_url = wp_get_attachment_url( $attachment_id );
-			}
-
 			// Get video duration in ISO 8601 format.
 			$attachment_meta = wp_get_attachment_metadata( $attachment_id );
 		} finally {
 			do_action( 'rtgodam_after_attachment_lookup' );
 		}
+
+		// Point Google at a format it can index: the HLS (.m3u8) stream, or the
+		// original upload. Never the DASH (.mpd) manifest, which Google can't use.
+		$content_url = $this->get_attachment_content_url( $attachment_id );
 
 		$duration = '';
 		if ( ! empty( $attachment_meta['length'] ) && is_numeric( $attachment_meta['length'] ) ) {
@@ -365,11 +447,16 @@ class Seo {
 			$upload_date = gmdate( 'c', strtotime( $attachment->post_date_gmt ) );
 		}
 
-		// Strip HTML from description.
-		$description = wp_strip_all_tags( $attachment->post_content );
+		// Strip HTML from description. When the media item has no description,
+		// fall back to the start of its transcript (fetched and cached once).
+		$description = trim( wp_strip_all_tags( $attachment->post_content ) );
+		if ( '' === $description ) {
+			$description = $this->get_transcript_excerpt( $attachment_id, $allow_remote );
+		}
 
 		return array(
 			'contentUrl'       => $content_url,
+			'embedUrl'         => $this->get_embed_url( $attachment_id ),
 			'headline'         => $attachment->post_title,
 			'description'      => $description,
 			'uploadDate'       => $upload_date,
@@ -377,6 +464,364 @@ class Seo {
 			'thumbnailUrl'     => $thumbnail_url,
 			'isFamilyFriendly' => true,
 		);
+	}
+
+	/**
+	 * Resolve the URL Google should index as a video's `contentUrl`.
+	 *
+	 * Google's supported formats list M3U8 (HLS) but not MPD (DASH), so this
+	 * prefers the HLS stream and falls back to the original uploaded file.
+	 * `rtgodam_transcoded_url` (the DASH manifest) is deliberately never used.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return string The HLS URL, the original file URL, or '' when neither exists.
+	 */
+	public function get_attachment_content_url( $attachment_id ) {
+		$attachment_id = absint( $attachment_id );
+		if ( ! $attachment_id ) {
+			return '';
+		}
+
+		if ( function_exists( 'rtgodam_get_hls_transcoded_url_from_attachment' ) ) {
+			// Fires its own rtgodam_before/after_attachment_lookup pair.
+			$hls_url = (string) rtgodam_get_hls_transcoded_url_from_attachment( $attachment_id );
+		} else {
+			do_action( 'rtgodam_before_attachment_lookup' );
+			$hls_url = (string) get_post_meta( $attachment_id, 'rtgodam_hls_transcoded_url', true );
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+
+		if ( '' !== $hls_url && ! self::is_dash_url( $hls_url ) ) {
+			$content_url = $hls_url;
+		} else {
+			/**
+			 * Fires before reading this attachment's original file URL, so
+			 * integrations that centralize media on another site can switch
+			 * context first.
+			 *
+			 * @since n.e.x.t
+			 */
+			do_action( 'rtgodam_before_attachment_lookup' );
+			$original_url = wp_get_attachment_url( $attachment_id );
+			do_action( 'rtgodam_after_attachment_lookup' );
+
+			$content_url = ( $original_url && ! self::is_dash_url( $original_url ) ) ? $original_url : '';
+		}
+
+		/**
+		 * Filters the URL used as a video's schema `contentUrl` and sitemap
+		 * `<video:content_loc>`.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param string $content_url   HLS URL, original file URL, or ''.
+		 * @param int    $attachment_id Attachment ID.
+		 */
+		return (string) apply_filters( 'godam_video_seo_content_url', $content_url, $attachment_id );
+	}
+
+	/**
+	 * Build the player (embed) URL for a video, used as schema `embedUrl` and
+	 * sitemap `<video:player_loc>`.
+	 *
+	 * Uses GoDAM's existing video-embed page (`?godam_page=video-embed&id=…`),
+	 * so no new public URL is created.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return string The embed URL, or '' for an invalid ID.
+	 */
+	public function get_embed_url( $attachment_id ) {
+		$attachment_id = absint( $attachment_id );
+		if ( ! $attachment_id ) {
+			return '';
+		}
+
+		$embed_url = add_query_arg(
+			array(
+				'godam_page' => 'video-embed',
+				'id'         => $attachment_id,
+			),
+			home_url( '/' )
+		);
+
+		/**
+		 * Filters the player URL used as a video's schema `embedUrl`.
+		 *
+		 * Return '' to leave `embedUrl` out.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param string $embed_url     The embed page URL.
+		 * @param int    $attachment_id Attachment ID.
+		 */
+		return (string) apply_filters( 'godam_video_seo_embed_url', $embed_url, $attachment_id );
+	}
+
+	/**
+	 * Whether a URL points at a DASH (.mpd) manifest.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $url URL to check.
+	 * @return bool
+	 */
+	public static function is_dash_url( $url ) {
+		if ( ! is_string( $url ) || '' === $url ) {
+			return false;
+		}
+
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+
+		return '.mpd' === strtolower( substr( $path, -4 ) );
+	}
+
+	/**
+	 * Get a short plain-text excerpt of a video's transcript, for use as a
+	 * fallback schema description.
+	 *
+	 * The transcript is a WebVTT/SRT file referenced by `rtgodam_transcript_path`.
+	 * Its text is fetched once and cached on the attachment (keyed by the
+	 * transcript path, so a new transcript is picked up automatically). Pass
+	 * `$allow_remote = false` on page renders to only ever read that cache.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int  $attachment_id Attachment ID.
+	 * @param bool $allow_remote  Whether the transcript file may be fetched when not cached.
+	 * @return string Excerpt of up to {@see self::DESCRIPTION_MAX_LENGTH} characters, or ''.
+	 */
+	public function get_transcript_excerpt( $attachment_id, $allow_remote = false ) {
+		$attachment_id = absint( $attachment_id );
+		if ( ! $attachment_id ) {
+			return '';
+		}
+
+		/**
+		 * Fires before reading this attachment's transcript meta, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since n.e.x.t
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$transcript_path = (string) get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+		$is_deleted      = (bool) get_post_meta( $attachment_id, 'rtgodam_transcript_deleted', true );
+		$cache           = get_post_meta( $attachment_id, self::TRANSCRIPT_EXCERPT_META_KEY, true );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( '' === $transcript_path || $is_deleted ) {
+			return '';
+		}
+
+		if ( is_array( $cache ) && isset( $cache['path'], $cache['text'] ) && $cache['path'] === $transcript_path ) {
+			$failed_at = isset( $cache['failed_at'] ) ? (int) $cache['failed_at'] : 0;
+
+			// A failed fetch is remembered for an hour, so saves that happen in
+			// bursts (e.g. WooCommerce stock changes re-saving product pages)
+			// don't each wait on a dead transcript URL. After that, retry.
+			if ( ! $failed_at || ! $allow_remote || ( time() - $failed_at ) < self::TRANSCRIPT_RETRY_AFTER ) {
+				return (string) $cache['text'];
+			}
+		}
+
+		if ( ! $allow_remote ) {
+			return '';
+		}
+
+		$raw = $this->read_transcript_file( $transcript_path );
+		if ( false === $raw ) {
+			do_action( 'rtgodam_before_attachment_lookup' );
+			update_post_meta(
+				$attachment_id,
+				self::TRANSCRIPT_EXCERPT_META_KEY,
+				array(
+					'path'      => $transcript_path,
+					'text'      => '',
+					'failed_at' => time(),
+				)
+			);
+			do_action( 'rtgodam_after_attachment_lookup' );
+
+			return '';
+		}
+
+		$excerpt = self::trim_to_length( self::transcript_to_text( $raw ), self::DESCRIPTION_MAX_LENGTH );
+
+		do_action( 'rtgodam_before_attachment_lookup' );
+		update_post_meta(
+			$attachment_id,
+			self::TRANSCRIPT_EXCERPT_META_KEY,
+			array(
+				'path' => $transcript_path,
+				'text' => $excerpt,
+			)
+		);
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		return $excerpt;
+	}
+
+	/**
+	 * Read a transcript file's contents.
+	 *
+	 * Files in this site's uploads directory are read from disk (this also
+	 * works on local sites whose hostnames don't resolve from PHP); anything
+	 * else is fetched with wp_safe_remote_get().
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $url Transcript URL.
+	 * @return string|false File contents, or false on failure.
+	 */
+	private function read_transcript_file( $url ) {
+		$uploads = wp_get_upload_dir();
+		if ( ! empty( $uploads['baseurl'] ) && ! empty( $uploads['basedir'] ) && 0 === strpos( $url, trailingslashit( $uploads['baseurl'] ) ) ) {
+			$relative = substr( $url, strlen( trailingslashit( $uploads['baseurl'] ) ) );
+			$file     = trailingslashit( $uploads['basedir'] ) . rawurldecode( $relative );
+
+			// realpath() throws a ValueError on a NUL byte (e.g. "%00" in the URL).
+			if ( false !== strpos( $file, "\0" ) ) {
+				return false;
+			}
+
+			$real = realpath( $file );
+			$base = realpath( $uploads['basedir'] );
+
+			// Compare against the uploads dir *with* a trailing separator, so a
+			// sibling such as "/uploads-other/" can't pass the prefix check.
+			if ( $real && $base && 0 === strpos( $real, trailingslashit( $base ) ) && is_file( $real ) && is_readable( $real ) ) {
+				$contents = file_get_contents( $real ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown -- local uploads file, path validated above.
+				return false === $contents ? false : (string) $contents;
+			}
+		}
+
+		$response = wp_safe_remote_get(
+			$url,
+			array(
+				'timeout' => 3, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout -- runs on save, kept short.
+			)
+		);
+
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return false;
+		}
+
+		return (string) wp_remote_retrieve_body( $response );
+	}
+
+	/**
+	 * Convert a WebVTT or SRT transcript into plain running text.
+	 *
+	 * Drops the WEBVTT header, NOTE/STYLE/REGION blocks, cue identifiers,
+	 * timing lines and inline tags, then joins the cue text with spaces.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $raw Transcript file contents.
+	 * @return string Plain text.
+	 */
+	public static function transcript_to_text( $raw ) {
+		$raw    = str_replace( array( "\r\n", "\r" ), "\n", (string) $raw );
+		$raw    = preg_replace( '/^\xEF\xBB\xBF/', '', $raw ); // UTF-8 BOM.
+		$blocks = preg_split( "/\n\s*\n/", $raw );
+		$parts  = array();
+
+		foreach ( $blocks as $block ) {
+			$lines = array_values( array_filter( array_map( 'trim', explode( "\n", trim( $block ) ) ), 'strlen' ) );
+			if ( empty( $lines ) ) {
+				continue;
+			}
+
+			// Only cue blocks carry spoken text, and a cue block always has a
+			// timing line ("00:00:01.000 --> 00:00:04.000", or "," in SRT).
+			// Header, NOTE, STYLE and REGION blocks have none and are skipped.
+			$timing_index = null;
+			foreach ( $lines as $index => $line ) {
+				if ( false !== strpos( $line, '-->' ) ) {
+					$timing_index = $index;
+					break;
+				}
+			}
+
+			if ( null === $timing_index ) {
+				continue;
+			}
+
+			// Lines before the timing line are the cue identifier (numeric in
+			// SRT, any text in WebVTT); the cue text is everything after it.
+			// Text that merely starts with "Note" or is a number is kept.
+			foreach ( array_slice( $lines, $timing_index + 1 ) as $line ) {
+				$text = trim( preg_replace( '/<[^>]*>/', '', $line ) );
+				if ( '' !== $text ) {
+					// Decode entities, then strip again: "&lt;/script&gt;" must not
+					// come back as a real tag.
+					$parts[] = wp_strip_all_tags( html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+				}
+			}
+		}
+
+		return trim( preg_replace( '/\s+/u', ' ', implode( ' ', $parts ) ) );
+	}
+
+	/**
+	 * Trim text to a maximum length, cutting at a word boundary and adding an
+	 * ellipsis when shortened. The result, ellipsis included, never exceeds
+	 * `$max_length` characters.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $text       Plain text.
+	 * @param int    $max_length Maximum number of characters.
+	 * @return string
+	 */
+	public static function trim_to_length( $text, $max_length ) {
+		$text = trim( preg_replace( '/\s+/u', ' ', (string) $text ) );
+
+		if ( mb_strlen( $text, 'UTF-8' ) <= $max_length ) {
+			return $text;
+		}
+
+		$cut        = mb_substr( $text, 0, $max_length - 1, 'UTF-8' );
+		$last_space = mb_strrpos( $cut, ' ', 0, 'UTF-8' );
+
+		// Only back off to a word boundary if it doesn't throw away most of the text.
+		if ( false !== $last_space && $last_space > (int) ( $max_length * 0.6 ) ) {
+			$cut = mb_substr( $cut, 0, $last_space, 'UTF-8' );
+		}
+
+		return rtrim( $cut, " \t\n\r\0\x0B.,;:-" ) . '…';
+	}
+
+	/**
+	 * Interpret a stored family-friendly flag as a real boolean.
+	 *
+	 * Older blocks and page-builder settings can store this as a string
+	 * ("True", "false", "1", "yes", ""), and a plain (bool) cast would turn
+	 * "false" into true.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $value Stored value.
+	 * @return bool
+	 */
+	public static function to_bool( $value ) {
+		if ( is_bool( $value ) ) {
+			return $value;
+		}
+
+		if ( is_string( $value ) ) {
+			$value = strtolower( trim( $value ) );
+			if ( in_array( $value, array( 'false', '0', 'no', 'off', '' ), true ) ) {
+				return false;
+			}
+			return true;
+		}
+
+		return (bool) $value;
 	}
 
 	/**
@@ -560,7 +1005,9 @@ class Seo {
 		// Output a single <script> with all schemas.
 		echo '<script type="application/ld+json">' . wp_json_encode(
 			count( $output_schemas ) === 1 ? $output_schemas[0] : $output_schemas,
-			JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+			// JSON_HEX_TAG / JSON_HEX_AMP encode < > & as \u003C \u003E \u0026, so no
+			// value (e.g. a description containing "</script>") can close the tag.
+			JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_HEX_TAG | JSON_HEX_AMP
 		) . '</script>';
 	}
 
@@ -571,7 +1018,12 @@ class Seo {
 	 * render-time output ({@see output_render_time_video_seo_schema}) so both
 	 * paths produce identical schema and fire the same per-entry filter.
 	 *
+	 * Also used by the video sitemap ({@see Video_Sitemap}), so the sitemap and
+	 * the schema always agree.
+	 *
 	 * @since 2.1.0
+	 * @since n.e.x.t Public. HLS contentUrl, embedUrl, description fallbacks, and
+	 *              empty description/uploadDate are left out instead of output empty.
 	 *
 	 * @param array $video   Raw video SEO data (headline, contentUrl, etc.).
 	 * @param int   $post_id The current post ID for filter context. May be 0 on
@@ -579,20 +1031,53 @@ class Seo {
 	 *                       where the queried object has no post ID.
 	 * @return array|null The VideoObject schema array, or null when invalid.
 	 */
-	private function build_video_object_schema( $video, $post_id ) {
+	public function build_video_object_schema( $video, $post_id ) {
 		if ( ! is_array( $video ) || empty( $video['headline'] ) ) {
 			return null;
 		}
 
+		$attachment_id = ! empty( $video['attachment_id'] ) ? absint( $video['attachment_id'] ) : 0;
+
 		$schema = array(
-			'@context'         => 'https://schema.org',
-			'@type'            => 'VideoObject',
-			'name'             => sanitize_text_field( $video['headline'] ?? '' ),
-			'description'      => wp_strip_all_tags( $video['description'] ?? '' ),
-			'contentUrl'       => esc_url_raw( $video['contentUrl'] ?? '' ),
-			'uploadDate'       => sanitize_text_field( $video['uploadDate'] ?? '' ),
-			'isFamilyFriendly' => isset( $video['isFamilyFriendly'] ) ? (bool) $video['isFamilyFriendly'] : true,
+			'@context' => 'https://schema.org',
+			'@type'    => 'VideoObject',
+			'name'     => sanitize_text_field( $video['headline'] ?? '' ),
 		);
+
+		// Never output an empty description (Search Console flags it). Fall back
+		// to the transcript, then the page excerpt; otherwise leave it out.
+		$description = $this->resolve_schema_description( $video, $attachment_id, $post_id );
+		if ( '' !== $description ) {
+			$schema['description'] = $description;
+		}
+
+		$content_url = $this->resolve_schema_content_url( $video, $attachment_id );
+
+		// Elementor and WPBakery entries cached by older GoDAM versions have no attachment
+		// ID and a DASH contentUrl, so neither contentUrl nor embedUrl can be
+		// resolved for them here. Re-save the page once in the background to
+		// rebuild its cache in the current shape.
+		if ( 0 === $attachment_id && $post_id > 0 && ! empty( $video['contentUrl'] ) && self::is_dash_url( (string) $video['contentUrl'] ) ) {
+			$this->maybe_queue_legacy_resave( $post_id );
+		}
+		if ( '' !== $content_url ) {
+			$schema['contentUrl'] = esc_url_raw( $content_url );
+		}
+
+		$embed_url = ! empty( $video['embedUrl'] ) && is_string( $video['embedUrl'] )
+			? $video['embedUrl']
+			: $this->get_embed_url( $attachment_id );
+		if ( '' !== $embed_url ) {
+			$schema['embedUrl'] = esc_url_raw( $embed_url );
+		}
+
+		$upload_date = sanitize_text_field( $video['uploadDate'] ?? '' );
+		if ( '' !== $upload_date ) {
+			$schema['uploadDate'] = $upload_date;
+		}
+
+		// A real JSON boolean, whatever shape the stored value has.
+		$schema['isFamilyFriendly'] = isset( $video['isFamilyFriendly'] ) ? self::to_bool( $video['isFamilyFriendly'] ) : true;
 
 		if ( ! empty( $video['thumbnailUrl'] ) ) {
 			$schema['thumbnailUrl'] = esc_url_raw( $video['thumbnailUrl'] );
@@ -600,6 +1085,15 @@ class Seo {
 
 		if ( ! empty( $video['duration'] ) ) {
 			$schema['duration'] = sanitize_text_field( $video['duration'] );
+		}
+
+		// Key moments: the video's chapters as Clip entries, so Google can show
+		// "jump to" links in search. Needs the host page to build each clip's URL.
+		if ( $attachment_id > 0 && $post_id > 0 ) {
+			$clips = $this->get_key_moment_clips( $attachment_id, $post_id, $schema['duration'] ?? '' );
+			if ( ! empty( $clips ) ) {
+				$schema['hasPart'] = $clips;
+			}
 		}
 
 		/**
@@ -618,6 +1112,505 @@ class Seo {
 		 *                       using it (e.g. get_post_type( $post_id )).
 		 */
 		return apply_filters( 'godam_video_seo_schema', $schema, $video, $post_id );
+	}
+
+	/**
+	 * Build Google "key moments" for a video from its GoDAM chapters.
+	 *
+	 * Each chapter becomes a schema.org `Clip` with a deep link that seeks the
+	 * player on the host page (`?t=<seconds>#godam-video-<id>`). The fragment
+	 * is not an element anchor: the GoDAM player script reads it and matches
+	 * `<id>` against the player's `data-id` attribute. Read at output time from
+	 * the attachment's `rtgodam_meta`, so editing chapters updates the schema
+	 * without re-saving the page. Skipped for videos known to be shorter than
+	 * {@see Seo::KEY_MOMENTS_MIN_DURATION} seconds.
+	 *
+	 * @see https://developers.google.com/search/docs/appearance/structured-data/video#clip
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param int    $post_id       Host post ID (the page the video is on).
+	 * @param string $duration      Video duration (ISO 8601), used to end the last clip.
+	 * @return array[] Clip entries for `hasPart`, or an empty array.
+	 */
+	public function get_key_moment_clips( $attachment_id, $post_id, $duration = '' ) {
+		$attachment_id = absint( $attachment_id );
+		$post_id       = absint( $post_id );
+
+		if ( ! $attachment_id || ! $post_id ) {
+			return array();
+		}
+
+		/**
+		 * Filters whether chapters are output as key moments (`hasPart` Clips).
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param bool $enabled       Default true.
+		 * @param int  $attachment_id Attachment ID.
+		 * @param int  $post_id       Host post ID.
+		 */
+		if ( ! apply_filters( 'godam_video_seo_key_moments_enabled', true, $attachment_id, $post_id ) ) {
+			return array();
+		}
+
+		/**
+		 * Fires before reading this attachment's chapters (rtgodam_meta), so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since n.e.x.t
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$meta = get_post_meta( $attachment_id, 'rtgodam_meta', true );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		$chapters = ( is_array( $meta ) && ! empty( $meta['chapters'] ) && is_array( $meta['chapters'] ) ) ? $meta['chapters'] : array();
+		if ( empty( $chapters ) ) {
+			return array();
+		}
+
+		$page_url = (string) get_permalink( $post_id ); // godam-coverage-ignore -- get_key_moment_clips(): $post_id is the host page, never an attachment.
+		if ( '' === $page_url ) {
+			return array();
+		}
+
+		$duration_seconds = self::iso8601_to_seconds( $duration );
+
+		// Google only shows key moments for videos of at least 30 seconds.
+		if ( $duration_seconds > 0 && $duration_seconds < self::KEY_MOMENTS_MIN_DURATION ) {
+			return array();
+		}
+
+		$clips = self::chapters_to_clips( $chapters, $page_url, $attachment_id, $duration_seconds );
+
+		/**
+		 * Filters the key moment Clip entries output in a video's `hasPart`.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param array[] $clips         Clip entries.
+		 * @param int     $attachment_id Attachment ID.
+		 * @param int     $post_id       Host post ID.
+		 * @param array   $chapters      Raw chapters from rtgodam_meta.
+		 */
+		$clips = apply_filters( 'godam_video_seo_key_moments', $clips, $attachment_id, $post_id, $chapters );
+
+		return is_array( $clips ) ? array_values( $clips ) : array();
+	}
+
+	/**
+	 * Convert GoDAM chapters into schema.org Clip entries.
+	 *
+	 * Chapters are sorted by start time and offsets are whole seconds, rounded
+	 * down. Duplicate start seconds (the first chapter wins) and chapters
+	 * starting at or after the end of the video are dropped first. A chapter's
+	 * end is then its own `endTime` when set, otherwise the next kept
+	 * chapter's start, otherwise the video duration, and never later than the
+	 * next kept chapter's start or the duration. Chapters without a title,
+	 * with an unreadable start, or with no length are skipped.
+	 *
+	 * Pure: no WordPress calls.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array  $chapters         Chapters (`text`, `startTime`, optional `endTime`, `originalTime`).
+	 * @param string $page_url         Host page URL.
+	 * @param int    $attachment_id    Attachment ID, for the `#godam-video-<id>` deep-link fragment.
+	 * @param int    $duration_seconds Video length in seconds, or 0 when unknown.
+	 * @return array[] Clip entries.
+	 */
+	public static function chapters_to_clips( array $chapters, $page_url, $attachment_id, $duration_seconds = 0 ) {
+		$rows = array();
+
+		foreach ( $chapters as $chapter ) {
+			$chapter = (array) $chapter;
+			$name    = trim( wp_strip_all_tags( (string) ( $chapter['text'] ?? '' ) ) );
+
+			$start_raw = ( isset( $chapter['startTime'] ) && '' !== (string) $chapter['startTime'] )
+				? $chapter['startTime']
+				: ( $chapter['originalTime'] ?? null );
+			$start     = self::parse_time_to_seconds( $start_raw );
+
+			if ( '' === $name || null === $start || $start < 0 ) {
+				continue;
+			}
+
+			$end = ( isset( $chapter['endTime'] ) && '' !== (string) $chapter['endTime'] )
+				? self::parse_time_to_seconds( $chapter['endTime'] )
+				: null;
+
+			$rows[] = array(
+				'name'  => $name,
+				'start' => $start,
+				'end'   => $end,
+			);
+		}
+
+		usort(
+			$rows,
+			function ( $a, $b ) {
+				return $a['start'] <=> $b['start'];
+			}
+		);
+
+		// Strip any fragment from the page URL; the clip adds its own.
+		$base = (string) preg_replace( '/#.*$/', '', (string) $page_url );
+		$sep  = ( false === strpos( $base, '?' ) ) ? '?' : '&';
+
+		// Whole seconds, rounded down for both start and end, so a clip never
+		// overlaps the next one. De-duplicate (keeping the first chapter for a
+		// given second) and drop chapters past the end of the video *before*
+		// working out ends, so "next chapter" always means one that is output.
+		$kept        = array();
+		$seen_starts = array();
+
+		foreach ( $rows as $row ) {
+			$start_offset = (int) floor( $row['start'] );
+
+			if ( isset( $seen_starts[ $start_offset ] ) ) {
+				continue;
+			}
+
+			if ( $duration_seconds > 0 && $start_offset >= $duration_seconds ) {
+				continue;
+			}
+
+			$seen_starts[ $start_offset ] = true;
+
+			$row['start_offset'] = $start_offset;
+			$kept[]              = $row;
+		}
+
+		$clips = array();
+		$count = count( $kept );
+
+		for ( $i = 0; $i < $count; $i++ ) {
+			$start_offset = $kept[ $i ]['start_offset'];
+			$next_start   = ( $i + 1 < $count ) ? $kept[ $i + 1 ]['start_offset'] : null;
+
+			$end_offset = null;
+			if ( null !== $kept[ $i ]['end'] ) {
+				$end_offset = (int) floor( $kept[ $i ]['end'] );
+			} elseif ( null !== $next_start ) {
+				$end_offset = $next_start;
+			} elseif ( $duration_seconds > 0 ) {
+				$end_offset = (int) $duration_seconds;
+			}
+
+			$clip = array(
+				'@type'       => 'Clip',
+				'name'        => $kept[ $i ]['name'],
+				'startOffset' => $start_offset,
+			);
+
+			if ( null !== $end_offset ) {
+				// Never run into the next clip or past the end of the video.
+				if ( null !== $next_start ) {
+					$end_offset = min( $end_offset, $next_start );
+				}
+				if ( $duration_seconds > 0 ) {
+					$end_offset = min( $end_offset, (int) $duration_seconds );
+				}
+				if ( $end_offset <= $start_offset ) {
+					continue;
+				}
+				$clip['endOffset'] = $end_offset;
+			}
+
+			$clip['url'] = $base . $sep . 't=' . $start_offset . '#godam-video-' . (int) $attachment_id;
+			$clips[]     = $clip;
+		}
+
+		return $clips;
+	}
+
+	/**
+	 * Parse a chapter time: plain seconds ("90", "12.5"), "mm:ss" or "hh:mm:ss(.ms)".
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $value Time value.
+	 * @return float|null Seconds, or null when unreadable.
+	 */
+	public static function parse_time_to_seconds( $value ) {
+		if ( null === $value || is_array( $value ) || is_object( $value ) ) {
+			return null;
+		}
+
+		$value = trim( (string) $value );
+
+		if ( '' === $value ) {
+			return null;
+		}
+
+		if ( is_numeric( $value ) ) {
+			return (float) $value;
+		}
+
+		if ( ! preg_match( '/^(?:(\d+):)?(\d{1,2}):(\d{1,2}(?:\.\d+)?)$/', $value, $m ) ) {
+			return null;
+		}
+
+		$hours   = '' !== $m[1] ? (int) $m[1] : 0;
+		$minutes = (int) $m[2];
+		$seconds = (float) $m[3];
+
+		return $hours * 3600 + $minutes * 60 + $seconds;
+	}
+
+	/**
+	 * Convert an ISO 8601 duration (e.g. "PT1H2M3S") to whole seconds.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $duration ISO 8601 duration.
+	 * @return int Seconds, or 0 when unparseable.
+	 */
+	public static function iso8601_to_seconds( $duration ) {
+		if ( ! is_string( $duration ) || ! preg_match( '/^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/i', trim( $duration ), $m ) ) {
+			return 0;
+		}
+
+		$days    = isset( $m[1] ) ? (int) $m[1] : 0;
+		$hours   = isset( $m[2] ) ? (int) $m[2] : 0;
+		$minutes = isset( $m[3] ) ? (int) $m[3] : 0;
+		$seconds = isset( $m[4] ) ? (float) $m[4] : 0;
+
+		return (int) round( $days * 86400 + $hours * 3600 + $minutes * 60 + $seconds );
+	}
+
+	/**
+	 * Queue a one-time background re-save of a page whose cached video SEO
+	 * was cached by an older GoDAM version.
+	 *
+	 * In older GoDAM versions only the block stored an attachment ID in each cached entry;
+	 * Elementor and WPBakery entries kept just the DASH (.mpd) contentUrl. Such
+	 * entries can't be resolved to an HLS contentUrl or an embedUrl at output
+	 * time, so the page's cache is rebuilt once via WP-Cron. A post meta flag
+	 * makes sure each page is only ever queued once.
+	 *
+	 * Built for sites with many such pages, since the first sitemap index
+	 * request can hit all of them: IDs are collected for the request and
+	 * written to one queue option at shutdown, a single cron event is
+	 * scheduled, and each run re-saves {@see Seo::LEGACY_RESAVE_BATCH_SIZE}
+	 * pages.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $post_id Host post ID.
+	 * @return void
+	 */
+	public function maybe_queue_legacy_resave( $post_id ) {
+		$post_id = absint( $post_id );
+		if ( ! $post_id ) {
+			return;
+		}
+
+		if ( get_post_meta( $post_id, self::LEGACY_RESAVE_META_KEY, true ) ) { // godam-coverage-ignore -- maybe_queue_legacy_resave(): $post_id is the host page, never an attachment.
+			return;
+		}
+
+		update_post_meta( $post_id, self::LEGACY_RESAVE_META_KEY, time() ); // godam-coverage-ignore -- maybe_queue_legacy_resave(): flag on the host page, never an attachment.
+
+		if ( empty( $this->pending_legacy_resaves ) ) {
+			add_action( 'shutdown', array( $this, 'flush_legacy_resave_queue' ) );
+		}
+
+		$this->pending_legacy_resaves[] = $post_id;
+	}
+
+	/**
+	 * Add the pages queued during this request to the re-save queue and make
+	 * sure a cron run is scheduled. Runs once, at shutdown.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function flush_legacy_resave_queue() {
+		if ( empty( $this->pending_legacy_resaves ) ) {
+			return;
+		}
+
+		$queue = get_option( self::LEGACY_RESAVE_QUEUE_OPTION, array() );
+		$queue = is_array( $queue ) ? array_map( 'absint', $queue ) : array();
+		$queue = array_values( array_unique( array_filter( array_merge( $queue, $this->pending_legacy_resaves ) ) ) );
+
+		$this->pending_legacy_resaves = array();
+
+		update_option( self::LEGACY_RESAVE_QUEUE_OPTION, $queue, false );
+		$this->schedule_legacy_resave_run();
+	}
+
+	/**
+	 * Re-save the next batch of queued pages (WP-Cron callback), and schedule
+	 * another run while pages remain.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function process_legacy_resave_queue() {
+		$queue = get_option( self::LEGACY_RESAVE_QUEUE_OPTION, array() );
+		$queue = is_array( $queue ) ? array_values( array_filter( array_map( 'absint', $queue ) ) ) : array();
+
+		if ( empty( $queue ) ) {
+			return;
+		}
+
+		$batch     = array_slice( $queue, 0, self::LEGACY_RESAVE_BATCH_SIZE );
+		$remaining = array_slice( $queue, self::LEGACY_RESAVE_BATCH_SIZE );
+
+		// Save the shorter queue first, so a fatal error on one page can't
+		// make every later run retry the same batch.
+		update_option( self::LEGACY_RESAVE_QUEUE_OPTION, $remaining, false );
+
+		foreach ( $batch as $post_id ) {
+			$this->resave_post_video_seo( $post_id );
+		}
+
+		if ( ! empty( $remaining ) ) {
+			$this->schedule_legacy_resave_run();
+		}
+	}
+
+	/**
+	 * Schedule the next queue run, unless one is already scheduled.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	private function schedule_legacy_resave_run() {
+		if ( ! wp_next_scheduled( self::LEGACY_RESAVE_CRON_HOOK ) ) {
+			wp_schedule_single_event( time(), self::LEGACY_RESAVE_CRON_HOOK );
+		}
+	}
+
+	/**
+	 * Rebuild a page's cached video SEO (one page of the re-save queue).
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $post_id Host post ID.
+	 * @return void
+	 */
+	public function resave_post_video_seo( $post_id ) {
+		$post = get_post( $post_id ); // godam-coverage-ignore -- resave_post_video_seo(): host page queued by maybe_queue_legacy_resave(), never an attachment.
+		if ( ! $post ) {
+			return;
+		}
+
+		if ( $this->is_elementor_post( $post_id ) ) {
+			$this->elementor_save_seo_data_as_postmeta( $post_id );
+		} else {
+			$this->save_seo_data_as_postmeta( $post_id, $post );
+		}
+	}
+
+	/**
+	 * Resolve the `contentUrl` for a cached SEO entry.
+	 *
+	 * Resolved at output time rather than trusted from the cache, so pages saved
+	 * by older GoDAM versions (whose cache holds the DASH .mpd URL) are fixed without a
+	 * re-save, and a video that finishes HLS transcoding after the page was
+	 * saved starts pointing at the HLS stream straight away.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $video         Cached SEO entry.
+	 * @param int   $attachment_id Attachment ID, or 0.
+	 * @return string URL, or '' when there is no indexable URL.
+	 */
+	private function resolve_schema_content_url( array $video, $attachment_id ) {
+		if ( $attachment_id > 0 ) {
+			$content_url = $this->get_attachment_content_url( $attachment_id );
+			if ( '' !== $content_url ) {
+				return $content_url;
+			}
+		}
+
+		$stored = ! empty( $video['contentUrl'] ) && is_string( $video['contentUrl'] ) ? $video['contentUrl'] : '';
+
+		// Never hand Google a DASH manifest it can't index.
+		return self::is_dash_url( $stored ) ? '' : $stored;
+	}
+
+	/**
+	 * Resolve the description for a cached SEO entry: the entry's own
+	 * description, else the transcript excerpt, else the page excerpt.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $video         Cached SEO entry.
+	 * @param int   $attachment_id Attachment ID, or 0.
+	 * @param int   $post_id       Host post ID, or 0.
+	 * @return string Plain text, or '' when none is available.
+	 */
+	private function resolve_schema_description( array $video, $attachment_id, $post_id ) {
+		$description = trim( wp_strip_all_tags( (string) ( $video['description'] ?? '' ) ) );
+
+		if ( '' === $description && $attachment_id > 0 ) {
+			// Cache-only read: never fetch a transcript during a page render.
+			$description = $this->get_transcript_excerpt( $attachment_id, false );
+		}
+
+		if ( '' === $description && $post_id > 0 ) {
+			$description = $this->get_post_excerpt_fallback( $post_id );
+		}
+
+		/**
+		 * Filters the description used for a video's schema and sitemap entry.
+		 *
+		 * Return '' to leave the description out.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param string $description   Resolved description.
+		 * @param array  $video         Cached SEO entry.
+		 * @param int    $post_id       Host post ID, or 0.
+		 */
+		return trim( (string) apply_filters( 'godam_video_seo_description', $description, $video, $post_id ) );
+	}
+
+	/**
+	 * Build a fallback description from the host page: its manual excerpt, or
+	 * else the start of its text content. Block markup and shortcodes are
+	 * stripped without rendering them.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $post_id Host post ID.
+	 * @return string Up to {@see self::DESCRIPTION_MAX_LENGTH} characters, or ''.
+	 */
+	private function get_post_excerpt_fallback( $post_id ) {
+		$post = get_post( $post_id ); // godam-coverage-ignore -- get_post_excerpt_fallback(): $post_id is the host page (queried object), never an attachment.
+		if ( ! is_object( $post ) || empty( $post->post_type ) || 'attachment' === $post->post_type ) {
+			return '';
+		}
+
+		// Only a publicly viewable post may feed the description: never a
+		// draft, pending, scheduled or private one.
+		if ( ! is_post_publicly_viewable( $post ) ) {
+			return '';
+		}
+
+		// Never expose a password-protected page's text to visitors who haven't
+		// entered the password (core's get_the_excerpt() follows the same rule).
+		if ( ! empty( $post->post_password ) ) {
+			return '';
+		}
+
+		$text = has_excerpt( $post ) ? $post->post_excerpt : $post->post_content;
+		$text = preg_replace( '/<!--.*?-->/s', '', (string) $text );
+		$text = wp_strip_all_tags( strip_shortcodes( $text ) );
+		// Decode entities, then strip again: text stored as "&lt;/script&gt;"
+		// must not come back as a real tag.
+		$text = wp_strip_all_tags( html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+
+		return self::trim_to_length( $text, self::DESCRIPTION_MAX_LENGTH );
 	}
 
 	/**
@@ -773,7 +1766,10 @@ class Seo {
 			return;
 		}
 
-		$post_id = get_queried_object_id();
+		// Only a singular view has a host post. On term and author archives the
+		// queried object ID is a term or user ID, which would otherwise be read
+		// as an unrelated post (description fallback, re-save queue, clip URLs).
+		$post_id = is_singular() ? get_queried_object_id() : 0;
 
 		$output_schemas = array();
 		foreach ( $this->render_collected_schemas as $video ) {
@@ -827,7 +1823,9 @@ class Seo {
 		// Output a single <script> with all render-collected schemas.
 		echo '<script type="application/ld+json">' . wp_json_encode(
 			count( $output_schemas ) === 1 ? $output_schemas[0] : $output_schemas,
-			JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+			// JSON_HEX_TAG / JSON_HEX_AMP encode < > & as \u003C \u003E \u0026, so no
+			// value (e.g. a description containing "</script>") can close the tag.
+			JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_HEX_TAG | JSON_HEX_AMP
 		) . '</script>';
 	}
 
@@ -880,19 +1878,22 @@ class Seo {
 						$settings = $element['settings'];
 					}
 					$seo_override = isset( $settings['seo_override'] ) && 'yes' === $settings['seo_override'];
+					$exclude      = isset( $settings['seo_exclude_from_sitemap'] ) && 'yes' === $settings['seo_exclude_from_sitemap'];
+
+					// Get attachment ID from video-file setting.
+					$attachment_id = 0;
+					if ( isset( $settings['video-file']['id'] ) && is_numeric( $settings['video-file']['id'] ) ) {
+						$attachment_id = absint( $settings['video-file']['id'] );
+					}
 
 					// If seo_override is false, try to fetch SEO from the media attachment.
 					if ( ! $seo_override ) {
-						// Get attachment ID from video-file setting.
-						$attachment_id = 0;
-						if ( isset( $settings['video-file']['id'] ) && is_numeric( $settings['video-file']['id'] ) ) {
-							$attachment_id = absint( $settings['video-file']['id'] );
-						}
-
 						if ( $attachment_id > 0 ) {
 							$media_seo = $seo_obj->get_seo_from_attachment( $attachment_id );
 							if ( ! empty( $media_seo ) && ! empty( $media_seo['headline'] ) ) {
-								$seo_data[] = $media_seo;
+								$media_seo['attachment_id']      = $attachment_id;
+								$media_seo['excludeFromSitemap'] = $exclude;
+								$seo_data[]                      = $media_seo;
 								if ( $track_attachments ) {
 									$attachments[] = $attachment_id;
 								}
@@ -913,6 +1914,11 @@ class Seo {
 						$_seo_data['thumbnailUrl']     = isset( $settings['seo_content_video_thumbnail_url'] ) ? $settings['seo_content_video_thumbnail_url'] : '';
 						$_seo_data['isFamilyFriendly'] = isset( $settings['seo_content_family_friendly'] ) ? 'yes' === $settings['seo_content_family_friendly'] : true;
 						$_seo_data['duration']         = isset( $settings['seo_content_duration'] ) ? $settings['seo_content_duration'] : '';
+
+						$_seo_data['excludeFromSitemap'] = $exclude;
+						if ( $attachment_id > 0 ) {
+							$_seo_data['attachment_id'] = $attachment_id;
+						}
 
 						$seo_data[] = $_seo_data;
 					}
@@ -966,11 +1972,35 @@ class Seo {
 			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
 			do_action( 'godam_video_seo_schema_saved', $post_ID, $video_seo_schema );
 		} else {
+			$had_schema = metadata_exists( 'post', $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY );
+
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; clears its own cached video SEO schema meta, not attachment data.
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY ); // godam-coverage-ignore -- elementor_save_seo_data_as_postmeta(): $post_ID is the host post being saved; clears its own cached-schema-updated timestamp meta, not attachment data.
 			$this->update_attachment_post_mapping( $post_ID, array() );
-			do_action( 'godam_video_seo_schema_cleared', $post_ID );
+			/** This action is documented in inc/classes/class-seo.php */
+			do_action( 'godam_video_seo_schema_cleared', $post_ID, $had_schema );
 		}
+	}
+
+	/**
+	 * Undo WPBakery's shortcode-safe encoding of a param value.
+	 *
+	 * WPBakery stores `"` as two backticks, and `[` / `]` as `{` / `}`
+	 * wrapped in backticks, so they can't break the shortcode. Same mapping
+	 * as WPBakery's `vc_value_from_safe()`, without depending on it being
+	 * loaded.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $value Raw shortcode attribute value.
+	 * @return string Decoded value.
+	 */
+	public static function decode_wpbakery_param( $value ) {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+
+		return str_replace( array( '`{`', '`}`', '``' ), array( '[', ']', '"' ), (string) $value );
 	}
 
 	/**
@@ -1010,10 +2040,14 @@ class Seo {
 					$media_seo = $this->get_seo_from_attachment( $attachment_id );
 				}
 
+				$exclude = isset( $atts['seo_exclude_from_sitemap'] ) && '1' === $atts['seo_exclude_from_sitemap'];
+
 				// If seo_override is false, try to fetch SEO from the media attachment.
 				if ( ! $seo_override ) {
 					if ( ! empty( $media_seo ) && ! empty( $media_seo['headline'] ) ) {
-						$seo_data[] = $media_seo;
+						$media_seo['attachment_id']      = $attachment_id;
+						$media_seo['excludeFromSitemap'] = $exclude;
+						$seo_data[]                      = $media_seo;
 						if ( $track_attachments ) {
 							$attachments[] = $attachment_id;
 						}
@@ -1021,17 +2055,37 @@ class Seo {
 					}
 				}
 
-				// Use shortcode attributes if seo_override is true or no attachment data available.
+				// Override = No: the SEO fields only mirror the Media Library (the
+				// editor fills them in), so stored copies are never used. With no
+				// usable attachment data (video deleted, title cleared) nothing is
+				// output, rather than a stale VideoObject.
+				if ( ! $seo_override ) {
+					// Still track a video the Media Library knows about (e.g. its
+					// title is empty for now), so filling in the title later
+					// re-syncs this page, as for blocks.
+					if ( $track_attachments && $attachment_id > 0 && ! empty( $media_seo ) ) {
+						$attachments[] = $attachment_id;
+					}
+					continue;
+				}
+
+				// Override = Yes: use the shortcode attributes, with the
+				// attachment's technical values taking priority when it exists.
 				if ( ! empty( $atts['seo_headline'] ) ) {
 					$video_seo = array(
-						'contentUrl'       => ! empty( $media_seo['contentUrl'] ) ? $media_seo['contentUrl'] : ( isset( $atts['seo_content_url'] ) ? $atts['seo_content_url'] : '' ),
-						'headline'         => isset( $atts['seo_headline'] ) ? $atts['seo_headline'] : '',
-						'description'      => isset( $atts['seo_description'] ) ? $atts['seo_description'] : '',
-						'uploadDate'       => ! empty( $media_seo['uploadDate'] ) ? $media_seo['uploadDate'] : ( isset( $atts['seo_upload_date'] ) ? $atts['seo_upload_date'] : '' ),
-						'thumbnailUrl'     => ! empty( $media_seo['thumbnailUrl'] ) ? $media_seo['thumbnailUrl'] : ( isset( $atts['seo_thumbnail_url'] ) ? $atts['seo_thumbnail_url'] : '' ),
-						'isFamilyFriendly' => isset( $atts['seo_family_friendly'] ) ? '1' === $atts['seo_family_friendly'] : true,
-						'duration'         => ! empty( $media_seo['duration'] ) ? $media_seo['duration'] : ( isset( $atts['seo_duration'] ) ? $atts['seo_duration'] : '' ),
+						'contentUrl'         => ! empty( $media_seo['contentUrl'] ) ? $media_seo['contentUrl'] : ( isset( $atts['seo_content_url'] ) ? $atts['seo_content_url'] : '' ),
+						'headline'           => self::decode_wpbakery_param( $atts['seo_headline'] ),
+						'description'        => isset( $atts['seo_description'] ) ? self::decode_wpbakery_param( $atts['seo_description'] ) : '',
+						'uploadDate'         => ! empty( $media_seo['uploadDate'] ) ? $media_seo['uploadDate'] : ( isset( $atts['seo_upload_date'] ) ? $atts['seo_upload_date'] : '' ),
+						'thumbnailUrl'       => ! empty( $media_seo['thumbnailUrl'] ) ? $media_seo['thumbnailUrl'] : ( isset( $atts['seo_thumbnail_url'] ) ? $atts['seo_thumbnail_url'] : '' ),
+						'isFamilyFriendly'   => isset( $atts['seo_family_friendly'] ) ? '1' === $atts['seo_family_friendly'] : true,
+						'duration'           => ! empty( $media_seo['duration'] ) ? $media_seo['duration'] : ( isset( $atts['seo_duration'] ) ? $atts['seo_duration'] : '' ),
+						'excludeFromSitemap' => $exclude,
 					);
+
+					if ( $attachment_id > 0 ) {
+						$video_seo['attachment_id'] = $attachment_id;
+					}
 
 					$seo_data[] = $video_seo;
 					if ( $track_attachments && $attachment_id > 0 && ! empty( $media_seo ) ) {

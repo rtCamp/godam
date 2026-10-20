@@ -1221,6 +1221,18 @@ class Pages {
 				$addon_statuses
 			);
 
+			// Video sitemap details for the SEO settings tab.
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'godamVideoSitemap',
+				array(
+					'sitemapUrl'          => Video_Sitemap::get_sitemap_url( 1 ),
+					'activeSeoPlugin'     => Video_Sitemap::get_active_seo_sitemap(),
+					'coreSitemapsEnabled' => Video_Sitemap::are_core_sitemaps_enabled(),
+					'coreIndexUrl'        => home_url( '/wp-sitemap.xml' ),
+				)
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-godam' );
 
 			/**
