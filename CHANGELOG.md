@@ -2,7 +2,8 @@
 
 ## v2.4.1 (October 20, 2026) ##
 
-- Fix: The video transcript no longer covers the video.
+- Fix: The video transcript no longer covers the video. It opens beside the video, or below it on narrow screens, matches the player skin, and can be searched.
+- Fix: Transcripts uploaded as .srt files now show captions and the transcript to visitors.
 
 ## v2.4.0 (October 16, 2026) ##
 
