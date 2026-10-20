@@ -6,6 +6,7 @@
 - Fix: Transcripts uploaded as .srt files now show captions and the transcript to visitors.
 - Fix: In Safari, tall videos in a lightbox are no longer cut off at the bottom.
 - Fix: Captions no longer overlap the player controls on narrow screens.
+- Fix: On phones, a video in a lightbox no longer resizes when the browser toolbar shows or hides.
 
 ## v2.4.0 (October 16, 2026) ##
 
