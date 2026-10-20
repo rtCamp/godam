@@ -65,31 +65,77 @@ export default class TranscriptManager {
 			return;
 		}
 
-		// The transcript stored on the attachment wins over the SaaS copy, so an
-		// uploaded caption file is what visitors get.
+		// Prefer first-class caption tracks (multilingual subtitles + uploaded
+		// captions) from the SaaS, which also include the generated transcript.
+		// Falls back to the legacy single-transcript path for old SaaS responses
+		// and for attachments with no job id (purely local media).
+		if ( this.jobId && ! this.transcriptDeleted ) {
+			try {
+				const transcriptData = await this.fetchTranscriptPath();
+
+				const captions = Array.isArray( transcriptData?.caption_tracks )
+					? transcriptData.caption_tracks
+					: [];
+
+				if ( captions.length ) {
+					this.addCaptionTracks( captions );
+					return;
+				}
+
+				// No caption_tracks (old SaaS): fall back to the single transcript
+				// from the same response — but a locally-stored transcript still
+				// wins, so defer to it below when present.
+				if ( ! this.localTranscriptUrl && transcriptData?.exists && transcriptData?.url ) {
+					this.transcriptUrl = transcriptData.url;
+					this.addTextTrack( transcriptData.url );
+					return;
+				}
+			} catch ( error ) {
+				// Silently fall through to the local transcript — captions are optional.
+				// eslint-disable-next-line no-console
+				console.debug( 'GoDAM: Could not load caption tracks:', error.message );
+			}
+		}
+
+		// The transcript stored on the attachment (editor-cached or hand-uploaded)
+		// is the fallback when the SaaS has no caption tracks, when the media has
+		// no job id, or when the fetch failed.
 		if ( this.localTranscriptUrl ) {
 			this.transcriptUrl = this.localTranscriptUrl;
 			this.addTextTrack( this.localTranscriptUrl );
+		}
+	}
+
+	/**
+	 * Add one subtitle/caption `<track>` per first-class caption track.
+	 *
+	 * Tracks still being generated (no `vtt_path` yet) are skipped. The default
+	 * track is added first so the player's auto-enable (see
+	 * `setupDefaultSubtitle` in videoPlayer.js) turns on the right language.
+	 *
+	 * @param {Array<Object>} captions Caption-track rows from the SaaS.
+	 */
+	addCaptionTracks( captions ) {
+		const ready = captions.filter( ( caption ) => !! caption?.vtt_path );
+		if ( ! ready.length ) {
 			return;
 		}
 
-		// Deleted in the editor — don't resurrect it from the SaaS.
-		if ( this.transcriptDeleted || ! this.jobId ) {
-			return;
-		}
+		// Default track first, so it becomes the auto-enabled subtitle.
+		ready.sort( ( a, b ) => ( b?.is_default ? 1 : 0 ) - ( a?.is_default ? 1 : 0 ) );
 
-		try {
-			const transcriptData = await this.fetchTranscriptPath();
-
-			if ( transcriptData?.exists && transcriptData?.url ) {
-				this.transcriptUrl = transcriptData.url;
-				this.addTextTrack( transcriptData.url );
+		ready.forEach( ( caption, index ) => {
+			const srclang = caption.language || 'en';
+			this.addTextTrack( caption.vtt_path, {
+				kind: caption.kind === 'captions' ? 'captions' : 'subtitles',
+				label: caption.label || srclang,
+				srclang,
+			} );
+			// Remember the default (first) caption as the panel/reader transcript.
+			if ( index === 0 ) {
+				this.transcriptUrl = caption.vtt_path;
 			}
-		} catch ( error ) {
-			// Silently fail - transcript is optional
-			// eslint-disable-next-line no-console
-			console.debug( 'GoDAM: Could not load transcript:', error.message );
-		}
+		} );
 	}
 
 	/**
@@ -176,13 +222,15 @@ export default class TranscriptManager {
 			srclang = 'en',
 		} = options;
 
-		// Check if track with same src already exists
-		const existingTracks = this.player.textTracks();
-		for ( let i = 0; i < existingTracks.length; i++ ) {
-			const track = existingTracks[ i ];
-			// Check if this is the same track by comparing language and kind
-			if ( track.language === srclang && track.kind === kind ) {
-				return; // Track already exists
+		// Dedup by source URL, not by language: a video can carry several caption
+		// tracks in the same language (e.g. two uploaded Spanish files), so only a
+		// matching src means we already added this exact track (e.g. on refresh).
+		const existingEls = this.player.remoteTextTrackEls?.();
+		if ( existingEls ) {
+			for ( let i = 0; i < existingEls.length; i++ ) {
+				if ( existingEls[ i ]?.src === trackUrl ) {
+					return; // This exact track is already present.
+				}
 			}
 		}
 
