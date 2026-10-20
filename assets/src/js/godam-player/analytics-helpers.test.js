@@ -34,6 +34,25 @@ const setParams = ( overrides = {} ) => {
 
 const build = ( opts ) => buildAnalyticsRequestBody( { type: 1, ...opts } );
 
+describe( 'buildAnalyticsRequestBody — viewer identity', () => {
+	beforeEach( () => {
+		setParams();
+	} );
+
+	it( 'does not send the viewer email, even when the page still carries one', () => {
+		// setParams() leaves emailId on the page, as a page cached by an older
+		// plugin version would.
+		const { body } = build( {} );
+		expect( body ).not.toHaveProperty( 'email' );
+		expect( JSON.stringify( body ) ).not.toContain( 'a@b.test' );
+	} );
+
+	it( 'still sends the WordPress user id', () => {
+		const { body } = build( {} );
+		expect( body.wp_user_id ).toBe( 1 );
+	} );
+} );
+
 describe( 'buildAnalyticsRequestBody — placement attribution', () => {
 	beforeEach( () => {
 		setParams();
