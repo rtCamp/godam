@@ -222,6 +222,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: The video transcript no longer covers the video. It opens beside the video, or below it on narrow screens, matches the player skin, and can be searched.
 - Fix: Transcripts uploaded as .srt files now show captions and the transcript to visitors.
 - Fix: In Safari, tall videos in a lightbox are no longer cut off at the bottom.
+- Fix: Captions no longer overlap the player controls on narrow screens.
 
 = v2.4.0 (October 16, 2026) =
 
