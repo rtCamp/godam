@@ -69,7 +69,7 @@ export function toWebVttTrackSrc( url ) {
 	}
 
 	if ( ! conversions.has( url ) ) {
-		conversions.set( url, ( async () => {
+		const conversion = ( async () => {
 			try {
 				const response = await fetch( url );
 				if ( ! response.ok ) {
@@ -83,7 +83,16 @@ export function toWebVttTrackSrc( url ) {
 			} catch ( error ) {
 				return url;
 			}
-		} )() );
+		} )();
+		conversions.set( url, conversion );
+		// Keep only a converted file. A fallback is forgotten once it settles,
+		// so a one-off failure does not leave the page without captions and a
+		// transcript: the next request fetches again.
+		conversion.then( ( src ) => {
+			if ( src === url && conversions.get( url ) === conversion ) {
+				conversions.delete( url );
+			}
+		} );
 	}
 
 	return conversions.get( url );

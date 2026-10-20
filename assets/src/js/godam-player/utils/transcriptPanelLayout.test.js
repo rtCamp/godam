@@ -7,7 +7,9 @@ import {
 	PANEL_MAX_WIDTH,
 	PANEL_MIN_WIDTH,
 	computeTranscriptLayout,
+	compileQuery,
 	findMatchRanges,
+	matchRanges,
 	normaliseQuery,
 } from './transcriptPanelLayout';
 
@@ -168,5 +170,22 @@ describe( 'findMatchRanges', () => {
 	it( 'treats regular expression characters in the query as text', () => {
 		expect( findMatchRanges( 'Price (USD) is $5.00', normaliseQuery( '(usd)' ) ) ).toEqual( [ [ 6, 11 ] ] );
 		expect( findMatchRanges( 'a.c abc', 'a.c' ) ).toEqual( [ [ 0, 3 ] ] );
+	} );
+} );
+
+describe( 'compileQuery and matchRanges', () => {
+	it( 'match like findMatchRanges, with one pattern reused across cues', () => {
+		const pattern = compileQuery( normaliseQuery( 'Video' ) );
+
+		// A global pattern remembers where it stopped; each cue starts afresh.
+		expect( matchRanges( 'Video SEO for video sites', pattern ) ).toEqual( [ [ 0, 5 ], [ 14, 19 ] ] );
+		expect( matchRanges( 'video first', pattern ) ).toEqual( [ [ 0, 5 ] ] );
+		expect( matchRanges( 'no match here', pattern ) ).toEqual( [] );
+		expect( matchRanges( 'a video', pattern ) ).toEqual( [ [ 2, 7 ] ] );
+	} );
+
+	it( 'compiles nothing for an empty query', () => {
+		expect( compileQuery( '' ) ).toBeNull();
+		expect( matchRanges( 'anything', null ) ).toEqual( [] );
 	} );
 } );

@@ -12,7 +12,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { isPlayerFullscreen, setupFullscreenReparenting } from '../utils/fullscreenReparent.js';
-import { computeTranscriptLayout, findMatchRanges, normaliseQuery } from '../utils/transcriptPanelLayout.js';
+import { compileQuery, computeTranscriptLayout, matchRanges, normaliseQuery } from '../utils/transcriptPanelLayout.js';
 import { toWebVttTrackSrc } from '../utils/captionTrackSrc.js';
 
 // Minimum container width (px) at which the Bubble skin routes the button into
@@ -549,6 +549,7 @@ export default class TranscriptPanelManager {
 	 */
 	filterCues( rawQuery ) {
 		const query = normaliseQuery( rawQuery );
+		const pattern = compileQuery( query );
 		let matches = 0;
 
 		this.cues.forEach( ( cue, index ) => {
@@ -558,7 +559,7 @@ export default class TranscriptPanelManager {
 				return;
 			}
 
-			const ranges = findMatchRanges( cue.text, query );
+			const ranges = matchRanges( cue.text, pattern );
 			const visible = ! query || ranges.length > 0;
 			row.classList.toggle( HIDDEN_CUE_CLASS, ! visible );
 			row.hidden = ! visible;

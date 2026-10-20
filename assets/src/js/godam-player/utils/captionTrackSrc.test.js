@@ -104,4 +104,15 @@ describe( 'toWebVttTrackSrc', () => {
 		await expect( toWebVttTrackSrc( 'https://example.com/empty.srt' ) ).resolves.toBe( 'https://example.com/empty.srt' );
 		expect( window.URL.createObjectURL ).not.toHaveBeenCalled();
 	} );
+
+	it( 'fetches again after a failed fetch, so a one-off failure is not kept for the page', async () => {
+		const url = 'https://example.com/flaky.srt';
+		global.fetch = jest.fn()
+			.mockImplementationOnce( () => Promise.resolve( { ok: false } ) )
+			.mockImplementationOnce( () => Promise.resolve( { ok: true, text: () => Promise.resolve( SRT ) } ) );
+
+		await expect( toWebVttTrackSrc( url ) ).resolves.toBe( url );
+		await expect( toWebVttTrackSrc( url ) ).resolves.toBe( 'blob:converted-1' );
+		expect( global.fetch ).toHaveBeenCalledTimes( 2 );
+	} );
 } );

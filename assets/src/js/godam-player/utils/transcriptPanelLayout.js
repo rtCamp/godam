@@ -107,33 +107,63 @@ export function normaliseQuery( query ) {
 }
 
 /**
- * Find every occurrence of a query in a cue's text, case-insensitively.
+ * Compile a query into the pattern `matchRanges` searches with: matched
+ * case-insensitively on the original text, so the ranges index the text as
+ * displayed (lower-casing first can change its length, e.g. "İ"), and any run
+ * of whitespace in the text matches a space in the query. Compile once per
+ * query, not once per cue.
  *
- * Matched with a case-insensitive pattern on the original text, so the ranges
- * index the text as displayed (lower-casing first can change its length, e.g.
- * "İ"), and any run of whitespace in the text matches a space in the query.
- *
- * @param {string} text  Cue text.
  * @param {string} query Normalised query (see `normaliseQuery`).
- * @return {Array<[number, number]>} `[start, end)` index pairs, in order.
+ * @return {RegExp|null} The pattern, or null when there is nothing to search for.
  */
-export function findMatchRanges( text, query ) {
+export function compileQuery( query ) {
 	if ( ! query ) {
-		return [];
+		return null;
 	}
 
 	const source = query
 		.split( ' ' )
 		.map( ( word ) => word.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' ) )
 		.join( '\\s+' );
-	const pattern = new RegExp( source, 'giu' );
-	const ranges = [];
+	return new RegExp( source, 'giu' );
+}
 
-	for ( const match of String( text || '' ).matchAll( pattern ) ) {
-		if ( match[ 0 ].length > 0 ) {
+/**
+ * Find every match of a compiled query in a cue's text.
+ *
+ * @param {string}      text    Cue text.
+ * @param {RegExp|null} pattern Pattern from `compileQuery`.
+ * @return {Array<[number, number]>} `[start, end)` index pairs, in order.
+ */
+export function matchRanges( text, pattern ) {
+	if ( ! pattern ) {
+		return [];
+	}
+
+	const value = String( text || '' );
+	const ranges = [];
+	// The pattern is shared across cues: start each search from the beginning.
+	pattern.lastIndex = 0;
+	let match = pattern.exec( value );
+	while ( match ) {
+		if ( match[ 0 ].length === 0 ) {
+			pattern.lastIndex = match.index + 1;
+		} else {
 			ranges.push( [ match.index, match.index + match[ 0 ].length ] );
 		}
+		match = pattern.exec( value );
 	}
 
 	return ranges;
+}
+
+/**
+ * Find every occurrence of a query in a cue's text, case-insensitively.
+ *
+ * @param {string} text  Cue text.
+ * @param {string} query Normalised query (see `normaliseQuery`).
+ * @return {Array<[number, number]>} `[start, end)` index pairs, in order.
+ */
+export function findMatchRanges( text, query ) {
+	return matchRanges( text, compileQuery( query ) );
 }
