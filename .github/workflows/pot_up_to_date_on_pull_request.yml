@@ -1,7 +1,8 @@
+# Only PRs into main (the develop → main release and patch releases) need a
+# fresh POT; feature PRs into develop don't have to regenerate it.
 on:
   pull_request:
     branches:
-      - develop
       - main
 
 name: Translation Template

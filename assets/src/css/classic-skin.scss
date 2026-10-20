@@ -461,6 +461,7 @@
 
 			.vjs-fullscreen-control {
 
+				/* stylelint-disable-next-line no-descending-specificity -- scoped under a different ancestor (fullscreen / .godam-submenu-open), so it never competes with the earlier rule. */
 				span::before {
 					background: url(../images/classic-exit-full-screen.svg);
 					background-repeat: no-repeat;
@@ -477,6 +478,7 @@
 
 		.vjs-settings-button {
 
+			/* stylelint-disable-next-line no-descending-specificity -- scoped under a different ancestor (fullscreen / .godam-submenu-open), so it never competes with the earlier rule. */
 			.vjs-menu ul.vjs-menu-content {
 				right: -30% !important;
 				width: max-content !important;
@@ -486,6 +488,7 @@
 			}
 
 			/* Speed option pills */
+			/* stylelint-disable-next-line no-descending-specificity -- scoped under a different ancestor (fullscreen / .godam-submenu-open), so it never competes with the earlier rule. */
 			.vjs-menu-item:not(.vjs-back-item) {
 				background: #3a3a3a;
 				padding: 6px 14px;
