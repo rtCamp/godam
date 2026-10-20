@@ -684,6 +684,9 @@ export default class TranscriptPanelManager {
 		this.isOpen = false;
 		this.unobserveLayout();
 		this.clearLayout();
+		// Forget the layout, so reopening (in fullscreen too) always tells the
+		// player its controls need re-placing.
+		this.layoutSignature = '';
 		this.wrapper.classList.remove( OPEN_CLASS );
 		this.panel.hidden = true;
 		this.panel.inert = true;
