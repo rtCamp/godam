@@ -23,6 +23,10 @@ export const BELOW_HEIGHT_RATIO = 0.6;
 // A narrow (portrait) video widens toward this shape when the panel opens.
 const WIDE_RATIO = 16 / 9;
 
+// Where the height is capped (the lightbox), the video keeps at least this
+// share of it when it has to shrink to make room for the panel beneath.
+const MIN_STAGE_SHARE = 0.5;
+
 const clamp = ( value, min, max ) => Math.min( Math.max( value, min ), max );
 
 /**
@@ -36,19 +40,31 @@ const clamp = ( value, min, max ) => Math.min( Math.max( value, min ), max );
  *
  * `below`: the video would get too small beside the panel (a 16:9 video in a
  * typical content column), so the panel stacks beneath the full-size video.
+ * Where the height is capped (`maxHeight`, the lightbox, which cannot
+ * scroll), the video shrinks so that it and the panel both fit.
  *
  * @param {Object} geometry             Closed-state geometry, in px.
  * @param {number} geometry.stageWidth  Width of the video stage.
  * @param {number} geometry.stageHeight Height of the video stage.
  * @param {number} geometry.ratio       Video aspect ratio (width / height).
  * @param {number} geometry.room        Widest the stage may grow to.
- * @return {Object} The layout. Side: `mode`, `width`, `expandBy`, `panelWidth`, `stageHeight`, `playerWidth`, `playerHeight`, `playerTop`. Below: `mode`, `panelHeight`.
+ * @param {number} [geometry.maxHeight] Tallest the stage plus a panel beneath may be (0: no cap).
+ * @return {Object} The layout. Side: `mode`, `width`, `expandBy`, `panelWidth`, `stageHeight`, `playerWidth`, `playerHeight`, `playerTop`. Below: `mode`, `width`, `panelHeight`.
  */
-export function computeTranscriptLayout( { stageWidth, stageHeight, ratio, room } ) {
-	const belowHeight = clamp( Math.round( ( stageHeight || 0 ) * BELOW_HEIGHT_RATIO ), BELOW_MIN_HEIGHT, BELOW_MAX_HEIGHT );
+export function computeTranscriptLayout( { stageWidth, stageHeight, ratio, room, maxHeight = 0 } ) {
+	const below = () => {
+		const panelHeight = clamp( Math.round( ( stageHeight || 0 ) * BELOW_HEIGHT_RATIO ), BELOW_MIN_HEIGHT, BELOW_MAX_HEIGHT );
+		if ( ! maxHeight || ! ratio || stageHeight + panelHeight <= maxHeight ) {
+			return { mode: 'below', width: stageWidth, panelHeight };
+		}
+		// Too tall for the cap: shrink the video, but not below half the cap,
+		// and give the panel what is left.
+		const fitHeight = Math.max( maxHeight - panelHeight, maxHeight * MIN_STAGE_SHARE );
+		return { mode: 'below', width: Math.min( stageWidth, fitHeight * ratio ), panelHeight: Math.round( maxHeight - fitHeight ) };
+	};
 
 	if ( ! stageWidth || ! stageHeight || ! ratio ) {
-		return { mode: 'below', panelHeight: belowHeight };
+		return below();
 	}
 
 	const reach = Math.max( stageWidth, room || 0 );
@@ -63,7 +79,7 @@ export function computeTranscriptLayout( { stageWidth, stageHeight, ratio, room 
 	const playerWidth = Math.min( fullPlayerWidth, width - panelWidth );
 
 	if ( playerWidth < Math.min( MIN_PLAYER_WIDTH, fullPlayerWidth * MIN_PLAYER_SCALE ) ) {
-		return { mode: 'below', panelHeight: belowHeight };
+		return below();
 	}
 
 	const playerHeight = playerWidth / ratio;
@@ -93,6 +109,10 @@ export function normaliseQuery( query ) {
 /**
  * Find every occurrence of a query in a cue's text, case-insensitively.
  *
+ * Matched with a case-insensitive pattern on the original text, so the ranges
+ * index the text as displayed (lower-casing first can change its length, e.g.
+ * "İ"), and any run of whitespace in the text matches a space in the query.
+ *
  * @param {string} text  Cue text.
  * @param {string} query Normalised query (see `normaliseQuery`).
  * @return {Array<[number, number]>} `[start, end)` index pairs, in order.
@@ -102,17 +122,17 @@ export function findMatchRanges( text, query ) {
 		return [];
 	}
 
-	const haystack = String( text || '' ).toLocaleLowerCase();
+	const source = query
+		.split( ' ' )
+		.map( ( word ) => word.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' ) )
+		.join( '\\s+' );
+	const pattern = new RegExp( source, 'giu' );
 	const ranges = [];
-	let from = 0;
 
-	while ( from <= haystack.length - query.length ) {
-		const index = haystack.indexOf( query, from );
-		if ( index === -1 ) {
-			break;
+	for ( const match of String( text || '' ).matchAll( pattern ) ) {
+		if ( match[ 0 ].length > 0 ) {
+			ranges.push( [ match.index, match.index + match[ 0 ].length ] );
 		}
-		ranges.push( [ index, index + query.length ] );
-		from = index + query.length;
 	}
 
 	return ranges;

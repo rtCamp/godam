@@ -73,13 +73,38 @@ describe( 'computeTranscriptLayout', () => {
 		// Beside the panel the video would shrink to a quarter of its size.
 		const layout = computeTranscriptLayout( { stageWidth: 337.5, stageHeight: 600, ratio: 9 / 16, room: 337.5 } );
 
-		expect( layout ).toEqual( { mode: 'below', panelHeight: BELOW_MAX_HEIGHT } );
+		expect( layout ).toEqual( { mode: 'below', width: 337.5, panelHeight: BELOW_MAX_HEIGHT } );
 	} );
 
 	it( 'stacks the panel beneath the video on a phone-width 16:9 player', () => {
 		const layout = computeTranscriptLayout( { stageWidth: 375, stageHeight: 211, ratio: 16 / 9, room: 375 } );
 
-		expect( layout ).toEqual( { mode: 'below', panelHeight: BELOW_MIN_HEIGHT } );
+		expect( layout ).toEqual( { mode: 'below', width: 375, panelHeight: BELOW_MIN_HEIGHT } );
+	} );
+
+	it( 'keeps a stacked layout inside the lightbox height by shrinking the video', () => {
+		// Phone lightbox: a 9:16 video fills 359x638 of a 710px cap.
+		const layout = computeTranscriptLayout( { stageWidth: 359, stageHeight: 638, ratio: 9 / 16, room: 359, maxHeight: 710 } );
+
+		expect( layout.mode ).toBe( 'below' );
+		const stageHeight = layout.width / ( 9 / 16 );
+		expect( stageHeight + layout.panelHeight ).toBeLessThanOrEqual( 710.5 );
+		// 638 + 360 would overflow; the video keeps half the cap, the panel the rest.
+		expect( stageHeight ).toBeCloseTo( 355 );
+		expect( layout.panelHeight ).toBe( 355 );
+	} );
+
+	it( 'never shrinks the video below half the lightbox height', () => {
+		const layout = computeTranscriptLayout( { stageWidth: 300, stageHeight: 533, ratio: 9 / 16, room: 300, maxHeight: 500 } );
+		const stageHeight = layout.width / ( 9 / 16 );
+
+		expect( stageHeight ).toBeCloseTo( 250 );
+		expect( layout.panelHeight ).toBe( 250 );
+	} );
+
+	it( 'leaves a stacked layout alone when it already fits the cap', () => {
+		expect( computeTranscriptLayout( { stageWidth: 375, stageHeight: 211, ratio: 16 / 9, room: 375, maxHeight: 700 } ) )
+			.toEqual( { mode: 'below', width: 375, panelHeight: BELOW_MIN_HEIGHT } );
 	} );
 
 	it( 'stacks the panel under a 16:9 video in a typical content column, and goes beside it on wider players', () => {
@@ -126,5 +151,22 @@ describe( 'findMatchRanges', () => {
 
 	it( 'does not overlap matches', () => {
 		expect( findMatchRanges( 'aaaa', 'aa' ) ).toEqual( [ [ 0, 2 ], [ 2, 4 ] ] );
+	} );
+
+	it( 'matches a phrase across a line break or extra spaces in the cue', () => {
+		expect( findMatchRanges( 'the\nquick  fox', normaliseQuery( 'Quick fox' ) ) ).toEqual( [ [ 4, 14 ] ] );
+		expect( findMatchRanges( 'the\nquick', normaliseQuery( 'the quick' ) ) ).toEqual( [ [ 0, 9 ] ] );
+	} );
+
+	it( 'indexes the text as displayed when lower-casing changes its length', () => {
+		// "İ".toLowerCase() is two code units; the range must still cover "Ankara".
+		const text = 'İstanbul and Ankara';
+		const [ [ start, end ] ] = findMatchRanges( text, 'ankara' );
+		expect( text.slice( start, end ) ).toBe( 'Ankara' );
+	} );
+
+	it( 'treats regular expression characters in the query as text', () => {
+		expect( findMatchRanges( 'Price (USD) is $5.00', normaliseQuery( '(usd)' ) ) ).toEqual( [ [ 6, 11 ] ] );
+		expect( findMatchRanges( 'a.c abc', 'a.c' ) ).toEqual( [ [ 0, 3 ] ] );
 	} );
 } );

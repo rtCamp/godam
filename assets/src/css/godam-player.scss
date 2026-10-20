@@ -2583,7 +2583,8 @@ body.godam-share-modal-open {
 		margin: 0;
 		padding: 0;
 		font: inherit;
-		font-size: 13px;
+		// 16px: iOS Safari zooms the page into any smaller field on focus.
+		font-size: 16px;
 		color: var(--godam-transcript-text);
 		background: transparent;
 		border: 0;
@@ -2611,13 +2612,12 @@ body.godam-share-modal-open {
 		}
 	}
 
+	// Kept rendered even when empty: a live region that only appears with its
+	// first message is often not announced.
 	&__search-status {
 		font-size: 12px;
+		line-height: 1.3;
 		color: var(--godam-transcript-text-muted);
-
-		&:empty {
-			display: none;
-		}
 	}
 
 	&__body {
@@ -2773,18 +2773,37 @@ body.godam-share-modal-open {
 		height: var(--godam-transcript-stage-height);
 	}
 
-	// Inner-block overlays (heading over the video) stay over the video.
+	// Layers (CTA, form, hotspot) sit next to the player in the stage, not
+	// inside it, so give them the player's box too: hotspots are placed from the
+	// video's size, and a CTA belongs over the video, not the black bars.
+	> .easydam-video-container > .easydam-layer {
+		top: var(--godam-transcript-player-top);
+		left: calc((100% - var(--godam-transcript-player-width)) / 2);
+		width: var(--godam-transcript-player-width);
+		height: var(--godam-transcript-player-height);
+	}
+
+	// Inner-block overlays (heading over the video) stay over the video, on
+	// the panel's far side in right-to-left layouts too.
 	> .godam-video-overlay-container {
-		right: var(--godam-transcript-panel-width);
+		inset-inline-end: var(--godam-transcript-panel-width);
 	}
 }
 
 // Stacked: the panel takes its own row under a full-size video.
-.godam-video-wrapper.godam-transcript-layout--below > .godam-transcript-panel {
-	position: relative;
-	inset: auto;
-	width: 100%;
-	height: var(--godam-transcript-panel-height);
+.godam-video-wrapper.godam-transcript-layout--below {
+
+	> .godam-transcript-panel {
+		position: relative;
+		inset: auto;
+		width: 100%;
+		height: var(--godam-transcript-panel-height);
+	}
+
+	// The wrapper now includes the panel; keep inner-block overlays on the video.
+	> .godam-video-overlay-container {
+		bottom: var(--godam-transcript-panel-height);
+	}
 }
 
 // The block root while widened for a portrait video. Elementor gives the
@@ -2814,6 +2833,12 @@ body.godam-share-modal-open {
 		right: calc(var(--godam-transcript-fs-width) + 10px);
 	}
 
+	// The Pills and Bubble bars are centred with auto margins; ending the bar's
+	// box at the panel centres them in the video area instead of under it.
+	> .vjs-control-bar {
+		right: var(--godam-transcript-fs-width);
+	}
+
 	.godam-transcript-panel {
 		position: absolute;
 		inset: 0 0 0 auto;
@@ -2841,6 +2866,14 @@ body.godam-share-modal-open {
 		> .vjs-button.godam-share-button,
 		> .vjs-button.godam-transcript-button {
 			right: 10px;
+		}
+
+		// The control bar is pinned to the bottom, where the panel now is; lift
+		// it onto the video. `!important` to out-rank the Pills skin's own
+		// `bottom: 0.5rem !important`.
+		> .vjs-control-bar {
+			right: 0;
+			bottom: var(--godam-transcript-fs-height) !important;
 		}
 
 		.godam-transcript-panel {

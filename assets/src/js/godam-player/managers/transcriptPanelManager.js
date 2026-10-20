@@ -127,6 +127,7 @@ export default class TranscriptPanelManager {
 		this.lightboxRatioBackup = null;
 		this.layoutSignature = '';
 		this.resizeObserver = null;
+		this.lightboxObserver = null;
 		this.observedParent = null;
 		this.reducedMotion = window.matchMedia?.( '(prefers-reduced-motion: reduce)' ) || null;
 
@@ -256,7 +257,9 @@ export default class TranscriptPanelManager {
 				.map( ( cue ) => ( {
 					start: cue.startTime,
 					end: cue.endTime,
-					text: ( cue.text || '' ).replace( /[<>]/g, '' ).trim(),
+					// One line of text, as it renders, so a search can match across
+					// the cue's line breaks.
+					text: ( cue.text || '' ).replace( /[<>]/g, '' ).replace( /\s+/g, ' ' ).trim(),
 				} ) )
 				.filter( ( cue ) => cue.text !== '' );
 
@@ -478,7 +481,10 @@ export default class TranscriptPanelManager {
 		panel.appendChild( body );
 
 		// Append inside the wrapper, after the video container. It stays hidden
-		// until opened; `applyLayout()` then gives it its own space.
+		// (and out of the tab order, which the lightbox's focus trap reads) until
+		// opened; `applyLayout()` then gives it its own space.
+		panel.hidden = true;
+		panel.inert = true;
 		this.wrapper.appendChild( panel );
 		this.wrapper.classList.add( HAS_PANEL_CLASS );
 		this.panel = panel;
@@ -656,6 +662,8 @@ export default class TranscriptPanelManager {
 			return;
 		}
 		this.isOpen = true;
+		this.panel.hidden = false;
+		this.panel.inert = false;
 		this.wrapper.classList.add( OPEN_CLASS );
 		this.button?.setAttribute( 'aria-expanded', 'true' );
 		this.button?.classList.add( `${ BUTTON_CLASS }--active` );
@@ -672,12 +680,24 @@ export default class TranscriptPanelManager {
 		if ( ! this.panel ) {
 			return;
 		}
+		const hadFocus = this.panel.contains( this.panel.ownerDocument.activeElement );
 		this.isOpen = false;
 		this.unobserveLayout();
 		this.clearLayout();
 		this.wrapper.classList.remove( OPEN_CLASS );
+		this.panel.hidden = true;
+		this.panel.inert = true;
 		this.button?.setAttribute( 'aria-expanded', 'false' );
 		this.button?.classList.remove( `${ BUTTON_CLASS }--active` );
+		// Closing from inside the panel would drop focus to the page (behind the
+		// lightbox, if open). Hand it to the toggle, or the player if the toggle
+		// cannot take it (it is hidden until hovered).
+		if ( hadFocus ) {
+			this.button?.focus?.( { preventScroll: true } );
+			if ( this.panel.ownerDocument.activeElement !== this.button ) {
+				this.player.el()?.focus?.( { preventScroll: true } );
+			}
+		}
 		this.notifyPlayerResize();
 	}
 
@@ -696,7 +716,7 @@ export default class TranscriptPanelManager {
 	 * Measure the closed-state geometry the layout is computed from. Call with
 	 * the layout cleared, so the stage reports its natural size.
 	 *
-	 * @return {Object} `{ stageWidth, stageHeight, ratio, room }` in px.
+	 * @return {Object} `{ stageWidth, stageHeight, ratio, room, maxHeight }` in px.
 	 */
 	measureLayout() {
 		const stageWidth = this.container.offsetWidth;
@@ -719,7 +739,15 @@ export default class TranscriptPanelManager {
 			room = Math.max( stageWidth, columnWidth - ( root.offsetWidth - stageWidth ) );
 		}
 
-		return { stageWidth, stageHeight, ratio, room };
+		// The lightbox cannot scroll, so there the stage plus a panel beneath it
+		// must fit its height cap.
+		let maxHeight = 0;
+		const lightbox = root?.closest( '.godam-player-modal-wrapper' );
+		if ( lightbox ) {
+			maxHeight = parseFloat( window.getComputedStyle( lightbox ).maxHeight ) || 0;
+		}
+
+		return { stageWidth, stageHeight, ratio, room, maxHeight };
 	}
 
 	/**
@@ -741,13 +769,19 @@ export default class TranscriptPanelManager {
 			return;
 		}
 
-		const layout = computeTranscriptLayout( this.measureLayout() );
+		const geometry = this.measureLayout();
+		const layout = computeTranscriptLayout( geometry );
 		const px = ( value ) => `${ Math.round( value ) }px`;
 
 		if ( layout.mode === 'below' ) {
 			this.wrapper.classList.add( LAYOUT_BELOW_CLASS );
 			this.wrapper.style.setProperty( '--godam-transcript-panel-height', px( layout.panelHeight ) );
-			this.setLayoutSignature( `below:${ Math.round( layout.panelHeight ) }` );
+			// Narrowed (in the lightbox) so the video and the panel both fit.
+			if ( layout.width < geometry.stageWidth - 1 ) {
+				const stageHeight = layout.width / geometry.ratio;
+				this.resizeRoot( layout.width - geometry.stageWidth, layout.width / ( stageHeight + layout.panelHeight ) );
+			}
+			this.setLayoutSignature( `below:${ Math.round( layout.width ) }x${ Math.round( layout.panelHeight ) }` );
 			return;
 		}
 
@@ -759,7 +793,7 @@ export default class TranscriptPanelManager {
 		this.wrapper.style.setProperty( '--godam-transcript-player-top', px( layout.playerTop ) );
 
 		if ( layout.expandBy >= 1 ) {
-			this.expandRoot( layout.expandBy, layout.width / layout.stageHeight );
+			this.resizeRoot( layout.expandBy, layout.width / layout.stageHeight );
 		}
 
 		this.setLayoutSignature( `side:${ Math.round( layout.width ) }x${ Math.round( layout.playerWidth ) }` );
@@ -778,14 +812,15 @@ export default class TranscriptPanelManager {
 	}
 
 	/**
-	 * Widen the block root so the panel fits beside a full-size video (a
-	 * portrait video grows toward 16:9). Its inline styles are saved first and
+	 * Resize the block root: wider so the panel fits beside a full-size video
+	 * (a portrait video grows toward 16:9), or narrower so a video and the
+	 * panel beneath it fit the lightbox. Its inline styles are saved first and
 	 * put back exactly by `restoreRoot()`.
 	 *
-	 * @param {number} expandBy   Extra width needed, in px.
-	 * @param {number} stageRatio Width / height of the widened stage.
+	 * @param {number} expandBy   Width to add, in px (negative to narrow).
+	 * @param {number} stageRatio Width / height of the resized content.
 	 */
-	expandRoot( expandBy, stageRatio ) {
+	resizeRoot( expandBy, stageRatio ) {
 		const root = this.getRoot();
 		if ( ! root ) {
 			return;
@@ -805,7 +840,7 @@ export default class TranscriptPanelManager {
 		root.classList.add( EXPANDED_CLASS );
 
 		// In the lightbox, the close button finds the video's corner from this
-		// ratio; point it at the widened stage while the panel is open.
+		// ratio; point it at the resized content while the panel is open.
 		const lightbox = root.closest( '.godam-player-modal-wrapper' );
 		if ( lightbox ) {
 			this.lightboxWrapper = lightbox;
@@ -815,7 +850,7 @@ export default class TranscriptPanelManager {
 	}
 
 	/**
-	 * Undo `expandRoot()`.
+	 * Undo `resizeRoot()`.
 	 */
 	restoreRoot() {
 		if ( this.root && this.rootStyleBackup ) {
@@ -871,6 +906,8 @@ export default class TranscriptPanelManager {
 	 * (window resize, the player moving into or out of the lightbox).
 	 */
 	observeLayout() {
+		this.watchLightboxClose();
+
 		if ( typeof window.ResizeObserver !== 'function' ) {
 			window.addEventListener( 'resize', this.applyLayout );
 			return;
@@ -890,13 +927,34 @@ export default class TranscriptPanelManager {
 	}
 
 	/**
-	 * Point the resize observer at the block root and its column.
+	 * Point the resize observer at the block root and its column (or, with
+	 * unexpected markup, the wrapper's parent).
 	 */
 	observeTargets() {
 		const root = this.getRoot();
 		this.resizeObserver.disconnect();
-		this.observedParent = root?.parentElement || null;
+		this.observedParent = root?.parentElement || this.wrapper.parentElement || null;
 		[ root, this.observedParent ].filter( Boolean ).forEach( ( el ) => this.resizeObserver.observe( el ) );
+	}
+
+	/**
+	 * Close the panel when the lightbox it was opened in closes. The player
+	 * goes back to being a click-to-open poster, which hides the panel and its
+	 * button, so the layout would otherwise stay applied to the poster. The
+	 * lightbox marks its wrapper with `godam-lightbox-open` while it is up.
+	 */
+	watchLightboxClose() {
+		if ( ! this.wrapper.classList.contains( 'godam-show-in-lightbox' ) || typeof window.MutationObserver !== 'function' ) {
+			return;
+		}
+		if ( ! this.lightboxObserver ) {
+			this.lightboxObserver = new window.MutationObserver( () => {
+				if ( this.isOpen && ! this.wrapper.classList.contains( 'godam-lightbox-open' ) ) {
+					this.close();
+				}
+			} );
+		}
+		this.lightboxObserver.observe( this.wrapper, { attributes: true, attributeFilter: [ 'class' ] } );
 	}
 
 	/**
@@ -904,6 +962,7 @@ export default class TranscriptPanelManager {
 	 */
 	unobserveLayout() {
 		this.resizeObserver?.disconnect();
+		this.lightboxObserver?.disconnect();
 		this.observedParent = null;
 		window.removeEventListener( 'resize', this.applyLayout );
 	}
