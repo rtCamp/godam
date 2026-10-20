@@ -24,8 +24,7 @@ import {
 	findVideoById,
 	getLightboxRoot,
 	isLightboxVideo,
-	parseLightboxHash,
-	parseStartTime,
+	resolveDeepLinkTarget,
 } from './utils/lightboxTargets.js';
 import { seekPlayer } from './utils/seekPlayer.js';
 
@@ -61,15 +60,18 @@ const initGodamPlayers = () => {
  *
  * The ID is resolved as a job ID first and an attachment ID second — see
  * `findVideoById()`.
+ *
+ * A `?t=` with no `#godam-video-{id}` hash (for example a key-moment link
+ * whose fragment was dropped) seeks the first ordinary GoDAM video on the
+ * page instead.
  */
 const applyDeepLink = () => {
-	const targetId = parseLightboxHash( window.location.hash );
-	if ( ! targetId ) {
+	const target = resolveDeepLinkTarget( window.location );
+	if ( ! target ) {
 		return;
 	}
 
-	const searchParams = new URLSearchParams( window.location.search );
-	const startTime = parseStartTime( searchParams.get( 't' ) );
+	const { targetId, startTime, fromHash } = target;
 
 	// Match on either ID, so a link built from an attachment ID works too.
 	const isTarget = ( videoElement ) =>
@@ -81,6 +83,12 @@ const applyDeepLink = () => {
 	const onPlayerReady = ( event ) => {
 		const { videoElement, player } = event.detail;
 		if ( ! isTarget( videoElement ) ) {
+			return;
+		}
+
+		// Without a hash, only an inline player is seeked; a lightbox copy of the
+		// same video is left closed.
+		if ( ! fromHash && isLightboxVideo( videoElement ) ) {
 			return;
 		}
 

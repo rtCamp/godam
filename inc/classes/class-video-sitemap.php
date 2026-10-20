@@ -506,16 +506,7 @@ class Video_Sitemap {
 	 * @return int Seconds, or 0 when unparseable.
 	 */
 	public static function iso8601_duration_to_seconds( $duration ) {
-		if ( ! is_string( $duration ) || ! preg_match( '/^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/i', trim( $duration ), $m ) ) {
-			return 0;
-		}
-
-		$days    = isset( $m[1] ) ? (int) $m[1] : 0;
-		$hours   = isset( $m[2] ) ? (int) $m[2] : 0;
-		$minutes = isset( $m[3] ) ? (int) $m[3] : 0;
-		$seconds = isset( $m[4] ) ? (float) $m[4] : 0;
-
-		return (int) round( $days * 86400 + $hours * 3600 + $minutes * 60 + $seconds );
+		return Seo::iso8601_to_seconds( $duration );
 	}
 
 	/**
