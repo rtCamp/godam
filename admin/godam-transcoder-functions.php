@@ -771,6 +771,10 @@ function rtgodam_get_localize_array() {
 /**
  * Get the user's IP address.
  *
+ * GoDAM no longer calls this: the analytics service reads the visitor's IP
+ * from the request itself, so the page does not print it. It is kept because
+ * it is a public helper that other plugins may call.
+ *
  * @return string The user's IP address.
  */
 function rtgodam_get_user_ip() {
