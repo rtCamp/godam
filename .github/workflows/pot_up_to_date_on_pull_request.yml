@@ -1,5 +1,5 @@
-# Only the develop → main release merge needs a fresh POT; feature PRs into
-# develop don't have to regenerate it.
+# Only PRs into main (the develop → main release and patch releases) need a
+# fresh POT; feature PRs into develop don't have to regenerate it.
 on:
   pull_request:
     branches:
@@ -13,7 +13,6 @@ permissions:
 jobs:
   checkPotIsUpToDate:
     name: Check the committed POT matches a fresh build
-    if: github.head_ref == 'develop'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
