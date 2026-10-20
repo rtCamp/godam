@@ -13,6 +13,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  */
 import { isPlayerFullscreen, setupFullscreenReparenting } from '../utils/fullscreenReparent.js';
 import { computeTranscriptLayout, findMatchRanges, normaliseQuery } from '../utils/transcriptPanelLayout.js';
+import { toWebVttTrackSrc } from '../utils/captionTrackSrc.js';
 
 // Minimum container width (px) at which the Bubble skin routes the button into
 // the control bar instead of overlaying it — matches ShareManager.
@@ -86,6 +87,7 @@ const COPY_FEEDBACK_DELAY = 2000;
  * fallback — then the cues are loaded through a hidden Video.js
  * `metadata` text track so the browser handles all WebVTT parsing (and so the
  * VTT is fetched by the media element, sidestepping cross-origin fetch issues).
+ * An uploaded .srt is converted to WebVTT first (see captionTrackSrc.js).
  *
  * @class TranscriptPanelManager
  * @param {Object}      player            Video.js player instance.
@@ -218,6 +220,8 @@ export default class TranscriptPanelManager {
 		if ( ! transcriptUrl ) {
 			return;
 		}
+		// The media editor accepts .srt too; a track only parses WebVTT.
+		const trackSrc = await toWebVttTrackSrc( transcriptUrl );
 
 		// `metadata` keeps the track out of the subtitles/captions menu; `hidden`
 		// mode forces the browser to download and parse the cues without
@@ -227,7 +231,7 @@ export default class TranscriptPanelManager {
 				kind: 'metadata',
 				label: 'GoDAM Transcript',
 				srclang: 'en',
-				src: transcriptUrl,
+				src: trackSrc,
 			},
 			false,
 		);
