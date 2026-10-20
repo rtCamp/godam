@@ -293,7 +293,9 @@ class Seo {
 
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_META_KEY ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); clears its own cached video SEO schema meta, not attachment data.
 			delete_post_meta( $post_ID, self::VIDEO_SEO_SCHEMA_UPDATED_META_KEY ); // godam-coverage-ignore -- save_seo_data_as_postmeta(): $post_ID is the host post being saved (save_post action); clears its own cached-schema-updated timestamp meta, not attachment data.
-			$this->update_attachment_post_mapping( $post_ID, array() );
+			// Keep tracking videos that produced no schema yet (e.g. an empty
+			// Media Library title), so editing them later re-syncs this page.
+			$this->update_attachment_post_mapping( $post_ID, array_unique( $attachments_used ) );
 
 			/**
 			 * Fired after video SEO schema is cleared from a post.
@@ -1981,6 +1983,27 @@ class Seo {
 	}
 
 	/**
+	 * Undo WPBakery's shortcode-safe encoding of a param value.
+	 *
+	 * WPBakery stores `"` as two backticks, and `[` / `]` as `{` / `}`
+	 * wrapped in backticks, so they can't break the shortcode. Same mapping
+	 * as WPBakery's `vc_value_from_safe()`, without depending on it being
+	 * loaded.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $value Raw shortcode attribute value.
+	 * @return string Decoded value.
+	 */
+	public static function decode_wpbakery_param( $value ) {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+
+		return str_replace( array( '`{`', '`}`', '``' ), array( '[', ']', '"' ), (string) $value );
+	}
+
+	/**
 	 * Extract SEO data from WPBakery godam_video shortcodes.
 	 *
 	 * @param string $content           The post content containing shortcodes.
@@ -2032,12 +2055,27 @@ class Seo {
 					}
 				}
 
-				// Use shortcode attributes if seo_override is true or no attachment data available.
+				// Override = No: the SEO fields only mirror the Media Library (the
+				// editor fills them in), so stored copies are never used. With no
+				// usable attachment data (video deleted, title cleared) nothing is
+				// output, rather than a stale VideoObject.
+				if ( ! $seo_override ) {
+					// Still track a video the Media Library knows about (e.g. its
+					// title is empty for now), so filling in the title later
+					// re-syncs this page, as for blocks.
+					if ( $track_attachments && $attachment_id > 0 && ! empty( $media_seo ) ) {
+						$attachments[] = $attachment_id;
+					}
+					continue;
+				}
+
+				// Override = Yes: use the shortcode attributes, with the
+				// attachment's technical values taking priority when it exists.
 				if ( ! empty( $atts['seo_headline'] ) ) {
 					$video_seo = array(
 						'contentUrl'         => ! empty( $media_seo['contentUrl'] ) ? $media_seo['contentUrl'] : ( isset( $atts['seo_content_url'] ) ? $atts['seo_content_url'] : '' ),
-						'headline'           => isset( $atts['seo_headline'] ) ? $atts['seo_headline'] : '',
-						'description'        => isset( $atts['seo_description'] ) ? $atts['seo_description'] : '',
+						'headline'           => self::decode_wpbakery_param( $atts['seo_headline'] ),
+						'description'        => isset( $atts['seo_description'] ) ? self::decode_wpbakery_param( $atts['seo_description'] ) : '',
 						'uploadDate'         => ! empty( $media_seo['uploadDate'] ) ? $media_seo['uploadDate'] : ( isset( $atts['seo_upload_date'] ) ? $atts['seo_upload_date'] : '' ),
 						'thumbnailUrl'       => ! empty( $media_seo['thumbnailUrl'] ) ? $media_seo['thumbnailUrl'] : ( isset( $atts['seo_thumbnail_url'] ) ? $atts['seo_thumbnail_url'] : '' ),
 						'isFamilyFriendly'   => isset( $atts['seo_family_friendly'] ) ? '1' === $atts['seo_family_friendly'] : true,
