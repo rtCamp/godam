@@ -617,7 +617,7 @@ class Video_Sitemap {
 			'post_type'              => self::get_post_types(),
 			'post_status'            => 'publish',
 			'has_password'           => false,
-			'meta_key'               => Seo::VIDEO_SEO_SCHEMA_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_query_meta_key -- indexed meta_key existence check; results cached.
+			'meta_key'               => Seo::VIDEO_SEO_SCHEMA_META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- indexed meta_key existence check; results cached.
 			'fields'                 => 'ids',
 			'orderby'                => 'ID',
 			'order'                  => 'ASC',
