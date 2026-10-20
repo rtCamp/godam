@@ -281,7 +281,7 @@ This plugin relies on third-party services to provide specific features. Below i
     <tr>
       <td>analytics.godam.io</td>
       <td>Collects video analytics</td>
-      <td>IP, Email, Author, Browser info, OS, User Agent</td>
+      <td>IP, Author, Browser info, OS, User Agent</td>
       <td>On video page load &amp; exit</td>
       <td>
         analytics.godam.io<br>
