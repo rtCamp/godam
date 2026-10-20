@@ -727,12 +727,15 @@ export default class TranscriptPanelManager {
 			: 16 / 9;
 
 		// Room the stage can widen into: the column the block sits in, less
-		// whatever the root wraps around the stage (padding, borders).
+		// whatever the root wraps around the stage (padding, borders). None in a
+		// flex or grid parent (a Row or Grid group): there the root is an item
+		// that would be squeezed by its siblings rather than widened, so the
+		// panel stacks beneath the video instead.
 		let room = stageWidth;
 		const root = this.getRoot();
 		const column = root?.parentElement;
-		if ( column ) {
-			const style = window.getComputedStyle( column );
+		const style = column ? window.getComputedStyle( column ) : null;
+		if ( column && ! /^(inline-)?(flex|grid)$/.test( style.display ) ) {
 			const columnWidth = column.clientWidth -
 				( parseFloat( style.paddingLeft ) || 0 ) -
 				( parseFloat( style.paddingRight ) || 0 );
