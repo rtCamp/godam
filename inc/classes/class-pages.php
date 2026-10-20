@@ -339,7 +339,7 @@ class Pages {
 	 * The editor also folds it from React, but that runs after the page has painted, so the
 	 * menu showed at full width and then collapsed.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param string $classes Space-separated admin body classes.
 	 *

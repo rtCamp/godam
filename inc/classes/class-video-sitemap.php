@@ -14,7 +14,7 @@
  * those is active, in the WordPress core sitemap index (/wp-sitemap.xml).
  *
  * @package GoDAM
- * @since   n.e.x.t
+ * @since   2.5.0
  */
 
 namespace RTGODAM\Inc;
@@ -150,7 +150,7 @@ class Video_Sitemap {
 		/**
 		 * Filters whether the GoDAM video sitemap is enabled.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 *
 		 * @param bool $enabled Whether the sitemap is enabled in settings.
 		 */
@@ -166,7 +166,7 @@ class Video_Sitemap {
 		/**
 		 * Filters the number of pages listed per video sitemap file.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 *
 		 * @param int $entries Entries per sitemap page. Default 1000.
 		 */
@@ -403,7 +403,7 @@ class Video_Sitemap {
 			 *
 			 * Return an empty value to drop the page from the sitemap.
 			 *
-			 * @since n.e.x.t
+			 * @since 2.5.0
 			 *
 			 * @param array $entry   Entry with 'loc', 'lastmod' and 'videos'.
 			 * @param int   $post_id Host post ID.
@@ -599,7 +599,7 @@ class Video_Sitemap {
 		/**
 		 * Filters the post types whose pages may appear in the video sitemap.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 *
 		 * @param string[] $post_types Public post types, minus attachment.
 		 */
@@ -749,7 +749,7 @@ class Video_Sitemap {
 		/**
 		 * Filters whether a page is left out of the GoDAM video sitemap.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 *
 		 * @param bool $excluded Whether the page is excluded (true when noindexed).
 		 * @param int  $post_id  Host post ID.
@@ -984,7 +984,7 @@ class Video_Sitemap {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$in_use = metadata_exists( 'post', (int) $attachment_id, Seo::ATTACHMENT_POSTS_MAP_META_KEY );
