@@ -851,10 +851,11 @@ export class ModalManager {
 
 		// Skip controls that are present but not currently offered — Video.js
 		// hides inapplicable control-bar buttons with `vjs-hidden` rather than
-		// removing them. Checked declaratively rather than via `offsetParent`, so
-		// this needs no layout and behaves the same under test.
+		// removing them, and a closed transcript panel is `hidden` and `inert`
+		// around its buttons. Checked declaratively rather than via `offsetParent`,
+		// so this needs no layout and behaves the same under test.
 		const isAvailable = ( node ) =>
-			! node.hasAttribute( 'hidden' ) &&
+			! node.closest( '[hidden], [inert]' ) &&
 			'true' !== node.getAttribute( 'aria-hidden' ) &&
 			! node.classList.contains( 'vjs-hidden' );
 

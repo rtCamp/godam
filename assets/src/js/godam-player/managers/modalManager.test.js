@@ -426,6 +426,25 @@ describe( 'ModalManager', () => {
 			// first and last and focus stays put.
 			expect( document.activeElement ).toBe( document.querySelector( '.godam-player-modal-close' ) );
 		} );
+
+		it( 'skips buttons inside a closed transcript panel', () => {
+			const { video, playerRoot } = renderPlayer();
+			playerRoot.querySelector( 'figure' ).insertAdjacentHTML(
+				'beforeend',
+				'<div class="godam-transcript-panel" hidden inert><button id="cue-0">0:00 A line</button></div>',
+			);
+			lightbox.openElement( playerRoot, { video } );
+
+			document.querySelector( '.godam-player-modal-close' ).focus();
+			const event = new KeyboardEvent( 'keydown', { key: 'Tab', cancelable: true } );
+			document.dispatchEvent( event );
+
+			// The closed panel's rows are not focus stops, so the close button is
+			// the last stop and Tab wraps instead of leaving the dialog for a
+			// button nobody can see.
+			expect( event.defaultPrevented ).toBe( true );
+			expect( document.activeElement ).toBe( document.querySelector( '.godam-player-modal-close' ) );
+		} );
 	} );
 
 	describe( 'register', () => {
