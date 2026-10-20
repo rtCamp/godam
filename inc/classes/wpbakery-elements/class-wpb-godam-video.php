@@ -331,6 +331,13 @@ class WPB_GoDAM_Video {
 				),
 
 				// SEO Settings.
+				//
+				// Same fields, order and behaviour as the Gutenberg "Video SEO Schema"
+				// modal and the Elementor SEO popover. Every field shows once a video
+				// is selected; assets/src/js/wpbakery/wpbakery-video-selector-param.js
+				// fills them from the Media Library, keeps Content URL / Upload Date /
+				// Duration / Thumbnail read-only, and keeps Headline / Description /
+				// Family Friendly read-only until "Override SEO" is Yes.
 				array(
 					'type'        => 'dropdown',
 					'heading'     => esc_html__( 'Override SEO', 'godam' ),
@@ -340,9 +347,21 @@ class WPB_GoDAM_Video {
 						esc_html__( 'Yes', 'godam' ) => '1',
 					),
 					'std'         => '0',
-					'description' => esc_html__( 'When disabled, SEO data is automatically synced from the media library. Enable to override with custom values.', 'godam' ),
+					'description' => esc_html__( 'Enable to customize SEO for this element. When disabled, SEO data is synced from the media library.', 'godam' ),
 					'group'       => esc_html__( 'SEO Settings', 'godam' ),
 					'save_always' => true,
+					'dependency'  => array(
+						'element'   => 'id',
+						'not_empty' => true,
+					),
+				),
+				array(
+					'type'        => 'textfield',
+					'heading'     => esc_html__( 'Content URL', 'godam' ),
+					'param_name'  => 'seo_content_url',
+					'value'       => '',
+					'description' => esc_html__( 'URL of the video file or HLS (.m3u8) stream that search engines index. Filled in from the selected video.', 'godam' ),
+					'group'       => esc_html__( 'SEO Settings', 'godam' ),
 					'dependency'  => array(
 						'element'   => 'id',
 						'not_empty' => true,
@@ -353,12 +372,12 @@ class WPB_GoDAM_Video {
 					'heading'     => esc_html__( 'Headline', 'godam' ),
 					'param_name'  => 'seo_headline',
 					'value'       => '',
-					'description' => esc_html__( 'Title of the video for SEO.', 'godam' ),
+					'description' => esc_html__( 'Title of the video', 'godam' ),
 					'group'       => esc_html__( 'SEO Settings', 'godam' ),
 					'save_always' => true,
 					'dependency'  => array(
-						'element' => 'seo_override',
-						'value'   => '1',
+						'element'   => 'id',
+						'not_empty' => true,
 					),
 				),
 				array(
@@ -366,29 +385,82 @@ class WPB_GoDAM_Video {
 					'heading'     => esc_html__( 'Description', 'godam' ),
 					'param_name'  => 'seo_description',
 					'value'       => '',
-					'description' => esc_html__( 'Description of the video for SEO. It is recommended to add a description for better video SEO.', 'godam' ),
+					'description' => esc_html__( 'Description of the video. It is recommended to add a description for better video SEO.', 'godam' ),
 					'group'       => esc_html__( 'SEO Settings', 'godam' ),
 					'save_always' => true,
 					'dependency'  => array(
-						'element' => 'seo_override',
-						'value'   => '1',
+						'element'   => 'id',
+						'not_empty' => true,
+					),
+				),
+				array(
+					'type'        => 'textfield',
+					'heading'     => esc_html__( 'Upload Date', 'godam' ),
+					'param_name'  => 'seo_upload_date',
+					'value'       => '',
+					'description' => esc_html__( 'ISO 8601 datetime format. Example: 2024-01-15T10:30:00+00:00', 'godam' ),
+					'group'       => esc_html__( 'SEO Settings', 'godam' ),
+					'dependency'  => array(
+						'element'   => 'id',
+						'not_empty' => true,
+					),
+				),
+				array(
+					'type'        => 'textfield',
+					'heading'     => esc_html__( 'Duration', 'godam' ),
+					'param_name'  => 'seo_duration',
+					'value'       => '',
+					'description' => esc_html__( 'ISO 8601 format. Example: PT1H30M', 'godam' ),
+					'group'       => esc_html__( 'SEO Settings', 'godam' ),
+					'dependency'  => array(
+						'element'   => 'id',
+						'not_empty' => true,
+					),
+				),
+				array(
+					'type'        => 'textfield',
+					'heading'     => esc_html__( 'Video Thumbnail URL', 'godam' ),
+					'param_name'  => 'seo_thumbnail_url',
+					'value'       => '',
+					'description' => esc_html__( 'URL of the video thumbnail. Example: https://www.example.com/thumbnail.jpg', 'godam' ),
+					'group'       => esc_html__( 'SEO Settings', 'godam' ),
+					'dependency'  => array(
+						'element'   => 'id',
+						'not_empty' => true,
 					),
 				),
 				array(
 					'type'        => 'dropdown',
-					'heading'     => esc_html__( 'Family Friendly', 'godam' ),
+					'heading'     => esc_html__( 'Is Family Friendly', 'godam' ),
 					'param_name'  => 'seo_family_friendly',
 					'value'       => array(
 						esc_html__( 'Yes', 'godam' ) => '1',
 						esc_html__( 'No', 'godam' )  => '0',
 					),
 					'std'         => '1',
-					'description' => esc_html__( 'Is this video family friendly?', 'godam' ),
+					'description' => esc_html__( 'Is the video suitable for all audiences?', 'godam' ),
 					'group'       => esc_html__( 'SEO Settings', 'godam' ),
 					'save_always' => true,
 					'dependency'  => array(
-						'element' => 'seo_override',
-						'value'   => '1',
+						'element'   => 'id',
+						'not_empty' => true,
+					),
+				),
+				array(
+					'type'        => 'dropdown',
+					'heading'     => esc_html__( 'Exclude from video sitemap', 'godam' ),
+					'param_name'  => 'seo_exclude_from_sitemap',
+					'value'       => array(
+						esc_html__( 'No', 'godam' )  => '0',
+						esc_html__( 'Yes', 'godam' ) => '1',
+					),
+					'std'         => '0',
+					'description' => esc_html__( 'Leave this video out of the GoDAM video sitemap. The video schema on this page is not affected.', 'godam' ),
+					'group'       => esc_html__( 'SEO Settings', 'godam' ),
+					'save_always' => true,
+					'dependency'  => array(
+						'element'   => 'id',
+						'not_empty' => true,
 					),
 				),
 			),

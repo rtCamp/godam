@@ -150,7 +150,15 @@ if ( ! function_exists( 'wp_get_upload_dir' ) ) {
 			? (string) $GLOBALS['rtgodam_stub']['uploads_baseurl']
 			: 'https://example.com/wp-content/uploads';
 
-		return array( 'baseurl' => $baseurl );
+		$dirs = array( 'baseurl' => $baseurl );
+
+		// Only set when a test needs the uploads path on disk (e.g. reading a
+		// transcript file from uploads in VideoSeoSchemaTest).
+		if ( isset( $GLOBALS['rtgodam_stub']['uploads_basedir'] ) ) {
+			$dirs['basedir'] = (string) $GLOBALS['rtgodam_stub']['uploads_basedir'];
+		}
+
+		return $dirs;
 	}
 }
 
