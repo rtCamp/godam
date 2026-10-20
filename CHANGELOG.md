@@ -1,5 +1,12 @@
 # Changelog #
 
+## v2.4.1 (October 20, 2026) ##
+
+- Fix: The video transcript no longer covers the video. It opens beside the video, or below it on narrow screens, matches the player skin, and can be searched.
+- Fix: Transcripts uploaded as .srt files now show captions and the transcript to visitors.
+- Fix: In Safari, tall videos in a lightbox are no longer cut off at the bottom.
+- Fix: Captions no longer overlap the player controls on narrow screens.
+
 ## v2.4.0 (October 16, 2026) ##
 
 - Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.

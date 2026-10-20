@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.4.0
+Stable tag: 2.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -217,6 +217,13 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.4.1 (October 20, 2026) =
+
+- Fix: The video transcript no longer covers the video. It opens beside the video, or below it on narrow screens, matches the player skin, and can be searched.
+- Fix: Transcripts uploaded as .srt files now show captions and the transcript to visitors.
+- Fix: In Safari, tall videos in a lightbox are no longer cut off at the bottom.
+- Fix: Captions no longer overlap the player controls on narrow screens.
+
 = v2.4.0 (October 16, 2026) =
 
 - Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.
@@ -231,17 +238,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts automatically the first time you open the library and can be replayed anytime from the new button next to Manage Media.
 - Feat: GoDAM now tells you when it can't reach your site to send back transcoding updates, on admin screens and in GoDAM settings, so videos no longer sit at "Processing" without explanation.
 - Fix: Uploads that GoDAM refuses (the file can't be downloaded, isn't a video, is empty or too large, or the licence is inactive, storage is full or the site isn't allowed) are now marked as failed with the reason in the Media Library and on the Tools page, instead of showing no status at all.
-- Fix: Security fixes.
-
-= v2.3.1 (October 6, 2026) =
-
-- Fix: What's New refreshes after every plugin update, so it always shows the current release post.
-- Fix: A video's hotspot, call-to-action, form and poll analytics are now stored with the same video ID as its plays, so they stay together in Top Products.
-- Fix: Revenue tooltips now say that revenue is after discounts and excludes tax, shipping and fees.
-- Fix: Top Products explains why grouped and external products show no add-to-carts or revenue, and shows "-" instead of a misleading 0.0% add-to-cart rate.
-- Fix: Video to Cart, Video to Purchase and the funnels now count each day in the store's time zone, matching the Revenue card.
-- Fix: Editors and Authors see video analytics only; store data (products, add-to-carts, orders, revenue) needs WooCommerce's report permission.
-- Fix: A GoDAM Record field on a Gravity Forms form no longer fails with "Number of files (2) exceeds limit (1)" after moving between pages or fixing a failed submit, on Gravity Forms 2.9.18 and later.
 - Fix: Security fixes.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
