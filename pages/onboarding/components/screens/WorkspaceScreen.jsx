@@ -65,9 +65,10 @@ const WorkspaceScreen = () => {
 			if ( ! isMounted.current ) {
 				return;
 			}
-			dispatch( clearNotice() );
 			dispatch( setOrganizations( latest ) );
-			if ( ! latest.length ) {
+			if ( latest.length ) {
+				dispatch( clearNotice() );
+			} else {
 				dispatch( setNotice( { status: 'info', message: __( 'Still no workspaces on this account. Create one in the GoDAM app, then refresh again.', 'godam' ) } ) );
 			}
 		} catch ( error ) {
