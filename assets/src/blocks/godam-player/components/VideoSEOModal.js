@@ -21,7 +21,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import './video-seo-modal.scss';
-import { appendTimezoneOffsetToUTC, stripHtmlTags } from '../utils';
+import { appendTimezoneOffsetToUTC, stripHtmlTags, getFileNameFromUrl, isFilenameLikeTitle } from '../utils';
 
 /**
  * Video SEO Modal component
@@ -39,6 +39,8 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 	const [ mediaSEOData, setMediaSEOData ] = useState( null );
 	const [ isLoadingMediaSEO, setIsLoadingMediaSEO ] = useState( false );
 	const [ seoOverride, setSeoOverride ] = useState( attributes?.seoOverride || false );
+	const [ excludeFromSitemap, setExcludeFromSitemap ] = useState( !! attributes?.excludeFromVideoSitemap );
+	const [ mediaFileName, setMediaFileName ] = useState( getFileNameFromUrl( attributes?.src || '' ) );
 	const posterThumbnail = attributes?.poster || '';
 
 	/**
@@ -53,8 +55,9 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 		try {
 			const response = await apiFetch( { path: `/wp/v2/media/${ attributes.id }` } );
 
+			// Google indexes HLS (.m3u8) but not DASH (.mpd), so prefer the HLS stream.
 			const seoFromMedia = {
-				contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url || '',
+				contentUrl: response.meta?.rtgodam_hls_transcoded_url || response.source_url || '',
 				headline: response.title?.rendered || '',
 				description: stripHtmlTags( response.description?.rendered || '' ),
 				uploadDate: appendTimezoneOffsetToUTC( response.date_gmt || '' ),
@@ -64,6 +67,9 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 			};
 
 			setMediaSEOData( seoFromMedia );
+			if ( response.source_url ) {
+				setMediaFileName( getFileNameFromUrl( response.source_url ) );
+			}
 			return seoFromMedia;
 		} catch ( error ) {
 			// eslint-disable-next-line no-console
@@ -82,6 +88,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 		// Sync local override state with attributes
 		const currentSeoOverride = attributes?.seoOverride || false;
 		setSeoOverride( currentSeoOverride );
+		setExcludeFromSitemap( !! attributes?.excludeFromVideoSitemap );
 
 		// If seoOverride is false, fetch and display fresh data from media library
 		if ( ! currentSeoOverride ) {
@@ -120,7 +127,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 
 		// Also fetch media SEO for comparison/reset purposes
 		fetchMediaSEOData();
-	}, [ attributes.seo, attributes?.seoOverride, attributes?.poster, isOpen, fetchMediaSEOData ] ); // Depend on seo attribute and modal state
+	}, [ attributes.seo, attributes?.seoOverride, attributes?.excludeFromVideoSitemap, attributes?.poster, isOpen, fetchMediaSEOData ] ); // Depend on seo attribute and modal state
 
 	const updateField = ( field, value ) => {
 		setVideoData( { ...videoData, [ field ]: value } );
@@ -181,6 +188,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 			setVideoData( mediaSEOData );
 		}
 		setSeoOverride( attributes?.seoOverride || false );
+		setExcludeFromSitemap( !! attributes?.excludeFromVideoSitemap );
 	};
 
 	const saveData = () => {
@@ -192,6 +200,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 		setAttributes( {
 			seo: finalVideoData,
 			seoOverride,
+			excludeFromVideoSitemap: excludeFromSitemap,
 		} );
 		closeModal();
 	};
@@ -202,6 +211,8 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 
 	// Check if fields should be editable (only when override is enabled)
 	const isFieldsDisabled = ! seoOverride;
+
+	const isHeadlineFilenameLike = isFilenameLikeTitle( videoData?.headline, mediaFileName );
 
 	return (
 		<Modal
@@ -248,7 +259,7 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				label={ __( 'Content URL', 'godam' ) }
 				value={ videoData?.contentUrl || '' }
 				onChange={ ( value ) => updateField( 'contentUrl', value ) }
-				help={ __( 'URL of the video content can be MOV, MP4, MPD. Example: https://www.example.com/video.mp4', 'godam' ) }
+				help={ __( 'URL of the video file or HLS (.m3u8) stream that search engines index. Example: https://www.example.com/video.mp4', 'godam' ) }
 				disabled={ true }
 			/>
 			<TextControl
@@ -259,6 +270,14 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				help={ __( 'Title of the video', 'godam' ) }
 				disabled={ isFieldsDisabled }
 			/>
+			{ isHeadlineFilenameLike && (
+				<Notice status="warning" isDismissible={ false } className="godam-seo-modal__notice godam-seo-modal__notice--filename">
+					{ seoOverride
+						? __( 'This title looks like a file name. Search engines show it as the video title, so use a descriptive title with spaces instead.', 'godam' )
+						: __( 'This title looks like a file name. Search engines show it as the video title. Edit the video title in the Media Library, or turn on "Override default SEO" to set a descriptive title for this block.', 'godam' )
+					}
+				</Notice>
+			) }
 			<TextareaControl
 				className={ `godam-seo-modal__property${ ! videoData?.description?.trim() ? ' godam-seo-modal__property--warning' : '' }` }
 				label={ __( 'Description', 'godam' ) }
@@ -301,6 +320,13 @@ export default function VideoSEOModal( { isOpen, setIsOpen, attributes, setAttri
 				onChange={ ( value ) => updateField( 'isFamilyFriendly', value ) }
 				help={ __( 'Is the video suitable for all audiences?', 'godam' ) }
 				disabled={ isFieldsDisabled }
+			/>
+			<ToggleControl
+				className="godam-seo-modal__property"
+				label={ __( 'Exclude from video sitemap', 'godam' ) }
+				checked={ excludeFromSitemap }
+				onChange={ ( value ) => setExcludeFromSitemap( value ) }
+				help={ __( 'Leave this video out of the GoDAM video sitemap. The video schema on this page is not affected.', 'godam' ) }
 			/>
 
 			<div style={ { display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' } }>

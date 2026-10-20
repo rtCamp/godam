@@ -63,6 +63,9 @@ class Settings extends Base {
 				'enable_global_video_ads' => false,
 				'adTagUrl'                => '',
 			),
+			'seo'          => array(
+				'enable_video_sitemap' => false,
+			),
 			'integrations' => apply_filters( 'godam_default_integration_settings', array() ),
 		);
 	}
@@ -398,6 +401,9 @@ class Settings extends Base {
 			'ads_settings' => array(
 				'enable_global_video_ads' => rest_sanitize_boolean( $settings['ads_settings']['enable_global_video_ads'] ?? $default['ads_settings']['enable_global_video_ads'] ),
 				'adTagUrl'                => esc_url_raw( $settings['ads_settings']['adTagUrl'] ?? $default['ads_settings']['adTagUrl'] ),
+			),
+			'seo'          => array(
+				'enable_video_sitemap' => rest_sanitize_boolean( $settings['seo']['enable_video_sitemap'] ?? $default['seo']['enable_video_sitemap'] ),
 			),
 			'integrations' => apply_filters( 'godam_sanitize_integration_settings', array(), $settings, $default ),
 		);
