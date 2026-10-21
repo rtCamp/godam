@@ -318,7 +318,7 @@
 
 		// Stack vertically when the card's own container is narrow, regardless of
 		// the viewport width (e.g. the card placed in a narrow column on desktop).
-		@container godam-pdf-card ( max-width: 480px ) {
+		@container godam-pdf-card ( max-width: 400px ) {
 			flex-direction: column;
 			align-items: flex-start;
 
