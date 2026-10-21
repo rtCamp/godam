@@ -45,6 +45,14 @@ class VideoSeoSchemaTest extends TestCase {
 	 */
 	private $temp_dirs = array();
 
+	/**
+	 * Registered shortcodes as they were before register_shortcodes() replaced
+	 * them, put back in tearDown().
+	 *
+	 * @var array|null
+	 */
+	private $saved_shortcode_tags = null;
+
 	protected function setUp(): void {
 		parent::setUp();
 		$GLOBALS['rtgodam_stub']  = array();
@@ -53,6 +61,10 @@ class VideoSeoSchemaTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
+		if ( null !== $this->saved_shortcode_tags ) {
+			$GLOBALS['shortcode_tags']  = $this->saved_shortcode_tags;
+			$this->saved_shortcode_tags = null;
+		}
 		foreach ( $this->temp_dirs as $dir ) {
 			$this->remove_dir( $dir );
 		}
@@ -237,6 +249,97 @@ class VideoSeoSchemaTest extends TestCase {
 		$schema = $this->seo->build_video_object_schema( $this->legacy_entry(), 7 );
 
 		$this->assertSame( 'Hello & welcome.', $schema['description'] );
+	}
+
+	/**
+	 * Replace the registered shortcodes, as they stand at a given point of a
+	 * request. The sitemap is built at parse_request priority 1, before a page
+	 * builder registers its shortcodes; a front-end page (wp_head) is built after.
+	 *
+	 * @param string[] $tags Shortcode tags that are registered.
+	 * @return void
+	 */
+	private function register_shortcodes( array $tags ) {
+		if ( null === $this->saved_shortcode_tags ) {
+			$this->saved_shortcode_tags = $GLOBALS['shortcode_tags'];
+		}
+
+		$GLOBALS['shortcode_tags'] = array_fill_keys( $tags, '__return_empty_string' );
+	}
+
+	/**
+	 * Description a page with the given content gets, or '' when it has none.
+	 *
+	 * @param string $content Page content.
+	 * @return string
+	 */
+	private function page_description( $content ) {
+		$GLOBALS['rtgodam_stub']['posts'][7] = (object) array(
+			'post_type'    => 'page',
+			'post_excerpt' => '',
+			'post_content' => $content,
+		);
+
+		$schema = $this->seo->build_video_object_schema( $this->legacy_entry(), 7 );
+
+		return $schema['description'] ?? '';
+	}
+
+	public function test_page_fallback_does_not_show_builder_shortcodes_that_are_not_registered_yet() {
+		// The sitemap runs before WPBakery registers vc_row, vc_column and vc_column_text.
+		$this->register_shortcodes( array( 'gallery', 'godam_video' ) );
+
+		$description = $this->page_description( '[vc_row][vc_column][vc_column_text]Learn to brew filter coffee at home.[/vc_column_text][godam_video id="265"][/vc_column][/vc_row]' );
+
+		$this->assertStringNotContainsString( '[', $description );
+		$this->assertStringNotContainsString( 'vc_', $description );
+	}
+
+	public function test_page_fallback_is_the_same_before_and_after_the_builder_registers_its_shortcodes() {
+		$content = 'Intro text. [vc_row][vc_column][vc_column_text]Inside the builder.[/vc_column_text][/vc_column][/vc_row] Outro text.';
+
+		$this->register_shortcodes( array( 'gallery', 'godam_video' ) );
+		$at_sitemap_time = $this->page_description( $content );
+
+		$this->register_shortcodes( array( 'gallery', 'godam_video', 'vc_row', 'vc_column', 'vc_column_text' ) );
+		$at_page_time = $this->page_description( $content );
+
+		$this->assertSame( $at_page_time, $at_sitemap_time );
+		$this->assertSame( 'Intro text. Outro text.', $at_sitemap_time );
+	}
+
+	public function test_page_fallback_removes_divi_shortcodes_that_are_not_registered() {
+		$this->register_shortcodes( array( 'gallery' ) );
+
+		$description = $this->page_description( 'Before. [et_pb_section][et_pb_row][et_pb_text]Divi copy.[/et_pb_text][/et_pb_row][/et_pb_section] After.' );
+
+		$this->assertSame( 'Before. After.', $description );
+	}
+
+	public function test_page_fallback_removes_a_self_closing_shortcode_that_is_not_registered() {
+		$this->register_shortcodes( array( 'gallery' ) );
+
+		$this->assertSame( 'Hello world.', $this->page_description( 'Hello [unknown_tag foo="bar" /]world.' ) );
+	}
+
+	public function test_page_fallback_leaves_text_outside_shortcodes_alone_when_none_are_used() {
+		$this->register_shortcodes( array( 'gallery' ) );
+
+		$this->assertSame( 'Plain page text with no shortcodes.', $this->page_description( '<p>Plain page text with no shortcodes.</p>' ) );
+	}
+
+	public function test_page_fallback_survives_a_page_full_of_distinct_bracketed_words() {
+		$this->register_shortcodes( array( 'gallery' ) );
+
+		$content = 'Start. ';
+		for ( $i = 0; $i < 3000; $i++ ) {
+			$content .= '[word' . $i . '] ';
+		}
+
+		$description = $this->page_description( $content );
+
+		$this->assertStringStartsWith( 'Start.', $description );
+		$this->assertLessThanOrEqual( Seo::DESCRIPTION_MAX_LENGTH, mb_strlen( $description ) );
 	}
 
 	public function test_page_text_cannot_close_the_json_ld_script_tag() {

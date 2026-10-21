@@ -32,6 +32,15 @@ class Seo {
 	const DESCRIPTION_MAX_LENGTH = 160;
 
 	/**
+	 * Most unregistered shortcode names removed from one page text when
+	 * building its fallback description. Bounds the size of the pattern a page
+	 * full of bracketed words would otherwise build.
+	 *
+	 * @since 2.5.0
+	 */
+	const FALLBACK_UNREGISTERED_SHORTCODES_LIMIT = 100;
+
+	/**
 	 * Seconds before a failed transcript fetch is retried.
 	 *
 	 * @since 2.5.0
@@ -1605,12 +1614,46 @@ class Seo {
 
 		$text = has_excerpt( $post ) ? $post->post_excerpt : $post->post_content;
 		$text = preg_replace( '/<!--.*?-->/s', '', (string) $text );
-		$text = wp_strip_all_tags( strip_shortcodes( $text ) );
+		$text = wp_strip_all_tags( $this->strip_all_shortcodes( $text ) );
 		// Decode entities, then strip again: text stored as "&lt;/script&gt;"
 		// must not come back as a real tag.
 		$text = wp_strip_all_tags( html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
 
 		return self::trim_to_length( $text, self::DESCRIPTION_MAX_LENGTH );
+	}
+
+	/**
+	 * Remove every shortcode from a text, registered or not, together with the
+	 * text they enclose.
+	 *
+	 * Core's strip_shortcodes() only removes the shortcodes registered at the
+	 * moment it runs. The video sitemap is served at parse_request priority 1,
+	 * before a page builder such as WPBakery or Divi registers its own, so
+	 * their tags would stay in the description as raw `[vc_row]` text while a
+	 * front-end page (wp_head, after the builder loaded) drops them. Adding
+	 * the tag names found in the text to core's list, through its own
+	 * `strip_shortcodes_tagnames` filter, gives the same result at both points.
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param string $text Page text.
+	 * @return string Text without shortcodes.
+	 */
+	private function strip_all_shortcodes( $text ) {
+		$add_found_tag_names = static function ( $tags, $content ) {
+			$tags = (array) $tags;
+
+			preg_match_all( '@\[([^<>&/\[\]\x00-\x20=]++)@', (string) $content, $matches );
+			$unregistered = array_diff( array_unique( $matches[1] ), $tags );
+
+			return array_merge( $tags, array_slice( $unregistered, 0, self::FALLBACK_UNREGISTERED_SHORTCODES_LIMIT ) );
+		};
+
+		add_filter( 'strip_shortcodes_tagnames', $add_found_tag_names, 10, 2 );
+		$stripped = strip_shortcodes( $text );
+		remove_filter( 'strip_shortcodes_tagnames', $add_found_tag_names, 10 );
+
+		return (string) $stripped;
 	}
 
 	/**
