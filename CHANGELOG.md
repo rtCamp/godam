@@ -1,6 +1,6 @@
 # Changelog #
 
-## v2.5.0 (October 21, 2026) ##
+## v2.5.0 (October 22, 2026) ##
 
 - Feat: GoDAM can add a video sitemap that lists every page with a GoDAM video, through Yoast SEO, Rank Math, All in One SEO or the WordPress sitemap. Turn it on in GoDAM > Settings > SEO; single videos can be left out.
 - Feat: Video chapters are added to the video's search data as key moments, so Google can show links that jump to each chapter.
