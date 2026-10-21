@@ -18,6 +18,13 @@
 
 .wp-block-godam-pdf {
 	box-sizing: border-box;
+	// Fill the inline space of the container. Without this the block root is a
+	// flex item with the default `flex: 0 1 auto` when placed inside a core Group
+	// using a Row/Stack (flex) layout, so it collapses to its min-content width
+	// while `.godam-pdf-wrapper`'s fixed pixel height stays — rendering a tall,
+	// narrow, empty box. Filling the width keeps flex parents consistent with the
+	// flow/grid/columns layouts.
+	width: 100%;
 
 	figcaption {
 		margin-top: 0.5em;
