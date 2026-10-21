@@ -32,6 +32,27 @@ class Seo {
 	const DESCRIPTION_MAX_LENGTH = 160;
 
 	/**
+	 * Most unregistered builder-style shortcode names removed from one page
+	 * text when building its fallback description. Together with the name
+	 * length limit below, it keeps the pattern core builds from them far below
+	 * PCRE's size limit, whatever a page contains.
+	 *
+	 * @since 2.5.0
+	 */
+	const FALLBACK_UNREGISTERED_SHORTCODES_LIMIT = 100;
+
+	/**
+	 * Which unregistered tag names the fallback description treats as page-builder
+	 * shortcodes (`vc_row`, `et_pb_section`, `fusion_builder_container`,
+	 * `contact-form-7`): 64 characters at most, starting with a letter, with an
+	 * underscore or hyphen in them. Plain bracketed words are common in ordinary
+	 * text and stay.
+	 *
+	 * @since 2.5.0
+	 */
+	const FALLBACK_SHORTCODE_NAME_PATTERN = '/^(?=.{1,64}$)(?=[A-Za-z0-9]*[_-])[A-Za-z][A-Za-z0-9_-]*$/D';
+
+	/**
 	 * Seconds before a failed transcript fetch is retried.
 	 *
 	 * @since 2.5.0
@@ -1605,12 +1626,72 @@ class Seo {
 
 		$text = has_excerpt( $post ) ? $post->post_excerpt : $post->post_content;
 		$text = preg_replace( '/<!--.*?-->/s', '', (string) $text );
-		$text = wp_strip_all_tags( strip_shortcodes( $text ) );
+		$text = wp_strip_all_tags( $this->strip_all_shortcodes( $text ) );
 		// Decode entities, then strip again: text stored as "&lt;/script&gt;"
 		// must not come back as a real tag.
 		$text = wp_strip_all_tags( html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
 
 		return self::trim_to_length( $text, self::DESCRIPTION_MAX_LENGTH );
+	}
+
+	/**
+	 * Remove shortcodes from a text, including page-builder shortcodes that are
+	 * not registered yet, together with the text they enclose.
+	 *
+	 * Core's strip_shortcodes() only removes the shortcodes registered at the
+	 * moment it runs. The video sitemap is served at parse_request priority 1,
+	 * before a page builder such as WPBakery or Divi registers its own, so
+	 * their tags would stay in the description as raw `[vc_row]` text while a
+	 * front-end page (wp_head, after the builder loaded) drops them. Adding
+	 * the unregistered builder-style tag names found in the text to core's list,
+	 * through its own `strip_shortcodes_tagnames` filter, gives the same result
+	 * at both points.
+	 *
+	 * Only names that look like a builder tag are added (see
+	 * {@see self::FALLBACK_SHORTCODE_NAME_PATTERN}): ordinary bracketed text
+	 * such as `[sic]`, `[1]` or `[b]bold[/b]` is left alone, so the description
+	 * of a page whose shortcodes are all registered does not change.
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param string $text Page text.
+	 * @return string Text without shortcodes.
+	 */
+	private function strip_all_shortcodes( $text ) {
+		$add_found_tag_names = static function ( $tags, $content ) {
+			global $shortcode_tags;
+
+			$tags       = (array) $tags;
+			$registered = is_array( $shortcode_tags ) ? $shortcode_tags : array();
+			$found      = array();
+
+			preg_match_all( '@\[([^<>&/\[\]\x00-\x20=]++)@', (string) $content, $matches );
+
+			foreach ( array_unique( $matches[1] ) as $name ) {
+				if ( count( $found ) >= self::FALLBACK_UNREGISTERED_SHORTCODES_LIMIT ) {
+					break;
+				}
+
+				// A tag another filter took off the list is registered: leave it be.
+				if ( array_key_exists( $name, $registered ) || ! preg_match( self::FALLBACK_SHORTCODE_NAME_PATTERN, $name ) ) {
+					continue;
+				}
+
+				$found[] = $name;
+			}
+
+			return array_merge( $tags, $found );
+		};
+
+		add_filter( 'strip_shortcodes_tagnames', $add_found_tag_names, 10, 2 );
+
+		try {
+			$stripped = strip_shortcodes( $text );
+		} finally {
+			remove_filter( 'strip_shortcodes_tagnames', $add_found_tag_names, 10 );
+		}
+
+		return (string) $stripped;
 	}
 
 	/**

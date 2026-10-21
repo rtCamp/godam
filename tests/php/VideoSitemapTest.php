@@ -257,6 +257,62 @@ class VideoSitemapTest extends TestCase {
 		$this->assertSame( 'Video 1', $video['description'] );
 	}
 
+	/**
+	 * The sitemap's <video:description> texts for a page whose content is the
+	 * given string and whose video has no description of its own, with only the
+	 * given shortcodes registered (the sitemap is served at parse_request
+	 * priority 1, before WPBakery registers vc_row, vc_column and the rest).
+	 *
+	 * @param string   $content           Page content.
+	 * @param string[] $registered_shorts Shortcode tags registered at that point.
+	 * @return string[]
+	 */
+	private function sitemap_descriptions_for_page( $content, array $registered_shorts ) {
+		$saved                     = $GLOBALS['shortcode_tags'];
+		$GLOBALS['shortcode_tags'] = array_fill_keys( $registered_shorts, '__return_empty_string' );
+
+		try {
+			$GLOBALS['rtgodam_stub']['posts'][10] = (object) array(
+				'post_type'    => 'page',
+				'post_excerpt' => '',
+				'post_content' => $content,
+			);
+
+			$sitemap = $this->sitemap_with_pages( array( 10 => array( $this->video( 1, array( 'description' => '' ) ) ) ) );
+			$xml     = Video_Sitemap::build_urlset_xml( $sitemap->get_url_entries( 1 ) );
+		} finally {
+			$GLOBALS['shortcode_tags'] = $saved;
+		}
+
+		$xpath        = $this->parse( $xml );
+		$descriptions = array();
+		$count        = $xpath->query( '//video:description' )->length;
+		for ( $position = 1; $position <= $count; $position++ ) {
+			$descriptions[] = $xpath->evaluate( "string(//video:description[{$position}])" );
+		}
+
+		return $descriptions;
+	}
+
+	public function test_wpbakery_page_does_not_leak_shortcode_text_into_the_description() {
+		$descriptions = $this->sitemap_descriptions_for_page(
+			'[vc_row][vc_column][vc_column_text]Learn to brew filter coffee at home, step by step.[/vc_column_text][godam_video id="265"][/vc_column][/vc_row]',
+			array( 'gallery', 'godam_video' )
+		);
+
+		// Nothing is left of the page text, so the sitemap uses the title, as it does when the builder is active.
+		$this->assertSame( array( 'Video 1' ), $descriptions );
+	}
+
+	public function test_page_text_outside_the_builder_shortcodes_is_used_as_the_description() {
+		$descriptions = $this->sitemap_descriptions_for_page(
+			'Learn to brew filter coffee at home. [vc_row][vc_column][godam_video id="265"][/vc_column][/vc_row]',
+			array( 'gallery', 'godam_video' )
+		);
+
+		$this->assertSame( array( 'Learn to brew filter coffee at home.' ), $descriptions );
+	}
+
 	public function test_missing_thumbnail_falls_back_to_featured_image() {
 		$GLOBALS['rtgodam_stub']['featured_image'][10] = 'https://example.test/featured.jpg';
 
