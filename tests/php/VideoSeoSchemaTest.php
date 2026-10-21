@@ -328,18 +328,86 @@ class VideoSeoSchemaTest extends TestCase {
 		$this->assertSame( 'Plain page text with no shortcodes.', $this->page_description( '<p>Plain page text with no shortcodes.</p>' ) );
 	}
 
-	public function test_page_fallback_survives_a_page_full_of_distinct_bracketed_words() {
+	public function test_page_fallback_leaves_ordinary_bracketed_text_alone() {
 		$this->register_shortcodes( array( 'gallery' ) );
 
+		$text = 'He said [sic] hello, see [1] and [citation needed], [b]bold[/b] and a[0].';
+
+		$this->assertSame( $text, $this->page_description( $text ) );
+	}
+
+	public function test_page_fallback_removes_a_builder_tag_with_a_hyphen_in_its_name() {
+		$this->register_shortcodes( array( 'gallery' ) );
+
+		$this->assertSame( 'Hello world.', $this->page_description( 'Hello [contact-form-7 id="1"]world.' ) );
+	}
+
+	public function test_page_fallback_leaves_a_tag_another_filter_took_off_the_strip_list() {
+		$this->register_shortcodes( array( 'gallery', 'my_plugin_tag' ) );
+		add_filter(
+			'strip_shortcodes_tagnames',
+			static function ( $tags ) {
+				return array_diff( $tags, array( 'my_plugin_tag' ) );
+			},
+			5
+		);
+
+		$this->assertSame( 'See [my_plugin_tag id="1"] done.', $this->page_description( 'See [my_plugin_tag id="1"] done.' ) );
+	}
+
+	public function test_page_fallback_survives_a_page_full_of_distinct_builder_style_tags() {
+		$this->register_shortcodes( array( 'gallery' ) );
+
+		// Far more names than fit in one pattern: core's regex fails to compile past a few thousand.
 		$content = 'Start. ';
-		for ( $i = 0; $i < 3000; $i++ ) {
-			$content .= '[word' . $i . '] ';
+		for ( $i = 0; $i < 20000; $i++ ) {
+			$content .= '[tag_' . $i . '] ';
 		}
 
 		$description = $this->page_description( $content );
 
 		$this->assertStringStartsWith( 'Start.', $description );
 		$this->assertLessThanOrEqual( Seo::DESCRIPTION_MAX_LENGTH, mb_strlen( $description ) );
+	}
+
+	public function test_page_fallback_survives_a_very_long_tag_name() {
+		$this->register_shortcodes( array( 'gallery' ) );
+
+		// A name this long would make the pattern too large for PCRE and the whole description empty.
+		$content = 'Start. [long_' . str_repeat( 'x', 70000 ) . '] End.';
+
+		$description = $this->page_description( $content );
+
+		$this->assertStringStartsWith( 'Start.', $description );
+	}
+
+	public function test_page_fallback_does_not_leave_its_filter_registered() {
+		$this->register_shortcodes( array( 'gallery' ) );
+
+		$this->page_description( '[vc_row]Text.[/vc_row]' );
+
+		$this->assertEmpty( array_filter( $GLOBALS['rtgodam_hooks']['strip_shortcodes_tagnames'] ?? array() ) );
+	}
+
+	public function test_page_fallback_does_not_leave_its_filter_registered_when_stripping_throws() {
+		$this->register_shortcodes( array( 'gallery' ) );
+		add_filter(
+			'strip_shortcodes_tagnames',
+			static function () {
+				throw new \RuntimeException( 'another plugin failed' );
+			},
+			20
+		);
+
+		try {
+			$this->page_description( '[vc_row]Text.[/vc_row]' );
+			$this->fail( 'The exception from the other filter should have reached the caller.' );
+		} catch ( \RuntimeException $e ) {
+			$this->assertSame( 'another plugin failed', $e->getMessage() );
+		}
+
+		// Only the throwing callback (priority 20) is left; the one this fix added (priority 10) is gone.
+		$this->assertEmpty( $GLOBALS['rtgodam_hooks']['strip_shortcodes_tagnames'][10] ?? array() );
 	}
 
 	public function test_page_text_cannot_close_the_json_ld_script_tag() {
