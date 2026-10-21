@@ -208,6 +208,12 @@
 			&__info {
 				padding: 0 16px 16px 16px;
 			}
+
+			// Show the full title once stacked — there is room for it, and the
+			// side-by-side ellipsis was what truncated it in narrow placements.
+			&__title {
+				white-space: normal;
+			}
 		}
 	}
 }

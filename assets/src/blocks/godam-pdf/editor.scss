@@ -240,6 +240,11 @@
 	// ── Card view ────────────────────────────────────────────────────────────
 	.godam-pdf-preview--card {
 		width: 100%;
+		// Query container so the card stacks based on the width the block is given
+		// by its parent (column, grid cell, flex item) rather than the viewport,
+		// mirroring the front end so the editor preview matches the rendered output.
+		container-type: inline-size;
+		container-name: godam-pdf-card;
 	}
 
 	.godam-pdf-card {
@@ -262,10 +267,6 @@
 				object-fit: cover;
 				display: block;
 			}
-
-			@media ( max-width: 480px ) {
-				border-radius: 10px 10px 0 0;
-			}
 		}
 
 		&__cover-placeholder {
@@ -287,10 +288,6 @@
 		&__info {
 			flex: 1;
 			min-width: 0;
-
-			@media ( max-width: 480px ) {
-				padding: 0 16px 16px 16px;
-			}
 		}
 
 		&__title {
@@ -301,10 +298,6 @@
 			overflow: hidden;
 			text-overflow: ellipsis;
 			color: #1e1e1e;
-
-			@media ( max-width: 480px ) {
-				white-space: normal;
-			}
 		}
 
 		&__description {
@@ -321,6 +314,28 @@
 			font-size: 12px;
 			color: #9ca3af;
 			margin: 0;
+		}
+
+		// Stack vertically when the card's own container is narrow, regardless of
+		// the viewport width (e.g. the card placed in a narrow column on desktop).
+		@container godam-pdf-card ( max-width: 480px ) {
+			flex-direction: column;
+			align-items: flex-start;
+
+			&__cover {
+				width: 100%;
+				height: 250px;
+				flex: none;
+				border-radius: 10px 10px 0 0;
+			}
+
+			&__info {
+				padding: 0 16px 16px 16px;
+			}
+
+			&__title {
+				white-space: normal;
+			}
 		}
 	}
 
