@@ -36,6 +36,7 @@ use RTGODAM\Inc\REST_API\Hubspot_Forms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Onboarding;
 use RTGODAM\Inc\REST_API\Marketo_Integration;
+use RTGODAM\Inc\REST_API\Hubspot_Integration;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
 use RTGODAM\Inc\REST_API\Video_Editor;
@@ -133,6 +134,9 @@ class Plugin {
 		// Marketo integration (settings fields + form-layer support).
 		Marketo::get_instance();
 
+		// HubSpot integration (settings fields + form-layer support).
+		Hubspot::get_instance();
+
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 
@@ -195,6 +199,7 @@ class Plugin {
 		Settings::get_instance();
 		Onboarding::get_instance();
 		Marketo_Integration::get_instance();
+		Hubspot_Integration::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();
 		Video_Editor::get_instance();

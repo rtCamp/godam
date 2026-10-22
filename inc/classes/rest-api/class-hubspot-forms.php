@@ -17,10 +17,15 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Hubspot;
+use RTGODAM\Inc\Traits\Central_Client;
+
 /**
  * Class Hubspot_Forms
  */
 class Hubspot_Forms extends Base {
+
+	use Central_Client;
 
 	/**
 	 * HubSpot marketing forms endpoint (v3).
@@ -60,20 +65,13 @@ class Hubspot_Forms extends Base {
 	/**
 	 * Whether the HubSpot (leadin) plugin is active and connected to an account.
 	 *
-	 * Mirrors leadin's own Connection::is_connected(): a portal ID and a refresh
-	 * token must both be present. Read from options to avoid coupling to leadin's
-	 * classes.
+	 * Delegates to {@see Hubspot::is_leadin_connected()} so the "is leadin
+	 * connected" check lives in one place.
 	 *
 	 * @return bool
 	 */
 	private function is_hubspot_connected() {
-		if ( ! function_exists( 'is_plugin_active' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-
-		return is_plugin_active( 'leadin/leadin.php' )
-			&& ! empty( get_option( 'leadin_portalId', '' ) )
-			&& ! empty( get_option( 'leadin_refresh_token', '' ) );
+		return Hubspot::is_leadin_connected();
 	}
 
 	/**
@@ -103,14 +101,75 @@ class Hubspot_Forms extends Base {
 	}
 
 	/**
-	 * Get all forms from the connected HubSpot account.
+	 * Get the HubSpot forms for the editor's form picker, from whichever source
+	 * the admin has chosen and connected.
+	 *
+	 * One route, one response shape (`[{ id, title }]` where `id` is the HubSpot
+	 * form GUID) regardless of source, so the editor uses a single query:
+	 *  - `central`: list through GoDAM Central (`get_forms?provider=hubspot`). An
+	 *    empty list is returned when Central cannot list them (e.g. a forms-only
+	 *    connection) so the editor falls back to a typed form-ID field.
+	 *  - `leadin`: list through the leadin plugin's HubSpot account.
+	 *
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_hubspot_forms() {
+		switch ( Hubspot::get_active_source() ) {
+			case 'central':
+				return $this->get_central_forms();
+			case 'leadin':
+				return $this->get_leadin_forms();
+			default:
+				return new \WP_Error( 'hubspot_not_connected', __( 'HubSpot is not connected. Connect it in Settings → Integrations, or activate and connect the HubSpot plugin.', 'godam' ), array( 'status' => 404 ) );
+		}
+	}
+
+	/**
+	 * List HubSpot forms through GoDAM Central.
+	 *
+	 * Central returns `{ id, name }`; normalise it to the editor's `{ id, title }`
+	 * shape. When Central cannot list forms (a forms-only connection, or any
+	 * error) return an empty list so the editor shows a typed form-ID field
+	 * instead of failing.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	private function get_central_forms() {
+		$result = $this->call_central(
+			'godam_core.api.map_wordpress.get_forms',
+			array( 'provider' => 'hubspot' )
+		);
+
+		if ( is_wp_error( $result ) ) {
+			// Let the editor fall back to a typed form-ID field rather than error.
+			return rest_ensure_response( array() );
+		}
+
+		$forms = array();
+
+		foreach ( (array) ( $result['forms'] ?? array() ) as $form ) {
+			if ( empty( $form['id'] ) ) {
+				continue;
+			}
+
+			$forms[] = array(
+				'id'    => sanitize_text_field( $form['id'] ),
+				'title' => sanitize_text_field( $form['name'] ?? $form['id'] ),
+			);
+		}
+
+		return rest_ensure_response( $forms );
+	}
+
+	/**
+	 * List all forms from the HubSpot account connected through the leadin plugin.
 	 *
 	 * Returns a list of `{ id, title }` where `id` is the HubSpot form ID (GUID)
 	 * used by the embed, matching the shape the editor's form picker expects.
 	 *
 	 * @return \WP_REST_Response|\WP_Error
 	 */
-	public function get_hubspot_forms() {
+	private function get_leadin_forms() {
 		if ( ! $this->is_hubspot_connected() ) {
 			return new \WP_Error( 'hubspot_not_connected', __( 'The HubSpot plugin is not active or not connected to an account.', 'godam' ), array( 'status' => 404 ) );
 		}

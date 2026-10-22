@@ -7,6 +7,7 @@ import clsx from 'clsx';
 /**
  * WordPress dependencies
  */
+import { Notice, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useCallback, useEffect, useState } from '@wordpress/element';
 
@@ -14,6 +15,7 @@ import { useCallback, useEffect, useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
+import { VeSection, VeTextInput } from '../controls';
 import FormFields from './FormFields';
 import FormPreview from './FormPreview';
 
@@ -58,9 +60,14 @@ const loadHubSpotScript = () =>
  *
  * The form is picked from the connected HubSpot account's form list (fetched via
  * `godam/v1/hubspot-forms`, same as the other providers) and previewed live with
- * HubSpot's own embed script. The portal ID and region come from the connected
- * "HubSpot All-In-One Marketing" (leadin) plugin via `window.videoData`, never
- * from the layer, so the preview matches what the frontend renders.
+ * HubSpot's own embed script. The portal ID and region come from whichever
+ * source is active (GoDAM Central or the "HubSpot All-In-One Marketing" / leadin
+ * plugin) via `window.videoData`, never from the layer, so the preview matches
+ * what the frontend renders.
+ *
+ * The form is normally picked from the connected account's form list. When no
+ * list is available (an account that returns none, or a Central connection that
+ * cannot list forms) the marketer types the HubSpot form ID instead.
  *
  * @param {Object} props         Component props.
  * @param {string} props.layerID The ID of the layer being edited.
@@ -72,8 +79,11 @@ const HubSpotForm = ( { layerID } ) => {
 	const hubspotForms = useSelector( ( state ) => state.videoReducer.hubspotForms ) || [];
 
 	const isActive = Boolean( window?.videoData?.hubspotActive );
+	const isEnabled = window?.videoData?.hubspotEnabled !== false;
 	const portalId = window?.videoData?.hubspotPortalId || '';
 	const region = window?.videoData?.hubspotHublet || 'na1';
+	const source = window?.videoData?.hubspotSource || '';
+	const settingsUrl = `${ window?.videoData?.adminUrl ?? '/wp-admin/' }admin.php?page=rtgodam_settings`;
 
 	const formId = layer?.hubspot_id || '';
 	const containerId = `godam-hubspot-form-${ layer.id }`;
@@ -149,14 +159,59 @@ const HubSpotForm = ( { layerID } ) => {
 
 	return (
 		<>
-			<FormFields
-				isActive={ isActive }
-				pluginLabel={ __( 'HubSpot', 'godam' ) }
-				formID={ formId }
-				forms={ forms }
-				onSelectForm={ changeFormID }
-				selectorClassName="hubspot-form-selector"
-			/>
+			{ isActive && forms.length > 0 ? (
+				<FormFields
+					isActive={ isActive }
+					pluginLabel={ __( 'HubSpot', 'godam' ) }
+					formID={ formId }
+					forms={ forms }
+					onSelectForm={ changeFormID }
+					selectorClassName="hubspot-form-selector"
+				/>
+			) : (
+				// Shown when the form cannot be configured normally: the integration
+				// is off or not connected, or there is no form list to pick from (an
+				// account with no forms, or a Central connection that cannot list
+				// them). Either way, type the HubSpot form ID.
+				<VeSection title={ __( 'Form', 'godam' ) }>
+					{ ! isActive && (
+						<Notice className="mb-4" status="warning" isDismissible={ false }>
+							{ ! isEnabled && (
+								<>
+									{ __( 'The HubSpot integration is turned off, so this form will not show on your videos. Turn it on in', 'godam' ) }
+									{ ' ' }
+									<ExternalLink href={ settingsUrl }>
+										{ __( 'Settings → Integrations → HubSpot', 'godam' ) }
+									</ExternalLink>
+									{ '.' }
+								</>
+							) }
+							{ isEnabled && 'leadin' === source && (
+								__( 'Activate and connect the HubSpot plugin to use this form.', 'godam' )
+							) }
+							{ isEnabled && 'leadin' !== source && (
+								<>
+									{ __( 'HubSpot is not connected, so this form will not show on your videos. Connect HubSpot in', 'godam' ) }
+									{ ' ' }
+									<ExternalLink href={ settingsUrl }>
+										{ __( 'Settings → Integrations → HubSpot', 'godam' ) }
+									</ExternalLink>
+									{ '.' }
+								</>
+							) }
+						</Notice>
+					) }
+
+					<VeTextInput
+						label={ __( 'HubSpot Form ID', 'godam' ) }
+						help={ __( 'The HubSpot form GUID, e.g. 1a2b3c4d-5e6f-7890-abcd-ef1234567890.', 'godam' ) }
+						value={ formId }
+						onChange={ changeFormID }
+						placeholder={ __( 'e.g. 1a2b3c4d-5e6f-7890-abcd-ef1234567890', 'godam' ) }
+						disabled={ ! isEnabled }
+					/>
+				</VeSection>
+			) }
 
 			<FormPreview
 				bgColor={ layer.bg_color }

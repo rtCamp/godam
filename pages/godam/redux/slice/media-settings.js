@@ -53,6 +53,10 @@ const initialState = {
 			munchkinId: '',
 			recaptchaKey: '',
 		},
+		hubspot: {
+			enable: true,
+			source: 'central',
+		},
 	},
 	isChanged: false,
 };

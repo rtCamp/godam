@@ -722,6 +722,7 @@ class Pages {
 					// secret (the frontend embed exposes them too). `hubspotSource`
 					// lets the editor tailor its copy (central / leadin / empty).
 					'hubspotActive'      => \RTGODAM\Inc\Hubspot::is_configured(),
+					'hubspotEnabled'     => \RTGODAM\Inc\Hubspot::is_enabled(),
 					'hubspotPortalId'    => \RTGODAM\Inc\Hubspot::get_effective_portal_id(),
 					'hubspotHublet'      => \RTGODAM\Inc\Hubspot::get_effective_region(),
 					'hubspotSource'      => \RTGODAM\Inc\Hubspot::get_active_source(),
