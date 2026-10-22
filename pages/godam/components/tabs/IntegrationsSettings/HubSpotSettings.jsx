@@ -49,6 +49,11 @@ const POLL_INTERVAL_MS = 4000;
 const POLL_TIMEOUT_MS = 3 * 60 * 1000;
 
 /**
+ * GoDAM support, linked from admin-facing error notices.
+ */
+const SUPPORT_URL = 'https://app.godam.io/helpdesk/my-tickets';
+
+/**
  * Small coloured status badge.
  *
  * @param {Object} props       Props.
@@ -100,7 +105,7 @@ const SOURCE_OPTIONS = [
 	{
 		value: 'central',
 		title: __( 'GoDAM Central', 'godam' ),
-		description: __( 'Connect HubSpot through GoDAM. Recommended because it also enables video-view tracking on hubSpot dashboard.', 'godam' ),
+		description: __( 'Connect HubSpot through GoDAM. Recommended because it also enables video-view tracking on your HubSpot dashboard.', 'godam' ),
 		recommended: true,
 	},
 	{
@@ -258,8 +263,12 @@ const HubSpotSettings = ( { settings = {}, onSettingChange } ) => {
 		setConnecting( false );
 	}, [] );
 
-	const loadStatus = useCallback( async () => {
-		setLoading( true );
+	// `silent` poll calls skip the loading spinner, so a background re-check does
+	// not blank the whole panel every few seconds.
+	const loadStatus = useCallback( async ( { silent = false } = {} ) => {
+		if ( ! silent ) {
+			setLoading( true );
+		}
 		setStatusError( '' );
 		try {
 			const res = await apiFetch( { path: '/godam/v1/hubspot/status' } );
@@ -271,7 +280,9 @@ const HubSpotSettings = ( { settings = {}, onSettingChange } ) => {
 			);
 			return null;
 		} finally {
-			setLoading( false );
+			if ( ! silent ) {
+				setLoading( false );
+			}
 		}
 	}, [] );
 
@@ -279,6 +290,18 @@ const HubSpotSettings = ( { settings = {}, onSettingChange } ) => {
 		if ( enabled ) {
 			loadStatus();
 		}
+	}, [ enabled, loadStatus ] );
+
+	// Re-check when the admin returns to this tab, so finishing the connect on
+	// GoDAM after the polling window closed still updates without a reload.
+	useEffect( () => {
+		const onFocus = () => {
+			if ( enabled ) {
+				loadStatus( { silent: true } );
+			}
+		};
+		window.addEventListener( 'focus', onFocus );
+		return () => window.removeEventListener( 'focus', onFocus );
 	}, [ enabled, loadStatus ] );
 
 	// Stop polling when the component unmounts.
@@ -313,7 +336,7 @@ const HubSpotSettings = ( { settings = {}, onSettingChange } ) => {
 				clearPoll();
 				return;
 			}
-			const res = await loadStatus();
+			const res = await loadStatus( { silent: true } );
 			if ( res?.hubspot?.state === 'connected' || res?.hubspot?.state === 'needs_attention' ) {
 				clearPoll();
 			}
@@ -363,6 +386,10 @@ const HubSpotSettings = ( { settings = {}, onSettingChange } ) => {
 			{ statusError && (
 				<Notice status="error" isDismissible={ false } className="mb-4">
 					{ statusError }
+					{ ' ' }
+					<ExternalLink href={ SUPPORT_URL }>
+						{ __( 'Contact support', 'godam' ) }
+					</ExternalLink>
 				</Notice>
 			) }
 

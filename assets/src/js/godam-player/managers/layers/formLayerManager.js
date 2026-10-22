@@ -461,10 +461,13 @@ export default class FormLayerManager {
 			'.contact-form-success',
 			'.forminator-success.forminator-show',
 			'.everest-forms-notice--success',
-			// HubSpot (leadin) embedded forms swap the form for this node on a
-			// successful inline submission.
+			// HubSpot: `.submitted-message` / `.hs-form__submitted-message` cover a
+			// non-iframe (Legacy/raw) form; `.godam-hubspot-submitted` is set by
+			// hubspot-form.js onFormSubmitted for the usual iframe-rendered form,
+			// whose success node lives inside the iframe and cannot be queried.
 			'.submitted-message',
 			'.hs-form__submitted-message',
+			'.godam-hubspot-submitted',
 			// Marketo: inserted by marketo-form.js onSuccess (stays on the page).
 			'.godam-marketo-success',
 		];

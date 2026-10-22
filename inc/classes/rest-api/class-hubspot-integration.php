@@ -2,23 +2,23 @@
 /**
  * REST API for the HubSpot integration tab.
  *
- * Admin-only WordPress routes under `godam/v1/hubspot/*` that proxy to GoDAM
- * Central's WordPress MAP API (`godam_core.api.map_wordpress.*`). GoDAM Central
- * is the source of truth for a Central HubSpot connection; these routes let a
- * WordPress admin read its status and list its forms without ever handling
- * Central's stored HubSpot credentials.
+ * Admin-only `GET godam/v1/hubspot/status` that proxies GoDAM Central's
+ * WordPress MAP API (`godam_core.api.map_wordpress.get_status`). GoDAM Central
+ * is the source of truth for a Central HubSpot connection; this route lets a
+ * WordPress admin read its status without ever handling Central's stored HubSpot
+ * credentials.
  *
  * Unlike Marketo, HubSpot cannot be connected from the plugin: connecting is an
  * OAuth flow done on Central. So there are no connect/test routes here — the tab
  * links out to Central to connect, and polls `get_status` until it reports the
- * connection. Listing forms for the leadin source is handled separately by
+ * connection. The editor's form list (for either source) is served separately by
  * {@see Hubspot_Forms}.
  *
  * The browser never calls Central directly: the WP→Central leg is server to
  * server, authenticated by the licence key (`X-API-KEY`) alone — the same
  * credential the plugin already uses for `verify_api_key` and `track`.
  *
- * @since 2.5.0
+ * @since n.e.x.t
  * @package GoDAM
  */
 
@@ -34,7 +34,7 @@ use WP_REST_Response;
 /**
  * Class Hubspot_Integration
  *
- * @since 2.5.0
+ * @since n.e.x.t
  */
 class Hubspot_Integration extends Base {
 
@@ -67,15 +67,6 @@ class Hubspot_Integration extends Base {
 					'permission_callback' => $manage,
 				),
 			),
-			array(
-				'namespace' => $this->namespace,
-				'route'     => '/' . $this->rest_base . '/forms',
-				'args'      => array(
-					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_forms' ),
-					'permission_callback' => $manage,
-				),
-			),
 		);
 	}
 
@@ -103,6 +94,18 @@ class Hubspot_Integration extends Base {
 
 		$result['live'] = true;
 
+		// The editor, the form picker and the player read the portal ID from the
+		// cached verify reply (`map.hubspot`), which the hourly refresh updates.
+		// HubSpot has no connect route to force that refresh after an OAuth connect
+		// on Central, so do it here when Central's live answer differs from the
+		// cache (newly connected, disconnected, or a different portal). Central
+		// clears its own `map` cache on any connection change, so one verify picks
+		// up the new portal, and it only costs a call when something changed.
+		$live_portal = (string) ( $result['hubspot']['portal_id'] ?? '' );
+		if ( $live_portal !== Hubspot::get_central_portal_id() && function_exists( 'rtgodam_get_user_data' ) ) {
+			rtgodam_get_user_data( false, HOUR_IN_SECONDS, true );
+		}
+
 		return new WP_REST_Response( $this->with_source_context( $result ), 200 );
 	}
 
@@ -125,25 +128,6 @@ class Hubspot_Integration extends Base {
 		);
 
 		return $status;
-	}
-
-	/**
-	 * GET /hubspot/forms — the HubSpot account's forms for the layer picker.
-	 *
-	 * @param WP_REST_Request $request Request.
-	 * @return WP_REST_Response|\WP_Error
-	 */
-	public function get_forms( WP_REST_Request $request ) {
-		$result = $this->call_central(
-			'godam_core.api.map_wordpress.get_forms',
-			array( 'provider' => 'hubspot' )
-		);
-
-		if ( is_wp_error( $result ) ) {
-			return $result;
-		}
-
-		return new WP_REST_Response( $result, 200 );
 	}
 
 	/**

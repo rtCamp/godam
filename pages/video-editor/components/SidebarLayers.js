@@ -126,7 +126,17 @@ export const layerTypes = [
 				layerText: __( 'HubSpot', 'godam' ),
 				icon: HubSpotIcon,
 				isActive: window?.videoData?.hubspotActive ?? false,
-				tooltipMessage: __( 'Connect HubSpot in Settings → Integrations, or activate the HubSpot plugin, to use this form', 'godam' ),
+				// Say what actually unblocks the layer: turning the integration on,
+				// or connecting the source the admin chose (GoDAM Central by default,
+				// where activating the HubSpot plugin alone is not enough).
+				tooltipMessage: ( () => {
+					if ( window?.videoData?.hubspotEnabled === false ) {
+						return __( 'Turn on HubSpot in Settings → Integrations → HubSpot to use this form', 'godam' );
+					}
+					return 'leadin' === ( window?.videoData?.hubspotChosenSource ?? 'central' )
+						? __( 'Activate and connect the HubSpot plugin to use this form', 'godam' )
+						: __( 'Connect HubSpot in Settings → Integrations → HubSpot to use this form', 'godam' );
+				} )(),
 			},
 		},
 	},

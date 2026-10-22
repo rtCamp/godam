@@ -60,6 +60,14 @@
 				formId,
 				region,
 				target: '#' + target.id,
+				// HubSpot draws the form (and its `.submitted-message`) inside an
+				// iframe, which `hasConfirmationMessage()` cannot see into. Mark the
+				// container from this callback so the player shows "Continue" and
+				// sends the `submitted` event (`.godam-hubspot-submitted` is in the
+				// FormLayerManager confirmation selectors).
+				onFormSubmitted() {
+					container.classList.add( 'godam-hubspot-submitted' );
+				},
 			} );
 		} );
 	}

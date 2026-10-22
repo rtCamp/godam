@@ -725,7 +725,11 @@ class Pages {
 					'hubspotEnabled'     => \RTGODAM\Inc\Hubspot::is_enabled(),
 					'hubspotPortalId'    => \RTGODAM\Inc\Hubspot::get_effective_portal_id(),
 					'hubspotHublet'      => \RTGODAM\Inc\Hubspot::get_effective_region(),
+					// Active source is '' when nothing is connected; the chosen source
+					// (what the admin picked) is what the editor copy needs to tell them
+					// how to connect.
 					'hubspotSource'      => \RTGODAM\Inc\Hubspot::get_active_source(),
+					'hubspotChosenSource' => \RTGODAM\Inc\Hubspot::get_chosen_source(),
 					// O9: Woo empty-state copy on the connected Video Editor.
 					'wooActive'          => class_exists( 'WooCommerce' ),
 					// Woo product-guide entry: only when GoDAM-for-Woo ships the

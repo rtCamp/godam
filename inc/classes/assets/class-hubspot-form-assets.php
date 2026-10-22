@@ -8,7 +8,7 @@
  * the player template (see inc/templates/godam-player.php) only when a Central
  * HubSpot layer is actually rendered — mirroring Marketo_Form_Assets.
  *
- * @since 2.5.0
+ * @since n.e.x.t
  * @package GoDAM
  */
 
@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * HubSpot Form Assets class.
  *
- * @since 2.5.0
+ * @since n.e.x.t
  */
 class Hubspot_Form_Assets {
 

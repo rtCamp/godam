@@ -82,8 +82,11 @@ const HubSpotForm = ( { layerID } ) => {
 	const isEnabled = window?.videoData?.hubspotEnabled !== false;
 	const portalId = window?.videoData?.hubspotPortalId || '';
 	const region = window?.videoData?.hubspotHublet || 'na1';
-	const source = window?.videoData?.hubspotSource || '';
-	const settingsUrl = `${ window?.videoData?.adminUrl ?? '/wp-admin/' }admin.php?page=rtgodam_settings`;
+	// The chosen source (what the admin picked) stays set even when nothing is
+	// connected, so the "how to connect" copy can be specific — unlike the active
+	// source, which is '' until a source is actually connected.
+	const chosenSource = window?.videoData?.hubspotChosenSource || 'central';
+	const settingsUrl = `${ window?.videoData?.adminUrl ?? '/wp-admin/' }admin.php?page=rtgodam_settings&settings_tab=integrations-settings&integration_tab=hubspot`;
 
 	const formId = layer?.hubspot_id || '';
 	const containerId = `godam-hubspot-form-${ layer.id }`;
@@ -186,10 +189,10 @@ const HubSpotForm = ( { layerID } ) => {
 									{ '.' }
 								</>
 							) }
-							{ isEnabled && 'leadin' === source && (
+							{ isEnabled && 'leadin' === chosenSource && (
 								__( 'Activate and connect the HubSpot plugin to use this form.', 'godam' )
 							) }
-							{ isEnabled && 'leadin' !== source && (
+							{ isEnabled && 'leadin' !== chosenSource && (
 								<>
 									{ __( 'HubSpot is not connected, so this form will not show on your videos. Connect HubSpot in', 'godam' ) }
 									{ ' ' }

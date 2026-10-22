@@ -1099,7 +1099,15 @@ do_action( 'rtgodam_after_attachment_lookup' );
 											</div>
 										</div>
 										<?php
-									elseif ( 'hubspot' === $godam_form_type && ! empty( $godam_layer['hubspot_id'] ) && Hubspot::is_configured() ) :
+									elseif (
+										'hubspot' === $godam_form_type
+										&& ! empty( $godam_layer['hubspot_id'] )
+										// A HubSpot form GUID, or the numeric id the HubSpot plugin also
+										// accepts. Rejects anything else, including a `]` that would close
+										// the [hubspot] shortcode early (esc_attr does not escape it).
+										&& preg_match( '/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|\d+)$/i', (string) $godam_layer['hubspot_id'] )
+										&& Hubspot::is_configured()
+									) :
 										// HubSpot supports two connection sources; the admin picks one in
 										// Settings → Integrations → HubSpot. Only the active (and actually
 										// connected) source renders, so a disconnected or disabled HubSpot

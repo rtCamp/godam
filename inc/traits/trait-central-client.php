@@ -13,7 +13,7 @@
  * The licence key never reaches the browser: these calls run on the WordPress
  * server only.
  *
- * @since 2.5.0
+ * @since n.e.x.t
  * @package GoDAM
  */
 
@@ -27,7 +27,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Trait Central_Client
  *
- * @since 2.5.0
+ * @since n.e.x.t
  */
 trait Central_Client {
 
