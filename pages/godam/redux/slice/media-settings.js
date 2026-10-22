@@ -49,9 +49,6 @@ const initialState = {
 		},
 		marketo: {
 			enable: true,
-			podId: '',
-			munchkinId: '',
-			recaptchaKey: '',
 		},
 		hubspot: {
 			enable: true,

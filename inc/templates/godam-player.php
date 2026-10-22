@@ -1089,7 +1089,13 @@ do_action( 'rtgodam_after_attachment_lookup' );
 										?>
 										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden marketo" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
 											<div class="form-container marketo-form-container">
-												<form id="mktoForm_<?php echo esc_attr( intval( $godam_layer['marketo_id'] ) ); ?>"></form>
+												<?php
+													// Unique id per node plus the form id in a data attribute: two
+													// layers with the same Marketo form id never share a
+													// `mktoForm_<id>` element (marketo-form.js loads them one at a
+													// time). See its comment for why.
+												?>
+												<form id="godam-mkto-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" data-marketo-form-id="<?php echo esc_attr( intval( $godam_layer['marketo_id'] ) ); ?>"></form>
 											</div>
 										</div>
 										<?php

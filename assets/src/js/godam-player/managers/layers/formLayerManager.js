@@ -465,6 +465,8 @@ export default class FormLayerManager {
 			// successful inline submission.
 			'.submitted-message',
 			'.hs-form__submitted-message',
+			// Marketo: inserted by marketo-form.js onSuccess (stays on the page).
+			'.godam-marketo-success',
 		];
 
 		// Check for standard selectors
