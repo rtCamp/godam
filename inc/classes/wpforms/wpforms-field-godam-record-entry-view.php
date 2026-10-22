@@ -84,7 +84,16 @@ $godam_content_type = $godam_is_audio ? __( 'Audio', 'godam' ) : __( 'Video', 'g
 			// No need to escape here, the entire template will be returned as strings,
 			// which will be later on escaped using wp_kses_post() by WPForms before rendering the field.
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo force_balance_tags( do_shortcode( "[godam_video poster='{$godam_thumbnail_url}' src='{$godam_attachment_url}' transcoded_url='{$godam_transcoded_url}']" ) );
+			echo force_balance_tags(
+				rtgodam_render_shortcode_from_atts(
+					'godam_video',
+					array(
+						'poster'         => esc_url_raw( $godam_thumbnail_url ),
+						'src'            => esc_url_raw( $godam_attachment_url ),
+						'transcoded_url' => esc_url_raw( (string) $godam_transcoded_url ),
+					)
+				)
+			);
 		?>
 	<?php endif; ?>
 </div>
