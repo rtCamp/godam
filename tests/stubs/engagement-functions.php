@@ -41,8 +41,11 @@ if ( ! function_exists( 'wp_get_current_user' ) ) {
 		$user = $GLOBALS['rtgodam_stub']['user'] ?? array();
 
 		return (object) array(
+			'ID'           => $user['id'] ?? 0,
 			'user_email'   => $user['email'] ?? '',
 			'display_name' => $user['name'] ?? '',
+			// Like WordPress: an empty object for a visitor who is not signed in.
+			'data'         => (object) ( isset( $user['email'] ) ? array( 'user_email' => $user['email'] ) : array() ),
 		);
 	}
 }

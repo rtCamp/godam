@@ -18,6 +18,7 @@ use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Embed;
+use RTGODAM\Inc\Video_Sitemap;
 use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
 use RTGODAM\Inc\Virtual_Media_Registrar;
@@ -110,6 +111,7 @@ class Plugin {
 		Media_Usage_Tracker::get_instance();
 		Media_Usage_Backfill::get_instance();
 		Seo::get_instance();
+		Video_Sitemap::get_instance();
 		Rewrite::get_instance();
 		Video_Preview::get_instance();
 		Video_Embed::get_instance();

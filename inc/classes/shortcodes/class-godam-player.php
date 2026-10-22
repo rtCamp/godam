@@ -222,7 +222,7 @@ class GoDAM_Player {
 				// the requested video is not rendered on the page.
 				'embedBaseUrl'            => home_url( '/' ),
 				'hostPostId'              => get_the_ID() ? get_the_ID() : '',
-				'currentLoggedInUserData' => rtgodam_get_current_logged_in_user_data(),
+				'currentLoggedInUserData' => rtgodam_get_current_user_data_for_page(),
 				'loginUrl'                => apply_filters( 'rtgodam_site_login_url', wp_login_url() . '?redirect_to=' . rawurlencode( get_permalink() ) ),
 				'registrationUrl'         => apply_filters( 'rtgodam_site_registration_url', wp_registration_url() . '&redirect_to=' . rawurlencode( get_permalink() ) ),
 				'defaultAvatar'           => get_avatar_url( 0 ),

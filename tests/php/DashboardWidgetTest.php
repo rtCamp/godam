@@ -160,15 +160,15 @@ class DashboardWidgetTest extends TestCase {
 			),
 			Dashboard_Widget::group_mime_counts(
 				array(
-					'image/jpeg'         => 5,
-					'image/png'          => 2,
-					'video/mp4'          => 2,
-					'audio/mpeg'         => 1,
-					'application/pdf'    => 1,
-					'application/msword' => 2,
+					'image/jpeg'               => 5,
+					'image/png'                => 2,
+					'video/mp4'                => 2,
+					'audio/mpeg'               => 1,
+					'application/pdf'          => 1,
+					'application/msword'       => 2,
 					'application/vnd.ms-excel' => 1,
-					'application/zip'    => 1,
-					'text/html'          => -4,
+					'application/zip'          => 1,
+					'text/html'                => -4,
 				)
 			)
 		);
@@ -689,7 +689,15 @@ class DashboardWidgetTest extends TestCase {
 		);
 		$this->assertSame( 'videos', Dashboard_Widget::pick_connect_prompt( $tie )['type'] );
 
-		$this->assertSame( 'audio', Dashboard_Widget::pick_connect_prompt( array( 'audio' => 10, 'videos' => 3 ) )['type'] );
+		$this->assertSame(
+			'audio',
+			Dashboard_Widget::pick_connect_prompt(
+				array(
+					'audio'  => 10,
+					'videos' => 3,
+				) 
+			)['type'] 
+		);
 
 		$this->assertSame(
 			array(

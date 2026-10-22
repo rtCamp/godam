@@ -252,10 +252,9 @@ add_filter( 'rtgodam_enqueue_lightbox_runtime', '__return_true' );
 ## Deep Linking
 
 A `#godam-video-{id}` URL opens the video when the page loads — this is what the
-share button's "WP page link" produces. It uses the **WordPress attachment ID**,
+share button's "Page Link" produces. It uses the **WordPress attachment ID**,
 falling back to the transcoding job ID for virtual media, which has no local
-attachment. (The "GoDAM Central" and "Embed" links in the same modal are SaaS
-routes and always use the job ID.)
+attachment.
 
 Both spellings resolve, so links shared before this became the default keep
 working. An optional `?t={seconds}` query parameter seeks:
@@ -283,9 +282,9 @@ Two limits worth knowing:
   back to an attachment ID in the browser, so there is no iframe fallback on this
   path. In practice the share button only exists on a rendered player, so a link
   produced by sharing always resolves.
-- The share modal itself needs a transcoding job ID, so videos that have not been
-  transcoded have no share modal — and therefore no share link to deep-link with.
-  A hand-written `#godam-video-{attachmentID}` link still works.
+- The share modal shares the WordPress page link (`#godam-video-{attachmentID}`),
+  so it works for every rendered video regardless of transcoding status. A
+  hand-written `#godam-video-{attachmentID}` link resolves the same way.
 
 ## Player Instance Methods
 

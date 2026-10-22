@@ -736,15 +736,8 @@ function rtgodam_get_localize_array() {
 	 * Get Current User.
 	 */
 	$current_user = wp_get_current_user();
-	$email_id     = '';
 
 	$localize_array['userId'] = $current_user->ID;
-
-	if ( ! empty( (array) $current_user->data ) ) {
-
-		$email_id                  = $current_user->data->user_email;
-		$localize_array['emailId'] = $email_id;
-	}
 
 	$localize_array['siteId'] = get_current_blog_id();
 
