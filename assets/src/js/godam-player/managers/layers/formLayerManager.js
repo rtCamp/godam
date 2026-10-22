@@ -461,6 +461,8 @@ export default class FormLayerManager {
 			'.contact-form-success',
 			'.forminator-success.forminator-show',
 			'.everest-forms-notice--success',
+			// Marketo: inserted by marketo-form.js onSuccess (stays on the page).
+			'.godam-marketo-success',
 		];
 
 		// Check for standard selectors

@@ -7,7 +7,7 @@
  * template (see inc/templates/godam-player.php) only when a Marketo layer is
  * actually rendered — mirroring the Jetpack_Form_Assets precedent.
  *
- * @since 2.5.0
+ * @since n.e.x.t
  * @package GoDAM
  */
 
@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Marketo Form Assets class.
  *
- * @since 2.5.0
+ * @since n.e.x.t
  */
 class Marketo_Form_Assets {
 
@@ -88,10 +88,13 @@ class Marketo_Form_Assets {
 			'rtgodam-marketo-form',
 			'godamMarketoFormData',
 			array(
-				// Source of truth is GoDAM Central (with local override as fallback).
+				// GoDAM Central is the single source of truth for the connection.
 				'munchkinId'   => Marketo::get_munchkin_id(),
 				'recaptchaKey' => Marketo::get_recaptcha_key(),
 				'instanceHost' => $host,
+				// Shown in place of the form after a submit, so the viewer stays on
+				// the video instead of following Marketo's follow-up redirect.
+				'successText'  => __( 'Thank you! Your submission has been received.', 'godam' ),
 			)
 		);
 

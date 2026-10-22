@@ -3,15 +3,17 @@
  * Marketo integration.
  *
  * Adds a Marketo integration to GoDAM so that Marketo forms can be rendered
- * inside video layers. V1 collects the instance credentials (Pod ID, Munchkin
- * ID and an optional reCAPTCHA key) on the Settings → Integrations → Marketo
- * tab; the per-layer Marketo Form ID is entered in the video editor.
+ * inside video layers. GoDAM Central is the single source of truth for the
+ * connection: the Settings → Integrations → Marketo tab connects the instance
+ * on Central, and the account details (Munchkin ID, forms host, reCAPTCHA key)
+ * are read from the `map` block of the cached licence response. The per-layer
+ * Marketo Form ID is entered in the video editor.
  *
  * Unlike the other form integrations, Marketo is a third-party SaaS with no
  * WordPress plugin and no shortcode: the form is embedded on the frontend via
  * Marketo's forms2 library (see Marketo_Form_Assets).
  *
- * @since 2.5.0
+ * @since n.e.x.t
  * @package GoDAM
  */
 
@@ -24,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Marketo
  *
- * @since 2.5.0
+ * @since n.e.x.t
  */
 class Marketo {
 
@@ -53,11 +55,10 @@ class Marketo {
 	 * @return array
 	 */
 	public static function get_default_settings() {
+		// Only the site-level on/off switch is stored. The account details come
+		// from GoDAM Central (the `map` block), never from local fields.
 		return array(
-			'enable'       => true,
-			'podId'        => '',
-			'munchkinId'   => '',
-			'recaptchaKey' => '',
+			'enable' => true,
 		);
 	}
 
@@ -119,10 +120,7 @@ class Marketo {
 			: self::get_default_settings();
 
 		$integrations['marketo'] = array(
-			'enable'       => rest_sanitize_boolean( $incoming['enable'] ?? $defaults['enable'] ),
-			'podId'        => sanitize_text_field( $incoming['podId'] ?? $defaults['podId'] ),
-			'munchkinId'   => sanitize_text_field( $incoming['munchkinId'] ?? $defaults['munchkinId'] ),
-			'recaptchaKey' => sanitize_text_field( $incoming['recaptchaKey'] ?? $defaults['recaptchaKey'] ),
+			'enable' => rest_sanitize_boolean( $incoming['enable'] ?? $defaults['enable'] ),
 		);
 
 		return $integrations;
@@ -132,10 +130,7 @@ class Marketo {
 	 * Get the saved Marketo settings, merged over defaults.
 	 *
 	 * @return array {
-	 *     @type bool   $enable       Whether the integration is enabled.
-	 *     @type string $podId        Marketo Pod / instance ID.
-	 *     @type string $munchkinId   Marketo Munchkin (account) ID.
-	 *     @type string $recaptchaKey Optional reCAPTCHA site key.
+	 *     @type bool $enable Whether the integration is enabled.
 	 * }
 	 */
 	public static function get_settings() {

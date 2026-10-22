@@ -51,8 +51,8 @@ function loadForms2Library( instanceHost ) {
  * Marketo form layer settings + live form preview.
  *
  * Marketo has no WordPress plugin and no form-list API, so the marketer types
- * the Marketo Form ID directly. The Pod ID and Munchkin ID come from
- * Settings → Integrations → Marketo (exposed via `window.videoData.marketoConfig`).
+ * the Marketo Form ID directly. The Munchkin ID and forms host come from the
+ * GoDAM Central connection (exposed via `window.videoData.marketoConfig`).
  * When a valid ID is entered the form is rendered live over the video using
  * Marketo's forms2 library — the same path used on the frontend.
  *
@@ -70,7 +70,7 @@ const Marketo = ( { layerID } ) => {
 	// frontend always target the same Marketo instance, pod or mktoweb domain.
 	const instanceHost = marketoConfig.instanceHost ?? '';
 	const munchkinId = marketoConfig.munchkinId ?? '';
-	const settingsUrl = `${ window?.videoData?.adminUrl ?? '/wp-admin/' }admin.php?page=rtgodam_settings`;
+	const settingsUrl = `${ window?.videoData?.adminUrl ?? '/wp-admin/' }admin.php?page=rtgodam_settings&settings_tab=integrations-settings&integration_tab=marketo`;
 
 	const formId = layer?.marketo_id ?? '';
 
