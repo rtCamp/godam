@@ -52,8 +52,7 @@ class Marketo_Form_Assets {
 			return;
 		}
 
-		$settings = Marketo::get_settings();
-		$host     = Marketo::get_instance_host();
+		$host = Marketo::get_instance_host();
 
 		// Marketo's forms2 library, served from the account's instance host.
 		if ( ! wp_script_is( 'rtgodam-marketo-forms2', 'registered' ) ) {
@@ -89,9 +88,9 @@ class Marketo_Form_Assets {
 			'rtgodam-marketo-form',
 			'godamMarketoFormData',
 			array(
-				'podId'        => $settings['podId'],
-				'munchkinId'   => $settings['munchkinId'],
-				'recaptchaKey' => $settings['recaptchaKey'],
+				// Source of truth is GoDAM Central (with local override as fallback).
+				'munchkinId'   => Marketo::get_munchkin_id(),
+				'recaptchaKey' => Marketo::get_recaptcha_key(),
 				'instanceHost' => $host,
 			)
 		);

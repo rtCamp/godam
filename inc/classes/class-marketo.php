@@ -38,6 +38,16 @@ class Marketo {
 	const SETTINGS_OPTION = 'rtgodam-settings';
 
 	/**
+	 * Path to GoDAM Central's Third Party Apps settings page.
+	 *
+	 * Where disconnecting Marketo and the "Track video views" switch are done:
+	 * actions the plugin cannot perform, so the tab links out to Central for them.
+	 *
+	 * @var string
+	 */
+	const CENTRAL_SETTINGS_PATH = '/web/settings?setTab=ThirdPartyApps';
+
+	/**
 	 * Default Marketo integration settings.
 	 *
 	 * @return array
@@ -139,43 +149,152 @@ class Marketo {
 	}
 
 	/**
-	 * Build the protocol-relative Marketo instance host used by forms2.
+	 * The Marketo account details GoDAM Central holds for this organization.
 	 *
-	 * Marketo instances are reached either on their pod domain
-	 * (`app-sj04.marketo.com`) or on the newer `*.mktoweb.com` domain
-	 * (`123-ABC-456.mktoweb.com`). Accept whichever the user pastes — with or
-	 * without a scheme — and only fall back to appending `.mktoweb.com` when a
-	 * bare identifier (no dot) is given.
+	 * GoDAM Central is the source of truth for the Marketo connection. Its
+	 * account details (Munchkin ID, forms host, reCAPTCHA key) ride along in the
+	 * `map` block of the cached `verify_api_key` response, so this reads the
+	 * stored option directly and never triggers a remote call — safe on every
+	 * frontend page load.
 	 *
-	 * @return string Host like `//app-sj04.marketo.com`, or '' when unset.
+	 * @return array {
+	 *     Empty when Marketo is not connected on Central (or no `map` block yet).
+	 *
+	 *     @type string      $state              `not_connected`, `connected` or `needs_attention`.
+	 *     @type string|null $munchkin_id        Munchkin Account ID.
+	 *     @type string|null $forms_host         Forms host, e.g. `app-sj04.marketo.com`.
+	 *     @type string|null $recaptcha_site_key reCAPTCHA site key.
+	 * }
 	 */
-	public static function get_instance_host() {
-		$settings = self::get_settings();
-		$pod      = trim( (string) $settings['podId'] );
+	public static function get_central_config() {
+		$stored = get_option( 'rtgodam_user_data', array() );
 
-		if ( '' === $pod ) {
+		$map = isset( $stored['user_data']['map'] ) && is_array( $stored['user_data']['map'] )
+			? $stored['user_data']['map']
+			: array();
+
+		$marketo = isset( $map['marketo'] ) && is_array( $map['marketo'] )
+			? $map['marketo']
+			: array();
+
+		return $marketo;
+	}
+
+	/**
+	 * Whether Marketo is connected on GoDAM Central.
+	 *
+	 * @return bool
+	 */
+	public static function is_central_connected() {
+		$central = self::get_central_config();
+
+		return ! empty( $central['munchkin_id'] );
+	}
+
+	/**
+	 * The effective Munchkin ID: GoDAM Central first, local override as fallback.
+	 *
+	 * @return string
+	 */
+	public static function get_munchkin_id() {
+		$central = self::get_central_config();
+
+		if ( ! empty( $central['munchkin_id'] ) ) {
+			return (string) $central['munchkin_id'];
+		}
+
+		return (string) self::get_settings()['munchkinId'];
+	}
+
+	/**
+	 * The effective reCAPTCHA site key: GoDAM Central first, local override after.
+	 *
+	 * @return string
+	 */
+	public static function get_recaptcha_key() {
+		$central = self::get_central_config();
+
+		if ( ! empty( $central['recaptcha_site_key'] ) ) {
+			return (string) $central['recaptcha_site_key'];
+		}
+
+		return (string) self::get_settings()['recaptchaKey'];
+	}
+
+	/**
+	 * Absolute URL of GoDAM Central's Third Party Apps settings page.
+	 *
+	 * @return string
+	 */
+	public static function central_settings_url() {
+		return RTGODAM_API_BASE . self::CENTRAL_SETTINGS_PATH;
+	}
+
+	/**
+	 * Normalize a pasted Marketo host down to a bare host name.
+	 *
+	 * Accepts a value with or without a scheme, leading slashes or a path, and
+	 * appends `.mktoweb.com` to a bare identifier (no dot).
+	 *
+	 * @param string $value Raw host / pod identifier.
+	 * @return string Host like `app-sj04.marketo.com`, or '' when empty.
+	 */
+	private static function normalize_host( $value ) {
+		$value = trim( (string) $value );
+
+		if ( '' === $value ) {
 			return '';
 		}
 
 		// Strip any scheme, leading slashes and path so only the host remains.
-		$pod = preg_replace( '#^[a-z][a-z0-9+.-]*:#i', '', $pod );
-		$pod = ltrim( $pod, '/' );
-		$pod = explode( '/', $pod )[0];
-		$pod = trim( $pod );
+		$value = preg_replace( '#^[a-z][a-z0-9+.-]*:#i', '', $value );
+		$value = ltrim( $value, '/' );
+		$value = explode( '/', $value )[0];
+		$value = trim( $value );
 
-		if ( '' === $pod ) {
+		if ( '' === $value ) {
 			return '';
 		}
 
-		if ( false === strpos( $pod, '.' ) ) {
-			$pod .= '.mktoweb.com';
+		if ( false === strpos( $value, '.' ) ) {
+			$value .= '.mktoweb.com';
 		}
 
-		return '//' . $pod;
+		return $value;
+	}
+
+	/**
+	 * Build the protocol-relative Marketo instance host used by forms2.
+	 *
+	 * GoDAM Central is the source of truth: use its forms host, or the
+	 * `<munchkin>.mktoweb.com` fallback derived from its Munchkin ID. Only when
+	 * Central has no Marketo connection does the local Pod ID override apply,
+	 * which keeps existing sites working before they connect through Central.
+	 *
+	 * @return string Host like `//app-sj04.marketo.com`, or '' when unset.
+	 */
+	public static function get_instance_host() {
+		$central = self::get_central_config();
+
+		if ( ! empty( $central['forms_host'] ) ) {
+			return '//' . self::normalize_host( $central['forms_host'] );
+		}
+
+		if ( ! empty( $central['munchkin_id'] ) ) {
+			return '//' . strtolower( (string) $central['munchkin_id'] ) . '.mktoweb.com';
+		}
+
+		// Local override (no Central connection, or offline).
+		$host = self::normalize_host( self::get_settings()['podId'] );
+
+		return '' === $host ? '' : '//' . $host;
 	}
 
 	/**
 	 * Whether Marketo is enabled and has the minimum credentials to render a form.
+	 *
+	 * Enabled locally, plus an effective instance host and Munchkin ID from
+	 * either GoDAM Central or the local override.
 	 *
 	 * @return bool
 	 */
@@ -184,6 +303,6 @@ class Marketo {
 
 		return ! empty( $settings['enable'] )
 			&& ! empty( self::get_instance_host() )
-			&& ! empty( $settings['munchkinId'] );
+			&& ! empty( self::get_munchkin_id() );
 	}
 }

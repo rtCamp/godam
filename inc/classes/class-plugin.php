@@ -34,6 +34,7 @@ use RTGODAM\INC\REST_API\SureForms;
 use RTGODAM\Inc\REST_API\Fluent_Forms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Onboarding;
+use RTGODAM\Inc\REST_API\Marketo_Integration;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
 use RTGODAM\Inc\REST_API\Video_Editor;
@@ -191,6 +192,7 @@ class Plugin {
 		Metform_Rest_Api::get_instance();
 		Settings::get_instance();
 		Onboarding::get_instance();
+		Marketo_Integration::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();
 		Video_Editor::get_instance();
