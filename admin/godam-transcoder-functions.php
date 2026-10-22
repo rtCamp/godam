@@ -251,7 +251,32 @@ function rtgodam_delete_related_transcoded_files( $post_id ) {
 add_action( 'delete_attachment', 'rtgodam_delete_related_transcoded_files', 99, 1 );
 
 /**
+ * Marks the media file lists as protected meta.
+ *
+ * Protected meta cannot be written through XML-RPC or the custom fields box. GoDAM
+ * writes these keys itself with update_post_meta(), which protection does not affect.
+ *
+ * @since n.e.x.t
+ *
+ * @param bool   $is_protected Whether the meta key is protected.
+ * @param string $meta_key     Meta key.
+ *
+ * @return bool
+ */
+function rtgodam_protect_media_file_meta( $is_protected, $meta_key ) {
+	if ( in_array( $meta_key, array( 'rtgodam_media_thumbnails', 'rtgodam_media_transcoded_files' ), true ) ) {
+		return true;
+	}
+
+	return $is_protected;
+}
+
+add_filter( 'is_protected_meta', 'rtgodam_protect_media_file_meta', 10, 2 );
+
+/**
  * Deletes/Unlinks the files given in the array
+ *
+ * Only files inside the uploads folder are deleted; any other path is skipped.
  *
  * @since 1.0.5
  *
@@ -269,14 +294,66 @@ function rtgodam_delete_transcoded_files( $files ) {
 		$files = array( $files );
 	}
 
-	$uploadpath = rtgodam_get_upload_dir();
-
 	foreach ( $files as $file ) {
-		if ( ! empty( $file ) ) {
-			$file_path = path_join( $uploadpath['basedir'], $file );
+		$file_path = rtgodam_get_uploads_file_path( $file );
+
+		if ( $file_path ) {
 			\RTGODAM\Inc\FileSystem::delete_file( $file_path );
 		}
 	}
+}
+
+/**
+ * Resolves a media file path to the real path of a file inside the uploads folder.
+ *
+ * Paths stored on a media item can point anywhere on the server, so code that deletes
+ * or copies media files resolves them here first and skips anything that is not a file
+ * inside the uploads folder.
+ *
+ * @since n.e.x.t
+ *
+ * @param mixed $file File path, absolute or relative to the uploads folder.
+ *
+ * @return string|false Real path of the file, or false when it is not a file inside the uploads folder.
+ */
+function rtgodam_get_uploads_file_path( $file ) {
+	if ( ! is_string( $file ) || '' === $file || false !== strpos( $file, "\0" ) ) {
+		return false;
+	}
+
+	$uploads = rtgodam_get_upload_dir();
+
+	if ( empty( $uploads['basedir'] ) ) {
+		return false;
+	}
+
+	$path = path_join( $uploads['basedir'], $file );
+
+	if ( wp_is_stream( $uploads['basedir'] ) ) {
+		// A stream wrapper (offloaded uploads) has no real path to resolve, so compare the paths and refuse dot segments.
+		$real_path = wp_normalize_path( $path );
+		$basedir   = trailingslashit( wp_normalize_path( $uploads['basedir'] ) );
+
+		if ( preg_match( '#(^|/)\.\.(/|$)#', $real_path ) ) {
+			return false;
+		}
+	} else {
+		$real_path = realpath( $path );
+		$basedir   = realpath( $uploads['basedir'] );
+
+		if ( false === $real_path || false === $basedir ) {
+			return false;
+		}
+
+		$real_path = wp_normalize_path( $real_path );
+		$basedir   = trailingslashit( wp_normalize_path( $basedir ) );
+	}
+
+	if ( 0 !== strpos( $real_path, $basedir ) || ! is_file( $real_path ) ) {
+		return false;
+	}
+
+	return $real_path;
 }
 
 /**
