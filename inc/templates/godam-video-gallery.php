@@ -167,17 +167,20 @@ if ( ! function_exists( 'rtgodam_gallery_v2_build_query_args' ) ) {
 		}
 
 		$query_args = array(
-			'post_type'              => 'attachment',
-			'post_status'            => 'inherit',
-			'post_mime_type'         => 'video',
-			'posts_per_page'         => $count,
-			'paged'                  => max( 1, absint( $page ) ),
-			'orderby'                => in_array( $orderby, array( 'date', 'title' ), true ) ? $orderby : 'date',
-			'order'                  => in_array( $order, array( 'ASC', 'DESC' ), true ) ? $order : 'DESC',
-			'ignore_sticky_posts'    => true,
-			'no_found_rows'          => false,
-			'update_post_meta_cache' => true,
-			'update_post_term_cache' => true,
+			'post_type'                 => 'attachment',
+			'post_status'               => 'inherit',
+			'post_mime_type'            => 'video',
+			'posts_per_page'            => $count,
+			'paged'                     => max( 1, absint( $page ) ),
+			'orderby'                   => in_array( $orderby, array( 'date', 'title' ), true ) ? $orderby : 'date',
+			'order'                     => in_array( $order, array( 'ASC', 'DESC' ), true ) ? $order : 'DESC',
+			'ignore_sticky_posts'       => true,
+			'no_found_rows'             => false,
+			'update_post_meta_cache'    => true,
+			'update_post_term_cache'    => true,
+			// Leave out media of drafts, private and password-protected posts
+			// (see rtgodam_public_media_query_clauses()).
+			'rtgodam_public_media_only' => true,
 		);
 
 		if ( 'duration' === $orderby ) {

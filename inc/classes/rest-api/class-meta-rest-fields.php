@@ -50,7 +50,9 @@ class Meta_Rest_Fields {
 					 * @since 2.2.0
 					 */
 					do_action( 'rtgodam_before_attachment_lookup' );
-					$value = get_post_meta( $post['id'], 'rtgodam_meta', true );
+					// The stored GoDAM settings (layers, chapters and so on) are for people who write posts,
+					// whose editor previews read them, and for whoever can edit the file.
+					$value = current_user_can( 'edit_posts' ) || current_user_can( 'edit_post', $post['id'] ) ? get_post_meta( $post['id'], 'rtgodam_meta', true ) : null;
 					do_action( 'rtgodam_after_attachment_lookup' );
 					return $value;
 				},
