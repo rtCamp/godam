@@ -461,9 +461,20 @@ class RTGODAM_Transcoder_Handler {
 				}
 			}
 
+			/**
+			 * Filters whether requests to the GoDAM transcoding API verify the
+			 * server's TLS certificate. Turn it off only for a local or staging
+			 * API that uses a self-signed certificate.
+			 *
+			 * @since n.e.x.t
+			 *
+			 * @param bool $verify_ssl Whether to verify the certificate. Default true.
+			 */
+			$verify_ssl = (bool) apply_filters( 'godam_transcoder_verify_ssl', true );
+
 			$args = array(
 				'method'    => empty( $transcoding_job_id ) ? 'POST' : 'PUT',
-				'sslverify' => false,
+				'sslverify' => $verify_ssl,
 				'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'body'      => array_merge(
 					array(
