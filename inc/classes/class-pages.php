@@ -681,6 +681,16 @@ class Pages {
 
 			$is_ninja_forms_active = is_plugin_active( 'ninja-forms/ninja-forms.php' );
 
+			// HubSpot ("HubSpot All-In-One Marketing" / leadin plugin). Unlike the
+			// other form plugins, the HubSpot form layer needs the plugin to be
+			// active AND connected to a HubSpot account (portal ID + refresh token
+			// present) — the same check leadin's own Connection::is_connected() makes.
+			// We read the options directly to avoid coupling to leadin's classes.
+			$hubspot_portal_id = get_option( 'leadin_portalId', '' );
+			$is_hubspot_active = is_plugin_active( 'leadin/leadin.php' )
+				&& ! empty( $hubspot_portal_id )
+				&& ! empty( get_option( 'leadin_refresh_token', '' ) );
+
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -704,6 +714,12 @@ class Pages {
 					'everestFormsActive' => $is_everest_forms_active,
 					'ninjaFormsActive'   => $is_ninja_forms_active,
 					'metformActive'      => $is_met_form_active,
+					'hubspotActive'      => $is_hubspot_active,
+					// Portal ID + hublet (region) from the connected HubSpot (leadin)
+					// plugin, used only to render the live form preview inside the
+					// editor. Empty strings unless the plugin is active and connected.
+					'hubspotPortalId'    => $is_hubspot_active ? $hubspot_portal_id : '',
+					'hubspotHublet'      => $is_hubspot_active ? get_option( 'leadin_hublet', 'na1' ) : '',
 					// O9: Woo empty-state copy on the connected Video Editor.
 					'wooActive'          => class_exists( 'WooCommerce' ),
 					// Woo product-guide entry: only when GoDAM-for-Woo ships the

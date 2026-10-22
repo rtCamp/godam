@@ -22,6 +22,7 @@ import { fluentFormsApi } from './api/fluent-forms';
 import { everestFormsApi } from './api/everest-forms';
 import { ninjaFormsApi } from './api/ninja-forms';
 import { metformApi } from './api/metform';
+import { hubspotFormsApi } from './api/hubspot-forms';
 import { analyticsApi } from '../../analytics/redux/api/analyticsApi';
 
 export default configureStore( {
@@ -42,6 +43,7 @@ export default configureStore( {
 		[ everestFormsApi.reducerPath ]: everestFormsApi.reducer,
 		[ ninjaFormsApi.reducerPath ]: ninjaFormsApi.reducer,
 		[ metformApi.reducerPath ]: metformApi.reducer,
+		[ hubspotFormsApi.reducerPath ]: hubspotFormsApi.reducer,
 		[ analyticsApi.reducerPath ]: analyticsApi.reducer,
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
@@ -60,6 +62,7 @@ export default configureStore( {
 		everestFormsApi.middleware,
 		ninjaFormsApi.middleware,
 		metformApi.middleware,
+		hubspotFormsApi.middleware,
 		analyticsApi.middleware,
 	),
 } );
