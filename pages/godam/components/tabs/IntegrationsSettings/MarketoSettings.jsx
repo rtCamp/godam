@@ -16,6 +16,7 @@ import {
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+import { external } from '@wordpress/icons';
 
 /**
  * Human text for each connection state.
@@ -287,17 +288,25 @@ const MarketoSettings = ( { settings = {} } ) => {
 						</p>
 					) }
 
-					<Flex justify="flex-start" gap={ 4 } style={ { marginTop: '12px' } }>
+					<Flex justify="flex-start" gap={ 3 } style={ { marginTop: '12px' } }>
 						{ settingsUrl && (
 							<FlexItem>
-								<ExternalLink href={ settingsUrl }>
+								<Button
+									variant="primary"
+									href={ settingsUrl }
+									target="_blank"
+									rel="noopener noreferrer"
+									icon={ external }
+									iconPosition="right"
+									data-test-id="godam-settings-marketo-button-manage"
+								>
 									{ __( 'Manage on GoDAM', 'godam' ) }
-								</ExternalLink>
+								</Button>
 							</FlexItem>
 						) }
 						<FlexItem>
 							<Button
-								variant="link"
+								variant="secondary"
 								onClick={ handleTest }
 								isBusy={ testing }
 								disabled={ testing }
