@@ -1074,11 +1074,15 @@ do_action( 'rtgodam_after_attachment_lookup' );
 										</div>
 									</div>
 										<?php
-									elseif ( 'marketo' === $godam_form_type && ! empty( $godam_layer['marketo_id'] ) ) :
+									elseif ( 'marketo' === $godam_form_type && ! empty( $godam_layer['marketo_id'] ) && \RTGODAM\Inc\Marketo::is_configured() ) :
 										// Marketo has no shortcode: render an empty form node that the
 										// forms2 library fills on the frontend (see Marketo_Form_Assets
 										// and assets/src/js/marketo-form.js). Enqueue the library only
 										// when a Marketo layer is actually present on the page.
+										//
+										// Skipped entirely unless Marketo is connected and the integration
+										// is enabled (Marketo::is_configured), so a disconnected or
+										// disabled Marketo never shows an empty form overlay on the video.
 										Marketo_Form_Assets::get_instance();
 										?>
 										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden marketo" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">

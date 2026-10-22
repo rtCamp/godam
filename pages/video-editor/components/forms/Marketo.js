@@ -184,7 +184,7 @@ const Marketo = ( { layerID } ) => {
 
 			{ status === 'error' && (
 				<p className="godam-marketo-preview__status">
-					{ __( 'Could not load this Marketo form. Check the Form ID and your Marketo settings (Pod ID / Munchkin ID), and your browser console for Marketo errors.', 'godam' ) }
+					{ __( 'Could not load this Marketo form. Check the Form ID and your Marketo connection, and your browser console for Marketo errors.', 'godam' ) }
 				</p>
 			) }
 
@@ -192,7 +192,7 @@ const Marketo = ( { layerID } ) => {
 				<p className="godam-marketo-preview__status">
 					{ isConfigured
 						? __( 'Enter a Marketo Form ID to preview the form here.', 'godam' )
-						: __( 'Configure Marketo in Settings → Integrations to preview the form.', 'godam' ) }
+						: __( 'Connect Marketo in Settings → Integrations to preview the form.', 'godam' ) }
 				</p>
 			) }
 
@@ -215,13 +215,12 @@ const Marketo = ( { layerID } ) => {
 						status="warning"
 						isDismissible={ false }
 					>
-						{ __( 'Marketo is not configured yet. Add your Pod ID and Munchkin ID in', 'godam' ) }
+						{ __( 'Marketo is not connected, or the integration is turned off, so this form will not show on your videos. Connect and enable Marketo in', 'godam' ) }
 						{ ' ' }
 						<ExternalLink href={ settingsUrl }>
 							{ __( 'Settings → Integrations → Marketo', 'godam' ) }
 						</ExternalLink>
-						{ ' ' }
-						{ __( 'so the form can render on the frontend.', 'godam' ) }
+						{ '.' }
 					</Notice>
 				) }
 

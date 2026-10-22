@@ -192,33 +192,28 @@ class Marketo {
 	}
 
 	/**
-	 * The effective Munchkin ID: GoDAM Central first, local override as fallback.
+	 * The Munchkin ID from the GoDAM Central connection.
+	 *
+	 * GoDAM Central is the single source of truth: this is empty unless Marketo is
+	 * connected there. Nothing stored locally can make a form render.
 	 *
 	 * @return string
 	 */
 	public static function get_munchkin_id() {
 		$central = self::get_central_config();
 
-		if ( ! empty( $central['munchkin_id'] ) ) {
-			return (string) $central['munchkin_id'];
-		}
-
-		return (string) self::get_settings()['munchkinId'];
+		return ! empty( $central['munchkin_id'] ) ? (string) $central['munchkin_id'] : '';
 	}
 
 	/**
-	 * The effective reCAPTCHA site key: GoDAM Central first, local override after.
+	 * The reCAPTCHA site key from the GoDAM Central connection.
 	 *
 	 * @return string
 	 */
 	public static function get_recaptcha_key() {
 		$central = self::get_central_config();
 
-		if ( ! empty( $central['recaptcha_site_key'] ) ) {
-			return (string) $central['recaptcha_site_key'];
-		}
-
-		return (string) self::get_settings()['recaptchaKey'];
+		return ! empty( $central['recaptcha_site_key'] ) ? (string) $central['recaptcha_site_key'] : '';
 	}
 
 	/**
@@ -266,12 +261,11 @@ class Marketo {
 	/**
 	 * Build the protocol-relative Marketo instance host used by forms2.
 	 *
-	 * GoDAM Central is the source of truth: use its forms host, or the
-	 * `<munchkin>.mktoweb.com` fallback derived from its Munchkin ID. Only when
-	 * Central has no Marketo connection does the local Pod ID override apply,
-	 * which keeps existing sites working before they connect through Central.
+	 * Derived only from the GoDAM Central connection: its forms host, or the
+	 * `<munchkin>.mktoweb.com` fallback from its Munchkin ID. Empty when Marketo
+	 * is not connected on Central.
 	 *
-	 * @return string Host like `//app-sj04.marketo.com`, or '' when unset.
+	 * @return string Host like `//app-sj04.marketo.com`, or '' when not connected.
 	 */
 	public static function get_instance_host() {
 		$central = self::get_central_config();
@@ -284,17 +278,12 @@ class Marketo {
 			return '//' . strtolower( (string) $central['munchkin_id'] ) . '.mktoweb.com';
 		}
 
-		// Local override (no Central connection, or offline).
-		$host = self::normalize_host( self::get_settings()['podId'] );
-
-		return '' === $host ? '' : '//' . $host;
+		return '';
 	}
 
 	/**
-	 * Whether Marketo is enabled and has the minimum credentials to render a form.
-	 *
-	 * Enabled locally, plus an effective instance host and Munchkin ID from
-	 * either GoDAM Central or the local override.
+	 * Whether a Marketo form can render: the integration is enabled on this site
+	 * and Marketo is connected on GoDAM Central.
 	 *
 	 * @return bool
 	 */
@@ -302,7 +291,7 @@ class Marketo {
 		$settings = self::get_settings();
 
 		return ! empty( $settings['enable'] )
-			&& ! empty( self::get_instance_host() )
-			&& ! empty( self::get_munchkin_id() );
+			&& self::is_central_connected()
+			&& '' !== self::get_instance_host();
 	}
 }

@@ -205,6 +205,13 @@ class Marketo_Integration extends Base {
 			return $result;
 		}
 
+		// Form rendering reads the Marketo account details from the `map` block of
+		// the cached verify response, so force a refresh now; the new connection
+		// then shows on videos right away instead of after the hourly cache expiry.
+		if ( function_exists( 'rtgodam_get_user_data' ) ) {
+			rtgodam_get_user_data( false, HOUR_IN_SECONDS, true );
+		}
+
 		return new WP_REST_Response( $result, 200 );
 	}
 
