@@ -62,15 +62,25 @@
 		formEl.id = 'mktoForm_' + formId;
 
 		MktoForms2.loadForm( instanceHost, munchkinId, formId, function( form ) {
-			form.onSuccess( function() {
-				formEl.insertAdjacentHTML(
-					'afterend',
-					'<p class="godam-marketo-success">' + successText + '</p>',
-				);
-				formEl.style.display = 'none';
-				// Returning false stops forms2 from navigating to the follow-up URL.
-				return false;
-			} );
+			// forms2 calls back with null when Marketo cannot return the form (an
+			// unknown, deleted or unapproved id, or a subscription mismatch). Guard
+			// it so the id is still restored and the forms after this one on the
+			// page still load.
+			if ( form ) {
+				form.onSuccess( function() {
+					// Built as a text node: a translated string containing `<` or `&`
+					// must not be read as markup.
+					const message = document.createElement( 'p' );
+					message.className = 'godam-marketo-success';
+					message.textContent = successText;
+
+					formEl.after( message );
+					formEl.style.display = 'none';
+
+					// Returning false stops forms2 from navigating to the follow-up URL.
+					return false;
+				} );
+			}
 
 			// Restore a stable id before loading the next node.
 			formEl.id = originalId;
