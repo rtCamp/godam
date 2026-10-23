@@ -158,6 +158,13 @@ const godamPlayerAnalytics = {
 	},
 };
 
+const godamMapTracking = {
+	...sharedConfig,
+	entry: {
+		'godam-map-tracking': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'map-tracking.js' ),
+	},
+};
+
 const deactivationJS = {
 	...sharedConfig,
 	entry: {
@@ -461,6 +468,7 @@ module.exports = [
 	godamPlayerFrontend,
 	godamImageLayersFrontend,
 	godamPlayerAnalytics,
+	godamMapTracking,
 	deactivationJS,
 	dashboardWidgetJS,
 	httpAuthDetector,
