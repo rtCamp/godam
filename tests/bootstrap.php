@@ -319,11 +319,21 @@ if ( ! class_exists( 'WP_REST_Server' ) ) {
 if ( ! function_exists( 'current_user_can' ) ) {
 
 	/**
+	 * Every check is recorded in `cap_checks`. A meta capability is answered from the `caps`
+	 * list, unless the test scopes it to objects with `object_caps`, e.g.
+	 * array( 'edit_post' => array( 7 ) ) for a user who may edit attachment 7 only.
+	 *
 	 * @param string $capability Capability name.
-	 * @param mixed  ...$args    Ignored; object-level checks are not stubbed.
+	 * @param mixed  ...$args    Object id for a meta capability.
 	 * @return bool
 	 */
-	function current_user_can( $capability, ...$args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $args are ignored.
+	function current_user_can( $capability, ...$args ) {
+		$GLOBALS['rtgodam_stub']['cap_checks'][] = array_merge( array( $capability ), $args );
+
+		if ( $args && isset( $GLOBALS['rtgodam_stub']['object_caps'][ $capability ] ) ) {
+			return in_array( $args[0], $GLOBALS['rtgodam_stub']['object_caps'][ $capability ], true );
+		}
+
 		$caps = isset( $GLOBALS['rtgodam_stub']['caps'] ) && is_array( $GLOBALS['rtgodam_stub']['caps'] )
 			? $GLOBALS['rtgodam_stub']['caps']
 			: array();
