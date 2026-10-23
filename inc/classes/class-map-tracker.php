@@ -101,10 +101,15 @@ class Map_Tracker {
 		 * forward has finished, whichever way it finished. Priority 20 puts this after
 		 * Action Scheduler's own logger (priority 10), so deleting the row also clears
 		 * the log line it just wrote instead of leaving one behind.
+		 *
+		 * `action_scheduler_unexpected_shutdown` covers a PHP fatal mid-forward, which
+		 * skips the other three: Action Scheduler marks the row failed at shutdown and
+		 * fires only that hook. The store is still usable there.
 		 */
 		add_action( 'action_scheduler_completed_action', array( $this, 'delete_finished_forward' ), 20 );
 		add_action( 'action_scheduler_failed_execution', array( $this, 'delete_finished_forward' ), 20 );
 		add_action( 'action_scheduler_failed_action', array( $this, 'delete_finished_forward' ), 20 );
+		add_action( 'action_scheduler_unexpected_shutdown', array( $this, 'delete_finished_forward' ), 20 );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_script' ) );
 

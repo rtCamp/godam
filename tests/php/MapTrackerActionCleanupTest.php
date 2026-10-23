@@ -107,9 +107,9 @@ class MapTrackerActionCleanupTest extends TestCase {
 	}
 
 	/**
-	 * A forward that threw, or that Action Scheduler gave up on after a timeout, is
-	 * deleted too. Failed rows are never purged by Action Scheduler, so this is the
-	 * case that would otherwise keep the cookie for good.
+	 * A forward that threw, that Action Scheduler gave up on after a timeout, or that
+	 * died in a PHP fatal is deleted too. Failed rows are never purged by Action
+	 * Scheduler, so these are the cases that would otherwise keep the cookie for good.
 	 *
 	 * @return void
 	 */
@@ -123,6 +123,12 @@ class MapTrackerActionCleanupTest extends TestCase {
 		do_action( 'action_scheduler_failed_action', self::FORWARD, 300 );
 
 		$this->assertArrayNotHasKey( self::FORWARD, $GLOBALS['rtgodam_as']['rows'] );
+
+		$GLOBALS['rtgodam_as']['rows'][ self::FORWARD ] = Map_Tracker::ASYNC_HOOK;
+
+		do_action( 'action_scheduler_unexpected_shutdown', self::FORWARD, array( 'type' => E_ERROR ) );
+
+		$this->assertArrayNotHasKey( self::FORWARD, $GLOBALS['rtgodam_as']['rows'] );
 	}
 
 	/**
@@ -134,6 +140,7 @@ class MapTrackerActionCleanupTest extends TestCase {
 		do_action( 'action_scheduler_completed_action', self::OTHER );
 		do_action( 'action_scheduler_failed_execution', self::OTHER, new \Exception( 'boom' ), 'WP Cron' );
 		do_action( 'action_scheduler_failed_action', self::OTHER, 300 );
+		do_action( 'action_scheduler_unexpected_shutdown', self::OTHER, array( 'type' => E_ERROR ) );
 
 		$this->assertArrayHasKey( self::OTHER, $GLOBALS['rtgodam_as']['rows'] );
 	}
@@ -159,7 +166,12 @@ class MapTrackerActionCleanupTest extends TestCase {
 	 * @return void
 	 */
 	public function test_runs_after_action_scheduler_logs_the_outcome() {
-		$hooks = array( 'action_scheduler_completed_action', 'action_scheduler_failed_execution', 'action_scheduler_failed_action' );
+		$hooks = array(
+			'action_scheduler_completed_action',
+			'action_scheduler_failed_execution',
+			'action_scheduler_failed_action',
+			'action_scheduler_unexpected_shutdown',
+		);
 
 		foreach ( $hooks as $hook ) {
 			$callbacks = $GLOBALS['rtgodam_hooks'][ $hook ][20] ?? array();
