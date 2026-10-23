@@ -14,7 +14,9 @@ import {
 	TextControl,
 	TextareaControl,
 	ToggleControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalToggleGroupControl as ToggleGroupControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
 import {
@@ -36,6 +38,7 @@ import { trash } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import { getSafeLinkUrl } from '../../utils/safe-url';
 import { Caption } from './caption';
 import PreviewErrorBoundary from './preview-error-boundary';
 import {
@@ -246,8 +249,10 @@ function PdfEdit( {
 	 *
 	 * The attachment's own URL wins over the stored `src`, which was captured when the block
 	 * was inserted and can be stale if the file was later offloaded to a CDN.
+	 *
+	 * Only an http(s) or mailto URL is linked; anything else leaves the panel without a link.
 	 */
-	const resolvedDownloadUrl = sourceUrl || src || '';
+	const resolvedDownloadUrl = getSafeLinkUrl( sourceUrl || src || '' );
 
 	/**
 	 * Record the page count reported by pdf.js.

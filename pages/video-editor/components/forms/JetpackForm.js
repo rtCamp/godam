@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 /**
  * WordPress dependencies
@@ -14,6 +14,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { updateLayerField, setJetpackForms, setJetpackPluginActive } from '../../redux/slice/videoSlice';
 import { useGetSingleJetpackFormQuery, useGetJetpackFormsQuery } from '../../redux/api/jetpack-forms';
+import { sanitizePreviewMarkup } from '../../utils/sanitizeMarkup';
 import FormFields from './FormFields';
 import FormPreview from './FormPreview';
 
@@ -29,6 +30,8 @@ const JetpackForm = ( { layerID } ) => {
 	const { data: formHTML, isFetching, error } = useGetSingleJetpackFormQuery( { id: layer?.jp_id }, {
 		skip: 'undefined' === typeof layer?.jp_id,
 	} );
+
+	const safeFormHTML = useMemo( () => sanitizePreviewMarkup( formHTML ), [ formHTML ] );
 
 	// Initialize Jetpack forms data - useEffect must be called unconditionally
 	useEffect( () => {
@@ -181,7 +184,7 @@ const JetpackForm = ( { layerID } ) => {
 						<>
 							{
 								( formHTML && ! isFetching && ! error ) &&
-								<div className="form-container jetpack-form-preview" dangerouslySetInnerHTML={ { __html: formHTML } } />
+								<div className="form-container jetpack-form-preview" dangerouslySetInnerHTML={ { __html: safeFormHTML } } />
 							}
 
 							{

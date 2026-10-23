@@ -225,6 +225,13 @@ describe( 'HotspotLayerManager button style', () => {
 		expect( relative.getAttribute( 'href' ) ).toBe( '/shop/' );
 	} );
 
+	it( 'accepts a mailto link', () => {
+		const el = build( { styleType: 'button' }, { id: 'M', tooltipText: 'Write', link: 'mailto:hello@example.com', position: { x: 0, y: 0 }, unit: 'percent' } );
+
+		expect( el.getAttribute( 'href' ) ).toBe( 'mailto:hello@example.com' );
+		expect( el.getAttribute( 'target' ) ).toBe( '_blank' );
+	} );
+
 	it( 'clamps a button near the bottom-right so it stays inside the video', () => {
 		const el = build( { styleType: 'button' }, { id: 'E', tooltipText: 'Go', position: { x: 95, y: 90 }, unit: 'percent' } );
 		// jsdom has no layout, so give the button a measured size.
@@ -386,5 +393,56 @@ describe( 'HotspotLayerManager button style', () => {
 		expect( buttonEl.style.top ).toBe( '160px' );
 
 		rafSpy.mockRestore();
+	} );
+} );
+
+describe( 'HotspotLayerManager.createHotspotTooltip', () => {
+	let manager;
+
+	beforeEach( () => {
+		manager = new HotspotLayerManager( fakePlayer(), true, 'inst-1' );
+	} );
+
+	it.each( [
+		[ 'javascript:', 'javascript:alert(1)' ],
+		[ 'a mixed-case javascript:', 'JaVaScRiPt:alert(1)' ],
+		[ 'a javascript: with a tab inside', 'java\tscript:alert(1)' ],
+		[ 'data:', 'data:text/html,<script>alert(1)</script>' ],
+		[ 'vbscript:', 'vbscript:msgbox(1)' ],
+		[ 'an unparseable value', 'http://' ],
+	] )( 'shows the label as plain text for %s links', ( name, link ) => {
+		const tooltip = manager.createHotspotTooltip( { id: 'T', tooltipText: 'Go', link }, 0 );
+
+		expect( tooltip.querySelector( 'a' ) ).toBeNull();
+		expect( tooltip.textContent ).toBe( 'Go' );
+	} );
+
+	it( 'keeps the numbered fallback label when an unsafe link has no tooltip text', () => {
+		const tooltip = manager.createHotspotTooltip( { id: 'T', link: 'javascript:alert(1)' }, 1 );
+
+		expect( tooltip.querySelector( 'a' ) ).toBeNull();
+		expect( tooltip.textContent ).toBe( 'Hotspot 2' );
+	} );
+
+	it.each( [
+		[ 'an absolute http link', 'http://example.com/x', 'http://example.com/x' ],
+		[ 'an absolute https link', 'https://example.com/x?a=1&b=2', 'https://example.com/x?a=1&b=2' ],
+		[ 'a mailto link', 'mailto:hello@example.com', 'mailto:hello@example.com' ],
+		[ 'a relative link', '/shop/', '/shop/' ],
+	] )( 'links the label for %s', ( name, link, href ) => {
+		const tooltip = manager.createHotspotTooltip( { id: 'T', tooltipText: 'Go', link }, 0 );
+		const anchor = tooltip.querySelector( 'a' );
+
+		expect( anchor ).not.toBeNull();
+		expect( anchor.getAttribute( 'href' ) ).toBe( href );
+		expect( anchor.getAttribute( 'target' ) ).toBe( '_blank' );
+		expect( anchor.textContent ).toBe( 'Go' );
+	} );
+
+	it( 'renders a plain label when the hotspot has no link', () => {
+		const tooltip = manager.createHotspotTooltip( { id: 'T', tooltipText: 'Go' }, 0 );
+
+		expect( tooltip.querySelector( 'a' ) ).toBeNull();
+		expect( tooltip.textContent ).toBe( 'Go' );
 	} );
 } );
