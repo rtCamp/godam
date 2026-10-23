@@ -255,6 +255,9 @@ class Engagement extends Base {
 	/**
 	 * Get all activities for a video.
 	 *
+	 * Answers only for a video of this site that the visitor can see. For any other
+	 * video the answer is the same as for a video nobody has engaged with.
+	 *
 	 * @param WP_REST_Request $request Request Object.
 	 *
 	 * @return WP_REST_Response
@@ -266,6 +269,23 @@ class Engagement extends Base {
 		$site_url      = rtgodam_get_site_origin();
 		if ( '' === $site_url ) {
 			return $this->site_origin_unavailable_response( 500 );
+		}
+
+		$transcoder_job_id = $this->get_visible_transcoder_job_id( $video_id );
+
+		if ( null === $transcoder_job_id ) {
+			return new WP_REST_Response(
+				array(
+					'status' => 'success',
+					'data'   => array(
+						'is_liked'       => false,
+						'likes_count'    => 0,
+						'comments'       => array(),
+						'comments_count' => 0,
+					),
+				),
+				200
+			);
 		}
 
 		$account_credentials = $this->access_credentials_check();
@@ -287,8 +307,6 @@ class Engagement extends Base {
 		if ( ! empty( $analytics_data['processed_analytics'] ) ) {
 			$response_data['views_count'] = array_sum( $analytics_data['processed_analytics']['post_views'] ?? array() );
 		}
-
-		$transcoder_job_id = $this->get_transcoder_job_id( $video_id );
 
 		$likes                        = $this->get_likes( $transcoder_job_id, $account_credentials );
 		$response_data['is_liked']    = $likes['has_liked_by_user'];
@@ -442,7 +460,11 @@ class Engagement extends Base {
 		$current_user       = rtgodam_get_current_logged_in_user_data();
 		$current_user_email = $current_user['email'];
 		$current_user_name  = $current_user['name'];
-		$transcoder_job_id  = $this->get_transcoder_job_id( $video_id );
+		$transcoder_job_id  = $this->get_visible_transcoder_job_id( $video_id );
+
+		if ( null === $transcoder_job_id ) {
+			return $this->video_not_available_response();
+		}
 
 		$query_params = array(
 			'api_key'        => $account_credentials['api_key'],
@@ -529,7 +551,11 @@ class Engagement extends Base {
 		$current_user       = rtgodam_get_current_logged_in_user_data();
 		$current_user_email = $current_user['email'];
 		$current_user_name  = $current_user['name'];
-		$transcoder_job_id  = $this->get_transcoder_job_id( $video_id );
+		$transcoder_job_id  = $this->get_visible_transcoder_job_id( $video_id );
+
+		if ( null === $transcoder_job_id ) {
+			return $this->video_not_available_response();
+		}
 
 		// Only the author may edit a comment, whatever id the browser sends.
 		if ( 'edit' === $comment_type ) {
@@ -1174,14 +1200,49 @@ class Engagement extends Base {
 	/**
 	 * Returns the transcoding job ID for a given video ID.
 	 *
-	 * @param int|string $video_id The video ID. If it starts with 'cmmid_', the rest is the transcoding job ID.
+	 * The job ID always comes from an attachment of this site, never from the
+	 * request itself: a numeric video ID is an attachment ID, and `cmmid_` followed
+	 * by a job ID stands for the attachment that carries that job ID.
 	 *
-	 * @return string|null The transcoding job ID, or null if not found.
+	 * @param int|string $video_id The video ID: an attachment ID, or 'cmmid_' and the transcoding job ID of one.
+	 *
+	 * @return string|null The transcoding job ID, or null if this site has no such video.
 	 */
 	public function get_transcoder_job_id( $video_id ) {
-		if ( 0 === strpos( $video_id, 'cmmid_' ) ) {
-			return preg_replace( '/^cmmid_/', '', $video_id );
-		}
+		return $this->find_transcoder_job_id( $video_id, false );
+	}
+
+	/**
+	 * Returns the transcoding job ID for a video of this site that the current user can see.
+	 *
+	 * A video is visible when its attachment is publicly viewable, or when the
+	 * current user may read it, as for an attachment of a private post.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int|string $video_id The video ID: an attachment ID, or 'cmmid_' and the transcoding job ID of one.
+	 *
+	 * @return string|null The transcoding job ID, or null if this site has no such video or the current user cannot see it.
+	 */
+	public function get_visible_transcoder_job_id( $video_id ) {
+		return $this->find_transcoder_job_id( $video_id, true );
+	}
+
+	/**
+	 * Finds the transcoding job ID of a video through the attachments of this site.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int|string $video_id     The video ID: an attachment ID, or 'cmmid_' and the transcoding job ID of one.
+	 * @param bool       $visible_only Whether to skip attachments the current user cannot see.
+	 *
+	 * @return string|null The transcoding job ID, or null if there is none.
+	 */
+	private function find_transcoder_job_id( $video_id, $visible_only ) {
+		$video_id   = (string) $video_id;
+		$named_job  = '';
+		$candidates = array();
+		$job_id     = '';
 
 		/**
 		 * Fires before reading this attachment's transcoding job ID, so
@@ -1191,10 +1252,79 @@ class Engagement extends Base {
 		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
-		$transcoder_job_id = get_post_meta( $video_id, 'rtgodam_transcoding_job_id', true );
+
+		if ( 0 === strpos( $video_id, 'cmmid_' ) ) {
+			$named_job = substr( $video_id, strlen( 'cmmid_' ) );
+
+			if ( '' !== $named_job ) {
+				// Central media keeps its job ID as the attachment's job ID or GoDAM ID.
+				$candidates = get_posts( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts
+					array(
+						'post_type'      => 'attachment',
+						'post_status'    => 'any',
+						'posts_per_page' => 10,
+						'fields'         => 'ids',
+						'no_found_rows'  => true,
+						'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required for finding the attachment by its job ID.
+							'relation' => 'OR',
+							array(
+								'key'   => 'rtgodam_transcoding_job_id',
+								'value' => $named_job,
+							),
+							array(
+								'key'   => '_godam_original_id',
+								'value' => $named_job,
+							),
+						),
+					)
+				);
+			}
+		} elseif ( ctype_digit( $video_id ) && (int) $video_id > 0 ) {
+			$candidates = array( (int) $video_id );
+		}
+
+		foreach ( $candidates as $attachment_id ) {
+			$attachment = get_post( $attachment_id );
+
+			if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+				continue;
+			}
+
+			if ( $visible_only && ! is_post_publicly_viewable( $attachment ) && ! current_user_can( 'read_post', $attachment->ID ) ) {
+				continue;
+			}
+
+			$job_id = '' !== $named_job ? $named_job : get_post_meta( $attachment->ID, 'rtgodam_transcoding_job_id', true );
+
+			if ( ! empty( $job_id ) ) {
+				break;
+			}
+		}
+
 		do_action( 'rtgodam_after_attachment_lookup' );
 
-		return ! empty( $transcoder_job_id ) ? $transcoder_job_id : null;
+		return ! empty( $job_id ) ? (string) $job_id : null;
+	}
+
+	/**
+	 * The refusal for a video the current user may not like or comment on.
+	 *
+	 * The same answer for a video that is not on this site, one that does not exist
+	 * and one the current user cannot see.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return WP_REST_Response
+	 */
+	private function video_not_available_response() {
+		return new WP_REST_Response(
+			array(
+				'status'    => 'error',
+				'message'   => __( 'This video is not available.', 'godam' ),
+				'errorType' => 'video_not_available',
+			),
+			403
+		);
 	}
 
 	/**

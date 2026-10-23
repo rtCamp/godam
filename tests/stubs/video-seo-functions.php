@@ -17,6 +17,9 @@ namespace {
 	// get_shortcode_regex(), used by the strip_shortcodes() stub below.
 	require_once __DIR__ . '/shortcode-functions.php';
 
+	// The post stubs: get_post and is_post_publicly_viewable.
+	require_once __DIR__ . '/post-functions.php';
+
 	/*
 	 * The HLS URL is read through rtgodam_get_hls_transcoded_url_from_attachment()
 	 * when admin/godam-transcoder-functions.php is loaded (EarlyTranslationHooksTest
@@ -77,30 +80,6 @@ namespace {
 					$this->$key = $value;
 				}
 			}
-		}
-	}
-
-	if ( ! function_exists( 'get_post' ) ) {
-
-		/**
-		 * @param int $post_id Post ID.
-		 * @return object|null Post from $GLOBALS['rtgodam_stub']['posts'][ $post_id ].
-		 */
-		function get_post( $post_id = 0 ) {
-			return $GLOBALS['rtgodam_stub']['posts'][ (int) $post_id ] ?? null;
-		}
-	}
-
-	if ( ! function_exists( 'is_post_publicly_viewable' ) ) {
-
-		/**
-		 * Published posts are viewable; a post stub without a status counts as published.
-		 *
-		 * @param WP_Post|object $post Post.
-		 * @return bool
-		 */
-		function is_post_publicly_viewable( $post = null ) {
-			return is_object( $post ) && 'publish' === ( $post->post_status ?? 'publish' );
 		}
 	}
 

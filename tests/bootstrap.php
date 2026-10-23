@@ -110,10 +110,14 @@ if ( ! function_exists( 'get_post_meta' ) ) {
 	 * @param bool   $single  Ignored; always single-value semantics.
 	 * @return mixed
 	 */
-	function get_post_meta( $post_id, $key = '', $single = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $post_id/$single are ignored.
+	function get_post_meta( $post_id, $key = '', $single = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $single is ignored.
 		$meta = isset( $GLOBALS['rtgodam_stub']['post_meta'] ) && is_array( $GLOBALS['rtgodam_stub']['post_meta'] )
 			? $GLOBALS['rtgodam_stub']['post_meta']
 			: array();
+		// A test that gives posts their own meta (`attachment_meta`, keyed by post ID) is answered per post.
+		if ( isset( $GLOBALS['rtgodam_stub']['attachment_meta'][ $post_id ] ) ) {
+			$meta = $GLOBALS['rtgodam_stub']['attachment_meta'][ $post_id ];
+		}
 		return array_key_exists( $key, $meta ) ? $meta[ $key ] : '';
 	}
 }
@@ -302,7 +306,8 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
  * ---------------------------------------------------------------------------
  * Stubs for AnalyticsRoutePermissionTest. The route table reads the
  * WP_REST_Server method constants, and the permission callbacks ask
- * current_user_can(), which answers from $GLOBALS['rtgodam_stub']['caps'].
+ * current_user_can(), which answers from $GLOBALS['rtgodam_stub']['caps'] and,
+ * for a capability asked about one post, from `object_caps`.
  * ---------------------------------------------------------------------------
  */
 if ( ! class_exists( 'WP_REST_Server' ) ) {
@@ -320,10 +325,15 @@ if ( ! function_exists( 'current_user_can' ) ) {
 
 	/**
 	 * @param string $capability Capability name.
-	 * @param mixed  ...$args    Ignored; object-level checks are not stubbed.
+	 * @param mixed  ...$args    Object ID of a meta capability. Answered from `object_caps`
+	 *                           (entries such as 'edit_post:12') when a test sets it, and
+	 *                           ignored otherwise.
 	 * @return bool
 	 */
-	function current_user_can( $capability, ...$args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $args are ignored.
+	function current_user_can( $capability, ...$args ) {
+		if ( isset( $args[0] ) && isset( $GLOBALS['rtgodam_stub']['object_caps'] ) ) {
+			return in_array( $capability . ':' . $args[0], (array) $GLOBALS['rtgodam_stub']['object_caps'], true );
+		}
 		$caps = isset( $GLOBALS['rtgodam_stub']['caps'] ) && is_array( $GLOBALS['rtgodam_stub']['caps'] )
 			? $GLOBALS['rtgodam_stub']['caps']
 			: array();
