@@ -7,6 +7,8 @@
 
 namespace RTGODAM\Inc\Taxonomies;
 
+use RTGODAM\Inc\Media_Library\Media_Folder_Utils;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -32,6 +34,76 @@ class Media_Folders extends Base {
 		parent::setup_hooks();
 
 		add_action( 'init', array( $this, 'register_term_meta' ) );
+
+		// The folder lock, applied where a folder is filled or created rather than on one route.
+		add_filter( 'map_meta_cap', array( $this, 'lock_folder_assignment' ), 10, 4 );
+		add_filter( 'pre_insert_term', array( $this, 'lock_folder_creation' ), 10, 3 );
+	}
+
+	/**
+	 * Refuse the `assign_term` capability for a locked folder.
+	 *
+	 * Core asks `assign_term` for each folder a request names before it files an attachment
+	 * there (the media route's `media-folder` field is one such request), so a locked folder,
+	 * or one inside a locked folder, takes no new files for any user. Same rule as the
+	 * assign-folder route.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string[] $caps    Primitive capabilities required of the user.
+	 * @param string   $cap     Capability being checked.
+	 * @param int      $user_id The user ID.
+	 * @param array    $args    Extra arguments; the first is the term ID for term capabilities.
+	 * @return string[] The capabilities, with `do_not_allow` added for a locked folder.
+	 */
+	public function lock_folder_assignment( $caps, $cap, $user_id, $args ) {
+		if ( 'assign_term' !== $cap || empty( $args[0] ) ) {
+			return $caps;
+		}
+
+		$term = get_term( (int) $args[0] );
+
+		if ( ! $term || is_wp_error( $term ) || static::SLUG !== $term->taxonomy ) {
+			return $caps;
+		}
+
+		if ( Media_Folder_Utils::get_instance()->is_folder_locked( $term->term_id ) ) {
+			$caps[] = 'do_not_allow';
+		}
+
+		return $caps;
+	}
+
+	/**
+	 * Refuse a new folder inside a locked folder.
+	 *
+	 * Runs for every way a folder is created, so a locked folder gets no new child
+	 * however the request arrives.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string|\WP_Error $term     The term name to add, or a WP_Error from an earlier filter.
+	 * @param string           $taxonomy Taxonomy slug.
+	 * @param array|string     $args     Arguments passed to wp_insert_term().
+	 * @return string|\WP_Error The term name, or a 403 WP_Error when the parent folder is locked.
+	 */
+	public function lock_folder_creation( $term, $taxonomy, $args ) {
+		if ( static::SLUG !== $taxonomy || is_wp_error( $term ) ) {
+			return $term;
+		}
+
+		$args   = wp_parse_args( $args );
+		$parent = isset( $args['parent'] ) ? (int) $args['parent'] : 0;
+
+		if ( $parent > 0 && Media_Folder_Utils::get_instance()->is_folder_locked( $parent ) ) {
+			return new \WP_Error(
+				'godam_folder_locked',
+				__( 'The destination folder is locked and cannot be modified.', 'godam' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		return $term;
 	}
 
 	/**
