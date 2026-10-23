@@ -37,6 +37,7 @@ class TranscodedAudioMimeTypeTest extends TestCase {
 			define( 'RTGODAM_PATH', dirname( __DIR__, 2 ) . '/' );
 		}
 		require_once dirname( __DIR__, 2 ) . '/admin/class-rtgodam-transcoder-handler.php';
+		require_once dirname( __DIR__ ) . '/stubs/transcoded-file-functions.php';
 
 		// phpcs:disable Squiz.PHP.Eval.Discouraged -- test-only stubs, isolated process.
 		eval( 'function wp_upload_bits( $name, $deprecated, $bits ) { return array( "file" => "/uploads/2026/10/" . $name, "url" => "https://example.test/uploads/2026/10/" . $name ); }' );
@@ -56,7 +57,7 @@ class TranscodedAudioMimeTypeTest extends TestCase {
 	public function test_converted_audio_is_saved_as_audio_mpeg( $uploaded_type ) {
 		$GLOBALS['rtgodam_stub']['mime'] = $uploaded_type;
 
-		$this->handler()->add_transcoded_files( array( 'mp3' => array( 'https://cdn.example.test/voice-note.mp3' ) ), 12, 'wp-media' );
+		$this->handler()->add_transcoded_files( array( 'mp3' => array( 'https://n8e0ka87m9.gdcdn.us/vo15od683f/voice-note.mp3' ) ), 12, 'wp-media' );
 
 		$this->assertSame(
 			array(
@@ -89,7 +90,7 @@ class TranscodedAudioMimeTypeTest extends TestCase {
 	public function test_converted_video_is_still_saved_as_video_mp4() {
 		$GLOBALS['rtgodam_stub']['mime'] = 'video/quicktime';
 
-		$this->handler()->add_transcoded_files( array( 'mp4' => array( 'https://cdn.example.test/clip.mp4' ) ), 7, 'wp-media' );
+		$this->handler()->add_transcoded_files( array( 'mp4' => array( 'https://n8e0ka87m9.gdcdn.us/vo15od683f/clip.mp4' ) ), 7, 'wp-media' );
 
 		$this->assertSame( 'video/mp4', $GLOBALS['rtgodam_stub']['updates'][0]['post_mime_type'] );
 	}

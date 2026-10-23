@@ -3047,3 +3047,79 @@ function rtgodam_get_request_site_origin( $requested_origin ) {
 
 	return $origin;
 }
+
+/**
+ * Get the hosts GoDAM Central serves transcoded files from.
+ *
+ * Central gives each account its own subdomain on its CDN domain, for example
+ * `https://abc123def4.gdcdn.us/{job_id}/video.mp4`, so a name here matches that
+ * host and any subdomain of it.
+ *
+ * @since n.e.x.t
+ *
+ * @return string[] Lowercase host names, without scheme, port or path.
+ */
+function rtgodam_get_transcoder_file_hosts() {
+	/**
+	 * Filters the hosts the transcoder callback may download files from.
+	 *
+	 * A name matches that host and any subdomain of it. Add the CDN domain of a
+	 * self-hosted or staging GoDAM Central here, or a domain the CDN is served from.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string[] $hosts Host names, such as `gdcdn.us`.
+	 */
+	$hosts = apply_filters( 'rtgodam_transcoder_file_hosts', array( 'gdcdn.us' ) );
+
+	$clean = array();
+
+	foreach ( is_array( $hosts ) ? $hosts : array() as $host ) {
+		$host = is_string( $host ) ? strtolower( trim( $host, " \t\n\r\0\x0B." ) ) : '';
+
+		if ( '' !== $host ) {
+			$clean[] = $host;
+		}
+	}
+
+	return array_values( array_unique( $clean ) );
+}
+
+/**
+ * Whether a URL is a file URL on a host GoDAM Central serves transcoded files from.
+ *
+ * The URL must use https, carry no username or password, and name a plain host
+ * that is one of rtgodam_get_transcoder_file_hosts() or a subdomain of one. It is
+ * checked as written, so check the decoded form of a URL that is decoded before use.
+ *
+ * @since n.e.x.t
+ *
+ * @param mixed $url URL to check.
+ * @return bool
+ */
+function rtgodam_is_transcoder_file_url( $url ) {
+	if ( ! is_string( $url ) || '' === $url ) {
+		return false;
+	}
+
+	$parts = wp_parse_url( $url );
+
+	if ( ! is_array( $parts ) || empty( $parts['host'] ) || 'https' !== strtolower( $parts['scheme'] ?? '' ) || isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
+		return false;
+	}
+
+	$host = strtolower( rtrim( $parts['host'], '.' ) );
+
+	// Letters, digits and hyphens only, so nothing here can be read as another host.
+	if ( 1 !== preg_match( '/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/', $host ) ) {
+		return false;
+	}
+
+	foreach ( rtgodam_get_transcoder_file_hosts() as $allowed_host ) {
+		if ( $host === $allowed_host || substr( $host, -( strlen( $allowed_host ) + 1 ) ) === '.' . $allowed_host ) {
+			return true;
+		}
+	}
+
+	return false;
+}
