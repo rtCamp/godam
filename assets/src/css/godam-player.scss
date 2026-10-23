@@ -3110,9 +3110,11 @@ body.godam-player-modal-open {
 	outline: none;
 	transition: opacity 0.3s ease;
 
-	/* dvh accounts for mobile browser chrome; vh above is the fallback. */
-	@supports (max-height: 90dvh) {
-		--godam-lightbox-max-h: calc(90dvh - var(--godam-lightbox-close-gap));
+	/* svh is the viewport with the mobile browser's toolbar showing, so the cap
+	 * stays put as the toolbar shows and hides (dvh follows it, which resized
+	 * the video mid-view). vh above is the fallback. */
+	@supports (max-height: 90svh) {
+		--godam-lightbox-max-h: calc(90svh - var(--godam-lightbox-close-gap));
 	}
 
 	&.is-active {
@@ -3174,7 +3176,8 @@ body.godam-player-modal-open {
 	display: block;
 	width: 100%;
 	aspect-ratio: 16 / 9;
-	max-height: 90dvh;
+	max-height: 90vh;
+	max-height: 90svh; // Steady as the mobile toolbar shows and hides; see the wrapper.
 	border: 0;
 	background: #000;
 }
