@@ -1,5 +1,10 @@
 
 /**
+ * Most IDs the status route answers for in one request (Transcoding::MAX_STATUS_IDS).
+ */
+const MAX_IDS_PER_REQUEST = 100;
+
+/**
  * Class to check the Transcoding status from API.
  */
 class TranscodingChecker {
@@ -24,14 +29,33 @@ class TranscodingChecker {
 		return nonce ? { headers: { 'X-WP-Nonce': nonce } } : {};
 	}
 
-	async fetchStatusOnce( postIds ) {
-		const url = this.buildUrl( postIds );
-		if ( ! url ) {
-			return;
+	/**
+	 * Fetch the status of every ID, in requests of at most MAX_IDS_PER_REQUEST.
+	 *
+	 * @param {Array} postIds Attachment IDs.
+	 * @return {Promise<Object|null>} Statuses keyed by ID, or null when there is no valid ID.
+	 */
+	async fetchBatches( postIds ) {
+		const validIds = postIds.map( ( id ) => parseInt( id ) ).filter( ( id ) => Number.isInteger( id ) && id > 0 );
+		if ( validIds.length === 0 ) {
+			return null;
 		}
+
+		const requests = [];
+		for ( let start = 0; start < validIds.length; start += MAX_IDS_PER_REQUEST ) {
+			const url = this.buildUrl( validIds.slice( start, start + MAX_IDS_PER_REQUEST ) );
+			requests.push( fetch( url, this.requestOptions() ).then( ( response ) => response.json() ) );
+		}
+
+		return Object.assign( {}, ...( await Promise.all( requests ) ) );
+	}
+
+	async fetchStatusOnce( postIds ) {
 		try {
-			const response = await fetch( url, this.requestOptions() );
-			const data = await response.json();
+			const data = await this.fetchBatches( postIds );
+			if ( ! data ) {
+				return;
+			}
 			this.updateCallback( data );
 		} catch ( error ) {
 			throw error;
@@ -39,14 +63,11 @@ class TranscodingChecker {
 	}
 
 	async fetchStatus() {
-		const url = this.buildUrl( this.postIds );
-		if ( ! url ) {
-			return;
-		}
-
 		try {
-			const response = await fetch( url, this.requestOptions() );
-			const data = await response.json();
+			const data = await this.fetchBatches( this.postIds );
+			if ( ! data ) {
+				return;
+			}
 
 			this.updateCallback( data );
 			this.filterPostIds( data );

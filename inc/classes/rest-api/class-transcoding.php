@@ -33,6 +33,30 @@ class Transcoding extends Base {
 	const DEFAULT_MEDIA_TYPE = 'video';
 
 	/**
+	 * Most attachment IDs the public status route answers for in one request.
+	 *
+	 * The route is open to visitors and reads several meta rows per ID, so a longer
+	 * list is refused. 100 is the largest page WordPress's own REST collections
+	 * return; the media library sends its IDs in batches of that size.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int
+	 */
+	const MAX_STATUS_IDS = 100;
+
+	/**
+	 * Seconds after a status update during which a transcoded video that has no
+	 * thumbnail yet is still reported as generating one. About the three polls,
+	 * five seconds apart, that the media library used to count.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int
+	 */
+	const THUMBNAIL_WAIT_SECONDS = 15;
+
+	/**
 	 * Media types that can be fetched for transcoding, mapped to the MIME types they cover.
 	 *
 	 * The keys are the accepted values of the `media_type` parameter on the
@@ -145,9 +169,11 @@ class Transcoding extends Base {
 						'ids' => array(
 							'required'          => true,
 							'type'              => 'array',
+							'maxItems'          => self::MAX_STATUS_IDS,
 							'description'       => __( 'The array of attachment IDs.', 'godam' ),
+							// The callback enforces maxItems: core only checks it through rest_validate_request_arg().
 							'validate_callback' => function ( $param ) {
-								return is_array( $param );
+								return is_array( $param ) && count( $param ) <= self::MAX_STATUS_IDS;
 							},
 						),
 					),
@@ -259,6 +285,7 @@ class Transcoding extends Base {
 
 		update_post_meta( $attachment_id, 'rtgodam_transcoding_status', $status );
 		update_post_meta( $attachment_id, 'rtgodam_transcoding_progress', $progress );
+		update_post_meta( $attachment_id, 'rtgodam_transcoding_status_updated', time() );
 
 		do_action( 'rtgodam_after_attachment_lookup' );
 		wp_send_json_success(
@@ -271,6 +298,8 @@ class Transcoding extends Base {
 	/**
 	 * Return transcoding status of a media.
 	 *
+	 * Reads only. IDs the user may not see are left out, as if they were missing.
+	 *
 	 * @param \WP_REST_Request $request REST request object.
 	 *
 	 * @return WP_REST_Response|WP_Error
@@ -282,6 +311,13 @@ class Transcoding extends Base {
 		$response_object = array();
 
 		foreach ( $attachment_ids as $attachment_id ) {
+			$attachment_id = absint( $attachment_id );
+
+			// Leave out media the user may not see, and IDs that aren't media, alike.
+			if ( ! rtgodam_can_view_attachment( $attachment_id ) ) {
+				continue;
+			}
+
 			$status_object                     = $this->get_status_object_from_attachment( $attachment_id );
 			$response_object[ $attachment_id ] = $status_object;
 		}
@@ -298,9 +334,9 @@ class Transcoding extends Base {
 	 */
 	private function get_status_object_from_attachment( int $attachment_id ) {
 		/**
-		 * Fires before reading/writing this attachment's transcoding-status
-		 * metadata (job ID, status, error code/message, progress, thumbnail
-		 * ID, and the thumbnail-retry counter), so integrations that
+		 * Fires before reading this attachment's transcoding-status metadata
+		 * (job ID, status, error code/message, progress, thumbnail ID, and
+		 * the time of the last status update), so integrations that
 		 * centralize media on another site can switch context first. Wrapped
 		 * in try/finally because this method returns early from several
 		 * branches below.
@@ -371,16 +407,13 @@ class Transcoding extends Base {
 			// Check if media has thumbnail generated after transcoding.
 			$thumbnail_id = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
-			// Handle retry logic for missing thumbnails when transcoding is complete.
+			// A thumbnail missing right after transcoding may still be on its way. Report 95%
+			// for a short while after the status was set, then carry on without it. This is a
+			// read: the time was stored when the status was updated, nothing is written here.
 			if ( 'transcoded' === strtolower( $status ) && empty( $thumbnail_id ) ) {
-				$retry_count = intval( get_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', true ) );
-				$max_retries = 3;
+				$status_updated = intval( get_post_meta( $attachment_id, 'rtgodam_transcoding_status_updated', true ) );
 
-				if ( $retry_count < $max_retries ) {
-					// Increment retry count.
-					update_post_meta( $attachment_id, 'rtgodam_thumbnail_retry_count', $retry_count + 1 );
-
-					// Return transcoding status with 95% progress to indicate waiting for thumbnail.
+				if ( $status_updated && time() - $status_updated < self::THUMBNAIL_WAIT_SECONDS ) {
 					return array(
 						'status'    => 'transcoding',
 						'progress'  => 95,
@@ -388,7 +421,6 @@ class Transcoding extends Base {
 						'thumbnail' => '',
 					);
 				}
-				// If max retries reached, continue with normal flow (return transcoded status without thumbnail).
 			}
 
 			return array(

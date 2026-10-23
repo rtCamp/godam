@@ -88,9 +88,8 @@ class Dynamic_Shortcode extends Base {
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
-			$attachment = get_post( $id );
-
-			if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			// Media the visitor may not see answers exactly like a missing one.
+			if ( ! rtgodam_can_view_attachment( $id ) ) {
 				return new WP_REST_Response(
 					array(
 						'status'  => 'error',
