@@ -34,8 +34,11 @@ use RTGODAM\Inc\Traits\Singleton;
  * (rtgodam_get_user_data()), so there is no extra call to Central.
  *
  * The cookie identifies a person to their own marketing tool, so it is treated as
- * personal data throughout: it is never logged, never stored in an option or transient,
- * and only ever travels to Central over the server-to-server call.
+ * personal data throughout: it is never logged or stored in an option or transient,
+ * and only ever travels to Central over the server-to-server call. The one place it
+ * is written down is the arguments of the forward's Action Scheduler row, which is
+ * deleted as soon as the forward finishes (delete_finished_forward()). A forward
+ * that has not run yet keeps its row until it does.
  */
 class Map_Tracker {
 
@@ -92,6 +95,16 @@ class Map_Tracker {
 		// The async forward. The trailing attempt counter drives the retry back-off,
 		// so the callback takes one more argument than the scheduling payload.
 		add_action( self::ASYNC_HOOK, array( $this, 'async_map_event' ), 10, 2 );
+
+		/*
+		 * A forward's row carries the visitor's cookie, so it is deleted as soon as the
+		 * forward has finished, whichever way it finished. Priority 20 puts this after
+		 * Action Scheduler's own logger (priority 10), so deleting the row also clears
+		 * the log line it just wrote instead of leaving one behind.
+		 */
+		add_action( 'action_scheduler_completed_action', array( $this, 'delete_finished_forward' ), 20 );
+		add_action( 'action_scheduler_failed_execution', array( $this, 'delete_finished_forward' ), 20 );
+		add_action( 'action_scheduler_failed_action', array( $this, 'delete_finished_forward' ), 20 );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_script' ) );
 
@@ -423,5 +436,38 @@ class Map_Tracker {
 		$delay = MINUTE_IN_SECONDS * pow( 2, $attempt - 1 );
 
 		as_schedule_single_action( time() + $delay, self::ASYNC_HOOK, array( $event, $attempt + 1 ) );
+	}
+
+	/**
+	 * Delete a forward's Action Scheduler row once it has finished.
+	 *
+	 * The row's arguments hold the visitor's `_mkto_trk` / `hubspotutk` cookie.
+	 * Left alone, Action Scheduler keeps a completed row for 31 days and a failed
+	 * one indefinitely, and shows its arguments under Tools > Scheduled Actions. A
+	 * retry is scheduled as a new row before this one finishes, so nothing is lost.
+	 *
+	 * Hooked to every action that completes or fails on the site, so anything that
+	 * is not a forward is left exactly as it was.
+	 *
+	 * @param int $action_id Action Scheduler action ID.
+	 * @return void
+	 */
+	public function delete_finished_forward( $action_id ) {
+		if ( ! class_exists( 'ActionScheduler' ) ) {
+			return;
+		}
+
+		try {
+			$store = \ActionScheduler::store();
+
+			if ( self::ASYNC_HOOK !== $store->fetch_action( $action_id )->get_hook() ) {
+				return;
+			}
+
+			$store->delete_action( $action_id );
+		} catch ( \Exception $e ) {
+			// Already deleted by another process: nothing left to clean up.
+			return;
+		}
 	}
 }
