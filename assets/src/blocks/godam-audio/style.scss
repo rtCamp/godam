@@ -10,10 +10,14 @@
 
 .wp-block-godam-audio {
 	box-sizing: border-box;
-	// Fill the inline space of the container. Without this the block root is a
-	// flex item with the default `flex: 0 1 auto` when placed inside a core Group
-	// using a Row/Stack (flex) layout, so it collapses to its min-content width
-	// (the player controls) instead of filling. Matches the flow/grid/columns
-	// layouts.
+}
+
+// Fill the inline space of a flex container. Inside a core Group using a
+// Row/Stack (flex) layout the block root is a flex item with the default
+// `flex: 0 1 auto`, so it collapses to its min-content width (the player
+// controls) instead of filling. Scoped to flex parents because flow,
+// constrained and grid parents already stretch the block, and a root
+// `width: 100%` there would break Align: Full width and side margins.
+:where(.is-layout-flex) > .wp-block-godam-audio {
 	width: 100%;
 }

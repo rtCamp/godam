@@ -240,9 +240,14 @@
 	// ── Card view ────────────────────────────────────────────────────────────
 	.godam-pdf-preview--card {
 		width: 100%;
-		// Query container so the card stacks based on the width the block is given
-		// by its parent (column, grid cell, flex item) rather than the viewport,
-		// mirroring the front end so the editor preview matches the rendered output.
+	}
+
+	// Query container so the card stacks based on the width the block is given
+	// by its parent (column, grid cell, flex item) rather than the viewport,
+	// mirroring the front end so the editor preview matches the rendered output.
+	// Floated (Align left/right) blocks are skipped, as on the front end, so
+	// inline-size containment doesn't collapse the shrink-to-fit float to zero.
+	&:not(.alignleft, .alignright) .godam-pdf-preview--card {
 		container-type: inline-size;
 		container-name: godam-pdf-card;
 	}

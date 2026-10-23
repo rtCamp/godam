@@ -1,11 +1,6 @@
 .wp-block-godam-video-thumbnail {
 	// This block has customizable padding, border-box makes that more predictable.
 	box-sizing: border-box;
-	// Fill the inline space of the container so the thumbnail doesn't collapse to
-	// its min-content width when placed as a flex item inside a core Group using a
-	// Row/Stack layout (its intended home is a grid/query-loop cell that gives it
-	// width); keeps it consistent with the flow/grid/columns layouts.
-	width: 100%;
 	height: 100%;
 	position: relative;
 
@@ -48,4 +43,13 @@
 	&:hover .godam-video-thumbnail__play-button {
 		transform: translate(-50%, -50%) scale(1.1);
 	}
+}
+
+// Fill the inline space of a flex container so the thumbnail doesn't collapse to
+// its min-content width when placed as a flex item inside a core Group using a
+// Row/Stack layout (its intended home is a grid/query-loop cell that gives it
+// width). Scoped to flex parents because a root `width: 100%` elsewhere would
+// break Align: Full width.
+:where(.is-layout-flex) > .wp-block-godam-video-thumbnail {
+	width: 100%;
 }
