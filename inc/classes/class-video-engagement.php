@@ -83,12 +83,13 @@ class Video_Engagement {
 
 		$brand_color = '#000'; // Default brand color.
 
+		// The colour is printed into an inline style, so a value that is not a plain colour keeps the one before it.
 		if ( ! empty( $godam_settings['video_player']['brand_color'] ) ) {
-			$brand_color = $godam_settings['video_player']['brand_color'];
+			$brand_color = rtgodam_sanitize_css_color( $godam_settings['video_player']['brand_color'], $brand_color );
 		}
 
 		if ( ! empty( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ) {
-			$brand_color = $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'];
+			$brand_color = rtgodam_sanitize_css_color( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'], $brand_color );
 		}
 		?>
 		<div class="rtgodam-video-engagement rtgodam-video-engagement--link-disabled" 
