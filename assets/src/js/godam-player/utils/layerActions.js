@@ -139,6 +139,7 @@ export const FORM_TYPE_LABELS = {
 	ninjaforms: 'Ninja Forms',
 	metform: 'MetForm',
 	marketo: 'Marketo',
+	hubspot: 'HubSpot',
 };
 
 const UUID_SHAPE_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

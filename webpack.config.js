@@ -228,6 +228,13 @@ const marketoFormJS = {
 	},
 };
 
+const hubspotFormJS = {
+	...sharedConfig,
+	entry: {
+		'hubspot-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'hubspot-form.js' ),
+	},
+};
+
 const elementorWidgetJS = {
 	...sharedConfig,
 	entry: {
@@ -464,6 +471,7 @@ module.exports = [
 	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
 	marketoFormJS,
+	hubspotFormJS,
 	styles, // Do not remove this.
 	pages,
 	elementorWidgetJS,

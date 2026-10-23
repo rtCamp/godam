@@ -50,6 +50,10 @@ const initialState = {
 		marketo: {
 			enable: true,
 		},
+		hubspot: {
+			enable: true,
+			source: 'central',
+		},
 	},
 	isChanged: false,
 };

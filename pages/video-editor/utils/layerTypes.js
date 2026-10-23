@@ -29,6 +29,7 @@ import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
 import MarketoIcon from '../assets/layers/MarketoIcon.svg';
+import HubSpotIcon from '../assets/layers/HubSpotIcon.svg';
 
 /**
  * Per-form-plugin display name and icon, keyed by a form layer's `form_type`.
@@ -47,6 +48,7 @@ export const FORM_PLUGIN_META = {
 	ninjaforms: { name: __( 'Ninja Forms', 'godam' ), icon: NinjaFormsIcon },
 	metform: { name: __( 'MetForm', 'godam' ), icon: MetformIcon },
 	marketo: { name: __( 'Marketo', 'godam' ), icon: MarketoIcon },
+	hubspot: { name: __( 'HubSpot', 'godam' ), icon: HubSpotIcon },
 };
 
 /**

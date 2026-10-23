@@ -22,6 +22,15 @@ use RTGODAM\Inc\REST_API\Marketo_Integration;
 
 require_once dirname( __DIR__, 2 ) . '/inc/classes/class-marketo.php';
 require_once dirname( __DIR__, 2 ) . '/inc/helpers/class-api-key.php';
+
+// Once the HubSpot work lands, Marketo_Integration gets call_central() from the
+// shared Central_Client trait; load it when present (it does not exist on the
+// Marketo-only branch, where call_central is a private method on the class).
+$godam_central_client_trait = dirname( __DIR__, 2 ) . '/inc/traits/trait-central-client.php';
+if ( file_exists( $godam_central_client_trait ) ) {
+	require_once $godam_central_client_trait;
+}
+
 require_once dirname( __DIR__, 2 ) . '/inc/classes/rest-api/class-marketo-integration.php';
 
 /**

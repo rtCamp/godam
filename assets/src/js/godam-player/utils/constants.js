@@ -25,6 +25,7 @@ export const FORM_TYPES = {
 	NINJA: 'ninjaforms',
 	METFORM: 'metform',
 	MARKETO: 'marketo',
+	HUBSPOT: 'hubspot',
 };
 
 /**
