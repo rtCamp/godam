@@ -3,7 +3,7 @@
  * Unit tests for media visibility on GoDAM's public routes and pages.
  *
  * Media is shown to a visitor only where WordPress would show it: unattached, or
- * attached to a post that is published and has no password. Media used on a
+ * attached to a post that is published, with or without a password. Media used on a
  * publicly viewable post counts as public whichever post it was uploaded to, and
  * whoever can edit the media always sees it. Covers the helper, the gallery query,
  * the preview and embed pages, the ad tag route, the stored-settings REST field,
@@ -153,7 +153,7 @@ class MediaVisibilityTest extends TestCase {
 			'private'            => array( array( 'post_status' => 'private' ), false ),
 			'scheduled'          => array( array( 'post_status' => 'future' ), false ),
 			'trashed'            => array( array( 'post_status' => 'trash' ), false ),
-			'password protected' => array( array( 'post_password' => 'secret' ), false ),
+			'password protected' => array( array( 'post_password' => 'secret' ), true ),
 		);
 	}
 
@@ -232,30 +232,25 @@ class MediaVisibilityTest extends TestCase {
 		$this->assertTrue( rtgodam_can_view_attachment( 10 ) );
 	}
 
-	public function test_a_user_who_can_edit_a_password_protected_parent_sees_its_media() {
+	public function test_a_password_protected_parent_shows_its_media_as_wordpress_does() {
 		$this->add_video_with_parent( array( 'post_password' => 'secret' ) );
-		$GLOBALS['rtgodam_stub']['caps'] = array( 'edit_post:5' );
 
 		$this->assertTrue( rtgodam_can_view_attachment( 10 ) );
 	}
 
-	public function test_a_visitor_who_entered_the_password_sees_the_media_of_that_page() {
-		$this->add_video_with_parent( array( 'post_password' => 'secret' ) );
-		$GLOBALS['rtgodam_stub']['unlocked'] = array( 5 );
-
-		$this->assertTrue( rtgodam_can_view_attachment( 10 ) );
-	}
-
-	public function test_a_readable_parent_does_not_unlock_its_password() {
+	public function test_a_private_password_protected_parent_follows_its_status() {
 		$this->add_video_with_parent(
 			array(
 				'post_status'   => 'private',
 				'post_password' => 'secret',
 			)
 		);
-		$GLOBALS['rtgodam_stub']['caps'] = array( 'read_post:5' );
 
 		$this->assertFalse( rtgodam_can_view_attachment( 10 ) );
+
+		$GLOBALS['rtgodam_stub']['caps'] = array( 'read_post:5' );
+
+		$this->assertTrue( rtgodam_can_view_attachment( 10 ) );
 	}
 
 	public function test_lookup_hooks_are_balanced_however_the_check_ends() {
@@ -307,12 +302,18 @@ class MediaVisibilityTest extends TestCase {
 	 */
 	public function non_public_usage_provider() {
 		return array(
-			'draft'              => array( array( 'post_status' => 'draft' ) ),
-			'private'            => array( array( 'post_status' => 'private' ) ),
-			'scheduled'          => array( array( 'post_status' => 'future' ) ),
-			'trashed'            => array( array( 'post_status' => 'trash' ) ),
-			'password protected' => array( array( 'post_password' => 'secret' ) ),
+			'draft'     => array( array( 'post_status' => 'draft' ) ),
+			'private'   => array( array( 'post_status' => 'private' ) ),
+			'scheduled' => array( array( 'post_status' => 'future' ) ),
+			'trashed'   => array( array( 'post_status' => 'trash' ) ),
 		);
+	}
+
+	public function test_media_used_on_a_password_protected_published_post_is_public() {
+		$this->add_video_with_parent( array( 'post_status' => 'draft' ), array( 7 ) );
+		$this->add_post( 7, array( 'post_password' => 'secret' ) );
+
+		$this->assertTrue( rtgodam_can_view_attachment( 10 ) );
 	}
 
 	/**
@@ -468,7 +469,7 @@ class MediaVisibilityTest extends TestCase {
 		$this->assertStringStartsWith( ' AND 1=1 AND (', $clauses['where'] );
 		$this->assertStringContainsString( 'rtgodam_media_parent.ID IS NULL', $clauses['where'] );
 		$this->assertStringContainsString( "rtgodam_media_parent.post_status IN ( 'publish' )", $clauses['where'] );
-		$this->assertStringContainsString( "rtgodam_media_parent.post_password = ''", $clauses['where'] );
+		$this->assertStringNotContainsString( 'post_password', $clauses['where'] );
 		$this->assertStringNotContainsString( 'wp_posts.ID IN', $clauses['where'] );
 	}
 
@@ -501,7 +502,7 @@ class MediaVisibilityTest extends TestCase {
 		$this->assertStringContainsString( "usage_meta.meta_key = '" . self::USAGE_KEY . "'", $query );
 		$this->assertStringContainsString( "media.post_mime_type LIKE 'video/%'", $query );
 		$this->assertStringContainsString( "media_parent.post_status NOT IN ( 'publish' )", $query );
-		$this->assertStringContainsString( "media_parent.post_password <> ''", $query );
+		$this->assertStringNotContainsString( 'post_password', $query );
 	}
 
 	public function test_only_media_used_on_a_public_post_makes_the_set() {
@@ -518,7 +519,7 @@ class MediaVisibilityTest extends TestCase {
 		$this->add_post( 8, array( 'post_status' => 'private' ) );
 		$this->add_post( 9, array( 'post_password' => 'secret' ) );
 
-		$this->assertSame( array( 21, 24, 27 ), rtgodam_get_publicly_used_media_ids( true ) );
+		$this->assertSame( array( 21, 23, 24, 27 ), rtgodam_get_publicly_used_media_ids( true ) );
 	}
 
 	public function test_the_used_media_set_is_read_once_per_request() {

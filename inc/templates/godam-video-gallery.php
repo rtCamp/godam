@@ -178,7 +178,7 @@ if ( ! function_exists( 'rtgodam_gallery_v2_build_query_args' ) ) {
 			'no_found_rows'             => false,
 			'update_post_meta_cache'    => true,
 			'update_post_term_cache'    => true,
-			// Leave out media of drafts, private and password-protected posts
+			// Leave out media of draft, private, scheduled and trashed posts
 			// (see rtgodam_public_media_query_clauses()).
 			'rtgodam_public_media_only' => true,
 		);

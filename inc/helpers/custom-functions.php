@@ -2122,10 +2122,9 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
  *
  * Media follows the post it was uploaded to, as WordPress's own media API does.
  * It is shown when it is unattached, or when that post is published (or has
- * another public status) and has no password the visitor has not entered.
- * Users who can edit the attachment always see it, so editors can preview
- * their own unpublished media; users who can read a private or draft parent,
- * or edit a password-protected one, see its media too.
+ * another public status), with or without a password. Users who can edit the
+ * attachment always see it, so editors can preview their own unpublished
+ * media; users who can read a private or draft parent see its media too.
  *
  * Media used on a publicly viewable post is shown as well, whichever post it
  * was uploaded to: a video uploaded while drafting one post and placed on a
@@ -2168,9 +2167,7 @@ function rtgodam_can_view_attachment( $attachment_id ) {
 
 		// A parent that no longer exists counts as unattached, as in get_post_status().
 		if ( $parent && ! current_user_can( 'edit_post', $attachment_id ) ) {
-			$is_readable = is_post_status_viewable( get_post_status( $parent ) ) || current_user_can( 'read_post', $parent_id );
-			$is_unlocked = ! post_password_required( $parent ) || current_user_can( 'edit_post', $parent_id );
-			$can_view    = $is_readable && $is_unlocked;
+			$can_view = is_post_status_viewable( get_post_status( $parent ) ) || current_user_can( 'read_post', $parent_id );
 		}
 	} finally {
 		do_action( 'rtgodam_after_attachment_lookup' );
@@ -2199,7 +2196,7 @@ function rtgodam_can_view_attachment( $attachment_id ) {
 
 /**
  * Whether any of the given posts, listed in a media usage record, shows its
- * media to everyone: a post that is publicly viewable and has no password.
+ * media to everyone: a post that is publicly viewable.
  * Post ID 0 is the site-wide anchor for media in a block widget, which shows
  * on every page.
  *
@@ -2216,7 +2213,7 @@ function rtgodam_usage_includes_public_post( array $post_ids ) {
 
 		$post = get_post( $post_id ); // godam-coverage-ignore -- rtgodam_usage_includes_public_post(): the IDs come from the media usage index and name the posts that use the media, never attachments.
 
-		if ( $post && '' === (string) $post->post_password && is_post_publicly_viewable( $post ) ) {
+		if ( $post && is_post_publicly_viewable( $post ) ) {
 			return true;
 		}
 	}
@@ -2239,7 +2236,7 @@ function rtgodam_get_viewable_post_statuses() {
 
 /**
  * IDs of the video attachments that were uploaded to a post that is not public
- * (a draft, a private or password-protected post, and so on) but are used on one
+ * (a draft, a private or scheduled post, and so on) but are used on one
  * that is. The listing query keeps these, see rtgodam_public_media_query_clauses().
  *
  * Read once per request and site: the usage index lists the posts as serialized
@@ -2282,7 +2279,7 @@ function rtgodam_get_publicly_used_media_ids( $refresh = false ) {
 			INNER JOIN {$wpdb->postmeta} AS usage_meta ON usage_meta.post_id = media.ID AND usage_meta.meta_key = %s
 			WHERE media.post_type = 'attachment'
 			AND media.post_mime_type LIKE %s
-			AND ( media_parent.post_status NOT IN ( {$placeholders} ) OR media_parent.post_password <> '' )", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- table names from $wpdb; the meta key and mime type, then one %s per status.
+			AND media_parent.post_status NOT IN ( {$placeholders} )", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- table names from $wpdb; the meta key and mime type, then one %s per status.
 			$query_args
 		)
 	);
@@ -2320,8 +2317,8 @@ function rtgodam_get_publicly_used_media_ids( $refresh = false ) {
 
 /**
  * Limit a query flagged with `rtgodam_public_media_only` to attachments that are
- * unattached, or whose parent post is published (or has another public status)
- * and has no password, plus the media used on a public post whichever post it
+ * unattached, or whose parent post is published (or has another public status),
+ * plus the media used on a public post whichever post it
  * was uploaded to (see rtgodam_get_publicly_used_media_ids()).
  *
  * The SQL counterpart of rtgodam_can_view_attachment(), for listings: filtering
@@ -2354,7 +2351,7 @@ function rtgodam_public_media_query_clauses( $clauses, $query ) {
 
 	// A parent that no longer exists counts as unattached, as in get_post_status().
 	$clauses['where'] .= $wpdb->prepare(
-		" AND ( rtgodam_media_parent.ID IS NULL OR ( rtgodam_media_parent.post_status IN ( {$status_placeholders} ) AND rtgodam_media_parent.post_password = '' ){$used_clause} )", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names from $wpdb; one %s per status and one %d per media ID.
+		" AND ( rtgodam_media_parent.ID IS NULL OR rtgodam_media_parent.post_status IN ( {$status_placeholders} ){$used_clause} )", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names from $wpdb; one %s per status and one %d per media ID.
 		array_merge( $statuses, $used_media_ids )
 	);
 

@@ -143,7 +143,7 @@ class MediaVisibilityShortcodeRouteTest extends TestCase {
 			'private'            => array( array( 'post_status' => 'private' ), false ),
 			'scheduled'          => array( array( 'post_status' => 'future' ), false ),
 			'trashed'            => array( array( 'post_status' => 'trash' ), false ),
-			'password protected' => array( array( 'post_password' => 'secret' ), false ),
+			'password protected' => array( array( 'post_password' => 'secret' ), true ),
 		);
 	}
 
