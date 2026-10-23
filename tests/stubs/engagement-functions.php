@@ -10,6 +10,13 @@
  *                   leave it unset for a logged-out visitor.
  *  - `post_handler` callable( $url, $args ) that answers a wp_remote_post() call.
  *  - `posts`        every wp_remote_post() call, recorded as array( 'url', 'args' ).
+ *  - `site_posts`, `attachment_meta`, `video_posts`, `object_caps`
+ *                   the site's videos, which the routes look up before they ask
+ *                   Central: see rtgodam_stub_video(). `site_posts` is what
+ *                   get_post() reads (video-seo-functions.php), kept apart from
+ *                   `posts` above; `attachment_meta` and `object_caps` are read
+ *                   by get_post_meta() and current_user_can() in bootstrap.php.
+ *  - `get_posts_args` every get_posts() query, recorded.
  *
  * All guarded so a real WP test bootstrap that already defines these wins.
  *
@@ -146,5 +153,51 @@ if ( ! function_exists( 'wp_remote_post' ) ) {
 			'code' => 200,
 			'body' => '{}',
 		);
+	}
+}
+
+if ( ! function_exists( 'rtgodam_stub_video' ) ) {
+
+	/**
+	 * Adds an attachment of the site, with the lookups the Engagement routes make.
+	 *
+	 * The attachment is found by its ID and, when it has a job, by get_posts()
+	 * searching for that job. A status other than 'publish' makes it non-public
+	 * for is_post_publicly_viewable().
+	 *
+	 * @param int    $attachment_id Attachment ID.
+	 * @param string $job_id        Transcoding job ID, or '' for an attachment without one.
+	 * @param string $status        'publish' for a public attachment, 'private' for one only some users may read.
+	 * @param string $post_type     Post type, 'attachment' unless a test needs another.
+	 * @return void
+	 */
+	function rtgodam_stub_video( $attachment_id, $job_id, $status = 'publish', $post_type = 'attachment' ) {
+		$GLOBALS['rtgodam_stub']['site_posts'][ $attachment_id ] = (object) array(
+			'ID'          => $attachment_id,
+			'post_type'   => $post_type,
+			'post_status' => $status,
+		);
+
+		$GLOBALS['rtgodam_stub']['attachment_meta'][ $attachment_id ] = '' === $job_id ? array() : array( 'rtgodam_transcoding_job_id' => $job_id );
+
+		if ( '' !== $job_id ) {
+			$GLOBALS['rtgodam_stub']['video_posts'][ $job_id ][] = $attachment_id;
+		}
+	}
+}
+
+if ( ! function_exists( 'get_posts' ) ) {
+
+	/**
+	 * Answers the job lookup: the attachments rtgodam_stub_video() registered for the
+	 * job the query asks for. The query is recorded.
+	 *
+	 * @param array $args Query args; the job is the first meta_query value.
+	 * @return int[]
+	 */
+	function get_posts( $args = array() ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_stub']['get_posts_args'][] = $args;
+
+		return $GLOBALS['rtgodam_stub']['video_posts'][ $args['meta_query'][0]['value'] ?? '' ] ?? array();
 	}
 }

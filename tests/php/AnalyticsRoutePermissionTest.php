@@ -12,12 +12,17 @@
  *  - the Dashboard routes whose whole answer is store data (products,
  *    add-to-carts, orders, revenue) also need WooCommerce's report permission,
  *    `view_woocommerce_reports`, which editors and authors do not hold.
+ * The three routes that take a `video_id` (fetch, history, layer-analytics) also
+ * ask that the video is an attachment of this site the user can edit, as the
+ * Media Editor does: editors and administrators can edit every video, an author
+ * only their own.
  * Any route added later has to be placed in one of the lists below, so a new
  * route cannot ship without a deliberate permission.
  *
  * The instance is built without the constructor (Base's constructor registers
  * WP hooks we don't want here). current_user_can() is stubbed in
- * tests/bootstrap.php and driven by $GLOBALS['rtgodam_stub']['caps'].
+ * tests/bootstrap.php and driven by $GLOBALS['rtgodam_stub']['caps'], and for a
+ * capability asked about one post by 'object_caps'.
  *
  * @package GoDAM
  */
@@ -27,9 +32,12 @@ namespace RTGODAM\Tests;
 use PHPUnit\Framework\TestCase;
 use RTGODAM\Inc\REST_API\Analytics;
 
+require_once dirname( __DIR__ ) . '/stubs/post-functions.php';
+
 /**
  * @covers \RTGODAM\Inc\REST_API\Analytics::get_rest_routes
  * @covers \RTGODAM\Inc\REST_API\Analytics::check_analytics_read_permission
+ * @covers \RTGODAM\Inc\REST_API\Analytics::can_read_video_analytics
  * @covers \RTGODAM\Inc\REST_API\Analytics::check_dashboard_read_permission
  * @covers \RTGODAM\Inc\REST_API\Analytics::check_dashboard_store_permission
  * @covers \RTGODAM\Inc\REST_API\Analytics::can_view_store_data
@@ -84,6 +92,11 @@ class AnalyticsRoutePermissionTest extends TestCase {
 	const SHOP_MANAGER_CAPS = array( 'read', 'edit_posts', 'upload_files', 'edit_pages', 'view_woocommerce_reports' );
 
 	/**
+	 * A video the user can edit unless a test says otherwise.
+	 */
+	const VIDEO = 101;
+
+	/**
 	 * Route args keyed by route path, e.g. '/analytics/fetch'.
 	 *
 	 * @var array
@@ -94,6 +107,9 @@ class AnalyticsRoutePermissionTest extends TestCase {
 		parent::setUp();
 
 		$analytics = ( new \ReflectionClass( Analytics::class ) )->newInstanceWithoutConstructor();
+
+		$GLOBALS['rtgodam_hooks'] = array();
+		rtgodam_stub_video( self::VIDEO, 'job-101' );
 
 		$this->routes = array();
 		foreach ( $analytics->get_rest_routes() as $route ) {
@@ -109,13 +125,24 @@ class AnalyticsRoutePermissionTest extends TestCase {
 	/**
 	 * Call a route's permission callback as the given user.
 	 *
-	 * @param array $args Route args.
-	 * @param array $caps Capabilities the current user holds.
+	 * By default the user can edit the video the request names; pass the
+	 * attachment IDs they can edit to say otherwise.
+	 *
+	 * @param array $args     Route args.
+	 * @param array $caps     Capabilities the current user holds.
+	 * @param int[] $editable Attachment IDs the user can edit.
+	 * @param int   $video_id Video the request names.
 	 * @return mixed
 	 */
-	private function check_as( array $args, array $caps ) {
-		$GLOBALS['rtgodam_stub']['caps'] = $caps;
-		return call_user_func( $args['permission_callback'] );
+	private function check_as( array $args, array $caps, array $editable = array( self::VIDEO ), $video_id = self::VIDEO ) {
+		$GLOBALS['rtgodam_stub']['caps']        = $caps;
+		$GLOBALS['rtgodam_stub']['object_caps'] = array_map(
+			static function ( $id ) {
+				return 'edit_post:' . $id;
+			},
+			$editable
+		);
+		return call_user_func( $args['permission_callback'], new \WP_REST_Request( array( 'video_id' => $video_id ) ) );
 	}
 
 	/** The routes the Dashboard, Analytics and Video Editor pages call are all registered. */
@@ -205,5 +232,75 @@ class AnalyticsRoutePermissionTest extends TestCase {
 			$this->assertFalse( $this->check_as( $this->routes[ $path ], array( 'read', 'upload_files', 'edit_pages' ) ), "$path with edit_pages but not the report permission" );
 			$this->assertTrue( $this->check_as( $this->routes[ $path ], array( 'read', 'edit_pages', 'view_woocommerce_reports' ) ), "$path with both" );
 		}
+	}
+
+	/** An author can read the analytics of their own video but not of a video they cannot edit. */
+	public function test_author_is_refused_on_a_video_they_cannot_edit() {
+		rtgodam_stub_video( 102, 'job-102' );
+
+		foreach ( self::UPLOAD_FILES_ROUTES as $path ) {
+			$this->assertTrue( $this->check_as( $this->routes[ $path ], self::AUTHOR_CAPS, array( 102 ), 102 ), "$path own video" );
+			$this->assertFalse( $this->check_as( $this->routes[ $path ], self::AUTHOR_CAPS, array( 102 ), self::VIDEO ), "$path someone else's video" );
+		}
+	}
+
+	/** An editor can edit every attachment, so the video check changes nothing for them. */
+	public function test_editor_is_allowed_on_any_video() {
+		rtgodam_stub_video( 102, 'job-102' );
+
+		foreach ( self::UPLOAD_FILES_ROUTES as $path ) {
+			$this->assertTrue( $this->check_as( $this->routes[ $path ], self::EDITOR_CAPS, array( self::VIDEO, 102 ), 102 ), $path );
+			$this->assertTrue( $this->check_as( $this->routes[ $path ], self::EDITOR_CAPS, array( self::VIDEO, 102 ), self::VIDEO ), $path );
+		}
+	}
+
+	/** Only a video of this site: a post that is not an attachment, or an ID with no post, is refused even to someone who can edit it. */
+	public function test_only_an_attachment_that_exists_is_a_video() {
+		rtgodam_stub_video( 103, '', 'publish', 'page' );
+
+		foreach ( self::UPLOAD_FILES_ROUTES as $path ) {
+			$this->assertFalse( $this->check_as( $this->routes[ $path ], self::EDITOR_CAPS, array( 103, 999 ), 103 ), "$path page" );
+			$this->assertFalse( $this->check_as( $this->routes[ $path ], self::EDITOR_CAPS, array( 103, 999 ), 999 ), "$path missing" );
+			$this->assertFalse( $this->check_as( $this->routes[ $path ], self::EDITOR_CAPS, array( self::VIDEO ), 0 ), "$path no video" );
+		}
+	}
+
+	/** The capability still comes first: without upload_files the video check does not matter. */
+	public function test_capability_is_still_required_for_a_video_the_user_can_edit() {
+		foreach ( self::UPLOAD_FILES_ROUTES as $path ) {
+			$this->assertFalse( $this->check_as( $this->routes[ $path ], array( 'read', 'edit_posts' ), array( self::VIDEO ), self::VIDEO ), $path );
+		}
+	}
+
+	/** The routes without a video, the Dashboard's, are not affected by the video check. */
+	public function test_dashboard_routes_do_not_depend_on_a_video() {
+		foreach ( array_merge( self::DASHBOARD_ROUTES, self::STORE_ROUTES ) as $path ) {
+			$this->assertTrue( $this->check_as( $this->routes[ $path ], self::SHOP_MANAGER_CAPS, array(), 0 ), $path );
+		}
+	}
+
+	/** The attachment lookup is bracketed for integrations that keep media on another site, and the pair stays balanced. */
+	public function test_attachment_lookup_is_bracketed() {
+		$calls = array();
+		add_action(
+			'rtgodam_before_attachment_lookup',
+			static function () use ( &$calls ) {
+				$calls[] = 'before';
+			}
+		);
+		add_action(
+			'rtgodam_after_attachment_lookup',
+			static function () use ( &$calls ) {
+				$calls[] = 'after';
+			}
+		);
+
+		$this->check_as( $this->routes['/analytics/fetch'], self::AUTHOR_CAPS );
+		$this->assertSame( array( 'before', 'after' ), $calls );
+
+		// No video ID, nothing to look up.
+		$calls = array();
+		$this->check_as( $this->routes['/analytics/fetch'], self::AUTHOR_CAPS, array( self::VIDEO ), 0 );
+		$this->assertSame( array(), $calls );
 	}
 }

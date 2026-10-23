@@ -19,6 +19,8 @@ use PHPUnit\Framework\TestCase;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Engagement;
 
+require_once dirname( __DIR__ ) . '/stubs/post-functions.php';
+
 /**
  * @covers ::rtgodam_get_site_origin
  * @covers \RTGODAM\Inc\REST_API\Analytics
@@ -50,6 +52,9 @@ class SiteOriginTest extends TestCase {
 				'body' => '{}',
 			),
 		);
+
+		// The video the engagement tests embed as cmmid_job-1: a public attachment of this site.
+		rtgodam_stub_video( 41, 'job-1' );
 	}
 
 	/**
