@@ -102,7 +102,7 @@ class Hubspot_Integration extends Base {
 		// clears its own `map` cache on any connection change, so one verify picks
 		// up the new portal, and it only costs a call when something changed.
 		$live_portal = (string) ( $result['hubspot']['portal_id'] ?? '' );
-		if ( $live_portal !== Hubspot::get_central_portal_id() && function_exists( 'rtgodam_get_user_data' ) ) {
+		if ( Hubspot::get_central_portal_id() !== $live_portal && function_exists( 'rtgodam_get_user_data' ) ) {
 			rtgodam_get_user_data( false, HOUR_IN_SECONDS, true );
 		}
 

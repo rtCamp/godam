@@ -420,6 +420,10 @@ const HubSpotSettings = ( { settings = {}, onSettingChange } ) => {
 									{ __( 'Open GoDAM settings', 'godam' ) }
 								</ExternalLink>
 							) }
+							{ ' ' }
+							<ExternalLink href={ SUPPORT_URL }>
+								{ __( 'Contact support', 'godam' ) }
+							</ExternalLink>
 						</Notice>
 					) }
 
