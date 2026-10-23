@@ -1181,8 +1181,11 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Replace an existing WordPress media attachment with a file from an external URL,
-	 * using the WordPress Filesystem API.
+	 * Replace an existing WordPress media attachment with an MP4 file from a GoDAM
+	 * Central host, using the WordPress Filesystem API.
+	 *
+	 * The file is stored under a name made here, and an existing file is only
+	 * overwritten when it is this attachment's own.
 	 *
 	 * @since 1.4.2
 	 *
@@ -1194,6 +1197,10 @@ class Media_Library_Ajax {
 	private function godam_replace_attachment_with_external_file( $attachment_id, $file_url = '' ) {
 		if ( ! $attachment_id || ! $this->is_valid_url( $file_url ) ) {
 			return new \WP_Error( 'invalid_input', __( 'Invalid attachment ID or URL.', 'godam' ) );
+		}
+
+		if ( ! rtgodam_is_transcoder_file_url( $file_url ) ) {
+			return new \WP_Error( 'invalid_host', __( 'The file is not on a host GoDAM serves files from.', 'godam' ) );
 		}
 
 		/**
@@ -1237,13 +1244,31 @@ class Media_Library_Ajax {
 				return $temp_file;
 			}
 
-			// Prepare new file path in uploads.
+			// Prepare new file path in uploads. The name comes from the attachment's current file, or the URL when it has none, with an .mp4 extension.
 			$upload_dir   = wp_upload_dir();
-			$new_filename = wp_basename( wp_parse_url( $file_url, PHP_URL_PATH ) );
+			$current_file = get_attached_file( $attachment_id );
+			$name_source  = $current_file ? $current_file : rawurldecode( wp_basename( (string) wp_parse_url( $file_url, PHP_URL_PATH ) ) );
+			$new_filename = sanitize_file_name( pathinfo( wp_basename( $name_source ), PATHINFO_FILENAME ) . '.mp4' );
 			$new_filepath = trailingslashit( $upload_dir['path'] ) . $new_filename;
 
+			// Only the attachment's own file is overwritten; any other file keeps its name and the new one gets a free one.
+			$replaces_own_file = $current_file && wp_normalize_path( $current_file ) === wp_normalize_path( $new_filepath );
+
+			if ( ! $replaces_own_file ) {
+				$new_filename = wp_unique_filename( $upload_dir['path'], $new_filename );
+				$new_filepath = trailingslashit( $upload_dir['path'] ) . $new_filename;
+			}
+
+			// Only an MP4 replaces the attachment's file.
+			$filetype = wp_check_filetype_and_ext( $temp_file, $new_filename );
+
+			if ( 'video/mp4' !== $filetype['type'] ) {
+				$wp_filesystem->delete( $temp_file );
+				return new \WP_Error( 'invalid_file_type', __( 'The downloaded file is not an MP4 video.', 'godam' ) );
+			}
+
 			// Move temp file into uploads with WP_Filesystem.
-			$moved = $wp_filesystem->move( $temp_file, $new_filepath, true );
+			$moved = $wp_filesystem->move( $temp_file, $new_filepath, $replaces_own_file );
 
 			if ( ! $moved ) {
 				$wp_filesystem->delete( $temp_file );
@@ -1254,15 +1279,12 @@ class Media_Library_Ajax {
 			update_attached_file( $attachment_id, $new_filepath );
 
 			// update mime type.
-			$filetype = wp_check_filetype( $new_filename, null );
-			if ( $filetype['type'] ) {
-				wp_update_post(
-					array(
-						'ID'             => $attachment_id,
-						'post_mime_type' => $filetype['type'],
-					)
-				);
-			}
+			wp_update_post(
+				array(
+					'ID'             => $attachment_id,
+					'post_mime_type' => $filetype['type'],
+				)
+			);
 
 			// Regenerate metadata.
 			$metadata = wp_generate_attachment_metadata( $attachment_id, $new_filepath );
