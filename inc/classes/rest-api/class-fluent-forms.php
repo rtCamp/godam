@@ -28,7 +28,7 @@ class Fluent_Forms extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_fluent_forms' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => $this->get_collection_params(),
 					),
 				),
@@ -40,7 +40,7 @@ class Fluent_Forms extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_fluent_form' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(

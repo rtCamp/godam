@@ -83,7 +83,7 @@ class Jetpack extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_jetpack_form' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => array_merge(
 							$this->get_collection_params(),
 							array(
@@ -302,7 +302,10 @@ class Jetpack extends Base {
 
 		// Get the post content.
 		$post = get_post( $post_id ); // godam-coverage-ignore -- get_jetpack_form(): $post_id is the host post embedding the Jetpack form block, not an attachment ID.
-		if ( ! $post ) {
+
+		// A post visitors cannot see is previewed only for a user who can edit it.
+		$can_preview = $post && ( self::is_host_post_public( $post ) || current_user_can( 'edit_post', $post_id ) ); // godam-coverage-ignore -- get_jetpack_form(): $post_id is the host post embedding the Jetpack form block, not an attachment ID.
+		if ( ! $can_preview ) {
 			return new \WP_Error( 'post_not_found', __( 'Post not found.', 'godam' ), array( 'status' => 404 ) );
 		}
 
@@ -410,6 +413,21 @@ class Jetpack extends Base {
 	}
 
 	/**
+	 * Whether a post that holds a Jetpack form is one visitors can see.
+	 *
+	 * Forms are shown in a video, and submitted from it, only when the post that
+	 * holds them is publicly viewable and has no password.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_Post|null $post The post that holds the form.
+	 * @return bool
+	 */
+	public static function is_host_post_public( $post ) {
+		return $post instanceof \WP_Post && is_post_publicly_viewable( $post ) && empty( $post->post_password );
+	}
+
+	/**
 	 * Static helper method to get rendered form HTML (for use in templates).
 	 *
 	 * @param string $form_id The form ID.
@@ -432,7 +450,7 @@ class Jetpack extends Base {
 
 		// Get the post content.
 		$post = get_post( $post_id ); // godam-coverage-ignore -- get_rendered_form_html_static(): $post_id is the host post embedding the Jetpack form block, not an attachment ID.
-		if ( ! $post ) {
+		if ( ! $post || ! self::is_host_post_public( $post ) ) {
 			return false;
 		}
 
@@ -766,7 +784,7 @@ class Jetpack extends Base {
 	private function load_form_into_memory_with_origin( $form_id, $form_hash, $origin_post_id ) {
 		// Get the origin post.
 		$origin_post = get_post( $origin_post_id ); // godam-coverage-ignore -- load_form_into_memory_with_origin(): $origin_post_id is the host post that originated the form submission (REST "origin-post-id" param or the same form-ID parsing as get_jetpack_form), not an attachment ID.
-		if ( ! $origin_post ) {
+		if ( ! $origin_post || ! self::is_host_post_public( $origin_post ) ) {
 			return false;
 		}
 
