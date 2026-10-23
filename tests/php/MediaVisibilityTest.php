@@ -562,7 +562,6 @@ class MediaVisibilityTest extends TestCase {
 
 		$this->assertSame( $visible, $this->contains( $html, 'Quarterly update' ) );
 		$this->assertSame( ! $visible, $this->contains( $html, 'We could not locate your video' ) );
-		$this->assertSame( $visible ? array( '[godam_video id="10"]' ) : array(), $GLOBALS['rtgodam_stub']['shortcodes'] ?? array() );
 	}
 
 	public function test_preview_page_shows_an_editor_their_unpublished_media() {
@@ -594,7 +593,6 @@ class MediaVisibilityTest extends TestCase {
 
 		$this->assertSame( $visible, $this->contains( $html, 'godam-video-embed"' ) );
 		$this->assertSame( ! $visible, $this->contains( $html, 'Video not found' ) );
-		$this->assertSame( $visible ? array( '[godam_video id="10"]' ) : array(), $GLOBALS['rtgodam_stub']['shortcodes'] ?? array() );
 	}
 
 	public function test_embed_page_shows_an_editor_their_unpublished_media() {

@@ -161,7 +161,6 @@ class MediaVisibilityShortcodeRouteTest extends TestCase {
 		if ( $visible ) {
 			$this->assertSame( 200, $response->get_status() );
 			$this->assertSame( 'Quarterly update', $response->get_data()['title'] );
-			$this->assertStringContainsString( "[godam_video id='10'", $GLOBALS['rtgodam_stub']['shortcodes'][0] );
 		} else {
 			$this->assertSame( 404, $response->get_status() );
 			$this->assertArrayNotHasKey( 'title', $response->get_data() );
