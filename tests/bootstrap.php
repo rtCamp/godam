@@ -120,6 +120,10 @@ if ( ! function_exists( 'get_post_meta' ) ) {
 		$meta = isset( $GLOBALS['rtgodam_stub']['post_meta'] ) && is_array( $GLOBALS['rtgodam_stub']['post_meta'] )
 			? $GLOBALS['rtgodam_stub']['post_meta']
 			: array();
+		// A test that gives posts their own meta (`attachment_meta`, keyed by post ID) is answered per post.
+		if ( isset( $GLOBALS['rtgodam_stub']['attachment_meta'][ $post_id ] ) ) {
+			$meta = $GLOBALS['rtgodam_stub']['attachment_meta'][ $post_id ];
+		}
 		return array_key_exists( $key, $meta ) ? $meta[ $key ] : '';
 	}
 }
@@ -324,7 +328,8 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
  * ---------------------------------------------------------------------------
  * Stubs for AnalyticsRoutePermissionTest. The route table reads the
  * WP_REST_Server method constants, and the permission callbacks ask
- * current_user_can(), which answers from $GLOBALS['rtgodam_stub']['caps'].
+ * current_user_can(), which answers from $GLOBALS['rtgodam_stub']['caps'] and,
+ * for a capability asked about one post, from `object_caps`.
  * ---------------------------------------------------------------------------
  */
 if ( ! class_exists( 'WP_REST_Server' ) ) {
@@ -341,12 +346,32 @@ if ( ! class_exists( 'WP_REST_Server' ) ) {
 if ( ! function_exists( 'current_user_can' ) ) {
 
 	/**
+	 * Every check is recorded in `cap_checks`. A meta capability asked about one object is
+	 * answered from `object_caps` when a test sets it, in either shape: capability => object IDs
+	 * (array( 'edit_post' => array( 7 ) )), or a list of 'capability:ID' entries
+	 * (array( 'edit_post:12' )). Otherwise it comes from `caps`, where "edit_post:42" grants
+	 * one object and the plain name grants all.
+	 *
 	 * @param string $capability Capability name.
-	 * @param mixed  ...$args    The object ID of a meta capability. A test grants it for one
-	 *                           object only as "edit_post:42"; the plain name grants it for all.
+	 * @param mixed  ...$args    The object ID of a meta capability.
 	 * @return bool
 	 */
 	function current_user_can( $capability, ...$args ) {
+		$GLOBALS['rtgodam_stub']['cap_checks'][] = array_merge( array( $capability ), $args );
+
+		if ( isset( $args[0] ) && isset( $GLOBALS['rtgodam_stub']['object_caps'] ) ) {
+			$object_caps = (array) $GLOBALS['rtgodam_stub']['object_caps'];
+
+			if ( isset( $object_caps[ $capability ] ) && is_array( $object_caps[ $capability ] ) ) {
+				return in_array( $args[0], $object_caps[ $capability ], true );
+			}
+
+			// A plain list (even an empty one) answers every object check.
+			if ( array_values( $object_caps ) === $object_caps ) {
+				return in_array( $capability . ':' . $args[0], $object_caps, true );
+			}
+		}
+
 		$caps = isset( $GLOBALS['rtgodam_stub']['caps'] ) && is_array( $GLOBALS['rtgodam_stub']['caps'] )
 			? $GLOBALS['rtgodam_stub']['caps']
 			: array();
