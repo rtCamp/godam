@@ -124,7 +124,9 @@ class Media_Library extends Base {
 		$is_write = in_array( $request->get_method(), array( 'POST', 'PUT', 'PATCH', 'DELETE' ), true );
 
 		// Anyone who writes posts can read folders (the gallery block's folder picker); changing them needs upload rights.
-		if ( ! current_user_can( $is_write ? 'upload_files' : 'edit_posts' ) ) {
+		$can_use_route = $is_write ? current_user_can( 'upload_files' ) : current_user_can( 'edit_posts' );
+
+		if ( ! $can_use_route ) {
 			return new \WP_Error(
 				'rest_forbidden',
 				__( 'Sorry, you are not allowed to access media folders.', 'godam' ),
