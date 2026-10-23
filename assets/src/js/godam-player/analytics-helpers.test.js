@@ -193,3 +193,22 @@ describe( 'groupBatchByHostPostId', () => {
 		expect( groupBatchByHostPostId( null ).size ).toBe( 0 );
 	} );
 } );
+
+describe( 'buildAnalyticsRequestBody — location', () => {
+	beforeEach( () => {
+		setParams();
+	} );
+
+	it( 'sends no location field, even when the page still carries one', () => {
+		// setParams() leaves locationIP on the page, as a page cached by an older
+		// plugin version would.
+		const { body } = build( {} );
+		expect( body ).not.toHaveProperty( 'location_ip' );
+		expect( JSON.stringify( body ) ).not.toContain( '10.0.0.1' );
+	} );
+
+	it( 'still sends the browser language', () => {
+		const { body } = build( {} );
+		expect( body.location_browser_lang ).toBe( window.navigator.language );
+	} );
+} );
