@@ -182,6 +182,142 @@ describe( 'watchedPercent', () => {
 	it( 'survives a player that exposes neither duration nor played', () => {
 		expect( watchedPercent( {} ) ).toBe( 0 );
 	} );
+
+	it( 'counts a range that stops within the slack of the end as reaching it', () => {
+		expect( watchedPercent( fakePlayer( 100, [ [ 0, 99.7 ] ] ), 1 ) ).toBe( 100 );
+	} );
+
+	it( 'does not stretch a range that stops further from the end than the slack', () => {
+		expect( watchedPercent( fakePlayer( 100, [ [ 0, 98 ] ] ), 1 ) ).toBe( 98 );
+	} );
+
+	it( 'gives nothing extra to a viewer who skipped to the end', () => {
+		expect( watchedPercent( fakePlayer( 100, [ [ 0, 1 ], [ 98, 100 ] ] ), 1 ) ).toBe( 3 );
+	} );
+} );
+
+describe( 'milestones reported for one view', () => {
+	const originalFetch = window.fetch;
+
+	/**
+	 * Load a second copy of the tracker with tracking switched on, so its init()
+	 * listens for godamPlayerReady. Loaded once: every copy adds its own listener,
+	 * and each test uses a fresh <video> so the copy's de-duplication never bites.
+	 */
+	beforeAll( () => {
+		window.godamMapTracking = {
+			restUrl: 'https://example.com/wp-json/godam/v1/map-events',
+			providers: [ 'HubSpot' ],
+		};
+
+		jest.isolateModules( () => {
+			require( './map-tracking' );
+		} );
+	} );
+
+	afterAll( () => {
+		delete window.godamMapTracking;
+	} );
+
+	beforeEach( () => {
+		window.fetch = jest.fn( () => Promise.resolve() );
+		window.sessionStorage.clear();
+		document.cookie = `hubspotutk=${ HUTK }; path=/`;
+	} );
+
+	afterEach( () => {
+		window.fetch = originalFetch;
+		clearCookies();
+	} );
+
+	/**
+	 * Hand the tracker a Video.js-shaped player whose events the test fires itself.
+	 *
+	 * @param {number} duration - Duration in seconds.
+	 * @return {Object} The player, plus `ranges` to push played ranges to and `trigger( name )`.
+	 */
+	function readyPlayer( duration ) {
+		const handlers = {};
+		const ranges = [];
+		const listen = ( name, handler ) => {
+			handlers[ name ] = handlers[ name ] || [];
+			handlers[ name ].push( handler );
+		};
+
+		const player = {
+			ranges,
+			duration: () => duration,
+			played: () => ( {
+				length: ranges.length,
+				start: ( i ) => ranges[ i ][ 0 ],
+				end: ( i ) => ranges[ i ][ 1 ],
+			} ),
+			on: listen,
+			one: ( name, handler ) => {
+				let fired = false;
+				listen( name, () => {
+					if ( ! fired ) {
+						fired = true;
+						handler();
+					}
+				} );
+			},
+			trigger: ( name ) => ( handlers[ name ] || [] ).forEach( ( handler ) => handler() ),
+		};
+
+		const video = document.createElement( 'video' );
+		video.dataset.job_id = 'job-1';
+
+		document.dispatchEvent(
+			new CustomEvent( 'godamPlayerReady', { detail: { player, videoElement: video } } ),
+		);
+
+		return player;
+	}
+
+	/**
+	 * @return {number[]} Milestones posted so far, in order.
+	 */
+	function postedMilestones() {
+		return window.fetch.mock.calls.map( ( [ , init ] ) => JSON.parse( init.body ).milestone );
+	}
+
+	it( 'reports only the start when the viewer skips to the end and lets it finish', () => {
+		const player = readyPlayer( 100 );
+
+		player.trigger( 'play' );
+		player.ranges.push( [ 0, 1 ] );
+		player.trigger( 'timeupdate' );
+		player.ranges.push( [ 98, 100 ] );
+		player.trigger( 'timeupdate' );
+		player.trigger( 'ended' );
+
+		expect( postedMilestones() ).toEqual( [ 0 ] );
+	} );
+
+	it( 'reports 100 for a full watch whose played range stops just short of the end', () => {
+		const player = readyPlayer( 100 );
+
+		player.trigger( 'play' );
+		player.ranges.push( [ 0, 99.7 ] );
+		player.trigger( 'timeupdate' );
+		player.trigger( 'ended' );
+
+		expect( postedMilestones() ).toEqual( [ 0, 25, 50, 75, 100 ] );
+	} );
+
+	it( 'reports what was watched before a skip to the end, and no more', () => {
+		const player = readyPlayer( 100 );
+
+		player.trigger( 'play' );
+		player.ranges.push( [ 0, 60 ] );
+		player.trigger( 'timeupdate' );
+		player.ranges.push( [ 99, 100 ] );
+		player.trigger( 'timeupdate' );
+		player.trigger( 'ended' );
+
+		expect( postedMilestones() ).toEqual( [ 0, 25, 50 ] );
+	} );
 } );
 
 describe( 'MILESTONES', () => {

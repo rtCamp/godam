@@ -17,6 +17,13 @@
 const MILESTONES = [ 0, 25, 50, 75, 100 ];
 
 /**
+ * How far short of the end a played range can stop and still count as reaching it,
+ * in seconds. `timeupdate` stops a little short of the end on most browsers, so a
+ * full watch can finish with its played range a fraction of a second shy.
+ */
+const END_SLACK_SECONDS = 1;
+
+/**
  * Cookie each provider identifies its visitors with.
  */
 const PROVIDER_COOKIES = {
@@ -127,10 +134,15 @@ function getSessionId( jobId ) {
  * Summed from the played ranges rather than taken from the current position, so
  * skipping ahead does not count as watching and watching out of order does.
  *
- * @param {Object} player - Video.js player.
+ * With `endSlack`, a range that stops within that many seconds of the end is
+ * counted to the end. Only that missing tail is credited, not the slack itself, so
+ * a viewer who skipped to the end gains nothing from it.
+ *
+ * @param {Object} player     - Video.js player.
+ * @param {number} [endSlack] - Seconds short of the end that still reach it.
  * @return {number} 0-100.
  */
-function watchedPercent( player ) {
+function watchedPercent( player, endSlack = 0 ) {
 	const duration = typeof player.duration === 'function' ? player.duration() : 0;
 
 	if ( ! duration || ! isFinite( duration ) || duration <= 0 ) {
@@ -146,7 +158,9 @@ function watchedPercent( player ) {
 	let seconds = 0;
 
 	for ( let i = 0; i < played.length; i++ ) {
-		seconds += Math.max( 0, played.end( i ) - played.start( i ) );
+		const end = duration - played.end( i ) <= endSlack ? duration : played.end( i );
+
+		seconds += Math.max( 0, end - played.start( i ) );
 	}
 
 	return Math.min( 100, ( seconds / duration ) * 100 );
@@ -250,9 +264,16 @@ function trackPlayer( config, player, video ) {
 	} );
 
 	// `timeupdate` stops a little short of the end on most browsers, so 100 would
-	// otherwise never fire for someone who watched the whole thing.
+	// otherwise never fire for someone who watched the whole thing. Still count only
+	// what was played: skipping to the end and letting it finish is not watching it.
 	player.on( 'ended', () => {
-		MILESTONES.forEach( report );
+		const percent = watchedPercent( player, END_SLACK_SECONDS );
+
+		MILESTONES.forEach( ( milestone ) => {
+			if ( percent >= milestone ) {
+				report( milestone );
+			}
+		} );
 	} );
 }
 
