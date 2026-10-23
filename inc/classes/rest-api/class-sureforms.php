@@ -61,7 +61,7 @@ class SureForms extends Base {
 					array(
 						'methods'             => WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_sureforms' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => $this->get_collection_params(),
 					),
 				),
@@ -73,7 +73,7 @@ class SureForms extends Base {
 					array(
 						'methods'             => WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_sureform' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
@@ -134,10 +134,8 @@ class SureForms extends Base {
 
 		foreach ( $forms as $form ) {
 			$sure_forms[] = array(
-				'id'          => $form->ID,
-				'title'       => $form->post_title,
-				'description' => $form->post_excerpt,
-				'content'     => $form->post_content,
+				'id'    => $form->ID,
+				'title' => $form->post_title,
 			);
 		}
 
