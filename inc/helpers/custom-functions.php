@@ -2192,10 +2192,10 @@ function godam_preview_page_content( $video_id ) {
 				) . ' /-->'
 			);
 		} else {
-			$godam_shortcode    = $godam_is_audio
-				? '[godam_audio id="' . $video_id . '"]'
-				: '[godam_video id="' . $video_id . '"]';
-			$godam_media_output = do_shortcode( $godam_shortcode );
+			$godam_media_output = rtgodam_render_shortcode_from_atts(
+				$godam_is_audio ? 'godam_audio' : 'godam_video',
+				array( 'id' => (string) $video_id )
+			);
 		}
 		?>
 		<div class="godam-video-preview--notice">
@@ -2294,6 +2294,30 @@ function rtgodam_get_block_source_from_context( $context ) {
 }
 
 /**
+ * Render a registered shortcode from an attributes array.
+ *
+ * Calls the shortcode's callback directly, so each attribute value is passed to
+ * the renderer as plain data and is never parsed as shortcode syntax. Use it
+ * instead of do_shortcode() when a value comes from a request, a form
+ * submission or other stored user data.
+ *
+ * @since n.e.x.t
+ *
+ * @param string               $tag  Shortcode tag, for example 'godam_video'.
+ * @param array<string, mixed> $atts Attributes, keyed in lowercase as the shortcode parser would key them.
+ * @return string The shortcode output, or an empty string when the shortcode is not registered or its callback cannot be called.
+ */
+function rtgodam_render_shortcode_from_atts( $tag, $atts = array() ) {
+	global $shortcode_tags;
+
+	if ( ! shortcode_exists( $tag ) || ! is_callable( $shortcode_tags[ $tag ] ) ) {
+		return '';
+	}
+
+	return (string) call_user_func( $shortcode_tags[ $tag ], $atts, '', $tag );
+}
+
+/**
  * Generate HTML content for the video embed page.
  *
  * This function produces the HTML markup for embedding a single video.
@@ -2301,10 +2325,10 @@ function rtgodam_get_block_source_from_context( $context ) {
  * making it suitable for embedding in iframes or modals.
  *
  * @param int    $video_id      The ID of the video attachment to embed.
- * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only').
+ * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only'). Reduced to slug characters with sanitize_key().
  * @param string $bg_color      Optional. Hex background color applied as --godam-video-bg-color CSS variable on the wrapper.
  * @param bool   $show_engagements Optional. Whether to show engagements in the embed. Default false (no engagements shown).
- * @param string $block_source  Optional. Analytics placement slug forwarded to the player (e.g. 'video-gallery' for gallery iframes).
+ * @param string $block_source  Optional. Analytics placement slug forwarded to the player (e.g. 'video-gallery' for gallery iframes). Reduced to slug characters with sanitize_key().
  * @param int    $host_post_id  Optional. Post ID of the page embedding this iframe, so analytics attribute to the host page.
  *
  * @since 1.5.0
@@ -2318,6 +2342,10 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 	$show_video        = false;
 	$video_id          = intval( $video_id );
 	$engagements_value = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
+
+	// Both values arrive from the URL; keep them to slug characters.
+	$godam_context = sanitize_key( $godam_context );
+	$block_source  = sanitize_key( $block_source );
 
 	if ( ! empty( $video_id ) ) {
 		/**
@@ -2342,20 +2370,19 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		<?php
 	} else {
 		// Display video content.
-		$godam_shortcode = '[godam_video id="' . $video_id . '"';
+		$godam_atts = array( 'id' => (string) $video_id );
 		if ( ! empty( $godam_context ) ) {
-			$godam_shortcode .= ' godam_context="' . esc_attr( $godam_context ) . '"';
+			$godam_atts['godam_context'] = $godam_context;
 		}
 		if ( ! empty( $engagements_value ) ) {
-			$godam_shortcode .= ' engagements="' . esc_attr( $engagements_value ) . '"';
+			$godam_atts['engagements'] = $engagements_value;
 		}
 		if ( ! empty( $block_source ) ) {
-			$godam_shortcode .= ' block_source="' . esc_attr( $block_source ) . '"';
+			$godam_atts['block_source'] = $block_source;
 		}
 		if ( ! empty( $host_post_id ) ) {
-			$godam_shortcode .= ' host_post_id="' . absint( $host_post_id ) . '"';
+			$godam_atts['host_post_id'] = (string) absint( $host_post_id );
 		}
-		$godam_shortcode .= ']';
 
 		$godam_wrapper_style = ! empty( $bg_color ) ? '--godam-video-bg-color: ' . $bg_color . ';' : '';
 		?>
@@ -2364,7 +2391,7 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 			data-show-engagements="<?php echo esc_attr( $show_engagements ? 'true' : 'false' ); ?>"
 			style="<?php echo esc_attr( $godam_wrapper_style ); ?>"
 		>
-			<?php echo do_shortcode( $godam_shortcode ); ?>
+			<?php echo rtgodam_render_shortcode_from_atts( 'godam_video', $godam_atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The player template escapes its output. ?>
 		</div>
 		<?php
 	}

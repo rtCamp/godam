@@ -439,6 +439,10 @@ if ( ! function_exists( 'set_transient' ) ) {
  */
 require_once __DIR__ . '/stubs/hooks.php';
 require_once __DIR__ . '/stubs/i18n.php';
+// Shortcode registry and runner, so a test can register a shortcode and see whether
+// text handed to do_shortcode() runs it. Loaded here so its do_shortcode() is the one
+// that every test sees.
+require_once __DIR__ . '/stubs/shortcode-runtime.php';
 // HTTP / REST stubs for the Analytics microservice-proxy tests (fetch_top_videos
 // / fetch_top_products): fake wp_remote_* responses + get_option, and minimal
 // WP_REST_Request / WP_REST_Response so the proxy's error-vs-empty guard can be
