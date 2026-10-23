@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { getFirstNonEmpty, appendTimezoneOffsetToUTC, stripHtmlTags } from '../../../blocks/godam-player/utils';
+import { getFirstNonEmpty, appendTimezoneOffsetToUTC, stripHtmlTags, isFilenameLikeTitle } from '../../../blocks/godam-player/utils';
 
 window.addEventListener( 'elementor/frontend/init', () => {
 	const SEO_FIELD_NAMES = [
@@ -50,7 +50,7 @@ window.addEventListener( 'elementor/frontend/init', () => {
 
 	function prepareVideoMeta( attachmentData ) {
 		const initialVideoData = {
-			contentUrl: getFirstNonEmpty( attachmentData?.meta?.rtgodam_transcoded_url, attachmentData?.source_url ),
+			contentUrl: getFirstNonEmpty( attachmentData?.meta?.rtgodam_hls_transcoded_url, attachmentData?.source_url ),
 			headline: getFirstNonEmpty( attachmentData?.title?.rendered ),
 			description: stripHtmlTags( getFirstNonEmpty( attachmentData?.description?.rendered ) || '' ),
 			uploadDate: getFirstNonEmpty( appendTimezoneOffsetToUTC( attachmentData?.date_gmt ) ),
@@ -288,6 +288,9 @@ window.addEventListener( 'elementor/frontend/init', () => {
 					setTimeout( async () => {
 						await syncSeoFromAttachment( ! isSeoOverrideEnabled( settings ) );
 						handleSeoOverrideChange();
+						// The SEO fields live in this popover, which mounts after the panel renders.
+						// eslint-disable-next-line no-use-before-define
+						setTimeout( updateHeadlineHelp, 100 );
 					}, 120 );
 				};
 
@@ -329,16 +332,45 @@ window.addEventListener( 'elementor/frontend/init', () => {
 					}
 				};
 
+				/**
+				 * Warns when the SEO headline looks like a raw file name.
+				 */
+				const updateHeadlineHelp = () => {
+					const headline = model.get( 'settings' ).get( 'seo_content_headline' ) || '';
+					const videoFile = model.get( 'settings' ).get( 'video-file' ) || {};
+					const helpElement = panel.$el.find( '.godam-seo-headline-help' );
+
+					if ( ! helpElement.length ) {
+						return;
+					}
+
+					if ( isFilenameLikeTitle( headline, videoFile?.name || videoFile?.url || '' ) ) {
+						helpElement.text(
+							isSeoOverrideEnabled( settings )
+								? __( 'This title looks like a file name. Search engines show it as the video title, so use a descriptive title with spaces instead.', 'godam' )
+								: __( 'This title looks like a file name. Search engines show it as the video title. Edit the video title in the Media Library, or turn on "Override default SEO" to set a descriptive title here.', 'godam' ),
+						);
+						helpElement.css( 'color', '#996800' );
+					} else {
+						helpElement.text( __( 'Title of the video', 'godam' ) );
+						helpElement.css( 'color', '' );
+					}
+				};
+
 				// Delay to ensure the Elementor panel DOM has finished rendering
 				// before querying and updating the SEO description help element.
 				const DESCRIPTION_HELP_UPDATE_DELAY_MS = 100;
 
 				// Update help text when description changes
 				model.get( 'settings' ).on( 'change:seo_content_description', updateDescriptionHelp );
+				model.get( 'settings' ).on( 'change:seo_content_headline change:seo_override change:video-file', () => {
+					setTimeout( updateHeadlineHelp, DESCRIPTION_HELP_UPDATE_DELAY_MS );
+				} );
 
 				// Update help text when panel renders
 				panel.currentPageView.on( 'render', () => {
 					setTimeout( updateDescriptionHelp, DESCRIPTION_HELP_UPDATE_DELAY_MS );
+					setTimeout( updateHeadlineHelp, DESCRIPTION_HELP_UPDATE_DELAY_MS );
 				} );
 
 				panel.currentPageView.on( 'destroy', () => {

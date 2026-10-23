@@ -662,8 +662,13 @@ export default class HotspotLayerManager {
 		const nativeW = videoEl.videoWidth || this.player.videoWidth() || 0;
 		const nativeH = videoEl.videoHeight || this.player.videoHeight() || 0;
 
-		const elW = containerEl.offsetWidth;
-		const elH = containerEl.offsetHeight;
+		// Measure the video's own box. It normally fills the player, but in
+		// fullscreen with the transcript open the video (and the layers) are
+		// confined to the area beside the panel, while the player still spans
+		// the screen.
+		const boxEl = videoEl.offsetWidth && videoEl.offsetHeight ? videoEl : containerEl;
+		const elW = boxEl.offsetWidth;
+		const elH = boxEl.offsetHeight;
 
 		// If video dimensions aren't loaded yet, use full container
 		if ( ! nativeW || ! nativeH ) {

@@ -261,6 +261,24 @@
 	padding: 32px 10%;
 }
 
+// HubSpot renders its form inside an embed wrapper / iframe. Unlike the inline
+// markup the other form plugins output, that wrapper gives the `fit-content`
+// form-container no intrinsic width, so in fullscreen the form collapses toward
+// one side / mis-places. Lay the HubSpot form out at a fixed, centred width and
+// let its wrapper and iframe fill it, matching the other providers.
+.fullscreen-layer.hubspot .form-container {
+	width: 100%;
+	max-width: 640px;
+	padding: 32px;
+}
+
+.easydam-layer.hubspot .form-container .hbspt-form,
+.easydam-layer.hubspot .form-container .hs-form-frame,
+.easydam-layer.hubspot .form-container iframe {
+	width: 100%;
+	max-width: 100%;
+}
+
 .poll-container,
 .fullscreen-layer .poll-container {
 	color: #000;
@@ -1863,25 +1881,11 @@ body.godam-share-modal-open {
 	position: relative;
 	width: 100%;
 
-	// Size container for the transcript panel: the panel overlays the right side
-	// of the video, and below a container-query threshold it instead drops beneath
-	// and stacks full width. That query lives with the transcript panel styles
-	// further down; only the container declaration belongs here, with the rest of
-	// the wrapper's base layout.
+	// Size container (inline-size containment keeps the wrapper's width from
+	// depending on its content). The transcript panel used to query it; its
+	// layout is now set by TranscriptPanelManager, see "Transcript side panel".
 	container-type: inline-size;
 	container-name: godam-video-wrapper;
-
-	// While a transcript panel is present it is parked (slid) off the right edge
-	// when closed, so clip the wrapper to keep it from widening the block or
-	// spawning a horizontal scrollbar. The clip would cut the inner container's
-	// drop shadow, so re-apply the same shadow on the wrapper (an element's own
-	// box-shadow is not affected by its overflow). The `godam-has-transcript-panel`
-	// class is toggled by TranscriptPanelManager — a plain class avoids `:has()`,
-	// which some browsers do not support.
-	&.godam-has-transcript-panel {
-		overflow: hidden;
-		box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-	}
 }
 
 /* Ensure Elementor widget wrapper maintains proper dimensions */
@@ -1920,6 +1924,15 @@ body.godam-share-modal-open {
 
 	.vjs-text-track-display {
 		bottom: 4em !important;
+	}
+
+	// On a narrow Default-skin player the control bar is two rows (the progress
+	// bar above the buttons) and 6em tall, so lift the captions clear of it.
+	@container godam-player-default-skin (max-width: 480px) {
+
+		.vjs-text-track-display {
+			bottom: 6em !important;
+		}
 	}
 
 	// Share and transcript buttons share the same on-video circular UI. The
@@ -1965,6 +1978,12 @@ body.godam-share-modal-open {
 			opacity: 1;
 			visibility: visible;
 			filter: brightness(0.9);
+		}
+
+		// Hidden while the panel is open (its close button takes over). The
+		// skins set `display`, so the attribute alone would not hide it.
+		&[hidden] {
+			display: none !important;
 		}
 
 		.godam-transcript-icon {
@@ -2450,36 +2469,51 @@ body.godam-share-modal-open {
 // ---------------------------------------------------------------------------
 // Transcript side panel
 // ---------------------------------------------------------------------------
-// The panel overlays the right side of the video so the video keeps its full
-// width when the transcript opens (no reflow / resize). It slides in from the
-// right for a smooth transition. The wrapper is a size container, so below a
-// container-query threshold the panel instead drops beneath the video and
-// stacks full width (see the container query at the end of this section).
-// The `container-type` / `container-name` declarations that make that work, and
-// the `.godam-has-transcript-panel` clipping rule, live with the base
-// `.godam-video-wrapper` rule earlier in this file so the selector has a single
-// definition.
+// The open panel never covers the video. TranscriptPanelManager measures the
+// block and picks one of two layouts, written as classes and custom properties
+// on the wrapper.
+// - `godam-transcript-layout--side`: the panel sits beside the video and the
+//   stage keeps its height. A portrait video widens the block toward 16:9 when
+//   the column has room; otherwise the player scales down to fit beside the
+//   panel, letterboxed on black, so nothing is cropped and every layer stays
+//   on the (smaller) video.
+// - `godam-transcript-layout--below`: no room for both, so the panel stacks
+//   beneath a full-size video.
+// Fullscreen is laid out by CSS alone (further down). The palette comes from
+// per-skin tokens, dark by default; the accent follows the player's control
+// bar colour when one is set.
 
 .godam-transcript-panel {
+	--godam-transcript-bg: #1c1c1c;
+	--godam-transcript-text: #f0f0f0;
+	--godam-transcript-text-muted: rgba(255, 255, 255, 0.64);
+	--godam-transcript-border: rgba(255, 255, 255, 0.12);
+	--godam-transcript-surface: rgba(255, 255, 255, 0.08);
+	--godam-transcript-surface-hover: rgba(255, 255, 255, 0.12);
+	--godam-transcript-active: rgba(255, 255, 255, 0.16);
+	--godam-transcript-accent: var(--rtgodam-control-bar-color, #3858e9);
+	--godam-transcript-match: rgba(255, 214, 10, 0.4);
+	--godam-transcript-radius: 0;
+	--godam-transcript-row-radius: 6px;
+
+	// Hidden until opened. While open with no layout class (the instant the
+	// manager re-measures) it is out of flow, so it never skews the measurement.
 	position: absolute;
 	inset: 0 0 0 auto;
-	z-index: 20;
-	width: clamp(260px, 38%, 340px);
-	display: flex;
+	display: none;
 	flex-direction: column;
 	min-height: 0;
-	background-color: #fff;
-	color: #1e1e1e;
-	border: 1px solid #e0e0e0;
-	box-shadow: -4px 0 12px rgba(0, 0, 0, 0.12);
-
-	// Closed: slid out to the right and non-interactive.
-	transform: translateX(100%);
-	transition: transform 0.3s ease;
-	will-change: transform;
+	box-sizing: border-box;
+	overflow: hidden;
+	font-size: 14px;
+	line-height: 1.4;
+	background-color: var(--godam-transcript-bg);
+	color: var(--godam-transcript-text);
+	border-radius: var(--godam-transcript-radius);
 
 	.godam-transcript-open & {
-		transform: translateX(0);
+		display: flex;
+		animation: godam-transcript-panel-in 0.25s ease-out;
 	}
 
 	&__header {
@@ -2487,13 +2521,13 @@ body.godam-share-modal-open {
 		align-items: center;
 		justify-content: space-between;
 		gap: 8px;
-		padding: 12px 14px;
-		border-bottom: 1px solid #e0e0e0;
+		padding: 12px 14px 8px;
 	}
 
 	&__title {
 		font-size: 15px;
 		font-weight: 600;
+		color: var(--godam-transcript-text);
 	}
 
 	&__actions {
@@ -2502,21 +2536,43 @@ body.godam-share-modal-open {
 		gap: 4px;
 	}
 
-	&__copy,
-	&__close {
+	// Scoped under the panel (two classes) so a theme's `button` /
+	// `[type="button"]` reset, which loads later, cannot restyle them.
+	.godam-transcript-panel__copy,
+	.godam-transcript-panel__close {
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		width: auto;
+		min-width: 0;
+		min-height: 0;
 		padding: 4px;
-		color: #50575e;
+		margin: 0;
+		font-size: inherit;
+		color: var(--godam-transcript-text-muted);
 		background: none;
 		border: none;
 		border-radius: 4px;
+		box-shadow: none;
 		cursor: pointer;
 		line-height: 1;
 
-		&:hover {
-			background-color: #f0f0f1;
+		&:hover,
+		&:focus {
+			color: var(--godam-transcript-text);
+			background-color: var(--godam-transcript-surface-hover);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--godam-transcript-text);
+			outline-offset: 1px;
+		}
+
+		// Focus from a click (or handed over when the panel opens from a
+		// click) keeps the resting look, so it does not read as hovered.
+		&:focus:not(:focus-visible):not(:hover) {
+			color: var(--godam-transcript-text-muted);
+			background-color: transparent;
 		}
 
 		/* stylelint-disable-next-line no-descending-specificity */
@@ -2528,76 +2584,355 @@ body.godam-share-modal-open {
 		}
 	}
 
+	&__search {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		padding: 0 14px 10px;
+		border-bottom: 1px solid var(--godam-transcript-border);
+	}
+
+	&__search-field {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin: 0;
+		padding: 0 10px;
+		background-color: var(--godam-transcript-surface);
+		border: 1px solid transparent;
+		border-radius: 6px;
+		cursor: text;
+
+		&:focus-within {
+			border-color: var(--godam-transcript-text-muted);
+		}
+	}
+
+	&__search-icon {
+		flex-shrink: 0;
+		width: 18px;
+		height: 18px;
+		color: var(--godam-transcript-text-muted);
+	}
+
+	// Reset theme input styles; the field around it draws the box.
+	&__search-input[type="search"] {
+		flex: 1;
+		min-width: 0;
+		height: 34px;
+		margin: 0;
+		padding: 0;
+		font: inherit;
+		// 16px: iOS Safari zooms the page into any smaller field on focus.
+		font-size: 16px;
+		color: var(--godam-transcript-text);
+		background: transparent;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+		outline: none;
+		appearance: none;
+
+		// Themes restyle `input[type="search"]:focus` too.
+		&:focus {
+			color: var(--godam-transcript-text);
+			background: transparent;
+			border: 0;
+			box-shadow: none;
+			outline: none;
+		}
+
+		&::placeholder {
+			color: var(--godam-transcript-text-muted);
+			opacity: 1;
+		}
+
+		&::-webkit-search-cancel-button {
+			cursor: pointer;
+		}
+	}
+
+	// Kept rendered even when empty: a live region that only appears with its
+	// first message is often not announced.
+	&__search-status {
+		font-size: 12px;
+		line-height: 1.3;
+		color: var(--godam-transcript-text-muted);
+	}
+
 	&__body {
 		flex: 1;
+		min-height: 0;
 		overflow-y: auto;
-		padding: 8px 6px 14px;
+		overscroll-behavior: contain;
+		padding: 6px 6px 14px;
+		scrollbar-color: var(--godam-transcript-surface-hover) transparent;
 	}
 }
 
-.godam-transcript-cue {
+@keyframes godam-transcript-panel-in {
+
+	from {
+		opacity: 0;
+		transform: translateX(16px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+// Scoped under the panel (two classes) so a theme's `button` /
+// `[type="button"]` reset, which loads later, cannot restyle the rows.
+.godam-transcript-panel .godam-transcript-cue {
 	display: flex;
 	gap: 10px;
 	width: 100%;
+	min-height: 0;
+	margin: 0;
 	padding: 8px 10px;
+	font: inherit;
+	font-weight: 400;
+	line-height: 1.5;
+	letter-spacing: normal;
 	text-align: left;
+	text-transform: none;
+	white-space: normal;
+	color: var(--godam-transcript-text);
 	background: none;
 	border: none;
-	border-radius: 6px;
+	border-left: 3px solid transparent;
+	border-radius: var(--godam-transcript-row-radius);
+	box-shadow: none;
 	cursor: pointer;
 	transition: background-color 0.2s ease;
 
-	&:hover {
-		background-color: #f6f7f7;
+	&:hover,
+	&:focus {
+		color: var(--godam-transcript-text);
+		background-color: var(--godam-transcript-surface);
 	}
 
-	&--active {
-		background-color: #f0f0f1;
+	&:focus-visible {
+		outline: 2px solid var(--godam-transcript-text);
+		outline-offset: -2px;
 	}
 
-	&__time {
-		flex-shrink: 0;
-		font-size: 12px;
-		font-weight: 600;
-		color: var(--rtgodam-control-bar-color, rgba(0, 0, 0, 0.7));
-		padding-top: 2px;
-	}
-
-	&__text {
-		font-size: 13px;
-		line-height: 1.5;
-		color: #3c434a;
+	&[hidden] {
+		display: none;
 	}
 }
 
-// Below this width the right-side strip would be too narrow, so the panel
-// covers the full video instead — but it keeps the exact same overlay layout
-// and slide-in-from-the-right behaviour as desktop (base rule), rather than
-// stacking beneath the video. Only the width changes (full cover); `inset: 0
-// 0 0 auto` from the base already spans top-to-bottom.
-@container godam-video-wrapper (max-width: 560px) {
+.godam-transcript-panel .godam-transcript-cue--active,
+.godam-transcript-panel .godam-transcript-cue--active:hover {
+	background-color: var(--godam-transcript-active);
+	border-left-color: var(--godam-transcript-accent);
+}
+
+.godam-transcript-panel .godam-transcript-cue__time {
+	flex-shrink: 0;
+	min-width: 3.2em;
+	padding-top: 1px;
+	font-size: 12px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--godam-transcript-text-muted);
+}
+
+.godam-transcript-panel .godam-transcript-cue--active .godam-transcript-cue__time {
+	color: var(--godam-transcript-text);
+}
+
+.godam-transcript-panel .godam-transcript-cue__text {
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--godam-transcript-text);
+}
+
+.godam-transcript-panel .godam-transcript-cue__match {
+	padding: 0 1px;
+	color: inherit;
+	background-color: var(--godam-transcript-match);
+	border-radius: 2px;
+}
+
+// Skin palettes. The panel sits next to the skinned container, so it carries
+// its own `godam-transcript-panel--<skin>` class.
+.godam-transcript-panel--default {
+	--godam-transcript-bg: #171a1f;
+}
+
+.godam-transcript-panel--classic,
+.godam-transcript-panel--minimal {
+	--godam-transcript-bg: #111;
+	--godam-transcript-row-radius: 4px;
+}
+
+.godam-transcript-panel--pills {
+	--godam-transcript-bg: #000;
+	--godam-transcript-accent: var(--rtgodam-control-bar-color, #fff);
+	--godam-transcript-row-radius: 10px;
+}
+
+.godam-transcript-panel--bubble {
+	--godam-transcript-bg: #1c1c1c;
+	--godam-transcript-accent: var(--rtgodam-control-bar-color, #fff);
+	--godam-transcript-row-radius: 12px;
+}
+
+// Side by side: the wrapper becomes a row, the stage keeps its height and the
+// player is sized (and centred) inside it. Not in fullscreen, where the
+// fullscreen rules below take over.
+.godam-video-wrapper.godam-transcript-layout--side {
+	display: flex;
+	align-items: stretch;
+
+	> .easydam-video-container {
+		flex: 1 1 auto;
+		min-width: 0;
+		height: var(--godam-transcript-stage-height);
+		aspect-ratio: auto;
+		background-color: #000;
+	}
+
+	> .easydam-video-container > .easydam-player.video-js:not(.vjs-fullscreen) {
+		width: var(--godam-transcript-player-width) !important;
+		max-width: 100%;
+		height: var(--godam-transcript-player-height) !important;
+		padding-top: 0 !important;
+		margin: var(--godam-transcript-player-top) auto 0;
+		aspect-ratio: auto;
+	}
+
+	> .godam-transcript-panel {
+		position: relative;
+		inset: auto;
+		flex: 0 0 var(--godam-transcript-panel-width);
+		width: var(--godam-transcript-panel-width);
+		height: var(--godam-transcript-stage-height);
+	}
+
+	// Layers (CTA, form, hotspot) sit next to the player in the stage, not
+	// inside it, so give them the player's box too: hotspots are placed from the
+	// video's size, and a CTA belongs over the video, not the black bars.
+	> .easydam-video-container > .easydam-layer {
+		top: var(--godam-transcript-player-top);
+		left: calc((100% - var(--godam-transcript-player-width)) / 2);
+		width: var(--godam-transcript-player-width);
+		height: var(--godam-transcript-player-height);
+	}
+
+	// Inner-block overlays (heading over the video) stay over the video, on
+	// the panel's far side in right-to-left layouts too.
+	> .godam-video-overlay-container {
+		inset-inline-end: var(--godam-transcript-panel-width);
+	}
+}
+
+// Stacked: the panel takes its own row under a full-size video.
+.godam-video-wrapper.godam-transcript-layout--below {
+
+	> .godam-transcript-panel {
+		position: relative;
+		inset: auto;
+		width: 100%;
+		height: var(--godam-transcript-panel-height);
+	}
+
+	// The wrapper now includes the panel; keep inner-block overlays on the video.
+	> .godam-video-overlay-container {
+		bottom: var(--godam-transcript-panel-height);
+	}
+}
+
+// The block root while widened for a portrait video. Elementor gives the
+// figure its own aspect ratio, which would stretch it to the new width.
+.godam-transcript-expanded > figure[id^="godam-player-container"] {
+	aspect-ratio: auto !important;
+}
+
+// Fullscreen: the player fills the screen, so instead of resizing it the panel
+// takes a strip on the right and everything else in the player (video,
+// poster, captions, controls, layers) is confined to the area beside it.
+// Hotspots measure the video's own box, so they stay on target.
+.godam-transcript-open .video-js.vjs-fullscreen {
+	--godam-transcript-fs-width: clamp(280px, 30vw, 440px);
+
+	> *:not(.godam-transcript-panel):not(.godam-share-button):not(.godam-transcript-button) {
+		max-width: calc(100% - var(--godam-transcript-fs-width));
+	}
+
+	> .vjs-big-play-button,
+	> .vjs-loading-spinner {
+		left: calc((100% - var(--godam-transcript-fs-width)) / 2);
+	}
+
+	> .vjs-button.godam-share-button,
+	> .vjs-button.godam-transcript-button {
+		right: calc(var(--godam-transcript-fs-width) + 10px);
+	}
+
+	// The Pills and Bubble bars are centred with auto margins; ending the bar's
+	// box at the panel centres them in the video area instead of under it.
+	> .vjs-control-bar {
+		right: var(--godam-transcript-fs-width);
+	}
 
 	.godam-transcript-panel {
-		width: 100%;
+		position: absolute;
+		inset: 0 0 0 auto;
+		width: var(--godam-transcript-fs-width);
+		height: auto;
+		z-index: 20;
+	}
+
+	// A portrait screen (a phone held upright) has no width to spare: the
+	// panel takes the bottom of the screen and the player the rest.
+	@media (orientation: portrait) {
+		--godam-transcript-fs-height: 45%;
+
+		> *:not(.godam-transcript-panel):not(.godam-share-button):not(.godam-transcript-button) {
+			max-width: none;
+			max-height: calc(100% - var(--godam-transcript-fs-height));
+		}
+
+		> .vjs-big-play-button,
+		> .vjs-loading-spinner {
+			left: 50%;
+			top: calc((100% - var(--godam-transcript-fs-height)) / 2);
+		}
+
+		> .vjs-button.godam-share-button,
+		> .vjs-button.godam-transcript-button {
+			right: 10px;
+		}
+
+		// The control bar is pinned to the bottom, where the panel now is; lift
+		// it onto the video. `!important` to out-rank the Pills skin's own
+		// `bottom: 0.5rem !important`.
+		> .vjs-control-bar {
+			right: 0;
+			bottom: var(--godam-transcript-fs-height) !important;
+		}
+
+		.godam-transcript-panel {
+			inset: auto 0 0;
+			width: 100%;
+			height: var(--godam-transcript-fs-height);
+		}
 	}
 }
 
-// In fullscreen the panel is reparented into the fullscreen element
-// (`.video-js.vjs-fullscreen`). Force the slide-in overlay layout there so a
-// narrow block (whose container query would otherwise stack/hide the panel)
-// still shows it as an on-video overlay. Higher specificity than the base and
-// container-query rules so it wins regardless of source order.
-.video-js.vjs-fullscreen .godam-transcript-panel {
-	position: absolute;
-	inset: 0 0 0 auto;
-	width: clamp(280px, 32%, 420px);
-	max-height: none;
-	display: flex;
-	transform: translateX(100%);
-}
+@media (prefers-reduced-motion: reduce) {
 
-.godam-transcript-open .video-js.vjs-fullscreen .godam-transcript-panel {
-	transform: translateX(0);
+	.godam-transcript-open .godam-transcript-panel {
+		animation: none;
+	}
+
+	.godam-transcript-panel .godam-transcript-cue {
+		transition: none;
+	}
 }
 
 // In fullscreen the overlay share/transcript buttons are reparented as direct
@@ -2818,10 +3153,13 @@ body.godam-player-modal-open {
  * the width leaves height to come from aspect-ratio alone, so a 9:16 reel renders
  * ~1778px tall and its control bar lands far below the fold. With an explicit
  * ratio and a height cap, the width resolves from whichever constraint binds
- * first — the wrapper width for wide videos, the height cap for tall ones. */
+ * first — the wrapper width for wide videos, the height cap for tall ones.
+ * Safari does not carry the height cap through the aspect ratio into the width,
+ * so the width is also capped at the height cap times the ratio: the same width
+ * the close button's offset uses. */
 .godam-player-modal-item {
 	width: auto !important;
-	max-width: 100% !important;
+	max-width: min(100%, calc(var(--godam-lightbox-max-h, 90vh) * (var(--godam-lightbox-ratio, 16 / 9)))) !important;
 
 	/* Shared with the wrapper, so the close button's offset maths (which uses the
 	 * same value) always matches the video actually rendered. */

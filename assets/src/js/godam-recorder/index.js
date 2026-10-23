@@ -20,6 +20,27 @@ import { __, sprintf } from '@wordpress/i18n';
 import { forgetGravityFormsSavedFile, hasGravityFormsSavedFile } from './gravity-forms-saved-file';
 
 /**
+ * Finds the file input and trigger button that belong to a recorder container.
+ *
+ * The server builds the button id with wp_unique_id(), so a container rendered again carries
+ * a different id. Read it from the container every time instead of keeping an earlier value.
+ *
+ * @param {HTMLElement} container - The recorder container.
+ * @return {Object} The input id, button id, file input and button; an element is null when it is missing.
+ */
+const resolveRecorderMarkup = ( container ) => {
+	const inputId = container.getAttribute( 'data-input-id' );
+	const uploadButtonId = container.getAttribute( 'data-video-upload-button-id' );
+
+	return {
+		inputId,
+		uploadButtonId,
+		fileInput: document.getElementById( inputId ),
+		uploadButton: container.querySelector( `#${ uploadButtonId }` ),
+	};
+};
+
+/**
  * Class to handle Uppy video uploads within Gravity Forms.
  * Supports webcam, screen capture, and local file uploads with preview,
  * localStorage restoration, and integration with existing file input fields.
@@ -31,12 +52,7 @@ class UppyVideoUploader {
 	 * @param {HTMLElement} container - The container element with data-* attributes for config.
 	 */
 	constructor( container ) {
-		this.container = container;
 		this.containerId = container.id;
-		this.inputId = container.getAttribute( 'data-input-id' );
-		this.uploadButtonId = container.getAttribute(
-			'data-video-upload-button-id',
-		);
 		this.maxFileSize = Number( container.getAttribute( 'data-max-size' ) );
 		this.maxDurationSeconds = Number( container.getAttribute( 'data-max-duration' ) ) || 0;
 		this.enabledSelectors =
@@ -44,8 +60,7 @@ class UppyVideoUploader {
 			'webcam,screen_capture';
 		this.selectorArray = this.enabledSelectors.split( ',' );
 
-		this.fileInput = document.getElementById( this.inputId );
-		this.uploadButton = container.querySelector( `#${ this.uploadButtonId }` );
+		this.useMarkup( container, resolveRecorderMarkup( container ) );
 
 		// Uppy target for forms used inside godam video.
 		this.uppyModalTarget = document.getElementById( 'uppy-godam-video-modal-container' );
@@ -65,6 +80,20 @@ class UppyVideoUploader {
 
 		// Attach Gravity Forms AJAX rehydration handler.
 		this.setupGravityFormsAjaxHandler();
+	}
+
+	/**
+	 * Points the uploader at a container's elements.
+	 *
+	 * @param {HTMLElement} container - The recorder container the uploader works in.
+	 * @param {Object}      markup    - The ids and elements from resolveRecorderMarkup().
+	 */
+	useMarkup( container, markup ) {
+		this.container = container;
+		this.inputId = markup.inputId;
+		this.uploadButtonId = markup.uploadButtonId;
+		this.fileInput = markup.fileInput;
+		this.uploadButton = markup.uploadButton;
 	}
 
 	/**
@@ -499,52 +528,62 @@ class UppyVideoUploader {
 	}
 
 	/**
-	 * Sets up the Gravity Forms `gform_post_render` hook to reattach triggers and restore files after AJAX submission.
+	 * Opens the Uppy dashboard from the uploader's current trigger button.
+	 *
+	 * Uppy binds the dashboard trigger once, when the plugin is installed. A button that
+	 * Gravity Forms renders later is a different element, so it needs a listener of its own.
+	 */
+	bindUploadButton() {
+		// Prevent duplicate listeners by checking marker attribute.
+		if ( this.uploadButton.getAttribute( 'uppy-click-attached' ) ) {
+			return;
+		}
+
+		this.uploadButton.addEventListener( 'click', () => {
+			this.uppy.getPlugin( 'Dashboard' ).openModal();
+		} );
+		this.uploadButton.setAttribute( 'uppy-click-attached', 'true' );
+	}
+
+	/**
+	 * Sets up the Gravity Forms `gform_post_render` hook to move the uploader onto markup that
+	 * Gravity Forms rendered again, after a page change or a failed submit over AJAX.
 	 */
 	setupGravityFormsAjaxHandler() {
-		jQuery( document ).on( 'gform_post_render', ( _, formId ) => {
-			const submission = window?.gform?.submission;
-			if ( ! submission ) {
-				return;
-			}
-
-			const form = document.getElementById( `gform_${ formId }` );
-			if ( ! form ) {
-				return;
-			}
-
-			// Skip if submission is POSTBACK (non-AJAX).
-			if ( submission.getSubmissionMethod( form ) === submission.SUBMISSION_METHOD_POSTBACK ) {
-				return;
-			}
-
-			// Skip on initial load, run only after AJAX validation errors.
-			const gformWrapper = form.closest( 'div[id^=gform_wrapper_]' );
-			if ( ! gformWrapper.classList.contains( 'gform_validation_error' ) ) {
-				return;
-			}
-
+		jQuery( document ).on( 'gform_post_render', () => {
 			this.handleUppyUIOnAjaxRequest();
 		} );
 	}
 
 	/**
-	 * Reattaches Uppy modal open handlers and restores file previews after Gravity Forms AJAX submission.
+	 * Moves the uploader onto its field's new markup and shows the recording it holds again.
+	 *
+	 * Gravity Forms replaces a page's markup on every AJAX page change, so the container, file
+	 * input and button the uploader was bound to leave the page. Their ids are the same in the
+	 * new markup, except the button's, which is read from the new container.
 	 */
 	handleUppyUIOnAjaxRequest() {
-		const dashboardTrigger = document.getElementById( this.uploadButtonId );
-
-		// Prevent duplicate listeners by checking marker attribute.
-		if ( ! dashboardTrigger.getAttribute( 'uppy-click-attached' ) ) {
-			dashboardTrigger.addEventListener( 'click', () => {
-				this.uppy.getPlugin( 'Dashboard' ).openModal();
-			} );
-			dashboardTrigger.setAttribute( 'uppy-click-attached', 'true' );
+		// The markup is still on the page: first render, a postback, or a page the response did not replace.
+		if ( this.container.isConnected ) {
+			return;
 		}
+
+		const container = document.getElementById( this.containerId );
+		if ( ! container ) {
+			return;
+		}
+
+		const markup = resolveRecorderMarkup( container );
+		if ( ! markup.fileInput || ! markup.uploadButton ) {
+			return;
+		}
+
+		this.useMarkup( container, markup );
+		this.bindUploadButton();
 
 		const restoredFile = this.uppy.getFiles()?.[ 0 ];
 		if ( restoredFile ) {
-			// Re-render preview on AJAX validation errors.
+			// Draw the recording's preview again on the new markup.
 			this.processVideoUpload( restoredFile, 'restored' );
 		}
 	}

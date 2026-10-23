@@ -1,5 +1,26 @@
 # Changelog #
 
+## v2.5.0 (October 22, 2026) ##
+
+- Feat: GoDAM can add a video sitemap that lists every page with a GoDAM video, through Yoast SEO, Rank Math, All in One SEO or the WordPress sitemap. Turn it on in GoDAM > Settings > SEO; single videos can be left out.
+- Feat: Video chapters are added to the video's search data as key moments, so Google can show links that jump to each chapter.
+- Tweak: The video schema GoDAM adds for search engines now uses a video URL Google can index, adds the player's embed link, and leaves out empty fields.
+- Tweak: Editors see a warning when a video's title looks like a raw file name.
+- Tweak: The WPBakery GoDAM Video element's SEO Settings tab shows the same Video SEO fields as the block editor and Elementor.
+- Tweak: The video share popup now shares the page link. The GoDAM Central and Embed links are gone, and the share button shows on every video when sharing is turned on.
+- Tweak: GoDAM no longer adds the signed-in viewer's email address to the page or to video analytics.
+- Fix: Audio converted to MP3 now shows in the block editor's audio list, including files converted before this update.
+- Fix: The Gravity Forms Record field keeps working after an AJAX page change or a failed submit.
+- Fix: The WordPress admin menu no longer flashes and jumps when a GoDAM page loads.
+- Fix: The form layer preview in the video editor now accepts only a valid form ID.
+
+## v2.4.1 (October 20, 2026) ##
+
+- Fix: The video transcript no longer covers the video. It opens beside the video, or below it on narrow screens, matches the player skin, and can be searched.
+- Fix: Transcripts uploaded as .srt files now show captions and the transcript to visitors.
+- Fix: In Safari, tall videos in a lightbox are no longer cut off at the bottom.
+- Fix: Captions no longer overlap the player controls on narrow screens.
+
 ## v2.4.0 (October 16, 2026) ##
 
 - Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.

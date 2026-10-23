@@ -97,6 +97,10 @@
 			"type": "boolean",
 			"default": false
 		},
+		"excludeFromVideoSitemap": {
+			"type": "boolean",
+			"default": false
+		},
 		"verticalAlignment": {
 			"type": "string",
 			"default": "center"

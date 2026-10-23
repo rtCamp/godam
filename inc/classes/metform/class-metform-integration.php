@@ -95,7 +95,7 @@ class Metform_Integration {
 	 * @since 1.4.0
 	 *
 	 * @param string $layer Layer name.
-	 * @param string $layer_id Layer ID.
+	 * @param int    $layer_id Layer ID.
 	 *
 	 * @return void
 	 */
@@ -121,13 +121,13 @@ class Metform_Integration {
 	 * @since 1.4.0
 	 *
 	 * @param string $layer Layer name.
-	 * @param string $layer_id Layer ID.
+	 * @param int    $layer_id Layer ID.
 	 *
 	 * @return void
 	 */
 	public function render_layer_form_for_video_editor( $layer, $layer_id ) {
 		if ( 'metform' === $layer && ! empty( $layer_id ) ) {
-			echo do_shortcode( "[metform form_id='{$layer_id}']" ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo do_shortcode( sprintf( "[metform form_id='%d']", absint( $layer_id ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 	}
 }

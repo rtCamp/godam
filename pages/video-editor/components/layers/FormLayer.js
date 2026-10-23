@@ -25,6 +25,8 @@ import FluentForm from '../forms/FluentForm.js';
 import MetForm from '../forms/MetForm.js';
 import ForminatorForm from '../forms/forminatorForms.js';
 import NinjaForm from '../forms/NinjaForm.js';
+import Marketo from '../forms/Marketo.js';
+import HubSpotForm from '../forms/HubSpotForm.js';
 
 /**
  * FormLayer Components Object mapping.
@@ -97,6 +99,22 @@ export const FormLayerComponentType = {
 		component: MetForm,
 		idField: 'metform_id',
 		settingsUrl: '?post={formId}&action=elementor',
+	},
+	marketo: {
+		// Marketo has no plugin to activate: the layer is always editable and the
+		// panel surfaces a notice when credentials are missing in settings.
+		isActive: true,
+		component: Marketo,
+		idField: 'marketo_id',
+		settingsUrl: 'admin.php?page=rtgodam_settings',
+	},
+	hubspot: {
+		isActive: Boolean( window?.videoData?.hubspotActive ) ?? false,
+		component: HubSpotForm,
+		idField: 'hubspot_id',
+		// HubSpot forms are managed in HubSpot, not in wp-admin, so there is no
+		// local settings URL.
+		settingsUrl: '',
 	},
 };
 

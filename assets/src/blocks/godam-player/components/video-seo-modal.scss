@@ -27,6 +27,13 @@
 		}
 	}
 
+	// "Title looks like a file name" warning under the Headline field:
+	// same gap below it as between the property boxes.
+	&__notice--filename {
+		margin-top: 0;
+		margin-bottom: 1rem;
+	}
+
 	&__property {
 
 		background-color: rgb(248, 249, 250);
