@@ -700,18 +700,18 @@ class Pages {
 					'sureformsActive'    => $is_sure_form_active,
 					'forminatorActive'   => $is_forminator_active,
 					'fluentformsActive'  => $is_fluent_forms_active,
-					'everestFormsActive' => $is_everest_forms_active,
-					'ninjaFormsActive'   => $is_ninja_forms_active,
-					'metformActive'      => $is_met_form_active,
+					'everestFormsActive'  => $is_everest_forms_active,
+					'ninjaFormsActive'    => $is_ninja_forms_active,
+					'metformActive'       => $is_met_form_active,
 					// Marketo is a SaaS (no plugin): "active" means enabled and
 					// connected on GoDAM Central.
-					'marketoActive'      => \RTGODAM\Inc\Marketo::is_configured(),
+					'marketoActive'       => \RTGODAM\Inc\Marketo::is_configured(),
 					// Account details for the in-editor Marketo form preview, read from
 					// the GoDAM Central connection. `instanceHost` is the normalized
 					// forms2 base URL (the account's forms host or mktoweb domain).
 					// These account IDs are not secret — the frontend embed exposes
 					// them too.
-					'marketoConfig'      => array(
+					'marketoConfig'       => array(
 						'instanceHost' => \RTGODAM\Inc\Marketo::get_instance_host(),
 						'munchkinId'   => \RTGODAM\Inc\Marketo::get_munchkin_id(),
 					),
