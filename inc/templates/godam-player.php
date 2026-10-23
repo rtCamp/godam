@@ -398,9 +398,10 @@ if ( empty( $godam_attachment_id ) && empty( $godam_src ) && empty( $godam_trans
 
 $godam_easydam_control_bar_color = 'initial'; // Default color.
 
+// The brand and appearance colours end up in the wrapper's inline style, so only a plain colour value is kept.
 $godam_settings               = get_option( 'rtgodam-settings', array() );
-$godam_brand_color            = isset( $godam_settings['video_player']['brand_color'] ) ? $godam_settings['video_player']['brand_color'] : null;
-$godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
+$godam_brand_color            = isset( $godam_settings['video_player']['brand_color'] ) ? rtgodam_sanitize_css_color( $godam_settings['video_player']['brand_color'] ) : null;
+$godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? rtgodam_sanitize_css_color( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) : null;
 $godam_brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
 $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $godam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
 
@@ -906,21 +907,18 @@ do_action( 'rtgodam_after_attachment_lookup' );
 						foreach ( $godam_meta_data['layers'] as $godam_layer ) :
 
 							$godam_form_type = ! empty( $godam_layer['form_type'] ) ? $godam_layer['form_type'] : 'gravity';
+
+							// Printed into the layer's style attribute: a plain colour only, else the default overlay colour.
+							$godam_layer_bg_color = isset( $godam_layer['bg_color'] ) ? rtgodam_sanitize_css_color( $godam_layer['bg_color'], '#FFFFFFB3' ) : '#FFFFFFB3';
+
 							// FORM layer.
 							if ( isset( $godam_layer['type'] ) && 'form' === $godam_layer['type'] ) :
 								if ( 'gravity' === $godam_form_type && ! empty( $godam_layer['gf_id'] ) ) :
 									?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 									<div class="form-container">
 										<?php
-											$godam_theme = ! empty( $godam_layer['theme'] ) ? esc_attr( $godam_layer['theme'] ) : '';
-											echo do_shortcode(
-												sprintf(
-													"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
-													intval( $godam_layer['gf_id'] ),
-													$godam_theme ? " theme='$godam_theme'" : ''
-												)
-											);
+											echo do_shortcode( rtgodam_get_gravityform_layer_shortcode( $godam_layer ) );
 										?>
 									</div>
 								</div>
@@ -928,7 +926,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 								elseif ( 'cf7' === $godam_form_type && ! empty( $godam_layer['cf7_id'] ) ) :
 									$godam_form_theme = ! empty( $godam_layer['theme'] ) ? $godam_layer['theme'] : 'godam';
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container <?php echo esc_attr( 'godam' === $godam_form_theme ? 'rtgodam-wpcf7-form' : '' ); ?>">
 											<?php
 												echo do_shortcode(
@@ -943,7 +941,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<?php
 								elseif ( 'wpforms' === $godam_form_type && ! empty( $godam_layer['wpform_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -958,7 +956,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<?php
 								elseif ( 'sureforms' === $godam_form_type && ! empty( $godam_layer['sureform_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -973,7 +971,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<?php
 								elseif ( 'forminator' === $godam_form_type && ! empty( $godam_layer['forminator_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -988,7 +986,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<?php
 								elseif ( 'metform' === $godam_form_type && ! empty( $godam_layer['metform_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -1013,7 +1011,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 
 									if ( $godam_form_html && ! is_wp_error( $godam_form_html ) ) :
 										?>
-										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 											<div class="form-container jetpack-form-container" <?php echo ! empty( $godam_origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $godam_origin_post_id ) . '"' : ''; ?>>
 												<?php
 													// HTML generated dynamically using Block content.
@@ -1026,7 +1024,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									endif;
 								elseif ( 'fluentforms' === $godam_form_type && ! empty( $godam_layer['fluent_form_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -1044,7 +1042,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<div
 										id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
 										class="easydam-layer hidden"
-										style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>"
+										style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>"
 									>
 										<div class="form-container everest-form">
 											<?php
@@ -1060,7 +1058,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<?php
 								elseif ( 'ninjaforms' === $godam_form_type && ! empty( $godam_layer['ninja_form_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -1077,7 +1075,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									// Poll layer.
 							elseif ( isset( $godam_layer['type'] ) && 'poll' === $godam_layer['type'] ) :
 								?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 									<div class="form-container poll-container">
 										<?php
 										$godam_poll_id = ! empty( $godam_layer['poll_id'] ) ? intval( $godam_layer['poll_id'] ) : 0;
@@ -1098,7 +1096,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 								// matching DOM element is absent, so the video just plays through.
 								if ( $godam_render_html_cta || $godam_render_image_cta ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<?php if ( $godam_render_html_cta ) : ?>
 											<div class="easydam-layer--cta-html">
 												<?php
@@ -1132,9 +1130,10 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
 									class="easydam-layer hidden hotspot-layer"
 									<?php
-									if ( ! empty( $godam_layer['bg_color'] ) ) :
+									$godam_hotspot_bg_color = ! empty( $godam_layer['bg_color'] ) ? rtgodam_sanitize_css_color( $godam_layer['bg_color'] ) : '';
+									if ( '' !== $godam_hotspot_bg_color ) :
 										?>
-										style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"<?php endif; ?>
+										style="background-color: <?php echo esc_attr( $godam_hotspot_bg_color ); ?>"<?php endif; ?>
 								>
 								</div>
 								<?php
