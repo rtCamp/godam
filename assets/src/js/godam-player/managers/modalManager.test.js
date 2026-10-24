@@ -771,6 +771,36 @@ describe( 'fullscreen inside the lightbox', () => {
 		player.trigger( 'customfullscreenchange' );
 	};
 
+	describe( 'controls relayout', () => {
+		beforeEach( () => jest.useFakeTimers() );
+		afterEach( () => jest.useRealTimers() );
+
+		it( 'asks the player to lay its controls out again once the lightbox has settled', () => {
+			// On iOS the skip buttons kept the inline player's position until the
+			// browser toolbar next changed, then jumped.
+			const onResize = jest.fn();
+			player.on( 'resize', onResize );
+
+			lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+			expect( onResize ).not.toHaveBeenCalled();
+
+			jest.advanceTimersByTime( 500 );
+			expect( onResize ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'skips the relayout when the lightbox closes first', () => {
+			const onResize = jest.fn();
+			player.on( 'resize', onResize );
+
+			lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+			lightbox.historyPushed = false;
+			lightbox.close();
+			jest.advanceTimersByTime( 500 );
+
+			expect( onResize ).not.toHaveBeenCalled();
+		} );
+	} );
+
 	it( 'drops the wrapper transform so a fullscreen player can fill the viewport', () => {
 		// The wrapper is transformed for centring, which would otherwise make it the
 		// containing block for the fullscreen player's `position: fixed`.

@@ -88,6 +88,20 @@ const TAP_MOVEMENT_THRESHOLD = 10;
 const TAP_MAX_DURATION = 200;
 
 /**
+ * How long after opening to ask the player to lay its controls out again (ms).
+ *
+ * On a narrow player the skip buttons are placed by script from the player's
+ * height (ControlsManager.moveVideoControls), and only on a resize. On iOS
+ * Safari that pass ran before the lightbox had settled, so the buttons kept the
+ * inline player's position (73.5px instead of 81.5px on an iPhone 15) until the
+ * browser toolbar next changed, then jumped about 8px. A fresh pass this long
+ * after opening put them right on the device; the fade-in is 300ms.
+ *
+ * @type {number}
+ */
+const CONTROLS_RELAYOUT_DELAY = 500;
+
+/**
  * Whether a completed touch was a tap rather than a swipe or a long press.
  *
  * @param {Object} start    - Where and when the touch began.
@@ -471,6 +485,15 @@ export class ModalManager {
 					playPromise.catch( () => {} );
 				}
 			}
+
+			// Re-place the controls for the lightbox size (EventsManager listens for
+			// `resize`). See CONTROLS_RELAYOUT_DELAY.
+			const entry = this.activeEntry;
+			entry.relayoutTimer = setTimeout( () => {
+				if ( this.activeEntry === entry ) {
+					player.trigger( 'resize' );
+				}
+			}, CONTROLS_RELAYOUT_DELAY );
 		}
 	}
 
@@ -723,6 +746,7 @@ export class ModalManager {
 		this.activeEntry = null;
 
 		entry.disposeFullscreenWatch?.();
+		clearTimeout( entry.relayoutTimer );
 
 		if ( 'element' === mode ) {
 			const player = video ? videojs.getPlayer( video ) : null;
