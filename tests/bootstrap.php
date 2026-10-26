@@ -214,11 +214,22 @@ if ( ! function_exists( 'wp_parse_url' ) ) {
 	}
 }
 
-// Empty stand-in for the WP core base so Video_Editor's parent chain resolves
+// Stand-in for the WP core base so Video_Editor's parent chain resolves
 // without a WordPress install; the constructor is never run (tests build the
-// object with ReflectionClass::newInstanceWithoutConstructor()).
+// object with ReflectionClass::newInstanceWithoutConstructor()). The route
+// tables call get_collection_params() for their `args`; the params themselves
+// are not what those tests look at.
 if ( ! class_exists( 'WP_REST_Controller' ) ) {
-	class WP_REST_Controller {} // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+	// phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed, Generic.Files.OneObjectStructurePerFile.MultipleFound -- test stub.
+	class WP_REST_Controller {
+
+		/**
+		 * @return array
+		 */
+		public function get_collection_params() {
+			return array();
+		}
+	}
 }
 
 /*
@@ -300,6 +311,11 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 		/** @return int */
 		public function get_status() {
 			return $this->status;
+		}
+
+		/** @param int $status HTTP status code. */
+		public function set_status( $status ) {
+			$this->status = $status;
 		}
 	}
 }

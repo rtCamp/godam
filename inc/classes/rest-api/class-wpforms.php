@@ -30,7 +30,7 @@ class WPForms extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_gforms' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => $this->get_collection_params(),
 					),
 				),
@@ -42,7 +42,7 @@ class WPForms extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_wpforms_form' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
@@ -108,9 +108,8 @@ class WPForms extends Base {
 		if ( ! empty( $forms ) && ! is_wp_error( $forms ) ) {
 			foreach ( $forms as $form ) {
 				$wpforms[] = array(
-					'id'          => $form->ID,
-					'title'       => $form->post_title,
-					'description' => $form->post_excerpt,
+					'id'    => $form->ID,
+					'title' => $form->post_title,
 				);
 			}
 		}
