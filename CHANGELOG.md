@@ -1,13 +1,13 @@
 # Changelog #
 
-## v2.5.1 (October 23, 2026) ##
+## v2.5.1 (October 26, 2026) ##
 
 - Fix: GoDAM's public video pages, lists and player data no longer show media from draft, private or scheduled posts. Media used on a published page keeps working.
 - Fix: GoDAM only deletes, exports and stores media files that are inside the uploads folder.
 - Fix: Video embed pages and form entries build the player from checked settings.
 - Fix: The form lists in the video editor are available only to users who can upload media, and Jetpack forms in videos show only on published posts.
 - Fix: Sending media to GoDAM for transcoding now checks GoDAM's security certificate.
-- Fix: Media folders are visible only to signed-in users, and a locked folder stays locked everywhere.
+- Fix: Media folder names are no longer shown to site visitors, and a locked folder stays locked everywhere.
 
 ## v2.5.0 (October 22, 2026) ##
 
