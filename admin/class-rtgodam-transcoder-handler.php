@@ -466,7 +466,7 @@ class RTGODAM_Transcoder_Handler {
 			 * server's TLS certificate. Turn it off only for a local or staging
 			 * API that uses a self-signed certificate.
 			 *
-			 * @since n.e.x.t
+			 * @since 2.5.1
 			 *
 			 * @param bool $verify_ssl Whether to verify the certificate. Default true.
 			 */
