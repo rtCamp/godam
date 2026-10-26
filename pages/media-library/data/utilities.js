@@ -240,33 +240,46 @@ const getCurrentMimeTypeFilter = ( paramName = 'post_mime_type' ) => {
 };
 
 /**
- * Turns a media type filter into query args for the core `wp/v2/media` route.
+ * Builds the request for the media sidebar's All Media count.
  *
- * The route's `media_type` accepts only whole types (image, video, text, application, audio)
- * and rejects anything else with a 400, while its `mime_type` keeps only exact MIME types and
- * silently drops whole types. A picker can ask for exact MIME types, e.g. the caption picker's
- * [ 'text/vtt', 'application/x-subrip', 'text/plain' ], so each entry goes to the arg that accepts it.
+ * With no type filter, or only whole types (image, video, audio...), the count comes from the
+ * core `wp/v2/media` route's `media_type`. A filter with exact MIME types, e.g. the caption
+ * picker's [ 'text/vtt', 'application/x-subrip', 'text/plain' ], goes to admin-ajax
+ * `query-attachments` instead, the same query the picker's grid runs: the REST route answers
+ * 400 to exact types in `media_type`, and only takes a list of them in `mime_type` from WordPress 6.9.
  *
  * @since n.e.x.t
  *
- * @param {string|string[]} type A type, a comma-separated list of types, or an array of them.
+ * @param {string|string[]} type A type, a comma-separated list of types, or an array of them. Defaults to the current media frame's or URL's filter.
  *
- * @return {Object} `media_type` and/or `mime_type` arrays, or an empty object when there is no filter.
+ * @return {Object} The `url` and `params` to request. Both routes send the total in an `X-WP-Total` header.
  */
-const getMediaRouteTypeParams = ( type ) => {
-	const entries = [].concat( type ?? [] )
+const getAllMediaCountRequest = ( type = getCurrentMimeTypeFilter( 'type' ).type ) => {
+	const types = [].concat( type ?? [] )
 		.join( ',' )
 		.split( ',' )
 		.map( ( entry ) => entry.trim() )
 		.filter( Boolean );
 
-	const wholeTypes = entries.filter( ( entry ) => ! entry.includes( '/' ) );
-	const mimeTypes = entries.filter( ( entry ) => entry.includes( '/' ) );
+	if ( types.some( ( entry ) => entry.includes( '/' ) ) ) {
+		return {
+			url: new URL( window.wp?.ajax?.settings?.url || window.ajaxurl, window.location.href ).href,
+			params: {
+				action: 'query-attachments',
+				'query[post_mime_type]': types.join( ',' ),
+				'query[posts_per_page]': 1,
+			},
+		};
+	}
 
 	return {
-		...( wholeTypes.length ? { media_type: wholeTypes } : {} ),
-		...( mimeTypes.length ? { mime_type: mimeTypes } : {} ),
+		url: 'wp/v2/media',
+		params: {
+			_fields: 'id',
+			per_page: 1,
+			...( types.length ? { media_type: types } : {} ),
+		},
 	};
 };
 
-export { utilities, getCurrentMimeTypeFilter, getMediaRouteTypeParams };
+export { utilities, getCurrentMimeTypeFilter, getAllMediaCountRequest };

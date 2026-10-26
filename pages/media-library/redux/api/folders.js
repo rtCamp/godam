@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { getCurrentMimeTypeFilter, getMediaRouteTypeParams } from '../../data/utilities';
+import { getCurrentMimeTypeFilter, getAllMediaCountRequest } from '../../data/utilities';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
@@ -68,16 +68,8 @@ export const folderApi = createApi( {
 	endpoints: ( builder ) => ( {
 		getAllMediaCount: builder.query( {
 			async queryFn( arg, api, extraOptions, baseQuery ) {
-				const { type } = getCurrentMimeTypeFilter( 'type' );
-				const mimeTypeParams = getMediaRouteTypeParams( type );
-
 				const result = await baseQuery( {
-					url: 'wp/v2/media',
-					params: {
-						_fields: 'id',
-						per_page: 1,
-						...mimeTypeParams,
-					},
+					...getAllMediaCountRequest(),
 					// Send the REST nonce so the count runs as the current user (matching the
 					// grid). Without it the request is anonymous and only counts public media,
 					// undercounting when private/pending attachments exist.
