@@ -239,4 +239,34 @@ const getCurrentMimeTypeFilter = ( paramName = 'post_mime_type' ) => {
 	return {};
 };
 
-export { utilities, getCurrentMimeTypeFilter };
+/**
+ * Turns a media type filter into query args for the core `wp/v2/media` route.
+ *
+ * The route's `media_type` accepts only whole types (image, video, text, application, audio)
+ * and rejects anything else with a 400, while its `mime_type` keeps only exact MIME types and
+ * silently drops whole types. A picker can ask for exact MIME types, e.g. the caption picker's
+ * [ 'text/vtt', 'application/x-subrip', 'text/plain' ], so each entry goes to the arg that accepts it.
+ *
+ * @since n.e.x.t
+ *
+ * @param {string|string[]} type A type, a comma-separated list of types, or an array of them.
+ *
+ * @return {Object} `media_type` and/or `mime_type` arrays, or an empty object when there is no filter.
+ */
+const getMediaRouteTypeParams = ( type ) => {
+	const entries = [].concat( type ?? [] )
+		.join( ',' )
+		.split( ',' )
+		.map( ( entry ) => entry.trim() )
+		.filter( Boolean );
+
+	const wholeTypes = entries.filter( ( entry ) => ! entry.includes( '/' ) );
+	const mimeTypes = entries.filter( ( entry ) => entry.includes( '/' ) );
+
+	return {
+		...( wholeTypes.length ? { media_type: wholeTypes } : {} ),
+		...( mimeTypes.length ? { mime_type: mimeTypes } : {} ),
+	};
+};
+
+export { utilities, getCurrentMimeTypeFilter, getMediaRouteTypeParams };

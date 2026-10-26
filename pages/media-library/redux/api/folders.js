@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { getCurrentMimeTypeFilter } from '../../data/utilities';
+import { getCurrentMimeTypeFilter, getMediaRouteTypeParams } from '../../data/utilities';
 
 const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
@@ -68,7 +68,8 @@ export const folderApi = createApi( {
 	endpoints: ( builder ) => ( {
 		getAllMediaCount: builder.query( {
 			async queryFn( arg, api, extraOptions, baseQuery ) {
-				const mimeTypeParams = getCurrentMimeTypeFilter( 'media_type' );
+				const { type } = getCurrentMimeTypeFilter( 'type' );
+				const mimeTypeParams = getMediaRouteTypeParams( type );
 
 				const result = await baseQuery( {
 					url: 'wp/v2/media',
