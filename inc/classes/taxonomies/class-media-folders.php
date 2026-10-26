@@ -38,6 +38,27 @@ class Media_Folders extends Base {
 		// The folder lock, applied where a folder is filled or created rather than on one route.
 		add_filter( 'map_meta_cap', array( $this, 'lock_folder_assignment' ), 10, 4 );
 		add_filter( 'pre_insert_term', array( $this, 'lock_folder_creation' ), 10, 3 );
+
+		// Folder names are private, so keep them out of the post classes core shows to visitors.
+		add_filter( 'post_class_taxonomies', array( $this, 'hide_folders_from_post_classes' ) );
+	}
+
+	/**
+	 * Leave media folders out of the post classes.
+	 *
+	 * Core adds a `media-folder-<slug>` class for each folder an attachment is in, and shows
+	 * those classes to logged-out visitors in the media route's `class_list` and on attachment
+	 * pages. Folder slugs are folder names, which only signed-in users may see.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string[] $taxonomies Taxonomies whose terms become post classes.
+	 * @return string[] The taxonomies, without media folders.
+	 */
+	public function hide_folders_from_post_classes( $taxonomies ) {
+		unset( $taxonomies[ static::SLUG ] );
+
+		return $taxonomies;
 	}
 
 	/**

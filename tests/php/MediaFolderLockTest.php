@@ -28,6 +28,7 @@ use RTGODAM\Inc\Taxonomies\Media_Folders;
  * @covers \RTGODAM\Inc\Taxonomies\Media_Folders::setup_hooks
  * @covers \RTGODAM\Inc\Taxonomies\Media_Folders::lock_folder_assignment
  * @covers \RTGODAM\Inc\Taxonomies\Media_Folders::lock_folder_creation
+ * @covers \RTGODAM\Inc\Taxonomies\Media_Folders::hide_folders_from_post_classes
  * @covers \RTGODAM\Inc\REST_API\Media_Library::guard_media_folder_routes
  * @covers \RTGODAM\Inc\REST_API\Media_Library::check_media_folder_request
  * @covers \RTGODAM\Inc\REST_API\Media_Library::enforce_locked_folder_on_media_update
@@ -290,6 +291,28 @@ class MediaFolderLockTest extends TestCase {
 
 		$this->assertTrue( has_action( 'map_meta_cap', array( $taxonomy, 'lock_folder_assignment' ) ) );
 		$this->assertTrue( has_action( 'pre_insert_term', array( $taxonomy, 'lock_folder_creation' ) ) );
+		$this->assertTrue( has_action( 'post_class_taxonomies', array( $taxonomy, 'hide_folders_from_post_classes' ) ) );
+	}
+
+	/**
+	 * Folder names stay out of the post classes core shows to visitors.
+	 *
+	 * @return void
+	 */
+	public function test_folders_are_left_out_of_post_classes() {
+		$public = array(
+			'category'     => 'category',
+			'media-folder' => 'media-folder',
+			'post_tag'     => 'post_tag',
+		);
+
+		$this->assertSame(
+			array(
+				'category' => 'category',
+				'post_tag' => 'post_tag',
+			),
+			$this->taxonomy()->hide_folders_from_post_classes( $public )
+		);
 	}
 
 	/**
