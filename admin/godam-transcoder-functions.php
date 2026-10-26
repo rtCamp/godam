@@ -256,7 +256,7 @@ add_action( 'delete_attachment', 'rtgodam_delete_related_transcoded_files', 99, 
  * Protected meta cannot be written through XML-RPC or the custom fields box. GoDAM
  * writes these keys itself with update_post_meta(), which protection does not affect.
  *
- * @since n.e.x.t
+ * @since 2.5.1
  *
  * @param bool   $is_protected Whether the meta key is protected.
  * @param string $meta_key     Meta key.
@@ -310,7 +310,7 @@ function rtgodam_delete_transcoded_files( $files ) {
  * or copies media files resolves them here first and skips anything that is not a file
  * inside the uploads folder.
  *
- * @since n.e.x.t
+ * @since 2.5.1
  *
  * @param mixed $file File path, absolute or relative to the uploads folder.
  *

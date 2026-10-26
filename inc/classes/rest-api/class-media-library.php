@@ -2311,7 +2311,7 @@ class Media_Library extends Base {
 	 * Core's wp_http_validate_url() refuses other schemes, loopback and private hosts, and
 	 * unusual ports. It does not refuse link-local addresses, so those are checked here.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param string $url URL, already passed through esc_url_raw().
 	 * @return bool
