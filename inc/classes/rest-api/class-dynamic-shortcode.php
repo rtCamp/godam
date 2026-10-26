@@ -173,7 +173,7 @@ class Dynamic_Shortcode extends Base {
 		/**
 		 * Filters the attributes the player is rendered with.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.1
 		 *
 		 * @param array $atts Attributes passed to the [godam_video] renderer.
 		 * @param int   $id   Attachment ID.
@@ -195,12 +195,12 @@ class Dynamic_Shortcode extends Base {
 			 * Filters the shortcode string the player is rendered from.
 			 *
 			 * @since 1.1.4
-			 * @deprecated n.e.x.t Use the rtgodam_shortcode_atts filter instead.
+			 * @deprecated 2.5.1 Use the rtgodam_shortcode_atts filter instead.
 			 *
 			 * @param string $shortcode The [godam_video] shortcode.
 			 * @param int    $id        Attachment ID.
 			 */
-			$shortcode = apply_filters_deprecated( 'rtgodam_shortcode_output', array( $shortcode, $id ), 'n.e.x.t', 'rtgodam_shortcode_atts' );
+			$shortcode = apply_filters_deprecated( 'rtgodam_shortcode_output', array( $shortcode, $id ), '2.5.1', 'rtgodam_shortcode_atts' );
 
 			echo do_shortcode( $shortcode );
 		} else {

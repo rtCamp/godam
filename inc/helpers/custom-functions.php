@@ -2301,7 +2301,7 @@ function rtgodam_get_block_source_from_context( $context ) {
  * instead of do_shortcode() when a value comes from a request, a form
  * submission or other stored user data.
  *
- * @since n.e.x.t
+ * @since 2.5.1
  *
  * @param string               $tag  Shortcode tag, for example 'godam_video'.
  * @param array<string, mixed> $atts Attributes, keyed in lowercase as the shortcode parser would key them.
