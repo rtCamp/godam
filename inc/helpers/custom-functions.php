@@ -1754,12 +1754,15 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 		$watermark_to_use
 	);
 
+	/** This filter is documented in admin/class-rtgodam-transcoder-handler.php */
+	$verify_ssl = (bool) apply_filters( 'godam_transcoder_verify_ssl', true );
+
 	/**
 	 * Prepare the args to pass to request.
 	 */
 	$args = array(
 		'method'    => 'POST',
-		'sslverify' => false,
+		'sslverify' => $verify_ssl,
 		'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 		'body'      => $body,
 	);
