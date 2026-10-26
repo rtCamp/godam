@@ -2134,7 +2134,7 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
  * Fires the attachment lookup hooks itself, so a site that keeps its media on
  * another site answers from there.
  *
- * @since n.e.x.t
+ * @since 2.5.1
  *
  * @param int $attachment_id Attachment ID.
  * @return bool
@@ -2186,7 +2186,7 @@ function rtgodam_can_view_attachment( $attachment_id ) {
 	 * The gallery listing is limited in the database query instead, so this
 	 * filter does not run for it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param bool     $can_view   Whether the attachment may be shown.
 	 * @param \WP_Post $attachment The attachment.
@@ -2200,7 +2200,7 @@ function rtgodam_can_view_attachment( $attachment_id ) {
  * Post ID 0 is the site-wide anchor for media in a block widget, which shows
  * on every page.
  *
- * @since n.e.x.t
+ * @since 2.5.1
  *
  * @param int[] $post_ids Post IDs from the media usage index.
  * @return bool
@@ -2224,7 +2224,7 @@ function rtgodam_usage_includes_public_post( array $post_ids ) {
 /**
  * Statuses of the posts that anyone can view on the front end.
  *
- * @since n.e.x.t
+ * @since 2.5.1
  *
  * @return string[]
  */
@@ -2243,7 +2243,7 @@ function rtgodam_get_viewable_post_statuses() {
  * arrays, so the check of each is done in PHP, for the small set of videos that
  * have both a non-public parent and a usage record.
  *
- * @since n.e.x.t
+ * @since 2.5.1
  *
  * @param bool $refresh Whether to read again instead of using this request's copy.
  * @return int[]
@@ -2325,7 +2325,7 @@ function rtgodam_get_publicly_used_media_ids( $refresh = false ) {
  * in the query keeps paging and counts right. It applies to every viewer, so a
  * listing shows editors the same media it shows visitors.
  *
- * @since n.e.x.t
+ * @since 2.5.1
  *
  * @param array     $clauses Query clauses.
  * @param \WP_Query $query   The query.

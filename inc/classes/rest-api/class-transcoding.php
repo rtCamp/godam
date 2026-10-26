@@ -39,7 +39,7 @@ class Transcoding extends Base {
 	 * list is refused. 100 is the largest page WordPress's own REST collections
 	 * return; the media library sends its IDs in batches of that size.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @var int
 	 */
@@ -50,7 +50,7 @@ class Transcoding extends Base {
 	 * thumbnail yet is still reported as generating one. About the three polls,
 	 * five seconds apart, that the media library used to count.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @var int
 	 */

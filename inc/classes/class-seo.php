@@ -916,7 +916,7 @@ class Seo {
 	 * where that content is public, never on a draft, private, scheduled or
 	 * password-protected post.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param int $post_id Post ID.
 	 * @return bool
