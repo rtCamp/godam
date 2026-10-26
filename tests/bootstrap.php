@@ -105,12 +105,18 @@ if ( ! function_exists( 'wp_prepare_attachment_for_js' ) ) {
 if ( ! function_exists( 'get_post_meta' ) ) {
 
 	/**
-	 * @param int    $post_id Ignored (single post per test).
+	 * @param int    $post_id Post ID. Only read for a test that sets meta per post in
+	 *                        `post_meta_by_id` (post ID => key => value); otherwise ignored.
 	 * @param string $key     Meta key.
 	 * @param bool   $single  Ignored; always single-value semantics.
 	 * @return mixed
 	 */
-	function get_post_meta( $post_id, $key = '', $single = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $post_id/$single are ignored.
+	function get_post_meta( $post_id, $key = '', $single = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $single is ignored.
+		if ( isset( $GLOBALS['rtgodam_stub']['post_meta_by_id'][ (int) $post_id ] ) ) {
+			$by_id = $GLOBALS['rtgodam_stub']['post_meta_by_id'][ (int) $post_id ];
+			return array_key_exists( $key, $by_id ) ? $by_id[ $key ] : '';
+		}
+
 		$meta = isset( $GLOBALS['rtgodam_stub']['post_meta'] ) && is_array( $GLOBALS['rtgodam_stub']['post_meta'] )
 			? $GLOBALS['rtgodam_stub']['post_meta']
 			: array();
@@ -320,13 +326,19 @@ if ( ! function_exists( 'current_user_can' ) ) {
 
 	/**
 	 * @param string $capability Capability name.
-	 * @param mixed  ...$args    Ignored; object-level checks are not stubbed.
+	 * @param mixed  ...$args    The object ID of a meta capability. A test grants it for one
+	 *                           object only as "edit_post:42"; the plain name grants it for all.
 	 * @return bool
 	 */
-	function current_user_can( $capability, ...$args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $args are ignored.
+	function current_user_can( $capability, ...$args ) {
 		$caps = isset( $GLOBALS['rtgodam_stub']['caps'] ) && is_array( $GLOBALS['rtgodam_stub']['caps'] )
 			? $GLOBALS['rtgodam_stub']['caps']
 			: array();
+
+		if ( isset( $args[0] ) && is_scalar( $args[0] ) && in_array( $capability . ':' . $args[0], $caps, true ) ) {
+			return true;
+		}
+
 		return in_array( $capability, $caps, true );
 	}
 }
