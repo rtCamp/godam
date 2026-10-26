@@ -379,6 +379,10 @@ class RTGODAM_Transcoder_Admin {
 	public function dismiss_free_plan_notice() {
 		check_ajax_referer( 'dismiss_free_plan_notice', 'nonce' );
 
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
 		// Store timestamp for 7-day temporary dismissal.
 		update_option( 'rtgodam_free_plan_notice_dismissed_timestamp', time() );
 
@@ -392,6 +396,10 @@ class RTGODAM_Transcoder_Admin {
 	 */
 	public function dismiss_woo_promo_notice() {
 		check_ajax_referer( 'dismiss_woo_promo_notice', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
 
 		// Store timestamp for 30-day temporary dismissal.
 		update_option( 'rtgodam_woo_promo_dismissed_timestamp', time() );
