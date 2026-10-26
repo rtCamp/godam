@@ -252,7 +252,7 @@ const getCurrentMimeTypeFilter = ( paramName = 'post_mime_type' ) => {
  *
  * @param {string|string[]} type A type, a comma-separated list of types, or an array of them. Defaults to the current media frame's or URL's filter.
  *
- * @return {Object} The `url` and `params` to request. Both routes send the total in an `X-WP-Total` header.
+ * @return {Object} The request for `fetchBaseQuery`. Both routes send the total in an `X-WP-Total` header.
  */
 const getAllMediaCountRequest = ( type = getCurrentMimeTypeFilter( 'type' ).type ) => {
 	const types = [].concat( type ?? [] )
@@ -262,13 +262,15 @@ const getAllMediaCountRequest = ( type = getCurrentMimeTypeFilter( 'type' ).type
 		.filter( Boolean );
 
 	if ( types.some( ( entry ) => entry.includes( '/' ) ) ) {
+		// admin-ajax.php registers `query-attachments` for POST requests only.
 		return {
 			url: new URL( window.wp?.ajax?.settings?.url || window.ajaxurl, window.location.href ).href,
-			params: {
+			method: 'POST',
+			body: new URLSearchParams( {
 				action: 'query-attachments',
 				'query[post_mime_type]': types.join( ',' ),
 				'query[posts_per_page]': 1,
-			},
+			} ),
 		};
 	}
 
