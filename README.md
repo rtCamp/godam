@@ -25,7 +25,7 @@ Media hosting for WordPress. Move course, LMS and membership videos off Vimeo: f
 
 Let’s dive into each of these in detail.
 
-Paid plans start at $7.5 per month (annual subscription) (for unlimited sites) or [Start for free](https://godam.io/pricing/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=start-free).
+Paid plans start from $9 a month (for unlimited sites) or [Start for free](https://godam.io/pricing/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=start-free).
 
 Check out our source code and contribute to the plugin on GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam)
 
@@ -145,7 +145,7 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 ---
 
 ### Important Links
-- [Upgrade to a paid plan](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link) starting at just $7.5 per month (annual subscription) for unlimited sites (or [Start for free](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=start-free))
+- [Upgrade to a paid plan](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link) starting from $9 a month for unlimited sites (or [Start for free](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=start-free))
 - [All features](https://godam.io/features/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=features-link)
 - [All integrations](https://godam.io/integrations/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=integrations-link)
 - [Demo](https://demo.godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=demo-link)
