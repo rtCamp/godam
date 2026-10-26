@@ -418,7 +418,7 @@ class Jetpack extends Base {
 	 * Forms are shown in a video, and submitted from it, only when the post that
 	 * holds them is publicly viewable and has no password.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param \WP_Post|null $post The post that holds the form.
 	 * @return bool

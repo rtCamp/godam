@@ -92,7 +92,7 @@ abstract class Base extends \WP_REST_Controller {
 	 *
 	 * The capability the Media Editor page itself requires.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @return bool
 	 */
