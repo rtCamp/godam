@@ -33,8 +33,11 @@ use RTGODAM\Inc\REST_API\WPForms;
 use RTGODAM\Inc\REST_API\Forminator_Forms;
 use RTGODAM\INC\REST_API\SureForms;
 use RTGODAM\Inc\REST_API\Fluent_Forms;
+use RTGODAM\Inc\REST_API\Hubspot_Forms;
 use RTGODAM\Inc\REST_API\Settings;
 use RTGODAM\Inc\REST_API\Onboarding;
+use RTGODAM\Inc\REST_API\Marketo_Integration;
+use RTGODAM\Inc\REST_API\Hubspot_Integration;
 use RTGODAM\Inc\REST_API\Meta_Rest_Fields;
 use RTGODAM\Inc\REST_API\Media_Library;
 use RTGODAM\Inc\REST_API\Video_Editor;
@@ -130,6 +133,12 @@ class Plugin {
 		Video_Editor_Form_Layer_Handler::get_instance()->init();
 		Everest_Forms_Integration::get_instance()->init();
 
+		// Marketo integration (settings fields + form-layer support).
+		Marketo::get_instance();
+
+		// HubSpot integration (settings fields + form-layer support).
+		Hubspot::get_instance();
+
 		$this->load_taxonomies();
 		$this->load_plugin_configs();
 
@@ -188,8 +197,11 @@ class Plugin {
 		Fluent_Forms::get_instance();
 		Ninja_Forms_Rest_Api::get_instance();
 		Metform_Rest_Api::get_instance();
+		Hubspot_Forms::get_instance();
 		Settings::get_instance();
 		Onboarding::get_instance();
+		Marketo_Integration::get_instance();
+		Hubspot_Integration::get_instance();
 		Meta_Rest_Fields::get_instance();
 		Media_Library::get_instance();
 		Video_Editor::get_instance();

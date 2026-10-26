@@ -31,6 +31,24 @@ const integrationTabs = [
 		),
 		className: 'godam-tab',
 	},
+	{
+		// Marketo has no add-on plugin to install, so no `pluginSlug`/`fdItemId`:
+		// `IntegrationsSettings` treats it as always-installed and renders the
+		// fields from `window.godamIntegrationComponents.marketo`.
+		name: 'marketo',
+		integrationLabel: __( 'Marketo', 'godam' ),
+		title: __( 'Marketo', 'godam' ),
+		className: 'godam-tab',
+	},
+	{
+		// HubSpot is always-installed too: the tab lets the admin pick a source
+		// (GoDAM Central or the HubSpot plugin) and connect. Fields come from
+		// `window.godamIntegrationComponents.hubspot`.
+		name: 'hubspot',
+		integrationLabel: __( 'HubSpot', 'godam' ),
+		title: __( 'HubSpot', 'godam' ),
+		className: 'godam-tab',
+	},
 ];
 
 export default integrationTabs;

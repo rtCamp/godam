@@ -50,6 +50,13 @@ const initialState = {
 		woocommerce: {
 			enable: true,
 		},
+		marketo: {
+			enable: true,
+		},
+		hubspot: {
+			enable: true,
+			source: 'central',
+		},
 	},
 	isChanged: false,
 };

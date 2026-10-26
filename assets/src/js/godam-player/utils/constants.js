@@ -24,6 +24,8 @@ export const FORM_TYPES = {
 	FLUENT: 'fluentforms',
 	NINJA: 'ninjaforms',
 	METFORM: 'metform',
+	MARKETO: 'marketo',
+	HUBSPOT: 'hubspot',
 };
 
 /**
