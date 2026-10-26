@@ -50,7 +50,7 @@ class Media_Folders extends Base {
 	 * those classes to logged-out visitors in the media route's `class_list` and on attachment
 	 * pages. Folder slugs are folder names, which only signed-in users may see.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param string[] $taxonomies Taxonomies whose terms become post classes.
 	 * @return string[] The taxonomies, without media folders.
@@ -69,7 +69,7 @@ class Media_Folders extends Base {
 	 * or one inside a locked folder, takes no new files for any user. Same rule as the
 	 * assign-folder route.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param string[] $caps    Primitive capabilities required of the user.
 	 * @param string   $cap     Capability being checked.
@@ -101,7 +101,7 @@ class Media_Folders extends Base {
 	 * Runs for every way a folder is created, so a locked folder gets no new child
 	 * however the request arrives.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param string|\WP_Error $term     The term name to add, or a WP_Error from an earlier filter.
 	 * @param string           $taxonomy Taxonomy slug.

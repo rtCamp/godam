@@ -266,7 +266,7 @@ class Media_Folder_Utils {
 	 * term-meta is truthy or if any of its ancestors' is. Client-side gating (React)
 	 * is UX only; this is the authoritative server-side check.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param int $folder_id Media folder term ID.
 	 * @return bool True if the folder or one of its ancestors is locked.

@@ -64,7 +64,7 @@ class Media_Library extends Base {
 	 * against the requested path, so it runs however the request reaches them (any letter
 	 * case, `?rest_route=`, a batch request, an embed).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param array $endpoints The registered REST routes, keyed by route.
 	 * @return array The routes, with the media-folder handlers wrapped.
@@ -113,7 +113,7 @@ class Media_Library extends Base {
 	 * Reads are always allowed once the user can write posts; locking protects against
 	 * modification, not viewing.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param \WP_REST_Request $request The request being dispatched.
 	 * @return true|\WP_Error True to carry on to the controller's own check, or a WP_Error
@@ -177,7 +177,7 @@ class Media_Library extends Base {
 	 * `media-folder` field it was sent, which empties the locked folder. Same rule as the
 	 * assign-folder route.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.1
 	 *
 	 * @param \stdClass|\WP_Error $prepared_post The attachment about to be saved.
 	 * @param \WP_REST_Request    $request       The request being dispatched.
