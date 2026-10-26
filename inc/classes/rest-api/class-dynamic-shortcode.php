@@ -58,7 +58,7 @@ class Dynamic_Shortcode extends Base {
 							'required'          => false,
 							'type'              => 'string',
 							'default'           => '',
-							'sanitize_callback' => 'sanitize_text_field',
+							'sanitize_callback' => 'sanitize_key',
 						),
 					),
 				),
@@ -77,7 +77,8 @@ class Dynamic_Shortcode extends Base {
 
 		$engagements = $request->get_param( 'engagements' );
 
-		$godam_context = $request->get_param( 'godam_context' );
+		// Slug characters only, whatever reaches this method.
+		$godam_context = sanitize_key( (string) $request->get_param( 'godam_context' ) );
 
 		/**
 		 * Fires before resolving this attachment's URL/meta/sources, so
@@ -127,9 +128,7 @@ class Dynamic_Shortcode extends Base {
 			'type' => 'video/quicktime' === $video_src_type ? 'video/mp4' : $video_src_type,
 		);
 
-		// Convert JSON to use custom placeholders instead of square brackets.
-		$sources_json              = wp_json_encode( $sources );
-		$sources_with_placeholders = str_replace( array( '[', ']' ), array( '__rtgob__', '__rtgcb__' ), $sources_json );
+		$sources_json = wp_json_encode( $sources );
 
 		// Add action before shortcode rendering.
 		do_action( 'rtgodam_shortcode_before_render', $id );
@@ -160,18 +159,53 @@ class Dynamic_Shortcode extends Base {
 		$video_date  = apply_filters( 'rtgodam_shortcode_video_date', $video_date, $id );
 
 		ob_start();
-		$shortcode = "[godam_video id='{$id}' engagements='" . esc_attr( $engagements ) . "' sources='{$sources_with_placeholders}'";
+		$atts = array(
+			'id'          => (string) $id,
+			'engagements' => (string) $engagements,
+			'sources'     => $sources_json,
+		);
 
 		if ( ! empty( $godam_context ) ) {
-			$shortcode .= " godam_context='" . esc_attr( $godam_context ) . "'";
+			$atts['godam_context'] = $godam_context;
 		}
 
-		$shortcode .= ']';
+		/**
+		 * Filters the attributes the player is rendered with.
+		 *
+		 * @since 2.5.1
+		 *
+		 * @param array $atts Attributes passed to the [godam_video] renderer.
+		 * @param int   $id   Attachment ID.
+		 */
+		$atts = apply_filters( 'rtgodam_shortcode_atts', $atts, $id );
 
-		// Add filter for shortcode.
-		$shortcode = apply_filters( 'rtgodam_shortcode_output', $shortcode, $id );
+		if ( has_filter( 'rtgodam_shortcode_output' ) ) {
+			// Keep sites that still change the shortcode string working. Every value in it is
+			// an ID, a slug, 'show'/'hide' or JSON with its brackets swapped for placeholders.
+			$shortcode = "[godam_video id='" . absint( $atts['id'] ?? $id ) . "' engagements='" . esc_attr( $atts['engagements'] ?? '' ) . "' sources='" . str_replace( array( '[', ']' ), array( '__rtgob__', '__rtgcb__' ), (string) ( $atts['sources'] ?? '' ) ) . "'";
 
-		echo do_shortcode( $shortcode );
+			if ( ! empty( $atts['godam_context'] ) ) {
+				$shortcode .= " godam_context='" . esc_attr( $atts['godam_context'] ) . "'";
+			}
+
+			$shortcode .= ']';
+
+			/**
+			 * Filters the shortcode string the player is rendered from.
+			 *
+			 * @since 1.1.4
+			 * @deprecated 2.5.1 Use the rtgodam_shortcode_atts filter instead.
+			 *
+			 * @param string $shortcode The [godam_video] shortcode.
+			 * @param int    $id        Attachment ID.
+			 */
+			$shortcode = apply_filters_deprecated( 'rtgodam_shortcode_output', array( $shortcode, $id ), '2.5.1', 'rtgodam_shortcode_atts' );
+
+			echo do_shortcode( $shortcode );
+		} else {
+			echo rtgodam_render_shortcode_from_atts( 'godam_video', $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The player template escapes its output.
+		}
+
 		$html = ob_get_clean();
 
 		// Add filter for final HTML output.
