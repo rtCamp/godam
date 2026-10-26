@@ -2255,6 +2255,21 @@ class Media_Library extends Base {
 		// Use the normalized value for the rest of the handler.
 		$data['mime'] = $mime;
 
+		// The media and stream URLs are saved with the entry, so only public http(s) addresses are accepted.
+		foreach ( array( 'url', 'mpd_url', 'hls_url' ) as $url_field ) {
+			if ( ! isset( $data[ $url_field ] ) || '' === $data[ $url_field ] ) {
+				continue;
+			}
+
+			$media_url = is_string( $data[ $url_field ] ) ? esc_url_raw( $data[ $url_field ] ) : '';
+
+			if ( ! $this->is_public_media_url( $media_url ) ) {
+				return new \WP_Error( 'invalid_url', __( 'Invalid media URL.', 'godam' ), array( 'status' => 400 ) );
+			}
+
+			$data[ $url_field ] = $media_url;
+		}
+
 		// Build (or find an existing) virtual attachment for this payload.
 		$attach_id = $this->create_virtual_attachment( $data );
 
@@ -2288,6 +2303,29 @@ class Media_Library extends Base {
 			),
 			200
 		);
+	}
+
+	/**
+	 * Check that a media URL from a request is an http(s) address on a public host.
+	 *
+	 * Core's wp_http_validate_url() refuses other schemes, loopback and private hosts, and
+	 * unusual ports. It does not refuse link-local addresses, so those are checked here.
+	 *
+	 * @since 2.5.1
+	 *
+	 * @param string $url URL, already passed through esc_url_raw().
+	 * @return bool
+	 */
+	private function is_public_media_url( $url ) {
+		if ( '' === $url || ! wp_http_validate_url( $url ) ) {
+			return false;
+		}
+
+		$host = trim( (string) wp_parse_url( $url, PHP_URL_HOST ), '.' );
+		$ip   = filter_var( $host, FILTER_VALIDATE_IP ) ? $host : gethostbyname( $host );
+
+		// The link-local range (169.254.0.0/16) includes the cloud metadata address.
+		return 0 !== strpos( $ip, '169.254.' );
 	}
 
 	/**
@@ -2428,7 +2466,10 @@ class Media_Library extends Base {
 		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
-		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ?? '' ) ); // Virtual media path. // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		// Virtual media has no local file, so only a bare file name is kept: no directories, no dot segments.
+		$virtual_file_name = wp_basename( sanitize_text_field( $data['filename'] ?? '' ) );
+		$virtual_file_name = in_array( $virtual_file_name, array( '.', '..' ), true ) ? '' : $virtual_file_name;
+		update_post_meta( $attach_id, '_wp_attached_file', $virtual_file_name ); // Virtual media path. // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 		$video_duration_in_seconds = 0;
 		$video_duration_formatted  = '';
