@@ -318,6 +318,70 @@ describe( 'milestones reported for one view', () => {
 
 		expect( postedMilestones() ).toEqual( [ 0, 25, 50 ] );
 	} );
+
+	/*
+	 * The tracking script that writes the cookie is third-party and async, so on a
+	 * visitor's first page view it often lands after the player is ready. The whole
+	 * view has to survive that, not just the milestones that follow it.
+	 */
+	it( 'carries the whole view when the cookie only arrives mid-watch', () => {
+		clearCookies();
+
+		const player = readyPlayer( 100 );
+
+		player.trigger( 'play' );
+		player.ranges.push( [ 0, 10 ] );
+		player.trigger( 'timeupdate' );
+
+		expect( postedMilestones() ).toEqual( [] );
+
+		document.cookie = `hubspotutk=${ HUTK }; path=/`;
+		player.ranges.push( [ 10, 60 ] );
+		player.trigger( 'timeupdate' );
+
+		expect( postedMilestones() ).toEqual( [ 0, 25, 50 ] );
+	} );
+
+	it( 'sends the cookie that arrived, not an empty set', () => {
+		clearCookies();
+
+		const player = readyPlayer( 100 );
+
+		player.trigger( 'play' );
+		document.cookie = `hubspotutk=${ HUTK }; path=/`;
+		player.ranges.push( [ 0, 30 ] );
+		player.trigger( 'timeupdate' );
+
+		const [ , init ] = window.fetch.mock.calls[ 0 ];
+
+		expect( JSON.parse( init.body ).ids ).toEqual( { hubspotutk: HUTK } );
+	} );
+
+	it( 'reports nothing for a viewer whose cookie never arrives', () => {
+		clearCookies();
+
+		const player = readyPlayer( 100 );
+
+		player.trigger( 'play' );
+		player.ranges.push( [ 0, 100 ] );
+		player.trigger( 'timeupdate' );
+		player.trigger( 'ended' );
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	it( 'leaves no session ID behind for a viewer no tool knows', () => {
+		clearCookies();
+
+		const player = readyPlayer( 100 );
+
+		player.trigger( 'play' );
+		player.ranges.push( [ 0, 100 ] );
+		player.trigger( 'timeupdate' );
+		player.trigger( 'ended' );
+
+		expect( window.sessionStorage.length ).toBe( 0 );
+	} );
 } );
 
 describe( 'MILESTONES', () => {

@@ -220,23 +220,57 @@ function trackPlayer( config, player, video ) {
 
 	tracked.add( video );
 
-	const ids = collectVisitorIds( config.providers );
-
-	// The visitor is not known to any connected tool, so there is no record to put
-	// this on. Send nothing rather than a request that can only be dropped.
-	if ( Object.keys( ids ).length === 0 ) {
-		return;
-	}
-
-	const sessionId = getSessionId( jobId );
+	let sessionId = '';
+	let knownIds = null;
 	const sent = new Set();
+
+	/**
+	 * The visitor's cookies, read afresh until they turn up.
+	 *
+	 * Both tracking scripts are third-party and load asynchronously, so on a
+	 * visitor's first page view the cookie is often written after the player is
+	 * ready. Reading it once at setup would drop that whole view — which is the
+	 * view that matters most, someone arriving on a landing page for the first
+	 * time. Once found it is kept, so a known visitor costs one read per view.
+	 *
+	 * @return {Object} Map of cookie key to value. Empty while the visitor is unknown.
+	 */
+	const visitorIds = () => {
+		if ( knownIds ) {
+			return knownIds;
+		}
+
+		const found = collectVisitorIds( config.providers );
+
+		if ( Object.keys( found ).length > 0 ) {
+			knownIds = found;
+		}
+
+		return found;
+	};
 
 	const report = ( milestone ) => {
 		if ( sent.has( milestone ) ) {
 			return;
 		}
 
+		const ids = visitorIds();
+
+		// The visitor is not known to any connected tool yet, so there is no record
+		// to put this on. Leave the milestone unsent rather than sending something
+		// that can only be dropped: the handlers below re-report every milestone
+		// already passed, so a cookie that arrives mid-view still carries the view.
+		if ( Object.keys( ids ).length === 0 ) {
+			return;
+		}
+
 		sent.add( milestone );
+
+		// Minted only once there is somewhere to send it, so a visitor no tool
+		// knows leaves nothing behind in sessionStorage.
+		if ( ! sessionId ) {
+			sessionId = getSessionId( jobId );
+		}
 
 		sendMilestone( config, {
 			media_id: jobId,
