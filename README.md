@@ -291,8 +291,8 @@ This plugin relies on third-party services to provide specific features. Below i
     <tr>
       <td>us.i.posthog.com (PostHog)</td>
       <td>Product analytics for GoDAM's own admin screens and the screens where GoDAM adds its media tools: the Media Library and Edit Media screens, the editors for posts, pages and other post types, the site editor, and the widgets screen</td>
-      <td>Site details (PHP, MySQL, web server and WordPress versions, site language, plugin and user counts); page views, clicks, errors, session replays and heatmaps of those screens, which cover the whole screen; the screen address and an ID PostHog stores in the browser; the IP address and browser and device details</td>
-      <td>Only after a site administrator clicks Allow in the Dashboard notice or turns on "Help us improve GoDAM" on the Help page; only in those WordPress admin screens, never for visitors. It can be turned off on the Help page and stops from the next page load</td>
+      <td>Site details (PHP, MySQL, web server and WordPress versions, site language, plugin and user counts); page views, clicks (including the text of what was clicked), errors, session replays and heatmaps of those screens, which cover the whole screen, so a name, email address, file name or video title shown there can appear in clicks and replays (the plugin does not send the admin's name or email as an identifier); the screen address and an ID PostHog stores in the browser; the IP address and browser and device details</td>
+      <td>Only after a site administrator clicks Allow in the Dashboard notice or turns on "Help us improve GoDAM" on the Help page; only in those WordPress admin screens, never for visitors; once allowed it covers everyone who uses those screens, not only that administrator. It can be turned off on the Help page and stops from the next page load</td>
       <td>
         <a href="https://posthog.com">posthog.com</a><br>
         <a href="https://posthog.com/terms">ToS</a> | <a href="https://posthog.com/privacy">Privacy</a>

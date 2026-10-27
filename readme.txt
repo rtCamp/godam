@@ -328,9 +328,9 @@ Data Sent:
 
 1. Details about the site: PHP version, MySQL version, web server software, WordPress version, site language, number of active plugins, total number of plugins, and number of users
 
-2. How these screens are used: page views, clicks, and errors
+2. How these screens are used: page views, clicks (including the text of what was clicked), and errors
 
-3. Session replays and heatmaps of these screens. They cover the whole screen, not only GoDAM's parts of it
+3. Session replays (recordings of what is shown on screen) and heatmaps (where people click and scroll) of these screens. They cover the whole screen, not only GoDAM's parts of it. A name, email address, file name or video title shown on a screen can therefore appear in clicks and replays. The plugin does not send the admin's name or email to PostHog as an identifier
 
 4. The address of the admin screen being used, and an ID that PostHog stores in the browser
 
@@ -340,7 +340,7 @@ When Data is Sent:
 
 1. Only after a site administrator has clicked "Allow" in the notice shown on the WordPress Dashboard, or turned on "Help us improve GoDAM" on the GoDAM Help page. Nothing is sent before one of these, and connecting a GoDAM account (an API key) does not switch it on.
 
-2. Only while someone is using one of these screens in the WordPress admin. It is never sent for visitors to your site.
+2. Only while someone is using one of these screens in the WordPress admin. Once an administrator allows it, it covers everyone who uses these screens on the site, not only that administrator. It is never sent for visitors to your site.
 
 3. An administrator can turn it off at any time with "Help us improve GoDAM" on the GoDAM Help page, and that choice is kept, including when an API key is saved. It stops from the next page load.
 
