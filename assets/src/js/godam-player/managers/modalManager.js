@@ -25,6 +25,7 @@ import {
 import { exitCustomFullscreen } from '../utils/customFullscreen.js';
 import { isPlayerFullscreen } from '../utils/fullscreenReparent.js';
 import { seekPlayer } from '../utils/seekPlayer.js';
+import { getVisibilityManager } from './visibilityManager.js';
 
 /**
  * Attributes that turn the inline poster into a button.
@@ -458,6 +459,9 @@ export class ModalManager {
 
 		const player = video ? videojs.getPlayer( video ) : null;
 		if ( player ) {
+			// Opening a video in the lightbox counts as the visitor starting it.
+			getVisibilityManager().markInteraction( player );
+
 			const seconds = parseStartTime( startTime );
 			if ( seconds !== null ) {
 				seekPlayer( player, seconds );

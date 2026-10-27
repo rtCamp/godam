@@ -21,6 +21,7 @@ import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
 import TranscriptManager from './managers/transcriptManager.js';
 import TranscriptPanelManager from './managers/transcriptPanelManager.js';
+import { getVisibilityManager, resolveOutOfViewMode } from './managers/visibilityManager.js';
 import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
 
 /**
@@ -304,6 +305,7 @@ export default class GodamVideoPlayer {
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
 			new MenuButtonHoverManager( this.player );
+			this.setupVisibilityHandling();
 
 			// Emit custom event for external developers
 			const playerReadyEvent = new CustomEvent( 'godamPlayerReady', {
@@ -315,6 +317,22 @@ export default class GodamVideoPlayer {
 			} );
 			document.dispatchEvent( playerReadyEvent );
 		} );
+	}
+
+	/**
+	 * Pause or mute the player when it leaves the visitor's view, per the
+	 * out-of-view setting rendered as `data-out-of-view` (see visibilityManager.js).
+	 */
+	setupVisibilityHandling() {
+		const visibilityManager = getVisibilityManager();
+		const entry = visibilityManager.register( this.player, {
+			mode: resolveOutOfViewMode( this.video ),
+			isPreview: () => !! this.hoverManager?.isPreviewActive?.(),
+		} );
+
+		if ( entry ) {
+			this.player.one( 'dispose', () => visibilityManager.unregister( this.player ) );
+		}
 	}
 
 	/**

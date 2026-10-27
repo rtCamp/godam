@@ -153,6 +153,39 @@ readyPlayers.forEach(playerObj => {
 });
 ```
 
+### `pauseAll(options?)`
+
+Pause every playing GoDAM video on the page, for example from a carousel's
+slide-change hook. It applies to all GoDAM players, whatever their "When a video
+goes out of view" setting.
+
+These pauses are treated as automatic: they don't show "on pause" CTA layers, and
+the player's `pause` event carries `{ reason: 'api' }`.
+
+**Parameters:**
+
+- `options.except` (HTMLElement|string|number|Player|Array, optional): videos to keep playing. Pass
+  elements (a player, or a slide that contains one), attachment IDs, or Player instances.
+- `options.within` (HTMLElement|string, optional): only pause videos inside this element or CSS selector.
+
+**Returns:** `number` of videos paused.
+
+**Example:**
+
+```javascript
+// Swiper: when the slide changes, pause the videos on every other slide.
+swiper.on('slideChange', () => {
+    window.GoDAMAPI.pauseAll({
+        within: swiper.el,
+        except: swiper.slides[swiper.activeIndex],
+    });
+});
+```
+
+> GoDAM already pauses videos that leave the view (scrolled past, inactive slide,
+> closed tab or accordion). Use `pauseAll()` when you want to control it yourself,
+> such as on sites set to "Keep playing, muted".
+
 ## Lightbox Methods
 
 Open a video in a centered overlay instead of playing it in place. These are the
@@ -534,9 +567,16 @@ const midpointLayer = player.createLayer({
 
 ### Playback Control
 
-#### `play()`
+#### `play(options?)`
 
 Start video playback.
+
+**Parameters:**
+
+- `options.userStarted` (boolean, optional): pass `true` when the visitor asked for playback (for example,
+  your own play button). Script-started playback is treated like autoplay: it pauses when the video leaves
+  the view and resumes when it's visible again. Visitor-started playback follows the site's
+  "When a video goes out of view" setting instead.
 
 **Returns:** `Promise` that resolves when play starts
 
@@ -771,7 +811,8 @@ The Player API includes a custom event system that allows you to listen for and 
 
 - `fullscreenchange` - Triggered when fullscreen mode changes
 - `play` - Triggered when video starts playing
-- `pause` - Triggered when video is paused
+- `pause` - Triggered when video is paused. Data: `{ reason }`, where `reason` is `'visibility'` when GoDAM
+  paused it automatically because it left the view, `'api'` for `GoDAMAPI.pauseAll()`, or `null` otherwise
 - `ended` - Triggered when video playback ends
 - `timeupdate` - Triggered during video playback (updates frequently)
 - `volumechange` - Triggered when volume changes

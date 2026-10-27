@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 import {
 	Disabled,
 	PanelBody,
+	SelectControl,
 	ToggleControl,
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalToggleGroupControl as ToggleGroupControl,
@@ -22,7 +23,7 @@ import apiFetch from '@wordpress/api-fetch';
  * @param {Object}   props.attributes    Block attributes.
  */
 export const PlaybackControls = ( { setAttributes, attributes } ) => {
-	const { autoplay, controls, loop, muted, showShareButton, showCaption, showTranscription, showInLightbox, tracks, id, cmmId } = attributes;
+	const { autoplay, controls, loop, muted, showShareButton, showCaption, showTranscription, showInLightbox, outOfViewBehavior, tracks, id, cmmId } = attributes;
 	const showShareButtonSetting = window?.godamSettings?.enableGlobalVideoShare ?? false;
 	const videoEditorUrl = `${ window?.pluginInfo?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_media_editor&id=${ id || cmmId }&tab=transcription`;
 	const hasNoTracks = ! tracks || tracks.length === 0;
@@ -133,6 +134,22 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 					onChange={ toggleFactory.showInLightbox }
 					checked={ !! showInLightbox }
 					help={ __( 'Open the video in a lightbox when clicked.', 'godam' ) }
+				/>
+			</div>
+			<div data-test-id="godam-video-control-out-of-view">
+				<SelectControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
+					label={ __( 'When out of view', 'godam' ) }
+					value={ outOfViewBehavior || '' }
+					options={ [
+						{ label: __( 'Use global setting', 'godam' ), value: '' },
+						{ label: __( 'Pause the video', 'godam' ), value: 'pause' },
+						{ label: __( 'Keep playing, muted', 'godam' ), value: 'mute' },
+						{ label: __( 'Do nothing', 'godam' ), value: 'off' },
+					] }
+					onChange={ ( value ) => setAttributes( { outOfViewBehavior: value } ) }
+					help={ __( 'What happens when a visitor-started video is scrolled past or hidden. Autoplaying videos always pause and resume when visible again, unless set to "Do nothing".', 'godam' ) }
 				/>
 			</div>
 			{ showShareButtonSetting && (

@@ -123,6 +123,46 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
 }
 
 /**
+ * Sanitize an out-of-view behavior value.
+ *
+ * `pause` pauses a visitor-started video when it leaves the view, `mute` keeps
+ * it playing muted, `off` turns the feature off. Autoplaying videos always
+ * pause and resume (see assets/src/js/godam-player/managers/visibilityManager.js).
+ *
+ * @param mixed  $value    Raw value.
+ * @param string $fallback Returned when the value is not valid.
+ *
+ * @return string `pause`, `mute`, `off`, or the fallback.
+ */
+function rtgodam_sanitize_out_of_view_behavior( $value, $fallback = 'pause' ) {
+	$value = is_string( $value ) ? strtolower( trim( $value ) ) : '';
+
+	return in_array( $value, array( 'pause', 'mute', 'off' ), true ) ? $value : $fallback;
+}
+
+/**
+ * Resolve the out-of-view behavior for one player.
+ *
+ * A valid per-player value (block attribute or shortcode attribute) wins;
+ * empty or `inherit` falls back to the global Video Player setting.
+ *
+ * @param string $override Per-player value, empty to inherit.
+ *
+ * @return string `pause`, `mute` or `off`.
+ */
+function rtgodam_get_out_of_view_behavior( $override = '' ) {
+	$override = rtgodam_sanitize_out_of_view_behavior( $override, '' );
+	if ( '' !== $override ) {
+		return $override;
+	}
+
+	$settings = get_option( 'rtgodam-settings', array() );
+	$global   = isset( $settings['video_player']['out_of_view_behavior'] ) ? $settings['video_player']['out_of_view_behavior'] : 'pause';
+
+	return rtgodam_sanitize_out_of_view_behavior( $global );
+}
+
+/**
  * Fetch the URL of a media file by its ID.
  *
  * This function retrieves the URL of a media attachment in WordPress based on the provided media ID.

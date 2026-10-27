@@ -33,6 +33,12 @@ const PLAYER_SKIN_OPTIONS = [
 	{ key: 'Bubble', name: __( 'Bubble', 'godam' ) },
 ];
 
+const OUT_OF_VIEW_OPTIONS = [
+	{ key: 'pause', name: __( 'Pause the video', 'godam' ) },
+	{ key: 'mute', name: __( 'Keep playing, muted', 'godam' ) },
+	{ key: 'off', name: __( 'Do nothing', 'godam' ) },
+];
+
 const VideoPlayer = () => {
 	const dispatch = useDispatch();
 	const wrapperRef = useRef( null );
@@ -422,6 +428,29 @@ const VideoPlayer = () => {
 							value={ PLAYER_SKIN_OPTIONS.find( ( option ) => option.key === ( mediaSettings?.video_player?.player_skin || 'Default' ) ) ?? PLAYER_SKIN_OPTIONS[ 0 ] }
 							onChange={ ( { selectedItem } ) => handleSettingChange( 'player_skin', selectedItem.key ) }
 						/>
+					</div>
+				</PanelBody>
+			</Panel>
+
+			<Panel header={ __( 'Playback', 'godam' ) } className="godam-panel godam-margin-bottom">
+				<PanelBody opened>
+					<div className="godam-form-group max-w-[520px]" data-test-id="godam-settings-player-control-out-of-view">
+						<label className="label-text" htmlFor="out_of_view_behavior">
+							{ __( 'When a video goes out of view', 'godam' ) }
+						</label>
+
+						<CustomSelectControl
+							__next40pxDefaultSize
+							hideLabelFromVision
+							label={ __( 'When a video goes out of view', 'godam' ) }
+							options={ OUT_OF_VIEW_OPTIONS }
+							value={ OUT_OF_VIEW_OPTIONS.find( ( option ) => option.key === ( mediaSettings?.video_player?.out_of_view_behavior || 'pause' ) ) ?? OUT_OF_VIEW_OPTIONS[ 0 ] }
+							onChange={ ( { selectedItem } ) => handleSettingChange( 'out_of_view_behavior', selectedItem.key ) }
+						/>
+
+						<p className="text-[0.75rem] leading-[1.2] text-[#777] mt-2 mb-0">
+							{ __( 'Applies when a visitor-started video is scrolled past, moved to another carousel slide, hidden in a closed tab or accordion, or the browser tab is in the background. Autoplaying videos always pause and resume when visible again. Fullscreen and picture-in-picture are never affected. Can be overridden per video.', 'godam' ) }
+						</p>
 					</div>
 				</PanelBody>
 			</Panel>

@@ -7,6 +7,7 @@ import LayerValidator from './layers/layerValidator.js';
 import FormLayerManager from './layers/formLayerManager.js';
 import HotspotLayerManager from './layers/hotspotLayerManager.js';
 import { loadFontAwesome, hasHotspotsWithIcons } from '../utils/pluginLoader.js';
+import { isAutoPause } from './visibilityManager.js';
 
 /**
  * Layers Manager
@@ -59,7 +60,9 @@ export default class LayersManager {
 			// pauses, `end_of_video` overlays one when playback ends. (The
 			// `timestamp` and `watch_depth` triggers run off `timeupdate`.)
 			this.player.on( 'pause', () => {
-				if ( ! this.areLayersSuppressed() ) {
+				// Automatic pauses (player scrolled out of view, GoDAMAPI.pauseAll)
+				// are not the viewer pausing, so they must not reveal a CTA.
+				if ( ! this.areLayersSuppressed() && ! isAutoPause( this.player ) ) {
 					this.formLayerManager.handlePause();
 				}
 			} );

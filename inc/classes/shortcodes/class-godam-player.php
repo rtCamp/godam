@@ -359,6 +359,8 @@ class GoDAM_Player {
 				'godam_context'      => '',
 				'block_source'       => '', // Analytics placement slug; overrides the godam_context-derived mapping (embed iframes).
 				'host_post_id'       => 0, // Post ID of the page hosting an embed iframe, for analytics attribution.
+				'outOfViewBehavior'  => '', // pause|mute|off; empty inherits the global setting.
+				'out_of_view'        => '', // Same, shortcode-friendly name, e.g. [godam_video id="1" out_of_view="mute"].
 			),
 			$atts,
 			'godam_video'
@@ -379,6 +381,11 @@ class GoDAM_Player {
 			$attributes['engagements'] = 'show' === $attributes['engagements']
 				? true
 				: filter_var( $attributes['engagements'], FILTER_VALIDATE_BOOLEAN );
+		}
+
+		// `out_of_view` is the shortcode-friendly spelling of `outOfViewBehavior`.
+		if ( '' !== $attributes['out_of_view'] && '' === $attributes['outOfViewBehavior'] ) {
+			$attributes['outOfViewBehavior'] = $attributes['out_of_view'];
 		}
 
 		// Map WPBakery format (lowercase_underscore) to camelCase for backward compatibility.

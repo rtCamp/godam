@@ -19,6 +19,7 @@ import {
 	clearLayerInteractions as bufferClearLayerInteractions,
 } from './utils/storage';
 import { LAYER_ACTIONS, LAYER_TYPE_WHITELIST, getLayerDisplayName } from './utils/layerActions';
+import { subtractRanges } from './utils/timeRanges';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -44,6 +45,17 @@ function collectPlayedRanges( player ) {
 			ranges.push( [ played.start( i ), played.end( i ) ] );
 		}
 	}
+
+	// With the "keep playing muted" out-of-view setting, a video can keep
+	// playing while nobody can see it. Leave those seconds out of the heatmap,
+	// except where the same seconds were also watched in view
+	// (ranges recorded by managers/visibilityManager.js).
+	const hidden = player?.godamHiddenRanges;
+	if ( Array.isArray( hidden ) && hidden.length && ranges.length ) {
+		const unwatched = subtractRanges( hidden, player.godamVisibleRanges || [] );
+		return subtractRanges( ranges, unwatched );
+	}
+
 	return ranges;
 }
 
