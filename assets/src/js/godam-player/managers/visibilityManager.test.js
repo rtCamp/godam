@@ -345,6 +345,119 @@ describe( 'VisibilityManager', () => {
 		expect( b.pause ).not.toHaveBeenCalled();
 	} );
 
+	it( 'pauseAll keeps autoplaying videos resumable and visitor-started ones paused', () => {
+		const auto = createPlayer();
+		const visitor = createPlayer( { paused: true } );
+		const manager = new VisibilityManager( {
+			win: { IntersectionObserver: FakeObserver, setTimeout, clearTimeout, setInterval, clearInterval },
+			doc: document,
+			now: () => 1000,
+			getPlayers: () => [ auto, visitor ],
+		} );
+		const autoEntry = manager.register( auto );
+		const visitorEntry = manager.register( visitor );
+		pointerDown( visitor );
+		visitor.play();
+
+		expect( manager.pauseAll() ).toBe( 2 );
+		expect( autoEntry.resumeWhenVisible ).toBe( true );
+		expect( visitorEntry.resumeWhenVisible ).toBe( false );
+	} );
+
+	it( 'pauseAll does not undo a visibility pause that ran first', () => {
+		const player = createPlayer();
+		const manager = new VisibilityManager( {
+			win: { IntersectionObserver: FakeObserver, setTimeout, clearTimeout, setInterval, clearInterval },
+			doc: document,
+			getPlayers: () => [ player ],
+		} );
+		const entry = manager.register( player );
+
+		FakeObserver.instance.fire( player.el(), false );
+		expect( entry.resumeWhenVisible ).toBe( true );
+		expect( manager.pauseAll() ).toBe( 0 );
+		expect( entry.resumeWhenVisible ).toBe( true );
+	} );
+
+	it( 'pauseAll treats an element wrapping the player as an exception', () => {
+		const player = createPlayer();
+		const slide = document.createElement( 'div' );
+		slide.appendChild( player.el() );
+		document.body.appendChild( slide );
+		const manager = new VisibilityManager( {
+			win: { IntersectionObserver: FakeObserver, setTimeout, clearTimeout, setInterval, clearInterval },
+			doc: document,
+			getPlayers: () => [ player ],
+		} );
+
+		expect( manager.pauseAll( { except: slide } ) ).toBe( 0 );
+		expect( player.pause ).not.toHaveBeenCalled();
+	} );
+
+	it( 'records off-screen playback even when the visitor had already muted it', () => {
+		const manager = createManager();
+		const player = createPlayer( { paused: true, muted: true } );
+		manager.register( player, { mode: OUT_OF_VIEW_MODE.MUTE } );
+
+		pointerDown( player );
+		player.play();
+		FakeObserver.instance.fire( player.el(), false );
+		[ 0, 1, 2 ].forEach( ( t ) => {
+			player.state.time = t;
+			player.emit( 'timeupdate' );
+		} );
+
+		expect( player.godamHiddenRanges ).toEqual( [ [ 0, 2 ] ] );
+		expect( player.godamVisibleRanges ).toEqual( [] );
+	} );
+
+	it( 'keeps counting off-screen playback across throttled timeupdate gaps', () => {
+		const manager = createManager();
+		const player = createPlayer( { paused: true } );
+		manager.register( player, { mode: OUT_OF_VIEW_MODE.MUTE } );
+
+		pointerDown( player );
+		player.play();
+		FakeObserver.instance.fire( player.el(), false );
+		[ 0, 5, 12 ].forEach( ( t ) => {
+			player.state.time = t;
+			player.emit( 'timeupdate' );
+		} );
+
+		expect( player.godamHiddenRanges ).toEqual( [ [ 0, 12 ] ] );
+	} );
+
+	it( 'restores ad volume when a muted ad comes back into view', () => {
+		const manager = createManager();
+		const player = createPlayer( { paused: true } );
+		let volume = 0.8;
+		const adsManager = { getVolume: () => volume, setVolume: jest.fn( ( v ) => ( volume = v ) ) };
+		player.ads = { inAdBreak: () => true };
+		player.ima = { getAdsManager: () => adsManager, pauseAd: jest.fn(), resumeAd: jest.fn() };
+		manager.register( player, { mode: OUT_OF_VIEW_MODE.MUTE } );
+
+		pointerDown( player );
+		player.play();
+		FakeObserver.instance.fire( player.el(), false );
+		expect( volume ).toBe( 0 );
+
+		FakeObserver.instance.fire( player.el(), true );
+		expect( volume ).toBe( 0.8 );
+		expect( player.ima.pauseAd ).not.toHaveBeenCalled();
+	} );
+
+	it( 'keeps polling CSS visibility for an ad it paused behind a hidden slide', () => {
+		const manager = createManager();
+		const player = createPlayer();
+		const entry = manager.register( player );
+		entry.styleVisible = false;
+		entry.adPausedByUs = true;
+
+		expect( manager.isWaitingBehindStyle( entry ) ).toBe( true );
+		manager.syncStylePoll();
+		expect( manager.stylePollTimer ).not.toBeNull();
+	} );
+
 	it( 'stops managing a player after unregister', () => {
 		const manager = createManager();
 		const player = createPlayer();

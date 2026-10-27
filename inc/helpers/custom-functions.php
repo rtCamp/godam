@@ -129,6 +129,8 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
  * it playing muted, `off` turns the feature off. Autoplaying videos always
  * pause and resume (see assets/src/js/godam-player/managers/visibilityManager.js).
  *
+ * @since n.e.x.t
+ *
  * @param mixed  $value    Raw value.
  * @param string $fallback Returned when the value is not valid.
  *
@@ -145,6 +147,8 @@ function rtgodam_sanitize_out_of_view_behavior( $value, $fallback = 'pause' ) {
  *
  * A valid per-player value (block attribute or shortcode attribute) wins;
  * empty or `inherit` falls back to the global Video Player setting.
+ *
+ * @since n.e.x.t
  *
  * @param string $override Per-player value, empty to inherit.
  *

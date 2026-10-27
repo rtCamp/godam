@@ -44,7 +44,11 @@ export const OUT_OF_VIEW_MODE = Object.freeze( {
 /** A player counts as visible when at least this share of it (or of the viewport) is on screen. */
 export const VISIBLE_RATIO = 0.25;
 
-const OBSERVER_THRESHOLDS = [ 0, 0.05, 0.1, 0.15, 0.2, 0.25 ];
+/**
+ * Fine-grained thresholds (0, 0.01 … 0.25) so a player much taller than the
+ * screen is re-checked often enough to apply the 25%-of-viewport rule closely.
+ */
+const OBSERVER_THRESHOLDS = Array.from( { length: 26 }, ( _, i ) => i / 100 );
 
 /** A play/pause/seek/volume change this soon after a pointer or key event on the player is the visitor's. */
 const GESTURE_WINDOW_MS = 1000;
@@ -52,10 +56,17 @@ const GESTURE_WINDOW_MS = 1000;
 /** How long a CSS-hidden state (opacity/visibility) must last before it counts, to ignore fade-in transitions. */
 const STYLE_HIDDEN_DEBOUNCE_MS = 300;
 
-/** Poll interval for CSS visibility while an auto-paused player waits to be shown again. */
+/** Poll interval for CSS visibility while an auto-paused player (or ad) waits to be shown again. */
 const STYLE_POLL_MS = 500;
 
-/** Largest gap between two `timeupdate`s still treated as continuous playback (seconds). */
+/** Minimum time between CSS visibility checks from `timeupdate` while nothing is pending. */
+const STYLE_CHECK_INTERVAL_MS = 500;
+
+/**
+ * Largest gap between two `timeupdate`s still treated as continuous playback
+ * while in view (seconds). Off screen there is no limit: background tabs
+ * throttle `timeupdate`, and a seek always resets the segment anyway.
+ */
 const MAX_SEGMENT_GAP = 1.5;
 
 /** Safety net: clear the auto-pause flag even if no `pause` event arrives. */
@@ -175,8 +186,10 @@ export class VisibilityManager {
 			userStarted: false,
 			lastGestureAt: -Infinity,
 			resumeWhenVisible: false,
-			autoMuted: false,
 			adPausedByUs: false,
+			adMutedByUs: false,
+			adVolumeBeforeMute: 1,
+			lastStyleCheckAt: -Infinity,
 			lastTime: null,
 			cleanup: [],
 		};
@@ -285,15 +298,22 @@ export class VisibilityManager {
 			if ( ! el || ( container && ! container.contains( el ) ) ) {
 				return;
 			}
+			// An exception can be the player, an element wrapping it (e.g. a
+			// carousel slide) or an element inside it (e.g. its <video>).
 			const isException = exceptions.some( ( item ) =>
-				item === player || ( item?.nodeType === 1 && ( item === el || el.contains( item ) ) ),
+				item === player ||
+				( item?.nodeType === 1 && ( item === el || item.contains( el ) || el.contains( item ) ) ),
 			);
+			// An already-paused player keeps whatever resume state it has, so a
+			// visibility pause that ran first is not undone.
 			if ( isException || player.paused() ) {
 				return;
 			}
+			// Same rule as an out-of-view pause: autoplaying videos resume when
+			// they are shown again, visitor-started ones stay paused.
 			const entry = this.entries.get( player );
 			if ( entry ) {
-				entry.resumeWhenVisible = false;
+				entry.resumeWhenVisible = ! entry.userStarted && ! entry.isPreview();
 			}
 			this.autoPause( player, 'api' );
 			paused++;
@@ -390,7 +410,6 @@ export class VisibilityManager {
 			return;
 		}
 		// Sound is on: the visitor has unmuted (we only ever mute).
-		entry.autoMuted = false;
 		if ( this.hasRecentGesture( entry ) && ! entry.isPreview() ) {
 			this.markInteraction( player );
 		}
@@ -402,8 +421,11 @@ export class VisibilityManager {
 
 		if ( entry.lastTime !== null && ! player.paused() ) {
 			const delta = time - entry.lastTime;
-			if ( delta > 0 && delta <= MAX_SEGMENT_GAP ) {
-				if ( entry.autoMuted && ! this.isVisible( entry ) ) {
+			// Playing where nobody can see it (e.g. "keep playing, muted"),
+			// whoever muted it. Fullscreen and picture-in-picture count as seen.
+			const unseen = ! this.isVisible( entry ) && ! this.isExempt( entry );
+			if ( delta > 0 && ( unseen || delta <= MAX_SEGMENT_GAP ) ) {
+				if ( unseen ) {
 					player.godamHiddenRanges = addRange( player.godamHiddenRanges, entry.lastTime, time );
 				} else {
 					player.godamVisibleRanges = addRange( player.godamVisibleRanges, entry.lastTime, time );
@@ -412,7 +434,13 @@ export class VisibilityManager {
 		}
 		entry.lastTime = time;
 
-		this.refreshStyleVisibility( entry );
+		// checkVisibility() walks ancestor styles, so don't run it on every
+		// timeupdate; a pending hidden check always runs.
+		const now = this.now();
+		if ( entry.styleHiddenSince !== null || now - entry.lastStyleCheckAt >= STYLE_CHECK_INTERVAL_MS ) {
+			entry.lastStyleCheckAt = now;
+			this.refreshStyleVisibility( entry );
+		}
 	}
 
 	/**
@@ -527,6 +555,12 @@ export class VisibilityManager {
 				player.ima?.resumeAd?.();
 			}
 		}
+		// Unlike the video, an ad has no volume control the visitor can use to
+		// unmute it, so give the ad its sound back when it is in view again.
+		if ( entry.adMutedByUs ) {
+			entry.adMutedByUs = false;
+			player.ima?.getAdsManager?.()?.setVolume?.( entry.adVolumeBeforeMute );
+		}
 		if ( ! entry.resumeWhenVisible ) {
 			return;
 		}
@@ -545,8 +579,13 @@ export class VisibilityManager {
 
 		if ( this.inAdBreak( player ) ) {
 			const ima = player.ima;
-			if ( muteInstead && typeof ima?.getAdsManager === 'function' ) {
-				ima.getAdsManager()?.setVolume?.( 0 );
+			const adsManager = typeof ima?.getAdsManager === 'function' ? ima.getAdsManager() : null;
+			if ( muteInstead && adsManager?.setVolume ) {
+				if ( ! entry.adMutedByUs ) {
+					entry.adVolumeBeforeMute = adsManager.getVolume?.() ?? 1;
+					entry.adMutedByUs = true;
+				}
+				adsManager.setVolume( 0 );
 			} else if ( typeof ima?.pauseAd === 'function' ) {
 				ima.pauseAd();
 				entry.adPausedByUs = true;
@@ -560,7 +599,6 @@ export class VisibilityManager {
 
 		if ( muteInstead ) {
 			if ( ! player.muted() ) {
-				entry.autoMuted = true;
 				player.muted( true );
 			}
 			return;
@@ -602,24 +640,38 @@ export class VisibilityManager {
 	}
 
 	/**
-	 * While an auto-paused player waits behind CSS (e.g. an inactive fade
-	 * slide), no `timeupdate` fires, so poll its CSS visibility to know when
-	 * to resume it.
+	 * Whether a CSS-hidden entry is waiting to be resumed (the video, or an ad
+	 * we paused). Nothing fires `timeupdate` while it waits.
+	 *
+	 * @param {Object} entry - Player entry.
+	 * @return {boolean} True while it needs polling.
+	 */
+	isWaitingBehindStyle( entry ) {
+		return ! entry.styleVisible && ( entry.resumeWhenVisible || entry.adPausedByUs );
+	}
+
+	/**
+	 * While an auto-paused player (or ad) waits behind CSS (e.g. an inactive
+	 * fade slide), poll its CSS visibility to know when to resume it.
 	 */
 	syncStylePoll() {
-		const waiting = Array.from( this.entries.values() ).filter(
-			( entry ) => entry.resumeWhenVisible && ! entry.styleVisible,
-		);
+		let waiting = false;
+		for ( const entry of this.entries.values() ) {
+			if ( this.isWaitingBehindStyle( entry ) ) {
+				waiting = true;
+				break;
+			}
+		}
 
-		if ( waiting.length && ! this.stylePollTimer ) {
+		if ( waiting && ! this.stylePollTimer ) {
 			this.stylePollTimer = this.win.setInterval( () => {
 				this.entries.forEach( ( entry ) => {
-					if ( entry.resumeWhenVisible && ! entry.styleVisible ) {
+					if ( this.isWaitingBehindStyle( entry ) ) {
 						this.refreshStyleVisibility( entry );
 					}
 				} );
 			}, STYLE_POLL_MS );
-		} else if ( ! waiting.length && this.stylePollTimer ) {
+		} else if ( ! waiting && this.stylePollTimer ) {
 			this.win.clearInterval( this.stylePollTimer );
 			this.stylePollTimer = null;
 		}

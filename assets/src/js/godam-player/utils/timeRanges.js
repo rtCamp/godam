@@ -72,3 +72,33 @@ export function subtractRanges( ranges, remove ) {
 
 	return result;
 }
+
+/**
+ * Ranges a player has played where the visitor could see it.
+ *
+ * Starts from `player.played()` and removes seconds that only played while
+ * the player was out of view (recorded by managers/visibilityManager.js in
+ * `godamHiddenRanges` / `godamVisibleRanges`, e.g. with "Keep playing, muted").
+ * Seconds that were also watched in view still count. Shared by the heatmap
+ * (analytics.js) and the GTM tracker so both report the same playback.
+ *
+ * @param {Object} player - Video.js player.
+ * @return {Array<Array<number>>} `[ start, end ]` pairs.
+ */
+export function getWatchedRanges( player ) {
+	const played = player && typeof player.played === 'function' ? player.played() : null;
+	const ranges = [];
+	if ( played && typeof played.length === 'number' ) {
+		for ( let i = 0; i < played.length; i++ ) {
+			ranges.push( [ played.start( i ), played.end( i ) ] );
+		}
+	}
+
+	const hidden = player?.godamHiddenRanges;
+	if ( Array.isArray( hidden ) && hidden.length && ranges.length ) {
+		const unseen = subtractRanges( hidden, player.godamVisibleRanges || [] );
+		return subtractRanges( ranges, unseen );
+	}
+
+	return ranges;
+}

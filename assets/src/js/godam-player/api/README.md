@@ -162,6 +162,10 @@ goes out of view" setting.
 These pauses are treated as automatic: they don't show "on pause" CTA layers, and
 the player's `pause` event carries `{ reason: 'api' }`.
 
+They follow the same rule as an out-of-view pause: an autoplaying video resumes on
+its own once it goes out of view and is shown again (for example, when the visitor
+swipes back to its slide). A video the visitor started stays paused.
+
 **Parameters:**
 
 - `options.except` (HTMLElement|string|number|Player|Array, optional): videos to keep playing. Pass
