@@ -282,4 +282,26 @@ class HubspotConfigTest extends TestCase {
 		$this->set_central( array() ); // No portal.
 		$this->assertSame( '', Hubspot::central_tracking_code_src() );
 	}
+
+	/**
+	 * The forms embed loader uses the plain host for na1 and a region host otherwise,
+	 * points at `/forms/embed/<portal>.js`, and is empty without a portal.
+	 */
+	public function test_central_forms_embed_src(): void {
+		$this->set_settings( 'central' );
+
+		$this->set_central( array( 'portal_id' => '247' ) ); // region defaults to na1.
+		$this->assertSame( 'https://js.hsforms.net/forms/embed/247.js', Hubspot::central_forms_embed_src() );
+
+		$this->set_central(
+			array(
+				'portal_id' => '247',
+				'region'    => 'na2',
+			)
+		);
+		$this->assertSame( 'https://js-na2.hsforms.net/forms/embed/247.js', Hubspot::central_forms_embed_src() );
+
+		$this->set_central( array() ); // No portal.
+		$this->assertSame( '', Hubspot::central_forms_embed_src() );
+	}
 }

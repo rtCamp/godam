@@ -402,6 +402,36 @@ class Hubspot {
 	}
 
 	/**
+	 * HubSpot's current ("new") forms embed loader URL for Central's portal.
+	 *
+	 * Unlike the legacy forms v2 library (`hbspt.forms.create()`), this is a single
+	 * per-portal script that finds every `.hs-form-frame` element on the page and
+	 * renders the form named by its data attributes — and it loads HubSpot's own
+	 * tracking code as part of doing so. That is what writes the `hubspotutk` cookie
+	 * and links the submission (and later video-view milestones) to the visitor's
+	 * contact; a new-generation form rendered through the legacy library instead
+	 * loads with its script loader disabled, sets no cookie, and submits anonymously
+	 * (every event then arrives as "Unknown Contact"). The host carries the data
+	 * centre the same way {@see central_tracking_code_src()} does.
+	 *
+	 * @return string Empty when Central has no connected portal.
+	 */
+	public static function central_forms_embed_src() {
+		$portal_id = self::get_central_portal_id();
+
+		if ( '' === $portal_id ) {
+			return '';
+		}
+
+		$region = self::get_central_region();
+		$host   = ( '' === $region || self::DEFAULT_REGION === $region )
+			? 'js.hsforms.net'
+			: 'js-' . $region . '.hsforms.net';
+
+		return 'https://' . $host . '/forms/embed/' . $portal_id . '.js';
+	}
+
+	/**
 	 * Whether the `hubspotutk` cookie on the frontend will belong to the same HubSpot
 	 * portal that GoDAM Central forwards view milestones to.
 	 *

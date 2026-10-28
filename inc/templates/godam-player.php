@@ -1115,20 +1115,26 @@ do_action( 'rtgodam_after_attachment_lookup' );
 										$godam_hubspot_source = Hubspot::get_active_source();
 
 										if ( 'central' === $godam_hubspot_source ) :
-											// GoDAM Central: no WP plugin or shortcode. Render an empty
-											// container that HubSpot's own forms v2 script fills on the
-											// frontend (see Hubspot_Form_Assets and assets/src/js/hubspot-form.js),
-											// using the portal ID + region from the Central connection. Enqueue
-											// the library only when a Central HubSpot layer is on the page.
+											// GoDAM Central: no WP plugin or shortcode. Render HubSpot's
+											// current embed markup (a `.hs-form-frame` carrying the portal,
+											// form and region from the Central connection); HubSpot's
+											// per-portal embed script fills it on the frontend and loads the
+											// tracking code that sets the `hubspotutk` cookie — so the
+											// submission (and later view milestones) land on a contact rather
+											// than "Unknown Contact" (see Hubspot_Form_Assets and
+											// assets/src/js/hubspot-form.js). Enqueue the embed only when a
+											// Central HubSpot layer is on the page.
 											Hubspot_Form_Assets::get_instance();
 											?>
 										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden hubspot" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
-											<div
-												class="form-container hubspot-form"
-												data-portal-id="<?php echo esc_attr( Hubspot::get_effective_portal_id() ); ?>"
-												data-form-id="<?php echo esc_attr( $godam_layer['hubspot_id'] ); ?>"
-												data-region="<?php echo esc_attr( Hubspot::get_effective_region() ); ?>"
-											></div>
+											<div class="form-container hubspot-form">
+												<div
+													class="hs-form-frame"
+													data-portal-id="<?php echo esc_attr( Hubspot::get_effective_portal_id() ); ?>"
+													data-form-id="<?php echo esc_attr( $godam_layer['hubspot_id'] ); ?>"
+													data-region="<?php echo esc_attr( Hubspot::get_effective_region() ); ?>"
+												></div>
+											</div>
 										</div>
 											<?php
 										elseif ( 'leadin' === $godam_hubspot_source && shortcode_exists( 'hubspot' ) ) :
