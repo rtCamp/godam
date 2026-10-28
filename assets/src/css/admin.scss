@@ -1282,8 +1282,7 @@ to ensure proper responsiveness and avoid layout issues.
 		gap: 12px;
 	}
 
-	a.rtgodam-offer-notice__claim,
-	a.rtgodam-offer-notice__claim:visited {
+	a.rtgodam-offer-notice__claim {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
