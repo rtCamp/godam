@@ -325,6 +325,9 @@ export class VisibilityManager {
 			this.autoPause( player, 'api' );
 			paused++;
 		} );
+		// A pauseAll() resume waits for the player to leave the view; on a
+		// fade carousel only the CSS poll can see that, so start it now.
+		this.syncStylePoll();
 		return paused;
 	}
 
@@ -381,6 +384,9 @@ export class VisibilityManager {
 
 	handlePlay( entry ) {
 		entry.lastTime = null;
+		// Playing again: any pending resume belongs to an earlier pause.
+		entry.resumeWhenVisible = false;
+		entry.resumeNeedsHide = false;
 		const byVisitor = this.hasRecentGesture( entry ) && ! entry.isPreview();
 		if ( byVisitor ) {
 			this.markInteraction( entry.player );
@@ -620,6 +626,9 @@ export class VisibilityManager {
 		if ( ! entry.userStarted ) {
 			// Autoplay / script playback resumes when visible; hover previews don't.
 			entry.resumeWhenVisible = ! entry.isPreview();
+			// This pause is our own out-of-view pause, so the resume flag
+			// describes it alone (no leftover pauseAll() wait-for-hide).
+			entry.resumeNeedsHide = false;
 		}
 		this.autoPause( player, 'visibility' );
 	}
@@ -660,6 +669,11 @@ export class VisibilityManager {
 	 * @return {boolean} True while it needs polling.
 	 */
 	isWaitingBehindStyle( entry ) {
+		// Paused by pauseAll() while still on screen: watch CSS until it is
+		// hidden (e.g. a fade slide going out), then until it is shown again.
+		if ( entry.resumeWhenVisible && entry.resumeNeedsHide && entry.player.paused() ) {
+			return true;
+		}
 		return ! entry.styleVisible && ( entry.resumeWhenVisible || entry.adPausedByUs );
 	}
 
@@ -683,6 +697,8 @@ export class VisibilityManager {
 						this.refreshStyleVisibility( entry );
 					}
 				} );
+				// Stop once nothing is waiting any more.
+				this.syncStylePoll();
 			}, STYLE_POLL_MS );
 		} else if ( ! waiting && this.stylePollTimer ) {
 			this.win.clearInterval( this.stylePollTimer );

@@ -387,6 +387,70 @@ describe( 'VisibilityManager', () => {
 		expect( player.play ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	it( 'resumes after a tab switch when a script restarted a pauseAll()-paused video', () => {
+		let hidden = false;
+		Object.defineProperty( document, 'hidden', { configurable: true, get: () => hidden } );
+		const player = createPlayer();
+		const manager = new VisibilityManager( {
+			win: { IntersectionObserver: FakeObserver, setTimeout, clearTimeout, setInterval, clearInterval },
+			doc: document,
+			getPlayers: () => [ player ],
+		} );
+		manager.register( player );
+
+		manager.pauseAll();
+		jest.runOnlyPendingTimers();
+		player.play(); // script play while in view
+		jest.runOnlyPendingTimers();
+		player.play.mockClear();
+
+		hidden = true;
+		manager.handleDocumentVisibility();
+		jest.runOnlyPendingTimers();
+		hidden = false;
+		manager.handleDocumentVisibility();
+
+		expect( player.play ).toHaveBeenCalledTimes( 1 );
+		delete document.hidden;
+	} );
+
+	it( 'resumes a pauseAll()-paused autoplay video on a fade carousel', () => {
+		const clock = { now: 0 };
+		const player = createPlayer();
+		let cssVisible = true;
+		player.el().checkVisibility = () => cssVisible;
+		const manager = new VisibilityManager( {
+			win: { IntersectionObserver: FakeObserver, setTimeout, clearTimeout, setInterval, clearInterval },
+			doc: document,
+			now: () => clock.now,
+			getPlayers: () => [ player ],
+		} );
+		manager.register( player );
+		const advance = ( ms ) => {
+			for ( let t = 0; t < ms; t += 100 ) {
+				clock.now += 100;
+				jest.advanceTimersByTime( 100 );
+			}
+		};
+
+		manager.pauseAll(); // slideChange
+		jest.runOnlyPendingTimers();
+		player.play.mockClear();
+
+		cssVisible = false; // old slide fades out
+		advance( 5000 );
+		expect( player.play ).not.toHaveBeenCalled();
+
+		cssVisible = true; // visitor goes back
+		advance( 2000 );
+		expect( player.paused() ).toBe( false );
+		expect( player.play ).toHaveBeenCalledTimes( 1 );
+
+		// Nothing is waiting any more, so the poll stops.
+		advance( 1000 );
+		expect( manager.stylePollTimer ).toBeNull();
+	} );
+
 	it( 'pauseAll does not undo a visibility pause that ran first', () => {
 		const player = createPlayer();
 		const manager = new VisibilityManager( {
