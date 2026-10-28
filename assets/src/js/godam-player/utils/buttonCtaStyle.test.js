@@ -9,7 +9,7 @@
 /**
  * Internal dependencies
  */
-import { getButtonFontPx, fitButtonFontPx, resolveButtonFontPercent, DEFAULT_BUTTON_FONT_PERCENT, MIN_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX, MAX_BUTTON_WIDTH_FRACTION } from './buttonCtaStyle';
+import { getButtonFontPx, fitButtonFontPx, resolveButtonFontPercent, resolveButtonCtaStyle, getButtonCtaClassName, DEFAULT_BUTTON_FONT_PERCENT, MIN_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX, MAX_BUTTON_WIDTH_FRACTION } from './buttonCtaStyle';
 
 describe( 'resolveButtonFontPercent', () => {
 	it( 'returns the stored fontPercent when set', () => {
@@ -70,5 +70,18 @@ describe( 'fitButtonFontPx', () => {
 	it( 'returns the size unchanged when it can not be measured', () => {
 		expect( fitButtonFontPx( 40, 0, 800 ) ).toBe( 40 );
 		expect( fitButtonFontPx( 40, 700, 0 ) ).toBe( 40 );
+	} );
+} );
+
+describe( 'resolveButtonCtaStyle attention', () => {
+	it( 'keeps a supported attention animation', () => {
+		expect( resolveButtonCtaStyle( { attention: 'pulse' } ).attention ).toBe( 'pulse' );
+		expect( resolveButtonCtaStyle( { attention: 'glow' } ).attention ).toBe( 'glow' );
+	} );
+
+	it( 'falls back to none for the removed "Border waves" (ripple) animation', () => {
+		const style = resolveButtonCtaStyle( { attention: 'ripple' } );
+		expect( style.attention ).toBe( 'none' );
+		expect( getButtonCtaClassName( style ) ).not.toContain( 'godam-button-cta--attn-' );
 	} );
 } );
