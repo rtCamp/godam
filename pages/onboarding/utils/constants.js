@@ -26,6 +26,11 @@ export const AUTH_METHOD = {
 };
 
 /**
+ * Where "Contact support" links go (the same helpdesk the admin pages use).
+ */
+export const SUPPORT_URL = 'https://app.godam.io/helpdesk/my-tickets';
+
+/**
  * Runtime config localized from PHP (see class-pages.php → `godamOnboarding`).
  * Falls back to sane defaults so the bundle is safe to load standalone.
  */
