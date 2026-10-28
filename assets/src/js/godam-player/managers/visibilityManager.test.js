@@ -364,6 +364,29 @@ describe( 'VisibilityManager', () => {
 		expect( visitorEntry.resumeWhenVisible ).toBe( false );
 	} );
 
+	it( 'pauseAll on an in-view autoplay video does not resume it on a tab switch', () => {
+		const player = createPlayer();
+		const manager = new VisibilityManager( {
+			win: { IntersectionObserver: FakeObserver, setTimeout, clearTimeout, setInterval, clearInterval },
+			doc: document,
+			getPlayers: () => [ player ],
+		} );
+		manager.register( player );
+
+		manager.pauseAll();
+		jest.runOnlyPendingTimers();
+		player.play.mockClear();
+
+		// Tab hidden then shown again: the player itself never left the view.
+		manager.handleDocumentVisibility();
+		expect( player.play ).not.toHaveBeenCalled();
+
+		// Scrolled (or swiped) out and back: now it resumes.
+		FakeObserver.instance.fire( player.el(), false );
+		FakeObserver.instance.fire( player.el(), true );
+		expect( player.play ).toHaveBeenCalledTimes( 1 );
+	} );
+
 	it( 'pauseAll does not undo a visibility pause that ran first', () => {
 		const player = createPlayer();
 		const manager = new VisibilityManager( {

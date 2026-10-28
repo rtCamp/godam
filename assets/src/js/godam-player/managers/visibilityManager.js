@@ -186,6 +186,7 @@ export class VisibilityManager {
 			userStarted: false,
 			lastGestureAt: -Infinity,
 			resumeWhenVisible: false,
+			resumeNeedsHide: false,
 			adPausedByUs: false,
 			adMutedByUs: false,
 			adVolumeBeforeMute: 1,
@@ -314,6 +315,12 @@ export class VisibilityManager {
 			const entry = this.entries.get( player );
 			if ( entry ) {
 				entry.resumeWhenVisible = ! entry.userStarted && ! entry.isPreview();
+				// Paused while possibly still on screen (e.g. "another video
+				// started, stop the rest"): only resume after the player itself
+				// has gone out of view and come back, never on a tab switch.
+				// Not gated on isVisible() here: a carousel's slideChange runs
+				// before the observer reports the old slide hidden.
+				entry.resumeNeedsHide = true;
 			}
 			this.autoPause( player, 'api' );
 			paused++;
@@ -539,6 +546,12 @@ export class VisibilityManager {
 			this.refreshStyleVisibility( entry, { notify: false } );
 		}
 
+		// The player itself left the view (scroll, slide, display/opacity), not
+		// just the browser tab: a pauseAll() resume may now apply when it returns.
+		if ( ! entry.inViewport || ! entry.styleVisible ) {
+			entry.resumeNeedsHide = false;
+		}
+
 		if ( this.isVisible( entry ) ) {
 			this.handleVisible( entry );
 		} else if ( ! this.isExempt( entry ) ) {
@@ -561,7 +574,7 @@ export class VisibilityManager {
 			entry.adMutedByUs = false;
 			player.ima?.getAdsManager?.()?.setVolume?.( entry.adVolumeBeforeMute );
 		}
-		if ( ! entry.resumeWhenVisible ) {
+		if ( ! entry.resumeWhenVisible || entry.resumeNeedsHide ) {
 			return;
 		}
 		entry.resumeWhenVisible = false;
