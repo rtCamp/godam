@@ -105,12 +105,18 @@ if ( ! function_exists( 'wp_prepare_attachment_for_js' ) ) {
 if ( ! function_exists( 'get_post_meta' ) ) {
 
 	/**
-	 * @param int    $post_id Ignored (single post per test).
+	 * @param int    $post_id Post ID. Only read for a test that sets meta per post in
+	 *                        `post_meta_by_id` (post ID => key => value); otherwise ignored.
 	 * @param string $key     Meta key.
 	 * @param bool   $single  Ignored; always single-value semantics.
 	 * @return mixed
 	 */
-	function get_post_meta( $post_id, $key = '', $single = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $post_id/$single are ignored.
+	function get_post_meta( $post_id, $key = '', $single = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $single is ignored.
+		if ( isset( $GLOBALS['rtgodam_stub']['post_meta_by_id'][ (int) $post_id ] ) ) {
+			$by_id = $GLOBALS['rtgodam_stub']['post_meta_by_id'][ (int) $post_id ];
+			return array_key_exists( $key, $by_id ) ? $by_id[ $key ] : '';
+		}
+
 		$meta = isset( $GLOBALS['rtgodam_stub']['post_meta'] ) && is_array( $GLOBALS['rtgodam_stub']['post_meta'] )
 			? $GLOBALS['rtgodam_stub']['post_meta']
 			: array();
@@ -208,11 +214,22 @@ if ( ! function_exists( 'wp_parse_url' ) ) {
 	}
 }
 
-// Empty stand-in for the WP core base so Video_Editor's parent chain resolves
+// Stand-in for the WP core base so Video_Editor's parent chain resolves
 // without a WordPress install; the constructor is never run (tests build the
-// object with ReflectionClass::newInstanceWithoutConstructor()).
+// object with ReflectionClass::newInstanceWithoutConstructor()). The route
+// tables call get_collection_params() for their `args`; the params themselves
+// are not what those tests look at.
 if ( ! class_exists( 'WP_REST_Controller' ) ) {
-	class WP_REST_Controller {} // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+	// phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed, Generic.Files.OneObjectStructurePerFile.MultipleFound -- test stub.
+	class WP_REST_Controller {
+
+		/**
+		 * @return array
+		 */
+		public function get_collection_params() {
+			return array();
+		}
+	}
 }
 
 /*
@@ -295,6 +312,11 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 		public function get_status() {
 			return $this->status;
 		}
+
+		/** @param int $status HTTP status code. */
+		public function set_status( $status ) {
+			$this->status = $status;
+		}
 	}
 }
 
@@ -320,13 +342,19 @@ if ( ! function_exists( 'current_user_can' ) ) {
 
 	/**
 	 * @param string $capability Capability name.
-	 * @param mixed  ...$args    Ignored; object-level checks are not stubbed.
+	 * @param mixed  ...$args    The object ID of a meta capability. A test grants it for one
+	 *                           object only as "edit_post:42"; the plain name grants it for all.
 	 * @return bool
 	 */
-	function current_user_can( $capability, ...$args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $args are ignored.
+	function current_user_can( $capability, ...$args ) {
 		$caps = isset( $GLOBALS['rtgodam_stub']['caps'] ) && is_array( $GLOBALS['rtgodam_stub']['caps'] )
 			? $GLOBALS['rtgodam_stub']['caps']
 			: array();
+
+		if ( isset( $args[0] ) && is_scalar( $args[0] ) && in_array( $capability . ':' . $args[0], $caps, true ) ) {
+			return true;
+		}
+
 		return in_array( $capability, $caps, true );
 	}
 }
@@ -439,6 +467,10 @@ if ( ! function_exists( 'set_transient' ) ) {
  */
 require_once __DIR__ . '/stubs/hooks.php';
 require_once __DIR__ . '/stubs/i18n.php';
+// Shortcode registry and runner, so a test can register a shortcode and see whether
+// text handed to do_shortcode() runs it. Loaded here so its do_shortcode() is the one
+// that every test sees.
+require_once __DIR__ . '/stubs/shortcode-runtime.php';
 // HTTP / REST stubs for the Analytics microservice-proxy tests (fetch_top_videos
 // / fetch_top_products): fake wp_remote_* responses + get_option, and minimal
 // WP_REST_Request / WP_REST_Response so the proxy's error-vs-empty guard can be
@@ -524,6 +556,15 @@ if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 		return $GLOBALS['rtgodam_stub']['video_metadata'][ $file ] ?? false;
 	}
 }
+
+// Loaded for MediaFolderLockTest: the folder lock check, the lock rules on the taxonomy
+// and the media-folder REST route guard. Each file only declares a class, so requiring
+// them runs no WP code.
+require_once __DIR__ . '/stubs/media-folder-functions.php';
+require_once dirname( __DIR__ ) . '/inc/classes/media-library/class-media-folder-utils.php';
+require_once dirname( __DIR__ ) . '/inc/classes/taxonomies/class-base.php';
+require_once dirname( __DIR__ ) . '/inc/classes/taxonomies/class-media-folders.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-media-library.php';
 
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.

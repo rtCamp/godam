@@ -28,7 +28,7 @@ class CF7 extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_cf7_form' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(

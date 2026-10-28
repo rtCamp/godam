@@ -29,15 +29,6 @@ class GF extends Base {
 	public const ALLOWED_FORM_FIELDS = array( 'id', 'title', 'description' );
 
 	/**
-	 * Permission check — same capability the Video Editor page requires.
-	 *
-	 * @return bool
-	 */
-	public function forms_permissions_check() {
-		return current_user_can( 'upload_files' );
-	}
-
-	/**
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {

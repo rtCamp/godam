@@ -259,6 +259,45 @@ class Media_Folder_Utils {
 	}
 
 	/**
+	 * Whether a media folder is locked, directly or through an ancestor.
+	 *
+	 * Folder locking is protective: a locked folder shields itself AND all of its
+	 * descendants from mutation. So a folder counts as locked if its own `locked`
+	 * term-meta is truthy or if any of its ancestors' is. Client-side gating (React)
+	 * is UX only; this is the authoritative server-side check.
+	 *
+	 * @since 2.5.1
+	 *
+	 * @param int $folder_id Media folder term ID.
+	 * @return bool True if the folder or one of its ancestors is locked.
+	 */
+	public function is_folder_locked( $folder_id ) {
+		$folder_id = (int) $folder_id;
+
+		if ( $folder_id <= 0 ) {
+			return false;
+		}
+
+		// The term itself plus every ancestor — a locked ancestor locks the branch.
+		$ids       = array( $folder_id );
+		$ancestors = get_ancestors( $folder_id, 'media-folder', 'taxonomy' );
+
+		if ( is_array( $ancestors ) ) {
+			$ids = array_merge( $ids, $ancestors );
+		}
+
+		foreach ( $ids as $id ) {
+			$locked_raw = get_term_meta( $id, 'locked', true );
+
+			if ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Get folder information with attachment count
 	 *
 	 * @since 1.3.0

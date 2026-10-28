@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Media_Library\Media_Folder_Utils;
 
 /**
  * Class Media_Library
@@ -634,6 +635,12 @@ class Media_Library_Ajax {
 		$term = get_term( $media_folder, 'media-folder' );
 
 		if ( is_wp_error( $term ) || ! $term || $term->term_id !== $media_folder ) {
+			return;
+		}
+
+		// A locked folder, or one inside a locked folder, takes no new files. Leave the
+		// upload unfiled, as the assign-folder route refuses the same move.
+		if ( Media_Folder_Utils::get_instance()->is_folder_locked( $media_folder ) ) {
 			return;
 		}
 

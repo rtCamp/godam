@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.5.0
+Stable tag: 2.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -217,6 +217,15 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.5.1 (October 26, 2026) =
+
+- Fix: GoDAM's public video pages, lists and player data no longer show media from draft, private or scheduled posts. Media used on a published page keeps working.
+- Fix: GoDAM only deletes, exports and stores media files that are inside the uploads folder.
+- Fix: Video embed pages and form entries build the player from checked settings.
+- Fix: The form lists in the video editor are available only to users who can upload media, and Jetpack forms in videos show only on published posts.
+- Fix: Sending media to GoDAM for transcoding now checks GoDAM's security certificate.
+- Fix: Media folder names are no longer shown to site visitors, and a locked folder stays locked everywhere.
+
 = v2.5.0 (October 22, 2026) =
 
 - Feat: GoDAM can add a video sitemap that lists every page with a GoDAM video, through Yoast SEO, Rank Math, All in One SEO or the WordPress sitemap. Turn it on in GoDAM > Settings > SEO; single videos can be left out.
@@ -237,15 +246,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Transcripts uploaded as .srt files now show captions and the transcript to visitors.
 - Fix: In Safari, tall videos in a lightbox are no longer cut off at the bottom.
 - Fix: Captions no longer overlap the player controls on narrow screens.
-
-= v2.4.0 (October 16, 2026) =
-
-- Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.
-- Feat: The Hotspot layer has a new Button style: each hotspot can show as a text or sticker button, with its own colours and link.
-- Tweak: The media preview page can switch between Desktop and Mobile views, for videos, images and audio.
-- Fix: Usage tracking now follows the admin's choice.
-- Fix: The GoDAM Audio block now accepts .webm audio, such as form recordings, from the GoDAM tab and from uploads.
-- Fix: GoDAM stays connected when its servers are slow to respond.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
