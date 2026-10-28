@@ -1,6 +1,6 @@
 # Changelog #
 
-## v2.5.2 (October 28, 2026) ##
+## v2.5.2 (October 29, 2026) ##
 
 - Tweak: The Border waves animation is no longer offered for hotspot buttons. Buttons that used it now show without animation.
 - Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.
