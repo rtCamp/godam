@@ -83,6 +83,24 @@ class OfferNoticeTest extends TestCase {
 		$this->assertFalse( Offer_Notice::should_show( $this->moment( '2026-11-10 00:00:00' ), $this->user_data() ) );
 	}
 
+	public function test_the_end_follows_the_site_time_zone_not_utc() {
+		// A site in India: midnight on 10 Nov there is 18:30 UTC on 9 Nov.
+		$GLOBALS['rtgodam_stub']['timezone'] = new \DateTimeZone( 'Asia/Kolkata' );
+
+		$this->assertTrue( Offer_Notice::should_show( $this->moment( '2026-11-09 18:29:59' ), $this->user_data() ) );
+		$this->assertFalse( Offer_Notice::should_show( $this->moment( '2026-11-09 18:30:00' ), $this->user_data() ) );
+
+		// A site in New York: still 9 Nov there when it is already 10 Nov in UTC.
+		$GLOBALS['rtgodam_stub']['timezone'] = new \DateTimeZone( 'America/New_York' );
+
+		$this->assertTrue( Offer_Notice::should_show( $this->moment( '2026-11-10 04:59:59' ), $this->user_data() ) );
+		$this->assertFalse( Offer_Notice::should_show( $this->moment( '2026-11-10 05:00:00' ), $this->user_data() ) );
+	}
+
+	public function test_it_never_shows_on_a_later_year() {
+		$this->assertFalse( Offer_Notice::should_show( $this->moment( '2027-10-29 10:00:00' ), $this->user_data() ) );
+	}
+
 	public function test_a_trial_site_sees_it() {
 		$this->connect( 'Free', gmdate( 'Y-m-d H:i:s', time() + 10 * DAY_IN_SECONDS ) );
 
