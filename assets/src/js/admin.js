@@ -200,7 +200,8 @@ function initOfferNotice() {
 				const body = new window.FormData();
 				body.append( 'action', 'godam_dismiss_offer_notice' );
 				body.append( 'nonce', notice.dataset.nonce || '' );
-				window.fetch( window.ajaxurl, { method: 'POST', credentials: 'same-origin', body } );
+				// keepalive lets the request finish even if the admin leaves the page right away.
+				window.fetch( window.ajaxurl, { method: 'POST', credentials: 'same-origin', keepalive: true, body } );
 			}
 		} );
 	}
