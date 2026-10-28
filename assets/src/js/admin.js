@@ -182,9 +182,73 @@ function handleBannerClose() {
 	}
 }
 
+/**
+ * Seasonal offer notice: dismiss for the whole site, and copy the offer code.
+ */
+function initOfferNotice() {
+	const notice = document.querySelector( '.rtgodam-offer-notice' );
+	if ( ! notice ) {
+		return;
+	}
+
+	const dismiss = notice.querySelector( '.rtgodam-offer-notice__dismiss' );
+	if ( dismiss ) {
+		dismiss.addEventListener( 'click', () => {
+			notice.remove();
+
+			if ( window.ajaxurl ) {
+				const body = new window.FormData();
+				body.append( 'action', 'godam_dismiss_offer_notice' );
+				body.append( 'nonce', notice.dataset.nonce || '' );
+				window.fetch( window.ajaxurl, { method: 'POST', credentials: 'same-origin', body } );
+			}
+		} );
+	}
+
+	const copy = notice.querySelector( '.rtgodam-offer-notice__copy' );
+	const status = notice.querySelector( '.rtgodam-offer-notice__status' );
+	if ( copy ) {
+		const label = copy.textContent;
+		copy.addEventListener( 'click', () => {
+			const done = () => {
+				copy.textContent = copy.dataset.copied || label;
+				if ( status ) {
+					status.textContent = status.dataset.message || '';
+				}
+				setTimeout( () => {
+					copy.textContent = label;
+					if ( status ) {
+						status.textContent = '';
+					}
+				}, 1500 );
+			};
+
+			if ( window.navigator.clipboard && window.isSecureContext ) {
+				window.navigator.clipboard.writeText( copy.dataset.code ).then( done ).catch( () => {} );
+				return;
+			}
+
+			// Plain-http admin pages have no async clipboard API.
+			const field = document.createElement( 'textarea' );
+			field.value = copy.dataset.code;
+			field.setAttribute( 'readonly', '' );
+			field.style.position = 'absolute';
+			field.style.left = '-9999px';
+			document.body.appendChild( field );
+			field.select();
+			const copied = document.execCommand( 'copy' );
+			field.remove();
+			if ( copied ) {
+				done();
+			}
+		} );
+	}
+}
+
 function initAdminUI() {
 	initTogglePostboxes();
 	handleBannerClose();
+	initOfferNotice();
 	new ParticleEffect();
 	initHandleInsightsDataNotice();
 }

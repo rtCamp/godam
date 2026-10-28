@@ -1204,3 +1204,107 @@ to ensure proper responsiveness and avoid layout issues.
 		}
 	}
 }
+
+/* Seasonal offer notice (Halloween 2026), shown on the Dashboard and Media Library. */
+.rtgodam-offer-notice {
+	position: relative;
+	display: flex;
+	gap: 8px;
+	padding: 12px 40px 12px 0;
+	border-left-color: #5d31ff;
+	overflow: hidden;
+
+	&__art {
+		flex: none;
+		width: 92px;
+		height: 104px;
+		margin-top: -12px;
+	}
+
+	&__body p {
+		margin: 0;
+		padding: 0;
+	}
+
+	.rtgodam-offer-notice__title {
+		font-size: 15px;
+		font-weight: 600;
+		color: #1d2327;
+	}
+
+	.rtgodam-offer-notice__text {
+		margin: 3px 0 6px;
+		font-size: 13px;
+		color: #50575e;
+	}
+
+	.rtgodam-offer-notice__chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-bottom: 10px;
+	}
+
+	&__chip {
+		padding: 2px 8px;
+		border-radius: 4px;
+		background: #f3efff;
+		color: #3a1ea8;
+		font-size: 12px;
+	}
+
+	.rtgodam-offer-notice__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.button-primary {
+		background: #5d31ff;
+		border-color: #5d31ff;
+
+		&:hover,
+		&:focus {
+			background: #4321c9;
+			border-color: #4321c9;
+		}
+	}
+
+	.button-secondary {
+		color: #4321c9;
+		border-color: #5d31ff;
+
+		&:hover,
+		&:focus {
+			color: #3a1ea8;
+			border-color: #4321c9;
+			background: #f3efff;
+		}
+	}
+
+	&__code {
+		font-size: 12px;
+		color: #50575e;
+
+		code {
+			padding: 2px 8px;
+			border: 1px dashed #5d31ff;
+			border-radius: 4px;
+			background: #f3efff;
+			color: #3a1ea8;
+		}
+	}
+
+	@media (max-width: 600px) {
+
+		&__art {
+			display: none;
+		}
+
+		& {
+			padding-left: 12px;
+		}
+	}
+}
+

@@ -230,7 +230,7 @@ class RTGODAM_Transcoder_Admin {
 	}
 
 	/**
-	 * Display New Year Sale offer banner on the WordPress dashboard.
+	 * Display the seasonal offer notice on the WordPress dashboard.
 	 *
 	 * @return void
 	 */
@@ -239,72 +239,7 @@ class RTGODAM_Transcoder_Admin {
 			return;
 		}
 
-		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
-		$timezone          = wp_timezone();
-		$current_time      = new \DateTime( 'now', $timezone );
-		$end_time          = new \DateTime( '2026-01-20 23:59:59', $timezone );
-		
-		if ( $current_time <= $end_time && $show_offer_banner ) {
-			$host = wp_parse_url( home_url(), PHP_URL_HOST );
-
-			$banner_image = RTGODAM_URL . 'assets/src/images/new-year-sale-2026.webp';
-
-			$banner_html = sprintf(
-				'<div class="notice annual-plan-offer-banner">
-					<a
-						href="%1$s"
-						class="annual-plan-offer-banner__link"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="%2$s"
-					>
-						<img
-							src="%3$s"
-							class="annual-plan-offer-banner__image"
-							alt="%4$s"
-							loading="lazy"
-						/>
-					</a>
-					<button
-						type="button"
-						class="annual-plan-offer-banner__dismiss"
-						aria-label="%5$s"
-					>
-						&times;
-					</button>
-				</div>',
-				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=new-year-sale-2026&utm_source=' . $host . '&utm_medium=plugin&utm_content=dashboard-banner' ),
-				esc_attr__( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ),
-				esc_url( $banner_image ),
-				esc_attr__( 'New Year Sale 2026 offer from GoDAM', 'godam' ),
-				esc_html__( 'Dismiss banner', 'godam' )
-			);
-
-			echo wp_kses(
-				$banner_html,
-				array(
-					'div'    => array( 'class' => array() ),
-					'a'      => array(
-						'href'       => array(),
-						'class'      => array(),
-						'target'     => array(),
-						'rel'        => array(),
-						'aria-label' => array(),
-					),
-					'img'    => array(
-						'src'     => array(),
-						'alt'     => array(),
-						'class'   => array(),
-						'loading' => array(),
-					),
-					'button' => array(
-						'type'       => array(),
-						'class'      => array(),
-						'aria-label' => array(),
-					),
-				)
-			);
-		}
+		\RTGODAM\Inc\Offer_Notice::render( 'dashboard' );
 	}
 
 	/**
