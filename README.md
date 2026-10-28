@@ -288,6 +288,16 @@ This plugin relies on third-party services to provide specific features. Below i
         <a href="https://godam.io/tos/">ToS</a> | <a href="https://godam.io/privacy-policy/">Privacy</a>
       </td>
     </tr>
+    <tr>
+      <td>HubSpot (js.hsforms.net, js.hs-scripts.com)</td>
+      <td>Renders a HubSpot form on a video, and records how far a known HubSpot contact watched (when HubSpot is connected via GoDAM Central)</td>
+      <td>Form submissions; the <code>hubspotutk</code> cookie plus HubSpot's tracking suite for your portal (analytics, cookie banner, chat, CTAs, ads pixel, surveys, depending on your portal)</td>
+      <td>Form embed: on a page with a HubSpot form layer. Tracking code: on the frontend when "Track video views" is on in Central (off via the <code>rtgodam_map_inject_hubspot_tracking_code</code> filter)</td>
+      <td>
+        <a href="https://www.hubspot.com">HubSpot</a><br>
+        <a href="https://legal.hubspot.com/terms-of-service">ToS</a> | <a href="https://legal.hubspot.com/privacy-policy">Privacy</a>
+      </td>
+    </tr>
   </tbody>
 </table>
 
