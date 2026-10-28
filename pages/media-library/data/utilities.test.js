@@ -49,6 +49,24 @@ describe( 'getAllMediaCountRequest', () => {
 			.toBe( 'image,application/pdf' );
 	} );
 
+	it( 'sends more than one whole type to query-attachments', () => {
+		// media_type takes a single value before WordPress 6.9, so `image,video` would answer 400 there.
+		const request = getAllMediaCountRequest( [ 'image', 'video' ] );
+
+		expect( request.method ).toBe( 'POST' );
+		expect( ajaxFields( request )[ 'query[post_mime_type]' ] ).toBe( 'image,video' );
+	} );
+
+	it( 'falls back to the REST route\'s mime_type when the page has no admin-ajax URL', () => {
+		delete global.wp;
+		delete window.ajaxurl;
+
+		expect( getAllMediaCountRequest( [ 'text/vtt', 'text/plain' ] ) ).toEqual( {
+			url: 'wp/v2/media',
+			params: { _fields: 'id', per_page: 1, mime_type: [ 'text/vtt', 'text/plain' ] },
+		} );
+	} );
+
 	it( 'asks the REST route for everything when there is no filter', () => {
 		const everything = { url: 'wp/v2/media', params: { _fields: 'id', per_page: 1 } };
 		expect( getAllMediaCountRequest( undefined ) ).toEqual( everything );

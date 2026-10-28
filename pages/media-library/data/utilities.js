@@ -242,11 +242,12 @@ const getCurrentMimeTypeFilter = ( paramName = 'post_mime_type' ) => {
 /**
  * Builds the request for the media sidebar's All Media count.
  *
- * With no type filter, or only whole types (image, video, audio...), the count comes from the
+ * With no type filter, or one whole type (image, video, audio...), the count comes from the
  * core `wp/v2/media` route's `media_type`. A filter with exact MIME types, e.g. the caption
- * picker's [ 'text/vtt', 'application/x-subrip', 'text/plain' ], goes to admin-ajax
- * `query-attachments` instead, the same query the picker's grid runs: the REST route answers
- * 400 to exact types in `media_type`, and only takes a list of them in `mime_type` from WordPress 6.9.
+ * picker's [ 'text/vtt', 'application/x-subrip', 'text/plain' ], or with more than one type,
+ * goes to admin-ajax `query-attachments` instead, the same query the picker's grid runs: the
+ * REST route answers 400 to exact types in `media_type`, takes only one `media_type` before
+ * WordPress 6.9, and only takes a list of exact types in `mime_type` from 6.9.
  *
  * @since n.e.x.t
  *
@@ -256,15 +257,24 @@ const getCurrentMimeTypeFilter = ( paramName = 'post_mime_type' ) => {
  */
 const getAllMediaCountRequest = ( type = getCurrentMimeTypeFilter( 'type' ).type ) => {
 	const types = [].concat( type ?? [] )
-		.join( ',' )
-		.split( ',' )
+		.flatMap( ( entry ) => String( entry ).split( ',' ) )
 		.map( ( entry ) => entry.trim() )
 		.filter( Boolean );
+	const hasExactType = types.some( ( entry ) => entry.includes( '/' ) );
+	const ajaxUrl = window.wp?.ajax?.settings?.url || window.ajaxurl;
 
-	if ( types.some( ( entry ) => entry.includes( '/' ) ) ) {
+	if ( ( hasExactType || types.length > 1 ) && ! ajaxUrl ) {
+		// No admin-ajax URL on this page: fall back to the REST route's `mime_type` (WordPress 6.9+).
+		return {
+			url: 'wp/v2/media',
+			params: { _fields: 'id', per_page: 1, mime_type: types },
+		};
+	}
+
+	if ( hasExactType || types.length > 1 ) {
 		// admin-ajax.php registers `query-attachments` for POST requests only.
 		return {
-			url: new URL( window.wp?.ajax?.settings?.url || window.ajaxurl, window.location.href ).href,
+			url: new URL( ajaxUrl, window.location.href ).href,
 			method: 'POST',
 			body: new URLSearchParams( {
 				action: 'query-attachments',
