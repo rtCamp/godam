@@ -248,7 +248,7 @@ class Offer_Notice {
 		);
 		?>
 		<div class="notice rtgodam-offer-notice" data-nonce="<?php echo esc_attr( wp_create_nonce( self::DISMISS_ACTION ) ); ?>">
-			<svg class="rtgodam-offer-notice__art" viewBox="0 0 92 104" aria-hidden="true" focusable="false">
+			<svg class="rtgodam-offer-notice__art" viewBox="0 0 92 104" width="92" height="104" aria-hidden="true" focusable="false">
 				<g stroke="#b9aee8" stroke-width="1" fill="none">
 					<path d="M0 0 L80 0"/><path d="M0 0 L70 40"/><path d="M0 0 L40 72"/><path d="M0 0 L0 90"/>
 					<path d="M18 0 Q20 12 12 14 Q6 18 0 18"/><path d="M38 0 Q42 22 28 30 Q14 36 0 38"/><path d="M58 0 Q62 32 42 46 Q22 56 0 58"/>
@@ -261,7 +261,7 @@ class Offer_Notice {
 			<div class="rtgodam-offer-notice__body">
 				<p class="rtgodam-offer-notice__eyebrow">
 					<?php esc_html_e( 'Halloween offer', 'godam' ); ?>
-					<svg class="rtgodam-offer-notice__pumpkin" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+					<svg class="rtgodam-offer-notice__pumpkin" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
 						<path d="M12 6c-1-2 0-4 2-4" stroke="#5d31ff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
 						<ellipse cx="7.5" cy="14" rx="5" ry="7" fill="#7a57ff"/><ellipse cx="16.5" cy="14" rx="5" ry="7" fill="#7a57ff"/><ellipse cx="12" cy="14" rx="4" ry="7.5" fill="#5d31ff"/>
 						<path d="M8 12l2-2 1 2zM13 12l2-2 1 2zM8 16q4 3 8 0l-1.5 1-1.2-.8-1.3 1-1.3-1-1.2.8z" fill="#fff"/>
