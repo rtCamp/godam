@@ -225,24 +225,29 @@ function initOfferNotice() {
 				}, 1500 );
 			};
 
+			// Older copy through a hidden textarea: for plain-http admin pages, which have no
+			// async clipboard API, and for when the browser refuses an async write.
+			const fallbackCopy = () => {
+				const field = document.createElement( 'textarea' );
+				field.value = copy.dataset.code;
+				field.setAttribute( 'readonly', '' );
+				field.style.position = 'absolute';
+				field.style.left = '-9999px';
+				document.body.appendChild( field );
+				field.select();
+				const copied = document.execCommand( 'copy' );
+				field.remove();
+				if ( copied ) {
+					done();
+				}
+			};
+
 			if ( window.navigator.clipboard && window.isSecureContext ) {
-				window.navigator.clipboard.writeText( copy.dataset.code ).then( done ).catch( () => {} );
+				window.navigator.clipboard.writeText( copy.dataset.code ).then( done ).catch( fallbackCopy );
 				return;
 			}
 
-			// Plain-http admin pages have no async clipboard API.
-			const field = document.createElement( 'textarea' );
-			field.value = copy.dataset.code;
-			field.setAttribute( 'readonly', '' );
-			field.style.position = 'absolute';
-			field.style.left = '-9999px';
-			document.body.appendChild( field );
-			field.select();
-			const copied = document.execCommand( 'copy' );
-			field.remove();
-			if ( copied ) {
-				done();
-			}
+			fallbackCopy();
 		} );
 	}
 }

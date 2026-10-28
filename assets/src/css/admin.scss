@@ -1308,6 +1308,13 @@ to ensure proper responsiveness and avoid layout issues.
 		}
 	}
 
+	&__code-group {
+		display: inline-flex;
+		align-items: center;
+		gap: 12px;
+		white-space: nowrap;
+	}
+
 	&__code-label {
 		font-size: 13px;
 		color: #50575e;

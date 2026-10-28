@@ -86,7 +86,7 @@ class Offer_Notice {
 	}
 
 	/**
-	 * Whether the site is on no plan (no valid API key) or on the free trial.
+	 * Whether the site has no API key at all, or is on the free trial.
 	 *
 	 * The 60-day trial is a Free plan on GoDAM Central, so it is told apart by
 	 * `active_plan` "Free" with an end date still ahead, the same test as the
@@ -101,8 +101,11 @@ class Offer_Notice {
 	public static function is_free_or_trial_site( $user_data = null ) {
 		$user_data = is_array( $user_data ) ? $user_data : rtgodam_get_user_data();
 
+		// Free means no API key at all. A stored key that is not valid right now is a paid or
+		// lapsed account, or a paid site during a short Central outage (`verification_failed`):
+		// none of them should be offered a first payment.
 		if ( empty( $user_data['valid_api_key'] ) ) {
-			return true;
+			return isset( $user_data['api_key_status'] ) && \RTGODAM\Inc\Enums\Api_Key_Status::NO_API_KEY === $user_data['api_key_status'];
 		}
 
 		$api_data = isset( $user_data['user_data'] ) && is_array( $user_data['user_data'] ) ? $user_data['user_data'] : array();
@@ -198,9 +201,9 @@ class Offer_Notice {
 
 				$message = $recorder
 					/* translators: %s: one or two form plugin names. */
-					? sprintf( __( 'Show your %s forms inside your videos, and collect video and audio answers with the GoDAM recorder field.', 'godam' ), $list )
+					? sprintf( __( 'Show forms from %s inside your videos, and collect video and audio answers with the GoDAM recorder field.', 'godam' ), $list )
 					/* translators: %s: one or two form plugin names. */
-					: sprintf( __( 'Show your %s forms inside your videos, so viewers can sign up without leaving the video.', 'godam' ), $list );
+					: sprintf( __( 'Show forms from %s inside your videos, so viewers can sign up without leaving the video.', 'godam' ), $list );
 				break;
 
 			default:
@@ -219,12 +222,14 @@ class Offer_Notice {
 	 *
 	 * @since 2.5.2
 	 *
-	 * @param string $placement Where it shows, for the link's tracking: `dashboard` or `media-library`.
+	 * @param string                  $placement Where it shows, for the link's tracking: `dashboard` or `media-library`.
+	 * @param \DateTimeInterface|null $now       The moment to check, now when null. Tests pass a fixed time.
+	 * @param array|null              $user_data The site's GoDAM account data, read from rtgodam_get_user_data() when null.
 	 *
 	 * @return void
 	 */
-	public static function render( $placement ) {
-		if ( ! self::should_show() ) {
+	public static function render( $placement, $now = null, $user_data = null ) {
+		if ( ! self::should_show( $now, $user_data ) ) {
 			return;
 		}
 
@@ -292,15 +297,17 @@ class Offer_Notice {
 						<?php esc_html_e( 'Claim 50% off', 'godam' ); ?>
 						<span aria-hidden="true">&rarr;</span>
 					</a>
-					<span class="rtgodam-offer-notice__code-label"><?php esc_html_e( 'Code', 'godam' ); ?></span>
 					<?php
 					/* translators: %s: offer code. */
 					$copy_label = sprintf( __( 'Copy the code %s', 'godam' ), self::CODE );
 					?>
+					<span class="rtgodam-offer-notice__code-group">
+					<span class="rtgodam-offer-notice__code-label"><?php esc_html_e( 'Code', 'godam' ); ?></span>
 					<button type="button" class="rtgodam-offer-notice__copy" data-code="<?php echo esc_attr( self::CODE ); ?>" data-copied="<?php esc_attr_e( 'Copied', 'godam' ); ?>" aria-label="<?php echo esc_attr( $copy_label ); ?>">
 						<span class="rtgodam-offer-notice__copy-text"><?php echo esc_html( self::CODE ); ?></span>
 						<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
 					</button>
+					</span>
 					<span class="screen-reader-text rtgodam-offer-notice__status" role="status" aria-live="polite" data-message="<?php esc_attr_e( 'Code copied', 'godam' ); ?>"></span>
 				</p>
 				<p class="rtgodam-offer-notice__ends">

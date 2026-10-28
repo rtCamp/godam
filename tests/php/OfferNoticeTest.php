@@ -32,9 +32,13 @@ class OfferNoticeTest extends TestCase {
 			'caps'           => array( 'manage_options' ),
 			'options'        => array(),
 			'active_plugins' => array(),
-			'user_data'      => array( 'valid_api_key' => false ),
+			'user_data'      => array(
+				'valid_api_key'  => false,
+				'api_key_status' => 'no_api_key',
+			),
 		);
 
+		require_once dirname( __DIR__, 2 ) . '/inc/classes/enums/class-api-key-status.php';
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/class-offer-notice.php';
 	}
 
@@ -159,12 +163,12 @@ class OfferNoticeTest extends TestCase {
 		$GLOBALS['rtgodam_stub']['active_plugins'] = array( 'wpforms/wpforms.php', 'fluentform/fluentform.php', 'ninja-forms/ninja-forms.php' );
 		$with                                      = Offer_Notice::get_message( Offer_Notice::get_active_integrations() );
 		$this->assertSame( 'forms', $with['key'] );
-		$this->assertStringContainsString( 'WPForms and Fluent Forms forms', $with['message'] );
+		$this->assertStringContainsString( 'forms from WPForms and Fluent Forms inside', $with['message'] );
 		$this->assertStringContainsString( 'recorder field', $with['message'] );
 
 		$GLOBALS['rtgodam_stub']['active_plugins'] = array( 'contact-form-7/wp-contact-form-7.php' );
 		$without                                   = Offer_Notice::get_message( Offer_Notice::get_active_integrations() );
-		$this->assertStringContainsString( 'Contact Form 7 forms', $without['message'] );
+		$this->assertStringContainsString( 'forms from Contact Form 7 inside', $without['message'] );
 		$this->assertStringNotContainsString( 'recorder', $without['message'] );
 	}
 
@@ -173,5 +177,110 @@ class OfferNoticeTest extends TestCase {
 
 		$this->assertSame( 'general', $message['key'] );
 		$this->assertStringContainsString( 'Video hosting, transcoding and analytics', $message['message'] );
+	}
+
+	public function test_a_site_with_a_stored_key_that_is_not_valid_never_sees_it() {
+		foreach ( array( 'expired', 'verification_failed' ) as $status ) {
+			$GLOBALS['rtgodam_stub']['user_data'] = array(
+				'valid_api_key'  => false,
+				'api_key_status' => $status,
+			);
+
+			$this->assertFalse( Offer_Notice::is_free_or_trial_site( $this->user_data() ), $status );
+		}
+	}
+
+	public function test_dismiss_rejects_a_bad_nonce_and_a_non_administrator_and_saves_for_an_administrator() {
+		$this->stub_ajax();
+
+		$GLOBALS['rtgodam_stub']['nonce_ok'] = false;
+		$this->assertSame( 'bad nonce', $this->call_dismiss() );
+		$this->assertArrayNotHasKey( Offer_Notice::DISMISS_OPTION, $GLOBALS['rtgodam_stub']['options'] );
+
+		$GLOBALS['rtgodam_stub']['nonce_ok'] = true;
+		$GLOBALS['rtgodam_stub']['caps']     = array( 'edit_posts' );
+		$this->assertSame( 'error 403', $this->call_dismiss() );
+		$this->assertArrayNotHasKey( Offer_Notice::DISMISS_OPTION, $GLOBALS['rtgodam_stub']['options'] );
+
+		$GLOBALS['rtgodam_stub']['caps'] = array( 'manage_options' );
+		$this->assertSame( 'success', $this->call_dismiss() );
+		$this->assertNotEmpty( $GLOBALS['rtgodam_stub']['options'][ Offer_Notice::DISMISS_OPTION ] );
+	}
+
+	public function test_render_prints_the_claim_link_with_its_tracking_and_nothing_for_a_paid_site() {
+		$this->stub_render();
+		$GLOBALS['rtgodam_stub']['active_plugins'] = array( 'gravityforms/gravityforms.php' );
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			// phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
+			eval( 'class WooCommerce {}' );
+		}
+
+		ob_start();
+		Offer_Notice::render( 'dashboard', $this->moment( '2026-10-29 10:00:00' ), $this->user_data() );
+		$html = ob_get_clean();
+
+		$this->assertStringContainsString( 'utm_campaign=halloween-2026', $html );
+		$this->assertStringContainsString( 'utm_content=dashboard-woocommerce', $html );
+		$this->assertStringContainsString( 'Works with WooCommerce', $html );
+		$this->assertStringContainsString( 'data-code="SPOOKY50"', $html );
+
+		$this->connect( 'Starter', gmdate( 'Y-m-d H:i:s', time() + 300 * DAY_IN_SECONDS ) );
+		ob_start();
+		Offer_Notice::render( 'dashboard', $this->moment( '2026-10-29 10:00:00' ), $this->user_data() );
+		$this->assertSame( '', trim( ob_get_clean() ) );
+	}
+
+	/**
+	 * Stub the AJAX helpers dismiss() calls. Each one that ends a WordPress request throws instead.
+	 */
+	private function stub_ajax() {
+		// phpcs:disable Squiz.PHP.Eval.Discouraged -- test-only stubs, isolated process.
+		if ( ! function_exists( 'check_ajax_referer' ) ) {
+			eval( 'function check_ajax_referer( $action, $arg ) { if ( empty( $GLOBALS["rtgodam_stub"]["nonce_ok"] ) ) { throw new \RuntimeException( "bad nonce" ); } return 1; }' );
+		}
+		if ( ! function_exists( 'wp_send_json_error' ) ) {
+			eval( 'function wp_send_json_error( $data = null, $code = null ) { throw new \RuntimeException( "error " . $code ); }' );
+		}
+		if ( ! function_exists( 'update_option' ) ) {
+			eval( 'function update_option( $option, $value, $autoload = null ) { $GLOBALS["rtgodam_stub"]["options"][ $option ] = $value; return true; }' );
+		}
+		if ( ! function_exists( 'wp_send_json_success' ) ) {
+			eval( 'function wp_send_json_success( $data = null ) { throw new \RuntimeException( "success" ); }' );
+		}
+		// phpcs:enable Squiz.PHP.Eval.Discouraged
+	}
+
+	/**
+	 * Run dismiss() and return how it ended.
+	 *
+	 * @return string
+	 */
+	private function call_dismiss() {
+		try {
+			Offer_Notice::dismiss();
+		} catch ( \RuntimeException $e ) {
+			return $e->getMessage();
+		}
+		return 'returned';
+	}
+
+	/**
+	 * Stub the output helpers render() calls that the bootstrap does not have.
+	 */
+	private function stub_render() {
+		// phpcs:disable Squiz.PHP.Eval.Discouraged -- test-only stubs, isolated process.
+		if ( ! function_exists( 'esc_attr_e' ) ) {
+			eval( 'function esc_attr_e( $text, $domain = "default" ) { echo htmlspecialchars( $text, ENT_QUOTES ); }' );
+		}
+		if ( ! function_exists( 'esc_html_e' ) ) {
+			eval( 'function esc_html_e( $text, $domain = "default" ) { echo htmlspecialchars( $text, ENT_QUOTES ); }' );
+		}
+		if ( ! function_exists( 'wp_kses' ) ) {
+			eval( 'function wp_kses( $content, $allowed_html ) { return $content; }' );
+		}
+		if ( ! function_exists( 'wp_create_nonce' ) ) {
+			eval( 'function wp_create_nonce( $action = -1 ) { return "nonce"; }' );
+		}
+		// phpcs:enable Squiz.PHP.Eval.Discouraged
 	}
 }
