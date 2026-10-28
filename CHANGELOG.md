@@ -2,7 +2,6 @@
 
 ## v2.5.2 (October 29, 2026) ##
 
-- Tweak: The Border waves animation is no longer offered for hotspot buttons. Buttons that used it now show without animation.
 - Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.
 - Fix: The Remove API Key dialog now says what really happens: only this site disconnects, and your GoDAM account and media are not affected.
 - Fix: On phones, a video in the lightbox no longer jumps when the browser toolbar shows or hides.
