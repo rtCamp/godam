@@ -1,5 +1,13 @@
 # Changelog #
 
+## v2.5.2 (October 28, 2026) ##
+
+- Tweak: The Border waves animation is no longer offered for hotspot buttons. Buttons that used it now show without animation.
+- Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.
+- Fix: The Remove API Key dialog now says what really happens: only this site disconnects, and your GoDAM account and media are not affected.
+- Fix: On phones, a video in the lightbox no longer jumps when the browser toolbar shows or hides.
+- Fix: The All Media count in the media picker is now right when the picker shows only caption or document files.
+
 ## v2.5.1 (October 26, 2026) ##
 
 - Fix: GoDAM's public video pages, lists and player data no longer show media from draft, private or scheduled posts. Media used on a published page keeps working.
