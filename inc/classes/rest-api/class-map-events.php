@@ -180,11 +180,18 @@ class Map_Events extends Base {
 	/**
 	 * Cookie names worth forwarding, keyed for array_intersect_key().
 	 *
+	 * Taken through {@see Map_Tracker::frontend_providers()}, the same filter the
+	 * frontend applies, so a provider the site has switched off (or a HubSpot portal
+	 * mismatch) is dropped here too. The route is public and the inline
+	 * `godamMapTracking` on a full-page-cached page can outlive that switch, so a
+	 * disabled tool's cookie could still arrive by POST; filtering here means it is
+	 * never forwarded regardless.
+	 *
 	 * @return array<string,bool>
 	 */
 	private function cookie_names_for_connected_providers() {
 		$config    = Map_Tracker::get_map_config();
-		$providers = is_array( $config['providers'] ?? null ) ? $config['providers'] : array();
+		$providers = Map_Tracker::frontend_providers( $config['providers'] ?? array() );
 
 		$names = array();
 

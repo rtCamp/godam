@@ -85,18 +85,41 @@ class MapEventsTrackTest extends TestCase {
 	 * @return void
 	 */
 	private function connect( array $providers, $tracking = true ) {
+		$map = array(
+			'tracking'  => $tracking,
+			'providers' => $providers,
+		);
+
+		// A Central HubSpot portal, so frontend_providers()'s portal-alignment check
+		// passes for a connected HubSpot (no leadin plugin is active in these tests).
+		foreach ( $providers as $provider ) {
+			if ( 'hubspot' === strtolower( (string) $provider ) ) {
+				$map['hubspot'] = array( 'portal_id' => '247' );
+				break;
+			}
+		}
+
 		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key']        = 'key';
 		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-status'] = 'valid';
 		$GLOBALS['rtgodam_stub']['options']['rtgodam_user_data']      = array(
 			'valid_api_key' => true,
 			'timestamp'     => time(),
 			'checked_at'    => time(),
-			'user_data'     => array(
-				'map' => array(
-					'tracking'  => $tracking,
-					'providers' => $providers,
-				),
-			),
+			'user_data'     => array( 'map' => $map ),
+		);
+	}
+
+	/**
+	 * Switch a provider off at the site level (Settings → Integrations), the way an
+	 * admin does, independently of what Central still lists.
+	 *
+	 * @param string $integration `marketo` or `hubspot`.
+	 * @param bool   $enable      Whether the integration is on.
+	 * @return void
+	 */
+	private function set_integration_enabled( string $integration, bool $enable ) {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings']['integrations'][ $integration ] = array(
+			'enable' => $enable,
 		);
 	}
 
@@ -195,6 +218,36 @@ class MapEventsTrackTest extends TestCase {
 	public function test_drops_a_visitor_known_only_to_an_unconnected_tool() {
 		$this->connect( array( 'Marketo' ) );
 		$this->send( array( 'ids' => array( 'hubspotutk' => self::HUTK ) ) );
+
+		$this->assertSame( array(), $GLOBALS['rtgodam_jobs'] );
+	}
+
+	/**
+	 * A provider switched off in the plugin settings is dropped here too, not only on
+	 * the frontend: a full-page-cached page (or a direct POST) can keep sending its
+	 * cookie after the switch, and the route must not forward it.
+	 *
+	 * @return void
+	 */
+	public function test_drops_the_cookie_of_a_provider_switched_off_in_settings() {
+		// Both tools connected on Central and both cookies posted, but Marketo is off
+		// at the site level: only HubSpot's cookie is forwarded.
+		$this->set_integration_enabled( 'marketo', false );
+		$this->send();
+
+		$this->assertCount( 1, $GLOBALS['rtgodam_jobs'] );
+		$this->assertSame( array( 'hubspotutk' => self::HUTK ), $this->queued()[0]['ids'] );
+	}
+
+	/**
+	 * Both providers switched off: nothing is forwarded, whatever the request carries.
+	 *
+	 * @return void
+	 */
+	public function test_queues_nothing_when_both_providers_are_switched_off() {
+		$this->set_integration_enabled( 'marketo', false );
+		$this->set_integration_enabled( 'hubspot', false );
+		$this->send();
 
 		$this->assertSame( array(), $GLOBALS['rtgodam_jobs'] );
 	}

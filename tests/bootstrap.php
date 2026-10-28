@@ -534,6 +534,8 @@ require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';
 // class (the Singleton trait above is its only dependency), so no WP code runs.
 require_once dirname( __DIR__ ) . '/inc/classes/class-map-tracker.php';
 
-// Loaded so Map_Tracker::frontend_providers() can read the Marketo site-level
-// on/off switch (MapTrackerProvidersTest). The file only declares the class.
+// Loaded so Map_Tracker::frontend_providers() can read the Marketo and HubSpot
+// site-level on/off switches (MapTrackerProvidersTest, and the REST route in
+// MapEventsTrackTest). Each file only declares the class, so no WP code runs.
 require_once dirname( __DIR__ ) . '/inc/classes/class-marketo.php';
+require_once dirname( __DIR__ ) . '/inc/classes/class-hubspot.php';

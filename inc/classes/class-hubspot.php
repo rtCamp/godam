@@ -404,15 +404,20 @@ class Hubspot {
 	/**
 	 * HubSpot's current ("new") forms embed loader URL for Central's portal.
 	 *
-	 * Unlike the legacy forms v2 library (`hbspt.forms.create()`), this is a single
-	 * per-portal script that finds every `.hs-form-frame` element on the page and
-	 * renders the form named by its data attributes — and it loads HubSpot's own
-	 * tracking code as part of doing so. That is what writes the `hubspotutk` cookie
-	 * and links the submission (and later video-view milestones) to the visitor's
-	 * contact; a new-generation form rendered through the legacy library instead
-	 * loads with its script loader disabled, sets no cookie, and submits anonymously
-	 * (every event then arrives as "Unknown Contact"). The host carries the data
-	 * centre the same way {@see central_tracking_code_src()} does.
+	 * A single per-portal script that finds every `.hs-form-frame` element on the
+	 * page and renders the form named by its data attributes. It renders both a
+	 * new-editor form and fires HubSpot's V4 submit event
+	 * (`hs-form-event:on-submission:success`), which the legacy `hbspt.forms.create()`
+	 * call does not do for a new-editor form — that call loads it with its script
+	 * loader disabled, so the form neither rendered as a V4 form nor reported its
+	 * submit. The host carries the data centre the same way
+	 * {@see central_tracking_code_src()} does.
+	 *
+	 * This loader renders the form only; it does not write the `hubspotutk` cookie.
+	 * That cookie — what ties the submission (and later view milestones) to a contact
+	 * rather than "Unknown Contact" — comes from HubSpot's tracking code, which the
+	 * plugin injects separately for a Central-only site (see
+	 * {@see \RTGODAM\Inc\Map_Tracker::maybe_enqueue_hubspot_tracking_code()}).
 	 *
 	 * @return string Empty when Central has no connected portal.
 	 */

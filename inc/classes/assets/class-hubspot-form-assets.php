@@ -9,11 +9,15 @@
  * rendered — mirroring Marketo_Form_Assets.
  *
  * The embed is HubSpot's new (`.hs-form-frame`) method rather than the legacy
- * forms v2 library: the legacy `hbspt.forms.create()` loads a new-generation form
- * with its script loader disabled, so no tracking code runs, no `hubspotutk`
- * cookie is set, and the submission is anonymous — which is why view-tracking
- * events showed "Unknown Contact" and submissions were not associated with a
- * contact. The per-portal embed loads the tracking code itself, fixing both.
+ * forms v2 library: the legacy `hbspt.forms.create()` loads a new-editor form with
+ * its script loader disabled, so it neither renders as a V4 form nor reports its
+ * submit. The per-portal embed renders it and fires HubSpot's V4 submit event, so
+ * the player's confirmation step works again.
+ *
+ * The `hubspotutk` cookie that associates a submission with a contact (rather than
+ * "Unknown Contact") is not set by this embed; HubSpot's tracking code sets it, and
+ * the plugin injects that separately for a Central-only site when view tracking is
+ * on (see Map_Tracker::maybe_enqueue_hubspot_tracking_code()).
  *
  * @since n.e.x.t
  * @package GoDAM
@@ -76,9 +80,10 @@ class Hubspot_Form_Assets {
 		}
 
 		// HubSpot's current per-portal forms embed. It renders every `.hs-form-frame`
-		// on the page and loads HubSpot's tracking code, so it sets the `hubspotutk`
-		// cookie and links the submission (and later view milestones) to the contact.
-		// The URL is HubSpot's canonical loader and carries no version of its own.
+		// on the page and fires the V4 submit event the bridge listens for. (The
+		// `hubspotutk` cookie comes from the tracking code, injected separately — see
+		// the class docblock.) The URL is HubSpot's canonical loader and carries no
+		// version of its own.
 		if ( ! wp_script_is( self::EMBED_HANDLE, 'registered' ) ) {
 			wp_register_script(
 				self::EMBED_HANDLE,

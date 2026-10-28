@@ -4,16 +4,19 @@
  * The player template renders HubSpot's current embed markup inside each Central
  * HubSpot layer: a `.hs-form-frame` element carrying the portal, form and region.
  * HubSpot's per-portal embed script (enqueued as a dependency) finds those and
- * renders the form itself — and, unlike the legacy forms v2 library, it loads
- * HubSpot's tracking code, so it sets the `hubspotutk` cookie and links the
- * submission (and later video-view milestones) to the visitor's contact.
+ * renders the form itself — including a new-editor form, which the legacy
+ * `hbspt.forms.create()` call did not render or report a submit for.
  *
  * So there is nothing to render here. All this script does is notice when one of
  * those forms is submitted and mark its container with `godam-hubspot-submitted`,
  * which is in the player's FormLayerManager confirmation selectors, so the player
- * shows "Continue" and fires its `submitted` event. The embed renders inline (not
- * in an iframe), so its own `.submitted-message` is already covered too; this is
- * the belt-and-braces signal that does not depend on HubSpot's success markup.
+ * shows "Continue" and fires its `submitted` event. The embed renders the form in
+ * a same-origin `srcdoc` iframe, so the parent cannot see its success markup — this
+ * class, set from the submit event, is how the player learns the form was sent.
+ *
+ * (Associating the submission with a contact is a separate matter: that needs the
+ * `hubspotutk` cookie, set by HubSpot's tracking code, which the plugin injects for
+ * a Central-only site when view tracking is on — not by this embed.)
  */
 
 ( function() {
