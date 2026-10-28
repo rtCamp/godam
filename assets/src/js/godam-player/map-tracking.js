@@ -63,7 +63,42 @@ function readCookie( name ) {
 }
 
 /**
+ * Whether the browser carries a page-wide "do not sell or share" signal.
+ *
+ * Global Privacy Control is the standard opt-out a visitor sets once for every
+ * site, so it suppresses every tool, not just one — the same as GoDAM Central's
+ * own `v1.js`. We never report a view for a visitor who has turned this on.
+ *
+ * @return {boolean} True when the browser signals a page-wide opt-out.
+ */
+function privacyOptedOut() {
+	try {
+		return window.navigator && window.navigator.globalPrivacyControl === true;
+	} catch ( e ) {
+		return false;
+	}
+}
+
+/**
+ * Whether the visitor has opted out of HubSpot's own tracking.
+ *
+ * HubSpot sets `__hs_opt_out=yes` when a visitor declines its cookie banner and
+ * `__hs_do_not_track` when tracking is disabled programmatically. The `hubspotutk`
+ * cookie can still be in the jar from before, so its presence is not consent:
+ * these two are what HubSpot itself honours, and so do we.
+ *
+ * @return {boolean} True when the visitor has opted out of HubSpot tracking.
+ */
+function hubspotOptedOut() {
+	return 'yes' === readCookie( '__hs_opt_out' ) || '' !== readCookie( '__hs_do_not_track' );
+}
+
+/**
  * Collect the visitor cookies for the tools this account has connected.
+ *
+ * Honours the visitor's privacy choices before reading anything: a page-wide
+ * opt-out (GPC) suppresses every tool, and HubSpot's own opt-out suppresses
+ * HubSpot even when its cookie is still present.
  *
  * @param {string[]} providers - Provider names from the server ("Marketo", "HubSpot").
  * @return {Object} Map of cookie key to value. Empty when the visitor is unknown to every tool.
@@ -71,10 +106,21 @@ function readCookie( name ) {
 function collectVisitorIds( providers ) {
 	const ids = {};
 
+	// A page-wide opt-out means no tool should hear about this view at all.
+	if ( privacyOptedOut() ) {
+		return ids;
+	}
+
 	providers.forEach( ( provider ) => {
 		const key = PROVIDER_COOKIES[ String( provider ).toLowerCase() ];
 
 		if ( ! key ) {
+			return;
+		}
+
+		// Respect HubSpot's own opt-out, which governs its cookie regardless of
+		// whether the cookie itself is still set.
+		if ( 'hubspotutk' === key && hubspotOptedOut() ) {
 			return;
 		}
 
@@ -372,5 +418,7 @@ export {
 	getSessionId,
 	readCookie,
 	watchedPercent,
+	privacyOptedOut,
+	hubspotOptedOut,
 	MILESTONES,
 };

@@ -373,6 +373,64 @@ class Hubspot {
 		return RTGODAM_API_BASE . self::CENTRAL_SETTINGS_PATH;
 	}
 
+	// --- View tracking ---
+
+	/**
+	 * The HubSpot analytics loader URL for Central's portal.
+	 *
+	 * This is the `hs-scripts` tracking code that writes the `hubspotutk` cookie and
+	 * powers contact tracking — distinct from the forms v2 library that
+	 * {@see \RTGODAM\Inc\Assets\Hubspot_Form_Assets} loads to render a form. The host
+	 * carries the data centre: `js.hs-scripts.com` for `na1` (the default) and
+	 * `js-<region>.hs-scripts.com` for any other region.
+	 *
+	 * @return string Empty when Central has no connected portal.
+	 */
+	public static function central_tracking_code_src() {
+		$portal_id = self::get_central_portal_id();
+
+		if ( '' === $portal_id ) {
+			return '';
+		}
+
+		$region = self::get_central_region();
+		$host   = ( '' === $region || self::DEFAULT_REGION === $region )
+			? 'js.hs-scripts.com'
+			: 'js-' . $region . '.hs-scripts.com';
+
+		return 'https://' . $host . '/' . $portal_id . '.js';
+	}
+
+	/**
+	 * Whether the `hubspotutk` cookie on the frontend will belong to the same HubSpot
+	 * portal that GoDAM Central forwards view milestones to.
+	 *
+	 * View tracking always goes through Central's HubSpot connection, so a milestone
+	 * can only land on a contact when the visitor's cookie was written by tracking
+	 * code for *Central's* portal. When the leadin plugin is connected to a different
+	 * portal, it writes the cookie for its own portal instead, and every milestone
+	 * Central forwards shows up as "Unknown Contact" — so HubSpot view tracking
+	 * cannot work there and should not be attempted.
+	 *
+	 * @return bool False on a portal mismatch, or when Central has no HubSpot portal.
+	 */
+	public static function is_central_tracking_portal_aligned() {
+		$central_portal = self::get_central_portal_id();
+
+		// No Central HubSpot connection means there is no portal to forward to.
+		if ( '' === $central_portal ) {
+			return false;
+		}
+
+		// A connected leadin owns the page's tracking code and writes the cookie for
+		// its own portal; only a matching portal keeps that cookie usable for Central.
+		if ( self::is_leadin_connected() && self::get_leadin_portal_id() !== $central_portal ) {
+			return false;
+		}
+
+		return true;
+	}
+
 	/**
 	 * Whether the HubSpot integration is enabled (the site-level on/off switch),
 	 * regardless of whether a source is connected.

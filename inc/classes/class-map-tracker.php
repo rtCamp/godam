@@ -55,6 +55,13 @@ class Map_Tracker {
 	const SCRIPT_HANDLE = 'godam-map-tracking-script';
 
 	/**
+	 * Script handle for HubSpot's analytics loader, injected for a Central-source
+	 * connection so the `hubspotutk` cookie exists at all (see
+	 * maybe_enqueue_hubspot_tracking_code()).
+	 */
+	const HUBSPOT_TRACKING_HANDLE = 'godam-hubspot-tracking';
+
+	/**
 	 * Maximum attempts (initial + retries) for one event before it is dropped.
 	 *
 	 * A view milestone is low-value and high-volume: unlike media usage, there is no
@@ -211,7 +218,14 @@ class Map_Tracker {
 			return;
 		}
 
-		$config = self::get_map_config();
+		$config    = self::get_map_config();
+		$providers = self::frontend_providers( $config['providers'] ?? array() );
+
+		// Every connected tool is unusable on this page (e.g. HubSpot with a portal
+		// mismatch), so there is nothing to track and nothing to enqueue.
+		if ( empty( $providers ) ) {
+			return;
+		}
 
 		wp_add_inline_script(
 			self::SCRIPT_HANDLE,
@@ -220,13 +234,113 @@ class Map_Tracker {
 					'restUrl'   => rest_url( 'godam/v1/map-events' ),
 					// Which cookies are worth reading at all. Account IDs stay on the
 					// server: the script only needs to know which tools to look for.
-					'providers' => array_values( array_filter( array_map( 'strval', (array) ( $config['providers'] ?? array() ) ) ) ),
+					'providers' => $providers,
 				)
 			) . ';',
 			'before'
 		);
 
 		wp_enqueue_script( self::SCRIPT_HANDLE );
+
+		// The cookie HubSpot view tracking relies on only exists when HubSpot's own
+		// tracking code runs on the page; add it when nothing else already does.
+		$this->maybe_enqueue_hubspot_tracking_code( $providers );
+	}
+
+	/**
+	 * The providers to hand the frontend tracker, with any tool that cannot be
+	 * matched on this page removed.
+	 *
+	 * Central's `map` block lists every connected tool, but HubSpot view tracking
+	 * only works when the page's `hubspotutk` cookie belongs to Central's portal.
+	 * When it does not — a leadin connection to a different portal — every HubSpot
+	 * milestone would arrive as "Unknown Contact", so HubSpot is dropped here rather
+	 * than sent only to be discarded. Marketo is unaffected.
+	 *
+	 * @param mixed $providers Raw `providers` from the `map` block.
+	 * @return string[] Providers safe to track on this page; may be empty.
+	 */
+	public static function frontend_providers( $providers ) {
+		$providers = array_values( array_filter( array_map( 'strval', (array) $providers ) ) );
+
+		if ( Hubspot::is_central_tracking_portal_aligned() ) {
+			return $providers;
+		}
+
+		return array_values(
+			array_filter(
+				$providers,
+				static function ( $provider ) {
+					return 'hubspot' !== strtolower( $provider );
+				}
+			)
+		);
+	}
+
+	/**
+	 * Enqueue HubSpot's analytics loader for Central's portal when nothing else on
+	 * the page already loads it.
+	 *
+	 * A milestone attaches to a contact through the `hubspotutk` cookie, and that
+	 * cookie only exists if HubSpot's tracking code runs on the page. The plugin adds
+	 * it nowhere else: a connected leadin brings its own, but a Central-only site has
+	 * none, so a visitor never gets a cookie and nothing is ever tracked. This fills
+	 * that gap — only when HubSpot is a provider whose portal lines up (so
+	 * {@see frontend_providers()} kept it), and only when a connected leadin is not
+	 * already loading the code for the same portal.
+	 *
+	 * Filterable, so a site that manages HubSpot's tracking code itself (pasted into
+	 * the theme, or gated behind a consent manager) can switch this off.
+	 *
+	 * @param string[] $providers The frontend providers for this page.
+	 * @return void
+	 */
+	private function maybe_enqueue_hubspot_tracking_code( array $providers ) {
+		$has_hubspot = false;
+
+		foreach ( $providers as $provider ) {
+			if ( 'hubspot' === strtolower( (string) $provider ) ) {
+				$has_hubspot = true;
+				break;
+			}
+		}
+
+		if ( ! $has_hubspot ) {
+			return;
+		}
+
+		// A connected leadin already loads the tracking code for the same portal
+		// (frontend_providers() drops HubSpot when the portals differ), so ours would
+		// only load it twice.
+		if ( Hubspot::is_leadin_connected() ) {
+			return;
+		}
+
+		/**
+		 * Whether GoDAM injects HubSpot's analytics loader for view tracking.
+		 *
+		 * @param bool $inject Whether to add the loader. Default true.
+		 */
+		if ( ! apply_filters( 'rtgodam_map_inject_hubspot_tracking_code', true ) ) {
+			return;
+		}
+
+		$src = Hubspot::central_tracking_code_src();
+
+		if ( '' === $src || wp_script_is( self::HUBSPOT_TRACKING_HANDLE, 'enqueued' ) ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			self::HUBSPOT_TRACKING_HANDLE,
+			$src,
+			array(),
+			null, // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- HubSpot's canonical loader URL carries no version and must not be cache-busted.
+			array(
+				'in_footer' => true,
+				'strategy'  => 'defer',
+			)
+		);
 	}
 
 	// -------------------------------------------------------------------------

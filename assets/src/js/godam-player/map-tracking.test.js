@@ -15,6 +15,8 @@ import {
 	getSessionId,
 	readCookie,
 	watchedPercent,
+	privacyOptedOut,
+	hubspotOptedOut,
 	MILESTONES,
 } from './map-tracking';
 
@@ -109,6 +111,69 @@ describe( 'collectVisitorIds', () => {
 
 	it( 'ignores providers it has no cookie name for', () => {
 		expect( collectVisitorIds( [ 'Mailchimp' ] ) ).toEqual( {} );
+	} );
+
+	it( 'reports nothing for a visitor with Global Privacy Control on', () => {
+		document.cookie = `_mkto_trk=${ encodeURIComponent( MKTO ) }; path=/`;
+		document.cookie = `hubspotutk=${ HUTK }; path=/`;
+
+		Object.defineProperty( window.navigator, 'globalPrivacyControl', {
+			value: true,
+			configurable: true,
+		} );
+
+		expect( collectVisitorIds( [ 'Marketo', 'HubSpot' ] ) ).toEqual( {} );
+
+		delete window.navigator.globalPrivacyControl;
+	} );
+
+	it( 'drops HubSpot, but keeps Marketo, when HubSpot is opted out', () => {
+		document.cookie = `_mkto_trk=${ encodeURIComponent( MKTO ) }; path=/`;
+		document.cookie = `hubspotutk=${ HUTK }; path=/`;
+		document.cookie = '__hs_opt_out=yes; path=/';
+
+		expect( collectVisitorIds( [ 'Marketo', 'HubSpot' ] ) ).toEqual( { mkto_trk: MKTO } );
+	} );
+
+	it( 'drops HubSpot when __hs_do_not_track is set', () => {
+		document.cookie = `hubspotutk=${ HUTK }; path=/`;
+		document.cookie = '__hs_do_not_track=true; path=/';
+
+		expect( collectVisitorIds( [ 'HubSpot' ] ) ).toEqual( {} );
+	} );
+} );
+
+describe( 'privacyOptedOut', () => {
+	afterEach( () => {
+		delete window.navigator.globalPrivacyControl;
+	} );
+
+	it( 'is true only when Global Privacy Control is exactly true', () => {
+		expect( privacyOptedOut() ).toBe( false );
+
+		Object.defineProperty( window.navigator, 'globalPrivacyControl', {
+			value: true,
+			configurable: true,
+		} );
+		expect( privacyOptedOut() ).toBe( true );
+	} );
+} );
+
+describe( 'hubspotOptedOut', () => {
+	afterEach( clearCookies );
+
+	it( 'is false with no opt-out cookie', () => {
+		expect( hubspotOptedOut() ).toBe( false );
+	} );
+
+	it( 'is true when __hs_opt_out is yes', () => {
+		document.cookie = '__hs_opt_out=yes; path=/';
+		expect( hubspotOptedOut() ).toBe( true );
+	} );
+
+	it( 'is true when __hs_do_not_track is present', () => {
+		document.cookie = '__hs_do_not_track=true; path=/';
+		expect( hubspotOptedOut() ).toBe( true );
 	} );
 } );
 
