@@ -257,6 +257,11 @@ class RTGODAM_Transcoder_Admin {
 			return;
 		}
 
+		// One promotional banner at a time: the seasonal offer replaces this notice while it shows.
+		if ( \RTGODAM\Inc\Offer_Notice::should_show() ) {
+			return;
+		}
+
 		// Check if user has dismissed this notice recently (within 7 days).
 		$dismissed_timestamp = get_option( 'rtgodam_free_plan_notice_dismissed_timestamp', false );
 		if ( $dismissed_timestamp && ( time() - $dismissed_timestamp ) < ( 7 * DAY_IN_SECONDS ) ) {
