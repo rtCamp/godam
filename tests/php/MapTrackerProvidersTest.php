@@ -1,14 +1,14 @@
 <?php
 /**
- * The frontend provider list the tracker is handed, which drops a tool that cannot
- * be matched on the page.
+ * The frontend provider list the tracker is handed, which drops a tool that must
+ * not be tracked on the page.
  *
- * Central's `map` block lists every connected tool, but HubSpot view tracking only
- * works when the page's `hubspotutk` cookie belongs to Central's portal. When a
- * leadin connection points at a different portal, every HubSpot milestone would
- * arrive as "Unknown Contact", so HubSpot is filtered out before it is ever sent.
- * These pin that filtering, driven by the same stubbed options/active-plugin state
- * as HubspotConfigTest.
+ * Central's `map` block lists every tool connected on Central, but a tool is
+ * dropped when the site has switched it off in the plugin settings, and HubSpot is
+ * dropped too when the page's `hubspotutk` cookie belongs to a different portal
+ * than Central forwards to (a leadin connection on another portal) — every HubSpot
+ * milestone would otherwise arrive as "Unknown Contact". These pin that filtering,
+ * driven by the same stubbed options/active-plugin state as HubspotConfigTest.
  *
  * @package GoDAM
  */
@@ -67,6 +67,18 @@ class MapTrackerProvidersTest extends TestCase {
 	}
 
 	/**
+	 * Set a provider's site-level on/off switch (Settings → Integrations).
+	 *
+	 * @param string $integration `marketo` or `hubspot`.
+	 * @param bool   $enable      Whether the integration is on.
+	 */
+	private function set_integration_enabled( string $integration, bool $enable ): void {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings']['integrations'][ $integration ] = array(
+			'enable' => $enable,
+		);
+	}
+
+	/**
 	 * Central connected, no leadin: HubSpot is kept.
 	 */
 	public function test_keeps_hubspot_when_portal_aligned(): void {
@@ -111,6 +123,48 @@ class MapTrackerProvidersTest extends TestCase {
 		$this->assertSame(
 			array( 'HubSpot' ),
 			Map_Tracker::frontend_providers( array( 'HubSpot' ) )
+		);
+	}
+
+	/**
+	 * Marketo switched off in the plugin settings: it is dropped even though Central
+	 * still lists it, and HubSpot is unaffected.
+	 */
+	public function test_drops_marketo_when_disabled(): void {
+		$this->set_central( array( 'portal_id' => '247' ) );
+		$this->set_integration_enabled( 'marketo', false );
+
+		$this->assertSame(
+			array( 'HubSpot' ),
+			Map_Tracker::frontend_providers( array( 'Marketo', 'HubSpot' ) )
+		);
+	}
+
+	/**
+	 * HubSpot switched off in the plugin settings: it is dropped even though its
+	 * portal is aligned, and Marketo is unaffected.
+	 */
+	public function test_drops_hubspot_when_disabled(): void {
+		$this->set_central( array( 'portal_id' => '247' ) );
+		$this->set_integration_enabled( 'hubspot', false );
+
+		$this->assertSame(
+			array( 'Marketo' ),
+			Map_Tracker::frontend_providers( array( 'Marketo', 'HubSpot' ) )
+		);
+	}
+
+	/**
+	 * Both switched off: nothing is tracked, so nothing is enqueued.
+	 */
+	public function test_drops_everything_when_both_disabled(): void {
+		$this->set_central( array( 'portal_id' => '247' ) );
+		$this->set_integration_enabled( 'marketo', false );
+		$this->set_integration_enabled( 'hubspot', false );
+
+		$this->assertSame(
+			array(),
+			Map_Tracker::frontend_providers( array( 'Marketo', 'HubSpot' ) )
 		);
 	}
 

@@ -248,14 +248,19 @@ class Map_Tracker {
 	}
 
 	/**
-	 * The providers to hand the frontend tracker, with any tool that cannot be
-	 * matched on this page removed.
+	 * The providers to hand the frontend tracker, with any tool that must not be
+	 * tracked on this page removed.
 	 *
-	 * Central's `map` block lists every connected tool, but HubSpot view tracking
-	 * only works when the page's `hubspotutk` cookie belongs to Central's portal.
-	 * When it does not — a leadin connection to a different portal — every HubSpot
-	 * milestone would arrive as "Unknown Contact", so HubSpot is dropped here rather
-	 * than sent only to be discarded. Marketo is unaffected.
+	 * Central's `map` block lists every tool connected on Central, but a tool is
+	 * dropped here when:
+	 *
+	 *  - its integration is switched off in the plugin's own settings
+	 *    (Settings → Integrations). The site can turn Marketo or HubSpot off
+	 *    independently of Central, and that choice must stop its events — so a
+	 *    disabled tool is never enqueued, and with both off nothing is; or
+	 *  - (HubSpot only) the page's `hubspotutk` cookie belongs to a different portal
+	 *    than Central forwards to — a leadin connection on another portal — so every
+	 *    HubSpot milestone would arrive as "Unknown Contact".
 	 *
 	 * @param mixed $providers Raw `providers` from the `map` block.
 	 * @return string[] Providers safe to track on this page; may be empty.
@@ -263,15 +268,24 @@ class Map_Tracker {
 	public static function frontend_providers( $providers ) {
 		$providers = array_values( array_filter( array_map( 'strval', (array) $providers ) ) );
 
-		if ( Hubspot::is_central_tracking_portal_aligned() ) {
-			return $providers;
-		}
-
 		return array_values(
 			array_filter(
 				$providers,
 				static function ( $provider ) {
-					return 'hubspot' !== strtolower( $provider );
+					switch ( strtolower( $provider ) ) {
+						case 'marketo':
+							// Dropped when the site has switched Marketo off, whatever
+							// Central still lists.
+							return Marketo::is_enabled();
+						case 'hubspot':
+							// Off at the site level, or the cookie belongs to a
+							// different portal than Central forwards to — either way,
+							// every event could only be discarded.
+							return Hubspot::is_enabled() && Hubspot::is_central_tracking_portal_aligned();
+						default:
+							// An unknown tool Central may add later: leave it be.
+							return true;
+					}
 				}
 			)
 		);
