@@ -223,6 +223,9 @@ class OfferNoticeTest extends TestCase {
 		$this->assertStringContainsString( 'utm_content=dashboard-woocommerce', $html );
 		$this->assertStringContainsString( 'Works with WooCommerce', $html );
 		$this->assertStringContainsString( 'data-code="SPOOKY50"', $html );
+		// Sized in the markup, so a missing or stale admin.css cannot blow the drawings up to full width.
+		$this->assertStringContainsString( 'viewBox="0 0 92 104" width="92" height="104"', $html );
+		$this->assertStringContainsString( 'viewBox="0 0 24 24" width="18" height="18"', $html );
 
 		$this->connect( 'Starter', gmdate( 'Y-m-d H:i:s', time() + 300 * DAY_IN_SECONDS ) );
 		ob_start();
