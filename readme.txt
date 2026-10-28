@@ -222,6 +222,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: The Remove API Key dialog now says what really happens: only this site disconnects, and your GoDAM account and media are not affected.
 - Fix: On phones, a video in the lightbox no longer jumps when the browser toolbar shows or hides.
 - Fix: The All Media count in the media picker is now right when the picker shows only caption or document files.
+- Fix: Security fixes.
 
 = v2.5.1 (October 26, 2026) =
 
