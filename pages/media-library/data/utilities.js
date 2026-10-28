@@ -249,7 +249,7 @@ const getCurrentMimeTypeFilter = ( paramName = 'post_mime_type' ) => {
  * REST route answers 400 to exact types in `media_type`, takes only one `media_type` before
  * WordPress 6.9, and only takes a list of exact types in `mime_type` from 6.9.
  *
- * @since n.e.x.t
+ * @since 2.5.2
  *
  * @param {string|string[]} type A type, a comma-separated list of types, or an array of them. Defaults to the current media frame's or URL's filter.
  *
