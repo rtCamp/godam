@@ -1282,7 +1282,8 @@ to ensure proper responsiveness and avoid layout issues.
 		gap: 12px;
 	}
 
-	&__claim {
+	a.rtgodam-offer-notice__claim,
+	a.rtgodam-offer-notice__claim:visited {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
@@ -1294,14 +1295,17 @@ to ensure proper responsiveness and avoid layout issues.
 		text-decoration: none;
 
 		&:hover,
-		&:focus {
+		&:focus,
+		&:active {
 			background: #4321c9;
 			color: #fff;
+			text-decoration: none;
 		}
 
 		&:focus-visible {
 			outline: 2px solid #5d31ff;
 			outline-offset: 2px;
+			box-shadow: none;
 		}
 	}
 
