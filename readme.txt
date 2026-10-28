@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.5.1
+Stable tag: 2.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,7 +30,6 @@ Check out our source code and contribute to the plugin on GitHub: [Official GoDA
 👉 Official Free Demo Link: [Try out GoDAM Demo](https://demo.godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=demo-link)
 
 👉 Learn More About GoDAM : [All The Features of GoDAM](https://godam.io/features/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=features-link)
-
 
 [youtube https://www.youtube.com/watch?v=UGmKa6aLSgU]
 
@@ -270,6 +269,14 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.5.2 (October 29, 2026) =
+
+- Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.
+- Fix: The Remove API Key dialog now says what really happens: only this site disconnects, and your GoDAM account and media are not affected.
+- Fix: On phones, a video in the lightbox no longer jumps when the browser toolbar shows or hides.
+- Fix: The All Media count in the media picker is now right when the picker shows only caption or document files.
+- Fix: Security fixes.
+
 = v2.5.1 (October 26, 2026) =
 
 - Fix: GoDAM's public video pages, lists and player data no longer show media from draft, private or scheduled posts. Media used on a published page keeps working.
@@ -292,15 +299,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: The Gravity Forms Record field keeps working after an AJAX page change or a failed submit.
 - Fix: The WordPress admin menu no longer flashes and jumps when a GoDAM page loads.
 - Fix: The form layer preview in the video editor now accepts only a valid form ID.
-
-= v2.4.1 (October 20, 2026) =
-
-- Fix: The video transcript no longer covers the video. It opens beside the video, or below it on narrow screens, matches the player skin, and can be searched.
-- Fix: Transcripts uploaded as .srt files now show captions and the transcript to visitors.
-- Fix: In Safari, tall videos in a lightbox are no longer cut off at the bottom.
-- Fix: Captions no longer overlap the player controls on narrow screens.
-
-[CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
