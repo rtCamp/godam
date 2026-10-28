@@ -208,15 +208,16 @@ function initOfferNotice() {
 	const copy = notice.querySelector( '.rtgodam-offer-notice__copy' );
 	const status = notice.querySelector( '.rtgodam-offer-notice__status' );
 	if ( copy ) {
-		const label = copy.textContent;
+		const text = copy.querySelector( '.rtgodam-offer-notice__copy-text' ) || copy;
+		const label = text.textContent;
 		copy.addEventListener( 'click', () => {
 			const done = () => {
-				copy.textContent = copy.dataset.copied || label;
+				text.textContent = copy.dataset.copied || label;
 				if ( status ) {
 					status.textContent = status.dataset.message || '';
 				}
 				setTimeout( () => {
-					copy.textContent = label;
+					text.textContent = label;
 					if ( status ) {
 						status.textContent = '';
 					}

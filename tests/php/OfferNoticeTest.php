@@ -142,6 +142,7 @@ class OfferNoticeTest extends TestCase {
 
 		$this->assertSame( 'lifterlms', $message['key'] );
 		$this->assertStringContainsString( 'LifterLMS course videos', $message['message'] );
+		$this->assertStringContainsString( 'from Vimeo for free', $message['message'] );
 		$this->assertSame( array( 'LifterLMS', 'WPBakery', 'Gravity Forms' ), array_column( $integrations, 'name' ) );
 	}
 

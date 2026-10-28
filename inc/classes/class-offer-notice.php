@@ -171,11 +171,11 @@ class Offer_Notice {
 
 		switch ( $first ) {
 			case 'lifterlms':
-				$message = __( 'Host your LifterLMS course videos on GoDAM, with adaptive streaming and video analytics. We move up to 100 of your videos for free.', 'godam' );
+				$message = __( 'Host your LifterLMS course videos on GoDAM, with adaptive streaming and video analytics. We move up to 100 of your videos from Vimeo for free.', 'godam' );
 				break;
 
 			case 'woocommerce':
-				$message = __( 'Add product hotspots and shoppable video to your WooCommerce store with the GoDAM for Woo add-on, with the order value each video brings in.', 'godam' );
+				$message = __( 'Add shoppable videos and product hotspots to your WooCommerce store with GoDAM for Woo. Turn video views into product clicks, and product clicks into sales.', 'godam' );
 				break;
 
 			case 'elementor':
@@ -254,7 +254,26 @@ class Offer_Notice {
 				<circle cx="60.5" cy="59" r="1" fill="#fff"/><circle cx="63.5" cy="59" r="1" fill="#fff"/>
 			</svg>
 			<div class="rtgodam-offer-notice__body">
-				<p class="rtgodam-offer-notice__title"><?php esc_html_e( 'No tricks, just treats: 50% off your first GoDAM payment', 'godam' ); ?></p>
+				<p class="rtgodam-offer-notice__eyebrow">
+					<?php esc_html_e( 'Halloween offer', 'godam' ); ?>
+					<svg class="rtgodam-offer-notice__pumpkin" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+						<path d="M12 6c-1-2 0-4 2-4" stroke="#5d31ff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+						<ellipse cx="7.5" cy="14" rx="5" ry="7" fill="#7a57ff"/><ellipse cx="16.5" cy="14" rx="5" ry="7" fill="#7a57ff"/><ellipse cx="12" cy="14" rx="4" ry="7.5" fill="#5d31ff"/>
+						<path d="M8 12l2-2 1 2zM13 12l2-2 1 2zM8 16q4 3 8 0l-1.5 1-1.2-.8-1.3 1-1.3-1-1.2.8z" fill="#fff"/>
+					</svg>
+				</p>
+				<p class="rtgodam-offer-notice__title">
+					<?php
+					echo wp_kses(
+						sprintf(
+							/* translators: %s: the discount, shown in the accent colour, for example "Get 50% off". */
+							esc_html__( 'No tricks, just treats: %s GoDAM!', 'godam' ),
+							'<span>' . esc_html__( 'Get 50% off', 'godam' ) . '</span>'
+						),
+						array( 'span' => array() )
+					);
+					?>
+				</p>
 				<p class="rtgodam-offer-notice__text"><?php echo esc_html( $message['message'] ); ?></p>
 				<?php if ( ! empty( $chips ) ) : ?>
 					<p class="rtgodam-offer-notice__chips">
@@ -269,26 +288,24 @@ class Offer_Notice {
 					</p>
 				<?php endif; ?>
 				<p class="rtgodam-offer-notice__actions">
-					<a class="button button-primary" href="<?php echo esc_url( $claim_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Claim 50% off', 'godam' ); ?></a>
+					<a class="rtgodam-offer-notice__claim" href="<?php echo esc_url( $claim_url ); ?>" target="_blank" rel="noopener noreferrer">
+						<?php esc_html_e( 'Claim 50% off', 'godam' ); ?>
+						<span aria-hidden="true">&rarr;</span>
+					</a>
+					<span class="rtgodam-offer-notice__code-label"><?php esc_html_e( 'Code', 'godam' ); ?></span>
 					<?php
 					/* translators: %s: offer code. */
 					$copy_label = sprintf( __( 'Copy the code %s', 'godam' ), self::CODE );
 					?>
-					<button type="button" class="button button-secondary rtgodam-offer-notice__copy" data-code="<?php echo esc_attr( self::CODE ); ?>" data-copied="<?php esc_attr_e( 'Copied', 'godam' ); ?>" aria-label="<?php echo esc_attr( $copy_label ); ?>"><?php esc_html_e( 'Copy code', 'godam' ); ?></button>
+					<button type="button" class="rtgodam-offer-notice__copy" data-code="<?php echo esc_attr( self::CODE ); ?>" data-copied="<?php esc_attr_e( 'Copied', 'godam' ); ?>" aria-label="<?php echo esc_attr( $copy_label ); ?>">
+						<span class="rtgodam-offer-notice__copy-text"><?php echo esc_html( self::CODE ); ?></span>
+						<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+					</button>
 					<span class="screen-reader-text rtgodam-offer-notice__status" role="status" aria-live="polite" data-message="<?php esc_attr_e( 'Code copied', 'godam' ); ?>"></span>
-					<span class="rtgodam-offer-notice__code">
-						<?php
-						echo wp_kses(
-							sprintf(
-								/* translators: 1: offer code, 2: last day of the offer. */
-								esc_html__( 'Code %1$s, through %2$s', 'godam' ),
-								'<code>' . esc_html( self::CODE ) . '</code>',
-								esc_html__( 'November 9', 'godam' )
-							),
-							array( 'code' => array() )
-						);
-						?>
-					</span>
+				</p>
+				<p class="rtgodam-offer-notice__ends">
+					<span class="dashicons dashicons-calendar-alt" aria-hidden="true"></span>
+					<?php esc_html_e( 'Through November 9. Don\'t let this treat disappear!', 'godam' ); ?>
 				</p>
 			</div>
 			<button type="button" class="notice-dismiss rtgodam-offer-notice__dismiss"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this offer', 'godam' ); ?></span></button>

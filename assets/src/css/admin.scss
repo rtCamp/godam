@@ -1210,7 +1210,7 @@ to ensure proper responsiveness and avoid layout issues.
 	position: relative;
 	display: flex;
 	gap: 8px;
-	padding: 12px 40px 12px 0;
+	padding: 14px 44px 14px 0;
 	border-left-color: #5d31ff;
 	overflow: hidden;
 
@@ -1218,7 +1218,7 @@ to ensure proper responsiveness and avoid layout issues.
 		flex: none;
 		width: 92px;
 		height: 104px;
-		margin-top: -12px;
+		margin-top: -14px;
 	}
 
 	&__body p {
@@ -1226,14 +1226,36 @@ to ensure proper responsiveness and avoid layout issues.
 		padding: 0;
 	}
 
+	.rtgodam-offer-notice__eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin-bottom: 4px;
+		font-size: 12px;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: #5d31ff;
+	}
+
+	&__pumpkin {
+		width: 18px;
+		height: 18px;
+	}
+
 	.rtgodam-offer-notice__title {
-		font-size: 15px;
+		font-size: 20px;
+		line-height: 1.25;
 		font-weight: 600;
-		color: #1d2327;
+		color: #1d1640;
+
+		span {
+			color: #5d31ff;
+		}
 	}
 
 	.rtgodam-offer-notice__text {
-		margin: 3px 0 6px;
+		max-width: 640px;
+		margin: 6px 0 8px;
 		font-size: 13px;
 		color: #50575e;
 	}
@@ -1241,13 +1263,13 @@ to ensure proper responsiveness and avoid layout issues.
 	.rtgodam-offer-notice__chips {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 6px;
-		margin-bottom: 10px;
+		gap: 8px;
+		margin-bottom: 12px;
 	}
 
 	&__chip {
-		padding: 2px 8px;
-		border-radius: 4px;
+		padding: 3px 10px;
+		border-radius: 6px;
 		background: #f3efff;
 		color: #3a1ea8;
 		font-size: 12px;
@@ -1257,54 +1279,83 @@ to ensure proper responsiveness and avoid layout issues.
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 8px;
+		gap: 12px;
 	}
 
-	.button-primary {
+	&__claim {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 8px 16px;
+		border-radius: 6px;
 		background: #5d31ff;
-		border-color: #5d31ff;
+		color: #fff;
+		font-size: 14px;
+		text-decoration: none;
 
 		&:hover,
 		&:focus {
 			background: #4321c9;
-			border-color: #4321c9;
+			color: #fff;
+		}
+
+		&:focus-visible {
+			outline: 2px solid #5d31ff;
+			outline-offset: 2px;
 		}
 	}
 
-	.button-secondary {
-		color: #4321c9;
-		border-color: #5d31ff;
+	&__code-label {
+		font-size: 13px;
+		color: #50575e;
+	}
 
-		&:hover,
-		&:focus {
-			color: #3a1ea8;
-			border-color: #4321c9;
+	&__copy {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		padding: 7px 12px;
+		border: 1px dashed #5d31ff;
+		border-radius: 6px;
+		background: #faf8ff;
+		color: #3a1ea8;
+		font-family: Consolas, Monaco, monospace;
+		font-size: 14px;
+		cursor: pointer;
+
+		&:hover {
 			background: #f3efff;
 		}
+
+		&:focus-visible {
+			outline: 2px solid #5d31ff;
+			outline-offset: 2px;
+		}
 	}
 
-	&__code {
+	.rtgodam-offer-notice__ends {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin-top: 10px;
 		font-size: 12px;
 		color: #50575e;
 
-		code {
-			padding: 2px 8px;
-			border: 1px dashed #5d31ff;
-			border-radius: 4px;
-			background: #f3efff;
-			color: #3a1ea8;
+		.dashicons {
+			font-size: 16px;
+			width: 16px;
+			height: 16px;
 		}
 	}
 
 	@media (max-width: 600px) {
 
-		&__art {
-			display: none;
-		}
-
 		& {
 			padding-left: 12px;
 		}
+
+		&__art {
+			display: none;
+		}
 	}
 }
-
