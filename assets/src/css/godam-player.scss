@@ -3092,9 +3092,15 @@ body.godam-player-modal-open {
 	outline: none;
 	transition: opacity 0.3s ease;
 
-	/* dvh accounts for mobile browser chrome; vh above is the fallback. */
-	@supports (max-height: 90dvh) {
-		--godam-lightbox-max-h: calc(90dvh - var(--godam-lightbox-close-gap));
+	/* svh is the viewport with the mobile browser's toolbar showing, so it does
+	 * not change as the toolbar shows and hides. Centring on it keeps the
+	 * lightbox still: `top: 50%` follows the visible viewport, so on iOS Safari
+	 * the whole lightbox jumped about 40px when the bottom bar expanded. The cap
+	 * uses it too, so the video fits the same space. 50% and vh above are the
+	 * fallbacks. */
+	@supports (max-height: 90svh) {
+		--godam-lightbox-max-h: calc(90svh - var(--godam-lightbox-close-gap));
+		top: 50svh;
 	}
 
 	&.is-active {
@@ -3156,7 +3162,8 @@ body.godam-player-modal-open {
 	display: block;
 	width: 100%;
 	aspect-ratio: 16 / 9;
-	max-height: 90dvh;
+	max-height: 90vh;
+	max-height: 90svh; // Steady as the mobile toolbar shows and hides; see the wrapper.
 	border: 0;
 	background: #000;
 }
