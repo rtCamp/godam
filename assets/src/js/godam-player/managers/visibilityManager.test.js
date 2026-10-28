@@ -545,6 +545,80 @@ describe( 'VisibilityManager', () => {
 		expect( manager.stylePollTimer ).not.toBeNull();
 	} );
 
+	describe( 'add-on API', () => {
+		it( 'resetInteraction makes a visitor-started video autoplay again', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player );
+			pointerDown( player );
+			player.play();
+			expect( manager.isUserStarted( player ) ).toBe( true );
+
+			manager.resetInteraction( player );
+			FakeObserver.instance.fire( player.el(), false );
+			jest.runOnlyPendingTimers();
+			FakeObserver.instance.fire( player.el(), true );
+			expect( player.play ).toHaveBeenCalledTimes( 2 );
+		} );
+
+		it( 'cancelResume stops an automatic resume', () => {
+			const manager = createManager();
+			const player = createPlayer();
+			manager.register( player );
+
+			FakeObserver.instance.fire( player.el(), false );
+			jest.runOnlyPendingTimers();
+			manager.cancelResume( player );
+			FakeObserver.instance.fire( player.el(), true );
+			expect( player.play ).not.toHaveBeenCalled();
+		} );
+
+		it( 'isInView reflects visibility and exemptions', () => {
+			const manager = createManager();
+			const player = createPlayer();
+			manager.register( player );
+			expect( manager.isInView( player ) ).toBe( true );
+
+			FakeObserver.instance.fire( player.el(), false );
+			expect( manager.isInView( player ) ).toBe( false );
+
+			player.isFullscreen = () => true;
+			expect( manager.isInView( player ) ).toBe( true );
+			expect( manager.isInView( createPlayer() ) ).toBe( true ); // untracked
+		} );
+
+		it( 'flags its own mute while the volumechange is dispatched', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.MUTE } );
+			pointerDown( player );
+			player.play();
+
+			let flagged = null;
+			player.on( 'volumechange', () => {
+				flagged = manager.isAutomaticChange( player );
+			} );
+			FakeObserver.instance.fire( player.el(), false );
+			expect( flagged ).toBe( true );
+			jest.runOnlyPendingTimers();
+			expect( manager.isAutomaticChange( player ) ).toBe( false );
+		} );
+
+		it( 'ignores taps on a player without controls', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			player.controls = () => false;
+			manager.register( player );
+
+			pointerDown( player );
+			player.play();
+			expect( manager.isUserStarted( player ) ).toBe( false );
+
+			manager.markInteraction( player );
+			expect( manager.isUserStarted( player ) ).toBe( true );
+		} );
+	} );
+
 	it( 'stops managing a player after unregister', () => {
 		const manager = createManager();
 		const player = createPlayer();
