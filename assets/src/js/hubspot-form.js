@@ -1,63 +1,149 @@
+/* global hbspt */
+
 /**
- * HubSpot form layer — submit bridge (GoDAM Central source).
+ * HubSpot form layer — frontend loader (GoDAM Central source).
  *
- * The player template renders HubSpot's current embed markup inside each Central
- * HubSpot layer: a `.hs-form-frame` element carrying the portal, form and region.
- * HubSpot's per-portal embed script (enqueued as a dependency) finds those and
- * renders the form itself — including a new-editor form, which the legacy
- * `hbspt.forms.create()` call did not render or report a submit for.
+ * The player template renders an empty
+ * `<div class="form-container hubspot-form" data-portal-id data-form-id data-region>`
+ * inside each Central HubSpot layer overlay. HubSpot's forms v2 library renders the
+ * form into every such container with `hbspt.forms.create( { portalId, formId,
+ * region, target } )`, the same call the in-editor preview makes.
  *
- * So there is nothing to render here. All this script does is notice when one of
- * those forms is submitted and mark its container with `godam-hubspot-submitted`,
- * which is in the player's FormLayerManager confirmation selectors, so the player
- * shows "Continue" and fires its `submitted` event. The embed renders the form in
- * a same-origin `srcdoc` iframe, so the parent cannot see its success markup — this
- * class, set from the submit event, is how the player learns the form was sent.
+ * forms v2 handles both kinds of form: a legacy-editor form it renders itself (in
+ * an iframe), and a new-editor form it switches to HubSpot's V4 embed (rendered in
+ * a same-origin `srcdoc` iframe). The account details come from each container's
+ * own data attributes, written by the template from the active Central connection.
  *
- * (Associating the submission with a contact is a separate matter: that needs the
- * `hubspotutk` cookie, set by HubSpot's tracking code, which the plugin injects for
- * a Central-only site when view tracking is on — not by this embed.)
+ * The overlay starts hidden; the form can render immediately and the player's
+ * FormLayerManager unhides it at the layer's display time.
+ *
+ * On submit, the container is marked with `godam-hubspot-submitted` — one of the
+ * FormLayerManager confirmation selectors — so the player shows "Continue" and
+ * fires its `submitted` event. The success node lives inside an iframe the parent
+ * cannot read into, so this class is how the player learns the form was sent, from
+ * two signals that cover both form types: the legacy `onFormSubmitted` callback,
+ * and HubSpot's V4 `hs-form-event:on-submission:success` window event.
+ *
+ * (Associating the submission with a contact is separate: it needs the `hubspotutk`
+ * cookie, set by HubSpot's tracking code, which the plugin injects for a
+ * Central-only site when view tracking is on — not by the form library.)
  */
 
 ( function() {
+	const SELECTOR = '.hubspot-form[data-form-id]';
+
 	/**
-	 * Mark the HubSpot layer container whose form was submitted.
+	 * Mark a HubSpot layer container as submitted, by its form id when one is known,
+	 * otherwise every one on the page (a page rarely shows two at once).
 	 *
-	 * @param {string} formId - HubSpot form GUID, when the event names one.
+	 * @param {string} formId - HubSpot form GUID, or '' to mark all.
 	 */
 	function markSubmitted( formId ) {
-		const frames = document.querySelectorAll( '.hubspot-form .hs-form-frame' );
-
-		frames.forEach( function( frame ) {
-			// When HubSpot tells us which form submitted, mark only that one;
-			// otherwise mark every HubSpot layer (a page rarely shows two at once).
-			if ( formId && frame.dataset.formId && frame.dataset.formId !== formId ) {
+		document.querySelectorAll( SELECTOR ).forEach( function( container ) {
+			if ( formId && container.dataset.formId && container.dataset.formId !== formId ) {
 				return;
 			}
 
-			const container = frame.closest( '.hubspot-form' );
-
-			if ( container ) {
-				container.classList.add( 'godam-hubspot-submitted' );
-			}
+			container.classList.add( 'godam-hubspot-submitted' );
 		} );
 	}
 
-	// HubSpot's current embed dispatches a window-level event on a successful
-	// submission (developers.hubspot.com → Global form events).
-	window.addEventListener( 'hs-form-event:on-submission:success', function( event ) {
-		const detail = event && event.detail ? event.detail : {};
-
-		markSubmitted( detail.formId || detail.id || '' );
-	} );
-
-	// A collected/legacy form on the same page instead posts a message; honour both
-	// so the confirmation works whichever path HubSpot takes.
-	window.addEventListener( 'message', function( event ) {
-		const data = event && event.data ? event.data : {};
-
-		if ( data.type === 'hsFormCallback' && ( data.eventName === 'onFormSubmitted' || data.eventName === 'onFormSubmit' ) ) {
-			markSubmitted( ( data.data && data.data.formGuid ) || data.id || '' );
+	/**
+	 * Render every not-yet-rendered Central HubSpot form on the page.
+	 */
+	function loadHubSpotForms() {
+		if ( typeof hbspt === 'undefined' || ! hbspt.forms || ! hbspt.forms.create ) {
+			return;
 		}
-	} );
+
+		const containers = document.querySelectorAll( SELECTOR );
+
+		containers.forEach( function( container ) {
+			// Skip containers already rendered / in progress.
+			if ( container.dataset.godamHubspotLoaded === 'true' ) {
+				return;
+			}
+
+			const portalId = container.dataset.portalId || '';
+			const formId = container.dataset.formId || '';
+			const region = container.dataset.region || 'na1';
+
+			if ( ! portalId || ! formId ) {
+				return;
+			}
+
+			// hbspt.forms.create injects into a selector target. Give each container
+			// a unique target node so two forms never collide.
+			let target = container.querySelector( '.hubspot-form-target' );
+			if ( ! target ) {
+				target = document.createElement( 'div' );
+				target.className = 'hubspot-form-target';
+				target.id = 'godam-hubspot-form-' + Math.random().toString( 36 ).slice( 2 );
+				container.appendChild( target );
+			}
+
+			container.dataset.godamHubspotLoaded = 'true';
+
+			hbspt.forms.create( {
+				portalId,
+				formId,
+				region,
+				target: '#' + target.id,
+				// Fires for a legacy iframe-rendered form, whose success node lives
+				// inside the iframe and cannot be queried. A new-editor (V4) form does
+				// not fire this; the window listener below covers that one.
+				onFormSubmitted() {
+					container.classList.add( 'godam-hubspot-submitted' );
+				},
+			} );
+		} );
+	}
+
+	/**
+	 * forms/v2.js is enqueued as a dependency and should be present, but it can
+	 * finish evaluating slightly after this script. Retry briefly until the global
+	 * is available.
+	 *
+	 * @param {number} [attempt] Current retry count.
+	 */
+	function waitForHbspt( attempt ) {
+		attempt = attempt || 0;
+
+		if ( typeof hbspt !== 'undefined' && hbspt.forms && hbspt.forms.create ) {
+			loadHubSpotForms();
+			return;
+		}
+
+		// Give up after ~10s (50 × 200ms) to avoid an endless timer.
+		if ( attempt >= 50 ) {
+			return;
+		}
+
+		window.setTimeout( function() {
+			waitForHbspt( attempt + 1 );
+		}, 200 );
+	}
+
+	function init() {
+		if ( ! document.querySelector( SELECTOR ) ) {
+			return;
+		}
+
+		// A new-editor form rendered as HubSpot's V4 embed reports its submit with a
+		// window event rather than the create() callback above. Registered once, for
+		// every HubSpot layer on the page.
+		window.addEventListener( 'hs-form-event:on-submission:success', function( event ) {
+			const detail = event && event.detail ? event.detail : {};
+
+			markSubmitted( detail.formId || detail.id || '' );
+		} );
+
+		waitForHbspt();
+	}
+
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', init );
+	} else {
+		init();
+	}
 }() );

@@ -402,41 +402,6 @@ class Hubspot {
 	}
 
 	/**
-	 * HubSpot's current ("new") forms embed loader URL for Central's portal.
-	 *
-	 * A single per-portal script that finds every `.hs-form-frame` element on the
-	 * page and renders the form named by its data attributes. It renders both a
-	 * new-editor form and fires HubSpot's V4 submit event
-	 * (`hs-form-event:on-submission:success`), which the legacy `hbspt.forms.create()`
-	 * call does not do for a new-editor form — that call loads it with its script
-	 * loader disabled, so the form neither rendered as a V4 form nor reported its
-	 * submit. The host carries the data centre the same way
-	 * {@see central_tracking_code_src()} does.
-	 *
-	 * This loader renders the form only; it does not write the `hubspotutk` cookie.
-	 * That cookie — what ties the submission (and later view milestones) to a contact
-	 * rather than "Unknown Contact" — comes from HubSpot's tracking code, which the
-	 * plugin injects separately for a Central-only site (see
-	 * {@see \RTGODAM\Inc\Map_Tracker::maybe_enqueue_hubspot_tracking_code()}).
-	 *
-	 * @return string Empty when Central has no connected portal.
-	 */
-	public static function central_forms_embed_src() {
-		$portal_id = self::get_central_portal_id();
-
-		if ( '' === $portal_id ) {
-			return '';
-		}
-
-		$region = self::get_central_region();
-		$host   = ( '' === $region || self::DEFAULT_REGION === $region )
-			? 'js.hsforms.net'
-			: 'js-' . $region . '.hsforms.net';
-
-		return 'https://' . $host . '/forms/embed/' . $portal_id . '.js';
-	}
-
-	/**
 	 * Whether the `hubspotutk` cookie on the frontend will belong to the same HubSpot
 	 * portal that GoDAM Central forwards view milestones to.
 	 *

@@ -2,22 +2,23 @@
 /**
  * HubSpot Form Assets class.
  *
- * Loads HubSpot's current per-portal forms embed plus a small bridge script, for
- * the GoDAM Central source (which, unlike the leadin plugin, has no WordPress
- * shortcode). Enqueued on demand from the player template (see
- * inc/templates/godam-player.php) only when a Central HubSpot layer is actually
- * rendered — mirroring Marketo_Form_Assets.
+ * Loads HubSpot's forms v2 library plus a small bridge script, for the GoDAM
+ * Central source (which, unlike the leadin plugin, has no WordPress shortcode).
+ * Enqueued on demand from the player template (see inc/templates/godam-player.php)
+ * only when a Central HubSpot layer is actually rendered — mirroring
+ * Marketo_Form_Assets.
  *
- * The embed is HubSpot's new (`.hs-form-frame`) method rather than the legacy
- * forms v2 library: the legacy `hbspt.forms.create()` loads a new-editor form with
- * its script loader disabled, so it neither renders as a V4 form nor reports its
- * submit. The per-portal embed renders it and fires HubSpot's V4 submit event, so
- * the player's confirmation step works again.
+ * forms v2 renders both kinds of form: a legacy-editor form itself, and a
+ * new-editor form by switching it to HubSpot's V4 embed. The bridge detects a
+ * submit for both — the legacy iframe callback and the V4 `hs-form-event` — so the
+ * player's confirmation step works whichever the account's form uses. (An earlier
+ * iteration loaded the per-portal V4 embed directly, which has no legacy path and
+ * left layers on an older form blank.)
  *
  * The `hubspotutk` cookie that associates a submission with a contact (rather than
- * "Unknown Contact") is not set by this embed; HubSpot's tracking code sets it, and
- * the plugin injects that separately for a Central-only site when view tracking is
- * on (see Map_Tracker::maybe_enqueue_hubspot_tracking_code()).
+ * "Unknown Contact") is not set by the form library; HubSpot's tracking code sets
+ * it, and the plugin injects that separately for a Central-only site when view
+ * tracking is on (see Map_Tracker::maybe_enqueue_hubspot_tracking_code()).
  *
  * @since n.e.x.t
  * @package GoDAM
@@ -40,11 +41,11 @@ class Hubspot_Form_Assets {
 	use Singleton;
 
 	/**
-	 * Handle for HubSpot's current per-portal forms embed loader.
+	 * HubSpot forms v2 embed script.
 	 *
 	 * @var string
 	 */
-	const EMBED_HANDLE = 'rtgodam-hubspot-forms-embed';
+	const HUBSPOT_FORMS_SCRIPT = 'https://js.hsforms.net/forms/v2.js';
 
 	/**
 	 * Constructor.
@@ -61,7 +62,7 @@ class Hubspot_Form_Assets {
 	}
 
 	/**
-	 * Register and enqueue HubSpot's per-portal forms embed plus the GoDAM bridge.
+	 * Register and enqueue HubSpot's forms v2 library plus the GoDAM bridge.
 	 *
 	 * @return void
 	 */
@@ -72,28 +73,15 @@ class Hubspot_Form_Assets {
 			return;
 		}
 
-		$embed_src = Hubspot::central_forms_embed_src();
-
-		// No connected portal means there is no embed to load and nothing to render.
-		if ( '' === $embed_src ) {
-			return;
-		}
-
-		// HubSpot's current per-portal forms embed. It renders every `.hs-form-frame`
-		// on the page and fires the V4 submit event the bridge listens for. (The
-		// `hubspotutk` cookie comes from the tracking code, injected separately — see
-		// the class docblock.) The URL is HubSpot's canonical loader and carries no
-		// version of its own.
-		if ( ! wp_script_is( self::EMBED_HANDLE, 'registered' ) ) {
+		// HubSpot's forms v2 library, which renders both a legacy-editor form and a
+		// new-editor form (switching the latter to HubSpot's V4 embed).
+		if ( ! wp_script_is( 'rtgodam-hubspot-forms-v2', 'registered' ) ) {
 			wp_register_script(
-				self::EMBED_HANDLE,
-				$embed_src,
+				'rtgodam-hubspot-forms-v2',
+				self::HUBSPOT_FORMS_SCRIPT,
 				array(),
-				null, // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- HubSpot's canonical embed URL carries no version and must not be cache-busted.
-				array(
-					'in_footer' => true,
-					'strategy'  => 'defer',
-				)
+				RTGODAM_VERSION,
+				true
 			);
 		}
 
@@ -111,12 +99,12 @@ class Hubspot_Form_Assets {
 		wp_register_script(
 			'rtgodam-hubspot-form',
 			RTGODAM_URL . 'assets/build/js/hubspot-form.min.js',
-			array_merge( $init_asset['dependencies'], array( self::EMBED_HANDLE ) ),
+			array_merge( $init_asset['dependencies'], array( 'rtgodam-hubspot-forms-v2' ) ),
 			$init_asset['version'],
 			true
 		);
 
-		wp_enqueue_script( self::EMBED_HANDLE );
+		wp_enqueue_script( 'rtgodam-hubspot-forms-v2' );
 		wp_enqueue_script( 'rtgodam-hubspot-form' );
 	}
 }
