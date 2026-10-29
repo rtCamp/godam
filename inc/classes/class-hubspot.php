@@ -19,7 +19,7 @@
  * and is the same whichever source is active — only where the account details,
  * form list and rendering come from differs.
  *
- * @since n.e.x.t
+ * @since 2.6.0
  * @package GoDAM
  */
 
@@ -32,7 +32,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Hubspot
  *
- * @since n.e.x.t
+ * @since 2.6.0
  */
 class Hubspot {
 

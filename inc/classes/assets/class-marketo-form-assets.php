@@ -7,7 +7,7 @@
  * template (see inc/templates/godam-player.php) only when a Marketo layer is
  * actually rendered — mirroring the Jetpack_Form_Assets precedent.
  *
- * @since n.e.x.t
+ * @since 2.6.0
  * @package GoDAM
  */
 
@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Marketo Form Assets class.
  *
- * @since n.e.x.t
+ * @since 2.6.0
  */
 class Marketo_Form_Assets {
 

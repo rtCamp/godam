@@ -13,7 +13,7 @@
  * credential the plugin already uses for `verify_api_key` and `track`, kept
  * server-side and never exposed to JS.
  *
- * @since n.e.x.t
+ * @since 2.6.0
  * @package GoDAM
  */
 
@@ -30,7 +30,7 @@ use WP_REST_Response;
 /**
  * Class Marketo_Integration
  *
- * @since n.e.x.t
+ * @since 2.6.0
  */
 class Marketo_Integration extends Base {
 
