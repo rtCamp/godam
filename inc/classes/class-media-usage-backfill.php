@@ -261,7 +261,16 @@ class Media_Usage_Backfill {
 		// regardless of which subsite queued them, so without it the batch would
 		// scan the wrong site and never complete the one that started the backfill.
 		$this->unschedule_batch_actions_for_blog( $blog_id );
-		as_enqueue_async_action( self::AS_BATCH_ACTION, array( $blog_id ) );
+		$action_id = as_enqueue_async_action( self::AS_BATCH_ACTION, array( $blog_id ) );
+
+		// as_enqueue_async_action() returns 0 when the action could not be saved,
+		// e.g. on a multisite subsite whose Action Scheduler tables do not exist
+		// yet. Leaving the status at RUNNING would make every later caller think a
+		// batch is queued, so put it back and let the next start() try again.
+		if ( ! $action_id ) {
+			update_option( self::OPT_STATUS, false === $current_status ? self::STATUS_IDLE : $current_status, false );
+			wp_cache_delete( self::CACHE_KEY, self::CACHE_GROUP );
+		}
 	}
 
 	/**
