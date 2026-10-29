@@ -440,7 +440,10 @@
 				display: none;
 			}
 
-			@media screen and (max-width: 420px) {
+			// Hide the time display on a narrow PLAYER (container query), not a
+			// narrow viewport, so it reacts to the player's own width (e.g. in the
+			// device-frame preview where the viewport stays wide).
+			@container godam-player-classic-skin (max-width: 420px) {
 				display: none !important;
 			}
 		}
@@ -458,6 +461,7 @@
 
 			.vjs-fullscreen-control {
 
+				/* stylelint-disable-next-line no-descending-specificity -- scoped under a different ancestor (fullscreen / .godam-submenu-open), so it never competes with the earlier rule. */
 				span::before {
 					background: url(../images/classic-exit-full-screen.svg);
 					background-repeat: no-repeat;
@@ -474,6 +478,7 @@
 
 		.vjs-settings-button {
 
+			/* stylelint-disable-next-line no-descending-specificity -- scoped under a different ancestor (fullscreen / .godam-submenu-open), so it never competes with the earlier rule. */
 			.vjs-menu ul.vjs-menu-content {
 				right: -30% !important;
 				width: max-content !important;
@@ -483,6 +488,7 @@
 			}
 
 			/* Speed option pills */
+			/* stylelint-disable-next-line no-descending-specificity -- scoped under a different ancestor (fullscreen / .godam-submenu-open), so it never competes with the earlier rule. */
 			.vjs-menu-item:not(.vjs-back-item) {
 				background: #3a3a3a;
 				padding: 6px 14px;

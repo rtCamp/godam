@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Media_Library\Media_Folder_Utils;
 
 /**
  * Class Media_Library
@@ -40,6 +41,8 @@ class Media_Library_Ajax {
 			add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_media_filter' ) );
 		}
 
+		// Before the attachment exists, so its type, and the transcoding request sent on add_attachment, say audio.
+		add_filter( 'wp_handle_upload', array( $this, 'store_audio_only_upload_as_audio' ), 10, 1 );
 		add_action( 'add_attachment', array( $this, 'add_media_library_taxonomy_on_media_upload' ), 10, 1 );
 		add_action( 'add_attachment', array( $this, 'upload_media_to_frappe_backend' ), 10, 1 );
 		add_filter( 'wp_prepare_attachment_for_js', array( $this, 'add_media_transcoding_status_js' ), 10, 2 );
@@ -192,6 +195,139 @@ class Media_Library_Ajax {
 	}
 
 	/**
+	 * Video container types that form recorders save audio in, mapped to the audio type the
+	 * GoDAM tab reports for an audio job stored in them, and that an audio-only upload in
+	 * them is stored as (see store_audio_only_upload_as_audio()).
+	 *
+	 * @since 2.4.0
+	 *
+	 * @return array<string, string> Container MIME type => audio MIME type.
+	 */
+	public static function get_audio_container_mimes() {
+		return array(
+			'video/webm' => 'audio/webm',
+			'video/mp4'  => 'audio/mp4',
+		);
+	}
+
+	/**
+	 * Whether an attachment reused for a GoDAM-tab pick should take the audio type the tab now
+	 * reports for it.
+	 *
+	 * The picked type comes from the browser and the create-media-entry route only needs
+	 * `upload_files`, so the change is limited to the exact pairs in
+	 * get_audio_container_mimes() (video/webm to audio/webm, video/mp4 to audio/mp4) and to a
+	 * user who may edit the attachment.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param string $current_mime MIME type the attachment has now.
+	 * @param string $picked_mime  MIME type of the picked GoDAM-tab item.
+	 * @param bool   $can_edit     Whether the current user may edit the attachment.
+	 * @return bool True when the attachment's MIME type should become $picked_mime.
+	 */
+	public static function should_correct_audio_mime( $current_mime, $picked_mime, $can_edit ) {
+		if ( ! $can_edit ) {
+			return false;
+		}
+
+		$audio_containers = self::get_audio_container_mimes();
+
+		return isset( $audio_containers[ $current_mime ] ) && $audio_containers[ $current_mime ] === $picked_mime;
+	}
+
+	/**
+	 * Store an uploaded WebM or MP4 file that holds only audio as audio/webm or audio/mp4.
+	 *
+	 * WordPress types an upload by its extension, so every .webm is video/webm and every .mp4
+	 * is video/mp4, even a voice recording with no picture. Typed as video, such a file is
+	 * listed under the Media Library's Video filter, left out of the GoDAM Audio block's
+	 * library (an MP4 is refused by the block outright), opened in the video editor, and sent
+	 * to GoDAM Central as a video job. This reads the file the way WordPress itself does when
+	 * it builds the attachment metadata, and switches the type when the file has no video.
+	 *
+	 * Hooked to `wp_handle_upload`, which media uploads, sideloads and REST uploads all pass
+	 * through before the attachment is created, after WordPress has checked the file type.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param array $upload The uploaded file: 'file' (path), 'url' and 'type' (MIME type).
+	 * @return array The upload, with 'type' switched to audio when the file holds only audio.
+	 */
+	public function store_audio_only_upload_as_audio( $upload ) {
+		if ( ! is_array( $upload ) || ! empty( $upload['error'] ) || empty( $upload['file'] ) || empty( $upload['type'] ) ) {
+			return $upload;
+		}
+
+		// Only the container types; reading every upload would slow down image uploads for nothing.
+		if ( ! isset( self::get_audio_container_mimes()[ $upload['type'] ] ) ) {
+			return $upload;
+		}
+
+		// Only for someone who can add media, or WP-CLI. Visitor uploads through forms never become
+		// attachments, and reading them would let anyone make the site parse a file.
+		if ( ! ( ( defined( 'WP_CLI' ) && WP_CLI ) || current_user_can( 'upload_files' ) ) ) {
+			return $upload;
+		}
+
+		$audio_type = self::get_audio_type_for_upload( $upload['type'], self::read_media_mime_type( $upload['file'] ) );
+		if ( '' !== $audio_type ) {
+			$upload['type'] = $audio_type;
+		}
+
+		return $upload;
+	}
+
+	/**
+	 * The audio type an upload should be stored as, given the type WordPress gave it and the
+	 * type read from the file's content.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param string $type          MIME type WordPress gave the upload (from its extension).
+	 * @param string $content_mime  MIME type read from the file's content, or '' if unread.
+	 * @return string audio/webm or audio/mp4 for an audio-only WebM or MP4, otherwise ''.
+	 */
+	public static function get_audio_type_for_upload( $type, $content_mime ) {
+		$audio_containers = self::get_audio_container_mimes();
+
+		if ( ! isset( $audio_containers[ $type ] ) || 0 !== strpos( (string) $content_mime, 'audio/' ) ) {
+			return '';
+		}
+
+		return $audio_containers[ $type ];
+	}
+
+	/**
+	 * The MIME type WordPress reads from a media file's content, the same reading
+	 * wp_generate_attachment_metadata() stores as the attachment's `mime_type`.
+	 *
+	 * @since 2.4.0
+	 *
+	 * @param string $file Absolute path to the file.
+	 * @return string The MIME type, or '' when the file cannot be read.
+	 */
+	private static function read_media_mime_type( $file ) {
+		if ( ! is_readable( $file ) ) {
+			return '';
+		}
+
+		// wp_read_video_metadata() lives in an admin include that front-end and REST uploads may not have loaded.
+		if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/media.php';
+		}
+
+		// getID3 can throw an Error (not only an Exception) on a damaged file; keep the upload's type then.
+		try {
+			$metadata = wp_read_video_metadata( $file );
+		} catch ( \Throwable $e ) {
+			return '';
+		}
+
+		return is_array( $metadata ) && ! empty( $metadata['mime_type'] ) ? (string) $metadata['mime_type'] : '';
+	}
+
+	/**
 	 * Get appropriate MIME type based on job type.
 	 *
 	 * @param string $job_type  Job type from GoDAM API.
@@ -204,7 +340,21 @@ class Media_Library_Ajax {
 			case 'stream':
 				return 'application/dash+xml';
 			case 'audio':
-				return ! empty( $mime_type ) ? $mime_type : 'audio/mpeg';
+				if ( empty( $mime_type ) ) {
+					return 'audio/mpeg';
+				}
+
+				/*
+				 * Form recorders save audio in a WebM (Chrome) or MP4 (Safari) container and
+				 * register it with Central under the type WordPress guesses from the extension,
+				 * video/webm or video/mp4. Central processes it as audio, so report it as audio:
+				 * the GoDAM Audio block rejects a video MIME type on select, and the attachment
+				 * created from this item keeps this MIME type, which decides whether WordPress
+				 * files it under audio or video.
+				 */
+				$audio_containers = self::get_audio_container_mimes();
+
+				return $audio_containers[ $mime_type ] ?? $mime_type;
 			case 'image':
 				return ! empty( $mime_type ) ? $mime_type : 'image/jpeg';
 			case 'pdf':
@@ -419,6 +569,8 @@ class Media_Library_Ajax {
 			)
 		);
 
+		$job_id = '';
+
 		if ( ! is_wp_error( $upload_media ) &&
 			(
 				isset( $upload_media['response']['code'] ) &&
@@ -429,9 +581,32 @@ class Media_Library_Ajax {
 
 			if ( isset( $upload_info->data ) && isset( $upload_info->data->name ) ) {
 				$job_id = $upload_info->data->name;
-				update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
 			}
 		}
+
+		/**
+		 * Fires before recording the outcome on this attachment, so integrations that
+		 * centralize media on another site write it where the attachment lives.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		if ( '' !== $job_id ) {
+			update_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', $job_id );
+
+			// Accepted: drop an earlier failure (e.g. HTTP auth) and its queued retry, which
+			// the cron can't send for an image and would otherwise mark failed later.
+			if ( 'failed' === get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) ) {
+				delete_post_meta( $attachment_id, 'rtgodam_transcoding_status' );
+			}
+			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
+			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
+			rtgodam_remove_from_retry_queue( $attachment_id );
+		}
+		// Central refused the job on purpose (4xx): record why, so the file says so.
+		rtgodam_record_job_refusal( $attachment_id, $upload_media );
+		do_action( 'rtgodam_after_attachment_lookup' );
 
 		// Note: For now media is only uploaded to the GoDAM and we are storing the transcoding job ID in the attachment meta.
 		// Todo: In future we can add more logic to handle the transcoded image URLs to provide image CDN feature.
@@ -460,6 +635,12 @@ class Media_Library_Ajax {
 		$term = get_term( $media_folder, 'media-folder' );
 
 		if ( is_wp_error( $term ) || ! $term || $term->term_id !== $media_folder ) {
+			return;
+		}
+
+		// A locked folder, or one inside a locked folder, takes no new files. Leave the
+		// upload unfiled, as the assign-folder route refuses the same move.
+		if ( Media_Folder_Utils::get_instance()->is_folder_locked( $media_folder ) ) {
 			return;
 		}
 
@@ -632,6 +813,28 @@ class Media_Library_Ajax {
 
 		// Add transcoding status to response.
 		$response['transcoding_status'] = $transcoding_status ? strtolower( $transcoding_status ) : 'not_started';
+
+		// Say why Central refused the job, so the grid can show it on the item.
+		$error_code = get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_code', true );
+
+		if ( 'failed' === $response['transcoding_status'] && rtgodam_is_job_refusal( $error_code ) ) {
+			// The message can be Central's own wording and the detail always is, which can carry
+			// URLs: only someone who can edit the file sees them, as on the status route.
+			$can_edit = current_user_can( 'edit_post', $attachment->ID );
+
+			$response['transcoding_error_code']   = $error_code;
+			$response['transcoding_error_msg']    = $can_edit
+				? get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_msg', true )
+				: __( 'This file can\'t be transcoded.', 'godam' );
+			$response['transcoding_error_detail'] = $can_edit
+				? get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_detail', true )
+				: '';
+
+			// For the attachment details panel: offer the plan page when that's the fix, and a
+			// retranscode button to whoever the retranscode route lets in.
+			$response['transcoding_error_needs_plan'] = rtgodam_refusal_needs_plan( get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_detail', true ) );
+			$response['transcoding_can_retranscode']  = current_user_can( 'edit_others_posts' );
+		}
 
 		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );
 

@@ -4,7 +4,7 @@ Tags: transcoder, video, media library, folders, file manager
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.3.2
+Stable tag: 2.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -194,63 +194,58 @@ A. Yes! You can start with a 60-day free trial to explore all features. No credi
 A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
 == Screenshots ==
-1. General Settings
-2. Video Settings with valid API Key
-3. Media Editor
-4. Video Layer Selection
-5. Hotspot Layer
-6. Ads Integration
-7. Gravity Forms Integration
-8. Player Settings
-9. Enhanced Media Library (DAM)
-10. Post-Specific Video Settings
-11. Attachment Video Details
-12. Single Video Analytics
-13. Video Analytics Dashboard
-14. GoDAM Central Selector Tab
-15. GoDAM Recorder Field for Gravity Forms
-16. Automatic Video Transcription
-17. GoDAM Central
-18. Image Upload to GoDAM Central
-19. Single Video Page in  GoDAM Central
-20. Settings Page in GoDAM Central
-21. GoDAM Video Gallery Block
-22. Elementor GoDAM Gallery Widget
-23. Elementor GoDAM Video Widget
-24. Video Player Style Settings
-25. Global Ads Settings
-26. Chapters Interface
-27. Likes and Comments
+1. Video Editor: add interactive layers to a video, with its plays and watch time on top
+2. Add layer menu: CTA, Hotspot, Form, Poll and Ad layers (WooCommerce with the GoDAM for Woo add-on)
+3. Hotspot layer: place a clickable icon with a tooltip and link at a moment in the video
+4. Ad layer: play a skippable video ad inside your video, with a click-through link
+5. Gravity Forms layer: ask viewers to fill in a form mid-video, including a field to record a video answer
+6. Media Library with folders: keep your videos, audio and images organized and bookmarked
+7. Attachment details: preview a video, pick its thumbnail, and open its editor or analytics
+8. Single video analytics: engagement, play rate, watch time and plays for one video
+9. Analytics dashboard: plays, unique viewers, viewer locations and playback performance across your videos
+10. Transcription: a time-stamped transcript shown beside your video
+11. GoDAM Central media library: all your hosted videos, audio and images in one place
+12. Video Gallery block: show handpicked videos, or videos chosen by a query, as a gallery in the block editor
+13. Elementor Gallery widget: build a video gallery with a grid layout, choose videos by category, tag or date range, and Load More
+14. Elementor Video widget: add a GoDAM video with autoplay, loop and playback controls
+15. Video Player settings: choose a player skin and set your brand color and logo
+16. Chapters: split a video into titled sections on its timeline
+17. GoDAM for Woo add-on (a separate plugin): Reel Pop, a floating video on your storefront
+18. GoDAM for Woo add-on: a scrolling row of shoppable videos with product, price and Add to Cart
+19. GoDAM for Woo add-on: a product video gallery on the product page
+20. GoDAM for Woo add-on: product hotspots that show the product and its price inside the video
 
 == Changelog ==
 
-= v2.3.2 (October 9, 2026) =
+= v2.5.1 (October 26, 2026) =
 
-- Feat: A guided, hands-on tour of the GoDAM Media Library introduces folders, sub-folders, bookmarks, drag-and-drop and bulk moves. It starts automatically the first time you open the library and can be replayed anytime from the new button next to Manage Media.
-- Fix: Security fixes.
+- Fix: GoDAM's public video pages, lists and player data no longer show media from draft, private or scheduled posts. Media used on a published page keeps working.
+- Fix: GoDAM only deletes, exports and stores media files that are inside the uploads folder.
+- Fix: Video embed pages and form entries build the player from checked settings.
+- Fix: The form lists in the video editor are available only to users who can upload media, and Jetpack forms in videos show only on published posts.
+- Fix: Sending media to GoDAM for transcoding now checks GoDAM's security certificate.
+- Fix: Media folder names are no longer shown to site visitors, and a locked folder stays locked everywhere.
 
-= v2.3.1 (October 6, 2026) =
+= v2.5.0 (October 22, 2026) =
 
-- Fix: What's New refreshes after every plugin update, so it always shows the current release post.
-- Fix: A video's hotspot, call-to-action, form and poll analytics are now stored with the same video ID as its plays, so they stay together in Top Products.
-- Fix: Revenue tooltips now say that revenue is after discounts and excludes tax, shipping and fees.
-- Fix: Top Products explains why grouped and external products show no add-to-carts or revenue, and shows "-" instead of a misleading 0.0% add-to-cart rate.
-- Fix: Video to Cart, Video to Purchase and the funnels now count each day in the store's time zone, matching the Revenue card.
-- Fix: Editors and Authors see video analytics only; store data (products, add-to-carts, orders, revenue) needs WooCommerce's report permission.
-- Fix: A GoDAM Record field on a Gravity Forms form no longer fails with "Number of files (2) exceeds limit (1)" after moving between pages or fixing a failed submit, on Gravity Forms 2.9.18 and later.
-- Fix: Security fixes.
+- Feat: GoDAM can add a video sitemap that lists every page with a GoDAM video, through Yoast SEO, Rank Math, All in One SEO or the WordPress sitemap. Turn it on in GoDAM > Settings > SEO; single videos can be left out.
+- Feat: Video chapters are added to the video's search data as key moments, so Google can show links that jump to each chapter.
+- Tweak: The video schema GoDAM adds for search engines now uses a video URL Google can index, adds the player's embed link, and leaves out empty fields.
+- Tweak: Editors see a warning when a video's title looks like a raw file name.
+- Tweak: The WPBakery GoDAM Video element's SEO Settings tab shows the same Video SEO fields as the block editor and Elementor.
+- Tweak: The video share popup now shares the page link. The GoDAM Central and Embed links are gone, and the share button shows on every video when sharing is turned on.
+- Tweak: GoDAM no longer adds the signed-in viewer's email address to the page or to video analytics.
+- Fix: Audio converted to MP3 now shows in the block editor's audio list, including files converted before this update.
+- Fix: The Gravity Forms Record field keeps working after an AJAX page change or a failed submit.
+- Fix: The WordPress admin menu no longer flashes and jumps when a GoDAM page loads.
+- Fix: The form layer preview in the video editor now accepts only a valid form ID.
 
-= v2.3.0 (September 24, 2026) =
+= v2.4.1 (October 20, 2026) =
 
-- Feat: Revenue Analytics for WooCommerce. See how much order value is credited to each video, split into Direct (added to cart inside the video) and Assisted (clicked the product in a video, image hotspot or Reel Pop, then added it to cart on its product page). Influenced revenue is reported separately and is never added to the headline.
-- Feat: Top Products, a new dashboard tab showing per-product views, add-to-cart counts split into in-video and product-page, revenue, and where in your videos each product appeared.
-- Feat: Video to Cart and Video to Purchase rates, measured against the people who actually played the video.
-- Feat: Two new funnels: Play to Cart to Purchase, and the same funnel broken down by placement.
-- Feat: Per-hotspot revenue in layer analytics, showing the revenue from in-video add-to-carts made through each product hotspot.
-- Feat: A Google Analytics 4 status widget on the analytics dashboard, showing whether GoDAM for Woo is pushing video-driven add_to_cart and purchase events to your Google Tag Manager dataLayer.
-- Tweak: The Revenue and Purchase Funnel cards on the single-video page each have their own date-range picker.
-- Tweak: The layer interaction metric is now called "Interaction rate" instead of "Conversion".
-- Note: Revenue and product metrics need the GoDAM for Woo add-on 2.2.0 or later.
+- Fix: The video transcript no longer covers the video. It opens beside the video, or below it on narrow screens, matches the player skin, and can be searched.
+- Fix: Transcripts uploaded as .srt files now show captions and the transcript to visitors.
+- Fix: In Safari, tall videos in a lightbox are no longer cut off at the bottom.
+- Fix: Captions no longer overlap the player controls on narrow screens.
 
 [CHECK THE FULL CHANGELOG](https://github.com/rtCamp/godam/blob/main/CHANGELOG.md)
 
@@ -309,15 +304,13 @@ Data Sent:
 
 1. IP Address
 
-2. Email
+2. Author of the post's display name
 
-3. Author of the post's display name
+3. Browser version, name, and browser language
 
-4. Browser version, name, and browser language
+4. User Agent String
 
-5. User Agent String
-
-6. The operating system of the user's device (e.g., Windows, macOS, Android)
+5. The operating system of the user's device (e.g., Windows, macOS, Android)
 
 When Data is Sent:
 
@@ -328,3 +321,51 @@ When Data is Sent:
 Service Provider: analytics.godam.io
 
 [Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
+
+=== PostHog (us.i.posthog.com) ===
+Purpose: This service provides product analytics for GoDAM's own screens in the WordPress admin. It helps us see how GoDAM is used and where it fails, so we can improve the plugin.
+
+Data Sent:
+
+1. Details about the site: PHP version, MySQL version, web server software, WordPress version, site language, number of active plugins, total number of plugins, and number of users
+
+2. How GoDAM's admin screens are used: page views, clicks, and errors
+
+3. Session replays and heatmaps of GoDAM's admin screens
+
+4. The address of the admin screen being used, and an ID that PostHog stores in the browser
+
+5. The IP address and browser details that every web request carries
+
+When Data is Sent:
+
+1. Only after a site administrator has clicked "Allow" in the notice shown on the WordPress Dashboard, or turned on "Help us improve GoDAM" on the GoDAM Help page. Nothing is sent before one of these, and connecting a GoDAM account (an API key) does not switch it on.
+
+2. Only while someone is using GoDAM's screens in the WordPress admin. It is never sent for visitors to your site.
+
+3. An administrator can turn it off at any time with "Help us improve GoDAM" on the GoDAM Help page, and that choice is kept, including when an API key is saved. It stops from the next page load.
+
+PostHog's code also loads its own settings and scripts from us-assets.i.posthog.com, at the same times as the data above is sent.
+
+Service Provider: [posthog.com](https://posthog.com)
+
+[Terms of Service](https://posthog.com/terms) | [Privacy Policy](https://posthog.com/privacy)
+
+=== HubSpot (js.hsforms.net, js.hs-scripts.com) ===
+Purpose: When HubSpot is connected through GoDAM Central, GoDAM loads HubSpot's own scripts in the visitor's browser to render a HubSpot form placed on a video and to record how far a known HubSpot contact watched a video.
+
+Data Sent:
+
+1. HubSpot form embed: HubSpot renders the form in the visitor's browser, and whatever the visitor types into it is submitted to HubSpot.
+
+2. HubSpot tracking code: HubSpot's standard analytics. It sets and reads the `hubspotutk` cookie and loads HubSpot's tracking suite for your portal — which, depending on what your HubSpot portal has enabled, can include analytics, the cookie/consent banner, chat, pop-ups and CTAs, the ads pixel and surveys.
+
+When Data is Sent:
+
+1. The form embed loads only on a page that has a HubSpot form layer on a video.
+
+2. The tracking code loads on the frontend only when HubSpot is connected on GoDAM Central and "Track video views" is turned on in Central. On a site that also runs HubSpot's own plugin, GoDAM does not add it (that plugin already loads it). You can stop GoDAM from adding it with the `rtgodam_map_inject_hubspot_tracking_code` filter (return false) — for example, to gate it behind a consent manager.
+
+Service Provider: [HubSpot](https://www.hubspot.com)
+
+[Terms of Service](https://legal.hubspot.com/terms-of-service) | [Privacy Policy](https://legal.hubspot.com/privacy-policy)

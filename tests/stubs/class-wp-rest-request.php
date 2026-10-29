@@ -24,10 +24,26 @@ if ( ! class_exists( 'WP_REST_Request' ) ) {
 		private $params;
 
 		/**
-		 * @param array<string, mixed> $params Request params.
+		 * HTTP method.
+		 *
+		 * @var string
 		 */
-		public function __construct( array $params = array() ) {
+		private $method;
+
+		/**
+		 * @param array<string, mixed> $params Request params.
+		 * @param string               $method HTTP method.
+		 */
+		public function __construct( array $params = array(), $method = 'GET' ) {
 			$this->params = $params;
+			$this->method = $method;
+		}
+
+		/**
+		 * @return string The HTTP method.
+		 */
+		public function get_method() {
+			return $this->method;
 		}
 
 		/**

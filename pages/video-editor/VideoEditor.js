@@ -39,6 +39,7 @@ import {
 	setEverestForms,
 	setNinjaForms,
 	setMetforms,
+	setHubspotForms,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -128,7 +129,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		} );
 	}, [ attachmentID, capability.copyBlockName, capability.mediaType ] );
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, hubspotForms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -338,8 +339,12 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			if ( metforms && metforms.length > 0 ) {
 				dispatch( setMetforms( metforms ) );
 			}
+
+			if ( hubspotForms && hubspotForms.length > 0 ) {
+				dispatch( setHubspotForms( hubspotForms ) );
+			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms ] );
+	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms, hubspotForms ] );
 
 	// Size the video preview so it fits the stage in BOTH dimensions.
 	//

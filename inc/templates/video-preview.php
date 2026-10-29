@@ -25,10 +25,17 @@ $godam_video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0
  * @since 2.2.0
  */
 do_action( 'rtgodam_before_attachment_lookup' );
-$godam_media_mime = $godam_video_id ? (string) get_post_mime_type( $godam_video_id ) : '';
+// Media the visitor may not see is treated as missing, so the page doesn't reveal its type either.
+$godam_media_mime = $godam_video_id && rtgodam_can_view_attachment( $godam_video_id ) ? (string) get_post_mime_type( $godam_video_id ) : '';
 do_action( 'rtgodam_after_attachment_lookup' );
 $godam_is_image = 0 === strpos( $godam_media_mime, 'image/' );
 $godam_is_audio = 0 === strpos( $godam_media_mime, 'audio/' );
+
+// Whether a real attachment is being previewed. The device-view toggle only
+// makes sense when media is actually shown (get_post_mime_type() returns an
+// empty string for a missing / non-attachment ID, which renders the "not
+// found" message instead).
+$godam_has_media = ! empty( $godam_video_id ) && '' !== $godam_media_mime;
 
 if ( $godam_is_image ) {
 	$godam_media_label = __( 'Image Preview', 'godam' );
@@ -72,19 +79,34 @@ $godam_page_title = empty( $godam_video_id )
 					<h2 class="logo-text"><?php echo esc_html( $godam_media_label ); ?></h2>
 				</div>
 			</div>
-			<div class="godam-video-preview-header--center"></div>
+			<div class="godam-video-preview-header--center">
+				<?php if ( $godam_has_media ) : ?>
+					<!-- Desktop / Mobile preview toggle (shared across video, image and audio). -->
+					<div class="godam-view-toggle" role="group" aria-label="<?php esc_attr_e( 'Preview device width', 'godam' ); ?>">
+						<button type="button" class="godam-view-toggle__button is-active" data-godam-view="desktop" aria-pressed="true" aria-label="<?php esc_attr_e( 'Desktop', 'godam' ); ?>">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M3 4h18a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-7v2h3v2H7v-2h3v-2H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm1 2v9h16V6H4Z"></path></svg>
+							<span aria-hidden="true"><?php esc_html_e( 'Desktop', 'godam' ); ?></span>
+						</button>
+						<button type="button" class="godam-view-toggle__button" data-godam-view="mobile" aria-pressed="false" aria-label="<?php esc_attr_e( 'Mobile', 'godam' ); ?>">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm0 2v14h10V4H7Zm4 15h2v-1.5h-2V19Z"></path></svg>
+							<span aria-hidden="true"><?php esc_html_e( 'Mobile', 'godam' ); ?></span>
+						</button>
+					</div>
+				<?php endif; ?>
+			</div>
 			<div class="godam-video-preview-header--right">
 				<?php if ( $godam_video_id ) : ?>
 					<!-- Analytics link (video-only; images and audio have no analytics view). -->
 					<?php if ( $godam_api_key_valid && ! $godam_is_image && ! $godam_is_audio ) : ?>
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_analytics&id=' . $godam_video_id ) ); ?>" class="godam-button button-secondary">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.25 5h1.5v15h-1.5V5zM6 10h1.5v10H6V10zm12 4h-1.5v6H18v-6z"></path></svg>
-						<?php esc_html_e( 'Analytics', 'godam' ); ?>
+						<span><?php esc_html_e( 'Analytics', 'godam' ); ?></span>
 					</a>
 					<?php endif; ?>
 					<!-- Edit media link (opens the same GoDAM editor). -->
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtgodam_media_editor&id=' . $godam_video_id ) ); ?>" class="godam-button button-primary">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m19 7-3-3-8.5 8.5-1 4 4-1L19 7Zm-7 11.5H5V20h7v-1.5Z"></path></svg>
+						<span>
 						<?php
 						if ( $godam_is_image ) {
 							echo esc_html__( 'Edit Image', 'godam' );
@@ -94,6 +116,7 @@ $godam_page_title = empty( $godam_video_id )
 							echo esc_html__( 'Edit Video', 'godam' );
 						}
 						?>
+						</span>
 					</a>
 				<?php endif; ?>
 			</div>

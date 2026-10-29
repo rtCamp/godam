@@ -24,6 +24,8 @@ export const FORM_TYPES = {
 	FLUENT: 'fluentforms',
 	NINJA: 'ninjaforms',
 	METFORM: 'metform',
+	MARKETO: 'marketo',
+	HUBSPOT: 'hubspot',
 };
 
 /**
@@ -53,13 +55,9 @@ export const PRODUCT_HOTSPOT_CONSTANTS = {
 /**
  * Layer types.
  *
- * NOTE: Add-ons can register custom layer types using:
- * import { registerLayerType } from './layer-registry.js';
- * registerLayerType( 'custom-id', {
- *   label: 'Custom Layer',
- *   validator: (layer, dependencies) => true,
- *   manager: CustomLayerManager // optional
- * });
+ * NOTE: Add-ons can register custom layer types using `registerLayerType`
+ * from `./layer-registry.js`, passing an id plus a config object with a
+ * `label`, a `validator` function and an optional `manager` class.
  */
 export const LAYER_TYPES = {
 	FORM: 'form',

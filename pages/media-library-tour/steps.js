@@ -14,7 +14,13 @@
  * - `advanceWhen`  `( ctx ) => boolean` polled while the step is shown.
  * - `abortWhen`    `( ctx ) => boolean` polled; when true the tour jumps to `backTo`
  * (e.g. the user closed the folder modal without creating).
- * - `showNext`     Show a Next button (informational steps). `nextLabel` overrides it.
+ * - `showNext`     Marks an informational step (enables Back between two of them).
+ * The forward button is added by the controller for every step;
+ * `nextLabel` overrides its label ("Next" / "Skip" / "Finish").
+ * - `hideSkip`     Suppress the forward button. Used on modal steps: Skip would
+ * advance while leaving the modal frozen on screen, and the modal's
+ * own Cancel/close already rewinds (`abortWhen` + `backTo`) to a step
+ * that has Skip, so these steps are not dead-ends without it.
  * - `skipTo`       Step id the Next/Skip button jumps to (skips an interactive sequence).
  * - `interactive`  Extra selectors that stay clickable while the step is shown
  * (driver.js otherwise blocks everything but the highlight).
@@ -63,6 +69,9 @@ const folderNameStep = ( { id, recordKey, parentKey, backTo, title, text } ) => 
 	align: 'start',
 	interactive: [ SELECTORS.modalOverlay ],
 	focus: `${ SELECTORS.folderModal } input`,
+	// No Skip: it would leave the New Folder modal frozen above the next step.
+	// Closing the modal rewinds to `backTo` (which has Skip) instead.
+	hideSkip: true,
 	advanceOn: EVENTS.FOLDER_CREATED,
 	onEvent: ( ctx, detail ) => {
 		// The sub-folder step only counts a folder created inside the parent.
@@ -104,6 +113,8 @@ export const getSteps = () => [
 		align: 'center',
 		advanceWhen: () => isFolderModalOpen(),
 		when: () => Boolean( document.querySelector( SELECTORS.newFolderButton ) ),
+		// Skip the whole folder-creation flow; nothing downstream needs a folder yet.
+		skipTo: 'bookmarks-locked',
 	},
 	folderNameStep( {
 		id: 'name-folder',
@@ -126,6 +137,8 @@ export const getSteps = () => [
 		align: 'center',
 		when: ( ctx ) => Boolean( ctx.folder ),
 		advanceWhen: () => isContextMenuOpen(),
+		// Skip leaps past the menu + sub-folder steps (their targets never open).
+		skipTo: 'bookmarks-locked',
 		// Remember which folder's menu was opened — the sub-folder is created there.
 		onAdvance: ( ctx ) => {
 			const toggle = document.querySelector( `${ SELECTORS.folderTree } .tree-item__menu-toggle[aria-expanded="true"]` );
@@ -144,6 +157,8 @@ export const getSteps = () => [
 		advanceWhen: () => isFolderModalOpen(),
 		abortWhen: () => ! isContextMenuOpen() && ! isFolderModalOpen(),
 		backTo: 'folder-ready',
+		// Skip leaps past the sub-folder steps (the modal is not open).
+		skipTo: 'bookmarks-locked',
 	},
 	{
 		...folderNameStep( {
@@ -225,7 +240,6 @@ export const getSteps = () => [
 			return true;
 		},
 		showNext: true,
-		nextLabel: __( 'Skip', 'godam' ),
 	},
 	{
 		id: 'open-folder',
@@ -247,7 +261,6 @@ export const getSteps = () => [
 		align: 'center',
 		advanceWhen: () => isSelectMode(),
 		showNext: true,
-		nextLabel: __( 'Skip', 'godam' ),
 		skipTo: 'upload',
 	},
 	{
@@ -262,7 +275,6 @@ export const getSteps = () => [
 		abortWhen: () => ! isSelectMode(),
 		backTo: 'bulk-select',
 		showNext: true,
-		nextLabel: __( 'Skip', 'godam' ),
 		skipTo: 'bulk-exit',
 	},
 	{
@@ -278,7 +290,6 @@ export const getSteps = () => [
 		abortWhen: () => ! isSelectMode() || ! document.querySelector( SELECTORS.selectedAttachment ),
 		backTo: 'bulk-select',
 		showNext: true,
-		nextLabel: __( 'Skip', 'godam' ),
 		skipTo: 'bulk-exit',
 	},
 	{
@@ -298,6 +309,9 @@ export const getSteps = () => [
 		side: 'right',
 		align: 'start',
 		interactive: [ SELECTORS.modalOverlay ],
+		// No Skip: it would leave the Move-to-folder modal frozen above the next
+		// step. Closing the modal rewinds to `bulk-move` (which has Skip) instead.
+		hideSkip: true,
 		advanceOn: EVENTS.ATTACHMENTS_MOVED,
 		onEvent: ( ctx, detail ) => {
 			// 0 is a real destination ("Uncategorized"); only a missing id is not.

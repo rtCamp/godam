@@ -158,10 +158,24 @@ const godamPlayerAnalytics = {
 	},
 };
 
+const godamMapTracking = {
+	...sharedConfig,
+	entry: {
+		'godam-map-tracking': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'map-tracking.js' ),
+	},
+};
+
 const deactivationJS = {
 	...sharedConfig,
 	entry: {
 		'deactivation-feedback': path.resolve( process.cwd(), 'assets', 'src', 'js', 'deactivation-feedback.js' ),
+	},
+};
+
+const dashboardWidgetJS = {
+	...sharedConfig,
+	entry: {
+		'dashboard-widget': path.resolve( process.cwd(), 'assets', 'src', 'js', 'dashboard-widget', 'index.js' ),
 	},
 };
 
@@ -211,6 +225,20 @@ const jetpackFormJS = {
 	...sharedConfig,
 	entry: {
 		'jetpack-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'jetpack-form.js' ),
+	},
+};
+
+const marketoFormJS = {
+	...sharedConfig,
+	entry: {
+		'marketo-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'marketo-form.js' ),
+	},
+};
+
+const hubspotFormJS = {
+	...sharedConfig,
+	entry: {
+		'hubspot-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'hubspot-form.js' ),
 	},
 };
 
@@ -391,6 +419,19 @@ const pages = {
 					},
 				],
 			},
+			{
+				// Emit font files referenced from imported stylesheets (e.g. the
+				// Titan One sticker face in `godam-player.scss`) as their own
+				// files instead of inlining them, so they are fetched only when a
+				// rule actually uses the font. The `styles` config handles this
+				// via the @wordpress/scripts defaults; the `pages` config needs
+				// its own rule.
+				test: /\.woff2$/,
+				type: 'asset/resource',
+				generator: {
+					filename: 'fonts/[name].[hash][ext]',
+				},
+			},
 		],
 	},
 	externals: {
@@ -427,7 +468,9 @@ module.exports = [
 	godamPlayerFrontend,
 	godamImageLayersFrontend,
 	godamPlayerAnalytics,
+	godamMapTracking,
 	deactivationJS,
+	dashboardWidgetJS,
 	httpAuthDetector,
 	godamGallery,
 	godamVideoEmbed,
@@ -435,6 +478,8 @@ module.exports = [
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
+	marketoFormJS,
+	hubspotFormJS,
 	styles, // Do not remove this.
 	pages,
 	elementorWidgetJS,

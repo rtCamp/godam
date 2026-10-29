@@ -10,6 +10,11 @@
  * ETag/Cache-Control:
  * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
  */
+/**
+ * Internal dependencies
+ */
+import { toWebVttTrackSrc } from '../utils/captionTrackSrc.js';
+
 export default class TranscriptManager {
 	/**
 	 * Create a TranscriptManager instance.
@@ -87,7 +92,7 @@ export default class TranscriptManager {
 				// wins, so defer to it below when present.
 				if ( ! this.localTranscriptUrl && transcriptData?.exists && transcriptData?.url ) {
 					this.transcriptUrl = transcriptData.url;
-					this.addTextTrack( transcriptData.url );
+					this.addTextTrack( await toWebVttTrackSrc( transcriptData.url ) );
 					return;
 				}
 			} catch ( error ) {
@@ -102,7 +107,8 @@ export default class TranscriptManager {
 		// no job id, or when the fetch failed.
 		if ( this.localTranscriptUrl ) {
 			this.transcriptUrl = this.localTranscriptUrl;
-			this.addTextTrack( this.localTranscriptUrl );
+			// An uploaded .srt is converted to WebVTT, the only format a track parses.
+			this.addTextTrack( await toWebVttTrackSrc( this.localTranscriptUrl ) );
 		}
 	}
 

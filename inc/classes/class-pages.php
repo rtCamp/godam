@@ -150,6 +150,7 @@ class Pages {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_media_library_tour' ) );
 		add_action( 'admin_head', array( $this, 'handle_admin_head' ) );
+		add_filter( 'admin_body_class', array( $this, 'fold_admin_menu_in_media_editor' ) );
 		// The old slug is no longer a registered menu page, so WordPress' menu
 		// access check (wp-admin/menu.php) wp_die()s before `admin_init` fires.
 		// `admin_page_access_denied` runs at that exact point, so redirect there.
@@ -330,6 +331,29 @@ class Pages {
 			// Remove the WordPress version number.
 			add_filter( 'update_footer', '__return_empty_string', 11 );
 		}
+	}
+
+	/**
+	 * Fold the admin menu when the Media Editor opens with a file.
+	 *
+	 * The editor also folds it from React, but that runs after the page has painted, so the
+	 * menu showed at full width and then collapsed.
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param string $classes Space-separated admin body classes.
+	 *
+	 * @return string
+	 */
+	public function fold_admin_menu_in_media_editor( $classes ) {
+		$screen = get_current_screen();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only check of which file the page opens.
+		if ( $screen && $this->video_editor_page_id === $screen->id && ! empty( $_GET['id'] ) ) {
+			$classes .= ' folded';
+		}
+
+		return $classes;
 	}
 
 	/**
@@ -657,7 +681,6 @@ class Pages {
 
 			$is_ninja_forms_active = is_plugin_active( 'ninja-forms/ninja-forms.php' );
 
-
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
@@ -677,11 +700,38 @@ class Pages {
 					'sureformsActive'    => $is_sure_form_active,
 					'forminatorActive'   => $is_forminator_active,
 					'fluentformsActive'  => $is_fluent_forms_active,
-					'everestFormsActive' => $is_everest_forms_active,
-					'ninjaFormsActive'   => $is_ninja_forms_active,
-					'metformActive'      => $is_met_form_active,
+					'everestFormsActive'  => $is_everest_forms_active,
+					'ninjaFormsActive'    => $is_ninja_forms_active,
+					'metformActive'       => $is_met_form_active,
+					// Marketo is a SaaS (no plugin): "active" means enabled and
+					// connected on GoDAM Central.
+					'marketoActive'       => \RTGODAM\Inc\Marketo::is_configured(),
+					// Account details for the in-editor Marketo form preview, read from
+					// the GoDAM Central connection. `instanceHost` is the normalized
+					// forms2 base URL (the account's forms host or mktoweb domain).
+					// These account IDs are not secret — the frontend embed exposes
+					// them too.
+					'marketoConfig'       => array(
+						'instanceHost' => \RTGODAM\Inc\Marketo::get_instance_host(),
+						'munchkinId'   => \RTGODAM\Inc\Marketo::get_munchkin_id(),
+					),
+					// HubSpot form layer. "Active" means enabled and the admin's
+					// chosen source (GoDAM Central or the HubSpot/leadin plugin) is
+					// actually connected. Portal ID + region drive the in-editor live
+					// preview and come from whichever source is active; they are not
+					// secret (the frontend embed exposes them too). `hubspotSource`
+					// lets the editor tailor its copy (central / leadin / empty).
+					'hubspotActive'       => \RTGODAM\Inc\Hubspot::is_configured(),
+					'hubspotEnabled'      => \RTGODAM\Inc\Hubspot::is_enabled(),
+					'hubspotPortalId'     => \RTGODAM\Inc\Hubspot::get_effective_portal_id(),
+					'hubspotHublet'       => \RTGODAM\Inc\Hubspot::get_effective_region(),
+					// Active source is '' when nothing is connected; the chosen source
+					// (what the admin picked) is what the editor copy needs to tell them
+					// how to connect.
+					'hubspotSource'       => \RTGODAM\Inc\Hubspot::get_active_source(),
+					'hubspotChosenSource' => \RTGODAM\Inc\Hubspot::get_chosen_source(),
 					// O9: Woo empty-state copy on the connected Video Editor.
-					'wooActive'          => class_exists( 'WooCommerce' ),
+					'wooActive'           => class_exists( 'WooCommerce' ),
 					// Woo product-guide entry: only when GoDAM-for-Woo ships the
 					// Shoppable Video tour (capability gate, not just plugin-active),
 					// so the Woo card never leads to a missing block or dead-end page.
@@ -1197,6 +1247,18 @@ class Pages {
 				$addon_statuses
 			);
 
+			// Video sitemap details for the SEO settings tab.
+			wp_localize_script(
+				'transcoder-page-script-godam',
+				'godamVideoSitemap',
+				array(
+					'sitemapUrl'          => Video_Sitemap::get_sitemap_url( 1 ),
+					'activeSeoPlugin'     => Video_Sitemap::get_active_seo_sitemap(),
+					'coreSitemapsEnabled' => Video_Sitemap::are_core_sitemaps_enabled(),
+					'coreIndexUrl'        => home_url( '/wp-sitemap.xml' ),
+				)
+			);
+
 			wp_enqueue_script( 'transcoder-page-script-godam' );
 
 			/**
@@ -1483,8 +1545,12 @@ class Pages {
 	 * @return array PostHog configuration array with 'key', 'host', and 'enabled' settings.
 	 */
 	private function get_posthog_config() {
-		$settings        = get_option( 'rtgodam-settings', array() );
-		$enable_tracking = isset( $settings['general']['enable_posthog_tracking'] ) ? $settings['general']['enable_posthog_tracking'] : false;
+		$settings = get_option( 'rtgodam-settings', array() );
+		$general  = isset( $settings['general'] ) && is_array( $settings['general'] ) ? $settings['general'] : array();
+
+		// Tracking runs only when it is switched on AND an admin's choice is recorded (the notice's Allow, or the Help
+		// page toggle, set both). A switch with no recorded choice does not count, so nothing but an explicit opt-in starts it.
+		$enable_tracking = (bool) (int) ( $general['enable_posthog_tracking'] ?? 0 ) && ! empty( $general['posthog_initialized'] );
 
 		$config = array(
 			'key'     => 'phc_9P3X3py1SfwrF78SXXkIyL2cHjkRTpvWzqf8RZJDaSk',

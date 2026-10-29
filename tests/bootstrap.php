@@ -56,6 +56,19 @@ if ( ! function_exists( 'sanitize_text_field' ) ) {
 	}
 }
 
+if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+
+	/**
+	 * Like sanitize_text_field(), but keeps line breaks.
+	 *
+	 * @param string $str Input.
+	 * @return string
+	 */
+	function sanitize_textarea_field( $str ) {
+		return trim( preg_replace( '/[\t ]+/', ' ', wp_strip_all_tags( (string) $str ) ) );
+	}
+}
+
 if ( ! function_exists( 'esc_url' ) ) {
 
 	/**
@@ -92,12 +105,18 @@ if ( ! function_exists( 'wp_prepare_attachment_for_js' ) ) {
 if ( ! function_exists( 'get_post_meta' ) ) {
 
 	/**
-	 * @param int    $post_id Ignored (single post per test).
+	 * @param int    $post_id Post ID. Only read for a test that sets meta per post in
+	 *                        `post_meta_by_id` (post ID => key => value); otherwise ignored.
 	 * @param string $key     Meta key.
 	 * @param bool   $single  Ignored; always single-value semantics.
 	 * @return mixed
 	 */
-	function get_post_meta( $post_id, $key = '', $single = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $post_id/$single are ignored.
+	function get_post_meta( $post_id, $key = '', $single = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $single is ignored.
+		if ( isset( $GLOBALS['rtgodam_stub']['post_meta_by_id'][ (int) $post_id ] ) ) {
+			$by_id = $GLOBALS['rtgodam_stub']['post_meta_by_id'][ (int) $post_id ];
+			return array_key_exists( $key, $by_id ) ? $by_id[ $key ] : '';
+		}
+
 		$meta = isset( $GLOBALS['rtgodam_stub']['post_meta'] ) && is_array( $GLOBALS['rtgodam_stub']['post_meta'] )
 			? $GLOBALS['rtgodam_stub']['post_meta']
 			: array();
@@ -137,7 +156,15 @@ if ( ! function_exists( 'wp_get_upload_dir' ) ) {
 			? (string) $GLOBALS['rtgodam_stub']['uploads_baseurl']
 			: 'https://example.com/wp-content/uploads';
 
-		return array( 'baseurl' => $baseurl );
+		$dirs = array( 'baseurl' => $baseurl );
+
+		// Only set when a test needs the uploads path on disk (e.g. reading a
+		// transcript file from uploads in VideoSeoSchemaTest).
+		if ( isset( $GLOBALS['rtgodam_stub']['uploads_basedir'] ) ) {
+			$dirs['basedir'] = (string) $GLOBALS['rtgodam_stub']['uploads_basedir'];
+		}
+
+		return $dirs;
 	}
 }
 
@@ -187,11 +214,22 @@ if ( ! function_exists( 'wp_parse_url' ) ) {
 	}
 }
 
-// Empty stand-in for the WP core base so Video_Editor's parent chain resolves
+// Stand-in for the WP core base so Video_Editor's parent chain resolves
 // without a WordPress install; the constructor is never run (tests build the
-// object with ReflectionClass::newInstanceWithoutConstructor()).
+// object with ReflectionClass::newInstanceWithoutConstructor()). The route
+// tables call get_collection_params() for their `args`; the params themselves
+// are not what those tests look at.
 if ( ! class_exists( 'WP_REST_Controller' ) ) {
-	class WP_REST_Controller {} // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+	// phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed, Generic.Files.OneObjectStructurePerFile.MultipleFound -- test stub.
+	class WP_REST_Controller {
+
+		/**
+		 * @return array
+		 */
+		public function get_collection_params() {
+			return array();
+		}
+	}
 }
 
 /*
@@ -210,12 +248,40 @@ if ( ! class_exists( 'WP_Error' ) ) {
 	// phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed, Generic.Files.OneObjectStructurePerFile.MultipleFound -- test stub.
 	class WP_Error {
 
+		/** @var mixed */
+		private $code;
+
+		/** @var string */
+		private $message;
+
+		/** @var mixed */
+		private $data;
+
 		/**
-		 * @param mixed $code    Ignored.
-		 * @param mixed $message Ignored.
-		 * @param mixed $data    Ignored.
+		 * @param mixed  $code    Error code.
+		 * @param string $message Error message.
+		 * @param mixed  $data    Error data.
 		 */
-		public function __construct( $code = '', $message = '', $data = '' ) {} // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
+		public function __construct( $code = '', $message = '', $data = '' ) {
+			$this->code    = $code;
+			$this->message = $message;
+			$this->data    = $data;
+		}
+
+		/** @return mixed */
+		public function get_error_code() {
+			return $this->code;
+		}
+
+		/** @return string */
+		public function get_error_message() {
+			return $this->message;
+		}
+
+		/** @return mixed */
+		public function get_error_data() {
+			return $this->data;
+		}
 	}
 }
 
@@ -246,6 +312,11 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 		public function get_status() {
 			return $this->status;
 		}
+
+		/** @param int $status HTTP status code. */
+		public function set_status( $status ) {
+			$this->status = $status;
+		}
 	}
 }
 
@@ -271,13 +342,19 @@ if ( ! function_exists( 'current_user_can' ) ) {
 
 	/**
 	 * @param string $capability Capability name.
-	 * @param mixed  ...$args    Ignored; object-level checks are not stubbed.
+	 * @param mixed  ...$args    The object ID of a meta capability. A test grants it for one
+	 *                           object only as "edit_post:42"; the plain name grants it for all.
 	 * @return bool
 	 */
-	function current_user_can( $capability, ...$args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $args are ignored.
+	function current_user_can( $capability, ...$args ) {
 		$caps = isset( $GLOBALS['rtgodam_stub']['caps'] ) && is_array( $GLOBALS['rtgodam_stub']['caps'] )
 			? $GLOBALS['rtgodam_stub']['caps']
 			: array();
+
+		if ( isset( $args[0] ) && is_scalar( $args[0] ) && in_array( $capability . ':' . $args[0], $caps, true ) ) {
+			return true;
+		}
+
 		return in_array( $capability, $caps, true );
 	}
 }
@@ -390,6 +467,10 @@ if ( ! function_exists( 'set_transient' ) ) {
  */
 require_once __DIR__ . '/stubs/hooks.php';
 require_once __DIR__ . '/stubs/i18n.php';
+// Shortcode registry and runner, so a test can register a shortcode and see whether
+// text handed to do_shortcode() runs it. Loaded here so its do_shortcode() is the one
+// that every test sees.
+require_once __DIR__ . '/stubs/shortcode-runtime.php';
 // HTTP / REST stubs for the Analytics microservice-proxy tests (fetch_top_videos
 // / fetch_top_products): fake wp_remote_* responses + get_option, and minimal
 // WP_REST_Request / WP_REST_Response so the proxy's error-vs-empty guard can be
@@ -443,6 +524,59 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-analytics.php';
 // Requiring the file runs no WP code.
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-engagement.php';
 
+// Loaded for the Dashboard widget's rules and summary shaping (DashboardWidgetTest).
+// Each file only declares a class, so requiring them runs no WP code.
+require_once dirname( __DIR__ ) . '/inc/classes/enums/class-api-key-status.php';
+require_once dirname( __DIR__ ) . '/inc/classes/class-dashboard-widget.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-dashboard-widget-summary.php';
+
+// Loaded for GodamTabAudioMimeTest: get_mime_type_for_job_type() through reflection on a
+// constructor-less instance, and the static MIME helpers. Requiring the file only declares the class.
+require_once dirname( __DIR__ ) . '/inc/classes/class-media-library-ajax.php';
+
+if ( ! function_exists( 'wp_read_video_metadata' ) ) {
+
+	/**
+	 * Narrow stub for AudioOnlyUploadTypeTest: returns `$GLOBALS['rtgodam_stub']['video_metadata'][ $file ]`
+	 * (an array with 'mime_type', or false; the string 'throw' throws a TypeError the way getID3
+	 * does on some damaged files) and records each path read in
+	 * `$GLOBALS['rtgodam_stub']['video_metadata_reads']`.
+	 *
+	 * @param string $file Path to the file.
+	 * @return array|false
+	 * @throws TypeError When the stubbed value is 'throw'.
+	 */
+	function wp_read_video_metadata( $file ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_stub']['video_metadata_reads'][] = $file;
+
+		if ( 'throw' === ( $GLOBALS['rtgodam_stub']['video_metadata'][ $file ] ?? null ) ) {
+			throw new TypeError( 'Unsupported operand types: string + int' );
+		}
+
+		return $GLOBALS['rtgodam_stub']['video_metadata'][ $file ] ?? false;
+	}
+}
+
+// Loaded for MediaFolderLockTest: the folder lock check, the lock rules on the taxonomy
+// and the media-folder REST route guard. Each file only declares a class, so requiring
+// them runs no WP code.
+require_once __DIR__ . '/stubs/media-folder-functions.php';
+require_once dirname( __DIR__ ) . '/inc/classes/media-library/class-media-folder-utils.php';
+require_once dirname( __DIR__ ) . '/inc/classes/taxonomies/class-base.php';
+require_once dirname( __DIR__ ) . '/inc/classes/taxonomies/class-media-folders.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-media-library.php';
+
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
 require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';
+
+// Loaded for MapTrackerValidationTest: the static request-shape checks shared by
+// Map_Tracker and the map-events REST route. Requiring the file only declares the
+// class (the Singleton trait above is its only dependency), so no WP code runs.
+require_once dirname( __DIR__ ) . '/inc/classes/class-map-tracker.php';
+
+// Loaded so Map_Tracker::frontend_providers() can read the Marketo and HubSpot
+// site-level on/off switches (MapTrackerProvidersTest, and the REST route in
+// MapEventsTrackTest). Each file only declares the class, so no WP code runs.
+require_once dirname( __DIR__ ) . '/inc/classes/class-marketo.php';
+require_once dirname( __DIR__ ) . '/inc/classes/class-hubspot.php';

@@ -251,7 +251,32 @@ function rtgodam_delete_related_transcoded_files( $post_id ) {
 add_action( 'delete_attachment', 'rtgodam_delete_related_transcoded_files', 99, 1 );
 
 /**
+ * Marks the media file lists as protected meta.
+ *
+ * Protected meta cannot be written through XML-RPC or the custom fields box. GoDAM
+ * writes these keys itself with update_post_meta(), which protection does not affect.
+ *
+ * @since 2.5.1
+ *
+ * @param bool   $is_protected Whether the meta key is protected.
+ * @param string $meta_key     Meta key.
+ *
+ * @return bool
+ */
+function rtgodam_protect_media_file_meta( $is_protected, $meta_key ) {
+	if ( in_array( $meta_key, array( 'rtgodam_media_thumbnails', 'rtgodam_media_transcoded_files' ), true ) ) {
+		return true;
+	}
+
+	return $is_protected;
+}
+
+add_filter( 'is_protected_meta', 'rtgodam_protect_media_file_meta', 10, 2 );
+
+/**
  * Deletes/Unlinks the files given in the array
+ *
+ * Only files inside the uploads folder are deleted; any other path is skipped.
  *
  * @since 1.0.5
  *
@@ -269,14 +294,66 @@ function rtgodam_delete_transcoded_files( $files ) {
 		$files = array( $files );
 	}
 
-	$uploadpath = rtgodam_get_upload_dir();
-
 	foreach ( $files as $file ) {
-		if ( ! empty( $file ) ) {
-			$file_path = path_join( $uploadpath['basedir'], $file );
+		$file_path = rtgodam_get_uploads_file_path( $file );
+
+		if ( $file_path ) {
 			\RTGODAM\Inc\FileSystem::delete_file( $file_path );
 		}
 	}
+}
+
+/**
+ * Resolves a media file path to the real path of a file inside the uploads folder.
+ *
+ * Paths stored on a media item can point anywhere on the server, so code that deletes
+ * or copies media files resolves them here first and skips anything that is not a file
+ * inside the uploads folder.
+ *
+ * @since 2.5.1
+ *
+ * @param mixed $file File path, absolute or relative to the uploads folder.
+ *
+ * @return string|false Real path of the file, or false when it is not a file inside the uploads folder.
+ */
+function rtgodam_get_uploads_file_path( $file ) {
+	if ( ! is_string( $file ) || '' === $file || false !== strpos( $file, "\0" ) ) {
+		return false;
+	}
+
+	$uploads = rtgodam_get_upload_dir();
+
+	if ( empty( $uploads['basedir'] ) ) {
+		return false;
+	}
+
+	$path = path_join( $uploads['basedir'], $file );
+
+	if ( wp_is_stream( $uploads['basedir'] ) ) {
+		// A stream wrapper (offloaded uploads) has no real path to resolve, so compare the paths and refuse dot segments.
+		$real_path = wp_normalize_path( $path );
+		$basedir   = trailingslashit( wp_normalize_path( $uploads['basedir'] ) );
+
+		if ( preg_match( '#(^|/)\.\.(/|$)#', $real_path ) ) {
+			return false;
+		}
+	} else {
+		$real_path = realpath( $path );
+		$basedir   = realpath( $uploads['basedir'] );
+
+		if ( false === $real_path || false === $basedir ) {
+			return false;
+		}
+
+		$real_path = wp_normalize_path( $real_path );
+		$basedir   = trailingslashit( wp_normalize_path( $basedir ) );
+	}
+
+	if ( 0 !== strpos( $real_path, $basedir ) || ! is_file( $real_path ) ) {
+		return false;
+	}
+
+	return $real_path;
 }
 
 /**
@@ -388,6 +465,9 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 
 		// only display the check status button for media that are transcoding.
 		$transcoding_status = get_post_meta( $post_id, 'rtgodam_transcoding_status', true );
+		$preflight_reason   = rtgodam_is_job_refusal( get_post_meta( $post_id, 'rtgodam_transcoding_error_code', true ) )
+			? get_post_meta( $post_id, 'rtgodam_transcoding_error_msg', true )
+			: '';
 	} finally {
 		do_action( 'rtgodam_after_attachment_lookup' );
 	}
@@ -407,7 +487,11 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 					<path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
 				</svg>
 			</div>
-			<span class="status-text"><?php esc_html_e( 'Transcoding failed, please try again.', 'godam' ); ?></span>
+			<?php if ( '' !== $preflight_reason ) : ?>
+				<span class="status-text"><?php echo esc_html( $preflight_reason ); ?></span>
+			<?php else : ?>
+				<span class="status-text"><?php esc_html_e( 'Transcoding failed, please try again.', 'godam' ); ?></span>
+			<?php endif; ?>
 		</div>
 		<?php
 	} elseif ( empty( $transcoded_files ) && rtgodam_is_file_being_transcoded( $post_id ) ) {
@@ -514,10 +598,11 @@ function rtgodam_get_server_var( $server_key, $filter_type = FILTER_SANITIZE_FUL
  *
  * @param string $api_key The api key to verify.
  * @param bool   $save        Whether to save the API key in the site options.
+ * @param int    $timeout     Seconds to wait for Central. Defaults to Api_Key::VERIFY_TIMEOUT.
  *
  * @return array|WP_Error Array with status and data on success, WP_Error on failure.
  */
-function rtgodam_verify_api_key( $api_key, $save = false ) {
+function rtgodam_verify_api_key( $api_key, $save = false, $timeout = Api_Key::VERIFY_TIMEOUT ) {
 	if ( empty( $api_key ) ) {
 		return new \WP_Error( 'missing_api_key', __( 'API key is required.', 'godam' ), array( 'status' => 400 ) );
 	}
@@ -561,6 +646,7 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		'headers' => array(
 			'Content-Type' => 'application/json',
 		),
+		'timeout' => $timeout,
 	);
 
 	// Use vip_safe_wp_remote_post as primary and wp_safe_remote_post as fallback.
@@ -579,7 +665,14 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 	$status_code = wp_remote_retrieve_response_code( $response );
 	$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
-	// Central sends 200 status code with error if API Key is invalid.
+	// Central puts an `error` in its 5xx bodies too ("Service temporarily unavailable",
+	// "Account setup is still in progress"). Those say nothing about the key, so they
+	// must not mark it expired: report a temporary failure and keep the stored status.
+	if ( Api_Key::is_retryable_status( $status_code ) ) {
+		return new \WP_Error( 'verification_error', __( 'Unable to verify API key. Please try again later.', 'godam' ), array( 'status' => 500 ) );
+	}
+
+	// Central answers an invalid or inactive key with an `error` (HTTP 401/403, or 200 on older versions).
 	if ( isset( $body['message']['error'] ) ) {
 		$error_message = $body['message']['error'];
 
@@ -606,18 +699,6 @@ function rtgodam_verify_api_key( $api_key, $save = false ) {
 		// Mark API key as valid and clear any invalid timestamp.
 		rtgodam_set_api_key_status( Api_Key_Status::VALID );
 		rtgodam_clear_api_key_invalid_timestamp();
-
-		// Enable PostHog tracking once API key is activated or plugin is updated with active API key.
-		$settings = get_option( 'rtgodam-settings', array() );
-		if ( $save || empty( $settings['general']['posthog_initialized'] ) ) {
-			$settings['general']['enable_posthog_tracking'] = true;
-			$settings['general']['posthog_initialized']     = true;
-			update_option( 'rtgodam-settings', $settings );
-		} elseif ( ! empty( $settings['general']['posthog_initialized'] ) && ! $settings['general']['enable_posthog_tracking'] && $save ) {
-			// If user previously opted out but is now activating an API key, re-enable tracking.
-			$settings['general']['enable_posthog_tracking'] = true;
-			update_option( 'rtgodam-settings', $settings );
-		}
 
 		if ( $save ) {
 			// Save the API key in the site options only if it is verified.
@@ -732,15 +813,8 @@ function rtgodam_get_localize_array() {
 	 * Get Current User.
 	 */
 	$current_user = wp_get_current_user();
-	$email_id     = '';
 
 	$localize_array['userId'] = $current_user->ID;
-
-	if ( ! empty( (array) $current_user->data ) ) {
-
-		$email_id                  = $current_user->data->user_email;
-		$localize_array['emailId'] = $email_id;
-	}
 
 	$localize_array['siteId'] = get_current_blog_id();
 

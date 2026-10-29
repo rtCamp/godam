@@ -251,21 +251,18 @@ class Form_Submit {
 		/**
 		 * Error handling.
 		 */
+		// A failed send must not end the visitor's submission: the entry is already saved.
 		if ( is_wp_error( $response_from_transcoding ) ) {
-			return wp_send_json_error(
-				$response_from_transcoding->get_error_message(),
-				$response_from_transcoding->get_error_code(),
-			);
+			rtgodam_handle_form_transcoding_failure( 'sureforms', $entry_id, $response_from_transcoding );
+			return;
 		}
 
 		/**
 		 * If empty data or name send error.
 		 */
 		if ( empty( $response_from_transcoding->data ) || empty( $response_from_transcoding->data->name ) ) {
-			return wp_send_json_error(
-				__( 'Transcoding data not set', 'godam' ),
-				404
-			);
+			rtgodam_handle_form_transcoding_failure( 'sureforms', $entry_id, $response_from_transcoding );
+			return;
 		}
 
 		/**
@@ -351,8 +348,6 @@ class Form_Submit {
 		$transcoded_url_output   = '';
 
 		if ( ! empty( $transcoded_url ) ) {
-			$transcoded_url        = esc_url( $transcoded_url );
-			$transcoded_url        = "transcoded_url={$transcoded_url}";
 			$transcoded_url_output = sprintf(
 				"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
 				$is_audio 
@@ -371,7 +366,7 @@ class Form_Submit {
 		if ( $is_audio ) {
 			$audio_output = '<audio controls>';
 			if ( ! empty( $transcoded_url ) ) {
-				$audio_output .= sprintf( '<source src="%s" type="audio/mpeg">', esc_url( str_replace( 'transcoded_url=', '', $transcoded_url ) ) );
+				$audio_output .= sprintf( '<source src="%s" type="audio/mpeg">', esc_url( $transcoded_url ) );
 			}
 			$audio_output .= sprintf( '<source src="%s" type="%s">', esc_url( $value ), esc_attr( $file_type['type'] ) );
 			$audio_output .= esc_html__( 'Your browser does not support the audio element.', 'godam' );
@@ -379,7 +374,13 @@ class Form_Submit {
 			
 			$media_output = '<div class="srfm-godam-audio-preview">' . $audio_output . '</div>';
 		} else {
-			$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
+			$video_output = rtgodam_render_shortcode_from_atts(
+				'godam_video',
+				array(
+					'src'            => esc_url_raw( $value ),
+					'transcoded_url' => esc_url_raw( (string) $transcoded_url ),
+				)
+			);
 			$media_output = '<div class="srfm-godam-video-preview">' . $video_output . '</div>';
 		}
 		

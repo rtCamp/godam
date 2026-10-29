@@ -19,8 +19,8 @@ do_action( 'qm/cease' ); // phpcs:ignore WordPress.NamingConventions.ValidHookNa
 // We need to remove the admin bar for this template to avoid to display it on the video editor page.
 add_filter( 'show_admin_bar', '__return_false' ); // phpcs:ignore WordPressVIPMinimum.UserExperience.AdminBarRemoval.RemovalDetected
 
-$godam_layer    = get_query_var( 'rtgodam-render-layer' );
-$godam_layer_id = get_query_var( 'rtgodam-layer-id' );
+$godam_layer    = sanitize_key( get_query_var( 'rtgodam-render-layer' ) );
+$godam_layer_id = absint( get_query_var( 'rtgodam-layer-id' ) );
 ?>
 
 <!DOCTYPE html>
@@ -38,7 +38,7 @@ $godam_layer_id = get_query_var( 'rtgodam-layer-id' );
 	 * @since 1.4.0
 	 *
 	 * @param string $godam_layer The type of layer being rendered.
-	 * @param string $godam_layer_id The ID of the layer being rendered.
+	 * @param int    $godam_layer_id The ID of the layer being rendered.
 	 */
 	do_action( 'rtgodam_render_layer_for_video_editor_before', $godam_layer, $godam_layer_id );
 	?>
@@ -55,7 +55,7 @@ $godam_layer_id = get_query_var( 'rtgodam-layer-id' );
 				 * @since 1.4.0
 				 *
 				 * @param string $godam_layer The type of layer being rendered.
-				 * @param string $godam_layer_id The ID of the layer being rendered.
+				 * @param int    $godam_layer_id The ID of the layer being rendered.
 				 */
 				do_action( 'rtgodam_render_layer_for_video_editor', $godam_layer, $godam_layer_id );
 			?>
@@ -67,7 +67,7 @@ $godam_layer_id = get_query_var( 'rtgodam-layer-id' );
 		 * @since 1.4.0
 		 *
 		 * @param string $godam_layer The type of layer being rendered.
-		 * @param string $godam_layer_id The ID of the layer being rendered.
+		 * @param int    $godam_layer_id The ID of the layer being rendered.
 		 */
 		do_action( 'rtgodam_render_layer_for_video_editor_after', $godam_layer, $godam_layer_id );
 	?>

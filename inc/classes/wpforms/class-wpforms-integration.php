@@ -214,18 +214,15 @@ class WPForms_Integration {
 				$job_type
 			);
 
+			// A failed send must not end the visitor's submission: the entry is already saved.
 			if ( is_wp_error( $response ) ) {
-				return wp_send_json_error(
-					$response->get_error_message(),
-					$response->get_error_code(),
-				);
+				rtgodam_handle_form_transcoding_failure( 'wpforms', $entry_id, $response );
+				continue;
 			}
 
 			if ( empty( $response->data ) || empty( $response->data->name ) ) {
-				return wp_send_json_error(
-					__( 'Transcoding data not set', 'godam' ),
-					404
-				);
+				rtgodam_handle_form_transcoding_failure( 'wpforms', $entry_id, $response );
+				continue;
 			}
 
 			$job_id = $response->data->name;

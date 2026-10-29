@@ -128,12 +128,14 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 
 			$transcoded_url_meta_key = 'rtgodam_transcoded_url_everestforms_' . $form_id . '_' . $entry_id;
 			$transcoded_url_output   = '';
+			$transcoded_url_source   = '';
+			$transcoded_url          = '';
 
 			if ( ! empty( $entry_data ) ) {
-				$transcoded_url = esc_url( $entry_data->meta[ $transcoded_url_meta_key ] ?? '' );
+				$transcoded_url_source = $entry_data->meta[ $transcoded_url_meta_key ] ?? '';
+				$transcoded_url        = esc_url( $transcoded_url_source );
 
 				if ( ! empty( $transcoded_url ) ) {
-					$transcoded_url        = "transcoded_url={$transcoded_url}";
 					$transcoded_url_output = sprintf(
 						"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
 						$is_audio
@@ -151,8 +153,7 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 			if ( $is_audio ) {
 				$audio_output = '<audio controls style="width: 100%; margin-top: 10px;">';
 				if ( ! empty( $transcoded_url ) ) {
-					$audio_src     = str_replace( 'transcoded_url=', '', $transcoded_url );
-					$audio_output .= sprintf( '<source src="%s" type="audio/mpeg">', esc_url( $audio_src ) );
+					$audio_output .= sprintf( '<source src="%s" type="audio/mpeg">', esc_url( $transcoded_url ) );
 				}
 				$audio_output .= sprintf( '<source src="%s" type="%s">', esc_url( $value ), esc_attr( $mime_type ) );
 				$audio_output .= esc_html__( 'Your browser does not support the audio element.', 'godam' );
@@ -164,7 +165,13 @@ if ( class_exists( 'EVF_Form_Fields_Upload' ) ) {
 
 				$media_output = $audio_output;
 			} else {
-				$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
+				$video_output = rtgodam_render_shortcode_from_atts(
+					'godam_video',
+					array(
+						'src'            => esc_url_raw( $value ),
+						'transcoded_url' => esc_url_raw( $transcoded_url_source ),
+					)
+				);
 
 				// Workaround, replace all line breaks and new lines with empty string.
 				$video_output = str_replace( array( "\r", "\n" ), '', $video_output );

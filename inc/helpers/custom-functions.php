@@ -354,49 +354,67 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 		return $no_key_data;
 	}
 
-	// Check if we should skip verification.
-	// Skip only for expired keys that are past their grace period.
-	$skip_verification = false;
-	if ( ! $force_refresh && \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status && ! rtgodam_is_api_key_in_grace_period() ) {
-		// Grace period expired for expired key, pause automatic checks until manual refresh.
-		$skip_verification = true;
+	// At most one call to Central per request: later calls in the same request reuse
+	// what the first one got, even if another request saved the same data meanwhile.
+	static $checked_this_request = null;
+	if ( null !== $checked_this_request && ! $force_refresh ) {
+		$rtgodam_user_data = $checked_this_request;
 	}
 
-	$should_verify = (
-		empty( $rtgodam_user_data ) ||
-		( isset( $rtgodam_user_data['timestamp'] ) && ( time() - $rtgodam_user_data['timestamp'] ) > $timeout )
-	) && ! $skip_verification;
+	$has_cached_data = is_array( $rtgodam_user_data ) && isset( $rtgodam_user_data['timestamp'] );
+	$cache_age       = $has_cached_data ? time() - (int) $rtgodam_user_data['timestamp'] : PHP_INT_MAX;
+	$retry_at        = $has_cached_data && isset( $rtgodam_user_data['retry_at'] ) ? (int) $rtgodam_user_data['retry_at'] : 0;
 
-	// Allow force refresh to bypass timeout and skip checks.
+	// Time since the last attempt, successful or not. Checks that Central could not
+	// answer don't move `timestamp`, so this is what tells whether WP-Cron is keeping up.
+	$last_attempt = $has_cached_data ? (int) ( $rtgodam_user_data['checked_at'] ?? $rtgodam_user_data['timestamp'] ) : 0;
+	$attempt_age  = $has_cached_data ? time() - $last_attempt : PHP_INT_MAX;
+
+	// An expired key past its grace period is still re-checked, just rarely, so a
+	// renewed subscription comes back on its own without a manual refresh.
+	$refresh_after = $timeout;
+	if ( \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status && ! rtgodam_is_api_key_in_grace_period() ) {
+		$refresh_after = max( $timeout, \RTGODAM\Inc\Helpers\Api_Key::EXPIRED_RECHECK_INTERVAL );
+	}
+
 	if ( $force_refresh ) {
 		$should_verify = true;
+	} elseif ( $retry_at ) {
+		// Only while Central keeps failing: retry on the short delay. The next
+		// successful check drops `retry_at`, which puts the site back on $refresh_after.
+		$should_verify = time() >= $retry_at;
+	} else {
+		$should_verify = $cache_age > $refresh_after;
 	}
 
-	if ( $should_verify ) {
-		// Verify the user's API Key.
-		$result = rtgodam_verify_api_key( $api_key );
+	if ( null !== $checked_this_request && ! $force_refresh ) {
+		$should_verify = false;
+	}
 
-		$valid_api_key    = false;
-		$user_data        = array();
-		$transient_status = null; // For temporary verification_failed state.
+	// Verifying can take a while on a cold Central cache, so serve the cached data and
+	// let WP-Cron check instead of making this request (often a visitor's page load)
+	// wait. Only when no attempt has been made for well past the refresh time, as on
+	// sites where WP-Cron never runs, does the request check itself.
+	$verify_inline = $should_verify && ! $force_refresh && ! wp_doing_cron();
+	if ( $verify_inline && $attempt_age <= $refresh_after + \RTGODAM\Inc\Helpers\Api_Key::BACKGROUND_REFRESH_WINDOW ) {
+		rtgodam_schedule_user_data_refresh();
+		$should_verify = false;
+	}
+
+	$verify_timeout = $verify_inline ? \RTGODAM\Inc\Helpers\Api_Key::INLINE_VERIFY_TIMEOUT : \RTGODAM\Inc\Helpers\Api_Key::VERIFY_TIMEOUT;
+	$result         = $should_verify ? rtgodam_verify_api_key( $api_key, false, $verify_timeout ) : null;
+
+	if ( $should_verify && rtgodam_is_verification_unavailable( $result ) ) {
+		$rtgodam_user_data = rtgodam_keep_user_data_after_failed_check( $api_key, $rtgodam_user_data );
+	} elseif ( $should_verify ) {
+		$valid_api_key = false;
+		$user_data     = array();
 
 		if ( is_wp_error( $result ) ) {
-			// API Key shouldn't be invalid if there is a server error.
-			$error_data  = $result->get_error_data();
-			$status_code = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR;
-
-			if ( \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR === $status_code && ! empty( $api_key ) ) {
-				// Server error with existing API key - DON'T change DB status, just show verification_failed to user.
-				// DON'T set error timestamp - this is temporary and we should keep checking.
-				$transient_status = \RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED;
-				$valid_api_key    = false;
-			} elseif ( \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR !== $status_code ) {
-				$valid_api_key = false;
-				// Preserve existing user data for expired/invalid keys.
-				$existing_usage = get_option( 'rtgodam-usage', array() );
-				if ( ! empty( $existing_usage ) && isset( $existing_usage[ $api_key ] ) ) {
-					$user_data = is_object( $existing_usage[ $api_key ] ) ? (array) $existing_usage[ $api_key ] : $existing_usage[ $api_key ];
-				}
+			// Preserve existing user data for expired/invalid keys.
+			$existing_usage = get_option( 'rtgodam-usage', array() );
+			if ( ! empty( $existing_usage ) && isset( $existing_usage[ $api_key ] ) ) {
+				$user_data = is_object( $existing_usage[ $api_key ] ) ? (array) $existing_usage[ $api_key ] : $existing_usage[ $api_key ];
 			}
 		} else {
 			$valid_api_key = true;
@@ -407,11 +425,6 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 
 		// Get updated status after verification.
 		$api_key_status = rtgodam_get_api_key_status();
-
-		// If there's a transient status (verification_failed), use it instead of DB status.
-		if ( ! is_null( $transient_status ) ) {
-			$api_key_status = $transient_status;
-		}
 
 		$rtgodam_user_data = array(
 			'currentUserId'  => get_current_user_id(),
@@ -456,10 +469,15 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 			$rtgodam_user_data['storageBandwidthError'] = $usage_data->get_error_message();
 		}
 
-		$rtgodam_user_data['timestamp'] = time();
+		$rtgodam_user_data['timestamp']  = time();
+		$rtgodam_user_data['checked_at'] = $rtgodam_user_data['timestamp'];
 
 		// Save the userData in wp_options.
 		update_option( 'rtgodam_user_data', $rtgodam_user_data );
+	}
+
+	if ( $should_verify ) {
+		$checked_this_request = $rtgodam_user_data;
 	}
 
 	// Ensure api_key_status is always present in the data.
@@ -502,6 +520,426 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 	}
 
 	return $rtgodam_user_data;
+}
+
+/**
+ * Whether a verify result means Central could not answer (timeout, network error,
+ * 5xx) rather than giving an answer about the key.
+ *
+ * @since 2.4.0
+ *
+ * @param array|\WP_Error $result Result of rtgodam_verify_api_key().
+ *
+ * @return bool
+ */
+function rtgodam_is_verification_unavailable( $result ) {
+	if ( ! is_wp_error( $result ) ) {
+		return false;
+	}
+
+	$error_data = $result->get_error_data();
+	$status     = is_array( $error_data ) && isset( $error_data['status'] ) ? $error_data['status'] : \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR;
+
+	return \RTGODAM\Inc\Enums\HTTP_Status_Code::INTERNAL_SERVER_ERROR === $status;
+}
+
+/**
+ * Store the user data to use after a check Central could not answer.
+ *
+ * A key that verified as valid within Api_Key::LAST_KNOWN_GOOD_WINDOW keeps its
+ * cached data and stays valid, so one slow or failed request no longer switches
+ * GoDAM off. Otherwise the key is shown as `verification_failed`. Either way the
+ * check is retried after Api_Key::RETRY_INTERVAL instead of a full refresh period,
+ * until a check succeeds and the site goes back to the normal interval.
+ * `timestamp` keeps the time of the last successful check, `checked_at` the time
+ * of this attempt.
+ *
+ * @since 2.4.0
+ *
+ * @param string     $api_key  The stored API key.
+ * @param array|bool $previous The cached user data, or false when there is none.
+ *
+ * @return array The user data now cached.
+ */
+function rtgodam_keep_user_data_after_failed_check( $api_key, $previous ) {
+	$last_checked  = is_array( $previous ) && isset( $previous['timestamp'] ) ? (int) $previous['timestamp'] : 0;
+	$was_valid     = is_array( $previous ) && ! empty( $previous['valid_api_key'] );
+	$still_trusted = $was_valid
+		&& \RTGODAM\Inc\Enums\Api_Key_Status::VALID === rtgodam_get_api_key_status()
+		&& ( time() - $last_checked ) < \RTGODAM\Inc\Helpers\Api_Key::LAST_KNOWN_GOOD_WINDOW;
+
+	if ( $still_trusted ) {
+		$user_data = $previous;
+	} else {
+		$user_data = array(
+			'currentUserId'  => get_current_user_id(),
+			'valid_api_key'  => false,
+			'api_key_status' => \RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED,
+			'user_data'      => array( 'masked_api_key' => rtgodam_mask_string( $api_key ) ),
+			'timestamp'      => $last_checked,
+		);
+	}
+
+	$user_data['checked_at'] = time();
+	$user_data['retry_at']   = $user_data['checked_at'] + \RTGODAM\Inc\Helpers\Api_Key::RETRY_INTERVAL;
+
+	update_option( 'rtgodam_user_data', $user_data );
+
+	return $user_data;
+}
+
+/**
+ * Queue a one-off WP-Cron refresh of the cached user data, unless one is queued.
+ *
+ * @since 2.4.0
+ */
+function rtgodam_schedule_user_data_refresh() {
+	if ( ! wp_next_scheduled( 'rtgodam_refresh_user_data' ) ) {
+		wp_schedule_single_event( time(), 'rtgodam_refresh_user_data' );
+	}
+}
+
+add_action( 'rtgodam_refresh_user_data', 'rtgodam_get_user_data', 10, 0 );
+
+/**
+ * Get the licence preflight checks GoDAM Central flagged for this site.
+ *
+ * Central runs these checks on every `verify_api_key` call and returns them under
+ * `preflight`. That response is already kept in the cached user data, so this makes
+ * no remote request, and removing the API key (which drops the cache) clears them.
+ *
+ * The quota check is left out: `usage_limit_notices()` already warns about usage,
+ * from fresher numbers and at a lower threshold.
+ *
+ * @since 2.3.2
+ *
+ * @see https://github.com/rtCamp/godam-core/issues/856
+ *
+ * @return array[] Checks with a `warn` or `fail` status, in the order Central sent them.
+ */
+function rtgodam_get_preflight_issues() {
+	$user_data = rtgodam_get_user_data();
+
+	if ( empty( $user_data['valid_api_key'] ) || empty( $user_data['user_data']['preflight']['checks'] ) ) {
+		return array();
+	}
+
+	$issues = array();
+
+	foreach ( (array) $user_data['user_data']['preflight']['checks'] as $check ) {
+		if ( ! is_array( $check ) || 'check_quota' === ( $check['id'] ?? '' ) ) {
+			continue;
+		}
+
+		if ( in_array( $check['status'] ?? '', array( 'warn', 'fail' ), true ) ) {
+			$issues[] = $check;
+		}
+	}
+
+	return $issues;
+}
+
+/**
+ * Turn the source-video checks Central failed into a short message for the media item.
+ *
+ * Central's messages are diagnostics (HTTP codes, Python exceptions) written for
+ * support, so the known checks get plain wording here. A check this plugin doesn't
+ * know yet falls back to Central's message.
+ *
+ * When the video URL can't be reached, Central still reports the content-type and
+ * size checks, but only to say they were skipped. They add nothing, so only the
+ * reachability failure is kept in that case.
+ *
+ * @since 2.3.2
+ *
+ * @param array $results The `message.results` list from Central's HTTP 417 response.
+ *
+ * @return string What went wrong and what to do, or an empty string if no check failed.
+ */
+function rtgodam_get_preflight_failure_message( $results ) {
+	$failed = array_filter(
+		(array) $results,
+		function ( $check ) {
+			return is_array( $check ) && 'fail' === ( $check['status'] ?? '' );
+		}
+	);
+
+	foreach ( $failed as $check ) {
+		if ( 'check_source_reachable' === ( $check['id'] ?? '' ) ) {
+			$failed = array( $check );
+			break;
+		}
+	}
+
+	// Central refuses every http:// source, and "make it publicly accessible" is the wrong fix for that.
+	foreach ( $failed as $check ) {
+		if ( false !== stripos( $check['message'] ?? '', "disallowed scheme 'http'" ) ) {
+			return __( 'Only files served over HTTPS can be transcoded. Serve your media over https://.', 'godam' );
+		}
+	}
+
+	$known = array(
+		'check_source_reachable'    => __( 'This file couldn\'t be downloaded from your site. Make sure uploaded videos are publicly accessible.', 'godam' ),
+		'check_source_content_type' => __( 'The file\'s link opens a web page instead of the video, often because of a login or media protection plugin.', 'godam' ),
+		'check_source_size'         => __( 'The file is empty or too large. Try uploading it again.', 'godam' ),
+	);
+
+	$messages = array();
+
+	foreach ( $failed as $check ) {
+		$messages[] = $known[ $check['id'] ?? '' ] ?? ( $check['message'] ?? '' );
+	}
+
+	return sanitize_text_field( implode( ' ', array_unique( array_filter( $messages ) ) ) );
+}
+
+/**
+ * Turn Central's refusal of a job (any 4xx answer) into a short message for the media item.
+ *
+ * Central refuses a job on purpose in two shapes: HTTP 417 with the source-file checks
+ * that failed, or Frappe's standard error body for licence and account problems
+ * (unknown licence, licence inactive, storage full, site not allowed). The known
+ * reasons get plain wording; anything else falls back to Central's own message.
+ *
+ * @since 2.3.2
+ *
+ * @see https://github.com/rtCamp/godam-core/issues/856
+ *
+ * @param int   $status_code HTTP status of Central's answer.
+ * @param array $body        Central's decoded JSON answer.
+ *
+ * @return array{code: string, message: string} Error code (`preflight_failed` for the
+ *                                              source-file checks, `job_refused` otherwise)
+ *                                              and message, or empty strings when the
+ *                                              answer is not a refusal.
+ */
+function rtgodam_get_job_refusal( $status_code, $body ) {
+	$none = array(
+		'code'    => '',
+		'message' => '',
+		'detail'  => '',
+	);
+
+	// 408 and 429 are transient (timeout, rate limit), not a refusal: retrying can work.
+	if ( $status_code < 400 || $status_code >= 500 || in_array( $status_code, array( 408, 429 ), true ) ) {
+		return $none;
+	}
+
+	$body = is_array( $body ) ? $body : array();
+
+	if ( ! empty( $body['message']['has_failures'] ) ) {
+		$results = $body['message']['results'] ?? array();
+		$message = rtgodam_get_preflight_failure_message( $results );
+
+		return '' === $message ? $none : array(
+			'code'    => 'preflight_failed',
+			'message' => $message,
+			'detail'  => rtgodam_get_preflight_failure_detail( $results ),
+		);
+	}
+
+	$reason = rtgodam_get_frappe_error_message( $body );
+
+	// Central can quote the API key ("Could not find License: <key>"). The plugin never
+	// shows it in full, so mask it as GoDAM settings does.
+	$api_key = (string) get_option( 'rtgodam-api-key', '' );
+	if ( '' !== $api_key ) {
+		$reason = str_replace( $api_key, rtgodam_mask_string( $api_key ), $reason );
+	}
+
+	$known = array(
+		// An unknown key fails Central's link check (HTTP 417) before its own 404 "Invalid License".
+		'Could not find License' => __( 'This site\'s API key wasn\'t recognised. Check the key in GoDAM settings.', 'godam' ),
+		'Invalid License'        => __( 'This site\'s API key wasn\'t recognised. Check the key in GoDAM settings.', 'godam' ),
+		'License Inactive'       => __( 'Your GoDAM licence is inactive. Renew your plan to transcode new uploads.', 'godam' ),
+		'Storage limit exceeded' => __( 'Your GoDAM storage is full. Upgrade your plan or delete unused files.', 'godam' ),
+		'not whitelisted'        => __( 'This site isn\'t on your GoDAM account\'s list of allowed sites. Ask your GoDAM admin to add it.', 'godam' ),
+	);
+
+	$message = '';
+
+	foreach ( $known as $needle => $plain ) {
+		if ( false !== stripos( $reason, $needle ) ) {
+			$message = $plain;
+			break;
+		}
+	}
+
+	if ( '' === $message ) {
+		$message = '' !== $reason ? $reason : __( 'This file can\'t be transcoded.', 'godam' );
+	}
+
+	$message = sanitize_text_field( $message );
+	$detail  = sanitize_text_field( $reason );
+
+	return array(
+		'code'    => 'job_refused',
+		'message' => $message,
+		// Only worth keeping when it says something the plain message doesn't.
+		'detail'  => $detail === $message ? '' : $detail,
+	);
+}
+
+/**
+ * Central's own messages for the source-file checks that failed, for support.
+ *
+ * Follows rtgodam_get_preflight_failure_message(): when the URL can't be reached, only
+ * that check is kept.
+ *
+ * @since 2.3.2
+ *
+ * @param array $results The `message.results` list from Central's HTTP 417 response.
+ *
+ * @return string The failing checks' messages, or an empty string.
+ */
+function rtgodam_get_preflight_failure_detail( $results ) {
+	$failed = array_values(
+		array_filter(
+			(array) $results,
+			function ( $check ) {
+				return is_array( $check ) && 'fail' === ( $check['status'] ?? '' );
+			}
+		)
+	);
+
+	foreach ( $failed as $check ) {
+		if ( 'check_source_reachable' === ( $check['id'] ?? '' ) ) {
+			$failed = array( $check );
+			break;
+		}
+	}
+
+	return sanitize_text_field( implode( ' ', array_filter( array_column( $failed, 'message' ) ) ) );
+}
+
+/**
+ * Read the human message out of a Frappe error body.
+ *
+ * Frappe sends it JSON-encoded twice in `_server_messages`; `exception` carries it too,
+ * after the exception class name.
+ *
+ * @since 2.3.2
+ *
+ * @param array $body Central's decoded JSON answer.
+ *
+ * @return string The message, or an empty string.
+ */
+function rtgodam_get_frappe_error_message( $body ) {
+	if ( ! empty( $body['_server_messages'] ) && is_string( $body['_server_messages'] ) ) {
+		$messages = json_decode( $body['_server_messages'], true );
+		$first    = is_array( $messages ) && isset( $messages[0] ) ? json_decode( (string) $messages[0], true ) : null;
+
+		if ( is_array( $first ) && ! empty( $first['message'] ) ) {
+			return wp_strip_all_tags( (string) $first['message'] );
+		}
+	}
+
+	if ( ! empty( $body['exception'] ) && is_string( $body['exception'] ) ) {
+		$parts = explode( ': ', $body['exception'], 2 );
+
+		return trim( $parts[1] ?? $parts[0] );
+	}
+
+	return '';
+}
+
+/**
+ * Mark an attachment as failed when Central refused its job.
+ *
+ * A refusal (any 4xx answer) is deliberate: the source file failed Central's checks,
+ * or the licence, storage or site isn't allowed to transcode. Before this the plugin
+ * kept no status for it, so the admin was never told why the file didn't transcode.
+ * Retrying sends the same request, so the attachment is also dropped from the 5xx
+ * retry queue in case an earlier attempt put it there.
+ *
+ * @since 2.3.2
+ *
+ * @see https://github.com/rtCamp/godam-core/issues/856
+ *
+ * @param int            $attachment_id ID of attachment.
+ * @param array|WP_Error $response      Response from the Transcoder Job request.
+ *
+ * @return bool Whether the response was a refusal (and was recorded).
+ */
+function rtgodam_record_job_refusal( $attachment_id, $response ) {
+	if ( is_wp_error( $response ) ) {
+		return false;
+	}
+
+	$refusal = rtgodam_get_job_refusal(
+		intval( wp_remote_retrieve_response_code( $response ) ),
+		json_decode( wp_remote_retrieve_body( $response ), true )
+	);
+
+	if ( '' === $refusal['code'] ) {
+		return false;
+	}
+
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', $refusal['code'] );
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $refusal['message'] );
+	// Central's own wording, for support: the plain message above can't carry every cause.
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', $refusal['detail'] );
+
+	rtgodam_remove_from_retry_queue( $attachment_id );
+
+	return true;
+}
+
+/**
+ * Remove an attachment from the 5xx retry queue.
+ *
+ * Entries are keyed by attachment ID, but legacy ones are numerically indexed (see the
+ * 5xx branch of wp_media_transcoding()), so a key can hold another attachment. The
+ * embedded attachment_id decides; the key only counts for an entry without one.
+ *
+ * @since 2.3.2
+ *
+ * @param int $attachment_id ID of attachment.
+ *
+ * @return void
+ */
+function rtgodam_remove_from_retry_queue( $attachment_id ) {
+	$failed_transcoding_attachments = get_option( 'rtgodam-failed-transcoding-attachments', array() );
+	$remaining                      = array_filter(
+		(array) $failed_transcoding_attachments,
+		function ( $entry, $key ) use ( $attachment_id ) {
+			$entry_id = is_array( $entry ) && isset( $entry['attachment_id'] ) ? $entry['attachment_id'] : $key;
+
+			return (int) $entry_id !== (int) $attachment_id;
+		},
+		ARRAY_FILTER_USE_BOTH
+	);
+
+	if ( count( $remaining ) !== count( (array) $failed_transcoding_attachments ) ) {
+		update_option( 'rtgodam-failed-transcoding-attachments', $remaining );
+	}
+}
+
+/**
+ * Whether Central refused a job because of the plan: storage full or licence inactive.
+ *
+ * @since 2.3.2
+ *
+ * @param string $detail Central's own wording, from `rtgodam_transcoding_error_detail`.
+ *
+ * @return bool
+ */
+function rtgodam_refusal_needs_plan( $detail ) {
+	return false !== stripos( (string) $detail, 'Storage limit exceeded' ) || false !== stripos( (string) $detail, 'License Inactive' );
+}
+
+/**
+ * Whether an attachment's failure is Central refusing its job (see rtgodam_record_job_refusal()).
+ *
+ * @since 2.3.2
+ *
+ * @param string $error_code The attachment's `rtgodam_transcoding_error_code`.
+ *
+ * @return bool
+ */
+function rtgodam_is_job_refusal( $error_code ) {
+	return in_array( $error_code, array( 'preflight_failed', 'job_refused' ), true );
 }
 
 /**
@@ -1117,6 +1555,59 @@ function rtgodam_get_document_download_url( $attachment_id = 0, $fallback_src = 
 }
 
 /**
+ * Deal with a form recording that couldn't be sent for transcoding.
+ *
+ * The recording is sent from inside the visitor's submission, after the entry is saved,
+ * so a failure must not end that request: the form shows its normal confirmation. The
+ * reason is kept for the site owner instead, as a note on the entry where the form
+ * plugin has notes (Gravity Forms), and through the `rtgodam_form_transcoding_failed`
+ * action for the others.
+ *
+ * @since 2.3.2
+ *
+ * @param string          $form_type Form type passed to rtgodam_send_video_to_godam_for_transcoding().
+ * @param int             $entry_id  Form entry ID.
+ * @param WP_Error|object $response  What rtgodam_send_video_to_godam_for_transcoding() returned.
+ *
+ * @return void
+ */
+function rtgodam_handle_form_transcoding_failure( $form_type, $entry_id, $response ) {
+	$error_data = is_wp_error( $response ) ? $response->get_error_data() : array();
+	$reason     = is_array( $error_data ) && ! empty( $error_data['reason'] ) ? $error_data['reason'] : '';
+
+	if ( '' === $reason && is_wp_error( $response ) && 'transcoding_disabled' === $response->get_error_code() ) {
+		$reason = $response->get_error_message();
+	}
+
+	if ( '' === $reason ) {
+		$reason = __( 'The transcoding service couldn\'t accept the recording. Try again later, or contact support if this keeps happening.', 'godam' );
+	}
+
+	if ( 'gf' === $form_type && class_exists( 'GFAPI' ) ) {
+		\GFAPI::add_note(
+			$entry_id,
+			0,
+			'GoDAM',
+			/* translators: %s: Why the recording couldn't be transcoded. */
+			sprintf( __( 'The recording couldn\'t be transcoded. %s', 'godam' ), $reason )
+		);
+	}
+
+	/**
+	 * Fires when a form recording couldn't be sent for transcoding. The submission itself
+	 * is unaffected; use this to tell the site owner, for example as an entry note.
+	 *
+	 * @since 2.3.2
+	 *
+	 * @param string          $form_type Form type, e.g. `gf`, `wpforms`, `fluentforms`.
+	 * @param int             $entry_id  Form entry ID.
+	 * @param string          $reason    Plain reason for the site owner.
+	 * @param WP_Error|object $response  What the send returned.
+	 */
+	do_action( 'rtgodam_form_transcoding_failed', $form_type, $entry_id, $reason, $response );
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.
@@ -1187,12 +1678,14 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$api_key = get_option( 'rtgodam-api-key', '' );
 
 	/**
-	 * Watermark settings.
+	 * Watermark settings. Saved settings can lack the video section, and this runs inside
+	 * the visitor's form submission, so fall back to the defaults key by key.
 	 */
-	$rtgodam_watermark           = $godam_settings['video']['watermark'];
-	$rtgodam_use_watermark_image = $godam_settings['video']['use_watermark_image'];
-	$rtgodam_watermark_text      = sanitize_text_field( $godam_settings['video']['watermark_text'] );
-	$rtgodam_watermark_url       = esc_url( $godam_settings['video']['watermark_url'] );
+	$video_settings              = array_merge( $default_settings['video'], (array) ( $godam_settings['video'] ?? array() ) );
+	$rtgodam_watermark           = $video_settings['watermark'];
+	$rtgodam_use_watermark_image = $video_settings['use_watermark_image'];
+	$rtgodam_watermark_text      = sanitize_text_field( $video_settings['watermark_text'] );
+	$rtgodam_watermark_url       = esc_url( $video_settings['watermark_url'] );
 
 	$watermark_to_use = array();
 
@@ -1261,12 +1754,15 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 		$watermark_to_use
 	);
 
+	/** This filter is documented in admin/class-rtgodam-transcoder-handler.php */
+	$verify_ssl = (bool) apply_filters( 'godam_transcoder_verify_ssl', true );
+
 	/**
 	 * Prepare the args to pass to request.
 	 */
 	$args = array(
 		'method'    => 'POST',
-		'sslverify' => false,
+		'sslverify' => $verify_ssl,
 		'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 		'body'      => $body,
 	);
@@ -1283,13 +1779,21 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 	$response = wp_remote_post( $transcoding_url, $args );
 
 	if ( is_wp_error( $response ) || empty( $response['response']['code'] ) || 200 !== intval( $response['response']['code'] ) ) {
+		// The plain reason goes in the error's data, for the site owner (see
+		// rtgodam_handle_form_transcoding_failure()); the visitor never sees it.
+		$refusal = is_wp_error( $response ) ? array( 'message' => '' ) : rtgodam_get_job_refusal(
+			intval( wp_remote_retrieve_response_code( $response ) ),
+			json_decode( wp_remote_retrieve_body( $response ), true )
+		);
+
 		return new WP_Error(
 			400,
 			sprintf(
 				/* translators: %s: Entry ID for which transcoding failed */
 				__( 'Transcoding failed | entry Id: %s', 'godam' ),
 				$entry_id
-			)
+			),
+			array( 'reason' => $refusal['message'] )
 		);
 	}
 
@@ -1359,6 +1863,25 @@ function rtgodam_get_current_logged_in_user_data() {
 		'email' => 'anonymous@' . $domain,
 		'name'  => __( 'Anonymous', 'godam' ),
 		'type'  => 'non-user',
+	);
+}
+
+/**
+ * Retrieves the current user's details for printing into a front-end page.
+ *
+ * Only the display name and whether someone is signed in: the page needs nothing
+ * else, and the REST routes that need the email read it on the server. The list
+ * of fields is fixed here, so a field added later to
+ * rtgodam_get_current_logged_in_user_data() is not printed by accident.
+ *
+ * @since 2.5.0
+ *
+ * @return array An associative array containing 'name' and 'type' of the user or guest.
+ */
+function rtgodam_get_current_user_data_for_page() {
+	return array_intersect_key(
+		rtgodam_get_current_logged_in_user_data(),
+		array_flip( array( 'name', 'type' ) )
 	);
 }
 
@@ -1596,6 +2119,251 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 }
 
 /**
+ * Whether the current user may see an attachment on GoDAM's public routes and
+ * pages: the preview and embed pages, the video shortcode route and the
+ * transcoding status route.
+ *
+ * Media follows the post it was uploaded to, as WordPress's own media API does.
+ * It is shown when it is unattached, or when that post is published (or has
+ * another public status), with or without a password. Users who can edit the
+ * attachment always see it, so editors can preview their own unpublished
+ * media; users who can read a private or draft parent see its media too.
+ *
+ * Media used on a publicly viewable post is shown as well, whichever post it
+ * was uploaded to: a video uploaded while drafting one post and placed on a
+ * published page keeps working in that page's player, gallery and embed. The
+ * usage comes from GoDAM's media usage index (see Media_Usage_Tracker).
+ *
+ * Fires the attachment lookup hooks itself, so a site that keeps its media on
+ * another site answers from there.
+ *
+ * @since 2.5.1
+ *
+ * @param int $attachment_id Attachment ID.
+ * @return bool
+ */
+function rtgodam_can_view_attachment( $attachment_id ) {
+	$attachment_id = absint( $attachment_id );
+
+	if ( ! $attachment_id ) {
+		return false;
+	}
+
+	/**
+	 * Fires before reading this attachment and the post it belongs to, so
+	 * integrations that centralize media on another site can switch context
+	 * first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$attachment = get_post( $attachment_id );
+
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			return false;
+		}
+
+		$can_view  = true;
+		$parent_id = (int) $attachment->post_parent;
+		$parent    = $parent_id ? get_post( $parent_id ) : null;
+
+		// A parent that no longer exists counts as unattached, as in get_post_status().
+		if ( $parent && ! current_user_can( 'edit_post', $attachment_id ) ) {
+			$can_view = is_post_status_viewable( get_post_status( $parent ) ) || current_user_can( 'read_post', $parent_id );
+		}
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
+	}
+
+	// The posts using the media belong to the current site, so they are read once the lookup above has closed.
+	if ( ! $can_view ) {
+		$can_view = rtgodam_usage_includes_public_post( \RTGODAM\Inc\Media_Usage_Tracker::get_instance()->get_usage_post_ids( $attachment_id ) );
+	}
+
+	/**
+	 * Filters whether the current user may see an attachment on GoDAM's public
+	 * routes and pages (preview, embed, video shortcode route and transcoding
+	 * status).
+	 *
+	 * The gallery listing is limited in the database query instead, so this
+	 * filter does not run for it.
+	 *
+	 * @since 2.5.1
+	 *
+	 * @param bool     $can_view   Whether the attachment may be shown.
+	 * @param \WP_Post $attachment The attachment.
+	 */
+	return (bool) apply_filters( 'rtgodam_can_view_attachment', $can_view, $attachment );
+}
+
+/**
+ * Whether any of the given posts, listed in a media usage record, shows its
+ * media to everyone: a post that is publicly viewable.
+ * Post ID 0 is the site-wide anchor for media in a block widget, which shows
+ * on every page.
+ *
+ * @since 2.5.1
+ *
+ * @param int[] $post_ids Post IDs from the media usage index.
+ * @return bool
+ */
+function rtgodam_usage_includes_public_post( array $post_ids ) {
+	foreach ( $post_ids as $post_id ) {
+		if ( 0 === (int) $post_id ) {
+			return true;
+		}
+
+		$post = get_post( $post_id ); // godam-coverage-ignore -- rtgodam_usage_includes_public_post(): the IDs come from the media usage index and name the posts that use the media, never attachments.
+
+		if ( $post && is_post_publicly_viewable( $post ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Statuses of the posts that anyone can view on the front end.
+ *
+ * @since 2.5.1
+ *
+ * @return string[]
+ */
+function rtgodam_get_viewable_post_statuses() {
+	$statuses = array_values( array_filter( get_post_stati(), 'is_post_status_viewable' ) );
+
+	return empty( $statuses ) ? array( 'publish' ) : $statuses;
+}
+
+/**
+ * IDs of the video attachments that were uploaded to a post that is not public
+ * (a draft, a private or scheduled post, and so on) but are used on one
+ * that is. The listing query keeps these, see rtgodam_public_media_query_clauses().
+ *
+ * Read once per request and site: the usage index lists the posts as serialized
+ * arrays, so the check of each is done in PHP, for the small set of videos that
+ * have both a non-public parent and a usage record.
+ *
+ * @since 2.5.1
+ *
+ * @param bool $refresh Whether to read again instead of using this request's copy.
+ * @return int[]
+ */
+function rtgodam_get_publicly_used_media_ids( $refresh = false ) {
+	static $cache = array();
+
+	$blog_id = get_current_blog_id();
+
+	if ( ! $refresh && isset( $cache[ $blog_id ] ) ) {
+		return $cache[ $blog_id ];
+	}
+
+	global $wpdb;
+
+	$statuses     = rtgodam_get_viewable_post_statuses();
+	$placeholders = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
+	$query_args   = array_merge( array( \RTGODAM\Inc\Media_Usage_Tracker::ATTACHMENT_META_KEY, $wpdb->esc_like( 'video/' ) . '%' ), $statuses );
+
+	/**
+	 * Fires before querying the media and the posts they belong to, so
+	 * integrations that centralize media on another site can switch context
+	 * first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the result is kept for the request below.
+		$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- each status adds one replacement to the two counted here.
+			"SELECT media.ID, usage_meta.meta_value
+			FROM {$wpdb->posts} AS media
+			INNER JOIN {$wpdb->posts} AS media_parent ON media_parent.ID = media.post_parent
+			INNER JOIN {$wpdb->postmeta} AS usage_meta ON usage_meta.post_id = media.ID AND usage_meta.meta_key = %s
+			WHERE media.post_type = 'attachment'
+			AND media.post_mime_type LIKE %s
+			AND media_parent.post_status NOT IN ( {$placeholders} )", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- table names from $wpdb; the meta key and mime type, then one %s per status.
+			$query_args
+		)
+	);
+	do_action( 'rtgodam_after_attachment_lookup' );
+
+	$usage_by_media = array();
+	$usage_post_ids = array();
+
+	foreach ( (array) $rows as $row ) {
+		$post_ids = maybe_unserialize( $row->meta_value );
+
+		if ( is_array( $post_ids ) && ! empty( $post_ids ) ) {
+			$usage_by_media[ (int) $row->ID ] = array_map( 'intval', $post_ids );
+			$usage_post_ids                   = array_merge( $usage_post_ids, $usage_by_media[ (int) $row->ID ] );
+		}
+	}
+
+	// Load the posts using the media together, so the checks below add no queries.
+	if ( ! empty( $usage_post_ids ) && function_exists( '_prime_post_caches' ) ) {
+		_prime_post_caches( array_values( array_unique( array_filter( $usage_post_ids ) ) ), false, false );
+	}
+
+	$media_ids = array();
+
+	foreach ( $usage_by_media as $media_id => $post_ids ) {
+		if ( rtgodam_usage_includes_public_post( $post_ids ) ) {
+			$media_ids[] = $media_id;
+		}
+	}
+
+	$cache[ $blog_id ] = $media_ids;
+
+	return $media_ids;
+}
+
+/**
+ * Limit a query flagged with `rtgodam_public_media_only` to attachments that are
+ * unattached, or whose parent post is published (or has another public status),
+ * plus the media used on a public post whichever post it
+ * was uploaded to (see rtgodam_get_publicly_used_media_ids()).
+ *
+ * The SQL counterpart of rtgodam_can_view_attachment(), for listings: filtering
+ * in the query keeps paging and counts right. It applies to every viewer, so a
+ * listing shows editors the same media it shows visitors.
+ *
+ * @since 2.5.1
+ *
+ * @param array     $clauses Query clauses.
+ * @param \WP_Query $query   The query.
+ * @return array
+ */
+function rtgodam_public_media_query_clauses( $clauses, $query ) {
+	if ( ! is_object( $query ) || ! method_exists( $query, 'get' ) || ! $query->get( 'rtgodam_public_media_only' ) ) {
+		return $clauses;
+	}
+
+	global $wpdb;
+
+	$statuses            = rtgodam_get_viewable_post_statuses();
+	$used_media_ids      = rtgodam_get_publicly_used_media_ids();
+	$status_placeholders = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
+	$used_clause         = '';
+
+	if ( ! empty( $used_media_ids ) ) {
+		$used_clause = " OR {$wpdb->posts}.ID IN ( " . implode( ', ', array_fill( 0, count( $used_media_ids ), '%d' ) ) . ' )';
+	}
+
+	$clauses['join'] .= " LEFT JOIN {$wpdb->posts} AS rtgodam_media_parent ON ( rtgodam_media_parent.ID = {$wpdb->posts}.post_parent )";
+
+	// A parent that no longer exists counts as unattached, as in get_post_status().
+	$clauses['where'] .= $wpdb->prepare(
+		" AND ( rtgodam_media_parent.ID IS NULL OR rtgodam_media_parent.post_status IN ( {$status_placeholders} ){$used_clause} )", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names from $wpdb; one %s per status and one %d per media ID.
+		array_merge( $statuses, $used_media_ids )
+	);
+
+	return $clauses;
+}
+
+add_filter( 'posts_clauses', 'rtgodam_public_media_query_clauses', 10, 2 );
+
+/**
  * Generate the HTML content for the preview page.
  *
  * Constructs the HTML for the shared front-end preview page based on the given
@@ -1613,27 +2381,27 @@ function godam_preview_page_content( $video_id ) {
 	$show_video       = false;
 	$video_id         = intval( $video_id );
 
-	$godam_video_title = '';
 	$godam_mime        = '';
+	$godam_video_title = '';
 
 	if ( ! empty( $video_id ) ) {
 		/**
-		 * Fires before resolving this attachment's post/mime/title data, so
+		 * Fires before resolving this attachment's post/mime data, so
 		 * integrations that centralize media on another site can switch
-		 * context first. Title and mime type are captured into variables here
-		 * (not re-read later) since the shortcode/block render further down
-		 * must run on the *current* site, after this bracket has closed.
+		 * context first. The mime type and title are captured into variables
+		 * here (not re-read later) since the shortcode/block render further
+		 * down must run on the *current* site, after this bracket has closed.
 		 *
 		 * @since 2.2.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
 		if ( $video_attachment && 'attachment' === $video_attachment->post_type ) {
-			$godam_video_title = get_the_title( $video_id );
 			$godam_mime        = (string) get_post_mime_type( $video_id );
+			$godam_video_title = get_the_title( $video_id );
 		}
 		do_action( 'rtgodam_after_attachment_lookup' );
-		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type;
+		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type && rtgodam_can_view_attachment( $video_id );
 	}
 
 	if ( ! $show_video ) {
@@ -1672,19 +2440,17 @@ function godam_preview_page_content( $video_id ) {
 				) . ' /-->'
 			);
 		} else {
-			$godam_shortcode    = $godam_is_audio
-				? '[godam_audio id="' . $video_id . '"]'
-				: '[godam_video id="' . $video_id . '"]';
-			$godam_media_output = do_shortcode( $godam_shortcode );
+			$godam_media_output = rtgodam_render_shortcode_from_atts(
+				$godam_is_audio ? 'godam_audio' : 'godam_video',
+				array( 'id' => (string) $video_id )
+			);
 		}
 		?>
 		<div class="godam-video-preview--notice">
 			<?php echo esc_html( $godam_notice ); ?>
 		</div>
 		<div class="godam-video-preview">
-			<h1 class="godam-video-preview--title">
-				<?php echo esc_html( $godam_video_title ); ?>
-			</h1>
+			<h1 class="godam-video-preview__title"><?php echo esc_html( $godam_video_title ); ?></h1>
 			<?php echo $godam_media_output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is escaped inside the block / shortcode render templates. ?>
 		</div>
 		<?php
@@ -1776,6 +2542,30 @@ function rtgodam_get_block_source_from_context( $context ) {
 }
 
 /**
+ * Render a registered shortcode from an attributes array.
+ *
+ * Calls the shortcode's callback directly, so each attribute value is passed to
+ * the renderer as plain data and is never parsed as shortcode syntax. Use it
+ * instead of do_shortcode() when a value comes from a request, a form
+ * submission or other stored user data.
+ *
+ * @since 2.5.1
+ *
+ * @param string               $tag  Shortcode tag, for example 'godam_video'.
+ * @param array<string, mixed> $atts Attributes, keyed in lowercase as the shortcode parser would key them.
+ * @return string The shortcode output, or an empty string when the shortcode is not registered or its callback cannot be called.
+ */
+function rtgodam_render_shortcode_from_atts( $tag, $atts = array() ) {
+	global $shortcode_tags;
+
+	if ( ! shortcode_exists( $tag ) || ! is_callable( $shortcode_tags[ $tag ] ) ) {
+		return '';
+	}
+
+	return (string) call_user_func( $shortcode_tags[ $tag ], $atts, '', $tag );
+}
+
+/**
  * Generate HTML content for the video embed page.
  *
  * This function produces the HTML markup for embedding a single video.
@@ -1783,10 +2573,10 @@ function rtgodam_get_block_source_from_context( $context ) {
  * making it suitable for embedding in iframes or modals.
  *
  * @param int    $video_id      The ID of the video attachment to embed.
- * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only').
+ * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only'). Reduced to slug characters with sanitize_key().
  * @param string $bg_color      Optional. Hex background color applied as --godam-video-bg-color CSS variable on the wrapper.
  * @param bool   $show_engagements Optional. Whether to show engagements in the embed. Default false (no engagements shown).
- * @param string $block_source  Optional. Analytics placement slug forwarded to the player (e.g. 'video-gallery' for gallery iframes).
+ * @param string $block_source  Optional. Analytics placement slug forwarded to the player (e.g. 'video-gallery' for gallery iframes). Reduced to slug characters with sanitize_key().
  * @param int    $host_post_id  Optional. Post ID of the page embedding this iframe, so analytics attribute to the host page.
  *
  * @since 1.5.0
@@ -1801,6 +2591,10 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 	$video_id          = intval( $video_id );
 	$engagements_value = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
 
+	// Both values arrive from the URL; keep them to slug characters.
+	$godam_context = sanitize_key( $godam_context );
+	$block_source  = sanitize_key( $block_source );
+
 	if ( ! empty( $video_id ) ) {
 		/**
 		 * Fires before resolving this attachment's post/mime data, so
@@ -1812,7 +2606,7 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
 		do_action( 'rtgodam_after_attachment_lookup' );
-		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 );
+		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 ) && rtgodam_can_view_attachment( $video_id );
 	}
 
 	if ( ! $show_video ) {
@@ -1824,20 +2618,19 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		<?php
 	} else {
 		// Display video content.
-		$godam_shortcode = '[godam_video id="' . $video_id . '"';
+		$godam_atts = array( 'id' => (string) $video_id );
 		if ( ! empty( $godam_context ) ) {
-			$godam_shortcode .= ' godam_context="' . esc_attr( $godam_context ) . '"';
+			$godam_atts['godam_context'] = $godam_context;
 		}
 		if ( ! empty( $engagements_value ) ) {
-			$godam_shortcode .= ' engagements="' . esc_attr( $engagements_value ) . '"';
+			$godam_atts['engagements'] = $engagements_value;
 		}
 		if ( ! empty( $block_source ) ) {
-			$godam_shortcode .= ' block_source="' . esc_attr( $block_source ) . '"';
+			$godam_atts['block_source'] = $block_source;
 		}
 		if ( ! empty( $host_post_id ) ) {
-			$godam_shortcode .= ' host_post_id="' . absint( $host_post_id ) . '"';
+			$godam_atts['host_post_id'] = (string) absint( $host_post_id );
 		}
-		$godam_shortcode .= ']';
 
 		$godam_wrapper_style = ! empty( $bg_color ) ? '--godam-video-bg-color: ' . $bg_color . ';' : '';
 		?>
@@ -1846,7 +2639,7 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 			data-show-engagements="<?php echo esc_attr( $show_engagements ? 'true' : 'false' ); ?>"
 			style="<?php echo esc_attr( $godam_wrapper_style ); ?>"
 		>
-			<?php echo do_shortcode( $godam_shortcode ); ?>
+			<?php echo rtgodam_render_shortcode_from_atts( 'godam_video', $godam_atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The player template escapes its output. ?>
 		</div>
 		<?php
 	}

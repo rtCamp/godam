@@ -403,7 +403,7 @@ function VideoEdit( {
 						const response = await apiFetch( { path: `/wp/v2/media/${ id }` } );
 
 						const enhancedSEOData = {
-							contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url || src || '',
+							contentUrl: response.meta?.rtgodam_hls_transcoded_url || response.source_url || src || '',
 							headline: response.title?.rendered || '',
 							description: stripHtmlTags( response.description?.rendered || '' ),
 							uploadDate: appendTimezoneOffsetToUTC( response.date_gmt || '' ),
@@ -535,8 +535,9 @@ function VideoEdit( {
 			}
 
 			// Create new SEO data from GoDAM media
+			// Prefer the HLS stream: Google indexes .m3u8 but not DASH .mpd.
 			const newSEOData = {
-				contentUrl: media?.url,
+				contentUrl: media?.hls_url || media?.url,
 				headline: media?.title || '',
 				description: stripHtmlTags( media?.description || '' ),
 				uploadDate: appendTimezoneOffsetToUTC( media?.date || '' ),
@@ -597,7 +598,7 @@ function VideoEdit( {
 
 					// Create new SEO data from WordPress media
 					const newSEOData = {
-						contentUrl: response.meta?.rtgodam_transcoded_url || response.source_url,
+						contentUrl: response.meta?.rtgodam_hls_transcoded_url || response.source_url,
 						headline: response.title?.rendered || '',
 						description: stripHtmlTags( response.description?.rendered || '' ),
 						uploadDate: appendTimezoneOffsetToUTC( response.date_gmt ),

@@ -40,6 +40,7 @@ import { plus, trash, edit as editIcon } from '@wordpress/icons';
 import { CustomizeVideoIcon } from '../godam-player/icons';
 import AudioMiniPlayer from './player';
 import AudioTabs from './tabs';
+import isAudioMedia from './is-audio-media';
 import './editor.scss';
 
 const ALLOWED_MEDIA_TYPES = [ 'audio' ];
@@ -146,14 +147,8 @@ function AudioEdit( {
 			return;
 		}
 
-		// Guard against non-audio selections. Derive the type from the MIME
-		// string rather than `media.type`: the latter is the top-level type
-		// ("audio") for library selections but the REST post type
-		// ("attachment") for freshly uploaded files, which would reject every
-		// uploaded audio file. `mime` is set on library selections,
-		// `mime_type` on uploads.
-		const mediaType = ( media.mime || media.mime_type || '' ).split( '/' )[ 0 ];
-		if ( mediaType && mediaType !== 'audio' ) {
+		// Guard against non-audio selections.
+		if ( ! isAudioMedia( media ) ) {
 			createErrorNotice(
 				__( 'Only audio files are allowed in the GoDAM Audio block.', 'godam' ),
 				{ type: 'snackbar' },

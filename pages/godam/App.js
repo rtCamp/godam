@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 /**
  * WordPress dependencies
  */
-import { cog, video, alignJustify, close, blockDefault, chevronRight } from '@wordpress/icons';
+import { cog, video, alignJustify, close, blockDefault, chevronRight, seen } from '@wordpress/icons';
 import { Icon } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -18,12 +18,14 @@ import { __ } from '@wordpress/i18n';
 import Skeleton from './components/Skeleton.jsx';
 import GodamHeader from './components/GoDAMHeader.jsx';
 import GoDAMFooter from './components/GoDAMFooter.jsx';
+import PreflightNotices from './components/PreflightNotices.jsx';
 import APIKey from './components/tabs/APIKey/APIKey.jsx';
 import GeneralSettings from './components/tabs/GeneralSettings/GeneralSettings.jsx';
 import IntegrationsSettings from './components/tabs/IntegrationsSettings/IntegrationsSettings.jsx';
 import VideoSettings from './components/tabs/VideoSettings/VideoSettings.jsx';
 import VideoPlayer from './components/tabs/VideoPlayer/VideoPlayer.jsx';
 import AdsSettings from './components/tabs/AdsSettings/AdsSettings.jsx';
+import SeoSettings from './components/tabs/SeoSettings/SeoSettings.jsx';
 import { isSafari } from './utils/index.js';
 
 import { useGetMediaSettingsQuery } from './redux/api/media-settings.js';
@@ -70,6 +72,12 @@ const TABS = [
 		</svg>,
 	},
 	{
+		id: 'seo-settings',
+		label: __( 'SEO', 'godam' ),
+		component: SeoSettings,
+		icon: seen,
+	},
+	{
 		id: 'integrations-settings',
 		label: __( 'Integrations Settings', 'godam' ),
 		component: IntegrationsSettings,
@@ -77,8 +85,74 @@ const TABS = [
 	},
 ];
 
+// URL query key that remembers the open settings tab, so a reload or a shared
+// link returns to the same tab. The sub-tabs use `integration_tab` the same way.
+const SETTINGS_TAB_QUERY_KEY = 'settings_tab';
+
+const isValidTab = ( id ) => TABS.some( ( tab ) => tab.id === id );
+
+/**
+ * The settings tab to open first: the `settings_tab` query param, the legacy
+ * hash deep link (e.g. `#video-settings`) for backward compatibility, else the
+ * first tab.
+ *
+ * @return {string} A valid tab id.
+ */
+const getInitialSettingsTab = () => {
+	try {
+		const name = new URLSearchParams( window.location.search ).get( SETTINGS_TAB_QUERY_KEY );
+		if ( name && isValidTab( name ) ) {
+			return name;
+		}
+	} catch ( error ) {
+		// Ignore an unparseable URL.
+	}
+
+	const hash = window.location.hash.replace( '#', '' );
+	if ( hash && isValidTab( hash ) ) {
+		return hash;
+	}
+
+	return TABS[ 0 ].id;
+};
+
+/**
+ * A relative link to a settings tab, preserving the other query params (e.g. a
+ * sub-tab) and dropping the legacy hash. Used so middle-click / open-in-new-tab
+ * still lands on the right tab.
+ *
+ * @param {string} id The tab id.
+ * @return {string} The href.
+ */
+const settingsTabHref = ( id ) => {
+	try {
+		const url = new URL( window.location.href );
+		url.searchParams.set( SETTINGS_TAB_QUERY_KEY, id );
+		url.hash = '';
+		return url.pathname + url.search;
+	} catch ( error ) {
+		return `?${ SETTINGS_TAB_QUERY_KEY }=${ id }`;
+	}
+};
+
+/**
+ * Remember the open settings tab in the URL without reloading or adding history.
+ *
+ * @param {string} id The tab id.
+ */
+const persistSettingsTab = ( id ) => {
+	try {
+		const url = new URL( window.location.href );
+		url.searchParams.set( SETTINGS_TAB_QUERY_KEY, id );
+		url.hash = '';
+		window.history.replaceState( {}, '', url );
+	} catch ( error ) {
+		// Ignore history/URL errors; the tab still switches in-page.
+	}
+};
+
 const App = () => {
-	const [ activeTab, setActiveTab ] = useState( TABS[ 0 ].id );
+	const [ activeTab, setActiveTab ] = useState( getInitialSettingsTab );
 	const [ isSidebarOpen, setIsSidebarOpen ] = useState( false );
 	const { data: mediaSettingsData, isLoading } = useGetMediaSettingsQuery();
 	const dispatch = useDispatch();
@@ -89,12 +163,18 @@ const App = () => {
 		}
 	}, [ mediaSettingsData, dispatch ] );
 
+	// Normalize the URL to the query param on load (also migrates a legacy hash
+	// deep link), so the address bar always reflects the open tab.
 	useEffect( () => {
-		const hash = window.location.hash.replace( '#', '' );
-		if ( hash && TABS.some( ( tab ) => tab.id === hash ) ) {
-			setActiveTab( hash );
-		}
+		persistSettingsTab( activeTab );
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
+
+	const selectTab = ( id ) => {
+		setActiveTab( id );
+		persistSettingsTab( id );
+		setIsSidebarOpen( false );
+	};
 
 	if ( isLoading ) {
 		return <Skeleton />;
@@ -145,12 +225,12 @@ const App = () => {
 					{ TABS.map( ( { id, label, icon } ) => (
 						<a
 							key={ id }
-							href={ `#${ id }` }
+							href={ settingsTabHref( id ) }
 							className={ `sidebar-nav-item whitespace-nowrap ${ activeTab === id ? 'active' : '' }` }
 							data-test-id={ `godam-settings-nav-${ id }` }
-							onClick={ () => {
-								setActiveTab( id );
-								setIsSidebarOpen( false );
+							onClick={ ( event ) => {
+								event.preventDefault();
+								selectTab( id );
 							} }
 						>
 							<Icon icon={ icon } />
@@ -162,6 +242,7 @@ const App = () => {
 					) ) }
 				</nav>
 				<div id="main-content" className="godam-settings__container__content" data-test-id="godam-settings-content">
+					<PreflightNotices />
 					{ activeTabData && <activeTabData.component /> }
 				</div>
 			</div>
