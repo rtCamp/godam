@@ -359,7 +359,7 @@ class GoDAM_Player {
 				'godam_context'      => '',
 				'block_source'       => '', // Analytics placement slug; overrides the godam_context-derived mapping (embed iframes).
 				'host_post_id'       => 0, // Post ID of the page hosting an embed iframe, for analytics attribution.
-				'outOfViewBehavior'  => '', // pause|mute|off; empty inherits the global setting.
+				'outOfViewBehavior'  => '', // off|autoplay|pause|mute; empty inherits the global setting.
 				'out_of_view'        => '', // Same, shortcode-friendly name, e.g. [godam_video id="1" out_of_view="mute"].
 			),
 			$atts,

@@ -138,7 +138,7 @@
 		},
 		"outOfViewBehavior": {
 			"type": "string",
-			"enum": [ "", "pause", "mute", "off" ],
+			"enum": [ "", "off", "autoplay", "pause", "mute" ],
 			"default": ""
 		}
 	},

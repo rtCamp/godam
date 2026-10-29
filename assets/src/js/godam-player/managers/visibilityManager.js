@@ -6,19 +6,25 @@
  * another carousel slide, inside a closed tab/accordion/modal, or in a
  * background browser tab.
  *
- * Rules (see rtCamp/godam-plugin-wp#57):
+ * Rules (see rtCamp/godam-plugin-wp#57), by out-of-view setting:
  *
- * Visitor-started playback (play, click, keyboard, unmute, seek, pause,
- * lightbox) follows the out-of-view setting: `pause` (default) or `mute`.
- * Back in view, a paused video stays paused and a muted one stays muted
- * until the visitor unmutes it.
+ * | Setting    | Autoplaying videos      | Visitor-started videos |
+ * |------------|-------------------------|------------------------|
+ * | `off`      | Keep playing (default)  | Keep playing           |
+ * | `autoplay` | Pause, resume when back | Keep playing           |
+ * | `pause`    | Pause, resume when back | Pause, stay paused     |
+ * | `mute`     | Pause, resume when back | Mute, stay muted       |
  *
- * Autoplay, autoplay-on-view, hover previews and script-started playback
- * pause when hidden and resume when visible again (hover previews never
- * resume).
+ * Visitor-started means playback the visitor started or controlled (play,
+ * click, keyboard, unmute, seek, pause, lightbox). Autoplay, autoplay-on-view,
+ * hover previews and script-started playback count as autoplaying (hover
+ * previews never resume).
  *
- * `off` disables all of it for that player. Fullscreen and
- * picture-in-picture are never touched.
+ * A background browser tab counts as hidden for autoplaying videos. For
+ * visitor-started videos it only does when the "Also apply when the browser
+ * tab is hidden" setting is on (`pauseOnTabHidden`); otherwise they carry on.
+ *
+ * Fullscreen and picture-in-picture are never touched.
  *
  * Automatic pauses set `player.godamAutoPause` while their `pause` event is
  * dispatched, so other listeners (CTA `on_pause` layers, the public API) can
@@ -36,9 +42,10 @@ import { addRange } from '../utils/timeRanges.js';
 import { CUSTOM_FULLSCREEN_PLAYER_CLASS } from '../utils/customFullscreen.js';
 
 export const OUT_OF_VIEW_MODE = Object.freeze( {
+	OFF: 'off',
+	AUTOPLAY: 'autoplay',
 	PAUSE: 'pause',
 	MUTE: 'mute',
-	OFF: 'off',
 } );
 
 /** A player counts as visible when at least this share of it (or of the viewport) is on screen. */
@@ -81,11 +88,22 @@ const PLAYER_SELECTOR = '.easydam-player.video-js';
  * Read the out-of-view mode rendered on the `<video>` element.
  *
  * @param {HTMLElement} videoEl - The original `<video>` element.
- * @return {string} One of OUT_OF_VIEW_MODE (defaults to `pause`).
+ * @return {string} One of OUT_OF_VIEW_MODE (defaults to `off`, today's behaviour).
  */
 export function resolveOutOfViewMode( videoEl ) {
 	const value = videoEl?.dataset?.outOfView;
-	return Object.values( OUT_OF_VIEW_MODE ).includes( value ) ? value : OUT_OF_VIEW_MODE.PAUSE;
+	return Object.values( OUT_OF_VIEW_MODE ).includes( value ) ? value : OUT_OF_VIEW_MODE.OFF;
+}
+
+/**
+ * Whether a background browser tab should also pause (or mute) videos the
+ * visitor started, from `data-out-of-view-tab-hidden` on the `<video>`.
+ *
+ * @param {HTMLElement} videoEl - The original `<video>` element.
+ * @return {boolean} True when the setting is on (off by default).
+ */
+export function resolvePauseOnTabHidden( videoEl ) {
+	return videoEl?.dataset?.outOfViewTabHidden === 'true';
 }
 
 /**
@@ -160,13 +178,14 @@ export class VisibilityManager {
 	/**
 	 * Start managing a player.
 	 *
-	 * @param {Object}   player              - Video.js player.
-	 * @param {Object}   [options]           - Options.
-	 * @param {string}   [options.mode]      - OUT_OF_VIEW_MODE value.
-	 * @param {Function} [options.isPreview] - Returns true while an uncommitted hover preview runs.
+	 * @param {Object}   player                     - Video.js player.
+	 * @param {Object}   [options]                  - Options.
+	 * @param {string}   [options.mode]             - OUT_OF_VIEW_MODE value.
+	 * @param {boolean}  [options.pauseOnTabHidden] - A background tab also counts as hidden for visitor-started videos.
+	 * @param {Function} [options.isPreview]        - Returns true while an uncommitted hover preview runs.
 	 * @return {Object|null} The entry, or null when the mode is `off`.
 	 */
-	register( player, { mode = OUT_OF_VIEW_MODE.PAUSE, isPreview = () => false } = {} ) {
+	register( player, { mode = OUT_OF_VIEW_MODE.PAUSE, pauseOnTabHidden = false, isPreview = () => false } = {} ) {
 		if ( ! player || mode === OUT_OF_VIEW_MODE.OFF ) {
 			return null;
 		}
@@ -179,6 +198,7 @@ export class VisibilityManager {
 			player,
 			el,
 			mode,
+			pauseOnTabHidden: !! pauseOnTabHidden,
 			isPreview,
 			inViewport: true,
 			styleVisible: true,
@@ -435,8 +455,11 @@ export class VisibilityManager {
 		if ( entry.lastTime !== null && ! player.paused() ) {
 			const delta = time - entry.lastTime;
 			// Playing where nobody can see it (e.g. "keep playing, muted"),
-			// whoever muted it. Fullscreen and picture-in-picture count as seen.
-			const unseen = ! this.isVisible( entry ) && ! this.isExempt( entry );
+			// whoever muted it. Fullscreen and picture-in-picture count as seen,
+			// and so does playback the setting deliberately leaves alone (a
+			// visitor-started video under "Pause autoplaying videos only"), as it
+			// did before this feature.
+			const unseen = ! this.isVisible( entry ) && ! this.isExempt( entry ) && ! this.isLeftAlone( entry );
 			if ( delta > 0 && ( unseen || delta <= MAX_SEGMENT_GAP ) ) {
 				if ( unseen ) {
 					player.godamHiddenRanges = addRange( player.godamHiddenRanges, entry.lastTime, time );
@@ -504,7 +527,32 @@ export class VisibilityManager {
 	}
 
 	isVisible( entry ) {
-		return ! this.doc.hidden && entry.inViewport && entry.styleVisible;
+		return ! this.isTabHiddenFor( entry ) && entry.inViewport && entry.styleVisible;
+	}
+
+	/**
+	 * Whether a background browser tab counts as hidden for this player.
+	 *
+	 * Always for autoplaying videos; for visitor-started ones only when the
+	 * "Also apply when the browser tab is hidden" setting is on, so a lesson or
+	 * podcast the visitor is listening to carries on in a background tab.
+	 *
+	 * @param {Object} entry - Player entry.
+	 * @return {boolean} True when the tab is hidden and that applies here.
+	 */
+	isTabHiddenFor( entry ) {
+		return !! this.doc.hidden && ( ! entry.userStarted || entry.pauseOnTabHidden );
+	}
+
+	/**
+	 * Whether the setting leaves this player alone while it is hidden: a
+	 * visitor-started video under "Pause autoplaying videos only".
+	 *
+	 * @param {Object} entry - Player entry.
+	 * @return {boolean} True when nothing should be done to it.
+	 */
+	isLeftAlone( entry ) {
+		return entry.userStarted && entry.mode === OUT_OF_VIEW_MODE.AUTOPLAY;
 	}
 
 	isExempt( entry ) {
@@ -594,6 +642,9 @@ export class VisibilityManager {
 
 	handleHidden( entry ) {
 		const { player } = entry;
+		if ( this.isLeftAlone( entry ) ) {
+			return;
+		}
 		const muteInstead = entry.userStarted && entry.mode === OUT_OF_VIEW_MODE.MUTE;
 
 		if ( this.inAdBreak( player ) ) {

@@ -144,12 +144,13 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 					value={ outOfViewBehavior || '' }
 					options={ [
 						{ label: __( 'Use global setting', 'godam' ), value: '' },
-						{ label: __( 'Pause the video', 'godam' ), value: 'pause' },
-						{ label: __( 'Keep playing, muted', 'godam' ), value: 'mute' },
 						{ label: __( 'Do nothing', 'godam' ), value: 'off' },
+						{ label: __( 'Pause autoplaying videos only', 'godam' ), value: 'autoplay' },
+						{ label: __( 'Pause all videos', 'godam' ), value: 'pause' },
+						{ label: __( 'Keep playing, muted', 'godam' ), value: 'mute' },
 					] }
 					onChange={ ( value ) => setAttributes( { outOfViewBehavior: value } ) }
-					help={ __( 'What happens when a visitor-started video is scrolled past or hidden. Autoplaying videos always pause and resume when visible again, unless set to "Do nothing".', 'godam' ) }
+					help={ __( 'Scrolled past, on another slide, or in a closed tab or accordion. Autoplaying videos resume when visible again.', 'godam' ) }
 				/>
 			</div>
 			{ showShareButtonSetting && (

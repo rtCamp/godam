@@ -7,6 +7,7 @@ import {
 	isAutoPause,
 	isRecordVisible,
 	resolveOutOfViewMode,
+	resolvePauseOnTabHidden,
 } from './visibilityManager';
 
 /**
@@ -106,13 +107,28 @@ const pointerDown = ( player ) =>
 	player.el().dispatchEvent( new Event( 'pointerdown', { bubbles: true } ) );
 
 describe( 'resolveOutOfViewMode', () => {
-	it( 'reads data-out-of-view and defaults to pause', () => {
+	it( 'reads data-out-of-view and defaults to off (do nothing)', () => {
 		const video = document.createElement( 'video' );
-		expect( resolveOutOfViewMode( video ) ).toBe( 'pause' );
+		expect( resolveOutOfViewMode( video ) ).toBe( 'off' );
 		video.dataset.outOfView = 'mute';
 		expect( resolveOutOfViewMode( video ) ).toBe( 'mute' );
-		video.dataset.outOfView = 'nonsense';
+		video.dataset.outOfView = 'autoplay';
+		expect( resolveOutOfViewMode( video ) ).toBe( 'autoplay' );
+		video.dataset.outOfView = 'pause';
 		expect( resolveOutOfViewMode( video ) ).toBe( 'pause' );
+		video.dataset.outOfView = 'nonsense';
+		expect( resolveOutOfViewMode( video ) ).toBe( 'off' );
+	} );
+} );
+
+describe( 'resolvePauseOnTabHidden', () => {
+	it( 'is on only for data-out-of-view-tab-hidden="true"', () => {
+		const video = document.createElement( 'video' );
+		expect( resolvePauseOnTabHidden( video ) ).toBe( false );
+		video.dataset.outOfViewTabHidden = 'false';
+		expect( resolvePauseOnTabHidden( video ) ).toBe( false );
+		video.dataset.outOfViewTabHidden = 'true';
+		expect( resolvePauseOnTabHidden( video ) ).toBe( true );
 	} );
 } );
 
@@ -543,6 +559,189 @@ describe( 'VisibilityManager', () => {
 		expect( manager.isWaitingBehindStyle( entry ) ).toBe( true );
 		manager.syncStylePoll();
 		expect( manager.stylePollTimer ).not.toBeNull();
+	} );
+
+	describe( 'pause autoplaying videos only', () => {
+		it( 'pauses an autoplaying video when hidden and resumes it when visible', () => {
+			const manager = createManager();
+			const player = createPlayer();
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.AUTOPLAY } );
+
+			FakeObserver.instance.fire( player.el(), false );
+			expect( player.pause ).toHaveBeenCalledTimes( 1 );
+
+			jest.runOnlyPendingTimers();
+			FakeObserver.instance.fire( player.el(), true );
+			expect( player.play ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'leaves a visitor-started video playing (not paused, not muted)', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.AUTOPLAY } );
+
+			pointerDown( player );
+			player.play();
+
+			FakeObserver.instance.fire( player.el(), false );
+			expect( player.pause ).not.toHaveBeenCalled();
+			expect( player.state.muted ).toBe( false );
+			expect( player.state.paused ).toBe( false );
+		} );
+
+		it( 'leaves a hover preview the visitor committed to playing', () => {
+			const clock = { now: 1000 };
+			const manager = createManager( clock );
+			const player = createPlayer();
+			let preview = true;
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.AUTOPLAY, isPreview: () => preview } );
+
+			// Click commits the preview to real playback.
+			pointerDown( player );
+			preview = false;
+			jest.advanceTimersByTime( 60 );
+
+			FakeObserver.instance.fire( player.el(), false );
+			expect( player.pause ).not.toHaveBeenCalled();
+		} );
+
+		it( 'counts visitor-started off-screen playback as watched (as before the feature)', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.AUTOPLAY } );
+
+			pointerDown( player );
+			player.play();
+			FakeObserver.instance.fire( player.el(), false );
+			[ 0, 1, 2 ].forEach( ( t ) => {
+				player.state.time = t;
+				player.emit( 'timeupdate' );
+			} );
+
+			expect( player.godamHiddenRanges ).toEqual( [] );
+			expect( player.godamVisibleRanges ).toEqual( [ [ 0, 2 ] ] );
+		} );
+
+		it( 'does not touch an ad in a visitor-started video', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			const ima = { pauseAd: jest.fn(), getAdsManager: () => ( { setVolume: jest.fn(), getVolume: () => 1 } ) };
+			player.ima = ima;
+			player.ads = { inAdBreak: () => true };
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.AUTOPLAY } );
+
+			pointerDown( player );
+			player.play();
+			FakeObserver.instance.fire( player.el(), false );
+			expect( ima.pauseAd ).not.toHaveBeenCalled();
+		} );
+	} );
+
+	describe( 'background browser tab', () => {
+		let hidden;
+		beforeEach( () => {
+			hidden = false;
+			Object.defineProperty( document, 'hidden', { configurable: true, get: () => hidden } );
+		} );
+		afterEach( () => {
+			delete document.hidden;
+		} );
+
+		const startByVisitor = ( player ) => {
+			pointerDown( player );
+			player.play();
+		};
+
+		it( 'still pauses and resumes autoplaying videos', () => {
+			const manager = createManager();
+			const player = createPlayer();
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.PAUSE } );
+
+			hidden = true;
+			manager.handleDocumentVisibility();
+			expect( player.pause ).toHaveBeenCalledTimes( 1 );
+
+			jest.runOnlyPendingTimers();
+			hidden = false;
+			manager.handleDocumentVisibility();
+			expect( player.play ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'leaves a visitor-started video playing when the setting is off', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.PAUSE } );
+			startByVisitor( player );
+
+			hidden = true;
+			manager.handleDocumentVisibility();
+			expect( player.pause ).not.toHaveBeenCalled();
+		} );
+
+		it( 'leaves a visitor-started video unmuted in mute mode when the setting is off', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.MUTE } );
+			startByVisitor( player );
+
+			hidden = true;
+			manager.handleDocumentVisibility();
+			expect( player.state.muted ).toBe( false );
+		} );
+
+		it( 'pauses a visitor-started video when the setting is on, and keeps it paused', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.PAUSE, pauseOnTabHidden: true } );
+			startByVisitor( player );
+
+			hidden = true;
+			manager.handleDocumentVisibility();
+			expect( player.pause ).toHaveBeenCalledTimes( 1 );
+
+			jest.runOnlyPendingTimers();
+			player.play.mockClear();
+			hidden = false;
+			manager.handleDocumentVisibility();
+			expect( player.play ).not.toHaveBeenCalled();
+		} );
+
+		it( 'mutes a visitor-started video in mute mode when the setting is on', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.MUTE, pauseOnTabHidden: true } );
+			startByVisitor( player );
+
+			hidden = true;
+			manager.handleDocumentVisibility();
+			expect( player.pause ).not.toHaveBeenCalled();
+			expect( player.state.muted ).toBe( true );
+		} );
+
+		it( 'still pauses a visitor-started video that is scrolled out of view', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.PAUSE } );
+			startByVisitor( player );
+
+			FakeObserver.instance.fire( player.el(), false );
+			expect( player.pause ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'counts visitor-started background-tab playback as watched when the setting is off', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.PAUSE } );
+			startByVisitor( player );
+
+			hidden = true;
+			manager.handleDocumentVisibility();
+			[ 0, 1, 2 ].forEach( ( t ) => {
+				player.state.time = t;
+				player.emit( 'timeupdate' );
+			} );
+			expect( player.godamHiddenRanges ).toEqual( [] );
+		} );
 	} );
 
 	it( 'stops managing a player after unregister', () => {

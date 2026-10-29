@@ -876,6 +876,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 							data-transcript-deleted="<?php echo esc_attr( $godam_transcript_deleted ? 'true' : 'false' ); ?>"
 							data-show-in-lightbox="<?php echo esc_attr( $godam_show_in_lightbox ? 'true' : 'false' ); ?>"
 							data-out-of-view="<?php echo esc_attr( $godam_out_of_view ); ?>"
+							data-out-of-view-tab-hidden="<?php echo esc_attr( rtgodam_out_of_view_applies_to_hidden_tab() ? 'true' : 'false' ); ?>"
 						>
 							<?php
 

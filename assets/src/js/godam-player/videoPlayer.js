@@ -21,7 +21,7 @@ import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
 import TranscriptManager from './managers/transcriptManager.js';
 import TranscriptPanelManager from './managers/transcriptPanelManager.js';
-import { getVisibilityManager, resolveOutOfViewMode } from './managers/visibilityManager.js';
+import { getVisibilityManager, resolveOutOfViewMode, resolvePauseOnTabHidden } from './managers/visibilityManager.js';
 import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
 
 /**
@@ -321,12 +321,14 @@ export default class GodamVideoPlayer {
 
 	/**
 	 * Pause or mute the player when it leaves the visitor's view, per the
-	 * out-of-view setting rendered as `data-out-of-view` (see visibilityManager.js).
+	 * out-of-view settings rendered as `data-out-of-view` and
+	 * `data-out-of-view-tab-hidden` (see visibilityManager.js).
 	 */
 	setupVisibilityHandling() {
 		const visibilityManager = getVisibilityManager();
 		const entry = visibilityManager.register( this.player, {
 			mode: resolveOutOfViewMode( this.video ),
+			pauseOnTabHidden: resolvePauseOnTabHidden( this.video ),
 			isPreview: () => !! this.hoverManager?.isPreviewActive?.(),
 		} );
 
