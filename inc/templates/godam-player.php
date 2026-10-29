@@ -429,7 +429,13 @@ if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
 
 $godam_ads_settings = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
 
-$godam_ads_settings       = wp_json_encode( $godam_ads_settings );
+// Global ads (Settings → Ads) apply to every player except WooCommerce
+// placements, which never show ads (their per-video ad tag is dropped too).
+$godam_global_ads_enabled = ! $godam_woocommerce_context
+	&& ! empty( $godam_ads_settings['enable_global_video_ads'] )
+	&& ! empty( $godam_ads_settings['adTagUrl'] );
+
+$godam_ads_settings       = wp_json_encode( $godam_woocommerce_context ? array() : $godam_ads_settings );
 $godam_global_video_share = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
 
 $godam_video_poster = empty( $godam_poster ) ? $godam_poster_image : $godam_poster;
@@ -658,8 +664,9 @@ elseif ( ! empty( $godam_ads_layers ) && 'self-hosted' === $godam_ad_server ) :
 	$godam_ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $godam_attachment_id;
 endif;
 
-// Enqueue IMA SDK assets only if Ad is enabled for this GoDAM player block.
-if ( ! empty( $godam_ad_tag_url ) ) {
+// Enqueue the IMA SDK only when this player can show an ad: its own ad tag or the
+// global ad tag. WooCommerce placements never show ads, so they skip it.
+if ( ( ! empty( $godam_ad_tag_url ) && ! $godam_woocommerce_context ) || $godam_global_ads_enabled ) {
 	IMA_Assets::get_instance();
 }
 

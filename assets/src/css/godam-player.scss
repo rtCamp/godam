@@ -764,6 +764,13 @@
 // muted / full-volume states the toggle uses) to match the control bar.
 .godam-classic-skin .video-js .godam-preview-mute {
 
+	// The base preview rule makes this pseudo-element `position: static`, so it
+	// is inline; without a block-level display the 21px size below is ignored and
+	// the SVG icon renders at 0×0 (an empty circle).
+	.vjs-icon-placeholder::before {
+		display: inline-block;
+	}
+
 	/* stylelint-disable-next-line no-descending-specificity -- overlay copy of the classic mute glyph; the control-bar rule keeps its own icon. */
 	&.vjs-vol-0 .vjs-icon-placeholder::before {
 		width: 21px;
