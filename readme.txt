@@ -405,3 +405,22 @@ PostHog's code also loads its own settings and scripts from us-assets.i.posthog.
 Service Provider: [posthog.com](https://posthog.com)
 
 [Terms of Service](https://posthog.com/terms) | [Privacy Policy](https://posthog.com/privacy)
+
+=== HubSpot (js.hsforms.net, js.hs-scripts.com) ===
+Purpose: When HubSpot is connected through GoDAM Central, GoDAM loads HubSpot's own scripts in the visitor's browser to render a HubSpot form placed on a video and to record how far a known HubSpot contact watched a video.
+
+Data Sent:
+
+1. HubSpot form embed: HubSpot renders the form in the visitor's browser, and whatever the visitor types into it is submitted to HubSpot.
+
+2. HubSpot tracking code: HubSpot's standard analytics. It sets and reads the `hubspotutk` cookie and loads HubSpot's tracking suite for your portal — which, depending on what your HubSpot portal has enabled, can include analytics, the cookie/consent banner, chat, pop-ups and CTAs, the ads pixel and surveys.
+
+When Data is Sent:
+
+1. The form embed loads only on a page that has a HubSpot form layer on a video.
+
+2. The tracking code loads on the frontend only when HubSpot is connected on GoDAM Central and "Track video views" is turned on in Central. On a site that also runs HubSpot's own plugin, GoDAM does not add it (that plugin already loads it). You can stop GoDAM from adding it with the `rtgodam_map_inject_hubspot_tracking_code` filter (return false) — for example, to gate it behind a consent manager.
+
+Service Provider: [HubSpot](https://www.hubspot.com)
+
+[Terms of Service](https://legal.hubspot.com/terms-of-service) | [Privacy Policy](https://legal.hubspot.com/privacy-policy)
