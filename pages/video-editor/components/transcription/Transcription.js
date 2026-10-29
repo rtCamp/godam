@@ -53,7 +53,8 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	const [ cuesLoading, setCuesLoading ] = useState( false );
 	const [ error, setError ] = useState( '' );
 	const [ confirmDelete, setConfirmDelete ] = useState( false );
-	const [ language, setLanguage ] = useState( 'auto' );
+	// Empty = the account's default transcription language, set in GoDAM Central.
+	const [ language, setLanguage ] = useState( '' );
 	const [ showCaptionManager, setShowCaptionManager ] = useState( false );
 
 	const { data: transcription } = useGetTranscriptionQuery( attachmentID, {
@@ -114,8 +115,8 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 		setError( '' );
 		setIsGenerating( true );
 		try {
-			// `auto` lets the SaaS/Deepgram detect the language; any other value
-			// requests that explicit language. Omitting it would use the org default.
+			// An empty language is left out of the request, so Central uses the
+			// account's default; `auto` and `multi` ask Deepgram to detect it.
 			const result = await generateTranscription( { attachmentID, language } ).unwrap();
 			// SaaS may answer synchronously when the transcript already exists.
 			if ( result?.transcript_path ) {

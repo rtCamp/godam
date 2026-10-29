@@ -188,6 +188,12 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
+					// JSON list of every caption track on the job. Sent by Central
+					// since multilingual captions; older Central versions omit it.
+					'caption_tracks'       => array(
+						'required' => false,
+						'type'     => 'string',
+					),
 				),
 			)
 		);
@@ -655,9 +661,19 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 			// If status is "Transcribed", save the transcript path.
 			if ( 'Transcribed' === $transcription_status ) {
-				// Save transcript path as post meta.
-				// The transcript_path parameter is already sanitized by the REST API framework via esc_url_raw sanitize_callback.
-				update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+				$caption_tracks = json_decode( (string) $request->get_param( 'caption_tracks' ), true );
+
+				if ( is_array( $caption_tracks ) ) {
+					// On a video with several audio tracks, `transcript_path` is the
+					// track that just finished, which may not be the default
+					// language. Cache the default caption from the full list instead,
+					// and leave a transcript the user uploaded in WordPress alone.
+					\RTGODAM\Inc\REST_API\Transcription::sync_cached_transcript( (int) $attachment_id, $caption_tracks, false );
+				} elseif ( 'upload' !== get_post_meta( $attachment_id, 'rtgodam_transcript_source', true ) ) {
+					// Older Central: only the one transcript path is sent.
+					// The transcript_path parameter is already sanitized by the REST API framework via esc_url_raw sanitize_callback.
+					update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+				}
 
 				return new WP_REST_Response(
 					array(

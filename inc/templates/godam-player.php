@@ -268,6 +268,7 @@ if ( empty( $godam_attachment_data ) && $godam_numeric_id ) {
 		// re-caches without the delete guard. Same rule as the audio block.
 		'transcript_path'    => get_post_meta( $godam_numeric_id, 'rtgodam_transcript_path', true ),
 		'transcript_deleted' => get_post_meta( $godam_numeric_id, 'rtgodam_transcript_deleted', true ),
+		'transcript_source'  => get_post_meta( $godam_numeric_id, 'rtgodam_transcript_source', true ),
 		'placeholder_map'    => get_post_meta( $godam_numeric_id, 'rtgodam_media_placeholder_thumbnails', true ),
 		'placeholder_single' => get_post_meta( $godam_numeric_id, 'rtgodam_media_video_placeholder_thumbnail', true ),
 		'attachment_meta'    => wp_get_attachment_metadata( $godam_numeric_id ),
@@ -741,23 +742,25 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
 }
 
 /**
- * Transcription resolution order on the front end:
+ * Transcription resolution order on the front end (see transcriptManager.js):
  *
- * 1. `data-transcript-url` — the transcript stored on the attachment
- *    (`rtgodam_transcript_path`), i.e. whatever the Transcription tab of the
- *    media editor last generated or the user uploaded. This wins so a
- *    hand-uploaded .vtt/.srt is what visitors actually get.
- * 2. `data-transcript-deleted` — set when the user deleted the transcript in
+ * 1. `data-transcript-deleted` — set when the user deleted the transcript in
  *    the editor. The player then shows nothing instead of resurrecting the
- *    SaaS copy.
- * 3. Otherwise the frontend JavaScript falls back to fetching the transcript
- *    URL by job_id via the public API endpoint:
+ *    SaaS copy. Cleared by generate, upload and any caption-manager change.
+ * 2. `data-transcript-url` with `data-transcript-source="upload"` — a .vtt/.srt
+ *    the user uploaded in WordPress. It never reaches the SaaS, so it is added
+ *    first and becomes the default subtitle.
+ * 3. Every ready caption track from the public API endpoint (one per
+ *    language, generated or uploaded in GoDAM), default first:
  *    GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
- *    which keeps ETag/Cache-Control caching for attachments that were never
- *    opened in the editor (and for virtual media with no local meta).
+ *    which keeps ETag/Cache-Control caching.
+ * 4. When that endpoint is unreachable or predates caption tracks,
+ *    `data-transcript-url` (the cached copy of the SaaS default caption), else
+ *    the endpoint's single legacy transcript.
  */
 $godam_transcript_url     = (string) ( $godam_attachment_data['transcript_path'] ?? '' );
 $godam_transcript_deleted = ! empty( $godam_attachment_data['transcript_deleted'] );
+$godam_transcript_source  = (string) ( $godam_attachment_data['transcript_source'] ?? '' );
 
 $godam_attachment_title = '';
 
@@ -874,6 +877,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 							data-disable-transcript="<?php echo esc_attr( $godam_disable_subtitles_and_transcript ? 'true' : 'false' ); ?>"
 							data-transcript-url="<?php echo esc_url( $godam_transcript_url ); ?>"
 							data-transcript-deleted="<?php echo esc_attr( $godam_transcript_deleted ? 'true' : 'false' ); ?>"
+							data-transcript-source="<?php echo esc_attr( $godam_transcript_source ); ?>"
 							data-show-in-lightbox="<?php echo esc_attr( $godam_show_in_lightbox ? 'true' : 'false' ); ?>"
 						>
 							<?php

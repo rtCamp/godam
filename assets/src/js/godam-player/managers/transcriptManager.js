@@ -3,13 +3,16 @@
  * Handles loading transcription tracks for the player.
  *
  * Resolution order (see the matching comment in inc/templates/godam-player.php):
- * `data-transcript-url` (the transcript stored on the attachment by the media
- * editor's Transcription tab, generated or user-uploaded) wins;
- * `data-transcript-deleted` means the user deleted it, so show nothing;
- * otherwise fall back to the public API endpoint, which supports
- * ETag/Cache-Control:
+ * `data-transcript-deleted` means the user deleted it, so show nothing.
+ * Otherwise a `data-transcript-url` with `data-transcript-source="upload"` (a
+ * file the user uploaded in WordPress) is added first, then every ready
+ * caption track from the public API endpoint, default first. The endpoint
+ * supports ETag/Cache-Control:
  * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
+ * If the endpoint fails or sends no caption tracks, the cached
+ * `data-transcript-url` is used, else the endpoint's single legacy transcript.
  */
+
 /**
  * Internal dependencies
  */
@@ -31,6 +34,9 @@ export default class TranscriptManager {
 		// Transcript cached on the attachment and printed by the server.
 		this.localTranscriptUrl = video.dataset.transcriptUrl || '';
 		this.transcriptDeleted = video.dataset.transcriptDeleted === 'true';
+		// `upload` when the transcript above was uploaded in WordPress rather
+		// than cached from the SaaS.
+		this.localTranscriptSource = video.dataset.transcriptSource || '';
 		this.etag = null;
 		this.transcriptUrl = null;
 	}
@@ -56,7 +62,8 @@ export default class TranscriptManager {
 
 	/**
 	 * Initialize transcript loading.
-	 * Fetches transcript URL from API and adds it as a text track.
+	 * Adds the WordPress-uploaded transcript and the SaaS caption tracks as
+	 * text tracks, in the order described at the top of this file.
 	 *
 	 * @return {Promise<void>}
 	 */
@@ -70,46 +77,58 @@ export default class TranscriptManager {
 			return;
 		}
 
-		// Prefer first-class caption tracks (multilingual subtitles + uploaded
-		// captions) from the SaaS, which also include the generated transcript.
-		// Falls back to the legacy single-transcript path for old SaaS responses
-		// and for attachments with no job id (purely local media).
-		if ( this.jobId && ! this.transcriptDeleted ) {
+		// Deleted in the editor — don't resurrect it from the SaaS.
+		if ( this.transcriptDeleted ) {
+			return;
+		}
+
+		// A file uploaded in WordPress never reaches the SaaS, so it goes first
+		// and becomes the default subtitle.
+		const hasLocalUpload = !! this.localTranscriptUrl && this.localTranscriptSource === 'upload';
+		if ( hasLocalUpload ) {
+			await this.addLocalTranscript();
+		}
+
+		let transcriptData = null;
+		if ( this.jobId ) {
 			try {
-				const transcriptData = await this.fetchTranscriptPath();
-
-				const captions = Array.isArray( transcriptData?.caption_tracks )
-					? transcriptData.caption_tracks
-					: [];
-
-				if ( captions.length ) {
-					this.addCaptionTracks( captions );
-					return;
-				}
-
-				// No caption_tracks (old SaaS): fall back to the single transcript
-				// from the same response — but a locally-stored transcript still
-				// wins, so defer to it below when present.
-				if ( ! this.localTranscriptUrl && transcriptData?.exists && transcriptData?.url ) {
-					this.transcriptUrl = transcriptData.url;
-					this.addTextTrack( await toWebVttTrackSrc( transcriptData.url ) );
-					return;
-				}
+				transcriptData = await this.fetchTranscriptPath();
 			} catch ( error ) {
-				// Silently fall through to the local transcript — captions are optional.
+				// Silently fall through to the cached transcript — captions are optional.
 				// eslint-disable-next-line no-console
 				console.debug( 'GoDAM: Could not load caption tracks:', error.message );
 			}
 		}
 
-		// The transcript stored on the attachment (editor-cached or hand-uploaded)
-		// is the fallback when the SaaS has no caption tracks, when the media has
-		// no job id, or when the fetch failed.
-		if ( this.localTranscriptUrl ) {
-			this.transcriptUrl = this.localTranscriptUrl;
-			// An uploaded .srt is converted to WebVTT, the only format a track parses.
-			this.addTextTrack( await toWebVttTrackSrc( this.localTranscriptUrl ) );
+		// Every ready caption track (one per language), when the SaaS sends them.
+		if ( Array.isArray( transcriptData?.caption_tracks ) ) {
+			this.addCaptionTracks( transcriptData.caption_tracks );
+			return;
 		}
+
+		if ( hasLocalUpload ) {
+			return;
+		}
+
+		// SaaS unreachable or too old for caption tracks: use the cached copy of
+		// its transcript, else the single transcript it reported.
+		if ( this.localTranscriptUrl ) {
+			await this.addLocalTranscript();
+		} else if ( transcriptData?.exists && transcriptData?.url ) {
+			this.transcriptUrl = transcriptData.url;
+			this.addTextTrack( await toWebVttTrackSrc( transcriptData.url ) );
+		}
+	}
+
+	/**
+	 * Add the transcript stored on the attachment as a text track.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async addLocalTranscript() {
+		this.transcriptUrl = this.localTranscriptUrl;
+		// An uploaded .srt is converted to WebVTT, the only format a track parses.
+		this.addTextTrack( await toWebVttTrackSrc( this.localTranscriptUrl ) );
 	}
 
 	/**
@@ -117,28 +136,26 @@ export default class TranscriptManager {
 	 *
 	 * Tracks still being generated (no `vtt_path` yet) are skipped. The default
 	 * track is added first so the player's auto-enable (see
-	 * `setupDefaultSubtitle` in videoPlayer.js) turns on the right language.
+	 * `setupDefaultSubtitle` in videoPlayer.js) turns on the right language,
+	 * unless a WordPress-uploaded transcript was already added ahead of it.
 	 *
 	 * @param {Array<Object>} captions Caption-track rows from the SaaS.
 	 */
 	addCaptionTracks( captions ) {
 		const ready = captions.filter( ( caption ) => !! caption?.vtt_path );
-		if ( ! ready.length ) {
-			return;
-		}
 
 		// Default track first, so it becomes the auto-enabled subtitle.
 		ready.sort( ( a, b ) => ( b?.is_default ? 1 : 0 ) - ( a?.is_default ? 1 : 0 ) );
 
-		ready.forEach( ( caption, index ) => {
+		ready.forEach( ( caption ) => {
 			const srclang = caption.language || 'en';
 			this.addTextTrack( caption.vtt_path, {
 				kind: caption.kind === 'captions' ? 'captions' : 'subtitles',
 				label: caption.label || srclang,
 				srclang,
 			} );
-			// Remember the default (first) caption as the panel/reader transcript.
-			if ( index === 0 ) {
+			// The first track added is the panel/reader transcript.
+			if ( ! this.transcriptUrl ) {
 				this.transcriptUrl = caption.vtt_path;
 			}
 		} );

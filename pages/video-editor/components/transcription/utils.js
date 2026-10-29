@@ -4,6 +4,11 @@
  */
 
 /**
+ * Internal dependencies
+ */
+import { cuesToWebVtt } from '../../../../assets/src/js/godam-player/utils/captionTrackSrc';
+
+/**
  * Parse a single timestamp (`HH:MM:SS.mmm`, `MM:SS.mmm`, or the SRT comma
  * variant) into seconds.
  *
@@ -124,35 +129,15 @@ export const formatBytes = ( bytes ) => {
 export const isTranscribingStatus = ( status ) => status === 'Transcribing' || status === 'Transcoding';
 
 /**
- * Format seconds as a WebVTT timestamp (`HH:MM:SS.mmm`).
- *
- * @param {number} seconds Seconds (float).
- * @return {string} WebVTT timestamp.
- */
-export const formatTimeForVTT = ( seconds ) => {
-	const total = Math.max( 0, Number( seconds ) || 0 );
-	const hrs = Math.floor( total / 3600 );
-	const mins = Math.floor( ( total % 3600 ) / 60 );
-	const secs = Math.floor( total % 60 );
-	const ms = Math.round( ( total - Math.floor( total ) ) * 1000 );
-	const pad = ( value, len = 2 ) => String( value ).padStart( len, '0' );
-	return `${ pad( hrs ) }:${ pad( mins ) }:${ pad( secs ) }.${ pad( ms, 3 ) }`;
-};
-
-/**
  * Serialise cue objects back into a WebVTT file.
  *
- * Note: this writes a stripped file — cue identifiers, cue settings and
- * styling/region blocks are not round-tripped (same limitation as `parseCaptions`).
- * The caption manager disables cue editing for tracks the SaaS flags as
- * `has_rich_formatting`, so this is only ever used on files it can round-trip.
+ * Uses the player's writer, so the editor and the player round timestamps the
+ * same way. It writes a stripped file: cue identifiers, cue settings and
+ * styling/region blocks are not round-tripped (same limitation as
+ * `parseCaptions`). The caption manager disables cue editing for tracks the
+ * SaaS flags as `has_rich_formatting`, so this is only used on plain files.
  *
  * @param {Array<{start:number,end:number,text:string}>} cues Ordered cues.
  * @return {string} WebVTT file text.
  */
-export const cuesToVTT = ( cues ) => {
-	const body = ( cues || [] )
-		.map( ( cue ) => `${ formatTimeForVTT( cue.start ) } --> ${ formatTimeForVTT( cue.end ) }\n${ cue.text }` )
-		.join( '\n\n' );
-	return `WEBVTT\n\n${ body }\n`;
-};
+export const cuesToVTT = ( cues ) => cuesToWebVtt( cues || [] );

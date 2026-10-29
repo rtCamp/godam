@@ -68,7 +68,7 @@ const readCaptionFile = ( file ) =>
  * @return {JSX.Element} The caption manager modal.
  */
 const CaptionManager = ( { attachmentID, onClose } ) => {
-	const { data, isLoading, isFetching } = useListCaptionsQuery( attachmentID );
+	const { data, isLoading, isFetching, isError, error: listError } = useListCaptionsQuery( attachmentID );
 	const [ uploadCaption, { isLoading: isUploading } ] = useUploadCaptionMutation();
 	const [ updateCaption ] = useUpdateCaptionMutation();
 	const [ deleteCaption ] = useDeleteCaptionMutation();
@@ -87,12 +87,8 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 	const replaceFileRef = useRef( null );
 	const replaceTargetRef = useRef( null );
 
-	let captions = [];
-	if ( Array.isArray( data?.caption_tracks ) ) {
-		captions = data.caption_tracks;
-	} else if ( Array.isArray( data ) ) {
-		captions = data;
-	}
+	// Central's caption endpoints return `{ success, captions: [...] }`.
+	const captions = Array.isArray( data?.captions ) ? data.captions : [];
 
 	const resolvedLanguage = form.language === FREE_TEXT ? form.freeLang.trim() : form.language;
 
@@ -217,6 +213,12 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 				</Notice>
 			) }
 
+			{ isError && (
+				<Notice status="error" isDismissible={ false }>
+					{ listError?.data?.message || __( 'Could not load the caption tracks.', 'godam' ) }
+				</Notice>
+			) }
+
 			{ isLoading ? (
 				<div className="godam-ve-transcription__loader">
 					<Spinner />
@@ -226,7 +228,8 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 					{ captions.map( ( caption ) => {
 						const id = caption.caption_id;
 						const isUploaded = caption.source === 'Uploaded';
-						const canEditCues = ! isUploaded || ! caption.has_rich_formatting;
+						// Rebuilding the VTT drops styling, so only plain tracks get the cue editor.
+						const canEditCues = ! caption.has_rich_formatting;
 						const rowBusy = busyId === id;
 						return (
 							<li key={ id } className="godam-ve-caption-manager__row" data-test-id={ `godam-caption-row-${ id }` }>
@@ -293,7 +296,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 							</li>
 						);
 					} ) }
-					{ captions.length === 0 && ! isFetching && (
+					{ captions.length === 0 && ! isFetching && ! isError && (
 						<li className="godam-ve-caption-manager__empty">
 							{ __( 'No caption tracks yet.', 'godam' ) }
 						</li>

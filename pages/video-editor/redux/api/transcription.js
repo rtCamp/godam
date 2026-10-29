@@ -96,7 +96,11 @@ export const transcriptionAPI = createApi( {
 					source_format: sourceFormat,
 				},
 			} ),
-			invalidatesTags: ( result, error, { attachmentID } ) => [ { type: 'Captions', id: attachmentID } ],
+			invalidatesTags: ( result, error, { attachmentID } ) => [
+				{ type: 'Captions', id: attachmentID },
+				// The server re-caches the default caption as the transcript.
+				{ type: 'Transcription', id: attachmentID },
+			],
 		} ),
 
 		// Replace or edit an existing caption track. Only pass the fields that change.
@@ -125,7 +129,11 @@ export const transcriptionAPI = createApi( {
 					body,
 				};
 			},
-			invalidatesTags: ( result, error, { attachmentID } ) => [ { type: 'Captions', id: attachmentID } ],
+			invalidatesTags: ( result, error, { attachmentID } ) => [
+				{ type: 'Captions', id: attachmentID },
+				// The server re-caches the default caption as the transcript.
+				{ type: 'Transcription', id: attachmentID },
+			],
 		} ),
 
 		// Delete a caption track.
@@ -136,7 +144,11 @@ export const transcriptionAPI = createApi( {
 				method: 'POST',
 				body: { attachment_id: attachmentID, caption_id: captionID },
 			} ),
-			invalidatesTags: ( result, error, { attachmentID } ) => [ { type: 'Captions', id: attachmentID } ],
+			invalidatesTags: ( result, error, { attachmentID } ) => [
+				{ type: 'Captions', id: attachmentID },
+				// The server re-caches the default caption as the transcript.
+				{ type: 'Transcription', id: attachmentID },
+			],
 		} ),
 
 		// Mark a caption track as the default for playback.
@@ -147,7 +159,11 @@ export const transcriptionAPI = createApi( {
 				method: 'POST',
 				body: { attachment_id: attachmentID, caption_id: captionID },
 			} ),
-			invalidatesTags: ( result, error, { attachmentID } ) => [ { type: 'Captions', id: attachmentID } ],
+			invalidatesTags: ( result, error, { attachmentID } ) => [
+				{ type: 'Captions', id: attachmentID },
+				// The server re-caches the default caption as the transcript.
+				{ type: 'Transcription', id: attachmentID },
+			],
 		} ),
 
 		// Attach an existing caption file (.vtt / .srt) as the transcript.

@@ -4,11 +4,11 @@
  * Two distinct lists are exported.
  *
  * `TRANSCRIBE_LANGUAGES` drives the "Generate transcription" selector. It leads
- * with Deepgram's detection options (`auto` / `multi`) because that is how
- * multilingual transcription is triggered, then the BCP 47 codes Deepgram
- * `nova-3` transcribes in. The server (`process_transcription`) validates the
- * chosen code before calling Deepgram, so this list only has to stay a sane
- * subset — the server is the source of truth.
+ * with "Account default" (no language sent, so Central uses the language set
+ * for the account) and Deepgram's detection options (`auto` / `multi`), then
+ * the languages Central accepts. Central rejects any other code, so keep
+ * `TRANSCRIBABLE_CODES` equal to `SUPPORTED_TRANSCRIPTION_LANGUAGES` in
+ * godam-core `godam_core/utils/transcription.py`.
  *
  * `CAPTION_LANGUAGES` drives the uploaded-caption language picker. Uploaded
  * captions are NOT limited to what Deepgram can transcribe (someone can upload
@@ -28,6 +28,7 @@ import { __ } from '@wordpress/i18n';
  * nova-3. Keep the values in sync with what `process_transcription` accepts.
  */
 export const DETECTION_OPTIONS = [
+	{ value: '', label: __( 'Account default', 'godam' ) },
 	{ value: 'auto', label: __( 'Auto-detect language', 'godam' ) },
 	{ value: 'multi', label: __( 'Multiple languages (code-switching)', 'godam' ) },
 ];
@@ -58,14 +59,24 @@ export const BCP47_LANGUAGES = [
 	{ value: 'sv', label: __( 'Swedish', 'godam' ) },
 	{ value: 'id', label: __( 'Indonesian', 'godam' ) },
 	{ value: 'uk', label: __( 'Ukrainian', 'godam' ) },
+	{ value: 'ta', label: __( 'Tamil', 'godam' ) },
 	{ value: 'cy', label: __( 'Welsh', 'godam' ) },
 ];
+
+/**
+ * Languages GoDAM Central can transcribe in. Mirrors
+ * `SUPPORTED_TRANSCRIPTION_LANGUAGES` in godam-core.
+ */
+const TRANSCRIBABLE_CODES = [ 'en', 'es', 'fr', 'de', 'hi', 'it', 'pt', 'nl', 'ja', 'ko', 'zh', 'ru', 'tr', 'uk', 'id', 'sv', 'pl', 'ta' ];
 
 /**
  * Options for the "Generate transcription" language selector:
  * detection options first, then the transcribable languages.
  */
-export const TRANSCRIBE_LANGUAGES = [ ...DETECTION_OPTIONS, ...BCP47_LANGUAGES ];
+export const TRANSCRIBE_LANGUAGES = [
+	...DETECTION_OPTIONS,
+	...BCP47_LANGUAGES.filter( ( { value } ) => TRANSCRIBABLE_CODES.includes( value ) ),
+];
 
 /**
  * Options for the uploaded-caption language picker (no detection pseudo-codes).
@@ -83,6 +94,6 @@ export const languageLabel = ( code ) => {
 	if ( ! code ) {
 		return '';
 	}
-	const match = TRANSCRIBE_LANGUAGES.find( ( option ) => option.value === code );
+	const match = [ ...DETECTION_OPTIONS, ...BCP47_LANGUAGES ].find( ( option ) => option.value === code );
 	return match ? match.label : code;
 };

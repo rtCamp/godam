@@ -109,6 +109,12 @@ const CaptionCueEditor = ( { attachmentID, caption, onClose } ) => {
 							</span>
 							<TextareaControl
 								__nextHasNoMarginBottom
+								label={ sprintf(
+									/* translators: %s: cue start time, e.g. 01:23. */
+									__( 'Caption text at %s', 'godam' ),
+									formatClock( cue.start ),
+								) }
+								hideLabelFromVision
 								value={ cue.text }
 								rows={ 2 }
 								onChange={ ( value ) => setCueText( index, value ) }
@@ -131,7 +137,7 @@ const CaptionCueEditor = ( { attachmentID, caption, onClose } ) => {
 					variant="primary"
 					className="w-full justify-center"
 					isBusy={ isSaving }
-					disabled={ isSaving || loading }
+					disabled={ isSaving || loading || cues.length === 0 }
 					onClick={ handleSave }
 				>
 					{ __( 'Save', 'godam' ) }

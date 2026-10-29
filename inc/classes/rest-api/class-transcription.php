@@ -44,6 +44,19 @@ class Transcription extends Base {
 	const DELETED_META = 'rtgodam_transcript_deleted';
 
 	/**
+	 * Meta flag set to `upload` when `rtgodam_transcript_path` is a caption file
+	 * the user uploaded in WordPress, rather than a cached copy of GoDAM
+	 * Central's default caption. An uploaded file never reaches Central, so the
+	 * player plays it ahead of Central's tracks and Central updates never
+	 * overwrite it. Cleared on generate and on delete.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string
+	 */
+	const SOURCE_META = 'rtgodam_transcript_source';
+
+	/**
 	 * Register custom REST API.
 	 *
 	 * @return array Array of registered REST API routes.
@@ -254,24 +267,25 @@ class Transcription extends Base {
 	}
 
 	/**
-	 * Sanitize a language code: a BCP 47 tag (e.g. `en`, `pt-BR`) or the
-	 * Deepgram detection keywords `auto` / `multi`. Returns an empty string for
-	 * anything that does not look like a language tag, so the SaaS default
-	 * language kicks in.
+	 * Sanitize a language code: a BCP 47 tag (e.g. `en`, `pt-BR`, `zh-Hant-TW`)
+	 * or the Deepgram detection keywords `auto` / `multi`. Matches the check
+	 * Central applies to caption languages (`validate_language`) and keeps the
+	 * tag's case, since Central stores it as given. Returns an empty string for
+	 * anything else, so the SaaS default language kicks in.
 	 *
 	 * @param string $value Raw language value.
 	 * @return string Sanitized language code, or '' to defer to the SaaS default.
 	 */
 	public function sanitize_language( $value ) {
-		$value = strtolower( trim( (string) $value ) );
+		$value = trim( (string) $value );
 		if ( '' === $value ) {
 			return '';
 		}
-		// Deepgram detection keywords are passed through verbatim.
-		if ( in_array( $value, array( 'auto', 'multi' ), true ) ) {
-			return $value;
+		// Deepgram detection keywords are passed through in lower case.
+		if ( in_array( strtolower( $value ), array( 'auto', 'multi' ), true ) ) {
+			return strtolower( $value );
 		}
-		if ( preg_match( '/^[a-z]{2,3}(-[a-z0-9]{2,8})?$/', $value ) ) {
+		if ( strlen( $value ) <= 35 && preg_match( '/^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$/', $value ) ) {
 			return $value;
 		}
 		return '';
@@ -433,8 +447,9 @@ class Transcription extends Base {
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		if ( ! empty( $path ) ) {
-			// A (re)generated transcript supersedes any prior delete.
+			// A (re)generated transcript supersedes any prior delete or upload.
 			delete_post_meta( $attachment_id, self::DELETED_META );
+			delete_post_meta( $attachment_id, self::SOURCE_META );
 			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $path );
 			update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
 		} elseif ( '' !== $current_status || '' !== $status ) {
@@ -442,6 +457,7 @@ class Transcription extends Base {
 			// remember the in-flight status so the editor keeps polling. On a
 			// hard error we leave the delete marker intact.
 			delete_post_meta( $attachment_id, self::DELETED_META );
+			delete_post_meta( $attachment_id, self::SOURCE_META );
 			$track = $current_status ? $current_status : $status;
 			update_post_meta( $attachment_id, self::STATUS_META, $track );
 		}
@@ -489,6 +505,7 @@ class Transcription extends Base {
 		// An uploaded transcript supersedes any prior delete.
 		delete_post_meta( $attachment_id, self::DELETED_META );
 		update_post_meta( $attachment_id, 'rtgodam_transcript_path', $url );
+		update_post_meta( $attachment_id, self::SOURCE_META, 'upload' );
 		update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
 		do_action( 'rtgodam_after_attachment_lookup' );
 
@@ -514,6 +531,7 @@ class Transcription extends Base {
 		do_action( 'rtgodam_before_attachment_lookup' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcript_path' );
 		delete_post_meta( $attachment_id, self::STATUS_META );
+		delete_post_meta( $attachment_id, self::SOURCE_META );
 		// Mark as deleted so GET won't auto-resurrect it from the SaaS.
 		update_post_meta( $attachment_id, self::DELETED_META, '1' );
 		do_action( 'rtgodam_after_attachment_lookup' );
@@ -563,12 +581,13 @@ class Transcription extends Base {
 			return $context;
 		}
 
-		return $this->call_saas(
+		return $this->write_caption(
+			absint( $request->get_param( 'attachment_id' ) ),
 			'godam_core.api.captions.upload_caption',
 			array(
 				'job_name'      => $context['job_id'],
 				'api_key'       => $context['api_key'],
-				'content'       => (string) wp_unslash( $request->get_param( 'content' ) ),
+				'content'       => (string) $request->get_param( 'content' ),
 				'language'      => (string) $request->get_param( 'language' ),
 				'label'         => (string) $request->get_param( 'label' ),
 				'kind'          => $request->get_param( 'kind' ) ? $request->get_param( 'kind' ) : 'subtitles',
@@ -600,14 +619,14 @@ class Transcription extends Base {
 		foreach ( array( 'content', 'language', 'label', 'kind' ) as $field ) {
 			$value = $request->get_param( $field );
 			if ( null !== $value ) {
-				$body[ $field ] = 'content' === $field ? (string) wp_unslash( $value ) : $value;
+				$body[ $field ] = $value;
 			}
 		}
 		if ( null !== $request->get_param( 'is_default' ) ) {
 			$body['is_default'] = $request->get_param( 'is_default' ) ? 1 : 0;
 		}
 
-		return $this->call_saas( 'godam_core.api.captions.update_caption', $body );
+		return $this->write_caption( absint( $request->get_param( 'attachment_id' ) ), 'godam_core.api.captions.update_caption', $body );
 	}
 
 	/**
@@ -623,7 +642,8 @@ class Transcription extends Base {
 			return $context;
 		}
 
-		return $this->call_saas(
+		return $this->write_caption(
+			absint( $request->get_param( 'attachment_id' ) ),
 			'godam_core.api.captions.delete_caption',
 			array(
 				'job_name'   => $context['job_id'],
@@ -645,7 +665,8 @@ class Transcription extends Base {
 			return $context;
 		}
 
-		return $this->call_saas(
+		return $this->write_caption(
+			absint( $request->get_param( 'attachment_id' ) ),
 			'godam_core.api.captions.set_default_caption',
 			array(
 				'job_name'   => $context['job_id'],
@@ -653,6 +674,75 @@ class Transcription extends Base {
 				'caption_id' => $request->get_param( 'caption_id' ),
 			)
 		);
+	}
+
+	/**
+	 * Send a caption write to the SaaS and, on success, bring the attachment's
+	 * cached transcript in line with the caption list the SaaS returns.
+	 *
+	 * @param int    $attachment_id WordPress attachment ID.
+	 * @param string $method        Dotted Frappe method path.
+	 * @param array  $body          Request body.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	private function write_caption( $attachment_id, $method, $body ) {
+		$response = $this->call_saas( $method, $body );
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$data = $response->get_data();
+		if ( isset( $data['captions'] ) && is_array( $data['captions'] ) ) {
+			self::sync_cached_transcript( $attachment_id, $data['captions'] );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Point the attachment's cached transcript (`rtgodam_transcript_path`) at
+	 * the default caption track Central reports, so the editor's Transcription
+	 * tab, the video SEO data and the player's fallback follow caption changes.
+	 *
+	 * A transcript the user uploaded in WordPress is left alone: it never
+	 * reaches Central, so Central's list says nothing about it. The delete
+	 * marker is cleared, because Central's tracks are now what the user manages.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int   $attachment_id  WordPress attachment ID.
+	 * @param array $captions       Caption-track rows from the SaaS.
+	 * @param bool  $switch_context Whether to fire the attachment-lookup actions
+	 *                              around the meta writes. Pass false when the
+	 *                              caller already fired them.
+	 * @return void
+	 */
+	public static function sync_cached_transcript( $attachment_id, $captions, $switch_context = true ) {
+		$default_path = '';
+		foreach ( $captions as $caption ) {
+			if ( is_array( $caption ) && ! empty( $caption['is_default'] ) && ! empty( $caption['vtt_path'] ) ) {
+				$default_path = esc_url_raw( $caption['vtt_path'] );
+				break;
+			}
+		}
+
+		if ( $switch_context ) {
+			/** This action is documented in inc/classes/rest-api/class-transcription.php */
+			do_action( 'rtgodam_before_attachment_lookup' );
+		}
+		delete_post_meta( $attachment_id, self::DELETED_META );
+		if ( 'upload' !== get_post_meta( $attachment_id, self::SOURCE_META, true ) ) {
+			if ( '' !== $default_path ) {
+				update_post_meta( $attachment_id, 'rtgodam_transcript_path', $default_path );
+				update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
+			} else {
+				delete_post_meta( $attachment_id, 'rtgodam_transcript_path' );
+				delete_post_meta( $attachment_id, self::STATUS_META );
+			}
+		}
+		if ( $switch_context ) {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	/**
