@@ -561,6 +561,96 @@ describe( 'VisibilityManager', () => {
 		expect( manager.stylePollTimer ).not.toBeNull();
 	} );
 
+	describe( 'add-on API', () => {
+		it( 'resetInteraction makes a visitor-started video autoplay again', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player );
+			pointerDown( player );
+			player.play();
+			expect( manager.isUserStarted( player ) ).toBe( true );
+
+			manager.resetInteraction( player );
+			FakeObserver.instance.fire( player.el(), false );
+			jest.runOnlyPendingTimers();
+			FakeObserver.instance.fire( player.el(), true );
+			expect( player.play ).toHaveBeenCalledTimes( 2 );
+		} );
+
+		it( 'resetInteraction survives the async pause after a recent gesture', () => {
+			const clock = { now: 1000 };
+			const manager = createManager( clock );
+			const player = createPlayer( { paused: true } );
+			player.controls = () => true;
+			manager.register( player );
+			manager.markInteraction( player ); // modal opened it
+			player.play();
+			player.el().dispatchEvent( new Event( 'touchstart', { bubbles: true } ) ); // swipe
+			clock.now += 400; // slide animation, then the modal restores the item
+			player.pause();
+			manager.resetInteraction( player );
+			jest.runOnlyPendingTimers(); // pause event arrives
+			expect( manager.isUserStarted( player ) ).toBe( false );
+		} );
+
+		it( 'cancelResume stops an automatic resume', () => {
+			const manager = createManager();
+			const player = createPlayer();
+			manager.register( player );
+
+			FakeObserver.instance.fire( player.el(), false );
+			jest.runOnlyPendingTimers();
+			manager.cancelResume( player );
+			FakeObserver.instance.fire( player.el(), true );
+			expect( player.play ).not.toHaveBeenCalled();
+		} );
+
+		it( 'isInView reflects visibility and exemptions', () => {
+			const manager = createManager();
+			const player = createPlayer();
+			manager.register( player );
+			expect( manager.isInView( player ) ).toBe( true );
+
+			FakeObserver.instance.fire( player.el(), false );
+			expect( manager.isInView( player ) ).toBe( false );
+
+			player.isFullscreen = () => true;
+			expect( manager.isInView( player ) ).toBe( true );
+			expect( manager.isInView( createPlayer() ) ).toBe( true ); // untracked
+		} );
+
+		it( 'flags its own mute while the volumechange is dispatched', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			manager.register( player, { mode: OUT_OF_VIEW_MODE.MUTE } );
+			pointerDown( player );
+			player.play();
+
+			let flagged = null;
+			player.on( 'volumechange', () => {
+				flagged = manager.isAutomaticChange( player );
+			} );
+			FakeObserver.instance.fire( player.el(), false );
+			expect( flagged ).toBe( true );
+			jest.runOnlyPendingTimers();
+			expect( manager.isAutomaticChange( player ) ).toBe( false );
+		} );
+
+		it( 'ignores taps on a player without controls', () => {
+			const manager = createManager();
+			const player = createPlayer( { paused: true } );
+			player.controls = () => false;
+			manager.register( player );
+
+			pointerDown( player );
+			player.play();
+			expect( manager.isUserStarted( player ) ).toBe( false );
+
+			manager.markInteraction( player );
+			expect( manager.isUserStarted( player ) ).toBe( true );
+		} );
+	} );
+
 	describe( 'pause autoplaying videos only', () => {
 		it( 'pauses an autoplaying video when hidden and resumes it when visible', () => {
 			const manager = createManager();
