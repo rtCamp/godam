@@ -1,8 +1,8 @@
 ![Banner V3](https://github.com/user-attachments/assets/73cfb2c2-0779-44c2-85e7-67e812dd82b6)
 
-# GoDAM - Organize WordPress Media Library & File Manager with Unlimited Folders for Images, Videos & more
+# GoDAM - Video Hosting for LMS & Online Courses
 Contributors: [rtcamp](https://profiles.wordpress.org/rtcamp), [elifvish](https://profiles.wordpress.org/elifvish), [subodhrajpopat](https://profiles.wordpress.org/subodhrajpopat), [kuldipchaudhary](https://profiles.wordpress.org/kuldipchaudhary), [prachigarg19](https://profiles.wordpress.org/prachigarg19), [juzar](https://profiles.wordpress.org/juzar), [geekofshire](https://profiles.wordpress.org/geekofshire), [nazmulhassann20](https://profiles.wordpress.org/nazmulhassann20), [mi5t4n](https://profiles.wordpress.org/mi5t4n), [abhinavbelhekar03](https://profiles.wordpress.org/abhinavbelhekar03), [gautam23](https://profiles.wordpress.org/gautam23), [mukulsingh27](https://profiles.wordpress.org/mukulsingh27), [hbhalodia](https://profiles.wordpress.org/hbhalodia), [kishu7270](https://profiles.wordpress.org/kishu7270), [opurockey](https://profiles.wordpress.org/opurockey), [utsavladani](https://profiles.wordpress.org/utsavladani), [whiteshadow01](https://profiles.wordpress.org/whiteshadow01), [ahmarzaidi](https://profiles.wordpress.org/ahmarzaidi), [im3dabasia1](https://profiles.wordpress.org/im3dabasia1), [akrocks](https://profiles.wordpress.org/akrocks)
-Tags: transcoder, video, media library, folders, file manager
+Tags: video hosting, vimeo, lms, online courses, lifterlms
 
 Requires at least: 6.5
 
@@ -10,11 +10,11 @@ Tested up to: 7.1
 
 Requires PHP: 7.4
 
-Stable tag: 2.5.1
+Stable tag: 2.5.2
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
-Manage and optimize digital assets with GoDAM – featuring transcoding, adaptive streaming, interactive video layers, and video analytics.
+Media hosting for WordPress. Move course, LMS and membership videos off Vimeo: free migration for up to 100 videos on one site. Works with LifterLMS.
 
 ## Description
 [GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) combines multiple media tools into one WordPress plugin and provides three key features:
@@ -25,7 +25,7 @@ Manage and optimize digital assets with GoDAM – featuring transcoding, adaptiv
 
 Let’s dive into each of these in detail.
 
-Paid plans start at $7.5 per month (annual subscription) (for unlimited sites) or [Start for free](https://godam.io/pricing/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=start-free).
+Paid plans start from $9 a month (for unlimited sites) or [Start for free](https://godam.io/pricing/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=start-free).
 
 Check out our source code and contribute to the plugin on GitHub: [Official GoDAM GitHub](https://github.com/rtCamp/godam)
 
@@ -145,7 +145,7 @@ GoDAM works seamlessly with popular WordPress plugins to enhance interactivity a
 ---
 
 ### Important Links
-- [Upgrade to a paid plan](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link) starting at just $7.5 per month (annual subscription) for unlimited sites (or [Start for free](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=start-free))
+- [Upgrade to a paid plan](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=pricing-link) starting from $9 a month for unlimited sites (or [Start for free](https://godam.io/pricing?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=start-free))
 - [All features](https://godam.io/features/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=features-link)
 - [All integrations](https://godam.io/integrations/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=integrations-link)
 - [Demo](https://demo.godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=demo-link)
@@ -281,11 +281,21 @@ This plugin relies on third-party services to provide specific features. Below i
     <tr>
       <td>analytics.godam.io</td>
       <td>Collects video analytics</td>
-      <td>IP, Email, Author, Browser info, OS, User Agent</td>
+      <td>IP, Author, Browser info, OS, User Agent</td>
       <td>On video page load &amp; exit</td>
       <td>
         analytics.godam.io<br>
         <a href="https://godam.io/tos/">ToS</a> | <a href="https://godam.io/privacy-policy/">Privacy</a>
+      </td>
+    </tr>
+    <tr>
+      <td>us.i.posthog.com (PostHog)</td>
+      <td>Product analytics for GoDAM's own admin screens and the screens where GoDAM adds its media tools: the Media Library and Edit Media screens, the editors for posts, pages and other post types, the site editor, and the widgets screen</td>
+      <td>Site details (PHP, MySQL, web server and WordPress versions, site language, plugin and user counts); page views, clicks (including the text of what was clicked), errors, session replays and heatmaps of those screens, which cover the whole screen, so a name, email address, file name or video title shown there can appear in clicks and replays (the plugin does not send the admin's name or email as an identifier); the screen address and an ID PostHog stores in the browser; the IP address and browser and device details</td>
+      <td>Only after a site administrator clicks Allow in the Dashboard notice or turns on "Help us improve GoDAM" on the Help page; only in those WordPress admin screens, never for visitors; once allowed it covers everyone who uses those screens, not only that administrator. It can be turned off on the Help page and stops from the next page load</td>
+      <td>
+        <a href="https://posthog.com">posthog.com</a><br>
+        <a href="https://posthog.com/terms">ToS</a> | <a href="https://posthog.com/privacy">Privacy</a>
       </td>
     </tr>
     <tr>

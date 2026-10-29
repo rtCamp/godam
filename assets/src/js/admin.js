@@ -182,9 +182,80 @@ function handleBannerClose() {
 	}
 }
 
+/**
+ * Seasonal offer notice: dismiss for the whole site, and copy the offer code.
+ */
+function initOfferNotice() {
+	const notice = document.querySelector( '.rtgodam-offer-notice' );
+	if ( ! notice ) {
+		return;
+	}
+
+	const dismiss = notice.querySelector( '.rtgodam-offer-notice__dismiss' );
+	if ( dismiss ) {
+		dismiss.addEventListener( 'click', () => {
+			notice.remove();
+
+			if ( window.ajaxurl ) {
+				const body = new window.FormData();
+				body.append( 'action', 'godam_dismiss_offer_notice' );
+				body.append( 'nonce', notice.dataset.nonce || '' );
+				// keepalive lets the request finish even if the admin leaves the page right away.
+				window.fetch( window.ajaxurl, { method: 'POST', credentials: 'same-origin', keepalive: true, body } );
+			}
+		} );
+	}
+
+	const copy = notice.querySelector( '.rtgodam-offer-notice__copy' );
+	const status = notice.querySelector( '.rtgodam-offer-notice__status' );
+	if ( copy ) {
+		const text = copy.querySelector( '.rtgodam-offer-notice__copy-text' ) || copy;
+		const label = text.textContent;
+		copy.addEventListener( 'click', () => {
+			const done = () => {
+				text.textContent = copy.dataset.copied || label;
+				if ( status ) {
+					status.textContent = status.dataset.message || '';
+				}
+				setTimeout( () => {
+					text.textContent = label;
+					if ( status ) {
+						status.textContent = '';
+					}
+				}, 1500 );
+			};
+
+			// Older copy through a hidden textarea: for plain-http admin pages, which have no
+			// async clipboard API, and for when the browser refuses an async write.
+			const fallbackCopy = () => {
+				const field = document.createElement( 'textarea' );
+				field.value = copy.dataset.code;
+				field.setAttribute( 'readonly', '' );
+				field.style.position = 'absolute';
+				field.style.left = '-9999px';
+				document.body.appendChild( field );
+				field.select();
+				const copied = document.execCommand( 'copy' );
+				field.remove();
+				if ( copied ) {
+					done();
+				}
+			};
+
+			if ( window.navigator.clipboard && window.isSecureContext ) {
+				window.navigator.clipboard.writeText( copy.dataset.code ).then( done ).catch( fallbackCopy );
+				return;
+			}
+
+			fallbackCopy();
+		} );
+	}
+}
+
 function initAdminUI() {
 	initTogglePostboxes();
 	handleBannerClose();
+	initOfferNotice();
 	new ParticleEffect();
 	initHandleInsightsDataNotice();
 }
