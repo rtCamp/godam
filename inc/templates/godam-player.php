@@ -426,10 +426,9 @@ if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
 
 $godam_ads_settings = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
 
-// Global ads (Settings → Ads) apply to every player except WooCommerce
-// placements, which never show ads (their per-video ad tag is dropped too).
-$godam_global_ads_enabled = ! $godam_woocommerce_context
-	&& ! empty( $godam_ads_settings['enable_global_video_ads'] )
+// Global ads (Settings → Ads) are on and have an ad tag. WooCommerce
+// placements never show ads; the IMA check below skips them.
+$godam_global_ads_enabled = ! empty( $godam_ads_settings['enable_global_video_ads'] )
 	&& ! empty( $godam_ads_settings['adTagUrl'] );
 
 $godam_ads_settings       = wp_json_encode( $godam_woocommerce_context ? array() : $godam_ads_settings );
@@ -663,7 +662,7 @@ endif;
 
 // Enqueue the IMA SDK only when this player can show an ad: its own ad tag or the
 // global ad tag. WooCommerce placements never show ads, so they skip it.
-if ( ( ! empty( $godam_ad_tag_url ) && ! $godam_woocommerce_context ) || $godam_global_ads_enabled ) {
+if ( ! $godam_woocommerce_context && ( ! empty( $godam_ad_tag_url ) || $godam_global_ads_enabled ) ) {
 	IMA_Assets::get_instance();
 }
 
