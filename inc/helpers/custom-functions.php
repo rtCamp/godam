@@ -125,21 +125,25 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
 /**
  * Sanitize an out-of-view behavior value.
  *
- * `pause` pauses a visitor-started video when it leaves the view, `mute` keeps
- * it playing muted, `off` turns the feature off. Autoplaying videos always
- * pause and resume (see assets/src/js/godam-player/managers/visibilityManager.js).
+ * - `off` (default): do nothing, videos keep playing.
+ * - `autoplay`: pause autoplaying videos and resume them when back in view;
+ *   videos the visitor started keep playing.
+ * - `pause`: also pause videos the visitor started (they stay paused).
+ * - `mute`: also keep videos the visitor started playing, muted.
+ *
+ * See assets/src/js/godam-player/managers/visibilityManager.js.
  *
  * @since n.e.x.t
  *
  * @param mixed  $value    Raw value.
  * @param string $fallback Returned when the value is not valid.
  *
- * @return string `pause`, `mute`, `off`, or the fallback.
+ * @return string `off`, `autoplay`, `pause`, `mute`, or the fallback.
  */
-function rtgodam_sanitize_out_of_view_behavior( $value, $fallback = 'pause' ) {
+function rtgodam_sanitize_out_of_view_behavior( $value, $fallback = 'off' ) {
 	$value = is_string( $value ) ? strtolower( trim( $value ) ) : '';
 
-	return in_array( $value, array( 'pause', 'mute', 'off' ), true ) ? $value : $fallback;
+	return in_array( $value, array( 'off', 'autoplay', 'pause', 'mute' ), true ) ? $value : $fallback;
 }
 
 /**
@@ -152,7 +156,7 @@ function rtgodam_sanitize_out_of_view_behavior( $value, $fallback = 'pause' ) {
  *
  * @param string $override Per-player value, empty to inherit.
  *
- * @return string `pause`, `mute` or `off`.
+ * @return string `off`, `autoplay`, `pause` or `mute`.
  */
 function rtgodam_get_out_of_view_behavior( $override = '' ) {
 	$override = rtgodam_sanitize_out_of_view_behavior( $override, '' );
@@ -161,9 +165,24 @@ function rtgodam_get_out_of_view_behavior( $override = '' ) {
 	}
 
 	$settings = get_option( 'rtgodam-settings', array() );
-	$global   = isset( $settings['video_player']['out_of_view_behavior'] ) ? $settings['video_player']['out_of_view_behavior'] : 'pause';
+	$global   = isset( $settings['video_player']['out_of_view_behavior'] ) ? $settings['video_player']['out_of_view_behavior'] : 'off';
 
 	return rtgodam_sanitize_out_of_view_behavior( $global );
+}
+
+/**
+ * Whether a background browser tab also pauses (or mutes) videos the visitor
+ * started. Global Video Player setting, off by default; autoplaying videos
+ * always pause in a background tab when the out-of-view behavior isn't `off`.
+ *
+ * @since n.e.x.t
+ *
+ * @return bool True when the setting is on.
+ */
+function rtgodam_out_of_view_applies_to_hidden_tab() {
+	$settings = get_option( 'rtgodam-settings', array() );
+
+	return ! empty( $settings['video_player']['out_of_view_tab_hidden'] );
 }
 
 /**
