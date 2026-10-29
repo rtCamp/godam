@@ -451,6 +451,10 @@ const HubSpotSettings = ( { settings = {}, onSettingChange } ) => {
 								) }
 							</Card>
 
+							<p style={ { margin: '12px 0 0', color: '#757575', fontSize: 13 } }>
+								{ __( 'With video-view tracking on, GoDAM adds HubSpot’s tracking code to pages that have a video, so views can be matched to a HubSpot contact. That code also loads whatever your HubSpot portal has set up — chat, pop-ups, the ads pixel and the cookie banner.', 'godam' ) }
+							</p>
+
 							{ settingsUrl && (
 								<Flex justify="flex-start" gap={ 3 } style={ { marginTop: '12px' } }>
 									<FlexItem>
