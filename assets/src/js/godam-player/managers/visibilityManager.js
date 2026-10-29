@@ -294,6 +294,9 @@ export class VisibilityManager {
 			return;
 		}
 		entry.userStarted = false;
+		// A gesture from before the hand-back (e.g. the swipe that moved a
+		// modal on) must not mark the pause that follows as the visitor's.
+		entry.lastGestureAt = -Infinity;
 		this.cancelResume( player );
 	}
 

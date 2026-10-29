@@ -561,6 +561,22 @@ describe( 'VisibilityManager', () => {
 			expect( player.play ).toHaveBeenCalledTimes( 2 );
 		} );
 
+		it( 'resetInteraction survives the async pause after a recent gesture', () => {
+			const clock = { now: 1000 };
+			const manager = createManager( clock );
+			const player = createPlayer( { paused: true } );
+			player.controls = () => true;
+			manager.register( player );
+			manager.markInteraction( player ); // modal opened it
+			player.play();
+			player.el().dispatchEvent( new Event( 'touchstart', { bubbles: true } ) ); // swipe
+			clock.now += 400; // slide animation, then the modal restores the item
+			player.pause();
+			manager.resetInteraction( player );
+			jest.runOnlyPendingTimers(); // pause event arrives
+			expect( manager.isUserStarted( player ) ).toBe( false );
+		} );
+
 		it( 'cancelResume stops an automatic resume', () => {
 			const manager = createManager();
 			const player = createPlayer();
