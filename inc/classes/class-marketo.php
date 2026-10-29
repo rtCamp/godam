@@ -277,15 +277,25 @@ class Marketo {
 	}
 
 	/**
+	 * Whether the Marketo integration is enabled (the site-level on/off switch),
+	 * regardless of whether Central has a connection.
+	 *
+	 * @return bool
+	 */
+	public static function is_enabled() {
+		$settings = self::get_settings();
+
+		return ! empty( $settings['enable'] );
+	}
+
+	/**
 	 * Whether a Marketo form can render: the integration is enabled on this site
 	 * and Marketo is connected on GoDAM Central.
 	 *
 	 * @return bool
 	 */
 	public static function is_configured() {
-		$settings = self::get_settings();
-
-		return ! empty( $settings['enable'] )
+		return self::is_enabled()
 			&& self::is_central_connected()
 			&& '' !== self::get_instance_host();
 	}

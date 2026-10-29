@@ -2,11 +2,23 @@
 /**
  * HubSpot Form Assets class.
  *
- * Loads HubSpot's forms v2 library and a small init script that renders each
- * HubSpot form layer present on the page, for the GoDAM Central source (which,
- * unlike the leadin plugin, has no WordPress shortcode). Enqueued on demand from
- * the player template (see inc/templates/godam-player.php) only when a Central
- * HubSpot layer is actually rendered — mirroring Marketo_Form_Assets.
+ * Loads HubSpot's forms v2 library plus a small bridge script, for the GoDAM
+ * Central source (which, unlike the leadin plugin, has no WordPress shortcode).
+ * Enqueued on demand from the player template (see inc/templates/godam-player.php)
+ * only when a Central HubSpot layer is actually rendered — mirroring
+ * Marketo_Form_Assets.
+ *
+ * forms v2 renders both kinds of form: a legacy-editor form itself, and a
+ * new-editor form by switching it to HubSpot's V4 embed. The bridge detects a
+ * submit for both — the legacy iframe callback and the V4 `hs-form-event` — so the
+ * player's confirmation step works whichever the account's form uses. (An earlier
+ * iteration loaded the per-portal V4 embed directly, which has no legacy path and
+ * left layers on an older form blank.)
+ *
+ * The `hubspotutk` cookie that associates a submission with a contact (rather than
+ * "Unknown Contact") is not set by the form library; HubSpot's tracking code sets
+ * it, and the plugin injects that separately for a Central-only site when view
+ * tracking is on (see Map_Tracker::maybe_enqueue_hubspot_tracking_code()).
  *
  * @since n.e.x.t
  * @package GoDAM
@@ -50,7 +62,7 @@ class Hubspot_Form_Assets {
 	}
 
 	/**
-	 * Register and enqueue HubSpot's forms v2 library plus the GoDAM init script.
+	 * Register and enqueue HubSpot's forms v2 library plus the GoDAM bridge.
 	 *
 	 * @return void
 	 */
@@ -61,7 +73,8 @@ class Hubspot_Form_Assets {
 			return;
 		}
 
-		// HubSpot's forms v2 library.
+		// HubSpot's forms v2 library, which renders both a legacy-editor form and a
+		// new-editor form (switching the latter to HubSpot's V4 embed).
 		if ( ! wp_script_is( 'rtgodam-hubspot-forms-v2', 'registered' ) ) {
 			wp_register_script(
 				'rtgodam-hubspot-forms-v2',

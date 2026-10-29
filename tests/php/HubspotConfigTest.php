@@ -216,4 +216,70 @@ class HubspotConfigTest extends TestCase {
 		$this->assertFalse( $out['hubspot']['enable'] );
 		$this->assertSame( 'central', $out['hubspot']['source'] );
 	}
+
+	/**
+	 * Central connected and no leadin: the frontend cookie is Central's, so tracking
+	 * is aligned.
+	 */
+	public function test_tracking_aligned_for_central_only(): void {
+		$this->set_settings( 'central' );
+		$this->set_central( array( 'portal_id' => '247' ) );
+
+		$this->assertTrue( Hubspot::is_central_tracking_portal_aligned() );
+	}
+
+	/**
+	 * No Central HubSpot portal: there is nothing to forward to, so not aligned.
+	 */
+	public function test_tracking_not_aligned_without_central_portal(): void {
+		$this->set_settings( 'central' );
+
+		$this->assertFalse( Hubspot::is_central_tracking_portal_aligned() );
+	}
+
+	/**
+	 * leadin connected to a different portal than Central: the page's cookie is
+	 * leadin's, so Central would only ever see "Unknown Contact" — not aligned.
+	 */
+	public function test_tracking_not_aligned_on_portal_mismatch(): void {
+		$this->set_settings( 'central' );
+		$this->set_central( array( 'portal_id' => '247' ) );
+		$this->activate_leadin(); // leadin_portalId = 111.
+
+		$this->assertFalse( Hubspot::is_central_tracking_portal_aligned() );
+	}
+
+	/**
+	 * leadin connected to the same portal as Central: the cookie matches, so tracking
+	 * is aligned.
+	 */
+	public function test_tracking_aligned_when_portals_match(): void {
+		$this->set_settings( 'central' );
+		$this->set_central( array( 'portal_id' => '111' ) );
+		$this->activate_leadin(); // leadin_portalId = 111.
+
+		$this->assertTrue( Hubspot::is_central_tracking_portal_aligned() );
+	}
+
+	/**
+	 * The tracking-code loader uses the plain host for na1 and a region host otherwise,
+	 * and is empty without a portal.
+	 */
+	public function test_central_tracking_code_src(): void {
+		$this->set_settings( 'central' );
+
+		$this->set_central( array( 'portal_id' => '247' ) ); // region defaults to na1.
+		$this->assertSame( 'https://js.hs-scripts.com/247.js', Hubspot::central_tracking_code_src() );
+
+		$this->set_central(
+			array(
+				'portal_id' => '247',
+				'region'    => 'eu1',
+			)
+		);
+		$this->assertSame( 'https://js-eu1.hs-scripts.com/247.js', Hubspot::central_tracking_code_src() );
+
+		$this->set_central( array() ); // No portal.
+		$this->assertSame( '', Hubspot::central_tracking_code_src() );
+	}
 }
