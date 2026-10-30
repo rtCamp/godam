@@ -290,12 +290,18 @@ const MarketoSettings = ( { settings = {}, onSettingChange } ) => {
 					</Card>
 
 					{ marketo.reason !== 'no_api_credentials' && (
-						<SiteTrackingToggle
-							label={ __( 'Marketo', 'godam' ) }
-							settings={ settings }
-							onSettingChange={ onSettingChange }
-							centralTracking={ isLive ? Boolean( marketo.tracking_active ) : undefined }
-						/>
+						<>
+							<SiteTrackingToggle
+								label={ __( 'Marketo', 'godam' ) }
+								settings={ settings }
+								onSettingChange={ onSettingChange }
+								centralTracking={ isLive ? Boolean( marketo.tracking_active ) : undefined }
+							/>
+
+							<p style={ { margin: '12px 0 0', color: '#757575', fontSize: 13 } }>
+								{ __( 'With video-view tracking on, GoDAM adds Marketo’s Munchkin tracking code to pages that have a video, so views can be matched to a Marketo lead. Munchkin also records page visits in your Marketo. If your site already loads Munchkin, a developer can turn ours off with the rtgodam_map_inject_munchkin filter.', 'godam' ) }
+							</p>
+						</>
 					) }
 
 					{ marketo.reason === 'no_api_credentials' && (
