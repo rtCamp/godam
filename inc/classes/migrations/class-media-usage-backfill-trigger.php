@@ -93,11 +93,35 @@ class Media_Usage_Backfill_Trigger {
 			return false;
 		}
 
+		// Action Scheduler creates a site's tables on a request to that site. On
+		// multisite the runner walks every subsite with switch_to_blog(), so a
+		// subsite nobody has opened yet has no tables and the batch could not be
+		// queued. Report incomplete so the runner retries once the site has them.
+		if ( ! self::action_scheduler_tables_exist() ) {
+			return false;
+		}
+
 		// Kicks off the batch chain (or completes immediately when there are no
 		// posts to scan). From here Action Scheduler drives it to completion.
 		Media_Usage_Backfill::get_instance()->start();
 
 		return self::is_kicked_off( get_option( Media_Usage_Backfill::OPT_STATUS, Media_Usage_Backfill::STATUS_IDLE ) );
+	}
+
+	/**
+	 * Whether Action Scheduler's actions table exists for the current site.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return bool
+	 */
+	private static function action_scheduler_tables_exist(): bool {
+		global $wpdb;
+
+		$table = $wpdb->prefix . 'actionscheduler_actions';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-off schema check, must not be cached.
+		return $table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
 	}
 
 	/**
