@@ -141,8 +141,13 @@ function collectVisitorIds( providers ) {
  * Kept in sessionStorage per video: a reload continues the same view rather than
  * sending every milestone again. Matches Central's `^[A-Za-z0-9-]{8,64}$`.
  *
+ * Always from the browser's cryptographic generator: `crypto.randomUUID()`
+ * where available (HTTPS pages), otherwise `crypto.getRandomValues()`, which
+ * plain-HTTP pages have too. Never `Math.random()`, whose output can be
+ * predicted.
+ *
  * @param {string} jobId - GoDAM Central media ID.
- * @return {string} Session ID.
+ * @return {string} Session ID, or '' when the browser has no crypto API.
  */
 function getSessionId( jobId ) {
 	const storageKey = `godam-map-session-${ jobId }`;
@@ -161,8 +166,14 @@ function getSessionId( jobId ) {
 
 	if ( window.crypto && typeof window.crypto.randomUUID === 'function' ) {
 		id = window.crypto.randomUUID();
+	} else if ( window.crypto && typeof window.crypto.getRandomValues === 'function' ) {
+		// 16 random bytes as 32 hex characters, the same entropy as a UUID.
+		id = Array.from( window.crypto.getRandomValues( new Uint8Array( 16 ) ), ( byte ) =>
+			byte.toString( 16 ).padStart( 2, '0' ),
+		).join( '' );
 	} else {
-		id = `${ Date.now().toString( 36 ) }-${ Math.random().toString( 36 ).slice( 2, 10 ) }`;
+		// No crypto API at all (a very old browser): no view can be sent.
+		return '';
 	}
 
 	try {
@@ -310,13 +321,19 @@ function trackPlayer( config, player, video ) {
 			return;
 		}
 
-		sent.add( milestone );
-
 		// Minted only once there is somewhere to send it, so a visitor no tool
 		// knows leaves nothing behind in sessionStorage.
 		if ( ! sessionId ) {
 			sessionId = getSessionId( jobId );
 		}
+
+		// A browser with no crypto API cannot mint one, and Central refuses a
+		// milestone without it.
+		if ( ! sessionId ) {
+			return;
+		}
+
+		sent.add( milestone );
 
 		sendMilestone( config, {
 			media_id: jobId,
