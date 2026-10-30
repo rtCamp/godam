@@ -74,6 +74,12 @@ const Marketo = ( { layerID } ) => {
 
 	const formId = layer?.marketo_id ?? '';
 
+	// forms2 sends a submission through a hidden iframe and only accepts its
+	// replies from the protocol it asked for. On an HTTP page it asks for
+	// `http://`, the browser upgrades the iframe to HTTPS and every submit hangs
+	// on "Please Wait". `app-*.marketo.com` hosts are always asked for over HTTPS.
+	const isInsecurePage = 'http:' === window.location.protocol && ! /^\/\/app-.*?\.marketo\.com/i.test( instanceHost );
+
 	// Debounce the form ID so we don't fetch a Marketo form on every keystroke.
 	const [ previewFormId, setPreviewFormId ] = useState( formId );
 	useEffect( () => {
@@ -119,13 +125,14 @@ const Marketo = ( { layerID } ) => {
 			}
 		}, 12000 );
 
-		const markReady = () => {
+		const settle = ( nextStatus ) => {
 			if ( ! settled ) {
 				settled = true;
 				clearTimeout( timeoutId );
-				setStatus( 'ready' );
+				setStatus( nextStatus );
 			}
 		};
+		const markReady = () => settle( 'ready' );
 
 		loadForms2Library( instanceHost )
 			.then( () => {
@@ -133,7 +140,11 @@ const Marketo = ( { layerID } ) => {
 					return;
 				}
 
-				window.MktoForms2.loadForm( instanceHost, munchkinId, Number( previewFormId ), () => markReady() );
+				// forms2 renders before it calls back, so no fields here means the
+				// form did not load, e.g. a form ID from another Marketo instance.
+				window.MktoForms2.loadForm( instanceHost, munchkinId, Number( previewFormId ), () => {
+					settle( node.querySelector( 'input, select, textarea, button' ) ? 'ready' : 'error' );
+				} );
 
 				// Backup readiness detection: Marketo adds `.mktoForm` + fields to
 				// the node once it renders, even if the callback above is missed.
@@ -150,13 +161,7 @@ const Marketo = ( { layerID } ) => {
 					}
 				}, 200 );
 			} )
-			.catch( () => {
-				if ( ! settled ) {
-					settled = true;
-					clearTimeout( timeoutId );
-					setStatus( 'error' );
-				}
-			} );
+			.catch( () => settle( 'error' ) );
 	}, [ canRender, instanceHost, munchkinId, previewFormId ] );
 
 	const changeFormID = ( value ) => {
@@ -221,6 +226,16 @@ const Marketo = ( { layerID } ) => {
 							{ __( 'Settings → Integrations → Marketo', 'godam' ) }
 						</ExternalLink>
 						{ '.' }
+					</Notice>
+				) }
+
+				{ isConfigured && isInsecurePage && (
+					<Notice
+						className="mb-4"
+						status="warning"
+						isDismissible={ false }
+					>
+						{ __( 'This site is served over HTTP. Marketo forms can only be submitted on HTTPS pages; on HTTP the submit button stays on "Please Wait".', 'godam' ) }
 					</Notice>
 				) }
 

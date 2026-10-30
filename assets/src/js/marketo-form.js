@@ -31,6 +31,37 @@
 	const instanceHost = data.instanceHost || '';
 	const munchkinId = data.munchkinId || '';
 	const successText = data.successText || 'Thank you! Your submission has been received.';
+	const unavailableText = data.unavailableText || 'This form could not be loaded.';
+
+	/**
+	 * Replace a form that did not load with a message. The player's
+	 * FormLayerManager sees `.godam-marketo-unavailable` and shows "Continue",
+	 * so the viewer is never stuck on an empty layer, even with skip turned off.
+	 *
+	 * @param {HTMLElement} formEl The form node that did not load.
+	 */
+	function showUnavailable( formEl ) {
+		// Built as a text node, like the success message.
+		const message = document.createElement( 'p' );
+		message.className = 'godam-marketo-unavailable';
+		message.textContent = unavailableText;
+
+		formEl.after( message );
+		formEl.style.display = 'none';
+	}
+
+	/**
+	 * forms2 sends a submission through a hidden iframe on the Marketo host and
+	 * only accepts its replies from the exact protocol it asked for. On an HTTP
+	 * page it asks for `http://<host>`, the browser upgrades the iframe to HTTPS,
+	 * every reply is dropped and the submit button stays on "Please Wait". Only
+	 * `app-*.marketo.com` hosts are always asked for over HTTPS.
+	 *
+	 * @return {boolean} Whether submissions will hang on this page.
+	 */
+	function isInsecurePage() {
+		return 'http:' === window.location.protocol && ! /^\/\/app-.*?\.marketo\.com/i.test( instanceHost );
+	}
 
 	/**
 	 * Load one node, then the next, so forms2 never sees two nodes with the same
@@ -62,11 +93,14 @@
 		formEl.id = 'mktoForm_' + formId;
 
 		MktoForms2.loadForm( instanceHost, munchkinId, formId, function( form ) {
-			// forms2 calls back with null when Marketo cannot return the form (an
-			// unknown, deleted or unapproved id, or a subscription mismatch). Guard
-			// it so the id is still restored and the forms after this one on the
-			// page still load.
-			if ( form ) {
+			// forms2 renders before it calls back, so a form with no fields here
+			// never loaded: null when Marketo cannot return the form (an unknown,
+			// deleted or unapproved id), or an empty render for a form ID from
+			// another Marketo instance. Either way the id is still restored and the
+			// forms after this one on the page still load.
+			if ( ! form || ! formEl.querySelector( 'input, select, textarea, button' ) ) {
+				showUnavailable( formEl );
+			} else {
 				form.onSuccess( function() {
 					// Built as a text node: a translated string containing `<` or `&`
 					// must not be read as markup.
@@ -133,6 +167,10 @@
 	function init() {
 		if ( ! instanceHost || ! munchkinId ) {
 			return;
+		}
+		if ( isInsecurePage() ) {
+			// eslint-disable-next-line no-console
+			console.warn( 'GoDAM: Marketo forms can only be submitted on HTTPS pages. On this HTTP page the submit button will stay on "Please Wait".' );
 		}
 		waitForMktoForms2();
 	}
