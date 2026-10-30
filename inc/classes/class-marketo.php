@@ -55,10 +55,12 @@ class Marketo {
 	 * @return array
 	 */
 	public static function get_default_settings() {
-		// Only the site-level on/off switch is stored. The account details come
-		// from GoDAM Central (the `map` block), never from local fields.
+		// Only site-level switches are stored. The account details come from
+		// GoDAM Central (the `map` block), never from local fields.
 		return array(
-			'enable' => true,
+			'enable'      => true,
+			// Send video views to Marketo from this site (Central must track too).
+			'track_views' => true,
 		);
 	}
 
@@ -120,7 +122,8 @@ class Marketo {
 			: self::get_default_settings();
 
 		$integrations['marketo'] = array(
-			'enable' => rest_sanitize_boolean( $incoming['enable'] ?? $defaults['enable'] ),
+			'enable'      => rest_sanitize_boolean( $incoming['enable'] ?? $defaults['enable'] ),
+			'track_views' => rest_sanitize_boolean( $incoming['track_views'] ?? ( $defaults['track_views'] ?? true ) ),
 		);
 
 		return $integrations;
@@ -130,7 +133,8 @@ class Marketo {
 	 * Get the saved Marketo settings, merged over defaults.
 	 *
 	 * @return array {
-	 *     @type bool $enable Whether the integration is enabled.
+	 *     @type bool $enable      Whether the integration is enabled.
+	 *     @type bool $track_views Whether this site sends video views to Marketo.
 	 * }
 	 */
 	public static function get_settings() {
@@ -286,6 +290,23 @@ class Marketo {
 		$settings = self::get_settings();
 
 		return ! empty( $settings['enable'] );
+	}
+
+	/**
+	 * Whether this site sends video views to Marketo: the integration is enabled
+	 * and its "Track video views on this site" switch is on.
+	 *
+	 * Site-level only. GoDAM Central's own "Track video views" switch stays the
+	 * master: Central queues a view for Marketo only when tracking is on there
+	 * and the plugin sends the visitor's `_mkto_trk` cookie, so turning this off
+	 * stops this site sending that cookie without changing Central or other sites.
+	 *
+	 * @return bool
+	 */
+	public static function is_tracking_enabled() {
+		$settings = self::get_settings();
+
+		return self::is_enabled() && ! empty( $settings['track_views'] );
 	}
 
 	/**

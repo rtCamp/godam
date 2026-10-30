@@ -19,6 +19,11 @@ import apiFetch from '@wordpress/api-fetch';
 import { external } from '@wordpress/icons';
 
 /**
+ * Internal dependencies
+ */
+import SiteTrackingToggle from './SiteTrackingToggle';
+
+/**
  * Human text for each connection state.
  */
 const STATE_LABELS = {
@@ -99,16 +104,18 @@ const ConfigRow = ( { label, children } ) => (
  * server-to-server `godam/v1/marketo/*` routes) and shows one of two things: a
  * short form to connect Marketo directly from WordPress when it is not connected,
  * or the connection details read-only (with a link to manage it on GoDAM) when it
- * is. Disconnect and the tracking switch stay on Central.
+ * is. Disconnect and Central's own tracking switch stay on Central.
  *
  * The on/off toggle above this component (rendered by IntegrationsSettings) is
- * the site-level switch; it does not disconnect the account.
+ * the site-level switch; it does not disconnect the account. "Track video views
+ * on this site" stops only this site sending views to Marketo.
  *
- * @param {Object} props          Props.
- * @param {Object} props.settings Current `integrations.marketo` settings (holds `enable`).
+ * @param {Object}   props                 Props.
+ * @param {Object}   props.settings        Current `integrations.marketo` settings (`enable`, `track_views`).
+ * @param {Function} props.onSettingChange Persist a single `integrations.marketo` field.
  * @return {JSX.Element|null} The Marketo settings body.
  */
-const MarketoSettings = ( { settings = {} } ) => {
+const MarketoSettings = ( { settings = {}, onSettingChange } ) => {
 	const enabled = settings?.enable !== false;
 
 	const [ status, setStatus ] = useState( null );
@@ -274,13 +281,28 @@ const MarketoSettings = ( { settings = {} } ) => {
 							{ marketo.forms_host || __( 'Auto', 'godam' ) }
 						</ConfigRow>
 						{ isLive && (
-							<ConfigRow label={ __( 'Video-view tracking', 'godam' ) }>
+							<ConfigRow label={ __( 'Video-view tracking on GoDAM Central', 'godam' ) }>
 								<span style={ { color: marketo.tracking_active ? '#007a4d' : '#757575' } }>
 									{ marketo.tracking_active ? __( 'On', 'godam' ) : __( 'Off', 'godam' ) }
 								</span>
 							</ConfigRow>
 						) }
 					</Card>
+
+					{ marketo.reason !== 'no_api_credentials' && (
+						<>
+							<SiteTrackingToggle
+								label={ __( 'Marketo', 'godam' ) }
+								settings={ settings }
+								onSettingChange={ onSettingChange }
+								centralTracking={ isLive ? Boolean( marketo.tracking_active ) : undefined }
+							/>
+
+							<p style={ { margin: '12px 0 0', color: '#757575', fontSize: 13 } }>
+								{ __( 'With video-view tracking on, GoDAM adds Marketo’s Munchkin tracking code to pages that have a video, so views can be matched to a Marketo lead. Munchkin also records page visits in your Marketo. If your site already loads Munchkin, a developer can turn ours off with the rtgodam_map_inject_munchkin filter.', 'godam' ) }
+							</p>
+						</>
+					) }
 
 					{ marketo.reason === 'no_api_credentials' && (
 						<p style={ { color: '#757575', fontSize: '13px', margin: '10px 0 0' } }>
