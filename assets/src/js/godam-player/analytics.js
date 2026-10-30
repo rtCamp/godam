@@ -19,6 +19,7 @@ import {
 	clearLayerInteractions as bufferClearLayerInteractions,
 } from './utils/storage';
 import { LAYER_ACTIONS, LAYER_TYPE_WHITELIST, getLayerDisplayName } from './utils/layerActions';
+import { getWatchedRanges } from './utils/timeRanges';
 
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
@@ -37,14 +38,9 @@ window.analytics = analytics;
  * @return {Array} Array of [start, end] pairs representing played ranges
  */
 function collectPlayedRanges( player ) {
-	const played = player && player.played && player.played();
-	const ranges = [];
-	if ( played && typeof played.length === 'number' ) {
-		for ( let i = 0; i < played.length; i++ ) {
-			ranges.push( [ played.start( i ), played.end( i ) ] );
-		}
-	}
-	return ranges;
+	// Played ranges minus seconds that only played out of view
+	// ("Keep playing, muted"); see utils/timeRanges.js.
+	return getWatchedRanges( player );
 }
 
 /**

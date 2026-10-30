@@ -38,6 +38,8 @@ const initialState = {
 		brand_image_id: null,
 		custom_css: VideoCustomCSSTemplate,
 		player_skin: 'Default',
+		out_of_view_behavior: 'off',
+		out_of_view_tab_hidden: false,
 	},
 	ads_settings: {
 		enable_global_video_ads: false,

@@ -135,6 +135,11 @@
 		"showInLightbox": {
 			"type": "boolean",
 			"default": false
+		},
+		"outOfViewBehavior": {
+			"type": "string",
+			"enum": [ "", "off", "autoplay", "pause", "mute" ],
+			"default": ""
 		}
 	},
 	"supports": {

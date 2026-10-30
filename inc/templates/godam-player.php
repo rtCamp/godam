@@ -409,6 +409,9 @@ $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlB
 
 $godam_woocommerce_allowed_contexts = apply_filters( 'godam_player_woocommerce_contexts', array() );
 
+// What happens when the player leaves the visitor's view: block/shortcode value, else the global setting.
+$godam_out_of_view = rtgodam_get_out_of_view_behavior( isset( $attributes['outOfViewBehavior'] ) ? $attributes['outOfViewBehavior'] : '' );
+
 $godam_woocommerce_context = false;
 
 if ( isset( $attributes['godam_context'] ) && ! empty( $godam_woocommerce_allowed_contexts ) ) {
@@ -881,6 +884,8 @@ do_action( 'rtgodam_after_attachment_lookup' );
 							data-transcript-url="<?php echo esc_url( $godam_transcript_url ); ?>"
 							data-transcript-deleted="<?php echo esc_attr( $godam_transcript_deleted ? 'true' : 'false' ); ?>"
 							data-show-in-lightbox="<?php echo esc_attr( $godam_show_in_lightbox ? 'true' : 'false' ); ?>"
+							data-out-of-view="<?php echo esc_attr( $godam_out_of_view ); ?>"
+							data-out-of-view-tab-hidden="<?php echo esc_attr( rtgodam_out_of_view_applies_to_hidden_tab() ? 'true' : 'false' ); ?>"
 						>
 							<?php
 

@@ -23,6 +23,7 @@ import { KEYBOARD_CONTROLS } from '../utils/constants.js';
 import { parseDataAttribute } from '../utils/dataHelpers.js';
 import { isLightboxVideo } from '../utils/lightboxTargets.js';
 import { engagement } from '../engagement';
+import { getVisibilityManager } from './visibilityManager.js';
 
 /**
  * Seek indicator SVG icons (no inline styles – styled via CSS class .godam-seek-icon).
@@ -434,6 +435,8 @@ export default class PlayerManager {
 		const action = actions[ key ];
 		if ( action ) {
 			event.preventDefault();
+			// Keyboard shortcuts are the visitor controlling this player.
+			getVisibilityManager().markInteraction( activePlayer );
 			action();
 		}
 	}
