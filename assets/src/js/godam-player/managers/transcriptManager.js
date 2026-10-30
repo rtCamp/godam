@@ -265,7 +265,11 @@ export default class TranscriptManager {
 				srclang,
 				src: trackUrl,
 			},
-			false, // Don't remove on source change
+			// `true` keeps the track when the player changes its source (video.js
+			// removes it on a source change when this is false). The transcript
+			// uploaded in WordPress is added before the SaaS request returns, so
+			// a source swap during load would otherwise drop it.
+			true,
 		);
 	}
 

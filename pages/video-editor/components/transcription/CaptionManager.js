@@ -17,8 +17,8 @@ import {
 	Flex,
 	FlexItem,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
-import { plus, trash, update, download, check } from '@wordpress/icons';
+import { __, _n, sprintf } from '@wordpress/i18n';
+import { plus, trash, edit, upload, download, check } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -242,8 +242,14 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 											caption.language,
 											isUploaded ? __( 'Uploaded', 'godam' ) : __( 'Generated', 'godam' ),
 											caption.cue_count
-												? `${ caption.cue_count } ${ __( 'cues', 'godam' ) }`
+												? sprintf(
+													/* translators: %d: number of cues in the caption file. */
+													_n( '%d cue', '%d cues', caption.cue_count, 'godam' ),
+													caption.cue_count,
+												)
 												: '',
+											// A generated track with no file is still running or failed.
+											! caption.vtt_path && caption.status ? caption.status : '',
 											caption.is_default ? __( 'Default', 'godam' ) : '',
 										]
 											.filter( Boolean )
@@ -256,18 +262,18 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 										icon={ check }
 										label={ __( 'Set as default', 'godam' ) }
 										showTooltip
-										disabled={ caption.is_default || rowBusy }
+										disabled={ caption.is_default || rowBusy || ! caption.vtt_path }
 										onClick={ () => handleSetDefault( id ) }
 									/>
 									<Button
-										icon={ update }
+										icon={ edit }
 										label={ __( 'Edit captions', 'godam' ) }
 										showTooltip
 										disabled={ ! canEditCues || rowBusy || ! caption.vtt_path }
 										onClick={ () => setEditing( caption ) }
 									/>
 									<Button
-										icon={ plus }
+										icon={ upload }
 										label={ __( 'Replace file', 'godam' ) }
 										showTooltip
 										disabled={ rowBusy }

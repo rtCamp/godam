@@ -218,3 +218,99 @@ $ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
 		left: 100%;
 	}
 }
+
+// Caption manager and cue editor. Modals render in a portal outside
+// `.godam-video-editor`, so these sit at the top level.
+.godam-ve-caption-manager,
+.godam-ve-caption-cue-editor {
+	width: min(36rem, 100%);
+
+	ul {
+		margin: 0 0 1rem;
+		padding: 0;
+		list-style: none;
+	}
+}
+
+.godam-ve-caption-manager {
+
+	&__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin: 0;
+		padding: 0.625rem 0;
+		border-bottom: 1px solid $ve-border;
+	}
+
+	&__meta {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	&__label {
+		font-size: 0.875rem;
+		font-weight: 600;
+		overflow-wrap: anywhere;
+	}
+
+	&__sub {
+		font-size: 0.75rem;
+		color: $ve-muted;
+	}
+
+	&__actions {
+		display: flex;
+		flex-shrink: 0;
+		align-items: center;
+	}
+
+	&__empty {
+		padding: 1rem 0;
+		font-size: 0.8125rem;
+		color: $ve-muted;
+		text-align: center;
+	}
+
+	&__add {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	&__add-row {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+}
+
+.godam-ve-caption-cue-editor {
+
+	&__cue {
+		display: flex;
+		gap: 0.75rem;
+		margin: 0;
+		padding: 0.5rem 0;
+		border-bottom: 1px solid $ve-border;
+
+		.components-base-control {
+			flex: 1;
+		}
+	}
+
+	&__time {
+		flex-shrink: 0;
+		width: 3rem;
+		padding-top: 0.5rem;
+		font-size: 0.75rem;
+		color: $ve-muted;
+	}
+
+	&__empty {
+		padding: 1rem 0;
+		color: $ve-muted;
+	}
+}
