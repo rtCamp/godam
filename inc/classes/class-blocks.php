@@ -75,6 +75,21 @@ class Blocks {
 		// race; the wrapper handle itself is registered by the always-booted
 		// player shortcode class, so it resolves at print time.
 		if ( function_exists( 'wp_enqueue_block_style' ) ) {
+			// The block editor prints its iframe styles while the edit screen
+			// renders, before `admin_enqueue_scripts` runs register_scripts() in
+			// the player class. Without this the editor logs a "dependencies that
+			// are not registered" notice for `godam-player-style` on WP 6.9.1+.
+			// Same handle and file as the player class, which then skips it.
+			$godam_wrapper_css = RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css';
+			if ( ! wp_style_is( 'godam-player-wrapper-style', 'registered' ) && file_exists( $godam_wrapper_css ) ) {
+				wp_register_style(
+					'godam-player-wrapper-style',
+					RTGODAM_URL . 'assets/build/css/godam-player-wrapper.css',
+					array(),
+					filemtime( $godam_wrapper_css )
+				);
+			}
+
 			$godam_player_css = RTGODAM_PATH . 'assets/build/css/godam-player.css';
 			wp_enqueue_block_style(
 				'godam/image',
