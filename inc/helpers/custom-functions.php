@@ -1608,6 +1608,38 @@ function rtgodam_handle_form_transcoding_failure( $form_type, $entry_id, $respon
 }
 
 /**
+ * Audio and video types a form recorder field accepts for an upload.
+ *
+ * The recorder produces WebM, MP4 and Ogg recordings, and a field that allows local
+ * files accepts any other video or audio file the browser can pick. This is the site's
+ * allowed upload types narrowed to those, so a site's own `upload_mimes` choices still
+ * apply, and it is what the recorder upload handlers pass to wp_handle_upload() as its
+ * `mimes` override.
+ *
+ * @since n.e.x.t
+ *
+ * @return array<string, string> File extensions (separated by `|`) => MIME type.
+ */
+function rtgodam_get_recorder_upload_mimes() {
+	$mimes = array();
+
+	foreach ( get_allowed_mime_types() as $extensions => $mime_type ) {
+		if ( 0 === strpos( $mime_type, 'video/' ) || 0 === strpos( $mime_type, 'audio/' ) ) {
+			$mimes[ $extensions ] = $mime_type;
+		}
+	}
+
+	/**
+	 * Filters the audio and video types a form recorder field accepts for an upload.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array<string, string> $mimes File extensions (separated by `|`) => MIME type.
+	 */
+	return apply_filters( 'rtgodam_recorder_upload_mimes', $mimes );
+}
+
+/**
  * Send Video file to GoDAM for transcoding.
  *
  * @param string  $form_type  Form Type.
