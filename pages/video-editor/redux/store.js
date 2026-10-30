@@ -23,6 +23,7 @@ import { everestFormsApi } from './api/everest-forms';
 import { ninjaFormsApi } from './api/ninja-forms';
 import { metformApi } from './api/metform';
 import { hubspotFormsApi } from './api/hubspot-forms';
+import { marketoFormsApi } from './api/marketo-forms';
 import { analyticsApi } from '../../analytics/redux/api/analyticsApi';
 
 export default configureStore( {
@@ -44,6 +45,7 @@ export default configureStore( {
 		[ ninjaFormsApi.reducerPath ]: ninjaFormsApi.reducer,
 		[ metformApi.reducerPath ]: metformApi.reducer,
 		[ hubspotFormsApi.reducerPath ]: hubspotFormsApi.reducer,
+		[ marketoFormsApi.reducerPath ]: marketoFormsApi.reducer,
 		[ analyticsApi.reducerPath ]: analyticsApi.reducer,
 	},
 	middleware: ( getDefaultMiddleware ) => getDefaultMiddleware().concat(
@@ -63,6 +65,7 @@ export default configureStore( {
 		ninjaFormsApi.middleware,
 		metformApi.middleware,
 		hubspotFormsApi.middleware,
+		marketoFormsApi.middleware,
 		analyticsApi.middleware,
 	),
 } );

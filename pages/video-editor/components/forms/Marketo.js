@@ -7,8 +7,8 @@ import { useDispatch, useSelector } from 'react-redux';
  * WordPress dependencies
  */
 import { Notice, ExternalLink, Spinner } from '@wordpress/components';
-import { useState, useEffect, useCallback } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -16,6 +16,7 @@ import { __ } from '@wordpress/i18n';
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import { VeSection, VeTextInput } from '../controls';
 import FormPreview from './FormPreview';
+import FormSelector from './FormSelector';
 
 /**
  * Lazy-load Marketo's forms2 library for a given instance host, once per host.
@@ -50,8 +51,10 @@ function loadForms2Library( instanceHost ) {
 /**
  * Marketo form layer settings + live form preview.
  *
- * Marketo has no WordPress plugin and no form-list API, so the marketer types
- * the Marketo Form ID directly. The Munchkin ID and forms host come from the
+ * When the Marketo connection on GoDAM Central has API credentials (Client ID
+ * and Secret), its approved forms are listed in a "Select Form" picker, like
+ * HubSpot. A forms-only connection has no list, so the marketer types the
+ * Marketo Form ID instead. The Munchkin ID and forms host come from the
  * GoDAM Central connection (exposed via `window.videoData.marketoConfig`).
  * When a valid ID is entered the form is rendered live over the video using
  * Marketo's forms2 library — the same path used on the frontend.
@@ -72,7 +75,30 @@ const Marketo = ( { layerID } ) => {
 	const munchkinId = marketoConfig.munchkinId ?? '';
 	const settingsUrl = `${ window?.videoData?.adminUrl ?? '/wp-admin/' }admin.php?page=rtgodam_settings&settings_tab=integrations-settings&integration_tab=marketo`;
 
-	const formId = layer?.marketo_id ?? '';
+	const formId = layer?.marketo_id ? String( layer.marketo_id ) : '';
+
+	// Approved forms from GoDAM Central (`godam/v1/marketo/forms`); empty for a
+	// forms-only connection or when Central could not list them.
+	const marketoForms = useSelector( ( state ) => state.videoReducer.marketoForms );
+	const formOptions = useMemo( () => {
+		const options = ( marketoForms || [] ).map( ( form ) => ( {
+			value: String( form.id ),
+			label: form.title,
+		} ) );
+
+		// Keep a saved form that is no longer listed (unapproved or deleted since
+		// it was picked) selectable, so the picker does not show it as blank.
+		if ( options.length > 0 && formId && ! options.some( ( option ) => option.value === formId ) ) {
+			options.unshift( {
+				value: formId,
+				/* translators: %s is a Marketo form ID. */
+				label: sprintf( __( 'Form %s', 'godam' ), formId ),
+			} );
+		}
+
+		return options;
+	}, [ marketoForms, formId ] );
+	const hasFormList = isConfigured && formOptions.length > 0;
 
 	// forms2 sends a submission through a hidden iframe and only accepts its
 	// replies from the protocol it asked for. On an HTTP page it asks for
@@ -168,7 +194,20 @@ const Marketo = ( { layerID } ) => {
 		// Marketo form IDs are numeric; keep digits only.
 		const sanitized = String( value ).replace( /[^0-9]/g, '' );
 		dispatch( updateLayerField( { id: layer.id, field: 'marketo_id', value: sanitized } ) );
+		return sanitized;
 	};
+
+	// A form picked from the list is final, so preview it without the typing debounce.
+	const selectFormID = ( value ) => {
+		setPreviewFormId( changeFormID( value ?? '' ) );
+	};
+
+	let idlePrompt = __( 'Connect Marketo in Settings → Integrations to preview the form.', 'godam' );
+	if ( hasFormList ) {
+		idlePrompt = __( 'Select a Marketo form to preview it here.', 'godam' );
+	} else if ( isConfigured ) {
+		idlePrompt = __( 'Enter a Marketo Form ID to preview the form here.', 'godam' );
+	}
 
 	// Body shown inside the on-video preview overlay.
 	//
@@ -195,9 +234,7 @@ const Marketo = ( { layerID } ) => {
 
 			{ status === 'idle' && (
 				<p className="godam-marketo-preview__status">
-					{ isConfigured
-						? __( 'Enter a Marketo Form ID to preview the form here.', 'godam' )
-						: __( 'Connect Marketo in Settings → Integrations to preview the form.', 'godam' ) }
+					{ idlePrompt }
 				</p>
 			) }
 
@@ -239,14 +276,25 @@ const Marketo = ( { layerID } ) => {
 					</Notice>
 				) }
 
-				<VeTextInput
-					label={ __( 'Marketo Form ID', 'godam' ) }
-					help={ __( 'The numeric ID of the Marketo form to embed, e.g. 1234.', 'godam' ) }
-					type="number"
-					value={ formId }
-					onChange={ changeFormID }
-					placeholder={ __( 'e.g. 1234', 'godam' ) }
-				/>
+				{ hasFormList ? (
+					<FormSelector
+						className="marketo-form-selector"
+						formID={ formId }
+						forms={ formOptions }
+						handleChange={ selectFormID }
+					/>
+				) : (
+					<VeTextInput
+						label={ __( 'Marketo Form ID', 'godam' ) }
+						help={ isConfigured
+							? __( 'The numeric ID of the Marketo form to embed, e.g. 1234. Add the Client ID and Client Secret in Settings → Integrations → Marketo to pick from a list of your forms instead.', 'godam' )
+							: __( 'The numeric ID of the Marketo form to embed, e.g. 1234.', 'godam' ) }
+						type="number"
+						value={ formId }
+						onChange={ changeFormID }
+						placeholder={ __( 'e.g. 1234', 'godam' ) }
+					/>
+				) }
 			</VeSection>
 
 			<FormPreview
