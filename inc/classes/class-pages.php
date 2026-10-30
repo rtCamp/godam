@@ -686,20 +686,20 @@ class Pages {
 				'transcoder-page-script-video-editor',
 				'videoData',
 				array(
-					'nonce'              => wp_create_nonce( 'wp_rest' ),   // WordPress nonce for API requests.
-					'currentUserId'      => get_current_user_id(),          // Current user ID.
-					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
-					'validApiKey'        => rtgodam_is_api_key_valid(),
-					'productGuideState'  => \RTGODAM\Inc\REST_API\Onboarding::get_product_guide_state(),
-					'adminUrl'           => admin_url(),
-					'godamBaseUrl'       => RTGODAM_IO_API_BASE,
-					'gfActive'           => $is_gf_active,
-					'cf7Active'          => $is_cf7_active,
-					'wpformsActive'      => $is_wpforms_active,
-					'jetpackActive'      => $is_jetpack_active,
-					'sureformsActive'    => $is_sure_form_active,
-					'forminatorActive'   => $is_forminator_active,
-					'fluentformsActive'  => $is_fluent_forms_active,
+					'nonce'               => wp_create_nonce( 'wp_rest' ),   // WordPress nonce for API requests.
+					'currentUserId'       => get_current_user_id(),          // Current user ID.
+					'currentUserRoles'    => wp_get_current_user()->roles,   // Current user roles.
+					'validApiKey'         => rtgodam_is_api_key_valid(),
+					'productGuideState'   => \RTGODAM\Inc\REST_API\Onboarding::get_product_guide_state(),
+					'adminUrl'            => admin_url(),
+					'godamBaseUrl'        => RTGODAM_IO_API_BASE,
+					'gfActive'            => $is_gf_active,
+					'cf7Active'           => $is_cf7_active,
+					'wpformsActive'       => $is_wpforms_active,
+					'jetpackActive'       => $is_jetpack_active,
+					'sureformsActive'     => $is_sure_form_active,
+					'forminatorActive'    => $is_forminator_active,
+					'fluentformsActive'   => $is_fluent_forms_active,
 					'everestFormsActive'  => $is_everest_forms_active,
 					'ninjaFormsActive'    => $is_ninja_forms_active,
 					'metformActive'       => $is_met_form_active,
@@ -735,7 +735,7 @@ class Pages {
 					// Woo product-guide entry: only when GoDAM-for-Woo ships the
 					// Shoppable Video tour (capability gate, not just plugin-active),
 					// so the Woo card never leads to a missing block or dead-end page.
-					'wooGuideActive'     => \RTGODAM\Inc\REST_API\Onboarding::is_woo_guide_available(),
+					'wooGuideActive'      => \RTGODAM\Inc\REST_API\Onboarding::is_woo_guide_available(),
 				)
 			);
 
