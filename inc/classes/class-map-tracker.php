@@ -254,10 +254,11 @@ class Map_Tracker {
 	 * Central's `map` block lists every tool connected on Central, but a tool is
 	 * dropped here when:
 	 *
-	 *  - its integration is switched off in the plugin's own settings
-	 *    (Settings → Integrations). The site can turn Marketo or HubSpot off
-	 *    independently of Central, and that choice must stop its events — so a
-	 *    disabled tool is never enqueued, and with both off nothing is; or
+	 *  - its integration, or its "Track video views on this site" switch, is off
+	 *    in the plugin's own settings (Settings → Integrations). The site can stop
+	 *    tracking Marketo or HubSpot independently of Central, and that choice
+	 *    must stop its events — so such a tool is never enqueued, and with both
+	 *    off nothing is; or
 	 *  - (HubSpot only) the page's `hubspotutk` cookie belongs to a different portal
 	 *    than Central forwards to — a leadin connection on another portal — so every
 	 *    HubSpot milestone would arrive as "Unknown Contact".
@@ -274,14 +275,14 @@ class Map_Tracker {
 				static function ( $provider ) {
 					switch ( strtolower( $provider ) ) {
 						case 'marketo':
-							// Dropped when the site has switched Marketo off, whatever
-							// Central still lists.
-							return Marketo::is_enabled();
+							// Dropped when the site has switched Marketo, or tracking
+							// it, off, whatever Central still lists.
+							return Marketo::is_tracking_enabled();
 						case 'hubspot':
-							// Off at the site level, or the cookie belongs to a
-							// different portal than Central forwards to — either way,
-							// every event could only be discarded.
-							return Hubspot::is_enabled() && Hubspot::is_central_tracking_portal_aligned();
+							// Off at the site level (integration or tracking), or the
+							// cookie belongs to a different portal than Central forwards
+							// to — either way, every event could only be discarded.
+							return Hubspot::is_tracking_enabled() && Hubspot::is_central_tracking_portal_aligned();
 						default:
 							// An unknown tool Central may add later: leave it be.
 							return true;
@@ -485,6 +486,30 @@ class Map_Tracker {
 	}
 
 	/**
+	 * Keep only the visitor IDs of tools this site still tracks.
+	 *
+	 * Central sends a milestone to Marketo only with `mkto_trk` and to HubSpot
+	 * only with `hubspotutk`, so dropping a cookie is how a site-level "Track
+	 * video views" switch takes effect without changing Central's own setting.
+	 *
+	 * @param mixed $ids Visitor IDs keyed `mkto_trk` / `hubspotutk`.
+	 * @return array The IDs of tools still tracked on this site; may be empty.
+	 */
+	public static function site_tracked_ids( $ids ) {
+		$ids = is_array( $ids ) ? $ids : array();
+
+		if ( ! Marketo::is_tracking_enabled() ) {
+			unset( $ids['mkto_trk'] );
+		}
+
+		if ( ! Hubspot::is_tracking_enabled() ) {
+			unset( $ids['hubspotutk'] );
+		}
+
+		return $ids;
+	}
+
+	/**
 	 * Send one milestone to Central.
 	 *
 	 * @param array $event   Validated event payload.
@@ -508,7 +533,9 @@ class Map_Tracker {
 			'milestone'  => $event['milestone'] ?? null,
 			'page_url'   => $event['page_url'] ?? '',
 			'session_id' => $event['session_id'] ?? '',
-			'ids'        => $event['ids'] ?? array(),
+			// Re-checked at send time: an event queued (or retried) after the site
+			// switched a tool's tracking off must not reach that tool.
+			'ids'        => self::site_tracked_ids( $event['ids'] ?? array() ),
 			'surface'    => 'wordpress',
 		);
 

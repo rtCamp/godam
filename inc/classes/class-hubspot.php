@@ -73,8 +73,10 @@ class Hubspot {
 	 */
 	public static function get_default_settings() {
 		return array(
-			'enable' => true,
-			'source' => 'central',
+			'enable'      => true,
+			'source'      => 'central',
+			// Send video views to HubSpot from this site (Central must track too).
+			'track_views' => true,
 		);
 	}
 
@@ -141,8 +143,9 @@ class Hubspot {
 		}
 
 		$integrations['hubspot'] = array(
-			'enable' => rest_sanitize_boolean( $incoming['enable'] ?? $defaults['enable'] ),
-			'source' => $source,
+			'enable'      => rest_sanitize_boolean( $incoming['enable'] ?? $defaults['enable'] ),
+			'source'      => $source,
+			'track_views' => rest_sanitize_boolean( $incoming['track_views'] ?? ( $defaults['track_views'] ?? true ) ),
 		);
 
 		return $integrations;
@@ -152,8 +155,9 @@ class Hubspot {
 	 * Get the saved HubSpot settings, merged over defaults.
 	 *
 	 * @return array {
-	 *     @type bool   $enable Whether the integration is enabled.
-	 *     @type string $source Chosen connection source: `central` or `leadin`.
+	 *     @type bool   $enable      Whether the integration is enabled.
+	 *     @type string $source      Chosen connection source: `central` or `leadin`.
+	 *     @type bool   $track_views Whether this site sends video views to HubSpot.
 	 * }
 	 */
 	public static function get_settings() {
@@ -441,6 +445,23 @@ class Hubspot {
 		$settings = self::get_settings();
 
 		return ! empty( $settings['enable'] );
+	}
+
+	/**
+	 * Whether this site sends video views to HubSpot: the integration is enabled
+	 * and its "Track video views on this site" switch is on.
+	 *
+	 * Site-level only. GoDAM Central's own "Track video views" switch stays the
+	 * master: Central queues a view for HubSpot only when tracking is on there
+	 * and the plugin sends the visitor's `hubspotutk` cookie, so turning this off
+	 * stops this site sending that cookie without changing Central or other sites.
+	 *
+	 * @return bool
+	 */
+	public static function is_tracking_enabled() {
+		$settings = self::get_settings();
+
+		return self::is_enabled() && ! empty( $settings['track_views'] );
 	}
 
 	/**

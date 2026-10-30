@@ -196,9 +196,11 @@ class HubspotConfigTest extends TestCase {
 			),
 			$defaults
 		);
-		$this->assertSame( array( 'enable', 'source' ), array_keys( $out['hubspot'] ) );
+		$this->assertSame( array( 'enable', 'source', 'track_views' ), array_keys( $out['hubspot'] ) );
 		$this->assertTrue( $out['hubspot']['enable'] );
 		$this->assertSame( 'leadin', $out['hubspot']['source'] );
+		// Not sent: the site keeps tracking, as before the switch existed.
+		$this->assertTrue( $out['hubspot']['track_views'] );
 
 		// An invalid source falls back to central; a falsey enable is coerced.
 		$out = $object->sanitize_integration_settings(
@@ -206,8 +208,9 @@ class HubspotConfigTest extends TestCase {
 			array(
 				'integrations' => array(
 					'hubspot' => array(
-						'enable' => '0',
-						'source' => 'bogus',
+						'enable'      => '0',
+						'source'      => 'bogus',
+						'track_views' => '0',
 					),
 				),
 			),
@@ -215,6 +218,29 @@ class HubspotConfigTest extends TestCase {
 		);
 		$this->assertFalse( $out['hubspot']['enable'] );
 		$this->assertSame( 'central', $out['hubspot']['source'] );
+		$this->assertFalse( $out['hubspot']['track_views'] );
+	}
+
+	/**
+	 * Site-level tracking needs the integration on and its own switch on; a site
+	 * saved before the switch existed keeps tracking.
+	 */
+	public function test_is_tracking_enabled_follows_both_site_switches(): void {
+		$this->assertTrue( Hubspot::is_tracking_enabled() );
+
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings'] = array(
+			'integrations' => array( 'hubspot' => array( 'enable' => true ) ),
+		);
+		$this->assertTrue( Hubspot::is_tracking_enabled() );
+
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings']['integrations']['hubspot']['track_views'] = false;
+		$this->assertFalse( Hubspot::is_tracking_enabled() );
+
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings']['integrations']['hubspot'] = array(
+			'enable'      => false,
+			'track_views' => true,
+		);
+		$this->assertFalse( Hubspot::is_tracking_enabled() );
 	}
 
 	/**
