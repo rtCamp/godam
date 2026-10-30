@@ -1,6 +1,6 @@
 # Changelog #
 
-## v2.6.0 (October 29, 2026) ##
+## v2.6.0 (October 30, 2026) ##
 
 - Feat: You can now add a Marketo form as a video layer. Connect your Marketo account under GoDAM > Settings > Integrations, then add a form to any video by its Marketo Form ID.
 - Feat: You can now add a HubSpot form as a video layer in the same way. Connect HubSpot under GoDAM > Settings > Integrations and drop a form into a video.
