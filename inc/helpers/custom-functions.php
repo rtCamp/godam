@@ -3322,3 +3322,94 @@ function rtgodam_get_request_site_origin( $requested_origin ) {
 
 	return $origin;
 }
+
+/**
+ * Return a CSS colour only when it is a plain colour value.
+ *
+ * Meant for colours that are printed into a style attribute, where an escaped
+ * value can still carry extra declarations. Accepts a hex colour (3, 4, 6 or 8
+ * digits), rgb()/rgba(), hsl()/hsla(), a CSS named colour, `transparent` and
+ * `currentcolor`. Anything else, such as a value with a `;`, a `url()` or a
+ * stray bracket, gives the fallback.
+ *
+ * @since n.e.x.t
+ *
+ * @param mixed  $color    The stored colour.
+ * @param string $fallback Value to return when the colour is not valid.
+ *
+ * @return string The colour, trimmed, or the fallback.
+ */
+function rtgodam_sanitize_css_color( $color, $fallback = '' ) {
+	if ( ! is_string( $color ) ) {
+		return $fallback;
+	}
+
+	$color = trim( $color );
+
+	if ( '' === $color ) {
+		return $fallback;
+	}
+
+	if ( preg_match( '/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/iD', $color ) ) {
+		return $color;
+	}
+
+	$part = '[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:%|deg|grad|rad|turn)?';
+
+	if ( preg_match( '/^(?:rgb|hsl)a?\(\s*' . $part . '(?:\s*,\s*|\s+)' . $part . '(?:\s*,\s*|\s+)' . $part . '(?:\s*[,\/]\s*' . $part . ')?\s*\)$/iD', $color ) ) {
+		return $color;
+	}
+
+	static $named_colors = null;
+
+	if ( null === $named_colors ) {
+		$named_colors = explode(
+			' ',
+			'aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue blueviolet brown '
+			. 'burlywood cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson currentcolor cyan '
+			. 'darkblue darkcyan darkgoldenrod darkgray darkgreen darkgrey darkkhaki darkmagenta darkolivegreen '
+			. 'darkorange darkorchid darkred darksalmon darkseagreen darkslateblue darkslategray darkslategrey '
+			. 'darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey dodgerblue firebrick floralwhite '
+			. 'forestgreen fuchsia gainsboro ghostwhite gold goldenrod gray green greenyellow grey honeydew hotpink '
+			. 'indianred indigo ivory khaki lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral '
+			. 'lightcyan lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon lightseagreen '
+			. 'lightskyblue lightslategray lightslategrey lightsteelblue lightyellow lime limegreen linen magenta '
+			. 'maroon mediumaquamarine mediumblue mediumorchid mediumpurple mediumseagreen mediumslateblue '
+			. 'mediumspringgreen mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin '
+			. 'navajowhite navy oldlace olive olivedrab orange orangered orchid palegoldenrod palegreen '
+			. 'paleturquoise palevioletred papayawhip peachpuff peru pink plum powderblue purple rebeccapurple red '
+			. 'rosybrown royalblue saddlebrown salmon sandybrown seagreen seashell sienna silver skyblue slateblue '
+			. 'slategray slategrey snow springgreen steelblue tan teal thistle tomato transparent turquoise violet '
+			. 'wheat white whitesmoke yellow yellowgreen'
+		);
+	}
+
+	if ( in_array( strtolower( $color ), $named_colors, true ) ) {
+		return $color;
+	}
+
+	return $fallback;
+}
+
+/**
+ * Build the Gravity Forms shortcode a form layer renders.
+ *
+ * The layer's theme is stored data and goes into a shortcode string, so it is
+ * reduced to a slug (lowercase letters, numbers, dashes and underscores) and
+ * cannot close the shortcode or open another one.
+ *
+ * @since n.e.x.t
+ *
+ * @param array $layer The form layer: `gf_id` is the form ID, `theme` the optional Gravity Forms theme.
+ *
+ * @return string The `[gravityform]` shortcode.
+ */
+function rtgodam_get_gravityform_layer_shortcode( $layer ) {
+	$theme = isset( $layer['theme'] ) && is_string( $layer['theme'] ) ? sanitize_key( $layer['theme'] ) : '';
+
+	return sprintf(
+		"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
+		isset( $layer['gf_id'] ) ? intval( $layer['gf_id'] ) : 0,
+		$theme ? " theme='$theme'" : ''
+	);
+}

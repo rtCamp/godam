@@ -58,6 +58,7 @@ class Meta_Rest_Fields {
 				},
 				'update_callback' => function ( $value, $post ) {
 					do_action( 'rtgodam_before_attachment_lookup' );
+					$value  = $this->limit_layer_custom_css( $value, $post->ID );
 					$result = update_post_meta( $post->ID, 'rtgodam_meta', $value );
 					do_action( 'rtgodam_after_attachment_lookup' );
 					return $result;
@@ -206,5 +207,55 @@ class Meta_Rest_Fields {
 				},
 			)
 		);
+	}
+
+	/**
+	 * Keep a layer's custom CSS as it is saved unless the user may change it.
+	 *
+	 * A layer's custom CSS is printed as a style element on the page the video
+	 * is on, the same as a style element in post content, which WordPress keeps
+	 * only for users with the `unfiltered_html` capability. Site administrators
+	 * (`manage_options`) keep it too, since on multisite they lack
+	 * `unfiltered_html` but manage the site. For any other user a layer's CSS
+	 * stays what is already saved for that layer, which is nothing for a new
+	 * layer, so saving the rest of the layer data works as before.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $value   The `rtgodam_meta` value being saved.
+	 * @param int   $post_id The attachment ID.
+	 *
+	 * @return mixed The value to save.
+	 */
+	public function limit_layer_custom_css( $value, $post_id ) {
+		if ( current_user_can( 'unfiltered_html' ) || current_user_can( 'manage_options' ) || ! is_array( $value ) || empty( $value['layers'] ) || ! is_array( $value['layers'] ) ) {
+			return $value;
+		}
+
+		$saved      = get_post_meta( $post_id, 'rtgodam_meta', true );
+		$saved_css  = array();
+		$saved_list = is_array( $saved ) && ! empty( $saved['layers'] ) && is_array( $saved['layers'] ) ? $saved['layers'] : array();
+
+		foreach ( $saved_list as $saved_layer ) {
+			if ( is_array( $saved_layer ) && isset( $saved_layer['id'] ) && is_scalar( $saved_layer['id'] ) && isset( $saved_layer['custom_css'] ) && is_string( $saved_layer['custom_css'] ) ) {
+				$saved_css[ (string) $saved_layer['id'] ] = $saved_layer['custom_css'];
+			}
+		}
+
+		foreach ( $value['layers'] as $index => $layer ) {
+			if ( ! is_array( $layer ) || empty( $layer['custom_css'] ) ) {
+				continue;
+			}
+
+			$layer_id = isset( $layer['id'] ) && is_scalar( $layer['id'] ) ? (string) $layer['id'] : '';
+
+			if ( isset( $saved_css[ $layer_id ] ) && $saved_css[ $layer_id ] === $layer['custom_css'] ) {
+				continue;
+			}
+
+			$value['layers'][ $index ]['custom_css'] = $saved_css[ $layer_id ] ?? '';
+		}
+
+		return $value;
 	}
 }
