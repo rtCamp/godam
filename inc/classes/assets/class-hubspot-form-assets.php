@@ -20,7 +20,7 @@
  * it, and the plugin injects that separately for a Central-only site when view
  * tracking is on (see Map_Tracker::maybe_enqueue_hubspot_tracking_code()).
  *
- * @since n.e.x.t
+ * @since 2.6.0
  * @package GoDAM
  */
 
@@ -34,7 +34,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * HubSpot Form Assets class.
  *
- * @since n.e.x.t
+ * @since 2.6.0
  */
 class Hubspot_Form_Assets {
 

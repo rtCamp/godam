@@ -1,5 +1,13 @@
 # Changelog #
 
+## v2.6.0 (October 30, 2026) ##
+
+- Feat: You can now add a Marketo form as a video layer. Connect your Marketo account under GoDAM > Settings > Integrations, then add a form to any video by its Marketo Form ID.
+- Feat: You can now add a HubSpot form as a video layer in the same way. Connect HubSpot under GoDAM > Settings > Integrations and drop a form into a video.
+- Feat: When a visitor your Marketo or HubSpot account already recognises watches a GoDAM video, how far they watched is sent back to that tool, so video engagement shows up against your contacts.
+- Fix: The Document, Audio and Video Thumbnail blocks no longer collapse when placed inside a Row or Stack (flex) layout, and the Document card now stacks to fit its column instead of the screen width.
+- Fix: Security fixes.
+
 ## v2.5.2 (October 29, 2026) ##
 
 - Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.

@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.5.2
+Stable tag: 2.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -269,6 +269,14 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.6.0 (October 30, 2026) =
+
+- Feat: You can now add a Marketo form as a video layer. Connect your Marketo account under GoDAM > Settings > Integrations, then add a form to any video by its Marketo Form ID.
+- Feat: You can now add a HubSpot form as a video layer in the same way. Connect HubSpot under GoDAM > Settings > Integrations and drop a form into a video.
+- Feat: When a visitor your Marketo or HubSpot account already recognises watches a GoDAM video, how far they watched is sent back to that tool, so video engagement shows up against your contacts.
+- Fix: The Document, Audio and Video Thumbnail blocks no longer collapse when placed inside a Row or Stack (flex) layout, and the Document card now stacks to fit its column instead of the screen width.
+- Fix: Security fixes.
+
 = v2.5.2 (October 29, 2026) =
 
 - Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.
@@ -287,20 +295,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: The form lists in the video editor are available only to users who can upload media, and Jetpack forms in videos show only on published posts.
 - Fix: Sending media to GoDAM for transcoding now checks GoDAM's security certificate.
 - Fix: Media folder names are no longer shown to site visitors, and a locked folder stays locked everywhere.
-
-= v2.5.0 (October 22, 2026) =
-
-- Feat: GoDAM can add a video sitemap that lists every page with a GoDAM video, through Yoast SEO, Rank Math, All in One SEO or the WordPress sitemap. Turn it on in GoDAM > Settings > SEO; single videos can be left out.
-- Feat: Video chapters are added to the video's search data as key moments, so Google can show links that jump to each chapter.
-- Tweak: The video schema GoDAM adds for search engines now uses a video URL Google can index, adds the player's embed link, and leaves out empty fields.
-- Tweak: Editors see a warning when a video's title looks like a raw file name.
-- Tweak: The WPBakery GoDAM Video element's SEO Settings tab shows the same Video SEO fields as the block editor and Elementor.
-- Tweak: The video share popup now shares the page link. The GoDAM Central and Embed links are gone, and the share button shows on every video when sharing is turned on.
-- Tweak: GoDAM no longer adds the signed-in viewer's email address to the page or to video analytics.
-- Fix: Audio converted to MP3 now shows in the block editor's audio list, including files converted before this update.
-- Fix: The Gravity Forms Record field keeps working after an AJAX page change or a failed submit.
-- Fix: The WordPress admin menu no longer flashes and jumps when a GoDAM page loads.
-- Fix: The form layer preview in the video editor now accepts only a valid form ID.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
@@ -424,3 +418,18 @@ When Data is Sent:
 Service Provider: [HubSpot](https://www.hubspot.com)
 
 [Terms of Service](https://legal.hubspot.com/terms-of-service) | [Privacy Policy](https://legal.hubspot.com/privacy-policy)
+
+=== Marketo (your account's Marketo instance host) ===
+Purpose: When Marketo is connected through GoDAM Central, GoDAM loads Marketo's forms2 library in the visitor's browser to render a Marketo form placed on a video.
+
+Data Sent:
+
+1. Marketo form embed: Marketo renders the form in the visitor's browser, and whatever the visitor types into it is submitted to Marketo.
+
+When Data is Sent:
+
+1. The forms2 library loads only on a page that has a Marketo form layer on a video. It is served from your account's own Marketo instance host (for example `//app-sj04.marketo.com/js/forms2/js/forms2.min.js`), taken from the GoDAM Central connection. GoDAM does not add Marketo's Munchkin tracking code; video-view tracking for Marketo is sent server to server through GoDAM Central (see app.godam.io above).
+
+Service Provider: [Adobe Marketo Engage](https://business.adobe.com/products/marketo/adobe-marketo.html)
+
+[Terms of Service](https://www.adobe.com/legal/terms.html) | [Privacy Policy](https://www.adobe.com/privacy/policy.html)

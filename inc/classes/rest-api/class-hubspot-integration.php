@@ -18,7 +18,7 @@
  * server, authenticated by the licence key (`X-API-KEY`) alone — the same
  * credential the plugin already uses for `verify_api_key` and `track`.
  *
- * @since n.e.x.t
+ * @since 2.6.0
  * @package GoDAM
  */
 
@@ -34,7 +34,7 @@ use WP_REST_Response;
 /**
  * Class Hubspot_Integration
  *
- * @since n.e.x.t
+ * @since 2.6.0
  */
 class Hubspot_Integration extends Base {
 

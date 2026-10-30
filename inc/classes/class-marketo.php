@@ -13,7 +13,7 @@
  * WordPress plugin and no shortcode: the form is embedded on the frontend via
  * Marketo's forms2 library (see Marketo_Form_Assets).
  *
- * @since n.e.x.t
+ * @since 2.6.0
  * @package GoDAM
  */
 
@@ -26,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Marketo
  *
- * @since n.e.x.t
+ * @since 2.6.0
  */
 class Marketo {
 
