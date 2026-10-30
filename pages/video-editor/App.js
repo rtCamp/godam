@@ -34,6 +34,8 @@ import { fluentFormsApi } from './redux/api/fluent-forms';
 import { everestFormsApi } from './redux/api/everest-forms';
 import { ninjaFormsApi } from './redux/api/ninja-forms';
 import { metformApi } from './redux/api/metform';
+import { hubspotFormsApi } from './redux/api/hubspot-forms';
+import { marketoFormsApi } from './redux/api/marketo-forms';
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -86,6 +88,8 @@ const App = () => {
 			everestFormsApi,
 			ninjaFormsApi,
 			metformApi,
+			hubspotFormsApi,
+			marketoFormsApi,
 		];
 
 		dispatch( resetVideoState() );

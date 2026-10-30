@@ -569,3 +569,14 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-media-library.php
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
 require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';
+
+// Loaded for MapTrackerValidationTest: the static request-shape checks shared by
+// Map_Tracker and the map-events REST route. Requiring the file only declares the
+// class (the Singleton trait above is its only dependency), so no WP code runs.
+require_once dirname( __DIR__ ) . '/inc/classes/class-map-tracker.php';
+
+// Loaded so Map_Tracker::frontend_providers() can read the Marketo and HubSpot
+// site-level on/off switches (MapTrackerProvidersTest, and the REST route in
+// MapEventsTrackTest). Each file only declares the class, so no WP code runs.
+require_once dirname( __DIR__ ) . '/inc/classes/class-marketo.php';
+require_once dirname( __DIR__ ) . '/inc/classes/class-hubspot.php';

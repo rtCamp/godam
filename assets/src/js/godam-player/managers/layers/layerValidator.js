@@ -55,6 +55,8 @@ export default class LayerValidator {
 			[ FORM_TYPES.FLUENT ]: dependencies?.fluentForms,
 			[ FORM_TYPES.NINJA ]: dependencies?.ninjaForms,
 			[ FORM_TYPES.METFORM ]: dependencies?.metform,
+			[ FORM_TYPES.MARKETO ]: dependencies?.marketo,
+			[ FORM_TYPES.HUBSPOT ]: dependencies?.hubspot,
 		};
 
 		return formChecks[ formType ] || false;

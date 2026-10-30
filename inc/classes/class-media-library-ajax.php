@@ -1101,6 +1101,10 @@ class Media_Library_Ajax {
 	public function dismiss_offer_banner() {
 		check_ajax_referer( 'godam-dismiss-offer-banner-nonce', 'nonce' );
 
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
 		if ( get_option( 'rtgodam-offer-banner' ) === false ) {
 			add_option( 'rtgodam-offer-banner', 0 );
 		} else {

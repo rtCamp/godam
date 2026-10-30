@@ -681,35 +681,61 @@ class Pages {
 
 			$is_ninja_forms_active = is_plugin_active( 'ninja-forms/ninja-forms.php' );
 
-
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
 				'videoData',
 				array(
-					'nonce'              => wp_create_nonce( 'wp_rest' ),   // WordPress nonce for API requests.
-					'currentUserId'      => get_current_user_id(),          // Current user ID.
-					'currentUserRoles'   => wp_get_current_user()->roles,   // Current user roles.
-					'validApiKey'        => rtgodam_is_api_key_valid(),
-					'productGuideState'  => \RTGODAM\Inc\REST_API\Onboarding::get_product_guide_state(),
-					'adminUrl'           => admin_url(),
-					'godamBaseUrl'       => RTGODAM_IO_API_BASE,
-					'gfActive'           => $is_gf_active,
-					'cf7Active'          => $is_cf7_active,
-					'wpformsActive'      => $is_wpforms_active,
-					'jetpackActive'      => $is_jetpack_active,
-					'sureformsActive'    => $is_sure_form_active,
-					'forminatorActive'   => $is_forminator_active,
-					'fluentformsActive'  => $is_fluent_forms_active,
-					'everestFormsActive' => $is_everest_forms_active,
-					'ninjaFormsActive'   => $is_ninja_forms_active,
-					'metformActive'      => $is_met_form_active,
+					'nonce'               => wp_create_nonce( 'wp_rest' ),   // WordPress nonce for API requests.
+					'currentUserId'       => get_current_user_id(),          // Current user ID.
+					'currentUserRoles'    => wp_get_current_user()->roles,   // Current user roles.
+					'validApiKey'         => rtgodam_is_api_key_valid(),
+					'productGuideState'   => \RTGODAM\Inc\REST_API\Onboarding::get_product_guide_state(),
+					'adminUrl'            => admin_url(),
+					'godamBaseUrl'        => RTGODAM_IO_API_BASE,
+					'gfActive'            => $is_gf_active,
+					'cf7Active'           => $is_cf7_active,
+					'wpformsActive'       => $is_wpforms_active,
+					'jetpackActive'       => $is_jetpack_active,
+					'sureformsActive'     => $is_sure_form_active,
+					'forminatorActive'    => $is_forminator_active,
+					'fluentformsActive'   => $is_fluent_forms_active,
+					'everestFormsActive'  => $is_everest_forms_active,
+					'ninjaFormsActive'    => $is_ninja_forms_active,
+					'metformActive'       => $is_met_form_active,
+					// Marketo is a SaaS (no plugin): "active" means enabled and
+					// connected on GoDAM Central.
+					'marketoActive'       => \RTGODAM\Inc\Marketo::is_configured(),
+					// Account details for the in-editor Marketo form preview, read from
+					// the GoDAM Central connection. `instanceHost` is the normalized
+					// forms2 base URL (the account's forms host or mktoweb domain).
+					// These account IDs are not secret — the frontend embed exposes
+					// them too.
+					'marketoConfig'       => array(
+						'instanceHost' => \RTGODAM\Inc\Marketo::get_instance_host(),
+						'munchkinId'   => \RTGODAM\Inc\Marketo::get_munchkin_id(),
+					),
+					// HubSpot form layer. "Active" means enabled and the admin's
+					// chosen source (GoDAM Central or the HubSpot/leadin plugin) is
+					// actually connected. Portal ID + region drive the in-editor live
+					// preview and come from whichever source is active; they are not
+					// secret (the frontend embed exposes them too). `hubspotSource`
+					// lets the editor tailor its copy (central / leadin / empty).
+					'hubspotActive'       => \RTGODAM\Inc\Hubspot::is_configured(),
+					'hubspotEnabled'      => \RTGODAM\Inc\Hubspot::is_enabled(),
+					'hubspotPortalId'     => \RTGODAM\Inc\Hubspot::get_effective_portal_id(),
+					'hubspotHublet'       => \RTGODAM\Inc\Hubspot::get_effective_region(),
+					// Active source is '' when nothing is connected; the chosen source
+					// (what the admin picked) is what the editor copy needs to tell them
+					// how to connect.
+					'hubspotSource'       => \RTGODAM\Inc\Hubspot::get_active_source(),
+					'hubspotChosenSource' => \RTGODAM\Inc\Hubspot::get_chosen_source(),
 					// O9: Woo empty-state copy on the connected Video Editor.
-					'wooActive'          => class_exists( 'WooCommerce' ),
+					'wooActive'           => class_exists( 'WooCommerce' ),
 					// Woo product-guide entry: only when GoDAM-for-Woo ships the
 					// Shoppable Video tour (capability gate, not just plugin-active),
 					// so the Woo card never leads to a missing block or dead-end page.
-					'wooGuideActive'     => \RTGODAM\Inc\REST_API\Onboarding::is_woo_guide_available(),
+					'wooGuideActive'      => \RTGODAM\Inc\REST_API\Onboarding::is_woo_guide_available(),
 				)
 			);
 

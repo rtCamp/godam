@@ -12,6 +12,8 @@ import { useGetEverestFormsQuery } from '../../redux/api/everest-forms';
 import { useGetNinjaFormsQuery } from '../../redux/api/ninja-forms';
 import { FormLayerComponentType } from '../layers/FormLayer';
 import { useGetMetformsQuery } from '../../redux/api/metform';
+import { useGetHubspotFormsQuery } from '../../redux/api/hubspot-forms';
+import { useGetMarketoFormsQuery } from '../../redux/api/marketo-forms';
 
 export const useFetchForms = () => {
 	const { data: cf7Forms = [], isFetching: isFetchingCF7 = false } = useGetCF7FormsQuery( undefined, {
@@ -45,6 +47,14 @@ export const useFetchForms = () => {
 	const { data: metforms = [], isFetching: isFetchingMetforms = false } = useGetMetformsQuery( undefined, {
 		skip: ! FormLayerComponentType?.metform.isActive,
 	} );
+	const { data: hubspotForms = [], isFetching: isFetchingHubspotForms = false } = useGetHubspotFormsQuery( undefined, {
+		skip: ! FormLayerComponentType?.hubspot.isActive,
+	} );
+	// The Marketo layer is always offered (a typed form ID works without a list),
+	// so gate the list on the connection itself.
+	const { data: marketoForms = [], isFetching: isFetchingMarketoForms = false } = useGetMarketoFormsQuery( undefined, {
+		skip: ! window?.videoData?.marketoActive,
+	} );
 
 	const isFetching =
 		isFetchingCF7 ||
@@ -56,7 +66,9 @@ export const useFetchForms = () => {
 		isFetchingFluentForms ||
 		isFetchingEverestForms ||
 		isFetchingNinjaForms ||
-		isFetchingMetforms;
+		isFetchingMetforms ||
+		isFetchingHubspotForms ||
+		isFetchingMarketoForms;
 
 	return {
 		cf7Forms,
@@ -69,6 +81,8 @@ export const useFetchForms = () => {
 		everestForms,
 		ninjaForms,
 		metforms,
+		hubspotForms,
+		marketoForms,
 		isFetching,
 	};
 };

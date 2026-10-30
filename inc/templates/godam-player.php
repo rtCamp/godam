@@ -9,6 +9,9 @@
 
 use RTGODAM\Inc\Assets\IMA_Assets;
 use RTGODAM\Inc\Assets\Jetpack_Form_Assets;
+use RTGODAM\Inc\Assets\Marketo_Form_Assets;
+use RTGODAM\Inc\Assets\Hubspot_Form_Assets;
+use RTGODAM\Inc\Hubspot;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -1078,8 +1081,92 @@ do_action( 'rtgodam_after_attachment_lookup' );
 											?>
 										</div>
 									</div>
-									<?php
-								endif;
+										<?php
+									elseif ( 'marketo' === $godam_form_type && ! empty( $godam_layer['marketo_id'] ) && \RTGODAM\Inc\Marketo::is_configured() ) :
+										// Marketo has no shortcode: render an empty form node that the
+										// forms2 library fills on the frontend (see Marketo_Form_Assets
+										// and assets/src/js/marketo-form.js). Enqueue the library only
+										// when a Marketo layer is actually present on the page.
+										//
+										// Skipped entirely unless Marketo is connected and the integration
+										// is enabled (Marketo::is_configured), so a disconnected or
+										// disabled Marketo never shows an empty form overlay on the video.
+										Marketo_Form_Assets::get_instance();
+										?>
+										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden marketo" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+											<div class="form-container marketo-form-container">
+												<?php
+													// Unique id per node plus the form id in a data attribute: two
+													// layers with the same Marketo form id never share a
+													// `mktoForm_<id>` element (marketo-form.js loads them one at a
+													// time). See its comment for why.
+												?>
+												<form id="godam-mkto-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" data-marketo-form-id="<?php echo esc_attr( intval( $godam_layer['marketo_id'] ) ); ?>"></form>
+											</div>
+										</div>
+										<?php
+									elseif (
+										'hubspot' === $godam_form_type
+										&& ! empty( $godam_layer['hubspot_id'] )
+										// A HubSpot form GUID, or the numeric id the HubSpot plugin also
+										// accepts. Rejects anything else, including a `]` that would close
+										// the [hubspot] shortcode early (esc_attr does not escape it).
+										&& preg_match( '/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|\d+)$/i', (string) $godam_layer['hubspot_id'] )
+										&& Hubspot::is_configured()
+									) :
+										// HubSpot supports two connection sources; the admin picks one in
+										// Settings → Integrations → HubSpot. Only the active (and actually
+										// connected) source renders, so a disconnected or disabled HubSpot
+										// never shows an empty overlay on the video.
+										$godam_hubspot_source = Hubspot::get_active_source();
+
+										if ( 'central' === $godam_hubspot_source ) :
+											// GoDAM Central: no WP plugin or shortcode. Render an empty
+											// container that HubSpot's forms v2 library fills on the frontend
+											// (see Hubspot_Form_Assets and assets/src/js/hubspot-form.js), using
+											// the portal ID + region from the Central connection. v2 renders a
+											// legacy-editor form itself and a new-editor form as HubSpot's V4
+											// embed; the bridge detects a submit for either. The `hubspotutk`
+											// cookie that ties a submission to a contact comes from HubSpot's
+											// tracking code, injected separately by Map_Tracker. Enqueue the
+											// library only when a Central HubSpot layer is on the page.
+											Hubspot_Form_Assets::get_instance();
+											?>
+										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden hubspot" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+											<div
+												class="form-container hubspot-form"
+												data-portal-id="<?php echo esc_attr( Hubspot::get_effective_portal_id() ); ?>"
+												data-form-id="<?php echo esc_attr( $godam_layer['hubspot_id'] ); ?>"
+												data-region="<?php echo esc_attr( Hubspot::get_effective_region() ); ?>"
+											></div>
+										</div>
+											<?php
+										elseif ( 'leadin' === $godam_hubspot_source && shortcode_exists( 'hubspot' ) ) :
+											// HubSpot (leadin) plugin: render through its own [hubspot]
+											// shortcode (first-party, so HubSpot can associate the visitor).
+											// The portal ID comes from the connected plugin, never the layer.
+											$godam_hubspot_portal_id = get_option( 'leadin_portalId', '' );
+											if ( ! empty( $godam_hubspot_portal_id ) ) :
+												?>
+										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden hubspot" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+											<div class="form-container">
+												<?php
+													echo do_shortcode(
+														sprintf(
+															"[hubspot type='form' portal='%s' id='%s']",
+															esc_attr( $godam_hubspot_portal_id ),
+															esc_attr( $godam_layer['hubspot_id'] )
+														)
+													);
+												?>
+											</div>
+										</div>
+												<?php
+											endif;
+										endif;
+										?>
+										<?php
+									endif;
 									// Poll layer.
 							elseif ( isset( $godam_layer['type'] ) && 'poll' === $godam_layer['type'] ) :
 								?>
