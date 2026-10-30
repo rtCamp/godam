@@ -89,12 +89,14 @@ class Marketo_Form_Assets {
 			'godamMarketoFormData',
 			array(
 				// GoDAM Central is the single source of truth for the connection.
-				'munchkinId'   => Marketo::get_munchkin_id(),
-				'recaptchaKey' => Marketo::get_recaptcha_key(),
-				'instanceHost' => $host,
+				'munchkinId'      => Marketo::get_munchkin_id(),
+				'recaptchaKey'    => Marketo::get_recaptcha_key(),
+				'instanceHost'    => $host,
 				// Shown in place of the form after a submit, so the viewer stays on
 				// the video instead of following Marketo's follow-up redirect.
-				'successText'  => __( 'Thank you! Your submission has been received.', 'godam' ),
+				'successText'     => __( 'Thank you! Your submission has been received.', 'godam' ),
+				// Shown in place of a form that Marketo could not load or render.
+				'unavailableText' => __( 'This form could not be loaded.', 'godam' ),
 			)
 		);
 

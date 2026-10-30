@@ -40,6 +40,7 @@ import {
 	setNinjaForms,
 	setMetforms,
 	setHubspotForms,
+	setMarketoForms,
 } from './redux/slice/videoSlice';
 
 import './video-editor.scss';
@@ -129,7 +130,7 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 		} );
 	}, [ attachmentID, capability.copyBlockName, capability.mediaType ] );
 
-	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, hubspotForms, isFetching } = useFetchForms();
+	const { gravityForms, wpForms, cf7Forms, sureforms, forminatorForms, fluentForms, everestForms, ninjaForms, metforms, hubspotForms, marketoForms, isFetching } = useFetchForms();
 
 	useEffect( () => {
 		const handleBeforeUnload = ( event ) => {
@@ -343,8 +344,12 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			if ( hubspotForms && hubspotForms.length > 0 ) {
 				dispatch( setHubspotForms( hubspotForms ) );
 			}
+
+			if ( marketoForms && marketoForms.length > 0 ) {
+				dispatch( setMarketoForms( marketoForms ) );
+			}
 		}
-	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms, hubspotForms ] );
+	}, [ gravityForms, cf7Forms, wpForms, everestForms, isFetching, dispatch, sureforms, forminatorForms, fluentForms, ninjaForms, metforms, hubspotForms, marketoForms ] );
 
 	// Size the video preview so it fits the stage in BOTH dimensions.
 	//

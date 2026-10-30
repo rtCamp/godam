@@ -69,7 +69,10 @@ class Marketo_Integration extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_forms' ),
-					'permission_callback' => $manage,
+					// The layer editor's form picker, like the other form-list routes.
+					'permission_callback' => function () {
+						return current_user_can( 'upload_files' );
+					},
 				),
 			),
 			array(
@@ -150,20 +153,43 @@ class Marketo_Integration extends Base {
 	/**
 	 * GET /marketo/forms — approved Marketo forms for the layer picker.
 	 *
+	 * Central returns `{ id, name }`; normalise it to the editor's `{ id, title }`
+	 * shape. When Central cannot list forms (a forms-only connection without a
+	 * Client ID and Secret, or any error) return an empty list so the editor
+	 * shows a typed form-ID field instead of failing.
+	 *
 	 * @param WP_REST_Request $request Request.
-	 * @return WP_REST_Response|WP_Error
+	 * @return WP_REST_Response
 	 */
 	public function get_forms( WP_REST_Request $request ) {
+		if ( ! Marketo::is_configured() ) {
+			return new WP_REST_Response( array(), 200 );
+		}
+
 		$result = $this->call_central(
 			'godam_core.api.map_wordpress.get_forms',
 			array( 'provider' => 'marketo' )
 		);
 
 		if ( is_wp_error( $result ) ) {
-			return $result;
+			// Let the editor fall back to a typed form-ID field rather than error.
+			return new WP_REST_Response( array(), 200 );
 		}
 
-		return new WP_REST_Response( $result, 200 );
+		$forms = array();
+
+		foreach ( (array) ( $result['forms'] ?? array() ) as $form ) {
+			if ( empty( $form['id'] ) ) {
+				continue;
+			}
+
+			$forms[] = array(
+				'id'    => sanitize_text_field( $form['id'] ),
+				'title' => sanitize_text_field( $form['name'] ?? $form['id'] ),
+			);
+		}
+
+		return new WP_REST_Response( $forms, 200 );
 	}
 
 	/**
