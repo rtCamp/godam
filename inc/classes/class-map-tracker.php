@@ -62,6 +62,17 @@ class Map_Tracker {
 	const HUBSPOT_TRACKING_HANDLE = 'godam-hubspot-tracking';
 
 	/**
+	 * Script handle for the inline loader of Marketo's Munchkin tracking code, so
+	 * the `_mkto_trk` cookie exists at all (see maybe_enqueue_munchkin()).
+	 */
+	const MUNCHKIN_HANDLE = 'godam-marketo-munchkin';
+
+	/**
+	 * Marketo's Munchkin tracking code, the same for every Marketo instance.
+	 */
+	const MUNCHKIN_SRC = 'https://munchkin.marketo.net/munchkin.js';
+
+	/**
 	 * Maximum attempts (initial + retries) for one event before it is dropped.
 	 *
 	 * A view milestone is low-value and high-volume: unlike media usage, there is no
@@ -245,6 +256,90 @@ class Map_Tracker {
 		// The cookie HubSpot view tracking relies on only exists when HubSpot's own
 		// tracking code runs on the page; add it when nothing else already does.
 		$this->maybe_enqueue_hubspot_tracking_code( $providers );
+
+		// Same for Marketo: `_mkto_trk` is set only by Munchkin, never by forms2.
+		$this->maybe_enqueue_munchkin( $providers );
+	}
+
+	/**
+	 * Load Marketo's Munchkin tracking code when Marketo is tracked on this page.
+	 *
+	 * Marketo view tracking needs the visitor's `_mkto_trk` cookie, and only
+	 * Munchkin sets it: forms2 (the Marketo form layer) reads it and never
+	 * creates it. Without Munchkin a visitor has no cookie, so no view reaches
+	 * Marketo and a form fill is not tied to the visitor's browser.
+	 *
+	 * @param string[] $providers The frontend providers for this page.
+	 * @return void
+	 */
+	private function maybe_enqueue_munchkin( array $providers ) {
+		$munchkin_id = self::munchkin_id_to_load( $providers );
+
+		if ( '' === $munchkin_id || wp_script_is( self::MUNCHKIN_HANDLE, 'enqueued' ) ) {
+			return;
+		}
+
+		// A handle with no file of its own, so the loader runs inline in the footer.
+		wp_register_script( self::MUNCHKIN_HANDLE, false, array(), RTGODAM_VERSION, array( 'in_footer' => true ) );
+		wp_enqueue_script( self::MUNCHKIN_HANDLE );
+		wp_add_inline_script( self::MUNCHKIN_HANDLE, self::munchkin_loader_js( $munchkin_id ) );
+	}
+
+	/**
+	 * The Munchkin ID to load Munchkin for on this page, or '' when it should not
+	 * be loaded.
+	 *
+	 * Loaded only when Marketo survived {@see frontend_providers()}, so it follows
+	 * both GoDAM Central's tracking switch and this site's "Track video views on
+	 * this site" switch.
+	 *
+	 * @param string[] $providers The frontend providers for this page.
+	 * @return string The Munchkin ID, e.g. `123-ABC-456`, or ''.
+	 */
+	public static function munchkin_id_to_load( array $providers ) {
+		$has_marketo = in_array( 'marketo', array_map( 'strtolower', array_map( 'strval', $providers ) ), true );
+
+		if ( ! $has_marketo ) {
+			return '';
+		}
+
+		/**
+		 * Whether GoDAM loads Marketo's Munchkin tracking code for view tracking.
+		 *
+		 * Return false when the site already loads Munchkin itself (pasted into
+		 * the theme, a tag manager, or gated behind a consent manager), so page
+		 * visits are not counted twice.
+		 *
+		 * @param bool $inject Whether to load Munchkin. Default true.
+		 */
+		if ( ! apply_filters( 'rtgodam_map_inject_munchkin', true ) ) {
+			return '';
+		}
+
+		$munchkin_id = Marketo::get_munchkin_id();
+
+		return preg_match( '/^\d{3}-[A-Za-z]{3}-\d{3}$/', $munchkin_id ) ? $munchkin_id : '';
+	}
+
+	/**
+	 * Inline loader for Munchkin, after Marketo's own embed snippet.
+	 *
+	 * It does nothing when Munchkin is already on the page (the site loads its
+	 * own), or when the browser sends Global Privacy Control, which the view
+	 * tracker honours too.
+	 *
+	 * @param string $munchkin_id The Munchkin ID to initialise.
+	 * @return string JavaScript.
+	 */
+	public static function munchkin_loader_js( $munchkin_id ) {
+		return '(function(){'
+			. 'if(window.Munchkin||(navigator&&navigator.globalPrivacyControl===true)){return;}'
+			. 'var s=document.createElement("script");'
+			. 's.async=true;'
+			. 's.src=' . wp_json_encode( self::MUNCHKIN_SRC ) . ';'
+			. 's.onload=function(){if(window.Munchkin){window.Munchkin.init(' . wp_json_encode( (string) $munchkin_id ) . ');}};'
+			. 'document.head.appendChild(s);'
+			. '}());';
 	}
 
 	/**
