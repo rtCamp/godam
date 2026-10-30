@@ -418,3 +418,18 @@ When Data is Sent:
 Service Provider: [HubSpot](https://www.hubspot.com)
 
 [Terms of Service](https://legal.hubspot.com/terms-of-service) | [Privacy Policy](https://legal.hubspot.com/privacy-policy)
+
+=== Marketo (your account's Marketo instance host) ===
+Purpose: When Marketo is connected through GoDAM Central, GoDAM loads Marketo's forms2 library in the visitor's browser to render a Marketo form placed on a video.
+
+Data Sent:
+
+1. Marketo form embed: Marketo renders the form in the visitor's browser, and whatever the visitor types into it is submitted to Marketo.
+
+When Data is Sent:
+
+1. The forms2 library loads only on a page that has a Marketo form layer on a video. It is served from your account's own Marketo instance host (for example `//app-sj04.marketo.com/js/forms2/js/forms2.min.js`), taken from the GoDAM Central connection. GoDAM does not add Marketo's Munchkin tracking code; video-view tracking for Marketo is sent server to server through GoDAM Central (see app.godam.io above).
+
+Service Provider: [Adobe Marketo Engage](https://business.adobe.com/products/marketo/adobe-marketo.html)
+
+[Terms of Service](https://www.adobe.com/legal/terms.html) | [Privacy Policy](https://www.adobe.com/privacy/policy.html)
