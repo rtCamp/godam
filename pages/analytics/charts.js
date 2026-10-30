@@ -6,13 +6,15 @@ import {
 	generateCountryHeatmap,
 } from '../../pages/analytics/helper';
 import { formatNumber, formatWatchTime } from '../utils/formatters';
+import { getSafeLinkUrl } from '../../assets/src/utils/safe-url';
 
 /**
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { decodeEntities } from '@wordpress/html-entities';
 
-function generatePostViewsChart( postsData, selector ) {
+export function generatePostViewsChart( postsData, selector ) {
 	// Idempotent: clear any previous render so re-runs (e.g. on a date-range
 	// change) replace the donut + legend instead of stacking them, and drop
 	// leaked tooltip nodes this chart appended to <body> on a prior run.
@@ -34,6 +36,10 @@ function generatePostViewsChart( postsData, selector ) {
 	const formatWithCommas = ( num ) => {
 		return num.toString().replace( /\B(?=(\d{3})+(?!\d))/g, ',' );
 	};
+
+	// WordPress hands titles over HTML-escaped (`Tom &amp; Jerry`), so decode once and
+	// only ever put the result in the page as text, never as markup.
+	const getPostLabel = ( post ) => ( post ? decodeEntities( String( post ) ) : __( 'Untitled', 'godam' ) );
 
 	// Color scale
 	const color = d3
@@ -87,7 +93,7 @@ function generatePostViewsChart( postsData, selector ) {
 		.data( pie( postsData ) )
 		.enter()
 		.append( 'a' )
-		.attr( 'xlink:href', ( d ) => d.data.url )
+		.attr( 'xlink:href', ( d ) => getSafeLinkUrl( d.data.url ) || null )
 		.attr( 'target', '_blank' )
 		.append( 'path' )
 		.attr( 'd', arc )
@@ -105,12 +111,18 @@ function generatePostViewsChart( postsData, selector ) {
 			const percent = Number.isFinite( rawPercent ) ? rawPercent.toFixed( 1 ) : '0.0';
 
 			tooltip.transition().duration( 200 ).style( 'opacity', 0.9 );
+
+			const tooltipTitle = document.createElement( 'strong' );
+			tooltipTitle.textContent = getPostLabel( d.data.post );
+			tooltip.node().textContent = '';
+			tooltip.node().append(
+				tooltipTitle,
+				document.createElement( 'br' ),
+				`Views: ${ formatWithCommas( d.data.views ) }`,
+				document.createElement( 'br' ),
+				`Percentage: ${ percent }%`,
+			);
 			tooltip
-				.html(
-					`<strong>${ d.data.post === '' ? __( 'Untitled', ' godam' ) : d.data.post }</strong><br>
-					Views: ${ formatWithCommas( d.data.views ) }<br>
-					Percentage: ${ percent }%`,
-				)
 				.style( 'left', event.pageX + 10 + 'px' )
 				.style( 'top', event.pageY - 28 + 'px' );
 		} )
@@ -175,8 +187,17 @@ function generatePostViewsChart( postsData, selector ) {
 			.attr( 'class', 'legend-color' )
 			.style( 'background-color', color( d.post + d.id ) );
 
-		legendItem.append( 'div' )
-			.html( `<a href="${ d.url }" target="_blank" class="pie-chart-legend">${ d.post === '' ? __( 'Untitled', 'godam' ) : d.post }</a>` );
+		const legendLink = legendItem.append( 'div' )
+			.append( 'a' )
+			.attr( 'target', '_blank' )
+			.attr( 'class', 'pie-chart-legend' )
+			.text( getPostLabel( d.post ) );
+
+		// Only a http(s) link is made navigable; anything else is left as plain text.
+		const legendHref = getSafeLinkUrl( d.url );
+		if ( legendHref ) {
+			legendLink.attr( 'href', legendHref );
+		}
 	} );
 }
 

@@ -10,29 +10,11 @@ import { HOTSPOT_CONSTANTS } from '../../utils/constants';
 import { getLayerDisplayName } from '../../utils/layerActions.js';
 import { resolveHotspotStyle, isButtonHotspot } from '../../utils/hotspotStyle';
 import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, fitButtonFontPx } from '../../utils/buttonCtaStyle';
+import { getSafeLinkUrl } from '../../../../utils/safe-url';
 
 // Every rendered hotspot point: circles (pulse / icon style) and buttons (button
 // style). Points are matched to `layer.hotspots` by index, so both must be found.
 const HOTSPOT_POINT_SELECTOR = '.hotspot, .godam-hotspot-button';
-
-/**
- * Whether an authored link is safe to make navigable. Only http(s) destinations
- * qualify (relative URLs resolve against the page), never `javascript:`, `data:`
- * and friends — `noopener` and `textContent` don't validate the destination, and
- * the editor's own URL check only shows an error, it doesn't stop the value being
- * saved.
- *
- * @param {string} url Authored link.
- * @return {boolean} True when the link resolves to an http(s) URL.
- */
-function isSafeLinkUrl( url ) {
-	try {
-		const { protocol } = new URL( url, window.location.href );
-		return protocol === 'http:' || protocol === 'https:';
-	} catch ( e ) {
-		return false;
-	}
-}
 
 /**
  * Resolve the analytics videoKey (data-id or data-job_id) for a player.
@@ -814,8 +796,11 @@ export default class HotspotLayerManager {
 			buttonEl.setAttribute( 'data-sticker-text', label );
 		}
 
-		if ( hotspot.link && isSafeLinkUrl( hotspot.link ) ) {
-			buttonEl.href = hotspot.link;
+		// Only http(s) and mailto links are made navigable: the editor's own URL check
+		// only shows an error, it doesn't stop an unsafe value being saved.
+		const link = getSafeLinkUrl( hotspot.link );
+		if ( link ) {
+			buttonEl.href = link;
 			buttonEl.target = '_blank';
 			buttonEl.rel = 'noopener noreferrer';
 		}
@@ -1009,9 +994,10 @@ export default class HotspotLayerManager {
 		/* translators: %d: hotspot number */
 		tooltipDiv.textContent = hotspot.tooltipText || sprintf( __( 'Hotspot %d', 'godam' ), index + 1 );
 
-		if ( hotspot.link ) {
+		const link = getSafeLinkUrl( hotspot.link );
+		if ( link ) {
 			const hotspotLink = document.createElement( 'a' );
-			hotspotLink.href = hotspot.link;
+			hotspotLink.href = link;
 			hotspotLink.target = '_blank';
 			/* translators: %d: hotspot number */
 			hotspotLink.textContent = hotspot.tooltipText || sprintf( __( 'Hotspot %d', 'godam' ), index + 1 );

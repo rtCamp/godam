@@ -4,11 +4,13 @@
 import { Button } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
+import { useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import LayerControl from '../LayerControls';
+import { sanitizePreviewMarkup } from '../../utils/sanitizeMarkup';
 
 /**
  * Shared preview for every form-plugin layer.
@@ -17,11 +19,11 @@ import LayerControl from '../LayerControls';
  * button so all form layers look and behave the same.
  *
  * The body comes from one of two sources. `html` is a string rendered via
- * `dangerouslySetInnerHTML` (used by plugins whose preview is fetched as
- * markup), with loading / error states handled here from `isFetching` /
- * `error`. `children` is a custom node (e.g. an iframe preview or a bespoke
- * empty state) that fully controls its own loading; when provided it takes
- * precedence over `html`.
+ * `dangerouslySetInnerHTML` after sanitising (used by plugins whose preview is
+ * fetched as markup), with loading / error states handled here from
+ * `isFetching` / `error`. `children` is a custom node (e.g. an iframe preview
+ * or a bespoke empty state) that fully controls its own loading; when provided
+ * it takes precedence over `html`.
  *
  * @param {Object}      props                      Props.
  * @param {string}      [props.bgColor]            Layer background colour.
@@ -42,6 +44,8 @@ const FormPreview = ( {
 	containerClassName = '',
 	children,
 } ) => {
+	const safeHtml = useMemo( () => sanitizePreviewMarkup( html ), [ html ] );
+
 	const body = children ?? (
 		<>
 			{ isFetching && (
@@ -59,7 +63,7 @@ const FormPreview = ( {
 			{ ! isFetching && ! error && html && (
 				<div
 					className={ `form-container ${ containerClassName }`.trim() }
-					dangerouslySetInnerHTML={ { __html: html } }
+					dangerouslySetInnerHTML={ { __html: safeHtml } }
 				/>
 			) }
 		</>

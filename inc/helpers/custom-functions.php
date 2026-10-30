@@ -3322,3 +3322,41 @@ function rtgodam_get_request_site_origin( $requested_origin ) {
 
 	return $origin;
 }
+
+/**
+ * Empty the link of any hotspot that is not an http, https or mailto URL.
+ *
+ * Hotspot layers are read from an attachment's `rtgodam_meta` and handed to
+ * front-end script, which makes each hotspot's `link` the `href` of a link. Only
+ * web and mail addresses are kept; a link on any other scheme (for example
+ * `javascript:`) is emptied, so the hotspot still renders, just without a
+ * destination. Everything else in the layers is returned unchanged.
+ *
+ * @since n.e.x.t
+ *
+ * @param array $layers Layers read from an attachment's `rtgodam_meta`.
+ * @return array The layers, with unsafe hotspot links emptied.
+ */
+function rtgodam_sanitize_hotspot_links( $layers ) {
+	if ( ! is_array( $layers ) ) {
+		return array();
+	}
+
+	foreach ( $layers as $layer_index => $layer ) {
+		if ( ! is_array( $layer ) || empty( $layer['hotspots'] ) || ! is_array( $layer['hotspots'] ) ) {
+			continue;
+		}
+
+		foreach ( $layer['hotspots'] as $hotspot_index => $hotspot ) {
+			if ( ! is_array( $hotspot ) || empty( $hotspot['link'] ) ) {
+				continue;
+			}
+
+			$layers[ $layer_index ]['hotspots'][ $hotspot_index ]['link'] = is_string( $hotspot['link'] )
+				? esc_url_raw( $hotspot['link'], array( 'http', 'https', 'mailto' ) )
+				: '';
+		}
+	}
+
+	return $layers;
+}
