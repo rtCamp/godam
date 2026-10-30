@@ -4,6 +4,11 @@
  */
 
 /**
+ * Internal dependencies
+ */
+import { cuesToWebVtt } from '../../../../assets/src/js/godam-player/utils/captionTrackSrc';
+
+/**
  * Parse a single timestamp (`HH:MM:SS.mmm`, `MM:SS.mmm`, or the SRT comma
  * variant) into seconds.
  *
@@ -122,3 +127,17 @@ export const formatBytes = ( bytes ) => {
  * @return {boolean} True while transcribing.
  */
 export const isTranscribingStatus = ( status ) => status === 'Transcribing' || status === 'Transcoding';
+
+/**
+ * Serialise cue objects back into a WebVTT file.
+ *
+ * Uses the player's writer, so the editor and the player round timestamps the
+ * same way. It writes a stripped file: cue identifiers, cue settings and
+ * styling/region blocks are not round-tripped (same limitation as
+ * `parseCaptions`). The caption manager disables cue editing for tracks the
+ * SaaS flags as `has_rich_formatting`, so this is only used on plain files.
+ *
+ * @param {Array<{start:number,end:number,text:string}>} cues Ordered cues.
+ * @return {string} WebVTT file text.
+ */
+export const cuesToVTT = ( cues ) => cuesToWebVtt( cues || [] );
