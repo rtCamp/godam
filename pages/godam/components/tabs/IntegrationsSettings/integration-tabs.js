@@ -4,6 +4,21 @@
 import { __ } from '@wordpress/i18n';
 
 /**
+ * A tab title with the "Pro" badge, for integrations that need a GoDAM plan.
+ *
+ * @param {string} label Integration name.
+ * @return {JSX.Element} The title.
+ */
+const proTabTitle = ( label ) => (
+	<>
+		{ label }
+		<span className="godam-pro-badge">
+			{ __( 'Pro', 'godam' ) }
+		</span>
+	</>
+);
+
+/**
  * Integration tab definitions.
  *
  * Each add-on that needs an Integrations Settings tab should have an entry here.
@@ -21,14 +36,7 @@ const integrationTabs = [
 		fdItemId: 'godam-for-woo',
 		integrationLabel: __( 'WooCommerce', 'godam' ),
 		addonLabel: __( 'GoDAM for Woo', 'godam' ),
-		title: (
-			<>
-				{ __( 'WooCommerce', 'godam' ) }
-				<span className="godam-pro-badge">
-					{ __( 'Pro', 'godam' ) }
-				</span>
-			</>
-		),
+		title: proTabTitle( __( 'WooCommerce', 'godam' ) ),
 		className: 'godam-tab',
 	},
 	{
@@ -37,7 +45,7 @@ const integrationTabs = [
 		// fields from `window.godamIntegrationComponents.marketo`.
 		name: 'marketo',
 		integrationLabel: __( 'Marketo', 'godam' ),
-		title: __( 'Marketo', 'godam' ),
+		title: proTabTitle( __( 'Marketo', 'godam' ) ),
 		className: 'godam-tab',
 	},
 	{
@@ -46,7 +54,7 @@ const integrationTabs = [
 		// `window.godamIntegrationComponents.hubspot`.
 		name: 'hubspot',
 		integrationLabel: __( 'HubSpot', 'godam' ),
-		title: __( 'HubSpot', 'godam' ),
+		title: proTabTitle( __( 'HubSpot', 'godam' ) ),
 		className: 'godam-tab',
 	},
 ];
