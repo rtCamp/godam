@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-02T07:43:27+00:00\n"
+"POT-Creation-Date: 2026-11-02T11:53:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -5950,8 +5950,8 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/tabs/IntegrationsSettings/HubSpotSettings.jsx:139
 #: pages/godam/components/tabs/IntegrationsSettings/HubSpotSettings.jsx:447
-#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:48
-#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:49
+#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:56
+#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:57
 #: pages/video-editor/components/forms/HubSpotForm.js:168
 #: pages/video-editor/components/SidebarLayers.js:126
 #: pages/video-editor/utils/layerTypes.js:51
@@ -6115,25 +6115,25 @@ msgid "Upgrade Plan"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:22
-#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:26
-msgid "WooCommerce"
-msgstr ""
-
-#: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:23
-msgid "GoDAM for Woo"
-msgstr ""
-
-#: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:28
+#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:16
 msgid "Pro"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: assets/build/pages/video-editor.min.js:2
+#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:37
 #: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:39
-#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:40
+msgid "WooCommerce"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:38
+msgid "GoDAM for Woo"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/video-editor.min.js:2
+#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:47
+#: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:48
 #: pages/godam/components/tabs/IntegrationsSettings/MarketoSettings.jsx:285
 #: pages/video-editor/components/SidebarLayers.js:117
 #: pages/video-editor/utils/layerTypes.js:50
