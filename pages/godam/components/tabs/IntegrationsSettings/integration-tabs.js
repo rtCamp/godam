@@ -37,7 +37,14 @@ const integrationTabs = [
 		// fields from `window.godamIntegrationComponents.marketo`.
 		name: 'marketo',
 		integrationLabel: __( 'Marketo', 'godam' ),
-		title: __( 'Marketo', 'godam' ),
+		title: (
+			<>
+				{ __( 'Marketo', 'godam' ) }
+				<span className="godam-pro-badge">
+					{ __( 'Pro', 'godam' ) }
+				</span>
+			</>
+		),
 		className: 'godam-tab',
 	},
 	{
@@ -46,7 +53,14 @@ const integrationTabs = [
 		// `window.godamIntegrationComponents.hubspot`.
 		name: 'hubspot',
 		integrationLabel: __( 'HubSpot', 'godam' ),
-		title: __( 'HubSpot', 'godam' ),
+		title: (
+			<>
+				{ __( 'HubSpot', 'godam' ) }
+				<span className="godam-pro-badge">
+					{ __( 'Pro', 'godam' ) }
+				</span>
+			</>
+		),
 		className: 'godam-tab',
 	},
 ];
