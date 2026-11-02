@@ -21,7 +21,7 @@ import { external } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import SiteTrackingToggle from './SiteTrackingToggle';
+import VideoTrackingSection from './VideoTrackingSection';
 
 /**
  * Human text for each connection state.
@@ -280,29 +280,17 @@ const MarketoSettings = ( { settings = {}, onSettingChange } ) => {
 						<ConfigRow label={ __( 'Forms host', 'godam' ) }>
 							{ marketo.forms_host || __( 'Auto', 'godam' ) }
 						</ConfigRow>
-						{ isLive && (
-							<ConfigRow label={ __( 'Video-view tracking on GoDAM Central', 'godam' ) }>
-								<span style={ { color: marketo.tracking_active ? '#007a4d' : '#757575' } }>
-									{ marketo.tracking_active ? __( 'On', 'godam' ) : __( 'Off', 'godam' ) }
-								</span>
-							</ConfigRow>
-						) }
-					</Card>
-
-					{ marketo.reason !== 'no_api_credentials' && (
-						<>
-							<SiteTrackingToggle
+						{ marketo.reason !== 'no_api_credentials' && (
+							<VideoTrackingSection
 								label={ __( 'Marketo', 'godam' ) }
 								settings={ settings }
 								onSettingChange={ onSettingChange }
 								centralTracking={ isLive ? Boolean( marketo.tracking_active ) : undefined }
+								settingsUrl={ settingsUrl }
+								note={ __( 'With video-view tracking on, GoDAM adds Marketo’s Munchkin tracking code to pages that have a video, so views can be matched to a Marketo lead. Munchkin also records page visits in your Marketo. If your site already loads Munchkin, a developer can turn ours off with the rtgodam_map_inject_munchkin filter.', 'godam' ) }
 							/>
-
-							<p style={ { margin: '12px 0 0', color: '#757575', fontSize: 13 } }>
-								{ __( 'With video-view tracking on, GoDAM adds Marketo’s Munchkin tracking code to pages that have a video, so views can be matched to a Marketo lead. Munchkin also records page visits in your Marketo. If your site already loads Munchkin, a developer can turn ours off with the rtgodam_map_inject_munchkin filter.', 'godam' ) }
-							</p>
-						</>
-					) }
+						) }
+					</Card>
 
 					{ marketo.reason === 'no_api_credentials' && (
 						<p style={ { color: '#757575', fontSize: '13px', margin: '10px 0 0' } }>
