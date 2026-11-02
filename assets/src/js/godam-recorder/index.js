@@ -272,7 +272,7 @@ class UppyVideoUploader {
 		}
 
 		// Optional ScreenCapture support.
-		if ( this.selectorArray.includes( 'screen_capture' ) ) {
+		if ( this.selectorArray.includes( 'screen_capture' ) && this.isScreenCaptureAvailable() ) {
 			this.uppy.use( ScreenCapture, { audio: true } );
 		}
 
@@ -586,6 +586,19 @@ class UppyVideoUploader {
 			// Draw the recording's preview again on the new markup.
 			this.processVideoUpload( restoredFile, 'restored' );
 		}
+	}
+
+	/**
+	 * Checks if the browser supports screen capture.
+	 *
+	 * @return {boolean} True if screen capture is supported, false otherwise.
+	 */
+	isScreenCaptureAvailable() {
+		return (
+			typeof navigator !== 'undefined' &&
+			navigator.mediaDevices &&
+			typeof navigator.mediaDevices.getDisplayMedia === 'function'
+		);
 	}
 }
 
