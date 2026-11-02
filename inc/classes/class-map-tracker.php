@@ -98,6 +98,19 @@ class Map_Tracker {
 	const PAGE_URL_MAX_LEN = 2000;
 
 	/**
+	 * `wp_footer` priority of {@see maybe_enqueue_script()}: after players rendered
+	 * in the footer, before footer scripts print at 20.
+	 */
+	const FOOTER_PRIORITY = 19;
+
+	/**
+	 * Whether a GoDAM video player was rendered on this request.
+	 *
+	 * @var bool
+	 */
+	private static $video_rendered = false;
+
+	/**
 	 * Constructor.
 	 */
 	protected function __construct() {
@@ -136,10 +149,12 @@ class Map_Tracker {
 		 *
 		 * Players are rendered by blocks and shortcodes while the_content runs, which
 		 * is after `wp_enqueue_scripts` has finished — so asking there whether a player
-		 * is on the page always answers no. By `wp_footer` every player has rendered,
-		 * and priority 1 is still ahead of wp_print_footer_scripts (priority 20).
+		 * is on the page always answers no. Some players render in `wp_footer` itself
+		 * (GoDAM for WooCommerce's Reel Pops widget, at the default priority 10), so
+		 * this runs at 19: after those, and still ahead of wp_print_footer_scripts
+		 * (priority 20), which prints what is enqueued here.
 		 */
-		add_action( 'wp_footer', array( $this, 'maybe_enqueue_script' ), 1 );
+		add_action( 'wp_footer', array( $this, 'maybe_enqueue_script' ), self::FOOTER_PRIORITY );
 	}
 
 	// -------------------------------------------------------------------------
@@ -211,6 +226,44 @@ class Map_Tracker {
 	}
 
 	/**
+	 * Record that a GoDAM video player was rendered on this request.
+	 *
+	 * Called by the player template once it has something to play, which every
+	 * in-page player goes through (block, shortcode, Elementor and WPBakery). A
+	 * gallery or lightbox video plays in the embed page's iframe, whose own
+	 * render calls this and loads its own tracker.
+	 *
+	 * @return void
+	 */
+	public static function mark_video_rendered() {
+		self::$video_rendered = true;
+	}
+
+	/**
+	 * Whether this page has a GoDAM video player, so view tracking can apply.
+	 *
+	 * Asked rather than inferred from `godam-player-frontend-script` being
+	 * enqueued: other plugins enqueue that handle, or scripts depending on it, on
+	 * every page, which loaded the tracker, Munchkin and HubSpot's tracking code
+	 * on pages with no video at all (404s, search results).
+	 *
+	 * @return bool
+	 */
+	public static function page_has_video() {
+		/**
+		 * Filters whether the current page has a GoDAM video player for view tracking.
+		 *
+		 * Return true for a page whose players are built in the browser rather than
+		 * rendered by GoDAM's player template, so their views are still tracked.
+		 *
+		 * @since 2.6.0
+		 *
+		 * @param bool $has_video Whether a player was rendered on this request.
+		 */
+		return (bool) apply_filters( 'rtgodam_map_page_has_video', self::$video_rendered );
+	}
+
+	/**
 	 * Enqueue the tracker when this page has a player and tracking is on.
 	 *
 	 * @return void
@@ -220,8 +273,9 @@ class Map_Tracker {
 			return;
 		}
 
-		// No player on this page means no milestone can ever fire.
-		if ( ! wp_script_is( 'godam-player-frontend-script', 'enqueued' ) && ! wp_script_is( 'godam-player-frontend-script', 'done' ) ) {
+		// No player on this page means no milestone can ever fire, and loading
+		// Munchkin or HubSpot's tracking code would only record a page visit.
+		if ( ! self::page_has_video() ) {
 			return;
 		}
 
