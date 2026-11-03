@@ -5,7 +5,7 @@
  * the label with four colours (background, text, hover-background, hover-text);
  * `sticker` renders the same label as a die-cut sticker, with one Fill colour
  * (stored in `bgColor`). Every hotspot also carries an optional `attention`
- * animation ('none' | 'pulse' | 'ripple' | 'glow') that draws the viewer's eye.
+ * animation ('none' | 'pulse' | 'glow') that draws the viewer's eye.
  * These are PER-HOTSPOT (unlike the Pulse / Icon styles, which share one look
  * across the layer) so a single layer can mix, e.g., a pulsing text "Buy now" and
  * a sticker.
@@ -25,7 +25,7 @@ const DEFAULT_BUTTON_HOVER_TEXT = '#ffffff';
 
 // Supported attention animations. 'none' leaves the button static; the others map
 // to `.godam-button-cta--attn-<value>` classes defined in `_button-cta.scss`.
-const BUTTON_ATTENTION_TYPES = [ 'none', 'pulse', 'ripple', 'glow' ];
+const BUTTON_ATTENTION_TYPES = [ 'none', 'pulse', 'glow' ];
 
 // Supported variants: a text label, or the label as a die-cut sticker.
 const BUTTON_VARIANTS = [ 'text', 'sticker' ];

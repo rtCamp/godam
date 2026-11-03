@@ -239,4 +239,59 @@ const getCurrentMimeTypeFilter = ( paramName = 'post_mime_type' ) => {
 	return {};
 };
 
-export { utilities, getCurrentMimeTypeFilter };
+/**
+ * Builds the request for the media sidebar's All Media count.
+ *
+ * With no type filter, or one whole type (image, video, audio...), the count comes from the
+ * core `wp/v2/media` route's `media_type`. A filter with exact MIME types, e.g. the caption
+ * picker's [ 'text/vtt', 'application/x-subrip', 'text/plain' ], or with more than one type,
+ * goes to admin-ajax `query-attachments` instead, the same query the picker's grid runs: the
+ * REST route answers 400 to exact types in `media_type`, takes only one `media_type` before
+ * WordPress 6.9, and only takes a list of exact types in `mime_type` from 6.9.
+ *
+ * @since 2.5.2
+ *
+ * @param {string|string[]} type A type, a comma-separated list of types, or an array of them. Defaults to the current media frame's or URL's filter.
+ *
+ * @return {Object} The request for `fetchBaseQuery`. Both routes send the total in an `X-WP-Total` header.
+ */
+const getAllMediaCountRequest = ( type = getCurrentMimeTypeFilter( 'type' ).type ) => {
+	const types = [].concat( type ?? [] )
+		.flatMap( ( entry ) => String( entry ).split( ',' ) )
+		.map( ( entry ) => entry.trim() )
+		.filter( Boolean );
+	const hasExactType = types.some( ( entry ) => entry.includes( '/' ) );
+	const ajaxUrl = window.wp?.ajax?.settings?.url || window.ajaxurl;
+
+	if ( ( hasExactType || types.length > 1 ) && ! ajaxUrl ) {
+		// No admin-ajax URL on this page: fall back to the REST route's `mime_type` (WordPress 6.9+).
+		return {
+			url: 'wp/v2/media',
+			params: { _fields: 'id', per_page: 1, mime_type: types },
+		};
+	}
+
+	if ( hasExactType || types.length > 1 ) {
+		// admin-ajax.php registers `query-attachments` for POST requests only.
+		return {
+			url: new URL( ajaxUrl, window.location.href ).href,
+			method: 'POST',
+			body: new URLSearchParams( {
+				action: 'query-attachments',
+				'query[post_mime_type]': types.join( ',' ),
+				'query[posts_per_page]': 1,
+			} ),
+		};
+	}
+
+	return {
+		url: 'wp/v2/media',
+		params: {
+			_fields: 'id',
+			per_page: 1,
+			...( types.length ? { media_type: types } : {} ),
+		},
+	};
+};
+
+export { utilities, getCurrentMimeTypeFilter, getAllMediaCountRequest };

@@ -4,7 +4,8 @@
  *
  * GF_Field_FileUpload mirrors only the submission-files cache of Gravity Forms 2.9.18+:
  * get_submission_files() returns what set_submission_files() stored, or the files the test
- * queued in $queued_files.
+ * queued in $queued_files. It also answers what the entry view reads from the field: its
+ * ID, get_modifiers() and get_download_url().
  *
  * @package GoDAM
  */
@@ -15,7 +16,15 @@ if ( ! class_exists( 'GF_Field' ) ) {
 	/**
 	 * Stub of Gravity Forms' base field.
 	 */
-	class GF_Field {}
+	class GF_Field {
+
+		/**
+		 * The field ID.
+		 *
+		 * @var int
+		 */
+		public $id = 0;
+	}
 }
 
 if ( ! class_exists( 'GF_Field_FileUpload' ) ) {
@@ -66,6 +75,27 @@ if ( ! class_exists( 'GF_Field_FileUpload' ) ) {
 		 */
 		public function set_submission_files( $files ) {
 			$this->stored_files = $files;
+		}
+
+		/**
+		 * The merge-tag modifiers of the field; none in a test.
+		 *
+		 * @return string[]
+		 */
+		public function get_modifiers() {
+			return array();
+		}
+
+		/**
+		 * The download URL of an uploaded file; the stub links the file itself.
+		 *
+		 * @param string $file           File URL.
+		 * @param bool   $force_download Whether to force a download. Unused.
+		 *
+		 * @return string
+		 */
+		public function get_download_url( $file, $force_download = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- signature mirrors Gravity Forms.
+			return $file;
 		}
 	}
 }

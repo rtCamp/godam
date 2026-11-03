@@ -48,7 +48,17 @@ $godam_is_audio = godam_is_audio_file( $godam_value );
 			<?php esc_html_e( 'Your browser does not support the audio element.', 'godam' ); ?>
 		</audio>
 	<?php else : ?>
-		<?php echo do_shortcode( "[godam_video poster='{$godam_thumbnail_url}' src='{$godam_value}' transcoded_url='{$godam_transcoded_url}']" ); ?>
+		<?php
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The player template escapes its output.
+		echo rtgodam_render_shortcode_from_atts(
+			'godam_video',
+			array(
+				'poster'         => esc_url_raw( $godam_thumbnail_url ),
+				'src'            => esc_url_raw( $godam_value ),
+				'transcoded_url' => esc_url_raw( $godam_transcoded_url ),
+			)
+		);
+		?>
 	<?php endif; ?>
 </div>
 <a

@@ -25,7 +25,8 @@ $godam_video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0
  * @since 2.2.0
  */
 do_action( 'rtgodam_before_attachment_lookup' );
-$godam_media_mime = $godam_video_id ? (string) get_post_mime_type( $godam_video_id ) : '';
+// Media the visitor may not see is treated as missing, so the page doesn't reveal its type either.
+$godam_media_mime = $godam_video_id && rtgodam_can_view_attachment( $godam_video_id ) ? (string) get_post_mime_type( $godam_video_id ) : '';
 do_action( 'rtgodam_after_attachment_lookup' );
 $godam_is_image = 0 === strpos( $godam_media_mime, 'image/' );
 $godam_is_audio = 0 === strpos( $godam_media_mime, 'audio/' );

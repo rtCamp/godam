@@ -12,8 +12,19 @@ import { PostHogProvider } from '@posthog/react';
 import store from './redux/store';
 import App from './App';
 import posthog from '../utils/posthog';
+import MarketoSettings from './components/tabs/IntegrationsSettings/MarketoSettings.jsx';
+import HubSpotSettings from './components/tabs/IntegrationsSettings/HubSpotSettings.jsx';
 
 import './index.scss';
+
+// Register core integration settings components on the shared seam that
+// `IntegrationsSettings` reads (`window.godamIntegrationComponents[ name ]`).
+// Marketo and HubSpot ship in core, so they register here rather than from an add-on.
+window.godamIntegrationComponents = {
+	...( window.godamIntegrationComponents || {} ),
+	marketo: MarketoSettings,
+	hubspot: HubSpotSettings,
+};
 
 const Index = () => {
 	return (

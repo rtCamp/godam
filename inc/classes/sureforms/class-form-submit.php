@@ -106,7 +106,7 @@ class Form_Submit {
 
 		// Loop through each file and check for `recorder` field data.
 		foreach ( $_FILES as $input_key => $file_data ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			if ( false === strpos( $input_key, '-input-recorder' ) ) {
+			if ( ! self::is_recorder_file_key( $input_key ) ) {
 				continue;
 			}
 
@@ -151,8 +151,22 @@ class Form_Submit {
 				'size'     => $file_size,
 			);
 
+			// Only audio and video, checked against the file itself rather than the type the browser sent.
+			$recorder_mimes = self::get_recorder_upload_mimes();
+
+			// An empty list would let WordPress fall back to every allowed type, so refuse instead.
+			if ( empty( $recorder_mimes ) ) {
+				wp_send_json_error(
+					array(
+						'message' => __( 'File is not uploaded', 'godam' ),
+					)
+				);
+			}
+
 			$upload_overrides = array(
 				'test_form' => false,
+				'test_type' => true,
+				'mimes'     => $recorder_mimes,
 			);
 			$move_file        = wp_handle_upload( $uploaded_file, $upload_overrides );
 
@@ -173,6 +187,41 @@ class Form_Submit {
 		remove_filter( 'upload_dir', array( $this, 'change_upload_dir' ) );
 
 		return $submission_data;
+	}
+
+	/**
+	 * Whether a posted file key is a GoDAM recorder field's.
+	 *
+	 * The recorder block names its input `godam-upload-<block id>-lbl-<label>-input-recorder<index>`
+	 * (see the block's render.php; the block id can be empty), so only a key of that shape is taken,
+	 * not any key that contains `-input-recorder`.
+	 *
+	 * @param string $input_key The key in `$_FILES`.
+	 *
+	 * @return bool
+	 */
+	public static function is_recorder_file_key( $input_key ) {
+		return 1 === preg_match( '/^godam-upload-.*-lbl-.*-input-recorder\d*$/', (string) $input_key );
+	}
+
+	/**
+	 * Audio and video types the recorder field accepts for an upload.
+	 *
+	 * The site's allowed upload types narrowed to audio and video, so a site's own
+	 * `upload_mimes` choices still apply.
+	 *
+	 * @return array<string, string> File extensions (separated by `|`) => MIME type.
+	 */
+	public static function get_recorder_upload_mimes() {
+		$mimes = array();
+
+		foreach ( get_allowed_mime_types() as $extensions => $mime_type ) {
+			if ( 0 === strpos( $mime_type, 'video/' ) || 0 === strpos( $mime_type, 'audio/' ) ) {
+				$mimes[ $extensions ] = $mime_type;
+			}
+		}
+
+		return $mimes;
 	}
 
 	/**
@@ -348,8 +397,6 @@ class Form_Submit {
 		$transcoded_url_output   = '';
 
 		if ( ! empty( $transcoded_url ) ) {
-			$transcoded_url        = esc_url( $transcoded_url );
-			$transcoded_url        = "transcoded_url={$transcoded_url}";
 			$transcoded_url_output = sprintf(
 				"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
 				$is_audio 
@@ -368,7 +415,7 @@ class Form_Submit {
 		if ( $is_audio ) {
 			$audio_output = '<audio controls>';
 			if ( ! empty( $transcoded_url ) ) {
-				$audio_output .= sprintf( '<source src="%s" type="audio/mpeg">', esc_url( str_replace( 'transcoded_url=', '', $transcoded_url ) ) );
+				$audio_output .= sprintf( '<source src="%s" type="audio/mpeg">', esc_url( $transcoded_url ) );
 			}
 			$audio_output .= sprintf( '<source src="%s" type="%s">', esc_url( $value ), esc_attr( $file_type['type'] ) );
 			$audio_output .= esc_html__( 'Your browser does not support the audio element.', 'godam' );
@@ -376,7 +423,13 @@ class Form_Submit {
 			
 			$media_output = '<div class="srfm-godam-audio-preview">' . $audio_output . '</div>';
 		} else {
-			$video_output = do_shortcode( "[godam_video src='{$value}' {$transcoded_url} ]" );
+			$video_output = rtgodam_render_shortcode_from_atts(
+				'godam_video',
+				array(
+					'src'            => esc_url_raw( $value ),
+					'transcoded_url' => esc_url_raw( (string) $transcoded_url ),
+				)
+			);
 			$media_output = '<div class="srfm-godam-video-preview">' . $video_output . '</div>';
 		}
 		

@@ -45,7 +45,6 @@ import {
 export const ATTENTION_OPTIONS = [
 	{ value: 'none', label: __( 'None', 'godam' ) },
 	{ value: 'pulse', label: __( 'Pulse', 'godam' ) },
-	{ value: 'ripple', label: __( 'Border waves', 'godam' ) },
 	{ value: 'glow', label: __( 'Glow', 'godam' ) },
 ];
 

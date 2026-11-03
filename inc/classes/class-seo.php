@@ -911,6 +911,23 @@ class Seo {
 	}
 
 	/**
+	 * Whether a post's content is public: viewable by anyone, and not behind a
+	 * password. Video schema describes the post's content, so it is only printed
+	 * where that content is public, never on a draft, private, scheduled or
+	 * password-protected post.
+	 *
+	 * @since 2.5.1
+	 *
+	 * @param int $post_id Post ID.
+	 * @return bool
+	 */
+	private function is_post_content_public( $post_id ) {
+		$post = get_post( $post_id ); // godam-coverage-ignore -- is_post_content_public(): $post_id is the queried post (the current page), never an attachment.
+
+		return $post && empty( $post->post_password ) && is_post_publicly_viewable( $post );
+	}
+
+	/**
 	 * Outputs structured data for VideoObject schema on singular pages.
 	 *
 	 * This function reads cached SEO data from post meta for optimal performance.
@@ -930,6 +947,12 @@ class Seo {
 
 		$post_id = get_queried_object_id();
 		if ( ! $post_id ) {
+			return;
+		}
+
+		// The cached schema describes the post's content, so only print it where
+		// that content is public.
+		if ( ! $this->is_post_content_public( $post_id ) ) {
 			return;
 		}
 
@@ -1851,6 +1874,11 @@ class Seo {
 		// queried object ID is a term or user ID, which would otherwise be read
 		// as an unrelated post (description fallback, re-save queue, clip URLs).
 		$post_id = is_singular() ? get_queried_object_id() : 0;
+
+		// Not on a post whose content is not public, as for the cached output.
+		if ( $post_id > 0 && ! $this->is_post_content_public( $post_id ) ) {
+			return;
+		}
 
 		$output_schemas = array();
 		foreach ( $this->render_collected_schemas as $video ) {

@@ -62,7 +62,7 @@ class Forminator_Forms extends Base {
 					array(
 						'methods'             => WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_forminator_forms' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => $this->get_collection_params(),
 					),
 				),
@@ -74,7 +74,7 @@ class Forminator_Forms extends Base {
 					array(
 						'methods'             => WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_forminator_form' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
@@ -126,10 +126,8 @@ class Forminator_Forms extends Base {
 			foreach ( $forms as $form ) {
 				// Prepare the form data.
 				$all_forms[] = array(
-					'id'        => $form->id,
-					'name'      => $form->name,
-					'client_id' => $form->client_id,
-					'status'    => $form->status,
+					'id'   => $form->id,
+					'name' => $form->name,
 				);
 			}
 			++$paged;
