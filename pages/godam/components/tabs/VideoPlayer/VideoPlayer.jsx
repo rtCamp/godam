@@ -7,7 +7,7 @@ import videojs from 'video.js';
 /**
  * WordPress dependencies
  */
-import { Button, Notice, CustomSelectControl, Icon, Spinner, Panel, PanelBody } from '@wordpress/components';
+import { Button, Notice, CustomSelectControl, Icon, Spinner, Panel, PanelBody, ToggleControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { error } from '@wordpress/icons';
 import { useState, useRef, useEffect } from '@wordpress/element';
@@ -31,6 +31,13 @@ const PLAYER_SKIN_OPTIONS = [
 	{ key: 'Minimal', name: __( 'Minimal', 'godam' ) },
 	{ key: 'Pills', name: __( 'Pills', 'godam' ) },
 	{ key: 'Bubble', name: __( 'Bubble', 'godam' ) },
+];
+
+const OUT_OF_VIEW_OPTIONS = [
+	{ key: 'off', name: __( 'Do nothing', 'godam' ) },
+	{ key: 'autoplay', name: __( 'Pause autoplaying videos only', 'godam' ) },
+	{ key: 'pause', name: __( 'Pause all videos', 'godam' ) },
+	{ key: 'mute', name: __( 'Keep playing, muted', 'godam' ) },
 ];
 
 const VideoPlayer = () => {
@@ -423,6 +430,41 @@ const VideoPlayer = () => {
 							onChange={ ( { selectedItem } ) => handleSettingChange( 'player_skin', selectedItem.key ) }
 						/>
 					</div>
+				</PanelBody>
+			</Panel>
+
+			<Panel header={ __( 'Playback', 'godam' ) } className="godam-panel godam-margin-bottom">
+				<PanelBody opened>
+					<div className="godam-form-group max-w-[520px]" data-test-id="godam-settings-player-control-out-of-view">
+						<label className="label-text" htmlFor="out_of_view_behavior">
+							{ __( 'When a video goes out of view', 'godam' ) }
+						</label>
+
+						<CustomSelectControl
+							__next40pxDefaultSize
+							hideLabelFromVision
+							label={ __( 'When a video goes out of view', 'godam' ) }
+							options={ OUT_OF_VIEW_OPTIONS }
+							value={ OUT_OF_VIEW_OPTIONS.find( ( option ) => option.key === ( mediaSettings?.video_player?.out_of_view_behavior || 'off' ) ) ?? OUT_OF_VIEW_OPTIONS[ 0 ] }
+							onChange={ ( { selectedItem } ) => handleSettingChange( 'out_of_view_behavior', selectedItem.key ) }
+						/>
+
+						<p className="text-[0.75rem] leading-[1.2] text-[#777] mt-2 mb-0">
+							{ __( 'Scrolled past, on another slide, or in a closed tab or accordion. Autoplaying videos resume when visible again. Can be changed per video.', 'godam' ) }
+						</p>
+					</div>
+
+					{ [ 'pause', 'mute' ].includes( mediaSettings?.video_player?.out_of_view_behavior ) && (
+						<ToggleControl
+							__nextHasNoMarginBottom
+							className="mt-4"
+							label={ __( 'Also apply when the browser tab is hidden', 'godam' ) }
+							help={ __( 'For videos the visitor started. Autoplaying videos always pause in a background tab.', 'godam' ) }
+							checked={ !! mediaSettings?.video_player?.out_of_view_tab_hidden }
+							onChange={ ( value ) => handleSettingChange( 'out_of_view_tab_hidden', value ) }
+							data-test-id="godam-settings-player-control-out-of-view-tab-hidden"
+						/>
+					) }
 				</PanelBody>
 			</Panel>
 

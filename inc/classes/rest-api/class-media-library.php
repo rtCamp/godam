@@ -316,9 +316,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_exif_data' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					'permission_callback' => array( $this, 'can_read_attachment' ),
 					'args'                => array(
 						'attachment_id' => array(
 							'required'    => true,
@@ -334,9 +332,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'set_video_thumbnail' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					'permission_callback' => array( $this, 'can_edit_attachment' ),
 					'args'                => array(
 						'attachment_id'             => array(
 							'required'    => true,
@@ -362,9 +358,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_video_thumbnails' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					'permission_callback' => array( $this, 'can_read_attachment' ),
 					'args'                => array(
 						'attachment_id' => array(
 							'required'    => true,
@@ -380,9 +374,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'upload_custom_video_thumbnail' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					'permission_callback' => array( $this, 'can_edit_attachment' ),
 					'args'                => array(
 						'attachment_id' => array(
 							'required'    => true,
@@ -403,9 +395,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'remove_custom_video_thumbnail' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					'permission_callback' => array( $this, 'can_edit_attachment' ),
 					'args'                => array(
 						'attachment_id' => array(
 							'required'    => true,
@@ -674,6 +664,79 @@ class Media_Library extends Base {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Permission: the caller may edit the attachment named in the request.
+	 *
+	 * Gates the routes that change a video's thumbnails. `edit_posts` alone does not say whose
+	 * media it is, so this also asks WordPress whether the user may edit that attachment.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return bool Whether the request is allowed.
+	 */
+	public function can_edit_attachment( $request ) {
+		return $this->can_access_attachment( $request, true );
+	}
+
+	/**
+	 * Permission: the caller may read the attachment named in the request.
+	 *
+	 * Gates the routes that read a video's thumbnails or an image's EXIF data. A user who can
+	 * read the attachment qualifies, as in WordPress's own media route. So does anyone who can
+	 * upload files, because the Media Library lists every attachment to them, whatever the
+	 * status of the post it is attached to. A private attachment still needs WordPress's say-so.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return bool Whether the request is allowed.
+	 */
+	public function can_read_attachment( $request ) {
+		return $this->can_access_attachment( $request, false );
+	}
+
+	/**
+	 * Check the current user against the attachment named in the request.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_REST_Request $request  REST request.
+	 * @param bool             $for_edit True to require edit access, false to require read access.
+	 * @return bool Whether the user has the access.
+	 */
+	private function can_access_attachment( $request, $for_edit ) {
+		// The capability these routes always needed; the checks below only narrow it.
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			return false;
+		}
+
+		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
+
+		if ( ! $attachment_id ) {
+			return false;
+		}
+
+		/**
+		 * Fires before this attachment-specific capability check, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			if ( $for_edit ) {
+				return current_user_can( 'edit_post', $attachment_id );
+			}
+
+			return current_user_can( 'read_post', $attachment_id )
+				|| ( current_user_can( 'upload_files' ) && 'inherit' === get_post_field( 'post_status', $attachment_id ) );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	/**
@@ -1225,6 +1288,10 @@ class Media_Library extends Base {
 
 		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 
+		// This read refreshes the stored thumbnails below. Only someone who may edit the video
+		// does that; anyone else gets the same answer without a write.
+		$can_save = current_user_can( 'edit_post', $attachment_id );
+
 		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
 
 		// Fetch thumbnails from CMM if its a virtual media.
@@ -1289,22 +1356,25 @@ class Media_Library extends Base {
 			}
 
 			$thumbnail_array = array_values( array_unique( $thumbnail_array ) );
-			if ( ! empty( $thumbnail_array ) ) {
-				update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $thumbnail_array );
-			}
 
-			if ( ! empty( $frappe_placeholder_map ) ) {
-				update_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', $frappe_placeholder_map );
-			} else {
-				delete_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails' );
-			}
+			if ( $can_save ) {
+				if ( ! empty( $thumbnail_array ) ) {
+					update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $thumbnail_array );
+				}
 
-			// Always sync the active placeholder thumbnail; clear it when there's no mapping.
-			$active_thumb_url = ! empty( $body->message->thumbnail_url ) ? $body->message->thumbnail_url : '';
-			if ( ! empty( $active_thumb_url ) && ! empty( $frappe_placeholder_map ) && isset( $frappe_placeholder_map[ $active_thumb_url ] ) ) {
-				update_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', $frappe_placeholder_map[ $active_thumb_url ] );
-			} else {
-				delete_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail' );
+				if ( ! empty( $frappe_placeholder_map ) ) {
+					update_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', $frappe_placeholder_map );
+				} else {
+					delete_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails' );
+				}
+
+				// Always sync the active placeholder thumbnail; clear it when there's no mapping.
+				$active_thumb_url = ! empty( $body->message->thumbnail_url ) ? $body->message->thumbnail_url : '';
+				if ( ! empty( $active_thumb_url ) && ! empty( $frappe_placeholder_map ) && isset( $frappe_placeholder_map[ $active_thumb_url ] ) ) {
+					update_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', $frappe_placeholder_map[ $active_thumb_url ] );
+				} else {
+					delete_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail' );
+				}
 			}
 		}
 
@@ -1361,7 +1431,9 @@ class Media_Library extends Base {
 				$selected_thumbnail = reset( $thumbnail_array );
 			}
 
-			update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $selected_thumbnail );
+			if ( $can_save ) {
+				update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $selected_thumbnail );
+			}
 		}
 
 		if ( ! empty( $selected_thumbnail ) ) {
@@ -1386,7 +1458,8 @@ class Media_Library extends Base {
 
 		$data['customThumbnails'] = $custom_thumbnails;
 
-		$godam_placeholder_map = get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
+		// A read that did not save still reports the map Central just returned.
+		$godam_placeholder_map = isset( $frappe_placeholder_map ) ? $frappe_placeholder_map : get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
 		if ( is_array( $godam_placeholder_map ) ) {
 			$normalized_placeholder_map = array();
 			foreach ( $godam_placeholder_map as $placeholder_key => $placeholder_value ) {
@@ -1450,6 +1523,12 @@ class Media_Library extends Base {
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		$thumbnail_url = $this->sanitize_thumbnail_url( $thumbnail_url );
+
+		if ( '' === $thumbnail_url ) {
+			return new \WP_Error( 'invalid_thumbnail_url', __( 'Invalid thumbnail URL.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Get current thumbnails.
@@ -1546,25 +1625,18 @@ class Media_Library extends Base {
 			return new \WP_Error( 'thumbnail_not_found', __( 'Custom thumbnail not found.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		// Remove the specified thumbnail.
-		$custom_thumbnails = array_diff( $custom_thumbnails, array( $thumbnail_url ) );
+		// Remove the specified thumbnail, keeping the list a list so it stays a JSON array.
+		$custom_thumbnails = array_values( array_diff( $custom_thumbnails, array( $thumbnail_url ) ) );
 
 		if ( empty( $custom_thumbnails ) ) {
 			delete_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails' );
-
-			return rest_ensure_response(
-				array(
-					'success' => true,
-					'message' => __( 'Custom video thumbnail removed successfully.', 'godam' ),
-				)
-			);
+		} else {
+			update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $custom_thumbnails );
 		}
-
-		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $custom_thumbnails );
 
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
-		if ( $selected_thumbnail === $thumbnail_url ) {
+		if ( rtgodam_convert_to_https_url( $selected_thumbnail ) === $thumbnail_url ) {
 			// If the removed thumbnail was the selected one, unset it.
 			delete_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail' );
 		}
@@ -1575,6 +1647,26 @@ class Media_Library extends Base {
 				'message' => __( 'Custom video thumbnail removed successfully.', 'godam' ),
 			)
 		);
+	}
+
+	/**
+	 * Clean a thumbnail URL from a request.
+	 *
+	 * A thumbnail is an image the player shows, so only an absolute http(s) URL is kept.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $url Thumbnail URL from the request.
+	 * @return string The cleaned URL, or an empty string when it is not an http(s) URL.
+	 */
+	private function sanitize_thumbnail_url( $url ) {
+		$url = is_string( $url ) ? trim( $url ) : '';
+
+		if ( ! preg_match( '#^https?://#i', $url ) ) {
+			return '';
+		}
+
+		return esc_url_raw( $url, array( 'http', 'https' ) );
 	}
 
 	/**
@@ -1627,7 +1719,9 @@ class Media_Library extends Base {
 		}
 
 		// Check if the thumbnail URL is valid.
-		if ( ! filter_var( $thumbnail_url, FILTER_VALIDATE_URL ) ) {
+		$thumbnail_url = $this->sanitize_thumbnail_url( $thumbnail_url );
+
+		if ( '' === $thumbnail_url ) {
 			return new \WP_Error( 'invalid_thumbnail_url', __( 'Invalid thumbnail URL.', 'godam' ), array( 'status' => 400 ) );
 		}
 

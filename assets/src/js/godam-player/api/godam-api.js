@@ -8,6 +8,7 @@ import videojs from 'video.js';
  */
 import Player from './player.js';
 import { getLightbox, openLightboxForId } from '../managers/modalManager.js';
+import { getVisibilityManager } from '../managers/visibilityManager.js';
 
 window.GoDAMAPI = {
 	/**
@@ -130,6 +131,53 @@ window.GoDAMAPI = {
 	 */
 	getAllReadyPlayers() {
 		return this.getAllPlayers().filter( ( playerObj ) => playerObj.isReady );
+	},
+
+	/**
+	 * Pause every playing GoDAM video, e.g. from a carousel's slide-change hook.
+	 *
+	 * Applies to all GoDAM players, whatever their out-of-view setting. These
+	 * pauses are treated as automatic: they don't show "on pause" CTA layers and
+	 * the `pause` event carries `{ reason: 'api' }`.
+	 *
+	 * @example
+	 * // Swiper: stop videos on the slides that just went out of view.
+	 * swiper.on( 'slideChange', () => {
+	 *     GoDAMAPI.pauseAll( { within: swiper.el, except: swiper.slides[ swiper.activeIndex ] } );
+	 * } );
+	 *
+	 * Keep playing: pass `except` as elements (a player or a slide around it),
+	 * attachment IDs or Player instances, alone or in an array.
+	 *
+	 * @param {Object}                                 [options]        - Options.
+	 * @param {HTMLElement|string|number|Player|Array} [options.except] - Players to keep playing.
+	 * @param {HTMLElement|string}                     [options.within] - Only pause players inside this element or selector.
+	 * @return {number} How many videos were paused.
+	 */
+	pauseAll( { except = [], within = null } = {} ) {
+		const exceptions = [];
+		( Array.isArray( except ) ? except : [ except ] ).forEach( ( item ) => {
+			if ( item instanceof Player ) {
+				exceptions.push( item.videoJs );
+			} else if ( typeof item === 'string' || typeof item === 'number' ) {
+				document.querySelectorAll( `[data-id="${ CSS.escape( String( item ) ) }"]` )
+					.forEach( ( el ) => exceptions.push( el ) );
+			} else if ( item ) {
+				exceptions.push( item );
+			}
+		} );
+
+		// An element passed as `except` may wrap the player (e.g. a carousel
+		// slide), so also except every player inside it.
+		const expanded = [];
+		exceptions.forEach( ( item ) => {
+			expanded.push( item );
+			if ( item?.nodeType === 1 ) {
+				item.querySelectorAll( '.easydam-player.video-js' ).forEach( ( el ) => expanded.push( el ) );
+			}
+		} );
+
+		return getVisibilityManager().pauseAll( { except: expanded, within } );
 	},
 
 	/**
