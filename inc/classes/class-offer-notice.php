@@ -2,10 +2,11 @@
 /**
  * Seasonal offer notice shown in wp-admin to free and trial sites.
  *
- * The current campaign is the Halloween 2026 offer: 50% off the first payment
- * with the code SPOOKY50, through November 9. The message names the
- * integrations the site already uses, so a LifterLMS site reads about course
- * videos and a WooCommerce store about shoppable video.
+ * Each campaign has fixed dates, a code and its own dismissal: the Halloween
+ * 2026 offer (SPOOKY50, through November 9) and the Black Friday 2026 offer
+ * (BFCM2026, November 15 to 27). Nothing shows between or after them. The
+ * message names the integrations the site already uses, so a LifterLMS site
+ * reads about course videos and a WooCommerce store about shoppable video.
  *
  * @package GoDAM
  * @since   2.5.2
@@ -23,27 +24,43 @@ defined( 'ABSPATH' ) || exit;
 class Offer_Notice {
 
 	/**
-	 * Option that stores the dismissal for this campaign only.
+	 * The campaigns, in date order.
 	 *
-	 * A new key per campaign, so a site that dismissed an earlier offer still sees this one.
+	 * `start` and `end` are the first and last moment the notice shows, in the site's time zone,
+	 * matching the offer on godam.io. Each campaign has its own dismiss option, so a site that
+	 * dismissed an earlier offer still sees the next one. `path` is the godam.io page the Claim
+	 * button opens, and `utm` its tracking (`utm_content` is added per placement and message).
 	 *
-	 * @var string
+	 * @since n.e.x.t
+	 *
+	 * @var array
 	 */
-	const DISMISS_OPTION = 'rtgodam_offer_halloween_2026_dismissed';
-
-	/**
-	 * Last moment the notice shows, in the site's time zone. Matches the offer on godam.io.
-	 *
-	 * @var string
-	 */
-	const END_TIME = '2026-11-09 23:59:59';
-
-	/**
-	 * Offer code.
-	 *
-	 * @var string
-	 */
-	const CODE = 'SPOOKY50';
+	const CAMPAIGNS = array(
+		'halloween-2026' => array(
+			'start'          => '2026-10-28 00:00:00',
+			'end'            => '2026-11-09 23:59:59',
+			'code'           => 'SPOOKY50',
+			'dismiss_option' => 'rtgodam_offer_halloween_2026_dismissed',
+			'path'           => '/pricing/',
+			'utm'            => array(
+				'utm_campaign' => 'halloween-2026',
+				'utm_source'   => '', // The site's host, filled in at render.
+				'utm_medium'   => 'plugin',
+			),
+		),
+		'bfcm-2026'      => array(
+			'start'          => '2026-11-15 00:00:00',
+			'end'            => '2026-11-27 23:59:59',
+			'code'           => 'BFCM2026',
+			'dismiss_option' => 'rtgodam_offer_bfcm_2026_dismissed',
+			'path'           => '/deals/',
+			'utm'            => array(
+				'utm_source'   => 'godam-plugin',
+				'utm_medium'   => 'admin-notice',
+				'utm_campaign' => 'bfcm2026',
+			),
+		),
+	);
 
 	/**
 	 * AJAX action and nonce action for dismissing the notice.
@@ -70,19 +87,34 @@ class Offer_Notice {
 			return false;
 		}
 
-		if ( get_option( self::DISMISS_OPTION, false ) ) {
-			return false;
-		}
-
-		$timezone = wp_timezone();
-		$now      = $now ? $now : new \DateTime( 'now', $timezone );
-		$end_time = new \DateTime( self::END_TIME, $timezone );
-
-		if ( $now > $end_time ) {
+		$campaign = self::get_campaign( $now );
+		if ( ! $campaign || get_option( self::CAMPAIGNS[ $campaign ]['dismiss_option'], false ) ) {
 			return false;
 		}
 
 		return self::is_free_or_trial_site( $user_data );
+	}
+
+	/**
+	 * The campaign running at the given moment, in the site's time zone.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \DateTimeInterface|null $now The moment to check, now when null. Tests pass a fixed time.
+	 *
+	 * @return string|null A key of CAMPAIGNS, or null between and after campaigns.
+	 */
+	public static function get_campaign( $now = null ) {
+		$timezone = wp_timezone();
+		$now      = $now ? $now : new \DateTime( 'now', $timezone );
+
+		foreach ( self::CAMPAIGNS as $key => $campaign ) {
+			if ( $now >= new \DateTime( $campaign['start'], $timezone ) && $now <= new \DateTime( $campaign['end'], $timezone ) ) {
+				return $key;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -233,21 +265,21 @@ class Offer_Notice {
 			return;
 		}
 
+		$campaign_key = self::get_campaign( $now );
+		$campaign     = self::CAMPAIGNS[ $campaign_key ];
+		$is_halloween = 'halloween-2026' === $campaign_key;
 		$integrations = self::get_active_integrations();
 		$message      = self::get_message( $integrations );
 		$chips        = array_slice( array_unique( array_column( $integrations, 'name' ) ), 0, 3 );
-		$host         = wp_parse_url( home_url(), PHP_URL_HOST );
-		$claim_url    = add_query_arg(
-			array(
-				'utm_campaign' => 'halloween-2026',
-				'utm_source'   => $host,
-				'utm_medium'   => 'plugin',
-				'utm_content'  => $placement . '-' . $message['key'],
-			),
-			RTGODAM_IO_API_BASE . '/pricing/'
-		);
+		$utm          = $campaign['utm'];
+		if ( '' === $utm['utm_source'] ) {
+			$utm['utm_source'] = wp_parse_url( home_url(), PHP_URL_HOST );
+		}
+		$utm['utm_content'] = $placement . '-' . $message['key'];
+		$claim_url          = add_query_arg( $utm, RTGODAM_IO_API_BASE . $campaign['path'] );
 		?>
-		<div class="notice rtgodam-offer-notice" data-nonce="<?php echo esc_attr( wp_create_nonce( self::DISMISS_ACTION ) ); ?>">
+		<div class="notice rtgodam-offer-notice<?php echo $is_halloween ? '' : ' rtgodam-offer-notice--no-art'; ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( self::DISMISS_ACTION ) ); ?>">
+			<?php if ( $is_halloween ) : ?>
 			<svg class="rtgodam-offer-notice__art" viewBox="0 0 92 104" width="92" height="104" aria-hidden="true" focusable="false">
 				<g stroke="#b9aee8" stroke-width="1" fill="none">
 					<path d="M0 0 L80 0"/><path d="M0 0 L70 40"/><path d="M0 0 L40 72"/><path d="M0 0 L0 90"/>
@@ -258,23 +290,29 @@ class Offer_Notice {
 				<g stroke="#2b1a66" stroke-width="1.5" fill="none" stroke-linecap="round"><path d="M57 65 l-7 -5 M56 70 l-8 0 M57 75 l-7 6 M67 65 l7 -5 M68 70 l8 0 M67 75 l7 6"/></g>
 				<circle cx="60.5" cy="59" r="1" fill="#fff"/><circle cx="63.5" cy="59" r="1" fill="#fff"/>
 			</svg>
+			<?php endif; ?>
 			<div class="rtgodam-offer-notice__body">
 				<p class="rtgodam-offer-notice__eyebrow">
-					<?php esc_html_e( 'Halloween offer', 'godam' ); ?>
+					<?php if ( $is_halloween ) : ?>
+						<?php esc_html_e( 'Halloween offer', 'godam' ); ?>
 					<svg class="rtgodam-offer-notice__pumpkin" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
 						<path d="M12 6c-1-2 0-4 2-4" stroke="#5d31ff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
 						<ellipse cx="7.5" cy="14" rx="5" ry="7" fill="#7a57ff"/><ellipse cx="16.5" cy="14" rx="5" ry="7" fill="#7a57ff"/><ellipse cx="12" cy="14" rx="4" ry="7.5" fill="#5d31ff"/>
 						<path d="M8 12l2-2 1 2zM13 12l2-2 1 2zM8 16q4 3 8 0l-1.5 1-1.2-.8-1.3 1-1.3-1-1.2.8z" fill="#fff"/>
 					</svg>
+					<?php else : ?>
+						<?php esc_html_e( 'Black Friday offer', 'godam' ); ?>
+					<?php endif; ?>
 				</p>
 				<p class="rtgodam-offer-notice__title">
 					<?php
+					$title = $is_halloween
+						/* translators: %s: the discount, shown in the accent colour, for example "Get 50% off". */
+						? esc_html__( 'No tricks, just treats: %s GoDAM!', 'godam' )
+						/* translators: %s: the discount, shown in the accent colour, for example "Get 50% off". */
+						: esc_html__( 'Black Friday deal: %s GoDAM', 'godam' );
 					echo wp_kses(
-						sprintf(
-							/* translators: %s: the discount, shown in the accent colour, for example "Get 50% off". */
-							esc_html__( 'No tricks, just treats: %s GoDAM!', 'godam' ),
-							'<span>' . esc_html__( 'Get 50% off', 'godam' ) . '</span>'
-						),
+						sprintf( $title, '<span>' . esc_html__( 'Get 50% off', 'godam' ) . '</span>' ),
 						array( 'span' => array() )
 					);
 					?>
@@ -299,12 +337,12 @@ class Offer_Notice {
 					</a>
 					<?php
 					/* translators: %s: offer code. */
-					$copy_label = sprintf( __( 'Copy the code %s', 'godam' ), self::CODE );
+					$copy_label = sprintf( __( 'Copy the code %s', 'godam' ), $campaign['code'] );
 					?>
 					<span class="rtgodam-offer-notice__code-group">
 					<span class="rtgodam-offer-notice__code-label"><?php esc_html_e( 'Code', 'godam' ); ?></span>
-					<button type="button" class="rtgodam-offer-notice__copy" data-code="<?php echo esc_attr( self::CODE ); ?>" data-copied="<?php esc_attr_e( 'Copied', 'godam' ); ?>" aria-label="<?php echo esc_attr( $copy_label ); ?>">
-						<span class="rtgodam-offer-notice__copy-text"><?php echo esc_html( self::CODE ); ?></span>
+					<button type="button" class="rtgodam-offer-notice__copy" data-code="<?php echo esc_attr( $campaign['code'] ); ?>" data-copied="<?php esc_attr_e( 'Copied', 'godam' ); ?>" aria-label="<?php echo esc_attr( $copy_label ); ?>">
+						<span class="rtgodam-offer-notice__copy-text"><?php echo esc_html( $campaign['code'] ); ?></span>
 						<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
 					</button>
 					</span>
@@ -312,7 +350,13 @@ class Offer_Notice {
 				</p>
 				<p class="rtgodam-offer-notice__ends">
 					<span class="dashicons dashicons-calendar-alt" aria-hidden="true"></span>
-					<?php esc_html_e( 'Through November 9. Don\'t let this treat disappear!', 'godam' ); ?>
+					<?php
+					if ( $is_halloween ) {
+						esc_html_e( 'Through November 9. Don\'t let this treat disappear!', 'godam' );
+					} else {
+						esc_html_e( 'Ends November 27 at 11:59 p.m. 50% off your first month or year on any plan.', 'godam' );
+					}
+					?>
 				</p>
 			</div>
 			<button type="button" class="notice-dismiss rtgodam-offer-notice__dismiss"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this offer', 'godam' ); ?></span></button>
@@ -321,20 +365,25 @@ class Offer_Notice {
 	}
 
 	/**
-	 * Save the dismissal for the whole site.
+	 * Save the dismissal of the running campaign for the whole site.
 	 *
 	 * @since 2.5.2
 	 *
+	 * @param \DateTimeInterface|null $now The moment to check, now when empty. Tests pass a fixed time.
+	 *
 	 * @return void
 	 */
-	public static function dismiss() {
+	public static function dismiss( $now = null ) {
 		check_ajax_referer( self::DISMISS_ACTION, 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'You are not allowed to dismiss this offer.', 'godam' ) ), 403 );
 		}
 
-		update_option( self::DISMISS_OPTION, time(), false );
+		$campaign = self::get_campaign( $now instanceof \DateTimeInterface ? $now : null );
+		if ( $campaign ) {
+			update_option( self::CAMPAIGNS[ $campaign ]['dismiss_option'], time(), false );
+		}
 
 		wp_send_json_success();
 	}

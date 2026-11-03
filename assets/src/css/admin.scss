@@ -1205,7 +1205,7 @@ to ensure proper responsiveness and avoid layout issues.
 	}
 }
 
-/* Seasonal offer notice (Halloween 2026), shown on the Dashboard and Media Library. */
+/* Seasonal offer notice (Halloween and Black Friday 2026), shown on the Dashboard and Media Library. */
 .rtgodam-offer-notice {
 	position: relative;
 	display: flex;
@@ -1213,6 +1213,11 @@ to ensure proper responsiveness and avoid layout issues.
 	padding: 14px 44px 14px 0;
 	border-left-color: #5d31ff;
 	overflow: hidden;
+
+	// No drawing on the left: the text needs the usual notice padding instead.
+	&--no-art {
+		padding-left: 16px;
+	}
 
 	&__art {
 		flex: none;
