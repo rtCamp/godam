@@ -274,7 +274,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each video can use its own setting.
 - Feat: Developers can pause all GoDAM videos from their own code, for example when a carousel changes slide.
 - Tweak: Authors see analytics only for the videos they can edit.
-- Tweak: Authors can no longer add custom CSS to video layers.
 - Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
 - Fix: Security fixes.
 
