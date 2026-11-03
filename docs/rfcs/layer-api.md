@@ -1,6 +1,6 @@
 # RFC: Layer API
 
-- **Status:** Draft, for review
+- **Status:** Accepted (2026-11-03)
 - **Issue:** #2291 (part of EPIC #2290)
 - **Covers:** the decisions the EPIC lists under "To decide", the public names, and what the audit of saved-layer readers found
 - **Scope:** the GoDAM plugin only. GoDAM Central adopts the API after it lands here.
@@ -68,7 +68,8 @@ Each decision gives a recommendation. Where the RFC is agreed differently, the d
 **Recommendation:** attributes stay top-level keys on the layer, next to `id`, `type`, `name` and `displayTime`. There's no nested `attributes` object.
 
 - Saved data, the player template, the analytics page, godam-for-woo's product SEO sync and the "edited" query all read flat keys today. Nesting would mean a migration and a dual-read period in all of them.
-- These core keys are reserved, and a layer type can't declare them as attributes: `id`, `type`, `name`, `displayTime`, `duration`, `allow_skip`, `custom_css`, `trigger`, `watchDepth`.
+- **Core keys:** `id`, `type`, `name` and `displayTime` are managed by GoDAM. A layer type can't declare them.
+- **Shared keys:** `duration`, `allow_skip`, `custom_css`, `trigger` and `watchDepth` have a schema GoDAM owns. A layer type may give one of them its own `default` (for example Hotspot's `duration: 5`), but can't change its `type` or `format`.
 
 ### D2. Renderers that don't know a type
 
