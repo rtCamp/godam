@@ -28,7 +28,6 @@ class HotspotLinkSanitizeTest extends TestCase {
 		parent::setUp();
 
 		require_once dirname( __DIR__ ) . '/stubs/hooks.php';
-		require_once dirname( __DIR__ ) . '/stubs/url-functions.php';
 		require_once dirname( __DIR__ ) . '/stubs/godam-image-render-functions.php';
 
 		$GLOBALS['rtgodam_hooks'] = array();
@@ -77,6 +76,11 @@ class HotspotLinkSanitizeTest extends TestCase {
 			'mailto'            => array( 'mailto:hello@example.com' ),
 			'root-relative'     => array( '/shop/' ),
 			'hash'              => array( '#products' ),
+			'page-relative'     => array( 'shop/item' ),
+			'query only'        => array( '?colour=red' ),
+			'with a space'      => array( 'https://example.com/summer sale' ),
+			'non-Latin path'    => array( 'https://example.com/ünï/商品' ),
+			'colon in the path' => array( '/shop/item:42' ),
 		);
 	}
 
@@ -87,12 +91,14 @@ class HotspotLinkSanitizeTest extends TestCase {
 	 */
 	public function unsafe_links(): array {
 		return array(
-			'javascript'                => array( 'javascript:alert(1)' ),
-			'javascript in mixed case'  => array( 'JaVaScRiPt:alert(1)' ),
-			'javascript after a space'  => array( '  javascript:alert(1)' ),
-			'javascript split by a tab' => array( "java\tscript:alert(1)" ),
-			'data'                      => array( 'data:text/html,<script>alert(1)</script>' ),
-			'vbscript'                  => array( 'vbscript:msgbox(1)' ),
+			'javascript'                           => array( 'javascript:alert(1)' ),
+			'javascript in mixed case'             => array( 'JaVaScRiPt:alert(1)' ),
+			'javascript after a space'             => array( '  javascript:alert(1)' ),
+			'javascript split by a tab'            => array( "java\tscript:alert(1)" ),
+			'javascript split by a newline'        => array( "java\nscript:alert(1)" ),
+			'javascript after a control character' => array( "\x01javascript:alert(1)" ),
+			'data'                                 => array( 'data:text/html,<script>alert(1)</script>' ),
+			'vbscript'                             => array( 'vbscript:msgbox(1)' ),
 		);
 	}
 
@@ -105,6 +111,13 @@ class HotspotLinkSanitizeTest extends TestCase {
 		$layers = rtgodam_sanitize_hotspot_links( array( $this->layer_with_link( $link ) ) );
 
 		$this->assertSame( $link, $layers[0]['hotspots'][0]['link'] );
+	}
+
+	/** A kept link is only trimmed, as the front end trims it; its text is never rewritten. */
+	public function test_a_kept_link_is_trimmed_and_not_rewritten(): void {
+		$layers = rtgodam_sanitize_hotspot_links( array( $this->layer_with_link( "  shop/summer sale\n" ) ) );
+
+		$this->assertSame( 'shop/summer sale', $layers[0]['hotspots'][0]['link'] );
 	}
 
 	/**

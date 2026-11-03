@@ -3324,13 +3324,40 @@ function rtgodam_get_request_site_origin( $requested_origin ) {
 }
 
 /**
+ * Whether a link may be used as an `href`: it is relative, or its scheme is
+ * http, https or mailto.
+ *
+ * The scheme is read the way the browser's URL parser reads it: tabs and
+ * newlines anywhere are dropped and leading control characters and spaces are
+ * ignored, so `java\tscript:` counts as `javascript:`.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $link Stored link.
+ * @return bool
+ */
+function rtgodam_is_safe_link_scheme( $link ) {
+	$link = preg_replace( '/^[\x00-\x20]+/', '', str_replace( array( "\t", "\n", "\r" ), '', (string) $link ) );
+
+	if ( ! preg_match( '/^([a-z][a-z0-9+.\-]*):/i', $link, $matches ) ) {
+		return true;
+	}
+
+	return in_array( strtolower( $matches[1] ), array( 'http', 'https', 'mailto' ), true );
+}
+
+/**
  * Empty the link of any hotspot that is not an http, https or mailto URL.
  *
  * Hotspot layers are read from an attachment's `rtgodam_meta` and handed to
  * front-end script, which makes each hotspot's `link` the `href` of a link. Only
  * web and mail addresses are kept; a link on any other scheme (for example
  * `javascript:`) is emptied, so the hotspot still renders, just without a
- * destination. Everything else in the layers is returned unchanged.
+ * destination. The same rule as getSafeLinkUrl() in assets/src/utils/safe-url.js:
+ * the scheme is read the way the browser reads an `href` (tabs and newlines
+ * removed, leading control characters and spaces ignored), a link without a
+ * scheme is relative and kept, and a kept link is only trimmed, never rewritten.
+ * Everything else in the layers is returned unchanged.
  *
  * @since n.e.x.t
  *
@@ -3352,8 +3379,8 @@ function rtgodam_sanitize_hotspot_links( $layers ) {
 				continue;
 			}
 
-			$layers[ $layer_index ]['hotspots'][ $hotspot_index ]['link'] = is_string( $hotspot['link'] )
-				? esc_url_raw( $hotspot['link'], array( 'http', 'https', 'mailto' ) )
+			$layers[ $layer_index ]['hotspots'][ $hotspot_index ]['link'] = is_string( $hotspot['link'] ) && rtgodam_is_safe_link_scheme( $hotspot['link'] )
+				? trim( $hotspot['link'] )
 				: '';
 		}
 	}
