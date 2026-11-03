@@ -3,6 +3,8 @@ on:
     branches:
       - develop
       - main
+      # Base branch for the Layer API EPIC (#2290); remove once it is merged.
+      - feature/layer-api
 
 name: PHP Unit Tests
 
