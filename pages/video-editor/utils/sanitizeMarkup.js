@@ -19,7 +19,7 @@ const PREVIEW_MARKUP_CONFIG = {
 /**
  * Make the markup a form plugin or poll returns safe to show in a preview.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @param {*} markup Markup fetched for the preview.
  * @return {string} The markup without scripts, event handlers or script URLs; '' when there is none.

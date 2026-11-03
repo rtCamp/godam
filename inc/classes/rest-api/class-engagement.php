@@ -1220,7 +1220,7 @@ class Engagement extends Base {
 	 * is public or readable by the current user, the user can edit it, or it is
 	 * used on a publicly viewable post.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param int|string $video_id The video ID: an attachment ID, or 'cmmid_' and the transcoding job ID of one.
 	 *
@@ -1233,7 +1233,7 @@ class Engagement extends Base {
 	/**
 	 * Finds the transcoding job ID of a video through the attachments of this site.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param int|string $video_id     The video ID: an attachment ID, or 'cmmid_' and the transcoding job ID of one.
 	 * @param bool       $visible_only Whether to skip attachments the current user cannot see.
@@ -1318,7 +1318,7 @@ class Engagement extends Base {
 	 * The same answer for a video that is not on this site, one that does not exist
 	 * and one the current user cannot see.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @return WP_REST_Response
 	 */

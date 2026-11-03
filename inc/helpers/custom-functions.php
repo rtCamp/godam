@@ -133,7 +133,7 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
  *
  * See assets/src/js/godam-player/managers/visibilityManager.js.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @param mixed  $value    Raw value.
  * @param string $fallback Returned when the value is not valid.
@@ -152,7 +152,7 @@ function rtgodam_sanitize_out_of_view_behavior( $value, $fallback = 'off' ) {
  * A valid per-player value (block attribute or shortcode attribute) wins;
  * empty or `inherit` falls back to the global Video Player setting.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @param string $override Per-player value, empty to inherit.
  *
@@ -175,7 +175,7 @@ function rtgodam_get_out_of_view_behavior( $override = '' ) {
  * started. Global Video Player setting, off by default; autoplaying videos
  * always pause in a background tab when the out-of-view behavior isn't `off`.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @return bool True when the setting is on.
  */
@@ -3394,7 +3394,7 @@ function rtgodam_get_request_site_origin( $requested_origin ) {
  * newlines anywhere are dropped and leading control characters and spaces are
  * ignored, so `java\tscript:` counts as `javascript:`.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @param string $link Stored link.
  * @return bool
@@ -3422,7 +3422,7 @@ function rtgodam_is_safe_link_scheme( $link ) {
  * scheme is relative and kept, and a kept link is only trimmed, never rewritten.
  * Everything else in the layers is returned unchanged.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @param array $layers Layers read from an attachment's `rtgodam_meta`.
  * @return array The layers, with unsafe hotspot links emptied.
@@ -3460,7 +3460,7 @@ function rtgodam_sanitize_hotspot_links( $layers ) {
  * `currentcolor`. Anything else, such as a value with a `;`, a `url()` or a
  * stray bracket, gives the fallback.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @param mixed  $color    The stored colour.
  * @param string $fallback Value to return when the colour is not valid.
@@ -3526,7 +3526,7 @@ function rtgodam_sanitize_css_color( $color, $fallback = '' ) {
  * reduced to a slug (lowercase letters, numbers, dashes and underscores) and
  * cannot close the shortcode or open another one.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @param array $layer The form layer: `gf_id` is the form ID, `theme` the optional Gravity Forms theme.
  *
@@ -3549,7 +3549,7 @@ function rtgodam_get_gravityform_layer_shortcode( $layer ) {
  * `https://abc123def4.gdcdn.us/{job_id}/video.mp4`, so a name here matches that
  * host and any subdomain of it.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @return string[] Lowercase host names, without scheme, port or path.
  */
@@ -3560,7 +3560,7 @@ function rtgodam_get_transcoder_file_hosts() {
 	 * A name matches that host and any subdomain of it. Add the CDN domain of a
 	 * self-hosted or staging GoDAM Central here, or a domain the CDN is served from.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param string[] $hosts Host names, such as `gdcdn.us`.
 	 */
@@ -3586,7 +3586,7 @@ function rtgodam_get_transcoder_file_hosts() {
  * that is one of rtgodam_get_transcoder_file_hosts() or a subdomain of one. It is
  * checked as written, so check the decoded form of a URL that is decoded before use.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @param mixed $url URL to check.
  * @return bool

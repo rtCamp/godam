@@ -14,7 +14,7 @@ import '../shared/analytics-unavailable.scss';
  * read this video's analytics: the route answers 403 for a video the user
  * cannot edit, such as an Author opening someone else's video.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @param {Object|undefined} error The query's error, as RTK Query's fetchBaseQuery returns it.
  * @return {boolean} True for a 403 answer.
@@ -24,7 +24,7 @@ export const isAnalyticsForbidden = ( error ) => 403 === error?.status;
 /**
  * Shown instead of the analytics when the user may not read this video's analytics.
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @return {JSX.Element} The notice.
  */

@@ -1,5 +1,13 @@
 # Changelog #
 
+## v2.7.0 (November 5, 2026) ##
+
+- Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each video can use its own setting.
+- Feat: Developers can pause all GoDAM videos from their own code, for example when a carousel changes slide.
+- Tweak: Authors see analytics only for the videos they can edit.
+- Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
+- Fix: Security fixes.
+
 ## v2.6.1 (November 3, 2026) ##
 
 - Fix: The analytics dashboard now shows correctly on sites with no views yet.

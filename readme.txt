@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.6.1
+Stable tag: 2.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -269,6 +269,14 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.7.0 (November 5, 2026) =
+
+- Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each video can use its own setting.
+- Feat: Developers can pause all GoDAM videos from their own code, for example when a carousel changes slide.
+- Tweak: Authors see analytics only for the videos they can edit.
+- Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
+- Fix: Security fixes.
+
 = v2.6.1 (November 3, 2026) =
 
 - Fix: The analytics dashboard now shows correctly on sites with no views yet.
@@ -282,16 +290,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: For Marketo video tracking, GoDAM now adds Marketo's Munchkin tracking code to pages that have a video, unless the page already loads it. Munchkin also records page visits in your Marketo. A site that loads Munchkin itself can turn ours off with the `rtgodam_map_inject_munchkin` filter.
 - Tweak: If a Marketo form can't load, the video layer says "This form could not be loaded." with a Continue button. On sites without HTTPS, the video editor warns that Marketo form submissions need HTTPS.
 - Fix: The Document, Audio and Video Thumbnail blocks no longer collapse when placed inside a Row or Stack (flex) layout, and the Document card now stacks to fit its column instead of the screen width.
-- Fix: Security fixes.
-
-= v2.5.2 (October 29, 2026) =
-
-- Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.
-- Fix: The Remove API Key dialog now says what really happens: only this site disconnects, and your GoDAM account and media are not affected.
-- Fix: On phones, a video in the lightbox no longer jumps when the browser toolbar shows or hides.
-- Fix: The All Media count in the media picker is now right when the picker shows only caption or document files.
-- Fix: Global video ads (GoDAM > Settings > Video Ads > Enable Global Video Ads) now play.
-- Fix: In the Classic player skin, the mute button on hover previews shows its icon again.
 - Fix: Security fixes.
 
 == External Services ==
