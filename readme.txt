@@ -269,7 +269,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v2.7.0 (November 20, 2026) =
+= v2.7.0 (November 4, 2026) =
 
 - Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each video can use its own setting.
 - Feat: Developers can pause all GoDAM videos from their own code, for example when a carousel changes slide.
