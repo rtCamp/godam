@@ -6,6 +6,7 @@ The GoDAM Player API provides a simple and powerful interface for developers to 
 
 - [Getting Started](#getting-started)
 - [Main API Methods](#main-api-methods)
+- [Out-of-view Integration](#out-of-view-integration-for-scripts-that-run-their-own-playback)
 - [Lightbox Methods](#lightbox-methods)
 - [Lightbox Trigger Elements](#lightbox-trigger-elements)
 - [Deep Linking](#deep-linking)
@@ -151,6 +152,117 @@ readyPlayers.forEach(playerObj => {
     // Safe to use these players immediately
     playerObj.player.play();
 });
+```
+
+### Out-of-view behavior
+
+GoDAM can pause videos that leave the visitor's view: scrolled past, on an inactive
+carousel slide, or inside a closed tab, accordion or modal. Site admins choose what
+happens in **GoDAM → Settings → Video Player → When a video goes out of view**. The
+block, shortcode, Elementor widget and WPBakery element can override it per video.
+
+| Setting | Autoplaying videos | Videos the visitor started |
+| --- | --- | --- |
+| Do nothing (default) | Keep playing | Keep playing |
+| Pause autoplaying videos only | Pause, resume when back | Keep playing |
+| Pause all videos | Pause, resume when back | Pause, stay paused |
+| Keep playing, muted | Pause, resume when back | Keep playing muted, stay muted |
+
+- "Autoplaying" covers autoplay, autoplay on view, hover previews, and any playback
+  started from code without `userStarted` (see [`play()`](#playoptions)).
+- A background browser tab counts as out of view for autoplaying videos. For videos
+  the visitor started it only does when **Also apply when the browser tab is hidden**
+  is turned on (off by default).
+- Fullscreen and picture-in-picture playback are never paused or muted.
+- Shortcode: `[godam_video id="123" out_of_view="autoplay"]` (`off`, `autoplay`,
+  `pause` or `mute`; leave it out to use the global setting).
+
+**Notes for custom code** (only when the setting isn't "Do nothing"):
+
+- Code that plays a video while it is out of view gets paused straight away.
+- Your `pause` listeners also see automatic pauses. Check the event's `reason`
+  (`'visibility'` or `'api'`) to tell them apart from the visitor pausing.
+- A custom play button outside the player counts as autoplay unless it calls
+  `player.play({ userStarted: true })`.
+- If your site already pauses videos on scroll or on a tab switch, keep the setting
+  on "Do nothing" so the two don't act on the same video.
+
+### `pauseAll(options?)`
+
+Pause every playing GoDAM video on the page, for example from a carousel's
+slide-change hook. It applies to all GoDAM players, whatever their "When a video
+goes out of view" setting, including "Do nothing".
+
+These pauses are treated as automatic: they don't show "on pause" CTA layers, and
+the player's `pause` event carries `{ reason: 'api' }`.
+
+They follow the same rule as an out-of-view pause: an autoplaying video resumes on
+its own once it goes out of view and is shown again (for example, when the visitor
+swipes back to its slide). A video the visitor started stays paused.
+
+**Parameters:**
+
+- `options.except` (HTMLElement|string|number|Player|Array, optional): videos to keep playing. Pass
+  elements (a player, or a slide that contains one), attachment IDs, or Player instances.
+- `options.within` (HTMLElement|string, optional): only pause videos inside this element or CSS selector.
+
+**Returns:** `number` of videos paused.
+
+**Example:**
+
+```javascript
+// Swiper: when the slide changes, pause the videos on every other slide.
+swiper.on('slideChange', () => {
+    window.GoDAMAPI.pauseAll({
+        within: swiper.el,
+        except: swiper.slides[swiper.activeIndex],
+    });
+});
+```
+
+> GoDAM can also pause videos that leave the view on its own (see
+> [Out-of-view behavior](#out-of-view-behavior)). Use `pauseAll()` when you want to
+> control it yourself, such as on sites set to "Do nothing" (the default) or
+> "Keep playing, muted".
+
+## Out-of-view Integration (for scripts that run their own playback)
+
+GoDAM pauses or mutes players that leave the view. Video started by the visitor
+follows the "When a video goes out of view" setting; video started by a script
+(autoplay, carousels, sequences) pauses when hidden and resumes when it's shown
+again. Scripts that play and stop GoDAM videos themselves (a slider, a playlist, a
+modal) can keep that in sync through `window.godamVisibilityManager`. It exists
+only on GoDAM versions with this feature, so check each method before calling it.
+Every method takes a Video.js player (`videojs.getPlayer( videoElement )`).
+
+| Method | Use it when |
+| --- | --- |
+| `markInteraction( player )` | The visitor started this video through your own UI (e.g. clicked a slide that opens it in a modal). |
+| `resetInteraction( player )` | You hand the video back to an automatic preview (e.g. the modal closed). It is treated as autoplaying again. |
+| `cancelResume( player )` | You stopped the video on purpose (e.g. your sequence moved on), so GoDAM must not start it again when it comes back into view. |
+| `isInView( player )` | Before you call `play()` yourself, to skip videos that are hidden. |
+| `isAutomaticChange( player )` | Inside a `pause` or `volumechange` listener, to ignore pauses and mutes GoDAM made. |
+
+Players without controls are always treated as autoplaying, since the visitor
+can't play or unmute them; `markInteraction()` still applies.
+
+**Example:**
+
+```javascript
+const vm = window.godamVisibilityManager;
+const player = window.videojs.getPlayer( videoElement );
+
+// Your slider moved on: stop the old slide for good.
+player.pause();
+vm?.cancelResume?.( player );
+
+// Ignore GoDAM's own mutes when you remember the visitor's mute choice.
+player.on( 'volumechange', () => {
+    if ( vm?.isAutomaticChange?.( player ) ) {
+        return;
+    }
+    savedMuted = player.muted();
+} );
 ```
 
 ## Lightbox Methods
@@ -534,9 +646,16 @@ const midpointLayer = player.createLayer({
 
 ### Playback Control
 
-#### `play()`
+#### `play(options?)`
 
 Start video playback.
+
+**Parameters:**
+
+- `options.userStarted` (boolean, optional): pass `true` when the visitor asked for playback (for example,
+  your own play button). Script-started playback is treated like autoplay: it pauses when the video leaves
+  the view and resumes when it's visible again. Visitor-started playback follows the site's
+  "When a video goes out of view" setting instead.
 
 **Returns:** `Promise` that resolves when play starts
 
@@ -547,6 +666,11 @@ player.play().then(() => {
     console.log('Video started playing');
 }).catch(error => {
     console.error('Failed to play video:', error);
+});
+
+// Your own play button: the visitor asked for playback.
+document.querySelector('.my-play-button').addEventListener('click', () => {
+    player.play({ userStarted: true });
 });
 ```
 
@@ -771,7 +895,8 @@ The Player API includes a custom event system that allows you to listen for and 
 
 - `fullscreenchange` - Triggered when fullscreen mode changes
 - `play` - Triggered when video starts playing
-- `pause` - Triggered when video is paused
+- `pause` - Triggered when video is paused. Data: `{ reason }`, where `reason` is `'visibility'` when GoDAM
+  paused it automatically because it left the view, `'api'` for `GoDAMAPI.pauseAll()`, or `null` otherwise
 - `ended` - Triggered when video playback ends
 - `timeupdate` - Triggered during video playback (updates frequently)
 - `volumechange` - Triggered when volume changes

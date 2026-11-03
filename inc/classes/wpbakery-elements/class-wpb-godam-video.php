@@ -203,6 +203,25 @@ class WPB_GoDAM_Video {
 			),
 			array(
 				'type'        => 'dropdown',
+				'heading'     => esc_html__( 'When Out of View', 'godam' ),
+				'param_name'  => 'out_of_view',
+				'value'       => array(
+					esc_html__( 'Use global setting', 'godam' ) => '',
+					esc_html__( 'Do nothing', 'godam' ) => 'off',
+					esc_html__( 'Pause autoplaying videos only', 'godam' ) => 'autoplay',
+					esc_html__( 'Pause all videos', 'godam' ) => 'pause',
+					esc_html__( 'Keep playing, muted', 'godam' ) => 'mute',
+				),
+				'std'         => '',
+				'description' => esc_html__( 'Scrolled past, on another slide, or in a closed tab or accordion. Autoplaying videos resume when visible again.', 'godam' ),
+				'save_always' => true,
+				'dependency'  => array(
+					'element'   => 'id',
+					'not_empty' => true,
+				),
+			),
+			array(
+				'type'        => 'dropdown',
 				'heading'     => esc_html__( 'Aspect Ratio', 'godam' ),
 				'param_name'  => 'aspect_ratio',
 				'value'       => array(
