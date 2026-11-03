@@ -221,7 +221,7 @@ class LayerCustomCssSaveTest extends TestCase {
 	private function save_through_rest_field( $value ) {
 		$this->fields()->add_meta_rest_fields();
 
-		$callback = $GLOBALS['rtgodam_stub']['rest_fields']['rtgodam_meta']['update_callback'];
+		$callback = $GLOBALS['rtgodam_stub']['rest_fields']['attachment']['rtgodam_meta']['update_callback'];
 
 		$callback( $value, (object) array( 'ID' => 12 ) );
 	}

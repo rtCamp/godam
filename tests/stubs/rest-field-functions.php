@@ -3,7 +3,8 @@
  * Narrow WordPress stubs for LayerCustomCssSaveTest.
  *
  * register_rest_field() records each field's args in
- * `$GLOBALS['rtgodam_stub']['rest_fields']`, keyed by field name, so a test can
+ * `$GLOBALS['rtgodam_stub']['rest_fields']`, keyed by object type and field name
+ * (the same shape as tests/stubs/media-visibility-functions.php), so a test can
  * call a field's callbacks the way the REST API does. update_post_meta() records
  * the same way as the one in tests/stubs/video-seo-functions.php.
  *
@@ -13,13 +14,13 @@
 if ( ! function_exists( 'register_rest_field' ) ) {
 
 	/**
-	 * @param string $object_type Object type. Unused.
+	 * @param string $object_type Object type.
 	 * @param string $field       Field name.
 	 * @param array  $args        Field args.
 	 * @return void
 	 */
-	function register_rest_field( $object_type, $field, $args ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound, Generic.CodeAnalysis.UnusedFunctionParameter.Found -- stub mirroring the WP function.
-		$GLOBALS['rtgodam_stub']['rest_fields'][ $field ] = $args;
+	function register_rest_field( $object_type, $field, $args ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_stub']['rest_fields'][ $object_type ][ $field ] = $args;
 	}
 }
 
