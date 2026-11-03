@@ -348,7 +348,8 @@ class Dashboard_Widget {
 				'reviewAsk'  => ! empty( $model['review_ask'] ),
 				'reviewPath' => '/godam/v1/dashboard-widget/review-ask',
 				// The GoDAM Dashboard holds the setup checklist for a site with no plays yet.
-				'setupUrl'   => current_user_can( self::GODAM_PAGE_CAP ) ? admin_url( 'admin.php?page=rtgodam' ) : '',
+				// Only users who can open it get this script (see the check above).
+				'setupUrl'   => admin_url( 'admin.php?page=rtgodam' ),
 			)
 		);
 	}
