@@ -13,7 +13,7 @@ const SAFE_LINK_PROTOCOLS = [ 'http:', 'https:', 'mailto:' ];
  * is seen for what it is. Relative links resolve against the current page and so
  * pass as http(s).
  *
- * @since n.e.x.t
+ * @since 2.7.0
  *
  * @param {*} url Stored link.
  * @return {string} The trimmed link when it is http(s), mailto or relative, otherwise ''.

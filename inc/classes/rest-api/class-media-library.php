@@ -672,7 +672,7 @@ class Media_Library extends Base {
 	 * Gates the routes that change a video's thumbnails. `edit_posts` alone does not say whose
 	 * media it is, so this also asks WordPress whether the user may edit that attachment.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param \WP_REST_Request $request REST request.
 	 * @return bool Whether the request is allowed.
@@ -689,7 +689,7 @@ class Media_Library extends Base {
 	 * upload files, because the Media Library lists every attachment to them, whatever the
 	 * status of the post it is attached to. A private attachment still needs WordPress's say-so.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param \WP_REST_Request $request REST request.
 	 * @return bool Whether the request is allowed.
@@ -701,7 +701,7 @@ class Media_Library extends Base {
 	/**
 	 * Check the current user against the attachment named in the request.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param \WP_REST_Request $request  REST request.
 	 * @param bool             $for_edit True to require edit access, false to require read access.
@@ -1654,7 +1654,7 @@ class Media_Library extends Base {
 	 *
 	 * A thumbnail is an image the player shows, so only an absolute http(s) URL is kept.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param mixed $url Thumbnail URL from the request.
 	 * @return string The cleaned URL, or an empty string when it is not an http(s) URL.

@@ -1012,7 +1012,7 @@ class RTGODAM_Transcoder_Handler {
 	 * Whether downloaded content is a file of the expected type, judged by the
 	 * name it would be stored under and by the content itself.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param string $content   File content.
 	 * @param string $file_name Name the file would be stored under.

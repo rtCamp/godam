@@ -220,7 +220,7 @@ class Meta_Rest_Fields {
 	 * stays what is already saved for that layer, which is nothing for a new
 	 * layer, so saving the rest of the layer data works as before.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param mixed $value   The `rtgodam_meta` value being saved.
 	 * @param int   $post_id The attachment ID.

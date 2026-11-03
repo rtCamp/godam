@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.6.1
+Stable tag: 2.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -269,6 +269,16 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.7.0 (November 20, 2026) =
+
+- Feat: Videos can now pause or mute themselves when they go out of view: scrolled past, on another carousel slide, or in a closed tab, accordion or popup. Choose what happens under GoDAM > Settings > Video Player > When a video goes out of view. It is off by default ("Do nothing"), so nothing changes until you turn it on.
+- Feat: With the setting on, autoplaying videos pause and play again when they come back into view. Videos the visitor started follow your choice: keep playing, pause, or keep playing muted. Fullscreen and picture-in-picture are never paused. A background browser tab counts too for autoplaying videos, and for every video once "Also apply when the browser tab is hidden" is on.
+- Feat: Each video can use its own setting in the GoDAM Video block, the Elementor and WPBakery GoDAM Video widgets, and the `[godam_video]` shortcode (`out_of_view="off"`, `"autoplay"`, `"pause"` or `"mute"`).
+- Feat: Developers can pause every playing GoDAM video with `GoDAMAPI.pauseAll()`, for example from a carousel's slide-change event, whatever the setting. A custom play button should call `player.play( { userStarted: true } )`, and the player's `pause` event now says whether GoDAM paused the video itself.
+- Tweak: Seconds a video plays muted while out of view no longer count as watched in the heatmap or in Google Tag Manager progress events.
+- Tweak: Add-ons such as GoDAM for WooCommerce can follow the same out-of-view rules for their own players.
+- Fix: Security fixes.
+
 = v2.6.1 (November 3, 2026) =
 
 - Fix: The analytics dashboard now shows correctly on sites with no views yet.
@@ -282,16 +292,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: For Marketo video tracking, GoDAM now adds Marketo's Munchkin tracking code to pages that have a video, unless the page already loads it. Munchkin also records page visits in your Marketo. A site that loads Munchkin itself can turn ours off with the `rtgodam_map_inject_munchkin` filter.
 - Tweak: If a Marketo form can't load, the video layer says "This form could not be loaded." with a Continue button. On sites without HTTPS, the video editor warns that Marketo form submissions need HTTPS.
 - Fix: The Document, Audio and Video Thumbnail blocks no longer collapse when placed inside a Row or Stack (flex) layout, and the Document card now stacks to fit its column instead of the screen width.
-- Fix: Security fixes.
-
-= v2.5.2 (October 29, 2026) =
-
-- Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.
-- Fix: The Remove API Key dialog now says what really happens: only this site disconnects, and your GoDAM account and media are not affected.
-- Fix: On phones, a video in the lightbox no longer jumps when the browser toolbar shows or hides.
-- Fix: The All Media count in the media picker is now right when the picker shows only caption or document files.
-- Fix: Global video ads (GoDAM > Settings > Video Ads > Enable Global Video Ads) now play.
-- Fix: In the Classic player skin, the mute button on hover previews shows its icon again.
 - Fix: Security fixes.
 
 == External Services ==

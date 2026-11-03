@@ -687,7 +687,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	 * GoDAM Central posts the key in the request body, so only the body is read.
 	 * A key in the URL is not accepted, since URLs end up in server logs.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 * @return string The key, or an empty string when the body has none.

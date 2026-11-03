@@ -542,7 +542,7 @@ class Analytics extends Base {
 	 * opens a video. Editors and administrators can edit every attachment; an
 	 * author can edit their own.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param int|string $video_id Attachment ID of the video.
 	 * @return bool

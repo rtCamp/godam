@@ -126,7 +126,7 @@ class Embed {
 	 * of the GoDAM API, so a URL that only mentions GoDAM in its path, query or
 	 * a longer host name does not count.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param string $url URL to check.
 	 *
@@ -150,7 +150,7 @@ class Embed {
 	 * Keeps the iframe the embed is made of, plus the markup WordPress allows in
 	 * post content, and removes anything else.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.7.0
 	 *
 	 * @param string $html HTML from the GoDAM oEmbed response.
 	 *
@@ -181,7 +181,7 @@ class Embed {
 		/**
 		 * Filters the HTML elements and attributes kept in the HTML GoDAM returns for an embed.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.7.0
 		 *
 		 * @param array $allowed_html Allowed elements and attributes, in the format wp_kses() takes.
 		 */
