@@ -271,12 +271,11 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v2.7.0 (November 20, 2026) =
 
-- Feat: Videos can now pause or mute themselves when they go out of view: scrolled past, on another carousel slide, or in a closed tab, accordion or popup. Choose what happens under GoDAM > Settings > Video Player > When a video goes out of view. It is off by default ("Do nothing"), so nothing changes until you turn it on.
-- Feat: With the setting on, autoplaying videos pause and play again when they come back into view. Videos the visitor started follow your choice: keep playing, pause, or keep playing muted. Fullscreen and picture-in-picture are never paused. A background browser tab counts too for autoplaying videos, and for every video once "Also apply when the browser tab is hidden" is on.
-- Feat: Each video can use its own setting in the GoDAM Video block, the Elementor and WPBakery GoDAM Video widgets, and the `[godam_video]` shortcode (`out_of_view="off"`, `"autoplay"`, `"pause"` or `"mute"`).
-- Feat: Developers can pause every playing GoDAM video with `GoDAMAPI.pauseAll()`, for example from a carousel's slide-change event, whatever the setting. A custom play button should call `player.play( { userStarted: true } )`, and the player's `pause` event now says whether GoDAM paused the video itself.
-- Tweak: Seconds a video plays muted while out of view no longer count as watched in the heatmap or in Google Tag Manager progress events.
-- Tweak: Add-ons such as GoDAM for WooCommerce can follow the same out-of-view rules for their own players.
+- Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each video can use its own setting.
+- Feat: Developers can pause all GoDAM videos from their own code, for example when a carousel changes slide.
+- Tweak: Authors see analytics only for the videos they can edit.
+- Tweak: Authors can no longer add custom CSS to video layers.
+- Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
 - Fix: Security fixes.
 
 = v2.6.1 (November 3, 2026) =
