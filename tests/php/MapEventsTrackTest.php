@@ -240,6 +240,23 @@ class MapEventsTrackTest extends TestCase {
 	}
 
 	/**
+	 * Marketo's "Track video views on this site" switched off, with the integration
+	 * (and its forms) still on: only HubSpot's cookie is forwarded.
+	 *
+	 * @return void
+	 */
+	public function test_drops_the_cookie_of_a_tool_whose_site_tracking_is_off() {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings']['integrations']['marketo'] = array(
+			'enable'      => true,
+			'track_views' => false,
+		);
+		$this->send();
+
+		$this->assertCount( 1, $GLOBALS['rtgodam_jobs'] );
+		$this->assertSame( array( 'hubspotutk' => self::HUTK ), $this->queued()[0]['ids'] );
+	}
+
+	/**
 	 * Both providers switched off: nothing is forwarded, whatever the request carries.
 	 *
 	 * @return void

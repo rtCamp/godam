@@ -399,6 +399,9 @@ if ( empty( $godam_attachment_id ) && empty( $godam_src ) && empty( $godam_trans
 	return;
 }
 
+// A player is going on the page, so MAP view tracking may load in the footer.
+\RTGODAM\Inc\Map_Tracker::mark_video_rendered();
+
 $godam_easydam_control_bar_color = 'initial'; // Default color.
 
 $godam_settings               = get_option( 'rtgodam-settings', array() );

@@ -31,6 +31,57 @@
 	const instanceHost = data.instanceHost || '';
 	const munchkinId = data.munchkinId || '';
 	const successText = data.successText || 'Thank you! Your submission has been received.';
+	const unavailableText = data.unavailableText || 'This form could not be loaded.';
+
+	/**
+	 * Replace a form that did not load with a message. The player's
+	 * FormLayerManager sees `.godam-marketo-unavailable` and shows "Continue",
+	 * so the viewer is never stuck on an empty layer, even with skip turned off.
+	 *
+	 * @param {HTMLElement} formEl The form node that did not load.
+	 */
+	function showUnavailable( formEl ) {
+		// Built as a text node, like the success message.
+		const message = document.createElement( 'p' );
+		message.className = 'godam-marketo-unavailable';
+		message.textContent = unavailableText;
+
+		formEl.after( message );
+		formEl.style.display = 'none';
+	}
+
+	/**
+	 * forms2 sends a submission through a hidden iframe on the Marketo host and
+	 * only accepts its replies from the exact protocol it asked for. On an HTTP
+	 * page it asks for `http://<host>`, the browser upgrades the iframe to HTTPS,
+	 * every reply is dropped and the submit button stays on "Please Wait". Only
+	 * `app-*.marketo.com` hosts are always asked for over HTTPS.
+	 *
+	 * @return {boolean} Whether submissions will hang on this page.
+	 */
+	function isInsecurePage() {
+		return 'http:' === window.location.protocol && ! /^\/\/app-.*?\.marketo\.com/i.test( instanceHost );
+	}
+
+	/**
+	 * How long to wait for forms2 to call back before treating a form as not
+	 * loaded, the same as the editor preview. forms2 never calls back when its
+	 * request fails (blocked by an ad or privacy blocker, or a network drop).
+	 */
+	const LOAD_TIMEOUT_MS = 12000;
+
+	/**
+	 * Marketo form nodes on the page that have not been loaded yet.
+	 *
+	 * @return {HTMLElement[]} The nodes.
+	 */
+	function pendingNodes() {
+		return Array.prototype.slice
+			.call( document.querySelectorAll( '.marketo-form-container [data-marketo-form-id]' ) )
+			.filter( function( el ) {
+				return el.dataset.godamMarketoLoaded !== 'true';
+			} );
+	}
 
 	/**
 	 * Load one node, then the next, so forms2 never sees two nodes with the same
@@ -61,12 +112,34 @@
 		const originalId = formEl.id;
 		formEl.id = 'mktoForm_' + formId;
 
+		// Settle this node once: by forms2's callback, or by the timeout when the
+		// callback never comes. Either way the forms after it still load.
+		let settled = false;
+		const guard = window.setTimeout( function() {
+			if ( settled ) {
+				return;
+			}
+			settled = true;
+			showUnavailable( formEl );
+			formEl.id = originalId;
+			loadNext( nodes, index + 1 );
+		}, LOAD_TIMEOUT_MS );
+
 		MktoForms2.loadForm( instanceHost, munchkinId, formId, function( form ) {
-			// forms2 calls back with null when Marketo cannot return the form (an
-			// unknown, deleted or unapproved id, or a subscription mismatch). Guard
-			// it so the id is still restored and the forms after this one on the
-			// page still load.
-			if ( form ) {
+			if ( settled ) {
+				return;
+			}
+			settled = true;
+			window.clearTimeout( guard );
+
+			// forms2 renders before it calls back, so a form with no fields here
+			// never loaded: null when Marketo cannot return the form (an unknown,
+			// deleted or unapproved id), or an empty render for a form ID from
+			// another Marketo instance. Either way the id is still restored and the
+			// forms after this one on the page still load.
+			if ( ! form || ! formEl.querySelector( 'input, select, textarea, button' ) ) {
+				showUnavailable( formEl );
+			} else {
 				form.onSuccess( function() {
 					// Built as a text node: a translated string containing `<` or `&`
 					// must not be read as markup.
@@ -96,13 +169,7 @@
 			return;
 		}
 
-		const nodes = Array.prototype.slice
-			.call( document.querySelectorAll( '.marketo-form-container [data-marketo-form-id]' ) )
-			.filter( function( el ) {
-				return el.dataset.godamMarketoLoaded !== 'true';
-			} );
-
-		loadNext( nodes, 0 );
+		loadNext( pendingNodes(), 0 );
 	}
 
 	/**
@@ -120,8 +187,14 @@
 			return;
 		}
 
-		// Give up after ~10s (50 × 200ms) to avoid an endless timer.
+		// Give up after ~10s (50 × 200ms) to avoid an endless timer. forms2 itself
+		// did not load (blocked, or a network error), so no form can: let viewers
+		// continue past every Marketo layer instead of an empty one.
 		if ( attempt >= 50 ) {
+			pendingNodes().forEach( function( formEl ) {
+				formEl.dataset.godamMarketoLoaded = 'true';
+				showUnavailable( formEl );
+			} );
 			return;
 		}
 
@@ -133,6 +206,10 @@
 	function init() {
 		if ( ! instanceHost || ! munchkinId ) {
 			return;
+		}
+		if ( isInsecurePage() ) {
+			// eslint-disable-next-line no-console
+			console.warn( 'GoDAM: Marketo forms can only be submitted on HTTPS pages. On this HTTP page the submit button will stay on "Please Wait".' );
 		}
 		waitForMktoForms2();
 	}
