@@ -3,6 +3,7 @@
 - **Status:** Draft, for review
 - **Issue:** #2291 (part of EPIC #2290)
 - **Covers:** the decisions the EPIC lists under "To decide", the public names, and what the audit of saved-layer readers found
+- **Scope:** the GoDAM plugin only. GoDAM Central adopts the API after it lands here.
 
 ## Summary
 
@@ -54,11 +55,9 @@ Layers live in the attachment's `rtgodam_meta` post meta, under `layers`. Each o
 | Image editor (`mediaCapabilities.js`) | Hidden. Allowlist `[ 'hotspot', 'woo' ]`. |
 | "Edited" counts (`class-video-editor.php`) | Counted. A serialized `LIKE` counts any layer. |
 
-### Renderers outside this plugin
+### Out of scope: GoDAM Central
 
-- **GoDAM Central serves its own player.** Its oEmbed pages are at `app.godam.io/web/video/…` and `/web/embed/…` (`class-embed.php`, the LifterLMS integration and the media library).
-- **No code here sends `rtgodam_meta.layers` to Central.** The only layer data that leaves the site is browser analytics events (`layer_id`, `layer_type`, `layer_name`, `layer_metadata`).
-- **Whether Central's player draws WordPress-authored layers can't be told from this repo.** That needs confirming with the Central team (see D2).
+**This EPIC covers the plugin only.** GoDAM Central's own player and layer handling are out of scope: Central will adopt the Layer API from the plugin once it's done here. Nothing in this RFC waits on Central. No code in the plugin sends `rtgodam_meta.layers` to Central. The only layer data that leaves the site is browser analytics events (see D4).
 
 ## Decisions
 
@@ -77,7 +76,6 @@ Each decision gives a recommendation. Where the RFC is agreed differently, the d
 
 - **Player and image:** print no container and log once in the console (`GoDAM: no runtime registered for layer type "acme/countdown"`). Today the container is printed and stays hidden.
 - **Editor:** show the layer in the list with a "Needs an add-on that isn't active" notice, instead of hiding it. Allow deleting it. Never open it in another type's editor.
-- **Central-hosted player:** confirm with the Central team whether it reads WordPress layers. If it does, it skips unknown types. This is the one open question this RFC can't settle alone.
 
 ### D3. Sanitization and privacy
 
