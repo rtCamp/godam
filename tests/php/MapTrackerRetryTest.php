@@ -191,4 +191,47 @@ class MapTrackerRetryTest extends TestCase {
 		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['posts'] );
 		$this->assertSame( array(), $GLOBALS['rtgodam_jobs'] );
 	}
+
+	/**
+	 * An event queued with both cookies, then Marketo's site tracking switched off
+	 * before it runs: only HubSpot's cookie is sent.
+	 *
+	 * @return void
+	 */
+	public function test_drops_a_cookie_switched_off_after_queueing() {
+		$this->central_answers( 200 );
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings']['integrations']['marketo'] = array(
+			'enable'      => true,
+			'track_views' => false,
+		);
+
+		$event        = self::EVENT;
+		$event['ids'] = array(
+			'mkto_trk'   => 'id:123-ABC-456&token:_mch-example.com-1700000000000-12345',
+			'hubspotutk' => '0123456789abcdef0123456789abcdef',
+		);
+		$this->tracker->async_map_event( $event );
+
+		$body = json_decode( $GLOBALS['rtgodam_stub']['posts'][0]['args']['body'], true );
+		$this->assertSame( array( 'hubspotutk' => '0123456789abcdef0123456789abcdef' ), $body['ids'] );
+	}
+
+	/**
+	 * Every tool's site tracking switched off before a queued event runs: nothing
+	 * is sent, and nothing is retried.
+	 *
+	 * @return void
+	 */
+	public function test_sends_nothing_when_every_cookie_is_switched_off() {
+		$this->central_answers( 200 );
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings']['integrations']['hubspot'] = array(
+			'enable'      => true,
+			'track_views' => false,
+		);
+
+		$this->tracker->async_map_event( self::EVENT );
+
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['posts'] );
+		$this->assertSame( array(), $GLOBALS['rtgodam_jobs'] );
+	}
 }

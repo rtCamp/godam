@@ -79,6 +79,20 @@ class MapTrackerProvidersTest extends TestCase {
 	}
 
 	/**
+	 * Set a provider's "Track video views on this site" switch, with the
+	 * integration itself left on (so its forms still render).
+	 *
+	 * @param string $integration `marketo` or `hubspot`.
+	 * @param bool   $track       Whether this site tracks the tool.
+	 */
+	private function set_site_tracking( string $integration, bool $track ): void {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings']['integrations'][ $integration ] = array(
+			'enable'      => true,
+			'track_views' => $track,
+		);
+	}
+
+	/**
 	 * Central connected, no leadin: HubSpot is kept.
 	 */
 	public function test_keeps_hubspot_when_portal_aligned(): void {
@@ -177,6 +191,49 @@ class MapTrackerProvidersTest extends TestCase {
 		$this->assertSame(
 			array( 'Marketo' ),
 			Map_Tracker::frontend_providers( array( 'Marketo', '', null ) )
+		);
+	}
+
+	/**
+	 * Marketo's site tracking switched off (integration still on): Marketo is
+	 * dropped, HubSpot is unaffected.
+	 */
+	public function test_drops_marketo_when_site_tracking_is_off(): void {
+		$this->set_central( array( 'portal_id' => '247' ) );
+		$this->set_site_tracking( 'marketo', false );
+
+		$this->assertSame(
+			array( 'HubSpot' ),
+			Map_Tracker::frontend_providers( array( 'Marketo', 'HubSpot' ) )
+		);
+	}
+
+	/**
+	 * HubSpot's site tracking switched off (integration still on): HubSpot is
+	 * dropped, so its tracking code is not injected either.
+	 */
+	public function test_drops_hubspot_when_site_tracking_is_off(): void {
+		$this->set_central( array( 'portal_id' => '247' ) );
+		$this->set_site_tracking( 'hubspot', false );
+
+		$this->assertSame(
+			array( 'Marketo' ),
+			Map_Tracker::frontend_providers( array( 'Marketo', 'HubSpot' ) )
+		);
+	}
+
+	/**
+	 * Settings saved before the switch existed have no `track_views`: both tools
+	 * keep tracking.
+	 */
+	public function test_keeps_tracking_when_the_switch_was_never_saved(): void {
+		$this->set_central( array( 'portal_id' => '247' ) );
+		$this->set_integration_enabled( 'marketo', true );
+		$this->set_integration_enabled( 'hubspot', true );
+
+		$this->assertSame(
+			array( 'Marketo', 'HubSpot' ),
+			Map_Tracker::frontend_providers( array( 'Marketo', 'HubSpot' ) )
 		);
 	}
 }

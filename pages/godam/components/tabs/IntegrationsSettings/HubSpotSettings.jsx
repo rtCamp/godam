@@ -22,6 +22,7 @@ import { external, check, wordpress } from '@wordpress/icons';
  */
 import godamIcon from '../../../../../assets/src/images/godam-icon.svg';
 import hubSpotIcon from '../../../../video-editor/assets/layers/HubSpotIcon.svg';
+import VideoTrackingSection from './VideoTrackingSection';
 
 /**
  * Human text for each connection state.
@@ -239,7 +240,7 @@ const SourceCard = ( { option, selected, onSelect } ) => (
  * is saved with the integration settings (Save button at the bottom of the tab).
  *
  * @param {Object}   props                 Props.
- * @param {Object}   props.settings        Current `integrations.hubspot` settings (`enable`, `source`).
+ * @param {Object}   props.settings        Current `integrations.hubspot` settings (`enable`, `source`, `track_views`).
  * @param {Function} props.onSettingChange Persist a single `integrations.hubspot` field.
  * @return {JSX.Element|null} The HubSpot settings body.
  */
@@ -442,18 +443,15 @@ const HubSpotSettings = ( { settings = {}, onSettingChange } ) => {
 								<ConfigRow label={ __( 'Region', 'godam' ) }>
 									{ hubspot.region || '—' }
 								</ConfigRow>
-								{ isLive && typeof hubspot.tracking_active !== 'undefined' && (
-									<ConfigRow label={ __( 'Video-view tracking', 'godam' ) }>
-										<span style={ { color: hubspot.tracking_active ? '#007a4d' : '#757575' } }>
-											{ hubspot.tracking_active ? __( 'On', 'godam' ) : __( 'Off', 'godam' ) }
-										</span>
-									</ConfigRow>
-								) }
+								<VideoTrackingSection
+									label={ __( 'HubSpot', 'godam' ) }
+									settings={ settings }
+									onSettingChange={ onSettingChange }
+									centralTracking={ isLive && typeof hubspot.tracking_active !== 'undefined' ? Boolean( hubspot.tracking_active ) : undefined }
+									settingsUrl={ settingsUrl }
+									note={ __( 'With video-view tracking on, GoDAM adds HubSpot’s tracking code to pages that have a video, so views can be matched to a HubSpot contact. That code also loads whatever your HubSpot portal has set up — chat, pop-ups, the ads pixel and the cookie banner.', 'godam' ) }
+								/>
 							</Card>
-
-							<p style={ { margin: '12px 0 0', color: '#757575', fontSize: 13 } }>
-								{ __( 'With video-view tracking on, GoDAM adds HubSpot’s tracking code to pages that have a video, so views can be matched to a HubSpot contact. That code also loads whatever your HubSpot portal has set up — chat, pop-ups, the ads pixel and the cookie banner.', 'godam' ) }
-							</p>
 
 							{ settingsUrl && (
 								<Flex justify="flex-start" gap={ 3 } style={ { marginTop: '12px' } }>

@@ -62,6 +62,17 @@ class Map_Tracker {
 	const HUBSPOT_TRACKING_HANDLE = 'godam-hubspot-tracking';
 
 	/**
+	 * Script handle for the inline loader of Marketo's Munchkin tracking code, so
+	 * the `_mkto_trk` cookie exists at all (see maybe_enqueue_munchkin()).
+	 */
+	const MUNCHKIN_HANDLE = 'godam-marketo-munchkin';
+
+	/**
+	 * Marketo's Munchkin tracking code, the same for every Marketo instance.
+	 */
+	const MUNCHKIN_SRC = 'https://munchkin.marketo.net/munchkin.js';
+
+	/**
 	 * Maximum attempts (initial + retries) for one event before it is dropped.
 	 *
 	 * A view milestone is low-value and high-volume: unlike media usage, there is no
@@ -85,6 +96,19 @@ class Map_Tracker {
 	 * Longest acceptable page URL, matching Central's `PAGE_URL_MAX_LEN`.
 	 */
 	const PAGE_URL_MAX_LEN = 2000;
+
+	/**
+	 * `wp_footer` priority of {@see maybe_enqueue_script()}: after players rendered
+	 * in the footer, before footer scripts print at 20.
+	 */
+	const FOOTER_PRIORITY = 19;
+
+	/**
+	 * Whether a GoDAM video player was rendered on this request.
+	 *
+	 * @var bool
+	 */
+	private static $video_rendered = false;
 
 	/**
 	 * Constructor.
@@ -125,10 +149,12 @@ class Map_Tracker {
 		 *
 		 * Players are rendered by blocks and shortcodes while the_content runs, which
 		 * is after `wp_enqueue_scripts` has finished — so asking there whether a player
-		 * is on the page always answers no. By `wp_footer` every player has rendered,
-		 * and priority 1 is still ahead of wp_print_footer_scripts (priority 20).
+		 * is on the page always answers no. Some players render in `wp_footer` itself
+		 * (GoDAM for WooCommerce's Reel Pops widget, at the default priority 10), so
+		 * this runs at 19: after those, and still ahead of wp_print_footer_scripts
+		 * (priority 20), which prints what is enqueued here.
 		 */
-		add_action( 'wp_footer', array( $this, 'maybe_enqueue_script' ), 1 );
+		add_action( 'wp_footer', array( $this, 'maybe_enqueue_script' ), self::FOOTER_PRIORITY );
 	}
 
 	// -------------------------------------------------------------------------
@@ -200,6 +226,44 @@ class Map_Tracker {
 	}
 
 	/**
+	 * Record that a GoDAM video player was rendered on this request.
+	 *
+	 * Called by the player template once it has something to play, which every
+	 * in-page player goes through (block, shortcode, Elementor and WPBakery). A
+	 * gallery or lightbox video plays in the embed page's iframe, whose own
+	 * render calls this and loads its own tracker.
+	 *
+	 * @return void
+	 */
+	public static function mark_video_rendered() {
+		self::$video_rendered = true;
+	}
+
+	/**
+	 * Whether this page has a GoDAM video player, so view tracking can apply.
+	 *
+	 * Asked rather than inferred from `godam-player-frontend-script` being
+	 * enqueued: other plugins enqueue that handle, or scripts depending on it, on
+	 * every page, which loaded the tracker, Munchkin and HubSpot's tracking code
+	 * on pages with no video at all (404s, search results).
+	 *
+	 * @return bool
+	 */
+	public static function page_has_video() {
+		/**
+		 * Filters whether the current page has a GoDAM video player for view tracking.
+		 *
+		 * Return true for a page whose players are built in the browser rather than
+		 * rendered by GoDAM's player template, so their views are still tracked.
+		 *
+		 * @since 2.6.0
+		 *
+		 * @param bool $has_video Whether a player was rendered on this request.
+		 */
+		return (bool) apply_filters( 'rtgodam_map_page_has_video', self::$video_rendered );
+	}
+
+	/**
 	 * Enqueue the tracker when this page has a player and tracking is on.
 	 *
 	 * @return void
@@ -209,8 +273,9 @@ class Map_Tracker {
 			return;
 		}
 
-		// No player on this page means no milestone can ever fire.
-		if ( ! wp_script_is( 'godam-player-frontend-script', 'enqueued' ) && ! wp_script_is( 'godam-player-frontend-script', 'done' ) ) {
+		// No player on this page means no milestone can ever fire, and loading
+		// Munchkin or HubSpot's tracking code would only record a page visit.
+		if ( ! self::page_has_video() ) {
 			return;
 		}
 
@@ -245,6 +310,90 @@ class Map_Tracker {
 		// The cookie HubSpot view tracking relies on only exists when HubSpot's own
 		// tracking code runs on the page; add it when nothing else already does.
 		$this->maybe_enqueue_hubspot_tracking_code( $providers );
+
+		// Same for Marketo: `_mkto_trk` is set only by Munchkin, never by forms2.
+		$this->maybe_enqueue_munchkin( $providers );
+	}
+
+	/**
+	 * Load Marketo's Munchkin tracking code when Marketo is tracked on this page.
+	 *
+	 * Marketo view tracking needs the visitor's `_mkto_trk` cookie, and only
+	 * Munchkin sets it: forms2 (the Marketo form layer) reads it and never
+	 * creates it. Without Munchkin a visitor has no cookie, so no view reaches
+	 * Marketo and a form fill is not tied to the visitor's browser.
+	 *
+	 * @param string[] $providers The frontend providers for this page.
+	 * @return void
+	 */
+	private function maybe_enqueue_munchkin( array $providers ) {
+		$munchkin_id = self::munchkin_id_to_load( $providers );
+
+		if ( '' === $munchkin_id || wp_script_is( self::MUNCHKIN_HANDLE, 'enqueued' ) ) {
+			return;
+		}
+
+		// A handle with no file of its own, so the loader runs inline in the footer.
+		wp_register_script( self::MUNCHKIN_HANDLE, false, array(), RTGODAM_VERSION, array( 'in_footer' => true ) );
+		wp_enqueue_script( self::MUNCHKIN_HANDLE );
+		wp_add_inline_script( self::MUNCHKIN_HANDLE, self::munchkin_loader_js( $munchkin_id ) );
+	}
+
+	/**
+	 * The Munchkin ID to load Munchkin for on this page, or '' when it should not
+	 * be loaded.
+	 *
+	 * Loaded only when Marketo survived {@see frontend_providers()}, so it follows
+	 * both GoDAM Central's tracking switch and this site's "Track video views on
+	 * this site" switch.
+	 *
+	 * @param string[] $providers The frontend providers for this page.
+	 * @return string The Munchkin ID, e.g. `123-ABC-456`, or ''.
+	 */
+	public static function munchkin_id_to_load( array $providers ) {
+		$has_marketo = in_array( 'marketo', array_map( 'strtolower', array_map( 'strval', $providers ) ), true );
+
+		if ( ! $has_marketo ) {
+			return '';
+		}
+
+		/**
+		 * Whether GoDAM loads Marketo's Munchkin tracking code for view tracking.
+		 *
+		 * Return false when the site already loads Munchkin itself (pasted into
+		 * the theme, a tag manager, or gated behind a consent manager), so page
+		 * visits are not counted twice.
+		 *
+		 * @param bool $inject Whether to load Munchkin. Default true.
+		 */
+		if ( ! apply_filters( 'rtgodam_map_inject_munchkin', true ) ) {
+			return '';
+		}
+
+		$munchkin_id = Marketo::get_munchkin_id();
+
+		return preg_match( '/^\d{3}-[A-Za-z]{3}-\d{3}$/', $munchkin_id ) ? $munchkin_id : '';
+	}
+
+	/**
+	 * Inline loader for Munchkin, after Marketo's own embed snippet.
+	 *
+	 * It does nothing when Munchkin is already on the page (the site loads its
+	 * own), or when the browser sends Global Privacy Control, which the view
+	 * tracker honours too.
+	 *
+	 * @param string $munchkin_id The Munchkin ID to initialise.
+	 * @return string JavaScript.
+	 */
+	public static function munchkin_loader_js( $munchkin_id ) {
+		return '(function(){'
+			. 'if(window.Munchkin||(navigator&&navigator.globalPrivacyControl===true)){return;}'
+			. 'var s=document.createElement("script");'
+			. 's.async=true;'
+			. 's.src=' . wp_json_encode( self::MUNCHKIN_SRC ) . ';'
+			. 's.onload=function(){if(window.Munchkin){window.Munchkin.init(' . wp_json_encode( (string) $munchkin_id ) . ');}};'
+			. 'document.head.appendChild(s);'
+			. '}());';
 	}
 
 	/**
@@ -254,10 +403,11 @@ class Map_Tracker {
 	 * Central's `map` block lists every tool connected on Central, but a tool is
 	 * dropped here when:
 	 *
-	 *  - its integration is switched off in the plugin's own settings
-	 *    (Settings → Integrations). The site can turn Marketo or HubSpot off
-	 *    independently of Central, and that choice must stop its events — so a
-	 *    disabled tool is never enqueued, and with both off nothing is; or
+	 *  - its integration, or its "Track video views on this site" switch, is off
+	 *    in the plugin's own settings (Settings → Integrations). The site can stop
+	 *    tracking Marketo or HubSpot independently of Central, and that choice
+	 *    must stop its events — so such a tool is never enqueued, and with both
+	 *    off nothing is; or
 	 *  - (HubSpot only) the page's `hubspotutk` cookie belongs to a different portal
 	 *    than Central forwards to — a leadin connection on another portal — so every
 	 *    HubSpot milestone would arrive as "Unknown Contact".
@@ -274,14 +424,14 @@ class Map_Tracker {
 				static function ( $provider ) {
 					switch ( strtolower( $provider ) ) {
 						case 'marketo':
-							// Dropped when the site has switched Marketo off, whatever
-							// Central still lists.
-							return Marketo::is_enabled();
+							// Dropped when the site has switched Marketo, or tracking
+							// it, off, whatever Central still lists.
+							return Marketo::is_tracking_enabled();
 						case 'hubspot':
-							// Off at the site level, or the cookie belongs to a
-							// different portal than Central forwards to — either way,
-							// every event could only be discarded.
-							return Hubspot::is_enabled() && Hubspot::is_central_tracking_portal_aligned();
+							// Off at the site level (integration or tracking), or the
+							// cookie belongs to a different portal than Central forwards
+							// to — either way, every event could only be discarded.
+							return Hubspot::is_tracking_enabled() && Hubspot::is_central_tracking_portal_aligned();
 						default:
 							// An unknown tool Central may add later: leave it be.
 							return true;
@@ -485,6 +635,30 @@ class Map_Tracker {
 	}
 
 	/**
+	 * Keep only the visitor IDs of tools this site still tracks.
+	 *
+	 * Central sends a milestone to Marketo only with `mkto_trk` and to HubSpot
+	 * only with `hubspotutk`, so dropping a cookie is how a site-level "Track
+	 * video views" switch takes effect without changing Central's own setting.
+	 *
+	 * @param mixed $ids Visitor IDs keyed `mkto_trk` / `hubspotutk`.
+	 * @return array The IDs of tools still tracked on this site; may be empty.
+	 */
+	public static function site_tracked_ids( $ids ) {
+		$ids = is_array( $ids ) ? $ids : array();
+
+		if ( ! Marketo::is_tracking_enabled() ) {
+			unset( $ids['mkto_trk'] );
+		}
+
+		if ( ! Hubspot::is_tracking_enabled() ) {
+			unset( $ids['hubspotutk'] );
+		}
+
+		return $ids;
+	}
+
+	/**
 	 * Send one milestone to Central.
 	 *
 	 * @param array $event   Validated event payload.
@@ -508,7 +682,9 @@ class Map_Tracker {
 			'milestone'  => $event['milestone'] ?? null,
 			'page_url'   => $event['page_url'] ?? '',
 			'session_id' => $event['session_id'] ?? '',
-			'ids'        => $event['ids'] ?? array(),
+			// Re-checked at send time: an event queued (or retried) after the site
+			// switched a tool's tracking off must not reach that tool.
+			'ids'        => self::site_tracked_ids( $event['ids'] ?? array() ),
 			'surface'    => 'wordpress',
 		);
 

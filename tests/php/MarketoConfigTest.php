@@ -146,4 +146,44 @@ class MarketoConfigTest extends TestCase {
 		$this->set_enabled( false );
 		$this->assertFalse( Marketo::is_configured() );
 	}
+
+	/**
+	 * The sanitiser keeps `enable` and `track_views` only, defaulting tracking on.
+	 */
+	public function test_sanitize_whitelists_track_views(): void {
+		$object   = ( new \ReflectionClass( Marketo::class ) )->newInstanceWithoutConstructor();
+		$defaults = array( 'integrations' => array( 'marketo' => Marketo::get_default_settings() ) );
+
+		$out = $object->sanitize_integration_settings(
+			array(),
+			array( 'integrations' => array( 'marketo' => array( 'enable' => true, 'munchkin' => 'x' ) ) ), // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound -- compact fixture.
+			$defaults
+		);
+		$this->assertSame( array( 'enable', 'track_views' ), array_keys( $out['marketo'] ) );
+		$this->assertTrue( $out['marketo']['track_views'] );
+
+		$out = $object->sanitize_integration_settings(
+			array(),
+			array( 'integrations' => array( 'marketo' => array( 'track_views' => '0' ) ) ),
+			$defaults
+		);
+		$this->assertFalse( $out['marketo']['track_views'] );
+	}
+
+	/**
+	 * Site-level tracking needs the integration on and its own switch on; a site
+	 * saved before the switch existed keeps tracking.
+	 */
+	public function test_is_tracking_enabled_follows_both_site_switches(): void {
+		$this->assertTrue( Marketo::is_tracking_enabled() );
+
+		$this->set_enabled( true );
+		$this->assertTrue( Marketo::is_tracking_enabled() );
+
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings']['integrations']['marketo']['track_views'] = false;
+		$this->assertFalse( Marketo::is_tracking_enabled() );
+
+		$this->set_enabled( false );
+		$this->assertFalse( Marketo::is_tracking_enabled() );
+	}
 }

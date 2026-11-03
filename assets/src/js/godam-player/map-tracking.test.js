@@ -200,6 +200,29 @@ describe( 'getSessionId', () => {
 		expect( getSessionId( 'job-1' ) ).toMatch( /^[A-Za-z0-9-]{8,64}$/ );
 	} );
 
+	it( 'uses crypto.getRandomValues when randomUUID is missing (plain-HTTP pages)', () => {
+		const randomUUID = window.crypto.randomUUID;
+		const random = jest.spyOn( Math, 'random' );
+		Object.defineProperty( window.crypto, 'randomUUID', { value: undefined, configurable: true } );
+
+		const id = getSessionId( 'job-1' );
+
+		expect( id ).toMatch( /^[0-9a-f]{32}$/ );
+		expect( random ).not.toHaveBeenCalled();
+
+		Object.defineProperty( window.crypto, 'randomUUID', { value: randomUUID, configurable: true } );
+		random.mockRestore();
+	} );
+
+	it( 'returns no ID, rather than a predictable one, without a crypto API', () => {
+		const crypto = Object.getOwnPropertyDescriptor( window, 'crypto' );
+		Object.defineProperty( window, 'crypto', { value: undefined, configurable: true } );
+
+		expect( getSessionId( 'job-1' ) ).toBe( '' );
+
+		Object.defineProperty( window, 'crypto', crypto );
+	} );
+
 	it( 'still returns an ID when storage is unavailable', () => {
 		const getItem = jest.spyOn( window.sessionStorage.__proto__, 'getItem' ).mockImplementation( () => {
 			throw new Error( 'denied' );

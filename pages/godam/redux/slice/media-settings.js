@@ -52,10 +52,12 @@ const initialState = {
 		},
 		marketo: {
 			enable: true,
+			track_views: true,
 		},
 		hubspot: {
 			enable: true,
 			source: 'central',
+			track_views: true,
 		},
 	},
 	isChanged: false,
