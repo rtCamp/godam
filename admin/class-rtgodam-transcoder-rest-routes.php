@@ -682,13 +682,33 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	}
 
 	/**
+	 * Get the API key a callback request carries in its body.
+	 *
+	 * GoDAM Central posts the key in the request body, so only the body is read.
+	 * A key in the URL is not accepted, since URLs end up in server logs.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return string The key, or an empty string when the body has none.
+	 */
+	private function get_callback_api_key( $request ) {
+		$body_params = $request->get_body_params();
+		$json_params = $request->get_json_params();
+
+		$api_key = $body_params['api_key'] ?? ( is_array( $json_params ) ? ( $json_params['api_key'] ?? '' ) : '' );
+
+		return is_string( $api_key ) ? sanitize_text_field( $api_key ) : '';
+	}
+
+	/**
 	 * Verify callback permission by checking API key.
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 * @return bool|WP_Error True if permission granted, WP_Error otherwise.
 	 */
 	public function verify_callback_permission( $request ) {
-		$provided_api_key = $request->get_param( 'api_key' );
+		$provided_api_key = $this->get_callback_api_key( $request );
 		$stored_api_key   = get_option( 'rtgodam-api-key' );
 
 		// Validate API Key.
@@ -700,7 +720,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			return new WP_Error( 'forbidden', __( 'API key not configured on the site.', 'godam' ), array( 'status' => 403 ) );
 		}
 
-		if ( $provided_api_key !== $stored_api_key ) {
+		if ( ! hash_equals( (string) $stored_api_key, $provided_api_key ) ) {
 			return new WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
 		}
 

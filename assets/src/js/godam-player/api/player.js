@@ -19,6 +19,11 @@
 /* eslint-disable no-console */
 
 /**
+ * Internal dependencies
+ */
+import { getAutoPauseReason, getVisibilityManager } from '../managers/visibilityManager.js';
+
+/**
  * Player Class for the GoDAM Video Player API
  *
  * Provides a developer-friendly interface for creating custom video layers
@@ -268,7 +273,9 @@ class Player {
 
 		// Listen for pause event
 		this.videoJs.on( 'pause', () => {
-			this.trigger( 'pause' );
+			// `reason` is 'visibility' (scrolled/hidden out of view) or 'api'
+			// (GoDAMAPI.pauseAll) for automatic pauses, and null otherwise.
+			this.trigger( 'pause', { reason: getAutoPauseReason( this.videoJs ) } );
 		} );
 
 		// Listen for ended event
@@ -650,10 +657,20 @@ class Player {
 	/**
 	 * Play the video
 	 *
+	 * Pass `userStarted: true` when the visitor asked for playback (e.g. your own
+	 * play button), so it follows the visitor-started out-of-view rule.
+	 *
+	 * @param {Object}  [options]             - Options.
+	 * @param {boolean} [options.userStarted] - Whether the visitor started playback.
 	 * @return {Promise} Promise that resolves when play starts
 	 */
-	play() {
+	play( { userStarted = false } = {} ) {
 		try {
+			// Script-started playback counts as autoplay (paused out of view and
+			// resumed when visible) unless the caller says the visitor started it.
+			if ( userStarted ) {
+				getVisibilityManager().markInteraction( this.videoJs );
+			}
 			return this.videoJs.play();
 		} catch ( error ) {
 			console.error( 'Error playing video:', error );
