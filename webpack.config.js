@@ -357,6 +357,14 @@ const ninjaFormsSubmissionsList = {
 	},
 };
 
+// Layer API registry (`window.godam.layers`, imported elsewhere as `@godam/layers`).
+const godamLayers = {
+	...sharedConfig,
+	entry: {
+		'godam-layers': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-layers', 'index.js' ),
+	},
+};
+
 const blockExtensions = {
 	...sharedConfig,
 	entry: {
@@ -453,6 +461,8 @@ const pages = {
 		// instance core registered. DataViews itself is still bundled because
 		// core ships no `wp-dataviews` script handle.
 		'@wordpress/private-apis': [ 'wp', 'privateApis' ],
+		// The layer type registry is its own script (`godam-layers`), shared with add-ons.
+		'@godam/layers': [ 'godam', 'layers' ],
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
@@ -499,4 +509,5 @@ module.exports = [
 	wpBakeryDocumentCoverSelectorParam,
 	ninjaFormsSubmissionsList,
 	blockExtensions,
+	godamLayers,
 ];

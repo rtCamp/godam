@@ -1,0 +1,17 @@
+{
+	"apiVersion": 1,
+	"name": "poll",
+	"title": "Poll",
+	"description": "Create an interactive poll",
+	"color": "#E8499E",
+	"supports": {
+		"media": [ "video" ],
+		"skip": true
+	},
+	"attributes": {
+		"poll_id": { "type": "string", "default": "" },
+		"allow_skip": { "default": true },
+		"custom_css": { "default": "" }
+	},
+	"textdomain": "godam"
+}

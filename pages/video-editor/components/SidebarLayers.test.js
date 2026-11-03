@@ -9,8 +9,11 @@
  * gating (video needs a playhead position, images allow only some types); and
  * saved layers whose type has no registration.
  *
- * Tests marked "current behaviour" pin something the refactor intends to change
- * on purpose. Update them in the same PR that changes the behaviour.
+ * Since #2292 the editor reads layer types from the layer registry, so these
+ * tests register the core types and the add-on types from the old hooks the
+ * same way the editor's entry point does. Tests marked "current behaviour" pin
+ * something a later Layer API PR intends to change on purpose; update them in
+ * the PR that changes the behaviour.
  */
 
 /**
@@ -30,6 +33,7 @@ import { configureStore } from '@reduxjs/toolkit';
  * Internal dependencies
  */
 import SidebarLayers, { getDefaultLayerName } from './SidebarLayers';
+import { registerEditorLayerTypes } from '../layers';
 
 // The real slice reads page globals at import time; only the action shapes matter here.
 jest.mock( '../redux/slice/videoSlice', () => ( {
@@ -42,6 +46,14 @@ jest.mock( '../redux/slice/videoSlice', () => ( {
 jest.mock( '../onboarding/productGuide', () => ( { notify: jest.fn() } ) );
 
 jest.mock( 'uuid', () => ( { v4: () => 'test-uuid' } ) );
+
+// The core settings panels aren't rendered here; registering them is enough.
+jest.mock( './layers/CTALayer', () => () => null );
+jest.mock( './layers/HotspotLayer', () => () => null );
+jest.mock( './layers/FormLayer', () => () => null );
+jest.mock( './layers/PollLayer', () => () => null );
+jest.mock( './layers/AdsLayer', () => () => null );
+jest.mock( '../utils/formUtils', () => ( { getFormIdFromLayer: () => null } ) );
 
 // Plain stand-ins for the menu primitives, so menu items are ordinary buttons
 // and the dropdown content is always rendered.
@@ -64,13 +76,14 @@ jest.mock( '@wordpress/components', () => {
 	};
 } );
 
+registerEditorLayerTypes();
+
 const baseState = {
 	loading: false,
 	addLayerModalTime: null,
 	layers: [],
 	currentLayer: null,
 	videoConfig: {},
-	allowedLayerTypes: '*',
 	mediaType: 'video',
 };
 
@@ -284,23 +297,32 @@ describe( 'Layer API contract: SidebarLayers', () => {
 			expect( container.querySelector( '#add-layer-btn' ).disabled ).toBe( true );
 		} );
 
-		// Current behaviour: the image allow-list names the Woo add-on (mediaCapabilities.js).
-		it( 'offers only the allowed types on an image, with no playhead needed', () => {
-			render( { currentTime: 0, state: { mediaType: 'image', allowedLayerTypes: [ 'hotspot', 'woo' ] } } );
+		// Current behaviour: the Woo add-on supports images because the old-hooks
+		// bridge says so (layers/legacy.js); #2296 moves that into the add-on.
+		it( 'offers only the types that support images, with no playhead needed', () => {
+			render( { currentTime: 0, state: { mediaType: 'image' } } );
 			expect( container.querySelector( '#add-layer-btn' ).disabled ).toBe( false );
 			expect( menuKeys() ).toEqual( [ 'hotspot', 'woo' ] );
 		} );
 	} );
 
 	describe( 'saved layers', () => {
-		// Current behaviour: a layer whose type nothing registers is hidden from
-		// the list but kept in the editor state, so saving does not drop it.
-		it( 'hides a layer of an unregistered type but keeps it in state', () => {
+		// RFC D2: a layer whose type nothing registers stays listed with a
+		// warning, and stays in the editor state, so saving does not drop it.
+		it( 'lists a layer of an unregistered type with a warning and keeps it in state', () => {
 			const ghost = { id: 'ghost', type: 'ghost', displayTime: 3 };
 			render( { state: { layers: [ ghost ] } } );
-			expect( container.querySelectorAll( '.godam-ve-layer-row' ) ).toHaveLength( 0 );
+			const rows = container.querySelectorAll( '.godam-ve-layer-row' );
+			expect( rows ).toHaveLength( 1 );
+			expect( rows[ 0 ].classList.contains( 'has-warning' ) ).toBe( true );
+			expect( rows[ 0 ].querySelector( 'button' ).disabled ).toBe( false );
 			expect( container.textContent ).toContain( 'Layers (1)' );
 			expect( addedLayers() ).toEqual( [ ghost ] );
+		} );
+
+		it( 'hides a layer whose registered type does not support this media', () => {
+			render( { state: { mediaType: 'image', layers: [ { id: 'c1', type: 'cta', displayTime: 0 } ] } } );
+			expect( container.querySelectorAll( '.godam-ve-layer-row' ) ).toHaveLength( 0 );
 		} );
 
 		it( 'lists a layer of a registered add-on type', () => {

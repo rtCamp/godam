@@ -655,6 +655,8 @@ class Pages {
 
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
+			$this->register_layer_api_script();
+
 			wp_register_script(
 				'transcoder-page-script-video-editor',
 				RTGODAM_URL . 'assets/build/pages/video-editor.min.js',
@@ -662,7 +664,8 @@ class Pages {
 				// but depends on the WP-provided builds of these packages being
 				// present. `wp-private-apis` in particular must load so the
 				// bundled DataViews can unlock `@wordpress/components` private APIs.
-				array( 'wp-element', 'wp-components', 'wp-primitives', 'wp-api-fetch', 'wp-data', 'wp-notices', 'wp-private-apis', 'wp-i18n' ),
+				// `godam-layers` is the layer type registry the editor reads.
+				array( 'wp-element', 'wp-components', 'wp-primitives', 'wp-api-fetch', 'wp-data', 'wp-notices', 'wp-private-apis', 'wp-i18n', 'godam-layers' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.min.js' ),
 				true
 			);
@@ -833,6 +836,11 @@ class Pages {
 
 			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
+
+			// The editor bundle provides `window.godam.layerEditor` (hooks and controls
+			// for layer settings panels). This handle lets an add-on's editor script
+			// depend on it by name, as `@godam/layer-editor`.
+			wp_register_script( 'godam-layer-editor', false, array( 'transcoder-page-script-video-editor' ), RTGODAM_VERSION, true );
 
 			// The "Edit metadata" action reuses the native two-column attachment
 			// details modal (wp.media.view.MediaFrame.EditAttachments), which is
@@ -1536,6 +1544,38 @@ class Pages {
 		}
 
 		return admin_url( str_replace( '{id}', (string) $form_id, $template ) );
+	}
+
+	/**
+	 * Register `godam-layers`, the Layer API's layer type registry
+	 * (`window.godam.layers`). The video editor depends on it, and so can an
+	 * add-on's editor script that registers its own layer types.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	private function register_layer_api_script() {
+		if ( wp_script_is( 'godam-layers', 'registered' ) ) {
+			return;
+		}
+
+		$asset_path = RTGODAM_PATH . 'assets/build/js/godam-layers.min.asset.php';
+		$asset      = file_exists( $asset_path )
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is a plugin constant + hardcoded build filename.
+			? include $asset_path
+			: array(
+				'dependencies' => array( 'wp-data', 'wp-hooks' ),
+				'version'      => RTGODAM_VERSION,
+			);
+
+		wp_register_script(
+			'godam-layers',
+			RTGODAM_URL . 'assets/build/js/godam-layers.min.js',
+			$asset['dependencies'],
+			$asset['version'],
+			true
+		);
 	}
 
 	/**

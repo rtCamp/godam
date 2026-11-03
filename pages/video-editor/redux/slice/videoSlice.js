@@ -45,11 +45,11 @@ const initialState = {
 	currentLayer: null,
 	currentTab: 'layers',
 	// Media-type awareness. Seeded from the attachment MIME via `setMediaType`;
-	// `allowedTabs` gates `setCurrentTab` and `allowedLayerTypes` gates the
-	// "Add layer" menu. Defaults reproduce the historic video-only behaviour.
+	// `allowedTabs` gates `setCurrentTab`. Which layer types a media type offers
+	// comes from each layer type's `supports.media` in the layer registry.
+	// Defaults reproduce the historic video-only behaviour.
 	mediaType: 'video',
 	allowedTabs: [ 'layers', 'player-settings', 'transcription', 'chapters' ],
-	allowedLayerTypes: '*',
 	loading: false,
 	gforms: [],
 	jetpackForms: [],
@@ -149,14 +149,13 @@ const slice = createSlice( {
 				state.currentTab = action.payload;
 			}
 		},
-		// Apply a media-type capability to the store: records the media type,
-		// the allowed tabs / layer types, and snaps `currentTab` to a supported
+		// Apply a media-type capability to the store: records the media type and
+		// the allowed tabs, and snaps `currentTab` to a supported
 		// tab if the current one isn't available for this media type.
 		setMediaType: ( state, action ) => {
-			const { mediaType, tabs, defaultTab, allowedLayerTypes } = action.payload;
+			const { mediaType, tabs, defaultTab } = action.payload;
 			state.mediaType = mediaType;
 			state.allowedTabs = tabs;
-			state.allowedLayerTypes = allowedLayerTypes;
 			if ( ! tabs.includes( state.currentTab ) ) {
 				state.currentTab = defaultTab;
 			}

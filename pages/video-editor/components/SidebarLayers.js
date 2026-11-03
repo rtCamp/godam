@@ -2,26 +2,22 @@
  * External dependencies
  */
 import { useSelector, useDispatch } from 'react-redux';
+import { v4 as uuidv4 } from 'uuid';
+import {
+	store as layersStore,
+	getLayerType,
+	getDefaultAttributes,
+	getDefaultVariation,
+	getLayerVariation,
+	isVariationAvailable,
+	getAvailability,
+	supportsMedia,
+} from '@godam/layers';
 
 /**
  * Internal dependencies
  */
 import { addLayer, setCurrentLayer, setAddLayerModalTime, removeLayer } from '../redux/slice/videoSlice';
-import { v4 as uuidv4 } from 'uuid';
-import GFIcon from '../assets/layers/GFIcon.svg';
-import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
-import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
-import CF7Icon from '../assets/layers/CF7Icon.svg';
-import JetpackIcon from '../assets/layers/JetpackIcon.svg';
-import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
-import ForminatorIcon from '../assets/layers/Forminator.png';
-import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
-import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
-import MetformIcon from '../assets/layers/MetFormIcon.png';
-import MarketoIcon from '../assets/layers/MarketoIcon.svg';
-import HubSpotIcon from '../assets/layers/HubSpotIcon.svg';
-import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from './editor-shell/icons';
-import { LAYER_TYPE_COLORS } from '../utils/layerTypes';
 import { notify as notifyGuide } from '../onboarding/productGuide';
 
 /**
@@ -29,153 +25,42 @@ import { notify as notifyGuide } from '../onboarding/productGuide';
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon, Tooltip, Dropdown, DropdownMenu, MenuGroup, MenuItem, NavigableMenu, Popover } from '@wordpress/components';
-import { plus, preformatted, customLink, video, customPostType, thumbsUp, moreVertical, copy, trash, chevronRight, info } from '@wordpress/icons';
+import { plus, moreVertical, copy, trash, chevronRight, info } from '@wordpress/icons';
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 
 /**
- * Layer types with their labels, icons, and integration-specific state.
+ * A layer type's label, or its variation's title for types with variations.
+ *
+ * @param {Object} layerType   Registered layer type.
+ * @param {string} [variation] Variation name; defaults to the type's default variation.
+ * @return {string} The label, or `''`.
  */
-export const layerTypes = [
-	{
-		title: __( 'CTA', 'godam' ),
-		icon: customLink,
-		type: 'cta',
-		layerText: __( 'CTA', 'godam' ),
-	},
-	{
-		title: __( 'Hotspot', 'godam' ),
-		icon: customPostType,
-		type: 'hotspot',
-		layerText: __( 'Hotspot', 'godam' ),
-	},
-	{
-		title: __( 'Forms', 'godam' ),
-		icon: preformatted,
-		type: 'form',
-		formType: {
-			gravity: {
-				layerText: __( 'Gravity Forms', 'godam' ),
-				icon: GFIcon,
-				isActive: window?.videoData?.gfActive ?? false,
-				tooltipMessage: __( 'Gravity Forms plugin is not active', 'godam' ),
-			},
-			wpforms: {
-				layerText: __( 'WPForms', 'godam' ),
-				icon: WPFormsIcon,
-				isActive: window?.videoData?.wpformsActive ?? false,
-				tooltipMessage: __( 'WPForms plugin is not active', 'godam' ),
-			},
-			cf7: {
-				layerText: __( 'Contact Form 7', 'godam' ),
-				isActive: window?.videoData?.cf7Active ?? false,
-				icon: CF7Icon,
-				tooltipMessage: __( 'Contact Form 7 plugin is not active', 'godam' ),
-			},
-			jetpack: {
-				layerText: __( 'Jetpack Forms', 'godam' ),
-				icon: JetpackIcon,
-				isActive: window?.videoData?.jetpackActive ?? false,
-				tooltipMessage: __( 'Jetpack plugin is not active', 'godam' ),
-			},
-			sureforms: {
-				layerText: __( 'SureForms', 'godam' ),
-				icon: SureformsIcon,
-				isActive: window?.videoData?.sureformsActive ?? false,
-				tooltipMessage: __( 'SureForms plugin is not active', 'godam' ),
-			},
-			forminator: {
-				layerText: __( 'Forminator Forms', 'godam' ),
-				icon: ForminatorIcon,
-				isActive: window?.videoData?.forminatorActive ?? false,
-				tooltipMessage: __( 'Forminator Forms plugin is not active', 'godam' ),
-			},
-			fluentforms: {
-				layerText: __( 'Fluent Forms', 'godam' ),
-				icon: FluentFormsIcon,
-				isActive: window?.videoData?.fluentformsActive ?? false,
-				tooltipMessage: __( 'Fluent Forms plugin is not active', 'godam' ),
-			},
-			everestforms: {
-				layerText: __( 'Everest Forms', 'godam' ),
-				icon: EverestFormsIcon,
-				isActive: window?.videoData?.everestFormsActive ?? false,
-				tooltipMessage: __( 'Everest Forms plugin is not active', 'godam' ),
-			},
-			ninjaforms: {
-				layerText: __( 'Ninja Forms', 'godam' ),
-				icon: NinjaFormsIcon,
-				isActive: window?.videoData?.ninjaFormsActive ?? false,
-				tooltipMessage: __( 'Ninja Forms plugin is not active', 'godam' ),
-			},
-			metform: {
-				layerText: __( 'MetForm', 'godam' ),
-				icon: MetformIcon,
-				isActive: window?.videoData?.metformActive ?? false,
-				tooltipMessage: __( 'MetForm plugin is not active', 'godam' ),
-			},
-			marketo: {
-				layerText: __( 'Marketo', 'godam' ),
-				icon: MarketoIcon,
-				// Marketo has no plugin to activate: it is always offered in the
-				// Add-layer menu. The layer's settings panel shows a notice linking
-				// to Settings → Integrations → Marketo when credentials are missing.
-				isActive: true,
-				tooltipMessage: '',
-			},
-			hubspot: {
-				layerText: __( 'HubSpot', 'godam' ),
-				icon: HubSpotIcon,
-				isActive: window?.videoData?.hubspotActive ?? false,
-				// Say what actually unblocks the layer: turning the integration on,
-				// or connecting the source the admin chose (GoDAM Central by default,
-				// where activating the HubSpot plugin alone is not enough).
-				tooltipMessage: ( () => {
-					if ( window?.videoData?.hubspotEnabled === false ) {
-						return __( 'Turn on HubSpot in Settings → Integrations → HubSpot to use this form', 'godam' );
-					}
-					return 'leadin' === ( window?.videoData?.hubspotChosenSource ?? 'central' )
-						? __( 'Activate and connect the HubSpot plugin to use this form', 'godam' )
-						: __( 'Connect HubSpot in Settings → Integrations → HubSpot to use this form', 'godam' );
-				} )(),
-			},
-		},
-	},
-	{
-		title: __( 'Ad', 'godam' ),
-		icon: video,
-		type: 'ad',
-		layerText: __( 'Ad', 'godam' ),
-		tooltipMessage: __( 'This ad will be overridden by Ad server\'s ads', 'godam' ),
-	},
-	{
-		title: __( 'Poll', 'godam' ),
-		icon: thumbsUp,
-		type: 'poll',
-		layerText: __( 'Poll', 'godam' ),
-		isActive: Boolean( window?.easydamMediaLibrary?.isPollPluginActive ) ?? false,
-		tooltipMessage: __( 'Poll plugin is not active', 'godam' ),
-	},
-	// Add-on layers (e.g., WooCommerce) are merged from PHP via godamVideoEditorConfig.
-	...( window.godamVideoEditorConfig?.layerOptions || [] ),
-];
+const getLayerTypeLabel = ( layerType, variation ) => {
+	if ( ! layerType ) {
+		return '';
+	}
+	if ( layerType.variations.length ) {
+		const match = variation
+			? layerType.variations.find( ( v ) => v.name === variation )
+			: getDefaultVariation( layerType );
+		return match?.title || '';
+	}
+	return layerType.label || layerType.title || '';
+};
 
 /**
  * Build the default display name for a layer, e.g. "CTA Layer", "Hotspot Layer",
- * "Gravity Forms Layer". The label is pulled from the layer-type registry above
- * (including add-on layers merged via `godamVideoEditorConfig`) so it stays in
- * sync with the Add-layer menu. Returns `''` for unknown types.
+ * "Gravity Forms Layer". The label comes from the layer registry (a variation's
+ * title for types with variations, such as the form plugin), so it matches the
+ * Add-layer menu. Returns `''` for unregistered types.
  *
- * @param {string} type       Layer type (e.g. 'cta', 'hotspot', 'form').
- * @param {string} [formType] Form integration key for `form` layers (e.g. 'gravity').
+ * @param {string} type        Layer type name (e.g. 'cta', 'hotspot', 'form').
+ * @param {string} [variation] Variation name for types with variations (e.g. 'gravity').
  * @return {string} The default layer name.
  */
-export const getDefaultLayerName = ( type, formType ) => {
-	const data = layerTypes.find( ( l ) => l.type === type );
-	const label = (
-		'form' === type
-			? data?.formType?.[ formType || 'gravity' ]?.layerText
-			: ( data?.layerText || data?.title )
-	) || '';
+export const getDefaultLayerName = ( type, variation ) => {
+	const label = getLayerTypeLabel( getLayerType( type ), variation );
 
 	if ( ! label ) {
 		return '';
@@ -215,7 +100,7 @@ const AddLayerSubmenuItem = ( { opt, onParentClose } ) => {
 			>
 				<span
 					className="godam-ve-add-menu__icon"
-					style={ { '--godam-layer-color': LAYER_TYPE_COLORS[ opt.key ] } }
+					style={ { '--godam-layer-color': opt.color } }
 				>
 					{ opt.iconUrl
 						? <img src={ opt.iconUrl } alt="" />
@@ -242,7 +127,7 @@ const AddLayerSubmenuItem = ( { opt, onParentClose } ) => {
 							<MenuItem
 								key={ sub.key }
 								className="godam-ve-add-menu__item"
-								data-test-id={ `godam-video-editor-control-add-form-${ sub.key }` }
+								data-test-id={ `godam-video-editor-control-add-${ opt.key }-${ sub.key }` }
 								onClick={ () => {
 									sub.onSelect();
 									setSubOpen( false );
@@ -317,121 +202,53 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	const layers = useSelector( ( state ) => state.videoReducer.layers );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const videoConfig = useSelector( ( state ) => state.videoReducer.videoConfig );
-	// Media-type gate: `'*'` (video) allows every layer type; a restricted media
-	// type (e.g. a future image editor with `[ 'hotspot' ]`) narrows the add menu
-	// and the rendered list.
-	const allowedLayerTypes = useSelector( ( state ) => state.videoReducer.allowedLayerTypes );
-	const isLayerTypeAllowed = useCallback(
-		( type ) => allowedLayerTypes === '*' || ! Array.isArray( allowedLayerTypes ) || allowedLayerTypes.includes( type ),
-		[ allowedLayerTypes ],
-	);
+	// Layer types come from the registry; add-ons can register after the editor loads.
+	const layerTypes = useSelect( ( select ) => select( layersStore ).getLayerTypes(), [] );
 	// Timeline-based media (video) gate the add flow on a playhead position;
 	// images have no timeline, so layers are added freely and land at 0:00.
 	const mediaType = useSelector( ( state ) => state.videoReducer.mediaType );
 	const isTimelineMedia = mediaType !== 'image';
-	const adServer = videoConfig?.adServer ?? 'self-hosted';
+	const availabilityContext = { videoConfig, mediaType };
 
-	// Sort the array (ascending order), excluding unknown and disallowed types.
+	// Sort the array (ascending order). A registered type that doesn't support
+	// this media is hidden; a type nothing registered stays listed, with a notice.
 	const sortedLayers = [ ...layers ]
-		.filter( ( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ) && isLayerTypeAllowed( layer.type ) )
+		.filter( ( layer ) => {
+			const layerType = getLayerType( layer.type );
+			return ! layerType || supportsMedia( layerType, mediaType );
+		} )
 		.sort( ( a, b ) => a.displayTime - b.displayTime );
 
-	const addNewLayer = ( type, formType ) => {
+	const addNewLayer = ( type, variationName ) => {
+		const layerType = getLayerType( type );
+		if ( ! layerType ) {
+			return;
+		}
 		// Add at the time requested from the timeline ("Add layer" chip), else at
 		// the current playhead. `??` keeps a valid 0:00. Cleared on menu close.
 		const addTime = addLayerModalTime ?? currentTime;
-		switch ( type ) {
-			case 'form':
-				dispatch( addLayer( {
-					id: uuidv4(),
-					displayTime: addTime,
-					type,
-					name: getDefaultLayerName( type, formType ),
-					form_type: formType || 'gravity',
-					submitted: false,
-					allow_skip: true,
-					custom_css: '',
-					theme: '',
-				} ) );
-				break;
-			case 'cta':
-				dispatch( addLayer( {
-					id: uuidv4(),
-					displayTime: addTime,
-					type,
-					name: getDefaultLayerName( type ),
-					cta_type: 'image',
-					cardLayout: 'card-layout--imagecover-text',
-					trigger: 'timestamp',
-					watchDepth: 50,
-					html: '',
-					link: '',
-					allow_skip: true,
-				} ) );
-				break;
-			case 'hotspot':
-				dispatch(
-					addLayer( {
-						id: uuidv4(),
-						displayTime: addTime,
-						type,
-						name: getDefaultLayerName( type ),
-						duration: 5,
-						pauseOnHover: false,
-						hotspots: [],
-						// `styleType` marks the layer as using the shared-style
-						// model (and keeps the legacy-migration effect from running
-						// on this fresh layer). Colours are intentionally NOT seeded
-						// here: the Style pickers and resolveHotspotStyle supply the
-						// conditional defaults (pulse / library-icon background
-						// #0c80dfa6, library glyph #fff, custom-icon background #fff).
-						// Hardcoding them overrode those defaults — e.g. a seeded
-						// blue `iconColor` made the glyph render blue, not white.
-						styleType: 'pulse',
-						icon: '',
-						customIconUrl: null,
-						customIconId: null,
-						isNew: true,
-					} ),
-				);
-				break;
-			case 'ad':
-				dispatch( addLayer( {
-					id: uuidv4(),
-					displayTime: addTime,
-					type,
-					name: getDefaultLayerName( type ),
-					adTagUrl: '',
-					ad_url: '',
-					skippable: false,
-					skip_offset: 5,
-				} ) );
-				break;
-			case 'poll':
-				dispatch( addLayer( {
-					id: uuidv4(),
-					displayTime: addTime,
-					type,
-					name: getDefaultLayerName( type ),
-					poll_id: '',
-					allow_skip: true,
-					custom_css: '',
-				} ) );
-				break;
-			default: {
-				// Check for add-on layer creators (registered via window.godamLayerCreators).
-				const addonCreator = window.godamLayerCreators?.[ type ];
-				if ( addonCreator ) {
-					const layerData = addonCreator( { layers, currentTime: addTime, type } );
-					if ( layerData ) {
-						// Seed a registry-derived default name; the add-on creator can
-						// override it by returning its own `name` (e.g. the WooCommerce
-						// layer names itself "Product Hotspot Layer").
-						dispatch( addLayer( { name: getDefaultLayerName( type ), ...layerData, id: uuidv4() } ) );
-					}
-				}
-				break;
+
+		if ( typeof layerType.create === 'function' ) {
+			// Add-on types from the old hooks build their own layer data
+			// (`window.godamLayerCreators`).
+			const layerData = layerType.create( { layers, currentTime: addTime, type } );
+			if ( layerData ) {
+				// Seed a registry-derived default name; the add-on creator can
+				// override it by returning its own `name` (e.g. the WooCommerce
+				// layer names itself "Product Hotspot Layer").
+				dispatch( addLayer( { name: getDefaultLayerName( type ), ...layerData, id: uuidv4() } ) );
 			}
+		} else {
+			const variation = variationName
+				? layerType.variations.find( ( v ) => v.name === variationName )
+				: getDefaultVariation( layerType );
+			dispatch( addLayer( {
+				id: uuidv4(),
+				displayTime: addTime,
+				type,
+				name: getDefaultLayerName( type, variation?.name ),
+				...getDefaultAttributes( layerType, variation ),
+			} ) );
 		}
 
 		// Advance the product guide's "add a layer" step once a layer is added.
@@ -474,92 +291,43 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 	const hasLayerAtCurrentTime = Boolean( layers.find( ( l ) => l.displayTime === currentTime ) );
 	const isAddDisabled = isTimelineMedia && ( ! currentTime || hasLayerAtCurrentTime );
 
-	// Colored layer-type icons (from design) used in the list rows + add menu.
-	const layerTypeIcons = {
-		cta: CtaLayerIcon,
-		hotspot: HotspotLayerIcon,
-		poll: PollLayerIcon,
-	};
-
-	// Build the "Add layer" dropdown options from the live layer types so that
-	// plugin availability (forms/poll/ad/add-ons) is reflected here, mirroring
-	// the modal's behaviour.
-	const buildAddOptions = () => {
-		const options = [
-			{ key: 'cta', iconComponent: CtaLayerIcon, title: __( 'CTA', 'godam' ), description: __( 'Add a clickable button', 'godam' ), onSelect: () => addNewLayer( 'cta' ) },
-			{ key: 'hotspot', iconComponent: HotspotLayerIcon, title: __( 'Hotspot', 'godam' ), description: __( 'Add an info hotspot', 'godam' ), onSelect: () => addNewLayer( 'hotspot' ) },
-		];
-
-		// "Form" entry. With multiple active form plugins it opens a side submenu
-		// to choose one; with a single plugin it adds directly; disabled when none
-		// are active.
-		const formLayer = layerTypes.find( ( l ) => l.type === 'form' );
-		const activeForms = Object.entries( formLayer?.formType ?? {} )
-			.filter( ( [ , ft ] ) => ft.isActive )
-			.map( ( [ ftKey, ft ] ) => ( {
-				key: ftKey,
-				title: ft.layerText,
-				iconUrl: ft.icon,
-				onSelect: () => addNewLayer( 'form', ftKey ),
-			} ) );
-		const formOption = {
-			key: 'form',
-			iconComponent: FormLayerIcon,
-			title: __( 'Form', 'godam' ),
-			description: __( 'Embed a lead form', 'godam' ),
-		};
-		if ( activeForms.length === 0 ) {
-			formOption.disabled = true;
-			formOption.tooltip = __( 'No form plugin is active', 'godam' );
-		} else if ( activeForms.length === 1 ) {
-			formOption.onSelect = activeForms[ 0 ].onSelect;
-		} else {
-			formOption.submenu = activeForms;
-		}
-		options.push( formOption );
-
-		const pollLayer = layerTypes.find( ( l ) => l.type === 'poll' );
-		options.push( {
-			key: 'poll',
-			iconComponent: PollLayerIcon,
-			title: __( 'Poll', 'godam' ),
-			description: __( 'Create an interactive poll', 'godam' ),
-			disabled: pollLayer?.isActive === false,
-			tooltip: pollLayer?.isActive === false ? pollLayer?.tooltipMessage : '',
-			onSelect: () => addNewLayer( 'poll' ),
+	// Build the "Add layer" dropdown from the registry, in registration order.
+	// A type with variations (e.g. Form's form plugins) adds directly when one
+	// variation is available and opens a side submenu when several are.
+	const buildAddOptions = () => layerTypes
+		.filter( ( layerType ) => supportsMedia( layerType, mediaType ) )
+		.map( ( layerType ) => {
+			const option = {
+				key: layerType.name,
+				iconUrl: layerType.iconUrl,
+				iconComponent: layerType.iconUrl ? undefined : layerType.icon,
+				title: layerType.title,
+				description: layerType.description,
+				color: layerType.color,
+			};
+			const availability = getAvailability( layerType, availabilityContext );
+			if ( ! availability.available ) {
+				return { ...option, disabled: true, tooltip: availability.reason ?? '' };
+			}
+			if ( ! layerType.variations.length ) {
+				return { ...option, onSelect: () => addNewLayer( layerType.name ) };
+			}
+			const variations = layerType.variations
+				.filter( isVariationAvailable )
+				.map( ( variation ) => ( {
+					key: variation.name,
+					title: variation.title,
+					iconUrl: typeof variation.icon === 'string' ? variation.icon : undefined,
+					iconComponent: typeof variation.icon === 'string' ? undefined : variation.icon,
+					onSelect: () => addNewLayer( layerType.name, variation.name ),
+				} ) );
+			if ( variations.length === 0 ) {
+				return { ...option, disabled: true, tooltip: '' };
+			}
+			return variations.length === 1
+				? { ...option, onSelect: variations[ 0 ].onSelect }
+				: { ...option, submenu: variations };
 		} );
-
-		const adLayer = layerTypes.find( ( l ) => l.type === 'ad' );
-		const adDisabled = 'ad-server' === adServer;
-		options.push( {
-			key: 'ad',
-			iconComponent: adLayer?.icon,
-			title: __( 'Ad', 'godam' ),
-			description: __( 'Insert an advertisement', 'godam' ),
-			disabled: adDisabled,
-			tooltip: adDisabled ? adLayer?.tooltipMessage : '',
-			onSelect: () => addNewLayer( 'ad' ),
-		} );
-
-		// Add-on layers (e.g., WooCommerce) merged from PHP.
-		layerTypes
-			.filter( ( lt ) => ! [ 'cta', 'hotspot', 'form', 'ad', 'poll' ].includes( lt.type ) )
-			.forEach( ( lt ) => {
-				options.push( {
-					key: lt.type,
-					iconUrl: lt.iconUrl,
-					iconComponent: lt.iconUrl ? undefined : lt.icon,
-					title: lt.title || lt.layerText,
-					description: ( lt.title && lt.layerText ) ? lt.layerText : '',
-					disabled: lt.isActive === false,
-					tooltip: lt.isActive === false ? ( lt.tooltipMessage ?? '' ) : '',
-					onSelect: () => addNewLayer( lt.type ),
-				} );
-			} );
-
-		// Restrict to the layer types the current media type allows.
-		return options.filter( ( opt ) => isLayerTypeAllowed( opt.key ) );
-	};
 	const addOptions = buildAddOptions();
 
 	return (
@@ -630,7 +398,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 									>
 										<span
 											className="godam-ve-add-menu__icon"
-											style={ { '--godam-layer-color': LAYER_TYPE_COLORS[ opt.key ] } }
+											style={ { '--godam-layer-color': opt.color } }
 										>
 											{ opt.iconUrl
 												? <img src={ opt.iconUrl } alt="" />
@@ -687,28 +455,29 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 			{ ! loading && sortedLayers.length > 0 && (
 				<ul className="godam-ve-layers__list">
 					{ sortedLayers.map( ( layer ) => {
-						const layerData = layerTypes.find( ( l ) => l.type === layer.type );
-						const formType = 'form' === layerData?.type ? layerData?.formType[ layer.form_type ?? 'gravity' ] : false;
-						const icon = formType ? formType?.icon : ( layerTypeIcons[ layer.type ] || layerData?.iconUrl || layerData?.icon );
-						const layerText = formType ? formType?.layerText : ( layerData?.layerText || layerData?.title );
+						const layerType = getLayerType( layer.type );
+						const variation = layerType?.variations.length ? getLayerVariation( layerType, layer ) : undefined;
+						const icon = variation?.icon || layerType?.iconUrl || layerType?.icon;
+						const layerText = variation?.title || layerType?.label || layerType?.title || layer.type;
 
-						// Tooltip shown when the layer's required plugin/feature is unavailable.
-						const tooltipMessage = ( () => {
-							if ( formType && ! formType.isActive ) {
-								return formType.tooltipMessage;
+						// Warning shown when the layer's type, variation or plugin is unavailable.
+						let tooltipMessage = '';
+						let isLayerDisabled = false;
+						if ( ! layerType ) {
+							tooltipMessage = __( 'This layer needs an add-on that isn\'t active.', 'godam' );
+						} else if ( variation && ! isVariationAvailable( variation ) ) {
+							tooltipMessage = variation.unavailableReason ?? '';
+							isLayerDisabled = true;
+						} else {
+							const availability = getAvailability( layerType, availabilityContext );
+							if ( ! availability.available ) {
+								tooltipMessage = availability.reason ?? '';
+								isLayerDisabled = false !== availability.disablesExisting;
 							}
-							if ( 'ad-server' === adServer && 'ad' === layerData?.type ) {
-								return layerData?.tooltipMessage;
-							}
-							if ( layerData?.isActive === false ) {
-								return layerData?.tooltipMessage ?? '';
-							}
-							return '';
-						} )();
+						}
 
-						const isLayerDisabled = ( formType && ! formType.isActive ) || layerData?.isActive === false;
 						const isActive = currentLayer?.id === layer.id;
-						const hasImageIcon = formType || ( typeof icon === 'string' && icon );
+						const hasImageIcon = typeof icon === 'string' && icon;
 
 						return (
 							<li
@@ -727,7 +496,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 										>
 											<span
 												className="godam-ve-layer-row__icon"
-												style={ { '--godam-layer-color': LAYER_TYPE_COLORS[ layer.type ] } }
+												style={ { '--godam-layer-color': layerType?.color } }
 											>
 												{ hasImageIcon
 													? <img src={ icon } alt="" className="godam-ve-layer-row__icon-img" />
