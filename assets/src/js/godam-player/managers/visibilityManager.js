@@ -127,6 +127,17 @@ export function getAutoPauseReason( player ) {
 }
 
 /**
+ * Whether the `volumechange` currently being dispatched is an automatic mute
+ * ("Keep playing, muted" while out of view), not the visitor muting.
+ *
+ * @param {Object} player - Video.js player.
+ * @return {boolean} True for an automatic mute.
+ */
+export function isAutoMute( player ) {
+	return !! player?.godamAutoMute;
+}
+
+/**
  * Whether an IntersectionObserver record means "visible enough".
  *
  * Counts either 25% of the player, or 25% of the viewport covered by it, so a
@@ -282,6 +293,77 @@ export class VisibilityManager {
 		}
 		entry.userStarted = true;
 		entry.resumeWhenVisible = false;
+		entry.resumeNeedsHide = false;
+	}
+
+	// ---------------------------------------------------------------------
+	// Add-on API: for page scripts that run their own playback (carousels,
+	// sequences, modals), such as GoDAM for WooCommerce. Reach it through
+	// `window.godamVisibilityManager` and check each method exists first.
+	// ---------------------------------------------------------------------
+
+	/**
+	 * Treat this player as autoplaying again (e.g. a modal handed it back to
+	 * an inline preview). It then pauses when hidden and resumes when shown.
+	 *
+	 * @param {Object} player - Video.js player.
+	 */
+	resetInteraction( player ) {
+		const entry = this.entries.get( player );
+		if ( ! entry ) {
+			return;
+		}
+		entry.userStarted = false;
+		// A gesture from before the hand-back (e.g. the swipe that moved a
+		// modal on) must not mark the pause that follows as the visitor's.
+		entry.lastGestureAt = -Infinity;
+		this.cancelResume( player );
+	}
+
+	/**
+	 * Drop a pending automatic resume. Call it when a page script stops a
+	 * video on purpose (e.g. a sequence moving to the next item), so the
+	 * manager doesn't start it again when it comes back into view.
+	 *
+	 * @param {Object} player - Video.js player.
+	 */
+	cancelResume( player ) {
+		const entry = this.entries.get( player );
+		if ( ! entry ) {
+			return;
+		}
+		entry.resumeWhenVisible = false;
+		entry.resumeNeedsHide = false;
+		this.syncStylePoll();
+	}
+
+	/**
+	 * Whether the player counts as in view: visible enough on screen and in
+	 * a visible browser tab, or in fullscreen / picture-in-picture. A
+	 * background tab only counts against visitor-started videos when "Also
+	 * apply when the browser tab is hidden" is on. Players the manager doesn't
+	 * track (setting "Do nothing") always count as in view.
+	 *
+	 * @param {Object} player - Video.js player.
+	 * @return {boolean} True when in view.
+	 */
+	isInView( player ) {
+		const entry = this.entries.get( player );
+		if ( ! entry ) {
+			return true;
+		}
+		return this.isVisible( entry ) || this.isExempt( entry );
+	}
+
+	/**
+	 * Whether the `pause` or `volumechange` being dispatched right now was made
+	 * by this manager (out of view, or `pauseAll()`), not by the visitor.
+	 *
+	 * @param {Object} player - Video.js player.
+	 * @return {boolean} True for an automatic pause or mute.
+	 */
+	isAutomaticChange( player ) {
+		return isAutoPause( player ) || isAutoMute( player );
 	}
 
 	/**
@@ -382,6 +464,13 @@ export class VisibilityManager {
 	}
 
 	hasRecentGesture( entry ) {
+		// Without controls the visitor can't play, pause or unmute the player
+		// (e.g. a background loop or a slider-driven gallery video), so taps on
+		// it are not playback interaction. markInteraction() still works.
+		const { player } = entry;
+		if ( typeof player.controls === 'function' && ! player.controls() ) {
+			return false;
+		}
 		return this.now() - entry.lastGestureAt <= GESTURE_WINDOW_MS;
 	}
 
@@ -669,7 +758,7 @@ export class VisibilityManager {
 
 		if ( muteInstead ) {
 			if ( ! player.muted() ) {
-				player.muted( true );
+				this.autoMute( player );
 			}
 			return;
 		}
@@ -726,6 +815,29 @@ export class VisibilityManager {
 			return true;
 		}
 		return ! entry.styleVisible && ( entry.resumeWhenVisible || entry.adPausedByUs );
+	}
+
+	/**
+	 * Mute a player and flag the mute as automatic while its `volumechange`
+	 * is dispatched (same handshake as autoPause()).
+	 *
+	 * @param {Object} player - Video.js player.
+	 */
+	autoMute( player ) {
+		player.godamAutoMute = true;
+
+		let cleared = false;
+		const clear = () => {
+			if ( cleared ) {
+				return;
+			}
+			cleared = true;
+			player.godamAutoMute = false;
+		};
+		player.one( 'volumechange', () => this.win.setTimeout( clear, 0 ) );
+		this.win.setTimeout( clear, AUTO_PAUSE_FLAG_TIMEOUT_MS );
+
+		player.muted( true );
 	}
 
 	/**

@@ -6,6 +6,7 @@ The GoDAM Player API provides a simple and powerful interface for developers to 
 
 - [Getting Started](#getting-started)
 - [Main API Methods](#main-api-methods)
+- [Out-of-view Integration](#out-of-view-integration-for-scripts-that-run-their-own-playback)
 - [Lightbox Methods](#lightbox-methods)
 - [Lightbox Trigger Elements](#lightbox-trigger-elements)
 - [Deep Linking](#deep-linking)
@@ -223,6 +224,46 @@ swiper.on('slideChange', () => {
 > [Out-of-view behavior](#out-of-view-behavior)). Use `pauseAll()` when you want to
 > control it yourself, such as on sites set to "Do nothing" (the default) or
 > "Keep playing, muted".
+
+## Out-of-view Integration (for scripts that run their own playback)
+
+GoDAM pauses or mutes players that leave the view. Video started by the visitor
+follows the "When a video goes out of view" setting; video started by a script
+(autoplay, carousels, sequences) pauses when hidden and resumes when it's shown
+again. Scripts that play and stop GoDAM videos themselves (a slider, a playlist, a
+modal) can keep that in sync through `window.godamVisibilityManager`. It exists
+only on GoDAM versions with this feature, so check each method before calling it.
+Every method takes a Video.js player (`videojs.getPlayer( videoElement )`).
+
+| Method | Use it when |
+| --- | --- |
+| `markInteraction( player )` | The visitor started this video through your own UI (e.g. clicked a slide that opens it in a modal). |
+| `resetInteraction( player )` | You hand the video back to an automatic preview (e.g. the modal closed). It is treated as autoplaying again. |
+| `cancelResume( player )` | You stopped the video on purpose (e.g. your sequence moved on), so GoDAM must not start it again when it comes back into view. |
+| `isInView( player )` | Before you call `play()` yourself, to skip videos that are hidden. |
+| `isAutomaticChange( player )` | Inside a `pause` or `volumechange` listener, to ignore pauses and mutes GoDAM made. |
+
+Players without controls are always treated as autoplaying, since the visitor
+can't play or unmute them; `markInteraction()` still applies.
+
+**Example:**
+
+```javascript
+const vm = window.godamVisibilityManager;
+const player = window.videojs.getPlayer( videoElement );
+
+// Your slider moved on: stop the old slide for good.
+player.pause();
+vm?.cancelResume?.( player );
+
+// Ignore GoDAM's own mutes when you remember the visitor's mute choice.
+player.on( 'volumechange', () => {
+    if ( vm?.isAutomaticChange?.( player ) ) {
+        return;
+    }
+    savedMuted = player.muted();
+} );
+```
 
 ## Lightbox Methods
 
