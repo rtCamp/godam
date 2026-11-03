@@ -158,6 +158,13 @@ const godamPlayerAnalytics = {
 	},
 };
 
+const godamMapTracking = {
+	...sharedConfig,
+	entry: {
+		'godam-map-tracking': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'map-tracking.js' ),
+	},
+};
+
 const deactivationJS = {
 	...sharedConfig,
 	entry: {
@@ -218,6 +225,20 @@ const jetpackFormJS = {
 	...sharedConfig,
 	entry: {
 		'jetpack-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'jetpack-form.js' ),
+	},
+};
+
+const marketoFormJS = {
+	...sharedConfig,
+	entry: {
+		'marketo-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'marketo-form.js' ),
+	},
+};
+
+const hubspotFormJS = {
+	...sharedConfig,
+	entry: {
+		'hubspot-form': path.resolve( process.cwd(), 'assets', 'src', 'js', 'hubspot-form.js' ),
 	},
 };
 
@@ -447,6 +468,7 @@ module.exports = [
 	godamPlayerFrontend,
 	godamImageLayersFrontend,
 	godamPlayerAnalytics,
+	godamMapTracking,
 	deactivationJS,
 	dashboardWidgetJS,
 	httpAuthDetector,
@@ -456,6 +478,8 @@ module.exports = [
 	gfGodamRecorderEditorJS,
 	wpFormsGodamRecorderEditorJS,
 	jetpackFormJS,
+	marketoFormJS,
+	hubspotFormJS,
 	styles, // Do not remove this.
 	pages,
 	elementorWidgetJS,

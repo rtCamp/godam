@@ -26,6 +26,14 @@ class IMA_Assets {
 	 * @since 1.4.8
 	 */
 	protected function __construct() {
+		// Players are often rendered inside the content, after `wp_enqueue_scripts`
+		// has already run (classic themes, shortcodes). Enqueue straight away then;
+		// the script is printed in the footer.
+		if ( did_action( 'wp_enqueue_scripts' ) ) {
+			$this->enqueue_scripts();
+			return;
+		}
+
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 	}
 

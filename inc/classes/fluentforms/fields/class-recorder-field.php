@@ -847,7 +847,7 @@ class Recorder_Field extends BaseFieldManager {
 		$transcoded_url        = '';
 
 		if ( ! empty( $submission_meta ) ) {
-			$transcoded_url        = esc_url( $submission_meta->value );
+			$transcoded_url        = esc_url_raw( $submission_meta->value );
 			$transcoded_url_output = sprintf(
 				"<div style='margin: 8px 0;' class='godam-transcoded-url-info'><span class='dashicons dashicons-yes-alt'></span><strong>%s</strong></div>",
 				esc_html__( 'Video saved and transcoded successfully on GoDAM', 'godam' )
@@ -857,7 +857,14 @@ class Recorder_Field extends BaseFieldManager {
 		/**
 		 * Generate video output.
 		 */
-		$video_output = do_shortcode( "[godam_video src='{$video_url}' transcoded_url='{$transcoded_url}' aspectRatio='']" );
+		$video_output = rtgodam_render_shortcode_from_atts(
+			'godam_video',
+			array(
+				'src'            => esc_url_raw( $video_url ),
+				'transcoded_url' => $transcoded_url,
+				'aspectratio'    => '',
+			)
+		);
 		$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
 
 		$download_url = sprintf(

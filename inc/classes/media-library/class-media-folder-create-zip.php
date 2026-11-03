@@ -216,7 +216,10 @@ class Media_Folder_Create_Zip {
 			foreach ( $batch_attachments as $attachment ) {
 				$file_path = get_attached_file( $attachment->ID );
 
-				if ( ! $file_path || ! file_exists( $file_path ) ) {
+				// Only files inside the uploads folder are added, wherever the stored path points.
+				$file_path = $file_path ? rtgodam_get_uploads_file_path( $file_path ) : false;
+
+				if ( ! $file_path ) {
 					++$skipped_files;
 					continue;
 				}

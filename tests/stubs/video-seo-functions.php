@@ -70,6 +70,13 @@ namespace {
  // phpcs:ignore Generic.Classes.DuplicateClassName.Found -- test stub.
 
 			/**
+			 * Parent post ID; 0 (unattached) unless a fixture sets it, as in WordPress.
+			 *
+			 * @var int
+			 */
+			public $post_parent = 0;
+
+			/**
 			 * @param array $props Properties.
 			 */
 			public function __construct( array $props = array() ) {

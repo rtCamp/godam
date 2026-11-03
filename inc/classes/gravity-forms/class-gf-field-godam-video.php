@@ -423,10 +423,17 @@ if ( class_exists( 'GF_Field' ) ) {
 				if ( $is_video ) {
 
 					if ( $transcoded_url ) {
-						$transcoded_url = esc_url( $transcoded_url );
+						$transcoded_url = esc_url_raw( $transcoded_url );
 					}
 
-					$video_output = do_shortcode( "[godam_video src='{$file_path}' transcoded_url='{$transcoded_url}' aspectRatio='']" );
+					$video_output = rtgodam_render_shortcode_from_atts(
+						'godam_video',
+						array(
+							'src'            => esc_url_raw( $file_path ),
+							'transcoded_url' => (string) $transcoded_url,
+							'aspectratio'    => '',
+						)
+					);
 					$video_output = '<div class="gf-godam-video-preview">' . $video_output . '</div>';
 					$output_arr[] = $video_output;
 				}

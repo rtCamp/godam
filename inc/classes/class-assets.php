@@ -122,6 +122,12 @@ class Assets {
 			'everestForms' => $is_everest_forms_active,
 			'ninjaForms'   => $is_ninja_forms_active,
 			'metform'      => $is_met_form_active,
+			// Marketo has no WP plugin; it is "available" when enabled and
+			// connected on GoDAM Central.
+			'marketo'      => \RTGODAM\Inc\Marketo::is_configured(),
+			// HubSpot is "available" when enabled and the admin's chosen source
+			// (GoDAM Central or the HubSpot plugin) is actually connected.
+			'hubspot'      => \RTGODAM\Inc\Hubspot::is_configured(),
 		);
 
 		/**
