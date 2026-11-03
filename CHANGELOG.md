@@ -1,5 +1,9 @@
 # Changelog #
 
+## v2.6.1 (November 3, 2026) ##
+
+- Fix: On a site where no video has been played yet, the GoDAM Dashboard and the WordPress Dashboard widget now show zeros instead of "Analytics is temporarily unavailable".
+
 ## v2.6.0 (November 2, 2026) ##
 
 - Feat: You can now add a Marketo form as a video layer. Connect your Marketo account under GoDAM > Settings > Integrations, then pick the form from a searchable list of your approved Marketo forms. If Marketo is connected without a Client ID and Secret, enter the form's ID instead.

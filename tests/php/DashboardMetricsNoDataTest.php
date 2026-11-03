@@ -9,7 +9,7 @@
  * temporarily unavailable" notice. A 2xx with the key missing, or with a value
  * that is not an object, is still an error.
  *
- * @since n.e.x.t
+ * @since 2.6.1
  *
  * @package GoDAM
  */
