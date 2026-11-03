@@ -56,6 +56,11 @@ class EngagementVideoScopeTest extends TestCase {
 	const PAGE = 44;
 
 	/**
+	 * A video attached to a draft but used on a published page, so GoDAM counts it as public.
+	 */
+	const USED_ON_PUBLIC_PAGE = 45;
+
+	/**
 	 * The address of the comment author in the Central fake.
 	 */
 	const COMMENTER = 'commenter@example.com';
@@ -82,6 +87,20 @@ class EngagementVideoScopeTest extends TestCase {
 		rtgodam_stub_video( self::PRIVATE_VIDEO, 'job-private', 'private' );
 		rtgodam_stub_video( self::NO_JOB_VIDEO, '' );
 		rtgodam_stub_video( self::PAGE, '', 'publish', 'page' );
+		rtgodam_stub_video( self::USED_ON_PUBLIC_PAGE, 'job-used', 'draft' );
+
+		// The site's visibility rule, as rtgodam_can_view_attachment() decides it (tested in
+		// MediaVisibilityTest): public, readable by the user, or used on a public page.
+		add_filter(
+			'rtgodam_can_view_attachment',
+			static function ( $can_view, $attachment ) {
+				return is_post_publicly_viewable( $attachment )
+					|| current_user_can( 'read_post', $attachment->ID )
+					|| self::USED_ON_PUBLIC_PAGE === $attachment->ID;
+			},
+			10,
+			2
+		);
 	}
 
 	protected function tearDown(): void {
@@ -535,7 +554,18 @@ class EngagementVideoScopeTest extends TestCase {
 			$calls = array();
 			$this->engagement()->get_visible_transcoder_job_id( $video_id );
 
-			$this->assertSame( array( 'before', 'after' ), $calls, $video_id );
+			// The visibility check brackets its own lookup after the job lookup closes: pairs, never nested.
+			$this->assertNotEmpty( $calls, $video_id );
+			$this->assertSame( array_fill( 0, count( $calls ) / 2, array( 'before', 'after' ) ), array_chunk( $calls, 2 ), $video_id );
 		}
+	}
+
+	/** A video attached to a draft but used on a published page shows its engagement and takes likes, as in its player. */
+	public function test_video_used_on_a_public_page_is_answered() {
+		$this->assertSame( 'job-used', $this->engagement()->get_visible_transcoder_job_id( (string) self::USED_ON_PUBLIC_PAGE ) );
+		$this->assertSame( 'job-used', $this->engagement()->get_visible_transcoder_job_id( 'cmmid_job-used' ) );
+
+		$this->sign_in_as();
+		$this->assertSame( 'job-used', $this->engagement()->get_visible_transcoder_job_id( (string) self::USED_ON_PUBLIC_PAGE ) );
 	}
 }

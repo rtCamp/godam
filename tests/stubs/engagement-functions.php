@@ -176,6 +176,7 @@ if ( ! function_exists( 'rtgodam_stub_video' ) ) {
 			'ID'          => $attachment_id,
 			'post_type'   => $post_type,
 			'post_status' => $status,
+			'post_parent' => 0,
 		);
 
 		$GLOBALS['rtgodam_stub']['attachment_meta'][ $attachment_id ] = '' === $job_id ? array() : array( 'rtgodam_transcoding_job_id' => $job_id );

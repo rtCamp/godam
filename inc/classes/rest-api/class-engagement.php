@@ -1215,8 +1215,10 @@ class Engagement extends Base {
 	/**
 	 * Returns the transcoding job ID for a video of this site that the current user can see.
 	 *
-	 * A video is visible when its attachment is publicly viewable, or when the
-	 * current user may read it, as for an attachment of a private post.
+	 * A video is visible when rtgodam_can_view_attachment() says so, as on
+	 * GoDAM's other public routes: it is unattached, the post it was uploaded to
+	 * is public or readable by the current user, the user can edit it, or it is
+	 * used on a publicly viewable post.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -1242,7 +1244,6 @@ class Engagement extends Base {
 		$video_id   = (string) $video_id;
 		$named_job  = '';
 		$candidates = array();
-		$job_id     = '';
 
 		/**
 		 * Fires before reading this attachment's transcoding job ID, so
@@ -1283,6 +1284,8 @@ class Engagement extends Base {
 			$candidates = array( (int) $video_id );
 		}
 
+		$jobs = array();
+
 		foreach ( $candidates as $attachment_id ) {
 			$attachment = get_post( $attachment_id );
 
@@ -1290,20 +1293,23 @@ class Engagement extends Base {
 				continue;
 			}
 
-			if ( $visible_only && ! is_post_publicly_viewable( $attachment ) && ! current_user_can( 'read_post', $attachment->ID ) ) {
-				continue;
-			}
-
 			$job_id = '' !== $named_job ? $named_job : get_post_meta( $attachment->ID, 'rtgodam_transcoding_job_id', true );
 
 			if ( ! empty( $job_id ) ) {
-				break;
+				$jobs[ $attachment->ID ] = (string) $job_id;
 			}
 		}
 
 		do_action( 'rtgodam_after_attachment_lookup' );
 
-		return ! empty( $job_id ) ? (string) $job_id : null;
+		// rtgodam_can_view_attachment() brackets its own lookup, so it runs once the lookup above has closed.
+		foreach ( $jobs as $attachment_id => $job_id ) {
+			if ( ! $visible_only || rtgodam_can_view_attachment( $attachment_id ) ) {
+				return $job_id;
+			}
+		}
+
+		return null;
 	}
 
 	/**
