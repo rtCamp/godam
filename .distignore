@@ -45,3 +45,6 @@ phpunit.xml.dist
 
 # Dashboard widget sample data: development and review only, never shipped.
 /inc/classes/class-dashboard-widget-preview.php
+
+# Design docs and RFCs: for contributors, not shipped.
+/docs/
