@@ -120,6 +120,10 @@ if ( ! function_exists( 'get_post_meta' ) ) {
 		$meta = isset( $GLOBALS['rtgodam_stub']['post_meta'] ) && is_array( $GLOBALS['rtgodam_stub']['post_meta'] )
 			? $GLOBALS['rtgodam_stub']['post_meta']
 			: array();
+		// A test that gives posts their own meta (`attachment_meta`, keyed by post ID) is answered per post.
+		if ( isset( $GLOBALS['rtgodam_stub']['attachment_meta'][ $post_id ] ) ) {
+			$meta = $GLOBALS['rtgodam_stub']['attachment_meta'][ $post_id ];
+		}
 		return array_key_exists( $key, $meta ) ? $meta[ $key ] : '';
 	}
 }
@@ -324,7 +328,8 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
  * ---------------------------------------------------------------------------
  * Stubs for AnalyticsRoutePermissionTest. The route table reads the
  * WP_REST_Server method constants, and the permission callbacks ask
- * current_user_can(), which answers from $GLOBALS['rtgodam_stub']['caps'].
+ * current_user_can(), which answers from $GLOBALS['rtgodam_stub']['caps'] and,
+ * for a capability asked about one post, from `object_caps`.
  * ---------------------------------------------------------------------------
  */
 if ( ! class_exists( 'WP_REST_Server' ) ) {

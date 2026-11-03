@@ -19,6 +19,8 @@ namespace RTGODAM\Tests;
 use PHPUnit\Framework\TestCase;
 use RTGODAM\Inc\REST_API\Engagement;
 
+require_once dirname( __DIR__ ) . '/stubs/post-functions.php';
+
 /**
  * @covers \RTGODAM\Inc\REST_API\Engagement::get_activities
  * @covers \RTGODAM\Inc\REST_API\Engagement::get_comments
@@ -49,6 +51,9 @@ class EngagementCommentPrivacyTest extends TestCase {
 			),
 			'post_handler' => array( $this, 'central' ),
 		);
+
+		// The video the tests embed as cmmid_job-1: a public attachment of this site.
+		rtgodam_stub_video( 41, 'job-1' );
 
 		// Alice wrote a top-level comment and a reply; Bob replied to her.
 		$this->set_central_comments(
