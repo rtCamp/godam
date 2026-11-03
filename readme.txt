@@ -271,7 +271,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v2.6.1 (November 3, 2026) =
 
-- Fix: On a site where no video has been played yet, the GoDAM Dashboard and the WordPress Dashboard widget now show zeros instead of "Analytics is temporarily unavailable".
+- Fix: The analytics dashboard now shows correctly on sites with no views yet.
 
 = v2.6.0 (November 2, 2026) =
 
