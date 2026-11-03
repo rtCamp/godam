@@ -37,8 +37,7 @@ class Setup_Checklist extends Base {
 	protected $rest_base = 'dashboard';
 
 	/**
-	 * Transient that holds the site facts for a minute, so a reload does not
-	 * repeat the post-content scan.
+	 * Transient that holds the site facts. Cleared whenever one of them can change.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -47,13 +46,88 @@ class Setup_Checklist extends Base {
 	const CACHE_KEY = 'rtgodam_setup_checklist_facts';
 
 	/**
-	 * How long the facts are cached.
+	 * How long the facts are cached when nothing clears them sooner.
 	 *
 	 * @since n.e.x.t
 	 *
 	 * @var int
 	 */
-	const CACHE_TTL = MINUTE_IN_SECONDS;
+	const CACHE_TTL = 5 * MINUTE_IN_SECONDS;
+
+	/**
+	 * Transient that holds whether a published post uses the GoDAM Video block.
+	 * Kept apart and longer, because finding out scans post content; cleared when
+	 * a post is published or unpublished.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string
+	 */
+	const BLOCK_CACHE_KEY = 'rtgodam_setup_checklist_block';
+
+	/**
+	 * Register the route, and clear the cached facts when one of them changes.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	protected function setup_hooks() {
+		parent::setup_hooks();
+
+		add_action( 'add_attachment', array( $this, 'flush_facts' ) );
+		add_action( 'delete_attachment', array( $this, 'flush_facts' ) );
+		add_action( 'added_post_meta', array( $this, 'flush_facts_on_meta' ), 10, 3 );
+		add_action( 'updated_post_meta', array( $this, 'flush_facts_on_meta' ), 10, 3 );
+		add_action( 'deleted_post_meta', array( $this, 'flush_facts_on_meta' ), 10, 3 );
+		add_action( 'add_option_godam_vimeo_video_migration_status', array( $this, 'flush_facts' ) );
+		add_action( 'update_option_godam_vimeo_video_migration_status', array( $this, 'flush_facts' ) );
+		add_action( 'delete_option_godam_vimeo_video_migration_status', array( $this, 'flush_facts' ) );
+		add_action( 'transition_post_status', array( $this, 'flush_block_cache' ), 10, 2 );
+	}
+
+	/**
+	 * Clear the cached facts.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function flush_facts() {
+		delete_transient( self::CACHE_KEY );
+	}
+
+	/**
+	 * Clear the cached facts when a video gains or loses its GoDAM copy.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int|int[] $meta_ids  Meta ID or IDs.
+	 * @param int       $object_id Post ID.
+	 * @param string    $meta_key  Meta key.
+	 * @return void
+	 */
+	public function flush_facts_on_meta( $meta_ids, $object_id, $meta_key ) {
+		if ( 'rtgodam_transcoded_url' === $meta_key ) {
+			$this->flush_facts();
+		}
+	}
+
+	/**
+	 * Clear the block lookup when a post is published or unpublished.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $new_status New post status.
+	 * @param string $old_status Old post status.
+	 * @return void
+	 */
+	public function flush_block_cache( $new_status, $old_status ) {
+		if ( 'publish' === $new_status || 'publish' === $old_status ) {
+			delete_transient( self::BLOCK_CACHE_KEY );
+			$this->flush_facts();
+		}
+	}
 
 	/**
 	 * Register the checklist route.
@@ -218,6 +292,9 @@ class Setup_Checklist extends Base {
 	/**
 	 * Whether any published post, page or lesson contains the GoDAM Video block.
 	 *
+	 * The scan has no index to use, so its answer is cached for a day and cleared
+	 * by flush_block_cache() whenever a post is published or unpublished.
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @return bool
@@ -225,13 +302,27 @@ class Setup_Checklist extends Base {
 	private function is_video_block_published() {
 		global $wpdb;
 
-		// One row is enough; a LIKE scan has no index, so it stops at the first match.
+		$cached = get_transient( self::BLOCK_CACHE_KEY );
+		if ( false !== $cached ) {
+			return 'yes' === $cached;
+		}
+
+		// Public content only: a synced pattern or template part is not a page or lesson.
+		$post_types = array_values( array_diff( get_post_types( array( 'public' => true ) ), array( 'attachment' ) ) );
+		if ( empty( $post_types ) ) {
+			return false;
+		}
+		$type_placeholders = implode( ', ', array_fill( 0, count( $post_types ), '%s' ) );
+
+		// One row is enough; LIMIT 1 stops at the first match.
 		$found = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, godam-coverage-ignore -- Post content, not attachment data; cached by get_checklist().
 			$wpdb->prepare(
-				"SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type NOT IN ( 'revision', 'attachment' ) AND post_content LIKE %s LIMIT 1",
-				'%' . $wpdb->esc_like( '<!-- wp:godam/video ' ) . '%'
+				"SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type IN ( {$type_placeholders} ) AND post_content LIKE %s LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $type_placeholders is a list of %s placeholders.
+				array_merge( $post_types, array( '%' . $wpdb->esc_like( '<!-- wp:godam/video ' ) . '%' ) )
 			)
 		);
+
+		set_transient( self::BLOCK_CACHE_KEY, empty( $found ) ? 'no' : 'yes', DAY_IN_SECONDS );
 
 		return ! empty( $found );
 	}

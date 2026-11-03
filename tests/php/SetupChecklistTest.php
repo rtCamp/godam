@@ -14,6 +14,8 @@ use RTGODAM\Inc\REST_API\Setup_Checklist;
 
 /**
  * @covers \RTGODAM\Inc\REST_API\Setup_Checklist::build_checklist
+ * @covers \RTGODAM\Inc\REST_API\Setup_Checklist::flush_facts_on_meta
+ * @covers \RTGODAM\Inc\REST_API\Setup_Checklist::flush_block_cache
  */
 class SetupChecklistTest extends TestCase {
 
@@ -108,5 +110,50 @@ class SetupChecklistTest extends TestCase {
 			array( 'connect_site', 'move_videos', 'vimeo', 'upload_video', 'add_block' ),
 			array_column( $checklist['steps'], 'id' )
 		);
+	}
+
+	/**
+	 * A checklist with both caches filled, built without the constructor's hooks.
+	 *
+	 * @return Setup_Checklist
+	 */
+	private function checklist_with_caches() {
+		$GLOBALS['rtgodam_stub']['transient'] = array(
+			Setup_Checklist::CACHE_KEY       => array( 'connected' => true ),
+			Setup_Checklist::BLOCK_CACHE_KEY => 'no',
+		);
+
+		return ( new \ReflectionClass( Setup_Checklist::class ) )->newInstanceWithoutConstructor();
+	}
+
+	/**
+	 * A video gaining or losing its GoDAM copy clears the facts; other meta does not.
+	 */
+	public function test_transcoded_url_meta_clears_the_facts() {
+		$checklist = $this->checklist_with_caches();
+
+		$checklist->flush_facts_on_meta( 1, 10, '_wp_attached_file' );
+		$this->assertArrayHasKey( Setup_Checklist::CACHE_KEY, $GLOBALS['rtgodam_stub']['transient'] );
+
+		$checklist->flush_facts_on_meta( 1, 10, 'rtgodam_transcoded_url' );
+		$this->assertArrayNotHasKey( Setup_Checklist::CACHE_KEY, $GLOBALS['rtgodam_stub']['transient'] );
+	}
+
+	/**
+	 * Publishing or unpublishing clears the block lookup; saving a draft keeps it.
+	 */
+	public function test_publish_changes_clear_the_block_lookup() {
+		$checklist = $this->checklist_with_caches();
+
+		$checklist->flush_block_cache( 'draft', 'auto-draft' );
+		$this->assertArrayHasKey( Setup_Checklist::BLOCK_CACHE_KEY, $GLOBALS['rtgodam_stub']['transient'] );
+
+		$checklist->flush_block_cache( 'publish', 'draft' );
+		$this->assertArrayNotHasKey( Setup_Checklist::BLOCK_CACHE_KEY, $GLOBALS['rtgodam_stub']['transient'] );
+		$this->assertArrayNotHasKey( Setup_Checklist::CACHE_KEY, $GLOBALS['rtgodam_stub']['transient'] );
+
+		$checklist = $this->checklist_with_caches();
+		$checklist->flush_block_cache( 'trash', 'publish' );
+		$this->assertArrayNotHasKey( Setup_Checklist::BLOCK_CACHE_KEY, $GLOBALS['rtgodam_stub']['transient'] );
 	}
 }
