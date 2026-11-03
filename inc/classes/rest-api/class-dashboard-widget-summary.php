@@ -291,6 +291,12 @@ class Dashboard_Widget_Summary extends Base {
 
 		$summary['unavailable'] = $unavailable;
 
+		// No video has played on this site yet: the widget points to the setup
+		// checklist instead of a row of zeros.
+		if ( ! empty( $metrics['no_data'] ) ) {
+			$summary['no_data'] = true;
+		}
+
 		return $summary;
 	}
 

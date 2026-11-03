@@ -347,6 +347,8 @@ class Dashboard_Widget {
 				'preview'    => self::preview_state(),
 				'reviewAsk'  => ! empty( $model['review_ask'] ),
 				'reviewPath' => '/godam/v1/dashboard-widget/review-ask',
+				// The GoDAM Dashboard holds the setup checklist for a site with no plays yet.
+				'setupUrl'   => current_user_can( self::GODAM_PAGE_CAP ) ? admin_url( 'admin.php?page=rtgodam' ) : '',
 			)
 		);
 	}

@@ -32,6 +32,7 @@ import PlaybackPerformanceDashboard from '../analytics/PlaybackPerformance';
 import TopVideosTable from './components/TopVideosTable';
 import TopProductsTable from './components/TopProductsTable';
 import GA4ConnectionWidget from './components/GA4ConnectionWidget';
+import SetupChecklist from './components/SetupChecklist';
 import DateRangePicker, { triggerLabelFor, fromISO } from '../analytics/components/DateRangePicker';
 
 /**
@@ -307,8 +308,13 @@ const Dashboard = () => {
 	const gaugeFullError = ! shouldSkipAnalytics && ( isGaugeError || !! gaugeMetrics?.errorType );
 
 	// Skip secondary queries until the primary metrics call has returned without an error.
+	// No video has played on this site yet: the setup checklist replaces the
+	// metrics, and gives way to them after the first play. Read from the
+	// all-time call only, so a quiet date range never brings it back.
+	const hasNoData = ! shouldSkipAnalytics && !! dashboardMetrics?.no_data;
+
 	// This prevents parallel requests being sent when the server rejects the API key.
-	const shouldSkipSecondaryQueries = shouldSkipAnalytics || ! dashboardMetrics || !! dashboardMetrics?.errorType;
+	const shouldSkipSecondaryQueries = shouldSkipAnalytics || ! dashboardMetrics || !! dashboardMetrics?.errorType || hasNoData;
 
 	const { data: dashboardMetricsHistory } = useFetchDashboardMetricsHistoryQuery( { days: 60, siteUrl }, { skip: shouldSkipSecondaryQueries } );
 
@@ -412,6 +418,21 @@ const Dashboard = () => {
 
 		return () => clearInterval( checkExist );
 	}, [] );
+
+	if ( hasNoData ) {
+		return (
+			<div className="godam-dashboard-container">
+				<GodamHeader />
+
+				<div id="dashboard-container" className="dashboard-container">
+					<div className="godam-dashboard-head">
+						<h1 className="godam-dashboard-title">{ __( 'Dashboard', 'godam' ) }</h1>
+					</div>
+					<SetupChecklist />
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="godam-dashboard-container">

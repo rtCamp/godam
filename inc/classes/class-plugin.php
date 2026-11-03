@@ -48,6 +48,7 @@ use RTGODAM\Inc\REST_API\Transcription;
 use RTGODAM\Inc\REST_API\Analytics;
 use RTGODAM\Inc\REST_API\Map_Events;
 use RTGODAM\Inc\REST_API\Dashboard_Widget_Summary;
+use RTGODAM\Inc\REST_API\Setup_Checklist;
 use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\Dynamic_Shortcode;
 use RTGODAM\Inc\REST_API\Dynamic_Gallery;
@@ -214,6 +215,7 @@ class Plugin {
 		Analytics::get_instance();
 		Map_Events::get_instance();
 		Dashboard_Widget_Summary::get_instance();
+		Setup_Checklist::get_instance();
 		Deactivation::get_instance();
 		Polls::get_instance();
 		Dynamic_Shortcode::get_instance();

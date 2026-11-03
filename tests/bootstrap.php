@@ -529,6 +529,7 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-engagement.php';
 require_once dirname( __DIR__ ) . '/inc/classes/enums/class-api-key-status.php';
 require_once dirname( __DIR__ ) . '/inc/classes/class-dashboard-widget.php';
 require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-dashboard-widget-summary.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-setup-checklist.php';
 
 // Loaded for GodamTabAudioMimeTest: get_mime_type_for_job_type() through reflection on a
 // constructor-less instance, and the static MIME helpers. Requiring the file only declares the class.

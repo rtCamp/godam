@@ -1396,7 +1396,13 @@ class Analytics extends Base {
 		// Any other non-2xx answer (401/403/429, …), or a 2xx without the metrics
 		// payload, is a failed call — not an empty set of metrics. Returning
 		// success here would show real tiles as "0" and cache that for 15 minutes.
-		if ( $http_code < 200 || $http_code >= 300 || ! is_array( $body ) || ! isset( $body['dashboard_metrics'] ) ) {
+		// A `dashboard_metrics: null` key is different: it is how the service says
+		// the site has no data yet (no video played), so it is a real zero.
+		if (
+			$http_code < 200 || $http_code >= 300 || ! is_array( $body )
+			|| ! array_key_exists( 'dashboard_metrics', $body )
+			|| ( null !== $body['dashboard_metrics'] && ! is_array( $body['dashboard_metrics'] ) )
+		) {
 			return new WP_REST_Response(
 				array(
 					'status'    => 'error',
@@ -1412,13 +1418,19 @@ class Analytics extends Base {
 			$dashboard_metrics = $this->video_data_in_dashboard_metrics( $dashboard_metrics );
 		}
 
-		return new WP_REST_Response(
-			array(
-				'status'            => 'success',
-				'dashboard_metrics' => $dashboard_metrics,
-			),
-			200
+		$data = array(
+			'status'            => 'success',
+			'dashboard_metrics' => $dashboard_metrics,
 		);
+
+		// Say so explicitly when the site has no data yet, so the dashboard can
+		// show the setup checklist instead of guessing from zeros. Callers read
+		// it from the all-time call: it means "never played", not "quiet range".
+		if ( null === $body['dashboard_metrics'] ) {
+			$data['no_data'] = true;
+		}
+
+		return new WP_REST_Response( $data, 200 );
 	}
 
 	/**
