@@ -37,7 +37,7 @@ class Offer_Notice {
 	 */
 	const CAMPAIGNS = array(
 		'halloween-2026' => array(
-			'start'          => '2026-10-28 00:00:00',
+			'start'          => '2026-10-01 00:00:00', // Before 2.5.2 shipped it: the notice showed from install.
 			'end'            => '2026-11-09 23:59:59',
 			'code'           => 'SPOOKY50',
 			'dismiss_option' => 'rtgodam_offer_halloween_2026_dismissed',
@@ -261,6 +261,9 @@ class Offer_Notice {
 	 * @return void
 	 */
 	public static function render( $placement, $now = null, $user_data = null ) {
+		// Read the clock once, so a campaign that ends mid-request cannot pass should_show() and then be gone.
+		$now = $now ? $now : new \DateTime( 'now', wp_timezone() );
+
 		if ( ! self::should_show( $now, $user_data ) ) {
 			return;
 		}

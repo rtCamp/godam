@@ -297,6 +297,17 @@ class OfferNoticeTest extends TestCase {
 		$this->assertSame( array( 'rtgodam_offer_bfcm_2026_dismissed' ), array_keys( $GLOBALS['rtgodam_stub']['options'] ) );
 	}
 
+	public function test_dismissing_between_campaigns_saves_nothing_and_the_ajax_call_without_a_time_still_works() {
+		$this->stub_ajax();
+		$GLOBALS['rtgodam_stub']['nonce_ok'] = true;
+
+		$this->assertSame( 'success', $this->call_dismiss( $this->moment( '2026-11-12 12:00:00' ) ) );
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['options'] );
+
+		// WordPress's do_action() passes '' to a one-argument callback: it must read the real clock, not fail.
+		$this->assertSame( 'success', $this->call_dismiss( '' ) );
+	}
+
 	/**
 	 * Stub the AJAX helpers dismiss() calls. Each one that ends a WordPress request throws instead.
 	 */
