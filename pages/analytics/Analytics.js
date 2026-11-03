@@ -39,6 +39,7 @@ import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
 import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
+import AnalyticsForbiddenNotice, { isAnalyticsForbidden } from './AnalyticsForbiddenNotice';
 import { canViewStoreData } from '../shared/canViewStoreData';
 import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
@@ -134,6 +135,7 @@ const Analytics = ( { attachmentID } ) => {
 		data: analyticsDataFetched,
 		isLoading: isAnalyticsDataLoading,
 		isError: isAnalyticsDataError,
+		error: analyticsDataError,
 	} = useFetchAnalyticsDataQuery(
 		{ videoId: attachmentID, siteUrl },
 		{ skip: ! attachmentID || shouldSkipAnalytics },
@@ -203,7 +205,9 @@ const Analytics = ( { attachmentID } ) => {
 	// Connected, but the analytics backend is unreachable (server down) or returned
 	// a microservice error. Gated on a valid key so it never shows for a
 	// disconnected site — that case is handled by the onboarding overlay.
-	const analyticsUnreachable = !! window.userData?.validApiKey && !! attachmentID && ! shouldSkipAnalytics && ( isAnalyticsDataError || analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
+	// The route refused this video for this user (an Author opening someone else's video), not an outage.
+	const analyticsForbidden = isAnalyticsDataError && isAnalyticsForbidden( analyticsDataError );
+	const analyticsUnreachable = !! window.userData?.validApiKey && !! attachmentID && ! shouldSkipAnalytics && ! analyticsForbidden && ( isAnalyticsDataError || analyticsDataFetched?.errorType === ERROR_TYPE.MICROSERVICE_ERROR );
 
 	// charts.js (KPIs + geography + Views-by-Source) renders from this global.
 	window.analyticsDataFetched = rangedAnalyticsData ?? analyticsDataFetched;
@@ -565,6 +569,7 @@ const Analytics = ( { attachmentID } ) => {
 			</div>
 
 			{ analyticsUnreachable && <AnalyticsUnavailableNotice area="analytics" /> }
+			{ analyticsForbidden && <AnalyticsForbiddenNotice /> }
 
 			<div
 				id="media-not-found-overlay"
