@@ -85,6 +85,10 @@ if ( $godam_show_layers && $godam_attachment_id ) {
 	}
 }
 
+// A hotspot link becomes the `href` of a link on the front end, so only http, https
+// and mailto links go out with the layers.
+$godam_layers = rtgodam_sanitize_hotspot_links( $godam_layers );
+
 $godam_has_layers = ! empty( $godam_layers );
 
 // The job id WordPress already has for this image, so its hotspot events carry it
