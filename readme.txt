@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.6.0
+Stable tag: 2.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -269,6 +269,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.6.1 (November 3, 2026) =
+
+- Fix: The analytics dashboard now shows correctly on sites with no views yet.
+
 = v2.6.0 (November 2, 2026) =
 
 - Feat: You can now add a Marketo form as a video layer. Connect your Marketo account under GoDAM > Settings > Integrations, then pick the form from a searchable list of your approved Marketo forms. If Marketo is connected without a Client ID and Secret, enter the form's ID instead.
@@ -289,15 +293,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Fix: Global video ads (GoDAM > Settings > Video Ads > Enable Global Video Ads) now play.
 - Fix: In the Classic player skin, the mute button on hover previews shows its icon again.
 - Fix: Security fixes.
-
-= v2.5.1 (October 26, 2026) =
-
-- Fix: GoDAM's public video pages, lists and player data no longer show media from draft, private or scheduled posts. Media used on a published page keeps working.
-- Fix: GoDAM only deletes, exports and stores media files that are inside the uploads folder.
-- Fix: Video embed pages and form entries build the player from checked settings.
-- Fix: The form lists in the video editor are available only to users who can upload media, and Jetpack forms in videos show only on published posts.
-- Fix: Sending media to GoDAM for transcoding now checks GoDAM's security certificate.
-- Fix: Media folder names are no longer shown to site visitors, and a locked folder stays locked everywhere.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.

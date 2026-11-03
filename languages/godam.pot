@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 2.6.0\n"
+"Project-Id-Version: GoDAM 2.6.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-02T11:53:17+00:00\n"
+"POT-Creation-Date: 2026-11-03T10:48:39+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -12551,9 +12551,9 @@ msgstr ""
 #: inc/classes/rest-api/class-analytics.php:798
 #: inc/classes/rest-api/class-analytics.php:1076
 #: inc/classes/rest-api/class-analytics.php:1316
-#: inc/classes/rest-api/class-analytics.php:1751
-#: inc/classes/rest-api/class-analytics.php:1828
-#: inc/classes/rest-api/class-analytics.php:1911
+#: inc/classes/rest-api/class-analytics.php:1757
+#: inc/classes/rest-api/class-analytics.php:1834
+#: inc/classes/rest-api/class-analytics.php:1917
 #: inc/classes/rest-api/class-engagement.php:376
 #: inc/classes/rest-api/class-site.php:169
 msgid "Missing API key."
@@ -12566,20 +12566,20 @@ msgstr ""
 #: inc/classes/rest-api/class-analytics.php:872
 #: inc/classes/rest-api/class-analytics.php:1112
 #: inc/classes/rest-api/class-analytics.php:1363
-#: inc/classes/rest-api/class-analytics.php:1777
-#: inc/classes/rest-api/class-analytics.php:1860
-#: inc/classes/rest-api/class-analytics.php:1937
+#: inc/classes/rest-api/class-analytics.php:1783
+#: inc/classes/rest-api/class-analytics.php:1866
+#: inc/classes/rest-api/class-analytics.php:1943
 msgid "Unable to reach analytics server."
 msgstr ""
 
 #: inc/classes/rest-api/class-analytics.php:881
 #: inc/classes/rest-api/class-analytics.php:1123
 #: inc/classes/rest-api/class-analytics.php:1372
-#: inc/classes/rest-api/class-analytics.php:1582
-#: inc/classes/rest-api/class-analytics.php:1788
-#: inc/classes/rest-api/class-analytics.php:1871
-#: inc/classes/rest-api/class-analytics.php:1948
-#: inc/classes/rest-api/class-analytics.php:2069
+#: inc/classes/rest-api/class-analytics.php:1588
+#: inc/classes/rest-api/class-analytics.php:1794
+#: inc/classes/rest-api/class-analytics.php:1877
+#: inc/classes/rest-api/class-analytics.php:1954
+#: inc/classes/rest-api/class-analytics.php:2075
 msgid "Unexpected error from analytics server."
 msgstr ""
 
@@ -12594,9 +12594,9 @@ msgid "Post #%d (deleted)"
 msgstr ""
 
 #: inc/classes/rest-api/class-analytics.php:1252
-#: inc/classes/rest-api/class-analytics.php:1443
-#: inc/classes/rest-api/class-analytics.php:1523
-#: inc/classes/rest-api/class-analytics.php:1997
+#: inc/classes/rest-api/class-analytics.php:1449
+#: inc/classes/rest-api/class-analytics.php:1529
+#: inc/classes/rest-api/class-analytics.php:2003
 msgid "Invalid or unverified API key."
 msgstr ""
 
@@ -12606,12 +12606,12 @@ msgstr ""
 msgid "Error fetching history data: %s"
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:1486
+#: inc/classes/rest-api/class-analytics.php:1492
 msgid "Could not load the analytics history."
 msgstr ""
 
 #. translators: %d: WooCommerce product ID.
-#: inc/classes/rest-api/class-analytics.php:2120
+#: inc/classes/rest-api/class-analytics.php:2126
 #, php-format
 msgid "ID: %d (Deleted Product)"
 msgstr ""
