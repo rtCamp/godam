@@ -18,9 +18,11 @@ namespace RTGODAM\Tests;
 
 use PHPUnit\Framework\TestCase;
 use RTGODAM\Inc\REST_API\Analytics;
+use RTGODAM\Inc\REST_API\Dashboard_Widget_Summary;
 
 /**
  * @covers \RTGODAM\Inc\REST_API\Analytics::fetch_dashboard_metrics
+ * @covers \RTGODAM\Inc\REST_API\Dashboard_Widget_Summary::assemble_summary
  */
 class DashboardMetricsNoDataTest extends TestCase {
 
@@ -88,6 +90,48 @@ class DashboardMetricsNoDataTest extends TestCase {
 
 		$this->assertSame( 'error', $data['status'] );
 		$this->assertSame( 'microservice_error', $data['errorType'] );
+	}
+
+	/**
+	 * An empty metrics object is also a real zero, not an error.
+	 */
+	public function test_empty_metrics_object_means_no_data_yet() {
+		$data = $this->fetch_with( 200, '{"dashboard_metrics":[]}' );
+
+		$this->assertSame( 'success', $data['status'] );
+		$this->assertSame( 0, $data['dashboard_metrics']['plays'] );
+	}
+
+	/**
+	 * A 200 whose body is not JSON (an HTML error page) is still a failed call.
+	 */
+	public function test_non_json_body_is_an_error() {
+		$data = $this->fetch_with( 200, '<html><body>502 Bad Gateway</body></html>' );
+
+		$this->assertSame( 'error', $data['status'] );
+		$this->assertSame( 'microservice_error', $data['errorType'] );
+	}
+
+	/**
+	 * The WP Dashboard widget builds a normal summary from the no-data response,
+	 * so it shows zeros instead of "analytics is unavailable".
+	 */
+	public function test_widget_summary_reads_no_data_as_zeros() {
+		$metrics = $this->fetch_with( 200, '{"dashboard_metrics":null,"message":"No dashboard data found for the given site."}' );
+		$top     = array(
+			'status'     => 'success',
+			'top_videos' => array(),
+		);
+		$history = array(
+			'status'                    => 'success',
+			'dashboard_metrics_history' => array(),
+		);
+
+		$summary = Dashboard_Widget_Summary::assemble_summary( $metrics, $top, $history, gmmktime( 12, 0, 0, 10, 9, 2026 ) );
+
+		$this->assertSame( 'success', $summary['status'] );
+		$this->assertSame( array(), $summary['unavailable'] );
+		$this->assertSame( 0, $summary['receipts']['plays'] );
 	}
 
 	/**
