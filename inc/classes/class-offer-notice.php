@@ -174,7 +174,7 @@ class Offer_Notice {
 
 		switch ( $first ) {
 			case 'lifterlms':
-				$message = __( 'Host your LifterLMS course videos on GoDAM, with adaptive streaming and video analytics. We move up to 100 of your videos from Vimeo for free.', 'godam' );
+				$message = __( 'Host your LifterLMS course videos on GoDAM, with adaptive streaming and video analytics. We move your entire video library from Vimeo for free.', 'godam' );
 				break;
 
 			case 'woocommerce':

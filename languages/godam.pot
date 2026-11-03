@@ -11552,7 +11552,7 @@ msgid "Action Scheduler is required to run the GoDAM media usage backfill."
 msgstr ""
 
 #: inc/classes/class-offer-notice.php:177
-msgid "Host your LifterLMS course videos on GoDAM, with adaptive streaming and video analytics. We move up to 100 of your videos from Vimeo for free."
+msgid "Host your LifterLMS course videos on GoDAM, with adaptive streaming and video analytics. We move your entire video library from Vimeo for free."
 msgstr ""
 
 #: inc/classes/class-offer-notice.php:181
