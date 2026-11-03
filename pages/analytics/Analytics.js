@@ -34,6 +34,7 @@ import PurchaseFunnelCard from './PurchaseFunnelCard.js';
 import PlaysVsViewers from './PlaysVsViewers.js';
 import PlaybackPerformanceDashboard from './PlaybackPerformance.js';
 import VideoLayerTimeline from './VideoLayerTimeline.js';
+import { getLayerCount } from './layerCount';
 import Placements from './components/Placements';
 import videojs from 'video.js';
 import { arrowLeft, info } from '@wordpress/icons';
@@ -444,8 +445,7 @@ const Analytics = ( { attachmentID } ) => {
 	// replaced by the retention curve, so this gives the user a visual reference
 	// for which video they're looking at (matches the Figma "Video Detail" head).
 	const videoThumbnail = attachmentData?.meta?.rtgodam_media_video_thumbnail || DefaultThumbnail;
-	const videoLayers = attachmentData?.meta?.rtgodam_meta?.layers;
-	const layerCount = Array.isArray( videoLayers ) ? videoLayers.length : 0;
+	const layerCount = getLayerCount( attachmentData );
 
 	// Render the Viewer Retention Curve from the parsed heatmap.
 	// (Replaces the old video-overlay line chart — see generateRetentionCurve.)
