@@ -16,6 +16,30 @@
 @import "../../../../node_modules/react-pdf/dist/esm/Page/AnnotationLayer";
 @import "./viewer/viewer";
 
+// The card stacked: cover on top at full width, text below. Used by the card's
+// container query and by the phone fallback for floated cards.
+@mixin godam-pdf-card-stacked {
+	flex-direction: column;
+	align-items: flex-start;
+
+	&__cover {
+		width: 100%;
+		height: 250px;
+		flex: none;
+		border-radius: 10px 10px 0 0;
+	}
+
+	&__info {
+		padding: 0 16px 16px 16px;
+	}
+
+	// Show the full title once stacked — there is room for it, and the
+	// side-by-side ellipsis was what truncated it in narrow placements.
+	&__title {
+		white-space: normal;
+	}
+}
+
 .wp-block-godam-pdf {
 	box-sizing: border-box;
 
@@ -101,6 +125,17 @@
 		width: 100%;
 	}
 
+	// Make the wrapper a size-query container so the card below adapts to the
+	// width its parent actually gives it (a column, grid cell or flex item),
+	// not the viewport width. This lets a narrow placement stack even on a
+	// wide screen. Floated (Align left/right) blocks are skipped: a float is
+	// sized by its content, and inline-size containment reports that content
+	// as zero wide, which would collapse the card.
+	&:not(.alignleft, .alignright) .godam-pdf-card-wrapper {
+		container-type: inline-size;
+		container-name: godam-pdf-card;
+	}
+
 	.godam-pdf-card {
 		display: flex;
 		align-items: center;
@@ -179,23 +214,35 @@
 			margin: 0;
 		}
 
-		// Stack vertically on small screens.
-		@media ( max-width: 480px ) {
-			flex-direction: column;
-			align-items: flex-start;
+		// Stack vertically when the card's own container is narrow, regardless of
+		// the viewport width (e.g. the card placed in a narrow column on desktop).
+		@container godam-pdf-card ( max-width: 400px ) {
 
-			&__cover {
-				width: 100%;
-				height: 250px;
-				flex: none;
-				border-radius: 10px 10px 0 0;
-			}
-
-			&__info {
-				padding: 0 16px 16px 16px;
-			}
+			@include godam-pdf-card-stacked;
 		}
 	}
+
+	// A floated card (Align left/right) has no query container (see above), so it
+	// falls back to the viewport, as before container queries: stacked on phones.
+	@media ( max-width: 480px ) {
+
+		&.alignleft .godam-pdf-card,
+		&.alignright .godam-pdf-card {
+
+			@include godam-pdf-card-stacked;
+		}
+	}
+}
+
+// Fill the inline space of a flex container. Inside a core Group using a
+// Row/Stack (flex) layout the block root is a flex item with the default
+// `flex: 0 1 auto`, so it collapses to its min-content width while
+// `.godam-pdf-wrapper`'s fixed pixel height stays — rendering a tall, narrow,
+// empty box. Scoped to flex parents because flow, constrained and grid parents
+// already stretch the block, and a root `width: 100%` there would break
+// Align: Full width (negative-margin bleed) and side margins.
+:where(.is-layout-flex) > .wp-block-godam-pdf {
+	width: 100%;
 }
 
 // ── Unsupported-format notice ───────────────────────────────────────────────

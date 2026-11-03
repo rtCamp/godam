@@ -399,7 +399,11 @@ export default class FormLayerManager {
 				layerObj.layerElement?.querySelector( '.wp-polls-form' ) ) {
 				pollFormSeen = true;
 			}
-			if ( this.hasConfirmationMessage( layerObj.layerElement ) ) {
+			const isConfirmed = this.hasConfirmationMessage( layerObj.layerElement );
+			// A Marketo form that could not load (marketo-form.js): let the viewer
+			// continue, even with skip turned off, but record no submission.
+			const isUnavailable = !! layerObj.layerElement?.querySelector( '.godam-marketo-unavailable' );
+			if ( isConfirmed || isUnavailable ) {
 				// Update button text while preserving the arrow icon
 				let textNode = null;
 				for ( let i = 0; i < skipButton.childNodes.length; i++ ) {
@@ -425,9 +429,10 @@ export default class FormLayerManager {
 				// via the .wp-polls-form → .wp-polls-ans transition).
 				// CTA layers don't run this observer — their click events
 				// fire separately via setupCtaClickTracking.
-				if ( layerObj.layer?.type === LAYER_TYPES.FORM ) {
+				// An unavailable form records nothing: no submission happened.
+				if ( isConfirmed && layerObj.layer?.type === LAYER_TYPES.FORM ) {
 					this.emitLayerEvent( layerObj.layer, 'submitted' );
-				} else if ( isPoll && pollFormSeen ) {
+				} else if ( isConfirmed && isPoll && pollFormSeen ) {
 					// pollFormSeen guards against counting an already-voted
 					// viewer (results shown without a vote this session).
 					this.emitLayerEvent( layerObj.layer, 'voted' );
@@ -461,6 +466,15 @@ export default class FormLayerManager {
 			'.contact-form-success',
 			'.forminator-success.forminator-show',
 			'.everest-forms-notice--success',
+			// HubSpot: `.submitted-message` / `.hs-form__submitted-message` cover a
+			// non-iframe (Legacy/raw) form; `.godam-hubspot-submitted` is set by
+			// hubspot-form.js onFormSubmitted for the usual iframe-rendered form,
+			// whose success node lives inside the iframe and cannot be queried.
+			'.submitted-message',
+			'.hs-form__submitted-message',
+			'.godam-hubspot-submitted',
+			// Marketo: inserted by marketo-form.js onSuccess (stays on the page).
+			'.godam-marketo-success',
 		];
 
 		// Check for standard selectors

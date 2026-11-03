@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Media_Library\Media_Folder_Utils;
 
 /**
  * Class Media_Library
@@ -50,6 +51,7 @@ class Media_Library_Ajax {
 
 		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
 		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
+		add_action( 'wp_ajax_godam_dismiss_offer_notice', array( Offer_Notice::class, 'dismiss' ) );
 
 		add_action( 'rtgodam_handle_callback_finished', array( $this, 'download_transcoded_mp4_source' ), 10, 4 );
 
@@ -637,6 +639,12 @@ class Media_Library_Ajax {
 			return;
 		}
 
+		// A locked folder, or one inside a locked folder, takes no new files. Leave the
+		// upload unfiled, as the assign-folder route refuses the same move.
+		if ( Media_Folder_Utils::get_instance()->is_folder_locked( $media_folder ) ) {
+			return;
+		}
+
 		// Assign the existing term.
 		wp_set_object_terms( $attachment_id, (int) $media_folder, 'media-folder' );
 	}
@@ -1093,6 +1101,10 @@ class Media_Library_Ajax {
 	public function dismiss_offer_banner() {
 		check_ajax_referer( 'godam-dismiss-offer-banner-nonce', 'nonce' );
 
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
 		if ( get_option( 'rtgodam-offer-banner' ) === false ) {
 			add_option( 'rtgodam-offer-banner', 0 );
 		} else {
@@ -1103,80 +1115,15 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Renders an offer banner on the media library page for non-premium users.
+	 * Renders the seasonal offer notice on the Media Library page.
 	 *
 	 * @return void
 	 */
 	public function media_library_offer_banner() {
 		$screen = get_current_screen();
 
-		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
-
-		$timezone     = wp_timezone();
-		$current_time = new \DateTime( 'now', $timezone );
-		$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
-
-		// Only show on the Media Library page.
-		if ( $current_time <= $end_time && $screen && 'upload' === $screen->base && $show_offer_banner ) {
-			$host = wp_parse_url( home_url(), PHP_URL_HOST );
-
-			$banner_image = RTGODAM_URL . 'assets/src/images/new-year-sale-2026.webp';
-
-			$banner_html = sprintf(
-				'<div class="notice annual-plan-offer-banner">
-					<a
-						href="%1$s"
-						class="annual-plan-offer-banner__link"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="%2$s"
-					>
-						<img
-							src="%3$s"
-							class="annual-plan-offer-banner__image"
-							alt="%4$s"
-							loading="lazy"
-						/>
-					</a>
-					<button
-						type="button"
-						class="annual-plan-offer-banner__dismiss"
-						aria-label="%5$s"
-					>
-						&times;
-					</button>
-				</div>',
-				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=new-year-sale-2026&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
-				esc_attr__( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ),
-				esc_url( $banner_image ),
-				esc_attr__( 'New Year Sale 2026 offer from GoDAM', 'godam' ),
-				esc_html__( 'Dismiss banner', 'godam' )
-			);
-
-			echo wp_kses(
-				$banner_html,
-				array(
-					'div'    => array( 'class' => array() ),
-					'a'      => array(
-						'href'       => array(),
-						'class'      => array(),
-						'target'     => array(),
-						'rel'        => array(),
-						'aria-label' => array(),
-					),
-					'img'    => array(
-						'src'     => array(),
-						'alt'     => array(),
-						'class'   => array(),
-						'loading' => array(),
-					),
-					'button' => array(
-						'type'       => array(),
-						'class'      => array(),
-						'aria-label' => array(),
-					),
-				)
-			);
+		if ( $screen && 'upload' === $screen->base ) {
+			Offer_Notice::render( 'media-library' );
 		}
 	}
 

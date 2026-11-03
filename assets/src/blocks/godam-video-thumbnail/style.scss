@@ -44,3 +44,12 @@
 		transform: translate(-50%, -50%) scale(1.1);
 	}
 }
+
+// Fill the inline space of a flex container so the thumbnail doesn't collapse to
+// its min-content width when placed as a flex item inside a core Group using a
+// Row/Stack layout (its intended home is a grid/query-loop cell that gives it
+// width). Scoped to flex parents because a root `width: 100%` elsewhere would
+// break Align: Full width.
+:where(.is-layout-flex) > .wp-block-godam-video-thumbnail {
+	width: 100%;
+}

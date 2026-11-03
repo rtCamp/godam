@@ -88,6 +88,19 @@ abstract class Base extends \WP_REST_Controller {
 	abstract public function get_rest_routes();
 
 	/**
+	 * Permission check for routes only the Media Editor calls.
+	 *
+	 * The capability the Media Editor page itself requires.
+	 *
+	 * @since 2.5.1
+	 *
+	 * @return bool
+	 */
+	public function forms_permissions_check() {
+		return current_user_can( 'upload_files' );
+	}
+
+	/**
 	 * Sets up the proper HTTP status code for authorization.
 	 *
 	 * @return int The HTTP status code.

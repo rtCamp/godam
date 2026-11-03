@@ -502,12 +502,17 @@ class Godam_Gallery extends Base {
 			);
 		}
 
-		$shortcode_atts_string = '';
-		foreach ( $shortcode_atts as $key => $value ) {
-			$shortcode_atts_string .= sprintf( ' %s="%s"', $key, esc_attr( $value ) );
-		}
+		// Pass the settings as an attributes array rather than building a
+		// "[godam_video_gallery …]" string, so a setting value is never parsed as
+		// shortcode syntax. Values stay strings, as the shortcode parser delivers them.
+		$shortcode_atts = array_map(
+			function ( $value ) {
+				return is_scalar( $value ) ? (string) $value : '';
+			},
+			$shortcode_atts
+		);
 
-		echo do_shortcode( '[godam_video_gallery' . $shortcode_atts_string . ']' );
+		echo rtgodam_render_shortcode_from_atts( 'godam_video_gallery', $shortcode_atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The gallery template escapes its output.
 	}
 
 	/**

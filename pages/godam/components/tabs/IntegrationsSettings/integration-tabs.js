@@ -4,6 +4,21 @@
 import { __ } from '@wordpress/i18n';
 
 /**
+ * A tab title with the "Pro" badge, for integrations that need a GoDAM plan.
+ *
+ * @param {string} label Integration name.
+ * @return {JSX.Element} The title.
+ */
+const proTabTitle = ( label ) => (
+	<>
+		{ label }
+		<span className="godam-pro-badge">
+			{ __( 'Pro', 'godam' ) }
+		</span>
+	</>
+);
+
+/**
  * Integration tab definitions.
  *
  * Each add-on that needs an Integrations Settings tab should have an entry here.
@@ -21,14 +36,25 @@ const integrationTabs = [
 		fdItemId: 'godam-for-woo',
 		integrationLabel: __( 'WooCommerce', 'godam' ),
 		addonLabel: __( 'GoDAM for Woo', 'godam' ),
-		title: (
-			<>
-				{ __( 'WooCommerce', 'godam' ) }
-				<span className="godam-pro-badge">
-					{ __( 'Pro', 'godam' ) }
-				</span>
-			</>
-		),
+		title: proTabTitle( __( 'WooCommerce', 'godam' ) ),
+		className: 'godam-tab',
+	},
+	{
+		// Marketo has no add-on plugin to install, so no `pluginSlug`/`fdItemId`:
+		// `IntegrationsSettings` treats it as always-installed and renders the
+		// fields from `window.godamIntegrationComponents.marketo`.
+		name: 'marketo',
+		integrationLabel: __( 'Marketo', 'godam' ),
+		title: proTabTitle( __( 'Marketo', 'godam' ) ),
+		className: 'godam-tab',
+	},
+	{
+		// HubSpot is always-installed too: the tab lets the admin pick a source
+		// (GoDAM Central or the HubSpot plugin) and connect. Fields come from
+		// `window.godamIntegrationComponents.hubspot`.
+		name: 'hubspot',
+		integrationLabel: __( 'HubSpot', 'godam' ),
+		title: proTabTitle( __( 'HubSpot', 'godam' ) ),
 		className: 'godam-tab',
 	},
 ];
