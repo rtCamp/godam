@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 import { ComboboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,6 +19,7 @@ import { useGetPollsQuery, useGetPollQuery } from '../../redux/api/polls';
 import LayersHeader from './LayersHeader.js';
 import FormPreview from '../forms/FormPreview';
 import { VeSection, VeToggle, VeColorList } from '../controls';
+import { sanitizePreviewMarkup } from '../../utils/sanitizeMarkup';
 
 const PollLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
@@ -25,6 +27,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 
 	const { data: polls } = useGetPollsQuery();
 	const { data: currentPoll } = useGetPollQuery( layer.poll_id, { skip: ! layer.poll_id } );
+	const safePollHtml = useMemo( () => sanitizePreviewMarkup( currentPoll?.html ), [ currentPoll?.html ] );
 
 	const handlePollChange = ( value ) => {
 		dispatch( updateLayerField( { id: layer.id, field: 'poll_id', value } ) );
@@ -78,7 +81,7 @@ const PollLayer = ( { layerID, goBack, duration } ) => {
 			</div>
 
 			<FormPreview bgColor={ layer.bg_color } allowSkip={ layer.allow_skip }>
-				<div className="form-container poll-container" dangerouslySetInnerHTML={ { __html: currentPoll?.html } } />
+				<div className="form-container poll-container" dangerouslySetInnerHTML={ { __html: safePollHtml } } />
 			</FormPreview>
 		</>
 	);

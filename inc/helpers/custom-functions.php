@@ -123,6 +123,69 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
 }
 
 /**
+ * Sanitize an out-of-view behavior value.
+ *
+ * - `off` (default): do nothing, videos keep playing.
+ * - `autoplay`: pause autoplaying videos and resume them when back in view;
+ *   videos the visitor started keep playing.
+ * - `pause`: also pause videos the visitor started (they stay paused).
+ * - `mute`: also keep videos the visitor started playing, muted.
+ *
+ * See assets/src/js/godam-player/managers/visibilityManager.js.
+ *
+ * @since 2.7.0
+ *
+ * @param mixed  $value    Raw value.
+ * @param string $fallback Returned when the value is not valid.
+ *
+ * @return string `off`, `autoplay`, `pause`, `mute`, or the fallback.
+ */
+function rtgodam_sanitize_out_of_view_behavior( $value, $fallback = 'off' ) {
+	$value = is_string( $value ) ? strtolower( trim( $value ) ) : '';
+
+	return in_array( $value, array( 'off', 'autoplay', 'pause', 'mute' ), true ) ? $value : $fallback;
+}
+
+/**
+ * Resolve the out-of-view behavior for one player.
+ *
+ * A valid per-player value (block attribute or shortcode attribute) wins;
+ * empty or `inherit` falls back to the global Video Player setting.
+ *
+ * @since 2.7.0
+ *
+ * @param string $override Per-player value, empty to inherit.
+ *
+ * @return string `off`, `autoplay`, `pause` or `mute`.
+ */
+function rtgodam_get_out_of_view_behavior( $override = '' ) {
+	$override = rtgodam_sanitize_out_of_view_behavior( $override, '' );
+	if ( '' !== $override ) {
+		return $override;
+	}
+
+	$settings = get_option( 'rtgodam-settings', array() );
+	$global   = isset( $settings['video_player']['out_of_view_behavior'] ) ? $settings['video_player']['out_of_view_behavior'] : 'off';
+
+	return rtgodam_sanitize_out_of_view_behavior( $global );
+}
+
+/**
+ * Whether a background browser tab also pauses (or mutes) videos the visitor
+ * started. Global Video Player setting, off by default; autoplaying videos
+ * always pause in a background tab when the out-of-view behavior isn't `off`.
+ *
+ * @since 2.7.0
+ *
+ * @return bool True when the setting is on.
+ */
+function rtgodam_out_of_view_applies_to_hidden_tab() {
+	$settings = get_option( 'rtgodam-settings', array() );
+
+	return ! empty( $settings['video_player']['out_of_view_tab_hidden'] );
+}
+
+/**
  * Fetch the URL of a media file by its ID.
  *
  * This function retrieves the URL of a media attachment in WordPress based on the provided media ID.
@@ -3321,4 +3384,236 @@ function rtgodam_get_request_site_origin( $requested_origin ) {
 	}
 
 	return $origin;
+}
+
+/**
+ * Whether a link may be used as an `href`: it is relative, or its scheme is
+ * http, https or mailto.
+ *
+ * The scheme is read the way the browser's URL parser reads it: tabs and
+ * newlines anywhere are dropped and leading control characters and spaces are
+ * ignored, so `java\tscript:` counts as `javascript:`.
+ *
+ * @since 2.7.0
+ *
+ * @param string $link Stored link.
+ * @return bool
+ */
+function rtgodam_is_safe_link_scheme( $link ) {
+	$link = preg_replace( '/^[\x00-\x20]+/', '', str_replace( array( "\t", "\n", "\r" ), '', (string) $link ) );
+
+	if ( ! preg_match( '/^([a-z][a-z0-9+.\-]*):/i', $link, $matches ) ) {
+		return true;
+	}
+
+	return in_array( strtolower( $matches[1] ), array( 'http', 'https', 'mailto' ), true );
+}
+
+/**
+ * Empty the link of any hotspot that is not an http, https or mailto URL.
+ *
+ * Hotspot layers are read from an attachment's `rtgodam_meta` and handed to
+ * front-end script, which makes each hotspot's `link` the `href` of a link. Only
+ * web and mail addresses are kept; a link on any other scheme (for example
+ * `javascript:`) is emptied, so the hotspot still renders, just without a
+ * destination. The same rule as getSafeLinkUrl() in assets/src/utils/safe-url.js:
+ * the scheme is read the way the browser reads an `href` (tabs and newlines
+ * removed, leading control characters and spaces ignored), a link without a
+ * scheme is relative and kept, and a kept link is only trimmed, never rewritten.
+ * Everything else in the layers is returned unchanged.
+ *
+ * @since 2.7.0
+ *
+ * @param array $layers Layers read from an attachment's `rtgodam_meta`.
+ * @return array The layers, with unsafe hotspot links emptied.
+ */
+function rtgodam_sanitize_hotspot_links( $layers ) {
+	if ( ! is_array( $layers ) ) {
+		return array();
+	}
+
+	foreach ( $layers as $layer_index => $layer ) {
+		if ( ! is_array( $layer ) || empty( $layer['hotspots'] ) || ! is_array( $layer['hotspots'] ) ) {
+			continue;
+		}
+
+		foreach ( $layer['hotspots'] as $hotspot_index => $hotspot ) {
+			if ( ! is_array( $hotspot ) || empty( $hotspot['link'] ) ) {
+				continue;
+			}
+
+			$layers[ $layer_index ]['hotspots'][ $hotspot_index ]['link'] = is_string( $hotspot['link'] ) && rtgodam_is_safe_link_scheme( $hotspot['link'] )
+				? trim( $hotspot['link'] )
+				: '';
+		}
+	}
+
+	return $layers;
+}
+
+/**
+ * Return a CSS colour only when it is a plain colour value.
+ *
+ * Meant for colours that are printed into a style attribute, where an escaped
+ * value can still carry extra declarations. Accepts a hex colour (3, 4, 6 or 8
+ * digits), rgb()/rgba(), hsl()/hsla(), a CSS named colour, `transparent` and
+ * `currentcolor`. Anything else, such as a value with a `;`, a `url()` or a
+ * stray bracket, gives the fallback.
+ *
+ * @since 2.7.0
+ *
+ * @param mixed  $color    The stored colour.
+ * @param string $fallback Value to return when the colour is not valid.
+ *
+ * @return string The colour, trimmed, or the fallback.
+ */
+function rtgodam_sanitize_css_color( $color, $fallback = '' ) {
+	if ( ! is_string( $color ) ) {
+		return $fallback;
+	}
+
+	$color = trim( $color );
+
+	if ( '' === $color ) {
+		return $fallback;
+	}
+
+	if ( preg_match( '/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/iD', $color ) ) {
+		return $color;
+	}
+
+	$part = '[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:%|deg|grad|rad|turn)?';
+
+	if ( preg_match( '/^(?:rgb|hsl)a?\(\s*' . $part . '(?:\s*,\s*|\s+)' . $part . '(?:\s*,\s*|\s+)' . $part . '(?:\s*[,\/]\s*' . $part . ')?\s*\)$/iD', $color ) ) {
+		return $color;
+	}
+
+	static $named_colors = null;
+
+	if ( null === $named_colors ) {
+		$named_colors = explode(
+			' ',
+			'aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue blueviolet brown '
+			. 'burlywood cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson currentcolor cyan '
+			. 'darkblue darkcyan darkgoldenrod darkgray darkgreen darkgrey darkkhaki darkmagenta darkolivegreen '
+			. 'darkorange darkorchid darkred darksalmon darkseagreen darkslateblue darkslategray darkslategrey '
+			. 'darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey dodgerblue firebrick floralwhite '
+			. 'forestgreen fuchsia gainsboro ghostwhite gold goldenrod gray green greenyellow grey honeydew hotpink '
+			. 'indianred indigo ivory khaki lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral '
+			. 'lightcyan lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon lightseagreen '
+			. 'lightskyblue lightslategray lightslategrey lightsteelblue lightyellow lime limegreen linen magenta '
+			. 'maroon mediumaquamarine mediumblue mediumorchid mediumpurple mediumseagreen mediumslateblue '
+			. 'mediumspringgreen mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin '
+			. 'navajowhite navy oldlace olive olivedrab orange orangered orchid palegoldenrod palegreen '
+			. 'paleturquoise palevioletred papayawhip peachpuff peru pink plum powderblue purple rebeccapurple red '
+			. 'rosybrown royalblue saddlebrown salmon sandybrown seagreen seashell sienna silver skyblue slateblue '
+			. 'slategray slategrey snow springgreen steelblue tan teal thistle tomato transparent turquoise violet '
+			. 'wheat white whitesmoke yellow yellowgreen'
+		);
+	}
+
+	if ( in_array( strtolower( $color ), $named_colors, true ) ) {
+		return $color;
+	}
+
+	return $fallback;
+}
+
+/**
+ * Build the Gravity Forms shortcode a form layer renders.
+ *
+ * The layer's theme is stored data and goes into a shortcode string, so it is
+ * reduced to a slug (lowercase letters, numbers, dashes and underscores) and
+ * cannot close the shortcode or open another one.
+ *
+ * @since 2.7.0
+ *
+ * @param array $layer The form layer: `gf_id` is the form ID, `theme` the optional Gravity Forms theme.
+ *
+ * @return string The `[gravityform]` shortcode.
+ */
+function rtgodam_get_gravityform_layer_shortcode( $layer ) {
+	$theme = isset( $layer['theme'] ) && is_string( $layer['theme'] ) ? sanitize_key( $layer['theme'] ) : '';
+
+	return sprintf(
+		"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
+		isset( $layer['gf_id'] ) ? intval( $layer['gf_id'] ) : 0,
+		$theme ? " theme='$theme'" : ''
+	);
+}
+
+/**
+ * Get the hosts GoDAM Central serves transcoded files from.
+ *
+ * Central gives each account its own subdomain on its CDN domain, for example
+ * `https://abc123def4.gdcdn.us/{job_id}/video.mp4`, so a name here matches that
+ * host and any subdomain of it.
+ *
+ * @since 2.7.0
+ *
+ * @return string[] Lowercase host names, without scheme, port or path.
+ */
+function rtgodam_get_transcoder_file_hosts() {
+	/**
+	 * Filters the hosts the transcoder callback may download files from.
+	 *
+	 * A name matches that host and any subdomain of it. Add the CDN domain of a
+	 * self-hosted or staging GoDAM Central here, or a domain the CDN is served from.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param string[] $hosts Host names, such as `gdcdn.us`.
+	 */
+	$hosts = apply_filters( 'rtgodam_transcoder_file_hosts', array( 'gdcdn.us' ) );
+
+	$clean = array();
+
+	foreach ( is_array( $hosts ) ? $hosts : array() as $host ) {
+		$host = is_string( $host ) ? strtolower( trim( $host, " \t\n\r\0\x0B." ) ) : '';
+
+		if ( '' !== $host ) {
+			$clean[] = $host;
+		}
+	}
+
+	return array_values( array_unique( $clean ) );
+}
+
+/**
+ * Whether a URL is a file URL on a host GoDAM Central serves transcoded files from.
+ *
+ * The URL must use https, carry no username or password, and name a plain host
+ * that is one of rtgodam_get_transcoder_file_hosts() or a subdomain of one. It is
+ * checked as written, so check the decoded form of a URL that is decoded before use.
+ *
+ * @since 2.7.0
+ *
+ * @param mixed $url URL to check.
+ * @return bool
+ */
+function rtgodam_is_transcoder_file_url( $url ) {
+	if ( ! is_string( $url ) || '' === $url ) {
+		return false;
+	}
+
+	$parts = wp_parse_url( $url );
+
+	if ( ! is_array( $parts ) || empty( $parts['host'] ) || 'https' !== strtolower( $parts['scheme'] ?? '' ) || isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
+		return false;
+	}
+
+	$host = strtolower( rtrim( $parts['host'], '.' ) );
+
+	// Letters, digits and hyphens only, so nothing here can be read as another host.
+	if ( 1 !== preg_match( '/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/', $host ) ) {
+		return false;
+	}
+
+	foreach ( rtgodam_get_transcoder_file_hosts() as $allowed_host ) {
+		if ( $host === $allowed_host || substr( $host, -( strlen( $allowed_host ) + 1 ) ) === '.' . $allowed_host ) {
+			return true;
+		}
+	}
+
+	return false;
 }

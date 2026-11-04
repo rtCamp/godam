@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.6.2
+Stable tag: 2.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -268,6 +268,14 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.7.0 (November 5, 2026) =
+
+- Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each video can use its own setting.
+- Feat: Developers can pause all GoDAM videos from their own code, for example when a carousel changes slide.
+- Tweak: Authors see analytics only for the videos they can edit.
+- Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
+- Fix: Security fixes.
+
 = v2.6.2 (November 4, 2026) =
 
 - Tweak: Our team now moves your entire video library from Vimeo for free.
@@ -275,17 +283,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v2.6.1 (November 3, 2026) =
 
 - Fix: The analytics dashboard now shows correctly on sites with no views yet.
-
-= v2.6.0 (November 2, 2026) =
-
-- Feat: You can now add a Marketo form as a video layer. Connect your Marketo account under GoDAM > Settings > Integrations, then pick the form from a searchable list of your approved Marketo forms. If Marketo is connected without a Client ID and Secret, enter the form's ID instead.
-- Feat: You can now add a HubSpot form as a video layer in the same way. Connect HubSpot under GoDAM > Settings > Integrations and drop a form into a video.
-- Feat: When a visitor your Marketo or HubSpot account already recognises watches a GoDAM video, how far they watched is sent back to that tool, so video engagement shows up against your contacts.
-- Feat: While video-view tracking is on in GoDAM Central, each site can now stop sending video views to Marketo or HubSpot with "Track video views on this site" under GoDAM > Settings > Integrations. Your other sites are not changed.
-- Feat: For Marketo video tracking, GoDAM now adds Marketo's Munchkin tracking code to pages that have a video, unless the page already loads it. Munchkin also records page visits in your Marketo. A site that loads Munchkin itself can turn ours off with the `rtgodam_map_inject_munchkin` filter.
-- Tweak: If a Marketo form can't load, the video layer says "This form could not be loaded." with a Continue button. On sites without HTTPS, the video editor warns that Marketo form submissions need HTTPS.
-- Fix: The Document, Audio and Video Thumbnail blocks no longer collapse when placed inside a Row or Stack (flex) layout, and the Document card now stacks to fit its column instead of the screen width.
-- Fix: Security fixes.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
