@@ -270,7 +270,7 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 = v2.6.2 (November 4, 2026) =
 
-- Tweak: The LifterLMS offer notice now says our team moves your entire video library from Vimeo for free.
+- Tweak: Our team now moves your entire video library from Vimeo for free.
 
 = v2.6.1 (November 3, 2026) =
 
