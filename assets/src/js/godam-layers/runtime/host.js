@@ -5,7 +5,7 @@
  * image. The host mounts each saved layer through its type's runtime, then
  * forwards player events to the handlers each `mount()` returned:
  *
- * - `onReady()` once every saved layer is mounted
+ * - `onReady()` once every saved layer is mounted (and right away for a layer mounted later)
  * - `onTimeUpdate( currentTime )`, `onPause()`, `onEnded()` (held back while layers are suppressed)
  * - `onPlay()`, `onResize()`, `onFullscreenChange( isFullscreen, container )`, `onReplay()`
  * - `destroy()` when the layer is unmounted
@@ -60,6 +60,7 @@ export function createLayerHost( {
 	const handlerList = [];
 	const mounted = [];
 	const tracked = new Set();
+	let ready = false;
 
 	const host = {
 		player,
@@ -105,6 +106,10 @@ export function createLayerHost( {
 			if ( ! handlerList.includes( handlers ) ) {
 				handlerList.push( handlers );
 			}
+			// A layer mounted after `onReady` (its view script loaded late) gets it now.
+			if ( ready ) {
+				call( handlers, 'onReady' );
+			}
 
 			return () => host.unmount( record );
 		},
@@ -134,6 +139,9 @@ export function createLayerHost( {
 		 * @param {...*}   args  Handler arguments.
 		 */
 		dispatch( event, ...args ) {
+			if ( 'onReady' === event ) {
+				ready = true;
+			}
 			if ( SUPPRESSIBLE_EVENTS.has( event ) && host.isSuppressed() ) {
 				return;
 			}

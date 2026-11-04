@@ -14,11 +14,11 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { updateLayerField } from '../../redux/slice/videoSlice';
-import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
-import LayersHeader from './LayersHeader.js';
-import { VeSection, VeToggle, VeColorList } from '../controls';
-import FormProviderPanel from '../forms/FormProviderPanel';
+import { updateLayerField } from '../../../../pages/video-editor/redux/slice/videoSlice';
+import ColorPickerButton from '../../../../pages/video-editor/components/shared/color-picker/ColorPickerButton.jsx';
+import LayersHeader from '../../../../pages/video-editor/components/layers/LayersHeader.js';
+import { VeSection, VeToggle, VeColorList } from '../../../../pages/video-editor/components/controls';
+import FormProviderPanel from '../../../../pages/video-editor/components/forms/FormProviderPanel';
 
 /**
  * Component to render and manage a form layer within the video editor. The

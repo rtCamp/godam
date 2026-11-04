@@ -2,7 +2,8 @@
  * Internal dependencies
  */
 import { createLayerHost } from '../../../godam-layers/runtime/host.js';
-import { registerCoreLayerRuntimes } from '../../layers/index.js';
+import { registerCoreLayerRuntimes } from '../../../../../../tests/js/register-core-layer-views.js';
+import { getOverlayController } from '../../layers/overlay.js';
 
 /**
  * Minimal player stub — emitLayerEvent only needs a videoKey off the element.
@@ -60,6 +61,7 @@ describe( 'FormLayerManager with a Marketo layer', () => {
 		};
 		registerCoreLayerRuntimes();
 		const host = createLayerHost( { player: fakePlayer(), media: { type: 'video' }, instanceId: 'inst-1' } );
+		getOverlayController( host );
 		layerElement = marketoLayerElement();
 		host.mount(
 			{ id: 'l1', type: 'form', form_type: 'marketo', displayTime: 3, allow_skip: false },

@@ -1,5 +1,6 @@
 /**
- * The CTA layer's front-end runtime (#2294).
+ * The CTA layer's front-end runtime (#2294). Built to
+ * `assets/build/layers/cta/view.js`; loads on pages that show a CTA layer.
  */
 
 /**
@@ -10,8 +11,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { registerLayerRuntime, getLayerRuntime } from '../../godam-layers/runtime/registry.js';
-import { mountOverlayLayer } from './overlay.js';
+import { registerLayerRuntime, getLayerRuntime } from '../../js/godam-layers/runtime/registry.js';
+import { mountOverlayLayer } from '../shared/overlay.js';
 
 /**
  * Register the CTA runtime, unless something already did.
@@ -29,3 +30,5 @@ export function registerCtaRuntime() {
 		} ) ),
 	} );
 }
+
+registerCtaRuntime();

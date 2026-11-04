@@ -7,8 +7,8 @@ import {
 	shouldMountLayer,
 	layersUseIconFont,
 	logOnce,
+	whenLayerRuntime,
 } from '../../godam-layers/runtime/registry.js';
-import { registerCoreLayerRuntimes } from '../layers/index.js';
 import { getOverlayController } from '../layers/overlay.js';
 import { loadFontAwesome } from '../utils/pluginLoader.js';
 import { isAutoPause } from './visibilityManager.js';
@@ -17,9 +17,9 @@ import { isAutoPause } from './visibilityManager.js';
  * Layers Manager
  *
  * Mounts a video's saved layers through the Layer API runtimes (#2294): each
- * layer's type has a runtime registered with `registerLayerRuntime()` (core
- * types in `../layers/`, add-ons on `window.godam.layers`, older add-ons
- * through `window.godamLayerRegistry`). The manager forwards player events to
+ * layer's type has a runtime registered with `registerLayerRuntime()` by its
+ * view script (core types in `assets/src/layers/<type>/view.js`, add-ons on
+ * `window.godam.layers`, older add-ons through `window.godamLayerRegistry`). The manager forwards player events to
  * every mounted layer and never branches on a layer type itself.
  */
 export default class LayersManager {
@@ -31,8 +31,6 @@ export default class LayersManager {
 		this.currentPlayerVideoInstanceId = currentPlayerVideoInstanceId;
 		this.suppressionCheck = null; // Optional predicate that pauses all layer firing
 		this.mountedElements = new WeakSet();
-
-		registerCoreLayerRuntimes();
 
 		this.host = createLayerHost( {
 			player,
@@ -120,9 +118,31 @@ export default class LayersManager {
 			logOnce( 'info', `GoDAM: no runtime registered for layer type "${ layer?.type }".` );
 			// An add-on's `godam_player_render_layer` output may not start hidden.
 			document.querySelector( `#layer-${ this.video.dataset.instanceId }-${ layer?.id }` )?.classList.add( 'hidden' );
+			// Its view script may still load (deferred or delayed): mount the layer then.
+			whenLayerRuntime( layer?.type, ( lateRuntime ) => this.mountLateLayer( layer, lateRuntime ) );
 			return;
 		}
 
+		if ( shouldMountLayer( runtime, layer ) ) {
+			this.handleLayerDisplay( layer, runtime );
+		}
+	}
+
+	/**
+	 * Mount a layer whose runtime registered after the player set its layers up.
+	 *
+	 * @param {Object} layer   - Layer configuration object
+	 * @param {Object} runtime - The layer type's runtime
+	 */
+	async mountLateLayer( layer, runtime ) {
+		if ( typeof runtime.usesIconFont === 'function' && runtime.usesIconFont( layer ) ) {
+			try {
+				await loadFontAwesome();
+			} catch ( error ) {
+				// eslint-disable-next-line no-console
+				console.error( 'Failed to load FontAwesome for hotspot icons:', error );
+			}
+		}
 		if ( shouldMountLayer( runtime, layer ) ) {
 			this.handleLayerDisplay( layer, runtime );
 		}

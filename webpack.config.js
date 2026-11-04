@@ -4,6 +4,8 @@
 const fs = require( 'fs' );
 const path = require( 'path' );
 const CssMinimizerPlugin = require( 'css-minimizer-webpack-plugin' );
+const CopyWebpackPlugin = require( 'copy-webpack-plugin' );
+const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 const RemoveEmptyScriptsPlugin = require( 'webpack-remove-empty-scripts' );
 
 /**
@@ -357,6 +359,52 @@ const ninjaFormsSubmissionsList = {
 	},
 };
 
+// Core layer types (`assets/src/layers/<type>/`), built like core blocks: each
+// `layer.json` names its view script as `file:./view.js`; that script is built
+// to `assets/build/layers/<type>/view.js` with its `view.asset.php`, and the
+// `layer.json` and PHP files are copied beside it. PHP loads the layer from there.
+const LAYERS_SRC = path.resolve( process.cwd(), 'assets', 'src', 'layers' );
+const coreLayers = {
+	...sharedConfig,
+	entry: () => {
+		const entries = {};
+		fs.readdirSync( LAYERS_SRC ).forEach( ( type ) => {
+			const metadataFile = path.join( LAYERS_SRC, type, 'layer.json' );
+			if ( ! fs.existsSync( metadataFile ) ) {
+				return;
+			}
+			const { viewScript } = JSON.parse( fs.readFileSync( metadataFile, 'utf8' ) );
+			[].concat( viewScript || [] )
+				.filter( ( script ) => typeof script === 'string' && script.startsWith( 'file:' ) )
+				.forEach( ( script ) => {
+					const file = path.join( LAYERS_SRC, type, script.slice( 5 ) );
+					entries[ path.join( type, path.basename( file, '.js' ) ) ] = file;
+				} );
+		} );
+		return entries;
+	},
+	output: {
+		path: path.resolve( process.cwd(), 'assets', 'build', 'layers' ),
+		filename: '[name].js',
+		chunkFilename: '[name].[contenthash].js',
+		uniqueName: 'godamLayerViews',
+	},
+	plugins: [
+		...sharedConfig.plugins.filter( ( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin' ),
+		new DependencyExtractionWebpackPlugin( {
+			// The runtime registry is its own script, shared with add-on view scripts.
+			requestToExternal: ( request ) => ( '@godam/layer-runtime' === request ? [ 'godam', 'layers' ] : undefined ),
+			requestToHandle: ( request ) => ( '@godam/layer-runtime' === request ? 'godam-layer-runtime' : undefined ),
+		} ),
+		new CopyWebpackPlugin( {
+			patterns: [
+				{ from: '*/layer.json', context: LAYERS_SRC },
+				{ from: '*/*.php', context: LAYERS_SRC },
+			],
+		} ),
+	],
+};
+
 // Layer API front-end runtime registry (`godam-layer-runtime`), for add-on view scripts.
 const godamLayerRuntime = {
 	...sharedConfig,
@@ -519,4 +567,5 @@ module.exports = [
 	blockExtensions,
 	godamLayers,
 	godamLayerRuntime,
+	coreLayers,
 ];

@@ -31,6 +31,19 @@ A layer type has one metadata file and up to three parts. Each part registers un
 | Editor script | the video editor | `window.godam.layers.registerLayerType()` | The settings panel, what a new layer starts with, availability in the "Add layer" menu |
 | View script | the page | `window.godam.layers.registerLayerRuntime()` | Shows and hides the layer, reacts to playback, resize and fullscreen, on video and images |
 
+**GoDAM's own layer types follow the same structure.** Each lives in its own folder, the way Gutenberg's core blocks live in `packages/block-library/src/<block>/`:
+
+```
+assets/src/layers/cta/
+├── layer.json   metadata (viewScript: "file:./view.js")
+├── cta.php      render callback + godam_register_layer_type()
+├── editor.js    registerLayerType() settings (title, icon, edit, …)
+├── edit.js      the settings panel
+└── view.js      registerLayerRuntime()
+```
+
+The build copies `layer.json` and the PHP to `assets/build/layers/cta/` beside the built `view.js` and `view.asset.php`, and GoDAM registers the type from there. The `cta`, `form`, `poll`, `hotspot` and `ad` folders are working examples of everything below.
+
 **Naming:** third-party layer types need a namespace, for example `acme/countdown`, made of lowercase letters, digits and dashes. That's the value saved in each layer's `type`, so pick it once and keep it.
 
 ## Quick start: a countdown layer
@@ -405,7 +418,7 @@ The runtime registry is `window.godam.layers` (handle `godam-layer-runtime`). It
 | `title` | Label used in analytics names. |
 | `variationAttribute`, `variations` | As in the editor. |
 
-A type with no runtime is skipped, and the console logs `GoDAM: no runtime registered for layer type "…"` once.
+A layer whose runtime isn't registered yet is kept back and mounted as soon as its view script registers it, so a view script that loads late (deferred or delayed by an optimisation plugin) still works. Until then the console logs `GoDAM: no runtime registered for layer type "…"` once. `whenLayerRuntime( name, callback )` runs `callback( runtime )` once a runtime registers, or straight away if it already has; it returns a function that stops waiting.
 
 ### `mount( ctx )`
 
@@ -547,7 +560,7 @@ godam-for-woo's move to this API is a worked example of a full migration: rtCamp
 |---|---|
 | The type isn't in **Add layer** | The editor script didn't run, or `registerLayerType()` was rejected (check the console for `GoDAM: layer type names must be namespaced…`). Or `supports.media` doesn't include the media open in the editor. |
 | "This layer needs an add-on that isn't active" in a layer's panel | The editor has a saved layer whose type nobody registered in JS. The layer is kept until someone deletes it. |
-| `GoDAM: no runtime registered for layer type "…"` | The view script didn't load or didn't call `registerLayerRuntime()`. The layer is skipped. |
+| `GoDAM: no runtime registered for layer type "…"` | The view script hasn't loaded, or didn't call `registerLayerRuntime()`. The layer mounts if the runtime registers later. Otherwise it stays hidden. |
 | The layer never appears on the video | `render_callback` returned `''`, the container's id doesn't match `layer-{instance_id}-{id}`, `validate()` returned `false`, or the handlers never call `api.show()`. |
 | An attribute disappears after saving | It isn't declared in `layer.json` `attributes`. |
 | Markup missing from the container | It was stripped by `wp_kses_post()`. Set `supports.rawHtml` and escape it yourself. |

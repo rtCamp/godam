@@ -7,8 +7,8 @@ import { video } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import metadata from '../../../../assets/src/layers/ad/layer.json';
-import AdsLayer from '../../components/layers/AdsLayer';
+import metadata from './layer.json';
+import AdsLayer from './edit';
 
 export { metadata };
 

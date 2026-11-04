@@ -19,19 +19,19 @@ import { registerLayerVariation } from '@godam/layers';
 /**
  * Internal dependencies
  */
-import FormLayer from './FormLayer';
-import { registerEditorLayerTypes } from '../../layers';
+import FormLayer from './edit';
+import { registerEditorLayerTypes } from '../../../../pages/video-editor/layers';
 
-jest.mock( './CTALayer', () => () => null );
-jest.mock( './HotspotLayer', () => () => null );
-jest.mock( './PollLayer', () => () => null );
-jest.mock( './AdsLayer', () => () => null );
-jest.mock( './LayersHeader.js', () => () => null );
-jest.mock( '../shared/color-picker/ColorPickerButton.jsx', () => () => null );
-jest.mock( '../forms/FormProviderPanel', () => ( props ) =>
+jest.mock( '../cta/edit', () => () => null );
+jest.mock( '../hotspot/edit', () => () => null );
+jest.mock( '../poll/edit', () => () => null );
+jest.mock( '../ad/edit', () => () => null );
+jest.mock( '../../../../pages/video-editor/components/layers/LayersHeader.js', () => () => null );
+jest.mock( '../../../../pages/video-editor/components/shared/color-picker/ColorPickerButton.jsx', () => () => null );
+jest.mock( '../../../../pages/video-editor/components/forms/FormProviderPanel', () => ( props ) =>
 	require( 'react' ).createElement( 'div', { 'data-form-panel': `shared:${ props.provider.name }` } ),
 );
-jest.mock( '../controls', () => {
+jest.mock( '../../../../pages/video-editor/components/controls', () => {
 	const { createElement: h, Fragment } = require( 'react' );
 	return {
 		VeSection: ( { children } ) => h( Fragment, null, children ),
@@ -39,7 +39,7 @@ jest.mock( '../controls', () => {
 		VeToggle: ( { disabled } ) => h( 'input', { type: 'checkbox', 'data-test-id': 'allow-skip', disabled } ),
 	};
 } );
-jest.mock( '../../redux/slice/videoSlice', () => ( {
+jest.mock( '../../../../pages/video-editor/redux/slice/videoSlice', () => ( {
 	updateLayerField: ( payload ) => ( { type: 'updateLayerField', payload } ),
 } ) );
 

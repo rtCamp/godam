@@ -2,6 +2,8 @@ node_modules/
 assets/src/blocks
 assets/src/css
 assets/src/js
+# Core layer types ship from assets/build/layers (layer.json, PHP and built scripts).
+assets/src/layers
 assets/src/libs/jquery-ui-1.14.2.draggable
 .browserslistrc
 .eslintignore

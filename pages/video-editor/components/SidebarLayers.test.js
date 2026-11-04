@@ -54,11 +54,11 @@ jest.mock( '../onboarding/productGuide', () => ( { notify: jest.fn() } ) );
 jest.mock( 'uuid', () => ( { v4: () => 'test-uuid' } ) );
 
 // The core settings panels aren't rendered here; registering them is enough.
-jest.mock( './layers/CTALayer', () => () => null );
-jest.mock( './layers/HotspotLayer', () => () => null );
-jest.mock( './layers/FormLayer', () => () => null );
-jest.mock( './layers/PollLayer', () => () => null );
-jest.mock( './layers/AdsLayer', () => () => null );
+jest.mock( '../../../assets/src/layers/cta/edit', () => () => null );
+jest.mock( '../../../assets/src/layers/hotspot/edit', () => () => null );
+jest.mock( '../../../assets/src/layers/form/edit', () => () => null );
+jest.mock( '../../../assets/src/layers/poll/edit', () => () => null );
+jest.mock( '../../../assets/src/layers/ad/edit', () => () => null );
 jest.mock( '../utils/formUtils', () => ( { getFormIdFromLayer: () => null } ) );
 
 // Plain stand-ins for the menu primitives, so menu items are ordinary buttons

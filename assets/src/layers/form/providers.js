@@ -25,30 +25,30 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import GravityForm from '../components/forms/GravityForm';
-import WPForm from '../components/forms/WPForm';
-import EverestForm from '../components/forms/EverestForm';
-import CF7 from '../components/forms/CF7';
-import JetpackForm from '../components/forms/JetpackForm';
-import SureForm from '../components/forms/Sureform.js';
-import FluentForm from '../components/forms/FluentForm.js';
-import MetForm from '../components/forms/MetForm.js';
-import ForminatorForm from '../components/forms/forminatorForms.js';
-import NinjaForm from '../components/forms/NinjaForm.js';
-import Marketo from '../components/forms/Marketo.js';
-import HubSpotForm from '../components/forms/HubSpotForm.js';
-import GFIcon from '../assets/layers/GFIcon.svg';
-import WPFormsIcon from '../assets/layers/WPForms-Mascot.svg';
-import EverestFormsIcon from '../assets/layers/EverestFormsIcon.svg';
-import CF7Icon from '../assets/layers/CF7Icon.svg';
-import JetpackIcon from '../assets/layers/JetpackIcon.svg';
-import SureformsIcon from '../assets/layers/SureFormsIcons.svg';
-import ForminatorIcon from '../assets/layers/Forminator.png';
-import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
-import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
-import MetformIcon from '../assets/layers/MetFormIcon.png';
-import MarketoIcon from '../assets/layers/MarketoIcon.svg';
-import HubSpotIcon from '../assets/layers/HubSpotIcon.svg';
+import GravityForm from '../../../../pages/video-editor/components/forms/GravityForm';
+import WPForm from '../../../../pages/video-editor/components/forms/WPForm';
+import EverestForm from '../../../../pages/video-editor/components/forms/EverestForm';
+import CF7 from '../../../../pages/video-editor/components/forms/CF7';
+import JetpackForm from '../../../../pages/video-editor/components/forms/JetpackForm';
+import SureForm from '../../../../pages/video-editor/components/forms/Sureform.js';
+import FluentForm from '../../../../pages/video-editor/components/forms/FluentForm.js';
+import MetForm from '../../../../pages/video-editor/components/forms/MetForm.js';
+import ForminatorForm from '../../../../pages/video-editor/components/forms/forminatorForms.js';
+import NinjaForm from '../../../../pages/video-editor/components/forms/NinjaForm.js';
+import Marketo from '../../../../pages/video-editor/components/forms/Marketo.js';
+import HubSpotForm from '../../../../pages/video-editor/components/forms/HubSpotForm.js';
+import GFIcon from '../../../../pages/video-editor/assets/layers/GFIcon.svg';
+import WPFormsIcon from '../../../../pages/video-editor/assets/layers/WPForms-Mascot.svg';
+import EverestFormsIcon from '../../../../pages/video-editor/assets/layers/EverestFormsIcon.svg';
+import CF7Icon from '../../../../pages/video-editor/assets/layers/CF7Icon.svg';
+import JetpackIcon from '../../../../pages/video-editor/assets/layers/JetpackIcon.svg';
+import SureformsIcon from '../../../../pages/video-editor/assets/layers/SureFormsIcons.svg';
+import ForminatorIcon from '../../../../pages/video-editor/assets/layers/Forminator.png';
+import FluentFormsIcon from '../../../../pages/video-editor/assets/layers/FluentFormsIcon.png';
+import NinjaFormsIcon from '../../../../pages/video-editor/assets/layers/NinjaFormsIcon.png';
+import MetformIcon from '../../../../pages/video-editor/assets/layers/MetFormIcon.png';
+import MarketoIcon from '../../../../pages/video-editor/assets/layers/MarketoIcon.svg';
+import HubSpotIcon from '../../../../pages/video-editor/assets/layers/HubSpotIcon.svg';
 
 // Availability is read when asked, not at import, so page data localized after
 // this module loads still counts.

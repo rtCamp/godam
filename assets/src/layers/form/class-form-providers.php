@@ -7,6 +7,7 @@
  * whether its plugin is active (`is_available`, reported to the player as
  * `godamPluginDependencies[ dependency_key ]`). The markup is what
  * `inc/templates/godam-player.php` used to print in its form `if/elseif` chain.
+ * Loaded by `form.php` (it lives with the Form layer, outside the autoloader).
  *
  * An add-on adds a provider with
  * `godam_register_layer_variation( 'form', array( 'name' => …, 'render_callback' => … ) )`.

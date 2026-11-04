@@ -14,7 +14,7 @@
 /**
  * Internal dependencies
  */
-import { registerLayerRuntimeVariation, getLayerRuntime } from '../../godam-layers/runtime/registry.js';
+import { registerLayerRuntimeVariation, getLayerRuntime } from '../../js/godam-layers/runtime/registry.js';
 
 /**
  * `isSubmitted()` for a provider whose confirmation matches a selector.

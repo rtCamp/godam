@@ -33,6 +33,18 @@ class Blocks {
 	 */
 	public function setup_hooks() {
 		add_action( 'init', array( $this, 'register_blocks' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_image_layer_view_scripts' ) );
+	}
+
+	/**
+	 * Load the view scripts of layer types that run on images, for the
+	 * godam/image block's preview. The block's edit script draws the layers in
+	 * the editor window, so the layer runtimes must be registered there.
+	 *
+	 * @return void
+	 */
+	public function enqueue_image_layer_view_scripts() {
+		\RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->enqueue_view_scripts_for_media( 'image' );
 	}
 
 	/**

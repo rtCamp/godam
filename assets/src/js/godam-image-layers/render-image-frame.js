@@ -8,8 +8,8 @@
  *
  * Layers are mounted through the Layer API runtimes (#2294), exactly as on a
  * video, on a host whose media is the image. Only runtimes that declare
- * `supports.media: [ 'image' ]` run here (core: Hotspot; add-ons: the Woo layer
- * through the legacy registry). A tiny "media host" adapter stands in for the
+ * `supports.media: [ 'image' ]` run here (core: Hotspot, from its view script
+ * `assets/build/layers/hotspot/view.js`; add-ons such as the Woo layer). A tiny "media host" adapter stands in for the
  * Video.js player; timeline and playback methods are no-ops.
  *
  * Note: importing this module is NOT side-effect-free — it initializes
@@ -25,8 +25,7 @@
 // Woo front-end script pushed to (image-only pages never boot the video player).
 import './../godam-player/utils/layer-registry-init.js';
 import { createLayerHost } from './../godam-layers/runtime/host.js';
-import { layersUseIconFont } from './../godam-layers/runtime/registry.js';
-import { registerHotspotRuntime } from './../godam-player/layers/hotspot.js';
+import { layersUseIconFont, getLayerRuntime, whenLayerRuntime } from './../godam-layers/runtime/registry.js';
 import { loadFontAwesome, renderFontAwesomeIcons } from './../godam-player/utils/pluginLoader.js';
 
 /**
@@ -112,7 +111,6 @@ export function initImageFrame( frame ) {
 
 	const instanceId = frame.dataset.instanceId || '';
 	const adapter = makeImageAdapter( frame, img );
-	registerHotspotRuntime();
 
 	// Everything that must be undone on teardown — resize listener, ResizeObserver
 	// and (until it fires) the deferred image `load` handler. Populated as setup
@@ -161,15 +159,41 @@ export function initImageFrame( frame ) {
 			// absolute markers resolve against the positioned frame, while each
 			// layer gets a private scope for its manager's index-based `.hotspot`
 			// reposition queries.
-			layers.forEach( ( layer ) => {
+			const mountLayer = ( layer, runtime ) => {
 				const layerEl = document.createElement( 'div' );
 				layerEl.className = 'godam-image-layer-item';
 				layerEl.dataset.layerType = String( layer?.type || '' );
 				layerEl.style.display = 'contents';
 				sharedEl.appendChild( layerEl );
-				if ( ! host.mount( layer, layerEl ) ) {
+				if ( ! host.mount( layer, layerEl, runtime ) ) {
 					layerEl.remove();
 				}
+			};
+
+			layers.forEach( ( layer ) => {
+				const runtime = getLayerRuntime( layer?.type );
+				if ( runtime ) {
+					mountLayer( layer, runtime );
+					return;
+				}
+				// Its view script may still load (deferred or delayed): mount it then.
+				const stop = whenLayerRuntime( layer?.type, ( lateRuntime ) => {
+					const mountLate = () => {
+						if ( torn ) {
+							return;
+						}
+						mountLayer( layer, lateRuntime );
+						if ( typeof lateRuntime.usesIconFont === 'function' && lateRuntime.usesIconFont( layer ) ) {
+							renderFontAwesomeIcons( frame );
+						}
+					};
+					if ( typeof lateRuntime.usesIconFont === 'function' && lateRuntime.usesIconFont( layer ) ) {
+						loadFontAwesome().then( mountLate ).catch( mountLate );
+					} else {
+						mountLate();
+					}
+				} );
+				cleanups.push( stop );
 			} );
 			host.dispatch( 'onReady' );
 

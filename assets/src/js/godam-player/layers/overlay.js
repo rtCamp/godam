@@ -2,9 +2,10 @@
  * The shared controller behind CTA, Form and Poll layers (#2294).
  *
  * These layers pause the video, show one at a time and have a skip button, so
- * every one of them on a player shares one `FormLayerManager`. Each runtime's
- * `mount()` adds its layer to it with its own `behaviour` and returns the same
- * handlers, so the host sends each player event to the manager once.
+ * every one of them on a player shares one `FormLayerManager`. The player's
+ * `LayersManager` creates it, so the CTA, Form and Poll view scripts
+ * (`assets/src/layers/shared/overlay.js`) only add their layers to it and
+ * never bundle the manager themselves.
  */
 
 /**
@@ -36,18 +37,4 @@ export function getOverlayController( scope ) {
 			},
 		};
 	} );
-}
-
-/**
- * Build a `mount()` that adds the layer to the overlay controller.
- *
- * @param {Function} getBehaviour `getBehaviour( ctx )` returns the `behaviour` for `FormLayerManager.setupFormLayer()`.
- * @return {Function} The mount function.
- */
-export function mountOverlayLayer( getBehaviour ) {
-	return ( ctx ) => {
-		const { manager, handlers } = getOverlayController( ctx );
-		manager.setupFormLayer( ctx.layer, ctx.container, getBehaviour( ctx ) );
-		return handlers;
-	};
 }

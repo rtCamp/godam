@@ -17,5 +17,6 @@
 		"link": { "type": "string", "format": "url", "default": "" },
 		"allow_skip": { "default": true }
 	},
+	"viewScript": "file:./view.js",
 	"textdomain": "godam"
 }

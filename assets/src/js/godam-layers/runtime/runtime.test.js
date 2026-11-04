@@ -8,6 +8,7 @@
 import {
 	registerLayerRuntime,
 	unregisterLayerRuntime,
+	whenLayerRuntime,
 	getLayerRuntime,
 	getLayerRuntimes,
 	registerLayerRuntimeVariation,
@@ -56,6 +57,24 @@ describe( 'Layer API: runtime registry', () => {
 		expect( registerLayerRuntime( 'acme/x', { mount, title: 'Other' } ) ).toBeUndefined();
 		expect( getLayerRuntime( 'acme/x' ) ).toBe( first );
 		expect( error ).toHaveBeenCalledWith( 'GoDAM: a runtime for layer type "acme/x" is already registered.' );
+	} );
+
+	it( 'runs a callback once a runtime registers, or now if it already has', () => {
+		const late = jest.fn();
+		whenLayerRuntime( 'acme/late', late );
+		expect( late ).not.toHaveBeenCalled();
+		registerLayerRuntime( 'acme/late', { mount } );
+		expect( late ).toHaveBeenCalledWith( expect.objectContaining( { name: 'acme/late' } ) );
+
+		const now = jest.fn();
+		whenLayerRuntime( 'acme/late', now );
+		expect( now ).toHaveBeenCalledTimes( 1 );
+
+		const cancelled = jest.fn();
+		const stop = whenLayerRuntime( 'acme/never', cancelled );
+		stop();
+		registerLayerRuntime( 'acme/never', { mount } );
+		expect( cancelled ).not.toHaveBeenCalled();
 	} );
 
 	it( 'unregisters a runtime', () => {

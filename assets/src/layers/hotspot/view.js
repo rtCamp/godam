@@ -5,9 +5,9 @@
 /**
  * Internal dependencies
  */
-import { registerLayerRuntime, getLayerRuntime } from '../../godam-layers/runtime/registry.js';
-import HotspotLayerManager from '../managers/layers/hotspotLayerManager.js';
-import { resolveHotspotStyle } from '../utils/hotspotStyle.js';
+import { registerLayerRuntime, getLayerRuntime } from '../../js/godam-layers/runtime/registry.js';
+import HotspotLayerManager from '../../js/godam-player/managers/layers/hotspotLayerManager.js';
+import { resolveHotspotStyle } from '../../js/godam-player/utils/hotspotStyle.js';
 
 /**
  * Whether a hotspot layer draws any FontAwesome icon.
@@ -113,3 +113,5 @@ export function registerHotspotRuntime() {
 		mount: ( ctx ) => ( ctx.media?.type === 'image' ? mountOnImage( ctx ) : mountOnVideo( ctx ) ),
 	} );
 }
+
+registerHotspotRuntime();

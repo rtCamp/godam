@@ -34,11 +34,11 @@ import { getLegacyEditComponent } from './legacy';
 import { LayerContext, useLayer, useLayerAttributes } from './hooks';
 import { getFormIdFromLayer } from '../utils/formUtils';
 
-jest.mock( '../components/layers/CTALayer', () => function CTALayer() {} );
-jest.mock( '../components/layers/HotspotLayer', () => function HotspotLayer() {} );
-jest.mock( '../components/layers/FormLayer', () => function FormLayer() {} );
-jest.mock( '../components/layers/PollLayer', () => function PollLayer() {} );
-jest.mock( '../components/layers/AdsLayer', () => function AdsLayer() {} );
+jest.mock( '../../../assets/src/layers/cta/edit', () => function CTALayer() {} );
+jest.mock( '../../../assets/src/layers/hotspot/edit', () => function HotspotLayer() {} );
+jest.mock( '../../../assets/src/layers/form/edit', () => function FormLayer() {} );
+jest.mock( '../../../assets/src/layers/poll/edit', () => function PollLayer() {} );
+jest.mock( '../../../assets/src/layers/ad/edit', () => function AdsLayer() {} );
 jest.mock( '../utils/formUtils', () => ( { getFormIdFromLayer: jest.fn() } ) );
 jest.mock( '../redux/slice/videoSlice', () => ( {
 	updateLayerField: ( payload ) => ( { type: 'updateLayerField', payload } ),

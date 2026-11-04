@@ -17,7 +17,7 @@ import FormLayerManager from './layers/formLayerManager.js';
 import HotspotLayerManager from './layers/hotspotLayerManager.js';
 import { registerLayerType } from '../utils/layer-registry.js';
 import { getLayerRuntime, shouldMountLayer, registerLayerRuntime, registerLayerRuntimeVariation } from '../../godam-layers/runtime/registry.js';
-import { registerCoreLayerRuntimes } from '../layers/index.js';
+import { registerCoreLayerRuntimes } from '../../../../../tests/js/register-core-layer-views.js';
 
 jest.mock( './layers/formLayerManager.js', () => ( {
 	__esModule: true,
@@ -99,6 +99,8 @@ describe( 'Layer API contract: LayersManager dispatch', () => {
 	beforeEach( () => {
 		delete window.godam;
 		delete window.godamLayerRegistry;
+		// On a page each core layer's view script registers its runtime.
+		registerCoreLayerRuntimes();
 		window.godamPluginDependencies = allDependencies;
 		FormLayerManager.mockClear();
 		HotspotLayerManager.mockClear();
@@ -300,6 +302,20 @@ describe( 'Layer API contract: LayersManager dispatch', () => {
 			expect( error ).toHaveBeenCalledWith( 'GoDAM: layer "b" (acme/broken) failed to mount.', expect.any( Error ) );
 			expect( formCalls() ).toEqual( [ [ { id: 'c', type: 'cta' }, containerFor( 'c' ) ] ] );
 		} );
+	} );
+
+	it( 'mounts a layer whose view script registers its runtime after the player set up', async () => {
+		const mount = jest.fn( () => ( {} ) );
+		const layer = { id: 'l1', type: 'acme/late' };
+		const { manager } = setup( [ layer ] );
+		await manager.setupLayers();
+		expect( mount ).not.toHaveBeenCalled();
+
+		registerLayerRuntime( 'acme/late', { mount } );
+		await Promise.resolve();
+
+		expect( mount ).toHaveBeenCalledTimes( 1 );
+		expect( mount.mock.calls[ 0 ][ 0 ].container ).toBe( containerFor( 'l1' ) );
 	} );
 
 	describe( 'layers that are skipped', () => {

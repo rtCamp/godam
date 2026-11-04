@@ -15,5 +15,6 @@
 		"custom_css": { "default": "" },
 		"theme": { "type": "string", "default": "" }
 	},
+	"viewScript": "file:./view.js",
 	"textdomain": "godam"
 }

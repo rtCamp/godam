@@ -10,8 +10,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { registerLayerRuntime, getLayerRuntime } from '../../godam-layers/runtime/registry.js';
-import { mountOverlayLayer } from './overlay.js';
+import { registerLayerRuntime, getLayerRuntime } from '../../js/godam-layers/runtime/registry.js';
+import { mountOverlayLayer } from '../shared/overlay.js';
 
 /**
  * Watch a poll layer for a vote.
@@ -51,3 +51,5 @@ export function registerPollRuntime() {
 		} ) ),
 	} );
 }
+
+registerPollRuntime();

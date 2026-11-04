@@ -8,8 +8,8 @@
 /**
  * Internal dependencies
  */
-import { registerCoreLayerTypes } from './core';
-import { registerCoreFormProviders } from './form-providers';
+import { registerCoreLayerTypes } from '../../../assets/src/layers';
+import { registerCoreFormProviders } from '../../../assets/src/layers/form/providers';
 import { registerLegacyLayerTypes } from './legacy';
 
 export function registerEditorLayerTypes() {

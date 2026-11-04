@@ -13,6 +13,7 @@ import { initImageFrame } from './render-image-frame.js';
 import HotspotLayerManager from '../godam-player/managers/layers/hotspotLayerManager.js';
 import { registerLayerType } from '../godam-player/utils/layer-registry.js';
 import { registerLayerRuntime } from '../godam-layers/runtime/registry.js';
+import { registerHotspotRuntime } from '../../layers/hotspot/view.js';
 
 jest.mock( '../godam-player/managers/layers/hotspotLayerManager.js', () => ( {
 	__esModule: true,
@@ -66,6 +67,8 @@ describe( 'Layer API contract: image layers', () => {
 
 	beforeEach( () => {
 		delete window.godam;
+		// On a page the hotspot layer's view script registers its runtime.
+		registerHotspotRuntime();
 		HotspotLayerManager.mockClear();
 		teardowns = [];
 		jest.spyOn( console, 'warn' ).mockImplementation( () => {} );
@@ -156,6 +159,19 @@ describe( 'Layer API contract: image layers', () => {
 		expect( ctx.media.type ).toBe( 'image' );
 		expect( ctx.api.currentTime() ).toBe( 0 );
 		expect( frame.querySelector( '.godam-image-layer-item' ).textContent ).toBe( 'Countdown' );
+	} );
+
+	it( 'draws a layer whose view script loads after the frame', () => {
+		const frame = makeFrame( [ { id: 'a1', type: 'acme/late' } ] );
+		init( frame );
+		expect( frame.querySelector( '.godam-image-layer-item' ) ).toBeNull();
+
+		registerLayerRuntime( 'acme/late', { supports: { media: [ 'image' ] }, mount: ( ctx ) => {
+			ctx.container.textContent = 'Late';
+			return {};
+		} } );
+
+		expect( frame.querySelector( '.godam-image-layer-item' ).textContent ).toBe( 'Late' );
 	} );
 
 	it( 'draws nothing for a frame with no layers', () => {

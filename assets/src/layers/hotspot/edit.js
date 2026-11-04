@@ -26,21 +26,21 @@ import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { updateLayerField } from '../../redux/slice/videoSlice';
-import { isValidURL } from '../../utils';
-import { formatClock, parseClock } from '../../utils/time';
-import LayerControls from '../LayerControls';
-import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
-import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
+import { updateLayerField } from '../../../../pages/video-editor/redux/slice/videoSlice';
+import { isValidURL } from '../../../../pages/video-editor/utils';
+import { formatClock, parseClock } from '../../../../pages/video-editor/utils/time';
+import LayerControls from '../../../../pages/video-editor/components/LayerControls';
+import FontAwesomeIconPicker from '../../../../pages/video-editor/components/hotspot/FontAwesomeIconPicker';
+import ColorPickerButton from '../../../../pages/video-editor/components/shared/color-picker/ColorPickerButton.jsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
-import LayersHeader from './LayersHeader';
-import { HOTSPOT_CONSTANTS } from '../../../../assets/src/js/godam-player/utils/constants';
-import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR, DEFAULT_HOTSPOT_ICON_COLOR, DEFAULT_HOTSPOT_CUSTOM_ICON_BG } from '../../../../assets/src/js/godam-player/utils/hotspotStyle';
-import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, MIN_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX } from '../../../../assets/src/js/godam-player/utils/buttonCtaStyle';
-import { ButtonVariantField, ButtonStyleFields, useDebouncedItemColor } from '../shared/button-cta/ButtonControls.jsx';
-import { ButtonCtaLayerIcon } from '../editor-shell/icons';
-import { VeSection, VeColorList, VeSegmented, VeTextInput, VeToggle } from '../controls';
+import LayersHeader from '../../../../pages/video-editor/components/layers/LayersHeader';
+import { HOTSPOT_CONSTANTS } from '../../js/godam-player/utils/constants';
+import { resolveHotspotStyle, DEFAULT_HOTSPOT_COLOR, DEFAULT_HOTSPOT_ICON_COLOR, DEFAULT_HOTSPOT_CUSTOM_ICON_BG } from '../../js/godam-player/utils/hotspotStyle';
+import { resolveButtonCtaStyle, getButtonCtaClassName, getButtonCtaCssVars, getButtonFontPx, resolveButtonFontPercent, MIN_BUTTON_FONT_PX, MAX_BUTTON_FONT_PX } from '../../js/godam-player/utils/buttonCtaStyle';
+import { ButtonVariantField, ButtonStyleFields, useDebouncedItemColor } from '../../../../pages/video-editor/components/shared/button-cta/ButtonControls.jsx';
+import { ButtonCtaLayerIcon } from '../../../../pages/video-editor/components/editor-shell/icons';
+import { VeSection, VeColorList, VeSegmented, VeTextInput, VeToggle } from '../../../../pages/video-editor/components/controls';
 
 /**
  * Small purple pulse-dot glyph for the Style segmented control, matching the

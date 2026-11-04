@@ -25,7 +25,7 @@ import { configureStore } from '@reduxjs/toolkit';
  * Internal dependencies
  */
 import Layer from './Layer';
-import { registerCoreLayerTypes } from '../../layers/core';
+import { registerCoreLayerTypes } from '../../../../assets/src/layers';
 
 // A function declaration, so it is hoisted along with the jest.mock() calls.
 function mockEditor( name ) {
@@ -35,11 +35,11 @@ function mockEditor( name ) {
 	};
 }
 
-jest.mock( './FormLayer', () => mockEditor( 'form' ) );
-jest.mock( './CTALayer', () => mockEditor( 'cta' ) );
-jest.mock( './HotspotLayer', () => mockEditor( 'hotspot' ) );
-jest.mock( './AdsLayer', () => mockEditor( 'ad' ) );
-jest.mock( './PollLayer', () => mockEditor( 'poll' ) );
+jest.mock( '../../../../assets/src/layers/form/edit', () => mockEditor( 'form' ) );
+jest.mock( '../../../../assets/src/layers/cta/edit', () => mockEditor( 'cta' ) );
+jest.mock( '../../../../assets/src/layers/hotspot/edit', () => mockEditor( 'hotspot' ) );
+jest.mock( '../../../../assets/src/layers/ad/edit', () => mockEditor( 'ad' ) );
+jest.mock( '../../../../assets/src/layers/poll/edit', () => mockEditor( 'poll' ) );
 jest.mock( '../../utils/formUtils', () => ( { getFormIdFromLayer: () => null } ) );
 
 // The real slice reads page globals at import time; only the action shapes matter here.

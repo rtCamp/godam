@@ -13,5 +13,6 @@
 		"allow_skip": { "default": true },
 		"custom_css": { "default": "" }
 	},
+	"viewScript": "file:./view.js",
 	"textdomain": "godam"
 }

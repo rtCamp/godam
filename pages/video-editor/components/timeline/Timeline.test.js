@@ -22,11 +22,11 @@ import { registerLayerType } from '@godam/layers';
 import Timeline from './Timeline';
 import { registerEditorLayerTypes } from '../../layers';
 
-jest.mock( '../layers/CTALayer', () => () => null );
-jest.mock( '../layers/HotspotLayer', () => () => null );
-jest.mock( '../layers/FormLayer', () => () => null );
-jest.mock( '../layers/PollLayer', () => () => null );
-jest.mock( '../layers/AdsLayer', () => () => null );
+jest.mock( '../../../../assets/src/layers/cta/edit', () => () => null );
+jest.mock( '../../../../assets/src/layers/hotspot/edit', () => () => null );
+jest.mock( '../../../../assets/src/layers/form/edit', () => () => null );
+jest.mock( '../../../../assets/src/layers/poll/edit', () => () => null );
+jest.mock( '../../../../assets/src/layers/ad/edit', () => () => null );
 jest.mock( '../../utils/formUtils', () => ( { getFormIdFromLayer: () => null } ) );
 jest.mock( '../../onboarding/productGuide', () => ( { notify: jest.fn() } ) );
 jest.mock( '../../redux/slice/videoSlice', () => ( {
