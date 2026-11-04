@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-04T06:04:10+00:00\n"
+"POT-Creation-Date: 2026-11-04T06:29:54+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -4642,12 +4642,12 @@ msgid "We couldn’t reach the GoDAM analytics service. This is usually temporar
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/AnalyticsForbiddenNotice.jsx:34
+#: pages/analytics/AnalyticsForbiddenNotice.jsx:36
 msgid "You can’t view analytics for this video."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/AnalyticsForbiddenNotice.jsx:35
+#: pages/analytics/AnalyticsForbiddenNotice.jsx:37
 msgid "Analytics is shown only for videos you can edit. Choose one of your own videos, or ask an Editor or Administrator."
 msgstr ""
 
