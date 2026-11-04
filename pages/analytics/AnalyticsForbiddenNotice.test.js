@@ -24,7 +24,7 @@ jest.mock( '../shared/analytics-unavailable.scss', () => ( {} ) );
 import AnalyticsForbiddenNotice, { isAnalyticsForbidden } from './AnalyticsForbiddenNotice';
 
 describe( 'isAnalyticsForbidden', () => {
-	it( 'is true only for a 403 answer', () => {
+	it( 'is true only for a 403 rest_forbidden answer', () => {
 		expect( isAnalyticsForbidden( { status: 403, data: { code: 'rest_forbidden' } } ) ).toBe( true );
 	} );
 
@@ -32,6 +32,8 @@ describe( 'isAnalyticsForbidden', () => {
 		[ 'a server error', { status: 500 } ],
 		[ 'a network error', { status: 'FETCH_ERROR', error: 'TypeError: Failed to fetch' } ],
 		[ 'a signed-out answer', { status: 401 } ],
+		[ 'an expired nonce', { status: 403, data: { code: 'rest_cookie_invalid_nonce' } } ],
+		[ 'a 403 with no error code', { status: 403 } ],
 		[ 'no error', undefined ],
 	] )( 'is false for %s', ( label, error ) => {
 		expect( isAnalyticsForbidden( error ) ).toBe( false );
