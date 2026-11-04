@@ -109,7 +109,7 @@ Each decision gives a recommendation. Where the RFC is agreed differently, the d
 |---|---|
 | Editor package / script handle / global | `@godam/layers` / `godam-layers` / `window.godam.layers` |
 | Editor hooks and controls package | `@godam/layer-editor` / `godam-layer-editor` / `window.godam.layerEditor` |
-| Front-end runtime (same package, front-end build) | `registerLayerRuntime()` on `window.godam.layers` |
+| Front-end runtime (plain JS, bundled into the player and image scripts; one registry per page) | `registerLayerRuntime()` on `window.godam.layers` |
 | Editor registration | `registerLayerType( metadata, { edit, preview } )`, `registerLayerVariation( 'form', … )` |
 | Data store | `godam/layers` |
 | PHP registration | `godam_register_layer_type( $path_or_metadata, $args )`, called on a new `godam_init` action |

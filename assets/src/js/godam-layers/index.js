@@ -75,5 +75,6 @@ export {
 
 if ( typeof window !== 'undefined' ) {
 	window.godam = window.godam || {};
-	window.godam.layers = api;
+	// The front-end runtime (`./runtime`) shares this global, so merge into it.
+	window.godam.layers = Object.assign( window.godam.layers || {}, api );
 }

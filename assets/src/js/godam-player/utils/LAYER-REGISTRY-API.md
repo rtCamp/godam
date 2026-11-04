@@ -1,5 +1,11 @@
 # GoDAM Layer Registry Usage Guide
 
+> **Superseded by the Layer API (#2290).** New layer types should register a
+> front-end runtime with `window.godam.layers.registerLayerRuntime( name, { mount } )`
+> (see `assets/src/js/godam-layers/runtime/`). `window.godamLayerRegistry`
+> still works: each `registerLayerType()` call now registers a runtime that
+> drives the add-on's manager class. #2296 deprecates it.
+
 /**
 
 * LAYER REGISTRY USAGE GUIDE FOR ADD-ONS
@@ -186,13 +192,10 @@
 * ===============
 * For each layer in a video:
 * 1. LayersManager.processLayer() is called
-* 1. LayerValidator.shouldProcessLayer() checks validation
-* * Looks up validator via window.godamLayerRegistry.getLayerValidator()
-* * Calls validator(layer, dependencies)
+* 1. The layer type's runtime validate() runs, which calls validator(layer, dependencies)
 * 1. If validator returns true:
-* * LayersManager.handleLayerDisplay() is called
-* * Looks up manager via window.godamLayerRegistry.getLayerManager()
-* * Instantiates and calls setupLayer()
+* * The runtime's mount() creates one manager instance per player (first layer only)
+* * and calls setupLayer( layer, element )
 *
 *
 * HOOKS

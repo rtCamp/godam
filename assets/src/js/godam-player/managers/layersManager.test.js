@@ -1,30 +1,16 @@
 /**
+ * LayersManager suppression gate: while a hover preview plays, no layer may
+ * appear — core, add-on, or created through GoDAMAPI (#2294).
+ */
+
+/**
  * Internal dependencies
  */
 import LayersManager from './layersManager';
-
-// The sub-managers do real DOM/player work; stub them so this spec is about the
-// suppression gate alone, and expose jest.fn() methods to assert delegation.
-jest.mock( './layers/formLayerManager.js', () => ( {
-	__esModule: true,
-	default: jest.fn().mockImplementation( () => ( {
-		handleFormLayersTimeUpdate: jest.fn(),
-		handlePause: jest.fn(),
-		handleEnded: jest.fn(),
-		sortLayers: jest.fn(),
-	} ) ),
-} ) );
-
-jest.mock( './layers/hotspotLayerManager.js', () => ( {
-	__esModule: true,
-	default: jest.fn().mockImplementation( () => ( {
-		handleHotspotLayersTimeUpdate: jest.fn(),
-	} ) ),
-} ) );
+import { registerLayerRuntime } from '../../godam-layers/runtime/registry.js';
 
 jest.mock( '../utils/pluginLoader.js', () => ( {
 	loadFontAwesome: jest.fn( () => Promise.resolve() ),
-	hasHotspotsWithIcons: jest.fn( () => false ),
 } ) );
 
 /**
@@ -37,30 +23,45 @@ const createPlayer = () => {
 	return {
 		on: ( event, cb ) => ( handlers[ event ] = handlers[ event ] || [] ).push( cb ),
 		emit: ( event ) => ( handlers[ event ] || [] ).forEach( ( cb ) => cb() ),
+		el: () => document.body,
+		isFullscreen: () => false,
 	};
 };
 
 /**
- * Builds a LayersManager with stubbed sub-managers.
+ * Builds a LayersManager with one add-on layer on the page.
  *
  * @param {Object} player - Player stub.
- * @return {LayersManager} The manager under test.
+ * @return {Object} `{ manager, handlers }`; `handlers` holds the add-on's jest.fn() handlers.
  */
 const createManager = ( player ) => {
+	const handlers = {
+		onTimeUpdate: jest.fn(),
+		onPause: jest.fn(),
+		onEnded: jest.fn(),
+		onResize: jest.fn(),
+	};
+	registerLayerRuntime( 'acme/probe', { mount: () => handlers } );
+
+	document.body.innerHTML = '<div id="layer-1-p"></div>';
 	const video = document.createElement( 'video' );
 	video.dataset.instanceId = '1';
-	const config = { isPreviewEnabled: false, videoSetupOptions: { layers: [] } };
-	return new LayersManager( player, video, config, {}, 'player-1' );
+	const config = { isPreviewEnabled: false, videoSetupOptions: { layers: [ { id: 'p', type: 'acme/probe' } ] } };
+	return { manager: new LayersManager( player, video, config, {}, 'player-1' ), handlers };
 };
 
 describe( 'LayersManager suppression gate', () => {
+	afterEach( () => {
+		delete window.godam;
+	} );
+
 	it( 'defaults to not suppressed', () => {
-		const manager = createManager( createPlayer() );
+		const { manager } = createManager( createPlayer() );
 		expect( manager.areLayersSuppressed() ).toBe( false );
 	} );
 
 	it( 'is suppressed only when the predicate returns strictly true', () => {
-		const manager = createManager( createPlayer() );
+		const { manager } = createManager( createPlayer() );
 
 		manager.setSuppressionCheck( () => true );
 		expect( manager.areLayersSuppressed() ).toBe( true );
@@ -73,37 +74,44 @@ describe( 'LayersManager suppression gate', () => {
 		expect( manager.areLayersSuppressed() ).toBe( false );
 	} );
 
-	it( 'gates the form and hotspot timeupdate paths', () => {
-		const manager = createManager( createPlayer() );
-		manager.setSuppressionCheck( () => true );
+	it( 'holds time updates back from every layer while suppressed', async () => {
+		const { manager, handlers } = createManager( createPlayer() );
+		await manager.setupLayers();
 
-		manager.handleFormLayersTimeUpdate( 5 );
-		manager.handleHotspotLayersTimeUpdate( 5 );
-		expect( manager.formLayerManager.handleFormLayersTimeUpdate ).not.toHaveBeenCalled();
-		expect( manager.hotspotLayerManager.handleHotspotLayersTimeUpdate ).not.toHaveBeenCalled();
+		manager.setSuppressionCheck( () => true );
+		manager.handleTimeUpdate( 5 );
+		expect( handlers.onTimeUpdate ).not.toHaveBeenCalled();
 
 		manager.setSuppressionCheck( () => false );
-		manager.handleFormLayersTimeUpdate( 5 );
-		manager.handleHotspotLayersTimeUpdate( 5 );
-		expect( manager.formLayerManager.handleFormLayersTimeUpdate ).toHaveBeenCalledWith( 5 );
-		expect( manager.hotspotLayerManager.handleHotspotLayersTimeUpdate ).toHaveBeenCalledWith( 5 );
+		manager.handleTimeUpdate( 5 );
+		expect( handlers.onTimeUpdate ).toHaveBeenCalledWith( 5 );
 	} );
 
-	it( 'gates the pause and ended CTA triggers', async () => {
+	it( 'holds the pause and ended triggers back while suppressed', async () => {
 		const player = createPlayer();
-		const manager = createManager( player );
+		const { manager, handlers } = createManager( player );
 		await manager.setupLayers(); // registers the pause / ended handlers
 
 		manager.setSuppressionCheck( () => true );
 		player.emit( 'pause' );
 		player.emit( 'ended' );
-		expect( manager.formLayerManager.handlePause ).not.toHaveBeenCalled();
-		expect( manager.formLayerManager.handleEnded ).not.toHaveBeenCalled();
+		expect( handlers.onPause ).not.toHaveBeenCalled();
+		expect( handlers.onEnded ).not.toHaveBeenCalled();
 
 		manager.setSuppressionCheck( () => false );
 		player.emit( 'pause' );
 		player.emit( 'ended' );
-		expect( manager.formLayerManager.handlePause ).toHaveBeenCalled();
-		expect( manager.formLayerManager.handleEnded ).toHaveBeenCalled();
+		expect( handlers.onPause ).toHaveBeenCalled();
+		expect( handlers.onEnded ).toHaveBeenCalled();
+	} );
+
+	it( 'keeps resizing layers while suppressed', async () => {
+		const { manager, handlers } = createManager( createPlayer() );
+		await manager.setupLayers();
+		manager.setSuppressionCheck( () => true );
+
+		manager.handleVideoResize();
+
+		expect( handlers.onResize ).toHaveBeenCalled();
 	} );
 } );

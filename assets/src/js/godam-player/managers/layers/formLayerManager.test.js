@@ -1,7 +1,8 @@
 /**
  * Internal dependencies
  */
-import FormLayerManager from './formLayerManager';
+import { createLayerHost } from '../../../godam-layers/runtime/host.js';
+import { registerCoreLayerRuntimes } from '../../layers/index.js';
 
 /**
  * Minimal player stub — emitLayerEvent only needs a videoKey off the element.
@@ -45,8 +46,9 @@ const addMessage = ( layerElement, className ) => {
 // MutationObserver callbacks run as microtasks.
 const flush = () => new Promise( ( resolve ) => setTimeout( resolve, 0 ) );
 
+// The Form runtime gives FormLayerManager the Marketo provider's behaviour.
 describe( 'FormLayerManager with a Marketo layer', () => {
-	let manager, events, layerElement;
+	let events, layerElement;
 
 	beforeEach( () => {
 		events = [];
@@ -56,9 +58,10 @@ describe( 'FormLayerManager with a Marketo layer', () => {
 			getDeviceType: () => 'desktop',
 			wasFirstViewForVideo: () => true,
 		};
-		manager = new FormLayerManager( fakePlayer(), true, 'inst-1' );
+		registerCoreLayerRuntimes();
+		const host = createLayerHost( { player: fakePlayer(), media: { type: 'video' }, instanceId: 'inst-1' } );
 		layerElement = marketoLayerElement();
-		manager.setupFormLayer(
+		host.mount(
 			{ id: 'l1', type: 'form', form_type: 'marketo', displayTime: 3, allow_skip: false },
 			layerElement,
 		);
