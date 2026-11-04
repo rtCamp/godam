@@ -55,6 +55,8 @@ class Layer_Type_Registry {
 			return;
 		}
 
+		$this->register_runtime_script();
+
 		/**
 		 * Fires when layer types should register. Call `godam_register_layer_type()` here.
 		 *
@@ -79,6 +81,9 @@ class Layer_Type_Registry {
 	 */
 	public function register( $path_or_metadata, $args = array() ) {
 		$metadata = is_array( $path_or_metadata ) ? $path_or_metadata : $this->read_metadata( $path_or_metadata );
+		if ( is_array( $metadata ) && ! is_array( $path_or_metadata ) ) {
+			$metadata['file'] = is_dir( $path_or_metadata ) ? trailingslashit( $path_or_metadata ) . 'layer.json' : $path_or_metadata;
+		}
 		if ( ! is_array( $metadata ) ) {
 			$this->notice( __FUNCTION__, __( 'Layer type metadata could not be read.', 'godam' ) );
 			return false;
@@ -121,6 +126,9 @@ class Layer_Type_Registry {
 			isset( $metadata['supports'] ) && is_array( $metadata['supports'] ) ? $metadata['supports'] : array(),
 			isset( $args['supports'] ) && is_array( $args['supports'] ) ? $args['supports'] : array()
 		);
+
+		$type['editor_script_handles'] = $this->register_scripts( $type, 'editorScript', array( 'godam-layers', 'godam-layer-editor' ) );
+		$type['view_script_handles']   = $this->register_scripts( $type, 'viewScript', array( 'godam-layer-runtime' ) );
 
 		$variations         = array_merge( (array) $type['variations'], $this->pending_variations[ $name ] ?? array() );
 		$type['variations'] = array();
@@ -322,6 +330,9 @@ class Layer_Type_Registry {
 		}
 
 		$html = (string) call_user_func( $type['render_callback'], $layer, $instance_id, $context );
+		if ( '' !== $html ) {
+			$this->enqueue_view_scripts( $type );
+		}
 		return empty( $type['supports']['rawHtml'] ) ? wp_kses_post( $html ) : $html;
 	}
 
@@ -345,7 +356,8 @@ class Layer_Type_Registry {
 			if ( ! empty( $type['should_render'] ) && is_callable( $type['should_render'] ) && ! call_user_func( $type['should_render'], $layer, array( 'media' => $media ) ) ) {
 				continue;
 			}
-			$kept[] = $layer;
+			$this->enqueue_view_scripts( $type );
+			$kept[] = $this->get_public_layer( $layer );
 		}
 		return $kept;
 	}
@@ -385,6 +397,164 @@ class Layer_Type_Registry {
 			}
 		}
 		return $flags;
+	}
+
+	/**
+	 * A saved layer without the attributes its type marks `"private": true`, for the page.
+	 *
+	 * @param mixed $layer Saved layer.
+	 * @return mixed The layer as the browser may see it.
+	 */
+	public function get_public_layer( $layer ) {
+		$type = is_array( $layer ) && ! empty( $layer['type'] ) ? $this->get( $layer['type'] ) : null;
+		if ( null === $type ) {
+			return $layer;
+		}
+		foreach ( (array) ( $type['attributes'] ?? array() ) as $key => $schema ) {
+			if ( ! empty( $schema['private'] ) ) {
+				unset( $layer[ $key ] );
+			}
+		}
+		return $layer;
+	}
+
+	/**
+	 * Clean saved layers against their types' declared attributes (RFC D3).
+	 *
+	 * @param mixed $layers Saved layers.
+	 * @return mixed The cleaned layers.
+	 */
+	public function sanitize_layers( $layers ) {
+		return Layer_Sanitizer::sanitize_layers( $layers, $this );
+	}
+
+	/**
+	 * What the video editor needs from PHP: each type's metadata (merged into
+	 * `registerLayerType()` the way Gutenberg merges server block metadata) and
+	 * whether each type and variation can run here.
+	 *
+	 * @return array `{ layerTypes: { [name]: metadata }, layerAvailability: { [name]: { available, variations } } }`.
+	 */
+	public function get_editor_settings() {
+		$types        = array();
+		$availability = array();
+
+		foreach ( $this->types as $name => $type ) {
+			$types[ $name ] = array_intersect_key(
+				$type,
+				array_flip( array( 'apiVersion', 'name', 'title', 'description', 'icon', 'color', 'category', 'supports', 'attributes', 'variationAttribute', 'textdomain' ) )
+			);
+
+			$variations = array();
+			foreach ( $type['variations'] as $variation ) {
+				$variations[ $variation['name'] ] = $this->is_available( $variation );
+			}
+			$availability[ $name ] = array(
+				'available'  => $this->is_available( $type ),
+				'variations' => (object) $variations,
+			);
+		}
+
+		return array(
+			'layerTypes'        => (object) $types,
+			'layerAvailability' => (object) $availability,
+		);
+	}
+
+	/**
+	 * Enqueue every registered type's `editorScript`. Called on the video editor page.
+	 *
+	 * @return void
+	 */
+	public function enqueue_editor_scripts() {
+		foreach ( $this->types as $type ) {
+			foreach ( $type['editor_script_handles'] ?? array() as $handle ) {
+				wp_enqueue_script( $handle );
+			}
+		}
+	}
+
+	/**
+	 * Enqueue a type's `viewScript`, so it loads only on pages that show its layers.
+	 *
+	 * @param array $type Layer type.
+	 * @return void
+	 */
+	private function enqueue_view_scripts( $type ) {
+		foreach ( $type['view_script_handles'] ?? array() as $handle ) {
+			wp_enqueue_script( $handle );
+		}
+	}
+
+	/**
+	 * Register the scripts a `layer.json` names under a key.
+	 *
+	 * A value is a registered script handle, or `file:./path.js` relative to the
+	 * `layer.json`, registered with the dependencies from its `*.asset.php` (as
+	 * `@wordpress/scripts` builds it) plus `$extra_deps`.
+	 *
+	 * @param array  $type       Layer type.
+	 * @param string $key        `editorScript` or `viewScript`.
+	 * @param array  $extra_deps Handles the script always depends on.
+	 * @return string[] Handles.
+	 */
+	private function register_scripts( $type, $key, $extra_deps ) {
+		$handles = array();
+		foreach ( array_filter( (array) ( $type[ $key ] ?? array() ), 'is_string' ) as $index => $script ) {
+			if ( 0 !== strpos( $script, 'file:' ) ) {
+				$handles[] = $script;
+				continue;
+			}
+			if ( empty( $type['file'] ) ) {
+				continue;
+			}
+
+			$path = wp_normalize_path( realpath( dirname( $type['file'] ) . '/' . substr( $script, 5 ) ) );
+			if ( ! $path || ! file_exists( $path ) ) {
+				continue;
+			}
+
+			$asset_file = preg_replace( '/\.js$/', '.asset.php', $path );
+			$asset      = $asset_file && file_exists( $asset_file ) ? include $asset_file : array();
+			$handle     = sprintf( '%s-%s%s', str_replace( '/', '-', $type['name'] ), 'editorScript' === $key ? 'editor-script' : 'view-script', $index ? '-' . ( $index + 1 ) : '' );
+
+			wp_register_script(
+				$handle,
+				plugins_url( basename( $path ), $path ),
+				array_values( array_unique( array_merge( (array) ( $asset['dependencies'] ?? array() ), $extra_deps ) ) ),
+				$asset['version'] ?? false,
+				true
+			);
+			$handles[] = $handle;
+		}
+		return $handles;
+	}
+
+	/**
+	 * Register `godam-layer-runtime`, the front-end layer runtime registry
+	 * (`window.godam.layers.registerLayerRuntime`) that add-on view scripts depend on.
+	 *
+	 * The player and image scripts bundle the same registry and share it
+	 * through `window.godam.layers`, so they work without it.
+	 *
+	 * @return void
+	 */
+	private function register_runtime_script() {
+		if ( ! defined( 'RTGODAM_PATH' ) || ! defined( 'RTGODAM_URL' ) || wp_script_is( 'godam-layer-runtime', 'registered' ) ) {
+			return;
+		}
+		$asset_path = RTGODAM_PATH . 'assets/build/js/godam-layer-runtime.min.asset.php';
+		if ( ! file_exists( RTGODAM_PATH . 'assets/build/js/godam-layer-runtime.min.js' ) ) {
+			return;
+		}
+		$asset = file_exists( $asset_path ) ? include $asset_path : array();
+		wp_register_script(
+			'godam-layer-runtime',
+			RTGODAM_URL . 'assets/build/js/godam-layer-runtime.min.js',
+			(array) ( $asset['dependencies'] ?? array() ),
+			$asset['version'] ?? ( defined( 'RTGODAM_VERSION' ) ? RTGODAM_VERSION : false ),
+			true
+		);
 	}
 
 	/**

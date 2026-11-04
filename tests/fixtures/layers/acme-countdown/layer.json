@@ -2,5 +2,29 @@
 	"apiVersion": 1,
 	"name": "acme/countdown-file",
 	"title": "Countdown from file",
-	"supports": { "media": [ "video", "image" ] }
+	"supports": {
+		"media": [
+			"video",
+			"image"
+		]
+	},
+	"editorScript": "file:./build/editor.js",
+	"viewScript": [
+		"file:./build/view.js",
+		"acme-shared-lib"
+	],
+	"attributes": {
+		"label": {
+			"type": "string",
+			"default": ""
+		},
+		"endsAt": {
+			"type": "string",
+			"default": ""
+		},
+		"apiToken": {
+			"type": "string",
+			"private": true
+		}
+	}
 }

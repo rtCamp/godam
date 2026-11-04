@@ -88,6 +88,18 @@ function normalizeVariation( layerType, variation ) {
 const pendingVariations = {};
 
 /**
+ * The metadata a layer type registered in PHP, sent to the editor as
+ * `godamVideoEditorConfig.layerTypes`.
+ *
+ * @param {string} name Layer type name.
+ * @return {Object} The metadata, or an empty object.
+ */
+function getServerMetadata( name ) {
+	const server = typeof window !== 'undefined' ? window.godamVideoEditorConfig?.layerTypes?.[ name ] : undefined;
+	return server && typeof server === 'object' ? server : {};
+}
+
+/**
  * Register a layer type.
  *
  * @param {Object|string} metadata Contents of the type's `layer.json`, or just its name.
@@ -95,7 +107,10 @@ const pendingVariations = {};
  * @return {Object|undefined} The registered layer type, or undefined when registration failed.
  */
 export function registerLayerType( metadata, settings = {} ) {
-	const merged = { ...( typeof metadata === 'string' ? { name: metadata } : metadata ), ...settings };
+	const own = typeof metadata === 'string' ? { name: metadata } : metadata;
+	// Metadata the type registered in PHP (`godam_register_layer_type()`) fills
+	// in what the script doesn't pass, so an add-on can register by name.
+	const merged = { ...getServerMetadata( own?.name ), ...own, ...settings };
 	const { name } = merged;
 
 	if ( typeof name !== 'string' || ( ! NAME_PATTERN.test( name ) && ! CORE_LAYER_TYPES.includes( name ) ) ) {

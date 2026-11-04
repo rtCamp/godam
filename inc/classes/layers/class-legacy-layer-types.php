@@ -42,8 +42,10 @@ class Legacy_Layer_Types {
 				),
 			),
 			array(
-				'render_callback' => array( self::class, 'render_with_action' ),
-				'should_render'   => function ( $layer ) {
+				'render_callback'            => array( self::class, 'render_with_action' ),
+				// Core has no schema for the add-on's attributes, so saving keeps them as they are.
+				'keep_undeclared_attributes' => true,
+				'should_render'              => function ( $layer ) {
 					return ! empty( $layer['productHotspots'] );
 				},
 			)
