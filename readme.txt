@@ -4,11 +4,11 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.6.1
+Stable tag: 2.6.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Media hosting for WordPress. Move course, LMS and membership videos off Vimeo: free migration for up to 100 videos on one site. Works with LifterLMS.
+Media hosting for WordPress. Move course, LMS and membership videos off Vimeo: we migrate your entire video library for free. Works with LifterLMS.
 
 == Description ==
 [GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) is the media layer for WordPress. It is built first for course, LMS and membership sites, including sites moving their videos off Vimeo, and it combines multiple media tools into one plugin with three key features:
@@ -37,10 +37,9 @@ Check out our source code and contribute to the plugin on GitHub: [Official GoDA
 
 If your course, LMS or membership site hosts its videos on Vimeo, GoDAM moves them to WordPress-native hosting for you.
 
-📌 **Free migration for up to 100 videos on one WordPress site**
+📌 **Free migration of your entire video library**
 ✓ Our team imports your videos with their titles, descriptions, thumbnails, tags and folders
 ✓ We replace the Vimeo embeds in your content, and you review each step
-✓ For a library above 100 videos, or for more than one site, we give you a fixed quote before we start
 
 [See how the free migration works](https://godam.io/vimeo-alternative/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=vimeo-migration#h-we-move-your-vimeo-library)
 
@@ -214,7 +213,7 @@ Supported input formats:
 A. Both. The plugin adds the player, the media manager and the settings to WordPress. Cloud storage, transcoding, adaptive bitrate streaming and CDN delivery run on GoDAM's service and need a valid API key. See Pricing Plans above, which include a 60-day free trial.
 
 = Can I move my existing Vimeo videos to GoDAM? =
-A. Yes. We move up to 100 videos on one WordPress site for free. Our team imports your videos with their titles, descriptions, thumbnails, tags and folders, replaces the Vimeo embeds in your content, and you review each step. For a larger library, or for more than one site, we give you a fixed quote first. [See how the free migration works](https://godam.io/vimeo-alternative/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=vimeo-faq#h-we-move-your-vimeo-library)
+A. Yes. We move your entire video library for free. Our team imports your videos with their titles, descriptions, thumbnails, tags and folders, replaces the Vimeo embeds in your content, and you review each step. [See how the free migration works](https://godam.io/vimeo-alternative/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=vimeo-faq#h-we-move-your-vimeo-library)
 
 You can also switch part of it yourself. For Vimeo videos you added with the WordPress Vimeo Embed block, the Video Migration tab under GoDAM → Tools replaces those blocks with GoDAM Video blocks, for videos you have already imported into your GoDAM account. That tab needs a valid API key. It does not cover Vimeo videos added in the Classic Editor, in page builders or in LMS lesson video fields.
 
@@ -269,6 +268,10 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.6.2 (November 4, 2026) =
+
+- Tweak: Our team now moves your entire video library from Vimeo for free.
+
 = v2.6.1 (November 3, 2026) =
 
 - Fix: The analytics dashboard now shows correctly on sites with no views yet.
@@ -282,16 +285,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 - Feat: For Marketo video tracking, GoDAM now adds Marketo's Munchkin tracking code to pages that have a video, unless the page already loads it. Munchkin also records page visits in your Marketo. A site that loads Munchkin itself can turn ours off with the `rtgodam_map_inject_munchkin` filter.
 - Tweak: If a Marketo form can't load, the video layer says "This form could not be loaded." with a Continue button. On sites without HTTPS, the video editor warns that Marketo form submissions need HTTPS.
 - Fix: The Document, Audio and Video Thumbnail blocks no longer collapse when placed inside a Row or Stack (flex) layout, and the Document card now stacks to fit its column instead of the screen width.
-- Fix: Security fixes.
-
-= v2.5.2 (October 29, 2026) =
-
-- Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.
-- Fix: The Remove API Key dialog now says what really happens: only this site disconnects, and your GoDAM account and media are not affected.
-- Fix: On phones, a video in the lightbox no longer jumps when the browser toolbar shows or hides.
-- Fix: The All Media count in the media picker is now right when the picker shows only caption or document files.
-- Fix: Global video ads (GoDAM > Settings > Video Ads > Enable Global Video Ads) now play.
-- Fix: In the Classic player skin, the mute button on hover previews shows its icon again.
 - Fix: Security fixes.
 
 == External Services ==
