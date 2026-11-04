@@ -1,9 +1,12 @@
 # Changelog #
 
+## v2.6.2 (November 4, 2026) ##
+
+- Tweak: The LifterLMS offer notice now says our team moves your entire video library from Vimeo for free.
+
 ## v2.6.1 (November 3, 2026) ##
 
 - Fix: The analytics dashboard now shows correctly on sites with no views yet.
-- Tweak: The LifterLMS offer notice now says our team moves your entire video library from Vimeo for free.
 
 ## v2.6.0 (November 2, 2026) ##
 
