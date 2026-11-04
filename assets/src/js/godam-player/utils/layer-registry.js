@@ -15,8 +15,8 @@
  * `updateProductHotspotPositions()`. Only a manager with
  * `createProductHotspots()` runs on images.
  *
- * New code should call `registerLayerRuntime()` instead. #2296 moves
- * godam-for-woo over and deprecates this file.
+ * Deprecated since GoDAM 2.7.0 (#2296), removed in 2.9.0: new code calls
+ * `registerLayerRuntime()`. Each call logs a deprecation notice once per page.
  */
 
 /**
@@ -27,6 +27,7 @@ import {
 	getLayerRuntime,
 	getLayerRuntimes,
 } from '../../godam-layers/runtime/registry.js';
+import { deprecated } from '../../godam-layers/deprecated.js';
 
 const CORE_TYPES = [ 'form', 'cta', 'poll', 'hotspot' ];
 
@@ -116,6 +117,8 @@ function legacyMount( id, Manager ) {
  * @return {boolean} True if registration successful, false if already registered
  */
 export function registerLayerType( id, config ) {
+	deprecated( 'window.godamLayerRegistry.registerLayerType()', 'window.godam.layers.registerLayerRuntime()' );
+
 	if ( getLayerRuntime( id ) ) {
 		// eslint-disable-next-line no-console
 		console.warn( `Layer type "${ id }" is already registered. Skipping duplicate registration.` );

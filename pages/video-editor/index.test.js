@@ -56,8 +56,9 @@ describe( 'Layer API contract: editor globals for add-ons', () => {
 		].forEach( ( name ) => expect( typeof components[ name ] ).toBe( 'function' ) );
 	} );
 
-	it( 'exposes the real updateLayerField action on window.godamVideoEditorActions', () => {
+	it( 'exposes the real updateLayerField action on window.godamVideoEditorActions, with a deprecation notice', () => {
 		expect( window.godamVideoEditorActions.updateLayerField ).toBe( require( './redux/slice/videoSlice' ).updateLayerField );
+		expect( console ).toHaveWarnedWith( 'GoDAM: window.godamVideoEditorActions is deprecated since version 2.7.0 and will be removed in version 2.9.0. Use useLayerAttributes() from window.godam.layerEditor instead.' );
 	} );
 
 	it( 'exposes formatClock and parseClock on window.godamVideoEditorUtils', () => {

@@ -16,7 +16,7 @@
 /**
  * External dependencies
  */
-import { getLayerType, __unstableRegisterLegacyLayerType } from '@godam/layers';
+import { getLayerType, __unstableRegisterLegacyLayerType, __unstableDeprecated as deprecated } from '@godam/layers';
 
 /**
  * Shopping-cart glyph (white line art) for commerce layer markers.
@@ -49,7 +49,11 @@ const LEGACY_WOO = {
  */
 export function getLegacyEditComponent( type ) {
 	const componentName = window.godamVideoEditorConfig?.layerComponents?.[ type ];
-	return componentName ? window.godamLayerComponents?.[ componentName ] : undefined;
+	const component = componentName ? window.godamLayerComponents?.[ componentName ] : undefined;
+	if ( component ) {
+		deprecated( 'window.godamLayerComponents', 'the `edit` setting of registerLayerType()' );
+	}
+	return component;
 }
 
 /**
@@ -75,7 +79,14 @@ export function registerLegacyLayerTypes() {
 					? { available: false, reason: option.tooltipMessage ?? '' }
 					: null
 			),
-			create: ( context ) => window.godamLayerCreators?.[ name ]?.( context ),
+			create: ( context ) => {
+				const creator = window.godamLayerCreators?.[ name ];
+				if ( ! creator ) {
+					return undefined;
+				}
+				deprecated( 'window.godamLayerCreators', 'the `create` setting of registerLayerType()' );
+				return creator( context );
+			},
 		} );
 	} );
 }

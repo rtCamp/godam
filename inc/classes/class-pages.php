@@ -829,8 +829,9 @@ class Pages {
 			);
 
 			// Localize video editor layer options and components via PHP filters.
-			$layer_options    = apply_filters( 'godam_video_editor_layer_options', array() );
-			$layer_components = apply_filters( 'godam_video_editor_layer_components', array() );
+			// Deprecated (#2296): add-ons register layer types with godam_register_layer_type().
+			$layer_options    = apply_filters_deprecated( 'godam_video_editor_layer_options', array( array() ), \RTGODAM\Inc\Layers\Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
+			$layer_components = apply_filters_deprecated( 'godam_video_editor_layer_components', array( array() ), \RTGODAM\Inc\Layers\Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type() with an editorScript' );
 
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
@@ -1059,7 +1060,20 @@ class Pages {
 			// surface. Built-in types (cta/form/hotspot/poll) have icons
 			// hardcoded in the React bundle; this exposes only the URL-based
 			// icons that come from PHP land.
-			$addon_layer_options = apply_filters( 'godam_video_editor_layer_options', array() );
+			$addon_layer_options = apply_filters_deprecated( 'godam_video_editor_layer_options', array( array() ), \RTGODAM\Inc\Layers\Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
+			$addon_layer_options = is_array( $addon_layer_options ) ? $addon_layer_options : array();
+
+			// Layer types registered through the Layer API name their icon in layer.json.
+			$addon_layer_types = array_column( $addon_layer_options, 'type' );
+			foreach ( \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->get_all() as $layer_type_name => $layer_type ) {
+				if ( ! empty( $layer_type['iconUrl'] ) && ! in_array( $layer_type_name, $addon_layer_types, true ) ) {
+					$addon_layer_options[] = array(
+						'type'    => $layer_type_name,
+						'title'   => $layer_type['title'],
+						'iconUrl' => $layer_type['iconUrl'],
+					);
+				}
+			}
 
 			// Published layer config for the analytics page's "active vs
 			// removed" rendering. The analytics service stores events

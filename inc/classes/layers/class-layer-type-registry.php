@@ -25,6 +25,14 @@ class Layer_Type_Registry {
 	use Singleton;
 
 	/**
+	 * GoDAM version that deprecated the add-on hooks the Layer API replaces (#2296).
+	 * They are removed two minor releases later, in 2.9.0.
+	 *
+	 * @var string
+	 */
+	const HOOKS_DEPRECATED_SINCE = '2.7.0';
+
+	/**
 	 * Registered layer types, keyed by name, in registration order.
 	 *
 	 * @var array<string, array>
@@ -316,12 +324,12 @@ class Layer_Type_Registry {
 			/**
 			 * Renders the container of a layer type that has no PHP registration.
 			 *
-			 * Use `godam_register_layer_type()` with a `render_callback` instead.
+			 * @deprecated 2.7.0 Use `godam_register_layer_type()` with a `render_callback` instead.
 			 *
 			 * @param array  $layer       Layer configuration.
 			 * @param string $instance_id Player instance ID.
 			 */
-			do_action( 'godam_player_render_layer', $layer, $instance_id );
+			do_action_deprecated( 'godam_player_render_layer', array( $layer, $instance_id ), self::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
 			return (string) ob_get_clean();
 		}
 
@@ -442,7 +450,7 @@ class Layer_Type_Registry {
 		foreach ( $this->types as $name => $type ) {
 			$types[ $name ] = array_intersect_key(
 				$type,
-				array_flip( array( 'apiVersion', 'name', 'title', 'description', 'icon', 'color', 'category', 'supports', 'attributes', 'variationAttribute', 'textdomain' ) )
+				array_flip( array( 'apiVersion', 'name', 'title', 'description', 'icon', 'iconUrl', 'color', 'category', 'supports', 'attributes', 'variationAttribute', 'textdomain' ) )
 			);
 
 			$variations = array();
