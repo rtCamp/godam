@@ -21,6 +21,10 @@ import {
 	isVariationAvailable,
 	getAvailability,
 	supportsMedia,
+	registerLayerVariation,
+	unregisterLayerVariation,
+	getLayerVariationByName,
+	getUnavailableReason,
 	__unstableRegisterLegacyLayerType,
 } from './index';
 
@@ -140,6 +144,84 @@ describe( 'Layer API: registerLayerType', () => {
 	} );
 } );
 
+describe( 'Layer API: registerLayerVariation', () => {
+	let error;
+
+	beforeEach( () => {
+		error = jest.spyOn( console, 'error' ).mockImplementation( () => {} );
+	} );
+
+	afterEach( () => {
+		getLayerTypes().forEach( ( { name } ) => unregisterLayerType( name ) );
+		error.mockRestore();
+	} );
+
+	const registerForm = ( settings = {} ) =>
+		registerLayerType( { name: 'form', title: 'Form' }, { variationAttribute: 'form_type', ...settings } );
+
+	it( 'adds variations in registration order, selected by the type\'s variationAttribute', () => {
+		registerForm();
+		registerLayerVariation( 'form', { name: 'gravity', title: 'Gravity Forms' } );
+		registerLayerVariation( 'form', { name: 'acme-forms', title: 'Acme Forms', idField: 'acme_form_id' } );
+
+		expect( getLayerType( 'form' ).variations ).toEqual( [
+			{ name: 'gravity', title: 'Gravity Forms', attributes: { form_type: 'gravity' } },
+			{ name: 'acme-forms', title: 'Acme Forms', idField: 'acme_form_id', attributes: { form_type: 'acme-forms' } },
+		] );
+		expect( getLayerVariationByName( 'form', 'acme-forms' ).idField ).toBe( 'acme_form_id' );
+	} );
+
+	it( 'keeps a variation\'s own attributes', () => {
+		registerForm();
+		registerLayerVariation( 'form', { name: 'dark', title: 'Dark', attributes: { theme: 'dark' } } );
+		expect( getLayerVariationByName( 'form', 'dark' ).attributes ).toEqual( { theme: 'dark' } );
+	} );
+
+	it( 'holds a variation registered before its type and adds it when the type registers', () => {
+		registerLayerVariation( 'form', { name: 'acme-forms', title: 'Acme Forms' } );
+		expect( getLayerType( 'form' ) ).toBeUndefined();
+
+		registerForm( { variations: [ { name: 'gravity', title: 'Gravity Forms' } ] } );
+
+		expect( getLayerType( 'form' ).variations.map( ( { name, attributes } ) => [ name, attributes.form_type ] ) ).toEqual( [
+			[ 'gravity', 'gravity' ],
+			[ 'acme-forms', 'acme-forms' ],
+		] );
+	} );
+
+	it( 'rejects a duplicate name, and a variation without a name or title', () => {
+		registerForm();
+		registerLayerVariation( 'form', { name: 'gravity', title: 'Gravity Forms' } );
+
+		expect( registerLayerVariation( 'form', { name: 'gravity', title: 'Again' } ) ).toBeUndefined();
+		expect( registerLayerVariation( 'form', { title: 'No name' } ) ).toBeUndefined();
+		expect( registerLayerVariation( 'form', { name: 'untitled' } ) ).toBeUndefined();
+		expect( getLayerType( 'form' ).variations.map( ( { name } ) => name ) ).toEqual( [ 'gravity' ] );
+	} );
+
+	it( 'unregisters a variation and keeps the others', () => {
+		registerForm();
+		registerLayerVariation( 'form', { name: 'gravity', title: 'Gravity Forms' } );
+		registerLayerVariation( 'form', { name: 'acme-forms', title: 'Acme Forms' } );
+
+		expect( unregisterLayerVariation( 'form', 'gravity' ).name ).toBe( 'gravity' );
+		expect( getLayerType( 'form' ).variations.map( ( { name } ) => name ) ).toEqual( [ 'acme-forms' ] );
+		expect( unregisterLayerVariation( 'form', 'gravity' ) ).toBeUndefined();
+	} );
+
+	it( 'keeps the type\'s place in the registry when a variation is added', () => {
+		registerForm();
+		registerLayerType( { name: 'acme/countdown', title: 'Countdown' } );
+		registerLayerVariation( 'form', { name: 'gravity', title: 'Gravity Forms' } );
+		expect( getLayerTypes().map( ( { name } ) => name ) ).toEqual( [ 'form', 'acme/countdown' ] );
+	} );
+
+	it( 'exposes variation registration on window.godam.layers', () => {
+		expect( window.godam.layers.registerLayerVariation ).toBe( registerLayerVariation );
+		expect( window.godam.layers.unregisterLayerVariation ).toBe( unregisterLayerVariation );
+	} );
+} );
+
 describe( 'Layer API: helpers', () => {
 	const formType = {
 		attributes: {
@@ -177,6 +259,12 @@ describe( 'Layer API: helpers', () => {
 	it( 'treats a variation as available unless isAvailable() says otherwise', () => {
 		expect( isVariationAvailable( {} ) ).toBe( true );
 		expect( isVariationAvailable( { isAvailable: () => false } ) ).toBe( false );
+	} );
+
+	it( 'reads a variation\'s unavailable reason from a string or a function', () => {
+		expect( getUnavailableReason( { unavailableReason: 'Activate Acme' } ) ).toBe( 'Activate Acme' );
+		expect( getUnavailableReason( { unavailableReason: () => 'Connect Acme' } ) ).toBe( 'Connect Acme' );
+		expect( getUnavailableReason( {} ) ).toBe( '' );
 	} );
 
 	it( 'reports availability from getAvailability( context ), defaulting to available', () => {

@@ -19,6 +19,11 @@
 /**
  * Internal dependencies
  */
+import '../../../tests/js/mock-form-provider-panels';
+
+/**
+ * Internal dependencies
+ */
 import '../../../tests/js/layer-contract-globals';
 
 /**
@@ -28,6 +33,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
+import { registerLayerVariation, unregisterLayerVariation } from '@godam/layers';
 
 /**
  * Internal dependencies
@@ -283,6 +289,42 @@ describe( 'Layer API contract: SidebarLayers', () => {
 		it( 'disables an add-on entry that reports isActive: false', () => {
 			render();
 			expect( control( 'acme-inactive' ).disabled ).toBe( true );
+		} );
+	} );
+
+	describe( 'add-on form providers', () => {
+		beforeAll( () => {
+			registerLayerVariation( 'form', { name: 'acme-forms', title: 'Acme Forms', isAvailable: () => true } );
+		} );
+
+		afterAll( () => unregisterLayerVariation( 'form', 'acme-forms' ) );
+
+		it( 'lists a provider registered through the Layer API in the Form submenu', () => {
+			render();
+			click( control( 'form' ) );
+			click( control( 'form-acme-forms' ) );
+			expect( addedLayers() ).toEqual( [ {
+				id: 'test-uuid',
+				displayTime: 12,
+				type: 'form',
+				name: 'Acme Forms Layer',
+				form_type: 'acme-forms',
+				submitted: false,
+				allow_skip: true,
+				custom_css: '',
+				theme: '',
+			} ] );
+		} );
+
+		it( 'leaves out a provider whose plugin is unavailable', () => {
+			registerLayerVariation( 'form', { name: 'acme-off', title: 'Acme Off', isAvailable: () => false } );
+			render();
+			click( control( 'form' ) );
+			expect( control( 'form-acme-off' ) ).toBeNull();
+			// The menu is still mounted and re-renders when the registry changes.
+			act( () => {
+				unregisterLayerVariation( 'form', 'acme-off' );
+			} );
 		} );
 	} );
 

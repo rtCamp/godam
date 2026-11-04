@@ -10,6 +10,7 @@ import {
 	getDefaultVariation,
 	getLayerVariation,
 	isVariationAvailable,
+	getUnavailableReason,
 	getAvailability,
 	supportsMedia,
 } from '@godam/layers';
@@ -466,7 +467,7 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						if ( ! layerType ) {
 							tooltipMessage = __( 'This layer needs an add-on that isn\'t active.', 'godam' );
 						} else if ( variation && ! isVariationAvailable( variation ) ) {
-							tooltipMessage = variation.unavailableReason ?? '';
+							tooltipMessage = getUnavailableReason( variation );
 							isLayerDisabled = true;
 						} else {
 							const availability = getAvailability( layerType, availabilityContext );

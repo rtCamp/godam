@@ -3,6 +3,11 @@
  */
 
 /**
+ * Internal dependencies
+ */
+import '../../../../tests/js/mock-form-provider-panels';
+
+/**
  * External dependencies
  */
 import { act } from 'react';
