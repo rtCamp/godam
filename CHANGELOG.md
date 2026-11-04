@@ -8,6 +8,10 @@
 - Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
 - Fix: Security fixes.
 
+## v2.6.2 (November 4, 2026) ##
+
+- Tweak: Our team now moves your entire video library from Vimeo for free.
+
 ## v2.6.1 (November 3, 2026) ##
 
 - Fix: The analytics dashboard now shows correctly on sites with no views yet.
