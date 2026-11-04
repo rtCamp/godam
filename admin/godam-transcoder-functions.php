@@ -809,12 +809,12 @@ function rtgodam_get_localize_array() {
 	$localize_array['postTitle']  = get_the_title(); // godam-coverage-ignore -- No argument: reads the title of whatever post/page the current front-end request is viewing (this fn runs unconditionally on every page load via Assets::enqueue_scripts()), not an explicit attachment lookup.
 	$localize_array['locationIP'] = rtgodam_get_user_ip();
 
-	/**
-	 * Get Current User.
+	/*
+	 * Always 0. This array is printed into the page, and a full-page cache would
+	 * serve one signed-in visitor's ID to everyone. Nothing reads it in analytics.
+	 * The key stays so older add-on scripts that read it still get a number.
 	 */
-	$current_user = wp_get_current_user();
-
-	$localize_array['userId'] = $current_user->ID;
+	$localize_array['userId'] = 0;
 
 	$localize_array['siteId'] = get_current_blog_id();
 
