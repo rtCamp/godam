@@ -529,6 +529,20 @@ function addConsentListeners() {
 	if ( document.readyState === 'loading' ) {
 		document.addEventListener( 'DOMContentLoaded', syncConsent );
 	}
+	// A "delay JavaScript" optimizer (WP Rocket, Perfmatters, Flying Scripts) can
+	// hold the WP Consent API script back until later, and the API fires no event
+	// when it loads. Check again on load and on the visitor's first interaction,
+	// so events waiting for consent are not stranded.
+	if ( document.readyState !== 'complete' ) {
+		window.addEventListener( 'load', syncConsent, { once: true } );
+	}
+	const interactions = [ 'pointerdown', 'keydown', 'scroll' ];
+	const onFirstInteraction = () => {
+		interactions.forEach( ( type ) => window.removeEventListener( type, onFirstInteraction, true ) );
+		// Let a delayed script that loads on this same interaction run first.
+		setTimeout( syncConsent, 0 );
+	};
+	interactions.forEach( ( type ) => window.addEventListener( type, onFirstInteraction, { capture: true, passive: true } ) );
 }
 
 /**

@@ -212,6 +212,22 @@ describe( 'consent changes while the page is open', () => {
 		expect( callback ).not.toHaveBeenCalled();
 	} );
 
+	it( 'picks up consent from a script an optimizer delays until the first interaction', async () => {
+		window.videoAnalyticsParams = { consent: { trackingEnabled: true, consentApi: true } };
+		const { onStatisticsConsent } = loadFresh( './consent' );
+		const callback = jest.fn();
+		onStatisticsConsent( callback );
+		document.dispatchEvent( new Event( 'DOMContentLoaded' ) );
+		expect( callback ).not.toHaveBeenCalled();
+
+		// The delayed API script loads on the visitor's first scroll; no event follows.
+		window.wp_has_consent = () => true;
+		window.dispatchEvent( new Event( 'scroll' ) );
+		await new Promise( ( resolve ) => setTimeout( resolve, 0 ) );
+
+		expect( callback ).toHaveBeenCalledTimes( 1 );
+	} );
+
 	it( 'picks up consent when the WP Consent API script runs after GoDAM\'s', () => {
 		window.videoAnalyticsParams = { consent: { trackingEnabled: true, consentApi: true } };
 		const { onStatisticsConsent, syncConsent } = loadFresh( './consent' );
