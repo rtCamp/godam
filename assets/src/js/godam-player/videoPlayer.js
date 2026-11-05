@@ -79,7 +79,11 @@ export default class GodamVideoPlayer {
 	 */
 	async useSignedSources() {
 		const signed = await fetchSignedSources( this.video.dataset.playbackUrl );
-		applySignedSources( this.configManager.videoSetupControls, signed );
+		if ( applySignedSources( this.configManager.videoSetupControls, signed ) && signed.poster ) {
+			// Load the signed poster now: the stored one is in the old folder and 404s, and
+			// the player would only fetch this one once it has started.
+			this.video.poster = signed.poster;
+		}
 		applySignedTranscript( this.video.dataset, signed );
 	}
 
