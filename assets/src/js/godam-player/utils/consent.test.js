@@ -388,6 +388,25 @@ describe( 'events before the visitor chooses wait in memory', () => {
 		expect( bodies[ 0 ].user_token ).toBe( JSON.parse( localStorage.getItem( '__anon_id' ) ) );
 	} );
 
+	it( 'a held play goes out with the returning visitor\'s stored id even if the library has not switched yet', async () => {
+		localStorage.setItem( '__anon_id', JSON.stringify( 'returning-visitor-id' ) );
+		installConsentApi( false );
+		window.videoAnalyticsParams = analyticsParams( { consentApi: true } );
+		loadFresh( '../analytics' );
+		await settle();
+		// A slow device: the library never reports the stored id within the 1 s wait.
+		window.analytics.setAnonymousId = () => {};
+
+		trackPlay();
+		await settle( 20 );
+		setStatisticsConsent( true );
+		await settle( 1200 );
+
+		const bodies = sentBodies();
+		expect( bodies ).toHaveLength( 1 );
+		expect( bodies[ 0 ].user_token ).toBe( 'returning-visitor-id' );
+	} );
+
 	it( 'a play tracked before consent is discarded when the visitor refuses', async () => {
 		installConsentApi( false );
 		window.videoAnalyticsParams = analyticsParams( { consentApi: true } );

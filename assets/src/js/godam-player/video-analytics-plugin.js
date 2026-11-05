@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { isAnalyticsOffPage, buildAnalyticsRequestBody } from './analytics-helpers';
-import { hasStatisticsConsent, holdUntilConsent } from './utils/consent';
+import { consentAwareStorage, hasStatisticsConsent, holdUntilConsent } from './utils/consent';
 
 const videoAnalyticsPlugin = () => {
 	return {
@@ -27,16 +27,17 @@ const videoAnalyticsPlugin = () => {
 /**
  * POST one tracked event to the analytics service.
  *
- * An event that waited for consent is sent with the visitor id in use now, which
+ * An event that waited for consent is sent with the visitor id stored now, which
  * can differ from the one in memory when it was tracked: a returning visitor's
- * stored id replaces it once consent is confirmed.
+ * stored id replaces it once consent is confirmed. It is read from GoDAM's own
+ * storage, not the library's live state, which can lag behind setAnonymousId().
  *
  * @param {Object}  payload The analytics library's track payload.
  * @param {boolean} held    True when the event waited for consent.
  */
 async function sendTrackPayload( payload, held ) {
 	const { properties, meta } = payload;
-	const anonymousId = ( held && window.analytics?.user?.()?.anonymousId ) || payload.anonymousId;
+	const anonymousId = ( held && ( consentAwareStorage.getItem( '__anon_id' ) || window.analytics?.user?.()?.anonymousId ) ) || payload.anonymousId;
 
 	try {
 		const { ranges = [], videoId, type, videoLength, videoIds, jobId, layers = [], reelPopId, blockSource = '', hostPostId = 0 } = properties;
