@@ -77,6 +77,7 @@ class GoDAM_Player {
 			'rtgodam_media_placeholder_thumbnails',
 			'rtgodam_transcript_path',
 			'rtgodam_transcript_deleted',
+			'rtgodam_transcript_source',
 		);
 
 		if ( ! in_array( $meta_key, $watched_keys, true ) ) {
