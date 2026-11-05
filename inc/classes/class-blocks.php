@@ -104,8 +104,9 @@ class Blocks {
 		// godam/image block with the player's aspect-ratio CSS missing, so the
 		// video poster rendered at its natural (oversized) height. Declaring the
 		// same dependency here keeps it regardless of which registration wins the
-		// race; the wrapper handle itself is registered by the always-booted
-		// player shortcode class, so it resolves at print time.
+		// race. GoDAM_Player::register_player_styles() registers both handles on
+		// `init`, so the dependency also resolves in the block editor canvas, whose
+		// styles are collected before `admin_enqueue_scripts` registers anything.
 		if ( function_exists( 'wp_enqueue_block_style' ) ) {
 			$godam_player_css = RTGODAM_PATH . 'assets/build/css/godam-player.css';
 			wp_enqueue_block_style(
