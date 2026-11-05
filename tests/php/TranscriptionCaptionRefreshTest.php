@@ -43,6 +43,7 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 		require_once $root . '/tests/stubs/video-seo-functions.php';
 		require_once $root . '/tests/stubs/engagement-functions.php';
 		require_once $root . '/tests/stubs/media-file-functions.php';
+		require_once $root . '/tests/stubs/option-functions.php';
 		require_once $root . '/inc/classes/rest-api/class-base.php';
 		require_once $root . '/inc/classes/rest-api/class-transcription.php';
 	}
@@ -139,18 +140,55 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 	}
 
 	/**
-	 * The SEO data queues one refresh when the last check is over 12 hours
-	 * old, and none when it is recent or one is already queued.
+	 * A video is queued when its last check is over 12 hours old, and only once.
 	 */
-	public function test_queues_one_refresh_after_12_hours() {
+	public function test_queues_a_video_after_12_hours_once() {
 		$this->assertFalse( Transcription::maybe_schedule_refresh( 7, time() - HOUR_IN_SECONDS ) );
 		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['scheduled'] );
 
 		$this->assertTrue( Transcription::maybe_schedule_refresh( 7, time() - 13 * HOUR_IN_SECONDS ) );
 		$this->assertFalse( Transcription::maybe_schedule_refresh( 7, 0 ) );
 
+		$this->assertSame( array( 7 ), $GLOBALS['rtgodam_stub']['options'][ Transcription::REFRESH_QUEUE_OPTION ] );
 		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['scheduled'] );
 		$this->assertSame( Transcription::REFRESH_HOOK, $GLOBALS['rtgodam_stub']['scheduled'][0]['hook'] );
-		$this->assertSame( array( 7 ), $GLOBALS['rtgodam_stub']['scheduled'][0]['args'] );
+	}
+
+	/**
+	 * Right after an update every video is due (never checked). A sitemap page
+	 * with 1000 videos must not queue 1000 events: one request adds at most 20
+	 * videos and one cron event.
+	 */
+	public function test_a_burst_of_due_videos_queues_one_event_and_a_capped_list() {
+		$queued = 0;
+		for ( $id = 1; $id <= 1000; $id++ ) {
+			$queued += (int) Transcription::maybe_schedule_refresh( $id, 0 );
+		}
+
+		$this->assertSame( 20, $queued );
+		$this->assertCount( 20, $GLOBALS['rtgodam_stub']['options'][ Transcription::REFRESH_QUEUE_OPTION ] );
+		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['scheduled'] );
+	}
+
+	/**
+	 * One cron run refreshes 20 videos, keeps the rest, and comes back for them;
+	 * the last run empties the queue and schedules nothing more.
+	 */
+	public function test_the_cron_run_works_through_the_queue_in_batches() {
+		$GLOBALS['rtgodam_stub']['options'][ Transcription::REFRESH_QUEUE_OPTION ] = range( 1, 45 );
+		$this->central_default_is_spanish();
+
+		$this->assertSame( 20, Transcription::process_refresh_queue() );
+		$this->assertCount( 20, $GLOBALS['rtgodam_stub']['posts'] );
+		$this->assertSame( range( 21, 45 ), $GLOBALS['rtgodam_stub']['options'][ Transcription::REFRESH_QUEUE_OPTION ] );
+		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['scheduled'] );
+
+		// WP-Cron drops an event before running it.
+		$GLOBALS['rtgodam_stub']['scheduled'] = array();
+		$this->assertSame( 20, Transcription::process_refresh_queue() );
+		$this->assertSame( 5, Transcription::process_refresh_queue() );
+
+		$this->assertArrayNotHasKey( Transcription::REFRESH_QUEUE_OPTION, $GLOBALS['rtgodam_stub']['options'] );
+		$this->assertCount( 45, $GLOBALS['rtgodam_stub']['posts'] );
 	}
 }

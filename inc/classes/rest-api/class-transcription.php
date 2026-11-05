@@ -67,16 +67,67 @@ class Transcription extends Base {
 	const CHECKED_META = 'rtgodam_transcript_checked_at';
 
 	/**
-	 * Cron hook that re-reads Central's default caption for one attachment.
+	 * Cron hook that re-reads Central's default caption for the next batch of
+	 * queued attachments (see {@see self::REFRESH_QUEUE_OPTION}).
 	 *
 	 * Central sends no message when captions are changed in its own dashboard,
 	 * so the cached transcript the video SEO data reads is refreshed this way.
+	 * One event works through the whole queue, a batch at a time, so a site with
+	 * many videos never queues one event or one Central call per video at once.
 	 *
 	 * @since n.e.x.t
 	 *
 	 * @var string
 	 */
-	const REFRESH_HOOK = 'rtgodam_refresh_caption_default';
+	const REFRESH_HOOK = 'rtgodam_refresh_caption_defaults';
+
+	/**
+	 * Option holding the attachment IDs waiting for a refresh, oldest first.
+	 * Not autoloaded.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string
+	 */
+	const REFRESH_QUEUE_OPTION = 'rtgodam_caption_refresh_queue';
+
+	/**
+	 * Attachments refreshed per cron run.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int
+	 */
+	const REFRESH_BATCH = 20;
+
+	/**
+	 * Seconds between two batch runs while the queue is not empty.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int
+	 */
+	const REFRESH_INTERVAL = 5 * MINUTE_IN_SECONDS;
+
+	/**
+	 * Most attachments one page view may add to the queue, and the most the
+	 * queue holds. Anything left out is added on a later page view.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int[]
+	 */
+	const REFRESH_LIMITS = array(
+		'per_request' => 20,
+		'queue'       => 500,
+	);
+
+	/**
+	 * How many attachments this request has added to the queue.
+	 *
+	 * @var int
+	 */
+	private static $queued_this_request = 0;
 
 	/**
 	 * How old the last check may be before the SEO data asks for a new one.
@@ -94,7 +145,7 @@ class Transcription extends Base {
 	 */
 	protected function setup_hooks() {
 		parent::setup_hooks();
-		add_action( self::REFRESH_HOOK, array( __CLASS__, 'refresh_cached_default' ) );
+		add_action( self::REFRESH_HOOK, array( __CLASS__, 'process_refresh_queue' ) );
 	}
 
 	/**
@@ -885,30 +936,86 @@ class Transcription extends Base {
 	}
 
 	/**
-	 * Queue a background refresh of the cached transcript when the last check
+	 * Add an attachment to the background refresh queue when the last check
 	 * against Central is more than {@see self::REFRESH_AFTER} old.
 	 *
 	 * Called by the video SEO data, the one reader that has no editor open to
 	 * refresh it. Never calls Central itself, so it is safe during a page render.
+	 * Right after an update every existing video is due at once (it has never
+	 * been checked), so one request adds at most `REFRESH_LIMITS['per_request']`
+	 * and the queue holds at most `REFRESH_LIMITS['queue']`; one cron event then
+	 * works through it a batch at a time.
 	 *
 	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id WordPress attachment ID.
 	 * @param int $checked_at    Value of the {@see self::CHECKED_META} meta.
-	 * @return bool Whether a refresh was queued.
+	 * @return bool Whether the attachment was added to the queue.
 	 */
 	public static function maybe_schedule_refresh( $attachment_id, $checked_at ) {
 		$attachment_id = absint( $attachment_id );
 		if ( ! $attachment_id || ( time() - (int) $checked_at ) < self::REFRESH_AFTER ) {
 			return false;
 		}
-
-		$args = array( $attachment_id );
-		if ( wp_next_scheduled( self::REFRESH_HOOK, $args ) ) {
+		if ( self::$queued_this_request >= self::REFRESH_LIMITS['per_request'] ) {
 			return false;
 		}
 
-		return (bool) wp_schedule_single_event( time(), self::REFRESH_HOOK, $args );
+		$queue = self::refresh_queue();
+		if ( in_array( $attachment_id, $queue, true ) || count( $queue ) >= self::REFRESH_LIMITS['queue'] ) {
+			return false;
+		}
+
+		$queue[] = $attachment_id;
+		update_option( self::REFRESH_QUEUE_OPTION, $queue, false );
+		++self::$queued_this_request;
+
+		if ( ! wp_next_scheduled( self::REFRESH_HOOK ) ) {
+			wp_schedule_single_event( time() + MINUTE_IN_SECONDS, self::REFRESH_HOOK );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Cron callback: refresh the next batch of queued attachments, and come
+	 * back for the rest after {@see self::REFRESH_INTERVAL}.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return int How many attachments were refreshed in this run.
+	 */
+	public static function process_refresh_queue() {
+		$queue = self::refresh_queue();
+		$batch = array_slice( $queue, 0, self::REFRESH_BATCH );
+		$rest  = array_slice( $queue, self::REFRESH_BATCH );
+
+		// Saved before the Central calls, so a run that times out never repeats a batch.
+		if ( empty( $rest ) ) {
+			delete_option( self::REFRESH_QUEUE_OPTION );
+		} else {
+			update_option( self::REFRESH_QUEUE_OPTION, $rest, false );
+		}
+
+		foreach ( $batch as $attachment_id ) {
+			self::refresh_cached_default( $attachment_id );
+		}
+
+		if ( ! empty( $rest ) && ! wp_next_scheduled( self::REFRESH_HOOK ) ) {
+			wp_schedule_single_event( time() + self::REFRESH_INTERVAL, self::REFRESH_HOOK );
+		}
+
+		return count( $batch );
+	}
+
+	/**
+	 * The attachment IDs waiting for a refresh.
+	 *
+	 * @return int[]
+	 */
+	private static function refresh_queue() {
+		$queue = get_option( self::REFRESH_QUEUE_OPTION, array() );
+		return is_array( $queue ) ? array_values( array_filter( array_map( 'absint', $queue ) ) ) : array();
 	}
 
 	/**
