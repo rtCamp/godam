@@ -45,11 +45,13 @@ export async function useSignedCopy( el ) {
 	}
 	el.dataset.godamSigned = '1';
 	const answer = await playbackFor( job );
-	if ( el instanceof HTMLImageElement && answer?.poster ) {
-		// A srcset would win over src; the signed poster is the one image there is.
+	// An image file shows its full image; a video tile its poster.
+	const image = el.dataset.godamKind === 'image' ? answer?.image : answer?.poster;
+	if ( el instanceof HTMLImageElement && image ) {
+		// A srcset would win over src; the signed copy is the one image there is.
 		el.removeAttribute( 'srcset' );
 		el.removeAttribute( 'sizes' );
-		el.src = answer.poster;
+		el.src = image;
 		return true;
 	}
 	const mp4 = ( answer?.sources || [] ).find( ( source ) => source.type === 'video/mp4' );

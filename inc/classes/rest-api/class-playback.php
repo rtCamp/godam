@@ -138,6 +138,7 @@ class Playback extends Base {
 			'sources'    => $this->player_sources( $message['sources'] ),
 			'poster'     => isset( $message['sources']['thumbnail_url'] ) ? esc_url_raw( $message['sources']['thumbnail_url'] ) : '',
 			'captions'   => $this->caption_tracks( isset( $message['caption_tracks'] ) ? $message['caption_tracks'] : array() ),
+			'image'      => $this->image_source( $message['sources'] ),
 			'expires_at' => isset( $message['expires_at'] ) ? absint( $message['expires_at'] ) : time() + 300,
 		);
 
@@ -174,6 +175,17 @@ class Playback extends Base {
 			);
 		}
 		return $out;
+	}
+
+	/**
+	 * The signed full image, when the file is an image (its main path is an image file).
+	 *
+	 * @param array $sources Signed URLs keyed by GoDAM field.
+	 * @return string
+	 */
+	private function image_source( $sources ) {
+		$path = isset( $sources['transcoded_file_path'] ) ? (string) $sources['transcoded_file_path'] : '';
+		return preg_match( '/\.(jpe?g|png|webp|avif|gif)(\?|$)/i', $path ) ? esc_url_raw( $path ) : '';
 	}
 
 	/**

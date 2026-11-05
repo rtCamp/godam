@@ -5,6 +5,7 @@ import { useSignedCopy } from './signed-thumbnails';
 
 const answer = {
 	poster: 'https://cdn.test/private/p/thumb.jpg?token=a',
+	image: 'https://cdn.test/private/p/photo.webp?token=d',
 	sources: [ { src: 'https://cdn.test/private/p/index.m3u8?token=b', type: 'application/x-mpegURL' }, { src: 'https://cdn.test/private/p/v.mp4?token=c', type: 'video/mp4' } ],
 };
 
@@ -40,6 +41,13 @@ describe( 'signed thumbnails', () => {
 		await useSignedCopy( b );
 		expect( await useSignedCopy( a ) ).toBe( false );
 		expect( global.fetch ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'shows an image file in full, not its thumbnail', async () => {
+		document.body.innerHTML = '<img data-godam-job="job-d" data-godam-kind="image" src="https://cdn.test/job-d/photo.webp">';
+		const img = document.querySelector( 'img' );
+		expect( await useSignedCopy( img ) ).toBe( true );
+		expect( img.src ).toBe( answer.image );
 	} );
 
 	it( 'leaves an element alone when it has no GoDAM job', async () => {
