@@ -23,7 +23,7 @@ import TranscriptManager from './managers/transcriptManager.js';
 import TranscriptPanelManager from './managers/transcriptPanelManager.js';
 import { getVisibilityManager, resolveOutOfViewMode, resolvePauseOnTabHidden } from './managers/visibilityManager.js';
 import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
-import { applySignedSources, applySignedTranscript, fetchSignedSources } from './utils/signedPlayback.js';
+import { applySignedSources, fetchSignedSources } from './utils/signedPlayback.js';
 
 /**
  * Refactored Video Player Class
@@ -74,8 +74,8 @@ export default class GodamVideoPlayer {
 	}
 
 	/**
-	 * Swap in signed sources (and transcript) for GoDAM media served from a signed folder
-	 * (Organization and Embed only). Keeps the saved ones when the site's playback route has none.
+	 * Swap in signed sources, poster and captions for GoDAM media served from a signed
+	 * folder (Organization and Embed only). Keeps the saved ones when the route has none.
 	 */
 	async useSignedSources() {
 		const signed = await fetchSignedSources( this.video.dataset.playbackUrl );
@@ -84,7 +84,9 @@ export default class GodamVideoPlayer {
 			// the player would only fetch this one once it has started.
 			this.video.poster = signed.poster;
 		}
-		applySignedTranscript( this.video.dataset, signed );
+		// Signed caption tracks for the transcript manager: GoDAM's public caption endpoint
+		// refuses these files, and their stored transcript is in the signed folder.
+		this.signedCaptions = signed?.captions?.length ? signed.captions : null;
 	}
 
 	/**
@@ -466,6 +468,7 @@ export default class GodamVideoPlayer {
 			this.player,
 			this.video,
 			this.configManager,
+			this.signedCaptions,
 		);
 
 		// Load transcript asynchronously (non-blocking)

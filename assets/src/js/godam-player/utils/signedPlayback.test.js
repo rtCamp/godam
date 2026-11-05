@@ -4,7 +4,7 @@
 /**
  * Internal dependencies
  */
-import { applySignedSources, applySignedTranscript, fetchSignedSources } from './signedPlayback';
+import { applySignedSources, fetchSignedSources } from './signedPlayback';
 
 const ok = ( body ) => Promise.resolve( { ok: true, json: () => Promise.resolve( body ) } );
 
@@ -15,6 +15,13 @@ describe( 'signed playback', () => {
 		);
 		expect( signed.sources ).toHaveLength( 1 );
 		expect( signed.poster ).toContain( 'token=y' );
+		expect( signed.captions ).toEqual( [] );
+	} );
+
+	it( 'passes the signed caption tracks through', async () => {
+		const captions = [ { language: 'en', label: 'English', vtt_path: 'https://cdn.test/private/a/en.vtt?token=c', is_default: true } ];
+		const signed = await fetchSignedSources( '/x', () => ok( { sources: [ { src: 's.mpd', type: 'application/dash+xml' } ], captions } ) );
+		expect( signed.captions ).toEqual( captions );
 	} );
 
 	it( 'keeps the saved sources when the route refuses, fails or has nothing', async () => {
@@ -30,24 +37,5 @@ describe( 'signed playback', () => {
 		expect( changed ).toBe( true );
 		expect( setup ).toEqual( { sources: [ { src: 'signed.mpd', type: 'application/dash+xml' } ], poster: 'signed.jpg' } );
 		expect( applySignedSources( setup, null ) ).toBe( false );
-	} );
-
-	it( 'uses the signed transcript only in place of GoDAM\'s own copy', () => {
-		const signed = { transcript: 'https://cdn.test/private/a/t.vtt?token=z' };
-		const none = {};
-		expect( applySignedTranscript( none, signed ) ).toBe( true );
-		expect( none.transcriptUrl ).toBe( signed.transcript );
-
-		const godams = { transcriptUrl: 'https://cdn.test/private/a/t.vtt' };
-		expect( applySignedTranscript( godams, signed ) ).toBe( true );
-
-		const uploaded = { transcriptUrl: 'https://site.test/wp-content/uploads/captions.vtt' };
-		expect( applySignedTranscript( uploaded, signed ) ).toBe( false );
-		expect( uploaded.transcriptUrl ).toContain( 'site.test' );
-
-		const deleted = { transcriptDeleted: 'true' };
-		expect( applySignedTranscript( deleted, signed ) ).toBe( false );
-		expect( deleted.transcriptUrl ).toBeUndefined();
-		expect( applySignedTranscript( none, { transcript: '' } ) ).toBe( false );
 	} );
 } );

@@ -137,7 +137,7 @@ class Playback extends Base {
 		$data = array(
 			'sources'    => $this->player_sources( $message['sources'] ),
 			'poster'     => isset( $message['sources']['thumbnail_url'] ) ? esc_url_raw( $message['sources']['thumbnail_url'] ) : '',
-			'transcript' => $this->default_transcript( isset( $message['caption_tracks'] ) ? $message['caption_tracks'] : array() ),
+			'captions'   => $this->caption_tracks( isset( $message['caption_tracks'] ) ? $message['caption_tracks'] : array() ),
 			'expires_at' => isset( $message['expires_at'] ) ? absint( $message['expires_at'] ) : time() + 300,
 		);
 
@@ -177,27 +177,29 @@ class Playback extends Base {
 	}
 
 	/**
-	 * The signed URL of the file's default caption track, which the player shows as its
-	 * transcript. The stored transcript URL of an Organization or Embed only file is in the
-	 * signed folder and doesn't load on its own.
+	 * GoDAM's caption tracks for the file, signed, in the shape the player's transcript
+	 * manager reads from GoDAM's public endpoint. That endpoint refuses an Organization or
+	 * Embed only file, and their stored transcript URL is in the signed folder.
 	 *
 	 * @param array $tracks GoDAM's signed caption tracks.
-	 * @return string
+	 * @return array
 	 */
-	private function default_transcript( $tracks ) {
-		$ready = array_filter(
-			is_array( $tracks ) ? $tracks : array(),
-			function ( $track ) {
-				return is_array( $track ) && ! empty( $track['vtt_path'] ) && ( empty( $track['status'] ) || 'Transcribed' === $track['status'] );
+	private function caption_tracks( $tracks ) {
+		$out = array();
+		foreach ( is_array( $tracks ) ? $tracks : array() as $track ) {
+			if ( ! is_array( $track ) || empty( $track['vtt_path'] ) ) {
+				continue;
 			}
-		);
-		foreach ( $ready as $track ) {
-			if ( ! empty( $track['is_default'] ) ) {
-				return esc_url_raw( $track['vtt_path'] );
-			}
+			$out[] = array(
+				'vtt_path'   => esc_url_raw( $track['vtt_path'] ),
+				'language'   => isset( $track['language'] ) ? sanitize_text_field( $track['language'] ) : '',
+				'label'      => isset( $track['label'] ) ? sanitize_text_field( $track['label'] ) : '',
+				'kind'       => isset( $track['kind'] ) ? sanitize_key( $track['kind'] ) : 'subtitles',
+				'is_default' => ! empty( $track['is_default'] ),
+				'revision'   => isset( $track['revision'] ) ? sanitize_text_field( $track['revision'] ) : '',
+			);
 		}
-		$first = reset( $ready );
-		return $first ? esc_url_raw( $first['vtt_path'] ) : '';
+		return $out;
 	}
 
 	/**

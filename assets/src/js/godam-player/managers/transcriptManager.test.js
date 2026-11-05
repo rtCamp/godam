@@ -17,12 +17,13 @@ const CAPTION_TRACKS = [
  * A manager for a video printed with the given data attributes, whose SaaS
  * request returns `response` (or fails when it is an Error).
  *
- * @param {Object}       dataset       The video's data attributes.
- * @param {Object|Error} response      What fetchTranscriptPath resolves or rejects with.
- * @param {Object}       configManager The player config (showCaption turns the default on).
+ * @param {Object}       dataset        The video's data attributes.
+ * @param {Object|Error} response       What fetchTranscriptPath resolves or rejects with.
+ * @param {Object}       configManager  The player config (showCaption turns the default on).
+ * @param {Array|null}   signedCaptions Signed caption tracks from the site's playback route.
  * @return {{manager: TranscriptManager, added: Array<Object>}} The manager and the tracks it adds.
  */
-const setup = ( dataset, response, configManager = {} ) => {
+const setup = ( dataset, response, configManager = {}, signedCaptions = null ) => {
 	const added = [];
 	const player = {
 		remoteTextTrackEls: () => added.map( ( track ) => ( { src: track.src, track } ) ),
@@ -31,7 +32,7 @@ const setup = ( dataset, response, configManager = {} ) => {
 		textTracks: () => added,
 	};
 	const video = { dataset: { job_id: 'job-1', ...dataset } };
-	const manager = new TranscriptManager( player, video, configManager );
+	const manager = new TranscriptManager( player, video, configManager, signedCaptions );
 	manager.fetchTranscriptPath = jest.fn( () => (
 		response instanceof Error ? Promise.reject( response ) : Promise.resolve( response )
 	) );
@@ -42,9 +43,7 @@ describe( 'TranscriptManager.trackSrc', () => {
 	const manager = new TranscriptManager( {}, { dataset: {} }, {} );
 
 	it( 'adds the revision to an unsigned URL so an edit reaches visitors', () => {
-		expect( manager.trackSrc( { vtt_path: 'https://cdn.example/job/en.vtt', revision: '3' } ) ).toBe(
-			'https://cdn.example/job/en.vtt?rev=3',
-		);
+		expect( manager.trackSrc( { vtt_path: 'https://cdn.example/job/en.vtt', revision: '3' } ) ).toBe( 'https://cdn.example/job/en.vtt?rev=3' );
 	} );
 
 	it( 'leaves a signed URL as it is: the CDN refuses a parameter its token does not cover', () => {
@@ -54,6 +53,17 @@ describe( 'TranscriptManager.trackSrc', () => {
 } );
 
 describe( 'TranscriptManager.initialize', () => {
+	it( 'uses the signed caption tracks of a file served signed, without asking the public endpoint', async () => {
+		const signed = CAPTION_TRACKS.map( ( track ) => ( track.vtt_path ? { ...track, vtt_path: `${ track.vtt_path }?token=t` } : track ) );
+		const { manager, added } = setup( { transcriptUrl: CACHED }, new Error( 'refused' ), {}, signed );
+
+		await manager.initialize();
+
+		expect( manager.fetchTranscriptPath ).not.toHaveBeenCalled();
+		expect( added.map( ( track ) => track.src ) ).toEqual( [ `${ CACHED }?token=t`, 'https://cdn.example/job/es.vtt?token=t' ] );
+		expect( manager.transcriptUrl ).toBe( `${ CACHED }?token=t` );
+	} );
+
 	it( 'adds every ready caption track A to Z and skips ones still generating', async () => {
 		const { manager, added } = setup( { transcriptUrl: CACHED }, { exists: true, url: CACHED, caption_tracks: CAPTION_TRACKS } );
 

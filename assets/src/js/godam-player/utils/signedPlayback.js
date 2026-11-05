@@ -15,7 +15,7 @@ const TIMEOUT_MS = 5000;
  *
  * @param {string}   url     The element's `data-playback-url`.
  * @param {Function} fetchFn Injected for tests; defaults to window.fetch.
- * @return {Promise<{sources: Array<{src: string, type: string}>, poster: string, transcript: string}|null>} Null when there is nothing usable.
+ * @return {Promise<{sources: Array<{src: string, type: string}>, poster: string, captions: Array<Object>}|null>} Null when there is nothing usable.
  */
 export async function fetchSignedSources( url, fetchFn = window.fetch.bind( window ) ) {
 	if ( ! url ) {
@@ -34,7 +34,8 @@ export async function fetchSignedSources( url, fetchFn = window.fetch.bind( wind
 		}
 		const data = await response.json();
 		const sources = Array.isArray( data?.sources ) ? data.sources.filter( ( source ) => source?.src ) : [];
-		return sources.length ? { sources, poster: data.poster || '', transcript: data.transcript || '' } : null;
+		const captions = Array.isArray( data?.captions ) ? data.captions : [];
+		return sources.length ? { sources, poster: data.poster || '', captions } : null;
 	} catch ( error ) {
 		return null;
 	} finally {
@@ -62,32 +63,3 @@ export function applySignedSources( setup, signed ) {
 	return true;
 }
 
-/**
- * Point the player's transcript at the signed copy, in place on the video's dataset.
- *
- * Only when the stored transcript is GoDAM's own (or there is none): a caption uploaded to
- * WordPress keeps playing from WordPress, and one deleted in the editor stays deleted.
- *
- * @param {DOMStringMap} dataset The video element's dataset.
- * @param {Object}       signed  What fetchSignedSources returned.
- * @return {boolean} Whether the transcript changed.
- */
-export function applySignedTranscript( dataset, signed ) {
-	if ( ! dataset || ! signed?.transcript || dataset.transcriptDeleted === 'true' ) {
-		return false;
-	}
-	const stored = dataset.transcriptUrl || '';
-	if ( stored && hostOf( stored ) !== hostOf( signed.transcript ) ) {
-		return false;
-	}
-	dataset.transcriptUrl = signed.transcript;
-	return true;
-}
-
-function hostOf( url ) {
-	try {
-		return new URL( url, window.location.href ).host;
-	} catch ( error ) {
-		return '';
-	}
-}

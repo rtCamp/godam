@@ -25,11 +25,12 @@ export default class TranscriptManager {
 	/**
 	 * Create a TranscriptManager instance.
 	 *
-	 * @param {Object}      player        - Video.js player instance
-	 * @param {HTMLElement} video         - Video DOM element
-	 * @param {Object}      configManager - Configuration manager instance
+	 * @param {Object}      player         - Video.js player instance
+	 * @param {HTMLElement} video          - Video DOM element
+	 * @param {Object}      configManager  - Configuration manager instance
+	 * @param {Array|null}  signedCaptions - Signed caption tracks from the playback route, or null.
 	 */
-	constructor( player, video, configManager ) {
+	constructor( player, video, configManager, signedCaptions = null ) {
 		this.player = player;
 		this.video = video;
 		this.configManager = configManager;
@@ -40,6 +41,7 @@ export default class TranscriptManager {
 		// `upload` when the transcript above was uploaded in WordPress rather
 		// than cached from the SaaS.
 		this.localTranscriptSource = video.dataset.transcriptSource || '';
+		this.signedCaptions = signedCaptions;
 		this.etag = null;
 		this.transcriptUrl = null;
 	}
@@ -85,6 +87,13 @@ export default class TranscriptManager {
 		const hasLocalUpload = ! this.transcriptDeleted && !! this.localTranscriptUrl && this.localTranscriptSource === 'upload';
 		if ( hasLocalUpload ) {
 			await this.addLocalTranscript();
+		}
+
+		// A file served signed already has its caption tracks, signed, from the playback
+		// route; GoDAM's public endpoint would refuse it.
+		if ( this.signedCaptions ) {
+			this.addCaptionTracks( this.signedCaptions, hasLocalUpload );
+			return;
 		}
 
 		let transcriptData = null;
