@@ -810,13 +810,20 @@ class Layer_Abilities extends Ability_Group {
 
 		switch ( $type ) {
 			case 'cta':
+				// The same fields godam/add-layer takes, so an agent can confirm what it saved.
 				$description['cta'] = 'html' === ( $layer['cta_type'] ?? '' )
-					? array( 'style' => 'html' )
+					? array(
+						'style' => 'html',
+						'html'  => $layer['html'] ?? '',
+					)
 					: array(
 						'style'       => 'card',
 						'heading'     => $layer['imageText'] ?? '',
+						'description' => $layer['imageDescription'] ?? '',
 						'button_text' => $layer['imageCtaButtonText'] ?? '',
 						'link'        => $layer['imageLink'] ?? '',
+						'image_id'    => is_numeric( $layer['image'] ?? '' ) && (int) $layer['image'] > 0 ? (int) $layer['image'] : null,
+						'layout'      => $layer['cardLayout'] ?? '',
 					);
 				break;
 
