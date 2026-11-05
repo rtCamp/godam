@@ -32,7 +32,7 @@
 /**
  * Internal dependencies
  */
-import { hasStatisticsConsent, LAYER_BUFFER_KEY } from './consent';
+import { hasStatisticsConsent, holdUntilConsent, LAYER_BUFFER_KEY } from './consent';
 
 const STORAGE_KEY = LAYER_BUFFER_KEY;
 
@@ -114,8 +114,11 @@ export function addLayerInteractions( videoKey, events ) {
 	if ( ! Array.isArray( events ) || events.length === 0 ) {
 		return;
 	}
-	// Without statistics consent nothing is buffered, so nothing is sent later.
+	// Without statistics consent nothing is written to the browser: the events
+	// wait in memory, are buffered if the visitor accepts on this page, and are
+	// discarded if they refuse.
 	if ( ! hasStatisticsConsent() ) {
+		holdUntilConsent( () => addLayerInteractions( videoKey, events ) );
 		return;
 	}
 

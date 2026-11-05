@@ -65,6 +65,16 @@ export function getOSName() {
  * @return {boolean} True if analytics should be skipped, false otherwise.
  */
 export function shouldSkipAnalytics() {
+	return isAnalyticsOffPage() || ! hasStatisticsConsent();
+}
+
+/**
+ * Pages that never send analytics, whatever the visitor's consent: wp-admin and
+ * video previews. Events from these are dropped, not held for consent.
+ *
+ * @return {boolean} True on admin pages and video previews.
+ */
+export function isAnalyticsOffPage() {
 	const { isAdminPage } = window.videoAnalyticsParams || {};
 
 	if ( isAdminPage ) {
@@ -72,15 +82,7 @@ export function shouldSkipAnalytics() {
 	}
 
 	const urlParams = new URLSearchParams( window.location.search );
-	if ( urlParams.get( 'godam_page' ) === 'video-preview' ) {
-		return true;
-	}
-
-	if ( ! hasStatisticsConsent() ) {
-		return true;
-	}
-
-	return false;
+	return urlParams.get( 'godam_page' ) === 'video-preview';
 }
 
 /**

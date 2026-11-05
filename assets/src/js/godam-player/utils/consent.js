@@ -6,13 +6,23 @@
  * of layer clicks) and sends events to analytics.godam.io. With the WP Consent API
  * active, none of that may happen until the visitor allows "statistics".
  *
- * Rules (rtCamp/godam-plugin-wp#47, Phase 1):
+ * Rules (rtCamp/godam-plugin-wp#55):
  * No WP Consent API on the site: today's behaviour, unless the site turned visitor
  * tracking off with the `godam_visitor_tracking_enabled` PHP filter. Before the
- * visitor chooses: store nothing and send nothing; nothing is queued to send later,
- * and the visitor id lives only in memory (see consentAwareStorage). The visitor
- * allows "statistics" mid-page: tracking starts from that moment. The visitor
- * withdraws "statistics": tracking stops and GoDAM's items are deleted.
+ * visitor chooses: store nothing and send nothing; the visitor id lives only in
+ * memory (see consentAwareStorage). The visitor allows "statistics" mid-page:
+ * tracking starts, and events held from earlier on the page are sent. The
+ * visitor withdraws "statistics": tracking stops and GoDAM's items are deleted.
+ *
+ * Custom banners (no WP Consent API): the `godam_visitor_tracking_requires_consent`
+ * PHP filter makes GoDAM wait, and the banner calls
+ * `window.GoDAM.setAnalyticsConsent( true | false )` (or sets
+ * `window.godamAnalyticsConsent` before GoDAM loads). An explicit call wins over
+ * the WP Consent API.
+ *
+ * While consent is pending, events wait in memory (holdUntilConsent): nothing is
+ * stored in the browser and nothing is sent. They go out if the visitor accepts on
+ * this page and are discarded if they refuse.
  *
  * The PHP side passes `videoAnalyticsParams.consent` (see
  * RTGODAM\Inc\Visitor_Consent::get_script_config()).
@@ -84,7 +94,7 @@ export const LAYER_BUFFER_KEY = 'godamLayerInteractions';
 /**
  * Consent settings printed by PHP.
  *
- * @return {{trackingEnabled?: boolean, consentApi?: boolean}} Settings, empty when not printed.
+ * @return {{trackingEnabled?: boolean, consentApi?: boolean, requireConsent?: boolean}} Settings, empty when not printed.
  */
 function getConsentConfig() {
 	return window.videoAnalyticsParams?.consent || {};
@@ -111,8 +121,15 @@ export function hasStatisticsConsent() {
 		return false;
 	}
 
+	// A decision the site's own banner passed to setAnalyticsConsent() wins.
+	const explicit = getExplicitConsent();
+	if ( explicit !== null ) {
+		return explicit;
+	}
+
 	if ( ! usesConsentApi() ) {
-		return true;
+		// Wait for setAnalyticsConsent() when the site asked GoDAM to.
+		return ! getConsentConfig().requireConsent;
 	}
 
 	// The API is active but its script has not run yet (it prints after GoDAM's
@@ -135,6 +152,40 @@ export function hasStatisticsConsent() {
 		return false;
 	}
 }
+
+/**
+ * The decision a custom banner gave through setAnalyticsConsent().
+ *
+ * Kept on window, not in this module, because the video player and the image-page
+ * runtime are separate bundles, each with its own copy of this module.
+ *
+ * @return {boolean|null} True or false once the banner decided, null otherwise.
+ */
+function getExplicitConsent() {
+	const value = window.godamAnalyticsConsent;
+	return value === true || value === false ? value : null;
+}
+
+/**
+ * Event every copy of this module listens to, so one call reaches all of them.
+ */
+const EXPLICIT_CONSENT_EVENT = 'godam_analytics_consent_change';
+
+/**
+ * Let a site's own consent banner tell GoDAM the visitor's choice.
+ *
+ * Exposed as `window.GoDAM.setAnalyticsConsent`. Call it with true when the visitor
+ * accepts statistics or analytics cookies, false when they refuse or withdraw.
+ *
+ * @param {boolean} allowed Whether the visitor allows statistics tracking.
+ */
+export function setAnalyticsConsent( allowed ) {
+	window.godamAnalyticsConsent = Boolean( allowed );
+	document.dispatchEvent( new CustomEvent( EXPLICIT_CONSENT_EVENT, { detail: { allowed: Boolean( allowed ) } } ) );
+}
+
+window.GoDAM = window.GoDAM || {};
+window.GoDAM.setAnalyticsConsent = setAnalyticsConsent;
 
 /**
  * The WP Consent API's own cookie for GoDAM's category ('allow', 'deny' or '').
@@ -280,6 +331,54 @@ let lastKnownConsent = null;
 let listenersAdded = false;
 
 /**
+ * Events waiting for consent, as functions that send them. Bounded, so a page
+ * open for a long time without a choice cannot grow it without limit.
+ */
+const heldActions = [];
+const MAX_HELD_ACTIONS = 500;
+
+/**
+ * Send now if consent is given; otherwise keep the event in memory until the
+ * visitor accepts (then it is sent) or refuses (then it is discarded). Nothing
+ * is stored in the browser and nothing is sent while it waits.
+ *
+ * @param {Function} action Sends the event. Called once, or never.
+ */
+export function holdUntilConsent( action ) {
+	addConsentListeners();
+	if ( lastKnownConsent === null ) {
+		lastKnownConsent = hasStatisticsConsent();
+	}
+	if ( hasStatisticsConsent() ) {
+		action();
+		return;
+	}
+	if ( heldActions.length < MAX_HELD_ACTIONS ) {
+		heldActions.push( action );
+	}
+}
+
+/**
+ * Throw away every event waiting for consent (the visitor refused).
+ */
+export function discardHeldEvents() {
+	heldActions.length = 0;
+}
+
+/**
+ * Send every event waiting for consent, oldest first.
+ */
+function releaseHeldEvents() {
+	heldActions.splice( 0 ).forEach( ( action ) => {
+		try {
+			action();
+		} catch ( e ) {
+			// One failing event must not stop the others.
+		}
+	} );
+}
+
+/**
  * Compare the current consent with the last known state and react to a change:
  * persist and start on grant, delete on withdrawal.
  */
@@ -295,6 +394,7 @@ export function syncConsent() {
 
 	if ( allowed ) {
 		const runGrantCallbacks = () => {
+			releaseHeldEvents();
 			grantCallbacks.forEach( ( callback ) => {
 				try {
 					callback();
@@ -320,6 +420,14 @@ export function syncConsent() {
 }
 
 /**
+ * The visitor refused or withdrew: discard waiting events and re-check.
+ */
+function onRefusal() {
+	discardHeldEvents();
+	syncConsent();
+}
+
+/**
  * Listen for the WP Consent API's events, once per page.
  */
 function addConsentListeners() {
@@ -332,7 +440,20 @@ function addConsentListeners() {
 	document.addEventListener( 'wp_consent_type_defined', syncConsent );
 	// The visitor changed a category; detail is { statistics: 'allow' | 'deny', ... }.
 	document.addEventListener( 'wp_listen_for_consent_change', ( event ) => {
-		if ( event?.detail && event.detail[ CONSENT_CATEGORY ] === undefined ) {
+		const choice = event?.detail ? event.detail[ CONSENT_CATEGORY ] : undefined;
+		if ( event?.detail && choice === undefined ) {
+			return;
+		}
+		if ( choice === 'deny' ) {
+			onRefusal();
+			return;
+		}
+		syncConsent();
+	} );
+	// The site's own banner called setAnalyticsConsent() (from any bundle).
+	document.addEventListener( EXPLICIT_CONSENT_EVENT, ( event ) => {
+		if ( event?.detail?.allowed === false ) {
+			onRefusal();
 			return;
 		}
 		syncConsent();
@@ -369,6 +490,7 @@ export function onStatisticsConsent( callback ) {
  */
 export function resetConsentStateForTests() {
 	grantCallbacks.length = 0;
+	heldActions.length = 0;
 	lastKnownConsent = null;
 	Object.keys( memoryStore ).forEach( ( key ) => delete memoryStore[ key ] );
 }

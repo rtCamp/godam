@@ -20,7 +20,11 @@ import {
 } from './utils/storage';
 import { LAYER_ACTIONS, LAYER_TYPE_WHITELIST, getLayerDisplayName } from './utils/layerActions';
 import { getWatchedRanges } from './utils/timeRanges';
-import { consentAwareStorage, hasStatisticsConsent, onStatisticsConsent } from './utils/consent';
+import { consentAwareStorage, hasStatisticsConsent, holdUntilConsent, onStatisticsConsent } from './utils/consent';
+
+// Video instances whose view (type 1) is waiting for consent, so a video that
+// scrolls in and out of view before the visitor chooses is held only once.
+const heldPageLoadInstances = new Set();
 
 // The consent-aware storage keeps the anonymous visitor id in memory until the
 // visitor allows "statistics", so creating the instance stores nothing.
@@ -259,10 +263,18 @@ function trackPageLoadForVideo( video, reelPopId = 0 ) {
 		return false; // Retry on the next observer tick.
 	}
 
-	// No statistics consent yet: keep observing, and count the view once the
-	// visitor allows tracking (see the onStatisticsConsent handler below).
+	// No statistics consent yet: hold the view. It is counted if the visitor
+	// accepts on this page (even after scrolling past the video) and discarded if
+	// they refuse. Nothing is stored or sent meanwhile.
 	if ( ! hasStatisticsConsent() ) {
-		return false;
+		if ( ! heldPageLoadInstances.has( videoInfo.instanceId ) ) {
+			heldPageLoadInstances.add( videoInfo.instanceId );
+			holdUntilConsent( () => {
+				heldPageLoadInstances.delete( videoInfo.instanceId );
+				trackPageLoadForVideo( videoInfo.videoEl, reelPopId );
+			} );
+		}
+		return true;
 	}
 
 	const rpId = parseInt( reelPopId, 10 ) || 0;

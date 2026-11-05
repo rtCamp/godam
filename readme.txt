@@ -244,6 +244,11 @@ A. Yes! You can start with a 60-day free trial to explore all features. No credi
 = Can I track video engagement and analytics? =
 A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
+= Can GoDAM wait for my cookie consent banner? =
+A. Yes. With the [WP Consent API](https://wordpress.org/plugins/wp-consent-api/) plugin and a banner that supports it (for example Complianz, CookieYes, Cookiebot or iubenda), GoDAM's video analytics wait for the visitor's "statistics" consent. Until then GoDAM stores nothing in the visitor's browser and sends nothing. Views and clicks from before the choice are sent if the visitor accepts on that page, and discarded if they refuse. Withdrawing consent deletes GoDAM's browser data. Sites without a consent banner are not affected.
+
+If your banner does not support the WP Consent API, add `add_filter( 'godam_visitor_tracking_requires_consent', '__return_true' );` and have the banner call `window.GoDAM.setAnalyticsConsent( true )` when the visitor accepts, or `window.GoDAM.setAnalyticsConsent( false )` when they refuse. To turn visitor tracking off completely, use `add_filter( 'godam_visitor_tracking_enabled', '__return_false' );`.
+
 == Screenshots ==
 1. Video Editor: add interactive layers to a video, with its plays and watch time on top
 2. Add layer menu: CTA, Hotspot, Form, Poll and Ad layers (WooCommerce with the GoDAM for Woo add-on)

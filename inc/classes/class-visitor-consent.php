@@ -26,10 +26,15 @@ use RTGODAM\Inc\Traits\Singleton;
  *   agrees mid-page, and deletes the items if they withdraw.
  * - Without it, behaviour is unchanged, as with WooCommerce's order attribution.
  * - The `godam_visitor_tracking_enabled` filter turns visitor tracking off
- *   entirely, for sites whose banner does not support the WP Consent API.
+ *   entirely.
+ * - For a banner that does not support the WP Consent API, the
+ *   `godam_visitor_tracking_requires_consent` filter makes GoDAM wait until the
+ *   banner calls `window.GoDAM.setAnalyticsConsent( true )`.
+ * - Events from before the visitor's choice wait in memory: sent if they accept on
+ *   that page, discarded if they refuse.
  *
  * The front end reads the settings from `videoAnalyticsParams.consent`
- * (get_script_config()). See rtCamp/godam-plugin-wp#47.
+ * (get_script_config()). See rtCamp/godam-plugin-wp#55.
  *
  * @since n.e.x.t
  */
@@ -87,6 +92,32 @@ class Visitor_Consent {
 	}
 
 	/**
+	 * Whether GoDAM waits for the site's own banner to call
+	 * `window.GoDAM.setAnalyticsConsent()` before it tracks a visitor.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return bool
+	 */
+	public static function requires_consent() {
+		/**
+		 * Filters whether GoDAM waits for the visitor's consent from the site's own
+		 * consent banner.
+		 *
+		 * Return true when the site's banner does not support the WP Consent API.
+		 * GoDAM then stores nothing and sends nothing until the banner calls
+		 * `window.GoDAM.setAnalyticsConsent( true )` (false when the visitor refuses),
+		 * or sets `window.godamAnalyticsConsent = true` before GoDAM's scripts run.
+		 * Not needed with the WP Consent API: GoDAM waits for "statistics" on its own.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param bool $requires_consent Whether to wait for the banner. Default false.
+		 */
+		return (bool) apply_filters( 'godam_visitor_tracking_requires_consent', false );
+	}
+
+	/**
 	 * Whether the WP Consent API plugin is active.
 	 *
 	 * @since n.e.x.t
@@ -102,12 +133,13 @@ class Visitor_Consent {
 	 *
 	 * @since n.e.x.t
 	 *
-	 * @return array{trackingEnabled: bool, consentApi: bool, category: string}
+	 * @return array{trackingEnabled: bool, consentApi: bool, requireConsent: bool, category: string}
 	 */
 	public static function get_script_config() {
 		return array(
 			'trackingEnabled' => self::is_tracking_enabled(),
 			'consentApi'      => self::is_consent_api_active(),
+			'requireConsent'  => self::requires_consent(),
 			'category'        => self::CONSENT_CATEGORY,
 		);
 	}

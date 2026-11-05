@@ -69,6 +69,7 @@ afterEach( () => {
 } );
 
 beforeEach( () => {
+	delete window.godamAnalyticsConsent;
 	document.cookie = 'wp_consent_statistics=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
 	localStorage.clear();
 	sessionStorage.clear();
@@ -333,5 +334,125 @@ describe( 'analytics bundles with the WP Consent API and no consent', () => {
 
 		setStatisticsConsent( true );
 		expect( window.analytics.user().anonymousId ).toMatch( UUID );
+	} );
+} );
+
+describe( 'events before the visitor chooses wait in memory', () => {
+	const settle = ( ms = 0 ) => new Promise( ( resolve ) => setTimeout( resolve, ms ) );
+	const analyticsParams = ( consent ) => ( {
+		endpoint: 'https://analytics.example',
+		token: 'verified-token',
+		consent: { trackingEnabled: true, ...consent },
+	} );
+	const trackPlay = () => window.analytics.track( 'video_heatmap', { type: 2, videoId: 7, ranges: [ [ 0, 3 ] ], videoLength: 10 } );
+	const sentBodies = () => global.fetch.mock.calls.map( ( call ) => JSON.parse( call[ 1 ].body ) );
+
+	it( 'a play tracked before consent is sent once the visitor accepts, with the stored id', async () => {
+		installConsentApi( false );
+		window.videoAnalyticsParams = analyticsParams( { consentApi: true } );
+		loadFresh( '../analytics' );
+		await settle();
+
+		trackPlay();
+		await settle( 20 );
+		expect( global.fetch ).not.toHaveBeenCalled();
+
+		setStatisticsConsent( true );
+		await settle( 50 );
+
+		const bodies = sentBodies();
+		expect( bodies ).toHaveLength( 1 );
+		expect( bodies[ 0 ].type ).toBe( 2 );
+		expect( bodies[ 0 ].user_token ).toBe( JSON.parse( localStorage.getItem( '__anon_id' ) ) );
+	} );
+
+	it( 'a play tracked before consent is discarded when the visitor refuses', async () => {
+		installConsentApi( false );
+		window.videoAnalyticsParams = analyticsParams( { consentApi: true } );
+		loadFresh( '../analytics' );
+		await settle();
+
+		trackPlay();
+		await settle( 20 ); // the library hands the event to GoDAM's sender asynchronously
+		setStatisticsConsent( false );
+		// Accepting later on the same page does not bring the refused events back.
+		setStatisticsConsent( true );
+		await settle( 50 );
+
+		expect( global.fetch ).not.toHaveBeenCalled();
+	} );
+
+	it( 'a layer click before consent reaches the buffer only after the visitor accepts', () => {
+		installConsentApi( false );
+		const storage = loadFresh( './storage' );
+		const click = { layer_id: 'l1', layer_type: 'hotspot', action_type: 'clicked', layer_timestamp: 0 };
+
+		storage.addLayerInteraction( '42', click );
+		expect( sessionStorage.getItem( 'godamLayerInteractions' ) ).toBeNull();
+
+		setStatisticsConsent( true );
+		expect( storage.getLayerInteractions() ).toEqual( { 42: [ click ] } );
+	} );
+} );
+
+describe( 'window.GoDAM.setAnalyticsConsent for a custom banner', () => {
+	const settle = ( ms = 0 ) => new Promise( ( resolve ) => setTimeout( resolve, ms ) );
+
+	beforeEach( () => {
+		delete window.godamAnalyticsConsent;
+	} );
+
+	it( 'waits when the site asked GoDAM to, until the banner calls it', () => {
+		window.videoAnalyticsParams = { consent: { trackingEnabled: true, consentApi: false, requireConsent: true } };
+		const consent = loadFresh( './consent' );
+		const callback = jest.fn();
+		consent.onStatisticsConsent( callback );
+
+		expect( consent.hasStatisticsConsent() ).toBe( false );
+		expect( callback ).not.toHaveBeenCalled();
+
+		window.GoDAM.setAnalyticsConsent( true );
+		expect( consent.hasStatisticsConsent() ).toBe( true );
+		expect( callback ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'reaches both bundles: one call starts the image runtime and the player', async () => {
+		window.videoAnalyticsParams = { endpoint: 'https://analytics.example', token: 't', consent: { trackingEnabled: true, consentApi: false, requireConsent: true } };
+		const runtime = loadFresh( '../layer-analytics-runtime' );
+		const playerConsent = loadFresh( './consent' );
+		runtime.initLayerAnalytics();
+		expect( window.analytics ).toBeUndefined();
+
+		// The banner calls the copy that loaded last.
+		window.GoDAM.setAnalyticsConsent( true );
+		await settle();
+
+		expect( playerConsent.hasStatisticsConsent() ).toBe( true );
+		expect( window.analytics.user().anonymousId ).toMatch( UUID );
+	} );
+
+	it( 'a value set before GoDAM loads is honoured', () => {
+		window.godamAnalyticsConsent = false;
+		const { hasStatisticsConsent } = loadFresh( './consent' );
+		expect( hasStatisticsConsent() ).toBe( false );
+	} );
+
+	it( 'false withdraws: GoDAM deletes its items', () => {
+		window.videoAnalyticsParams = { consent: { trackingEnabled: true, consentApi: false, requireConsent: true } };
+		window.godamAnalyticsConsent = true;
+		const consent = loadFresh( './consent' );
+		consent.onStatisticsConsent( () => {} );
+		localStorage.setItem( '__anon_id', JSON.stringify( 'abc' ) );
+
+		window.GoDAM.setAnalyticsConsent( false );
+
+		expect( localStorage.getItem( '__anon_id' ) ).toBeNull();
+	} );
+
+	it( 'still blocked when the site turned tracking off', () => {
+		window.videoAnalyticsParams = { consent: { trackingEnabled: false } };
+		window.godamAnalyticsConsent = true;
+		const { hasStatisticsConsent } = loadFresh( './consent' );
+		expect( hasStatisticsConsent() ).toBe( false );
 	} );
 } );

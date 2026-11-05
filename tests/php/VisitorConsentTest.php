@@ -43,7 +43,19 @@ class VisitorConsentTest extends TestCase {
 
 		$this->assertTrue( $config['trackingEnabled'] );
 		$this->assertFalse( $config['consentApi'] );
+		$this->assertFalse( $config['requireConsent'] );
 		$this->assertSame( 'statistics', $config['category'] );
+	}
+
+	public function test_a_site_with_its_own_banner_can_make_godam_wait(): void {
+		add_filter(
+			'godam_visitor_tracking_requires_consent',
+			static function () {
+				return true;
+			}
+		);
+
+		$this->assertTrue( Visitor_Consent::get_script_config()['requireConsent'] );
 	}
 
 	public function test_the_filter_turns_visitor_tracking_off(): void {
