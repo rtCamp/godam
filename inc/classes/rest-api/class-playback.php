@@ -37,6 +37,13 @@ class Playback extends Base {
 	const CACHE_MAX = 60;
 
 	/**
+	 * How long a failed call (GoDAM unreachable, or rate limiting this site) is remembered,
+	 * so a busy page doesn't keep calling while GoDAM can't answer. The player keeps the
+	 * saved sources meanwhile.
+	 */
+	const RETRY_AFTER = 15;
+
+	/**
 	 * Get REST routes.
 	 */
 	public function get_rest_routes() {
@@ -104,8 +111,14 @@ class Playback extends Base {
 		);
 
 		$response = function_exists( 'vip_safe_wp_remote_get' ) ? vip_safe_wp_remote_get( $url, '', 3, 3, 3, $args ) : wp_safe_remote_get( $url, $args );
-		if ( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) || '' === $response ) {
+			// '' is vip_safe_wp_remote_get's fallback while its circuit breaker is open.
+			set_transient( $cache_key, array( 'refused' => 'unreachable' ), self::RETRY_AFTER );
 			return new \WP_Error( 'godam_playback_unreachable', __( 'GoDAM could not be reached.', 'godam' ), array( 'status' => 502 ) );
+		}
+		if ( 429 === wp_remote_retrieve_response_code( $response ) ) {
+			set_transient( $cache_key, array( 'refused' => 'rate_limited' ), self::RETRY_AFTER );
+			return $this->refusal( 'rate_limited' );
 		}
 
 		$body    = json_decode( wp_remote_retrieve_body( $response ), true );
@@ -182,7 +195,7 @@ class Playback extends Base {
 				'posts_per_page' => 1,
 				'fields'         => 'ids',
 				'no_found_rows'  => true,
-				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- one indexed meta lookup, cached below.
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- meta_value isn't indexed; the answer is cached below.
 					'relation' => 'OR',
 					array(
 						'key'   => '_godam_original_id',
