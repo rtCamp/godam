@@ -323,6 +323,31 @@ $ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
 		gap: 1rem;
 	}
 
+	&__plan {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 1rem;
+		border: 1px solid $ve-border;
+		border-radius: 8px;
+		font-size: 0.8125rem;
+
+		p {
+			margin: 0;
+		}
+	}
+
+	&__plan-title {
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+
+	&__plan-actions {
+		display: flex;
+		gap: 0.5rem;
+		margin-top: 0.25rem;
+	}
+
 	&__label-field.has-error .components-base-control__help {
 		color: #cc1818;
 	}

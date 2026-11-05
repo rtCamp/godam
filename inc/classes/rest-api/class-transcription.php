@@ -755,6 +755,17 @@ class Transcription extends Base {
 	 * @return array{job_id:string,api_key:string}|\WP_Error
 	 */
 	private function caption_context( $attachment_id ) {
+		// Checked before the job, so a site with no GoDAM account is told to
+		// connect one rather than that the video is not transcoded.
+		$api_key = get_option( 'rtgodam-api-key', '' );
+		if ( empty( $api_key ) ) {
+			return new \WP_Error(
+				'rtgodam_no_api_key',
+				__( 'Connect your GoDAM account to manage captions.', 'godam' ),
+				array( 'status' => 400 )
+			);
+		}
+
 		/**
 		 * Fires before reading this attachment's job-ID meta, so integrations
 		 * that centralize media on another site can switch context first.
@@ -772,15 +783,6 @@ class Transcription extends Base {
 			return new \WP_Error(
 				'rtgodam_no_job',
 				__( 'This video has not been transcoded yet, so it has no captions.', 'godam' ),
-				array( 'status' => 400 )
-			);
-		}
-
-		$api_key = get_option( 'rtgodam-api-key', '' );
-		if ( empty( $api_key ) ) {
-			return new \WP_Error(
-				'rtgodam_no_api_key',
-				__( 'Connect your GoDAM account to manage captions.', 'godam' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -828,8 +830,11 @@ class Transcription extends Base {
 			if ( is_array( $payload ) ) {
 				$message = isset( $payload['error'] ) ? $payload['error'] : ( $payload['message'] ?? '' );
 			}
+			// Caption tracks need a paid plan; the editor offers the upgrade for this code.
+			$error_type = is_array( $payload ) && isset( $payload['error_type'] ) ? (string) $payload['error_type'] : '';
+			$error_code = in_array( $error_type, array( 'NoActiveSubscription', 'SubscriptionInactive' ), true ) ? 'rtgodam_no_subscription' : 'rtgodam_caption_error';
 			return new \WP_Error(
-				'rtgodam_caption_error',
+				$error_code,
 				$message ? sanitize_text_field( $message ) : __( 'The caption service rejected the request.', 'godam' ),
 				array( 'status' => $code >= 400 ? $code : 400 )
 			);

@@ -31,6 +31,7 @@ import {
 	useSetDefaultCaptionMutation,
 } from '../../redux/api/transcription';
 import { CAPTION_LANGUAGES, languageLabel } from './languages';
+import { getPricingUrl } from '../../../shared/premium-layers';
 import CaptionCueEditor from './CaptionCueEditor';
 
 const FREE_TEXT = '__other__';
@@ -119,6 +120,10 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 	);
 
 	const resolvedLanguage = form.language === FREE_TEXT ? form.freeLang.trim() : form.language;
+
+	// No GoDAM account, or a free one: explain and offer the upgrade instead of an error.
+	const listErrorCode = listError?.data?.code || '';
+	const needsPlan = [ 'rtgodam_no_api_key', 'rtgodam_no_subscription' ].includes( listErrorCode );
 
 	// The label is the track's name in the player's menu, so the user picks it and
 	// no two tracks on a video may share one (ignoring case and outer spaces).
@@ -262,7 +267,28 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 				</Notice>
 			) }
 
-			{ isError && (
+			{ isError && needsPlan && (
+				<div className="godam-ve-caption-manager__plan" data-test-id="godam-caption-plan-notice">
+					<p className="godam-ve-caption-manager__plan-title">
+						{ __( 'Captions in more than one language are part of the paid GoDAM plans', 'godam' ) }
+					</p>
+					<p>
+						{ __( 'With a paid plan, every language you add or generate here appears in the player\'s subtitles menu. On your current plan, Upload File in the Transcription tab still adds one caption file to this video.', 'godam' ) }
+					</p>
+					<div className="godam-ve-caption-manager__plan-actions">
+						<Button variant="primary" href={ getPricingUrl( 'caption-tracks' ) } target="_blank" rel="noreferrer">
+							{ __( 'See plans', 'godam' ) }
+						</Button>
+						{ 'rtgodam_no_api_key' === listErrorCode && (
+							<Button variant="secondary" href={ `${ window?.videoData?.adminUrl || '/wp-admin/' }admin.php?page=rtgodam_settings` }>
+								{ __( 'Connect your account', 'godam' ) }
+							</Button>
+						) }
+					</div>
+				</div>
+			) }
+
+			{ isError && ! needsPlan && (
 				<Notice status="error" isDismissible={ false }>
 					{ listError?.data?.message || __( 'Could not load the caption tracks.', 'godam' ) }
 				</Notice>
@@ -369,7 +395,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 			) }
 
 			{ /* Add form */ }
-			{ showAdd ? (
+			{ ! isError && showAdd && (
 				<div className="godam-ve-caption-manager__add">
 					<Flex align="flex-end" gap={ 3 } wrap>
 						<FlexItem>
@@ -443,7 +469,8 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 						</Button>
 					</div>
 				</div>
-			) : (
+			) }
+			{ ! isError && ! showAdd && (
 				<Button
 					variant="secondary"
 					icon={ plus }
