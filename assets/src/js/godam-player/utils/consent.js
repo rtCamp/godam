@@ -327,6 +327,7 @@ export function clearStatisticsStorage() {
 }
 
 const grantCallbacks = [];
+const withdrawnCallbacks = [];
 let lastKnownConsent = null;
 let listenersAdded = false;
 
@@ -416,7 +417,22 @@ export function syncConsent() {
 	// the visitor has not chosen yet (nothing of ours is stored then anyway).
 	if ( wasAllowed === true ) {
 		clearStatisticsStorage();
+		notifyWithdrawn();
+		return 'withdrawn';
 	}
+}
+
+/**
+ * Tell add-ons that the visitor refused or withdrew, so they delete their own items.
+ */
+function notifyWithdrawn() {
+	withdrawnCallbacks.forEach( ( callback ) => {
+		try {
+			callback();
+		} catch ( e ) {
+			// One failing listener must not stop the others.
+		}
+	} );
 }
 
 /**
@@ -424,7 +440,26 @@ export function syncConsent() {
  */
 function onRefusal() {
 	discardHeldEvents();
-	syncConsent();
+	if ( syncConsent() !== 'withdrawn' ) {
+		// A refusal before any consent on this page: add-ons still discard theirs.
+		notifyWithdrawn();
+	}
+}
+
+/**
+ * Run a callback each time the visitor refuses or withdraws statistics consent.
+ *
+ * For add-ons (GoDAM for Woo) to delete their own browser items. GoDAM's own
+ * items and every event waiting in holdUntilConsent() are already gone by then.
+ *
+ * @param {Function} callback Called with no arguments.
+ */
+export function onStatisticsConsentWithdrawn( callback ) {
+	addConsentListeners();
+	if ( lastKnownConsent === null ) {
+		lastKnownConsent = hasStatisticsConsent();
+	}
+	withdrawnCallbacks.push( callback );
 }
 
 /**
@@ -490,7 +525,18 @@ export function onStatisticsConsent( callback ) {
  */
 export function resetConsentStateForTests() {
 	grantCallbacks.length = 0;
+	withdrawnCallbacks.length = 0;
 	heldActions.length = 0;
 	lastKnownConsent = null;
 	Object.keys( memoryStore ).forEach( ( key ) => delete memoryStore[ key ] );
 }
+
+// For add-ons such as GoDAM for Woo, which are bundled separately. The player and
+// image-page bundles each carry a copy of this module; the copy that loads last owns
+// window.GoDAM, and consent changes reach every copy through the same events, so all
+// copies agree. Add-ons should look these up when they need them, not at load.
+window.GoDAM = window.GoDAM || {};
+window.GoDAM.hasStatisticsConsent = hasStatisticsConsent;
+window.GoDAM.holdUntilConsent = holdUntilConsent;
+window.GoDAM.onStatisticsConsent = onStatisticsConsent;
+window.GoDAM.onStatisticsConsentWithdrawn = onStatisticsConsentWithdrawn;

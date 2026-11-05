@@ -456,3 +456,55 @@ describe( 'window.GoDAM.setAnalyticsConsent for a custom banner', () => {
 		expect( hasStatisticsConsent() ).toBe( false );
 	} );
 } );
+
+describe( 'consent API on window.GoDAM for add-ons', () => {
+	it( 'exposes the check, the hold and the consent callbacks', () => {
+		loadFresh( './consent' );
+		[ 'hasStatisticsConsent', 'holdUntilConsent', 'onStatisticsConsent', 'onStatisticsConsentWithdrawn', 'setAnalyticsConsent' ].forEach( ( name ) => {
+			expect( typeof window.GoDAM[ name ] ).toBe( 'function' );
+		} );
+	} );
+
+	it( 'an add-on event held through window.GoDAM is sent on Accept', () => {
+		installConsentApi( false );
+		loadFresh( './consent' );
+		const send = jest.fn();
+
+		window.GoDAM.holdUntilConsent( send );
+		expect( send ).not.toHaveBeenCalled();
+
+		setStatisticsConsent( true );
+		expect( send ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'an add-on event held through window.GoDAM is discarded on Reject, and the add-on hears the refusal once', () => {
+		installConsentApi( false );
+		loadFresh( './consent' );
+		const send = jest.fn();
+		const withdrawn = jest.fn();
+		window.GoDAM.onStatisticsConsentWithdrawn( withdrawn );
+
+		window.GoDAM.holdUntilConsent( send );
+		setStatisticsConsent( false );
+		setStatisticsConsent( true );
+
+		expect( send ).not.toHaveBeenCalled();
+		expect( withdrawn ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'the add-on hears a withdrawal once, after GoDAM deleted its own items', () => {
+		installConsentApi( true );
+		loadFresh( './consent' );
+		localStorage.setItem( '__anon_id', JSON.stringify( 'abc' ) );
+		let idWhenCalled = 'not called';
+		const withdrawn = jest.fn( () => {
+			idWhenCalled = localStorage.getItem( '__anon_id' );
+		} );
+		window.GoDAM.onStatisticsConsentWithdrawn( withdrawn );
+
+		setStatisticsConsent( false );
+
+		expect( withdrawn ).toHaveBeenCalledTimes( 1 );
+		expect( idWhenCalled ).toBeNull();
+	} );
+} );
