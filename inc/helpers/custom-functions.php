@@ -123,6 +123,69 @@ function rtgodam_filter_input( $type, $variable_name, $filter = FILTER_DEFAULT, 
 }
 
 /**
+ * Sanitize an out-of-view behavior value.
+ *
+ * - `off` (default): do nothing, videos keep playing.
+ * - `autoplay`: pause autoplaying videos and resume them when back in view;
+ *   videos the visitor started keep playing.
+ * - `pause`: also pause videos the visitor started (they stay paused).
+ * - `mute`: also keep videos the visitor started playing, muted.
+ *
+ * See assets/src/js/godam-player/managers/visibilityManager.js.
+ *
+ * @since 2.7.0
+ *
+ * @param mixed  $value    Raw value.
+ * @param string $fallback Returned when the value is not valid.
+ *
+ * @return string `off`, `autoplay`, `pause`, `mute`, or the fallback.
+ */
+function rtgodam_sanitize_out_of_view_behavior( $value, $fallback = 'off' ) {
+	$value = is_string( $value ) ? strtolower( trim( $value ) ) : '';
+
+	return in_array( $value, array( 'off', 'autoplay', 'pause', 'mute' ), true ) ? $value : $fallback;
+}
+
+/**
+ * Resolve the out-of-view behavior for one player.
+ *
+ * A valid per-player value (block attribute or shortcode attribute) wins;
+ * empty or `inherit` falls back to the global Video Player setting.
+ *
+ * @since 2.7.0
+ *
+ * @param string $override Per-player value, empty to inherit.
+ *
+ * @return string `off`, `autoplay`, `pause` or `mute`.
+ */
+function rtgodam_get_out_of_view_behavior( $override = '' ) {
+	$override = rtgodam_sanitize_out_of_view_behavior( $override, '' );
+	if ( '' !== $override ) {
+		return $override;
+	}
+
+	$settings = get_option( 'rtgodam-settings', array() );
+	$global   = isset( $settings['video_player']['out_of_view_behavior'] ) ? $settings['video_player']['out_of_view_behavior'] : 'off';
+
+	return rtgodam_sanitize_out_of_view_behavior( $global );
+}
+
+/**
+ * Whether a background browser tab also pauses (or mutes) videos the visitor
+ * started. Global Video Player setting, off by default; autoplaying videos
+ * always pause in a background tab when the out-of-view behavior isn't `off`.
+ *
+ * @since 2.7.0
+ *
+ * @return bool True when the setting is on.
+ */
+function rtgodam_out_of_view_applies_to_hidden_tab() {
+	$settings = get_option( 'rtgodam-settings', array() );
+
+	return ! empty( $settings['video_player']['out_of_view_tab_hidden'] );
+}
+
+/**
  * Fetch the URL of a media file by its ID.
  *
  * This function retrieves the URL of a media attachment in WordPress based on the provided media ID.
@@ -1754,12 +1817,15 @@ function rtgodam_send_video_to_godam_for_transcoding( $form_type = '', $form_tit
 		$watermark_to_use
 	);
 
+	/** This filter is documented in admin/class-rtgodam-transcoder-handler.php */
+	$verify_ssl = (bool) apply_filters( 'godam_transcoder_verify_ssl', true );
+
 	/**
 	 * Prepare the args to pass to request.
 	 */
 	$args = array(
 		'method'    => 'POST',
-		'sslverify' => false,
+		'sslverify' => $verify_ssl,
 		'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 		'body'      => $body,
 	);
@@ -1871,7 +1937,7 @@ function rtgodam_get_current_logged_in_user_data() {
  * of fields is fixed here, so a field added later to
  * rtgodam_get_current_logged_in_user_data() is not printed by accident.
  *
- * @since n.e.x.t
+ * @since 2.5.0
  *
  * @return array An associative array containing 'name' and 'type' of the user or guest.
  */
@@ -2116,6 +2182,251 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 }
 
 /**
+ * Whether the current user may see an attachment on GoDAM's public routes and
+ * pages: the preview and embed pages, the video shortcode route and the
+ * transcoding status route.
+ *
+ * Media follows the post it was uploaded to, as WordPress's own media API does.
+ * It is shown when it is unattached, or when that post is published (or has
+ * another public status), with or without a password. Users who can edit the
+ * attachment always see it, so editors can preview their own unpublished
+ * media; users who can read a private or draft parent see its media too.
+ *
+ * Media used on a publicly viewable post is shown as well, whichever post it
+ * was uploaded to: a video uploaded while drafting one post and placed on a
+ * published page keeps working in that page's player, gallery and embed. The
+ * usage comes from GoDAM's media usage index (see Media_Usage_Tracker).
+ *
+ * Fires the attachment lookup hooks itself, so a site that keeps its media on
+ * another site answers from there.
+ *
+ * @since 2.5.1
+ *
+ * @param int $attachment_id Attachment ID.
+ * @return bool
+ */
+function rtgodam_can_view_attachment( $attachment_id ) {
+	$attachment_id = absint( $attachment_id );
+
+	if ( ! $attachment_id ) {
+		return false;
+	}
+
+	/**
+	 * Fires before reading this attachment and the post it belongs to, so
+	 * integrations that centralize media on another site can switch context
+	 * first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$attachment = get_post( $attachment_id );
+
+		if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+			return false;
+		}
+
+		$can_view  = true;
+		$parent_id = (int) $attachment->post_parent;
+		$parent    = $parent_id ? get_post( $parent_id ) : null;
+
+		// A parent that no longer exists counts as unattached, as in get_post_status().
+		if ( $parent && ! current_user_can( 'edit_post', $attachment_id ) ) {
+			$can_view = is_post_status_viewable( get_post_status( $parent ) ) || current_user_can( 'read_post', $parent_id );
+		}
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
+	}
+
+	// The posts using the media belong to the current site, so they are read once the lookup above has closed.
+	if ( ! $can_view ) {
+		$can_view = rtgodam_usage_includes_public_post( \RTGODAM\Inc\Media_Usage_Tracker::get_instance()->get_usage_post_ids( $attachment_id ) );
+	}
+
+	/**
+	 * Filters whether the current user may see an attachment on GoDAM's public
+	 * routes and pages (preview, embed, video shortcode route and transcoding
+	 * status).
+	 *
+	 * The gallery listing is limited in the database query instead, so this
+	 * filter does not run for it.
+	 *
+	 * @since 2.5.1
+	 *
+	 * @param bool     $can_view   Whether the attachment may be shown.
+	 * @param \WP_Post $attachment The attachment.
+	 */
+	return (bool) apply_filters( 'rtgodam_can_view_attachment', $can_view, $attachment );
+}
+
+/**
+ * Whether any of the given posts, listed in a media usage record, shows its
+ * media to everyone: a post that is publicly viewable.
+ * Post ID 0 is the site-wide anchor for media in a block widget, which shows
+ * on every page.
+ *
+ * @since 2.5.1
+ *
+ * @param int[] $post_ids Post IDs from the media usage index.
+ * @return bool
+ */
+function rtgodam_usage_includes_public_post( array $post_ids ) {
+	foreach ( $post_ids as $post_id ) {
+		if ( 0 === (int) $post_id ) {
+			return true;
+		}
+
+		$post = get_post( $post_id ); // godam-coverage-ignore -- rtgodam_usage_includes_public_post(): the IDs come from the media usage index and name the posts that use the media, never attachments.
+
+		if ( $post && is_post_publicly_viewable( $post ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Statuses of the posts that anyone can view on the front end.
+ *
+ * @since 2.5.1
+ *
+ * @return string[]
+ */
+function rtgodam_get_viewable_post_statuses() {
+	$statuses = array_values( array_filter( get_post_stati(), 'is_post_status_viewable' ) );
+
+	return empty( $statuses ) ? array( 'publish' ) : $statuses;
+}
+
+/**
+ * IDs of the video attachments that were uploaded to a post that is not public
+ * (a draft, a private or scheduled post, and so on) but are used on one
+ * that is. The listing query keeps these, see rtgodam_public_media_query_clauses().
+ *
+ * Read once per request and site: the usage index lists the posts as serialized
+ * arrays, so the check of each is done in PHP, for the small set of videos that
+ * have both a non-public parent and a usage record.
+ *
+ * @since 2.5.1
+ *
+ * @param bool $refresh Whether to read again instead of using this request's copy.
+ * @return int[]
+ */
+function rtgodam_get_publicly_used_media_ids( $refresh = false ) {
+	static $cache = array();
+
+	$blog_id = get_current_blog_id();
+
+	if ( ! $refresh && isset( $cache[ $blog_id ] ) ) {
+		return $cache[ $blog_id ];
+	}
+
+	global $wpdb;
+
+	$statuses     = rtgodam_get_viewable_post_statuses();
+	$placeholders = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
+	$query_args   = array_merge( array( \RTGODAM\Inc\Media_Usage_Tracker::ATTACHMENT_META_KEY, $wpdb->esc_like( 'video/' ) . '%' ), $statuses );
+
+	/**
+	 * Fires before querying the media and the posts they belong to, so
+	 * integrations that centralize media on another site can switch context
+	 * first.
+	 *
+	 * @since 2.2.0
+	 */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the result is kept for the request below.
+		$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- each status adds one replacement to the two counted here.
+			"SELECT media.ID, usage_meta.meta_value
+			FROM {$wpdb->posts} AS media
+			INNER JOIN {$wpdb->posts} AS media_parent ON media_parent.ID = media.post_parent
+			INNER JOIN {$wpdb->postmeta} AS usage_meta ON usage_meta.post_id = media.ID AND usage_meta.meta_key = %s
+			WHERE media.post_type = 'attachment'
+			AND media.post_mime_type LIKE %s
+			AND media_parent.post_status NOT IN ( {$placeholders} )", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- table names from $wpdb; the meta key and mime type, then one %s per status.
+			$query_args
+		)
+	);
+	do_action( 'rtgodam_after_attachment_lookup' );
+
+	$usage_by_media = array();
+	$usage_post_ids = array();
+
+	foreach ( (array) $rows as $row ) {
+		$post_ids = maybe_unserialize( $row->meta_value );
+
+		if ( is_array( $post_ids ) && ! empty( $post_ids ) ) {
+			$usage_by_media[ (int) $row->ID ] = array_map( 'intval', $post_ids );
+			$usage_post_ids                   = array_merge( $usage_post_ids, $usage_by_media[ (int) $row->ID ] );
+		}
+	}
+
+	// Load the posts using the media together, so the checks below add no queries.
+	if ( ! empty( $usage_post_ids ) && function_exists( '_prime_post_caches' ) ) {
+		_prime_post_caches( array_values( array_unique( array_filter( $usage_post_ids ) ) ), false, false );
+	}
+
+	$media_ids = array();
+
+	foreach ( $usage_by_media as $media_id => $post_ids ) {
+		if ( rtgodam_usage_includes_public_post( $post_ids ) ) {
+			$media_ids[] = $media_id;
+		}
+	}
+
+	$cache[ $blog_id ] = $media_ids;
+
+	return $media_ids;
+}
+
+/**
+ * Limit a query flagged with `rtgodam_public_media_only` to attachments that are
+ * unattached, or whose parent post is published (or has another public status),
+ * plus the media used on a public post whichever post it
+ * was uploaded to (see rtgodam_get_publicly_used_media_ids()).
+ *
+ * The SQL counterpart of rtgodam_can_view_attachment(), for listings: filtering
+ * in the query keeps paging and counts right. It applies to every viewer, so a
+ * listing shows editors the same media it shows visitors.
+ *
+ * @since 2.5.1
+ *
+ * @param array     $clauses Query clauses.
+ * @param \WP_Query $query   The query.
+ * @return array
+ */
+function rtgodam_public_media_query_clauses( $clauses, $query ) {
+	if ( ! is_object( $query ) || ! method_exists( $query, 'get' ) || ! $query->get( 'rtgodam_public_media_only' ) ) {
+		return $clauses;
+	}
+
+	global $wpdb;
+
+	$statuses            = rtgodam_get_viewable_post_statuses();
+	$used_media_ids      = rtgodam_get_publicly_used_media_ids();
+	$status_placeholders = implode( ', ', array_fill( 0, count( $statuses ), '%s' ) );
+	$used_clause         = '';
+
+	if ( ! empty( $used_media_ids ) ) {
+		$used_clause = " OR {$wpdb->posts}.ID IN ( " . implode( ', ', array_fill( 0, count( $used_media_ids ), '%d' ) ) . ' )';
+	}
+
+	$clauses['join'] .= " LEFT JOIN {$wpdb->posts} AS rtgodam_media_parent ON ( rtgodam_media_parent.ID = {$wpdb->posts}.post_parent )";
+
+	// A parent that no longer exists counts as unattached, as in get_post_status().
+	$clauses['where'] .= $wpdb->prepare(
+		" AND ( rtgodam_media_parent.ID IS NULL OR rtgodam_media_parent.post_status IN ( {$status_placeholders} ){$used_clause} )", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names from $wpdb; one %s per status and one %d per media ID.
+		array_merge( $statuses, $used_media_ids )
+	);
+
+	return $clauses;
+}
+
+add_filter( 'posts_clauses', 'rtgodam_public_media_query_clauses', 10, 2 );
+
+/**
  * Generate the HTML content for the preview page.
  *
  * Constructs the HTML for the shared front-end preview page based on the given
@@ -2153,7 +2464,7 @@ function godam_preview_page_content( $video_id ) {
 			$godam_video_title = get_the_title( $video_id );
 		}
 		do_action( 'rtgodam_after_attachment_lookup' );
-		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type;
+		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type && rtgodam_can_view_attachment( $video_id );
 	}
 
 	if ( ! $show_video ) {
@@ -2192,10 +2503,10 @@ function godam_preview_page_content( $video_id ) {
 				) . ' /-->'
 			);
 		} else {
-			$godam_shortcode    = $godam_is_audio
-				? '[godam_audio id="' . $video_id . '"]'
-				: '[godam_video id="' . $video_id . '"]';
-			$godam_media_output = do_shortcode( $godam_shortcode );
+			$godam_media_output = rtgodam_render_shortcode_from_atts(
+				$godam_is_audio ? 'godam_audio' : 'godam_video',
+				array( 'id' => (string) $video_id )
+			);
 		}
 		?>
 		<div class="godam-video-preview--notice">
@@ -2294,6 +2605,30 @@ function rtgodam_get_block_source_from_context( $context ) {
 }
 
 /**
+ * Render a registered shortcode from an attributes array.
+ *
+ * Calls the shortcode's callback directly, so each attribute value is passed to
+ * the renderer as plain data and is never parsed as shortcode syntax. Use it
+ * instead of do_shortcode() when a value comes from a request, a form
+ * submission or other stored user data.
+ *
+ * @since 2.5.1
+ *
+ * @param string               $tag  Shortcode tag, for example 'godam_video'.
+ * @param array<string, mixed> $atts Attributes, keyed in lowercase as the shortcode parser would key them.
+ * @return string The shortcode output, or an empty string when the shortcode is not registered or its callback cannot be called.
+ */
+function rtgodam_render_shortcode_from_atts( $tag, $atts = array() ) {
+	global $shortcode_tags;
+
+	if ( ! shortcode_exists( $tag ) || ! is_callable( $shortcode_tags[ $tag ] ) ) {
+		return '';
+	}
+
+	return (string) call_user_func( $shortcode_tags[ $tag ], $atts, '', $tag );
+}
+
+/**
  * Generate HTML content for the video embed page.
  *
  * This function produces the HTML markup for embedding a single video.
@@ -2301,10 +2636,10 @@ function rtgodam_get_block_source_from_context( $context ) {
  * making it suitable for embedding in iframes or modals.
  *
  * @param int    $video_id      The ID of the video attachment to embed.
- * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only').
+ * @param string $godam_context Optional. The player context passed to the godam_video shortcode (e.g. 'video-only'). Reduced to slug characters with sanitize_key().
  * @param string $bg_color      Optional. Hex background color applied as --godam-video-bg-color CSS variable on the wrapper.
  * @param bool   $show_engagements Optional. Whether to show engagements in the embed. Default false (no engagements shown).
- * @param string $block_source  Optional. Analytics placement slug forwarded to the player (e.g. 'video-gallery' for gallery iframes).
+ * @param string $block_source  Optional. Analytics placement slug forwarded to the player (e.g. 'video-gallery' for gallery iframes). Reduced to slug characters with sanitize_key().
  * @param int    $host_post_id  Optional. Post ID of the page embedding this iframe, so analytics attribute to the host page.
  *
  * @since 1.5.0
@@ -2319,6 +2654,10 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 	$video_id          = intval( $video_id );
 	$engagements_value = rtgodam_is_engagement_feature_enabled() && $show_engagements ? 'show' : '';
 
+	// Both values arrive from the URL; keep them to slug characters.
+	$godam_context = sanitize_key( $godam_context );
+	$block_source  = sanitize_key( $block_source );
+
 	if ( ! empty( $video_id ) ) {
 		/**
 		 * Fires before resolving this attachment's post/mime data, so
@@ -2330,7 +2669,7 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$video_attachment = get_post( $video_id );
 		do_action( 'rtgodam_after_attachment_lookup' );
-		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 );
+		$show_video = $video_attachment && 'attachment' === $video_attachment->post_type && 'video/' === substr( $video_attachment->post_mime_type, 0, 6 ) && rtgodam_can_view_attachment( $video_id );
 	}
 
 	if ( ! $show_video ) {
@@ -2342,20 +2681,19 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 		<?php
 	} else {
 		// Display video content.
-		$godam_shortcode = '[godam_video id="' . $video_id . '"';
+		$godam_atts = array( 'id' => (string) $video_id );
 		if ( ! empty( $godam_context ) ) {
-			$godam_shortcode .= ' godam_context="' . esc_attr( $godam_context ) . '"';
+			$godam_atts['godam_context'] = $godam_context;
 		}
 		if ( ! empty( $engagements_value ) ) {
-			$godam_shortcode .= ' engagements="' . esc_attr( $engagements_value ) . '"';
+			$godam_atts['engagements'] = $engagements_value;
 		}
 		if ( ! empty( $block_source ) ) {
-			$godam_shortcode .= ' block_source="' . esc_attr( $block_source ) . '"';
+			$godam_atts['block_source'] = $block_source;
 		}
 		if ( ! empty( $host_post_id ) ) {
-			$godam_shortcode .= ' host_post_id="' . absint( $host_post_id ) . '"';
+			$godam_atts['host_post_id'] = (string) absint( $host_post_id );
 		}
-		$godam_shortcode .= ']';
 
 		$godam_wrapper_style = ! empty( $bg_color ) ? '--godam-video-bg-color: ' . $bg_color . ';' : '';
 		?>
@@ -2364,7 +2702,7 @@ function godam_embed_page_content( $video_id, $godam_context = '', $bg_color = '
 			data-show-engagements="<?php echo esc_attr( $show_engagements ? 'true' : 'false' ); ?>"
 			style="<?php echo esc_attr( $godam_wrapper_style ); ?>"
 		>
-			<?php echo do_shortcode( $godam_shortcode ); ?>
+			<?php echo rtgodam_render_shortcode_from_atts( 'godam_video', $godam_atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The player template escapes its output. ?>
 		</div>
 		<?php
 	}
@@ -3046,4 +3384,236 @@ function rtgodam_get_request_site_origin( $requested_origin ) {
 	}
 
 	return $origin;
+}
+
+/**
+ * Whether a link may be used as an `href`: it is relative, or its scheme is
+ * http, https or mailto.
+ *
+ * The scheme is read the way the browser's URL parser reads it: tabs and
+ * newlines anywhere are dropped and leading control characters and spaces are
+ * ignored, so `java\tscript:` counts as `javascript:`.
+ *
+ * @since 2.7.0
+ *
+ * @param string $link Stored link.
+ * @return bool
+ */
+function rtgodam_is_safe_link_scheme( $link ) {
+	$link = preg_replace( '/^[\x00-\x20]+/', '', str_replace( array( "\t", "\n", "\r" ), '', (string) $link ) );
+
+	if ( ! preg_match( '/^([a-z][a-z0-9+.\-]*):/i', $link, $matches ) ) {
+		return true;
+	}
+
+	return in_array( strtolower( $matches[1] ), array( 'http', 'https', 'mailto' ), true );
+}
+
+/**
+ * Empty the link of any hotspot that is not an http, https or mailto URL.
+ *
+ * Hotspot layers are read from an attachment's `rtgodam_meta` and handed to
+ * front-end script, which makes each hotspot's `link` the `href` of a link. Only
+ * web and mail addresses are kept; a link on any other scheme (for example
+ * `javascript:`) is emptied, so the hotspot still renders, just without a
+ * destination. The same rule as getSafeLinkUrl() in assets/src/utils/safe-url.js:
+ * the scheme is read the way the browser reads an `href` (tabs and newlines
+ * removed, leading control characters and spaces ignored), a link without a
+ * scheme is relative and kept, and a kept link is only trimmed, never rewritten.
+ * Everything else in the layers is returned unchanged.
+ *
+ * @since 2.7.0
+ *
+ * @param array $layers Layers read from an attachment's `rtgodam_meta`.
+ * @return array The layers, with unsafe hotspot links emptied.
+ */
+function rtgodam_sanitize_hotspot_links( $layers ) {
+	if ( ! is_array( $layers ) ) {
+		return array();
+	}
+
+	foreach ( $layers as $layer_index => $layer ) {
+		if ( ! is_array( $layer ) || empty( $layer['hotspots'] ) || ! is_array( $layer['hotspots'] ) ) {
+			continue;
+		}
+
+		foreach ( $layer['hotspots'] as $hotspot_index => $hotspot ) {
+			if ( ! is_array( $hotspot ) || empty( $hotspot['link'] ) ) {
+				continue;
+			}
+
+			$layers[ $layer_index ]['hotspots'][ $hotspot_index ]['link'] = is_string( $hotspot['link'] ) && rtgodam_is_safe_link_scheme( $hotspot['link'] )
+				? trim( $hotspot['link'] )
+				: '';
+		}
+	}
+
+	return $layers;
+}
+
+/**
+ * Return a CSS colour only when it is a plain colour value.
+ *
+ * Meant for colours that are printed into a style attribute, where an escaped
+ * value can still carry extra declarations. Accepts a hex colour (3, 4, 6 or 8
+ * digits), rgb()/rgba(), hsl()/hsla(), a CSS named colour, `transparent` and
+ * `currentcolor`. Anything else, such as a value with a `;`, a `url()` or a
+ * stray bracket, gives the fallback.
+ *
+ * @since 2.7.0
+ *
+ * @param mixed  $color    The stored colour.
+ * @param string $fallback Value to return when the colour is not valid.
+ *
+ * @return string The colour, trimmed, or the fallback.
+ */
+function rtgodam_sanitize_css_color( $color, $fallback = '' ) {
+	if ( ! is_string( $color ) ) {
+		return $fallback;
+	}
+
+	$color = trim( $color );
+
+	if ( '' === $color ) {
+		return $fallback;
+	}
+
+	if ( preg_match( '/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/iD', $color ) ) {
+		return $color;
+	}
+
+	$part = '[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:%|deg|grad|rad|turn)?';
+
+	if ( preg_match( '/^(?:rgb|hsl)a?\(\s*' . $part . '(?:\s*,\s*|\s+)' . $part . '(?:\s*,\s*|\s+)' . $part . '(?:\s*[,\/]\s*' . $part . ')?\s*\)$/iD', $color ) ) {
+		return $color;
+	}
+
+	static $named_colors = null;
+
+	if ( null === $named_colors ) {
+		$named_colors = explode(
+			' ',
+			'aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond blue blueviolet brown '
+			. 'burlywood cadetblue chartreuse chocolate coral cornflowerblue cornsilk crimson currentcolor cyan '
+			. 'darkblue darkcyan darkgoldenrod darkgray darkgreen darkgrey darkkhaki darkmagenta darkolivegreen '
+			. 'darkorange darkorchid darkred darksalmon darkseagreen darkslateblue darkslategray darkslategrey '
+			. 'darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey dodgerblue firebrick floralwhite '
+			. 'forestgreen fuchsia gainsboro ghostwhite gold goldenrod gray green greenyellow grey honeydew hotpink '
+			. 'indianred indigo ivory khaki lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral '
+			. 'lightcyan lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon lightseagreen '
+			. 'lightskyblue lightslategray lightslategrey lightsteelblue lightyellow lime limegreen linen magenta '
+			. 'maroon mediumaquamarine mediumblue mediumorchid mediumpurple mediumseagreen mediumslateblue '
+			. 'mediumspringgreen mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin '
+			. 'navajowhite navy oldlace olive olivedrab orange orangered orchid palegoldenrod palegreen '
+			. 'paleturquoise palevioletred papayawhip peachpuff peru pink plum powderblue purple rebeccapurple red '
+			. 'rosybrown royalblue saddlebrown salmon sandybrown seagreen seashell sienna silver skyblue slateblue '
+			. 'slategray slategrey snow springgreen steelblue tan teal thistle tomato transparent turquoise violet '
+			. 'wheat white whitesmoke yellow yellowgreen'
+		);
+	}
+
+	if ( in_array( strtolower( $color ), $named_colors, true ) ) {
+		return $color;
+	}
+
+	return $fallback;
+}
+
+/**
+ * Build the Gravity Forms shortcode a form layer renders.
+ *
+ * The layer's theme is stored data and goes into a shortcode string, so it is
+ * reduced to a slug (lowercase letters, numbers, dashes and underscores) and
+ * cannot close the shortcode or open another one.
+ *
+ * @since 2.7.0
+ *
+ * @param array $layer The form layer: `gf_id` is the form ID, `theme` the optional Gravity Forms theme.
+ *
+ * @return string The `[gravityform]` shortcode.
+ */
+function rtgodam_get_gravityform_layer_shortcode( $layer ) {
+	$theme = isset( $layer['theme'] ) && is_string( $layer['theme'] ) ? sanitize_key( $layer['theme'] ) : '';
+
+	return sprintf(
+		"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
+		isset( $layer['gf_id'] ) ? intval( $layer['gf_id'] ) : 0,
+		$theme ? " theme='$theme'" : ''
+	);
+}
+
+/**
+ * Get the hosts GoDAM Central serves transcoded files from.
+ *
+ * Central gives each account its own subdomain on its CDN domain, for example
+ * `https://abc123def4.gdcdn.us/{job_id}/video.mp4`, so a name here matches that
+ * host and any subdomain of it.
+ *
+ * @since 2.7.0
+ *
+ * @return string[] Lowercase host names, without scheme, port or path.
+ */
+function rtgodam_get_transcoder_file_hosts() {
+	/**
+	 * Filters the hosts the transcoder callback may download files from.
+	 *
+	 * A name matches that host and any subdomain of it. Add the CDN domain of a
+	 * self-hosted or staging GoDAM Central here, or a domain the CDN is served from.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param string[] $hosts Host names, such as `gdcdn.us`.
+	 */
+	$hosts = apply_filters( 'rtgodam_transcoder_file_hosts', array( 'gdcdn.us' ) );
+
+	$clean = array();
+
+	foreach ( is_array( $hosts ) ? $hosts : array() as $host ) {
+		$host = is_string( $host ) ? strtolower( trim( $host, " \t\n\r\0\x0B." ) ) : '';
+
+		if ( '' !== $host ) {
+			$clean[] = $host;
+		}
+	}
+
+	return array_values( array_unique( $clean ) );
+}
+
+/**
+ * Whether a URL is a file URL on a host GoDAM Central serves transcoded files from.
+ *
+ * The URL must use https, carry no username or password, and name a plain host
+ * that is one of rtgodam_get_transcoder_file_hosts() or a subdomain of one. It is
+ * checked as written, so check the decoded form of a URL that is decoded before use.
+ *
+ * @since 2.7.0
+ *
+ * @param mixed $url URL to check.
+ * @return bool
+ */
+function rtgodam_is_transcoder_file_url( $url ) {
+	if ( ! is_string( $url ) || '' === $url ) {
+		return false;
+	}
+
+	$parts = wp_parse_url( $url );
+
+	if ( ! is_array( $parts ) || empty( $parts['host'] ) || 'https' !== strtolower( $parts['scheme'] ?? '' ) || isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
+		return false;
+	}
+
+	$host = strtolower( rtrim( $parts['host'], '.' ) );
+
+	// Letters, digits and hyphens only, so nothing here can be read as another host.
+	if ( 1 !== preg_match( '/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/', $host ) ) {
+		return false;
+	}
+
+	foreach ( rtgodam_get_transcoder_file_hosts() as $allowed_host ) {
+		if ( $host === $allowed_host || substr( $host, -( strlen( $allowed_host ) + 1 ) ) === '.' . $allowed_host ) {
+			return true;
+		}
+	}
+
+	return false;
 }

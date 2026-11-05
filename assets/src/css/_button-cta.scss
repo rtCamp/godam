@@ -137,31 +137,6 @@
 	}
 }
 
-// Border waves: a bordered ring that scales up and fades (radar ping).
-// Excluded from stickers (which get a contour-following version below).
-.godam-button-cta--attn-ripple:not(.godam-button-cta--sticker)::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	border-radius: inherit;
-	border: 0.125em solid var(--godam-btn-bg, #3858e9);
-	pointer-events: none;
-	animation: godam-btn-ripple 1.6s ease-out infinite;
-}
-
-@keyframes godam-btn-ripple {
-
-	0% {
-		transform: scale(1);
-		opacity: 0.7;
-	}
-
-	100% {
-		transform: scale(1.4);
-		opacity: 0;
-	}
-}
-
 // Glow: a soft, pulsing halo in the button colour.
 // Excluded from stickers (which get a contour-following version below).
 .godam-button-cta--attn-glow:not(.godam-button-cta--sticker) {
@@ -181,7 +156,7 @@
 }
 
 // Sticker attention animations follow the die-cut letter contour instead of a
-// rectangle. Pulse / border-waves animate the stroke WIDTH of a coloured copy of
+// rectangle. Pulse animates the stroke WIDTH of a coloured copy of
 // the text (the `::after`, replacing the static shadow). A stroke grows
 // uniformly outward from the glyph edge, and it starts at 0.25em — the same width
 // as the white die-cut border sitting in front of it — so the effect begins
@@ -189,22 +164,14 @@
 // off-centre "ghost"). Glow pulses a `drop-shadow` of the whole sticker shape.
 // None of these use `transform` on the button, so they never move the
 // react-rnd-positioned element.
-.godam-button-cta--sticker.godam-button-cta--attn-pulse::after,
-.godam-button-cta--sticker.godam-button-cta--attn-ripple::after {
+.godam-button-cta--sticker.godam-button-cta--attn-pulse::after {
 	inset: 0;
 	z-index: -2;
 	color: transparent;
 	filter: none;
 	-webkit-text-stroke-color: var(--godam-btn-bg, #3858e9);
 	-webkit-text-stroke-width: 0.25em;
-}
-
-.godam-button-cta--sticker.godam-button-cta--attn-pulse::after {
 	animation: godam-sticker-pulse 1.8s ease-out infinite;
-}
-
-.godam-button-cta--sticker.godam-button-cta--attn-ripple::after {
-	animation: godam-sticker-ripple 2s ease-out infinite;
 }
 
 .godam-button-cta--sticker.godam-button-cta--attn-glow {
@@ -221,31 +188,6 @@
 
 	100% {
 		-webkit-text-stroke-width: 0.85em;
-		opacity: 0;
-	}
-}
-
-// Border waves: two quick waves per cycle, each travelling out from the border.
-@keyframes godam-sticker-ripple {
-
-	0% {
-		-webkit-text-stroke-width: 0.25em;
-		opacity: 0.8;
-	}
-
-	45% {
-		-webkit-text-stroke-width: 0.65em;
-		opacity: 0;
-	}
-
-	50% {
-		-webkit-text-stroke-width: 0.25em;
-		opacity: 0.8;
-	}
-
-	95%,
-	100% {
-		-webkit-text-stroke-width: 0.65em;
 		opacity: 0;
 	}
 }
@@ -267,7 +209,6 @@
 @media (prefers-reduced-motion: reduce) {
 
 	.godam-button-cta--attn-pulse::after,
-	.godam-button-cta--attn-ripple::after,
 	.godam-button-cta--attn-glow {
 		animation: none;
 	}

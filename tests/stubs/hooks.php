@@ -36,6 +36,29 @@ if ( ! function_exists( 'add_filter' ) ) {
 	}
 }
 
+if ( ! function_exists( 'remove_filter' ) ) {
+
+	/**
+	 * Remove a callback that add_filter() recorded.
+	 *
+	 * @param string   $hook     Hook name.
+	 * @param callable $callback Callback, compared by identity.
+	 * @param int      $priority Priority it was added at.
+	 *
+	 * @return bool Whether a callback was removed.
+	 */
+	function remove_filter( $hook, $callback, $priority = 10 ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		foreach ( $GLOBALS['rtgodam_hooks'][ $hook ][ $priority ] ?? array() as $index => $registered ) {
+			if ( $registered === $callback ) {
+				unset( $GLOBALS['rtgodam_hooks'][ $hook ][ $priority ][ $index ] );
+				return true;
+			}
+		}
+
+		return false;
+	}
+}
+
 if ( ! function_exists( 'add_action' ) ) {
 
 	/**

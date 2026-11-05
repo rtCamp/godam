@@ -426,6 +426,25 @@ describe( 'ModalManager', () => {
 			// first and last and focus stays put.
 			expect( document.activeElement ).toBe( document.querySelector( '.godam-player-modal-close' ) );
 		} );
+
+		it( 'skips buttons inside a closed transcript panel', () => {
+			const { video, playerRoot } = renderPlayer();
+			playerRoot.querySelector( 'figure' ).insertAdjacentHTML(
+				'beforeend',
+				'<div class="godam-transcript-panel" hidden inert><button id="cue-0">0:00 A line</button></div>',
+			);
+			lightbox.openElement( playerRoot, { video } );
+
+			document.querySelector( '.godam-player-modal-close' ).focus();
+			const event = new KeyboardEvent( 'keydown', { key: 'Tab', cancelable: true } );
+			document.dispatchEvent( event );
+
+			// The closed panel's rows are not focus stops, so the close button is
+			// the last stop and Tab wraps instead of leaving the dialog for a
+			// button nobody can see.
+			expect( event.defaultPrevented ).toBe( true );
+			expect( document.activeElement ).toBe( document.querySelector( '.godam-player-modal-close' ) );
+		} );
 	} );
 
 	describe( 'register', () => {
@@ -770,6 +789,36 @@ describe( 'fullscreen inside the lightbox', () => {
 		document.body.style.overflow = 'hidden';
 		player.trigger( 'customfullscreenchange' );
 	};
+
+	describe( 'controls relayout', () => {
+		beforeEach( () => jest.useFakeTimers() );
+		afterEach( () => jest.useRealTimers() );
+
+		it( 'asks the player to lay its controls out again once the lightbox has settled', () => {
+			// On iOS the skip buttons kept the inline player's position until the
+			// browser toolbar next changed, then jumped.
+			const onResize = jest.fn();
+			player.on( 'resize', onResize );
+
+			lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+			expect( onResize ).not.toHaveBeenCalled();
+
+			jest.advanceTimersByTime( 500 );
+			expect( onResize ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'skips the relayout when the lightbox closes first', () => {
+			const onResize = jest.fn();
+			player.on( 'resize', onResize );
+
+			lightbox.openElement( document.getElementById( 'root' ), { video: document.getElementById( 'v' ) } );
+			lightbox.historyPushed = false;
+			lightbox.close();
+			jest.advanceTimersByTime( 500 );
+
+			expect( onResize ).not.toHaveBeenCalled();
+		} );
+	} );
 
 	it( 'drops the wrapper transform so a fullscreen player can fill the viewport', () => {
 		// The wrapper is transformed for centring, which would otherwise make it the

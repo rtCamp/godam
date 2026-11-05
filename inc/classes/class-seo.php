@@ -27,14 +27,35 @@ class Seo {
 	/**
 	 * Maximum length of a fallback description (transcript or page excerpt).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 */
 	const DESCRIPTION_MAX_LENGTH = 160;
 
 	/**
+	 * Most unregistered builder-style shortcode names removed from one page
+	 * text when building its fallback description. Together with the name
+	 * length limit below, it keeps the pattern core builds from them far below
+	 * PCRE's size limit, whatever a page contains.
+	 *
+	 * @since 2.5.0
+	 */
+	const FALLBACK_UNREGISTERED_SHORTCODES_LIMIT = 100;
+
+	/**
+	 * Which unregistered tag names the fallback description treats as page-builder
+	 * shortcodes (`vc_row`, `et_pb_section`, `fusion_builder_container`,
+	 * `contact-form-7`): 64 characters at most, starting with a letter, with an
+	 * underscore or hyphen in them. Plain bracketed words are common in ordinary
+	 * text and stay.
+	 *
+	 * @since 2.5.0
+	 */
+	const FALLBACK_SHORTCODE_NAME_PATTERN = '/^(?=.{1,64}$)(?=[A-Za-z0-9]*[_-])[A-Za-z][A-Za-z0-9_-]*$/D';
+
+	/**
 	 * Seconds before a failed transcript fetch is retried.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 */
 	const TRANSCRIPT_RETRY_AFTER = HOUR_IN_SECONDS;
 
@@ -42,28 +63,28 @@ class Seo {
 	 * Post meta marking that a page with video SEO cached by an older GoDAM version has been
 	 * queued for a one-time re-save (see {@see Seo::maybe_queue_legacy_resave()}).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 */
 	const LEGACY_RESAVE_META_KEY = '_godam_seo_legacy_resave';
 
 	/**
 	 * Option holding the IDs of pages waiting for that re-save.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 */
 	const LEGACY_RESAVE_QUEUE_OPTION = 'godam_video_seo_resave_queue';
 
 	/**
 	 * WP-Cron hook that works through the re-save queue.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 */
 	const LEGACY_RESAVE_CRON_HOOK = 'godam_video_seo_resave_batch';
 
 	/**
 	 * Pages re-saved per WP-Cron run; the rest wait for the next run.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 */
 	const LEGACY_RESAVE_BATCH_SIZE = 10;
 
@@ -79,7 +100,7 @@ class Seo {
 	 * Shortest video (seconds) that gets key moments. Google ignores clips on
 	 * videos under 30 seconds.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 */
 	const KEY_MOMENTS_MIN_DURATION = 30;
 
@@ -301,7 +322,7 @@ class Seo {
 			 * Fired after video SEO schema is cleared from a post.
 			 *
 			 * @since 1.10.0
-			 * @since n.e.x.t Added `$had_schema`.
+			 * @since 2.5.0 Added `$had_schema`.
 			 *
 			 * @param int  $post_ID    The post ID.
 			 * @param bool $had_schema Whether the post had cached video SEO before
@@ -389,7 +410,7 @@ class Seo {
 	 * Get SEO data from a media library attachment.
 	 *
 	 * @since 1.7.0
-	 * @since n.e.x.t contentUrl is the HLS stream (or original file), never the
+	 * @since 2.5.0 contentUrl is the HLS stream (or original file), never the
 	 *              DASH manifest; adds embedUrl; falls back to the transcript
 	 *              for an empty description. Added `$allow_remote`.
 	 *
@@ -473,7 +494,7 @@ class Seo {
 	 * prefers the HLS stream and falls back to the original uploaded file.
 	 * `rtgodam_transcoded_url` (the DASH manifest) is deliberately never used.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @return string The HLS URL, the original file URL, or '' when neither exists.
@@ -501,7 +522,7 @@ class Seo {
 			 * integrations that centralize media on another site can switch
 			 * context first.
 			 *
-			 * @since n.e.x.t
+			 * @since 2.5.0
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
 			$original_url = wp_get_attachment_url( $attachment_id );
@@ -514,7 +535,7 @@ class Seo {
 		 * Filters the URL used as a video's schema `contentUrl` and sitemap
 		 * `<video:content_loc>`.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 *
 		 * @param string $content_url   HLS URL, original file URL, or ''.
 		 * @param int    $attachment_id Attachment ID.
@@ -529,7 +550,7 @@ class Seo {
 	 * Uses GoDAM's existing video-embed page (`?godam_page=video-embed&id=…`),
 	 * so no new public URL is created.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 * @return string The embed URL, or '' for an invalid ID.
@@ -553,7 +574,7 @@ class Seo {
 		 *
 		 * Return '' to leave `embedUrl` out.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 *
 		 * @param string $embed_url     The embed page URL.
 		 * @param int    $attachment_id Attachment ID.
@@ -564,7 +585,7 @@ class Seo {
 	/**
 	 * Whether a URL points at a DASH (.mpd) manifest.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param string $url URL to check.
 	 * @return bool
@@ -588,7 +609,7 @@ class Seo {
 	 * transcript path, so a new transcript is picked up automatically). Pass
 	 * `$allow_remote = false` on page renders to only ever read that cache.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param int  $attachment_id Attachment ID.
 	 * @param bool $allow_remote  Whether the transcript file may be fetched when not cached.
@@ -605,7 +626,7 @@ class Seo {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$transcript_path = (string) get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
@@ -672,7 +693,7 @@ class Seo {
 	 * works on local sites whose hostnames don't resolve from PHP); anything
 	 * else is fetched with wp_safe_remote_get().
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param string $url Transcript URL.
 	 * @return string|false File contents, or false on failure.
@@ -719,7 +740,7 @@ class Seo {
 	 * Drops the WEBVTT header, NOTE/STYLE/REGION blocks, cue identifiers,
 	 * timing lines and inline tags, then joins the cue text with spaces.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param string $raw Transcript file contents.
 	 * @return string Plain text.
@@ -772,7 +793,7 @@ class Seo {
 	 * ellipsis when shortened. The result, ellipsis included, never exceeds
 	 * `$max_length` characters.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param string $text       Plain text.
 	 * @param int    $max_length Maximum number of characters.
@@ -803,7 +824,7 @@ class Seo {
 	 * ("True", "false", "1", "yes", ""), and a plain (bool) cast would turn
 	 * "false" into true.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param mixed $value Stored value.
 	 * @return bool
@@ -890,6 +911,23 @@ class Seo {
 	}
 
 	/**
+	 * Whether a post's content is public: viewable by anyone, and not behind a
+	 * password. Video schema describes the post's content, so it is only printed
+	 * where that content is public, never on a draft, private, scheduled or
+	 * password-protected post.
+	 *
+	 * @since 2.5.1
+	 *
+	 * @param int $post_id Post ID.
+	 * @return bool
+	 */
+	private function is_post_content_public( $post_id ) {
+		$post = get_post( $post_id ); // godam-coverage-ignore -- is_post_content_public(): $post_id is the queried post (the current page), never an attachment.
+
+		return $post && empty( $post->post_password ) && is_post_publicly_viewable( $post );
+	}
+
+	/**
 	 * Outputs structured data for VideoObject schema on singular pages.
 	 *
 	 * This function reads cached SEO data from post meta for optimal performance.
@@ -909,6 +947,12 @@ class Seo {
 
 		$post_id = get_queried_object_id();
 		if ( ! $post_id ) {
+			return;
+		}
+
+		// The cached schema describes the post's content, so only print it where
+		// that content is public.
+		if ( ! $this->is_post_content_public( $post_id ) ) {
 			return;
 		}
 
@@ -1022,7 +1066,7 @@ class Seo {
 	 * the schema always agree.
 	 *
 	 * @since 2.1.0
-	 * @since n.e.x.t Public. HLS contentUrl, embedUrl, description fallbacks, and
+	 * @since 2.5.0 Public. HLS contentUrl, embedUrl, description fallbacks, and
 	 *              empty description/uploadDate are left out instead of output empty.
 	 *
 	 * @param array $video   Raw video SEO data (headline, contentUrl, etc.).
@@ -1127,7 +1171,7 @@ class Seo {
 	 *
 	 * @see https://developers.google.com/search/docs/appearance/structured-data/video#clip
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param int    $attachment_id Attachment ID.
 	 * @param int    $post_id       Host post ID (the page the video is on).
@@ -1145,7 +1189,7 @@ class Seo {
 		/**
 		 * Filters whether chapters are output as key moments (`hasPart` Clips).
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 *
 		 * @param bool $enabled       Default true.
 		 * @param int  $attachment_id Attachment ID.
@@ -1160,7 +1204,7 @@ class Seo {
 		 * integrations that centralize media on another site can switch
 		 * context first.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$meta = get_post_meta( $attachment_id, 'rtgodam_meta', true );
@@ -1188,7 +1232,7 @@ class Seo {
 		/**
 		 * Filters the key moment Clip entries output in a video's `hasPart`.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 *
 		 * @param array[] $clips         Clip entries.
 		 * @param int     $attachment_id Attachment ID.
@@ -1213,7 +1257,7 @@ class Seo {
 	 *
 	 * Pure: no WordPress calls.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param array  $chapters         Chapters (`text`, `startTime`, optional `endTime`, `originalTime`).
 	 * @param string $page_url         Host page URL.
@@ -1329,7 +1373,7 @@ class Seo {
 	/**
 	 * Parse a chapter time: plain seconds ("90", "12.5"), "mm:ss" or "hh:mm:ss(.ms)".
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param mixed $value Time value.
 	 * @return float|null Seconds, or null when unreadable.
@@ -1363,7 +1407,7 @@ class Seo {
 	/**
 	 * Convert an ISO 8601 duration (e.g. "PT1H2M3S") to whole seconds.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param string $duration ISO 8601 duration.
 	 * @return int Seconds, or 0 when unparseable.
@@ -1397,7 +1441,7 @@ class Seo {
 	 * scheduled, and each run re-saves {@see Seo::LEGACY_RESAVE_BATCH_SIZE}
 	 * pages.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param int $post_id Host post ID.
 	 * @return void
@@ -1425,7 +1469,7 @@ class Seo {
 	 * Add the pages queued during this request to the re-save queue and make
 	 * sure a cron run is scheduled. Runs once, at shutdown.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @return void
 	 */
@@ -1448,7 +1492,7 @@ class Seo {
 	 * Re-save the next batch of queued pages (WP-Cron callback), and schedule
 	 * another run while pages remain.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @return void
 	 */
@@ -1479,7 +1523,7 @@ class Seo {
 	/**
 	 * Schedule the next queue run, unless one is already scheduled.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @return void
 	 */
@@ -1492,7 +1536,7 @@ class Seo {
 	/**
 	 * Rebuild a page's cached video SEO (one page of the re-save queue).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param int $post_id Host post ID.
 	 * @return void
@@ -1518,7 +1562,7 @@ class Seo {
 	 * re-save, and a video that finishes HLS transcoding after the page was
 	 * saved starts pointing at the HLS stream straight away.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param array $video         Cached SEO entry.
 	 * @param int   $attachment_id Attachment ID, or 0.
@@ -1542,7 +1586,7 @@ class Seo {
 	 * Resolve the description for a cached SEO entry: the entry's own
 	 * description, else the transcript excerpt, else the page excerpt.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param array $video         Cached SEO entry.
 	 * @param int   $attachment_id Attachment ID, or 0.
@@ -1566,7 +1610,7 @@ class Seo {
 		 *
 		 * Return '' to leave the description out.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.5.0
 		 *
 		 * @param string $description   Resolved description.
 		 * @param array  $video         Cached SEO entry.
@@ -1580,7 +1624,7 @@ class Seo {
 	 * else the start of its text content. Block markup and shortcodes are
 	 * stripped without rendering them.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param int $post_id Host post ID.
 	 * @return string Up to {@see self::DESCRIPTION_MAX_LENGTH} characters, or ''.
@@ -1605,12 +1649,72 @@ class Seo {
 
 		$text = has_excerpt( $post ) ? $post->post_excerpt : $post->post_content;
 		$text = preg_replace( '/<!--.*?-->/s', '', (string) $text );
-		$text = wp_strip_all_tags( strip_shortcodes( $text ) );
+		$text = wp_strip_all_tags( $this->strip_all_shortcodes( $text ) );
 		// Decode entities, then strip again: text stored as "&lt;/script&gt;"
 		// must not come back as a real tag.
 		$text = wp_strip_all_tags( html_entity_decode( $text, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
 
 		return self::trim_to_length( $text, self::DESCRIPTION_MAX_LENGTH );
+	}
+
+	/**
+	 * Remove shortcodes from a text, including page-builder shortcodes that are
+	 * not registered yet, together with the text they enclose.
+	 *
+	 * Core's strip_shortcodes() only removes the shortcodes registered at the
+	 * moment it runs. The video sitemap is served at parse_request priority 1,
+	 * before a page builder such as WPBakery or Divi registers its own, so
+	 * their tags would stay in the description as raw `[vc_row]` text while a
+	 * front-end page (wp_head, after the builder loaded) drops them. Adding
+	 * the unregistered builder-style tag names found in the text to core's list,
+	 * through its own `strip_shortcodes_tagnames` filter, gives the same result
+	 * at both points.
+	 *
+	 * Only names that look like a builder tag are added (see
+	 * {@see self::FALLBACK_SHORTCODE_NAME_PATTERN}): ordinary bracketed text
+	 * such as `[sic]`, `[1]` or `[b]bold[/b]` is left alone, so the description
+	 * of a page whose shortcodes are all registered does not change.
+	 *
+	 * @since 2.5.0
+	 *
+	 * @param string $text Page text.
+	 * @return string Text without shortcodes.
+	 */
+	private function strip_all_shortcodes( $text ) {
+		$add_found_tag_names = static function ( $tags, $content ) {
+			global $shortcode_tags;
+
+			$tags       = (array) $tags;
+			$registered = is_array( $shortcode_tags ) ? $shortcode_tags : array();
+			$found      = array();
+
+			preg_match_all( '@\[([^<>&/\[\]\x00-\x20=]++)@', (string) $content, $matches );
+
+			foreach ( array_unique( $matches[1] ) as $name ) {
+				if ( count( $found ) >= self::FALLBACK_UNREGISTERED_SHORTCODES_LIMIT ) {
+					break;
+				}
+
+				// A tag another filter took off the list is registered: leave it be.
+				if ( array_key_exists( $name, $registered ) || ! preg_match( self::FALLBACK_SHORTCODE_NAME_PATTERN, $name ) ) {
+					continue;
+				}
+
+				$found[] = $name;
+			}
+
+			return array_merge( $tags, $found );
+		};
+
+		add_filter( 'strip_shortcodes_tagnames', $add_found_tag_names, 10, 2 );
+
+		try {
+			$stripped = strip_shortcodes( $text );
+		} finally {
+			remove_filter( 'strip_shortcodes_tagnames', $add_found_tag_names, 10 );
+		}
+
+		return (string) $stripped;
 	}
 
 	/**
@@ -1770,6 +1874,11 @@ class Seo {
 		// queried object ID is a term or user ID, which would otherwise be read
 		// as an unrelated post (description fallback, re-save queue, clip URLs).
 		$post_id = is_singular() ? get_queried_object_id() : 0;
+
+		// Not on a post whose content is not public, as for the cached output.
+		if ( $post_id > 0 && ! $this->is_post_content_public( $post_id ) ) {
+			return;
+		}
 
 		$output_schemas = array();
 		foreach ( $this->render_collected_schemas as $video ) {
@@ -1990,7 +2099,7 @@ class Seo {
 	 * as WPBakery's `vc_value_from_safe()`, without depending on it being
 	 * loaded.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.5.0
 	 *
 	 * @param mixed $value Raw shortcode attribute value.
 	 * @return string Decoded value.

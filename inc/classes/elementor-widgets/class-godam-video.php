@@ -378,6 +378,26 @@ class GoDAM_Video extends Base {
 		);
 
 		$this->add_control(
+			'out_of_view',
+			array(
+				'label'       => esc_html__( 'When Out of View', 'godam' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => '',
+				'options'     => array(
+					''         => esc_html__( 'Use global setting', 'godam' ),
+					'off'      => esc_html__( 'Do nothing', 'godam' ),
+					'autoplay' => esc_html__( 'Pause autoplaying videos only', 'godam' ),
+					'pause'    => esc_html__( 'Pause all videos', 'godam' ),
+					'mute'     => esc_html__( 'Keep playing, muted', 'godam' ),
+				),
+				'description' => esc_html__( 'Scrolled past, on another slide, or in a closed tab or accordion. Autoplaying videos resume when visible again.', 'godam' ),
+				'condition'   => array(
+					'video-file[url]!' => '',
+				),
+			)
+		);
+
+		$this->add_control(
 			'show_share_button',
 			array(
 				'label'     => esc_html__( 'Show Share Button', 'godam' ),
@@ -525,6 +545,7 @@ class GoDAM_Video extends Base {
 		$widget_performance_mode   = $this->get_settings_for_display( 'performance_mode' ) ?? 'balanced';
 		$widget_hover_select       = $this->get_settings_for_display( 'hover_select' ) ?? 'none';
 		$widget_show_share_button  = 'yes' === $this->get_settings_for_display( 'show_share_button' );
+		$widget_out_of_view        = rtgodam_sanitize_out_of_view_behavior( $this->get_settings_for_display( 'out_of_view' ), '' );
 		$widget_show_transcription = 'yes' === $this->get_settings_for_display( 'show_transcription' );
 		$widget_show_in_lightbox   = 'yes' === $this->get_settings_for_display( 'show_in_lightbox' );
 		$widget_engagements        = rtgodam_is_engagement_feature_enabled() && 'yes' === $this->get_settings_for_display( 'engagements' );
@@ -596,6 +617,7 @@ class GoDAM_Video extends Base {
 			'performanceMode'   => $widget_performance_mode,
 			'hoverSelect'       => $widget_hover_select,
 			'showShareButton'   => $widget_show_share_button,
+			'outOfViewBehavior' => $widget_out_of_view,
 			'showTranscription' => $widget_show_transcription,
 			'showInLightbox'    => $widget_show_in_lightbox,
 			'engagements'       => $widget_engagements,

@@ -28,6 +28,7 @@ import { useState, useRef, useEffect, useCallback } from '@wordpress/element';
  */
 import { updateLayerField } from '../../redux/slice/videoSlice';
 import { isValidURL } from '../../utils';
+import { getSafeLinkUrl } from '../../../../assets/src/utils/safe-url';
 import { formatClock, parseClock } from '../../utils/time';
 import LayerControls from '../LayerControls';
 import FontAwesomeIconPicker from '../hotspot/FontAwesomeIconPicker';
@@ -673,6 +674,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 						// the published player.
 						const effective = resolveHotspotStyle( layer, hotspot );
 						const hasIcon = !! ( effective.icon || effective.customIconUrl );
+						const tooltipLink = getSafeLinkUrl( hotspot.link );
 
 						let pixelX, pixelY, pixelDiameter;
 
@@ -921,9 +923,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									<span className="index">{ index + 1 }</span>
 
 									<div className="hotspot-tooltip">
-										{ hotspot.link ? (
+										{ tooltipLink ? (
 											<a
-												href={ hotspot.link }
+												href={ tooltipLink }
 												target="_blank"
 												rel="noopener noreferrer"
 											>

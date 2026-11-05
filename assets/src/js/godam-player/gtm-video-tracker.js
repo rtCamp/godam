@@ -7,6 +7,11 @@
  */
 
 /**
+ * Internal dependencies
+ */
+import { getWatchedRanges } from './utils/timeRanges';
+
+/**
  * GTM Video Tracker Class
  * Handles video progress tracking and GTM dataLayer events
  */
@@ -137,27 +142,24 @@ class GTMVideoTracker {
 
 	/**
 	 * Calculate the percentage of video that has been played
-	 * Uses player.played() ranges to get accurate played duration
+	 * Uses the played ranges the visitor could see (same as the heatmap):
+	 * seconds that only played out of view ("Keep playing, muted") don't count.
 	 *
 	 * @return {number} Percentage of video played (0-100)
 	 */
 	calculatePlayedPercentage() {
 		try {
-			const played = this.player.played();
 			const totalDuration = this.player.duration();
 
-			if ( ! played || ! totalDuration || totalDuration === 0 ) {
+			if ( ! totalDuration || totalDuration === 0 ) {
 				return 0;
 			}
 
-			let totalPlayedDuration = 0;
-
-			// Sum up all played ranges
-			for ( let i = 0; i < played.length; i++ ) {
-				const startTime = played.start( i );
-				const endTime = played.end( i );
-				totalPlayedDuration += ( endTime - startTime );
-			}
+			// Sum up all watched ranges
+			const totalPlayedDuration = getWatchedRanges( this.player ).reduce(
+				( sum, [ start, end ] ) => sum + ( end - start ),
+				0,
+			);
 
 			// Calculate percentage
 			const percentage = ( totalPlayedDuration / totalDuration ) * 100;

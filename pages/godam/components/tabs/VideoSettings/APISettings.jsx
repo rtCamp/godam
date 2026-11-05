@@ -57,7 +57,7 @@ const APISettings = ( { setNotice } ) => {
 			const response = await deactivateAPIKey().unwrap();
 
 			setNotice( {
-				message: response.message || __( 'API key deactivated successfully!', 'godam' ),
+				message: response.message || __( 'API key removed. This site is now disconnected from GoDAM.', 'godam' ),
 				status: 'success',
 				isVisible: true,
 			} );
@@ -66,7 +66,7 @@ const APISettings = ( { setNotice } ) => {
 		} catch ( error ) {
 			setIsRemoveModalOpen( false );
 			setNotice( {
-				message: error.data?.message || __( 'Failed to deactivate API key', 'godam' ),
+				message: error.data?.message || __( 'Failed to remove the API key', 'godam' ),
 				status: 'error',
 				isVisible: true,
 			} );
@@ -195,7 +195,7 @@ const APISettings = ( { setNotice } ) => {
 				onConfirm={ handleDeactivateAPIKey }
 				data-test-id="godam-settings-api-key-button-confirm-remove"
 			>
-				{ __( 'If you remove the API key, your account will be deactivated and you’ll lose access to the platform.', 'godam' ) }
+				{ __( 'This site will be disconnected from GoDAM. New uploads won’t be transcoded, and analytics and other GoDAM features will stop working here until you add an API key again. Videos already on GoDAM keep playing, and your GoDAM account and media are not affected.', 'godam' ) }
 			</ConfirmModal>
 		</Panel>
 	);

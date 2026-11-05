@@ -375,13 +375,12 @@ $settings-page-breakpoint: 782px;
 		}
 	}
 
-	/* Tab content wrapper */
-	.godam-tab-content {
-		position: relative;
-		margin-top: 16px;
+	/* Integration sub-tabs panel (WooCommerce / Marketo / HubSpot) */
+	.godam-tab-panel {
+		animation: godamFadeSlide 0.25s ease;
 
-		.godam-tab-panel {
-			animation: godamFadeSlide 0.25s ease;
+		.components-tab-panel__tabs {
+			border-bottom: 1px solid #ddd;
 		}
 	}
 

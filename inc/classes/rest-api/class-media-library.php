@@ -39,17 +39,18 @@ class Media_Library extends Base {
 	/**
 	 * Setup hooks.
 	 *
-	 * Adds the base REST-route registration plus a server-side guard that enforces
-	 * folder "locked" state on the NATIVE wp/v2/media-folder term endpoints (rename,
-	 * delete, re-parent, create-under). Locking was previously enforced only in React,
-	 * so a direct REST call could still mutate a locked folder.
+	 * Adds the base REST-route registration plus the server-side rules for the NATIVE
+	 * wp/v2/media-folder term endpoints: who may use them, and the folder "locked" state
+	 * (rename, delete, re-parent, create-under). Locking was previously enforced only in
+	 * React, so a direct REST call could still mutate a locked folder.
 	 *
 	 * @return void
 	 */
 	protected function setup_hooks() {
 		parent::setup_hooks();
 
-		add_filter( 'rest_pre_dispatch', array( $this, 'enforce_locked_media_folder' ), 10, 3 );
+		add_filter( 'rest_endpoints', array( $this, 'guard_media_folder_routes' ) );
+		add_filter( 'rest_pre_insert_attachment', array( $this, 'enforce_locked_folder_on_media_update' ), 10, 2 );
 
 		// Background builder for folder-ZIP downloads (see download_folder()). Runs via
 		// Action Scheduler when available, otherwise WP-Cron — both invoke this hook.
@@ -57,42 +58,93 @@ class Media_Library extends Base {
 	}
 
 	/**
-	 * Reject mutating REST requests against locked media-folder terms.
+	 * Put the media-folder term routes behind check_media_folder_request().
 	 *
-	 * Runs before dispatch on the native taxonomy routes:
+	 * The check is attached to the routes' own permission callbacks rather than matched
+	 * against the requested path, so it runs however the request reaches them (any letter
+	 * case, `?rest_route=`, a batch request, an embed).
+	 *
+	 * @since 2.5.1
+	 *
+	 * @param array $endpoints The registered REST routes, keyed by route.
+	 * @return array The routes, with the media-folder handlers wrapped.
+	 */
+	public function guard_media_folder_routes( $endpoints ) {
+		$base = rest_get_route_for_taxonomy_items( Media_Folders::SLUG );
+
+		if ( '' === $base || ! is_array( $endpoints ) ) {
+			return $endpoints;
+		}
+
+		foreach ( $endpoints as $route => $handlers ) {
+			// The collection route and the single-term route.
+			if ( $route !== $base && 0 !== strpos( $route, $base . '/' ) ) {
+				continue;
+			}
+
+			foreach ( $handlers as $key => $handler ) {
+				// Route options such as `allow_batch` and `schema` sit beside the handlers.
+				if ( ! is_int( $key ) || ! is_array( $handler ) ) {
+					continue;
+				}
+
+				$original = isset( $handler['permission_callback'] ) ? $handler['permission_callback'] : '__return_true';
+
+				$endpoints[ $route ][ $key ]['permission_callback'] = function ( $request ) use ( $original ) {
+					$allowed = $this->check_media_folder_request( $request );
+
+					return is_wp_error( $allowed ) ? $allowed : call_user_func( $original, $request );
+				};
+			}
+		}
+
+		return $endpoints;
+	}
+
+	/**
+	 * Check a request to the native media-folder term routes, before the controller's own permission check.
+	 *
+	 * Reading folders needs `edit_posts` (the gallery block's folder picker runs for anyone
+	 * who writes posts); every other verb needs `upload_files`. Then, on the mutating verbs:
 	 *   - POST/PUT/PATCH /wp/v2/media-folder/{id}  → rename / re-parent an existing folder
 	 *   - DELETE         /wp/v2/media-folder/{id}  → delete an existing folder
 	 *   - POST           /wp/v2/media-folder       → create a folder (blocked only when the
 	 *                                                target parent is locked, i.e. populating it)
-	 * Reads (GET) are always allowed — locking protects against modification, not viewing.
+	 * Reads are always allowed once the user can write posts; locking protects against
+	 * modification, not viewing.
 	 *
-	 * @param mixed            $result  Pre-dispatch result (non-null short-circuits the request).
-	 * @param \WP_REST_Server  $server  Server instance (unused).
+	 * @since 2.5.1
+	 *
 	 * @param \WP_REST_Request $request The request being dispatched.
-	 * @return mixed Original $result, or a 403 WP_Error when the target folder is locked.
+	 * @return true|\WP_Error True to carry on to the controller's own check, or a WP_Error
+	 *                        (401/403) when the user may not use the routes or the target
+	 *                        folder is locked.
 	 */
-	public function enforce_locked_media_folder( $result, $server, $request ) {
-		// Let an already short-circuited result (e.g. another plugin's error) stand.
-		if ( null !== $result ) {
-			return $result;
+	public function check_media_folder_request( $request ) {
+		$is_write = in_array( $request->get_method(), array( 'POST', 'PUT', 'PATCH', 'DELETE' ), true );
+
+		// Anyone who writes posts can read folders (the gallery block's folder picker); changing them needs upload rights.
+		$can_use_route = $is_write ? current_user_can( 'upload_files' ) : current_user_can( 'edit_posts' );
+
+		if ( ! $can_use_route ) {
+			return new \WP_Error(
+				'rest_forbidden',
+				__( 'Sorry, you are not allowed to access media folders.', 'godam' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
 		}
 
-		// Only guard the native media-folder collection or a single term.
-		if ( ! preg_match( '#^/wp/v2/media-folder(?:/(\d+))?$#', $request->get_route(), $matches ) ) {
-			return $result;
+		if ( ! $is_write ) {
+			return true;
 		}
 
-		// Only mutating verbs.
-		if ( ! in_array( $request->get_method(), array( 'POST', 'PUT', 'PATCH', 'DELETE' ), true ) ) {
-			return $result;
-		}
-
-		$term_id = isset( $matches[1] ) ? (int) $matches[1] : 0;
+		// Read the id the way the controller does: a body or query `id` outranks the one in the URL.
+		$term_id = (int) $request->get_param( 'id' );
 
 		// Renaming / re-parenting / deleting a locked folder (or a child of one). A
 		// bookmark toggle is a personal flag rather than a modification of the folder's
 		// protected content, so it is still allowed on a locked folder.
-		if ( $term_id > 0 && $this->is_folder_locked( $term_id ) && ! $this->is_bookmark_only_folder_update( $request, $term_id ) ) {
+		if ( $term_id > 0 && Media_Folder_Utils::get_instance()->is_folder_locked( $term_id ) && ! $this->is_bookmark_only_folder_update( $request, $term_id ) ) {
 			return new \WP_Error(
 				'godam_folder_locked',
 				__( 'This folder is locked and cannot be modified.', 'godam' ),
@@ -104,7 +156,7 @@ class Media_Library extends Base {
 		if ( 'DELETE' !== $request->get_method() ) {
 			$new_parent = $request->get_param( 'parent' );
 
-			if ( ! is_null( $new_parent ) && (int) $new_parent > 0 && $this->is_folder_locked( (int) $new_parent ) ) {
+			if ( ! is_null( $new_parent ) && (int) $new_parent > 0 && Media_Folder_Utils::get_instance()->is_folder_locked( (int) $new_parent ) ) {
 				return new \WP_Error(
 					'godam_folder_locked',
 					__( 'The destination folder is locked and cannot be modified.', 'godam' ),
@@ -113,7 +165,57 @@ class Media_Library extends Base {
 			}
 		}
 
-		return $result;
+		return true;
+	}
+
+	/**
+	 * Refuse a core media update that takes a file out of a locked folder.
+	 *
+	 * Moving a file INTO a locked folder is already refused by the `assign_term`
+	 * capability check (see Media_Folders::lock_folder_assignment()). Moving one OUT is
+	 * not a capability check in core: the media route replaces the file's folders with the
+	 * `media-folder` field it was sent, which empties the locked folder. Same rule as the
+	 * assign-folder route.
+	 *
+	 * @since 2.5.1
+	 *
+	 * @param \stdClass|\WP_Error $prepared_post The attachment about to be saved.
+	 * @param \WP_REST_Request    $request       The request being dispatched.
+	 * @return \stdClass|\WP_Error The attachment, or a 403 WP_Error when it would leave a locked folder.
+	 */
+	public function enforce_locked_folder_on_media_update( $prepared_post, $request ) {
+		// A new upload has no folder to leave; only an update carries an ID.
+		if ( is_wp_error( $prepared_post ) || empty( $prepared_post->ID ) ) {
+			return $prepared_post;
+		}
+
+		$taxonomy  = get_taxonomy( Media_Folders::SLUG );
+		$rest_base = ( $taxonomy && ! empty( $taxonomy->rest_base ) ) ? $taxonomy->rest_base : Media_Folders::SLUG;
+		$requested = $request->get_param( $rest_base );
+
+		// The request does not touch the file's folders.
+		if ( null === $requested ) {
+			return $prepared_post;
+		}
+
+		$requested = array_map( 'intval', (array) $requested );
+		$current   = wp_get_object_terms( (int) $prepared_post->ID, Media_Folders::SLUG, array( 'fields' => 'ids' ) );
+
+		if ( is_wp_error( $current ) ) {
+			return $prepared_post;
+		}
+
+		foreach ( $current as $current_folder_id ) {
+			if ( ! in_array( (int) $current_folder_id, $requested, true ) && Media_Folder_Utils::get_instance()->is_folder_locked( $current_folder_id ) ) {
+				return new \WP_Error(
+					'godam_folder_locked',
+					__( 'One or more attachments belong to a locked folder and cannot be moved.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+		}
+
+		return $prepared_post;
 	}
 
 	/**
@@ -214,9 +316,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_exif_data' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					'permission_callback' => array( $this, 'can_read_attachment' ),
 					'args'                => array(
 						'attachment_id' => array(
 							'required'    => true,
@@ -232,9 +332,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'set_video_thumbnail' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					'permission_callback' => array( $this, 'can_edit_attachment' ),
 					'args'                => array(
 						'attachment_id'             => array(
 							'required'    => true,
@@ -260,9 +358,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_video_thumbnails' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					'permission_callback' => array( $this, 'can_read_attachment' ),
 					'args'                => array(
 						'attachment_id' => array(
 							'required'    => true,
@@ -278,9 +374,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'upload_custom_video_thumbnail' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					'permission_callback' => array( $this, 'can_edit_attachment' ),
 					'args'                => array(
 						'attachment_id' => array(
 							'required'    => true,
@@ -301,9 +395,7 @@ class Media_Library extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'remove_custom_video_thumbnail' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_posts' );
-					},
+					'permission_callback' => array( $this, 'can_edit_attachment' ),
 					'args'                => array(
 						'attachment_id' => array(
 							'required'    => true,
@@ -572,6 +664,79 @@ class Media_Library extends Base {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Permission: the caller may edit the attachment named in the request.
+	 *
+	 * Gates the routes that change a video's thumbnails. `edit_posts` alone does not say whose
+	 * media it is, so this also asks WordPress whether the user may edit that attachment.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return bool Whether the request is allowed.
+	 */
+	public function can_edit_attachment( $request ) {
+		return $this->can_access_attachment( $request, true );
+	}
+
+	/**
+	 * Permission: the caller may read the attachment named in the request.
+	 *
+	 * Gates the routes that read a video's thumbnails or an image's EXIF data. A user who can
+	 * read the attachment qualifies, as in WordPress's own media route. So does anyone who can
+	 * upload files, because the Media Library lists every attachment to them, whatever the
+	 * status of the post it is attached to. A private attachment still needs WordPress's say-so.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return bool Whether the request is allowed.
+	 */
+	public function can_read_attachment( $request ) {
+		return $this->can_access_attachment( $request, false );
+	}
+
+	/**
+	 * Check the current user against the attachment named in the request.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param \WP_REST_Request $request  REST request.
+	 * @param bool             $for_edit True to require edit access, false to require read access.
+	 * @return bool Whether the user has the access.
+	 */
+	private function can_access_attachment( $request, $for_edit ) {
+		// The capability these routes always needed; the checks below only narrow it.
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			return false;
+		}
+
+		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
+
+		if ( ! $attachment_id ) {
+			return false;
+		}
+
+		/**
+		 * Fires before this attachment-specific capability check, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			if ( $for_edit ) {
+				return current_user_can( 'edit_post', $attachment_id );
+			}
+
+			return current_user_can( 'read_post', $attachment_id )
+				|| ( current_user_can( 'upload_files' ) && 'inherit' === get_post_field( 'post_status', $attachment_id ) );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	/**
@@ -910,7 +1075,7 @@ class Media_Library extends Base {
 
 			if ( is_array( $current_folders ) ) {
 				foreach ( $current_folders as $current_folder_id ) {
-					if ( (int) $current_folder_id !== (int) $folder_term_id && $this->is_folder_locked( $current_folder_id ) ) {
+					if ( (int) $current_folder_id !== (int) $folder_term_id && Media_Folder_Utils::get_instance()->is_folder_locked( $current_folder_id ) ) {
 						return new \WP_Error(
 							'godam_folder_locked',
 							__( 'One or more attachments belong to a locked folder and cannot be moved.', 'godam' ),
@@ -947,7 +1112,7 @@ class Media_Library extends Base {
 		}
 
 		// Assigning attachments into a locked folder (or a child of one) populates it — reject.
-		if ( $this->is_folder_locked( $folder_term_id ) ) {
+		if ( Media_Folder_Utils::get_instance()->is_folder_locked( $folder_term_id ) ) {
 			return new \WP_Error(
 				'godam_folder_locked',
 				__( 'This folder is locked and cannot be modified.', 'godam' ),
@@ -1123,6 +1288,10 @@ class Media_Library extends Base {
 
 		$thumbnail_array = get_post_meta( $attachment_id, 'rtgodam_media_thumbnails', true );
 
+		// This read refreshes the stored thumbnails below. Only someone who may edit the video
+		// does that; anyone else gets the same answer without a write.
+		$can_save = current_user_can( 'edit_post', $attachment_id );
+
 		$godam_original_id = get_post_meta( $attachment_id, '_godam_original_id', true );
 
 		// Fetch thumbnails from CMM if its a virtual media.
@@ -1187,22 +1356,25 @@ class Media_Library extends Base {
 			}
 
 			$thumbnail_array = array_values( array_unique( $thumbnail_array ) );
-			if ( ! empty( $thumbnail_array ) ) {
-				update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $thumbnail_array );
-			}
 
-			if ( ! empty( $frappe_placeholder_map ) ) {
-				update_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', $frappe_placeholder_map );
-			} else {
-				delete_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails' );
-			}
+			if ( $can_save ) {
+				if ( ! empty( $thumbnail_array ) ) {
+					update_post_meta( $attachment_id, 'rtgodam_media_thumbnails', $thumbnail_array );
+				}
 
-			// Always sync the active placeholder thumbnail; clear it when there's no mapping.
-			$active_thumb_url = ! empty( $body->message->thumbnail_url ) ? $body->message->thumbnail_url : '';
-			if ( ! empty( $active_thumb_url ) && ! empty( $frappe_placeholder_map ) && isset( $frappe_placeholder_map[ $active_thumb_url ] ) ) {
-				update_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', $frappe_placeholder_map[ $active_thumb_url ] );
-			} else {
-				delete_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail' );
+				if ( ! empty( $frappe_placeholder_map ) ) {
+					update_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', $frappe_placeholder_map );
+				} else {
+					delete_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails' );
+				}
+
+				// Always sync the active placeholder thumbnail; clear it when there's no mapping.
+				$active_thumb_url = ! empty( $body->message->thumbnail_url ) ? $body->message->thumbnail_url : '';
+				if ( ! empty( $active_thumb_url ) && ! empty( $frappe_placeholder_map ) && isset( $frappe_placeholder_map[ $active_thumb_url ] ) ) {
+					update_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail', $frappe_placeholder_map[ $active_thumb_url ] );
+				} else {
+					delete_post_meta( $attachment_id, 'rtgodam_media_video_placeholder_thumbnail' );
+				}
 			}
 		}
 
@@ -1259,7 +1431,9 @@ class Media_Library extends Base {
 				$selected_thumbnail = reset( $thumbnail_array );
 			}
 
-			update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $selected_thumbnail );
+			if ( $can_save ) {
+				update_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', $selected_thumbnail );
+			}
 		}
 
 		if ( ! empty( $selected_thumbnail ) ) {
@@ -1284,7 +1458,8 @@ class Media_Library extends Base {
 
 		$data['customThumbnails'] = $custom_thumbnails;
 
-		$godam_placeholder_map = get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
+		// A read that did not save still reports the map Central just returned.
+		$godam_placeholder_map = isset( $frappe_placeholder_map ) ? $frappe_placeholder_map : get_post_meta( $attachment_id, 'rtgodam_media_placeholder_thumbnails', true );
 		if ( is_array( $godam_placeholder_map ) ) {
 			$normalized_placeholder_map = array();
 			foreach ( $godam_placeholder_map as $placeholder_key => $placeholder_value ) {
@@ -1348,6 +1523,12 @@ class Media_Library extends Base {
 
 		if ( ! preg_match( '/^video\//', $mime_type ) ) {
 			return new \WP_Error( 'invalid_attachment', __( 'Attachment is not a video.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		$thumbnail_url = $this->sanitize_thumbnail_url( $thumbnail_url );
+
+		if ( '' === $thumbnail_url ) {
+			return new \WP_Error( 'invalid_thumbnail_url', __( 'Invalid thumbnail URL.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		// Get current thumbnails.
@@ -1444,25 +1625,18 @@ class Media_Library extends Base {
 			return new \WP_Error( 'thumbnail_not_found', __( 'Custom thumbnail not found.', 'godam' ), array( 'status' => 404 ) );
 		}
 
-		// Remove the specified thumbnail.
-		$custom_thumbnails = array_diff( $custom_thumbnails, array( $thumbnail_url ) );
+		// Remove the specified thumbnail, keeping the list a list so it stays a JSON array.
+		$custom_thumbnails = array_values( array_diff( $custom_thumbnails, array( $thumbnail_url ) ) );
 
 		if ( empty( $custom_thumbnails ) ) {
 			delete_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails' );
-
-			return rest_ensure_response(
-				array(
-					'success' => true,
-					'message' => __( 'Custom video thumbnail removed successfully.', 'godam' ),
-				)
-			);
+		} else {
+			update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $custom_thumbnails );
 		}
-
-		update_post_meta( $attachment_id, 'rtgodam_custom_media_thumbnails', $custom_thumbnails );
 
 		$selected_thumbnail = get_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail', true );
 
-		if ( $selected_thumbnail === $thumbnail_url ) {
+		if ( rtgodam_convert_to_https_url( $selected_thumbnail ) === $thumbnail_url ) {
 			// If the removed thumbnail was the selected one, unset it.
 			delete_post_meta( $attachment_id, 'rtgodam_media_video_thumbnail' );
 		}
@@ -1473,6 +1647,26 @@ class Media_Library extends Base {
 				'message' => __( 'Custom video thumbnail removed successfully.', 'godam' ),
 			)
 		);
+	}
+
+	/**
+	 * Clean a thumbnail URL from a request.
+	 *
+	 * A thumbnail is an image the player shows, so only an absolute http(s) URL is kept.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param mixed $url Thumbnail URL from the request.
+	 * @return string The cleaned URL, or an empty string when it is not an http(s) URL.
+	 */
+	private function sanitize_thumbnail_url( $url ) {
+		$url = is_string( $url ) ? trim( $url ) : '';
+
+		if ( ! preg_match( '#^https?://#i', $url ) ) {
+			return '';
+		}
+
+		return esc_url_raw( $url, array( 'http', 'https' ) );
 	}
 
 	/**
@@ -1525,7 +1719,9 @@ class Media_Library extends Base {
 		}
 
 		// Check if the thumbnail URL is valid.
-		if ( ! filter_var( $thumbnail_url, FILTER_VALIDATE_URL ) ) {
+		$thumbnail_url = $this->sanitize_thumbnail_url( $thumbnail_url );
+
+		if ( '' === $thumbnail_url ) {
 			return new \WP_Error( 'invalid_thumbnail_url', __( 'Invalid thumbnail URL.', 'godam' ), array( 'status' => 400 ) );
 		}
 
@@ -1752,7 +1948,7 @@ class Media_Library extends Base {
 		// Reject the whole request if any target is locked (or a child of a locked folder),
 		// so a direct API call can't delete a protected folder — and we never partially delete.
 		foreach ( $folder_ids as $folder_id ) {
-			if ( is_numeric( $folder_id ) && (int) $folder_id > 0 && $this->is_folder_locked( $folder_id ) ) {
+			if ( is_numeric( $folder_id ) && (int) $folder_id > 0 && Media_Folder_Utils::get_instance()->is_folder_locked( $folder_id ) ) {
 				return new \WP_Error(
 					'godam_folder_locked',
 					__( 'One or more selected folders are locked and cannot be deleted.', 'godam' ),
@@ -1817,43 +2013,6 @@ class Media_Library extends Base {
 		} else {
 			return new \WP_Error( 'bulk_delete_failed', __( 'No folders were deleted.', 'godam' ) . ' Errors: ' . implode( ', ', $errors ), array( 'status' => 500 ) );
 		}
-	}
-
-	/**
-	 * Whether a media-folder term is locked, directly or through an ancestor.
-	 *
-	 * Folder locking is protective: a locked folder shields itself AND all of its
-	 * descendants from mutation. So a folder counts as locked if its own `locked`
-	 * term-meta is truthy or if any of its ancestors' is. Client-side gating (React)
-	 * is UX only; this is the authoritative server-side check.
-	 *
-	 * @param int $term_id Media-folder term ID.
-	 * @return bool True if the folder or one of its ancestors is locked.
-	 */
-	private function is_folder_locked( $term_id ) {
-		$term_id = (int) $term_id;
-
-		if ( $term_id <= 0 ) {
-			return false;
-		}
-
-		// The term itself plus every ancestor — a locked ancestor locks the branch.
-		$ids       = array( $term_id );
-		$ancestors = get_ancestors( $term_id, 'media-folder', 'taxonomy' );
-
-		if ( is_array( $ancestors ) ) {
-			$ids = array_merge( $ids, $ancestors );
-		}
-
-		foreach ( $ids as $id ) {
-			$locked_raw = get_term_meta( $id, 'locked', true );
-
-			if ( '1' === $locked_raw || 1 === $locked_raw || true === $locked_raw || 'true' === $locked_raw ) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
@@ -2255,6 +2414,21 @@ class Media_Library extends Base {
 		// Use the normalized value for the rest of the handler.
 		$data['mime'] = $mime;
 
+		// The media and stream URLs are saved with the entry, so only public http(s) addresses are accepted.
+		foreach ( array( 'url', 'mpd_url', 'hls_url' ) as $url_field ) {
+			if ( ! isset( $data[ $url_field ] ) || '' === $data[ $url_field ] ) {
+				continue;
+			}
+
+			$media_url = is_string( $data[ $url_field ] ) ? esc_url_raw( $data[ $url_field ] ) : '';
+
+			if ( ! $this->is_public_media_url( $media_url ) ) {
+				return new \WP_Error( 'invalid_url', __( 'Invalid media URL.', 'godam' ), array( 'status' => 400 ) );
+			}
+
+			$data[ $url_field ] = $media_url;
+		}
+
 		// Build (or find an existing) virtual attachment for this payload.
 		$attach_id = $this->create_virtual_attachment( $data );
 
@@ -2288,6 +2462,29 @@ class Media_Library extends Base {
 			),
 			200
 		);
+	}
+
+	/**
+	 * Check that a media URL from a request is an http(s) address on a public host.
+	 *
+	 * Core's wp_http_validate_url() refuses other schemes, loopback and private hosts, and
+	 * unusual ports. It does not refuse link-local addresses, so those are checked here.
+	 *
+	 * @since 2.5.1
+	 *
+	 * @param string $url URL, already passed through esc_url_raw().
+	 * @return bool
+	 */
+	private function is_public_media_url( $url ) {
+		if ( '' === $url || ! wp_http_validate_url( $url ) ) {
+			return false;
+		}
+
+		$host = trim( (string) wp_parse_url( $url, PHP_URL_HOST ), '.' );
+		$ip   = filter_var( $host, FILTER_VALIDATE_IP ) ? $host : gethostbyname( $host );
+
+		// The link-local range (169.254.0.0/16) includes the cloud metadata address.
+		return 0 !== strpos( $ip, '169.254.' );
 	}
 
 	/**
@@ -2428,7 +2625,10 @@ class Media_Library extends Base {
 		update_post_meta( $attach_id, 'rtgodam_transcoded_url', esc_url_raw( $data['mpd_url'] ?? '' ) ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 		update_post_meta( $attach_id, 'rtgodam_transcoding_status', 'transcoded' ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 		update_post_meta( $attach_id, 'rtgodam_transcoding_job_id', $godam_id ); // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
-		update_post_meta( $attach_id, '_wp_attached_file', sanitize_text_field( $data['filename'] ?? '' ) ); // Virtual media path. // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
+		// Virtual media has no local file, so only a bare file name is kept: no directories, no dot segments.
+		$virtual_file_name = wp_basename( sanitize_text_field( $data['filename'] ?? '' ) );
+		$virtual_file_name = in_array( $virtual_file_name, array( '.', '..' ), true ) ? '' : $virtual_file_name;
+		update_post_meta( $attach_id, '_wp_attached_file', $virtual_file_name ); // Virtual media path. // godam-coverage-ignore -- create_virtual_attachment_after_lookup(): covered transitively — caller (create_virtual_attachment) wraps the entire call in try/finally.
 
 		$video_duration_in_seconds = 0;
 		$video_duration_formatted  = '';

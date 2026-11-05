@@ -18,6 +18,8 @@ import ForminatorIcon from '../assets/layers/Forminator.png';
 import FluentFormsIcon from '../assets/layers/FluentFormsIcon.png';
 import NinjaFormsIcon from '../assets/layers/NinjaFormsIcon.png';
 import MetformIcon from '../assets/layers/MetFormIcon.png';
+import MarketoIcon from '../assets/layers/MarketoIcon.svg';
+import HubSpotIcon from '../assets/layers/HubSpotIcon.svg';
 import { CtaLayerIcon, HotspotLayerIcon, FormLayerIcon, PollLayerIcon } from './editor-shell/icons';
 import { LAYER_TYPE_COLORS } from '../utils/layerTypes';
 import { notify as notifyGuide } from '../onboarding/productGuide';
@@ -110,6 +112,31 @@ export const layerTypes = [
 				icon: MetformIcon,
 				isActive: window?.videoData?.metformActive ?? false,
 				tooltipMessage: __( 'MetForm plugin is not active', 'godam' ),
+			},
+			marketo: {
+				layerText: __( 'Marketo', 'godam' ),
+				icon: MarketoIcon,
+				// Marketo has no plugin to activate: it is always offered in the
+				// Add-layer menu. The layer's settings panel shows a notice linking
+				// to Settings → Integrations → Marketo when credentials are missing.
+				isActive: true,
+				tooltipMessage: '',
+			},
+			hubspot: {
+				layerText: __( 'HubSpot', 'godam' ),
+				icon: HubSpotIcon,
+				isActive: window?.videoData?.hubspotActive ?? false,
+				// Say what actually unblocks the layer: turning the integration on,
+				// or connecting the source the admin chose (GoDAM Central by default,
+				// where activating the HubSpot plugin alone is not enough).
+				tooltipMessage: ( () => {
+					if ( window?.videoData?.hubspotEnabled === false ) {
+						return __( 'Turn on HubSpot in Settings → Integrations → HubSpot to use this form', 'godam' );
+					}
+					return 'leadin' === ( window?.videoData?.hubspotChosenSource ?? 'central' )
+						? __( 'Activate and connect the HubSpot plugin to use this form', 'godam' )
+						: __( 'Connect HubSpot in Settings → Integrations → HubSpot to use this form', 'godam' );
+				} )(),
 			},
 		},
 	},

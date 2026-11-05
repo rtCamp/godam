@@ -48,6 +48,44 @@ const getExtendedSettings = ( tabName ) =>
 
 const TOGGLE_SUCCESS_NOTICE_KEY = 'godam_integration_toggle_notice';
 
+// URL query key that remembers which integration sub-tab is open, so a reload
+// (or a shared link) returns to the same tab instead of the first one. It lives
+// in the query string because the top-level settings tab already owns the URL
+// hash (see App.js).
+const TAB_QUERY_KEY = 'integration_tab';
+
+/**
+ * The sub-tab to open first, from the URL query, or undefined for the default.
+ *
+ * @return {string|undefined} A valid tab name, or undefined.
+ */
+const getInitialTabName = () => {
+	try {
+		const name = new URLSearchParams( window.location.search ).get( TAB_QUERY_KEY );
+		if ( name && integrationTabs.some( ( tab ) => tab.name === name ) ) {
+			return name;
+		}
+	} catch ( error ) {
+		// Ignore an unparseable URL; fall back to the default tab.
+	}
+	return undefined;
+};
+
+/**
+ * Remember the open sub-tab in the URL without reloading or adding history.
+ *
+ * @param {string} name The selected tab name.
+ */
+const persistTabName = ( name ) => {
+	try {
+		const url = new URL( window.location.href );
+		url.searchParams.set( TAB_QUERY_KEY, name );
+		window.history.replaceState( {}, '', url );
+	} catch ( error ) {
+		// Ignore storage/history errors; tab selection still works in-page.
+	}
+};
+
 const IntegrationSettings = () => {
 	const tabs = integrationTabs;
 
@@ -227,6 +265,8 @@ const IntegrationSettings = () => {
 					className="godam-tab-panel"
 					activeClass="is-active"
 					tabs={ tabs }
+					initialTabName={ getInitialTabName() }
+					onSelect={ persistTabName }
 				>
 					{ ( tab ) => {
 						const integrationSettings = mediaSettings.integrations?.[ tab.name ] || {};

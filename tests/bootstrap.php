@@ -105,15 +105,25 @@ if ( ! function_exists( 'wp_prepare_attachment_for_js' ) ) {
 if ( ! function_exists( 'get_post_meta' ) ) {
 
 	/**
-	 * @param int    $post_id Ignored (single post per test).
+	 * @param int    $post_id Post ID. Only read for a test that sets meta per post in
+	 *                        `post_meta_by_id` (post ID => key => value); otherwise ignored.
 	 * @param string $key     Meta key.
 	 * @param bool   $single  Ignored; always single-value semantics.
 	 * @return mixed
 	 */
-	function get_post_meta( $post_id, $key = '', $single = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $post_id/$single are ignored.
+	function get_post_meta( $post_id, $key = '', $single = false ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $single is ignored.
+		if ( isset( $GLOBALS['rtgodam_stub']['post_meta_by_id'][ (int) $post_id ] ) ) {
+			$by_id = $GLOBALS['rtgodam_stub']['post_meta_by_id'][ (int) $post_id ];
+			return array_key_exists( $key, $by_id ) ? $by_id[ $key ] : '';
+		}
+
 		$meta = isset( $GLOBALS['rtgodam_stub']['post_meta'] ) && is_array( $GLOBALS['rtgodam_stub']['post_meta'] )
 			? $GLOBALS['rtgodam_stub']['post_meta']
 			: array();
+		// A test that gives posts their own meta (`attachment_meta`, keyed by post ID) is answered per post.
+		if ( isset( $GLOBALS['rtgodam_stub']['attachment_meta'][ $post_id ] ) ) {
+			$meta = $GLOBALS['rtgodam_stub']['attachment_meta'][ $post_id ];
+		}
 		return array_key_exists( $key, $meta ) ? $meta[ $key ] : '';
 	}
 }
@@ -208,11 +218,22 @@ if ( ! function_exists( 'wp_parse_url' ) ) {
 	}
 }
 
-// Empty stand-in for the WP core base so Video_Editor's parent chain resolves
+// Stand-in for the WP core base so Video_Editor's parent chain resolves
 // without a WordPress install; the constructor is never run (tests build the
-// object with ReflectionClass::newInstanceWithoutConstructor()).
+// object with ReflectionClass::newInstanceWithoutConstructor()). The route
+// tables call get_collection_params() for their `args`; the params themselves
+// are not what those tests look at.
 if ( ! class_exists( 'WP_REST_Controller' ) ) {
-	class WP_REST_Controller {} // phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed
+	// phpcs:ignore Universal.Files.SeparateFunctionsFromOO.Mixed, Generic.Files.OneObjectStructurePerFile.MultipleFound -- test stub.
+	class WP_REST_Controller {
+
+		/**
+		 * @return array
+		 */
+		public function get_collection_params() {
+			return array();
+		}
+	}
 }
 
 /*
@@ -295,6 +316,11 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 		public function get_status() {
 			return $this->status;
 		}
+
+		/** @param int $status HTTP status code. */
+		public function set_status( $status ) {
+			$this->status = $status;
+		}
 	}
 }
 
@@ -302,7 +328,8 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
  * ---------------------------------------------------------------------------
  * Stubs for AnalyticsRoutePermissionTest. The route table reads the
  * WP_REST_Server method constants, and the permission callbacks ask
- * current_user_can(), which answers from $GLOBALS['rtgodam_stub']['caps'].
+ * current_user_can(), which answers from $GLOBALS['rtgodam_stub']['caps'] and,
+ * for a capability asked about one post, from `object_caps`.
  * ---------------------------------------------------------------------------
  */
 if ( ! class_exists( 'WP_REST_Server' ) ) {
@@ -319,14 +346,40 @@ if ( ! class_exists( 'WP_REST_Server' ) ) {
 if ( ! function_exists( 'current_user_can' ) ) {
 
 	/**
+	 * Every check is recorded in `cap_checks`. A meta capability asked about one object is
+	 * answered from `object_caps` when a test sets it, in either shape: capability => object IDs
+	 * (array( 'edit_post' => array( 7 ) )), or a list of 'capability:ID' entries
+	 * (array( 'edit_post:12' )). Otherwise it comes from `caps`, where "edit_post:42" grants
+	 * one object and the plain name grants all.
+	 *
 	 * @param string $capability Capability name.
-	 * @param mixed  ...$args    Ignored; object-level checks are not stubbed.
+	 * @param mixed  ...$args    The object ID of a meta capability.
 	 * @return bool
 	 */
-	function current_user_can( $capability, ...$args ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature mirrors the WP function; $args are ignored.
+	function current_user_can( $capability, ...$args ) {
+		$GLOBALS['rtgodam_stub']['cap_checks'][] = array_merge( array( $capability ), $args );
+
+		if ( isset( $args[0] ) && isset( $GLOBALS['rtgodam_stub']['object_caps'] ) ) {
+			$object_caps = (array) $GLOBALS['rtgodam_stub']['object_caps'];
+
+			if ( isset( $object_caps[ $capability ] ) && is_array( $object_caps[ $capability ] ) ) {
+				return in_array( $args[0], $object_caps[ $capability ], true );
+			}
+
+			// A plain list (even an empty one) answers every object check.
+			if ( array_values( $object_caps ) === $object_caps ) {
+				return in_array( $capability . ':' . $args[0], $object_caps, true );
+			}
+		}
+
 		$caps = isset( $GLOBALS['rtgodam_stub']['caps'] ) && is_array( $GLOBALS['rtgodam_stub']['caps'] )
 			? $GLOBALS['rtgodam_stub']['caps']
 			: array();
+
+		if ( isset( $args[0] ) && is_scalar( $args[0] ) && in_array( $capability . ':' . $args[0], $caps, true ) ) {
+			return true;
+		}
+
 		return in_array( $capability, $caps, true );
 	}
 }
@@ -439,6 +492,10 @@ if ( ! function_exists( 'set_transient' ) ) {
  */
 require_once __DIR__ . '/stubs/hooks.php';
 require_once __DIR__ . '/stubs/i18n.php';
+// Shortcode registry and runner, so a test can register a shortcode and see whether
+// text handed to do_shortcode() runs it. Loaded here so its do_shortcode() is the one
+// that every test sees.
+require_once __DIR__ . '/stubs/shortcode-runtime.php';
 // HTTP / REST stubs for the Analytics microservice-proxy tests (fetch_top_videos
 // / fetch_top_products): fake wp_remote_* responses + get_option, and minimal
 // WP_REST_Request / WP_REST_Response so the proxy's error-vs-empty guard can be
@@ -525,6 +582,26 @@ if ( ! function_exists( 'wp_read_video_metadata' ) ) {
 	}
 }
 
+// Loaded for MediaFolderLockTest: the folder lock check, the lock rules on the taxonomy
+// and the media-folder REST route guard. Each file only declares a class, so requiring
+// them runs no WP code.
+require_once __DIR__ . '/stubs/media-folder-functions.php';
+require_once dirname( __DIR__ ) . '/inc/classes/media-library/class-media-folder-utils.php';
+require_once dirname( __DIR__ ) . '/inc/classes/taxonomies/class-base.php';
+require_once dirname( __DIR__ ) . '/inc/classes/taxonomies/class-media-folders.php';
+require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-media-library.php';
+
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
 require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';
+
+// Loaded for MapTrackerValidationTest: the static request-shape checks shared by
+// Map_Tracker and the map-events REST route. Requiring the file only declares the
+// class (the Singleton trait above is its only dependency), so no WP code runs.
+require_once dirname( __DIR__ ) . '/inc/classes/class-map-tracker.php';
+
+// Loaded so Map_Tracker::frontend_providers() can read the Marketo and HubSpot
+// site-level on/off switches (MapTrackerProvidersTest, and the REST route in
+// MapEventsTrackTest). Each file only declares the class, so no WP code runs.
+require_once dirname( __DIR__ ) . '/inc/classes/class-marketo.php';
+require_once dirname( __DIR__ ) . '/inc/classes/class-hubspot.php';

@@ -24,6 +24,7 @@ import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
 import TriggerSection from './shared/TriggerSection.jsx';
 import { VeSection, VeField, VeSegmented, VeCollapsible } from '../controls';
+import { getSafeLinkUrl } from '../../../../assets/src/utils/safe-url';
 
 // A DOMPurify config similar to what wp_kses_post() allows
 const wpKsesAllowed = {
@@ -117,7 +118,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 					<div className="btns">
 						<a
 							className="godam-cta-btn"
-							href={ layer?.imageLink || '#' }
+							href={ getSafeLinkUrl( layer?.imageLink ) || '#' }
 							target="_blank"
 							rel="noreferrer"
 							style={ {

@@ -81,13 +81,15 @@ const AdsSettings = () => {
 	return (
 		<>
 			{ notice.isVisible && (
-				<Notice
-					className="mb-4"
-					status={ notice.status }
-					onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
-				>
-					{ notice.message }
-				</Notice>
+				<div data-test-id="godam-settings-ads-notice" data-notice-status={ notice.status }>
+					<Notice
+						className="mb-4"
+						status={ notice.status }
+						onRemove={ () => setNotice( { ...notice, isVisible: false } ) }
+					>
+						{ notice.message }
+					</Notice>
+				</div>
 			) }
 
 			<div>

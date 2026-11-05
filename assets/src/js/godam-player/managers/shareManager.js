@@ -67,8 +67,8 @@ const VARIATION_ICON_SKINS = [ 'Minimal', 'Pills', 'Bubble' ];
  * - Dynamically selects icon based on player skin.
  * - Appends button to control bar or DOM based on layout and screen size.
  *
- * 2. **Share Modal with Social and Embed Options**
- * - Generates modal with page and embed links for the video.
+ * 2. **Share Modal with Social and Page Link Options**
+ * - Generates modal with the WordPress page link for the video.
  * - Provides copy-to-clipboard functionality with visual feedback.
  * - Includes social sharing links for platforms like Facebook, Twitter, LinkedIn, Reddit, WhatsApp, and Telegram.
  *
@@ -239,9 +239,9 @@ class ShareManager {
 	}
 
 	/**
-	 * Creates and injects the share modal into the DOM with social and embed options.
+	 * Creates and injects the share modal into the DOM with social and page link options.
 	 *
-	 * @param {string} jobId - The ID of the video job to construct URLs.
+	 * @param {string} jobId - The ID of the video job, used only as a page-anchor fallback.
 	 */
 	createShareModal( jobId ) {
 		if ( document.querySelector( `.${ MODAL_CONTAINER_CLASS }` ) ) {
@@ -254,7 +254,7 @@ class ShareManager {
 		}
 
 		const socialLinks = this.createSocialLinksConfig( urls.message );
-		const modalHtml = this.buildModalHtml( socialLinks, urls.videoLink, urls.embedCode );
+		const modalHtml = this.buildModalHtml( socialLinks );
 
 		this.injectModalIntoDOM( modalHtml, socialLinks, urls );
 	}
@@ -262,24 +262,14 @@ class ShareManager {
 	/**
 	 * Generates the necessary URLs for sharing.
 	 *
-	 * @param {string} jobId - The video job ID.
-	 * @return {Object|null} Object containing URLs or null if invalid.
+	 * Only the WordPress page link is shared now: it resolves on this site and
+	 * points at the public post where the video is embedded, unlike the GoDAM
+	 * Central link, which is private by default until the video is made public.
+	 *
+	 * @param {string} jobId - The video job ID, used only as a page-anchor fallback.
+	 * @return {Object} Object containing the page link, its encoded form and the share message.
 	 */
 	generateShareUrls( jobId ) {
-		const baseUrl = window.godamData?.apiBase;
-		if ( ! jobId || ! baseUrl ) {
-			return null;
-		}
-
-		// The GoDAM Central and embed links are SaaS routes keyed on the transcoding
-		// job, so they always use the job ID — the SaaS knows nothing of WordPress
-		// attachment IDs.
-		const videoLink = `${ baseUrl }/web/video/${ jobId }`;
-		const embedUrl = `${ baseUrl }/web/embed/${ jobId }`;
-		const embedCode = `<iframe src="${ embedUrl }"></iframe>`;
-		const encodedLink = encodeURI( videoLink );
-		const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
-
 		// The WP page link is resolved by this site, so prefer the WordPress
 		// attachment ID: it is the ID authors recognise and the one they write into
 		// triggers. Fall back to the job ID for virtual media, which has no local
@@ -291,19 +281,23 @@ class ShareManager {
 		const pageUrl = new URL( window.location.href );
 		pageUrl.hash = `godam-video-${ pageId }`;
 		const pageLink = pageUrl.toString();
+		// Encode the whole link as a single value: encodeURI() would leave `#`,
+		// `?` and `&` intact, so appended after `?u=`/`&url=` the `#godam-video-{id}`
+		// anchor (and any query param) would split off the shared link instead of
+		// travelling with it.
+		const encodedLink = encodeURIComponent( pageLink );
+		const message = encodeURIComponent( __( 'Check out this video!', 'godam' ) );
 
-		return { videoLink, embedUrl, embedCode, encodedLink, message, pageLink };
+		return { pageLink, encodedLink, message };
 	}
 
 	/**
 	 * Builds the HTML structure for the share modal.
 	 *
-	 * @param {Array}  socialLinks - Array of social media link configurations.
-	 * @param {string} videoLink   - The direct video link.
-	 * @param {string} embedCode   - The embed code for the video.
+	 * @param {Array} socialLinks - Array of social media link configurations.
 	 * @return {string} Complete HTML string for the modal.
 	 */
-	buildModalHtml( socialLinks, videoLink, embedCode ) {
+	buildModalHtml( socialLinks ) {
 		const socialLinksHtml = socialLinks.map( ( link ) =>
 			`<a class="${ link.className } social-icon" target="_blank" rel="noopener noreferrer" tabindex="0">
 				<img
@@ -328,8 +322,6 @@ class ShareManager {
 				</div>
 				<div class="${ MODAL_POPUP_CLASS }__footer">
 					${ this.renderCopySection( 'wp-page-link', '', __( 'Page Link', 'godam' ) ) }
-					${ this.renderCopySection( 'page-link', videoLink, __( 'GoDAM Central', 'godam' ) ) }
-					${ this.renderCopySection( 'embed-code', embedCode, __( 'Embed', 'godam' ) ) }
 				</div>
 				<div class="${ MODAL_POPUP_CLASS }__timestamp-container">
 					<label for="use-timestamp">
@@ -405,13 +397,11 @@ class ShareManager {
 	 */
 	setupModalEventListeners( container, socialLinks, urls ) {
 		const cancelButton = container.querySelector( '.share-modal-popup__close-button' );
-		const copyPageLink = container.querySelector( '.copy-page-link' );
 		const copyWpPageLink = container.querySelector( '.copy-wp-page-link' );
-		const copyEmbedCode = container.querySelector( '.copy-embed-code' );
 
 		this.setupSocialLinkUrls( container, socialLinks, urls );
 		this.setupModalCloseHandlers( container, cancelButton );
-		this.setupCopyButtonHandlers( copyPageLink, copyWpPageLink, copyEmbedCode );
+		this.setupCopyButtonHandlers( copyWpPageLink );
 		this.setupTimestampControls( container, socialLinks, urls );
 	}
 
@@ -483,18 +473,17 @@ class ShareManager {
 	/**
 	 * Sets up copy button event handlers.
 	 *
-	 * @param {HTMLElement} copyPageLink   - GoDAM Central link copy button.
 	 * @param {HTMLElement} copyWpPageLink - WP page link copy button.
-	 * @param {HTMLElement} copyEmbedCode  - Embed code copy button.
 	 */
-	setupCopyButtonHandlers( copyPageLink, copyWpPageLink, copyEmbedCode ) {
+	setupCopyButtonHandlers( copyWpPageLink ) {
 		const copyButtons = [
-			{ button: copyPageLink, inputSelector: '.page-link' },
 			{ button: copyWpPageLink, inputSelector: '.wp-page-link' },
-			{ button: copyEmbedCode, inputSelector: '.embed-code' },
 		];
 
 		copyButtons.forEach( ( { button, inputSelector } ) => {
+			if ( ! button ) {
+				return;
+			}
 			button.addEventListener( 'click', () => this.copyToClipboard( inputSelector ) );
 			button.addEventListener( 'keydown', ( event ) => {
 				if ( [ KEYBOARD_CONTROLS.ENTER, KEYBOARD_CONTROLS.SPACE ].includes( event.key ) ) {
@@ -515,10 +504,9 @@ class ShareManager {
 	 * @param {HTMLElement} container   - The modal container element.
 	 */
 	updateTimestampLinks( checkbox, input, socialLinks, urls, container ) {
-		const pageLinkInput = container.querySelector( '.page-link' );
-		const embedInput = container.querySelector( '.embed-code' );
+		const wpPageLinkInput = container.querySelector( '.wp-page-link' );
 
-		if ( ! pageLinkInput || ! embedInput ) {
+		if ( ! wpPageLinkInput ) {
 			return;
 		}
 
@@ -526,33 +514,25 @@ class ShareManager {
 			? parseTime( input.value )
 			: null;
 
-		const fullPage = timestamp ? `${ urls.videoLink }?t=${ timestamp }` : urls.videoLink;
-		const fullEmbed = timestamp ? `<iframe src="${ urls.embedUrl }?t=${ timestamp }"></iframe>` : urls.embedCode;
-		const encodedHref = encodeURI( fullPage );
-
-		const wpPageLinkInput = container.querySelector( '.wp-page-link' );
-
 		// WP page link: update/append the timestamp query param while preserving
 		// any existing query params and the hash anchor.
-		if ( wpPageLinkInput ) {
-			const wpPageBase = urls.pageLink || '';
-			if ( timestamp && wpPageBase ) {
-				try {
-					const wpPageUrl = new URL( wpPageBase, window.location.origin );
-					wpPageUrl.searchParams.set( 't', timestamp );
-					wpPageLinkInput.value = wpPageUrl.toString();
-				} catch ( error ) {
-					wpPageLinkInput.value = wpPageBase;
-				}
-			} else {
-				wpPageLinkInput.value = wpPageBase;
+		const wpPageBase = urls.pageLink || '';
+		let wpPageLink = wpPageBase;
+		if ( timestamp && wpPageBase ) {
+			try {
+				const wpPageUrl = new URL( wpPageBase, window.location.origin );
+				wpPageUrl.searchParams.set( 't', timestamp );
+				wpPageLink = wpPageUrl.toString();
+			} catch ( error ) {
+				wpPageLink = wpPageBase;
 			}
 		}
+		wpPageLinkInput.value = wpPageLink;
 
-		pageLinkInput.value = fullPage;
-		embedInput.value = fullEmbed;
-
-		// Update social share URLs
+		// Social links share the WP page link so recipients land on the public page.
+		// encodeURIComponent so the `#godam-video-{id}` anchor and any query param
+		// travel with the link instead of splitting off (see generateShareUrls).
+		const encodedHref = encodeURIComponent( wpPageLink );
 		socialLinks.forEach( ( { className, href } ) => {
 			const el = container.querySelector( `.${ className }` );
 			if ( el ) {
@@ -572,24 +552,19 @@ class ShareManager {
 		// Initialize timestamp checkbox and input
 		const checkbox = container.querySelector( '.use-timestamp' );
 		const input = container.querySelector( '.timestamp-input' );
-		const pageLinkInput = container.querySelector( '.page-link' );
-		const embedInput = container.querySelector( '.embed-code' );
+		const wpPageLinkInput = container.querySelector( '.wp-page-link' );
 
-		if ( ! checkbox || ! input || ! pageLinkInput || ! embedInput ) {
+		if ( ! checkbox || ! input || ! wpPageLinkInput ) {
 			return;
 		}
 
-		const wpPageLinkInput = container.querySelector( '.wp-page-link' );
-
 		// Initialize wp-page-link input value via JS (DOMPurify may strip it from HTML attributes).
-		if ( wpPageLinkInput ) {
-			wpPageLinkInput.value = urls.pageLink || '';
-		}
+		wpPageLinkInput.value = urls.pageLink || '';
 
 		input.readOnly = ! checkbox.checked;
 		input.value = formatTime( this.video.currentTime || 0 );
 
-		// Initialize link inputs via JS to bypass DOMPurify stripping the iframe embed code from HTML attribute values.
+		// Initialize link inputs via JS to bypass DOMPurify stripping values from HTML attributes.
 		this.updateTimestampLinks( checkbox, input, socialLinks, urls, container );
 
 		// Set up event listeners
@@ -700,7 +675,17 @@ class ShareManager {
 
 		const container = this.player.el().closest( '.easydam-video-container' );
 
-		if ( ! container || jobId === '' || ! this.videoSetupOptions.showShareBtn ) {
+		// The share button no longer depends on transcoding, so non-transcoded
+		// Media Library videos get it too. But the shared link is a page anchor
+		// (#godam-video-{id}), so the player still needs an ID to point at — a WP
+		// attachment ID or a transcoding job ID.
+		if ( ! container || ! this.videoSetupOptions.showShareBtn ) {
+			return;
+		}
+
+		// "Insert from URL" players have neither ID, so their share link could not
+		// target the video (#godam-video-). Keep the button hidden for them.
+		if ( ! this.video.dataset.id && ! jobId ) {
 			return;
 		}
 

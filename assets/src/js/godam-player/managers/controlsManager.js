@@ -445,8 +445,13 @@ export default class ControlsManager {
 	moveVideoControls() {
 		try {
 			const playerElement = this.player.el_;
-			const newHeight = playerElement.offsetHeight;
-			const newWidth = playerElement.offsetWidth;
+			// Centre on the video's own box. It fills the player, except in
+			// fullscreen with the transcript open, where the video and the control
+			// bar sit beside or above the panel while the player spans the screen.
+			const tech = playerElement.querySelector( '.vjs-tech' );
+			const box = tech?.offsetWidth && tech?.offsetHeight ? tech : playerElement;
+			const newHeight = box.offsetHeight;
+			const newWidth = box.offsetWidth;
 
 			const skipButtons = playerElement.querySelectorAll(
 				'.vjs-skip-backward-5, .vjs-skip-backward-10, .vjs-skip-backward-30, .vjs-skip-forward-5, .vjs-skip-forward-10, .vjs-skip-forward-30',

@@ -461,9 +461,20 @@ class RTGODAM_Transcoder_Handler {
 				}
 			}
 
+			/**
+			 * Filters whether requests to the GoDAM transcoding API verify the
+			 * server's TLS certificate. Turn it off only for a local or staging
+			 * API that uses a self-signed certificate.
+			 *
+			 * @since 2.5.1
+			 *
+			 * @param bool $verify_ssl Whether to verify the certificate. Default true.
+			 */
+			$verify_ssl = (bool) apply_filters( 'godam_transcoder_verify_ssl', true );
+
 			$args = array(
 				'method'    => empty( $transcoding_job_id ) ? 'POST' : 'PUT',
-				'sslverify' => false,
+				'sslverify' => $verify_ssl,
 				'timeout'   => 60, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
 				'body'      => array_merge(
 					array(
@@ -886,7 +897,7 @@ class RTGODAM_Transcoder_Handler {
 	 * @param string $job_for           Whether media uploaded through rtmedia plugin or WordPress media.
 	 */
 	public function add_transcoded_files( $file_post_array, $attachment_id, $job_for = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
-		$transcoded_files = false;
+		$transcoded_files = array();
 		global $wpdb;
 
 		do_action( 'rtgodam_before_transcoded_media_store', $attachment_id, $file_post_array );
@@ -897,10 +908,19 @@ class RTGODAM_Transcoder_Handler {
 					foreach ( $format as $file ) {
 						if ( isset( $file ) ) {
 
-							$download_url                  = urldecode( urldecode( $file ) );
-							$new_wp_attached_file_pathinfo = pathinfo( $download_url );
-							$post_mime_type                = 'mp4' === $new_wp_attached_file_pathinfo['extension'] ? 'video/mp4' : 'audio/mp3';
-							$attachemnt_url                = wp_get_attachment_url( $attachment_id );
+							$download_url = urldecode( urldecode( $file ) );
+
+							// Fetch only the MP4 or MP3 files GoDAM Central serves from its own hosts.
+							$new_wp_attached_file_pathinfo = pathinfo( (string) wp_parse_url( $download_url, PHP_URL_PATH ) );
+							$file_extension                = strtolower( $new_wp_attached_file_pathinfo['extension'] ?? '' );
+
+							if ( ! rtgodam_is_transcoder_file_url( $download_url ) || ! in_array( $file_extension, array( 'mp4', 'mp3' ), true ) ) {
+								error_log( sprintf( 'GoDAM: Skipped a transcoded file from %s. It must be an MP4 or MP3 on a host in the rtgodam_transcoder_file_hosts filter.', sanitize_text_field( (string) wp_parse_url( $download_url, PHP_URL_HOST ) ) ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Logging the skipped file for debugging purposes.
+								continue;
+							}
+
+							$post_mime_type = 'mp4' === $file_extension ? 'video/mp4' : 'audio/mpeg';
+							$attachemnt_url = wp_get_attachment_url( $attachment_id );
 
 							$timeout = 5;
 
@@ -909,7 +929,7 @@ class RTGODAM_Transcoder_Handler {
 							}
 
 							try {
-								$response = function_exists( 'vip_safe_wp_remote_get' ) ? vip_safe_wp_remote_get( $download_url, '', 3, 3 ) : wp_remote_get( $download_url, array( 'timeout' => $timeout ) ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
+								$response = function_exists( 'vip_safe_wp_remote_get' ) ? vip_safe_wp_remote_get( $download_url, '', 3, 3 ) : wp_safe_remote_get( $download_url, array( 'timeout' => $timeout ) );
 							} catch ( Exception $e ) {
 								return;
 							}
@@ -929,7 +949,12 @@ class RTGODAM_Transcoder_Handler {
 
 								// Verify Extension.
 								if ( empty( pathinfo( $file_name, PATHINFO_EXTENSION ) ) ) {
-									$file_name .= '.' . $new_wp_attached_file_pathinfo['extension'];
+									$file_name .= '.' . $file_extension;
+								}
+
+								// Store the file only if its content is the type its name says.
+								if ( ! $this->is_expected_file_type( $file_content, $file_name, $post_mime_type ) ) {
+									continue;
 								}
 
 								$upload_info = wp_upload_bits( $file_name, null, $file_content );
@@ -958,7 +983,8 @@ class RTGODAM_Transcoder_Handler {
 										wp_update_post( // godam-coverage-ignore -- add_transcoded_files(): covered transitively — sole caller (handle_wp_media_transcoding_callback) already runs inside its own caller's before/after pair.
 											array(
 												'ID' => $attachment_id,
-												'post_mime_type' => 'audio/mp3',
+												// WordPress registers MP3 as audio/mpeg; audio/mp3 is missed by REST media_type=audio and wp_get_mime_types().
+												'post_mime_type' => 'audio/mpeg',
 											)
 										);
 									} else {
@@ -980,6 +1006,38 @@ class RTGODAM_Transcoder_Handler {
 			update_post_meta( $attachment_id, 'rtgodam_media_transcoded_files', $transcoded_files );
 			do_action( 'rtgodam_transcoded_media_added', $attachment_id );
 		}
+	}
+
+	/**
+	 * Whether downloaded content is a file of the expected type, judged by the
+	 * name it would be stored under and by the content itself.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param string $content   File content.
+	 * @param string $file_name Name the file would be stored under.
+	 * @param string $mime_type Expected MIME type, such as `video/mp4`.
+	 *
+	 * @return bool
+	 */
+	private function is_expected_file_type( $content, $file_name, $mime_type ) {
+		if ( ! function_exists( 'wp_tempnam' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
+		$temp_file = wp_tempnam( $file_name );
+
+		if ( ! $temp_file ) {
+			return false;
+		}
+
+		file_put_contents( $temp_file, $content ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents, WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_file_put_contents -- Writing the downloaded content to a file from wp_tempnam() to check its type.
+
+		$filetype = wp_check_filetype_and_ext( $temp_file, $file_name );
+
+		wp_delete_file( $temp_file );
+
+		return $mime_type === $filetype['type'];
 	}
 
 	/**

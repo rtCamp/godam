@@ -216,9 +216,8 @@ class Ads extends Base {
 		 */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		try {
-			// Check if the video exists.
-			$video = get_post( $video_id );
-			if ( empty( $video ) || 'attachment' !== $video->post_type ) {
+			// Check if the video exists and may be seen: media the visitor may not see answers like a missing one.
+			if ( ! rtgodam_can_view_attachment( $video_id ) ) {
 				return '';
 			}
 

@@ -1,5 +1,72 @@
 # Changelog #
 
+## v2.7.0 (November 5, 2026) ##
+
+- Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each GoDAM Video block, widget or shortcode can override it.
+- Feat: Developers can pause all GoDAM videos from their own code, for example when a carousel changes slide.
+- Tweak: Authors see analytics only for the videos they can edit.
+- Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
+- Fix: Security fixes.
+
+## v2.6.2 (November 4, 2026) ##
+
+- Tweak: Our team now moves your entire video library from Vimeo for free.
+
+## v2.6.1 (November 3, 2026) ##
+
+- Fix: The analytics dashboard now shows correctly on sites with no views yet.
+
+## v2.6.0 (November 2, 2026) ##
+
+- Feat: You can now add a Marketo form as a video layer. Connect your Marketo account under GoDAM > Settings > Integrations, then pick the form from a searchable list of your approved Marketo forms. If Marketo is connected without a Client ID and Secret, enter the form's ID instead.
+- Feat: You can now add a HubSpot form as a video layer in the same way. Connect HubSpot under GoDAM > Settings > Integrations and drop a form into a video.
+- Feat: When a visitor your Marketo or HubSpot account already recognises watches a GoDAM video, how far they watched is sent back to that tool, so video engagement shows up against your contacts.
+- Feat: While video-view tracking is on in GoDAM Central, each site can now stop sending video views to Marketo or HubSpot with "Track video views on this site" under GoDAM > Settings > Integrations. Your other sites are not changed.
+- Feat: For Marketo video tracking, GoDAM now adds Marketo's Munchkin tracking code to pages that have a video, unless the page already loads it. Munchkin also records page visits in your Marketo. A site that loads Munchkin itself can turn ours off with the `rtgodam_map_inject_munchkin` filter.
+- Tweak: If a Marketo form can't load, the video layer says "This form could not be loaded." with a Continue button. On sites without HTTPS, the video editor warns that Marketo form submissions need HTTPS.
+- Fix: The Document, Audio and Video Thumbnail blocks no longer collapse when placed inside a Row or Stack (flex) layout, and the Document card now stacks to fit its column instead of the screen width.
+- Fix: Security fixes.
+
+## v2.5.2 (October 29, 2026) ##
+
+- Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.
+- Fix: The Remove API Key dialog now says what really happens: only this site disconnects, and your GoDAM account and media are not affected.
+- Fix: On phones, a video in the lightbox no longer jumps when the browser toolbar shows or hides.
+- Fix: The All Media count in the media picker is now right when the picker shows only caption or document files.
+- Fix: Global video ads (GoDAM > Settings > Video Ads > Enable Global Video Ads) now play.
+- Fix: In the Classic player skin, the mute button on hover previews shows its icon again.
+- Fix: Security fixes.
+
+## v2.5.1 (October 26, 2026) ##
+
+- Fix: GoDAM's public video pages, lists and player data no longer show media from draft, private or scheduled posts. Media used on a published page keeps working.
+- Fix: GoDAM only deletes, exports and stores media files that are inside the uploads folder.
+- Fix: Video embed pages and form entries build the player from checked settings.
+- Fix: The form lists in the video editor are available only to users who can upload media, and Jetpack forms in videos show only on published posts.
+- Fix: Sending media to GoDAM for transcoding now checks GoDAM's security certificate.
+- Fix: Media folder names are no longer shown to site visitors, and a locked folder stays locked everywhere.
+
+## v2.5.0 (October 22, 2026) ##
+
+- Feat: GoDAM can add a video sitemap that lists every page with a GoDAM video, through Yoast SEO, Rank Math, All in One SEO or the WordPress sitemap. Turn it on in GoDAM > Settings > SEO; single videos can be left out.
+- Feat: Video chapters are added to the video's search data as key moments, so Google can show links that jump to each chapter.
+- Tweak: The video schema GoDAM adds for search engines now uses a video URL Google can index, adds the player's embed link, and leaves out empty fields.
+- Tweak: Editors see a warning when a video's title looks like a raw file name.
+- Tweak: The WPBakery GoDAM Video element's SEO Settings tab shows the same Video SEO fields as the block editor and Elementor.
+- Tweak: The video share popup now shares the page link. The GoDAM Central and Embed links are gone, and the share button shows on every video when sharing is turned on.
+- Tweak: GoDAM no longer adds the signed-in viewer's email address to the page or to video analytics.
+- Fix: Audio converted to MP3 now shows in the block editor's audio list, including files converted before this update.
+- Fix: The Gravity Forms Record field keeps working after an AJAX page change or a failed submit.
+- Fix: The WordPress admin menu no longer flashes and jumps when a GoDAM page loads.
+- Fix: The form layer preview in the video editor now accepts only a valid form ID.
+
+## v2.4.1 (October 20, 2026) ##
+
+- Fix: The video transcript no longer covers the video. It opens beside the video, or below it on narrow screens, matches the player skin, and can be searched.
+- Fix: Transcripts uploaded as .srt files now show captions and the transcript to visitors.
+- Fix: In Safari, tall videos in a lightbox are no longer cut off at the bottom.
+- Fix: Captions no longer overlap the player controls on narrow screens.
+
 ## v2.4.0 (October 16, 2026) ##
 
 - Feat: A GoDAM widget on the WordPress Dashboard shows what needs fixing (API key, storage, bandwidth, failed files), how your videos were watched over the last 30 days, a summary of your media library, and what is ready to stream.

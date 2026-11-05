@@ -14,6 +14,12 @@
 
 namespace {
 
+	// get_shortcode_regex(), used by the strip_shortcodes() stub below.
+	require_once __DIR__ . '/shortcode-functions.php';
+
+	// The post stubs: get_post and is_post_publicly_viewable.
+	require_once __DIR__ . '/post-functions.php';
+
 	/*
 	 * The HLS URL is read through rtgodam_get_hls_transcoded_url_from_attachment()
 	 * when admin/godam-transcoder-functions.php is loaded (EarlyTranslationHooksTest
@@ -67,6 +73,13 @@ namespace {
  // phpcs:ignore Generic.Classes.DuplicateClassName.Found -- test stub.
 
 			/**
+			 * Parent post ID; 0 (unattached) unless a fixture sets it, as in WordPress.
+			 *
+			 * @var int
+			 */
+			public $post_parent = 0;
+
+			/**
 			 * @param array $props Properties.
 			 */
 			public function __construct( array $props = array() ) {
@@ -74,30 +87,6 @@ namespace {
 					$this->$key = $value;
 				}
 			}
-		}
-	}
-
-	if ( ! function_exists( 'get_post' ) ) {
-
-		/**
-		 * @param int $post_id Post ID.
-		 * @return object|null Post from $GLOBALS['rtgodam_stub']['posts'][ $post_id ].
-		 */
-		function get_post( $post_id = 0 ) {
-			return $GLOBALS['rtgodam_stub']['posts'][ (int) $post_id ] ?? null;
-		}
-	}
-
-	if ( ! function_exists( 'is_post_publicly_viewable' ) ) {
-
-		/**
-		 * Published posts are viewable; a post stub without a status counts as published.
-		 *
-		 * @param WP_Post|object $post Post.
-		 * @return bool
-		 */
-		function is_post_publicly_viewable( $post = null ) {
-			return is_object( $post ) && 'publish' === ( $post->post_status ?? 'publish' );
 		}
 	}
 
@@ -124,14 +113,76 @@ namespace {
 		}
 	}
 
+	/*
+	 * Registered shortcodes. Core fills $shortcode_tags as plugins call
+	 * add_shortcode(); strip_shortcodes() below only removes tags found in it,
+	 * which is the behaviour the sitemap description depends on. These are the
+	 * shortcodes core registers itself, plus GoDAM's. A test that needs another
+	 * set assigns $GLOBALS['shortcode_tags'] and restores it in tearDown().
+	 */
+	if ( ! isset( $GLOBALS['shortcode_tags'] ) ) {
+		$GLOBALS['shortcode_tags'] = array_fill_keys(
+			array( 'wp_caption', 'caption', 'gallery', 'playlist', 'audio', 'video', 'embed', 'godam_video' ),
+			'__return_empty_string'
+		);
+	}
+
+	if ( ! function_exists( 'strip_shortcode_tag' ) ) {
+
+		/**
+		 * WordPress core's strip_shortcode_tag(), copied.
+		 *
+		 * @param array $m Regex match.
+		 * @return string
+		 */
+		function strip_shortcode_tag( $m ) {
+			// Allow [[foo]] syntax for escaping a tag.
+			if ( '[' === $m[1] && ']' === $m[6] ) {
+				return substr( $m[0], 1, -1 );
+			}
+
+			return $m[1] . $m[6];
+		}
+	}
+
 	if ( ! function_exists( 'strip_shortcodes' ) ) {
 
 		/**
+		 * WordPress core's strip_shortcodes(): removes the registered shortcodes
+		 * found in $content, together with the text they enclose, and leaves
+		 * every other [tag] as plain text. Copied from wp-includes/shortcodes.php
+		 * except for do_shortcodes_in_html_tags() / unescape_invalid_shortcodes(),
+		 * which only matter for shortcodes inside HTML attributes.
+		 *
 		 * @param string $content Content.
 		 * @return string
 		 */
 		function strip_shortcodes( $content ) {
-			return preg_replace( '/\[[^\]]*\]/', '', (string) $content );
+			global $shortcode_tags;
+
+			$content = (string) $content;
+
+			if ( false === strpos( $content, '[' ) ) {
+				return $content;
+			}
+
+			if ( empty( $shortcode_tags ) || ! is_array( $shortcode_tags ) ) {
+				return $content;
+			}
+
+			// Find all tag names in $content.
+			preg_match_all( '@\[([^<>&/\[\]\x00-\x20=]++)@', $content, $matches );
+
+			$tags_to_remove = apply_filters( 'strip_shortcodes_tagnames', array_keys( $shortcode_tags ), $content );
+			$tagnames       = array_intersect( $tags_to_remove, $matches[1] );
+
+			if ( empty( $tagnames ) ) {
+				return $content;
+			}
+
+			$pattern = get_shortcode_regex( $tagnames );
+
+			return preg_replace_callback( "/$pattern/", 'strip_shortcode_tag', $content );
 		}
 	}
 

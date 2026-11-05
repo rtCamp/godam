@@ -11,7 +11,7 @@
  * Only loaded from the `wp_sitemaps_init` action, when WP_Sitemaps_Provider exists.
  *
  * @package GoDAM
- * @since   n.e.x.t
+ * @since   2.5.0
  */
 
 namespace RTGODAM\Inc;
@@ -70,7 +70,7 @@ class Video_Sitemap_Core_Provider extends \WP_Sitemaps_Provider {
 			$entry = array( 'loc' => $item['loc'] );
 
 			/** This filter is documented in wp-includes/sitemaps/class-wp-sitemaps-provider.php */
-			$entries[] = apply_filters( 'wp_sitemaps_index_entry', $entry, $this->object_type, '', $item['page'] );
+			$entries[] = apply_filters( 'wp_sitemaps_index_entry', $entry, $this->object_type, '', $item['page'] ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WordPress core's own sitemap filter, applied the same way core does.
 		}
 
 		return $entries;

@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Media_Library\Media_Folder_Utils;
 
 /**
  * Class Media_Library
@@ -50,6 +51,7 @@ class Media_Library_Ajax {
 
 		add_action( 'admin_notices', array( $this, 'media_library_offer_banner' ) );
 		add_action( 'wp_ajax_godam_dismiss_offer_banner', array( $this, 'dismiss_offer_banner' ) );
+		add_action( 'wp_ajax_godam_dismiss_offer_notice', array( Offer_Notice::class, 'dismiss' ) );
 
 		add_action( 'rtgodam_handle_callback_finished', array( $this, 'download_transcoded_mp4_source' ), 10, 4 );
 
@@ -637,6 +639,12 @@ class Media_Library_Ajax {
 			return;
 		}
 
+		// A locked folder, or one inside a locked folder, takes no new files. Leave the
+		// upload unfiled, as the assign-folder route refuses the same move.
+		if ( Media_Folder_Utils::get_instance()->is_folder_locked( $media_folder ) ) {
+			return;
+		}
+
 		// Assign the existing term.
 		wp_set_object_terms( $attachment_id, (int) $media_folder, 'media-folder' );
 	}
@@ -1093,6 +1101,10 @@ class Media_Library_Ajax {
 	public function dismiss_offer_banner() {
 		check_ajax_referer( 'godam-dismiss-offer-banner-nonce', 'nonce' );
 
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Insufficient permissions.', 'godam' ) ), 403 );
+		}
+
 		if ( get_option( 'rtgodam-offer-banner' ) === false ) {
 			add_option( 'rtgodam-offer-banner', 0 );
 		} else {
@@ -1103,86 +1115,24 @@ class Media_Library_Ajax {
 	}
 
 	/**
-	 * Renders an offer banner on the media library page for non-premium users.
+	 * Renders the seasonal offer notice on the Media Library page.
 	 *
 	 * @return void
 	 */
 	public function media_library_offer_banner() {
 		$screen = get_current_screen();
 
-		$show_offer_banner = get_option( 'rtgodam-offer-banner', 1 );
-
-		$timezone     = wp_timezone();
-		$current_time = new \DateTime( 'now', $timezone );
-		$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
-
-		// Only show on the Media Library page.
-		if ( $current_time <= $end_time && $screen && 'upload' === $screen->base && $show_offer_banner ) {
-			$host = wp_parse_url( home_url(), PHP_URL_HOST );
-
-			$banner_image = RTGODAM_URL . 'assets/src/images/new-year-sale-2026.webp';
-
-			$banner_html = sprintf(
-				'<div class="notice annual-plan-offer-banner">
-					<a
-						href="%1$s"
-						class="annual-plan-offer-banner__link"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="%2$s"
-					>
-						<img
-							src="%3$s"
-							class="annual-plan-offer-banner__image"
-							alt="%4$s"
-							loading="lazy"
-						/>
-					</a>
-					<button
-						type="button"
-						class="annual-plan-offer-banner__dismiss"
-						aria-label="%5$s"
-					>
-						&times;
-					</button>
-				</div>',
-				esc_url( RTGODAM_IO_API_BASE . '/pricing?utm_campaign=new-year-sale-2026&utm_source=' . $host . '&utm_medium=plugin&utm_content=media-library-banner' ),
-				esc_attr__( 'Claim the GoDAM New Year Sale 2026 offer', 'godam' ),
-				esc_url( $banner_image ),
-				esc_attr__( 'New Year Sale 2026 offer from GoDAM', 'godam' ),
-				esc_html__( 'Dismiss banner', 'godam' )
-			);
-
-			echo wp_kses(
-				$banner_html,
-				array(
-					'div'    => array( 'class' => array() ),
-					'a'      => array(
-						'href'       => array(),
-						'class'      => array(),
-						'target'     => array(),
-						'rel'        => array(),
-						'aria-label' => array(),
-					),
-					'img'    => array(
-						'src'     => array(),
-						'alt'     => array(),
-						'class'   => array(),
-						'loading' => array(),
-					),
-					'button' => array(
-						'type'       => array(),
-						'class'      => array(),
-						'aria-label' => array(),
-					),
-				)
-			);
+		if ( $screen && 'upload' === $screen->base ) {
+			Offer_Notice::render( 'media-library' );
 		}
 	}
 
 	/**
-	 * Replace an existing WordPress media attachment with a file from an external URL,
-	 * using the WordPress Filesystem API.
+	 * Replace an existing WordPress media attachment with an MP4 file from a GoDAM
+	 * Central host, using the WordPress Filesystem API.
+	 *
+	 * The file is stored under a name made here, and an existing file is only
+	 * overwritten when it is this attachment's own.
 	 *
 	 * @since 1.4.2
 	 *
@@ -1194,6 +1144,10 @@ class Media_Library_Ajax {
 	private function godam_replace_attachment_with_external_file( $attachment_id, $file_url = '' ) {
 		if ( ! $attachment_id || ! $this->is_valid_url( $file_url ) ) {
 			return new \WP_Error( 'invalid_input', __( 'Invalid attachment ID or URL.', 'godam' ) );
+		}
+
+		if ( ! rtgodam_is_transcoder_file_url( $file_url ) ) {
+			return new \WP_Error( 'invalid_host', __( 'The file is not on a host GoDAM serves files from.', 'godam' ) );
 		}
 
 		/**
@@ -1237,13 +1191,31 @@ class Media_Library_Ajax {
 				return $temp_file;
 			}
 
-			// Prepare new file path in uploads.
+			// Prepare new file path in uploads. The name comes from the attachment's current file, or the URL when it has none, with an .mp4 extension.
 			$upload_dir   = wp_upload_dir();
-			$new_filename = wp_basename( wp_parse_url( $file_url, PHP_URL_PATH ) );
+			$current_file = get_attached_file( $attachment_id );
+			$name_source  = $current_file ? $current_file : rawurldecode( wp_basename( (string) wp_parse_url( $file_url, PHP_URL_PATH ) ) );
+			$new_filename = sanitize_file_name( pathinfo( wp_basename( $name_source ), PATHINFO_FILENAME ) . '.mp4' );
 			$new_filepath = trailingslashit( $upload_dir['path'] ) . $new_filename;
 
+			// Only the attachment's own file is overwritten; any other file keeps its name and the new one gets a free one.
+			$replaces_own_file = $current_file && wp_normalize_path( $current_file ) === wp_normalize_path( $new_filepath );
+
+			if ( ! $replaces_own_file ) {
+				$new_filename = wp_unique_filename( $upload_dir['path'], $new_filename );
+				$new_filepath = trailingslashit( $upload_dir['path'] ) . $new_filename;
+			}
+
+			// Only an MP4 replaces the attachment's file.
+			$filetype = wp_check_filetype_and_ext( $temp_file, $new_filename );
+
+			if ( 'video/mp4' !== $filetype['type'] ) {
+				$wp_filesystem->delete( $temp_file );
+				return new \WP_Error( 'invalid_file_type', __( 'The downloaded file is not an MP4 video.', 'godam' ) );
+			}
+
 			// Move temp file into uploads with WP_Filesystem.
-			$moved = $wp_filesystem->move( $temp_file, $new_filepath, true );
+			$moved = $wp_filesystem->move( $temp_file, $new_filepath, $replaces_own_file );
 
 			if ( ! $moved ) {
 				$wp_filesystem->delete( $temp_file );
@@ -1254,15 +1226,12 @@ class Media_Library_Ajax {
 			update_attached_file( $attachment_id, $new_filepath );
 
 			// update mime type.
-			$filetype = wp_check_filetype( $new_filename, null );
-			if ( $filetype['type'] ) {
-				wp_update_post(
-					array(
-						'ID'             => $attachment_id,
-						'post_mime_type' => $filetype['type'],
-					)
-				);
-			}
+			wp_update_post(
+				array(
+					'ID'             => $attachment_id,
+					'post_mime_type' => $filetype['type'],
+				)
+			);
 
 			// Regenerate metadata.
 			$metadata = wp_generate_attachment_metadata( $attachment_id, $new_filepath );

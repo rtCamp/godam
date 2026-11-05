@@ -9,6 +9,9 @@
 
 use RTGODAM\Inc\Assets\IMA_Assets;
 use RTGODAM\Inc\Assets\Jetpack_Form_Assets;
+use RTGODAM\Inc\Assets\Marketo_Form_Assets;
+use RTGODAM\Inc\Assets\Hubspot_Form_Assets;
+use RTGODAM\Inc\Hubspot;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -396,15 +399,22 @@ if ( empty( $godam_attachment_id ) && empty( $godam_src ) && empty( $godam_trans
 	return;
 }
 
+// A player is going on the page, so MAP view tracking may load in the footer.
+\RTGODAM\Inc\Map_Tracker::mark_video_rendered();
+
 $godam_easydam_control_bar_color = 'initial'; // Default color.
 
+// The brand and appearance colours end up in the wrapper's inline style, so only a plain colour value is kept.
 $godam_settings               = get_option( 'rtgodam-settings', array() );
-$godam_brand_color            = isset( $godam_settings['video_player']['brand_color'] ) ? $godam_settings['video_player']['brand_color'] : null;
-$godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] : null;
+$godam_brand_color            = isset( $godam_settings['video_player']['brand_color'] ) ? rtgodam_sanitize_css_color( $godam_settings['video_player']['brand_color'] ) : null;
+$godam_appearance_color       = isset( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ? rtgodam_sanitize_css_color( $godam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) : null;
 $godam_brand_image            = isset( $godam_settings['video_player']['brand_image'] ) ? $godam_settings['video_player']['brand_image'] : null;
 $godam_individual_brand_image = isset( $godam_meta_data['videoConfig']['controlBar']['brand_image'] ) ? $godam_meta_data['videoConfig']['controlBar']['brand_image'] : null;
 
 $godam_woocommerce_allowed_contexts = apply_filters( 'godam_player_woocommerce_contexts', array() );
+
+// What happens when the player leaves the visitor's view: block/shortcode value, else the global setting.
+$godam_out_of_view = rtgodam_get_out_of_view_behavior( isset( $attributes['outOfViewBehavior'] ) ? $attributes['outOfViewBehavior'] : '' );
 
 $godam_woocommerce_context = false;
 
@@ -426,7 +436,12 @@ if ( isset( $attributes['godam_context'] ) && $godam_woocommerce_context ) {
 
 $godam_ads_settings = isset( $godam_settings['ads_settings'] ) ? $godam_settings['ads_settings'] : array();
 
-$godam_ads_settings       = wp_json_encode( $godam_ads_settings );
+// Global ads (Settings → Ads) are on and have an ad tag. WooCommerce
+// placements never show ads; the IMA check below skips them.
+$godam_global_ads_enabled = ! empty( $godam_ads_settings['enable_global_video_ads'] )
+	&& ! empty( $godam_ads_settings['adTagUrl'] );
+
+$godam_ads_settings       = wp_json_encode( $godam_woocommerce_context ? array() : $godam_ads_settings );
 $godam_global_video_share = isset( $godam_settings['video']['enable_global_video_share'] ) ? $godam_settings['video']['enable_global_video_share'] : true;
 
 $godam_video_poster = empty( $godam_poster ) ? $godam_poster_image : $godam_poster;
@@ -655,8 +670,9 @@ elseif ( ! empty( $godam_ads_layers ) && 'self-hosted' === $godam_ad_server ) :
 	$godam_ad_tag_url = get_rest_url( get_current_blog_id(), '/godam/v1/adTagURL/' ) . $godam_attachment_id;
 endif;
 
-// Enqueue IMA SDK assets only if Ad is enabled for this GoDAM player block.
-if ( ! empty( $godam_ad_tag_url ) ) {
+// Enqueue the IMA SDK only when this player can show an ad: its own ad tag or the
+// global ad tag. WooCommerce placements never show ads, so they skip it.
+if ( ! $godam_woocommerce_context && ( ! empty( $godam_ad_tag_url ) || $godam_global_ads_enabled ) ) {
 	IMA_Assets::get_instance();
 }
 
@@ -872,6 +888,8 @@ do_action( 'rtgodam_after_attachment_lookup' );
 							data-transcript-url="<?php echo esc_url( $godam_transcript_url ); ?>"
 							data-transcript-deleted="<?php echo esc_attr( $godam_transcript_deleted ? 'true' : 'false' ); ?>"
 							data-show-in-lightbox="<?php echo esc_attr( $godam_show_in_lightbox ? 'true' : 'false' ); ?>"
+							data-out-of-view="<?php echo esc_attr( $godam_out_of_view ); ?>"
+							data-out-of-view-tab-hidden="<?php echo esc_attr( rtgodam_out_of_view_applies_to_hidden_tab() ? 'true' : 'false' ); ?>"
 						>
 							<?php
 
@@ -906,21 +924,18 @@ do_action( 'rtgodam_after_attachment_lookup' );
 						foreach ( $godam_meta_data['layers'] as $godam_layer ) :
 
 							$godam_form_type = ! empty( $godam_layer['form_type'] ) ? $godam_layer['form_type'] : 'gravity';
+
+							// Printed into the layer's style attribute: a plain colour only, else the default overlay colour.
+							$godam_layer_bg_color = isset( $godam_layer['bg_color'] ) ? rtgodam_sanitize_css_color( $godam_layer['bg_color'], '#FFFFFFB3' ) : '#FFFFFFB3';
+
 							// FORM layer.
 							if ( isset( $godam_layer['type'] ) && 'form' === $godam_layer['type'] ) :
 								if ( 'gravity' === $godam_form_type && ! empty( $godam_layer['gf_id'] ) ) :
 									?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 									<div class="form-container">
 										<?php
-											$godam_theme = ! empty( $godam_layer['theme'] ) ? esc_attr( $godam_layer['theme'] ) : '';
-											echo do_shortcode(
-												sprintf(
-													"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
-													intval( $godam_layer['gf_id'] ),
-													$godam_theme ? " theme='$godam_theme'" : ''
-												)
-											);
+											echo do_shortcode( rtgodam_get_gravityform_layer_shortcode( $godam_layer ) );
 										?>
 									</div>
 								</div>
@@ -928,7 +943,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 								elseif ( 'cf7' === $godam_form_type && ! empty( $godam_layer['cf7_id'] ) ) :
 									$godam_form_theme = ! empty( $godam_layer['theme'] ) ? $godam_layer['theme'] : 'godam';
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container <?php echo esc_attr( 'godam' === $godam_form_theme ? 'rtgodam-wpcf7-form' : '' ); ?>">
 											<?php
 												echo do_shortcode(
@@ -943,7 +958,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<?php
 								elseif ( 'wpforms' === $godam_form_type && ! empty( $godam_layer['wpform_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -958,7 +973,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<?php
 								elseif ( 'sureforms' === $godam_form_type && ! empty( $godam_layer['sureform_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -973,7 +988,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<?php
 								elseif ( 'forminator' === $godam_form_type && ! empty( $godam_layer['forminator_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -988,7 +1003,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<?php
 								elseif ( 'metform' === $godam_form_type && ! empty( $godam_layer['metform_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -1013,7 +1028,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 
 									if ( $godam_form_html && ! is_wp_error( $godam_form_html ) ) :
 										?>
-										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 											<div class="form-container jetpack-form-container" <?php echo ! empty( $godam_origin_post_id ) ? 'data-origin-post-id="' . esc_attr( $godam_origin_post_id ) . '"' : ''; ?>>
 												<?php
 													// HTML generated dynamically using Block content.
@@ -1026,7 +1041,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									endif;
 								elseif ( 'fluentforms' === $godam_form_type && ! empty( $godam_layer['fluent_form_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -1044,7 +1059,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<div
 										id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
 										class="easydam-layer hidden"
-										style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>"
+										style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>"
 									>
 										<div class="form-container everest-form">
 											<?php
@@ -1060,7 +1075,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									<?php
 								elseif ( 'ninjaforms' === $godam_form_type && ! empty( $godam_layer['ninja_form_id'] ) ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden <?php echo esc_attr( $godam_form_type ); ?>" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<div class="form-container">
 											<?php
 												echo do_shortcode(
@@ -1072,12 +1087,96 @@ do_action( 'rtgodam_after_attachment_lookup' );
 											?>
 										</div>
 									</div>
-									<?php
-								endif;
+										<?php
+									elseif ( 'marketo' === $godam_form_type && ! empty( $godam_layer['marketo_id'] ) && \RTGODAM\Inc\Marketo::is_configured() ) :
+										// Marketo has no shortcode: render an empty form node that the
+										// forms2 library fills on the frontend (see Marketo_Form_Assets
+										// and assets/src/js/marketo-form.js). Enqueue the library only
+										// when a Marketo layer is actually present on the page.
+										//
+										// Skipped entirely unless Marketo is connected and the integration
+										// is enabled (Marketo::is_configured), so a disconnected or
+										// disabled Marketo never shows an empty form overlay on the video.
+										Marketo_Form_Assets::get_instance();
+										?>
+										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden marketo" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+											<div class="form-container marketo-form-container">
+												<?php
+													// Unique id per node plus the form id in a data attribute: two
+													// layers with the same Marketo form id never share a
+													// `mktoForm_<id>` element (marketo-form.js loads them one at a
+													// time). See its comment for why.
+												?>
+												<form id="godam-mkto-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" data-marketo-form-id="<?php echo esc_attr( intval( $godam_layer['marketo_id'] ) ); ?>"></form>
+											</div>
+										</div>
+										<?php
+									elseif (
+										'hubspot' === $godam_form_type
+										&& ! empty( $godam_layer['hubspot_id'] )
+										// A HubSpot form GUID, or the numeric id the HubSpot plugin also
+										// accepts. Rejects anything else, including a `]` that would close
+										// the [hubspot] shortcode early (esc_attr does not escape it).
+										&& preg_match( '/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|\d+)$/i', (string) $godam_layer['hubspot_id'] )
+										&& Hubspot::is_configured()
+									) :
+										// HubSpot supports two connection sources; the admin picks one in
+										// Settings → Integrations → HubSpot. Only the active (and actually
+										// connected) source renders, so a disconnected or disabled HubSpot
+										// never shows an empty overlay on the video.
+										$godam_hubspot_source = Hubspot::get_active_source();
+
+										if ( 'central' === $godam_hubspot_source ) :
+											// GoDAM Central: no WP plugin or shortcode. Render an empty
+											// container that HubSpot's forms v2 library fills on the frontend
+											// (see Hubspot_Form_Assets and assets/src/js/hubspot-form.js), using
+											// the portal ID + region from the Central connection. v2 renders a
+											// legacy-editor form itself and a new-editor form as HubSpot's V4
+											// embed; the bridge detects a submit for either. The `hubspotutk`
+											// cookie that ties a submission to a contact comes from HubSpot's
+											// tracking code, injected separately by Map_Tracker. Enqueue the
+											// library only when a Central HubSpot layer is on the page.
+											Hubspot_Form_Assets::get_instance();
+											?>
+										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden hubspot" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+											<div
+												class="form-container hubspot-form"
+												data-portal-id="<?php echo esc_attr( Hubspot::get_effective_portal_id() ); ?>"
+												data-form-id="<?php echo esc_attr( $godam_layer['hubspot_id'] ); ?>"
+												data-region="<?php echo esc_attr( Hubspot::get_effective_region() ); ?>"
+											></div>
+										</div>
+											<?php
+										elseif ( 'leadin' === $godam_hubspot_source && shortcode_exists( 'hubspot' ) ) :
+											// HubSpot (leadin) plugin: render through its own [hubspot]
+											// shortcode (first-party, so HubSpot can associate the visitor).
+											// The portal ID comes from the connected plugin, never the layer.
+											$godam_hubspot_portal_id = get_option( 'leadin_portalId', '' );
+											if ( ! empty( $godam_hubspot_portal_id ) ) :
+												?>
+										<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden hubspot" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+											<div class="form-container">
+												<?php
+													echo do_shortcode(
+														sprintf(
+															"[hubspot type='form' portal='%s' id='%s']",
+															esc_attr( $godam_hubspot_portal_id ),
+															esc_attr( $godam_layer['hubspot_id'] )
+														)
+													);
+												?>
+											</div>
+										</div>
+												<?php
+											endif;
+										endif;
+										?>
+										<?php
+									endif;
 									// Poll layer.
 							elseif ( isset( $godam_layer['type'] ) && 'poll' === $godam_layer['type'] ) :
 								?>
-								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+								<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 									<div class="form-container poll-container">
 										<?php
 										$godam_poll_id = ! empty( $godam_layer['poll_id'] ) ? intval( $godam_layer['poll_id'] ) : 0;
@@ -1098,7 +1197,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 								// matching DOM element is absent, so the video just plays through.
 								if ( $godam_render_html_cta || $godam_render_image_cta ) :
 									?>
-									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo isset( $godam_layer['bg_color'] ) ? esc_attr( $godam_layer['bg_color'] ) : '#FFFFFFB3'; ?>">
+									<div id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>" class="easydam-layer hidden" style="background-color: <?php echo esc_attr( $godam_layer_bg_color ); ?>">
 										<?php if ( $godam_render_html_cta ) : ?>
 											<div class="easydam-layer--cta-html">
 												<?php
@@ -1132,9 +1231,10 @@ do_action( 'rtgodam_after_attachment_lookup' );
 									id="layer-<?php echo esc_attr( $godam_instance_id . '-' . $godam_layer['id'] ); ?>"
 									class="easydam-layer hidden hotspot-layer"
 									<?php
-									if ( ! empty( $godam_layer['bg_color'] ) ) :
+									$godam_hotspot_bg_color = ! empty( $godam_layer['bg_color'] ) ? rtgodam_sanitize_css_color( $godam_layer['bg_color'] ) : '';
+									if ( '' !== $godam_hotspot_bg_color ) :
 										?>
-										style="background-color: <?php echo esc_attr( $godam_layer['bg_color'] ); ?>"<?php endif; ?>
+										style="background-color: <?php echo esc_attr( $godam_hotspot_bg_color ); ?>"<?php endif; ?>
 								>
 								</div>
 								<?php

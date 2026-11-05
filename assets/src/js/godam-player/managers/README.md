@@ -50,8 +50,8 @@ hole in the page layout and hijack a player the visitor may already be watching.
 
 `utils/lightboxTargets.js` holds the shared, unit-tested resolution logic. A video
 is looked up by `data-job_id` first and `data-id` (the WordPress attachment ID)
-second — share links carry the job ID, while hand-written triggers usually carry
-the attachment ID.
+second — share links and hand-written triggers both usually carry the attachment
+ID, falling back to the job ID for virtual media.
 
 Always match on `video[data-*]`, never on `.easydam-player.video-js`: Video.js
 wraps the `<video>` in a generated div that inherits those classes, so the class

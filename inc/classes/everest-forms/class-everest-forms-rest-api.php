@@ -37,7 +37,7 @@ class Everest_Forms_Rest_Api extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_forms' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => $this->get_collection_params(),
 					),
 				),
@@ -49,7 +49,7 @@ class Everest_Forms_Rest_Api extends Base {
 					array(
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_form' ),
-						'permission_callback' => '__return_true',
+						'permission_callback' => array( $this, 'forms_permissions_check' ),
 						'args'                => array_merge(
 							$this->get_collection_params(), // Default collection params.
 							array(
@@ -117,9 +117,8 @@ class Everest_Forms_Rest_Api extends Base {
 			$formatted_forms = array_map(
 				function ( $form ) {
 					return array(
-						'id'          => $form->ID,
-						'title'       => $form->post_title,
-						'description' => $form->post_excerpt,
+						'id'    => $form->ID,
+						'title' => $form->post_title,
 					);
 				},
 				$forms
