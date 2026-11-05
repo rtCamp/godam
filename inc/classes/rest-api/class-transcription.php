@@ -349,9 +349,16 @@ class Transcription extends Base {
 
 		$status = $path ? 'Transcribed' : (string) get_post_meta( $attachment_id, self::STATUS_META, true );
 
+		// Transcription runs on GoDAM, so only a video it has transcoded (one with a
+		// job) can be transcribed. The editor disables Generate without one.
+		$job_id = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		}
+
 		do_action( 'rtgodam_after_attachment_lookup' );
 
-		return rest_ensure_response( $this->shape( $path, $status ) );
+		return rest_ensure_response( array_merge( $this->shape( $path, $status ), array( 'transcoded' => ! empty( $job_id ) ) ) );
 	}
 
 	/**

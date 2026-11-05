@@ -69,6 +69,14 @@ $ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
 			box-shadow: inset 0 0 0 1px $ve-accent;
 			background: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 6%, transparent);
 
+			// Disabled when the video is not on GoDAM: look it.
+			&:disabled {
+				color: $ve-muted;
+				box-shadow: inset 0 0 0 1px $ve-border;
+				background: transparent;
+				cursor: not-allowed;
+			}
+
 			&:hover:not(:disabled) {
 				background: color-mix(in srgb, var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9)) 12%, transparent);
 			}

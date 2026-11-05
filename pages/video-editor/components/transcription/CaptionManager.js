@@ -270,7 +270,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 			{ isError && needsPlan && (
 				<div className="godam-ve-caption-manager__plan" data-test-id="godam-caption-plan-notice">
 					<p className="godam-ve-caption-manager__plan-title">
-						{ __( 'Captions in more than one language are part of the paid GoDAM plans', 'godam' ) }
+						{ __( 'Multi-language captions are part of the paid GoDAM plans', 'godam' ) }
 					</p>
 					<p>
 						{ __( 'With a paid plan, every language you add or generate here appears in the player\'s subtitles menu. On your current plan, Upload File in the Transcription tab still adds one caption file to this video.', 'godam' ) }

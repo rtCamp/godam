@@ -68,6 +68,9 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	const [ deleteTranscription, { isLoading: isDeleting } ] = useDeleteTranscriptionMutation();
 
 	const transcriptPath = transcription?.transcript_path || '';
+	// Only a video GoDAM has transcoded can be transcribed. `undefined` (an older
+	// response) keeps Generate available, as before.
+	const notOnGoDAM = transcription?.transcoded === false;
 	const status = transcription?.status || '';
 	const isReady = Boolean( transcriptPath );
 
@@ -259,7 +262,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 							label={ __( 'Transcription language', 'godam' ) }
 							value={ language }
 							options={ TRANSCRIBE_LANGUAGES.map( ( { value, label } ) => ( { value, label } ) ) }
-							disabled={ isGenerating }
+							disabled={ isGenerating || notOnGoDAM }
 							onChange={ setLanguage }
 							data-test-id="godam-video-editor-select-transcription-language"
 						/>
@@ -267,12 +270,18 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 							className="godam-ve-transcription__generate-btn"
 							variant="secondary"
 							icon={ BoltIcon }
-							disabled={ isGenerating }
+							disabled={ isGenerating || notOnGoDAM }
+							aria-describedby={ notOnGoDAM ? 'godam-ve-transcription-not-transcoded' : undefined }
 							data-test-id="godam-video-editor-button-generate-transcription"
 							onClick={ handleGenerate }
 						>
 							{ __( 'Generate Transcription', 'godam' ) }
 						</Button>
+						{ notOnGoDAM && (
+							<p id="godam-ve-transcription-not-transcoded" className="godam-ve-transcription__help">
+								{ __( 'Transcription runs on GoDAM, and this video has not been transcoded by GoDAM yet. You can still upload a caption file.', 'godam' ) }
+							</p>
+						) }
 
 						<div className="godam-ve-transcription__divider">
 							<span>{ __( 'OR', 'godam' ) }</span>
