@@ -173,13 +173,57 @@ export const consentAwareStorage = {
 };
 
 /**
- * Write the values held in memory to the device, once consent arrives mid-page,
- * so the visitor keeps the id their events from now on are sent with.
+ * Once consent is known, line memory and the device up.
+ *
+ * A value already on the device wins: it is the id of a visitor who consented on
+ * an earlier page. That is the common case, not an edge: the WP Consent API's
+ * script prints after GoDAM's, so on every page load GoDAM first sees "no
+ * consent yet", the library makes a fresh id in memory, and only then consent is
+ * confirmed. Overwriting the stored id there would count a returning visitor as
+ * new on every page. The live instance is switched to the stored id too.
+ *
+ * A value only in memory (consent given on this page) is written to the device.
+ *
+ * @return {string|null} The stored visitor id the live instance is switching to, or null.
  */
 function persistMemoryStore() {
+	let adoptedId = null;
 	Object.keys( memoryStore ).forEach( ( key ) => {
-		deviceStorage.setItem( key, memoryStore[ key ] );
+		const stored = deviceStorage.getItem( key );
+		if ( stored === undefined ) {
+			deviceStorage.setItem( key, memoryStore[ key ] );
+			return;
+		}
+		if ( stored === memoryStore[ key ] ) {
+			return;
+		}
+		memoryStore[ key ] = stored;
+		if ( key === '__anon_id' && typeof window.analytics?.setAnonymousId === 'function' ) {
+			window.analytics.setAnonymousId( stored );
+			adoptedId = stored;
+		}
 	} );
+	return adoptedId;
+}
+
+/**
+ * Run a callback once the live analytics instance reports the given visitor id.
+ * setAnonymousId() finishes asynchronously (a few ms); waiting means no event that
+ * the grant callbacks start goes out with the id made in memory before consent.
+ *
+ * @param {string}   id       Visitor id to wait for.
+ * @param {Function} callback Called once, at the latest after one second.
+ */
+function whenVisitorIdIs( id, callback ) {
+	const deadline = Date.now() + 1000;
+	const check = () => {
+		if ( window.analytics?.user?.()?.anonymousId === id || Date.now() > deadline ) {
+			callback();
+			return;
+		}
+		setTimeout( check, 10 );
+	};
+	check();
 }
 
 /**
@@ -227,14 +271,21 @@ export function syncConsent() {
 	lastKnownConsent = allowed;
 
 	if ( allowed ) {
-		persistMemoryStore();
-		grantCallbacks.forEach( ( callback ) => {
-			try {
-				callback();
-			} catch ( e ) {
-				// One failing listener must not stop the others.
-			}
-		} );
+		const runGrantCallbacks = () => {
+			grantCallbacks.forEach( ( callback ) => {
+				try {
+					callback();
+				} catch ( e ) {
+					// One failing listener must not stop the others.
+				}
+			} );
+		};
+		const adoptedId = persistMemoryStore();
+		if ( adoptedId ) {
+			whenVisitorIdIs( adoptedId, runGrantCallbacks );
+		} else {
+			runGrantCallbacks();
+		}
 		return;
 	}
 

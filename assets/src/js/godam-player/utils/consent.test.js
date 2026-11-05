@@ -51,6 +51,22 @@ function loadFresh( path ) {
 	return mod;
 }
 
+// Each test loads fresh module copies, and each copy adds document listeners.
+// Remove them after every test so an earlier test's copy cannot react to a later
+// test's consent events.
+const addedListeners = [];
+const realAddEventListener = document.addEventListener.bind( document );
+document.addEventListener = ( type, listener, options ) => {
+	addedListeners.push( [ type, listener, options ] );
+	realAddEventListener( type, listener, options );
+};
+
+afterEach( () => {
+	addedListeners.splice( 0 ).forEach( ( [ type, listener, options ] ) => {
+		document.removeEventListener( type, listener, options );
+	} );
+} );
+
 beforeEach( () => {
 	localStorage.clear();
 	sessionStorage.clear();
@@ -242,6 +258,25 @@ describe( 'analytics bundles with the WP Consent API and no consent', () => {
 		const id = window.analytics.user().anonymousId;
 		expect( id ).toMatch( UUID );
 		expect( JSON.parse( localStorage.getItem( '__anon_id' ) ) ).toBe( id );
+	} );
+
+	it( 'a returning visitor keeps their stored id when the consent script loads after GoDAM', async () => {
+		// The visitor consented on an earlier page.
+		localStorage.setItem( '__anon_id', JSON.stringify( 'returning-visitor-id' ) );
+		// This page: the API is active but its script has not run when GoDAM's does.
+		window.videoAnalyticsParams = { consent: { trackingEnabled: true, consentApi: true } };
+		loadFresh( '../analytics' );
+		await new Promise( ( resolve ) => setTimeout( resolve, 0 ) ); // the library's start-up work, done before DOMContentLoaded on a page
+		expect( window.analytics.user().anonymousId ).not.toBe( 'returning-visitor-id' );
+
+		// The API's script runs and reports the earlier consent; GoDAM re-checks
+		// (its DOMContentLoaded listener).
+		window.wp_has_consent = () => true;
+		document.dispatchEvent( new Event( 'wp_consent_type_defined' ) );
+		await new Promise( ( resolve ) => setTimeout( resolve, 100 ) );
+
+		expect( window.analytics.user().anonymousId ).toBe( 'returning-visitor-id' );
+		expect( JSON.parse( localStorage.getItem( '__anon_id' ) ) ).toBe( 'returning-visitor-id' );
 	} );
 
 	it( 'does not buffer layer clicks or set the first-view flag before consent', () => {
