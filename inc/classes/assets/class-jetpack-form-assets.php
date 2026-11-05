@@ -59,15 +59,6 @@ class Jetpack_Form_Assets {
 			)
 		);
 
-		wp_localize_script(
-			'rtgodam-jetpack-form',
-			'wpAjax',
-			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'jetpack_form_nonce' ),
-			),
-		);
-
 		wp_enqueue_script( 'rtgodam-jetpack-form' );
 	}
 }

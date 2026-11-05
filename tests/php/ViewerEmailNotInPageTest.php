@@ -4,8 +4,8 @@
  *
  * rtgodam_get_localize_array() builds the `videoAnalyticsParams` object that is
  * written into every front-end page. It is the same for everyone who loads the
- * page, so it carries the signed-in user's id and nothing else about them: no
- * email address.
+ * page, and a full-page cache serves one visitor's copy to everyone, so it
+ * carries nothing about the signed-in user: no email address, and a user id of 0.
  *
  * @package GoDAM
  */
@@ -58,6 +58,13 @@ class ViewerEmailNotInPageTest extends TestCase {
 		$this->assertStringNotContainsString( self::VIEWER_EMAIL, (string) wp_json_encode( $params ) );
 	}
 
+	public function test_signed_in_viewers_id_is_not_in_the_page_params(): void {
+		$params = rtgodam_get_localize_array();
+
+		// The key stays for older add-on scripts, but always as 0.
+		$this->assertSame( 0, $params['userId'] );
+	}
+
 	public function test_player_page_data_for_a_signed_in_viewer_has_no_email(): void {
 		$data = rtgodam_get_current_user_data_for_page();
 
@@ -75,7 +82,6 @@ class ViewerEmailNotInPageTest extends TestCase {
 	public function test_page_params_keep_what_analytics_still_needs(): void {
 		$params = rtgodam_get_localize_array();
 
-		$this->assertSame( 7, $params['userId'] );
 		$this->assertSame( 1, $params['siteId'] );
 		$this->assertSame( 'https://analytics.test', $params['endpoint'] );
 		$this->assertSame( 'verified-account', $params['token'] );

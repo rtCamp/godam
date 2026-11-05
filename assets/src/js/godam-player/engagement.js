@@ -13,11 +13,59 @@ import { ACTIONS } from './utils/constants';
  */
 import { createReduxStore, register, select, dispatch, subscribe } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
-import { addQueryArgs } from '@wordpress/url';
+import { addQueryArgs } from '@wordpress/url'; // eslint-disable-line import/no-extraneous-dependencies -- WordPress's own wp-url script, loaded as an external.
 import { createRoot, useState, useMemo, useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
-const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar, nonce } = window.godamData || {};
+const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar } = window.godamData || {};
+
+/*
+ * No nonce of our own: core's wp-api-fetch adds its `wp_rest` nonce to every request,
+ * and when that nonce is stale (a page cache served an old copy) it gets a fresh one
+ * from its nonceEndpoint and retries.
+ */
+
+let signedInCheck = null;
+
+/**
+ * Whether the visitor is signed in, for a page that says they are not.
+ *
+ * A full-page cache can serve the signed-out copy of a page to a signed-in visitor.
+ * Core's `rest-nonce` admin-ajax action (apiFetch.nonceEndpoint) answers only a
+ * signed-in visitor, so ask it, once per page. Its answer is a fresh nonce for that
+ * visitor, which replaces the signed-out one in core's nonce middleware.
+ *
+ * @return {Promise<boolean>} Whether the visitor is signed in.
+ */
+export function checkSignedIn() {
+	if ( ! signedInCheck ) {
+		signedInCheck = ( async () => {
+			if ( ! apiFetch.nonceEndpoint ) {
+				return false;
+			}
+
+			try {
+				const response = await window.fetch( apiFetch.nonceEndpoint, { credentials: 'same-origin' } );
+
+				if ( ! response.ok ) {
+					return false;
+				}
+
+				const freshNonce = await response.text();
+
+				if ( apiFetch.nonceMiddleware ) {
+					apiFetch.nonceMiddleware.nonce = freshNonce;
+				}
+
+				return true;
+			} catch {
+				return false;
+			}
+		} )();
+	}
+
+	return signedInCheck;
+}
 
 const storeName = 'godam-video-engagement';
 
@@ -370,6 +418,29 @@ const engagementStore = {
 	},
 
 	/**
+	 * Whether the visitor can like and comment.
+	 *
+	 * The user data printed into the page can be a cached signed-out copy, so a
+	 * visitor it calls 'non-user' is checked once with the server (checkSignedIn()).
+	 *
+	 * @return {Promise<boolean>} Whether the visitor is signed in.
+	 */
+	async isUserSignedIn() {
+		const { type } = this.select.getUserData() || {};
+
+		if ( 'non-user' !== type ) {
+			return true;
+		}
+
+		if ( ! ( await checkSignedIn() ) ) {
+			return false;
+		}
+
+		this.dispatch.updateUserData( { type: 'user' } );
+		return true;
+	},
+
+	/**
 	 * Sends a request to the server to update the like status of a video.
 	 *
 	 * @param {number}  videoAttachmentId The ID of the video attachment.
@@ -384,7 +455,6 @@ const engagementStore = {
 			video_id: videoAttachmentId,
 			like_status: likeStatus,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 		return await apiFetch( {
 			path: addQueryArgs( '/godam/v1/engagement/user-hit-like' ),
 			method: 'POST',
@@ -450,10 +520,9 @@ const engagementStore = {
 			const commentLink = item.querySelector( '.rtgodam-video-engagement--comment-link' );
 
 			if ( likeLink ) {
-				likeLink.addEventListener( 'click', ( event ) => {
+				likeLink.addEventListener( 'click', async ( event ) => {
 					event.preventDefault();
-					const { type: userType } = self.select.getUserData();
-					if ( 'non-user' === userType ) {
+					if ( ! ( await self.isUserSignedIn() ) ) {
 						self.generateCommentModal( videoAttachmentId, siteUrl, videoId );
 						return;
 					}
@@ -613,7 +682,6 @@ function CommentForm( props ) {
 			comment_text: text,
 			comment_type: commentType,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 		let result;
 		try {
 			result = await apiFetch( {
@@ -856,7 +924,6 @@ export function Comment( props ) {
 			comment_id: commentId,
 			delete_type: deleteType,
 		};
-		apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 		let result;
 		try {
 			result = await apiFetch( {
@@ -1063,7 +1130,6 @@ function GuestLoginForm( props ) {
 			const queryParams = {
 				guest_user_email: guestEmail,
 			};
-			apiFetch.use( apiFetch.createNonceMiddleware( nonce ) );
 			const result = await apiFetch( {
 				path: addQueryArgs( '/godam/v1/engagement/guest-user-login' ),
 				method: 'POST',
@@ -1170,6 +1236,19 @@ function CommentBox( props ) {
 	const getUserData = memoizedStoreObj.select.getUserData();
 	const loginStatus = 'guest' === getUserData?.type || 'user' === getUserData?.type;
 	const [ isUserLoggedIn, setIsUserLoggedIn ] = useState( loginStatus );
+
+	// A cached signed-out page can reach a signed-in visitor: ask the server once.
+	useEffect( () => {
+		if ( isUserLoggedIn ) {
+			return;
+		}
+
+		memoizedStoreObj.isUserSignedIn().then( ( isSignedIn ) => {
+			if ( isSignedIn ) {
+				setIsUserLoggedIn( true );
+			}
+		} );
+	}, [ isUserLoggedIn, memoizedStoreObj ] );
 	const videoRatioClass = 'rtgodam-video-engagement-dynamic-ratio-9-16';
 	const videoInfoForMobile = useRef( null );
 

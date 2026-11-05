@@ -5,6 +5,11 @@
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import { getRecorderUploadNonce } from '../godam-recorder/upload-nonce';
+
 ( function( $ ) {
 	// Initialize Backbone.Radio
 	const gnfRadio = Backbone.Radio;
@@ -200,9 +205,11 @@ import { __ } from '@wordpress/i18n';
 
 			// Add nonce or action if needed for WordPress
 			formData.append( 'action', 'nf_godam_upload' );
-			formData.append( 'nonce', nonce );
-
-			this.sendAjax( formData, view, fieldID, formID );
+			// The nonce printed into the page can be stale on a cached page, so ask for a fresh one.
+			getRecorderUploadNonce( this.ajaxUrl, 'ninja-forms', fieldID, nonce ).then( ( freshNonce ) => {
+				formData.append( 'nonce', freshNonce );
+				this.sendAjax( formData, view, fieldID, formID );
+			} );
 		},
 
 		/**
