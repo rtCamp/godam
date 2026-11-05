@@ -32,6 +32,7 @@ function installConsentApi( allowed ) {
  */
 function setStatisticsConsent( allowed ) {
 	consentState = allowed;
+	document.cookie = `wp_consent_statistics=${ allowed ? 'allow' : 'deny' }; path=/`;
 	const detail = [];
 	detail.statistics = allowed ? 'allow' : 'deny';
 	document.dispatchEvent( new CustomEvent( 'wp_listen_for_consent_change', { detail } ) );
@@ -68,6 +69,7 @@ afterEach( () => {
 } );
 
 beforeEach( () => {
+	document.cookie = 'wp_consent_statistics=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
 	localStorage.clear();
 	sessionStorage.clear();
 	delete window.wp_has_consent;
@@ -112,6 +114,20 @@ describe( 'hasStatisticsConsent', () => {
 		consentState = true;
 		expect( hasStatisticsConsent() ).toBe( true );
 		expect( window.wp_has_consent ).toHaveBeenCalledWith( 'statistics' );
+	} );
+
+	it( 'honours a recorded refusal when the banner has not set a consent type on this page', () => {
+		// The real wp_has_consent() returns true when no consent type is set.
+		window.wp_has_consent = jest.fn( () => true );
+		window.videoAnalyticsParams = { consent: { trackingEnabled: true, consentApi: true } };
+		document.cookie = 'wp_consent_statistics=deny; path=/';
+		const { hasStatisticsConsent } = loadFresh( './consent' );
+
+		expect( hasStatisticsConsent() ).toBe( false );
+
+		document.cookie = 'wp_consent_statistics=allow; path=/';
+		expect( hasStatisticsConsent() ).toBe( true );
+		document.cookie = 'wp_consent_statistics=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
 	} );
 
 	it( 'uses the WP Consent API when its script is loaded even without the PHP flag', () => {

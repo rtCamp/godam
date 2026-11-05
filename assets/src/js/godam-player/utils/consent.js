@@ -121,11 +121,34 @@ export function hasStatisticsConsent() {
 		return false;
 	}
 
+	// An explicit refusal recorded by the banner always wins. wp_has_consent()
+	// returns true whenever no consent type (opt-in or opt-out) is set on the page,
+	// and some banners set it only when the visitor acts: CookieYes 3.5, on the
+	// next page after "Reject All", leaves it unset while its deny cookie is there.
+	if ( readConsentCookie() === 'deny' ) {
+		return false;
+	}
+
 	try {
 		return Boolean( window.wp_has_consent( CONSENT_CATEGORY ) );
 	} catch ( e ) {
 		return false;
 	}
+}
+
+/**
+ * The WP Consent API's own cookie for GoDAM's category ('allow', 'deny' or '').
+ *
+ * @return {string} Cookie value, '' when not set.
+ */
+function readConsentCookie() {
+	const prefix = window.consent_api?.cookie_prefix || 'wp_consent';
+	const name = `${ prefix }_${ CONSENT_CATEGORY }=`;
+	const match = document.cookie
+		.split( ';' )
+		.map( ( part ) => part.trim() )
+		.find( ( part ) => part.indexOf( name ) === 0 );
+	return match ? match.substring( name.length ) : '';
 }
 
 /**
