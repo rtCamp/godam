@@ -1,8 +1,8 @@
 <?php
 /**
- * Unit tests for who can call the form-plugin REST routes.
+ * Unit tests for who can call the form-plugin and poll REST routes.
  *
- * Only the Media Editor calls the form listing and single-form routes, so they
+ * Only the Media Editor calls the form and poll listing and single-item routes, so they
  * need `upload_files`, the capability the Media Editor page needs. The one form
  * route the front-end player calls, the Jetpack form submission, stays public,
  * and so do the routes that only repeat what WordPress already shows visitors.
@@ -27,6 +27,7 @@ use RTGODAM\Inc\REST_API\Fluent_Forms;
 use RTGODAM\Inc\REST_API\Forminator_Forms;
 use RTGODAM\Inc\REST_API\GF;
 use RTGODAM\Inc\REST_API\Jetpack;
+use RTGODAM\Inc\REST_API\Polls;
 use RTGODAM\Inc\REST_API\SureForms;
 use RTGODAM\Inc\REST_API\WPForms;
 
@@ -37,6 +38,7 @@ use RTGODAM\Inc\REST_API\WPForms;
  * @covers \RTGODAM\Inc\REST_API\Forminator_Forms::get_rest_routes
  * @covers \RTGODAM\Inc\REST_API\GF::get_rest_routes
  * @covers \RTGODAM\Inc\REST_API\Jetpack::get_rest_routes
+ * @covers \RTGODAM\Inc\REST_API\Polls::get_rest_routes
  * @covers \RTGODAM\Inc\REST_API\SureForms::get_rest_routes
  * @covers \RTGODAM\Inc\REST_API\WPForms::get_rest_routes
  * @covers \RTGODAM\Inc\Everest_Forms\Everest_Forms_Rest_Api::get_rest_routes
@@ -65,20 +67,26 @@ class FormRoutePermissionTest extends TestCase {
 		'/godam/v1/everest-form',
 		'/godam/v1/cf7-form',
 		'/godam/v1/jetpack-form',
+		'/godam/v1/metforms',
+		'/godam/v1/metform',
+		'/godam/v1/polls',
+		'/godam/v1/poll/(?P<id>\d+)',
 	);
 
 	/**
 	 * Routes that stay public.
 	 *
 	 * The Jetpack form submission is what the front-end player posts a visitor's
-	 * entry to. MetForm's forms are public posts, and the Jetpack listing names
-	 * published pages and posts, so those three routes return only what visitors
-	 * can already read on the site.
+	 * entry to. The Jetpack listing names published pages and posts, so it
+	 * returns only what visitors can already read on the site.
+	 *
+	 * MetForm and poll routes are not here: the single MetForm route renders
+	 * any form ID, including unpublished builder forms, and the polls listing
+	 * returns every poll, including scheduled ones. The player renders both
+	 * layers on the server, so only the Media Editor calls these routes.
 	 */
 	const PUBLIC_ROUTES = array(
 		'/godam/v1/jetpack-form-submit',
-		'/godam/v1/metforms',
-		'/godam/v1/metform',
 		'/godam/v1/jetpack-forms',
 	);
 
@@ -102,6 +110,7 @@ class FormRoutePermissionTest extends TestCase {
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/rest-api/class-fluent-forms.php';
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/rest-api/class-forminator-forms.php';
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/rest-api/class-jetpack.php';
+		require_once dirname( __DIR__, 2 ) . '/inc/classes/rest-api/class-polls.php';
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/rest-api/class-sureforms.php';
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/rest-api/class-wpforms.php';
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/everest-forms/class-everest-forms-rest-api.php';
@@ -112,7 +121,7 @@ class FormRoutePermissionTest extends TestCase {
 		$GLOBALS['rtgodam_stub'] = array( 'active_plugins' => array( 'sureforms/sureforms.php' ) );
 
 		$this->routes = array();
-		foreach ( array( CF7::class, Fluent_Forms::class, Forminator_Forms::class, GF::class, Jetpack::class, SureForms::class, WPForms::class, Everest_Forms_Rest_Api::class, Metform_Rest_Api::class, Ninja_Forms_Rest_Api::class ) as $class ) {
+		foreach ( array( CF7::class, Fluent_Forms::class, Forminator_Forms::class, GF::class, Jetpack::class, Polls::class, SureForms::class, WPForms::class, Everest_Forms_Rest_Api::class, Metform_Rest_Api::class, Ninja_Forms_Rest_Api::class ) as $class ) {
 			$instance = ( new \ReflectionClass( $class ) )->newInstanceWithoutConstructor();
 			foreach ( $instance->get_rest_routes() as $route ) {
 				// The routes have no base, so the route starts with a double slash.
@@ -185,7 +194,7 @@ class FormRoutePermissionTest extends TestCase {
 
 	/** The routes that only repeat what visitors can already read stay as they were. */
 	public function test_routes_that_repeat_public_data_stay_public() {
-		foreach ( array( '/godam/v1/metforms', '/godam/v1/metform', '/godam/v1/jetpack-forms' ) as $path ) {
+		foreach ( array( '/godam/v1/jetpack-forms' ) as $path ) {
 			$this->assertSame( '__return_true', $this->routes[ $path ]['permission_callback'], $path );
 		}
 	}
