@@ -15,6 +15,27 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      # Release tags must point at a commit that is already on main, so nothing
+      # reaches WordPress.org from a feature branch or an old commit. A tag does
+      # not record the branch it was made on, so we check main's history instead.
+      # Dry tags and develop pushes are dry runs and are not checked.
+      - name: Check the tag is on main
+        if: github.ref_type == 'tag' && !startsWith(github.ref_name, 'dry')
+        shell: bash
+        run: |
+          # The checkout is shallow; fetch full history so main's ancestry is known.
+          if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+            git fetch --no-tags --unshallow origin main
+          else
+            git fetch --no-tags origin main
+          fi
+          if git merge-base --is-ancestor "${GITHUB_SHA}^{commit}" FETCH_HEAD; then
+            echo "Tag ${GITHUB_REF_NAME} points at a commit on main."
+          else
+            echo "::error::Tag ${GITHUB_REF_NAME} points at ${GITHUB_SHA}, which is not on main. Tag a commit on main to release."
+            exit 1
+          fi
+
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
