@@ -176,7 +176,7 @@ class Dynamic_Gallery extends Base {
 				echo '<div class="godam-gallery-v2__query-item godam-gallery-v2__query-item--ratio-' . esc_attr( $ratio_class ) . '">';
 				$no_thumb_class = ( empty( $item['thumbnail'] ) && ! empty( $item['video_url'] ) ) ? ' godam-gallery-v2-item--no-thumb' : '';
 				/* translators: %s: video title. */
-				echo '<button type="button" class="godam-gallery-v2__query-button' . esc_attr( $no_thumb_class ) . '" data-godam-gallery-v2-trigger="true" data-video-id="' . esc_attr( $item['id'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $item['title'] ) ) . '">';
+				echo '<button type="button" class="godam-gallery-v2__query-button' . esc_attr( $no_thumb_class ) . '" data-godam-gallery-v2-trigger="true" data-video-id="' . esc_attr( $item['id'] ) . '" data-godam-job="' . esc_attr( rtgodam_signed_playback_job( $item['id'] ) ) . '" aria-label="' . esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $item['title'] ) ) . '">';
 				echo '<div class="godam-gallery-v2__query-thumb' . ( ! empty( $item['placeholder'] ) ? ' godam-gallery-blurred-img' : '' ) . '"' . ( ! empty( $item['placeholder'] ) ? ' style="background-image: url(\'' . esc_url( $item['placeholder'] ) . '\')"' : '' ) . '>';
 
 				if ( ! empty( $item['thumbnail'] ) ) {

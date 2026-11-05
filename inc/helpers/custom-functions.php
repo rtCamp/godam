@@ -3617,3 +3617,30 @@ function rtgodam_is_transcoder_file_url( $url ) {
 
 	return false;
 }
+
+/**
+ * The GoDAM job id of an attachment, for the signed playback route (godam/v1/playback).
+ *
+ * Thumbnails and previews of an Organization or Embed only file are in a signed folder, so
+ * their saved URLs fail; the front end swaps in signed ones by this id (signed-thumbnails.js).
+ * The job id, not the attachment id: attachment ids are sequential and would let anyone
+ * walk the media library through the route.
+ *
+ * @param int $attachment_id Attachment ID.
+ * @return string Job id, or '' when the attachment isn't a GoDAM file.
+ */
+function rtgodam_signed_playback_job( $attachment_id ) {
+	$attachment_id = absint( $attachment_id );
+	if ( ! $attachment_id ) {
+		return '';
+	}
+	/** This action is documented in inc/templates/godam-player.php */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	$job = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+	if ( empty( $job ) ) {
+		$job = get_post_meta( $attachment_id, '_godam_original_id', true );
+	}
+	/** This action is documented in inc/templates/godam-player.php */
+	do_action( 'rtgodam_after_attachment_lookup' );
+	return is_string( $job ) ? $job : '';
+}
