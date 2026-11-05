@@ -6,7 +6,7 @@
  * `data-transcript-deleted` means the user deleted it, so show nothing.
  * Otherwise a `data-transcript-url` with `data-transcript-source="upload"` (a
  * file the user uploaded in WordPress) is added first, then every ready
- * caption track from the public API endpoint, default first. The endpoint
+ * caption track from the public API endpoint, A to Z, with the default on. The endpoint
  * supports ETag/Cache-Control:
  * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
  * If the endpoint fails or sends no caption tracks, the cached
@@ -102,7 +102,7 @@ export default class TranscriptManager {
 
 		// Every ready caption track (one per language), when the SaaS sends them.
 		if ( Array.isArray( transcriptData?.caption_tracks ) ) {
-			this.addCaptionTracks( transcriptData.caption_tracks );
+			this.addCaptionTracks( transcriptData.caption_tracks, hasLocalUpload );
 			return;
 		}
 
@@ -134,31 +134,86 @@ export default class TranscriptManager {
 	/**
 	 * Add one subtitle/caption `<track>` per first-class caption track.
 	 *
-	 * Tracks still being generated (no `vtt_path` yet) are skipped. The default
-	 * track is added first so the player's auto-enable (see
-	 * `setupDefaultSubtitle` in videoPlayer.js) turns on the right language,
-	 * unless a WordPress-uploaded transcript was already added ahead of it.
+	 * Tracks still being generated (no `vtt_path` yet) are skipped. They are
+	 * added A to Z by the name shown in the CC menu, so the menu order does not
+	 * change when the default changes, and the default track is then switched on
+	 * directly. A transcript uploaded in WordPress, already added and switched
+	 * on ahead of these, stays the one showing.
 	 *
-	 * @param {Array<Object>} captions Caption-track rows from the SaaS.
+	 * @param {Array<Object>} captions          Caption-track rows from the SaaS.
+	 * @param {boolean}       keepLocalUploadOn Whether a WordPress upload was added first.
 	 */
-	addCaptionTracks( captions ) {
+	addCaptionTracks( captions, keepLocalUploadOn = false ) {
 		const ready = captions.filter( ( caption ) => !! caption?.vtt_path );
+		const menuName = ( caption ) => caption.label || caption.language || 'en';
 
-		// Default track first, so it becomes the auto-enabled subtitle.
-		ready.sort( ( a, b ) => ( b?.is_default ? 1 : 0 ) - ( a?.is_default ? 1 : 0 ) );
+		ready.sort( ( a, b ) => menuName( a ).localeCompare( menuName( b ), undefined, { sensitivity: 'base' } ) );
 
 		ready.forEach( ( caption ) => {
 			const srclang = caption.language || 'en';
-			this.addTextTrack( caption.vtt_path, {
+			this.addTextTrack( this.trackSrc( caption ), {
 				kind: caption.kind === 'captions' ? 'captions' : 'subtitles',
-				label: caption.label || srclang,
+				label: menuName( caption ),
 				srclang,
 			} );
-			// The first track added is the panel/reader transcript.
-			if ( ! this.transcriptUrl ) {
-				this.transcriptUrl = caption.vtt_path;
-			}
 		} );
+
+		const defaultCaption = ready.find( ( caption ) => caption.is_default ) || ready[ 0 ];
+		if ( ! defaultCaption ) {
+			return;
+		}
+		// The panel/reader transcript follows the default track.
+		if ( ! this.transcriptUrl ) {
+			this.transcriptUrl = this.trackSrc( defaultCaption );
+		}
+		if ( ! keepLocalUploadOn ) {
+			this.showTrack( this.trackSrc( defaultCaption ) );
+		}
+	}
+
+	/**
+	 * The URL to load a caption track from.
+	 *
+	 * An edit in GoDAM rewrites the file at the same address, and the CDN tells
+	 * browsers to keep caption files for 30 days, so a visitor who loaded the
+	 * track before would keep the old text. The track's `revision` changes on
+	 * every edit, so adding it gives each version its own address.
+	 *
+	 * @param {Object} caption Caption-track row from the SaaS.
+	 * @return {string} The track URL, with `rev` added when the row has a revision.
+	 */
+	trackSrc( caption ) {
+		if ( ! caption.revision ) {
+			return caption.vtt_path;
+		}
+		const separator = caption.vtt_path.includes( '?' ) ? '&' : '?';
+		return `${ caption.vtt_path }${ separator }rev=${ encodeURIComponent( caption.revision ) }`;
+	}
+
+	/**
+	 * Switch on the subtitle track loaded from `src` and switch the others off.
+	 *
+	 * The player's auto-enable (`setupDefaultSubtitle` in videoPlayer.js) turns
+	 * on whichever track is added first, which is now the first one A to Z; this
+	 * puts the default back on top of it. Does nothing when the player is set
+	 * not to show captions on load.
+	 *
+	 * @param {string} src URL of the track to show.
+	 */
+	showTrack( src ) {
+		if ( ! this.configManager?.videoSetupOptions?.showCaption ) {
+			return;
+		}
+		const target = Array.from( this.player.remoteTextTrackEls?.() || [] ).find( ( el ) => el?.src === src )?.track;
+		if ( ! target ) {
+			return;
+		}
+		const tracks = this.player.textTracks?.() || [];
+		for ( let i = 0; i < tracks.length; i++ ) {
+			if ( tracks[ i ].kind === 'subtitles' || tracks[ i ].kind === 'captions' ) {
+				tracks[ i ].mode = tracks[ i ] === target ? 'showing' : 'disabled';
+			}
+		}
 	}
 
 	/**

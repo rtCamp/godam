@@ -256,6 +256,43 @@ $ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
 		overflow-wrap: anywhere;
 	}
 
+	&__title {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.375rem;
+	}
+
+	&__badge {
+		padding: 0.0625rem 0.5rem;
+		border: 1px solid transparent;
+		border-radius: 999px;
+		background: $ve-faint;
+		font-size: 0.6875rem;
+		line-height: 1.4;
+		color: $ve-muted;
+
+		&.is-default {
+			border-color: #b8e6c3;
+			background: #edfaef;
+			color: #2e7d3d;
+		}
+	}
+
+	// The default track's filled check stays readable although the button is disabled.
+	&__default-btn.components-button:disabled {
+		background: transparent;
+		opacity: 1;
+	}
+
+	.components-button svg.godam-ve-caption-manager__icon--stroke {
+		fill: none;
+		stroke: currentcolor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.5;
+	}
+
 	&__sub {
 		font-size: 0.75rem;
 		color: $ve-muted;
@@ -284,6 +321,19 @@ $ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
 		display: flex;
 		align-items: center;
 		gap: 1rem;
+	}
+
+	&__label-field.has-error .components-base-control__help {
+		color: #cc1818;
+	}
+
+	&__file-name {
+		min-width: 0;
+		max-width: 14rem;
+		color: $ve-muted;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 }
 

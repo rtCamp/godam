@@ -207,10 +207,12 @@ class Transcription extends Base {
 				'description'       => __( 'BCP 47 language tag for the caption track.', 'godam' ),
 				'sanitize_callback' => array( $this, 'sanitize_language' ),
 			),
+			// The label names the track in the subtitle menu. It is required on
+			// upload and must be unique on the video; Central enforces both.
 			'label'      => array(
-				'required'          => false,
+				'required'          => $is_upload,
 				'type'              => 'string',
-				'description'       => __( 'Label shown in the subtitle menu.', 'godam' ),
+				'description'       => __( 'Label shown in the subtitle menu. Unique on the video.', 'godam' ),
 				'sanitize_callback' => 'sanitize_text_field',
 			),
 			'kind'       => array(

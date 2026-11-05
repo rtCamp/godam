@@ -751,7 +751,7 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
  *    the user uploaded in WordPress. It never reaches the SaaS, so it is added
  *    first and becomes the default subtitle.
  * 3. Every ready caption track from the public API endpoint (one per
- *    language, generated or uploaded in GoDAM), default first:
+ *    language, generated or uploaded in GoDAM), A to Z with the default on:
  *    GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
  *    which keeps ETag/Cache-Control caching.
  * 4. When that endpoint is unreachable or predates caption tracks,

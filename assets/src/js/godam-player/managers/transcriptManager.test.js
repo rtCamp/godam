@@ -17,18 +17,21 @@ const CAPTION_TRACKS = [
  * A manager for a video printed with the given data attributes, whose SaaS
  * request returns `response` (or fails when it is an Error).
  *
- * @param {Object}       dataset  The video's data attributes.
- * @param {Object|Error} response What fetchTranscriptPath resolves or rejects with.
+ * @param {Object}       dataset       The video's data attributes.
+ * @param {Object|Error} response      What fetchTranscriptPath resolves or rejects with.
+ * @param {Object}       configManager The player config (showCaption turns the default on).
  * @return {{manager: TranscriptManager, added: Array<Object>}} The manager and the tracks it adds.
  */
-const setup = ( dataset, response ) => {
+const setup = ( dataset, response, configManager = {} ) => {
 	const added = [];
 	const player = {
-		remoteTextTrackEls: () => added.map( ( track ) => ( { src: track.src } ) ),
-		addRemoteTextTrack: ( track ) => added.push( track ),
+		remoteTextTrackEls: () => added.map( ( track ) => ( { src: track.src, track } ) ),
+		// Like video.js's auto-enable, the first track added starts out showing.
+		addRemoteTextTrack: ( track ) => added.push( { ...track, mode: added.length ? 'disabled' : 'showing' } ),
+		textTracks: () => added,
 	};
 	const video = { dataset: { job_id: 'job-1', ...dataset } };
-	const manager = new TranscriptManager( player, video, {} );
+	const manager = new TranscriptManager( player, video, configManager );
 	manager.fetchTranscriptPath = jest.fn( () => (
 		response instanceof Error ? Promise.reject( response ) : Promise.resolve( response )
 	) );
@@ -36,7 +39,7 @@ const setup = ( dataset, response ) => {
 };
 
 describe( 'TranscriptManager.initialize', () => {
-	it( 'adds every ready caption track, default first, and skips ones still generating', async () => {
+	it( 'adds every ready caption track A to Z and skips ones still generating', async () => {
 		const { manager, added } = setup( { transcriptUrl: CACHED }, { exists: true, url: CACHED, caption_tracks: CAPTION_TRACKS } );
 
 		await manager.initialize();
@@ -48,6 +51,51 @@ describe( 'TranscriptManager.initialize', () => {
 		expect( manager.transcriptUrl ).toBe( CACHED );
 	} );
 
+	it( 'keeps the menu A to Z and switches on the default track, wherever it sorts', async () => {
+		const { manager, added } = setup(
+			{},
+			{
+				exists: true,
+				caption_tracks: [
+					{ caption_id: 's', language: 'es', label: 'Spanish', vtt_path: 'https://cdn.example/job/es.vtt', is_default: true },
+					{ caption_id: 'h', language: 'hi', label: 'hindi', vtt_path: 'https://cdn.example/job/hi.vtt', is_default: false },
+					{ caption_id: 'e', language: 'en', label: 'English', vtt_path: CACHED, is_default: false },
+				],
+			},
+			{ videoSetupOptions: { showCaption: true } },
+		);
+
+		await manager.initialize();
+
+		expect( added.map( ( track ) => [ track.label, track.mode ] ) ).toEqual( [
+			[ 'English', 'disabled' ],
+			[ 'hindi', 'disabled' ],
+			[ 'Spanish', 'showing' ],
+		] );
+		expect( manager.transcriptUrl ).toBe( 'https://cdn.example/job/es.vtt' );
+	} );
+
+	it( 'gives each edit of a track its own address, so browsers do not replay old text', async () => {
+		const { manager, added } = setup(
+			{},
+			{
+				exists: true,
+				caption_tracks: [
+					{ caption_id: 'e', language: 'en', label: 'English', vtt_path: CACHED, is_default: true, revision: '2026-11-05 13:53:38.730957' },
+					{ caption_id: 's', language: 'es', label: 'Spanish', vtt_path: 'https://cdn.example/job/es.vtt?token=a', is_default: false, revision: 'r 2' },
+				],
+			},
+		);
+
+		await manager.initialize();
+
+		expect( added.map( ( track ) => track.src ) ).toEqual( [
+			`${ CACHED }?rev=2026-11-05%2013%3A53%3A38.730957`,
+			'https://cdn.example/job/es.vtt?token=a&rev=r%202',
+		] );
+		expect( manager.transcriptUrl ).toBe( `${ CACHED }?rev=2026-11-05%2013%3A53%3A38.730957` );
+	} );
+
 	it( 'puts a transcript uploaded in WordPress first, then the GoDAM tracks', async () => {
 		const { manager, added } = setup(
 			{ transcriptUrl: UPLOAD, transcriptSource: 'upload' },
@@ -57,6 +105,7 @@ describe( 'TranscriptManager.initialize', () => {
 		await manager.initialize();
 
 		expect( added.map( ( track ) => track.src ) ).toEqual( [ UPLOAD, CACHED, 'https://cdn.example/job/es.vtt' ] );
+		expect( added.find( ( track ) => track.mode === 'showing' )?.src ).toBe( UPLOAD );
 		expect( manager.transcriptUrl ).toBe( UPLOAD );
 	} );
 

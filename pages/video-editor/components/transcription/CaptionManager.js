@@ -18,7 +18,7 @@ import {
 	FlexItem,
 } from '@wordpress/components';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { plus, trash, edit, upload, download, check } from '@wordpress/icons';
+import { plus, trash, edit, download } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -35,11 +35,35 @@ import CaptionCueEditor from './CaptionCueEditor';
 
 const FREE_TEXT = '__other__';
 
+// Same marks as GoDAM Central's caption dialog: an outlined check for "make this the default",
+// a filled green one on the track that already is, and circular arrows for "replace".
+// Stroke-only icons: the --stroke class stops the button's fill rule from filling them.
+const DefaultIcon = (
+	<svg className="godam-ve-caption-manager__icon--stroke" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+		<circle cx="12" cy="12" r="8" />
+		<path d="M8.75 12.25l2.25 2.25 4.25-4.5" />
+	</svg>
+);
+const IsDefaultIcon = (
+	<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+		<circle cx="12" cy="12" r="8.75" fill="#3d9a50" />
+		<path d="M8.75 12.25l2.25 2.25 4.25-4.5" fill="none" stroke="#fff" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+	</svg>
+);
+const ReplaceIcon = (
+	<svg className="godam-ve-caption-manager__icon--stroke" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+		<path d="M19 11a7 7 0 0 0-12.4-4.2L5 8.5" />
+		<path d="M5 4.5v4h4" />
+		<path d="M5 13a7 7 0 0 0 12.4 4.2L19 15.5" />
+		<path d="M19 19.5v-4h-4" />
+	</svg>
+);
+
 /**
  * Read a picked caption File into text + detected source format.
  *
  * @param {File} file The chosen .vtt / .srt file.
- * @return {Promise<{content:string,sourceFormat:string}>} File text and format.
+ * @return {Promise<{name:string,content:string,sourceFormat:string}>} File name, text and format.
  */
 const readCaptionFile = ( file ) =>
 	new Promise( ( resolve, reject ) => {
@@ -47,6 +71,7 @@ const readCaptionFile = ( file ) =>
 		reader.onload = () => {
 			const ext = ( file.name.split( '.' ).pop() || '' ).toLowerCase();
 			resolve( {
+				name: file.name,
 				content: String( reader.result || '' ),
 				sourceFormat: ext === 'srt' ? 'srt' : 'vtt',
 			} );
@@ -88,9 +113,26 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 	const replaceTargetRef = useRef( null );
 
 	// Central's caption endpoints return `{ success, captions: [...] }`.
-	const captions = Array.isArray( data?.captions ) ? data.captions : [];
+	// A to Z by the name shown, so a row does not jump when it becomes the default.
+	const captions = ( Array.isArray( data?.captions ) ? [ ...data.captions ] : [] ).sort( ( a, b ) =>
+		( a.label || languageLabel( a.language ) ).localeCompare( b.label || languageLabel( b.language ), undefined, { sensitivity: 'base' } ),
+	);
 
 	const resolvedLanguage = form.language === FREE_TEXT ? form.freeLang.trim() : form.language;
+
+	// The label is the track's name in the player's menu, so the user picks it and
+	// no two tracks on a video may share one (ignoring case and outer spaces).
+	const newLabel = form.label.trim();
+	const labelTaken = '' !== newLabel && captions.some(
+		( caption ) => ( caption.label || languageLabel( caption.language ) ).trim().toLowerCase() === newLabel.toLowerCase(),
+	);
+	const labelError = labelTaken
+		? sprintf(
+			/* translators: %s: caption label the user typed. */
+			__( 'A caption named "%s" already exists on this video. Choose another label.', 'godam' ),
+			newLabel,
+		)
+		: '';
 
 	/* ---- Add ---- */
 
@@ -122,13 +164,20 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 			setError( __( 'Choose a language for this caption.', 'godam' ) );
 			return;
 		}
+		if ( ! newLabel ) {
+			setError( __( 'Enter a label for this caption. It is the name shown in the subtitles menu.', 'godam' ) );
+			return;
+		}
+		if ( labelTaken ) {
+			return;
+		}
 		try {
 			await uploadCaption( {
 				attachmentID,
 				content: pendingFile.content,
 				sourceFormat: pendingFile.sourceFormat,
 				language: resolvedLanguage,
-				label: form.label.trim() || languageLabel( resolvedLanguage ),
+				label: newLabel,
 				kind: 'subtitles',
 				isDefault: form.isDefault,
 			} ).unwrap();
@@ -234,13 +283,22 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 						return (
 							<li key={ id } className="godam-ve-caption-manager__row" data-test-id={ `godam-caption-row-${ id }` }>
 								<div className="godam-ve-caption-manager__meta">
-									<span className="godam-ve-caption-manager__label">
-										{ caption.label || languageLabel( caption.language ) }
+									<span className="godam-ve-caption-manager__title">
+										<span className="godam-ve-caption-manager__label">
+											{ caption.label || languageLabel( caption.language ) }
+										</span>
+										{ caption.is_default && (
+											<span className="godam-ve-caption-manager__badge is-default">
+												{ __( 'Default', 'godam' ) }
+											</span>
+										) }
+										<span className="godam-ve-caption-manager__badge">
+											{ isUploaded ? __( 'Uploaded', 'godam' ) : __( 'Generated', 'godam' ) }
+										</span>
 									</span>
 									<span className="godam-ve-caption-manager__sub">
 										{ [
 											caption.language,
-											isUploaded ? __( 'Uploaded', 'godam' ) : __( 'Generated', 'godam' ),
 											caption.cue_count
 												? sprintf(
 													/* translators: %d: number of cues in the caption file. */
@@ -250,7 +308,6 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 												: '',
 											// A generated track with no file is still running or failed.
 											! caption.vtt_path && caption.status ? caption.status : '',
-											caption.is_default ? __( 'Default', 'godam' ) : '',
 										]
 											.filter( Boolean )
 											.join( ' • ' ) }
@@ -259,13 +316,6 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 								<div className="godam-ve-caption-manager__actions">
 									{ rowBusy && <Spinner /> }
 									<Button
-										icon={ check }
-										label={ __( 'Set as default', 'godam' ) }
-										showTooltip
-										disabled={ caption.is_default || rowBusy || ! caption.vtt_path }
-										onClick={ () => handleSetDefault( id ) }
-									/>
-									<Button
 										icon={ edit }
 										label={ __( 'Edit captions', 'godam' ) }
 										showTooltip
@@ -273,7 +323,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 										onClick={ () => setEditing( caption ) }
 									/>
 									<Button
-										icon={ upload }
+										icon={ ReplaceIcon }
 										label={ __( 'Replace file', 'godam' ) }
 										showTooltip
 										disabled={ rowBusy }
@@ -290,6 +340,14 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 											download
 										/>
 									) }
+									<Button
+										icon={ caption.is_default ? IsDefaultIcon : DefaultIcon }
+										label={ caption.is_default ? __( 'Shown by default', 'godam' ) : __( 'Show this caption by default', 'godam' ) }
+										showTooltip
+										className="godam-ve-caption-manager__default-btn"
+										disabled={ caption.is_default || rowBusy || ! caption.vtt_path }
+										onClick={ () => handleSetDefault( id ) }
+									/>
 									<Button
 										icon={ trash }
 										label={ __( 'Delete', 'godam' ) }
@@ -340,14 +398,22 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 								label={ __( 'Label', 'godam' ) }
 								placeholder={ __( 'Shown in the menu', 'godam' ) }
 								value={ form.label }
+								required
+								className={ labelError ? 'godam-ve-caption-manager__label-field has-error' : 'godam-ve-caption-manager__label-field' }
+								help={ labelError }
 								onChange={ ( label ) => setForm( ( f ) => ( { ...f, label } ) ) }
 							/>
 						</FlexItem>
 					</Flex>
 					<div className="godam-ve-caption-manager__add-row">
 						<Button variant="secondary" onClick={ () => addFileRef.current?.click() }>
-							{ pendingFile ? __( 'File selected', 'godam' ) : __( 'Choose file', 'godam' ) }
+							{ pendingFile ? __( 'Choose another file', 'godam' ) : __( 'Choose file', 'godam' ) }
 						</Button>
+						{ pendingFile && (
+							<span className="godam-ve-caption-manager__file-name" title={ pendingFile.name }>
+								{ pendingFile.name }
+							</span>
+						) }
 						<CheckboxControl
 							__nextHasNoMarginBottom
 							label={ __( 'Set as default', 'godam' ) }
@@ -370,7 +436,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 							variant="primary"
 							className="w-full justify-center"
 							isBusy={ isUploading }
-							disabled={ isUploading }
+							disabled={ isUploading || labelTaken }
 							onClick={ handleAdd }
 						>
 							{ __( 'Add caption', 'godam' ) }
