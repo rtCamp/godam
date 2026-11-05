@@ -544,6 +544,7 @@ class Layer_Type_Registry {
 				continue;
 			}
 
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- the build's `*.asset.php` beside a registered layer.json, checked to exist above.
 			$asset = include $asset_file;
 			// Core types (no namespace) get a `godam-layer-` prefix, as core blocks get `wp-block-`.
 			$prefix = false === strpos( $type['name'], '/' ) ? 'godam-layer-' . $type['name'] : str_replace( '/', '-', $type['name'] );

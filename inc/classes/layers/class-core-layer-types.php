@@ -57,6 +57,7 @@ class Core_Layer_Types {
 			if ( null !== $registry->get( $type ) || ! file_exists( $file ) ) {
 				continue;
 			}
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- path built from the plugin's layer folder and the fixed TYPES list.
 			require_once $file;
 			$register = __NAMESPACE__ . '\\Core\\register_' . $type;
 			if ( function_exists( $register ) ) {
