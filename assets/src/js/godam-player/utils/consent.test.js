@@ -337,6 +337,28 @@ describe( 'analytics bundles with the WP Consent API and no consent', () => {
 	} );
 } );
 
+describe( 'withdrawing, then accepting again on the same page', () => {
+	it( 'starts a new visitor instead of restoring the deleted id', async () => {
+		installConsentApi( true );
+		document.cookie = 'wp_consent_statistics=allow; path=/';
+		loadFresh( '../analytics' );
+		await new Promise( ( resolve ) => setTimeout( resolve, 20 ) );
+		const deletedId = JSON.parse( localStorage.getItem( '__anon_id' ) );
+		expect( deletedId ).toMatch( UUID );
+
+		setStatisticsConsent( false );
+		await new Promise( ( resolve ) => setTimeout( resolve, 20 ) );
+		expect( localStorage.getItem( '__anon_id' ) ).toBeNull();
+
+		setStatisticsConsent( true );
+		await new Promise( ( resolve ) => setTimeout( resolve, 50 ) );
+		const newId = JSON.parse( localStorage.getItem( '__anon_id' ) );
+		expect( newId ).toMatch( UUID );
+		expect( newId ).not.toBe( deletedId );
+		expect( window.analytics.user().anonymousId ).toBe( newId );
+	} );
+} );
+
 describe( 'events before the visitor chooses wait in memory', () => {
 	const settle = ( ms = 0 ) => new Promise( ( resolve ) => setTimeout( resolve, ms ) );
 	const analyticsParams = ( consent ) => ( {

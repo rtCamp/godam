@@ -31,6 +31,11 @@
  */
 
 /**
+ * External dependencies
+ */
+import { v4 as uuidv4 } from 'uuid';
+
+/**
  * The visitor's device storage for the analytics library's keys, in the format
  * the library's own default storage uses (JSON in localStorage), so ids stored
  * before this change are still read. When localStorage is unavailable, values
@@ -417,8 +422,21 @@ export function syncConsent() {
 	// the visitor has not chosen yet (nothing of ours is stored then anyway).
 	if ( wasAllowed === true ) {
 		clearStatisticsStorage();
+		forgetVisitorId();
 		notifyWithdrawn();
 		return 'withdrawn';
+	}
+}
+
+/**
+ * After a withdrawal, forget the visitor id in memory as well, and give the live
+ * instance a fresh one. Without this, accepting again on the same page would
+ * write the deleted id back. The fresh id stays in memory while consent is off.
+ */
+function forgetVisitorId() {
+	Object.keys( memoryStore ).forEach( ( key ) => delete memoryStore[ key ] );
+	if ( typeof window.analytics?.setAnonymousId === 'function' ) {
+		window.analytics.setAnonymousId( uuidv4() );
 	}
 }
 
