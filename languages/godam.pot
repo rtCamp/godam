@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-05T14:06:53+00:00\n"
+"POT-Creation-Date: 2026-11-05T15:03:00+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -121,7 +121,7 @@ msgstr ""
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:415
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:422
 #: pages/video-editor/components/audio/AudioCardPreview.js:253
-#: pages/video-editor/components/transcription/Transcription.js:170
+#: pages/video-editor/components/transcription/Transcription.js:188
 msgid "Transcript"
 msgstr ""
 
@@ -436,7 +436,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-audio/edit.js:571
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:20
-#: pages/video-editor/components/transcription/Transcription.js:176
+#: pages/video-editor/components/transcription/Transcription.js:194
 msgid "Transcription"
 msgstr ""
 
@@ -1239,10 +1239,12 @@ msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/blocks/godam-player/index.js:1
+#: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-pdf/caption.js:44
 #: assets/src/blocks/godam-pdf/caption.js:48
 #: assets/src/blocks/godam-player/caption.js:50
 #: assets/src/blocks/godam-player/caption.js:56
+#: pages/video-editor/components/transcription/CaptionManager.js:513
 msgid "Add caption"
 msgstr ""
 
@@ -1774,7 +1776,10 @@ msgstr ""
 #: pages/media-library/components/modal/RenameModal.jsx:104
 #: pages/video-editor/components/chapters/ChapterForm.js:124
 #: pages/video-editor/components/layers/LayersHeader.js:105
-#: pages/video-editor/components/transcription/Transcription.js:295
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:134
+#: pages/video-editor/components/transcription/CaptionManager.js:416
+#: pages/video-editor/components/transcription/CaptionManager.js:504
+#: pages/video-editor/components/transcription/Transcription.js:354
 msgid "Cancel"
 msgstr ""
 
@@ -1790,6 +1795,7 @@ msgstr ""
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:535
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:130
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:191
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:143
 msgid "Save"
 msgstr ""
 
@@ -2202,9 +2208,11 @@ msgid "GoDAM Video Thumbnail"
 msgstr ""
 
 #: assets/build/blocks/sureforms/blocks/recorder/index.js:1
+#: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-video.php:90
 #: assets/src/blocks/godam-player/track-uploader.js:77
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:167
+#: pages/video-editor/components/transcription/CaptionManager.js:469
 msgid "Label"
 msgstr ""
 
@@ -2593,7 +2601,9 @@ msgstr ""
 #: pages/media-library/components/context-menu/ContextMenu.jsx:518
 #: pages/media-library/components/modal/DeleteModal.jsx:132
 #: pages/video-editor/components/SidebarLayers.js:777
-#: pages/video-editor/components/transcription/Transcription.js:304
+#: pages/video-editor/components/transcription/CaptionManager.js:398
+#: pages/video-editor/components/transcription/CaptionManager.js:424
+#: pages/video-editor/components/transcription/Transcription.js:363
 msgid "Delete"
 msgstr ""
 
@@ -6481,6 +6491,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:126
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:29
 #: pages/video-editor/components/forms/CF7.js:26
+#: pages/video-editor/components/transcription/CaptionManager.js:337
 msgid "Default"
 msgstr ""
 
@@ -7693,7 +7704,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/onboarding/components/screens/EntryScreen.jsx:49
 #: pages/onboarding/components/screens/SignupScreen.jsx:70
-#: pages/video-editor/components/transcription/Transcription.js:254
+#: pages/video-editor/components/transcription/Transcription.js:295
 msgid "OR"
 msgstr ""
 
@@ -9957,83 +9968,433 @@ msgid "Delete chapter"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:74
-msgid "Transcription failed. Please try again."
+#: pages/video-editor/components/transcription/languages.js:31
+msgid "Account default"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:134
-msgid "Select a caption file"
+#: pages/video-editor/components/transcription/languages.js:32
+msgid "Auto-detect language"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:135
-msgid "Use this file"
+#: pages/video-editor/components/transcription/languages.js:33
+msgid "Multiple languages (code-switching)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:150
-msgid "Could not attach the caption file."
+#: assets/src/blocks/godam-player/track-uploader.js:111
+#: pages/video-editor/components/transcription/languages.js:43
+msgid "English"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:144
-msgid "Please choose a .vtt or .srt caption file."
+#: pages/video-editor/components/transcription/languages.js:44
+msgid "Spanish"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:199
-msgid "Replace transcription file"
+#: pages/video-editor/components/transcription/languages.js:45
+msgid "French"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:206
-#: pages/video-editor/components/transcription/Transcription.js:285
-msgid "Delete transcription"
+#: pages/video-editor/components/transcription/languages.js:46
+msgid "German"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:230
+#: pages/video-editor/components/transcription/languages.js:47
+msgid "Hindi"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:48
+msgid "Portuguese"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:49
+msgid "Portuguese (Brazil)"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:50
+msgid "Italian"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:51
+msgid "Dutch"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:52
+msgid "Japanese"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:53
+msgid "Korean"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:54
+msgid "Chinese"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:55
+msgid "Russian"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:56
+msgid "Arabic"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:57
+msgid "Turkish"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:58
+msgid "Polish"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:59
+msgid "Swedish"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:60
+msgid "Indonesian"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:61
+msgid "Ukrainian"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:62
+msgid "Tamil"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:63
+msgid "Welsh"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:56
+msgid "Could not load this caption file."
+msgstr ""
+
+#. translators: %s: caption track label.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:88
+#, js-format
+msgid "Edit captions — %s"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:89
+#: pages/video-editor/components/transcription/CaptionManager.js:365
+msgid "Edit captions"
+msgstr ""
+
+#. translators: %s: cue start time, e.g. 01:23.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:114
+#, js-format
+msgid "Caption text at %s"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:126
+#: pages/video-editor/components/transcription/Transcription.js:255
 msgid "No cues found in this caption file."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:240
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:83
+msgid "Could not save the caption."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:128
+msgid "Enter a language code, such as cy or pt-BR, not the language name."
+msgstr ""
+
+#. translators: %s: caption label the user typed.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:144
+#, js-format
+msgid "A caption named \"%s\" already exists on this video. Choose another label."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:274
+msgid "Other (enter code)…"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:279
+#: pages/video-editor/components/transcription/Transcription.js:217
+#: pages/video-editor/components/transcription/Transcription.js:326
+msgid "Manage caption tracks"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:292
+msgid "Multi-language captions are part of the paid GoDAM plans"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:295
+msgid "With a paid plan, every language you add or generate here appears in the player's subtitles menu. On your current plan, Upload File in the Transcription tab still adds one caption file to this video."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:299
+msgid "See plans"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:303
+msgid "Connect your account"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:312
+msgid "Could not load the caption tracks."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:341
+msgid "Uploaded"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:341
+msgid "Generated"
+msgstr ""
+
+#. translators: %d: number of cues in the caption file.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:350
+#, js-format
+msgid "%d cue"
+msgid_plural "%d cues"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:372
+msgid "Replace file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:380
+msgid "Download"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:390
+msgid "Shown by default"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:390
+msgid "Show this caption by default"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:253
+msgid "Could not set the default caption."
+msgstr ""
+
+#. translators: %s: caption track name.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:410
+#, js-format
+msgid "Delete \"%s\"? It is removed from GoDAM, so every site and page that plays this video loses it. This cannot be undone."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:266
+msgid "Could not delete the caption track."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:434
+msgid "No caption tracks yet."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:447
+msgid "Language"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:457
+msgid "Language code"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:470
+msgid "Shown in the menu"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:481
+msgid "Choose another file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:481
+msgid "Choose file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:490
+msgid "Set as default"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:208
+msgid "Could not add the caption track."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:187
+msgid "Enter a label for this caption. It is the name shown in the subtitles menu."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:180
+msgid "Choose a language for this caption."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:176
+msgid "Choose a caption file first."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:525
+msgid "Add caption track"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:162
+#: pages/video-editor/components/transcription/CaptionManager.js:227
+msgid "Caption file is too large. The limit is 1 MB."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:169
+msgid "Could not read the caption file."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:158
+#: pages/video-editor/components/transcription/CaptionManager.js:223
+#: pages/video-editor/components/transcription/Transcription.js:162
+msgid "Please choose a .vtt or .srt caption file."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:236
+msgid "Could not replace the caption file."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:90
+msgid "Transcription failed. Please try again."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:152
+msgid "Select a caption file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:153
+msgid "Use this file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:168
+msgid "Could not attach the caption file."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:224
+msgid "Replace transcription file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:231
+#: pages/video-editor/components/transcription/Transcription.js:343
+msgid "Delete transcription"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:265
 msgid "Automatically transcribe the audio using GoDAM's AI engine"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:124
+#: pages/video-editor/components/transcription/Transcription.js:270
+msgid "Transcription language"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:142
 msgid "Could not start transcription. Please try again."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:250
+#: pages/video-editor/components/transcription/Transcription.js:286
 msgid "Generate Transcription"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:261
+#: pages/video-editor/components/transcription/Transcription.js:290
+msgid "Transcription runs on GoDAM, and this video has not been transcoded by GoDAM yet. You can still upload a caption file."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:302
 msgid "Generating transcription…"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:264
+#: pages/video-editor/components/transcription/Transcription.js:305
 msgid "This usually takes 10–15 minutes. We'll notify you once it's ready"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:276
+#: pages/video-editor/components/transcription/Transcription.js:318
 msgid "Upload File"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:288
-msgid "Delete this transcription? This cannot be undone."
+#: pages/video-editor/components/transcription/Transcription.js:346
+msgid "Delete this transcription from WordPress? This cannot be undone."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:164
+#: pages/video-editor/components/transcription/Transcription.js:347
+msgid "Caption tracks stored in GoDAM keep playing for visitors. To remove one, use Manage caption tracks."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:182
 msgid "Could not remove the transcript."
 msgstr ""
 
@@ -11103,73 +11464,73 @@ msgid "Transcoding service can not be activated on the localhost"
 msgstr ""
 
 #. translators: Return an error if the value is neither a string nor an array.
-#: admin/class-rtgodam-transcoder-rest-routes.php:247
+#: admin/class-rtgodam-transcoder-rest-routes.php:253
 #, php-format
 msgid "%s must be a valid URL or an array of URLs."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:327
+#: admin/class-rtgodam-transcoder-rest-routes.php:333
 msgid "Transcoding error received and recorded."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:459
+#: admin/class-rtgodam-transcoder-rest-routes.php:465
 msgid "Callback processed successfully."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:504
+#: admin/class-rtgodam-transcoder-rest-routes.php:510
 msgid "Thumbnail created successfully."
 msgstr ""
 
 #. translators: %s is replaced with the attachment ID for which subsizes generation failed.
-#: admin/class-rtgodam-transcoder-rest-routes.php:575
+#: admin/class-rtgodam-transcoder-rest-routes.php:581
 #, php-format
 msgid "GoDAM: Failed to request image subsizes for attachment ID %s. The transcoded image URL has been saved; subsizes may be retried separately."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:583
+#: admin/class-rtgodam-transcoder-rest-routes.php:589
 msgid "Transcoded image URL saved, but failed to request subsizes."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:600
+#: admin/class-rtgodam-transcoder-rest-routes.php:606
 msgid "Attachment not found; it may have been deleted."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:627
+#: admin/class-rtgodam-transcoder-rest-routes.php:633
 msgid "Job ID is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:631
+#: admin/class-rtgodam-transcoder-rest-routes.php:637
 msgid "Transcription status is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:635
+#: admin/class-rtgodam-transcoder-rest-routes.php:641
 msgid "Transcript path is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:653
+#: admin/class-rtgodam-transcoder-rest-routes.php:659
 msgid "Video attachment not found for the provided job ID."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:665
+#: admin/class-rtgodam-transcoder-rest-routes.php:681
 msgid "Transcript path saved successfully."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:675
+#: admin/class-rtgodam-transcoder-rest-routes.php:691
 msgid "Transcription callback received."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:716
+#: admin/class-rtgodam-transcoder-rest-routes.php:732
 #: admin/godam-transcoder-functions.php:607
 #: inc/classes/rest-api/class-media-library.php:652
 #: inc/classes/rest-api/class-transcoding.php:481
 msgid "API key is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:720
+#: admin/class-rtgodam-transcoder-rest-routes.php:736
 msgid "API key not configured on the site."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:724
+#: admin/class-rtgodam-transcoder-rest-routes.php:740
 #: inc/classes/rest-api/class-media-library.php:659
 #: inc/classes/rest-api/class-settings.php:192
 #: inc/classes/rest-api/class-transcoding.php:487
@@ -11280,7 +11641,7 @@ msgstr ""
 msgid "This form could not be loaded."
 msgstr ""
 
-#: inc/classes/class-assets.php:94
+#: inc/classes/class-assets.php:98
 msgid "No video found for attachment ID"
 msgstr ""
 
@@ -11792,6 +12153,31 @@ msgstr ""
 
 #: inc/classes/class-virtual-media-registrar.php:347
 msgid "Failed to remove virtual media site from GoDAM Central."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:159
+#: inc/classes/class-visitor-consent.php:165
+msgid "Until deleted"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:160
+msgid "Ties one visitor's video views and clicks together without naming them."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:161
+msgid "Anonymous visitor ID"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:166
+msgid "Counts a viewer once per video."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:171
+msgid "Until the browser tab closes"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:172
+msgid "Holds clicks on video and image layers until they are sent to GoDAM analytics."
 msgstr ""
 
 #: inc/classes/cron-jobs/class-retranscode-failed-media.php:60
@@ -13636,28 +14022,84 @@ msgstr ""
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:56
+#: inc/classes/rest-api/class-transcription.php:161
 msgid "The video attachment ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:103
+#: inc/classes/rest-api/class-transcription.php:182
+msgid "Re-read the default caption from GoDAM Central first, so changes made in Central show."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:208
+msgid "BCP 47 language code to transcribe in, or \"auto\"/\"multi\" for Deepgram detection. Omitted falls back to the org/default language."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:214
+msgid "Audio stream to transcribe on a multi-audio asset. Omitted transcribes the default track."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:234
 msgid "URL of the uploaded .vtt / .srt caption file."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:203
+#: inc/classes/rest-api/class-transcription.php:309
+msgid "BCP 47 language tag for the caption track."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:317
+msgid "Label shown in the subtitle menu. Unique on the video."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:324
+msgid "Track kind: subtitles or captions."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:330
+msgid "Make this the default caption track."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:340
+msgid "Caption file text (VTT or SRT)."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:349
+msgid "Format of the uploaded caption text."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:367
+msgid "Caption track handle returned by the list endpoint."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:501
 msgid "This video has not been transcoded yet, so it cannot be transcribed."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:212
+#: inc/classes/rest-api/class-transcription.php:510
 msgid "Connect your GoDAM account to generate transcriptions."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:231
+#: inc/classes/rest-api/class-transcription.php:543
 msgid "Could not reach the transcription service. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:295
+#: inc/classes/rest-api/class-transcription.php:609
 msgid "Only .vtt or .srt caption files are supported."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:1035
+msgid "Connect your GoDAM account to manage captions."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:1056
+msgid "This video has not been transcoded yet, so it has no captions."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:1088
+msgid "Could not reach the caption service. Please try again."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:1109
+msgid "The caption service rejected the request."
 msgstr ""
 
 #: inc/classes/rest-api/class-video-editor.php:74
@@ -14466,10 +14908,6 @@ msgstr ""
 
 #: assets/src/blocks/godam-player/track-uploader.js:104
 msgid "Remove track"
-msgstr ""
-
-#: assets/src/blocks/godam-player/track-uploader.js:111
-msgid "English"
 msgstr ""
 
 #: assets/src/blocks/godam-player/track-uploader.js:123

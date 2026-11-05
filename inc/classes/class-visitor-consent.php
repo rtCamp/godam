@@ -36,7 +36,7 @@ use RTGODAM\Inc\Traits\Singleton;
  * The front end reads the settings from `videoAnalyticsParams.consent`
  * (get_script_config()). See rtCamp/godam-plugin-wp#55.
  *
- * @since n.e.x.t
+ * @since 2.8.0
  */
 class Visitor_Consent {
 
@@ -71,7 +71,7 @@ class Visitor_Consent {
 	/**
 	 * Whether GoDAM may track visitors at all on this site.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @return bool
 	 */
@@ -84,7 +84,7 @@ class Visitor_Consent {
 		 * visitor. Sites with a consent banner that supports the WP Consent API do
 		 * not need this: GoDAM waits for "statistics" consent on its own.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.8.0
 		 *
 		 * @param bool $enabled Whether visitor tracking is on. Default true.
 		 */
@@ -95,7 +95,7 @@ class Visitor_Consent {
 	 * Whether GoDAM waits for the site's own banner to call
 	 * `window.GoDAM.setAnalyticsConsent()` before it tracks a visitor.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @return bool
 	 */
@@ -110,7 +110,7 @@ class Visitor_Consent {
 		 * or sets `window.godamAnalyticsConsent = true` before GoDAM's scripts run.
 		 * Not needed with the WP Consent API: GoDAM waits for "statistics" on its own.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.8.0
 		 *
 		 * @param bool $requires_consent Whether to wait for the banner. Default false.
 		 */
@@ -120,7 +120,7 @@ class Visitor_Consent {
 	/**
 	 * Whether the WP Consent API plugin is active.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @return bool
 	 */
@@ -131,7 +131,7 @@ class Visitor_Consent {
 	/**
 	 * Settings the front-end analytics reads, as `videoAnalyticsParams.consent`.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * The category is always "statistics" (CONSENT_CATEGORY), so it is not sent.
 	 *
@@ -148,7 +148,7 @@ class Visitor_Consent {
 	/**
 	 * Items GoDAM keeps in the visitor's browser, for consent banners.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @return array<int, array{name: string, expires: string, purpose: string, personal_data: string}>
 	 */
@@ -178,7 +178,7 @@ class Visitor_Consent {
 	/**
 	 * List GoDAM's browser items with the WP Consent API, so banners can show them.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @return void
 	 */
