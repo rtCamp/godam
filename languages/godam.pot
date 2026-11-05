@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 2.7.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
+"Project-Id-Version: GoDAM 2.8.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/bump-2.8.0\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-04T06:29:54+00:00\n"
+"POT-Creation-Date: 2026-11-05T14:06:53+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -8077,7 +8077,7 @@ msgstr ""
 
 #: assets/build/pages/tools.min.js:2
 #: pages/tools/components/tabs/Migration/CoreVideoMigration.jsx:186
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:222
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:231
 msgid "Abort"
 msgstr ""
 
@@ -8095,13 +8095,13 @@ msgstr ""
 
 #: assets/build/pages/tools.min.js:2
 #: pages/tools/components/tabs/Migration/CoreVideoMigration.jsx:195
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:231
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:240
 msgid "Restart Migration"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
 #: pages/tools/components/tabs/Migration/CoreVideoMigration.jsx:195
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:231
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:240
 msgid "Start Migration"
 msgstr ""
 
@@ -8116,37 +8116,52 @@ msgid "Vimeo Video Migration has been successfully completed for all posts and p
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:176
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:179
 msgid "Vimeo video Migration"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:178
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:181
 msgid "This tool replaces WordPress Vimeo Embed blocks with GoDAM Video blocks. It does not replace Vimeo videos added in the WordPress Classic Editor."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:183
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:185
+msgid "Step 1:"
+msgstr ""
+
+#: assets/build/pages/tools.min.js:2
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:186
+msgid "Connect your Vimeo account in GoDAM Central."
+msgstr ""
+
+#: assets/build/pages/tools.min.js:2
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:187
+msgid "Connect Vimeo"
+msgstr ""
+
+#: assets/build/pages/tools.min.js:2
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:192
 msgid "This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:184
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:193
 msgid "Open"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:199
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:208
 msgid "Vimeo video migration in WordPress can only begin after all Vimeo videos have been successfully migrated to GoDAM Central,"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:201
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:210
 msgid "Check here!"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:210
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:219
 msgid "Migration is in progress. Please wait…"
 msgstr ""
 
