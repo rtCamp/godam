@@ -4,7 +4,7 @@
 /**
  * Internal dependencies
  */
-import { applySignedSources, fetchSignedSources } from './signedPlayback';
+import { applySignedSources, applySignedTranscript, fetchSignedSources } from './signedPlayback';
 
 const ok = ( body ) => Promise.resolve( { ok: true, json: () => Promise.resolve( body ) } );
 
@@ -30,5 +30,24 @@ describe( 'signed playback', () => {
 		expect( changed ).toBe( true );
 		expect( setup ).toEqual( { sources: [ { src: 'signed.mpd', type: 'application/dash+xml' } ], poster: 'signed.jpg' } );
 		expect( applySignedSources( setup, null ) ).toBe( false );
+	} );
+
+	it( 'uses the signed transcript only in place of GoDAM\'s own copy', () => {
+		const signed = { transcript: 'https://cdn.test/private/a/t.vtt?token=z' };
+		const none = {};
+		expect( applySignedTranscript( none, signed ) ).toBe( true );
+		expect( none.transcriptUrl ).toBe( signed.transcript );
+
+		const godams = { transcriptUrl: 'https://cdn.test/private/a/t.vtt' };
+		expect( applySignedTranscript( godams, signed ) ).toBe( true );
+
+		const uploaded = { transcriptUrl: 'https://site.test/wp-content/uploads/captions.vtt' };
+		expect( applySignedTranscript( uploaded, signed ) ).toBe( false );
+		expect( uploaded.transcriptUrl ).toContain( 'site.test' );
+
+		const deleted = { transcriptDeleted: 'true' };
+		expect( applySignedTranscript( deleted, signed ) ).toBe( false );
+		expect( deleted.transcriptUrl ).toBeUndefined();
+		expect( applySignedTranscript( none, { transcript: '' } ) ).toBe( false );
 	} );
 } );

@@ -23,7 +23,7 @@ import TranscriptManager from './managers/transcriptManager.js';
 import TranscriptPanelManager from './managers/transcriptPanelManager.js';
 import { getVisibilityManager, resolveOutOfViewMode, resolvePauseOnTabHidden } from './managers/visibilityManager.js';
 import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
-import { applySignedSources, fetchSignedSources } from './utils/signedPlayback.js';
+import { applySignedSources, applySignedTranscript, fetchSignedSources } from './utils/signedPlayback.js';
 
 /**
  * Refactored Video Player Class
@@ -74,12 +74,13 @@ export default class GodamVideoPlayer {
 	}
 
 	/**
-	 * Swap in signed sources for GoDAM media served from a signed folder (Organization and
-	 * Embed only). Keeps the saved sources when the site's playback route has none.
+	 * Swap in signed sources (and transcript) for GoDAM media served from a signed folder
+	 * (Organization and Embed only). Keeps the saved ones when the site's playback route has none.
 	 */
 	async useSignedSources() {
 		const signed = await fetchSignedSources( this.video.dataset.playbackUrl );
 		applySignedSources( this.configManager.videoSetupControls, signed );
+		applySignedTranscript( this.video.dataset, signed );
 	}
 
 	/**
