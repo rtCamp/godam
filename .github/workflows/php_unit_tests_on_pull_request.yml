@@ -3,6 +3,8 @@ on:
     branches:
       - develop
       - main
+  # Lets release_on_tag.yml run these tests before it publishes to WordPress.org.
+  workflow_call:
 
 name: PHP Unit Tests
 
