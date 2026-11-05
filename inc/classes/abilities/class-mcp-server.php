@@ -82,6 +82,10 @@ class Mcp_Server {
 	 * @return string[]
 	 */
 	private function exposed_ability_names() {
+		if ( ! function_exists( 'wp_get_abilities' ) ) {
+			return array();
+		}
+
 		/**
 		 * Filters the ability namespaces the GoDAM MCP server lists.
 		 *

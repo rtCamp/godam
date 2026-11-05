@@ -48,6 +48,10 @@ abstract class Ability_Group {
 	 * @return void
 	 */
 	protected function add( $name, array $args, $writes = false ) {
+		if ( ! function_exists( 'wp_register_ability' ) ) {
+			return;
+		}
+
 		$public = $writes ? (bool) get_option( Abilities::WRITE_ABILITIES_OPTION, false ) : true;
 
 		/**
