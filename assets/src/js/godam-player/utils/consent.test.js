@@ -407,6 +407,26 @@ describe( 'events before the visitor chooses wait in memory', () => {
 		expect( bodies[ 0 ].user_token ).toBe( 'returning-visitor-id' );
 	} );
 
+	it( 'a refusal that comes while the grant is still switching ids starts nothing', async () => {
+		localStorage.setItem( '__anon_id', JSON.stringify( 'returning-visitor-id' ) );
+		installConsentApi( false );
+		window.videoAnalyticsParams = analyticsParams( { consentApi: true } );
+		loadFresh( '../analytics' );
+		await settle();
+		window.analytics.setAnonymousId = () => {}; // keeps the grant step waiting
+		const started = jest.fn();
+		window.GoDAM.onStatisticsConsent( started );
+
+		trackPlay();
+		await settle( 20 );
+		setStatisticsConsent( true );
+		setStatisticsConsent( false );
+		await settle( 1200 );
+
+		expect( started ).not.toHaveBeenCalled();
+		expect( global.fetch ).not.toHaveBeenCalled();
+	} );
+
 	it( 'a play tracked before consent is discarded when the visitor refuses', async () => {
 		installConsentApi( false );
 		window.videoAnalyticsParams = analyticsParams( { consentApi: true } );

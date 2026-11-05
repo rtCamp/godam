@@ -400,6 +400,11 @@ export function syncConsent() {
 
 	if ( allowed ) {
 		const runGrantCallbacks = () => {
+			// This can run up to a second later (whenVisitorIdIs). If the visitor
+			// refused in between, held events are already discarded: start nothing.
+			if ( lastKnownConsent !== true || ! hasStatisticsConsent() ) {
+				return;
+			}
 			releaseHeldEvents();
 			grantCallbacks.forEach( ( callback ) => {
 				try {
