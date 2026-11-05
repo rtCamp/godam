@@ -333,6 +333,8 @@ export function clearStatisticsStorage() {
 
 const grantCallbacks = [];
 const withdrawnCallbacks = [];
+// Whether add-ons were already told about the current refusal; reset on consent.
+let withdrawnNotified = false;
 let lastKnownConsent = null;
 let listenersAdded = false;
 
@@ -399,6 +401,7 @@ export function syncConsent() {
 	lastKnownConsent = allowed;
 
 	if ( allowed ) {
+		withdrawnNotified = false;
 		const runGrantCallbacks = () => {
 			// This can run up to a second later (whenVisitorIdIs). If the visitor
 			// refused in between, held events are already discarded: start nothing.
@@ -447,8 +450,13 @@ function forgetVisitorId() {
 
 /**
  * Tell add-ons that the visitor refused or withdrew, so they delete their own items.
+ * Once per refusal: banners can fire the same "deny" more than once.
  */
 function notifyWithdrawn() {
+	if ( withdrawnNotified ) {
+		return;
+	}
+	withdrawnNotified = true;
 	withdrawnCallbacks.forEach( ( callback ) => {
 		try {
 			callback();
@@ -549,6 +557,7 @@ export function onStatisticsConsent( callback ) {
 export function resetConsentStateForTests() {
 	grantCallbacks.length = 0;
 	withdrawnCallbacks.length = 0;
+	withdrawnNotified = false;
 	heldActions.length = 0;
 	lastKnownConsent = null;
 	Object.keys( memoryStore ).forEach( ( key ) => delete memoryStore[ key ] );

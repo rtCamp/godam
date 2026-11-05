@@ -553,6 +553,22 @@ describe( 'consent API on window.GoDAM for add-ons', () => {
 		expect( withdrawn ).toHaveBeenCalledTimes( 1 );
 	} );
 
+	it( 'a repeated deny tells the add-on once; deny, accept, deny tells it twice', () => {
+		installConsentApi( false );
+		loadFresh( './consent' );
+		const withdrawn = jest.fn();
+		window.GoDAM.onStatisticsConsentWithdrawn( withdrawn );
+
+		setStatisticsConsent( false );
+		setStatisticsConsent( false );
+		setStatisticsConsent( false );
+		expect( withdrawn ).toHaveBeenCalledTimes( 1 );
+
+		setStatisticsConsent( true );
+		setStatisticsConsent( false );
+		expect( withdrawn ).toHaveBeenCalledTimes( 2 );
+	} );
+
 	it( 'the add-on hears a withdrawal once, after GoDAM deleted its own items', () => {
 		installConsentApi( true );
 		loadFresh( './consent' );
