@@ -44,7 +44,7 @@ class VisitorConsentTest extends TestCase {
 		$this->assertTrue( $config['trackingEnabled'] );
 		$this->assertFalse( $config['consentApi'] );
 		$this->assertFalse( $config['requireConsent'] );
-		$this->assertSame( 'statistics', $config['category'] );
+		$this->assertArrayNotHasKey( 'category', $config, 'The JS fixes the category to statistics; nothing reads a setting.' );
 	}
 
 	public function test_a_site_with_its_own_banner_can_make_godam_wait(): void {

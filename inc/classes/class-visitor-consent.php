@@ -133,14 +133,15 @@ class Visitor_Consent {
 	 *
 	 * @since n.e.x.t
 	 *
-	 * @return array{trackingEnabled: bool, consentApi: bool, requireConsent: bool, category: string}
+	 * The category is always "statistics" (CONSENT_CATEGORY), so it is not sent.
+	 *
+	 * @return array{trackingEnabled: bool, consentApi: bool, requireConsent: bool}
 	 */
 	public static function get_script_config() {
 		return array(
 			'trackingEnabled' => self::is_tracking_enabled(),
 			'consentApi'      => self::is_consent_api_active(),
 			'requireConsent'  => self::requires_consent(),
-			'category'        => self::CONSENT_CATEGORY,
 		);
 	}
 
