@@ -34,6 +34,26 @@ class Blocks {
 	public function setup_hooks() {
 		add_action( 'init', array( $this, 'register_blocks' ) );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_image_layer_view_scripts' ) );
+		add_action( 'enqueue_block_assets', array( $this, 'enqueue_image_layer_view_styles' ) );
+	}
+
+	/**
+	 * Load the `style` and `viewStyle` of layer types that run on images into
+	 * the block editor canvas, where the godam/image block draws its preview.
+	 *
+	 * The canvas is an iframe that gets the styles enqueued on
+	 * `enqueue_block_assets`, not those of the editor window. On the front end
+	 * the block loads them itself, only for the layers it shows.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function enqueue_image_layer_view_styles() {
+		if ( ! is_admin() ) {
+			return;
+		}
+		\RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->enqueue_view_styles_for_media( 'image' );
 	}
 
 	/**

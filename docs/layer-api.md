@@ -245,7 +245,10 @@ So `window.godam.layers` and `window.godam.layerEditor` are always ready when yo
 | `variationAttribute` | string | The attribute that selects a variation (the Form type uses `form_type`). |
 | `editorScript` | string or array | `file:./path.js` relative to `layer.json`, or a registered script handle. |
 | `viewScript` | string or array | Same, for the page. |
-| `textdomain` | string | Your text domain. |
+| `style` | string or array | `file:./path.css` relative to `layer.json`, or a registered style handle. Loads on the page **and** in the video editor. |
+| `viewStyle` | string or array | Same, for the page only. |
+| `editorStyle` | string or array | Same, for the video editor only. |
+| `textdomain` | string | Your text domain. GoDAM translates `title`, `description` and variation titles with it. See [Translations](#translations). |
 
 ### `supports`
 
@@ -298,7 +301,7 @@ Call it on `godam_init`. Returns the registered type, or `false` with a `_doing_
 | `should_render` | `( $layer, $context ) => bool` | Whether a saved layer is worth sending to an image block, e.g. it has content. |
 | `keep_undeclared_attributes` | bool | Keep keys your `layer.json` doesn't declare when a layer is saved. See [Cleaning on save](#cleaning-on-save). |
 | `variations` | array | Variations, as for `godam_register_layer_variation()`. |
-| any metadata key | | Overrides `layer.json`, for example a translated `title`, or `iconUrl` built from your plugin URL. |
+| any metadata key | | Overrides `layer.json`, for example `iconUrl` built from your plugin URL. |
 
 **The container.** The player finds each layer by its element id and toggles the `hidden` class:
 
@@ -339,10 +342,32 @@ GoDAM's own types keep undeclared keys for now, and keep `html` as written (it's
 
 **Declare every attribute you save.** Anything you leave out of `attributes` is deleted the next time the layer is saved.
 
-### Loading scripts
+### Loading scripts and styles
 
-- **`editorScript`** loads on the video editor page.
-- **`viewScript`** loads only when a layer of your type renders on the page, or is sent to a `godam/image` block. A page with no countdown layers never loads `view.js`.
+- **`editorScript`** and **`editorStyle`** load on the video editor page.
+- **`viewScript`** and **`viewStyle`** load only when a layer of your type renders on the page, or is sent to a `godam/image` block. A page with no countdown layers never loads `view.js` or `view.css`.
+- **`style`** loads wherever either of them does.
+- **In the block editor,** the `godam/image` block draws its layer preview inside the editor canvas, so the `style` and `viewStyle` of every type that supports images load there too. Their view scripts load in the editor window, as before.
+- **Page-builder editors** (Elementor, and shortcodes rendered over AJAX) load every type's view scripts and styles up front, since assets enqueued during an AJAX render never print.
+
+A `file:` script is registered only once it's built, with the `*.asset.php` `wp-scripts` writes beside it. A `file:` style is registered once the `.css` file exists, and if `wp-scripts` also wrote a `*-rtl.css` beside it, that file replaces it on right-to-left sites. Handles follow the block naming: `acme-countdown-style`, `acme-countdown-view-style`, `acme-countdown-editor-style`, with `-2`, `-3`… for the second and later entries of an array. GoDAM's own types use a `godam-layer-` prefix, for example `godam-layer-hotspot-view-script`.
+
+To build a stylesheet with `wp-scripts`, import it from the script that uses it, for example `import './view.scss';` in `src/view.js`, and point `viewStyle` at the CSS file the build writes (`file:./build/view.css`).
+
+### Translations
+
+**`layer.json` strings.** When `layer.json` sets `textdomain`, GoDAM translates its strings in PHP the way WordPress translates `block.json`:
+
+| Key | Gettext context |
+|---|---|
+| `title` | `layer title` |
+| `description` | `layer description` |
+| `variations[].title` | `layer variation title` |
+| `variations[].description` | `layer variation description` |
+
+A string with no translation in its context falls back to your text domain's translation of the same string without a context, so a `__( 'Countdown', 'acme-countdown' )` you already have elsewhere also covers the `layer.json` title. The editor uses the translated title and description over the ones in the `layer.json` your editor script imports, so you don't need to repeat them in `godam_register_layer_type()` or in `registerLayerType()` settings. `wp i18n make-pot` reads `block.json` files but not `layer.json`, so add these strings to your POT file yourself.
+
+**Script translations.** Each `file:` script is set up with `wp_set_script_translations()` for your `textdomain`, using WordPress's own lookup (`wp-content/languages/plugins/`). Don't override the path unless your plugin ships its translations elsewhere.
 
 ## Editor
 
@@ -564,4 +589,5 @@ godam-for-woo's move to this API is a worked example of a full migration: rtCamp
 | The layer never appears on the video | `render_callback` returned `''`, the container's id doesn't match `layer-{instance_id}-{id}`, `validate()` returned `false`, or the handlers never call `api.show()`. |
 | An attribute disappears after saving | It isn't declared in `layer.json` `attributes`. |
 | Markup missing from the container | It was stripped by `wp_kses_post()`. Set `supports.rawHtml` and escape it yourself. |
+| Your layer looks unstyled | The stylesheet isn't in `style` or `viewStyle`, its `file:` path doesn't point to a built `.css` file, or you enqueue it yourself somewhere it doesn't reach, such as the block editor canvas. |
 | `GoDAM: … failed to mount.` / `… handler failed.` | Your `mount()` or a handler threw. The error follows in the console. |
