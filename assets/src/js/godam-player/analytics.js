@@ -690,9 +690,12 @@ if ( ! window.pageLoadEventTracked ) {
 		playerAnalytics();
 	} );
 
-	// Consent given mid-page: count the videos already on screen. A video that
-	// entered the viewport before consent was left observed (trackPageLoadForVideo
-	// returned false); observing it again makes the observer report it at once.
+	// Consent given mid-page. A view held before consent is sent by its held action
+	// (trackPageLoadForVideo returned true for it). This pass catches the rest:
+	// videos still observed because analytics was not ready yet (it returned false),
+	// and videos on screen after a refusal and then an Accept on the same page, whose
+	// held views were discarded. Observing them again makes the observer report them
+	// at once; godamTrackedPageLoadInstances stops a second count.
 	onStatisticsConsent( restartPageLoadTracking );
 }
 
