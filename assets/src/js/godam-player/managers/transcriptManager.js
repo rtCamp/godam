@@ -3,12 +3,17 @@
  * Handles loading transcription tracks for the player.
  *
  * Resolution order (see the matching comment in inc/templates/godam-player.php):
- * `data-transcript-url` (the transcript stored on the attachment by the media
- * editor's Transcription tab, generated or user-uploaded) wins;
- * `data-transcript-deleted` means the user deleted it, so show nothing;
- * otherwise fall back to the public API endpoint, which supports
- * ETag/Cache-Control:
+ * A `data-transcript-url` with `data-transcript-source="upload"` (a file the
+ * user uploaded in WordPress) is added first, then every ready caption track
+ * from the public API endpoint, A to Z, with the default on. The endpoint
+ * supports ETag/Cache-Control:
  * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
+ * If the endpoint fails or sends no caption tracks, the cached
+ * `data-transcript-url` is used, else the endpoint's single legacy transcript.
+ *
+ * `data-transcript-deleted` means the user deleted WordPress's copy in the
+ * editor: that copy is not used, but the caption tracks in GoDAM Central (which
+ * the user manages in "Manage caption tracks") still play.
  */
 
 /**
@@ -32,6 +37,9 @@ export default class TranscriptManager {
 		// Transcript cached on the attachment and printed by the server.
 		this.localTranscriptUrl = video.dataset.transcriptUrl || '';
 		this.transcriptDeleted = video.dataset.transcriptDeleted === 'true';
+		// `upload` when the transcript above was uploaded in WordPress rather
+		// than cached from the SaaS.
+		this.localTranscriptSource = video.dataset.transcriptSource || '';
 		this.etag = null;
 		this.transcriptUrl = null;
 	}
@@ -57,7 +65,8 @@ export default class TranscriptManager {
 
 	/**
 	 * Initialize transcript loading.
-	 * Fetches transcript URL from API and adds it as a text track.
+	 * Adds the WordPress-uploaded transcript and the SaaS caption tracks as
+	 * text tracks, in the order described at the top of this file.
 	 *
 	 * @return {Promise<void>}
 	 */
@@ -71,31 +80,139 @@ export default class TranscriptManager {
 			return;
 		}
 
-		// The transcript stored on the attachment wins over the SaaS copy, so an
-		// uploaded caption file is what visitors get.
-		if ( this.localTranscriptUrl ) {
-			this.transcriptUrl = this.localTranscriptUrl;
-			// An uploaded .srt is converted to WebVTT, the only format a track parses.
-			this.addTextTrack( await toWebVttTrackSrc( this.localTranscriptUrl ) );
-			return;
+		// A file uploaded in WordPress never reaches the SaaS, so it goes first
+		// and becomes the default subtitle. A deleted copy is not used at all.
+		const hasLocalUpload = ! this.transcriptDeleted && !! this.localTranscriptUrl && this.localTranscriptSource === 'upload';
+		if ( hasLocalUpload ) {
+			await this.addLocalTranscript();
 		}
 
-		// Deleted in the editor — don't resurrect it from the SaaS.
-		if ( this.transcriptDeleted || ! this.jobId ) {
-			return;
-		}
-
-		try {
-			const transcriptData = await this.fetchTranscriptPath();
-
-			if ( transcriptData?.exists && transcriptData?.url ) {
-				this.transcriptUrl = transcriptData.url;
-				this.addTextTrack( await toWebVttTrackSrc( transcriptData.url ) );
+		let transcriptData = null;
+		if ( this.jobId ) {
+			try {
+				transcriptData = await this.fetchTranscriptPath();
+			} catch ( error ) {
+				// Silently fall through to the cached transcript — captions are optional.
+				// eslint-disable-next-line no-console
+				console.debug( 'GoDAM: Could not load caption tracks:', error.message );
 			}
-		} catch ( error ) {
-			// Silently fail - transcript is optional
-			// eslint-disable-next-line no-console
-			console.debug( 'GoDAM: Could not load transcript:', error.message );
+		}
+
+		// Every ready caption track (one per language), when the SaaS sends them.
+		if ( Array.isArray( transcriptData?.caption_tracks ) ) {
+			this.addCaptionTracks( transcriptData.caption_tracks, hasLocalUpload );
+			return;
+		}
+
+		// After a delete, only Central's caption tracks may play: neither the
+		// deleted copy nor the single transcript it was a copy of.
+		if ( hasLocalUpload || this.transcriptDeleted ) {
+			return;
+		}
+
+		// SaaS unreachable or too old for caption tracks: use the cached copy of
+		// its transcript, else the single transcript it reported.
+		if ( this.localTranscriptUrl ) {
+			await this.addLocalTranscript();
+		} else if ( transcriptData?.exists && transcriptData?.url ) {
+			this.transcriptUrl = transcriptData.url;
+			this.addTextTrack( await toWebVttTrackSrc( transcriptData.url ) );
+		}
+	}
+
+	/**
+	 * Add the transcript stored on the attachment as a text track.
+	 *
+	 * @return {Promise<void>}
+	 */
+	async addLocalTranscript() {
+		this.transcriptUrl = this.localTranscriptUrl;
+		// An uploaded .srt is converted to WebVTT, the only format a track parses.
+		this.addTextTrack( await toWebVttTrackSrc( this.localTranscriptUrl ) );
+	}
+
+	/**
+	 * Add one subtitle/caption `<track>` per first-class caption track.
+	 *
+	 * Tracks still being generated (no `vtt_path` yet) are skipped. They are
+	 * added A to Z by the name shown in the CC menu, so the menu order does not
+	 * change when the default changes, and the default track is then switched on
+	 * directly. A transcript uploaded in WordPress, already added and switched
+	 * on ahead of these, stays the one showing.
+	 *
+	 * @param {Array<Object>} captions          Caption-track rows from the SaaS.
+	 * @param {boolean}       keepLocalUploadOn Whether a WordPress upload was added first.
+	 */
+	addCaptionTracks( captions, keepLocalUploadOn = false ) {
+		const ready = captions.filter( ( caption ) => !! caption?.vtt_path );
+		const menuName = ( caption ) => caption.label || caption.language || 'en';
+
+		ready.sort( ( a, b ) => menuName( a ).localeCompare( menuName( b ), undefined, { sensitivity: 'base' } ) );
+
+		ready.forEach( ( caption ) => {
+			const srclang = caption.language || 'en';
+			this.addTextTrack( this.trackSrc( caption ), {
+				kind: caption.kind === 'captions' ? 'captions' : 'subtitles',
+				label: menuName( caption ),
+				srclang,
+			} );
+		} );
+
+		const defaultCaption = ready.find( ( caption ) => caption.is_default ) || ready[ 0 ];
+		if ( ! defaultCaption ) {
+			return;
+		}
+		// The panel/reader transcript follows the default track.
+		if ( ! this.transcriptUrl ) {
+			this.transcriptUrl = this.trackSrc( defaultCaption );
+		}
+		if ( ! keepLocalUploadOn ) {
+			this.showTrack( this.trackSrc( defaultCaption ) );
+		}
+	}
+
+	/**
+	 * The URL to load a caption track from.
+	 *
+	 * An edit in GoDAM rewrites the file at the same address, and the CDN tells
+	 * browsers to keep caption files for 30 days, so a visitor who loaded the
+	 * track before would keep the old text. The track's `revision` changes on
+	 * every edit, so adding it gives each version its own address.
+	 *
+	 * @param {Object} caption Caption-track row from the SaaS.
+	 * @return {string} The track URL, with `rev` added when the row has a revision.
+	 */
+	trackSrc( caption ) {
+		if ( ! caption.revision ) {
+			return caption.vtt_path;
+		}
+		const separator = caption.vtt_path.includes( '?' ) ? '&' : '?';
+		return `${ caption.vtt_path }${ separator }rev=${ encodeURIComponent( caption.revision ) }`;
+	}
+
+	/**
+	 * Switch on the subtitle track loaded from `src` and switch the others off.
+	 *
+	 * The player's auto-enable (`setupDefaultSubtitle` in videoPlayer.js) turns
+	 * on whichever track is added first, which is now the first one A to Z; this
+	 * puts the default back on top of it. Does nothing when the player is set
+	 * not to show captions on load.
+	 *
+	 * @param {string} src URL of the track to show.
+	 */
+	showTrack( src ) {
+		if ( ! this.configManager?.videoSetupOptions?.showCaption ) {
+			return;
+		}
+		const target = Array.from( this.player.remoteTextTrackEls?.() || [] ).find( ( el ) => el?.src === src )?.track;
+		if ( ! target ) {
+			return;
+		}
+		const tracks = this.player.textTracks?.() || [];
+		for ( let i = 0; i < tracks.length; i++ ) {
+			if ( tracks[ i ].kind === 'subtitles' || tracks[ i ].kind === 'captions' ) {
+				tracks[ i ].mode = tracks[ i ] === target ? 'showing' : 'disabled';
+			}
 		}
 	}
 
@@ -183,13 +300,15 @@ export default class TranscriptManager {
 			srclang = 'en',
 		} = options;
 
-		// Check if track with same src already exists
-		const existingTracks = this.player.textTracks();
-		for ( let i = 0; i < existingTracks.length; i++ ) {
-			const track = existingTracks[ i ];
-			// Check if this is the same track by comparing language and kind
-			if ( track.language === srclang && track.kind === kind ) {
-				return; // Track already exists
+		// Dedup by source URL, not by language: a video can carry several caption
+		// tracks in the same language (e.g. two uploaded Spanish files), so only a
+		// matching src means we already added this exact track (e.g. on refresh).
+		const existingEls = this.player.remoteTextTrackEls?.();
+		if ( existingEls ) {
+			for ( let i = 0; i < existingEls.length; i++ ) {
+				if ( existingEls[ i ]?.src === trackUrl ) {
+					return; // This exact track is already present.
+				}
 			}
 		}
 
@@ -201,7 +320,11 @@ export default class TranscriptManager {
 				srclang,
 				src: trackUrl,
 			},
-			false, // Don't remove on source change
+			// `true` keeps the track when the player changes its source (video.js
+			// removes it on a source change when this is false). The transcript
+			// uploaded in WordPress is added before the SaaS request returns, so
+			// a source swap during load would otherwise drop it.
+			true,
 		);
 	}
 

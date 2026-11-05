@@ -11,6 +11,11 @@
  */
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * Internal dependencies
+ */
+import { hasStatisticsConsent } from './utils/consent';
+
 // Module-scope cache. Generated once on first event, reused for the rest of
 // the page load. Every type=1/2/3/4 event from the same page load shares this
 // UUID so the microservice can dedup with uniqExact(page_load_session_id).
@@ -53,9 +58,23 @@ export function getOSName() {
 /**
  * Check if we should skip analytics tracking.
  *
+ * Skips on admin pages, video previews, and whenever the visitor has not given
+ * "statistics" consent (see utils/consent.js). Consent can arrive or be withdrawn
+ * while the page is open, so callers must not cache the result.
+ *
  * @return {boolean} True if analytics should be skipped, false otherwise.
  */
 export function shouldSkipAnalytics() {
+	return isAnalyticsOffPage() || ! hasStatisticsConsent();
+}
+
+/**
+ * Pages that never send analytics, whatever the visitor's consent: wp-admin and
+ * video previews. Events from these are dropped, not held for consent.
+ *
+ * @return {boolean} True on admin pages and video previews.
+ */
+export function isAnalyticsOffPage() {
 	const { isAdminPage } = window.videoAnalyticsParams || {};
 
 	if ( isAdminPage ) {
@@ -63,11 +82,7 @@ export function shouldSkipAnalytics() {
 	}
 
 	const urlParams = new URLSearchParams( window.location.search );
-	if ( urlParams.get( 'godam_page' ) === 'video-preview' ) {
-		return true;
-	}
-
-	return false;
+	return urlParams.get( 'godam_page' ) === 'video-preview';
 }
 
 /**
@@ -358,6 +373,11 @@ export function wasFirstViewForVideo( videoKey ) {
 	}
 	if ( _videoFirstViewCache[ videoKey ] !== undefined ) {
 		return _videoFirstViewCache[ videoKey ];
+	}
+	// No statistics consent: don't read or write the flag, and don't cache the
+	// answer, so the first call after the visitor allows tracking decides it.
+	if ( ! hasStatisticsConsent() ) {
+		return false;
 	}
 	try {
 		const storageKey = `godamVideoSeen:${ videoKey }`;

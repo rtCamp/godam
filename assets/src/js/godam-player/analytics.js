@@ -20,12 +20,20 @@ import {
 } from './utils/storage';
 import { LAYER_ACTIONS, LAYER_TYPE_WHITELIST, getLayerDisplayName } from './utils/layerActions';
 import { getWatchedRanges } from './utils/timeRanges';
+import { consentAwareStorage, hasStatisticsConsent, holdUntilConsent, onStatisticsConsent } from './utils/consent';
 
+// Video instances whose view (type 1) is waiting for consent, so a video that
+// scrolls in and out of view before the visitor chooses is held only once.
+const heldPageLoadInstances = new Set();
+
+// The consent-aware storage keeps the anonymous visitor id in memory until the
+// visitor allows "statistics", so creating the instance stores nothing.
 const analytics = Analytics( {
 	app: 'analytics-cdp-plugin',
 	plugins: [
 		videoAnalyticsPlugin(),
 	],
+	storage: consentAwareStorage,
 } );
 window.analytics = analytics;
 
@@ -175,9 +183,9 @@ function flushPageLoadQueue( sync = false ) {
 		// guarantees the browser carries the request to completion at the
 		// network layer.
 		if ( shouldSkipAnalytics() ) {
-			// shouldSkipAnalytics() is constant for the page session, so these
-			// events would never be sendable. Drop them rather than letting the
-			// queue grow unbounded across bfcache restores.
+			// Not sendable now (admin page, preview, or no statistics consent).
+			// Drop them rather than letting the queue grow unbounded across
+			// bfcache restores; nothing is held to send after consent arrives.
 			window.godamPageLoadQueue.length = 0;
 			return;
 		}
@@ -253,6 +261,20 @@ function trackPageLoadForVideo( video, reelPopId = 0 ) {
 
 	if ( ! window.analytics ) {
 		return false; // Retry on the next observer tick.
+	}
+
+	// No statistics consent yet: hold the view. It is counted if the visitor
+	// accepts on this page (even after scrolling past the video) and discarded if
+	// they refuse. Nothing is stored or sent meanwhile.
+	if ( ! hasStatisticsConsent() ) {
+		if ( ! heldPageLoadInstances.has( videoInfo.instanceId ) ) {
+			heldPageLoadInstances.add( videoInfo.instanceId );
+			holdUntilConsent( () => {
+				heldPageLoadInstances.delete( videoInfo.instanceId );
+				trackPageLoadForVideo( videoInfo.videoEl, reelPopId );
+			} );
+		}
+		return true;
 	}
 
 	const rpId = parseInt( reelPopId, 10 ) || 0;
@@ -666,6 +688,40 @@ if ( ! window.pageLoadEventTracked ) {
 		// Also try to set up analytics for any players that are already ready
 		// (in case this runs after some players are initialized)
 		playerAnalytics();
+	} );
+
+	// Consent given mid-page. A view held before consent is sent by its held action
+	// (trackPageLoadForVideo returned true for it). This pass catches the rest:
+	// videos still observed because analytics was not ready yet (it returned false),
+	// and videos on screen after a refusal and then an Accept on the same page, whose
+	// held views were discarded. Observing them again makes the observer report them
+	// at once; godamTrackedPageLoadInstances stops a second count.
+	onStatisticsConsent( restartPageLoadTracking );
+}
+
+/**
+ * Re-check every GoDAM video for its page_load event, e.g. after the visitor
+ * allows statistics tracking while the page is open.
+ */
+function restartPageLoadTracking() {
+	if ( document.readyState === 'loading' ) {
+		// The DOMContentLoaded handler above starts tracking with consent in place.
+		return;
+	}
+
+	document.querySelectorAll( '.easydam-player.video-js' ).forEach( ( video ) => {
+		const videoInfo = getPageLoadVideoInfo( video );
+		if ( ! videoInfo ) {
+			return;
+		}
+
+		if ( window.godamPageLoadObserver && window.godamObservedPageLoadVideos.has( videoInfo.videoEl ) ) {
+			window.godamPageLoadObserver.unobserve( videoInfo.videoEl );
+			window.godamPageLoadObserver.observe( videoInfo.videoEl );
+			return;
+		}
+
+		observePageLoadForVideo( video );
 	} );
 }
 
