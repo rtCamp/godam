@@ -79,6 +79,9 @@ class Playback extends Base {
 
 		$cache_key = 'rtgodam_playback_' . md5( $job_id );
 		$cached    = get_transient( $cache_key );
+		if ( is_array( $cached ) && ! empty( $cached['refused'] ) ) {
+			return $this->refusal( $cached['refused'] );
+		}
 		if ( is_array( $cached ) && ! empty( $cached['expires_at'] ) && $cached['expires_at'] - time() > self::EXPIRY_MARGIN ) {
 			return $this->response( $cached );
 		}
@@ -109,7 +112,13 @@ class Playback extends Base {
 		$message = is_array( $body ) && isset( $body['message'] ) && is_array( $body['message'] ) ? $body['message'] : array();
 		if ( 200 !== wp_remote_retrieve_response_code( $response ) || empty( $message['sources'] ) ) {
 			$error = isset( $message['error_type'] ) ? sanitize_key( $message['error_type'] ) : 'unavailable';
-			return new \WP_Error( 'godam_playback_' . $error, __( 'This media can\'t be played here.', 'godam' ), array( 'status' => 403 ) );
+			// A real refusal is kept as briefly as an answer: a busy page with a file GoDAM
+			// refuses must not call GoDAM on every view (the site shares one rate limit there).
+			// A server error without a reason isn't kept, so a blip doesn't last a minute.
+			if ( isset( $message['error_type'] ) ) {
+				set_transient( $cache_key, array( 'refused' => $error ), self::CACHE_MAX );
+			}
+			return $this->refusal( $error );
 		}
 
 		$data = array(
@@ -189,6 +198,16 @@ class Playback extends Base {
 		$uses  = ! empty( $query->posts );
 		wp_cache_set( $cache_key, $uses ? 'yes' : 'no', 'godam', 5 * MINUTE_IN_SECONDS );
 		return $uses;
+	}
+
+	/**
+	 * GoDAM refused to sign the file for this site.
+	 *
+	 * @param string $error GoDAM's error type, sanitized.
+	 * @return \WP_Error
+	 */
+	private function refusal( $error ) {
+		return new \WP_Error( 'godam_playback_' . sanitize_key( $error ), __( 'This media can\'t be played here.', 'godam' ), array( 'status' => 403 ) );
 	}
 
 	/**
