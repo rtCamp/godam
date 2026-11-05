@@ -141,3 +141,18 @@ export const isTranscribingStatus = ( status ) => status === 'Transcribing' || s
  * @return {string} WebVTT file text.
  */
 export const cuesToVTT = ( cues ) => cuesToWebVtt( cues || [] );
+
+/**
+ * Largest caption file GoDAM Central accepts (MAX_CAPTION_BYTES in godam-core
+ * godam_core/utils/captions/validation.py).
+ */
+export const MAX_CAPTION_BYTES = 1024 * 1024;
+
+/**
+ * Whether a picked file is too large for GoDAM Central, checked before the file
+ * is read, so a huge file is refused at once instead of after its upload.
+ *
+ * @param {File} file The picked file.
+ * @return {boolean} Whether the file is over the limit.
+ */
+export const isCaptionFileTooLarge = ( file ) => ( file?.size || 0 ) > MAX_CAPTION_BYTES;

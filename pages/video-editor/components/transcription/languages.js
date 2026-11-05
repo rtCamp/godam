@@ -97,3 +97,16 @@ export const languageLabel = ( code ) => {
 	const match = [ ...DETECTION_OPTIONS, ...BCP47_LANGUAGES ].find( ( option ) => option.value === code );
 	return match ? match.label : code;
 };
+
+/**
+ * Whether `value` is a language code GoDAM Central accepts for a caption, such
+ * as `cy` or `pt-BR`. Mirrors LANGUAGE_TAG_RE and MAX_LANGUAGE_TAG_LENGTH in
+ * godam-core godam_core/utils/captions/validation.py (and `sanitize_language()`
+ * in class-transcription.php), so a language name such as "English" is caught
+ * in the dialog instead of failing on Central.
+ *
+ * @param {string} value Code the user typed.
+ * @return {boolean} Whether it is a valid code.
+ */
+export const isLanguageCode = ( value ) =>
+	typeof value === 'string' && value.length <= 35 && /^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$/.test( value );

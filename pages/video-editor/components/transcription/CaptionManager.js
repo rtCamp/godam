@@ -30,7 +30,8 @@ import {
 	useDeleteCaptionMutation,
 	useSetDefaultCaptionMutation,
 } from '../../redux/api/transcription';
-import { CAPTION_LANGUAGES, languageLabel } from './languages';
+import { CAPTION_LANGUAGES, languageLabel, isLanguageCode } from './languages';
+import { isCaptionFileTooLarge } from './utils';
 import { getPricingUrl } from '../../../shared/premium-layers';
 import CaptionCueEditor from './CaptionCueEditor';
 
@@ -122,6 +123,10 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 	);
 
 	const resolvedLanguage = form.language === FREE_TEXT ? form.freeLang.trim() : form.language;
+	// A typed code must be one Central accepts; a language name is the usual slip.
+	const languageCodeError = form.language === FREE_TEXT && '' !== resolvedLanguage && ! isLanguageCode( resolvedLanguage )
+		? __( 'Enter a language code, such as cy or pt-BR, not the language name.', 'godam' )
+		: '';
 
 	// No GoDAM account, or a free one: explain and offer the upgrade instead of an error.
 	const listErrorCode = listError?.data?.code || '';
@@ -153,6 +158,10 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 			setError( __( 'Please choose a .vtt or .srt caption file.', 'godam' ) );
 			return;
 		}
+		if ( isCaptionFileTooLarge( file ) ) {
+			setError( __( 'Caption file is too large. The limit is 1 MB.', 'godam' ) );
+			return;
+		}
 		try {
 			setPendingFile( await readCaptionFile( file ) );
 			setError( '' );
@@ -169,6 +178,9 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 		}
 		if ( ! resolvedLanguage ) {
 			setError( __( 'Choose a language for this caption.', 'godam' ) );
+			return;
+		}
+		if ( languageCodeError ) {
 			return;
 		}
 		if ( ! newLabel ) {
@@ -209,6 +221,10 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 		}
 		if ( ! /\.(vtt|srt)$/i.test( file.name ) ) {
 			setError( __( 'Please choose a .vtt or .srt caption file.', 'godam' ) );
+			return;
+		}
+		if ( isCaptionFileTooLarge( file ) ) {
+			setError( __( 'Caption file is too large. The limit is 1 MB.', 'godam' ) );
 			return;
 		}
 		setError( '' );
@@ -441,6 +457,8 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 									label={ __( 'Language code', 'godam' ) }
 									placeholder="e.g. cy, pt-BR"
 									value={ form.freeLang }
+									className={ languageCodeError ? 'godam-ve-caption-manager__label-field has-error' : undefined }
+									help={ languageCodeError }
 									onChange={ ( freeLang ) => setForm( ( f ) => ( { ...f, freeLang } ) ) }
 								/>
 							</FlexItem>
@@ -489,7 +507,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 							variant="primary"
 							className="w-full justify-center"
 							isBusy={ isUploading }
-							disabled={ isUploading || labelTaken }
+							disabled={ isUploading || labelTaken || !! languageCodeError }
 							onClick={ handleAdd }
 						>
 							{ __( 'Add caption', 'godam' ) }
