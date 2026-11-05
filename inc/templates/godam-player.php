@@ -744,9 +744,10 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
 /**
  * Transcription resolution order on the front end (see transcriptManager.js):
  *
- * 1. `data-transcript-deleted` — set when the user deleted the transcript in
- *    the editor. The player then shows nothing instead of resurrecting the
- *    SaaS copy. Cleared by generate, upload and any caption-manager change.
+ * 1. `data-transcript-deleted` — set when the user deleted WordPress's copy of
+ *    the transcript in the editor. That copy (and the single legacy transcript
+ *    in 4) is then not used; Central's caption tracks in 3 still play. Cleared
+ *    by generate, upload and any caption-manager change.
  * 2. `data-transcript-url` with `data-transcript-source="upload"` — a .vtt/.srt
  *    the user uploaded in WordPress. It never reaches the SaaS, so it is added
  *    first and becomes the default subtitle.

@@ -104,6 +104,8 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 	const [ showAdd, setShowAdd ] = useState( false );
 	const [ editing, setEditing ] = useState( null );
 	const [ busyId, setBusyId ] = useState( '' );
+	// The track waiting for the user to confirm its deletion.
+	const [ confirmDeleteId, setConfirmDeleteId ] = useState( '' );
 
 	// Add-form state.
 	const [ form, setForm ] = useState( { language: 'en', freeLang: '', label: '', isDefault: false } );
@@ -239,6 +241,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 	};
 
 	const handleDelete = async ( captionID ) => {
+		setConfirmDeleteId( '' );
 		setError( '' );
 		setBusyId( captionID );
 		try {
@@ -380,9 +383,33 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 										showTooltip
 										isDestructive
 										disabled={ rowBusy }
-										onClick={ () => handleDelete( id ) }
+										onClick={ () => setConfirmDeleteId( id ) }
 									/>
 								</div>
+								{ confirmDeleteId === id && (
+									<div className="godam-ve-caption-manager__confirm" role="alert" data-test-id={ `godam-caption-confirm-delete-${ id }` }>
+										<p>
+											{ sprintf(
+												/* translators: %s: caption track name. */
+												__( 'Delete "%s"? It is removed from GoDAM, so every site and page that plays this video loses it. This cannot be undone.', 'godam' ),
+												caption.label || languageLabel( caption.language ),
+											) }
+										</p>
+										<div className="godam-ve-caption-manager__confirm-actions">
+											<Button variant="tertiary" onClick={ () => setConfirmDeleteId( '' ) }>
+												{ __( 'Cancel', 'godam' ) }
+											</Button>
+											<Button
+												variant="primary"
+												isDestructive
+												data-test-id={ `godam-caption-confirm-delete-button-${ id }` }
+												onClick={ () => handleDelete( id ) }
+											>
+												{ __( 'Delete', 'godam' ) }
+											</Button>
+										</div>
+									</div>
+								) }
 							</li>
 						);
 					} ) }

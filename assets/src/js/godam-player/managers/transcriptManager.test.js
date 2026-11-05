@@ -136,12 +136,30 @@ describe( 'TranscriptManager.initialize', () => {
 		expect( added.map( ( track ) => track.src ) ).toEqual( [ CACHED ] );
 	} );
 
-	it( 'shows nothing after the transcript was deleted in the editor', async () => {
-		const { manager, added } = setup( { transcriptDeleted: 'true' }, { exists: true, url: CACHED, caption_tracks: CAPTION_TRACKS } );
+	it( 'drops only the deleted WordPress copy: Central\'s caption tracks still play', async () => {
+		const { manager, added } = setup(
+			{ transcriptDeleted: 'true', transcriptUrl: UPLOAD, transcriptSource: 'upload' },
+			{ exists: true, url: CACHED, caption_tracks: CAPTION_TRACKS },
+		);
+
+		await manager.initialize();
+
+		expect( added.map( ( track ) => track.src ) ).toEqual( [ CACHED, 'https://cdn.example/job/es.vtt' ] );
+	} );
+
+	it( 'falls back to nothing after a delete when Central cannot be reached', async () => {
+		const { manager, added } = setup( { transcriptDeleted: 'true', transcriptUrl: CACHED }, new Error( 'offline' ) );
 
 		await manager.initialize();
 
 		expect( added ).toEqual( [] );
-		expect( manager.fetchTranscriptPath ).not.toHaveBeenCalled();
+	} );
+
+	it( 'does not bring back the single legacy transcript after a delete', async () => {
+		const { manager, added } = setup( { transcriptDeleted: 'true' }, { exists: true, url: CACHED } );
+
+		await manager.initialize();
+
+		expect( added ).toEqual( [] );
 	} );
 } );

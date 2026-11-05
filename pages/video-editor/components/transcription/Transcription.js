@@ -18,6 +18,7 @@ import {
 	useGenerateTranscriptionMutation,
 	useUploadTranscriptionMutation,
 	useDeleteTranscriptionMutation,
+	useRefreshTranscriptionMutation,
 } from '../../redux/api/transcription';
 import { parseCaptions, formatClock, formatBytes, isTranscribingStatus } from './utils';
 import { TRANSCRIBE_LANGUAGES } from './languages';
@@ -66,6 +67,13 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	const [ generateTranscription ] = useGenerateTranscriptionMutation();
 	const [ uploadTranscription ] = useUploadTranscriptionMutation();
 	const [ deleteTranscription, { isLoading: isDeleting } ] = useDeleteTranscriptionMutation();
+	const [ refreshTranscription ] = useRefreshTranscriptionMutation();
+
+	// When the tab opens, pick up a default changed in GoDAM Central's own
+	// dashboard. A failure keeps what WordPress already has.
+	useEffect( () => {
+		refreshTranscription( attachmentID ).catch( () => {} );
+	}, [ attachmentID, refreshTranscription ] );
 
 	const transcriptPath = transcription?.transcript_path || '';
 	// Only a video GoDAM has transcoded can be transcribed. `undefined` (an older
@@ -335,7 +343,8 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 					title={ __( 'Delete transcription', 'godam' ) }
 					onRequestClose={ () => setConfirmDelete( false ) }
 				>
-					<p>{ __( 'Delete this transcription? This cannot be undone.', 'godam' ) }</p>
+					<p>{ __( 'Delete this transcription from WordPress? This cannot be undone.', 'godam' ) }</p>
+					<p>{ __( 'Caption tracks stored in GoDAM keep playing for visitors. To remove one, use Manage caption tracks.', 'godam' ) }</p>
 					<div className="flex justify-between items-center gap-3">
 						<Button
 							variant="tertiary"

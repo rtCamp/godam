@@ -177,6 +177,18 @@ export const transcriptionAPI = createApi( {
 		} ),
 
 		// Remove the transcript from the attachment.
+		// Re-read the default caption from GoDAM Central, then refetch the tab.
+		// Sent once when the Transcription tab opens, since a change made in
+		// Central's own dashboard sends WordPress no message.
+		refreshTranscription: builder.mutation( {
+			query: ( attachmentID ) => ( {
+				url: `/godam/v1/transcription`,
+				method: 'GET',
+				params: { attachment_id: attachmentID, refresh: 1 },
+			} ),
+			invalidatesTags: ( result, error, attachmentID ) => [ { type: 'Transcription', id: attachmentID } ],
+		} ),
+
 		deleteTranscription: builder.mutation( {
 			query: ( attachmentID ) => ( {
 				url: `/godam/v1/transcription`,
@@ -193,6 +205,7 @@ export const {
 	useGenerateTranscriptionMutation,
 	useUploadTranscriptionMutation,
 	useDeleteTranscriptionMutation,
+	useRefreshTranscriptionMutation,
 	useListCaptionsQuery,
 	useUploadCaptionMutation,
 	useUpdateCaptionMutation,

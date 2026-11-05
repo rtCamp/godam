@@ -244,6 +244,7 @@ $ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
 
 	&__row {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.75rem;
@@ -329,6 +330,24 @@ $ve-faint: color-mix(in srgb, currentcolor 4%, transparent);
 		display: flex;
 		align-items: center;
 		gap: 1rem;
+	}
+
+	&__confirm {
+		flex-basis: 100%;
+		padding: 0.75rem;
+		border: 1px solid #cc1818;
+		border-radius: 4px;
+		background: #fcf0f1;
+
+		p {
+			margin: 0 0 0.5rem;
+		}
+	}
+
+	&__confirm-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.5rem;
 	}
 
 	&__plan {

@@ -57,6 +57,47 @@ class Transcription extends Base {
 	const SOURCE_META = 'rtgodam_transcript_source';
 
 	/**
+	 * Meta holding when the cached transcript was last checked against GoDAM
+	 * Central's caption list (a Unix timestamp), whether or not Central answered.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string
+	 */
+	const CHECKED_META = 'rtgodam_transcript_checked_at';
+
+	/**
+	 * Cron hook that re-reads Central's default caption for one attachment.
+	 *
+	 * Central sends no message when captions are changed in its own dashboard,
+	 * so the cached transcript the video SEO data reads is refreshed this way.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string
+	 */
+	const REFRESH_HOOK = 'rtgodam_refresh_caption_default';
+
+	/**
+	 * How old the last check may be before the SEO data asks for a new one.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int
+	 */
+	const REFRESH_AFTER = 12 * HOUR_IN_SECONDS;
+
+	/**
+	 * Register the REST routes and the background caption refresh.
+	 *
+	 * @return void
+	 */
+	protected function setup_hooks() {
+		parent::setup_hooks();
+		add_action( self::REFRESH_HOOK, array( __CLASS__, 'refresh_cached_default' ) );
+	}
+
+	/**
 	 * Register custom REST API.
 	 *
 	 * @return array Array of registered REST API routes.
@@ -80,7 +121,17 @@ class Transcription extends Base {
 						'methods'             => \WP_REST_Server::READABLE,
 						'callback'            => array( $this, 'get_transcription' ),
 						'permission_callback' => array( $this, 'edit_permission' ),
-						'args'                => $attachment_arg,
+						'args'                => array_merge(
+							$attachment_arg,
+							array(
+								'refresh' => array(
+									'required'    => false,
+									'type'        => 'boolean',
+									'default'     => false,
+									'description' => __( 'Re-read the default caption from GoDAM Central first, so changes made in Central show.', 'godam' ),
+								),
+							)
+						),
 					),
 					array(
 						'methods'             => \WP_REST_Server::DELETABLE,
@@ -327,6 +378,12 @@ class Transcription extends Base {
 	 */
 	public function get_transcription( \WP_REST_Request $request ) {
 		$attachment_id = absint( $request->get_param( 'attachment_id' ) );
+
+		// The editor asks once when the tab opens: captions may have changed in
+		// Central's own dashboard, which sends WordPress no message.
+		if ( $request->get_param( 'refresh' ) ) {
+			self::refresh_cached_default( $attachment_id );
+		}
 
 		/**
 		 * Fires before reading this attachment's transcript meta, so
@@ -741,6 +798,7 @@ class Transcription extends Base {
 		}
 		delete_post_meta( $attachment_id, self::DELETED_META );
 		if ( 'upload' !== get_post_meta( $attachment_id, self::SOURCE_META, true ) ) {
+			update_post_meta( $attachment_id, self::CHECKED_META, time() );
 			if ( '' !== $default_path ) {
 				update_post_meta( $attachment_id, 'rtgodam_transcript_path', $default_path );
 				update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
@@ -752,6 +810,105 @@ class Transcription extends Base {
 		if ( $switch_context ) {
 			do_action( 'rtgodam_after_attachment_lookup' );
 		}
+	}
+
+	/**
+	 * Re-read Central's caption list and point the cached transcript at its
+	 * current default, for changes made in Central's own dashboard.
+	 *
+	 * Skipped for a transcript uploaded in WordPress (Central does not have it),
+	 * after the user deleted the transcript, and for a video GoDAM has not
+	 * transcoded. When the default changed, the pages using the video have their
+	 * video SEO data rebuilt.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $attachment_id WordPress attachment ID.
+	 * @return bool Whether Central answered with a caption list.
+	 */
+	public static function refresh_cached_default( $attachment_id ) {
+		$attachment_id = absint( $attachment_id );
+		$api_key       = get_option( 'rtgodam-api-key', '' );
+		if ( ! $attachment_id || empty( $api_key ) ) {
+			return false;
+		}
+
+		/** This action is documented in inc/classes/rest-api/class-transcription.php */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$is_deleted = (bool) get_post_meta( $attachment_id, self::DELETED_META, true );
+		$is_upload  = 'upload' === get_post_meta( $attachment_id, self::SOURCE_META, true );
+		$job_id     = get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true );
+		if ( empty( $job_id ) ) {
+			$job_id = get_post_meta( $attachment_id, '_godam_original_id', true );
+		}
+		if ( ! $is_deleted && ! $is_upload && ! empty( $job_id ) ) {
+			// Recorded before asking, so a Central outage is not retried on every page view.
+			update_post_meta( $attachment_id, self::CHECKED_META, time() );
+		}
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( $is_deleted || $is_upload || empty( $job_id ) ) {
+			return false;
+		}
+
+		$response = wp_remote_post(
+			RTGODAM_API_BASE . '/api/method/godam_core.api.captions.list_captions',
+			array(
+				'timeout' => 10, // phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout
+				'body'    => array(
+					'job_name' => sanitize_text_field( $job_id ),
+					'api_key'  => sanitize_text_field( $api_key ),
+				),
+			)
+		);
+		if ( is_wp_error( $response ) || (int) wp_remote_retrieve_response_code( $response ) >= 400 ) {
+			return false;
+		}
+
+		$data    = json_decode( wp_remote_retrieve_body( $response ), true );
+		$payload = ( is_array( $data ) && isset( $data['message'] ) ) ? $data['message'] : $data;
+		if ( ! is_array( $payload ) || ! isset( $payload['captions'] ) || ! is_array( $payload['captions'] ) ) {
+			return false;
+		}
+
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$before = (string) get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+		self::sync_cached_transcript( $attachment_id, $payload['captions'], false );
+		$after = (string) get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( $before !== $after && class_exists( '\RTGODAM\Inc\Seo' ) ) {
+			\RTGODAM\Inc\Seo::get_instance()->schedule_seo_sync_for_attachment( $attachment_id );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Queue a background refresh of the cached transcript when the last check
+	 * against Central is more than {@see self::REFRESH_AFTER} old.
+	 *
+	 * Called by the video SEO data, the one reader that has no editor open to
+	 * refresh it. Never calls Central itself, so it is safe during a page render.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $attachment_id WordPress attachment ID.
+	 * @param int $checked_at    Value of the {@see self::CHECKED_META} meta.
+	 * @return bool Whether a refresh was queued.
+	 */
+	public static function maybe_schedule_refresh( $attachment_id, $checked_at ) {
+		$attachment_id = absint( $attachment_id );
+		if ( ! $attachment_id || ( time() - (int) $checked_at ) < self::REFRESH_AFTER ) {
+			return false;
+		}
+
+		$args = array( $attachment_id );
+		if ( wp_next_scheduled( self::REFRESH_HOOK, $args ) ) {
+			return false;
+		}
+
+		return (bool) wp_schedule_single_event( time(), self::REFRESH_HOOK, $args );
 	}
 
 	/**

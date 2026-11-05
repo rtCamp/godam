@@ -3,14 +3,17 @@
  * Handles loading transcription tracks for the player.
  *
  * Resolution order (see the matching comment in inc/templates/godam-player.php):
- * `data-transcript-deleted` means the user deleted it, so show nothing.
- * Otherwise a `data-transcript-url` with `data-transcript-source="upload"` (a
- * file the user uploaded in WordPress) is added first, then every ready
- * caption track from the public API endpoint, A to Z, with the default on. The endpoint
+ * A `data-transcript-url` with `data-transcript-source="upload"` (a file the
+ * user uploaded in WordPress) is added first, then every ready caption track
+ * from the public API endpoint, A to Z, with the default on. The endpoint
  * supports ETag/Cache-Control:
  * GET /api/method/godam_core.api.process.get_public_transcription_path?job_name=<job_id>
  * If the endpoint fails or sends no caption tracks, the cached
  * `data-transcript-url` is used, else the endpoint's single legacy transcript.
+ *
+ * `data-transcript-deleted` means the user deleted WordPress's copy in the
+ * editor: that copy is not used, but the caption tracks in GoDAM Central (which
+ * the user manages in "Manage caption tracks") still play.
  */
 
 /**
@@ -77,14 +80,9 @@ export default class TranscriptManager {
 			return;
 		}
 
-		// Deleted in the editor — don't resurrect it from the SaaS.
-		if ( this.transcriptDeleted ) {
-			return;
-		}
-
 		// A file uploaded in WordPress never reaches the SaaS, so it goes first
-		// and becomes the default subtitle.
-		const hasLocalUpload = !! this.localTranscriptUrl && this.localTranscriptSource === 'upload';
+		// and becomes the default subtitle. A deleted copy is not used at all.
+		const hasLocalUpload = ! this.transcriptDeleted && !! this.localTranscriptUrl && this.localTranscriptSource === 'upload';
 		if ( hasLocalUpload ) {
 			await this.addLocalTranscript();
 		}
@@ -106,7 +104,9 @@ export default class TranscriptManager {
 			return;
 		}
 
-		if ( hasLocalUpload ) {
+		// After a delete, only Central's caption tracks may play: neither the
+		// deleted copy nor the single transcript it was a copy of.
+		if ( hasLocalUpload || this.transcriptDeleted ) {
 			return;
 		}
 
