@@ -145,3 +145,40 @@ describe( 'TranscriptPanelManager toggle button', () => {
 		expect( document.activeElement ).toBe( manager.button );
 	} );
 } );
+
+describe( 'TranscriptPanelManager.resolveTranscriptUrl', () => {
+	// Only the fields resolveTranscriptUrl reads, as the constructor sets them.
+	const manager = ( dataset, signedCaptions ) => {
+		const m = Object.create( TranscriptPanelManager.prototype );
+		m.jobId = 'job-1';
+		m.localTranscriptUrl = dataset.transcriptUrl || '';
+		m.signedCaptions = signedCaptions;
+		return m;
+	};
+
+	afterEach( () => {
+		delete global.fetch;
+	} );
+
+	it( 'uses the default signed track of a file served signed, without asking the public endpoint', async () => {
+		global.fetch = jest.fn();
+		const signed = [
+			{ language: 'es', label: 'Español', vtt_path: 'https://cdn.test/private/p/es.vtt?token=a', is_default: false },
+			{ language: 'en', label: 'English', vtt_path: 'https://cdn.test/private/p/en.vtt?token=b', is_default: true },
+		];
+		expect( await manager( {}, signed ).resolveTranscriptUrl() ).toBe( 'https://cdn.test/private/p/en.vtt?token=b' );
+		expect( global.fetch ).not.toHaveBeenCalled();
+	} );
+
+	it( 'still prefers the transcript stored on the attachment', async () => {
+		global.fetch = jest.fn();
+		const url = await manager( { transcriptUrl: 'https://site.test/uploads/t.vtt' }, [ { vtt_path: 'x', is_default: true } ] ).resolveTranscriptUrl();
+		expect( url ).toBe( 'https://site.test/uploads/t.vtt' );
+	} );
+
+	it( 'asks the public endpoint when the route sent no tracks', async () => {
+		global.fetch = jest.fn( () => Promise.resolve( { ok: true, json: () => Promise.resolve( { message: { exists: true, url: 'https://cdn.test/job/t.vtt' } } ) } ) );
+		expect( await manager( {}, null ).resolveTranscriptUrl() ).toBe( 'https://cdn.test/job/t.vtt' );
+		expect( global.fetch ).toHaveBeenCalledTimes( 1 );
+	} );
+} );

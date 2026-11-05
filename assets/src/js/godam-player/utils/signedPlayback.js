@@ -63,3 +63,14 @@ export function applySignedSources( setup, signed ) {
 	return true;
 }
 
+/**
+ * The URL of the track to show as the transcript: the default ready one, else the first.
+ *
+ * @param {Array<Object>|null} captions Signed caption tracks from the playback route.
+ * @return {string} The track's URL, or '' when none is ready.
+ */
+export function defaultCaptionUrl( captions ) {
+	const ready = ( captions || [] ).filter( ( caption ) => !! caption?.vtt_path );
+	const caption = ready.find( ( track ) => track.is_default ) || ready[ 0 ];
+	return caption ? caption.vtt_path : '';
+}

@@ -487,6 +487,7 @@ export default class GodamVideoPlayer {
 			this.player,
 			this.video,
 			this.configManager.videoSetupOptions,
+			this.signedCaptions,
 		);
 		this.player.transcriptPanelManager = this.transcriptPanelManager;
 	}
