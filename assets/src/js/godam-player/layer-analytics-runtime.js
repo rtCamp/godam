@@ -31,6 +31,7 @@ import { Analytics } from 'analytics';
  * Internal dependencies
  */
 import { shouldSkipAnalytics, buildAnalyticsRequestBody } from './analytics-helpers';
+import { consentAwareStorage, onStatisticsConsent } from './utils/consent';
 import {
 	addLayerInteraction as bufferAddLayerInteraction,
 	getLayerInteractions as bufferGetLayerInteractions,
@@ -70,7 +71,9 @@ const ANALYTICS_APP_NAME = 'analytics-cdp-plugin';
  */
 export function ensureAnalyticsInstance() {
 	if ( ! window.analytics ) {
-		window.analytics = Analytics( { app: ANALYTICS_APP_NAME } );
+		// Same consent-aware storage as the player's instance: the visitor id stays
+		// in memory until the visitor allows "statistics".
+		window.analytics = Analytics( { app: ANALYTICS_APP_NAME, storage: consentAwareStorage } );
 	}
 	return window.analytics;
 }
@@ -190,10 +193,13 @@ function flushLayerInteractions() {
 export function initLayerAnalytics() {
 	// First, so the visitor id is readable before any hotspot can be clicked.
 	// Not on pages that send no analytics (previews, admin): there the id would
-	// be stored with nothing to use it.
-	if ( ! shouldSkipAnalytics() ) {
-		ensureAnalyticsInstance();
-	}
+	// be stored with nothing to use it. With the WP Consent API, only once the
+	// visitor allows "statistics" (at once if they already have).
+	onStatisticsConsent( () => {
+		if ( ! shouldSkipAnalytics() ) {
+			ensureAnalyticsInstance();
+		}
+	} );
 
 	window.GoDAM = window.GoDAM || {};
 
