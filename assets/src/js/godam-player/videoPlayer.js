@@ -23,6 +23,7 @@ import TranscriptManager from './managers/transcriptManager.js';
 import TranscriptPanelManager from './managers/transcriptPanelManager.js';
 import { getVisibilityManager, resolveOutOfViewMode, resolvePauseOnTabHidden } from './managers/visibilityManager.js';
 import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
+import { prepareSignedPlayback } from './utils/signedPlayback.js';
 
 /**
  * Refactored Video Player Class
@@ -60,6 +61,7 @@ export default class GodamVideoPlayer {
 
 		try {
 			this.setupVideoElement();
+			await this.useSignedSources();
 			await this.loadRequiredPlugins();
 			this.initializePlayer();
 		} finally {
@@ -69,6 +71,14 @@ export default class GodamVideoPlayer {
 				delete this.video.parentElement.dataset.videojsInitializing;
 			}
 		}
+	}
+
+	/**
+	 * Swap in signed sources, poster and captions for GoDAM media served from a signed
+	 * folder (Organization and Embed only). Keeps the saved ones when the route has none.
+	 */
+	async useSignedSources() {
+		this.signedCaptions = await prepareSignedPlayback( this.video, this.configManager.videoSetupControls );
 	}
 
 	/**
@@ -450,6 +460,7 @@ export default class GodamVideoPlayer {
 			this.player,
 			this.video,
 			this.configManager,
+			this.signedCaptions,
 		);
 
 		// Load transcript asynchronously (non-blocking)
@@ -468,6 +479,7 @@ export default class GodamVideoPlayer {
 			this.player,
 			this.video,
 			this.configManager.videoSetupOptions,
+			this.signedCaptions,
 		);
 		this.player.transcriptPanelManager = this.transcriptPanelManager;
 	}

@@ -321,6 +321,22 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 		public function set_status( $status ) {
 			$this->status = $status;
 		}
+
+		/** @var array */
+		public $headers = array();
+
+		/**
+		 * @param string $key   Header name.
+		 * @param string $value Header value.
+		 */
+		public function header( $key, $value ) {
+			$this->headers[ $key ] = $value;
+		}
+
+		/** @return array */
+		public function get_headers() {
+			return $this->headers;
+		}
 	}
 }
 
