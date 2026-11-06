@@ -405,6 +405,26 @@ function showStatus( status, message ) {
 }
 
 /**
+ * Add a link to the GoDAM Dashboard's setup checklist after the status message.
+ *
+ * @since n.e.x.t
+ *
+ * @param {HTMLElement|null} status Status element.
+ */
+function appendSetupLink( status ) {
+	if ( ! status || ! config.setupUrl ) {
+		return;
+	}
+
+	const link = document.createElement( 'a' );
+	link.href = config.setupUrl;
+	link.dataset.rtgodamDw = 'setup-link';
+	link.textContent = __( 'Get your first video live', 'godam' );
+
+	status.append( ' ', link );
+}
+
+/**
  * Load the summary and fill in the Watching section.
  *
  * @param {HTMLElement} root Widget root.
@@ -460,12 +480,17 @@ async function load( root ) {
 	let message = '';
 	if ( partial ) {
 		message = __( 'Some of these numbers could not load right now. GoDAM will try again in a few minutes.', 'godam' );
+	} else if ( summary.no_data ) {
+		message = __( 'No plays yet. Plays and watch time show up here once people start watching.', 'godam' );
 	} else if ( hint ) {
 		message = __( 'Add a GoDAM video to a page. Plays and watch time show up here once people start watching.', 'godam' );
 	}
 
 	showStatus( status, message );
-	showWatching( root, ! empty || hint || partial );
+	if ( summary.no_data && ! partial ) {
+		appendSetupLink( status );
+	}
+	showWatching( root, ! empty || hint || partial || !! summary.no_data );
 	renderUpdated( root, summary.fetched_at );
 	renderReviewAsk( root, receipts );
 }

@@ -229,6 +229,17 @@ class Dashboard_Widget_Summary extends Base {
 			return self::assemble_summary( $metrics, null, null, time() );
 		}
 
+		// No video has played yet, so there are no top videos or history to ask
+		// for, and a failed ask must not hide the "No plays yet" link.
+		if ( ! empty( $metrics['no_data'] ) ) {
+			$empty = array(
+				'status'                    => 'success',
+				'top_videos'                => array(),
+				'dashboard_metrics_history' => array(),
+			);
+			return self::assemble_summary( $metrics, $empty, $empty, time() );
+		}
+
 		$top_request = new WP_REST_Request( 'GET', '/godam/v1/analytics/top-videos' );
 		$top_request->set_param( 'site_url', $site_url );
 		$top_request->set_param( 'page', 1 );
@@ -290,6 +301,12 @@ class Dashboard_Widget_Summary extends Base {
 		);
 
 		$summary['unavailable'] = $unavailable;
+
+		// No video has played on this site yet: the widget points to the setup
+		// checklist instead of a row of zeros.
+		if ( ! empty( $metrics['no_data'] ) ) {
+			$summary['no_data'] = true;
+		}
 
 		return $summary;
 	}
