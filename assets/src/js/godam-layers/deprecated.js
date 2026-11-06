@@ -1,12 +1,12 @@
 /**
  * GoDAM Layer API: deprecation notices for the add-on hooks it replaces (#2296).
  *
- * The old hooks keep working until GoDAM 2.9.0; each logs one notice per page
+ * The old hooks keep working until GoDAM 2.10.0; each logs one notice per page
  * the first time it is used.
  */
 
-export const DEPRECATED_SINCE = '2.7.0';
-export const REMOVED_IN = '2.9.0';
+export const DEPRECATED_SINCE = '2.8.0';
+export const REMOVED_IN = '2.10.0';
 
 const shown = new Set();
 

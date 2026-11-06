@@ -4,7 +4,7 @@ Build your own layer types for GoDAM videos and images, the way you build blocks
 
 A layer is something that appears on top of a video or image: a call to action, a form, a poll, a hotspot, a product card. GoDAM's own layer types (CTA, Form, Poll, Hotspot and Ad) are registered through this same API, so an add-on's layer type gets the same treatment: an entry in the "Add layer" menu, a settings panel, a timeline marker, saving, and rendering in the player and on `godam/image` blocks.
 
-> **Requires GoDAM 2.7.0.** The older add-on hooks still work until 2.9.0, with deprecation notices. See [Moving from the old hooks](#moving-from-the-old-hooks).
+> **Requires GoDAM 2.8.0.** The older add-on hooks still work until 2.10.0, with deprecation notices. See [Moving from the old hooks](#moving-from-the-old-hooks).
 
 ## Contents
 
@@ -562,9 +562,9 @@ The editor reads and writes this through `/wp/v2/media/{id}` (the `rtgodam_meta`
 
 ## Moving from the old hooks
 
-These still work until **GoDAM 2.9.0**. Each logs a deprecation notice when used: in PHP through `_deprecated_hook()` (with `WP_DEBUG`), in JS in the console once per page.
+These still work until **GoDAM 2.10.0**. Each logs a deprecation notice when used: in PHP through `_deprecated_hook()` (with `WP_DEBUG`), in JS in the console once per page.
 
-| Deprecated since 2.7.0 | Use instead |
+| Deprecated since 2.8.0 | Use instead |
 |---|---|
 | `godam_video_editor_layer_options` filter | `godam_register_layer_type()`, plus `getAvailability` in the editor |
 | `godam_video_editor_layer_components` filter | `godam_register_layer_type()` with an `editorScript` |

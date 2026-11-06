@@ -104,7 +104,7 @@ describe( 'Layer API contract: Layer editor dispatch', () => {
 
 		expect( editor() ).toBe( 'acme' );
 		expect( AcmeLayer.mock.calls[ 0 ][ 0 ] ).toEqual( { layerID: 'l2', goBack, duration: 90 } );
-		expect( console ).toHaveWarnedWith( 'GoDAM: window.godamLayerComponents is deprecated since version 2.7.0 and will be removed in version 2.9.0. Use the `edit` setting of registerLayerType() instead.' );
+		expect( console ).toHaveWarnedWith( 'GoDAM: window.godamLayerComponents is deprecated since version 2.8.0 and will be removed in version 2.10.0. Use the `edit` setting of registerLayerType() instead.' );
 	} );
 
 	it( 'lets an add-on replace a core editor by listing the same type', () => {
