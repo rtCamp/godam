@@ -279,6 +279,7 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 - Feat: Choose the language for AI transcription, or let GoDAM detect it.
 - Feat: With a consent banner that supports the WP Consent API (such as Complianz, Cookiebot, CookieYes or iubenda), GoDAM analytics now waits for the visitor's statistics consent before it stores or sends anything.
 - Tweak: The Vimeo migration tab now links straight to the screen in GoDAM Central where you connect your Vimeo account.
+- Tweak: Sites running GoDAM for WooCommerce older than 2.3.1 are asked to update it.
 - Fix: Pages no longer include the visitor's IP address or the signed-in user's ID for analytics. If you use a page cache, purge it after updating.
 - Fix: GoDAM elements no longer cause deprecation notices with WPBakery 9.1.
 - Fix: Security fixes.
