@@ -51,6 +51,10 @@ class WPB_GoDAM_Audio {
 
 	/**
 	 * Map audio element to WPBakery.
+	 *
+	 * Each param default is set in both 'std' and settings['default']:
+	 * WPBakery 9.1+ reads settings['default'] and logs a deprecation notice
+	 * for 'std' on its own, while older versions read only 'std'.
 	 * 
 	 * @since 1.6.0
 	 *
@@ -147,6 +151,7 @@ class WPB_GoDAM_Audio {
 							esc_html__( 'Yes', 'godam' ) => '1',
 						),
 						'std'         => '0',
+						'settings'    => array( 'default' => '0' ),
 						'description' => esc_html__( 'Autoplay may cause usability issues for some users.', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
@@ -163,6 +168,7 @@ class WPB_GoDAM_Audio {
 							esc_html__( 'Yes', 'godam' ) => '1',
 						),
 						'std'         => '0',
+						'settings'    => array( 'default' => '0' ),
 						'description' => esc_html__( 'Loop the audio playback continuously.', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
@@ -181,6 +187,7 @@ class WPB_GoDAM_Audio {
 							esc_html__( 'Auto', 'godam' ) => 'auto',
 						),
 						'std'         => '',
+						'settings'    => array( 'default' => '' ),
 						'description' => esc_html__( 'Select the preload behavior for the audio.', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
@@ -196,6 +203,7 @@ class WPB_GoDAM_Audio {
 						'param_name'  => 'show_transcript',
 						'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
 						'std'         => 'true',
+						'settings'    => array( 'default' => 'true' ),
 						'description' => esc_html__( 'Show the transcript panel (when a transcript is available).', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
@@ -209,6 +217,7 @@ class WPB_GoDAM_Audio {
 						'param_name'  => 'show_chapters',
 						'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
 						'std'         => 'true',
+						'settings'    => array( 'default' => 'true' ),
 						'description' => esc_html__( 'Show the chapters panel (when chapters are available).', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(

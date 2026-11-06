@@ -52,6 +52,10 @@ class WPB_GoDAM_Image {
 	/**
 	 * Map image element to WPBakery.
 	 *
+	 * Each param default is set in both 'std' and settings['default']:
+	 * WPBakery 9.1+ reads settings['default'] and logs a deprecation notice
+	 * for 'std' on its own, while older versions read only 'std'.
+	 *
 	 * @since 2.0.0
 	 *
 	 * @return void
@@ -102,6 +106,7 @@ class WPB_GoDAM_Image {
 						'param_name'  => 'show_image_layers',
 						'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
 						'std'         => 'true',
+						'settings'    => array( 'default' => 'true' ),
 						'description' => esc_html__( 'Display the authored hotspot & product layers over the image.', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
