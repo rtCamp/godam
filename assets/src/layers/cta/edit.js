@@ -24,6 +24,7 @@ import ColorPickerButton from '../../../../pages/video-editor/components/shared/
 import LayersHeader from '../../../../pages/video-editor/components/layers/LayersHeader.js';
 import TriggerSection from '../../../../pages/video-editor/components/layers/shared/TriggerSection.jsx';
 import { VeSection, VeField, VeSegmented, VeCollapsible } from '../../../../pages/video-editor/components/controls';
+import { getSafeLinkUrl } from '../../utils/safe-url';
 
 // A DOMPurify config similar to what wp_kses_post() allows
 const wpKsesAllowed = {
@@ -117,7 +118,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 					<div className="btns">
 						<a
 							className="godam-cta-btn"
-							href={ layer?.imageLink || '#' }
+							href={ getSafeLinkUrl( layer?.imageLink ) || '#' }
 							target="_blank"
 							rel="noreferrer"
 							style={ {

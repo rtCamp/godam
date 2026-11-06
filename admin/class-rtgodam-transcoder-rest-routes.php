@@ -188,6 +188,12 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
+					// JSON list of every caption track on the job. Sent by Central
+					// since multilingual captions; older Central versions omit it.
+					'caption_tracks'       => array(
+						'required' => false,
+						'type'     => 'string',
+					),
 				),
 			)
 		);
@@ -655,9 +661,19 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 
 			// If status is "Transcribed", save the transcript path.
 			if ( 'Transcribed' === $transcription_status ) {
-				// Save transcript path as post meta.
-				// The transcript_path parameter is already sanitized by the REST API framework via esc_url_raw sanitize_callback.
-				update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+				$caption_tracks = json_decode( (string) $request->get_param( 'caption_tracks' ), true );
+
+				if ( is_array( $caption_tracks ) ) {
+					// On a video with several audio tracks, `transcript_path` is the
+					// track that just finished, which may not be the default
+					// language. Cache the default caption from the full list instead,
+					// and leave a transcript the user uploaded in WordPress alone.
+					\RTGODAM\Inc\REST_API\Transcription::sync_cached_transcript( (int) $attachment_id, $caption_tracks, false );
+				} elseif ( 'upload' !== get_post_meta( $attachment_id, 'rtgodam_transcript_source', true ) ) {
+					// Older Central: only the one transcript path is sent.
+					// The transcript_path parameter is already sanitized by the REST API framework via esc_url_raw sanitize_callback.
+					update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+				}
 
 				return new WP_REST_Response(
 					array(
@@ -682,13 +698,33 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	}
 
 	/**
+	 * Get the API key a callback request carries in its body.
+	 *
+	 * GoDAM Central posts the key in the request body, so only the body is read.
+	 * A key in the URL is not accepted, since URLs end up in server logs.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return string The key, or an empty string when the body has none.
+	 */
+	private function get_callback_api_key( $request ) {
+		$body_params = $request->get_body_params();
+		$json_params = $request->get_json_params();
+
+		$api_key = $body_params['api_key'] ?? ( is_array( $json_params ) ? ( $json_params['api_key'] ?? '' ) : '' );
+
+		return is_string( $api_key ) ? sanitize_text_field( $api_key ) : '';
+	}
+
+	/**
 	 * Verify callback permission by checking API key.
 	 *
 	 * @param WP_REST_Request $request The request object.
 	 * @return bool|WP_Error True if permission granted, WP_Error otherwise.
 	 */
 	public function verify_callback_permission( $request ) {
-		$provided_api_key = $request->get_param( 'api_key' );
+		$provided_api_key = $this->get_callback_api_key( $request );
 		$stored_api_key   = get_option( 'rtgodam-api-key' );
 
 		// Validate API Key.
@@ -700,7 +736,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 			return new WP_Error( 'forbidden', __( 'API key not configured on the site.', 'godam' ), array( 'status' => 403 ) );
 		}
 
-		if ( $provided_api_key !== $stored_api_key ) {
+		if ( ! hash_equals( (string) $stored_api_key, $provided_api_key ) ) {
 			return new WP_Error( 'forbidden', __( 'Invalid API key.', 'godam' ), array( 'status' => 403 ) );
 		}
 

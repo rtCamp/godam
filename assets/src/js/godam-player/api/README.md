@@ -1103,7 +1103,15 @@ player.on('ended', () => {
 }
 ```
 
-#### play, pause, ended
+#### pause
+```javascript
+{
+    reason: string|null  // 'visibility' when GoDAM paused the video because it left the view,
+                         // 'api' for GoDAMAPI.pauseAll(), null when the visitor or your code paused it
+}
+```
+
+#### play, ended
 These events don't include additional data (data will be `null`).
 
 **Notes:**

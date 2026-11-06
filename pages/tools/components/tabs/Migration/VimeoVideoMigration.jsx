@@ -170,6 +170,9 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 		);
 	}
 
+	// Central's Settings > Third-party apps tab, where the Vimeo account is connected.
+	const vimeoConnectUrl = `${ window.godamRestRoute?.apiBase || 'https://app.godam.io' }/web/settings?setTab=ThirdPartyApps`;
+
 	return (
 		<>
 			<Panel className="godam-panel">
@@ -178,10 +181,16 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 						{ __( 'This tool replaces WordPress Vimeo Embed blocks with GoDAM Video blocks. It does not replace Vimeo videos added in the WordPress Classic Editor.', 'godam' ) }
 					</p>
 
+					<p className="godam-vimeo-connect-step">
+						<strong>{ __( 'Step 1:', 'godam' ) }</strong>{ ' ' }
+						{ __( 'Connect your Vimeo account in GoDAM Central.', 'godam' ) }{ ' ' }
+						<ExternalLink href={ vimeoConnectUrl } className="godam-url">{ __( 'Connect Vimeo', 'godam' ) }</ExternalLink>
+					</p>
+
 					<div className="flex items-center gap-2">
 						<Icon icon={ error } className="w-4 h-4" style={ { fill: '#a77f06' } } />
 						<p className="m-0 text-[#a77f06]">{ __( 'This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central.', 'godam' ) }</p>
-						<ExternalLink href={ `${ window.godamRestRoute?.apiBase }/web` } className="godam-url">{ __( 'Open', 'godam' ) }</ExternalLink>
+						<ExternalLink href={ vimeoConnectUrl } className="godam-url">{ __( 'Open', 'godam' ) }</ExternalLink>
 					</div>
 
 					{ /* Progressbar indicating video migration progress */ }
@@ -197,7 +206,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 						! godamMigrationCompleted && (
 							<div className="godam-migration-status my-2 bg-gray-100 p-2 rounded">
 								{ __( 'Vimeo video migration in WordPress can only begin after all Vimeo videos have been successfully migrated to GoDAM Central,', 'godam' ) }
-								<a className="godam-url" href={ `${ window.godamRestRoute?.apiBase || 'https://app.godam.io' }/web/settings` } target="_blank" rel="noreferrer">
+								<a className="godam-url" href={ vimeoConnectUrl } target="_blank" rel="noreferrer">
 									{ __( 'Check here!', 'godam' ) }
 								</a>
 							</div>

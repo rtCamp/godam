@@ -525,13 +525,48 @@ class Analytics extends Base {
 	 * Each route proxies the site's stored API key and account token to the
 	 * analytics microservice, so none may answer anonymous callers. Access
 	 * matches the Analytics and Media Editor menus' `upload_files` capability
-	 * (authors and above). It also stops unauthenticated requests from
-	 * triggering uncached upstream calls.
+	 * (authors and above), for a video the user can edit, as the Media Editor
+	 * asks. It also stops unauthenticated requests from triggering uncached
+	 * upstream calls.
 	 *
+	 * @param WP_REST_Request $request REST API request.
 	 * @return bool Whether the current user may read per-video analytics.
 	 */
-	public function check_analytics_read_permission() {
-		return current_user_can( 'upload_files' );
+	public function check_analytics_read_permission( WP_REST_Request $request ) {
+		return current_user_can( 'upload_files' ) && $this->can_read_video_analytics( $request->get_param( 'video_id' ) );
+	}
+
+	/**
+	 * Whether the current user may read the analytics of a video: an attachment of
+	 * this site that they can edit, which is what the Media Editor asks before it
+	 * opens a video. Editors and administrators can edit every attachment; an
+	 * author can edit their own.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param int|string $video_id Attachment ID of the video.
+	 * @return bool
+	 */
+	public function can_read_video_analytics( $video_id ) {
+		$video_id = absint( $video_id );
+
+		if ( ! $video_id ) {
+			return false;
+		}
+
+		/**
+		 * Fires before this attachment-specific capability check, so
+		 * integrations that centralize media on another site can switch
+		 * context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$video    = get_post( $video_id );
+		$can_read = $video && 'attachment' === $video->post_type && current_user_can( 'edit_post', $video_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		return (bool) $can_read;
 	}
 
 	/**
@@ -1396,7 +1431,13 @@ class Analytics extends Base {
 		// Any other non-2xx answer (401/403/429, …), or a 2xx without the metrics
 		// payload, is a failed call — not an empty set of metrics. Returning
 		// success here would show real tiles as "0" and cache that for 15 minutes.
-		if ( $http_code < 200 || $http_code >= 300 || ! is_array( $body ) || ! isset( $body['dashboard_metrics'] ) ) {
+		// A `dashboard_metrics: null` key is different: it is how the service says
+		// the site has no data yet (no video played), so it is a real zero.
+		if (
+			$http_code < 200 || $http_code >= 300 || ! is_array( $body )
+			|| ! array_key_exists( 'dashboard_metrics', $body )
+			|| ( null !== $body['dashboard_metrics'] && ! is_array( $body['dashboard_metrics'] ) )
+		) {
 			return new WP_REST_Response(
 				array(
 					'status'    => 'error',

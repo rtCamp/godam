@@ -9,6 +9,13 @@ export const pollsAPI = createApi( {
 	reducerPath: 'pollsAPI',
 	baseQuery: fetchBaseQuery( {
 		baseUrl: window.pathJoin( [ restURL, '/godam/v1/' ] ),
+		prepareHeaders: ( headers ) => {
+			const nonce = window.godamRestRoute?.nonce || window.wpApiSettings?.nonce;
+			if ( nonce ) {
+				headers.set( 'X-WP-Nonce', nonce );
+			}
+			return headers;
+		},
 	} ),
 	endpoints: ( builder ) => ( {
 		getPolls: builder.query( {

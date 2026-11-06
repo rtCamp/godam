@@ -80,6 +80,10 @@ class Assets {
 
 		$localize_array = rtgodam_get_localize_array();
 
+		// Whether front-end analytics waits for the visitor's consent (WP Consent API)
+		// or is turned off; read by assets/src/js/godam-player/utils/consent.js.
+		$localize_array['consent'] = Visitor_Consent::get_script_config();
+
 		wp_localize_script(
 			'rtgodam-script',
 			'videoAnalyticsParams',

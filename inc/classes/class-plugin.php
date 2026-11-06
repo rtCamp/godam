@@ -15,6 +15,7 @@ use RTGODAM\Inc\Blocks;
 use RTGODAM\Inc\Assets;
 use RTGODAM\Inc\Deactivation;
 use RTGODAM\Inc\Media_Tracker;
+use RTGODAM\Inc\Visitor_Consent;
 use RTGODAM\Inc\Map_Tracker;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
@@ -119,6 +120,7 @@ class Plugin {
 		Media_Tracker::get_instance();
 		Media_Usage_Tracker::get_instance();
 		Map_Tracker::get_instance();
+		Visitor_Consent::get_instance();
 		Media_Usage_Backfill::get_instance();
 		Seo::get_instance();
 		Video_Sitemap::get_instance();

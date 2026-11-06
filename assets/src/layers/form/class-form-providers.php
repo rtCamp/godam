@@ -169,16 +169,8 @@ class Form_Providers {
 		if ( empty( $layer['gf_id'] ) ) {
 			return '';
 		}
-		$theme = ! empty( $layer['theme'] ) ? esc_attr( $layer['theme'] ) : '';
-		return self::form_container(
-			do_shortcode(
-				sprintf(
-					"[gravityform id='%d' title='false' description='false' ajax='true'%s]",
-					intval( $layer['gf_id'] ),
-					$theme ? " theme='$theme'" : ''
-				)
-			)
-		);
+		// The theme is reduced to a slug before it goes into the shortcode.
+		return self::form_container( do_shortcode( rtgodam_get_gravityform_layer_shortcode( $layer ) ) );
 	}
 
 	/**

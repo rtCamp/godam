@@ -93,14 +93,16 @@ class Core_Layer_Types {
 	 * @return string The container.
 	 */
 	public static function container( $layer, $instance_id, $inner_html, $args = array() ) {
-		$args     = array_merge(
+		$args    = array_merge(
 			array(
 				'class'            => '',
 				'default_bg_color' => true,
 			),
 			$args
 		);
-		$bg_color = ! empty( $layer['bg_color'] ) ? $layer['bg_color'] : ( $args['default_bg_color'] ? '#FFFFFFB3' : '' );
+		$default = $args['default_bg_color'] ? '#FFFFFFB3' : '';
+		// Printed into the style attribute: a plain colour only, else the default.
+		$bg_color = ! empty( $layer['bg_color'] ) ? rtgodam_sanitize_css_color( $layer['bg_color'], $default ) : $default;
 
 		return sprintf(
 			'<div id="%1$s" class="%2$s"%3$s>%4$s</div>',

@@ -10,11 +10,11 @@ Tested up to: 7.1
 
 Requires PHP: 7.4
 
-Stable tag: 2.6.0
+Stable tag: 2.8.0
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
-Media hosting for WordPress. Move course, LMS and membership videos off Vimeo: free migration for up to 100 videos on one site. Works with LifterLMS.
+Media hosting for WordPress. Move course, LMS and membership videos off Vimeo: we migrate your entire video library for free. Works with LifterLMS.
 
 ## Description
 [GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) combines multiple media tools into one WordPress plugin and provides three key features:

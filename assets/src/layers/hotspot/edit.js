@@ -32,6 +32,7 @@ import { formatClock, parseClock } from '../../../../pages/video-editor/utils/ti
 import LayerControls from '../../../../pages/video-editor/components/LayerControls';
 import FontAwesomeIconPicker from '../../../../pages/video-editor/components/hotspot/FontAwesomeIconPicker';
 import ColorPickerButton from '../../../../pages/video-editor/components/shared/color-picker/ColorPickerButton.jsx';
+import { getSafeLinkUrl } from '../../utils/safe-url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import LayersHeader from '../../../../pages/video-editor/components/layers/LayersHeader';
@@ -673,6 +674,7 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 						// the published player.
 						const effective = resolveHotspotStyle( layer, hotspot );
 						const hasIcon = !! ( effective.icon || effective.customIconUrl );
+						const tooltipLink = getSafeLinkUrl( hotspot.link );
 
 						let pixelX, pixelY, pixelDiameter;
 
@@ -921,9 +923,9 @@ const HotspotLayer = ( { layerID, goBack, duration } ) => {
 									<span className="index">{ index + 1 }</span>
 
 									<div className="hotspot-tooltip">
-										{ hotspot.link ? (
+										{ tooltipLink ? (
 											<a
-												href={ hotspot.link }
+												href={ tooltipLink }
 												target="_blank"
 												rel="noopener noreferrer"
 											>

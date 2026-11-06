@@ -107,14 +107,25 @@ if ( ! function_exists( 'do_action_deprecated' ) ) {
 if ( ! function_exists( 'do_shortcode' ) ) {
 
 	/**
-	 * Record the shortcode and print nothing.
+	 * Record the shortcode and return it unexpanded (so HTML without shortcodes passes through).
 	 *
 	 * @param string $content Content.
 	 * @return string
 	 */
 	function do_shortcode( $content ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
 		$GLOBALS['rtgodam_stub']['shortcodes'][] = $content;
-		return '';
+		return (string) $content;
+	}
+}
+
+if ( ! function_exists( 'sanitize_key' ) ) {
+
+	/**
+	 * @param string $key Key.
+	 * @return string
+	 */
+	function sanitize_key( $key ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $key ) );
 	}
 }
 

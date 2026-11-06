@@ -4,11 +4,11 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.6.0
+Stable tag: 2.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Media hosting for WordPress. Move course, LMS and membership videos off Vimeo: free migration for up to 100 videos on one site. Works with LifterLMS.
+Media hosting for WordPress. Move course, LMS and membership videos off Vimeo: we migrate your entire video library for free. Works with LifterLMS.
 
 == Description ==
 [GoDAM](https://godam.io/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=description-link) is the media layer for WordPress. It is built first for course, LMS and membership sites, including sites moving their videos off Vimeo, and it combines multiple media tools into one plugin with three key features:
@@ -37,10 +37,9 @@ Check out our source code and contribute to the plugin on GitHub: [Official GoDA
 
 If your course, LMS or membership site hosts its videos on Vimeo, GoDAM moves them to WordPress-native hosting for you.
 
-📌 **Free migration for up to 100 videos on one WordPress site**
+📌 **Free migration of your entire video library**
 ✓ Our team imports your videos with their titles, descriptions, thumbnails, tags and folders
 ✓ We replace the Vimeo embeds in your content, and you review each step
-✓ For a library above 100 videos, or for more than one site, we give you a fixed quote before we start
 
 [See how the free migration works](https://godam.io/vimeo-alternative/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=vimeo-migration#h-we-move-your-vimeo-library)
 
@@ -214,7 +213,7 @@ Supported input formats:
 A. Both. The plugin adds the player, the media manager and the settings to WordPress. Cloud storage, transcoding, adaptive bitrate streaming and CDN delivery run on GoDAM's service and need a valid API key. See Pricing Plans above, which include a 60-day free trial.
 
 = Can I move my existing Vimeo videos to GoDAM? =
-A. Yes. We move up to 100 videos on one WordPress site for free. Our team imports your videos with their titles, descriptions, thumbnails, tags and folders, replaces the Vimeo embeds in your content, and you review each step. For a larger library, or for more than one site, we give you a fixed quote first. [See how the free migration works](https://godam.io/vimeo-alternative/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=vimeo-faq#h-we-move-your-vimeo-library)
+A. Yes. We move your entire video library for free. Our team imports your videos with their titles, descriptions, thumbnails, tags and folders, replaces the Vimeo embeds in your content, and you review each step. [See how the free migration works](https://godam.io/vimeo-alternative/?utm_campaign=plugin-readme&utm_source=wordpress-org&utm_medium=plugin&utm_content=vimeo-faq#h-we-move-your-vimeo-library)
 
 You can also switch part of it yourself. For Vimeo videos you added with the WordPress Vimeo Embed block, the Video Migration tab under GoDAM → Tools replaces those blocks with GoDAM Video blocks, for videos you have already imported into your GoDAM account. That tab needs a valid API key. It does not cover Vimeo videos added in the Classic Editor, in page builders or in LMS lesson video fields.
 
@@ -245,6 +244,11 @@ A. Yes! You can start with a 60-day free trial to explore all features. No credi
 = Can I track video engagement and analytics? =
 A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
+= Can GoDAM wait for my cookie consent banner? =
+A. Yes. With the [WP Consent API](https://wordpress.org/plugins/wp-consent-api/) plugin and a banner that supports it (for example Complianz, CookieYes, Cookiebot or iubenda), GoDAM's own video, image and layer analytics wait for the visitor's "statistics" consent. Until then GoDAM stores nothing in the visitor's browser and sends nothing. (GoDAM for Woo's Shoppable Video and Reel Pop counts follow in a GoDAM for Woo update.) Views and clicks from before the choice are sent if the visitor accepts on that page, and discarded if they refuse. Withdrawing consent deletes GoDAM's browser data. Sites without a consent banner are not affected.
+
+If your banner does not support the WP Consent API, add `add_filter( 'godam_visitor_tracking_requires_consent', '__return_true' );` and have the banner call `window.GoDAM.setAnalyticsConsent( true )` when the visitor accepts, or `window.GoDAM.setAnalyticsConsent( false )` when they refuse. To turn visitor tracking off completely, use `add_filter( 'godam_visitor_tracking_enabled', '__return_false' );`.
+
 == Screenshots ==
 1. Video Editor: add interactive layers to a video, with its plays and watch time on top
 2. Add layer menu: CTA, Hotspot, Form, Poll and Ad layers (WooCommerce with the GoDAM for Woo add-on)
@@ -269,35 +273,28 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
-= v2.6.0 (November 2, 2026) =
+= v2.8.0 (November 9, 2026) =
 
-- Feat: You can now add a Marketo form as a video layer. Connect your Marketo account under GoDAM > Settings > Integrations, then pick the form from a searchable list of your approved Marketo forms. If Marketo is connected without a Client ID and Secret, enter the form's ID instead.
-- Feat: You can now add a HubSpot form as a video layer in the same way. Connect HubSpot under GoDAM > Settings > Integrations and drop a form into a video.
-- Feat: When a visitor your Marketo or HubSpot account already recognises watches a GoDAM video, how far they watched is sent back to that tool, so video engagement shows up against your contacts.
-- Feat: While video-view tracking is on in GoDAM Central, each site can now stop sending video views to Marketo or HubSpot with "Track video views on this site" under GoDAM > Settings > Integrations. Your other sites are not changed.
-- Feat: For Marketo video tracking, GoDAM now adds Marketo's Munchkin tracking code to pages that have a video, unless the page already loads it. Munchkin also records page visits in your Marketo. A site that loads Munchkin itself can turn ours off with the `rtgodam_map_inject_munchkin` filter.
-- Tweak: If a Marketo form can't load, the video layer says "This form could not be loaded." with a Continue button. On sites without HTTPS, the video editor warns that Marketo form submissions need HTTPS.
-- Fix: The Document, Audio and Video Thumbnail blocks no longer collapse when placed inside a Row or Stack (flex) layout, and the Document card now stacks to fit its column instead of the screen width.
+- Feat: Videos can now have captions in several languages. In the video editor's Transcription tab, add, edit, replace or remove a caption file for any language and choose which one shows by default. Visitors pick a language from the player's subtitles menu. Needs a paid GoDAM plan.
+- Feat: Choose the language for AI transcription, or let GoDAM detect it.
+- Feat: With a consent banner that supports the WP Consent API (such as Complianz, Cookiebot, CookieYes or iubenda), GoDAM analytics now waits for the visitor's statistics consent before it stores or sends anything.
+- Tweak: The Vimeo migration tab now links straight to the screen in GoDAM Central where you connect your Vimeo account.
+- Tweak: Sites running GoDAM for WooCommerce older than 2.3.1 are asked to update it.
+- Fix: Pages no longer include the visitor's IP address or the signed-in user's ID for analytics. If you use a page cache, purge it after updating.
+- Fix: GoDAM elements no longer cause deprecation notices with WPBakery 9.1.
 - Fix: Security fixes.
 
-= v2.5.2 (October 29, 2026) =
+= v2.7.0 (November 5, 2026) =
 
-- Fix: The "No workspaces yet" screen in onboarding now has Refresh and Back, so you can carry on after creating a workspace without signing in again.
-- Fix: The Remove API Key dialog now says what really happens: only this site disconnects, and your GoDAM account and media are not affected.
-- Fix: On phones, a video in the lightbox no longer jumps when the browser toolbar shows or hides.
-- Fix: The All Media count in the media picker is now right when the picker shows only caption or document files.
-- Fix: Global video ads (GoDAM > Settings > Video Ads > Enable Global Video Ads) now play.
-- Fix: In the Classic player skin, the mute button on hover previews shows its icon again.
+- Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each GoDAM Video block, widget or shortcode can override it.
+- Feat: Developers can pause all GoDAM videos from their own code, for example when a carousel changes slide.
+- Tweak: Authors see analytics only for the videos they can edit.
+- Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
 - Fix: Security fixes.
 
-= v2.5.1 (October 26, 2026) =
+= v2.6.2 (November 4, 2026) =
 
-- Fix: GoDAM's public video pages, lists and player data no longer show media from draft, private or scheduled posts. Media used on a published page keeps working.
-- Fix: GoDAM only deletes, exports and stores media files that are inside the uploads folder.
-- Fix: Video embed pages and form entries build the player from checked settings.
-- Fix: The form lists in the video editor are available only to users who can upload media, and Jetpack forms in videos show only on published posts.
-- Fix: Sending media to GoDAM for transcoding now checks GoDAM's security certificate.
-- Fix: Media folder names are no longer shown to site visitors, and a locked folder stays locked everywhere.
+- Tweak: Our team now moves your entire video library from Vimeo for free.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.

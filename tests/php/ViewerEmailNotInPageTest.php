@@ -75,7 +75,7 @@ class ViewerEmailNotInPageTest extends TestCase {
 	public function test_page_params_keep_what_analytics_still_needs(): void {
 		$params = rtgodam_get_localize_array();
 
-		$this->assertSame( 7, $params['userId'] );
+		$this->assertSame( 0, $params['userId'] );
 		$this->assertSame( 1, $params['siteId'] );
 		$this->assertSame( 'https://analytics.test', $params['endpoint'] );
 		$this->assertSame( 'verified-account', $params['token'] );

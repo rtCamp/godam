@@ -29,7 +29,12 @@
  * should touch the underlying key.
  */
 
-const STORAGE_KEY = 'godamLayerInteractions';
+/**
+ * Internal dependencies
+ */
+import { hasStatisticsConsent, holdUntilConsent, LAYER_BUFFER_KEY } from './consent';
+
+const STORAGE_KEY = LAYER_BUFFER_KEY;
 
 // Defensive upper bound on buffered events per video per page session.
 // Per-session dedupe in the manager classes already bounds normal growth to
@@ -94,19 +99,26 @@ export function getLayerInteractions() {
  * would repeat that whole cost N+1 times back to back, during playback. This
  * pays it once regardless of batch size.
  *
+ * An event is kept only if it has a truthy layer_id, layer_type and action_type
+ * (the fields the server requires); other entries are skipped, not fatal.
+ * layer_timestamp is expected downstream but not enforced here, since 0 (a layer
+ * at t=0) is a valid value.
+ *
  * @param {string}        videoKey data-id or job_id of the video. Required and non-empty.
- * @param {Array<Object>} events   Event objects. An entry is kept only if it has
- *                                 a truthy layer_id, layer_type and action_type
- *                                 (the fields the server requires); other entries
- *                                 are skipped, not fatal. layer_timestamp is
- *                                 expected downstream but not enforced here, since
- *                                 0 (a layer at t=0) is a valid value.
+ * @param {Array<Object>} events   Event objects.
  */
 export function addLayerInteractions( videoKey, events ) {
 	if ( ! videoKey || typeof videoKey !== 'string' ) {
 		return;
 	}
 	if ( ! Array.isArray( events ) || events.length === 0 ) {
+		return;
+	}
+	// Without statistics consent nothing is written to the browser: the events
+	// wait in memory, are buffered if the visitor accepts on this page, and are
+	// discarded if they refuse.
+	if ( ! hasStatisticsConsent() ) {
+		holdUntilConsent( () => addLayerInteractions( videoKey, events ) );
 		return;
 	}
 

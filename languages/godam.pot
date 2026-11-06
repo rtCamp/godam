@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 2.6.0\n"
+"Project-Id-Version: GoDAM 2.8.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-02T11:53:17+00:00\n"
+"POT-Creation-Date: 2026-11-06T05:37:51+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -23,11 +23,11 @@ msgstr ""
 #: inc/classes/class-elementor-widgets.php:240
 #: inc/classes/class-pages.php:186
 #: inc/classes/class-pages.php:187
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:68
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:102
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:68
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:371
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:473
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:72
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:106
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:72
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:390
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:512
 #: pages/godam/components/tabs/IntegrationsSettings/HubSpotSettings.jsx:136
 #: pages/video-editor/components/forms/CF7.js:22
 msgid "GoDAM"
@@ -121,7 +121,7 @@ msgstr ""
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:415
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:422
 #: pages/video-editor/components/audio/AudioCardPreview.js:253
-#: pages/video-editor/components/transcription/Transcription.js:170
+#: pages/video-editor/components/transcription/Transcription.js:188
 msgid "Transcript"
 msgstr ""
 
@@ -171,15 +171,15 @@ msgstr[1] ""
 #: assets/build/blocks/godam-pdf/render.php:209
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/src/blocks/godam-pdf/render.php:209
-#: assets/src/blocks/godam-pdf/edit.js:619
+#: assets/src/blocks/godam-pdf/edit.js:624
 msgid "A preview is not available for this document."
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/render.php:218
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/src/blocks/godam-pdf/render.php:218
-#: assets/src/blocks/godam-pdf/edit.js:605
-#: assets/src/blocks/godam-pdf/edit.js:628
+#: assets/src/blocks/godam-pdf/edit.js:610
+#: assets/src/blocks/godam-pdf/edit.js:633
 msgid "Download original"
 msgstr ""
 
@@ -289,7 +289,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
 #: inc/classes/elementor-widgets/class-godam-audio.php:70
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:101
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:105
 #: assets/src/blocks/godam-audio/edit.js:411
 msgid "Audio Title"
 msgstr ""
@@ -307,11 +307,11 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-audio.php:83
 #: inc/classes/elementor-widgets/class-godam-document.php:87
 #: inc/classes/elementor-widgets/class-godam-video.php:202
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:115
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:149
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:385
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:119
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:153
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:422
 #: assets/src/blocks/godam-audio/edit.js:420
-#: assets/src/blocks/godam-pdf/edit.js:826
+#: assets/src/blocks/godam-pdf/edit.js:831
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:283
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:183
 #: pages/video-editor/components/cta/CardCTA.js:445
@@ -339,7 +339,7 @@ msgstr ""
 #: assets/build/blocks/godam-player/index.js:5
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-audio.php:95
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:129
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:133
 #: assets/src/blocks/godam-audio/edit.js:498
 #: assets/src/blocks/godam-player/edit.js:1071
 #: pages/video-editor/components/appearance/Appearance.js:233
@@ -436,7 +436,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-audio/edit.js:571
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:20
-#: pages/video-editor/components/transcription/Transcription.js:176
+#: pages/video-editor/components/transcription/Transcription.js:194
 msgid "Transcription"
 msgstr ""
 
@@ -477,28 +477,28 @@ msgstr ""
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-audio.php:109
 #: inc/classes/elementor-widgets/class-godam-video.php:279
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:143
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:77
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:147
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:81
 #: assets/src/blocks/godam-audio/edit.js:606
-#: assets/src/blocks/godam-player/edit-common-settings.js:94
+#: assets/src/blocks/godam-player/edit-common-settings.js:95
 msgid "Autoplay"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-audio.php:112
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:150
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:84
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:155
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:89
 #: assets/src/blocks/godam-audio/edit.js:135
-#: assets/src/blocks/godam-player/edit-common-settings.js:61
+#: assets/src/blocks/godam-player/edit-common-settings.js:62
 msgid "Autoplay may cause usability issues for some users."
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
 #: inc/classes/elementor-widgets/class-godam-audio.php:122
 #: inc/classes/elementor-widgets/class-godam-video.php:291
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:159
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:93
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:164
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:98
 #: assets/src/blocks/godam-audio/edit.js:615
 msgid "Loop"
 msgstr ""
@@ -510,7 +510,7 @@ msgid "Preload"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:178
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:184
 #: assets/src/blocks/godam-audio/edit.js:630
 msgid "Browser default"
 msgstr ""
@@ -518,7 +518,7 @@ msgstr ""
 #: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/pages/godam.min.js:2
 #: inc/classes/elementor-widgets/class-godam-audio.php:141
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:181
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:187
 #: assets/src/blocks/godam-audio/edit.js:631
 #: pages/godam/components/tabs/IntegrationsSettings/MarketoSettings.jsx:281
 msgid "Auto"
@@ -527,7 +527,7 @@ msgstr ""
 #: assets/build/blocks/godam-audio/index.js:2
 #: inc/classes/elementor-widgets/class-godam-audio.php:142
 #: inc/classes/elementor-widgets/class-godam-video.php:111
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:179
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:185
 #: assets/src/blocks/godam-audio/edit.js:632
 #: assets/src/blocks/godam-player/track-uploader.js:33
 msgid "Metadata"
@@ -581,14 +581,14 @@ msgstr ""
 #: inc/templates/godam-video-gallery.php:264
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:163
 #: assets/src/blocks/godam-gallery-v2/edit.js:716
-#: pages/analytics/Analytics.js:628
+#: pages/analytics/Analytics.js:633
 #: pages/video-editor/VideoEditor.js:686
 msgid "Untitled video"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2-item/index.js:1
 #: assets/build/js/wpbakery-video-selector-param.min.js:1
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:66
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:70
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:271
 #: assets/src/js/wpbakery/wpbakery-video-selector-param.js:94
 msgid "Select Video"
@@ -685,7 +685,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:56
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:71
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:75
 #: assets/src/blocks/godam-gallery-v2/edit.js:860
 msgid "Gallery Settings"
 msgstr ""
@@ -693,7 +693,7 @@ msgstr ""
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:5
 #: inc/classes/elementor-widgets/class-godam-gallery.php:297
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:240
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:251
 #: assets/src/blocks/godam-gallery-v2/edit.js:867
 #: assets/src/blocks/godam-player/edit.js:1038
 msgid "Layout"
@@ -701,28 +701,28 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:303
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:244
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:255
 #: assets/src/blocks/godam-gallery-v2/edit.js:889
 msgid "Carousel"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:301
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:243
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:254
 #: assets/src/blocks/godam-gallery-v2/edit.js:894
 msgid "Grid"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:302
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:245
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:256
 #: assets/src/blocks/godam-gallery-v2/edit.js:899
 msgid "List"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:325
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:266
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:279
 #: assets/src/blocks/godam-gallery-v2/edit.js:907
 msgid "View Ratio"
 msgstr ""
@@ -771,7 +771,7 @@ msgstr ""
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:350
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:290
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:305
 #: assets/src/blocks/godam-gallery-v2/edit.js:962
 #: assets/src/blocks/godam-gallery-v2/edit.js:966
 #: pages/analytics/timeline/SubHotspotRail.js:83
@@ -780,7 +780,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:355
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:294
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:309
 #: assets/src/blocks/godam-gallery-v2/edit.js:971
 msgid "Autoplay all videos"
 msgstr ""
@@ -792,7 +792,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:354
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:293
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:308
 #: assets/src/blocks/godam-gallery-v2/edit.js:976
 msgid "Play on hover"
 msgstr ""
@@ -832,10 +832,10 @@ msgstr ""
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:274
 #: inc/classes/elementor-widgets/class-godam-video.php:349
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:228
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:161
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:238
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:170
 #: assets/src/blocks/godam-gallery-v2/edit.js:1018
-#: assets/src/blocks/godam-player/edit-common-settings.js:223
+#: assets/src/blocks/godam-player/edit-common-settings.js:241
 msgid "Priority"
 msgstr ""
 
@@ -843,10 +843,10 @@ msgstr ""
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:273
 #: inc/classes/elementor-widgets/class-godam-video.php:348
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:227
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:160
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:237
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:169
 #: assets/src/blocks/godam-gallery-v2/edit.js:1022
-#: assets/src/blocks/godam-player/edit-common-settings.js:224
+#: assets/src/blocks/godam-player/edit-common-settings.js:242
 msgid "Balanced"
 msgstr ""
 
@@ -857,18 +857,18 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:1
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:349
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:238
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:367
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:270
 #: assets/src/blocks/godam-gallery-v2/edit.js:1032
-#: assets/src/blocks/godam-player/edit-common-settings.js:246
+#: assets/src/blocks/godam-player/edit-common-settings.js:264
 msgid "Enable Likes & Comments"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:1
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:245
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:278
 #: assets/src/blocks/godam-gallery-v2/edit.js:1035
-#: assets/src/blocks/godam-player/edit-common-settings.js:249
+#: assets/src/blocks/godam-player/edit-common-settings.js:267
 msgid "Engagement will only be visible for transcoded videos"
 msgstr ""
 
@@ -890,7 +890,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:141
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:126
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:131
 #: assets/src/blocks/godam-gallery-v2/edit.js:1064
 msgid "Date"
 msgstr ""
@@ -899,7 +899,7 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:142
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:127
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:132
 #: assets/src/blocks/godam-gallery-v2/edit.js:1065
 #: pages/dashboard/components/TopVideosTable.js:222
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:117
@@ -908,28 +908,28 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:155
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:141
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:147
 #: assets/src/blocks/godam-gallery-v2/edit.js:1074
 msgid "Order"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:159
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:144
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:150
 #: assets/src/blocks/godam-gallery-v2/edit.js:1078
 msgid "Descending"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:160
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:145
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:151
 #: assets/src/blocks/godam-gallery-v2/edit.js:1082
 msgid "Ascending"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:184
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:157
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:164
 #: assets/src/blocks/godam-gallery-v2/edit.js:1093
 msgid "Media Folder"
 msgstr ""
@@ -941,7 +941,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:206
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:170
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:178
 #: assets/src/blocks/godam-gallery-v2/edit.js:1103
 msgid "Author"
 msgstr ""
@@ -956,7 +956,7 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/shared-components.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:220
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:183
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:192
 #: assets/src/blocks/godam-gallery-v2/edit.js:1112
 #: pages/analytics/components/DateRangePicker/index.js:405
 msgid "Date Range"
@@ -967,7 +967,7 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/shared-components.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:224
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:186
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:195
 #: assets/src/blocks/godam-gallery-v2/edit.js:1115
 #: pages/analytics/components/DateRangePicker/index.js:90
 #: pages/analytics/components/DateRangePicker/index.js:91
@@ -976,28 +976,28 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:225
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:187
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:196
 #: assets/src/blocks/godam-gallery-v2/edit.js:1116
 msgid "Last 7 Days"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:226
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:188
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:197
 #: assets/src/blocks/godam-gallery-v2/edit.js:1117
 msgid "Last 30 Days"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:227
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:189
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:198
 #: assets/src/blocks/godam-gallery-v2/edit.js:1118
 msgid "Last 90 Days"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:228
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:190
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:199
 #: assets/src/blocks/godam-gallery-v2/edit.js:1120
 msgid "Custom Range"
 msgstr ""
@@ -1026,14 +1026,14 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:377
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:315
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:332
 #: assets/src/blocks/godam-gallery-v2/edit.js:1206
 msgid "Enable More Items"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:389
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:327
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:344
 #: assets/src/blocks/godam-gallery-v2/edit.js:1213
 msgid "More Items Behavior"
 msgstr ""
@@ -1091,12 +1091,12 @@ msgstr ""
 #: assets/build/js/godam-player-frontend.min.js:7
 #: assets/build/pages/tools.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:78
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:103
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:471
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:108
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:510
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-view.php:30
 #: assets/src/blocks/godam-gallery-v2/edit.js:1352
 #: assets/src/blocks/godam-player/edit.js:1145
-#: assets/src/js/godam-player/managers/modalManager.js:530
+#: assets/src/js/godam-player/managers/modalManager.js:534
 #: pages/tools/components/tabs/RetranscodeTab.jsx:35
 msgid "Video"
 msgstr ""
@@ -1105,7 +1105,7 @@ msgstr ""
 #: assets/build/js/godam-player-frontend.min.js:7
 #: assets/src/blocks/godam-gallery-v2/view.js:129
 #: assets/src/blocks/godam-gallery-v2/view.js:136
-#: assets/src/js/godam-player/managers/modalManager.js:369
+#: assets/src/js/godam-player/managers/modalManager.js:370
 msgid "Video player"
 msgstr ""
 
@@ -1113,7 +1113,7 @@ msgstr ""
 #: assets/build/js/godam-player-frontend.min.js:7
 #: assets/build/pages/onboarding.min.js:2
 #: assets/src/blocks/godam-gallery-v2/view.js:142
-#: assets/src/js/godam-player/managers/modalManager.js:359
+#: assets/src/js/godam-player/managers/modalManager.js:360
 #: pages/onboarding/components/screens/WorkspaceScreen.jsx:133
 msgid "Close"
 msgstr ""
@@ -1140,11 +1140,11 @@ msgstr ""
 #: assets/build/js/godam-player-frontend.min.js:5
 #: assets/build/js/godam-player-frontend.min.js:7
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:809
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:1010
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:1017
-#: pages/video-editor/components/layers/HotspotLayer.js:483
-#: pages/video-editor/components/layers/HotspotLayer.js:700
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:791
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:995
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:1003
+#: pages/video-editor/components/layers/HotspotLayer.js:484
+#: pages/video-editor/components/layers/HotspotLayer.js:702
 #, js-format
 msgid "Hotspot %d"
 msgstr ""
@@ -1153,9 +1153,9 @@ msgstr ""
 #: assets/build/js/godam-image-layers-frontend.min.js:3
 #: assets/build/js/godam-player-frontend.min.js:3
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:968
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:953
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:200
-#: pages/video-editor/components/layers/HotspotLayer.js:911
+#: pages/video-editor/components/layers/HotspotLayer.js:913
 msgid "Custom Icon"
 msgstr ""
 
@@ -1223,8 +1223,8 @@ msgstr ""
 
 #: assets/build/blocks/godam-pdf-viewer.js:1
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:647
-#: assets/src/blocks/godam-pdf/edit.js:677
+#: assets/src/blocks/godam-pdf/edit.js:652
+#: assets/src/blocks/godam-pdf/edit.js:682
 #: assets/src/blocks/godam-pdf/viewer/index.js:329
 msgid "Loading preview…"
 msgstr ""
@@ -1239,10 +1239,12 @@ msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/blocks/godam-player/index.js:1
+#: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-pdf/caption.js:44
 #: assets/src/blocks/godam-pdf/caption.js:48
 #: assets/src/blocks/godam-player/caption.js:50
 #: assets/src/blocks/godam-player/caption.js:56
+#: pages/video-editor/components/transcription/CaptionManager.js:513
 msgid "Add caption"
 msgstr ""
 
@@ -1256,114 +1258,114 @@ msgstr ""
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/js/wpbakery-document-selector-param.min.js:1
 #: assets/build/pages/tools.min.js:2
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:100
-#: assets/src/blocks/godam-pdf/edit.js:316
-#: assets/src/blocks/godam-pdf/edit.js:480
-#: assets/src/blocks/godam-pdf/edit.js:552
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:104
+#: assets/src/blocks/godam-pdf/edit.js:321
+#: assets/src/blocks/godam-pdf/edit.js:485
+#: assets/src/blocks/godam-pdf/edit.js:557
 #: assets/src/js/wpbakery/wpbakery-document-selector-param.js:70
 #: pages/tools/components/tabs/RetranscodeTab.jsx:37
 msgid "Document"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:328
+#: assets/src/blocks/godam-pdf/edit.js:333
 msgid "That file type is not supported. Choose a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file."
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:487
-#: assets/src/blocks/godam-pdf/edit.js:794
+#: assets/src/blocks/godam-pdf/edit.js:492
+#: assets/src/blocks/godam-pdf/edit.js:799
 msgid "Doc Selection"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:489
-#: assets/src/blocks/godam-pdf/edit.js:796
+#: assets/src/blocks/godam-pdf/edit.js:494
+#: assets/src/blocks/godam-pdf/edit.js:801
 msgid "Add title, description, and more to make your document stand out."
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:504
+#: assets/src/blocks/godam-pdf/edit.js:509
 msgid "+ Add Document"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:515
+#: assets/src/blocks/godam-pdf/edit.js:520
 msgid "Attach a document here"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:518
+#: assets/src/blocks/godam-pdf/edit.js:523
 msgid "Upload a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file to embed it or display it as a card with a cover image."
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:532
+#: assets/src/blocks/godam-pdf/edit.js:537
 msgid "+ Upload Document"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: inc/classes/elementor-widgets/class-godam-document.php:269
-#: assets/src/blocks/godam-pdf/edit.js:574
+#: assets/src/blocks/godam-pdf/edit.js:579
 msgid "Unsupported file format"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:577
+#: assets/src/blocks/godam-pdf/edit.js:582
 msgid "Replace this with a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file; it will not be shown on your page."
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:592
+#: assets/src/blocks/godam-pdf/edit.js:597
 msgid "Generating preview…"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:595
+#: assets/src/blocks/godam-pdf/edit.js:600
 msgid "GoDAM is converting this document so it can be displayed on your page. Until it is ready, visitors are offered the original as a download. Reload this post to check for the finished preview."
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:715
+#: assets/src/blocks/godam-pdf/edit.js:720
 msgid "page"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:715
+#: assets/src/blocks/godam-pdf/edit.js:720
 msgid "pages"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:727
+#: assets/src/blocks/godam-pdf/edit.js:732
 msgid "Document cover"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:806
+#: assets/src/blocks/godam-pdf/edit.js:811
 msgid "Remove document"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: inc/classes/elementor-widgets/class-godam-document.php:73
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:135
-#: assets/src/blocks/godam-pdf/edit.js:817
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:139
+#: assets/src/blocks/godam-pdf/edit.js:822
 msgid "Doc Title"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: inc/classes/elementor-widgets/class-godam-document.php:76
-#: assets/src/blocks/godam-pdf/edit.js:819
+#: assets/src/blocks/godam-pdf/edit.js:824
 msgid "Add document title"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:828
+#: assets/src/blocks/godam-pdf/edit.js:833
 msgid "Add document description"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/blocks/godam-pdf/edit.js:836
+#: assets/src/blocks/godam-pdf/edit.js:841
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:286
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:291
 msgid "Preview"
@@ -1372,158 +1374,213 @@ msgstr ""
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/elementor-widgets/class-godam-document.php:100
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:163
-#: assets/src/blocks/godam-pdf/edit.js:840
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:167
+#: assets/src/blocks/godam-pdf/edit.js:845
 #: pages/analytics/helper.js:544
 msgid "View"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: inc/classes/elementor-widgets/class-godam-document.php:104
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:166
-#: assets/src/blocks/godam-pdf/edit.js:848
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:170
+#: assets/src/blocks/godam-pdf/edit.js:853
 msgid "Default View"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: inc/classes/elementor-widgets/class-godam-document.php:105
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:167
-#: assets/src/blocks/godam-pdf/edit.js:852
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:171
+#: assets/src/blocks/godam-pdf/edit.js:857
 msgid "Card View"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:860
+#: assets/src/blocks/godam-pdf/edit.js:865
 msgid "Show cover"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:869
+#: assets/src/blocks/godam-pdf/edit.js:874
 msgid "Cover"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
-#: assets/src/blocks/godam-pdf/edit.js:879
+#: assets/src/blocks/godam-pdf/edit.js:884
 #: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:118
 msgid "Auto-generated cover"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:883
+#: assets/src/blocks/godam-pdf/edit.js:888
 msgid "Auto-generated"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:916
+#: assets/src/blocks/godam-pdf/edit.js:921
 msgid "Select cover image"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
-#: assets/src/blocks/godam-pdf/edit.js:938
+#: assets/src/blocks/godam-pdf/edit.js:943
 #: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:103
 msgid "Remove cover"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:968
+#: assets/src/blocks/godam-pdf/edit.js:973
 msgid "+ Add Cover"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
-#: assets/src/blocks/godam-pdf/edit.js:974
+#: assets/src/blocks/godam-pdf/edit.js:979
 msgid "Recommended aspect ratio: 16:9."
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/blocks/godam-player/index.js:3
-#: assets/src/blocks/godam-pdf/edit.js:984
+#: assets/src/blocks/godam-pdf/edit.js:989
 #: assets/src/blocks/godam-player/edit.js:904
 msgid "Height"
 msgstr ""
 
 #: assets/build/blocks/godam-pdf/index.js:1
 #: inc/classes/elementor-widgets/class-godam-document.php:117
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:181
-#: assets/src/blocks/godam-pdf/edit.js:987
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:186
+#: assets/src/blocks/godam-pdf/edit.js:992
 msgid "Height (px)"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/src/blocks/godam-player/edit-common-settings.js:68
+#: assets/src/blocks/godam-player/edit-common-settings.js:69
 msgid "Muted because of Autoplay."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/src/blocks/godam-player/edit-common-settings.js:106
+#: assets/src/blocks/godam-player/edit-common-settings.js:107
 msgid "Play on loop"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:303
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:109
-#: assets/src/blocks/godam-player/edit-common-settings.js:114
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:115
+#: assets/src/blocks/godam-player/edit-common-settings.js:115
 msgid "Muted"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:319
-#: assets/src/blocks/godam-player/edit-common-settings.js:124
+#: assets/src/blocks/godam-player/edit-common-settings.js:125
 msgid "Playback controls"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:331
-#: assets/src/blocks/godam-player/edit-common-settings.js:132
+#: assets/src/blocks/godam-player/edit-common-settings.js:133
 msgid "Show in lightbox"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:334
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:148
-#: assets/src/blocks/godam-player/edit-common-settings.js:135
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:157
+#: assets/src/blocks/godam-player/edit-common-settings.js:136
 msgid "Open the video in a lightbox when clicked."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/src/blocks/godam-player/edit-common-settings.js:142
+#: assets/src/blocks/godam-player/edit-common-settings.js:143
+msgid "When out of view"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:1
+#: inc/classes/elementor-widgets/class-godam-video.php:387
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:220
+#: assets/src/blocks/godam-player/edit-common-settings.js:146
+msgid "Use global setting"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:1
+#: assets/build/pages/godam.min.js:2
+#: inc/classes/elementor-widgets/class-godam-video.php:388
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:221
+#: assets/src/blocks/godam-player/edit-common-settings.js:147
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:37
+msgid "Do nothing"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:1
+#: assets/build/pages/godam.min.js:2
+#: inc/classes/elementor-widgets/class-godam-video.php:389
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:222
+#: assets/src/blocks/godam-player/edit-common-settings.js:148
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:38
+msgid "Pause autoplaying videos only"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:1
+#: assets/build/pages/godam.min.js:2
+#: inc/classes/elementor-widgets/class-godam-video.php:390
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:223
+#: assets/src/blocks/godam-player/edit-common-settings.js:149
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:39
+msgid "Pause all videos"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:1
+#: assets/build/pages/godam.min.js:2
+#: inc/classes/elementor-widgets/class-godam-video.php:391
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:224
+#: assets/src/blocks/godam-player/edit-common-settings.js:150
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:40
+msgid "Keep playing, muted"
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:1
+#: inc/classes/elementor-widgets/class-godam-video.php:393
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:228
+#: assets/src/blocks/godam-player/edit-common-settings.js:153
+msgid "Scrolled past, on another slide, or in a closed tab or accordion. Autoplaying videos resume when visible again."
+msgstr ""
+
+#: assets/build/blocks/godam-player/index.js:1
+#: assets/src/blocks/godam-player/edit-common-settings.js:160
 msgid "Show share button"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/src/blocks/godam-player/edit-common-settings.js:151
+#: assets/src/blocks/godam-player/edit-common-settings.js:169
 msgid "Show transcription"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: inc/classes/elementor-widgets/class-godam-video.php:486
-#: assets/src/blocks/godam-player/edit-common-settings.js:159
+#: inc/classes/elementor-widgets/class-godam-video.php:506
+#: assets/src/blocks/godam-player/edit-common-settings.js:177
 msgid "Show caption"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/src/blocks/godam-player/edit-common-settings.js:167
+#: assets/src/blocks/godam-player/edit-common-settings.js:185
 msgid "No subtitle/transcript file uploaded."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/src/blocks/godam-player/edit-common-settings.js:170
+#: assets/src/blocks/godam-player/edit-common-settings.js:188
 msgid "Click here to upload subtitles."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/src/blocks/godam-player/edit-common-settings.js:180
+#: assets/src/blocks/godam-player/edit-common-settings.js:198
 msgid "Recommended for most videos. Loads thumbnails as visitors scroll and prepares the video just before they reach it. Best for overall page performance."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/src/blocks/godam-player/edit-common-settings.js:181
+#: assets/src/blocks/godam-player/edit-common-settings.js:199
 msgid "For hero videos above the fold. Loads the thumbnail immediately and prepares the video for the fastest possible first play. Use sparingly - one or two per page."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: assets/src/blocks/godam-player/edit-common-settings.js:255
+#: assets/src/blocks/godam-player/edit-common-settings.js:273
 msgid "Likes & Comments"
 msgstr ""
 
@@ -1574,7 +1631,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:176
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:360
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:397
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:259
 msgid "Content URL"
 msgstr ""
@@ -1593,7 +1650,7 @@ msgstr ""
 #: assets/build/blocks/godam-player/index.js:1
 #: assets/build/js/godam-elementor-frontend.min.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:194
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:375
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:412
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:270
 #: assets/src/js/elementor/widgets/godam-video.js:355
 msgid "Title of the video"
@@ -1629,7 +1686,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:213
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:398
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:435
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:294
 msgid "Upload Date"
 msgstr ""
@@ -1644,58 +1701,58 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:143
 #: inc/classes/elementor-widgets/class-godam-video.php:229
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:128
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:410
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:133
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:447
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:302
 #: pages/analytics/helper.js:548
-#: pages/video-editor/components/layers/HotspotLayer.js:551
+#: pages/video-editor/components/layers/HotspotLayer.js:552
 msgid "Duration"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:231
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:413
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:450
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:304
 msgid "ISO 8601 format. Example: PT1H30M"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:243
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:422
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:459
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:310
 msgid "Video Thumbnail URL"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:425
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:462
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:313
 msgid "URL of the video thumbnail. Example: https://www.example.com/thumbnail.jpg"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:256
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:434
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:471
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:318
 msgid "Is Family Friendly"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:258
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:441
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:479
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:321
 msgid "Is the video suitable for all audiences?"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:267
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:451
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:489
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:326
 msgid "Exclude from video sitemap"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: inc/classes/elementor-widgets/class-godam-video.php:269
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:458
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:497
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:329
 msgid "Leave this video out of the GoDAM video sitemap. The video schema on this page is not affected."
 msgstr ""
@@ -1719,7 +1776,10 @@ msgstr ""
 #: pages/media-library/components/modal/RenameModal.jsx:104
 #: pages/video-editor/components/chapters/ChapterForm.js:124
 #: pages/video-editor/components/layers/LayersHeader.js:105
-#: pages/video-editor/components/transcription/Transcription.js:295
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:134
+#: pages/video-editor/components/transcription/CaptionManager.js:416
+#: pages/video-editor/components/transcription/CaptionManager.js:504
+#: pages/video-editor/components/transcription/Transcription.js:354
 msgid "Cancel"
 msgstr ""
 
@@ -1732,16 +1792,17 @@ msgstr ""
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:140
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:400
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:153
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:493
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:535
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:130
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:191
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:143
 msgid "Save"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:1
 #: assets/build/js/media-library.min.js:1
-#: inc/classes/elementor-widgets/class-godam-video.php:452
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:174
+#: inc/classes/elementor-widgets/class-godam-video.php:472
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:184
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:146
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:413
 msgid "Video Thumbnail"
@@ -1883,28 +1944,28 @@ msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
 #: inc/classes/elementor-widgets/class-godam-video.php:366
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:191
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:201
 #: assets/src/blocks/godam-player/edit.js:877
 msgid "Start Preview"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: inc/classes/elementor-widgets/class-godam-video.php:422
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:206
+#: inc/classes/elementor-widgets/class-godam-video.php:442
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:237
 #: assets/src/blocks/godam-player/edit.js:886
 msgid "Aspect Ratio"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: inc/classes/elementor-widgets/class-godam-video.php:429
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:213
+#: inc/classes/elementor-widgets/class-godam-video.php:449
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:245
 #: assets/src/blocks/godam-player/edit.js:890
 msgid "Choose the aspect ratio for the video player."
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:3
-#: inc/classes/elementor-widgets/class-godam-video.php:426
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:209
+#: inc/classes/elementor-widgets/class-godam-video.php:446
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:240
 #: assets/src/blocks/godam-player/edit.js:892
 msgid "Original"
 msgstr ""
@@ -2024,7 +2085,7 @@ msgid "Upgrade Now"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:125
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:132
 #: assets/src/blocks/godam-player/edit.js:1046
 msgid "Playback Controls"
 msgstr ""
@@ -2035,7 +2096,7 @@ msgid "Hover Options"
 msgstr ""
 
 #: assets/build/blocks/godam-player/index.js:5
-#: inc/classes/elementor-widgets/class-godam-video.php:704
+#: inc/classes/elementor-widgets/class-godam-video.php:726
 #: assets/src/blocks/godam-player/edit.js:1118
 msgid "Add Video Here"
 msgstr ""
@@ -2147,9 +2208,11 @@ msgid "GoDAM Video Thumbnail"
 msgstr ""
 
 #: assets/build/blocks/sureforms/blocks/recorder/index.js:1
+#: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-video.php:90
 #: assets/src/blocks/godam-player/track-uploader.js:77
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:167
+#: pages/video-editor/components/transcription/CaptionManager.js:469
 msgid "Label"
 msgstr ""
 
@@ -2209,7 +2272,7 @@ msgstr ""
 #: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:452
 #: inc/classes/gravity-forms/class-init.php:202
 #: inc/classes/ninja-forms/config/field-settings.php:60
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:66
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:70
 #: inc/classes/wpforms/class-wpforms-field-godam-video.php:207
 #: inc/classes/wpforms/wpforms-field-godam-record-entry-view.php:30
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:235
@@ -2262,7 +2325,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:310
-#: pages/analytics/charts.js:179
+#: pages/analytics/charts.js:42
 msgid "Untitled"
 msgstr ""
 
@@ -2520,7 +2583,7 @@ msgid "Comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: inc/helpers/custom-functions.php:1864
+#: inc/helpers/custom-functions.php:1927
 #: assets/src/js/godam-player/engagement.js:908
 #: assets/src/js/godam-player/engagement.js:915
 msgid "Anonymous"
@@ -2538,7 +2601,9 @@ msgstr ""
 #: pages/media-library/components/context-menu/ContextMenu.jsx:518
 #: pages/media-library/components/modal/DeleteModal.jsx:132
 #: pages/video-editor/components/SidebarLayers.js:777
-#: pages/video-editor/components/transcription/Transcription.js:304
+#: pages/video-editor/components/transcription/CaptionManager.js:398
+#: pages/video-editor/components/transcription/CaptionManager.js:424
+#: pages/video-editor/components/transcription/Transcription.js:363
 msgid "Delete"
 msgstr ""
 
@@ -2623,7 +2688,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/godam-player/managers/controlsManager.js:394
 #: assets/src/js/godam-player/managers/controlsManager.js:411
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:429
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:471
 #: pages/video-editor/VideoJSPlayer.js:144
 msgid "Branding"
 msgstr ""
@@ -2643,7 +2708,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:320
 #: pages/media-library-tour/components/FinishModal.jsx:34
-#: pages/video-editor/components/layers/CTALayer.js:265
+#: pages/video-editor/components/layers/CTALayer.js:266
 msgid "Done"
 msgstr ""
 
@@ -2664,8 +2729,8 @@ msgstr ""
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:329
 #: pages/godam/components/WooUnlockedNotice.jsx:202
 #: pages/media-library-tour/controller.js:333
-#: pages/video-editor/components/forms/FormPreview.js:86
-#: pages/video-editor/components/layers/CTALayer.js:265
+#: pages/video-editor/components/forms/FormPreview.js:90
+#: pages/video-editor/components/layers/CTALayer.js:266
 msgid "Skip"
 msgstr ""
 
@@ -2684,7 +2749,7 @@ msgid "Continue"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:7
-#: assets/src/js/godam-player/managers/modalManager.js:41
+#: assets/src/js/godam-player/managers/modalManager.js:42
 msgid "Play video in a lightbox"
 msgstr ""
 
@@ -2692,8 +2757,8 @@ msgstr ""
 #. translators: %d: number of seconds to seek forward
 #: assets/build/js/godam-player-frontend.min.js:9
 #: assets/build/js/godam-player-frontend.min.js:11
-#: assets/src/js/godam-player/managers/playerManager.js:466
-#: assets/src/js/godam-player/managers/playerManager.js:482
+#: assets/src/js/godam-player/managers/playerManager.js:469
+#: assets/src/js/godam-player/managers/playerManager.js:485
 #, js-format
 msgid "%ds"
 msgstr ""
@@ -2819,7 +2884,7 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-admin.php:193
 #: admin/class-rtgodam-transcoder-admin.php:277
 #: admin/godam-transcoder-functions.php:458
-#: inc/classes/class-media-library-ajax.php:1735
+#: inc/classes/class-media-library-ajax.php:1757
 #: inc/templates/video-preview.php:78
 #: assets/src/js/media-library/views/attachment.js:184
 #: pages/godam/components/GoDAMHeader.jsx:74
@@ -2876,7 +2941,7 @@ msgstr ""
 #: assets/build/js/media-library.min.js:1
 #: inc/classes/class-media-library-ajax.php:829
 #: inc/classes/rest-api/class-transcoding.php:363
-#: inc/helpers/custom-functions.php:769
+#: inc/helpers/custom-functions.php:832
 #: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:116
 msgid "This file can't be transcoded."
 msgstr ""
@@ -3069,7 +3134,7 @@ msgstr ""
 
 #: assets/build/js/wpbakery-document-selector-param.min.js:1
 #: inc/classes/elementor-widgets/class-godam-document.php:57
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:109
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:113
 #: assets/src/js/wpbakery/wpbakery-document-selector-param.js:39
 msgid "Select Document"
 msgstr ""
@@ -3524,9 +3589,9 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:129
-#: pages/analytics/Analytics.js:178
-#: pages/analytics/Analytics.js:192
+#: pages/analytics/Analytics.js:130
+#: pages/analytics/Analytics.js:180
+#: pages/analytics/Analytics.js:194
 #: pages/analytics/PlaysVsViewers.js:93
 #: pages/analytics/SingleMetrics.js:122
 #: pages/dashboard/components/GA4ConnectionWidget.js:174
@@ -3633,7 +3698,7 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:99
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:92
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:97
 #: pages/dashboard/components/TopProductsTable.js:307
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:71
 msgid "Videos"
@@ -4039,8 +4104,8 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:673
-#: pages/analytics/Analytics.js:1026
+#: pages/analytics/Analytics.js:678
+#: pages/analytics/Analytics.js:1031
 #: pages/analytics/components/Placements/index.js:230
 #: pages/analytics/PlaybackPerformance.js:422
 #: pages/analytics/PlaybackPerformance.js:546
@@ -4097,7 +4162,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: pages/analytics/constants/layerTypes.js:157
-#: pages/video-editor/components/layers/PollLayer.js:39
+#: pages/video-editor/components/layers/PollLayer.js:42
 #: pages/video-editor/components/SidebarLayers.js:151
 #: pages/video-editor/components/SidebarLayers.js:154
 #: pages/video-editor/components/SidebarLayers.js:525
@@ -4464,7 +4529,7 @@ msgid "Video Block"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:369
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:388
 #: pages/analytics/components/Placements/index.js:33
 msgid "Video Gallery"
 msgstr ""
@@ -4481,7 +4546,7 @@ msgstr ""
 
 #. translators: %d: WordPress post ID.
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/rest-api/class-analytics.php:980
+#: inc/classes/rest-api/class-analytics.php:1015
 #: pages/analytics/components/Placements/index.js:173
 #, js-format,php-format
 msgid "Post #%d"
@@ -4500,7 +4565,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:1017
+#: pages/analytics/Analytics.js:1022
 #: pages/analytics/components/Placements/index.js:229
 #: pages/dashboard/components/TopVideosTable.js:226
 #: pages/dashboard/components/TopVideosTable.js:349
@@ -4525,8 +4590,8 @@ msgid "Displayed on:"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/rest-api/class-analytics.php:981
-#: inc/classes/rest-api/class-analytics.php:1042
+#: inc/classes/rest-api/class-analytics.php:1016
+#: inc/classes/rest-api/class-analytics.php:1077
 #: pages/analytics/components/Placements/index.js:273
 msgid "Deleted page"
 msgstr ""
@@ -4587,12 +4652,22 @@ msgid "We couldn’t reach the GoDAM analytics service. This is usually temporar
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:106
-msgid "Back to Dashboard"
+#: pages/analytics/AnalyticsForbiddenNotice.jsx:36
+msgid "You can’t view analytics for this video."
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: pages/analytics/AnalyticsForbiddenNotice.jsx:37
+msgid "Analytics is shown only for videos you can edit. Choose one of your own videos, or ask an Editor or Administrator."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: pages/analytics/Analytics.js:107
+msgid "Back to Dashboard"
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: pages/analytics/Analytics.js:108
 msgid "Back to Media Editor"
 msgstr ""
 
@@ -4607,40 +4682,40 @@ msgid "viewers"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:467
+#: pages/analytics/Analytics.js:471
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:469
+#: pages/analytics/Analytics.js:473
 msgid "Use this Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:576
+#: pages/analytics/Analytics.js:581
 msgid "This media doesn't exist."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:578
+#: pages/analytics/Analytics.js:583
 msgid "Go to Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:590
+#: pages/analytics/Analytics.js:595
 msgid "Single Video Analytics"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:602
+#: pages/analytics/Analytics.js:607
 #: pages/dashboard/Dashboard.js:437
 msgid "Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:616
+#: pages/analytics/Analytics.js:621
 #: pages/dashboard/components/TopVideosTable.js:426
 #: pages/dashboard/components/TopVideosTable.js:438
 msgid "Video thumbnail"
@@ -4650,7 +4725,7 @@ msgstr ""
 #. translators: %d is the number of layers.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:636
+#: pages/analytics/Analytics.js:641
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:233
 #, js-format
 msgid "%d layer"
@@ -4660,34 +4735,34 @@ msgstr[1] ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:652
+#: pages/analytics/Analytics.js:657
 #: pages/dashboard/Dashboard.js:499
 msgid "Insights"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:662
-#: pages/analytics/Analytics.js:1010
+#: pages/analytics/Analytics.js:667
+#: pages/analytics/Analytics.js:1015
 #: pages/dashboard/components/TopVideosTable.js:371
 msgid "Average Engagement"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:663
+#: pages/analytics/Analytics.js:668
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:674
+#: pages/analytics/Analytics.js:679
 #: pages/dashboard/Dashboard.js:535
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:684
+#: pages/analytics/Analytics.js:689
 #: pages/dashboard/components/TopVideosTable.js:227
 #: pages/dashboard/Dashboard.js:548
 msgid "Watch Time"
@@ -4695,89 +4770,89 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:685
+#: pages/analytics/Analytics.js:690
 #: pages/dashboard/Dashboard.js:549
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:776
+#: pages/analytics/Analytics.js:781
 msgid "Viewer Retention Curve"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:790
+#: pages/analytics/Analytics.js:795
 msgid "Viewer retention will appear here once this video receives views."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:838
+#: pages/analytics/Analytics.js:843
 msgid "Views by Source"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:849
+#: pages/analytics/Analytics.js:854
 msgid "Performance Comparison"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:870
+#: pages/analytics/Analytics.js:875
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:860
+#: pages/analytics/Analytics.js:865
 msgid "In Progress"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:865
+#: pages/analytics/Analytics.js:870
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:882
+#: pages/analytics/Analytics.js:887
 msgid "Start Test"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:901
+#: pages/analytics/Analytics.js:906
 msgid "Choose Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:913
+#: pages/analytics/Analytics.js:918
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:922
+#: pages/analytics/Analytics.js:927
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:927
+#: pages/analytics/Analytics.js:932
 msgid "Choose"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:998
+#: pages/analytics/Analytics.js:1003
 msgid "Views"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1038
+#: pages/analytics/Analytics.js:1043
 msgid "Page Loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1052
+#: pages/analytics/Analytics.js:1057
 msgid "Play Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1066
+#: pages/analytics/Analytics.js:1071
 msgid "Video Length"
 msgstr ""
 
@@ -4861,48 +4936,48 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:147
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:163
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:197
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:210
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:199
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:103
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:283
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:304
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:317
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:351
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:81
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:97
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:113
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:128
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:145
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:242
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:263
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:281
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:300
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:347
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:437
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:455
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:151
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:168
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:204
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:218
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:204
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:107
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:297
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:320
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:334
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:369
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:85
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:102
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:119
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:135
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:153
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:274
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:296
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:315
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:335
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:383
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:474
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:493
 #: pages/dashboard/components/TopProductsTable.js:332
 msgid "Yes"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:146
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:162
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:198
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:80
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:96
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:112
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:129
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:144
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:241
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:262
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:282
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:301
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:346
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:438
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:454
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:150
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:167
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:203
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:84
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:101
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:118
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:136
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:152
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:273
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:295
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:316
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:336
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:382
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:475
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:492
 #: pages/dashboard/components/TopProductsTable.js:332
 msgid "No"
 msgstr ""
@@ -5171,7 +5246,7 @@ msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:144
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:129
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:134
 #: pages/dashboard/components/TopVideosTable.js:224
 #: pages/dashboard/components/TopVideosTable.js:327
 msgid "Size"
@@ -5446,7 +5521,7 @@ msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/App.js:58
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:408
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:415
 msgid "Video Player"
 msgstr ""
 
@@ -5680,7 +5755,7 @@ msgstr ""
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:140
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:400
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:153
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:493
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:535
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:141
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:130
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:302
@@ -5736,7 +5811,7 @@ msgid "Yes, Remove"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: inc/classes/rest-api/class-settings.php:263
+#: inc/classes/rest-api/class-settings.php:265
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:60
 msgid "API key removed. This site is now disconnected from GoDAM."
 msgstr ""
@@ -5772,7 +5847,7 @@ msgstr ""
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:82
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:235
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:79
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:387
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:394
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:81
 #: pages/video-editor/App.js:128
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:206
@@ -5819,7 +5894,7 @@ msgstr ""
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:67
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:220
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:65
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:98
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:105
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:66
 msgid "Settings saved successfully."
 msgstr ""
@@ -5833,8 +5908,8 @@ msgstr ""
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:226
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:68
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:71
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:101
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:104
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:108
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:111
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:69
 #: pages/godam/components/tabs/VideoSettings/VideoSettings.jsx:72
 msgid "Failed to save settings."
@@ -6406,7 +6481,7 @@ msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/VideoPlayer/CustomVideoPlayerCSS.jsx:50
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:473
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:515
 msgid "Custom CSS"
 msgstr ""
 
@@ -6416,6 +6491,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:126
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:29
 #: pages/video-editor/components/forms/CF7.js:26
+#: pages/video-editor/components/transcription/CaptionManager.js:337
 msgid "Default"
 msgstr ""
 
@@ -6440,33 +6516,61 @@ msgid "Bubble"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:414
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:420
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:421
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:427
 msgid "Player Skin"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:435
-msgid "Brand color"
+#: assets/build/pages/video-editor.min.js:2
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:436
+#: pages/video-editor/components/ads/CustomAdSettings.js:234
+msgid "Playback"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:447
-msgid "Clear"
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:440
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:446
+msgid "When a video goes out of view"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:456
-msgid "The brand color will not be applied to the player skin."
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:453
+msgid "Scrolled past, on another slide, or in a closed tab or accordion. Autoplaying videos resume when visible again. Can be changed per video."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:461
+msgid "Also apply when the browser tab is hidden"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:462
+msgid "For videos the visitor started. Autoplaying videos always pause in a background tab."
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:477
+msgid "Brand color"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:489
+msgid "Clear"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:498
+msgid "The brand color will not be applied to the player skin."
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:503
 msgid "Applied to the video block. Can be overridden per video."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:478
+#: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:520
 msgid "Any custom CSS you add will be applied to all player skins. It's global and not tied to a specific skin style."
 msgstr ""
 
@@ -7110,7 +7214,7 @@ msgid "Load More"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: inc/classes/rest-api/class-media-library.php:1729
+#: inc/classes/rest-api/class-media-library.php:1823
 #: pages/media-library/components/context-menu/ContextMenu.jsx:217
 msgid "Preparing ZIP file…"
 msgstr ""
@@ -7136,7 +7240,7 @@ msgid "Failed to create ZIP file"
 msgstr ""
 
 #: assets/build/pages/media-library.min.js:2
-#: inc/classes/rest-api/class-media-library.php:1791
+#: inc/classes/rest-api/class-media-library.php:1885
 #: pages/media-library/components/context-menu/ContextMenu.jsx:244
 msgid "ZIP file created successfully."
 msgstr ""
@@ -7600,7 +7704,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/onboarding/components/screens/EntryScreen.jsx:49
 #: pages/onboarding/components/screens/SignupScreen.jsx:70
-#: pages/video-editor/components/transcription/Transcription.js:254
+#: pages/video-editor/components/transcription/Transcription.js:295
 msgid "OR"
 msgstr ""
 
@@ -7984,7 +8088,7 @@ msgstr ""
 
 #: assets/build/pages/tools.min.js:2
 #: pages/tools/components/tabs/Migration/CoreVideoMigration.jsx:186
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:222
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:231
 msgid "Abort"
 msgstr ""
 
@@ -8002,13 +8106,13 @@ msgstr ""
 
 #: assets/build/pages/tools.min.js:2
 #: pages/tools/components/tabs/Migration/CoreVideoMigration.jsx:195
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:231
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:240
 msgid "Restart Migration"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
 #: pages/tools/components/tabs/Migration/CoreVideoMigration.jsx:195
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:231
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:240
 msgid "Start Migration"
 msgstr ""
 
@@ -8023,37 +8127,52 @@ msgid "Vimeo Video Migration has been successfully completed for all posts and p
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:176
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:179
 msgid "Vimeo video Migration"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:178
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:181
 msgid "This tool replaces WordPress Vimeo Embed blocks with GoDAM Video blocks. It does not replace Vimeo videos added in the WordPress Classic Editor."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:183
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:185
+msgid "Step 1:"
+msgstr ""
+
+#: assets/build/pages/tools.min.js:2
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:186
+msgid "Connect your Vimeo account in GoDAM Central."
+msgstr ""
+
+#: assets/build/pages/tools.min.js:2
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:187
+msgid "Connect Vimeo"
+msgstr ""
+
+#: assets/build/pages/tools.min.js:2
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:192
 msgid "This migrator will only migrate Vimeo videos that are already fetched on GoDAM Central."
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:184
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:193
 msgid "Open"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:199
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:208
 msgid "Vimeo video migration in WordPress can only begin after all Vimeo videos have been successfully migrated to GoDAM Central,"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:201
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:210
 msgid "Check here!"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:2
-#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:210
+#: pages/tools/components/tabs/Migration/VimeoVideoMigration.jsx:219
 msgid "Migration is in progress. Please wait…"
 msgstr ""
 
@@ -8065,7 +8184,7 @@ msgstr ""
 #: assets/build/pages/tools.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-image.php:61
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:66
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:70
 #: pages/tools/components/tabs/RetranscodeTab.jsx:38
 #: pages/video-editor/components/cta/CardCTA.js:347
 #: pages/video-editor/components/cta/CardCTA.js:391
@@ -8708,7 +8827,7 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-gallery.php:290
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:72
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:76
 #: pages/video-editor/components/appearance/Appearance.js:118
 msgid "Display Settings"
 msgstr ""
@@ -8962,9 +9081,9 @@ msgid "Edit Form"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/FormPreview.js:49
+#: pages/video-editor/components/forms/FormPreview.js:53
 #: pages/video-editor/components/forms/HubSpotForm.js:225
-#: pages/video-editor/components/forms/JetpackForm.js:190
+#: pages/video-editor/components/forms/JetpackForm.js:193
 #: pages/video-editor/components/forms/MetForm.js:67
 #: pages/video-editor/components/forms/NinjaForm.js:67
 msgid "Loading form…"
@@ -8981,32 +9100,32 @@ msgid "Gravity"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:164
+#: pages/video-editor/components/forms/JetpackForm.js:167
 msgid "Jetpack"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:197
+#: pages/video-editor/components/forms/JetpackForm.js:200
 msgid "Error loading form. Please check if the form exists."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:204
+#: pages/video-editor/components/forms/JetpackForm.js:207
 msgid "No form selected or form not found."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:216
+#: pages/video-editor/components/forms/JetpackForm.js:219
 msgid "No Jetpack forms found. Please"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:223
+#: pages/video-editor/components/forms/JetpackForm.js:226
 msgid "create a Jetpack contact form"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:225
+#: pages/video-editor/components/forms/JetpackForm.js:228
 msgid "first."
 msgstr ""
 
@@ -9127,7 +9246,7 @@ msgstr ""
 #: pages/video-editor/components/ads/CustomAdSettings.js:268
 #: pages/video-editor/components/cta/CardCTA.js:274
 #: pages/video-editor/components/cta/CardCTA.js:284
-#: pages/video-editor/components/layers/HotspotLayer.js:520
+#: pages/video-editor/components/layers/HotspotLayer.js:521
 msgid "Please enter a valid URL (e.g., https://example.com)"
 msgstr ""
 
@@ -9177,7 +9296,7 @@ msgid "Card Layout"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:75
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:79
 #: pages/video-editor/components/cta/CardCTA.js:357
 msgid "Select Image"
 msgstr ""
@@ -9239,9 +9358,9 @@ msgid "Button Title"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: inc/helpers/custom-functions.php:221
+#: inc/helpers/custom-functions.php:284
 #: pages/video-editor/components/cta/CardCTA.js:460
-#: pages/video-editor/components/layers/CTALayer.js:129
+#: pages/video-editor/components/layers/CTALayer.js:130
 msgid "Check now"
 msgstr ""
 
@@ -9265,8 +9384,8 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/cta/CardCTA.js:484
 #: pages/video-editor/components/layers/FormLayer.js:165
-#: pages/video-editor/components/layers/HotspotLayer.js:629
-#: pages/video-editor/components/layers/PollLayer.js:72
+#: pages/video-editor/components/layers/HotspotLayer.js:630
+#: pages/video-editor/components/layers/PollLayer.js:75
 #: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:175
 msgid "Background"
 msgstr ""
@@ -9327,7 +9446,7 @@ msgid "Another CTA already uses On Pause — only one CTA per video can."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:553
+#: pages/video-editor/components/layers/HotspotLayer.js:554
 #: pages/video-editor/components/layers/shared/TriggerSection.jsx:107
 msgid "Start Time"
 msgstr ""
@@ -9375,14 +9494,14 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/elementor-widgets/class-godam-video.php:364
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:180
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:189
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:186
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:199
 #: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:46
 msgid "None"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:67
+#: pages/video-editor/components/layers/HotspotLayer.js:68
 #: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:47
 msgid "Pulse"
 msgstr ""
@@ -9433,13 +9552,13 @@ msgid "Fill"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:68
-#: pages/video-editor/components/layers/HotspotLayer.js:622
+#: pages/video-editor/components/layers/HotspotLayer.js:69
+#: pages/video-editor/components/layers/HotspotLayer.js:623
 msgid "Icon"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:69
+#: pages/video-editor/components/layers/HotspotLayer.js:70
 msgid "Button"
 msgstr ""
 
@@ -9489,11 +9608,6 @@ msgid "Replace ad video"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:234
-msgid "Playback"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/ads/CustomAdSettings.js:237
 msgid "Skippable"
 msgstr ""
@@ -9540,14 +9654,14 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/layers/FormLayer.js:146
-#: pages/video-editor/components/layers/HotspotLayer.js:639
-#: pages/video-editor/components/layers/PollLayer.js:54
+#: pages/video-editor/components/layers/HotspotLayer.js:640
+#: pages/video-editor/components/layers/PollLayer.js:57
 msgid "Behaviour"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/layers/FormLayer.js:149
-#: pages/video-editor/components/layers/PollLayer.js:57
+#: pages/video-editor/components/layers/PollLayer.js:60
 msgid "Allow user to skip"
 msgstr ""
 
@@ -9558,146 +9672,146 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/layers/FormLayer.js:160
-#: pages/video-editor/components/layers/PollLayer.js:67
+#: pages/video-editor/components/layers/PollLayer.js:70
 msgid "Background Colour"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:56
+#: pages/video-editor/components/layers/CTALayer.js:57
 msgid "Card Style"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:56
+#: pages/video-editor/components/layers/CTALayer.js:57
 msgid "Perfect for everyone"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:57
+#: pages/video-editor/components/layers/CTALayer.js:58
 msgid "HTML"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:57
+#: pages/video-editor/components/layers/CTALayer.js:58
 msgid "Great for developers"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:206
+#: pages/video-editor/components/layers/CTALayer.js:207
 msgid "Call To Action"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:226
+#: pages/video-editor/components/layers/CTALayer.js:227
 msgid "Advanced"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:227
+#: pages/video-editor/components/layers/CTALayer.js:228
 msgid "Layer Background Colour"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:230
+#: pages/video-editor/components/layers/CTALayer.js:231
 msgid "Layer background color"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: inc/helpers/custom-functions.php:246
-#: pages/video-editor/components/layers/CTALayer.js:108
+#: inc/helpers/custom-functions.php:309
+#: pages/video-editor/components/layers/CTALayer.js:109
 msgid "No Image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:249
+#: pages/video-editor/components/layers/HotspotLayer.js:250
 msgid "New Hotspot"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:463
+#: pages/video-editor/components/layers/HotspotLayer.js:464
 msgid "Add Hotspots"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:467
+#: pages/video-editor/components/layers/HotspotLayer.js:468
 msgid "Drag the hotspot in video to reposition it."
 msgstr ""
 
 #. translators: %d is the hotspot index
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:491
+#: pages/video-editor/components/layers/HotspotLayer.js:492
 #, js-format
 msgid "Delete Hotspot %d"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:516
-#: pages/video-editor/components/layers/HotspotLayer.js:510
+#: pages/video-editor/components/layers/HotspotLayer.js:511
 msgid "Button Text"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:510
+#: pages/video-editor/components/layers/HotspotLayer.js:511
 msgid "Tooltip Text"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:511
+#: pages/video-editor/components/layers/HotspotLayer.js:512
 msgid "Click here"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:511
+#: pages/video-editor/components/layers/HotspotLayer.js:512
 msgid "Click Me!"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:517
+#: pages/video-editor/components/layers/HotspotLayer.js:518
 msgid "Link"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:544
+#: pages/video-editor/components/layers/HotspotLayer.js:545
 msgid "Add Hotspot"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:560
+#: pages/video-editor/components/layers/HotspotLayer.js:561
 msgid "Layer Duration (seconds)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:201
+#: pages/video-editor/components/layers/HotspotLayer.js:202
 msgid "Layer duration exceeds the remaining video length. Please reduce the duration."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:567
+#: pages/video-editor/components/layers/HotspotLayer.js:568
 msgid "Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:573
+#: pages/video-editor/components/layers/HotspotLayer.js:574
 msgid "Style"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:583
+#: pages/video-editor/components/layers/HotspotLayer.js:584
 msgid "Each hotspot is a button. Set its type, text, colours and animation in the hotspot cards above."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:604
+#: pages/video-editor/components/layers/HotspotLayer.js:605
 msgid "Pulse colour"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:642
+#: pages/video-editor/components/layers/HotspotLayer.js:643
 msgid "Pause video when hotspot is hovered"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:645
+#: pages/video-editor/components/layers/HotspotLayer.js:646
 msgid "Player will pause the video while the layer is displayed and users hover over the hotspots."
 msgstr ""
 
@@ -9707,12 +9821,12 @@ msgid "Self hosted video Ad"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/PollLayer.js:45
+#: pages/video-editor/components/layers/PollLayer.js:48
 msgid "Select Poll"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/PollLayer.js:62
+#: pages/video-editor/components/layers/PollLayer.js:65
 msgid "If enabled, the user will be able to skip the poll."
 msgstr ""
 
@@ -9854,83 +9968,433 @@ msgid "Delete chapter"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:74
-msgid "Transcription failed. Please try again."
+#: pages/video-editor/components/transcription/languages.js:31
+msgid "Account default"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:134
-msgid "Select a caption file"
+#: pages/video-editor/components/transcription/languages.js:32
+msgid "Auto-detect language"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:135
-msgid "Use this file"
+#: pages/video-editor/components/transcription/languages.js:33
+msgid "Multiple languages (code-switching)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:150
-msgid "Could not attach the caption file."
+#: assets/src/blocks/godam-player/track-uploader.js:111
+#: pages/video-editor/components/transcription/languages.js:43
+msgid "English"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:144
-msgid "Please choose a .vtt or .srt caption file."
+#: pages/video-editor/components/transcription/languages.js:44
+msgid "Spanish"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:199
-msgid "Replace transcription file"
+#: pages/video-editor/components/transcription/languages.js:45
+msgid "French"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:206
-#: pages/video-editor/components/transcription/Transcription.js:285
-msgid "Delete transcription"
+#: pages/video-editor/components/transcription/languages.js:46
+msgid "German"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:230
+#: pages/video-editor/components/transcription/languages.js:47
+msgid "Hindi"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:48
+msgid "Portuguese"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:49
+msgid "Portuguese (Brazil)"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:50
+msgid "Italian"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:51
+msgid "Dutch"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:52
+msgid "Japanese"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:53
+msgid "Korean"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:54
+msgid "Chinese"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:55
+msgid "Russian"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:56
+msgid "Arabic"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:57
+msgid "Turkish"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:58
+msgid "Polish"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:59
+msgid "Swedish"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:60
+msgid "Indonesian"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:61
+msgid "Ukrainian"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:62
+msgid "Tamil"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/languages.js:63
+msgid "Welsh"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:56
+msgid "Could not load this caption file."
+msgstr ""
+
+#. translators: %s: caption track label.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:88
+#, js-format
+msgid "Edit captions — %s"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:89
+#: pages/video-editor/components/transcription/CaptionManager.js:365
+msgid "Edit captions"
+msgstr ""
+
+#. translators: %s: cue start time, e.g. 01:23.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:114
+#, js-format
+msgid "Caption text at %s"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:126
+#: pages/video-editor/components/transcription/Transcription.js:255
 msgid "No cues found in this caption file."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:240
+#: pages/video-editor/components/transcription/CaptionCueEditor.js:83
+msgid "Could not save the caption."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:128
+msgid "Enter a language code, such as cy or pt-BR, not the language name."
+msgstr ""
+
+#. translators: %s: caption label the user typed.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:144
+#, js-format
+msgid "A caption named \"%s\" already exists on this video. Choose another label."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:274
+msgid "Other (enter code)…"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:279
+#: pages/video-editor/components/transcription/Transcription.js:217
+#: pages/video-editor/components/transcription/Transcription.js:326
+msgid "Manage caption tracks"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:292
+msgid "Multi-language captions are part of the paid GoDAM plans"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:295
+msgid "With a paid plan, every language you add or generate here appears in the player's subtitles menu. On your current plan, Upload File in the Transcription tab still adds one caption file to this video."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:299
+msgid "See plans"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:303
+msgid "Connect your account"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:312
+msgid "Could not load the caption tracks."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:341
+msgid "Uploaded"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:341
+msgid "Generated"
+msgstr ""
+
+#. translators: %d: number of cues in the caption file.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:350
+#, js-format
+msgid "%d cue"
+msgid_plural "%d cues"
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:372
+msgid "Replace file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:380
+msgid "Download"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:390
+msgid "Shown by default"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:390
+msgid "Show this caption by default"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:253
+msgid "Could not set the default caption."
+msgstr ""
+
+#. translators: %s: caption track name.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:410
+#, js-format
+msgid "Delete \"%s\"? It is removed from GoDAM, so every site and page that plays this video loses it. This cannot be undone."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:266
+msgid "Could not delete the caption track."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:434
+msgid "No caption tracks yet."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:447
+msgid "Language"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:457
+msgid "Language code"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:470
+msgid "Shown in the menu"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:481
+msgid "Choose another file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:481
+msgid "Choose file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:490
+msgid "Set as default"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:208
+msgid "Could not add the caption track."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:187
+msgid "Enter a label for this caption. It is the name shown in the subtitles menu."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:180
+msgid "Choose a language for this caption."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:176
+msgid "Choose a caption file first."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:525
+msgid "Add caption track"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:162
+#: pages/video-editor/components/transcription/CaptionManager.js:227
+msgid "Caption file is too large. The limit is 1 MB."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:169
+msgid "Could not read the caption file."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:158
+#: pages/video-editor/components/transcription/CaptionManager.js:223
+#: pages/video-editor/components/transcription/Transcription.js:162
+msgid "Please choose a .vtt or .srt caption file."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/CaptionManager.js:236
+msgid "Could not replace the caption file."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:90
+msgid "Transcription failed. Please try again."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:152
+msgid "Select a caption file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:153
+msgid "Use this file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:168
+msgid "Could not attach the caption file."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:224
+msgid "Replace transcription file"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:231
+#: pages/video-editor/components/transcription/Transcription.js:343
+msgid "Delete transcription"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:265
 msgid "Automatically transcribe the audio using GoDAM's AI engine"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:124
+#: pages/video-editor/components/transcription/Transcription.js:270
+msgid "Transcription language"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:142
 msgid "Could not start transcription. Please try again."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:250
+#: pages/video-editor/components/transcription/Transcription.js:286
 msgid "Generate Transcription"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:261
+#: pages/video-editor/components/transcription/Transcription.js:290
+msgid "Transcription runs on GoDAM, and this video has not been transcoded by GoDAM yet. You can still upload a caption file."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:302
 msgid "Generating transcription…"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:264
+#: pages/video-editor/components/transcription/Transcription.js:305
 msgid "This usually takes 10–15 minutes. We'll notify you once it's ready"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:276
+#: pages/video-editor/components/transcription/Transcription.js:318
 msgid "Upload File"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:288
-msgid "Delete this transcription? This cannot be undone."
+#: pages/video-editor/components/transcription/Transcription.js:346
+msgid "Delete this transcription from WordPress? This cannot be undone."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:164
+#: pages/video-editor/components/transcription/Transcription.js:347
+msgid "Caption tracks stored in GoDAM keep playing for visitors. To remove one, use Manage caption tracks."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/transcription/Transcription.js:182
 msgid "Could not remove the transcript."
 msgstr ""
 
@@ -10792,7 +11256,7 @@ msgstr ""
 #: admin/class-rtgodam-transcoder-admin.php:323
 #: admin/class-rtgodam-transcoder-admin.php:341
 #: inc/classes/class-media-library-ajax.php:1105
-#: inc/classes/class-media-library-ajax.php:1687
+#: inc/classes/class-media-library-ajax.php:1709
 msgid "Insufficient permissions."
 msgstr ""
 
@@ -11000,75 +11464,75 @@ msgid "Transcoding service can not be activated on the localhost"
 msgstr ""
 
 #. translators: Return an error if the value is neither a string nor an array.
-#: admin/class-rtgodam-transcoder-rest-routes.php:247
+#: admin/class-rtgodam-transcoder-rest-routes.php:253
 #, php-format
 msgid "%s must be a valid URL or an array of URLs."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:327
+#: admin/class-rtgodam-transcoder-rest-routes.php:333
 msgid "Transcoding error received and recorded."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:459
+#: admin/class-rtgodam-transcoder-rest-routes.php:465
 msgid "Callback processed successfully."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:504
+#: admin/class-rtgodam-transcoder-rest-routes.php:510
 msgid "Thumbnail created successfully."
 msgstr ""
 
 #. translators: %s is replaced with the attachment ID for which subsizes generation failed.
-#: admin/class-rtgodam-transcoder-rest-routes.php:575
+#: admin/class-rtgodam-transcoder-rest-routes.php:581
 #, php-format
 msgid "GoDAM: Failed to request image subsizes for attachment ID %s. The transcoded image URL has been saved; subsizes may be retried separately."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:583
+#: admin/class-rtgodam-transcoder-rest-routes.php:589
 msgid "Transcoded image URL saved, but failed to request subsizes."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:600
+#: admin/class-rtgodam-transcoder-rest-routes.php:606
 msgid "Attachment not found; it may have been deleted."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:627
+#: admin/class-rtgodam-transcoder-rest-routes.php:633
 msgid "Job ID is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:631
+#: admin/class-rtgodam-transcoder-rest-routes.php:637
 msgid "Transcription status is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:635
+#: admin/class-rtgodam-transcoder-rest-routes.php:641
 msgid "Transcript path is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:653
+#: admin/class-rtgodam-transcoder-rest-routes.php:659
 msgid "Video attachment not found for the provided job ID."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:665
+#: admin/class-rtgodam-transcoder-rest-routes.php:681
 msgid "Transcript path saved successfully."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:675
+#: admin/class-rtgodam-transcoder-rest-routes.php:691
 msgid "Transcription callback received."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:696
+#: admin/class-rtgodam-transcoder-rest-routes.php:732
 #: admin/godam-transcoder-functions.php:607
-#: inc/classes/rest-api/class-media-library.php:662
+#: inc/classes/rest-api/class-media-library.php:652
 #: inc/classes/rest-api/class-transcoding.php:481
 msgid "API key is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:700
+#: admin/class-rtgodam-transcoder-rest-routes.php:736
 msgid "API key not configured on the site."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:704
-#: inc/classes/rest-api/class-media-library.php:669
-#: inc/classes/rest-api/class-settings.php:190
+#: admin/class-rtgodam-transcoder-rest-routes.php:740
+#: inc/classes/rest-api/class-media-library.php:659
+#: inc/classes/rest-api/class-settings.php:192
 #: inc/classes/rest-api/class-transcoding.php:487
 msgid "Invalid API key."
 msgstr ""
@@ -11131,18 +11595,18 @@ msgstr ""
 msgid "API key verified and stored successfully!"
 msgstr ""
 
-#: inc/classes/addons/class-addon-registry.php:106
+#: inc/classes/addons/class-addon-registry.php:108
 msgid "GoDAM for WooCommerce"
 msgstr ""
 
 #. translators: 1: Add-on name, 2: opening link tag, 3: closing link tag
-#: inc/classes/addons/class-addon-registry.php:142
+#: inc/classes/addons/class-addon-registry.php:144
 #, php-format
 msgid "%1$s is out of date and may not work correctly with this version of GoDAM. %2$sUpdate it to the latest version%3$s."
 msgstr ""
 
 #. translators: 1: Add-on name, 2: Required GoDAM version
-#: inc/classes/addons/class-addon-registry.php:229
+#: inc/classes/addons/class-addon-registry.php:231
 #, php-format
 msgid "%1$s requires GoDAM %2$s or higher. Please update the GoDAM plugin."
 msgstr ""
@@ -11177,7 +11641,7 @@ msgstr ""
 msgid "This form could not be loaded."
 msgstr ""
 
-#: inc/classes/class-assets.php:94
+#: inc/classes/class-assets.php:98
 msgid "No video found for attachment ID"
 msgstr ""
 
@@ -11486,32 +11950,40 @@ msgstr ""
 msgid "Offer banner dismissed successfully."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1143
+#: inc/classes/class-media-library-ajax.php:1146
 msgid "Invalid attachment ID or URL."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1165
-#: inc/classes/rest-api/class-media-library.php:991
+#: inc/classes/class-media-library-ajax.php:1150
+msgid "The file is not on a host GoDAM serves files from."
+msgstr ""
+
+#: inc/classes/class-media-library-ajax.php:1172
+#: inc/classes/rest-api/class-media-library.php:1054
 msgid "Invalid attachment ID."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1177
+#: inc/classes/class-media-library-ajax.php:1184
 msgid "Could not initialize WordPress filesystem."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1197
+#: inc/classes/class-media-library-ajax.php:1214
+msgid "The downloaded file is not an MP4 video."
+msgstr ""
+
+#: inc/classes/class-media-library-ajax.php:1222
 msgid "Could not move file into uploads directory."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1704
+#: inc/classes/class-media-library-ajax.php:1726
 msgid "HTTP auth status saved."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1737
+#: inc/classes/class-media-library-ajax.php:1759
 msgid "GoDAM Transcoding Blocked"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1740
+#: inc/classes/class-media-library-ajax.php:1762
 msgid "HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding."
 msgstr ""
 
@@ -11552,7 +12024,7 @@ msgid "Action Scheduler is required to run the GoDAM media usage backfill."
 msgstr ""
 
 #: inc/classes/class-offer-notice.php:177
-msgid "Host your LifterLMS course videos on GoDAM, with adaptive streaming and video analytics. We move up to 100 of your videos from Vimeo for free."
+msgid "Host your LifterLMS course videos on GoDAM, with adaptive streaming and video analytics. We move your entire video library from Vimeo for free."
 msgstr ""
 
 #: inc/classes/class-offer-notice.php:181
@@ -11683,6 +12155,31 @@ msgstr ""
 msgid "Failed to remove virtual media site from GoDAM Central."
 msgstr ""
 
+#: inc/classes/class-visitor-consent.php:159
+#: inc/classes/class-visitor-consent.php:165
+msgid "Until deleted"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:160
+msgid "Ties one visitor's video views and clicks together without naming them."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:161
+msgid "Anonymous visitor ID"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:166
+msgid "Counts a viewer once per video."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:171
+msgid "Until the browser tab closes"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:172
+msgid "Holds clicks on video and image layers until they are sent to GoDAM analytics."
+msgstr ""
+
 #: inc/classes/cron-jobs/class-retranscode-failed-media.php:60
 msgid "Retranscode Failed Media"
 msgstr ""
@@ -11750,12 +12247,12 @@ msgid "Select the audio file"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:73
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:104
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:108
 msgid "Title shown in the player. Leave empty to use the attachment title."
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:85
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:118
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:122
 msgid "Short description shown beneath the title."
 msgstr ""
 
@@ -11764,27 +12261,27 @@ msgid "Cover image for the player. Leave empty to use the GoDAM-generated cover.
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:134
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:175
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:181
 msgid "Preload"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:154
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:195
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:202
 msgid "Show Transcript"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:157
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:199
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:207
 msgid "Show the transcript panel (when a transcript is available)."
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:167
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:208
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:216
 msgid "Show Chapters"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-audio.php:170
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:212
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:221
 msgid "Show the chapters panel (when chapters are available)."
 msgstr ""
 
@@ -11818,12 +12315,12 @@ msgid "Embedded PDF viewer, or a card with a cover image."
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-document.php:141
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:195
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:200
 msgid "Show Cover"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-document.php:154
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:215
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:221
 msgid "Cover Image"
 msgstr ""
 
@@ -11832,8 +12329,8 @@ msgid "Leave empty to use the auto-generated cover. Recommended aspect ratio: 16
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-document.php:170
-#: inc/classes/elementor-widgets/class-godam-video.php:498
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:229
+#: inc/classes/elementor-widgets/class-godam-video.php:518
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:235
 msgid "Caption"
 msgstr ""
 
@@ -11847,22 +12344,22 @@ msgid "Video Gallery"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:63
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:80
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:84
 msgid "Mode"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:67
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:83
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:87
 msgid "Query (filter videos)"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:68
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:84
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:88
 msgid "Handpicked (pick videos)"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:70
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:87
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:92
 msgid "Query: filter from the media library. Handpicked: choose specific videos in order."
 msgstr ""
 
@@ -11875,7 +12372,7 @@ msgid "Add rows and pick a video for each. Order in the list determines display 
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:137
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:123
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:128
 msgid "Order By"
 msgstr ""
 
@@ -11885,33 +12382,33 @@ msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:269
 #: inc/classes/elementor-widgets/class-godam-video.php:344
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:224
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:157
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:234
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:166
 msgid "Performance Mode"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:276
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:231
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:242
 msgid "Priority preloads leading thumbnails with fetchpriority=\"high\"."
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:311
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:253
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:265
 msgid "Item Width"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:315
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:256
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:268
 msgid "Small (200px)"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:316
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:257
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:269
 msgid "Medium (260px)"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:317
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:258
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:270
 msgid "Large (320px)"
 msgstr ""
 
@@ -11932,32 +12429,32 @@ msgid "1:1"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:341
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:281
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:295
 msgid "Show Video Titles and Dates"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:357
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:297
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:313
 msgid "Play on hover: videos play when hovered. Autoplay: visible videos autoplay one at a time."
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:364
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:302
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:318
 msgid "Show Play Button"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:370
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:310
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:327
 msgid "Show the play button overlay on each tile."
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:393
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:330
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:347
 msgid "Load More button"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-gallery.php:394
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:331
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:348
 msgid "Infinite scroll"
 msgstr ""
 
@@ -12048,15 +12545,15 @@ msgid "Descriptions"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:124
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:351
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:364
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:376
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:389
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:402
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:414
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:388
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:401
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:413
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:426
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:442
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:459
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:439
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:451
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:463
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:480
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:498
 msgid "SEO Settings"
 msgstr ""
 
@@ -12073,7 +12570,7 @@ msgid "You have overridden the default SEO. Changes to this video in the media l
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:190
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:372
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:409
 msgid "Headline"
 msgstr ""
 
@@ -12082,12 +12579,12 @@ msgid "Forced on when Autoplay is enabled — most browsers block autoplay with 
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:360
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:186
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:196
 msgid "Hover Option"
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:365
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:190
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:200
 msgid "Show Player Controls"
 msgstr ""
 
@@ -12096,55 +12593,60 @@ msgid "Choose the action to perform on video hover. Disabled when Autoplay or Sh
 msgstr ""
 
 #: inc/classes/elementor-widgets/class-godam-video.php:383
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:217
+msgid "When Out of View"
+msgstr ""
+
+#: inc/classes/elementor-widgets/class-godam-video.php:403
 msgid "Show Share Button"
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:395
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:277
+#: inc/classes/elementor-widgets/class-godam-video.php:415
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:311
 msgid "Show Transcription"
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:398
+#: inc/classes/elementor-widgets/class-godam-video.php:418
 msgid "Show the transcript panel toggle on the player (when a transcript is available)."
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:409
+#: inc/classes/elementor-widgets/class-godam-video.php:429
 msgid "Enable Engagements"
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:427
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:210
+#: inc/classes/elementor-widgets/class-godam-video.php:447
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:241
 msgid "16:9 (Standard)"
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:439
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:222
+#: inc/classes/elementor-widgets/class-godam-video.php:459
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:254
 msgid "Player Height"
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:442
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:225
+#: inc/classes/elementor-widgets/class-godam-video.php:462
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:257
 msgid "Constrain player height (e.g. 400px, 50vh). Width is derived from aspect ratio."
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:455
+#: inc/classes/elementor-widgets/class-godam-video.php:475
 msgid "Select the video thumbnail."
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:472
+#: inc/classes/elementor-widgets/class-godam-video.php:492
 msgid "Or pick an auto-generated thumbnail"
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:474
+#: inc/classes/elementor-widgets/class-godam-video.php:494
 msgid "No auto-generated thumbnails available for this video."
 msgstr ""
 
-#: inc/classes/elementor-widgets/class-godam-video.php:707
+#: inc/classes/elementor-widgets/class-godam-video.php:729
 msgid "Select a video in the Player Settings panel to get started."
 msgstr ""
 
 #: inc/classes/enums/class-api-key-status.php:72
-#: inc/classes/rest-api/class-settings.php:306
+#: inc/classes/rest-api/class-settings.php:308
 msgid "API key status refreshed."
 msgstr ""
 
@@ -12367,7 +12869,7 @@ msgid "Leave empty to allow any duration. Example: 180 = 3 minutes."
 msgstr ""
 
 #: inc/classes/gravity-forms/class-init.php:314
-#: inc/helpers/custom-functions.php:1747
+#: inc/helpers/custom-functions.php:1810
 msgid "Gravity forms"
 msgstr ""
 
@@ -12548,70 +13050,70 @@ msgstr ""
 msgid "The Video ID for fetching analytics data."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:798
-#: inc/classes/rest-api/class-analytics.php:1076
-#: inc/classes/rest-api/class-analytics.php:1316
-#: inc/classes/rest-api/class-analytics.php:1751
-#: inc/classes/rest-api/class-analytics.php:1828
-#: inc/classes/rest-api/class-analytics.php:1911
-#: inc/classes/rest-api/class-engagement.php:376
+#: inc/classes/rest-api/class-analytics.php:833
+#: inc/classes/rest-api/class-analytics.php:1111
+#: inc/classes/rest-api/class-analytics.php:1351
+#: inc/classes/rest-api/class-analytics.php:1792
+#: inc/classes/rest-api/class-analytics.php:1869
+#: inc/classes/rest-api/class-analytics.php:1952
+#: inc/classes/rest-api/class-engagement.php:394
 #: inc/classes/rest-api/class-site.php:169
 msgid "Missing API key."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:809
+#: inc/classes/rest-api/class-analytics.php:844
 msgid "GoDAM account is not verified. Connect your account in GoDAM settings to view layer analytics."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:872
-#: inc/classes/rest-api/class-analytics.php:1112
-#: inc/classes/rest-api/class-analytics.php:1363
-#: inc/classes/rest-api/class-analytics.php:1777
-#: inc/classes/rest-api/class-analytics.php:1860
-#: inc/classes/rest-api/class-analytics.php:1937
+#: inc/classes/rest-api/class-analytics.php:907
+#: inc/classes/rest-api/class-analytics.php:1147
+#: inc/classes/rest-api/class-analytics.php:1398
+#: inc/classes/rest-api/class-analytics.php:1818
+#: inc/classes/rest-api/class-analytics.php:1901
+#: inc/classes/rest-api/class-analytics.php:1978
 msgid "Unable to reach analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:881
-#: inc/classes/rest-api/class-analytics.php:1123
-#: inc/classes/rest-api/class-analytics.php:1372
-#: inc/classes/rest-api/class-analytics.php:1582
-#: inc/classes/rest-api/class-analytics.php:1788
-#: inc/classes/rest-api/class-analytics.php:1871
-#: inc/classes/rest-api/class-analytics.php:1948
-#: inc/classes/rest-api/class-analytics.php:2069
+#: inc/classes/rest-api/class-analytics.php:916
+#: inc/classes/rest-api/class-analytics.php:1158
+#: inc/classes/rest-api/class-analytics.php:1407
+#: inc/classes/rest-api/class-analytics.php:1623
+#: inc/classes/rest-api/class-analytics.php:1829
+#: inc/classes/rest-api/class-analytics.php:1912
+#: inc/classes/rest-api/class-analytics.php:1989
+#: inc/classes/rest-api/class-analytics.php:2110
 msgid "Unexpected error from analytics server."
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:1028
+#: inc/classes/rest-api/class-analytics.php:1063
 msgid "Unavailable"
 msgstr ""
 
 #. translators: %d: WordPress post ID.
-#: inc/classes/rest-api/class-analytics.php:1041
+#: inc/classes/rest-api/class-analytics.php:1076
 #, php-format
 msgid "Post #%d (deleted)"
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:1252
-#: inc/classes/rest-api/class-analytics.php:1443
-#: inc/classes/rest-api/class-analytics.php:1523
-#: inc/classes/rest-api/class-analytics.php:1997
+#: inc/classes/rest-api/class-analytics.php:1287
+#: inc/classes/rest-api/class-analytics.php:1484
+#: inc/classes/rest-api/class-analytics.php:1564
+#: inc/classes/rest-api/class-analytics.php:2038
 msgid "Invalid or unverified API key."
 msgstr ""
 
 #. translators: %s is the error message from the API response.
-#: inc/classes/rest-api/class-analytics.php:1280
+#: inc/classes/rest-api/class-analytics.php:1315
 #, php-format
 msgid "Error fetching history data: %s"
 msgstr ""
 
-#: inc/classes/rest-api/class-analytics.php:1486
+#: inc/classes/rest-api/class-analytics.php:1527
 msgid "Could not load the analytics history."
 msgstr ""
 
 #. translators: %d: WooCommerce product ID.
-#: inc/classes/rest-api/class-analytics.php:2120
+#: inc/classes/rest-api/class-analytics.php:2161
 #, php-format
 msgid "ID: %d (Deleted Product)"
 msgstr ""
@@ -12677,65 +13179,69 @@ msgstr ""
 msgid "The guest user email"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:323
+#: inc/classes/rest-api/class-engagement.php:341
 #: inc/classes/rest-api/class-site.php:116
 msgid "Unable to reach server."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:333
+#: inc/classes/rest-api/class-engagement.php:351
 #: inc/classes/rest-api/class-site.php:126
 msgid "Unexpected error from server."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:492
+#: inc/classes/rest-api/class-engagement.php:514
 msgid "Failed to update likes."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:611
-#: inc/classes/rest-api/class-engagement.php:712
+#: inc/classes/rest-api/class-engagement.php:637
+#: inc/classes/rest-api/class-engagement.php:738
 msgid "Failed to update comment."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:961
+#: inc/classes/rest-api/class-engagement.php:987
 msgid "Unable to verify the comment. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1020
+#: inc/classes/rest-api/class-engagement.php:1046
 msgid "You can only change your own comments."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1098
+#: inc/classes/rest-api/class-engagement.php:1124
 msgid "Today"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1100
+#: inc/classes/rest-api/class-engagement.php:1126
 msgid "Yesterday"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1102
+#: inc/classes/rest-api/class-engagement.php:1128
 msgid " days ago"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1130
+#: inc/classes/rest-api/class-engagement.php:1156
 msgid "Invalid guest user email."
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1142
+#: inc/classes/rest-api/class-engagement.php:1168
 msgid "Guest"
 msgstr ""
 
-#: inc/classes/rest-api/class-engagement.php:1149
+#: inc/classes/rest-api/class-engagement.php:1175
 msgid "Guest user email saved successfully."
 msgstr ""
 
+#: inc/classes/rest-api/class-engagement.php:1329
+msgid "This video is not available."
+msgstr ""
+
 #. translators: 1: Parameter.
-#: inc/classes/rest-api/class-engagement.php:1217
+#: inc/classes/rest-api/class-engagement.php:1353
 #, php-format
 msgid "%1$s is invalid."
 msgstr ""
 
 #. translators: 1: Parameter.
-#: inc/classes/rest-api/class-engagement.php:1227
+#: inc/classes/rest-api/class-engagement.php:1363
 #, php-format
 msgid "%1$s is empty."
 msgstr ""
@@ -12904,7 +13410,7 @@ msgid "Sorry, you are not allowed to access media folders."
 msgstr ""
 
 #: inc/classes/rest-api/class-media-library.php:150
-#: inc/classes/rest-api/class-media-library.php:1055
+#: inc/classes/rest-api/class-media-library.php:1118
 msgid "This folder is locked and cannot be modified."
 msgstr ""
 
@@ -12914,7 +13420,7 @@ msgid "The destination folder is locked and cannot be modified."
 msgstr ""
 
 #: inc/classes/rest-api/class-media-library.php:212
-#: inc/classes/rest-api/class-media-library.php:1018
+#: inc/classes/rest-api/class-media-library.php:1081
 msgid "One or more attachments belong to a locked folder and cannot be moved."
 msgstr ""
 
@@ -12926,356 +13432,356 @@ msgstr ""
 msgid "ID of the folder term to associate with the attachments."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:326
+#: inc/classes/rest-api/class-media-library.php:324
 msgid "Attachment ID to get EXIF data for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:344
+#: inc/classes/rest-api/class-media-library.php:340
 msgid "Attachment ID to set video thumbnail for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:349
+#: inc/classes/rest-api/class-media-library.php:345
 msgid "Attachment URL to set as the thumbnail."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:354
+#: inc/classes/rest-api/class-media-library.php:350
 msgid "Placeholder (low-quality blur-up) thumbnail URL for this thumbnail."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:372
-#: inc/classes/rest-api/class-media-library.php:390
-#: inc/classes/rest-api/class-media-library.php:413
+#: inc/classes/rest-api/class-media-library.php:366
+#: inc/classes/rest-api/class-media-library.php:382
+#: inc/classes/rest-api/class-media-library.php:403
 msgid "Attachment ID to get video thumbnail for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:395
+#: inc/classes/rest-api/class-media-library.php:387
 msgid "URL of custom thumbnail."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:418
+#: inc/classes/rest-api/class-media-library.php:408
 msgid "Attachment URL of custom thumbnail."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:439
+#: inc/classes/rest-api/class-media-library.php:429
 msgid "ID of the folder to create a ZIP file for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:457
+#: inc/classes/rest-api/class-media-library.php:447
 msgid "ID of the ZIP build job to poll."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:476
+#: inc/classes/rest-api/class-media-library.php:466
 msgid "Array of folder IDs to delete."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:495
+#: inc/classes/rest-api/class-media-library.php:485
 msgid "Array of folder IDs to update lock status for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:500
+#: inc/classes/rest-api/class-media-library.php:490
 msgid "The desired lock status (true for locked, false for unlocked)."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:519
+#: inc/classes/rest-api/class-media-library.php:509
 msgid "Array of folder IDs to update bookmark status for."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:524
+#: inc/classes/rest-api/class-media-library.php:514
 msgid "The desired bookmark status (true for bookmarked, false for unbookmarked)."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:609
+#: inc/classes/rest-api/class-media-library.php:599
 msgid "Whether the media library folder sidebar is collapsed."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:673
-#: inc/classes/rest-api/class-media-library.php:926
+#: inc/classes/rest-api/class-media-library.php:663
+#: inc/classes/rest-api/class-media-library.php:989
 msgid "Invalid event."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:935
+#: inc/classes/rest-api/class-media-library.php:998
 msgid "job_id and resized_images are required."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:941
+#: inc/classes/rest-api/class-media-library.php:1004
 msgid "Failed to update attachment metadata."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:947
+#: inc/classes/rest-api/class-media-library.php:1010
 msgid "Image subsizes successfully generated."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:969
+#: inc/classes/rest-api/class-media-library.php:1032
 msgid "No attachment IDs provided."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:997
+#: inc/classes/rest-api/class-media-library.php:1060
 msgid "You are not allowed to modify one or more of these attachments."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1033
+#: inc/classes/rest-api/class-media-library.php:1096
 msgid "Failed to remove folder from the attachments."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1040
+#: inc/classes/rest-api/class-media-library.php:1103
 msgid "Attachments successfully removed from the folder."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1048
-#: inc/classes/rest-api/class-media-library.php:1691
-#: inc/classes/rest-api/class-media-library.php:1774
+#: inc/classes/rest-api/class-media-library.php:1111
+#: inc/classes/rest-api/class-media-library.php:1785
+#: inc/classes/rest-api/class-media-library.php:1868
 msgid "Invalid folder term ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1064
+#: inc/classes/rest-api/class-media-library.php:1127
 msgid "Failed to associate attachments with the folder."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1071
+#: inc/classes/rest-api/class-media-library.php:1134
 msgid "Attachments successfully associated with the folder."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1086
+#: inc/classes/rest-api/class-media-library.php:1149
 msgid "Invalid taxonomy."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1123
+#: inc/classes/rest-api/class-media-library.php:1186
 msgid "Image file not found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1130
+#: inc/classes/rest-api/class-media-library.php:1193
 msgid "No EXIF data found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1223
-#: inc/classes/rest-api/class-media-library.php:1452
-#: inc/classes/rest-api/class-media-library.php:1537
-#: inc/classes/rest-api/class-media-library.php:1626
+#: inc/classes/rest-api/class-media-library.php:1286
+#: inc/classes/rest-api/class-media-library.php:1525
+#: inc/classes/rest-api/class-media-library.php:1616
+#: inc/classes/rest-api/class-media-library.php:1718
 msgid "Attachment is not a video."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1256
+#: inc/classes/rest-api/class-media-library.php:1323
 msgid "Failed to fetch thumbnails from GoDAM."
 msgstr ""
 
 #. translators: %s is the HTTP status code from the GoDAM API response.
-#: inc/classes/rest-api/class-media-library.php:1262
-#: inc/classes/rest-api/class-media-library.php:2214
+#: inc/classes/rest-api/class-media-library.php:1329
+#: inc/classes/rest-api/class-media-library.php:2308
 #, php-format
 msgid "GoDAM API returned HTTP status: %s"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1267
+#: inc/classes/rest-api/class-media-library.php:1334
 msgid "Invalid JSON response from GoDAM API."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1275
-#: inc/classes/rest-api/class-media-library.php:1316
+#: inc/classes/rest-api/class-media-library.php:1342
+#: inc/classes/rest-api/class-media-library.php:1386
 msgid "No thumbnails found."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1466
-msgid "Only 3 custom thumbnails are allowed per video."
-msgstr ""
-
-#: inc/classes/rest-api/class-media-library.php:1546
-msgid "Custom thumbnail not found."
-msgstr ""
-
-#: inc/classes/rest-api/class-media-library.php:1558
-#: inc/classes/rest-api/class-media-library.php:1575
-msgid "Custom video thumbnail removed successfully."
-msgstr ""
-
-#: inc/classes/rest-api/class-media-library.php:1631
+#: inc/classes/rest-api/class-media-library.php:1531
+#: inc/classes/rest-api/class-media-library.php:1725
 msgid "Invalid thumbnail URL."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1636
+#: inc/classes/rest-api/class-media-library.php:1545
+msgid "Only 3 custom thumbnails are allowed per video."
+msgstr ""
+
+#: inc/classes/rest-api/class-media-library.php:1625
+msgid "Custom thumbnail not found."
+msgstr ""
+
+#: inc/classes/rest-api/class-media-library.php:1647
+msgid "Custom video thumbnail removed successfully."
+msgstr ""
+
+#: inc/classes/rest-api/class-media-library.php:1730
 msgid "Invalid placeholder thumbnail URL."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1665
+#: inc/classes/rest-api/class-media-library.php:1759
 msgid "Video thumbnail successfully set."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1684
+#: inc/classes/rest-api/class-media-library.php:1778
 msgid "Invalid folder ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1809
+#: inc/classes/rest-api/class-media-library.php:1903
 msgid "Unknown or expired download job."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1815
+#: inc/classes/rest-api/class-media-library.php:1909
 msgid "You are not allowed to access this download job."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1845
+#: inc/classes/rest-api/class-media-library.php:1939
 msgid "You do not have permission to delete folders."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1851
-#: inc/classes/rest-api/class-media-library.php:2002
-#: inc/classes/rest-api/class-media-library.php:2068
+#: inc/classes/rest-api/class-media-library.php:1945
+#: inc/classes/rest-api/class-media-library.php:2096
+#: inc/classes/rest-api/class-media-library.php:2162
 msgid "No folder IDs provided or invalid format."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1860
+#: inc/classes/rest-api/class-media-library.php:1954
 msgid "One or more selected folders are locked and cannot be deleted."
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
-#: inc/classes/rest-api/class-media-library.php:1872
-#: inc/classes/rest-api/class-media-library.php:1941
+#: inc/classes/rest-api/class-media-library.php:1966
+#: inc/classes/rest-api/class-media-library.php:2035
 #, php-format
 msgid "Invalid folder ID: %s"
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
-#: inc/classes/rest-api/class-media-library.php:1880
-#: inc/classes/rest-api/class-media-library.php:1949
+#: inc/classes/rest-api/class-media-library.php:1974
+#: inc/classes/rest-api/class-media-library.php:2043
 #, php-format
 msgid "Folder ID %s not found or invalid."
 msgstr ""
 
 #. translators: %s is the invalid folder ID where delete failed.
-#: inc/classes/rest-api/class-media-library.php:1888
+#: inc/classes/rest-api/class-media-library.php:1982
 #, php-format
 msgid "Failed to delete folder %s"
 msgstr ""
 
 #. translators: %s is the ID of folder not found.
-#: inc/classes/rest-api/class-media-library.php:1891
+#: inc/classes/rest-api/class-media-library.php:1985
 #, php-format
 msgid "Folder ID %s not found during deletion attempt."
 msgstr ""
 
 #. translators: %s is the invalid folder ID.
-#: inc/classes/rest-api/class-media-library.php:1894
+#: inc/classes/rest-api/class-media-library.php:1988
 #, php-format
 msgid "Folder ID %s cannot be deleted (possibly uncategorized or default term)."
 msgstr ""
 
 #. translators: %d is the number of folders deleted.
-#: inc/classes/rest-api/class-media-library.php:1905
+#: inc/classes/rest-api/class-media-library.php:1999
 #, php-format
 msgid "%d folder(s) deleted successfully."
 msgstr ""
 
 #. translators: %1$d is the number of folders deleted, %2$s are the errors.
-#: inc/classes/rest-api/class-media-library.php:1913
+#: inc/classes/rest-api/class-media-library.php:2007
 #, php-format
 msgid "Error deleting some folders. Deleted: %1$d. Errors: %2$s"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1920
+#: inc/classes/rest-api/class-media-library.php:2014
 msgid "No folders were deleted."
 msgstr ""
 
 #. translators: %s is the folder ID whose meta update failed.
-#: inc/classes/rest-api/class-media-library.php:1969
+#: inc/classes/rest-api/class-media-library.php:2063
 #, php-format
 msgid "Failed to update folder %s."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:1995
+#: inc/classes/rest-api/class-media-library.php:2089
 msgid "You do not have permission to lock or unlock folders."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:2014
+#: inc/classes/rest-api/class-media-library.php:2108
 #, php-format
 msgid "%d folder(s) locked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:2016
+#: inc/classes/rest-api/class-media-library.php:2110
 #, php-format
 msgid "%d folder(s) unlocked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:2030
+#: inc/classes/rest-api/class-media-library.php:2124
 #, php-format
 msgid "Some folders locked, but issues occurred with others. Locked: %d."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:2032
+#: inc/classes/rest-api/class-media-library.php:2126
 #, php-format
 msgid "Some folders unlocked, but issues occurred with others. Unlocked: %d."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2043
+#: inc/classes/rest-api/class-media-library.php:2137
 msgid "No folders were updated for lock status."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2061
+#: inc/classes/rest-api/class-media-library.php:2155
 msgid "You do not have permission to bookmark folders."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:2080
+#: inc/classes/rest-api/class-media-library.php:2174
 #, php-format
 msgid "%d folder(s) bookmarked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:2082
+#: inc/classes/rest-api/class-media-library.php:2176
 #, php-format
 msgid "%d folder(s) unbookmarked successfully."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:2096
+#: inc/classes/rest-api/class-media-library.php:2190
 #, php-format
 msgid "Some folders bookmarked, but issues occurred with others. Bookmarked: %d."
 msgstr ""
 
 #. translators: %d number of folders.
-#: inc/classes/rest-api/class-media-library.php:2098
+#: inc/classes/rest-api/class-media-library.php:2192
 #, php-format
 msgid "Some folders unbookmarked, but issues occurred with others. Unbookmarked: %d."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2109
+#: inc/classes/rest-api/class-media-library.php:2203
 msgid "No folders were updated for bookmark status."
 msgstr ""
 
 #. translators: %s is the error message from the GoDAM API request.
-#: inc/classes/rest-api/class-media-library.php:2199
+#: inc/classes/rest-api/class-media-library.php:2293
 #, php-format
 msgid "GoDAM API request failed: %s"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2227
+#: inc/classes/rest-api/class-media-library.php:2321
 msgid "Unexpected API response format."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2260
+#: inc/classes/rest-api/class-media-library.php:2354
 msgid "Filtered GoDAM files by MIME type."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2290
+#: inc/classes/rest-api/class-media-library.php:2384
 msgid "Required fields are missing."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2298
-#: inc/classes/rest-api/class-media-library.php:2305
-#: inc/classes/rest-api/class-media-library.php:2317
+#: inc/classes/rest-api/class-media-library.php:2392
+#: inc/classes/rest-api/class-media-library.php:2399
+#: inc/classes/rest-api/class-media-library.php:2411
 msgid "Invalid or disallowed MIME type."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2332
+#: inc/classes/rest-api/class-media-library.php:2426
 msgid "Invalid media URL."
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2367
+#: inc/classes/rest-api/class-media-library.php:2461
 msgid "Attachment ready"
 msgstr ""
 
-#: inc/classes/rest-api/class-media-library.php:2742
+#: inc/classes/rest-api/class-media-library.php:2836
 msgid "A Folder ID is required"
 msgstr ""
 
@@ -13321,33 +13827,33 @@ msgstr ""
 msgid "Invalid poll ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:93
+#: inc/classes/rest-api/class-settings.php:95
 msgid "The API key to verify."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:145
+#: inc/classes/rest-api/class-settings.php:147
 msgid "The godam settings to save."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:175
-#: inc/classes/rest-api/class-settings.php:182
+#: inc/classes/rest-api/class-settings.php:177
+#: inc/classes/rest-api/class-settings.php:184
 #: inc/classes/rest-api/class-video-migration.php:1189
 msgid "GoDAM API key is required."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:186
+#: inc/classes/rest-api/class-settings.php:188
 msgid "GoDAM API key is not set on this site."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:272
+#: inc/classes/rest-api/class-settings.php:274
 msgid "Failed to remove the API key. It might not exist."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:291
+#: inc/classes/rest-api/class-settings.php:293
 msgid "Failed to refresh API key status."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:356
+#: inc/classes/rest-api/class-settings.php:358
 msgid "EasyDAM settings updated successfully!"
 msgstr ""
 
@@ -13516,28 +14022,84 @@ msgstr ""
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:56
+#: inc/classes/rest-api/class-transcription.php:161
 msgid "The video attachment ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:103
+#: inc/classes/rest-api/class-transcription.php:182
+msgid "Re-read the default caption from GoDAM Central first, so changes made in Central show."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:208
+msgid "BCP 47 language code to transcribe in, or \"auto\"/\"multi\" for Deepgram detection. Omitted falls back to the org/default language."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:214
+msgid "Audio stream to transcribe on a multi-audio asset. Omitted transcribes the default track."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:234
 msgid "URL of the uploaded .vtt / .srt caption file."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:203
+#: inc/classes/rest-api/class-transcription.php:309
+msgid "BCP 47 language tag for the caption track."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:317
+msgid "Label shown in the subtitle menu. Unique on the video."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:324
+msgid "Track kind: subtitles or captions."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:330
+msgid "Make this the default caption track."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:340
+msgid "Caption file text (VTT or SRT)."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:349
+msgid "Format of the uploaded caption text."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:367
+msgid "Caption track handle returned by the list endpoint."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:501
 msgid "This video has not been transcoded yet, so it cannot be transcribed."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:212
+#: inc/classes/rest-api/class-transcription.php:510
 msgid "Connect your GoDAM account to generate transcriptions."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:231
+#: inc/classes/rest-api/class-transcription.php:543
 msgid "Could not reach the transcription service. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:295
+#: inc/classes/rest-api/class-transcription.php:609
 msgid "Only .vtt or .srt caption files are supported."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:1035
+msgid "Connect your GoDAM account to manage captions."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:1056
+msgid "This video has not been transcoded yet, so it has no captions."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:1088
+msgid "Could not reach the caption service. Please try again."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcription.php:1109
+msgid "The caption service rejected the request."
 msgstr ""
 
 #: inc/classes/rest-api/class-video-editor.php:74
@@ -13748,110 +14310,110 @@ msgstr ""
 msgid "Media Folders"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:69
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:73
 msgid "Embed audio from GoDAM Media Library"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:75
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:79
 msgid "Audio ID"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:78
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:82
 msgid "Enter the audio attachment ID from WordPress Media Library."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:86
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:120
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:86
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:90
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:124
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:90
 msgid "Source URL"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:90
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:94
 msgid "The source URL for the audio file."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:132
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:136
 msgid "Cover image for the audio player. Leave empty to use the GoDAM-generated cover."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:166
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:172
 msgid "Loop the audio playback continuously."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:184
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:191
 msgid "Select the preload behavior for the audio."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:222
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:224
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:243
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:245
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:116
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:118
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:362
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:364
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:328
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:330
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:231
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:233
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:249
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:251
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:121
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:123
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:381
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:383
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:364
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:366
 msgid "Design Options"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:103
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:107
 msgid "Embed a document from the GoDAM Media Library"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:112
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:116
 msgid "Select a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file from the WordPress Media Library."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:124
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:128
 msgid "The source URL for the document file."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:138
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:142
 msgid "Add a title for the document. Leave empty to use the attachment title."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:152
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:156
 msgid "Add a document description (shown in card view)."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:170
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:175
 msgid "Choose how the document is displayed: an embedded viewer or a card with a cover image."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:184
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:189
 msgid "Height of the embedded viewer in pixels."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:202
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:208
 msgid "Show a cover image on the document card."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:218
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:224
 msgid "Leave on the auto-generated cover, or select a custom image. Recommended aspect ratio: 16:9."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:232
+#: inc/classes/wpbakery-elements/class-wpb-godam-document.php:238
 msgid "Add a caption for the document."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:69
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:73
 msgid "Image with interactive GoDAM hotspot & product layers"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:78
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:82
 msgid "Select an image from the WordPress Media Library."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:90
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:94
 msgid "The source URL for the image."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:101
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:105
 msgid "Show Image Layers"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:105
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:110
 msgid "Display the authored hotspot & product layers over the image."
 msgstr ""
 
@@ -13859,190 +14421,190 @@ msgstr ""
 msgid "Select audio"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:94
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:99
 msgid "Pick one video per row. Order in the list determines display order."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:105
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:110
 msgid "Only video attachments are valid here."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:111
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:116
 msgid "Number of Videos"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:114
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:119
 msgid "Number of videos to display (1-30)."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:132
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:138
 msgid "Sort videos by."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:148
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:155
 msgid "Sort order."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:161
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:169
 msgid "Limit results to a single media folder."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:174
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:183
 msgid "Limit results to videos uploaded by one user."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:193
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:203
 msgid "Filter by date range."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:202
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:212
 msgid "Custom Start Date"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:204
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:214
 msgid "Start date in YYYY-MM-DD format."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:213
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:223
 msgid "Custom End Date"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:215
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:225
 msgid "End date in YYYY-MM-DD format."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:248
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:260
 msgid "Choose the layout style for the gallery."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:261
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:274
 msgid "Tile width in pixels."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:276
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:290
 msgid "Thumbnail aspect ratio."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:285
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:300
 msgid "Display video titles and upload dates beneath each tile."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:318
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:335
 msgid "Allow the gallery to load additional videos after the initial render."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:334
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:352
 msgid "How additional items appear once the initial set is shown."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:353
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:372
 msgid "Engagement layers only render for transcoded videos."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:372
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:391
 msgid "Embed a video gallery from the GoDAM media library."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:391
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:410
 msgid "All folders"
 msgstr ""
 
 #. translators: 1: taxonomy term name, 2: term ID.
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:411
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:430
 #, php-format
 msgid "%1$s (#%2$d)"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:434
+#: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:453
 msgid "All authors"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:69
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:73
 msgid "Select a video from the WordPress Media Library."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:100
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:106
 msgid "Loop the video playback."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:116
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:123
 msgid "Mute the video by default."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:132
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:140
 msgid "Show video playback controls."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:141
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:149
 msgid "Show in Lightbox"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:164
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:174
 msgid "Select the performance mode for the video."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:177
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:187
 msgid "Select a custom thumbnail image for the video."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:194
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:205
 msgid "Choose the action to perform on video hover. Ignored when Show in Lightbox is on."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:259
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:292
 msgid "Share Button"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:266
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:300
 msgid "Show share button in the video player."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:280
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:299
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:314
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:334
 msgid "Default (from media)"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:285
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:320
 msgid "Show the transcript button/panel. \"Default\" follows the media/block setting."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:296
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:331
 msgid "Show Caption"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:304
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:340
 msgid "Show the subtitles/captions button. \"Default\" follows the media caption setting."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:315
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:351
 msgid "Video Caption"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:318
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:354
 msgid "Add a caption for the video."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:343
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:379
 msgid "Override SEO"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:350
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:387
 msgid "Enable to customize SEO for this element. When disabled, SEO data is synced from the media library."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:363
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:400
 msgid "URL of the video file or HLS (.m3u8) stream that search engines index. Filled in from the selected video."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:388
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:425
 msgid "Description of the video. It is recommended to add a description for better video SEO."
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:401
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:438
 msgid "ISO 8601 datetime format. Example: 2024-01-15T10:30:00+00:00"
 msgstr ""
 
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:474
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:513
 msgid "Embed video from GoDAM Media Library"
 msgstr ""
 
@@ -14125,104 +14687,104 @@ msgstr ""
 msgid "Video transcoding process is in-progress."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:239
+#: inc/helpers/custom-functions.php:302
 msgid "CTA Card Image"
 msgstr ""
 
 #. translators: %s: storage usage percentage
-#: inc/helpers/custom-functions.php:453
+#: inc/helpers/custom-functions.php:516
 #, php-format
 msgid "Storage limit exceeded (%s%%). Please upgrade your plan to continue."
 msgstr ""
 
 #. translators: %s: bandwidth usage percentage
-#: inc/helpers/custom-functions.php:462
+#: inc/helpers/custom-functions.php:525
 #, php-format
 msgid "Bandwidth limit exceeded (%s%%). Please upgrade your plan to continue."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:677
+#: inc/helpers/custom-functions.php:740
 msgid "Only files served over HTTPS can be transcoded. Serve your media over https://."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:682
+#: inc/helpers/custom-functions.php:745
 msgid "This file couldn't be downloaded from your site. Make sure uploaded videos are publicly accessible."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:683
+#: inc/helpers/custom-functions.php:746
 msgid "The file's link opens a web page instead of the video, often because of a login or media protection plugin."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:684
+#: inc/helpers/custom-functions.php:747
 msgid "The file is empty or too large. Try uploading it again."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:752
-#: inc/helpers/custom-functions.php:753
+#: inc/helpers/custom-functions.php:815
+#: inc/helpers/custom-functions.php:816
 msgid "This site's API key wasn't recognised. Check the key in GoDAM settings."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:754
+#: inc/helpers/custom-functions.php:817
 msgid "Your GoDAM licence is inactive. Renew your plan to transcode new uploads."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:755
+#: inc/helpers/custom-functions.php:818
 msgid "Your GoDAM storage is full. Upgrade your plan or delete unused files."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:756
+#: inc/helpers/custom-functions.php:819
 msgid "This site isn't on your GoDAM account's list of allowed sites. Ask your GoDAM admin to add it."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:955
+#: inc/helpers/custom-functions.php:1018
 msgid "API key not found ( try refreshing the page )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:989
+#: inc/helpers/custom-functions.php:1052
 msgid "Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1583
+#: inc/helpers/custom-functions.php:1646
 msgid "The transcoding service couldn't accept the recording. Try again later, or contact support if this keeps happening."
 msgstr ""
 
 #. translators: %s: Why the recording couldn't be transcoded.
-#: inc/helpers/custom-functions.php:1592
+#: inc/helpers/custom-functions.php:1655
 #, php-format
 msgid "The recording couldn't be transcoded. %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1641
+#: inc/helpers/custom-functions.php:1704
 msgid "Form transcoding has been disabled by the site administrator."
 msgstr ""
 
 #. translators: %s: Entry ID for which transcoding failed
-#: inc/helpers/custom-functions.php:1793
+#: inc/helpers/custom-functions.php:1856
 #, php-format
 msgid "Transcoding failed | entry Id: %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1830
+#: inc/helpers/custom-functions.php:1893
 msgid "s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2411
+#: inc/helpers/custom-functions.php:2474
 msgid "Oops! We could not locate your video"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2422
+#: inc/helpers/custom-functions.php:2485
 msgid "Note: This is a simple image preview. The image and its layers may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2424
+#: inc/helpers/custom-functions.php:2487
 msgid "Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2426
+#: inc/helpers/custom-functions.php:2489
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2616
+#: inc/helpers/custom-functions.php:2679
 msgid "Video not found"
 msgstr ""
 
@@ -14346,10 +14908,6 @@ msgstr ""
 
 #: assets/src/blocks/godam-player/track-uploader.js:104
 msgid "Remove track"
-msgstr ""
-
-#: assets/src/blocks/godam-player/track-uploader.js:111
-msgid "English"
 msgstr ""
 
 #: assets/src/blocks/godam-player/track-uploader.js:123

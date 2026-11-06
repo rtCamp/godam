@@ -231,9 +231,35 @@ class LayerTypeRegistryTest extends TestCase {
 	}
 
 	/**
+	 * A layer's background colour goes into its style attribute only when it is a
+	 * plain colour; otherwise the overlay default, or none for a hotspot (#2246).
+	 */
+	public function test_prints_only_a_plain_background_colour(): void {
+		$poll    = array(
+			'id'      => 'p1',
+			'type'    => 'poll',
+			'poll_id' => '4',
+		);
+		$hotspot = array(
+			'id'   => 'h1',
+			'type' => 'hotspot',
+		);
+		$unsafe  = '#000; background-image: url(https://example.test/x)';
+
+		$this->assertStringContainsString( 'style="background-color: rgba(0, 0, 0, 0.5)"', godam_render_layer( $poll + array( 'bg_color' => 'rgba(0, 0, 0, 0.5)' ), 'video_1' ) );
+		$this->assertStringContainsString( 'style="background-color: #FFFFFFB3"', godam_render_layer( $poll + array( 'bg_color' => $unsafe ), 'video_1' ) );
+		$this->assertStringNotContainsString( 'url(', godam_render_layer( $poll + array( 'bg_color' => $unsafe ), 'video_1' ) );
+		$this->assertSame( '<div id="layer-video_1-h1" class="easydam-layer hidden hotspot-layer"></div>', godam_render_layer( $hotspot + array( 'bg_color' => $unsafe ), 'video_1' ) );
+	}
+
+	/**
 	 * CTA: HTML CTAs render their HTML; legacy text CTAs render nothing.
 	 */
 	public function test_renders_an_html_cta_and_skips_a_text_cta(): void {
+		// The bootstrap's do_shortcode() stub returns '' while no shortcode is
+		// registered; WordPress returns the content as is, so register one.
+		$GLOBALS['shortcode_tags'] = array_merge( (array) ( $GLOBALS['shortcode_tags'] ?? array() ), array( 'godam_test_noop' => '__return_empty_string' ) );
+
 		$html = godam_render_layer(
 			array(
 				'id'       => 'c1',
@@ -309,7 +335,7 @@ class LayerTypeRegistryTest extends TestCase {
 	 */
 	public function shortcode_providers(): array {
 		return array(
-			'gravity, theme'    => array(
+			'gravity, theme'        => array(
 				array(
 					'gf_id' => '3',
 					'theme' => 'orbital',
@@ -318,8 +344,18 @@ class LayerTypeRegistryTest extends TestCase {
 				'easydam-layer hidden',
 				'form-container',
 			),
-			'no form_type'      => array( array( 'gf_id' => '3' ), "[gravityform id='3' title='false' description='false' ajax='true']", 'easydam-layer hidden', 'form-container' ),
-			'cf7, godam theme'  => array(
+			'no form_type'          => array( array( 'gf_id' => '3' ), "[gravityform id='3' title='false' description='false' ajax='true']", 'easydam-layer hidden', 'form-container' ),
+			// The theme is reduced to a slug before it goes into the shortcode (#2246).
+			'gravity, unsafe theme' => array(
+				array(
+					'gf_id' => '3',
+					'theme' => "Orbital' ajax='false",
+				),
+				"[gravityform id='3' title='false' description='false' ajax='true' theme='orbitalajaxfalse']",
+				'easydam-layer hidden',
+				'form-container',
+			),
+			'cf7, godam theme'      => array(
 				array(
 					'form_type' => 'cf7',
 					'cf7_id'    => '9',
@@ -328,7 +364,7 @@ class LayerTypeRegistryTest extends TestCase {
 				'easydam-layer hidden',
 				'form-container rtgodam-wpcf7-form',
 			),
-			'cf7, plugin theme' => array(
+			'cf7, plugin theme'     => array(
 				array(
 					'form_type' => 'cf7',
 					'cf7_id'    => '9',
@@ -338,7 +374,7 @@ class LayerTypeRegistryTest extends TestCase {
 				'easydam-layer hidden',
 				'form-container',
 			),
-			'wpforms'           => array(
+			'wpforms'               => array(
 				array(
 					'form_type' => 'wpforms',
 					'wpform_id' => '5',
@@ -347,7 +383,7 @@ class LayerTypeRegistryTest extends TestCase {
 				'easydam-layer hidden',
 				'form-container',
 			),
-			'sureforms'         => array(
+			'sureforms'             => array(
 				array(
 					'form_type'   => 'sureforms',
 					'sureform_id' => '5',
@@ -356,7 +392,7 @@ class LayerTypeRegistryTest extends TestCase {
 				'easydam-layer hidden',
 				'form-container',
 			),
-			'forminator'        => array(
+			'forminator'            => array(
 				array(
 					'form_type'     => 'forminator',
 					'forminator_id' => '5',
@@ -365,7 +401,7 @@ class LayerTypeRegistryTest extends TestCase {
 				'easydam-layer hidden',
 				'form-container',
 			),
-			'fluentforms'       => array(
+			'fluentforms'           => array(
 				array(
 					'form_type'      => 'fluentforms',
 					'fluent_form_id' => '5',
@@ -374,7 +410,7 @@ class LayerTypeRegistryTest extends TestCase {
 				'easydam-layer hidden',
 				'form-container',
 			),
-			'everestforms'      => array(
+			'everestforms'          => array(
 				array(
 					'form_type'       => 'everestforms',
 					'everest_form_id' => '5',
@@ -383,7 +419,7 @@ class LayerTypeRegistryTest extends TestCase {
 				'easydam-layer hidden',
 				'form-container everest-form',
 			),
-			'ninjaforms'        => array(
+			'ninjaforms'            => array(
 				array(
 					'form_type'     => 'ninjaforms',
 					'ninja_form_id' => '5',
@@ -392,7 +428,7 @@ class LayerTypeRegistryTest extends TestCase {
 				'easydam-layer hidden ninjaforms',
 				'form-container',
 			),
-			'metform'           => array(
+			'metform'               => array(
 				array(
 					'form_type'  => 'metform',
 					'metform_id' => '5',

@@ -10,7 +10,12 @@ permissions:
   contents: write
 
 jobs:
+  # A tag never reaches WordPress.org unless the PHP unit tests pass on that commit.
+  tests:
+    uses: ./.github/workflows/php_unit_tests_on_pull_request.yml
+
   release:
+    needs: tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
