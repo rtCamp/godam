@@ -87,7 +87,8 @@ class Playback extends Base {
 		$cache_key = 'rtgodam_playback_' . md5( $job_id );
 		$cached    = get_transient( $cache_key );
 		if ( is_array( $cached ) && ! empty( $cached['refused'] ) ) {
-			return $this->refusal( $cached['refused'] );
+			// While backing off, say the same as the call that started it.
+			return 'unreachable' === $cached['refused'] ? $this->unreachable() : $this->refusal( $cached['refused'] );
 		}
 		if ( is_array( $cached ) && ! empty( $cached['expires_at'] ) && $cached['expires_at'] - time() > self::EXPIRY_MARGIN ) {
 			return $this->response( $cached );
@@ -114,10 +115,12 @@ class Playback extends Base {
 		if ( is_wp_error( $response ) || '' === $response ) {
 			// '' is vip_safe_wp_remote_get's fallback while its circuit breaker is open.
 			set_transient( $cache_key, array( 'refused' => 'unreachable' ), self::RETRY_AFTER );
-			return new \WP_Error( 'godam_playback_unreachable', __( 'GoDAM could not be reached.', 'godam' ), array( 'status' => 502 ) );
+			$this->log_backoff( $job_id, is_wp_error( $response ) ? $response->get_error_message() : 'circuit breaker open' );
+			return $this->unreachable();
 		}
 		if ( 429 === wp_remote_retrieve_response_code( $response ) ) {
 			set_transient( $cache_key, array( 'refused' => 'rate_limited' ), self::RETRY_AFTER );
+			$this->log_backoff( $job_id, 'rate limited (429)' );
 			return $this->refusal( 'rate_limited' );
 		}
 
@@ -250,6 +253,29 @@ class Playback extends Base {
 		$uses  = ! empty( $query->posts );
 		wp_cache_set( $cache_key, $uses ? 'yes' : 'no', 'godam', 5 * MINUTE_IN_SECONDS );
 		return $uses;
+	}
+
+	/**
+	 * Say why players on this site fall back to their saved sources. Called only where a
+	 * back-off starts, so it logs at most once per job every RETRY_AFTER seconds.
+	 *
+	 * @param string $job_id GoDAM job id.
+	 * @param string $reason What went wrong.
+	 * @return void
+	 */
+	private function log_backoff( $job_id, $reason ) {
+		error_log( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			sprintf( 'GoDAM: signed playback for job %s is backing off for %d s: %s', $job_id, self::RETRY_AFTER, $reason )
+		);
+	}
+
+	/**
+	 * GoDAM could not be reached (or its circuit breaker is open): not a refusal of the file.
+	 *
+	 * @return \WP_Error
+	 */
+	private function unreachable() {
+		return new \WP_Error( 'godam_playback_unreachable', __( 'GoDAM could not be reached.', 'godam' ), array( 'status' => 502 ) );
 	}
 
 	/**
