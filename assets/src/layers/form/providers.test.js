@@ -5,7 +5,7 @@
 /**
  * Internal dependencies
  */
-import '../../../tests/js/mock-form-provider-panels';
+import '../../../../tests/js/mock-form-provider-panels';
 
 /**
  * External dependencies
@@ -15,15 +15,15 @@ import { getLayerType, getLayerVariationByName, getDefaultAttributes, getLayerVa
 /**
  * Internal dependencies
  */
-import { registerEditorLayerTypes } from './index';
-import { getFormIdFromLayer, buildSettingsUrl } from '../utils/formUtils';
+import { registerEditorLayerTypes } from '../../../../pages/video-editor/layers/index';
+import { getFormIdFromLayer, buildSettingsUrl } from '../../../../pages/video-editor/utils/formUtils';
 
-jest.mock( '../components/layers/CTALayer', () => () => null );
-jest.mock( '../components/layers/HotspotLayer', () => () => null );
-jest.mock( '../components/layers/FormLayer', () => () => null );
-jest.mock( '../components/layers/PollLayer', () => () => null );
-jest.mock( '../components/layers/AdsLayer', () => () => null );
-jest.mock( '../redux/slice/videoSlice', () => ( { updateLayerField: jest.fn() } ) );
+jest.mock( '../cta/edit', () => () => null );
+jest.mock( '../hotspot/edit', () => () => null );
+jest.mock( './edit', () => () => null );
+jest.mock( '../poll/edit', () => () => null );
+jest.mock( '../ad/edit', () => () => null );
+jest.mock( '../../../../pages/video-editor/redux/slice/videoSlice', () => ( { updateLayerField: jest.fn() } ) );
 
 window.videoData = { adminUrl: 'https://example.com/wp-admin/' };
 window.godamVideoEditorConfig = {};

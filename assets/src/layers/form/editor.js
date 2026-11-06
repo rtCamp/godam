@@ -17,10 +17,10 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import metadata from '../../../../assets/src/layers/form/layer.json';
-import FormLayer from '../../components/layers/FormLayer';
-import { FormLayerIcon } from '../../components/editor-shell/icons';
-import { getFormIdFromLayer } from '../../utils/formUtils';
+import metadata from './layer.json';
+import FormLayer from './edit';
+import { FormLayerIcon } from '../../../../pages/video-editor/components/editor-shell/icons';
+import { getFormIdFromLayer } from '../../../../pages/video-editor/utils/formUtils';
 
 export { metadata };
 

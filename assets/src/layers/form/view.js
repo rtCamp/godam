@@ -2,7 +2,7 @@
  * The Form layer's front-end runtime (#2294).
  *
  * Each form plugin is a variation selected by `layer.form_type` (see
- * `form-providers.js`). A provider says whether its plugin is active, how to
+ * `view-providers.js`). A provider says whether its plugin is active, how to
  * tell the form was sent, and its label in analytics. An add-on adds a
  * provider with `registerLayerRuntimeVariation( 'form', { … } )`.
  */
@@ -19,9 +19,9 @@ import {
 	registerLayerRuntime,
 	getLayerRuntime,
 	getLayerRuntimeVariation,
-} from '../../godam-layers/runtime/registry.js';
-import { mountOverlayLayer } from './overlay.js';
-import { registerCoreFormProviders } from './form-providers.js';
+} from '../../js/godam-layers/runtime/registry.js';
+import { mountOverlayLayer } from '../shared/overlay.js';
+import { registerCoreFormProviders } from './view-providers.js';
 
 /**
  * Whether a form layer's provider is registered and its plugin is active.
@@ -78,3 +78,5 @@ export function registerFormRuntime() {
 	}
 	registerCoreFormProviders();
 }
+
+registerFormRuntime();

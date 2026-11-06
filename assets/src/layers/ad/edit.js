@@ -11,9 +11,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import LayerControls from '../LayerControls';
-import CustomAdSettings from '../ads/CustomAdSettings';
-import LayersHeader from './LayersHeader';
+import LayerControls from '../../../../pages/video-editor/components/LayerControls';
+import CustomAdSettings from '../../../../pages/video-editor/components/ads/CustomAdSettings';
+import LayersHeader from '../../../../pages/video-editor/components/layers/LayersHeader';
 
 const AdsLayer = ( { layerID, goBack, duration } ) => {
 	const layer = useSelector( ( state ) =>

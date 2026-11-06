@@ -11,11 +11,11 @@ import { registerLayerType, getLayerType } from '@godam/layers';
 /**
  * Internal dependencies
  */
-import * as cta from './cta';
-import * as hotspot from './hotspot';
-import * as form from './form';
-import * as poll from './poll';
-import * as ad from './ad';
+import * as cta from './cta/editor';
+import * as hotspot from './hotspot/editor';
+import * as form from './form/editor';
+import * as poll from './poll/editor';
+import * as ad from './ad/editor';
 
 export const coreLayerTypes = [ cta, hotspot, form, poll, ad ];
 

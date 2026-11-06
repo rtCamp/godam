@@ -121,7 +121,6 @@ if ( ! function_exists( 'do_shortcode' ) ) {
 require_once RTGODAM_PATH . 'inc/traits/trait-singleton.php';
 require_once RTGODAM_PATH . 'inc/classes/layers/class-layer-type-registry.php';
 require_once RTGODAM_PATH . 'inc/classes/layers/class-core-layer-types.php';
-require_once RTGODAM_PATH . 'inc/classes/layers/class-form-providers.php';
 require_once RTGODAM_PATH . 'inc/classes/layers/class-legacy-layer-types.php';
 require_once RTGODAM_PATH . 'inc/classes/layers/class-layer-sanitizer.php';
 require_once RTGODAM_PATH . 'inc/helpers/layer-functions.php';
@@ -131,6 +130,7 @@ require_once RTGODAM_PATH . 'inc/helpers/layer-functions.php';
  */
 function rtgodam_test_register_core_layer_types() {
 	\RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->reset();
-	\RTGODAM\Inc\Layers\Core_Layer_Types::get_instance()->register();
+	// The source copies of the core layer folders (the build copies are identical).
+	\RTGODAM\Inc\Layers\Core_Layer_Types::get_instance()->register( RTGODAM_PATH . 'assets/src/layers' );
 	\RTGODAM\Inc\Layers\Legacy_Layer_Types::register();
 }

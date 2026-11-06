@@ -17,5 +17,6 @@
 		"customIconId": { "type": [ "integer", "null" ], "default": null },
 		"isNew": { "type": "boolean", "default": true }
 	},
+	"viewScript": "file:./view.js",
 	"textdomain": "godam"
 }

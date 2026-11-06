@@ -86,7 +86,34 @@ class LayerAssetsTest extends TestCase {
 	}
 
 	/**
-	 * Core layers have no view script, so a page of core layers loads nothing extra.
+	 * An unprefixed (core) type's view script is registered as `godam-layer-<type>-view-script`.
+	 */
+	public function test_prefixes_core_view_script_handles(): void {
+		godam_register_layer_type(
+			RTGODAM_PATH . 'tests/fixtures/layers/built-core',
+			array(
+				'render_callback' => function () {
+					return '<div></div>';
+				},
+			)
+		);
+
+		$this->assertSame( array( 'godam-layer-builtcore-view-script' ), godam_get_layer_type( 'builtcore' )['view_script_handles'] );
+		godam_render_layer( array( 'type' => 'builtcore' ), 'video_1' );
+		$this->assertContains( 'godam-layer-builtcore-view-script', $GLOBALS['rtgodam_scripts']['enqueued'] );
+	}
+
+	/**
+	 * Editors that render previews over AJAX load every image-capable type's view scripts up front.
+	 */
+	public function test_loads_the_view_scripts_for_a_media_type(): void {
+		$this->registry()->enqueue_view_scripts_for_media( 'image' );
+		$this->assertSame( array( 'acme-countdown-file-view-script', 'acme-shared-lib' ), $GLOBALS['rtgodam_scripts']['enqueued'] );
+	}
+
+	/**
+	 * A `file:` script that hasn't been built (no `*.asset.php`) isn't registered, as
+	 * with the core layers' source folders: a page of them loads nothing from source.
 	 */
 	public function test_loads_nothing_extra_for_core_layers(): void {
 		godam_render_layer(

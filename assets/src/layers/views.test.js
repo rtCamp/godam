@@ -6,16 +6,17 @@
 /**
  * Internal dependencies
  */
-import { registerCoreLayerRuntimes } from './index.js';
-import { hotspotLayerUsesIconFont } from './hotspot.js';
-import { createLayerHost } from '../../godam-layers/runtime/host.js';
+import { registerCoreLayerRuntimes } from '../../../tests/js/register-core-layer-views.js';
+import { hotspotLayerUsesIconFont } from './hotspot/view.js';
+import { createLayerHost } from '../js/godam-layers/runtime/host.js';
+import { getOverlayController } from '../js/godam-player/layers/overlay.js';
 import {
 	getLayerRuntime,
 	getLayerRuntimeVariation,
 	registerLayerRuntimeVariation,
 	shouldMountLayer,
-} from '../../godam-layers/runtime/registry.js';
-import { getLayerDisplayName } from '../utils/layerActions.js';
+} from '../js/godam-layers/runtime/registry.js';
+import { getLayerDisplayName } from '../js/godam-player/utils/layerActions.js';
 
 const fakePlayer = () => ( {
 	el: () => ( { getAttribute: ( attr ) => ( attr === 'data-id' ? 'vid-1' : null ) } ),
@@ -55,6 +56,8 @@ describe( 'Layer API: core layer runtimes', () => {
 			getTabHiddenAccumulatedMs: () => 0,
 		};
 		host = createLayerHost( { player: fakePlayer(), media: { type: 'video' }, instanceId: 'p1', isDisplayingLayers: {} } );
+		// The player's LayersManager creates the shared overlay controller.
+		getOverlayController( host );
 	} );
 
 	afterEach( () => {

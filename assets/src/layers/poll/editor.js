@@ -6,9 +6,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import metadata from '../../../../assets/src/layers/poll/layer.json';
-import PollLayer from '../../components/layers/PollLayer';
-import { PollLayerIcon } from '../../components/editor-shell/icons';
+import metadata from './layer.json';
+import PollLayer from './edit';
+import { PollLayerIcon } from '../../../../pages/video-editor/components/editor-shell/icons';
 
 export { metadata };
 

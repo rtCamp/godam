@@ -479,7 +479,7 @@ class LayerTypeRegistryTest extends TestCase {
 	 */
 	public function test_lets_an_add_on_register_woo_itself(): void {
 		Layer_Type_Registry::get_instance()->reset();
-		\RTGODAM\Inc\Layers\Core_Layer_Types::get_instance()->register();
+		\RTGODAM\Inc\Layers\Core_Layer_Types::get_instance()->register( RTGODAM_PATH . 'assets/src/layers' );
 		godam_register_layer_type(
 			array(
 				'name'  => 'woo',

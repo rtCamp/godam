@@ -6,9 +6,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import metadata from '../../../../assets/src/layers/cta/layer.json';
-import CTALayer from '../../components/layers/CTALayer';
-import { CtaLayerIcon } from '../../components/editor-shell/icons';
+import metadata from './layer.json';
+import CTALayer from './edit';
+import { CtaLayerIcon } from '../../../../pages/video-editor/components/editor-shell/icons';
 
 export { metadata };
 

@@ -1,0 +1,7 @@
+{
+	"apiVersion": 1,
+	"name": "builtcore",
+	"title": "Built core",
+	"supports": { "media": [ "video", "image" ] },
+	"viewScript": "file:./view.js"
+}

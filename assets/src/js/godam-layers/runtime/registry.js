@@ -53,6 +53,7 @@ function createRegistry() {
 	const runtimes = new Map();
 	const pendingVariations = new Map();
 	const logged = new Set();
+	const waiting = new Map();
 
 	const withVariations = ( runtime, variations ) => ( {
 		...runtime,
@@ -101,7 +102,36 @@ function createRegistry() {
 		);
 		pendingVariations.delete( name );
 		runtimes.set( name, runtime );
+
+		const callbacks = waiting.get( name ) || [];
+		waiting.delete( name );
+		callbacks.forEach( ( callback ) => {
+			try {
+				callback( runtime );
+			} catch ( error ) {
+				// eslint-disable-next-line no-console
+				console.error( `GoDAM: a layer waiting for runtime "${ name }" failed to mount.`, error );
+			}
+		} );
 		return runtime;
+	}
+
+	/**
+	 * Run a callback once a layer type's runtime is registered: now, if it
+	 * already is. Lets a player mount layers whose view script loads after the
+	 * player started (scripts deferred or delayed by an optimisation plugin).
+	 *
+	 * @param {string}   name     Layer type name.
+	 * @param {Function} callback `callback( runtime )`.
+	 * @return {Function} Stops waiting.
+	 */
+	function whenLayerRuntime( name, callback ) {
+		if ( runtimes.has( name ) ) {
+			callback( runtimes.get( name ) );
+			return () => {};
+		}
+		waiting.set( name, [ ...( waiting.get( name ) || [] ), callback ] );
+		return () => waiting.set( name, ( waiting.get( name ) || [] ).filter( ( other ) => other !== callback ) );
 	}
 
 	/**
@@ -174,6 +204,7 @@ function createRegistry() {
 	return {
 		registerLayerRuntime,
 		unregisterLayerRuntime,
+		whenLayerRuntime,
 		registerLayerRuntimeVariation,
 		unregisterLayerRuntimeVariation,
 		getLayerRuntime: ( name ) => runtimes.get( name ),
@@ -215,6 +246,7 @@ export function getRuntimeRegistry() {
 
 export const registerLayerRuntime = ( ...args ) => getRuntimeRegistry().registerLayerRuntime( ...args );
 export const unregisterLayerRuntime = ( ...args ) => getRuntimeRegistry().unregisterLayerRuntime( ...args );
+export const whenLayerRuntime = ( ...args ) => getRuntimeRegistry().whenLayerRuntime( ...args );
 export const registerLayerRuntimeVariation = ( ...args ) => getRuntimeRegistry().registerLayerRuntimeVariation( ...args );
 export const unregisterLayerRuntimeVariation = ( ...args ) => getRuntimeRegistry().unregisterLayerRuntimeVariation( ...args );
 export const getLayerRuntime = ( name ) => getRuntimeRegistry().getLayerRuntime( name );

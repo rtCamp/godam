@@ -12,12 +12,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { updateLayerField } from '../../redux/slice/videoSlice';
-import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
-import { useGetPollsQuery, useGetPollQuery } from '../../redux/api/polls';
-import LayersHeader from './LayersHeader.js';
-import FormPreview from '../forms/FormPreview';
-import { VeSection, VeToggle, VeColorList } from '../controls';
+import { updateLayerField } from '../../../../pages/video-editor/redux/slice/videoSlice';
+import ColorPickerButton from '../../../../pages/video-editor/components/shared/color-picker/ColorPickerButton.jsx';
+import { useGetPollsQuery, useGetPollQuery } from '../../../../pages/video-editor/redux/api/polls';
+import LayersHeader from '../../../../pages/video-editor/components/layers/LayersHeader.js';
+import FormPreview from '../../../../pages/video-editor/components/forms/FormPreview';
+import { VeSection, VeToggle, VeColorList } from '../../../../pages/video-editor/components/controls';
 
 const PollLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();

@@ -16,14 +16,14 @@ import { useState, useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { updateLayerField } from '../../redux/slice/videoSlice';
-import CardCTA from '../cta/CardCTA';
-import HtmlCTA from '../cta/HtmlCTA';
-import LayerControls from '../LayerControls';
-import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
-import LayersHeader from './LayersHeader.js';
-import TriggerSection from './shared/TriggerSection.jsx';
-import { VeSection, VeField, VeSegmented, VeCollapsible } from '../controls';
+import { updateLayerField } from '../../../../pages/video-editor/redux/slice/videoSlice';
+import CardCTA from '../../../../pages/video-editor/components/cta/CardCTA';
+import HtmlCTA from '../../../../pages/video-editor/components/cta/HtmlCTA';
+import LayerControls from '../../../../pages/video-editor/components/LayerControls';
+import ColorPickerButton from '../../../../pages/video-editor/components/shared/color-picker/ColorPickerButton.jsx';
+import LayersHeader from '../../../../pages/video-editor/components/layers/LayersHeader.js';
+import TriggerSection from '../../../../pages/video-editor/components/layers/shared/TriggerSection.jsx';
+import { VeSection, VeField, VeSegmented, VeCollapsible } from '../../../../pages/video-editor/components/controls';
 
 // A DOMPurify config similar to what wp_kses_post() allows
 const wpKsesAllowed = {

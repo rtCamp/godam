@@ -483,6 +483,24 @@ class Layer_Type_Registry {
 	}
 
 	/**
+	 * Enqueue the view scripts of every type that runs on a kind of media.
+	 *
+	 * For places that draw layers without the page rendering them: the block
+	 * editor's godam/image preview, and page-builder editors that render
+	 * previews over AJAX (where scripts enqueued during the render never print).
+	 *
+	 * @param string|null $media `video`, `image`, or null for any.
+	 * @return void
+	 */
+	public function enqueue_view_scripts_for_media( $media = null ) {
+		foreach ( $this->types as $type ) {
+			if ( null === $media || $this->supports_media( $type, $media ) ) {
+				$this->enqueue_view_scripts( $type );
+			}
+		}
+	}
+
+	/**
 	 * Enqueue a type's `viewScript`, so it loads only on pages that show its layers.
 	 *
 	 * @param array $type Layer type.
@@ -517,14 +535,20 @@ class Layer_Type_Registry {
 				continue;
 			}
 
-			$path = wp_normalize_path( realpath( dirname( $type['file'] ) . '/' . substr( $script, 5 ) ) );
-			if ( ! $path || ! file_exists( $path ) ) {
+			$real = realpath( dirname( $type['file'] ) . '/' . substr( $script, 5 ) );
+			$path = $real ? wp_normalize_path( $real ) : '';
+			// Only a built script (with the `*.asset.php` `@wordpress/scripts`
+			// writes beside it) is registered, never a source file.
+			$asset_file = $path ? preg_replace( '/\.js$/', '.asset.php', $path ) : '';
+			if ( ! $path || ! file_exists( $path ) || ! $asset_file || ! file_exists( $asset_file ) ) {
 				continue;
 			}
 
-			$asset_file = preg_replace( '/\.js$/', '.asset.php', $path );
-			$asset      = $asset_file && file_exists( $asset_file ) ? include $asset_file : array();
-			$handle     = sprintf( '%s-%s%s', str_replace( '/', '-', $type['name'] ), 'editorScript' === $key ? 'editor-script' : 'view-script', $index ? '-' . ( $index + 1 ) : '' );
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- the build's `*.asset.php` beside a registered layer.json, checked to exist above.
+			$asset = include $asset_file;
+			// Core types (no namespace) get a `godam-layer-` prefix, as core blocks get `wp-block-`.
+			$prefix = false === strpos( $type['name'], '/' ) ? 'godam-layer-' . $type['name'] : str_replace( '/', '-', $type['name'] );
+			$handle = sprintf( '%s-%s%s', $prefix, 'editorScript' === $key ? 'editor-script' : 'view-script', $index ? '-' . ( $index + 1 ) : '' );
 
 			wp_register_script(
 				$handle,
@@ -533,6 +557,9 @@ class Layer_Type_Registry {
 				$asset['version'] ?? false,
 				true
 			);
+			if ( function_exists( 'wp_set_script_translations' ) ) {
+				wp_set_script_translations( $handle, $type['textdomain'] ?? 'godam', defined( 'RTGODAM_PATH' ) ? RTGODAM_PATH . 'languages' : '' );
+			}
 			$handles[] = $handle;
 		}
 		return $handles;
