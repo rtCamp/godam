@@ -1,10 +1,11 @@
 <?php
 /**
- * The Halloween 2026 offer notice: who sees it, until when, and which message.
+ * The seasonal offer notice: who sees it, when, and which message.
  *
  * Joel's rules from the 2.5.2 release thread: a WP-admin notice, only for free
- * and trial sites (never paid), gone after the offer ends (November 9), and a
- * message picked by the integrations the site uses.
+ * and trial sites (never paid), gone after each offer ends, and a message
+ * picked by the integrations the site uses. Halloween runs through November 9,
+ * Black Friday from November 15 to 27 (the BFCM 2026 campaign doc).
  *
  * @package GoDAM
  */
@@ -134,7 +135,7 @@ class OfferNoticeTest extends TestCase {
 		$GLOBALS['rtgodam_stub']['options']['rtgodam-offer-banner'] = 0;
 		$this->assertTrue( Offer_Notice::should_show( $this->moment( '2026-10-29 10:00:00' ), $this->user_data() ) );
 
-		$GLOBALS['rtgodam_stub']['options'][ Offer_Notice::DISMISS_OPTION ] = 1793170000;
+		$GLOBALS['rtgodam_stub']['options']['rtgodam_offer_halloween_2026_dismissed'] = 1793170000;
 		$this->assertFalse( Offer_Notice::should_show( $this->moment( '2026-10-29 10:00:00' ), $this->user_data() ) );
 	}
 
@@ -195,16 +196,16 @@ class OfferNoticeTest extends TestCase {
 
 		$GLOBALS['rtgodam_stub']['nonce_ok'] = false;
 		$this->assertSame( 'bad nonce', $this->call_dismiss() );
-		$this->assertArrayNotHasKey( Offer_Notice::DISMISS_OPTION, $GLOBALS['rtgodam_stub']['options'] );
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['options'] );
 
 		$GLOBALS['rtgodam_stub']['nonce_ok'] = true;
 		$GLOBALS['rtgodam_stub']['caps']     = array( 'edit_posts' );
 		$this->assertSame( 'error 403', $this->call_dismiss() );
-		$this->assertArrayNotHasKey( Offer_Notice::DISMISS_OPTION, $GLOBALS['rtgodam_stub']['options'] );
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['options'] );
 
 		$GLOBALS['rtgodam_stub']['caps'] = array( 'manage_options' );
-		$this->assertSame( 'success', $this->call_dismiss() );
-		$this->assertNotEmpty( $GLOBALS['rtgodam_stub']['options'][ Offer_Notice::DISMISS_OPTION ] );
+		$this->assertSame( 'success', $this->call_dismiss( $this->moment( '2026-10-29 10:00:00' ) ) );
+		$this->assertNotEmpty( $GLOBALS['rtgodam_stub']['options']['rtgodam_offer_halloween_2026_dismissed'] );
 	}
 
 	public function test_render_prints_the_claim_link_with_its_tracking_and_nothing_for_a_paid_site() {
@@ -233,6 +234,80 @@ class OfferNoticeTest extends TestCase {
 		$this->assertSame( '', trim( ob_get_clean() ) );
 	}
 
+	public function test_black_friday_shows_from_the_first_second_of_november_15_to_the_last_of_november_27() {
+		foreach ( array( 'Asia/Kolkata', 'America/New_York' ) as $zone ) {
+			$timezone                            = new \DateTimeZone( $zone );
+			$GLOBALS['rtgodam_stub']['timezone'] = $timezone;
+
+			$at = static fn( $time ) => new \DateTime( $time, $timezone );
+
+			$this->assertFalse( Offer_Notice::should_show( $at( '2026-11-14 23:59:59' ), $this->user_data() ), $zone );
+			$this->assertTrue( Offer_Notice::should_show( $at( '2026-11-15 00:00:00' ), $this->user_data() ), $zone );
+			$this->assertTrue( Offer_Notice::should_show( $at( '2026-11-27 23:59:59' ), $this->user_data() ), $zone );
+			$this->assertFalse( Offer_Notice::should_show( $at( '2026-11-28 00:00:00' ), $this->user_data() ), $zone );
+			$this->assertSame( 'bfcm-2026', Offer_Notice::get_campaign( $at( '2026-11-20 12:00:00' ) ), $zone );
+		}
+	}
+
+	public function test_nothing_shows_between_halloween_and_black_friday_or_on_a_later_year() {
+		foreach ( array( '2026-11-10 00:00:00', '2026-11-12 12:00:00', '2026-11-14 23:59:59', '2027-11-20 12:00:00' ) as $time ) {
+			$this->assertNull( Offer_Notice::get_campaign( $this->moment( $time ) ), $time );
+			$this->assertFalse( Offer_Notice::should_show( $this->moment( $time ), $this->user_data() ), $time );
+		}
+	}
+
+	public function test_a_halloween_dismissal_does_not_hide_black_friday_and_its_own_dismissal_does() {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam_offer_halloween_2026_dismissed'] = 1793170000;
+		$this->assertTrue( Offer_Notice::should_show( $this->moment( '2026-11-20 12:00:00' ), $this->user_data() ) );
+
+		$GLOBALS['rtgodam_stub']['options']['rtgodam_offer_bfcm_2026_dismissed'] = 1793170000;
+		$this->assertFalse( Offer_Notice::should_show( $this->moment( '2026-11-20 12:00:00' ), $this->user_data() ) );
+	}
+
+	public function test_a_paid_site_never_sees_black_friday() {
+		$this->connect( 'Starter', gmdate( 'Y-m-d H:i:s', time() + 300 * DAY_IN_SECONDS ) );
+
+		$this->assertFalse( Offer_Notice::should_show( $this->moment( '2026-11-20 12:00:00' ), $this->user_data() ) );
+	}
+
+	public function test_black_friday_render_has_its_code_copy_and_deals_link_and_no_halloween_art() {
+		$this->stub_render();
+		$GLOBALS['rtgodam_stub']['active_plugins'] = array( 'lifterlms/lifterlms.php' );
+
+		ob_start();
+		Offer_Notice::render( 'media-library', $this->moment( '2026-11-20 12:00:00' ), $this->user_data() );
+		$html = ob_get_clean();
+
+		$this->assertStringContainsString( 'https://godam.io/deals/?utm_source=godam-plugin&utm_medium=admin-notice&utm_campaign=bfcm2026&utm_content=media-library-lifterlms', $html );
+		$this->assertStringContainsString( 'data-code="BFCM2026"', $html );
+		$this->assertStringContainsString( 'Black Friday offer', $html );
+		$this->assertStringContainsString( 'Black Friday deal: <span>Get 50% off</span> GoDAM', $html );
+		$this->assertStringContainsString( 'Ends November 27 at 11:59 p.m. 50% off your first month or year on any plan.', $html );
+		$this->assertStringContainsString( 'rtgodam-offer-notice--no-art', $html );
+		$this->assertStringNotContainsString( 'rtgodam-offer-notice__art', $html );
+		$this->assertStringNotContainsString( 'rtgodam-offer-notice__pumpkin', $html );
+		$this->assertStringNotContainsString( 'SPOOKY50', $html );
+	}
+
+	public function test_dismissing_during_black_friday_saves_only_its_own_option() {
+		$this->stub_ajax();
+		$GLOBALS['rtgodam_stub']['nonce_ok'] = true;
+
+		$this->assertSame( 'success', $this->call_dismiss( $this->moment( '2026-11-20 12:00:00' ) ) );
+		$this->assertSame( array( 'rtgodam_offer_bfcm_2026_dismissed' ), array_keys( $GLOBALS['rtgodam_stub']['options'] ) );
+	}
+
+	public function test_dismissing_between_campaigns_saves_nothing_and_the_ajax_call_without_a_time_still_works() {
+		$this->stub_ajax();
+		$GLOBALS['rtgodam_stub']['nonce_ok'] = true;
+
+		$this->assertSame( 'success', $this->call_dismiss( $this->moment( '2026-11-12 12:00:00' ) ) );
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['options'] );
+
+		// WordPress's do_action() passes '' to a one-argument callback: it must read the real clock, not fail.
+		$this->assertSame( 'success', $this->call_dismiss( '' ) );
+	}
+
 	/**
 	 * Stub the AJAX helpers dismiss() calls. Each one that ends a WordPress request throws instead.
 	 */
@@ -256,11 +331,13 @@ class OfferNoticeTest extends TestCase {
 	/**
 	 * Run dismiss() and return how it ended.
 	 *
+	 * @param \DateTime|null $now The moment to dismiss at.
+	 *
 	 * @return string
 	 */
-	private function call_dismiss() {
+	private function call_dismiss( $now = null ) {
 		try {
-			Offer_Notice::dismiss();
+			Offer_Notice::dismiss( $now );
 		} catch ( \RuntimeException $e ) {
 			return $e->getMessage();
 		}
