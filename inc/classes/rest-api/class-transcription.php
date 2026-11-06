@@ -50,7 +50,7 @@ class Transcription extends Base {
 	 * player plays it ahead of Central's tracks and Central updates never
 	 * overwrite it. Cleared on generate and on delete.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @var string
 	 */
@@ -60,7 +60,7 @@ class Transcription extends Base {
 	 * Meta holding when the cached transcript was last checked against GoDAM
 	 * Central's caption list (a Unix timestamp), whether or not Central answered.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @var string
 	 */
@@ -75,7 +75,7 @@ class Transcription extends Base {
 	 * One event works through the whole queue, a batch at a time, so a site with
 	 * many videos never queues one event or one Central call per video at once.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @var string
 	 */
@@ -85,7 +85,7 @@ class Transcription extends Base {
 	 * Option holding the attachment IDs waiting for a refresh, oldest first.
 	 * Not autoloaded.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @var string
 	 */
@@ -94,7 +94,7 @@ class Transcription extends Base {
 	/**
 	 * Attachments refreshed per cron run.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @var int
 	 */
@@ -103,7 +103,7 @@ class Transcription extends Base {
 	/**
 	 * Seconds between two batch runs while the queue is not empty.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @var int
 	 */
@@ -113,7 +113,7 @@ class Transcription extends Base {
 	 * Most attachments one page view may add to the queue, and the most the
 	 * queue holds. Anything left out is added on a later page view.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @var int[]
 	 */
@@ -132,7 +132,7 @@ class Transcription extends Base {
 	/**
 	 * How old the last check may be before the SEO data asks for a new one.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @var int
 	 */
@@ -825,7 +825,7 @@ class Transcription extends Base {
 	 * reaches Central, so Central's list says nothing about it. The delete
 	 * marker is cleared, because Central's tracks are now what the user manages.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @param int   $attachment_id  WordPress attachment ID.
 	 * @param array $captions       Caption-track rows from the SaaS.
@@ -872,7 +872,7 @@ class Transcription extends Base {
 	 * transcoded. When the default changed, the pages using the video have their
 	 * video SEO data rebuilt.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @param int $attachment_id WordPress attachment ID.
 	 * @return bool Whether Central answered with a caption list.
@@ -946,7 +946,7 @@ class Transcription extends Base {
 	 * and the queue holds at most `REFRESH_LIMITS['queue']`; one cron event then
 	 * works through it a batch at a time.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @param int $attachment_id WordPress attachment ID.
 	 * @param int $checked_at    Value of the {@see self::CHECKED_META} meta.
@@ -981,7 +981,7 @@ class Transcription extends Base {
 	 * Cron callback: refresh the next batch of queued attachments, and come
 	 * back for the rest after {@see self::REFRESH_INTERVAL}.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.0
 	 *
 	 * @return int How many attachments were refreshed in this run.
 	 */

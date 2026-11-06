@@ -1,5 +1,16 @@
 # Changelog #
 
+## v2.8.0 (November 9, 2026) ##
+
+- Feat: Videos can now have captions in several languages. In the video editor's Transcription tab, add, edit, replace or remove a caption file for any language and choose which one shows by default. Visitors pick a language from the player's subtitles menu. Needs a paid GoDAM plan.
+- Feat: Choose the language for AI transcription, or let GoDAM detect it.
+- Feat: With a consent banner that supports the WP Consent API (such as Complianz, Cookiebot, CookieYes or iubenda), GoDAM analytics now waits for the visitor's statistics consent before it stores or sends anything.
+- Tweak: The Vimeo migration tab now links straight to the screen in GoDAM Central where you connect your Vimeo account.
+- Tweak: Sites running GoDAM for WooCommerce older than 2.3.1 are asked to update it.
+- Fix: Pages no longer include the visitor's IP address or the signed-in user's ID for analytics. If you use a page cache, purge it after updating.
+- Fix: GoDAM elements no longer cause deprecation notices with WPBakery 9.1.
+- Fix: Security fixes.
+
 ## v2.7.0 (November 5, 2026) ##
 
 - Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each GoDAM Video block, widget or shortcode can override it.
