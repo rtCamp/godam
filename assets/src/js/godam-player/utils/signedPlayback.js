@@ -64,6 +64,25 @@ export function applySignedSources( setup, signed ) {
 }
 
 /**
+ * Before the player starts: swap in the signed sources and poster, if the route has any.
+ *
+ * @param {HTMLVideoElement} video   The player's video element (its `data-playback-url`).
+ * @param {Object}           setup   The video.js setup object, changed in place.
+ * @param {Function}         fetchFn Injected for tests; defaults to window.fetch.
+ * @return {Promise<Array<Object>|null>} The signed caption tracks for the transcript manager, or null. GoDAM's public caption endpoint refuses these files.
+ */
+export async function prepareSignedPlayback( video, setup, fetchFn ) {
+	// An undefined fetchFn takes fetchSignedSources' default.
+	const signed = await fetchSignedSources( video.dataset.playbackUrl, fetchFn );
+	if ( applySignedSources( setup, signed ) && signed.poster ) {
+		// Load the signed poster now: the stored one is in the old folder and 404s, and the
+		// player would only fetch this one once it has started.
+		video.poster = signed.poster;
+	}
+	return signed?.captions?.length ? signed.captions : null;
+}
+
+/**
  * The URL of the track to show as the transcript: the default ready one, else the first.
  *
  * @param {Array<Object>|null} captions Signed caption tracks from the playback route.

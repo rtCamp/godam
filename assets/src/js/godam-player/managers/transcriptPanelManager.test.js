@@ -176,6 +176,19 @@ describe( 'TranscriptPanelManager.resolveTranscriptUrl', () => {
 		expect( url ).toBe( 'https://site.test/uploads/t.vtt' );
 	} );
 
+	it( 'shows no transcript, and asks nothing, while a signed file\'s tracks aren\'t ready', async () => {
+		global.fetch = jest.fn();
+		expect( await manager( {}, [ { vtt_path: '', is_default: true } ] ).resolveTranscriptUrl() ).toBeNull();
+		expect( global.fetch ).not.toHaveBeenCalled();
+	} );
+
+	it( 'keeps the signed tracks the player hands it, and none by default', () => {
+		const video = document.createElement( 'video' );
+		const tracks = [ { vtt_path: 'https://cdn.test/private/p/en.vtt?token=b' } ];
+		expect( new TranscriptPanelManager( {}, video, {}, tracks ).signedCaptions ).toBe( tracks );
+		expect( new TranscriptPanelManager( {}, video ).signedCaptions ).toBeNull();
+	} );
+
 	it( 'asks the public endpoint when the route sent no tracks', async () => {
 		global.fetch = jest.fn( () => Promise.resolve( { ok: true, json: () => Promise.resolve( { message: { exists: true, url: 'https://cdn.test/job/t.vtt' } } ) } ) );
 		expect( await manager( {}, null ).resolveTranscriptUrl() ).toBe( 'https://cdn.test/job/t.vtt' );

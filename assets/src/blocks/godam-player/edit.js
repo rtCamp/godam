@@ -50,7 +50,7 @@ import { store as noticesStore } from '@wordpress/notices';
  */
 import { PlaybackControls, PerformanceControl, LikesAndComments } from './edit-common-settings';
 import Video from './VideoJS';
-import useSignedPreview from './useSignedPreview';
+import useSignedPreview, { previewMedia } from './useSignedPreview';
 import { Caption } from './caption';
 import VideoSEOModal from './components/VideoSEOModal.js';
 import ThumbnailPanel from './components/ThumbnailPanel.js';
@@ -225,8 +225,7 @@ function VideoEdit( {
 			loop,
 			muted,
 			// A file served signed previews from signed URLs; they're never saved.
-			poster: ( signedPreview?.poster && ( ! poster || sameHost( poster, signedPreview.poster ) ) ? signedPreview.poster : poster ) || defaultPoster,
-			sources: signedPreview?.sources || sources,
+			...previewMedia( signedPreview, { poster, sources, defaultPoster } ),
 			aspectRatio: calculatedAspectRatio,
 			// VHS (HLS/DASH) initial configuration to prefer a ~14 Mbps start.
 			// This only affects the initial bandwidth guess; VHS will continue to measure actual throughput and adapt.
@@ -1222,18 +1221,3 @@ function VideoEdit( {
 }
 
 export default VideoEdit;
-
-/**
- * Whether two URLs are on the same host (the saved poster is GoDAM's own copy).
- *
- * @param {string} a A URL.
- * @param {string} b Another URL.
- * @return {boolean} True when both parse and share a host.
- */
-function sameHost( a, b ) {
-	try {
-		return new URL( a ).host === new URL( b ).host;
-	} catch ( error ) {
-		return false;
-	}
-}
