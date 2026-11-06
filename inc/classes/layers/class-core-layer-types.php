@@ -65,6 +65,9 @@ class Core_Layer_Types {
 			// Core callbacks escape their own output, which includes the form
 			// plugins' markup (forms, inputs, scripts) that wp_kses_post() strips.
 			$args['supports'] = array_merge( array( 'rawHtml' => true ), $args['supports'] ?? array() );
+			// Their layer.json files don't list every attribute they save yet, so
+			// saving cleans declared attributes and keeps the rest (see Layer_Sanitizer).
+			$args['keep_undeclared_attributes'] = true;
 			$registry->register( RTGODAM_PATH . 'assets/src/layers/' . $name . '/layer.json', $args );
 		}
 

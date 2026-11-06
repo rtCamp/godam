@@ -670,19 +670,26 @@ class Pages {
 				true
 			);
 
-			$is_gf_active           = is_plugin_active( 'gravityforms/gravityforms.php' );
-			$is_cf7_active          = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-			$is_wpforms_active      = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
-			$is_jetpack_active      = is_plugin_active( 'jetpack/jetpack.php' );
-			$is_sure_form_active    = is_plugin_active( 'sureforms/sureforms.php' );
-			$is_forminator_active   = is_plugin_active( 'forminator/forminator.php' );
-			$is_fluent_forms_active = is_plugin_active( 'fluentform/fluentform.php' );
-			$is_met_form_active     = is_plugin_active( 'metform/metform.php' );
+			// Whether each form provider can run here, from the Layer API registry
+			// (each provider's `is_available`). The `*Active` flags in `videoData`
+			// below are kept for code that still reads them.
+			$layer_registry       = \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance();
+			$layer_editor_config  = $layer_registry->get_editor_settings();
+			$form_provider_active = function ( $name ) use ( $layer_editor_config ) {
+				$form = $layer_editor_config['layerAvailability']->form ?? null;
+				return ! empty( $form['variations']->$name );
+			};
 
-			// TODO Handle Everest Forms pro versions as well in future.
-			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
-
-			$is_ninja_forms_active = is_plugin_active( 'ninja-forms/ninja-forms.php' );
+			$is_gf_active            = $form_provider_active( 'gravity' );
+			$is_cf7_active           = $form_provider_active( 'cf7' );
+			$is_wpforms_active       = $form_provider_active( 'wpforms' );
+			$is_jetpack_active       = $form_provider_active( 'jetpack' );
+			$is_sure_form_active     = $form_provider_active( 'sureforms' );
+			$is_forminator_active    = $form_provider_active( 'forminator' );
+			$is_fluent_forms_active  = $form_provider_active( 'fluentforms' );
+			$is_met_form_active      = $form_provider_active( 'metform' );
+			$is_everest_forms_active = $form_provider_active( 'everestforms' );
+			$is_ninja_forms_active   = $form_provider_active( 'ninjaforms' );
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -829,10 +836,17 @@ class Pages {
 				'transcoder-page-script-video-editor',
 				'godamVideoEditorConfig',
 				array(
-					'layerOptions'    => $layer_options,
-					'layerComponents' => $layer_components,
+					'layerOptions'      => $layer_options,
+					'layerComponents'   => $layer_components,
+					// Layer types registered in PHP: their metadata, merged into
+					// `registerLayerType()`, and whether each type and variation can run here.
+					'layerTypes'        => $layer_editor_config['layerTypes'],
+					'layerAvailability' => $layer_editor_config['layerAvailability'],
 				)
 			);
+
+			// Each layer type's `editorScript` from its layer.json.
+			$layer_registry->enqueue_editor_scripts();
 
 			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );

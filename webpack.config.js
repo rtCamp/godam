@@ -357,6 +357,14 @@ const ninjaFormsSubmissionsList = {
 	},
 };
 
+// Layer API front-end runtime registry (`godam-layer-runtime`), for add-on view scripts.
+const godamLayerRuntime = {
+	...sharedConfig,
+	entry: {
+		'godam-layer-runtime': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-layers', 'runtime', 'index.js' ),
+	},
+};
+
 // Layer API registry (`window.godam.layers`, imported elsewhere as `@godam/layers`).
 const godamLayers = {
 	...sharedConfig,
@@ -510,4 +518,5 @@ module.exports = [
 	ninjaFormsSubmissionsList,
 	blockExtensions,
 	godamLayers,
+	godamLayerRuntime,
 ];

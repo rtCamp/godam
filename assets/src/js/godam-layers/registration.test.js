@@ -48,6 +48,21 @@ describe( 'Layer API: registerLayerType', () => {
 		expect( getLayerType( 'acme/countdown' ) ).toBe( registered );
 	} );
 
+	it( 'fills in the metadata the type registered in PHP, letting the script override it', () => {
+		const Edit = () => null;
+		window.godamVideoEditorConfig = {
+			layerTypes: {
+				'acme/countdown': { name: 'acme/countdown', title: 'Countdown (PHP)', color: '#e24a4a', attributes: { endsAt: { type: 'string', default: '' } } },
+			},
+		};
+
+		const registered = registerLayerType( 'acme/countdown', { edit: Edit, title: 'Countdown' } );
+
+		expect( registered ).toMatchObject( { title: 'Countdown', color: '#e24a4a', edit: Edit } );
+		expect( registered.attributes.endsAt ).toMatchObject( { type: 'string', default: '' } );
+		delete window.godamVideoEditorConfig;
+	} );
+
 	it( 'fills in defaults for supports, label, description, attributes and variations', () => {
 		const registered = registerLayerType( { name: 'acme/countdown', title: 'Countdown', supports: { media: [ 'video', 'image' ] } } );
 

@@ -615,6 +615,8 @@ $godam_frontend_layers = apply_filters(
 	'rtgodam_video_layers_for_js',
 	array_map(
 		function ( $godam_frontend_layer ) {
+			// Leave out attributes the layer's type marks private (Layer API, RFC D3).
+			$godam_frontend_layer = \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->get_public_layer( $godam_frontend_layer );
 			return is_array( $godam_frontend_layer ) ? array_diff_key( $godam_frontend_layer, array_flip( array( 'html', 'text' ) ) ) : $godam_frontend_layer;
 		},
 		$godam_frontend_layers

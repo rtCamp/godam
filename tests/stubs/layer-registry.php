@@ -8,6 +8,7 @@
 
 require_once __DIR__ . '/hooks.php';
 require_once __DIR__ . '/i18n.php';
+require_once __DIR__ . '/script-functions.php';
 
 if ( ! defined( 'RTGODAM_PATH' ) ) {
 	define( 'RTGODAM_PATH', dirname( __DIR__, 2 ) . '/' );
@@ -48,6 +49,29 @@ if ( ! function_exists( 'trailingslashit' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_normalize_path' ) ) {
+
+	/**
+	 * @param string $path Path.
+	 * @return string
+	 */
+	function wp_normalize_path( $path ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return str_replace( '\\', '/', (string) $path );
+	}
+}
+
+if ( ! function_exists( 'plugins_url' ) ) {
+
+	/**
+	 * @param string $path   Path relative to the plugin file's folder.
+	 * @param string $plugin A file in the plugin.
+	 * @return string
+	 */
+	function plugins_url( $path = '', $plugin = '' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return 'https://example.com/plugins/' . basename( dirname( $plugin ) ) . '/' . ltrim( $path, '/' );
+	}
+}
+
 if ( ! function_exists( '_doing_it_wrong' ) ) {
 
 	/**
@@ -81,6 +105,7 @@ require_once RTGODAM_PATH . 'inc/classes/layers/class-layer-type-registry.php';
 require_once RTGODAM_PATH . 'inc/classes/layers/class-core-layer-types.php';
 require_once RTGODAM_PATH . 'inc/classes/layers/class-form-providers.php';
 require_once RTGODAM_PATH . 'inc/classes/layers/class-legacy-layer-types.php';
+require_once RTGODAM_PATH . 'inc/classes/layers/class-layer-sanitizer.php';
 require_once RTGODAM_PATH . 'inc/helpers/layer-functions.php';
 
 /**

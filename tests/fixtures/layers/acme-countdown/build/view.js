@@ -1,0 +1,1 @@
+window.acmeCountdownView = true;
