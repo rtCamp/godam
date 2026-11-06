@@ -347,6 +347,21 @@ class PlaybackRouteTest extends TestCase {
 	}
 
 	/**
+	 * On VIP the route calls vip_safe_wp_remote_get, which answers '' while its circuit
+	 * breaker is open: treated as unreachable, with the same back-off and log line.
+	 */
+	public function test_vip_s_open_circuit_breaker_backs_off_like_unreachable() {
+		// phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
+		eval( 'function vip_safe_wp_remote_get( $url, $fallback = "", $threshold = 3, $timeout = 1, $retry = 20, $args = array() ) { $GLOBALS["rtgodam_http"]["calls"][] = array( "url" => $url, "args" => $args, "vip" => true ); return ""; }' );
+		$this->assertSame( 'godam_playback_unreachable', $this->ask()->get_error_code() );
+		$this->assertSame( 'godam_playback_unreachable', $this->ask()->get_error_code() );
+		$this->assertCount( 1, $GLOBALS['rtgodam_http']['calls'] );
+		$this->assertTrue( $GLOBALS['rtgodam_http']['calls'][0]['vip'] );
+		$this->assertSame( 'SITE-KEY', $GLOBALS['rtgodam_http']['calls'][0]['args']['headers']['X-API-KEY'] );
+		$this->assertStringContainsString( 'circuit breaker open', $this->log_lines()[0] );
+	}
+
+	/**
 	 * GoDAM rate-limiting the site: a 403 refusal, kept for the back-off, logged once.
 	 */
 	public function test_rate_limiting_backs_off_and_logs_once() {
