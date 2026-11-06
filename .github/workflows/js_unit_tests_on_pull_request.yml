@@ -4,6 +4,8 @@ on:
       - develop
       - main
       - 'feat/**'
+      # Base branch for the Layer API EPIC (#2290); remove once it is merged.
+      - feature/layer-api
 
 name: JS Unit Tests
 
