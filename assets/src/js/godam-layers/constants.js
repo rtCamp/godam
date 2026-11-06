@@ -35,4 +35,10 @@ export const DEFAULT_SUPPORTS = {
 	rawHtml: false,
 };
 
+/**
+ * Un-namespaced add-on layer types saved before the Layer API existed. They may
+ * keep their name (renaming would orphan saved layers); new types need a namespace.
+ */
+export const LEGACY_LAYER_TYPE_NAMES = [ 'woo' ];
+
 export const NAME_PATTERN = /^[a-z0-9-]+\/[a-z0-9-]+$/;

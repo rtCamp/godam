@@ -30,6 +30,7 @@ import {
 	supportsMedia,
 } from './utils';
 import { CORE_LAYER_TYPES, STORE_NAME } from './constants';
+import { deprecated } from './deprecated';
 
 const api = {
 	store,
@@ -50,6 +51,7 @@ const api = {
 	getAvailability,
 	supportsMedia,
 	__unstableRegisterLegacyLayerType,
+	__unstableDeprecated: deprecated,
 };
 
 export {
@@ -71,6 +73,7 @@ export {
 	getAvailability,
 	supportsMedia,
 	__unstableRegisterLegacyLayerType,
+	deprecated as __unstableDeprecated,
 };
 
 if ( typeof window !== 'undefined' ) {

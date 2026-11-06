@@ -56,6 +56,12 @@ describe( 'Layer API contract: layer registry', () => {
 		expect( registry.getAllRegisteredLayerTypes() ).toEqual( { acme: { label: 'Acme', manager: AcmeManager } } );
 	} );
 
+	it( 'logs a deprecation notice pointing at registerLayerRuntime()', () => {
+		const registry = loadRegistry();
+		registry.registerLayerType( 'acme', { label: 'Acme', validator } );
+		expect( warn ).toHaveBeenCalledWith( 'GoDAM: window.godamLayerRegistry.registerLayerType() is deprecated since version 2.7.0 and will be removed in version 2.9.0. Use window.godam.layers.registerLayerRuntime() instead.' );
+	} );
+
 	it( 'treats the manager as optional', () => {
 		const registry = loadRegistry();
 		registry.registerLayerType( 'acme', { label: 'Acme', validator } );

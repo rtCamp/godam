@@ -28,6 +28,8 @@ class Core_Layer_Types {
 	 */
 	final protected function __construct() {
 		add_action( 'godam_init', array( $this, 'register' ), 5 );
+		// After add-ons (priority 10), so an add-on that registers its own type wins.
+		add_action( 'godam_init', array( Legacy_Layer_Types::class, 'register' ), 100 );
 	}
 
 	/**
@@ -70,8 +72,6 @@ class Core_Layer_Types {
 			$args['keep_undeclared_attributes'] = true;
 			$registry->register( RTGODAM_PATH . 'assets/src/layers/' . $name . '/layer.json', $args );
 		}
-
-		Legacy_Layer_Types::register();
 	}
 
 	/**

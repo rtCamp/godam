@@ -62,3 +62,12 @@ export function useLayerAttributes( layerId ) {
 
 	return [ layer, setAttributes ];
 }
+
+/**
+ * The kind of media open in the editor.
+ *
+ * @return {string} `video` or `image`.
+ */
+export function useMediaType() {
+	return useSelector( ( state ) => state.videoReducer.mediaType ) || 'video';
+}

@@ -86,6 +86,24 @@ if ( ! function_exists( '_doing_it_wrong' ) ) {
 	}
 }
 
+if ( ! function_exists( 'do_action_deprecated' ) ) {
+
+	/**
+	 * Run a deprecated action and record its name when something is hooked to it.
+	 *
+	 * @param string $hook_name   Hook.
+	 * @param array  $args        Arguments.
+	 * @param string $version     Version.
+	 * @param string $replacement Replacement.
+	 */
+	function do_action_deprecated( $hook_name, $args, $version, $replacement = '' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound, Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- stub mirroring the WP function.
+		if ( has_action( $hook_name ) ) {
+			$GLOBALS['rtgodam_stub']['deprecated_hooks'][] = $hook_name . '@' . $version;
+		}
+		do_action( $hook_name, ...$args );
+	}
+}
+
 if ( ! function_exists( 'do_shortcode' ) ) {
 
 	/**
@@ -114,4 +132,5 @@ require_once RTGODAM_PATH . 'inc/helpers/layer-functions.php';
 function rtgodam_test_register_core_layer_types() {
 	\RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->reset();
 	\RTGODAM\Inc\Layers\Core_Layer_Types::get_instance()->register();
+	\RTGODAM\Inc\Layers\Legacy_Layer_Types::register();
 }

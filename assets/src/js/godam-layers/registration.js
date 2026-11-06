@@ -16,7 +16,7 @@ import { applyFilters } from '@wordpress/hooks';
  * Internal dependencies
  */
 import { store } from './store';
-import { CORE_LAYER_TYPES, DEFAULT_SUPPORTS, MANAGED_KEYS, NAME_PATTERN, SHARED_KEYS } from './constants';
+import { CORE_LAYER_TYPES, DEFAULT_SUPPORTS, LEGACY_LAYER_TYPE_NAMES, MANAGED_KEYS, NAME_PATTERN, SHARED_KEYS } from './constants';
 
 /* eslint-disable no-console -- registration problems are reported to the add-on developer. */
 
@@ -113,7 +113,7 @@ export function registerLayerType( metadata, settings = {} ) {
 	const merged = { ...getServerMetadata( own?.name ), ...own, ...settings };
 	const { name } = merged;
 
-	if ( typeof name !== 'string' || ( ! NAME_PATTERN.test( name ) && ! CORE_LAYER_TYPES.includes( name ) ) ) {
+	if ( typeof name !== 'string' || ( ! NAME_PATTERN.test( name ) && ! CORE_LAYER_TYPES.includes( name ) && ! LEGACY_LAYER_TYPE_NAMES.includes( name ) ) ) {
 		console.error( 'GoDAM: layer type names must be namespaced, for example "acme/countdown".' );
 		return undefined;
 	}

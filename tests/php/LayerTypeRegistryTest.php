@@ -178,6 +178,7 @@ class LayerTypeRegistryTest extends TestCase {
 		);
 
 		$this->assertSame( '<div data-legacy="video_1:a1"></div>', godam_render_layer( $layer, 'video_1' ) );
+		$this->assertSame( array( 'godam_player_render_layer@2.7.0' ), $GLOBALS['rtgodam_stub']['deprecated_hooks'] );
 		$this->assertSame( '', godam_render_layer( $layer, 'img_1', array( 'media' => 'image' ) ) );
 	}
 
@@ -471,6 +472,24 @@ class LayerTypeRegistryTest extends TestCase {
 
 		$this->assertSame( array( $ad ), $this->registry()->filter_layers_by_support( array( array( 'id' => 'x' ), 'junk', $ad, array( 'type' => 'cta' ) ), 'adTag' ) );
 		$this->assertSame( '', godam_render_layer( $ad, 'video_1' ) );
+	}
+
+	/**
+	 * An add-on that registers `woo` itself takes over from the legacy registration.
+	 */
+	public function test_lets_an_add_on_register_woo_itself(): void {
+		Layer_Type_Registry::get_instance()->reset();
+		\RTGODAM\Inc\Layers\Core_Layer_Types::get_instance()->register();
+		godam_register_layer_type(
+			array(
+				'name'  => 'woo',
+				'title' => 'WooCommerce (add-on)',
+			)
+		);
+		\RTGODAM\Inc\Layers\Legacy_Layer_Types::register();
+
+		$this->assertSame( 'WooCommerce (add-on)', godam_get_layer_type( 'woo' )['title'] );
+		$this->assertArrayNotHasKey( 'doing_it_wrong', $GLOBALS['rtgodam_stub'] );
 	}
 
 	/**

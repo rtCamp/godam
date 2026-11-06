@@ -4,8 +4,9 @@
  *
  * The godam-for-woo `woo` layer renders its player container through the
  * `godam_player_render_layer` action and was hard-coded into the
- * `godam/image` block. Registering it here keeps both working through the
- * registry until #2296 moves godam-for-woo to `godam_register_layer_type()`.
+ * `godam/image` block. Registering it here keeps a godam-for-woo release that
+ * predates the Layer API working (with deprecation notices). It runs late on
+ * `godam_init`, so a godam-for-woo that registers `woo` itself takes over.
  *
  * @package GoDAM
  */
@@ -62,7 +63,7 @@ class Legacy_Layer_Types {
 	public static function render_with_action( $layer, $instance_id ) {
 		ob_start();
 		/** This action is documented in inc/classes/layers/class-layer-type-registry.php */
-		do_action( 'godam_player_render_layer', $layer, $instance_id );
+		do_action_deprecated( 'godam_player_render_layer', array( $layer, $instance_id ), Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
 		return (string) ob_get_clean();
 	}
 }

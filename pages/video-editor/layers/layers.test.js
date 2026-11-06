@@ -177,6 +177,7 @@ describe( 'Layer API: bridge from the old add-on hooks', () => {
 		expect( create( { currentTime: 1 } ) ).toBeUndefined();
 		window.godamLayerCreators.acme = ( { currentTime } ) => ( { type: 'acme', displayTime: currentTime } );
 		expect( create( { currentTime: 3 } ) ).toEqual( { type: 'acme', displayTime: 3 } );
+		expect( console ).toHaveWarnedWith( 'GoDAM: window.godamLayerCreators is deprecated since version 2.7.0 and will be removed in version 2.9.0. Use the `create` setting of registerLayerType() instead.' );
 	} );
 
 	it( 'looks the settings panel up when it opens', () => {
@@ -185,6 +186,7 @@ describe( 'Layer API: bridge from the old add-on hooks', () => {
 		window.godamLayerComponents.WoocommerceLayer = WoocommerceLayer;
 		expect( getLegacyEditComponent( 'woo' ) ).toBe( WoocommerceLayer );
 		expect( getLegacyEditComponent( 'acme' ) ).toBeUndefined();
+		expect( console ).toHaveWarnedWith( 'GoDAM: window.godamLayerComponents is deprecated since version 2.7.0 and will be removed in version 2.9.0. Use the `edit` setting of registerLayerType() instead.' );
 	} );
 
 	it( 'does not re-register a type an add-on already registered through the Layer API', () => {

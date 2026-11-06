@@ -48,6 +48,11 @@ describe( 'Layer API: registerLayerType', () => {
 		expect( getLayerType( 'acme/countdown' ) ).toBe( registered );
 	} );
 
+	it( 'lets an add-on keep the un-namespaced name its layers were saved under before the Layer API', () => {
+		expect( registerLayerType( { name: 'woo', title: 'WooCommerce' } ) ).toMatchObject( { name: 'woo' } );
+		expect( registerLayerType( { name: 'shop', title: 'Shop' } ) ).toBeUndefined();
+	} );
+
 	it( 'fills in the metadata the type registered in PHP, letting the script override it', () => {
 		const Edit = () => null;
 		window.godamVideoEditorConfig = {
