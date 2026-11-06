@@ -9,6 +9,7 @@ import {
 	registerLayerRuntime,
 	unregisterLayerRuntime,
 	whenLayerRuntime,
+	whenLayerRuntimeVariation,
 	getLayerRuntime,
 	getLayerRuntimes,
 	registerLayerRuntimeVariation,
@@ -17,6 +18,7 @@ import {
 	supportsMedia,
 	shouldMountLayer,
 	layersUseIconFont,
+	runtimeUsesIconFont,
 } from './registry';
 import { createLayerHost } from './host';
 
@@ -33,6 +35,49 @@ describe( 'Layer API: runtime registry', () => {
 	afterEach( () => {
 		error.mockRestore();
 		delete window.godam;
+	} );
+
+	it( 'matches a variation whose attributes hold an array or object by value', () => {
+		registerLayerRuntime( 'acme/forms', {
+			mount,
+			variations: [ { name: 'tagged', attributes: { tags: [ 'a', 'b' ], meta: { x: 1 } } } ],
+		} );
+		expect( getLayerRuntimeVariation( 'acme/forms', { tags: [ 'a', 'b' ], meta: { x: 1 } } )?.name ).toBe( 'tagged' );
+		expect( getLayerRuntimeVariation( 'acme/forms', { tags: [ 'a' ], meta: { x: 1 } } ) ).toBeUndefined();
+	} );
+
+	it( 'runs a variation waiter once a matching variation registers, and not before', () => {
+		registerLayerRuntime( 'acme/forms', { mount, variationAttribute: 'provider' } );
+		const callback = jest.fn();
+		whenLayerRuntimeVariation( 'acme/forms', { provider: 'late' }, callback );
+
+		registerLayerRuntimeVariation( 'acme/forms', { name: 'other' } );
+		expect( callback ).not.toHaveBeenCalled();
+
+		registerLayerRuntimeVariation( 'acme/forms', { name: 'late' } );
+		expect( callback ).toHaveBeenCalledTimes( 1 );
+		expect( callback.mock.calls[ 0 ][ 0 ].variations.map( ( { name } ) => name ) ).toEqual( [ 'other', 'late' ] );
+
+		// Already there: runs at once.
+		const now = jest.fn();
+		whenLayerRuntimeVariation( 'acme/forms', { provider: 'late' }, now );
+		expect( now ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'treats a validate() or usesIconFont() that throws as no, and logs it', () => {
+		const broken = registerLayerRuntime( 'acme/broken', {
+			mount,
+			validate: () => {
+				throw new Error( 'boom' );
+			},
+			usesIconFont: () => {
+				throw new Error( 'boom' );
+			},
+		} );
+		expect( shouldMountLayer( broken, { type: 'acme/broken' } ) ).toBe( false );
+		expect( runtimeUsesIconFont( broken, { type: 'acme/broken' } ) ).toBe( false );
+		expect( layersUseIconFont( [ { type: 'acme/broken' } ] ) ).toBe( false );
+		expect( error ).toHaveBeenCalledWith( 'GoDAM: the validate() of layer runtime "acme/broken" failed.', expect.any( Error ) );
 	} );
 
 	it( 'registers a runtime, defaulting its title and to video only', () => {

@@ -61,9 +61,6 @@ class Legacy_Layer_Types {
 	 * @return string Markup.
 	 */
 	public static function render_with_action( $layer, $instance_id ) {
-		ob_start();
-		/** This action is documented in inc/classes/layers/class-layer-type-registry.php */
-		do_action_deprecated( 'godam_player_render_layer', array( $layer, $instance_id ), Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
-		return (string) ob_get_clean();
+		return Layer_Type_Registry::render_with_legacy_action( $layer, $instance_id );
 	}
 }

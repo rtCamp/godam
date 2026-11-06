@@ -183,6 +183,32 @@ class LayerTypeRegistryTest extends TestCase {
 	}
 
 	/**
+	 * Under WP_DEBUG the deprecation notice prints to the page, not into the layer's markup.
+	 */
+	public function test_prints_the_old_action_notice_outside_the_layer_markup(): void {
+		add_action(
+			'godam_player_render_layer',
+			function ( $layer ) {
+				echo '<div class="legacy">' . esc_attr( $layer['id'] ) . '</div>';
+			}
+		);
+		$GLOBALS['rtgodam_stub']['print_deprecations'] = true;
+
+		ob_start();
+		$html    = godam_render_layer(
+			array(
+				'id'   => 'a1',
+				'type' => 'acme',
+			),
+			'video_1'
+		);
+		$printed = ob_get_clean();
+
+		$this->assertSame( '<div class="legacy">a1</div>', $html );
+		$this->assertSame( 'Deprecated: godam_player_render_layer', $printed );
+	}
+
+	/**
 	 * An add-on's output goes through wp_kses_post() unless it sets supports.rawHtml.
 	 */
 	public function test_escapes_add_on_output_unless_it_opts_out(): void {

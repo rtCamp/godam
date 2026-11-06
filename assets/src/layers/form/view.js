@@ -55,9 +55,15 @@ function watchFormOutcome( provider ) {
 }
 
 /**
- * Register the Form runtime and the core form providers, unless something already did.
+ * Register the core form providers and the Form runtime, unless something already did.
+ *
+ * Providers go first: registering the runtime mounts the form layers that were
+ * waiting for it (its script loaded after the player), and they need their
+ * provider to pass `validate`. Providers registered before the runtime are
+ * held and added when it registers.
  */
 export function registerFormRuntime() {
+	registerCoreFormProviders();
 	if ( ! getLayerRuntime( 'form' ) ) {
 		registerLayerRuntime( 'form', {
 			title: 'Form',
@@ -76,7 +82,6 @@ export function registerFormRuntime() {
 			} ),
 		} );
 	}
-	registerCoreFormProviders();
 }
 
 registerFormRuntime();

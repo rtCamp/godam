@@ -104,6 +104,25 @@ if ( ! function_exists( 'do_action_deprecated' ) ) {
 	}
 }
 
+if ( ! function_exists( '_deprecated_hook' ) ) {
+
+	/**
+	 * Record a deprecated hook, and print a notice the way WordPress does under
+	 * WP_DEBUG when a test sets `$GLOBALS['rtgodam_stub']['print_deprecations']`.
+	 *
+	 * @param string $hook        Hook.
+	 * @param string $version     Version.
+	 * @param string $replacement Replacement.
+	 * @param string $message     Message.
+	 */
+	function _deprecated_hook( $hook, $version, $replacement = '', $message = '' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound, Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_stub']['deprecated_hooks'][] = $hook . '@' . $version;
+		if ( ! empty( $GLOBALS['rtgodam_stub']['print_deprecations'] ) ) {
+			echo 'Deprecated: ' . $hook; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- test stub.
+		}
+	}
+}
+
 if ( ! function_exists( 'do_shortcode' ) ) {
 
 	/**

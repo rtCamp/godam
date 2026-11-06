@@ -68,7 +68,7 @@ const FormProviderPanel = ( { layerID, provider } ) => {
 	}, [ isActive, provider ] );
 
 	useEffect( () => {
-		if ( ! formId || typeof provider.getFormHtml !== 'function' ) {
+		if ( ! isActive || ! formId || typeof provider.getFormHtml !== 'function' ) {
 			setPreview( { isFetching: false, html: '', error: '' } );
 			return undefined;
 		}
@@ -84,7 +84,7 @@ const FormProviderPanel = ( { layerID, provider } ) => {
 		return () => {
 			cancelled = true;
 		};
-	}, [ formId, provider ] );
+	}, [ isActive, formId, provider ] );
 
 	if ( ! layer ) {
 		return null;

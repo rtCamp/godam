@@ -6,8 +6,11 @@ import {
 	getLayerRuntime,
 	shouldMountLayer,
 	layersUseIconFont,
+	runtimeUsesIconFont,
 	logOnce,
 	whenLayerRuntime,
+	whenLayerRuntimeVariation,
+	getLayerRuntimeVariation,
 } from '../../godam-layers/runtime/registry.js';
 import { getOverlayController } from '../layers/overlay.js';
 import { loadFontAwesome } from '../utils/pluginLoader.js';
@@ -123,8 +126,24 @@ export default class LayersManager {
 			return;
 		}
 
+		this.mountIfValid( layer, runtime );
+	}
+
+	/**
+	 * Mount a layer if its runtime accepts it. A layer of a type with variations
+	 * whose own variation isn't registered yet (an add-on's form provider whose
+	 * script loads later) is mounted once it registers.
+	 *
+	 * @param {Object} layer   - Layer configuration object
+	 * @param {Object} runtime - The layer type's runtime
+	 */
+	mountIfValid( layer, runtime ) {
 		if ( shouldMountLayer( runtime, layer ) ) {
 			this.handleLayerDisplay( layer, runtime );
+			return;
+		}
+		if ( runtime.variationAttribute && ! getLayerRuntimeVariation( runtime, layer ) ) {
+			whenLayerRuntimeVariation( layer?.type, layer, ( updated ) => this.mountIfValid( layer, updated ) );
 		}
 	}
 
@@ -135,7 +154,7 @@ export default class LayersManager {
 	 * @param {Object} runtime - The layer type's runtime
 	 */
 	async mountLateLayer( layer, runtime ) {
-		if ( typeof runtime.usesIconFont === 'function' && runtime.usesIconFont( layer ) ) {
+		if ( runtimeUsesIconFont( runtime, layer ) ) {
 			try {
 				await loadFontAwesome();
 			} catch ( error ) {
@@ -143,9 +162,7 @@ export default class LayersManager {
 				console.error( 'Failed to load FontAwesome for hotspot icons:', error );
 			}
 		}
-		if ( shouldMountLayer( runtime, layer ) ) {
-			this.handleLayerDisplay( layer, runtime );
-		}
+		this.mountIfValid( layer, runtime );
 	}
 
 	/**

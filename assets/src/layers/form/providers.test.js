@@ -110,4 +110,16 @@ describe( 'Layer API: an add-on form provider', () => {
 		expect( validate( { form_type: 'plain-forms', form_id: '9' } ) ).toBe( true );
 		expect( validate( { form_type: 'plain-forms' } ) ).toBe( false );
 	} );
+
+	it( 'never blocks saving a layer whose provider isn\'t registered (its add-on is inactive)', () => {
+		const { validate } = getLayerType( 'form' );
+		expect( validate( { form_type: 'gone-forms', gone_form_id: '3' } ) ).toBe( true );
+		expect( validate( { form_type: 'gone-forms' } ) ).toBe( true );
+	} );
+
+	it( 'reads a layer without form_type as the default provider (Gravity Forms)', () => {
+		const { validate } = getLayerType( 'form' );
+		expect( validate( { gf_id: '4' } ) ).toBe( true );
+		expect( validate( {} ) ).toBe( false );
+	} );
 } );

@@ -129,4 +129,12 @@ describe( 'Layer API: FormProviderPanel', () => {
 		expect( acme.getForms ).not.toHaveBeenCalled();
 		expect( lastProps( FormFields ) ).toMatchObject( { isActive: false, forms: [] } );
 	} );
+
+	it( 'does not fetch a preview of the saved form while the provider is unavailable', async () => {
+		const acme = provider( { isAvailable: () => false } );
+		await render( { id: 'l1', type: 'form', form_type: acme.name, acme_form_id: 'f1' }, acme );
+
+		expect( acme.getFormHtml ).not.toHaveBeenCalled();
+		expect( lastProps( FormPreview ) ).toMatchObject( { isFetching: false, html: '' } );
+	} );
 } );

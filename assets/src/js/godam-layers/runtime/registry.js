@@ -13,7 +13,45 @@
  * every player and image on the page.
  */
 
+/**
+ * Internal dependencies
+ */
+import { isEqual } from '../is-equal';
+
 const REGISTRY_KEY = '__runtimeRegistry';
+
+/**
+ * The variation of a runtime whose attributes all match a saved layer.
+ *
+ * @param {Object} runtime Runtime.
+ * @param {Object} layer   Saved layer.
+ * @return {Object|undefined} The variation.
+ */
+function findVariation( runtime, layer ) {
+	return runtime?.variations?.find( ( { attributes } ) =>
+		Object.entries( attributes ).every( ( [ key, value ] ) => isEqual( layer?.[ key ], value ) ),
+	);
+}
+
+/**
+ * Call a runtime callback an add-on wrote, treating a throw as `false`, so one
+ * broken layer type can't stop the others from mounting.
+ *
+ * @param {Object}   runtime Runtime, for the message.
+ * @param {string}   name    Callback name, for the message.
+ * @param {Function} fn      The callback.
+ * @param {...*}     args    Its arguments.
+ * @return {boolean} The callback's answer, or false when it threw.
+ */
+function callSafely( runtime, name, fn, ...args ) {
+	try {
+		return Boolean( fn( ...args ) );
+	} catch ( error ) {
+		// eslint-disable-next-line no-console
+		console.error( `GoDAM: the ${ name }() of layer runtime "${ runtime?.name }" failed.`, error );
+		return false;
+	}
+}
 
 /**
  * Log a message once per page.
@@ -54,6 +92,30 @@ function createRegistry() {
 	const pendingVariations = new Map();
 	const logged = new Set();
 	const waiting = new Map();
+	const waitingForVariation = new Map();
+
+	/**
+	 * Run the callbacks of layers waiting for a variation of this runtime that
+	 * now has one (e.g. a form layer whose provider just registered).
+	 *
+	 * @param {Object} runtime The runtime, with its current variations.
+	 */
+	const notifyVariationWaiters = ( runtime ) => {
+		const entries = waitingForVariation.get( runtime.name ) || [];
+		const ready = entries.filter( ( { layer } ) => findVariation( runtime, layer ) );
+		if ( ! ready.length ) {
+			return;
+		}
+		waitingForVariation.set( runtime.name, entries.filter( ( entry ) => ! ready.includes( entry ) ) );
+		ready.forEach( ( { callback } ) => {
+			try {
+				callback( runtime );
+			} catch ( error ) {
+				// eslint-disable-next-line no-console
+				console.error( `GoDAM: a layer waiting for a "${ runtime.name }" variation failed to mount.`, error );
+			}
+		} );
+	};
 
 	const withVariations = ( runtime, variations ) => ( {
 		...runtime,
@@ -113,7 +175,29 @@ function createRegistry() {
 				console.error( `GoDAM: a layer waiting for runtime "${ name }" failed to mount.`, error );
 			}
 		} );
+		notifyVariationWaiters( runtime );
 		return runtime;
+	}
+
+	/**
+	 * Run a callback once a runtime has a variation matching a saved layer: now,
+	 * if it already has. Lets a player mount a layer whose variation (an add-on's
+	 * form provider, say) registers after the layer was first checked.
+	 *
+	 * @param {string}   name     Layer type name.
+	 * @param {Object}   layer    Saved layer.
+	 * @param {Function} callback `callback( runtime )`.
+	 * @return {Function} Stops waiting.
+	 */
+	function whenLayerRuntimeVariation( name, layer, callback ) {
+		const runtime = runtimes.get( name );
+		if ( runtime && findVariation( runtime, layer ) ) {
+			callback( runtime );
+			return () => {};
+		}
+		const entry = { layer, callback };
+		waitingForVariation.set( name, [ ...( waitingForVariation.get( name ) || [] ), entry ] );
+		return () => waitingForVariation.set( name, ( waitingForVariation.get( name ) || [] ).filter( ( other ) => other !== entry ) );
 	}
 
 	/**
@@ -176,6 +260,7 @@ function createRegistry() {
 
 		const updated = withVariations( runtime, [ ...runtime.variations, variation ] );
 		runtimes.set( name, updated );
+		notifyVariationWaiters( updated );
 		return updated.variations.at( -1 );
 	}
 
@@ -205,6 +290,7 @@ function createRegistry() {
 		registerLayerRuntime,
 		unregisterLayerRuntime,
 		whenLayerRuntime,
+		whenLayerRuntimeVariation,
 		registerLayerRuntimeVariation,
 		unregisterLayerRuntimeVariation,
 		getLayerRuntime: ( name ) => runtimes.get( name ),
@@ -247,6 +333,7 @@ export function getRuntimeRegistry() {
 export const registerLayerRuntime = ( ...args ) => getRuntimeRegistry().registerLayerRuntime( ...args );
 export const unregisterLayerRuntime = ( ...args ) => getRuntimeRegistry().unregisterLayerRuntime( ...args );
 export const whenLayerRuntime = ( ...args ) => getRuntimeRegistry().whenLayerRuntime( ...args );
+export const whenLayerRuntimeVariation = ( ...args ) => getRuntimeRegistry().whenLayerRuntimeVariation( ...args );
 export const registerLayerRuntimeVariation = ( ...args ) => getRuntimeRegistry().registerLayerRuntimeVariation( ...args );
 export const unregisterLayerRuntimeVariation = ( ...args ) => getRuntimeRegistry().unregisterLayerRuntimeVariation( ...args );
 export const getLayerRuntime = ( name ) => getRuntimeRegistry().getLayerRuntime( name );
@@ -261,10 +348,7 @@ export const logOnce = ( level, message ) => getRuntimeRegistry().logOnce( level
  * @return {Object|undefined} The variation.
  */
 export function getLayerRuntimeVariation( runtime, layer ) {
-	const resolved = typeof runtime === 'string' ? getLayerRuntime( runtime ) : runtime;
-	return resolved?.variations?.find( ( { attributes } ) =>
-		Object.entries( attributes ).every( ( [ key, value ] ) => layer?.[ key ] === value ),
-	);
+	return findVariation( typeof runtime === 'string' ? getLayerRuntime( runtime ) : runtime, layer );
 }
 
 /**
@@ -280,7 +364,7 @@ export function supportsMedia( runtime, mediaType ) {
 
 /**
  * Whether a saved layer should be mounted: its runtime's `validate()` says yes
- * (no `validate()` means always).
+ * (no `validate()` means always). A `validate()` that throws counts as no.
  *
  * @param {Object} runtime        Runtime.
  * @param {Object} layer          Saved layer.
@@ -294,7 +378,19 @@ export function shouldMountLayer( runtime, layer, dependencies = window.godamPlu
 	if ( typeof runtime.validate !== 'function' ) {
 		return true;
 	}
-	return Boolean( runtime.validate( layer, { dependencies } ) );
+	return callSafely( runtime, 'validate', runtime.validate, layer, { dependencies } );
+}
+
+/**
+ * Whether a layer needs FontAwesome before it renders, per its runtime's
+ * `usesIconFont( layer )`. A callback that throws counts as no.
+ *
+ * @param {Object} runtime Runtime.
+ * @param {Object} layer   Saved layer.
+ * @return {boolean} True when FontAwesome must load first.
+ */
+export function runtimeUsesIconFont( runtime, layer ) {
+	return typeof runtime?.usesIconFont === 'function' && callSafely( runtime, 'usesIconFont', runtime.usesIconFont, layer );
 }
 
 /**
@@ -304,8 +400,5 @@ export function shouldMountLayer( runtime, layer, dependencies = window.godamPlu
  * @return {boolean} True when a runtime's `usesIconFont( layer )` says so.
  */
 export function layersUseIconFont( layers ) {
-	return ( Array.isArray( layers ) ? layers : [] ).some( ( layer ) => {
-		const runtime = getLayerRuntime( layer?.type );
-		return typeof runtime?.usesIconFont === 'function' && Boolean( runtime.usesIconFont( layer ) );
-	} );
+	return ( Array.isArray( layers ) ? layers : [] ).some( ( layer ) => runtimeUsesIconFont( getLayerRuntime( layer?.type ), layer ) );
 }

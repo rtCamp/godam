@@ -7,7 +7,7 @@
  * Internal dependencies
  */
 import LayersManager from './layersManager';
-import { registerLayerRuntime } from '../../godam-layers/runtime/registry.js';
+import { registerLayerRuntime, registerLayerRuntimeVariation } from '../../godam-layers/runtime/registry.js';
 
 jest.mock( '../utils/pluginLoader.js', () => ( {
 	loadFontAwesome: jest.fn( () => Promise.resolve() ),
@@ -113,5 +113,54 @@ describe( 'LayersManager suppression gate', () => {
 		manager.handleVideoResize();
 
 		expect( handlers.onResize ).toHaveBeenCalled();
+	} );
+} );
+
+describe( 'LayersManager with view scripts that load late', () => {
+	afterEach( () => {
+		delete window.godam;
+		document.body.innerHTML = '';
+	} );
+
+	const createManagerFor = ( layers ) => {
+		document.body.innerHTML = layers.map( ( { id } ) => `<div id="layer-1-${ id }"></div>` ).join( '' );
+		const video = document.createElement( 'video' );
+		video.dataset.instanceId = '1';
+		const config = { isPreviewEnabled: false, videoSetupOptions: { layers } };
+		return new LayersManager( createPlayer(), video, config, {}, 'player-1' );
+	};
+
+	it( 'mounts a layer once its variation (e.g. an add-on form provider) registers', async () => {
+		const mount = jest.fn( () => ( {} ) );
+		registerLayerRuntime( 'acme/forms', {
+			mount,
+			variationAttribute: 'provider',
+			validate: ( layer ) => Boolean( window.godam.layers.getLayerRuntimeVariation( 'acme/forms', layer ) ),
+		} );
+		await createManagerFor( [ { id: 'f', type: 'acme/forms', provider: 'late' } ] ).setupLayers();
+		expect( mount ).not.toHaveBeenCalled();
+
+		registerLayerRuntimeVariation( 'acme/forms', { name: 'late' } );
+
+		expect( mount ).toHaveBeenCalledTimes( 1 );
+		expect( mount.mock.calls[ 0 ][ 0 ].layer.id ).toBe( 'f' );
+	} );
+
+	it( 'keeps mounting the other layers when an add-on\'s validate() throws', async () => {
+		const error = jest.spyOn( console, 'error' ).mockImplementation( () => {} );
+		const mount = jest.fn( () => ( {} ) );
+		registerLayerRuntime( 'acme/broken', {
+			mount,
+			validate: () => {
+				throw new Error( 'boom' );
+			},
+		} );
+		registerLayerRuntime( 'acme/fine', { mount } );
+
+		const manager = createManagerFor( [ { id: 'b', type: 'acme/broken' }, { id: 'ok', type: 'acme/fine' } ] );
+		await expect( manager.setupLayers() ).resolves.toBeUndefined();
+
+		expect( mount.mock.calls.map( ( [ ctx ] ) => ctx.layer.id ) ).toEqual( [ 'ok' ] );
+		error.mockRestore();
 	} );
 } );

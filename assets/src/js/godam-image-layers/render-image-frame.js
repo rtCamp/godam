@@ -25,7 +25,7 @@
 // Woo front-end script pushed to (image-only pages never boot the video player).
 import './../godam-player/utils/layer-registry-init.js';
 import { createLayerHost } from './../godam-layers/runtime/host.js';
-import { layersUseIconFont, getLayerRuntime, whenLayerRuntime } from './../godam-layers/runtime/registry.js';
+import { layersUseIconFont, getLayerRuntime, whenLayerRuntime, runtimeUsesIconFont } from './../godam-layers/runtime/registry.js';
 import { loadFontAwesome, renderFontAwesomeIcons } from './../godam-player/utils/pluginLoader.js';
 
 /**
@@ -183,11 +183,11 @@ export function initImageFrame( frame ) {
 							return;
 						}
 						mountLayer( layer, lateRuntime );
-						if ( typeof lateRuntime.usesIconFont === 'function' && lateRuntime.usesIconFont( layer ) ) {
+						if ( runtimeUsesIconFont( lateRuntime, layer ) ) {
 							renderFontAwesomeIcons( frame );
 						}
 					};
-					if ( typeof lateRuntime.usesIconFont === 'function' && lateRuntime.usesIconFont( layer ) ) {
+					if ( runtimeUsesIconFont( lateRuntime, layer ) ) {
 						loadFontAwesome().then( mountLate ).catch( mountLate );
 					} else {
 						mountLate();

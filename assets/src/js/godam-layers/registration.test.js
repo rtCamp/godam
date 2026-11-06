@@ -294,6 +294,12 @@ describe( 'Layer API: helpers', () => {
 		expect( getLayerVariation( formType, { form_type: 'mystery' } ) ).toBeUndefined();
 	} );
 
+	it( 'matches a variation whose attributes hold an array by value', () => {
+		const type = { attributes: {}, variations: [ { name: 'tagged', attributes: { tags: [ 'a', 'b' ] } } ] };
+		expect( getLayerVariation( type, { tags: [ 'a', 'b' ] } )?.name ).toBe( 'tagged' );
+		expect( getLayerVariation( type, { tags: [ 'b', 'a' ] } ) ).toBeUndefined();
+	} );
+
 	it( 'picks the isDefault variation, else the first', () => {
 		expect( getDefaultVariation( formType ).name ).toBe( 'wpforms' );
 		expect( getDefaultVariation( { variations: [ { name: 'a' }, { name: 'b' } ] } ).name ).toBe( 'a' );

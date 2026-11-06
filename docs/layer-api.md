@@ -445,6 +445,8 @@ The runtime registry is `window.godam.layers` (handle `godam-layer-runtime`). It
 
 A layer whose runtime isn't registered yet is kept back and mounted as soon as its view script registers it, so a view script that loads late (deferred or delayed by an optimisation plugin) still works. Until then the console logs `GoDAM: no runtime registered for layer type "…"` once. `whenLayerRuntime( name, callback )` runs `callback( runtime )` once a runtime registers, or straight away if it already has; it returns a function that stops waiting.
 
+The same goes for variations: a layer whose variation isn't registered yet (an add-on form provider whose script loads after the player) is mounted once `registerLayerRuntimeVariation()` adds it. `whenLayerRuntimeVariation( name, layer, callback )` runs `callback( runtime )` once the runtime has a variation matching `layer`.
+
 ### `mount( ctx )`
 
 | `ctx` | |

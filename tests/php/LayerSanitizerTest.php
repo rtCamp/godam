@@ -153,6 +153,37 @@ class LayerSanitizerTest extends TestCase {
 	}
 
 	/**
+	 * Layer CSS is saved as written (develop never touched it): `<` in a media
+	 * query or a `content` string must survive. Only `</style` is removed.
+	 */
+	public function test_keeps_custom_css_as_written(): void {
+		foreach ( array( 'acme/countdown', 'cta' ) as $type ) {
+			foreach ( array( '@media (width<=600px){.a{color:red}}', '.a::before{content:"<"}.b{color:blue}', '.a > .b{color:red}' ) as $css ) {
+				$this->assertSame(
+					$css,
+					$this->clean(
+						array(
+							'type'       => $type,
+							'custom_css' => $css,
+						)
+					)['custom_css'],
+					"$type: $css"
+				);
+			}
+		}
+
+		$this->assertSame(
+			'.a{}><script>x()>',
+			$this->clean(
+				array(
+					'type'       => 'acme/countdown',
+					'custom_css' => '.a{}</STYLE><script>x()</sty</stylele>',
+				)
+			)['custom_css']
+		);
+	}
+
+	/**
 	 * A color must be one plain colour: anything that would add CSS declarations
 	 * where it is printed into a style attribute falls back to the default.
 	 */

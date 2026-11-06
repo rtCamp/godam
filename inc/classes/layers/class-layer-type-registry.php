@@ -356,20 +356,7 @@ class Layer_Type_Registry {
 		$type    = $this->get( $layer['type'] );
 
 		if ( null === $type ) {
-			if ( 'video' !== $context['media'] ) {
-				return '';
-			}
-			ob_start();
-			/**
-			 * Renders the container of a layer type that has no PHP registration.
-			 *
-			 * @deprecated 2.8.0 Use `godam_register_layer_type()` with a `render_callback` instead.
-			 *
-			 * @param array  $layer       Layer configuration.
-			 * @param string $instance_id Player instance ID.
-			 */
-			do_action_deprecated( 'godam_player_render_layer', array( $layer, $instance_id ), self::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
-			return (string) ob_get_clean();
+			return 'video' === $context['media'] ? self::render_with_legacy_action( $layer, $instance_id ) : '';
 		}
 
 		if ( ! $this->supports_media( $type, $context['media'] ) || empty( $type['render_callback'] ) || ! is_callable( $type['render_callback'] ) ) {
@@ -381,6 +368,39 @@ class Layer_Type_Registry {
 			$this->enqueue_view_scripts( $type );
 		}
 		return empty( $type['supports']['rawHtml'] ) ? wp_kses_post( $html ) : $html;
+	}
+
+	/**
+	 * A layer's container from the older `godam_player_render_layer` action, for
+	 * types with no PHP registration and the legacy Woo type.
+	 *
+	 * The deprecation is reported before output is buffered, so a notice printed
+	 * under `WP_DEBUG` goes to the page rather than into the layer's markup.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array  $layer       Saved layer.
+	 * @param string $instance_id Player instance id.
+	 * @return string Markup.
+	 */
+	public static function render_with_legacy_action( $layer, $instance_id ) {
+		if ( ! has_action( 'godam_player_render_layer' ) ) {
+			return '';
+		}
+
+		_deprecated_hook( 'godam_player_render_layer', esc_html( self::HOOKS_DEPRECATED_SINCE ), 'godam_register_layer_type()' );
+
+		ob_start();
+		/**
+		 * Renders the container of a layer type that has no PHP registration.
+		 *
+		 * @deprecated 2.8.0 Use `godam_register_layer_type()` with a `render_callback` instead.
+		 *
+		 * @param array  $layer       Layer configuration.
+		 * @param string $instance_id Player instance ID.
+		 */
+		do_action( 'godam_player_render_layer', $layer, $instance_id );
+		return (string) ob_get_clean();
 	}
 
 	/**
@@ -800,6 +820,7 @@ class Layer_Type_Registry {
 		if ( ! file_exists( RTGODAM_PATH . 'assets/build/js/godam-layer-runtime.min.js' ) ) {
 			return;
 		}
+		// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- RTGODAM_PATH plus a fixed build filename, checked to exist.
 		$asset = file_exists( $asset_path ) ? include $asset_path : array();
 		wp_register_script(
 			'godam-layer-runtime',

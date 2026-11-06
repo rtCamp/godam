@@ -15,7 +15,9 @@ import {
 	getLayerRuntimeVariation,
 	registerLayerRuntimeVariation,
 	shouldMountLayer,
+	whenLayerRuntime,
 } from '../js/godam-layers/runtime/registry.js';
+import { registerFormRuntime } from './form/view.js';
 import { getLayerDisplayName } from '../js/godam-player/utils/layerActions.js';
 
 const fakePlayer = () => ( {
@@ -194,5 +196,25 @@ describe( 'Layer API: core layer runtimes', () => {
 		expect( hotspotLayerUsesIconFont( { hotspots: [ { icon: 'star' } ] } ) ).toBe( true );
 		expect( hotspotLayerUsesIconFont( { hotspots: [ {} ] } ) ).toBe( false );
 		expect( hotspotLayerUsesIconFont( {} ) ).toBe( false );
+	} );
+} );
+
+describe( 'Layer API: the Form view script loading after the player', () => {
+	afterEach( () => {
+		delete window.godam;
+		delete window.godamPluginDependencies;
+	} );
+
+	it( 'has the core providers in place when layers waiting for the Form runtime mount', () => {
+		delete window.godam;
+		window.godamPluginDependencies = { gravityforms: true, wpforms: true };
+		const accepted = [];
+		[ 'gravity', 'wpforms' ].forEach( ( formType ) => {
+			whenLayerRuntime( 'form', ( runtime ) => accepted.push( shouldMountLayer( runtime, { type: 'form', form_type: formType } ) ) );
+		} );
+
+		registerFormRuntime();
+
+		expect( accepted ).toEqual( [ true, true ] );
 	} );
 } );

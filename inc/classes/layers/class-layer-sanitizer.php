@@ -259,7 +259,7 @@ class Layer_Sanitizer {
 			case 'url':
 				return esc_url_raw( $value );
 			case 'css':
-				return wp_strip_all_tags( $value );
+				return self::strip_style_end( $value );
 			case 'color':
 				// A plain colour only: a value like `rgb(0);position:fixed)` would
 				// add CSS declarations wherever an add-on prints it into `style`.
@@ -267,6 +267,26 @@ class Layer_Sanitizer {
 				return '' !== $color ? $color : null;
 		}
 		return sanitize_text_field( $value );
+	}
+
+	/**
+	 * CSS as written, without any `</style`, the only sequence that could end a
+	 * `<style>` element it is printed in. Nothing else is touched: CSS uses `<`
+	 * and `>` (`@media (width<=600px)`, `content: "<"`, child selectors), which
+	 * an HTML tag stripper would cut off. The player applies layer CSS through
+	 * `textContent`, which can't create markup either way.
+	 *
+	 * @param string $css CSS.
+	 * @return string The CSS.
+	 */
+	private static function strip_style_end( $css ) {
+		// Repeat until stable, so removing one `</style` can't join the text
+		// around it into another (`</sty</stylele`).
+		do {
+			$before = $css;
+			$css    = preg_replace( '#</style#i', '', $css );
+		} while ( $css !== $before );
+		return $css;
 	}
 
 	/**

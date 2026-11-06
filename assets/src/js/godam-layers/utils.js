@@ -2,6 +2,11 @@
  * Helpers for working with registered layer types.
  */
 
+/**
+ * Internal dependencies
+ */
+import { isEqual } from './is-equal';
+
 const clone = ( value ) => ( value === undefined ? undefined : JSON.parse( JSON.stringify( value ) ) );
 
 /**
@@ -34,7 +39,7 @@ export function getDefaultAttributes( layerType, variation ) {
 export function getLayerVariation( layerType, layer ) {
 	const defaults = getDefaultAttributes( layerType );
 	return ( layerType?.variations || [] ).find( ( variation ) =>
-		Object.entries( variation.attributes || {} ).every( ( [ key, value ] ) => ( layer?.[ key ] ?? defaults[ key ] ) === value ),
+		Object.entries( variation.attributes || {} ).every( ( [ key, value ] ) => isEqual( layer?.[ key ] ?? defaults[ key ], value ) ),
 	);
 }
 

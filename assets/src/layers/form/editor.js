@@ -7,7 +7,7 @@
 /**
  * External dependencies
  */
-import { getLayerType, isVariationAvailable } from '@godam/layers';
+import { getLayerType, getLayerVariation, isVariationAvailable } from '@godam/layers';
 
 /**
  * WordPress dependencies
@@ -35,6 +35,11 @@ export const settings = {
 			? null
 			: { available: false, reason: __( 'No form plugin is active', 'godam' ) }
 	),
-	// A form layer can't be saved until a form is picked.
-	validate: ( layer ) => Boolean( getFormIdFromLayer( layer, layer.form_type ) ),
+	// A form layer can't be saved until a form is picked. A layer whose provider
+	// isn't registered (its add-on is inactive) is kept as it was, so it never
+	// blocks saving the rest of the attachment.
+	validate: ( layer ) => {
+		const provider = getLayerVariation( getLayerType( 'form' ), layer );
+		return ! provider || Boolean( getFormIdFromLayer( layer, provider.name ) );
+	},
 };
