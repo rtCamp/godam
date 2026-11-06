@@ -4,6 +4,11 @@
  */
 
 /**
+ * Internal dependencies
+ */
+import '../../../tests/js/mock-form-provider-panels';
+
+/**
  * External dependencies
  */
 import { act } from 'react';
@@ -17,6 +22,7 @@ import {
 	getAvailability,
 	getDefaultAttributes,
 	getLayerVariation,
+	getUnavailableReason,
 	supportsMedia,
 } from '@godam/layers';
 
@@ -94,10 +100,10 @@ describe( 'Layer API: core layer types', () => {
 	it( 'explains why HubSpot is unavailable based on its settings', () => {
 		const hubspot = getLayerType( 'form' ).variations.find( ( { name } ) => name === 'hubspot' );
 		window.videoData.hubspotEnabled = false;
-		expect( hubspot.unavailableReason ).toMatch( /Turn on HubSpot/ );
+		expect( getUnavailableReason( hubspot ) ).toMatch( /Turn on HubSpot/ );
 		window.videoData.hubspotEnabled = true;
 		window.videoData.hubspotChosenSource = 'leadin';
-		expect( hubspot.unavailableReason ).toMatch( /Activate and connect the HubSpot plugin/ );
+		expect( getUnavailableReason( hubspot ) ).toMatch( /Activate and connect the HubSpot plugin/ );
 	} );
 
 	it( 'keeps Form available with no form plugin active, because Marketo needs none', () => {

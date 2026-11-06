@@ -2,11 +2,14 @@
  * External dependencies
  */
 import { useDispatch, useSelector } from 'react-redux';
+import { store as layersStore, getLayerVariation, isVariationAvailable } from '@godam/layers';
 
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { Notice } from '@wordpress/components';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -15,111 +18,12 @@ import { updateLayerField } from '../../redux/slice/videoSlice';
 import ColorPickerButton from '../shared/color-picker/ColorPickerButton.jsx';
 import LayersHeader from './LayersHeader.js';
 import { VeSection, VeToggle, VeColorList } from '../controls';
-import GravityForm from '../forms/GravityForm';
-import WPForm from '../forms/WPForm';
-import EverestForm from '../forms/EverestForm';
-import CF7 from '../forms/CF7';
-import JetpackForm from '../forms/JetpackForm';
-import SureForm from '../forms/Sureform.js';
-import FluentForm from '../forms/FluentForm.js';
-import MetForm from '../forms/MetForm.js';
-import ForminatorForm from '../forms/forminatorForms.js';
-import NinjaForm from '../forms/NinjaForm.js';
-import Marketo from '../forms/Marketo.js';
-import HubSpotForm from '../forms/HubSpotForm.js';
+import FormProviderPanel from '../forms/FormProviderPanel';
 
 /**
- * FormLayer Components Object mapping.
- */
-export const FormLayerComponentType = {
-	gravity: {
-		isActive: Boolean( window?.videoData?.gfActive ) ?? false,
-		component: GravityForm,
-		idField: 'gf_id',
-		settingsUrl: 'admin.php?subview=confirmation&page=gf_edit_forms&id={formId}&view=settings',
-	},
-	cf7: {
-		isActive: Boolean( window?.videoData?.cf7Active ) ?? false,
-		component: CF7,
-		idField: 'cf7_id',
-		settingsUrl: 'admin.php?page=wpcf7&post={formId}&action=edit',
-	},
-	jetpack: {
-		isActive: Boolean( window?.videoData?.jetpackActive ) ?? false,
-		component: JetpackForm,
-		idField: 'jp_id',
-		settingsUrl: 'admin.php?page=jetpack-forms-admin#/responses',
-		// Special handling for Jetpack forms (extract post ID from form ID)
-		getFormId: ( formId ) => {
-			if ( ! formId ) {
-				return null;
-			}
-			const parts = formId.split( '-' );
-			return parts[ 0 ] ? parseInt( parts[ 0 ] ) : null;
-		},
-	},
-	wpforms: {
-		isActive: Boolean( window?.videoData?.wpformsActive ) ?? false,
-		component: WPForm,
-		idField: 'wpform_id',
-		settingsUrl: 'admin.php?page=wpforms-builder&view=settings&form_id={formId}&section=general',
-	},
-	sureforms: {
-		isActive: Boolean( window?.videoData?.sureformsActive ) ?? false,
-		component: SureForm,
-		idField: 'sureform_id',
-		settingsUrl: 'post.php?post={formId}&action=edit',
-	},
-	forminator: {
-		isActive: Boolean( window?.videoData?.forminatorActive ) ?? false,
-		component: ForminatorForm,
-		idField: 'forminator_id',
-		settingsUrl: 'admin.php?page=forminator-cform-wizard&id={formId}',
-	},
-	fluentforms: {
-		isActive: Boolean( window?.videoData?.fluentformsActive ) ?? false,
-		component: FluentForm,
-		idField: 'fluent_form_id',
-		settingsUrl: 'admin.php?page=fluent_forms&form_id={formId}&route=settings&sub_route=form_settings',
-	},
-	everestforms: {
-		isActive: Boolean( window?.videoData?.everestFormsActive ) ?? false,
-		component: EverestForm,
-		idField: 'everest_form_id',
-		settingsUrl: 'admin.php?page=evf-builder&view=fields&form_id={formId}&tab=settings',
-	},
-	ninjaforms: {
-		isActive: Boolean( window?.videoData?.ninjaFormsActive ) ?? false,
-		component: NinjaForm,
-		idField: 'ninja_form_id',
-		settingsUrl: 'admin.php?page=ninja-forms&form_id={formId}',
-	},
-	metform: {
-		isActive: Boolean( window?.videoData?.metformActive ) ?? false,
-		component: MetForm,
-		idField: 'metform_id',
-		settingsUrl: '?post={formId}&action=elementor',
-	},
-	marketo: {
-		// Marketo has no plugin to activate: the layer is always editable and the
-		// panel surfaces a notice when credentials are missing in settings.
-		isActive: true,
-		component: Marketo,
-		idField: 'marketo_id',
-		settingsUrl: 'admin.php?page=rtgodam_settings',
-	},
-	hubspot: {
-		isActive: Boolean( window?.videoData?.hubspotActive ) ?? false,
-		component: HubSpotForm,
-		idField: 'hubspot_id',
-		// HubSpot forms are managed in HubSpot, not in wp-admin, so there is no
-		// local settings URL.
-		settingsUrl: '',
-	},
-};
-
-/**
- * Component to render and manage a form layer within the video editor.
+ * Component to render and manage a form layer within the video editor. The
+ * form plugin's part of the panel comes from the layer's form provider (a Form
+ * layer variation): its own `edit` panel, or the shared `FormProviderPanel`.
  *
  * @param {Object}   param0          - Props passed to the FormLayer component.
  * @param {string}   param0.layerID  - Unique identifier for the form layer.
@@ -132,16 +36,29 @@ const FormLayer = ( { layerID, goBack, duration } ) => {
 	const dispatch = useDispatch();
 	const layer = useSelector( ( state ) => state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ) );
 
-	const FormLayerData = FormLayerComponentType[ layer?.form_type ?? 'gravity' ];
-	const FormLayerComponent = FormLayerData?.component;
-	const isPluginActive = FormLayerData?.isActive;
+	const formType = useSelect( ( select ) => select( layersStore ).getLayerType( 'form' ), [] );
+	const provider = getLayerVariation( formType, layer );
+	const ProviderPanel = provider?.edit;
+	const isPluginActive = Boolean( provider ) && isVariationAvailable( provider );
 
 	return (
 		<>
 			<LayersHeader layer={ layer } goBack={ goBack } duration={ duration } />
 
 			<div className="godam-ve-config">
-				<FormLayerComponent layerID={ layer.id } />
+				{ provider && ProviderPanel && <ProviderPanel layerID={ layer.id } /> }
+				{ provider && ! ProviderPanel && <FormProviderPanel layerID={ layer.id } provider={ provider } /> }
+				{ ! provider && (
+					<VeSection title={ __( 'Form', 'godam' ) }>
+						<Notice status="warning" isDismissible={ false }>
+							{ sprintf(
+								/* translators: %s is a form provider name stored on the layer, e.g. "acme-forms". */
+								__( 'This layer uses the "%s" form, which isn\'t available. Activate the add-on that provides it, or delete the layer.', 'godam' ),
+								layer?.form_type,
+							) }
+						</Notice>
+					</VeSection>
+				) }
 
 				<VeSection title={ __( 'Behaviour', 'godam' ) }>
 					<div data-test-id="godam-form-control-allow-skip">

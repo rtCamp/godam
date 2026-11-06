@@ -61,6 +61,18 @@ export function isVariationAvailable( variation ) {
 }
 
 /**
+ * Why a variation can't be used, e.g. which plugin to activate. `unavailableReason`
+ * may be a string or a function returning one, for a reason that depends on settings.
+ *
+ * @param {Object} variation A layer type variation.
+ * @return {string} The reason, or `''`.
+ */
+export function getUnavailableReason( variation ) {
+	const reason = variation?.unavailableReason;
+	return ( typeof reason === 'function' ? reason() : reason ) || '';
+}
+
+/**
  * Whether a layer type can be added right now, and why not.
  *
  * @param {Object} layerType Registered layer type.

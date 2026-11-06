@@ -54,7 +54,7 @@ function sanitizeAttributes( name, attributes = {} ) {
  */
 function normalizeLayerType( layerType ) {
 	const { icon, iconUrl, supports, attributes, variations, ...rest } = layerType;
-	return {
+	const normalized = {
 		apiVersion: 1,
 		description: '',
 		...rest,
@@ -63,9 +63,29 @@ function normalizeLayerType( layerType ) {
 		iconUrl: iconUrl || ( isUrl( icon ) ? icon : undefined ),
 		supports: { ...DEFAULT_SUPPORTS, ...( supports || {} ) },
 		attributes: sanitizeAttributes( rest.name, attributes ),
-		variations: Array.isArray( variations ) ? variations : [],
 	};
+	normalized.variations = ( Array.isArray( variations ) ? variations : [] ).map( ( variation ) => normalizeVariation( normalized, variation ) );
+	return normalized;
 }
+
+/**
+ * Give a variation the attributes that select it. A type that sets
+ * `variationAttribute` (Form uses `form_type`) gets `{ [ variationAttribute ]: name }`
+ * for any variation that doesn't set its own `attributes`.
+ *
+ * @param {Object} layerType The layer type the variation belongs to.
+ * @param {Object} variation The variation.
+ * @return {Object} The variation, with `attributes`.
+ */
+function normalizeVariation( layerType, variation ) {
+	if ( variation.attributes || ! layerType.variationAttribute ) {
+		return { attributes: {}, ...variation };
+	}
+	return { ...variation, attributes: { [ layerType.variationAttribute ]: variation.name } };
+}
+
+// Variations registered before their layer type, applied when it registers.
+const pendingVariations = {};
 
 /**
  * Register a layer type.
@@ -115,7 +135,13 @@ function addLayerType( merged ) {
 	 * @param {Object} settings Layer type settings.
 	 * @param {string} name     Layer type name.
 	 */
-	const layerType = normalizeLayerType( { ...applyFilters( 'godam.layers.registerLayerType', merged, name ), name } );
+	const filtered = applyFilters( 'godam.layers.registerLayerType', merged, name );
+	const layerType = normalizeLayerType( {
+		...filtered,
+		name,
+		variations: [ ...( filtered.variations || [] ), ...( pendingVariations[ name ] || [] ) ],
+	} );
+	delete pendingVariations[ name ];
 
 	if ( typeof layerType.title !== 'string' || ! layerType.title ) {
 		console.error( `GoDAM: layer type "${ name }" needs a title.` );
@@ -142,7 +168,74 @@ export function unregisterLayerType( name ) {
 	return layerType;
 }
 
+/**
+ * Register a variation of a layer type, such as a form plugin for the Form
+ * layer. When the type isn't registered yet, the variation is kept and added
+ * when it is, so scripts can load in any order.
+ *
+ * A variation has a `name` and `title`, plus whatever its type reads; a form
+ * provider adds `icon`, `isAvailable`, `edit` or `getForms`/`getFormHtml`,
+ * `idField` and `settingsUrl`.
+ *
+ * @param {string} typeName  Layer type name, e.g. `form`.
+ * @param {Object} variation The variation.
+ * @return {Object|undefined} The registered variation, or undefined when registration failed.
+ */
+export function registerLayerVariation( typeName, variation ) {
+	const name = variation?.name;
+	if ( typeof name !== 'string' || ! name ) {
+		console.error( `GoDAM: a "${ typeName }" variation needs a name.` );
+		return undefined;
+	}
+	if ( typeof variation.title !== 'string' || ! variation.title ) {
+		console.error( `GoDAM: the "${ typeName }" variation "${ name }" needs a title.` );
+		return undefined;
+	}
+
+	const layerType = select( store ).getLayerType( typeName );
+	const existing = layerType ? layerType.variations : ( pendingVariations[ typeName ] || [] );
+	if ( existing.some( ( v ) => v.name === name ) ) {
+		console.error( `GoDAM: the "${ typeName }" variation "${ name }" is already registered.` );
+		return undefined;
+	}
+
+	if ( ! layerType ) {
+		pendingVariations[ typeName ] = [ ...existing, variation ];
+		return variation;
+	}
+
+	const normalized = normalizeVariation( layerType, variation );
+	dispatch( store ).addLayerType( { ...layerType, variations: [ ...layerType.variations, normalized ] } );
+	return normalized;
+}
+
+/**
+ * Unregister a variation of a layer type.
+ *
+ * @param {string} typeName      Layer type name.
+ * @param {string} variationName Variation name.
+ * @return {Object|undefined} The removed variation.
+ */
+export function unregisterLayerVariation( typeName, variationName ) {
+	const layerType = select( store ).getLayerType( typeName );
+	const variation = layerType?.variations.find( ( v ) => v.name === variationName );
+	if ( ! variation ) {
+		console.error( `GoDAM: the "${ typeName }" variation "${ variationName }" is not registered.` );
+		return undefined;
+	}
+	dispatch( store ).addLayerType( { ...layerType, variations: layerType.variations.filter( ( v ) => v !== variation ) } );
+	return variation;
+}
+
 /* eslint-enable no-console */
+
+/**
+ * @param {string} typeName      Layer type name.
+ * @param {string} variationName Variation name.
+ * @return {Object|undefined} The registered variation.
+ */
+export const getLayerVariationByName = ( typeName, variationName ) =>
+	select( store ).getLayerType( typeName )?.variations.find( ( v ) => v.name === variationName );
 
 /**
  * @param {string} name Layer type name.

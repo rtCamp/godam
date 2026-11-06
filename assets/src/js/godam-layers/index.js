@@ -15,6 +15,9 @@ import {
 	unregisterLayerType,
 	getLayerType,
 	getLayerTypes,
+	registerLayerVariation,
+	unregisterLayerVariation,
+	getLayerVariationByName,
 	__unstableRegisterLegacyLayerType,
 } from './registration';
 import {
@@ -22,10 +25,32 @@ import {
 	getLayerVariation,
 	getDefaultVariation,
 	isVariationAvailable,
+	getUnavailableReason,
 	getAvailability,
 	supportsMedia,
 } from './utils';
 import { CORE_LAYER_TYPES, STORE_NAME } from './constants';
+
+const api = {
+	store,
+	STORE_NAME,
+	CORE_LAYER_TYPES,
+	registerLayerType,
+	unregisterLayerType,
+	getLayerType,
+	getLayerTypes,
+	registerLayerVariation,
+	unregisterLayerVariation,
+	getLayerVariationByName,
+	getDefaultAttributes,
+	getLayerVariation,
+	getDefaultVariation,
+	isVariationAvailable,
+	getUnavailableReason,
+	getAvailability,
+	supportsMedia,
+	__unstableRegisterLegacyLayerType,
+};
 
 export {
 	store,
@@ -35,10 +60,14 @@ export {
 	unregisterLayerType,
 	getLayerType,
 	getLayerTypes,
+	registerLayerVariation,
+	unregisterLayerVariation,
+	getLayerVariationByName,
 	getDefaultAttributes,
 	getLayerVariation,
 	getDefaultVariation,
 	isVariationAvailable,
+	getUnavailableReason,
 	getAvailability,
 	supportsMedia,
 	__unstableRegisterLegacyLayerType,
@@ -46,20 +75,5 @@ export {
 
 if ( typeof window !== 'undefined' ) {
 	window.godam = window.godam || {};
-	window.godam.layers = {
-		store,
-		STORE_NAME,
-		CORE_LAYER_TYPES,
-		registerLayerType,
-		unregisterLayerType,
-		getLayerType,
-		getLayerTypes,
-		getDefaultAttributes,
-		getLayerVariation,
-		getDefaultVariation,
-		isVariationAvailable,
-		getAvailability,
-		supportsMedia,
-		__unstableRegisterLegacyLayerType,
-	};
+	window.godam.layers = api;
 }
