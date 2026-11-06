@@ -3,12 +3,12 @@
  * Layer API contract (#2291): which saved layers the `godam/image` block sends
  * to the browser.
  *
- * render.php keeps `hotspot` layers that have hotspots and `woo` layers that have
- * product hotspots, and drops everything else before the front end sees it. It
- * only loads the image-layers script when something is left, and lets add-ons
- * add script dependencies through `godam_image_layers_frontend_dependencies`.
- * #2294 and #2295 replace the hard-coded type checks; tests marked "current
- * behaviour" pin what they intend to change on purpose.
+ * render.php sends the layers whose registered type supports images and has
+ * something to draw (#2295): core `hotspot` layers with hotspots and legacy
+ * `woo` layers with product hotspots, plus any add-on type registered with
+ * `supports.media: [ 'image' ]`. It only loads the image-layers script when
+ * something is left, and lets add-ons add script dependencies through
+ * `godam_image_layers_frontend_dependencies`.
  *
  * @package GoDAM
  */
@@ -21,6 +21,7 @@ require_once dirname( __DIR__ ) . '/stubs/hooks.php';
 require_once dirname( __DIR__ ) . '/stubs/i18n.php';
 require_once dirname( __DIR__ ) . '/stubs/script-functions.php';
 require_once dirname( __DIR__ ) . '/stubs/block-render-functions.php';
+require_once dirname( __DIR__ ) . '/stubs/layer-registry.php';
 
 if ( ! defined( 'RTGODAM_PATH' ) ) {
 	define( 'RTGODAM_PATH', dirname( __DIR__, 2 ) . '/' );
@@ -48,6 +49,7 @@ class ImageBlockLayerContractTest extends TestCase {
 			'inline'     => array(),
 		);
 		$GLOBALS['rtgodam_stub']    = array();
+		rtgodam_test_register_core_layer_types();
 	}
 
 	/**
@@ -113,7 +115,7 @@ class ImageBlockLayerContractTest extends TestCase {
 	}
 
 	/**
-	 * Current behaviour: any other type is dropped on the server, even when an add-on handles it in JS.
+	 * Video-only and unregistered types are dropped on the server.
 	 */
 	public function test_drops_every_other_layer_type(): void {
 		$keep = array(
@@ -140,6 +142,24 @@ class ImageBlockLayerContractTest extends TestCase {
 		);
 
 		$this->assertSame( array( $keep ), $sent );
+	}
+
+	/**
+	 * An add-on type registered with image support is sent too.
+	 */
+	public function test_sends_an_add_on_type_that_supports_images(): void {
+		godam_register_layer_type(
+			array(
+				'name'     => 'acme/badge',
+				'supports' => array( 'media' => array( 'image' ) ),
+			)
+		);
+		$badge = array(
+			'id'   => 'b1',
+			'type' => 'acme/badge',
+		);
+
+		$this->assertSame( array( $badge ), $this->sent_layers( $this->render( array( $badge ) ) ) );
 	}
 
 	/**
