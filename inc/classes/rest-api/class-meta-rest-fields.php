@@ -57,6 +57,10 @@ class Meta_Rest_Fields {
 					return $value;
 				},
 				'update_callback' => function ( $value, $post ) {
+					// Clean each layer against its type's declared attributes (Layer API, RFC D3).
+					if ( is_array( $value ) && isset( $value['layers'] ) ) {
+						$value['layers'] = \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->sanitize_layers( $value['layers'] );
+					}
 					do_action( 'rtgodam_before_attachment_lookup' );
 					$value  = $this->limit_layer_custom_css( $value, $post->ID );
 					$result = update_post_meta( $post->ID, 'rtgodam_meta', $value );

@@ -99,40 +99,9 @@ class Assets {
 			)
 		);
 
-		include_once ABSPATH . 'wp-admin/includes/plugin.php';
-		$is_gf_active       = is_plugin_active( 'gravityforms/gravityforms.php' );
-		$is_wp_polls_active = is_plugin_active( 'wp-polls/wp-polls.php' );
-
-		$is_cf7_active     = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-		$is_wpforms_active = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
-
-		$is_jetpack_active         = is_plugin_active( 'jetpack/jetpack.php' );
-		$is_sure_form_active       = is_plugin_active( 'sureforms/sureforms.php' );
-		$is_forminator_form_active = is_plugin_active( 'forminator/forminator.php' );
-		$is_fluent_forms_active    = is_plugin_active( 'fluentform/fluentform.php' );
-		$is_everest_forms_active   = is_plugin_active( 'everest-forms/everest-forms.php' );
-		$is_ninja_forms_active     = is_plugin_active( 'ninja-forms/ninja-forms.php' );
-		$is_met_form_active        = is_plugin_active( 'metform/metform.php' );
-
-		$plugin_dependencies = array(
-			'gravityforms' => $is_gf_active,
-			'wpPolls'      => $is_wp_polls_active,
-			'cf7'          => $is_cf7_active,
-			'wpforms'      => $is_wpforms_active,
-			'jetpack'      => $is_jetpack_active,
-			'sureforms'    => $is_sure_form_active,
-			'forminator'   => $is_forminator_form_active,
-			'fluentForms'  => $is_fluent_forms_active,
-			'everestForms' => $is_everest_forms_active,
-			'ninjaForms'   => $is_ninja_forms_active,
-			'metform'      => $is_met_form_active,
-			// Marketo has no WP plugin; it is "available" when enabled and
-			// connected on GoDAM Central.
-			'marketo'      => \RTGODAM\Inc\Marketo::is_configured(),
-			// HubSpot is "available" when enabled and the admin's chosen source
-			// (GoDAM Central or the HubSpot plugin) is actually connected.
-			'hubspot'      => \RTGODAM\Inc\Hubspot::is_configured(),
-		);
+		// Whether each layer type and form provider can run here, from their
+		// `is_available` (`dependency_key` names the flag the player reads).
+		$plugin_dependencies = \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->get_dependency_flags();
 
 		/**
 		 * Filter the plugin dependencies data exposed to the frontend player.

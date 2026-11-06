@@ -12,7 +12,6 @@
  * `mediaType` — 'video' | 'audio' | 'image'.
  * `tabs` — ordered left-rail tab names; also the allow-list validating `setCurrentTab`.
  * `defaultTab` — tab selected when the editor opens for this media type.
- * `allowedLayerTypes` — `'*'` for every registered layer type, or an array of layer `type` strings to restrict the "Add layer" menu (`[]` disables layers).
  * `preview` — discriminator the editor maps to a preview component (`'videojs'` → VideoJSPlayer, `'audio'` → AudioCardPreview, `'image'` → ImagePreview). Components are not stored here to keep this module free of React/store imports.
  * `copyBlockName` — Gutenberg block emitted by the Copy action.
  * `previewPage` — `godam_page` query value for the front-end Preview link.
@@ -39,7 +38,6 @@ const CAPABILITIES = {
 		mediaType: 'video',
 		tabs: [ 'layers', 'player-settings', 'transcription', 'chapters' ],
 		defaultTab: 'layers',
-		allowedLayerTypes: '*',
 		preview: 'videojs',
 		copyBlockName: 'godam/video',
 		previewPage: 'video-preview',
@@ -51,7 +49,6 @@ const CAPABILITIES = {
 		mediaType: 'audio',
 		tabs: [ 'transcription', 'chapters' ],
 		defaultTab: 'transcription',
-		allowedLayerTypes: [],
 		preview: 'audio',
 		copyBlockName: 'godam/audio',
 		// Audio reuses the shared front-end preview page (`godam_page=video-preview`),
@@ -63,15 +60,14 @@ const CAPABILITIES = {
 		showTimeline: false,
 		showStats: false,
 	},
-	// Image editor — Hotspot + WooCommerce (product) hotspot layers placed
-	// spatially on a static image. The restricted `allowedLayerTypes` set falls
-	// out through the add menu without touching the core layer arrays. Copy and
-	// Preview are enabled: the `godam/image` front-end block exists (Iteration 2).
+	// Image editor — layers placed spatially on a static image. Which layer
+	// types it offers comes from each type's `supports.media` (Hotspot, and the
+	// WooCommerce product hotspot). Copy and Preview are enabled: the
+	// `godam/image` front-end block exists (Iteration 2).
 	image: {
 		mediaType: 'image',
 		tabs: [ 'layers' ],
 		defaultTab: 'layers',
-		allowedLayerTypes: [ 'hotspot', 'woo' ],
 		preview: 'image',
 		copyBlockName: 'godam/image',
 		// Images reuse the shared front-end preview page (`godam_page=video-preview`),
@@ -122,19 +118,4 @@ export function getCapability( mediaType ) {
  */
 export function getCapabilityForMime( mimeType ) {
 	return getCapability( getMediaTypeFromMime( mimeType ) );
-}
-
-/**
- * Filter a layer-type array by a capability's `allowedLayerTypes`. `'*'` (or a
- * non-array) returns the list unchanged, so video is unaffected.
- *
- * @param {Array}        types             Layer-type descriptors (each with a `type`).
- * @param {string|Array} allowedLayerTypes `'*'` or an array of allowed `type` strings.
- * @return {Array} The filtered list.
- */
-export function filterLayerTypesByCapability( types, allowedLayerTypes ) {
-	if ( allowedLayerTypes === '*' || ! Array.isArray( allowedLayerTypes ) ) {
-		return types;
-	}
-	return types.filter( ( lt ) => allowedLayerTypes.includes( lt.type ) );
 }

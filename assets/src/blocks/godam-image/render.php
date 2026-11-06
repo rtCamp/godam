@@ -73,16 +73,9 @@ if ( $godam_show_layers && $godam_attachment_id ) {
 	$godam_meta       = get_post_meta( $godam_attachment_id, 'rtgodam_meta', true );
 	$godam_all_layers = ( is_array( $godam_meta ) && ! empty( $godam_meta['layers'] ) ) ? $godam_meta['layers'] : array();
 	do_action( 'rtgodam_after_attachment_lookup' );
-	foreach ( $godam_all_layers as $godam_layer ) {
-		if ( ! is_array( $godam_layer ) || empty( $godam_layer['type'] ) ) {
-			continue;
-		}
-		if ( 'hotspot' === $godam_layer['type'] && ! empty( $godam_layer['hotspots'] ) ) {
-			$godam_layers[] = $godam_layer;
-		} elseif ( 'woo' === $godam_layer['type'] && ! empty( $godam_layer['productHotspots'] ) ) {
-			$godam_layers[] = $godam_layer;
-		}
-	}
+	// Layers of types that support images and have something to draw
+	// (`supports.media` and `should_render` in the layer type registry).
+	$godam_layers = \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->filter_layers_for_media( $godam_all_layers, 'image' );
 }
 
 // A hotspot link becomes the `href` of a link on the front end, so only http, https

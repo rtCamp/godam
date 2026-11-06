@@ -2,6 +2,8 @@ node_modules/
 assets/src/blocks
 assets/src/css
 assets/src/js
+# Core layer types ship from assets/build/layers (layer.json, PHP and built scripts).
+assets/src/layers
 assets/src/libs/jquery-ui-1.14.2.draggable
 .browserslistrc
 .eslintignore
@@ -45,3 +47,6 @@ phpunit.xml.dist
 
 # Dashboard widget sample data: development and review only, never shipped.
 /inc/classes/class-dashboard-widget-preview.php
+
+# Design docs and RFCs: for contributors, not shipped.
+/docs/

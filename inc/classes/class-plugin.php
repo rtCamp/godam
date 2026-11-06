@@ -25,6 +25,8 @@ use RTGODAM\Inc\Video_Engagement;
 use RTGODAM\Inc\Update;
 use RTGODAM\Inc\Virtual_Media_Registrar;
 use RTGODAM\Inc\Addons\Addon_Registry;
+use RTGODAM\Inc\Layers\Layer_Type_Registry;
+use RTGODAM\Inc\Layers\Core_Layer_Types;
 
 use RTGODAM\Inc\Taxonomies\Media_Folders;
 
@@ -108,6 +110,8 @@ class Plugin {
 
 		// Load plugin classes.
 		Update::get_instance();
+		Layer_Type_Registry::get_instance();
+		Core_Layer_Types::get_instance();
 		Assets::get_instance();
 		Blocks::get_instance();
 		Pages::get_instance();

@@ -29,9 +29,12 @@ class HotspotLinkSanitizeTest extends TestCase {
 
 		require_once dirname( __DIR__ ) . '/stubs/hooks.php';
 		require_once dirname( __DIR__ ) . '/stubs/godam-image-render-functions.php';
+		// The image block keeps the layers whose type supports images (Layer API, #2290).
+		require_once dirname( __DIR__ ) . '/stubs/layer-registry.php';
 
 		$GLOBALS['rtgodam_hooks'] = array();
 		$GLOBALS['rtgodam_stub']  = array();
+		rtgodam_test_register_core_layer_types();
 	}
 
 	protected function tearDown(): void {
