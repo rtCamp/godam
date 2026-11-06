@@ -69,19 +69,26 @@ function normalizeLayerType( layerType ) {
 }
 
 /**
- * Give a variation the attributes that select it. A type that sets
- * `variationAttribute` (Form uses `form_type`) gets `{ [ variationAttribute ]: name }`
- * for any variation that doesn't set its own `attributes`.
+ * Give a variation the attributes that select it, and split its icon like a
+ * layer type's: an image URL goes to `iconUrl`, a Dashicon name or component
+ * stays in `icon`. A type that sets `variationAttribute` (Form uses `form_type`)
+ * gets `{ [ variationAttribute ]: name }` for any variation that doesn't set its
+ * own `attributes`.
  *
  * @param {Object} layerType The layer type the variation belongs to.
  * @param {Object} variation The variation.
- * @return {Object} The variation, with `attributes`.
+ * @return {Object} The variation, with `attributes`, `icon` and `iconUrl`.
  */
 function normalizeVariation( layerType, variation ) {
+	const normalized = {
+		...variation,
+		icon: isUrl( variation.icon ) ? undefined : variation.icon,
+		iconUrl: variation.iconUrl || ( isUrl( variation.icon ) ? variation.icon : undefined ),
+	};
 	if ( variation.attributes || ! layerType.variationAttribute ) {
-		return { attributes: {}, ...variation };
+		return { attributes: {}, ...normalized };
 	}
-	return { ...variation, attributes: { [ layerType.variationAttribute ]: variation.name } };
+	return { ...normalized, attributes: { [ layerType.variationAttribute ]: variation.name } };
 }
 
 // Variations registered before their layer type, applied when it registers.

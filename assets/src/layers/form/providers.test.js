@@ -102,4 +102,12 @@ describe( 'Layer API: an add-on form provider', () => {
 		expect( validate( { form_type: 'acme-forms', acme_form_id: '5' } ) ).toBe( true );
 		expect( buildSettingsUrl( 'acme-forms', '5' ) ).toBe( 'https://acme.example/forms/5' );
 	} );
+
+	it( 'reads form_id for the save check when the provider sets no idField, as its panel saves it', () => {
+		registerLayerVariation( 'form', { name: 'plain-forms', title: 'Plain Forms', getForms: async () => [] } );
+		const { validate } = getLayerType( 'form' );
+		expect( getFormIdFromLayer( { form_type: 'plain-forms', form_id: '9' }, 'plain-forms' ) ).toBe( '9' );
+		expect( validate( { form_type: 'plain-forms', form_id: '9' } ) ).toBe( true );
+		expect( validate( { form_type: 'plain-forms' } ) ).toBe( false );
+	} );
 } );

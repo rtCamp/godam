@@ -153,6 +153,25 @@ class LayerSanitizerTest extends TestCase {
 	}
 
 	/**
+	 * A color must be one plain colour: anything that would add CSS declarations
+	 * where it is printed into a style attribute falls back to the default.
+	 */
+	public function test_rejects_colors_that_carry_extra_css(): void {
+		foreach ( array( 'rgb(0);position:fixed;top:0;left:0;width:100%;height:100%)', 'red;background:url(x)', '#12345', 'hsl(var(--x))' ) as $color ) {
+			$this->assertSame(
+				'#000',
+				$this->clean(
+					array(
+						'type'   => 'acme/countdown',
+						'accent' => $color,
+					)
+				)['accent'],
+				$color
+			);
+		}
+	}
+
+	/**
 	 * Core types are lenient: declared values of the right type are sanitized, everything else
 	 * (including HTML, which is escaped when it renders) is kept.
 	 */

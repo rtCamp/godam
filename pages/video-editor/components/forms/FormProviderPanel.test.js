@@ -22,6 +22,7 @@ jest.mock( '../../redux/slice/videoSlice', () => ( {
 	updateLayerField: ( payload ) => ( { type: 'updateLayerField', payload } ),
 } ) );
 jest.mock( '../../utils/formUtils', () => ( {
+	...jest.requireActual( '../../utils/formUtils' ),
 	buildSettingsUrl: ( formType, formId ) => `settings:${ formType }:${ formId }`,
 } ) );
 

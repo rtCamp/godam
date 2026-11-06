@@ -318,8 +318,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 				.map( ( variation ) => ( {
 					key: variation.name,
 					title: variation.title,
-					iconUrl: typeof variation.icon === 'string' ? variation.icon : undefined,
-					iconComponent: typeof variation.icon === 'string' ? undefined : variation.icon,
+					iconUrl: variation.iconUrl,
+					iconComponent: variation.iconUrl ? undefined : variation.icon,
 					onSelect: () => addNewLayer( layerType.name, variation.name ),
 				} ) );
 			if ( variations.length === 0 ) {
@@ -458,7 +458,8 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 					{ sortedLayers.map( ( layer ) => {
 						const layerType = getLayerType( layer.type );
 						const variation = layerType?.variations.length ? getLayerVariation( layerType, layer ) : undefined;
-						const icon = variation?.icon || layerType?.iconUrl || layerType?.icon;
+						// The variation's icon when it has one (e.g. a form plugin's logo), else the type's.
+						const iconSource = variation?.iconUrl || variation?.icon ? variation : layerType;
 						const layerText = variation?.title || layerType?.label || layerType?.title || layer.type;
 
 						// Warning shown when the layer's type, variation or plugin is unavailable.
@@ -478,7 +479,6 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 						}
 
 						const isActive = currentLayer?.id === layer.id;
-						const hasImageIcon = typeof icon === 'string' && icon;
 
 						return (
 							<li
@@ -499,9 +499,9 @@ const SidebarLayers = ( { currentTime, onSelectLayer, onPauseVideo, duration } )
 												className="godam-ve-layer-row__icon"
 												style={ { '--godam-layer-color': layerType?.color } }
 											>
-												{ hasImageIcon
-													? <img src={ icon } alt="" className="godam-ve-layer-row__icon-img" />
-													: <Icon icon={ icon } /> }
+												{ iconSource?.iconUrl
+													? <img src={ iconSource.iconUrl } alt="" className="godam-ve-layer-row__icon-img" />
+													: <Icon icon={ iconSource?.icon } /> }
 											</span>
 											<span className="godam-ve-layer-row__text">
 												<span className="godam-ve-layer-row__name">

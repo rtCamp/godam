@@ -322,7 +322,7 @@ const Slider = ( props ) => {
 						// Layers with a variation (e.g. a form plugin) show it (icon + name),
 						// so the chip reads e.g. "WPForms" with the WPForms logo on a white chip.
 						const variation = layerType?.variations.length ? getLayerVariation( layerType, layer ) : undefined;
-						const variationIcon = typeof variation?.icon === 'string' ? variation.icon : null;
+						const variationIcon = variation?.iconUrl || null;
 						// Timeline chips identify the layer by its type (e.g. "Hotspot"),
 						// not its custom name — the sidebar already shows the custom name.
 						const markerName = variation?.title || layerType?.title || layer.name || layer?.type;

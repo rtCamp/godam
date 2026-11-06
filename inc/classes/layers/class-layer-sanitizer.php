@@ -6,7 +6,7 @@
  * `number`, `integer`, `boolean`, `array`, `object`, or a list such as
  * `[ "string", "null" ]`) and optionally a `format` for strings: `plain` (the
  * default, `sanitize_text_field()`), `html` (`wp_kses_post()`), `url`
- * (`esc_url_raw()`) or `color`.
+ * (`esc_url_raw()`) or `color` (`rtgodam_sanitize_css_color()`).
  *
  * Two modes:
  *
@@ -261,7 +261,10 @@ class Layer_Sanitizer {
 			case 'css':
 				return wp_strip_all_tags( $value );
 			case 'color':
-				return preg_match( '/^(#[0-9a-f]{3,8}|(rgb|hsl)a?\([^()]*\)|transparent)$/i', trim( $value ) ) ? trim( $value ) : null;
+				// A plain colour only: a value like `rgb(0);position:fixed)` would
+				// add CSS declarations wherever an add-on prints it into `style`.
+				$color = rtgodam_sanitize_css_color( $value );
+				return '' !== $color ? $color : null;
 		}
 		return sanitize_text_field( $value );
 	}

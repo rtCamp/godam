@@ -53,14 +53,26 @@ function mountOnVideo( ctx ) {
  * reposition stays consistent. Per-layer style is flattened onto each hotspot
  * (legacy per-hotspot fields) so distinct layer colours and icons survive.
  *
+ * A layer mounted after `onReady` (its view script loaded late) gets `onReady`
+ * again on the same handlers, so each call replaces the previous drawing
+ * instead of adding to it.
+ *
  * @param {Object} ctx Mount context.
  * @return {Object} Handlers.
  */
 function mountOnImage( ctx ) {
 	const state = ctx.shared( 'godam/image-hotspots', () => {
-		const image = { layers: [], container: ctx.container, manager: null };
+		const image = { layers: [], container: ctx.container, manager: null, drawing: null };
 		image.handlers = {
 			onReady: () => {
+				// Redraw from scratch: drop the hotspots (and their listeners) drawn
+				// by an earlier call, so a late layer doesn't duplicate the others.
+				image.drawing?.remove();
+				image.drawing = document.createElement( 'div' );
+				image.drawing.className = 'godam-image-hotspots';
+				image.drawing.style.display = 'contents';
+				image.container.appendChild( image.drawing );
+
 				const hotspots = [];
 				image.layers.forEach( ( layer ) => {
 					( layer.hotspots || [] ).forEach( ( hotspot ) => {
@@ -84,7 +96,7 @@ function mountOnImage( ctx ) {
 				manager.computeContentRect = () => ctx.player.computeContentRect();
 				manager.setupHotspotLayer(
 					{ id: 'godam-image-hotspots', type: 'hotspot', pauseOnHover: false, hotspots },
-					image.container,
+					image.drawing,
 				);
 				// The analytics runtime loads on image pages too, so hotspot
 				// interactions are recorded like on video.
@@ -92,6 +104,11 @@ function mountOnImage( ctx ) {
 				image.manager = manager;
 			},
 			onResize: () => image.manager?.updateHotspotPositions(),
+			destroy: () => {
+				image.drawing?.remove();
+				image.drawing = null;
+				image.manager = null;
+			},
 		};
 		return image;
 	} );

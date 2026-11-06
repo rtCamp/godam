@@ -204,6 +204,17 @@ describe( 'Layer API: registerLayerVariation', () => {
 		expect( getLayerVariationByName( 'form', 'acme-forms' ).idField ).toBe( 'acme_form_id' );
 	} );
 
+	it( 'treats only a URL variation icon as an image, like a type\'s icon', () => {
+		registerForm();
+		registerLayerVariation( 'form', { name: 'dashicon', title: 'Dashicon', icon: 'feedback' } );
+		registerLayerVariation( 'form', { name: 'logo', title: 'Logo', icon: 'https://example.com/logo.svg' } );
+		registerLayerVariation( 'form', { name: 'both', title: 'Both', icon: 'feedback', iconUrl: '/logo.png' } );
+
+		expect( getLayerVariationByName( 'form', 'dashicon' ) ).toMatchObject( { icon: 'feedback', iconUrl: undefined } );
+		expect( getLayerVariationByName( 'form', 'logo' ) ).toMatchObject( { icon: undefined, iconUrl: 'https://example.com/logo.svg' } );
+		expect( getLayerVariationByName( 'form', 'both' ) ).toMatchObject( { icon: 'feedback', iconUrl: '/logo.png' } );
+	} );
+
 	it( 'keeps a variation\'s own attributes', () => {
 		registerForm();
 		registerLayerVariation( 'form', { name: 'dark', title: 'Dark', attributes: { theme: 'dark' } } );

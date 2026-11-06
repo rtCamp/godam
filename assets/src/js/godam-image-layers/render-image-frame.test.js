@@ -12,7 +12,7 @@
 import { initImageFrame } from './render-image-frame.js';
 import HotspotLayerManager from '../godam-player/managers/layers/hotspotLayerManager.js';
 import { registerLayerType } from '../godam-player/utils/layer-registry.js';
-import { registerLayerRuntime } from '../godam-layers/runtime/registry.js';
+import { registerLayerRuntime, unregisterLayerRuntime } from '../godam-layers/runtime/registry.js';
 import { registerHotspotRuntime } from '../../layers/hotspot/view.js';
 
 jest.mock( '../godam-player/managers/layers/hotspotLayerManager.js', () => ( {
@@ -99,6 +99,28 @@ describe( 'Layer API contract: image layers', () => {
 		expect( merged ).toMatchObject( { id: 'godam-image-hotspots', type: 'hotspot' } );
 		expect( merged.hotspots.map( ( h ) => h.id ) ).toEqual( [ 's1', 's2' ] );
 		expect( manager.createHotspots ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'draws late hotspot layers once, not once per layer mounted', () => {
+		unregisterLayerRuntime( 'hotspot' );
+		const frame = makeFrame( [
+			{ id: 'h1', type: 'hotspot', hotspots: [ { id: 's1' } ] },
+			{ id: 'h2', type: 'hotspot', hotspots: [ { id: 's2' } ] },
+		] );
+		init( frame );
+		expect( HotspotLayerManager ).not.toHaveBeenCalled();
+
+		// The hotspot view script loads after the frame rendered.
+		registerHotspotRuntime();
+
+		// Each late mount redraws from scratch: one drawing is left in the frame,
+		// and it holds both layers' hotspots once each.
+		const drawings = frame.querySelectorAll( '.godam-image-hotspots' );
+		expect( drawings ).toHaveLength( 1 );
+		const latest = HotspotLayerManager.mock.instances.at( -1 );
+		const [ merged, container ] = latest.setupHotspotLayer.mock.calls[ 0 ];
+		expect( merged.hotspots.map( ( h ) => h.id ) ).toEqual( [ 's1', 's2' ] );
+		expect( container ).toBe( drawings[ 0 ] );
 	} );
 
 	it( 'hands each woo layer to the registered woo manager and fires its impression', () => {

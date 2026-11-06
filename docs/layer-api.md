@@ -279,7 +279,7 @@ Attributes are your layer's settings. They're stored **flat** on the layer next 
 ```
 
 - **`type`:** `string`, `number`, `integer`, `boolean`, `array`, `object`, or a list such as `[ "integer", "null" ]`.
-- **`format`** (strings): `plain` (default, `sanitize_text_field()`), `html` (`wp_kses_post()`), `url` (`esc_url_raw()`) or `color` (hex, `rgb()`/`rgba()`, `hsl()`/`hsla()` or `transparent`).
+- **`format`** (strings): `plain` (default, `sanitize_text_field()`), `html` (`wp_kses_post()`), `url` (`esc_url_raw()`) or `color` (one plain colour: hex, `rgb()`/`rgba()`, `hsl()`/`hsla()` or a named colour such as `transparent`, checked with `rtgodam_sanitize_css_color()`).
 - **`default`:** what a new layer starts with, and what a value of the wrong type falls back to on save.
 - **`private`:** `true` keeps the attribute out of the page. It's saved and visible in the editor, but left out of the player's and image block's layer data.
 

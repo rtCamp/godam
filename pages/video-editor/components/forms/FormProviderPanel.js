@@ -15,7 +15,7 @@ import { useEffect, useState } from '@wordpress/element';
 import FormFields from './FormFields';
 import FormPreview from './FormPreview';
 import { useLayerAttributes } from '../../layers/hooks';
-import { buildSettingsUrl } from '../../utils/formUtils';
+import { buildSettingsUrl, getFormIdField } from '../../utils/formUtils';
 
 // Shared across panels, so reopening a layer doesn't fetch the same list or form again.
 const formListCache = new Map();
@@ -47,7 +47,7 @@ const cached = ( cache, key, load ) => {
  */
 const FormProviderPanel = ( { layerID, provider } ) => {
 	const [ layer, setAttributes ] = useLayerAttributes( layerID );
-	const idField = provider.idField || 'form_id';
+	const idField = getFormIdField( provider );
 	const formId = layer?.[ idField ];
 	const isActive = isVariationAvailable( provider );
 
