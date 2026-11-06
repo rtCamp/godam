@@ -307,6 +307,11 @@ class Player {
 	/**
 	 * Handle time-based display for custom layers
 	 *
+	 * Once the player's layers are set up, each custom layer is mounted on the
+	 * same Layer API host as the saved layers (`videoJs.godamLayers`), which then
+	 * drives it — so hover-preview suppression applies to it too. Until then
+	 * (or on a player without one) this listener drives it directly.
+	 *
 	 * @param {number} currentTime - Current video time in seconds
 	 */
 	handleCustomLayersTimeUpdate( currentTime ) {
@@ -315,53 +320,95 @@ class Player {
 			return;
 		}
 
+		const host = this.videoJs.godamLayers;
 		this.customLayers.forEach( ( layerObj ) => {
-			const { displayTime, duration = Infinity, element, onShow, pauseOnShow, hasTriggeredCallback, isDismissed } = layerObj;
-
-			// Skip dismissed layers
-			if ( isDismissed ) {
+			if ( layerObj.unmount ) {
 				return;
 			}
-
-			// Skip if element no longer exists in DOM
-			if ( ! element || ! document.contains( element ) ) {
+			if ( host ) {
+				this.mountCustomLayer( host, layerObj );
 				return;
 			}
-
-			// Convert percentage-based times to absolute time
-			const absoluteDisplayTime = this.convertToAbsoluteTime( displayTime );
-			const absoluteDuration = duration === Infinity ? Infinity : this.convertToAbsoluteTime( duration );
-			const endTime = absoluteDuration === Infinity ? Infinity : absoluteDisplayTime + absoluteDuration;
-
-			// Show/hide layer based on current time
-			const shouldShow = currentTime >= absoluteDisplayTime && ( endTime === Infinity || currentTime <= endTime );
-			const isCurrentlyHidden = element.classList.contains( 'hidden' );
-
-			if ( shouldShow && isCurrentlyHidden ) {
-				element.classList.remove( 'hidden' );
-				layerObj.visible = true;
-
-				// Pause video if requested (default behavior)
-				if ( pauseOnShow && ! this.videoJs.paused() ) {
-					this.videoJs.pause();
-				}
-
-				// Call onShow callback only once per display cycle
-				if ( onShow && typeof onShow === 'function' && ! hasTriggeredCallback ) {
-					layerObj.hasTriggeredCallback = true;
-					try {
-						onShow( element, this );
-					} catch ( error ) {
-						console.error( 'Error in layer onShow callback:', error );
-					}
-				}
-			} else if ( ! shouldShow && ! isCurrentlyHidden ) {
-				element.classList.add( 'hidden' );
-				layerObj.visible = false;
-				// Reset callback trigger for next display cycle
-				layerObj.hasTriggeredCallback = false;
-			}
+			this.updateCustomLayer( layerObj, currentTime );
 		} );
+	}
+
+	/**
+	 * Mount a custom layer on the player's Layer API host.
+	 *
+	 * @param {Object} host     The layer host.
+	 * @param {Object} layerObj Custom layer.
+	 */
+	mountCustomLayer( host, layerObj ) {
+		const unmount = host.mount(
+			{ id: layerObj.id, type: 'godam/api', displayTime: layerObj.displayTime },
+			layerObj.element,
+			{
+				name: 'godam/api',
+				supports: { media: [ 'video' ] },
+				mount: () => ( {
+					onTimeUpdate: ( currentTime ) => this.updateCustomLayer( layerObj, currentTime ),
+				} ),
+			},
+		);
+		layerObj.unmount = unmount || null;
+		if ( ! unmount ) {
+			this.updateCustomLayer( layerObj, Number( this.videoJs.currentTime() ) || 0 );
+		}
+	}
+
+	/**
+	 * Show or hide one custom layer for the current time.
+	 *
+	 * @param {Object} layerObj    Custom layer.
+	 * @param {number} currentTime Current video time in seconds.
+	 */
+	updateCustomLayer( layerObj, currentTime ) {
+		const { displayTime, duration = Infinity, element, onShow, pauseOnShow, hasTriggeredCallback, isDismissed } = layerObj;
+
+		// Skip dismissed layers
+		if ( isDismissed ) {
+			return;
+		}
+
+		// Skip if element no longer exists in DOM
+		if ( ! element || ! document.contains( element ) ) {
+			return;
+		}
+
+		// Convert percentage-based times to absolute time
+		const absoluteDisplayTime = this.convertToAbsoluteTime( displayTime );
+		const absoluteDuration = duration === Infinity ? Infinity : this.convertToAbsoluteTime( duration );
+		const endTime = absoluteDuration === Infinity ? Infinity : absoluteDisplayTime + absoluteDuration;
+
+		// Show/hide layer based on current time
+		const shouldShow = currentTime >= absoluteDisplayTime && ( endTime === Infinity || currentTime <= endTime );
+		const isCurrentlyHidden = element.classList.contains( 'hidden' );
+
+		if ( shouldShow && isCurrentlyHidden ) {
+			element.classList.remove( 'hidden' );
+			layerObj.visible = true;
+
+			// Pause video if requested (default behavior)
+			if ( pauseOnShow && ! this.videoJs.paused() ) {
+				this.videoJs.pause();
+			}
+
+			// Call onShow callback only once per display cycle
+			if ( onShow && typeof onShow === 'function' && ! hasTriggeredCallback ) {
+				layerObj.hasTriggeredCallback = true;
+				try {
+					onShow( element, this );
+				} catch ( error ) {
+					console.error( 'Error in layer onShow callback:', error );
+				}
+			}
+		} else if ( ! shouldShow && ! isCurrentlyHidden ) {
+			element.classList.add( 'hidden' );
+			layerObj.visible = false;
+			// Reset callback trigger for next display cycle
+			layerObj.hasTriggeredCallback = false;
+		}
 	}
 
 	/**
@@ -551,6 +598,7 @@ class Player {
 		}
 
 		const layerObj = this.customLayers[ layerIndex ];
+		layerObj.unmount?.();
 
 		// Remove from DOM
 		if ( layerObj.element && layerObj.element.parentNode ) {
@@ -572,6 +620,7 @@ class Player {
 		const count = this.customLayers.length;
 
 		this.customLayers.forEach( ( layerObj ) => {
+			layerObj.unmount?.();
 			if ( layerObj.element && layerObj.element.parentNode ) {
 				layerObj.element.parentNode.removeChild( layerObj.element );
 			}

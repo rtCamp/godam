@@ -11,24 +11,6 @@ export const PLAYER_SKINS = {
 };
 
 /**
- * Form types.
- */
-export const FORM_TYPES = {
-	GRAVITY: 'gravity',
-	WPFORMS: 'wpforms',
-	EVEREST: 'everestforms',
-	CF7: 'cf7',
-	JETPACK: 'jetpack',
-	SUREFORMS: 'sureforms',
-	FORMINATOR: 'forminator',
-	FLUENT: 'fluentforms',
-	NINJA: 'ninjaforms',
-	METFORM: 'metform',
-	MARKETO: 'marketo',
-	HUBSPOT: 'hubspot',
-};
-
-/**
  * Hotspot constants.
  */
 export const HOTSPOT_CONSTANTS = {
@@ -51,29 +33,6 @@ export const PRODUCT_HOTSPOT_CONSTANTS = {
 	BASE_WIDTH: 800,
 	BASE_HEIGHT: 600,
 };
-
-/**
- * Layer types.
- *
- * NOTE: Add-ons can register custom layer types using `registerLayerType`
- * from `./layer-registry.js`, passing an id plus a config object with a
- * `label`, a `validator` function and an optional `manager` class.
- */
-export const LAYER_TYPES = {
-	FORM: 'form',
-	CTA: 'cta',
-	POLL: 'poll',
-	HOTSPOT: 'hotspot',
-	WOOCOMMERCE: 'woo',
-};
-
-/**
- * Get dynamic layer types (including add-on registered types)
- * Use this if you need to access dynamically registered layer types
- *
- * @return {Object} Object with all available layer types
- */
-export { getLayerTypes } from './layer-registry.js';
 
 /**
  * Keyboard controls.

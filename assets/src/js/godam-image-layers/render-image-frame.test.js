@@ -1,10 +1,9 @@
 /**
- * Layer API contract tests (#2291): layers on a `godam/image` block.
+ * Layer API contract tests (#2291, updated for #2294): layers on a `godam/image` block.
  *
- * The image renderer draws `hotspot` layers itself and hands `woo` layers to
- * the manager godam-for-woo registered in the layer registry. No other type is
- * drawn. #2294 moves images onto the shared layer lifecycle; tests marked
- * "current behaviour" pin what it intends to change on purpose.
+ * Images mount layers through the same runtimes as video. Only runtimes that
+ * support images run: the core Hotspot runtime, and an add-on manager from the
+ * old registry that has the image methods godam-for-woo's manager has.
  */
 
 /**
@@ -13,6 +12,7 @@
 import { initImageFrame } from './render-image-frame.js';
 import HotspotLayerManager from '../godam-player/managers/layers/hotspotLayerManager.js';
 import { registerLayerType } from '../godam-player/utils/layer-registry.js';
+import { registerLayerRuntime } from '../godam-layers/runtime/registry.js';
 
 jest.mock( '../godam-player/managers/layers/hotspotLayerManager.js', () => ( {
 	__esModule: true,
@@ -26,7 +26,6 @@ jest.mock( '../godam-player/managers/layers/hotspotLayerManager.js', () => ( {
 
 jest.mock( '../godam-player/utils/pluginLoader.js', () => ( {
 	loadFontAwesome: jest.fn( () => Promise.resolve() ),
-	hasHotspotsWithIcons: jest.fn( () => false ),
 	renderFontAwesomeIcons: jest.fn(),
 } ) );
 
@@ -49,22 +48,28 @@ const makeFrame = ( layers ) => {
 	return frame;
 };
 
-const makeWooManager = () =>
-	jest.fn().mockImplementation( function WooManager() {
+// A stand-in for godam-for-woo's manager class: its image methods live on the
+// prototype, like the real class's, with per-instance spies on top.
+const makeWooManager = () => {
+	const WooManager = jest.fn().mockImplementation( function WooManager() {
 		this.wooLayers = [];
 		this.setupLayer = jest.fn( ( layer ) => this.wooLayers.push( { layer } ) );
 		this.createProductHotspots = jest.fn();
 		this.emitLayerVisible = jest.fn();
 	} );
+	WooManager.prototype.createProductHotspots = () => {};
+	return WooManager;
+};
 
 describe( 'Layer API contract: image layers', () => {
 	let teardowns;
 
 	beforeEach( () => {
-		delete window.__godamLayerRegistryStore;
+		delete window.godam;
 		HotspotLayerManager.mockClear();
 		teardowns = [];
 		jest.spyOn( console, 'warn' ).mockImplementation( () => {} );
+		jest.spyOn( console, 'info' ).mockImplementation( () => {} );
 	} );
 
 	afterEach( () => {
@@ -114,21 +119,43 @@ describe( 'Layer API contract: image layers', () => {
 		const frame = makeFrame( [ { id: 'w1', type: 'woo' } ] );
 		init( frame );
 		expect( frame.dataset.godamLayersRendered ).toBe( 'true' );
-		expect( frame.querySelector( '.godam-image-woo-layer' ) ).toBeNull();
+		expect( frame.querySelector( '.godam-image-layer-item' ) ).toBeNull();
 	} );
 
-	// Current behaviour: only `hotspot` and `woo` draw on images, even when another
-	// type has a registered manager. #2294 lets any type that supports images draw.
-	it( 'ignores any other type, even one with a registered manager', () => {
+	it( 'draws any add-on type whose manager has the image methods', () => {
 		const AcmeManager = makeWooManager();
 		registerLayerType( 'acme', { label: 'Acme', validator: () => true, manager: AcmeManager } );
+		init( makeFrame( [ { id: 'a1', type: 'acme' } ] ) );
+		expect( AcmeManager.mock.instances[ 0 ].createProductHotspots ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'skips video-only types: core CTA and add-on managers without the image methods', () => {
+		const VideoOnly = jest.fn();
+		registerLayerType( 'acme', { label: 'Acme', validator: () => true, manager: VideoOnly } );
 		const frame = makeFrame( [ { id: 'a1', type: 'acme' }, { id: 'c1', type: 'cta' } ] );
 
 		init( frame );
 
-		expect( AcmeManager ).not.toHaveBeenCalled();
+		expect( VideoOnly ).not.toHaveBeenCalled();
 		expect( HotspotLayerManager ).not.toHaveBeenCalled();
+		expect( frame.querySelector( '.godam-image-layer-item' ) ).toBeNull();
 		expect( frame.dataset.godamLayersRendered ).toBe( 'true' );
+	} );
+
+	it( 'draws an add-on runtime that supports images, with no timeline', () => {
+		const mount = jest.fn( ( ctx ) => {
+			ctx.container.textContent = 'Countdown';
+			return {};
+		} );
+		registerLayerRuntime( 'acme/countdown', { supports: { media: [ 'image' ] }, mount } );
+		const frame = makeFrame( [ { id: 'a1', type: 'acme/countdown' } ] );
+
+		init( frame );
+
+		const ctx = mount.mock.calls[ 0 ][ 0 ];
+		expect( ctx.media.type ).toBe( 'image' );
+		expect( ctx.api.currentTime() ).toBe( 0 );
+		expect( frame.querySelector( '.godam-image-layer-item' ).textContent ).toBe( 'Countdown' );
 	} );
 
 	it( 'draws nothing for a frame with no layers', () => {

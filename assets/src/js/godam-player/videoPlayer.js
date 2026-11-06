@@ -418,13 +418,6 @@ export default class GodamVideoPlayer {
 		this.layersManager.setSuppressionCheck(
 			() => this.hoverManager?.isPreviewActive() === true,
 		);
-
-		// Set up preview state change callback
-		if ( this.previewManager.getPreviewWatcher() ) {
-			this.previewManager.setPreviewStateChangeCallback(
-				( newValue ) => this.layersManager.handlePreviewStateChange( newValue ),
-			);
-		}
 	}
 
 	/**
@@ -540,14 +533,8 @@ export default class GodamVideoPlayer {
 	 * @param {number} currentTime - Current video time in seconds
 	 */
 	handleTimeUpdate( currentTime ) {
-		// Handle form layers
-		this.layersManager.handleFormLayersTimeUpdate( currentTime );
-
-		// Handle hotspot layers
-		this.layersManager.handleHotspotLayersTimeUpdate( currentTime );
-
-		// Handle custom add-on layers (WooCommerce, etc.)
-		this.layersManager.handleCustomLayersTimeUpdate( currentTime );
+		// Every mounted layer: core, add-on (WooCommerce, etc.) and GoDAMAPI layers.
+		this.layersManager.handleTimeUpdate( currentTime );
 	}
 
 	/**
