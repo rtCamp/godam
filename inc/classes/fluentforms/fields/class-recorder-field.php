@@ -570,6 +570,26 @@ class Recorder_Field extends BaseFieldManager {
 			);
 		}
 
+		/**
+		 * Get the form's recorder field, by element rather than by name: the name can be changed in the editor.
+		 */
+		$fields = FormFieldsParser::getElement(
+			$form,
+			array( 'godam-recorder-field' ),
+			array( 'rules', 'settings' )
+		);
+
+		if ( empty( $fields ) ) {
+			wp_send_json_error(
+				__( 'Form does not have a recorder field.', 'godam' ),
+				400
+			);
+		}
+
+		// The upload does not say which field it is for, so the form's first recorder field sets the rules.
+		$field            = reset( $fields );
+		$validation_rules = $field['settings']['validation_rules'] ?? array();
+
 		$data_to_send = array();
 
 		/**
@@ -580,32 +600,19 @@ class Recorder_Field extends BaseFieldManager {
 		// Work with files.
 		foreach ( $_FILES as $input_key => $file_data ) {
 
-			if ( false === strpos( $input_key, '-godam-input-recorder' ) ) {
+			if ( 'ff-godam-input-recorder' !== $input_key ) {
 				continue;
 			}
 
-			/**
-			 * Get the field data.
-			 */
-			$field = FormFieldsParser::getField(
-				$form,
-				array( 'godam-recorder-field' ),
-				'godam-recorder-field',
-				array( 'rules', 'settings' )
-			);
+			$errors = $this->validate_file( $validation_rules, $file_data );
 
-			if ( $field ) {
-				$validation_rules = $field['godam-recorder-field']['settings']['validation_rules'];
-				$errors           = $this->validate_file( $validation_rules, $file_data );
-
-				if ( $errors ) {
-					wp_send_json(
-						array(
-							'error' => $errors,
-						),
-						422,
-					);
-				}
+			if ( $errors ) {
+				wp_send_json(
+					array(
+						'error' => $errors,
+					),
+					422,
+				);
 			}
 
 			$temp_path  = $file_data['tmp_name'];
@@ -635,10 +642,21 @@ class Recorder_Field extends BaseFieldManager {
 				'size'     => $file_size,
 			);
 
-			$upload_overrides  = array(
+			$upload_overrides = array(
 				'test_form' => false,
+				'mimes'     => rtgodam_get_recorder_upload_mimes(),
 			);
-			$move_file         = wp_handle_upload( $uploaded_file, $upload_overrides );
+			$move_file        = wp_handle_upload( $uploaded_file, $upload_overrides );
+
+			if ( isset( $move_file['error'] ) ) {
+				wp_send_json(
+					array(
+						'error' => array( $move_file['error'] ),
+					),
+					422,
+				);
+			}
+
 			$move_file['file'] = wp_basename( $move_file['file'] );
 
 			$file = ArrayHelper::get( $move_file, 'file' );
