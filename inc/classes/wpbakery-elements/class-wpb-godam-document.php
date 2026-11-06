@@ -86,6 +86,10 @@ class WPB_GoDAM_Document {
 	/**
 	 * Map document element to WPBakery.
 	 *
+	 * Each param default is set in both 'std' and settings['default']:
+	 * WPBakery 9.1+ reads settings['default'] and logs a deprecation notice
+	 * for 'std' on its own, while older versions read only 'std'.
+	 *
 	 * @since 2.0.0
 	 *
 	 * @return void
@@ -167,6 +171,7 @@ class WPB_GoDAM_Document {
 							esc_html__( 'Card View', 'godam' )    => 'card',
 						),
 						'std'         => 'default',
+						'settings'    => array( 'default' => 'default' ),
 						'description' => esc_html__( 'Choose how the document is displayed: an embedded viewer or a card with a cover image.', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(
@@ -199,6 +204,7 @@ class WPB_GoDAM_Document {
 							esc_html__( 'Yes', 'godam' ) => '1',
 						),
 						'std'         => '0',
+						'settings'    => array( 'default' => '0' ),
 						'description' => esc_html__( 'Show a cover image on the document card.', 'godam' ),
 						'save_always' => true,
 						'dependency'  => array(

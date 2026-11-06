@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.7.0
+Stable tag: 2.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -244,6 +244,11 @@ A. Yes! You can start with a 60-day free trial to explore all features. No credi
 = Can I track video engagement and analytics? =
 A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
+= Can GoDAM wait for my cookie consent banner? =
+A. Yes. With the [WP Consent API](https://wordpress.org/plugins/wp-consent-api/) plugin and a banner that supports it (for example Complianz, CookieYes, Cookiebot or iubenda), GoDAM's own video, image and layer analytics wait for the visitor's "statistics" consent. Until then GoDAM stores nothing in the visitor's browser and sends nothing. (GoDAM for Woo's Shoppable Video and Reel Pop counts follow in a GoDAM for Woo update.) Views and clicks from before the choice are sent if the visitor accepts on that page, and discarded if they refuse. Withdrawing consent deletes GoDAM's browser data. Sites without a consent banner are not affected.
+
+If your banner does not support the WP Consent API, add `add_filter( 'godam_visitor_tracking_requires_consent', '__return_true' );` and have the banner call `window.GoDAM.setAnalyticsConsent( true )` when the visitor accepts, or `window.GoDAM.setAnalyticsConsent( false )` when they refuse. To turn visitor tracking off completely, use `add_filter( 'godam_visitor_tracking_enabled', '__return_false' );`.
+
 == Screenshots ==
 1. Video Editor: add interactive layers to a video, with its plays and watch time on top
 2. Add layer menu: CTA, Hotspot, Form, Poll and Ad layers (WooCommerce with the GoDAM for Woo add-on)
@@ -268,6 +273,17 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 
 == Changelog ==
 
+= v2.8.0 (November 9, 2026) =
+
+- Feat: Videos can now have captions in several languages. In the video editor's Transcription tab, add, edit, replace or remove a caption file for any language and choose which one shows by default. Visitors pick a language from the player's subtitles menu. Needs a paid GoDAM plan.
+- Feat: Choose the language for AI transcription, or let GoDAM detect it.
+- Feat: With a consent banner that supports the WP Consent API (such as Complianz, Cookiebot, CookieYes or iubenda), GoDAM analytics now waits for the visitor's statistics consent before it stores or sends anything.
+- Tweak: The Vimeo migration tab now links straight to the screen in GoDAM Central where you connect your Vimeo account.
+- Tweak: Sites running GoDAM for WooCommerce older than 2.3.1 are asked to update it.
+- Fix: Pages no longer include the visitor's IP address or the signed-in user's ID for analytics. If you use a page cache, purge it after updating.
+- Fix: GoDAM elements no longer cause deprecation notices with WPBakery 9.1.
+- Fix: Security fixes.
+
 = v2.7.0 (November 5, 2026) =
 
 - Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each GoDAM Video block, widget or shortcode can override it.
@@ -279,10 +295,6 @@ A. Yes, GoDAM provides robust analytics tools to track video engagement, includi
 = v2.6.2 (November 4, 2026) =
 
 - Tweak: Our team now moves your entire video library from Vimeo for free.
-
-= v2.6.1 (November 3, 2026) =
-
-- Fix: The analytics dashboard now shows correctly on sites with no views yet.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.

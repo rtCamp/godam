@@ -802,19 +802,20 @@ function rtgodam_get_localize_array() {
 
 	$localize_array = array();
 
-	$localize_array['endpoint']   = RTGODAM_ANALYTICS_BASE;
-	$localize_array['isPost']     = empty( is_single() ) ? 0 : is_single();
-	$localize_array['isPage']     = empty( is_page() ) ? 0 : is_page();
-	$localize_array['isArchive']  = empty( is_archive() ) ? 0 : is_archive();
-	$localize_array['postTitle']  = get_the_title(); // godam-coverage-ignore -- No argument: reads the title of whatever post/page the current front-end request is viewing (this fn runs unconditionally on every page load via Assets::enqueue_scripts()), not an explicit attachment lookup.
-	$localize_array['locationIP'] = rtgodam_get_user_ip();
+	$localize_array['endpoint']  = RTGODAM_ANALYTICS_BASE;
+	$localize_array['isPost']    = empty( is_single() ) ? 0 : is_single();
+	$localize_array['isPage']    = empty( is_page() ) ? 0 : is_page();
+	$localize_array['isArchive'] = empty( is_archive() ) ? 0 : is_archive();
+	$localize_array['postTitle'] = get_the_title(); // godam-coverage-ignore -- No argument: reads the title of whatever post/page the current front-end request is viewing (this fn runs unconditionally on every page load via Assets::enqueue_scripts()), not an explicit attachment lookup.
 
 	/**
-	 * Get Current User.
+	 * The signed-in viewer's WordPress user ID is not sent to analytics.
+	 *
+	 * No analytics report reads it, so it is kept at 0 instead of identifying
+	 * the viewer. The key stays because the player and the GoDAM for Woo
+	 * senders read it to fill `wp_user_id`, so they all send 0 without a change.
 	 */
-	$current_user = wp_get_current_user();
-
-	$localize_array['userId'] = $current_user->ID;
+	$localize_array['userId'] = 0;
 
 	$localize_array['siteId'] = get_current_blog_id();
 
@@ -848,6 +849,10 @@ function rtgodam_get_localize_array() {
 
 /**
  * Get the user's IP address.
+ *
+ * GoDAM no longer calls this: the analytics service reads the visitor's IP
+ * from the request itself, so the page does not print it. It is kept because
+ * it is a public helper that other plugins may call.
  *
  * @return string The user's IP address.
  */

@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 /**
  * WordPress dependencies
  */
-import { Button, Spinner, Notice, Modal } from '@wordpress/components';
+import { Button, Spinner, Notice, Modal, SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { plus, update, trash } from '@wordpress/icons';
 
@@ -18,8 +18,11 @@ import {
 	useGenerateTranscriptionMutation,
 	useUploadTranscriptionMutation,
 	useDeleteTranscriptionMutation,
+	useRefreshTranscriptionMutation,
 } from '../../redux/api/transcription';
 import { parseCaptions, formatClock, formatBytes, isTranscribingStatus } from './utils';
+import { TRANSCRIBE_LANGUAGES } from './languages';
+import CaptionManager from './CaptionManager';
 
 const BoltIcon = (
 	<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -51,6 +54,9 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	const [ cuesLoading, setCuesLoading ] = useState( false );
 	const [ error, setError ] = useState( '' );
 	const [ confirmDelete, setConfirmDelete ] = useState( false );
+	// Empty = the account's default transcription language, set in GoDAM Central.
+	const [ language, setLanguage ] = useState( '' );
+	const [ showCaptionManager, setShowCaptionManager ] = useState( false );
 
 	const { data: transcription } = useGetTranscriptionQuery( attachmentID, {
 		// Poll while a generation job is running so the panel flips to "ready"
@@ -61,8 +67,18 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 	const [ generateTranscription ] = useGenerateTranscriptionMutation();
 	const [ uploadTranscription ] = useUploadTranscriptionMutation();
 	const [ deleteTranscription, { isLoading: isDeleting } ] = useDeleteTranscriptionMutation();
+	const [ refreshTranscription ] = useRefreshTranscriptionMutation();
+
+	// When the tab opens, pick up a default changed in GoDAM Central's own
+	// dashboard. A failure keeps what WordPress already has.
+	useEffect( () => {
+		refreshTranscription( attachmentID ).catch( () => {} );
+	}, [ attachmentID, refreshTranscription ] );
 
 	const transcriptPath = transcription?.transcript_path || '';
+	// Only a video GoDAM has transcoded can be transcribed. `undefined` (an older
+	// response) keeps Generate available, as before.
+	const notOnGoDAM = transcription?.transcoded === false;
 	const status = transcription?.status || '';
 	const isReady = Boolean( transcriptPath );
 
@@ -110,7 +126,9 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 		setError( '' );
 		setIsGenerating( true );
 		try {
-			const result = await generateTranscription( attachmentID ).unwrap();
+			// An empty language is left out of the request, so Central uses the
+			// account's default; `auto` and `multi` ask Deepgram to detect it.
+			const result = await generateTranscription( { attachmentID, language } ).unwrap();
 			// SaaS may answer synchronously when the transcript already exists.
 			if ( result?.transcript_path ) {
 				setIsGenerating( false );
@@ -195,6 +213,13 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 							<span className="godam-ve-transcription__file-name" data-test-id="godam-video-editor-element-transcription-file">{ fileName }</span>
 							<div className="godam-ve-transcription__file-actions">
 								<Button
+									icon={ plus }
+									label={ __( 'Manage caption tracks', 'godam' ) }
+									showTooltip
+									data-test-id="godam-video-editor-button-manage-captions"
+									onClick={ () => setShowCaptionManager( true ) }
+								/>
+								<Button
 									icon={ update }
 									label={ __( 'Replace transcription file', 'godam' ) }
 									showTooltip
@@ -239,16 +264,32 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 						<p className="godam-ve-transcription__help">
 							{ __( "Automatically transcribe the audio using GoDAM's AI engine", 'godam' ) }
 						</p>
+						<SelectControl
+							__nextHasNoMarginBottom
+							className="godam-ve-transcription__language"
+							label={ __( 'Transcription language', 'godam' ) }
+							value={ language }
+							options={ TRANSCRIBE_LANGUAGES.map( ( { value, label } ) => ( { value, label } ) ) }
+							disabled={ isGenerating || notOnGoDAM }
+							onChange={ setLanguage }
+							data-test-id="godam-video-editor-select-transcription-language"
+						/>
 						<Button
 							className="godam-ve-transcription__generate-btn"
 							variant="secondary"
 							icon={ BoltIcon }
-							disabled={ isGenerating }
+							disabled={ isGenerating || notOnGoDAM }
+							aria-describedby={ notOnGoDAM ? 'godam-ve-transcription-not-transcoded' : undefined }
 							data-test-id="godam-video-editor-button-generate-transcription"
 							onClick={ handleGenerate }
 						>
 							{ __( 'Generate Transcription', 'godam' ) }
 						</Button>
+						{ notOnGoDAM && (
+							<p id="godam-ve-transcription-not-transcoded" className="godam-ve-transcription__help">
+								{ __( 'Transcription runs on GoDAM, and this video has not been transcoded by GoDAM yet. You can still upload a caption file.', 'godam' ) }
+							</p>
+						) }
 
 						<div className="godam-ve-transcription__divider">
 							<span>{ __( 'OR', 'godam' ) }</span>
@@ -266,26 +307,44 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 								<span className="godam-ve-transcription__progress-bar" aria-hidden="true" />
 							</div>
 						) : (
-							<Button
-								className="godam-ve-transcription__upload-btn"
-								variant="secondary"
-								icon={ plus }
-								data-test-id="godam-video-editor-button-upload-transcription"
-								onClick={ handleUpload }
-							>
-								{ __( 'Upload File', 'godam' ) }
-							</Button>
+							<>
+								<Button
+									className="godam-ve-transcription__upload-btn"
+									variant="secondary"
+									icon={ plus }
+									data-test-id="godam-video-editor-button-upload-transcription"
+									onClick={ handleUpload }
+								>
+									{ __( 'Upload File', 'godam' ) }
+								</Button>
+								<Button
+									className="godam-ve-transcription__manage-btn"
+									variant="link"
+									data-test-id="godam-video-editor-button-manage-captions-empty"
+									onClick={ () => setShowCaptionManager( true ) }
+								>
+									{ __( 'Manage caption tracks', 'godam' ) }
+								</Button>
+							</>
 						) }
 					</div>
 				) }
 			</div>
+
+			{ showCaptionManager && (
+				<CaptionManager
+					attachmentID={ attachmentID }
+					onClose={ () => setShowCaptionManager( false ) }
+				/>
+			) }
 
 			{ confirmDelete && (
 				<Modal
 					title={ __( 'Delete transcription', 'godam' ) }
 					onRequestClose={ () => setConfirmDelete( false ) }
 				>
-					<p>{ __( 'Delete this transcription? This cannot be undone.', 'godam' ) }</p>
+					<p>{ __( 'Delete this transcription from WordPress? This cannot be undone.', 'godam' ) }</p>
+					<p>{ __( 'Caption tracks stored in GoDAM keep playing for visitors. To remove one, use Manage caption tracks.', 'godam' ) }</p>
 					<div className="flex justify-between items-center gap-3">
 						<Button
 							variant="tertiary"

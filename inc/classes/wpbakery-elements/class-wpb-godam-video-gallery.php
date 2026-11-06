@@ -59,6 +59,10 @@ class WPB_GoDAM_Video_Gallery {
 	/**
 	 * Map the video gallery element to WPBakery.
 	 *
+	 * Each param default is set in both 'std' and settings['default']:
+	 * WPBakery 9.1+ reads settings['default'] and logs a deprecation notice
+	 * for 'std' on its own, while older versions read only 'std'.
+	 *
 	 * @since 1.6.0
 	 *
 	 * @return void
@@ -84,6 +88,7 @@ class WPB_GoDAM_Video_Gallery {
 					esc_html__( 'Handpicked (pick videos)', 'godam' )   => 'handpicked',
 				),
 				'std'         => 'query',
+				'settings'    => array( 'default' => 'query' ),
 				'description' => esc_html__( 'Query: filter from the media library. Handpicked: choose specific videos in order.', 'godam' ),
 				'group'       => $gallery_group,
 			),
@@ -129,6 +134,7 @@ class WPB_GoDAM_Video_Gallery {
 					esc_html__( 'Size', 'godam' )     => 'size',
 				),
 				'std'         => 'date',
+				'settings'    => array( 'default' => 'date' ),
 				'description' => esc_html__( 'Sort videos by.', 'godam' ),
 				'group'       => $gallery_group,
 				'dependency'  => array(
@@ -145,6 +151,7 @@ class WPB_GoDAM_Video_Gallery {
 					esc_html__( 'Ascending', 'godam' )  => 'asc',
 				),
 				'std'         => 'desc',
+				'settings'    => array( 'default' => 'desc' ),
 				'description' => esc_html__( 'Sort order.', 'godam' ),
 				'group'       => $gallery_group,
 				'dependency'  => array(
@@ -158,6 +165,7 @@ class WPB_GoDAM_Video_Gallery {
 				'param_name'  => 'media_folder',
 				'value'       => $this->get_media_folders_for_dropdown(),
 				'std'         => '',
+				'settings'    => array( 'default' => '' ),
 				'description' => esc_html__( 'Limit results to a single media folder.', 'godam' ),
 				'group'       => $gallery_group,
 				'dependency'  => array(
@@ -171,6 +179,7 @@ class WPB_GoDAM_Video_Gallery {
 				'param_name'  => 'author',
 				'value'       => $this->get_authors_for_dropdown(),
 				'std'         => '',
+				'settings'    => array( 'default' => '' ),
 				'description' => esc_html__( 'Limit results to videos uploaded by one user.', 'godam' ),
 				'group'       => $gallery_group,
 				'dependency'  => array(
@@ -190,6 +199,7 @@ class WPB_GoDAM_Video_Gallery {
 					esc_html__( 'Custom Range', 'godam' ) => 'custom',
 				),
 				'std'         => '',
+				'settings'    => array( 'default' => '' ),
 				'description' => esc_html__( 'Filter by date range.', 'godam' ),
 				'group'       => $gallery_group,
 				'dependency'  => array(
@@ -228,6 +238,7 @@ class WPB_GoDAM_Video_Gallery {
 					esc_html__( 'Priority', 'godam' ) => 'priority',
 				),
 				'std'         => 'balanced',
+				'settings'    => array( 'default' => 'balanced' ),
 				'description' => esc_html__( 'Priority preloads leading thumbnails with fetchpriority="high".', 'godam' ),
 				'group'       => $gallery_group,
 			),
@@ -245,6 +256,7 @@ class WPB_GoDAM_Video_Gallery {
 					esc_html__( 'List', 'godam' )     => 'list',
 				),
 				'std'         => 'grid',
+				'settings'    => array( 'default' => 'grid' ),
 				'description' => esc_html__( 'Choose the layout style for the gallery.', 'godam' ),
 				'group'       => $display_group,
 			),
@@ -258,6 +270,7 @@ class WPB_GoDAM_Video_Gallery {
 					esc_html__( 'Large (320px)', 'godam' ) => 'L',
 				),
 				'std'         => 'S',
+				'settings'    => array( 'default' => 'S' ),
 				'description' => esc_html__( 'Tile width in pixels.', 'godam' ),
 				'group'       => $display_group,
 			),
@@ -273,6 +286,7 @@ class WPB_GoDAM_Video_Gallery {
 					'1:1'  => '1:1',
 				),
 				'std'         => '16:9',
+				'settings'    => array( 'default' => '16:9' ),
 				'description' => esc_html__( 'Thumbnail aspect ratio.', 'godam' ),
 				'group'       => $display_group,
 			),
@@ -282,6 +296,7 @@ class WPB_GoDAM_Video_Gallery {
 				'param_name'  => 'show_title',
 				'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
 				'std'         => 'true',
+				'settings'    => array( 'default' => 'true' ),
 				'description' => esc_html__( 'Display video titles and upload dates beneath each tile.', 'godam' ),
 				'group'       => $display_group,
 			),
@@ -294,6 +309,7 @@ class WPB_GoDAM_Video_Gallery {
 					esc_html__( 'Autoplay all videos', 'godam' ) => 'autoplay',
 				),
 				'std'         => 'hover',
+				'settings'    => array( 'default' => 'hover' ),
 				'description' => esc_html__( 'Play on hover: videos play when hovered. Autoplay: visible videos autoplay one at a time.', 'godam' ),
 				'group'       => $display_group,
 			),
@@ -303,6 +319,7 @@ class WPB_GoDAM_Video_Gallery {
 				'param_name'  => 'show_play_button',
 				'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
 				'std'         => 'true',
+				'settings'    => array( 'default' => 'true' ),
 				// save_always so unchecking persists an empty value; without it VC
 				// omits the attribute and the shortcode's `true` default keeps the
 				// overlay on, making the toggle impossible to turn off.
@@ -331,6 +348,7 @@ class WPB_GoDAM_Video_Gallery {
 					esc_html__( 'Infinite scroll', 'godam' )  => 'infinite',
 				),
 				'std'         => 'button',
+				'settings'    => array( 'default' => 'button' ),
 				'description' => esc_html__( 'How additional items appear once the initial set is shown.', 'godam' ),
 				'group'       => $display_group,
 				'dependency'  => array(
@@ -350,6 +368,7 @@ class WPB_GoDAM_Video_Gallery {
 				'param_name'  => 'engagements',
 				'value'       => array( esc_html__( 'Yes', 'godam' ) => 'true' ),
 				'std'         => 'true',
+				'settings'    => array( 'default' => 'true' ),
 				'description' => esc_html__( 'Engagement layers only render for transcoded videos.', 'godam' ),
 				'group'       => $display_group,
 			);

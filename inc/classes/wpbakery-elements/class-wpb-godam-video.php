@@ -50,6 +50,10 @@ class WPB_GoDAM_Video {
 	/**
 	 * Map video element to WPBakery.
 	 *
+	 * Each param default is set in both 'std' and settings['default']:
+	 * WPBakery 9.1+ reads settings['default'] and logs a deprecation notice
+	 * for 'std' on its own, while older versions read only 'std'.
+	 *
 	 * @since 1.6.0
 	 *
 	 * @return void
@@ -81,6 +85,7 @@ class WPB_GoDAM_Video {
 					esc_html__( 'Yes', 'godam' ) => '1',
 				),
 				'std'         => '0',
+				'settings'    => array( 'default' => '0' ),
 				'description' => esc_html__( 'Autoplay may cause usability issues for some users.', 'godam' ),
 				'save_always' => true,
 				'dependency'  => array(
@@ -97,6 +102,7 @@ class WPB_GoDAM_Video {
 					esc_html__( 'Yes', 'godam' ) => '1',
 				),
 				'std'         => '0',
+				'settings'    => array( 'default' => '0' ),
 				'description' => esc_html__( 'Loop the video playback.', 'godam' ),
 				'save_always' => true,
 				'dependency'  => array(
@@ -113,6 +119,7 @@ class WPB_GoDAM_Video {
 					esc_html__( 'Yes', 'godam' ) => '1',
 				),
 				'std'         => '0',
+				'settings'    => array( 'default' => '0' ),
 				'description' => esc_html__( 'Mute the video by default.', 'godam' ),
 				'save_always' => true,
 				'dependency'  => array(
@@ -129,6 +136,7 @@ class WPB_GoDAM_Video {
 					esc_html__( 'No', 'godam' )  => '0',
 				),
 				'std'         => '1',
+				'settings'    => array( 'default' => '1' ),
 				'description' => esc_html__( 'Show video playback controls.', 'godam' ),
 				'save_always' => true,
 				'dependency'  => array(
@@ -145,6 +153,7 @@ class WPB_GoDAM_Video {
 					esc_html__( 'Yes', 'godam' ) => '1',
 				),
 				'std'         => '0',
+				'settings'    => array( 'default' => '0' ),
 				'description' => esc_html__( 'Open the video in a lightbox when clicked.', 'godam' ),
 				'save_always' => true,
 				'dependency'  => array(
@@ -161,6 +170,7 @@ class WPB_GoDAM_Video {
 					esc_html__( 'Priority', 'godam' ) => 'priority',
 				),
 				'std'         => 'balanced',
+				'settings'    => array( 'default' => 'balanced' ),
 				'description' => esc_html__( 'Select the performance mode for the video.', 'godam' ),
 				'save_always' => true,
 				'dependency'  => array(
@@ -191,6 +201,7 @@ class WPB_GoDAM_Video {
 					esc_html__( 'Start Preview', 'godam' ) => 'start-preview',
 				),
 				'std'         => 'none',
+				'settings'    => array( 'default' => 'none' ),
 				'description' => esc_html__( 'Choose the action to perform on video hover. Ignored when Show in Lightbox is on.', 'godam' ),
 				'save_always' => true,
 				// WPBakery allows a single dependency per param, spent here on `id`, so
@@ -213,6 +224,7 @@ class WPB_GoDAM_Video {
 					esc_html__( 'Keep playing, muted', 'godam' ) => 'mute',
 				),
 				'std'         => '',
+				'settings'    => array( 'default' => '' ),
 				'description' => esc_html__( 'Scrolled past, on another slide, or in a closed tab or accordion. Autoplaying videos resume when visible again.', 'godam' ),
 				'save_always' => true,
 				'dependency'  => array(
@@ -229,6 +241,7 @@ class WPB_GoDAM_Video {
 					esc_html__( '16:9 (Standard)', 'godam' ) => '16:9',
 				),
 				'std'         => 'responsive',
+				'settings'    => array( 'default' => 'responsive' ),
 				'description' => esc_html__( 'Choose the aspect ratio for the video player.', 'godam' ),
 				'save_always' => true,
 				'dependency'  => array(
@@ -261,6 +274,7 @@ class WPB_GoDAM_Video {
 					esc_html__( 'Yes', 'godam' ) => '1',
 				),
 				'std'         => '0',
+				'settings'    => array( 'default' => '0' ),
 				'description' => esc_html__( 'Engagement will only be visible for transcoded videos', 'godam' ),
 				'save_always' => true,
 				'dependency'  => array(
@@ -282,6 +296,7 @@ class WPB_GoDAM_Video {
 						esc_html__( 'Yes', 'godam' ) => '1',
 					),
 					'std'         => '0',
+					'settings'    => array( 'default' => '0' ),
 					'description' => esc_html__( 'Show share button in the video player.', 'godam' ),
 					'save_always' => true,
 					'dependency'  => array(
@@ -301,6 +316,7 @@ class WPB_GoDAM_Video {
 						esc_html__( 'No', 'godam' )  => '0',
 					),
 					'std'         => '',
+					'settings'    => array( 'default' => '' ),
 					'description' => esc_html__( 'Show the transcript button/panel. "Default" follows the media/block setting.', 'godam' ),
 					'save_always' => true,
 					'dependency'  => array(
@@ -320,6 +336,7 @@ class WPB_GoDAM_Video {
 						esc_html__( 'No', 'godam' )  => '0',
 					),
 					'std'         => '',
+					'settings'    => array( 'default' => '' ),
 					'description' => esc_html__( 'Show the subtitles/captions button. "Default" follows the media caption setting.', 'godam' ),
 					'save_always' => true,
 					'dependency'  => array(
@@ -366,6 +383,7 @@ class WPB_GoDAM_Video {
 						esc_html__( 'Yes', 'godam' ) => '1',
 					),
 					'std'         => '0',
+					'settings'    => array( 'default' => '0' ),
 					'description' => esc_html__( 'Enable to customize SEO for this element. When disabled, SEO data is synced from the media library.', 'godam' ),
 					'group'       => esc_html__( 'SEO Settings', 'godam' ),
 					'save_always' => true,
@@ -457,6 +475,7 @@ class WPB_GoDAM_Video {
 						esc_html__( 'No', 'godam' )  => '0',
 					),
 					'std'         => '1',
+					'settings'    => array( 'default' => '1' ),
 					'description' => esc_html__( 'Is the video suitable for all audiences?', 'godam' ),
 					'group'       => esc_html__( 'SEO Settings', 'godam' ),
 					'save_always' => true,
@@ -474,6 +493,7 @@ class WPB_GoDAM_Video {
 						esc_html__( 'Yes', 'godam' ) => '1',
 					),
 					'std'         => '0',
+					'settings'    => array( 'default' => '0' ),
 					'description' => esc_html__( 'Leave this video out of the GoDAM video sitemap. The video schema on this page is not affected.', 'godam' ),
 					'group'       => esc_html__( 'SEO Settings', 'godam' ),
 					'save_always' => true,

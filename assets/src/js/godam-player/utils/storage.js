@@ -29,7 +29,12 @@
  * should touch the underlying key.
  */
 
-const STORAGE_KEY = 'godamLayerInteractions';
+/**
+ * Internal dependencies
+ */
+import { hasStatisticsConsent, holdUntilConsent, LAYER_BUFFER_KEY } from './consent';
+
+const STORAGE_KEY = LAYER_BUFFER_KEY;
 
 // Defensive upper bound on buffered events per video per page session.
 // Per-session dedupe in the manager classes already bounds normal growth to
@@ -107,6 +112,13 @@ export function addLayerInteractions( videoKey, events ) {
 		return;
 	}
 	if ( ! Array.isArray( events ) || events.length === 0 ) {
+		return;
+	}
+	// Without statistics consent nothing is written to the browser: the events
+	// wait in memory, are buffered if the visitor accepts on this page, and are
+	// discarded if they refuse.
+	if ( ! hasStatisticsConsent() ) {
+		holdUntilConsent( () => addLayerInteractions( videoKey, events ) );
 		return;
 	}
 
