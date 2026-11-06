@@ -3,8 +3,9 @@
  *
  * Core types map to their own editors. An add-on type opens when PHP lists it in
  * `godamVideoEditorConfig.layerComponents` and the add-on's script put the named
- * component on `window.godamLayerComponents`. Tests marked "current behaviour"
- * pin something #2292 intends to change on purpose.
+ * component on `window.godamLayerComponents`. Since #2292 the panel comes from
+ * the layer registry, and a layer whose type has no panel gets a "needs an
+ * add-on" notice instead of the CTA editor (RFC D2).
  */
 
 /**
@@ -12,11 +13,14 @@
  */
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 
 /**
  * Internal dependencies
  */
 import Layer from './Layer';
+import { registerCoreLayerTypes } from '../../layers/core';
 
 // A function declaration, so it is hoisted along with the jest.mock() calls.
 function mockEditor( name ) {
@@ -31,22 +35,45 @@ jest.mock( './CTALayer', () => mockEditor( 'cta' ) );
 jest.mock( './HotspotLayer', () => mockEditor( 'hotspot' ) );
 jest.mock( './AdsLayer', () => mockEditor( 'ad' ) );
 jest.mock( './PollLayer', () => mockEditor( 'poll' ) );
+jest.mock( '../../utils/formUtils', () => ( { getFormIdFromLayer: () => null } ) );
+
+// The real slice reads page globals at import time; only the action shapes matter here.
+jest.mock( '../../redux/slice/videoSlice', () => ( {
+	removeLayer: ( payload ) => ( { type: 'removeLayer', payload } ),
+	updateLayerField: ( payload ) => ( { type: 'updateLayerField', payload } ),
+} ) );
+
+registerCoreLayerTypes();
 
 describe( 'Layer API contract: Layer editor dispatch', () => {
-	let container, root;
+	let container, root, dispatched;
 
 	const render = ( layer, props = {} ) => {
+		const store = configureStore( {
+			reducer: {
+				videoReducer: ( state = { layers: [ layer ] }, action ) => {
+					dispatched.push( action );
+					return state;
+				},
+			},
+		} );
 		act( () => {
-			root.render( <Layer layer={ layer } goBack={ props.goBack ?? ( () => {} ) } duration={ 90 } /> );
+			root.render(
+				<Provider store={ store }>
+					<Layer layer={ layer } goBack={ props.goBack ?? ( () => {} ) } duration={ 90 } />
+				</Provider>,
+			);
 		} );
 	};
 	const editor = () => container.querySelector( '[data-editor]' )?.dataset.editor;
+	const notice = () => container.querySelector( '[data-test-id="godam-video-editor-unregistered-layer"]' );
 
 	beforeEach( () => {
 		global.IS_REACT_ACT_ENVIRONMENT = true;
 		container = document.createElement( 'div' );
 		document.body.appendChild( container );
 		root = createRoot( container );
+		dispatched = [];
 		window.godamVideoEditorConfig = { layerComponents: {} };
 		window.godamLayerComponents = {};
 	} );
@@ -81,17 +108,27 @@ describe( 'Layer API contract: Layer editor dispatch', () => {
 		expect( editor() ).toBe( 'better-cta' );
 	} );
 
-	// Current behaviour: #2292 replaces this fallback with a "needs an add-on" notice.
-	it( 'falls back to the CTA editor when PHP lists a type whose component never loaded', () => {
+	it( 'shows the "needs an add-on" notice when PHP lists a type whose component never loaded', () => {
 		window.godamVideoEditorConfig.layerComponents = { acme: 'AcmeLayer' };
 		render( { id: 'l4', type: 'acme' } );
-		expect( editor() ).toBe( 'cta' );
+		expect( editor() ).toBeUndefined();
+		expect( notice() ).not.toBeNull();
 	} );
 
-	// Current behaviour: #2292 replaces this fallback with a "needs an add-on" notice.
-	it( 'falls back to the CTA editor for an unregistered type', () => {
+	it( 'shows the "needs an add-on" notice for an unregistered type, never another type\'s editor', () => {
 		render( { id: 'l5', type: 'ghost' } );
-		expect( editor() ).toBe( 'cta' );
+		expect( editor() ).toBeUndefined();
+		expect( notice().textContent ).toContain( 'ghost' );
+	} );
+
+	it( 'lets the notice delete the layer and go back', () => {
+		const goBack = jest.fn();
+		render( { id: 'l6', type: 'ghost' }, { goBack } );
+
+		act( () => [ ...notice().querySelectorAll( 'button' ) ].find( ( b ) => b.textContent === 'Delete layer' ).click() );
+
+		expect( dispatched ).toContainEqual( { type: 'removeLayer', payload: { id: 'l6' } } );
+		expect( goBack ).toHaveBeenCalled();
 	} );
 
 	it( 'shows the error notice, not a blank editor, when an add-on editor throws', () => {
@@ -103,7 +140,7 @@ describe( 'Layer API contract: Layer editor dispatch', () => {
 			},
 		};
 
-		render( { id: 'l6', type: 'acme' } );
+		render( { id: 'l7', type: 'acme' } );
 
 		expect( container.querySelector( '.godam-layer-error[role="alert"]' ) ).not.toBeNull();
 		consoleError.mockRestore();

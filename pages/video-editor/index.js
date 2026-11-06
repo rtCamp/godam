@@ -25,6 +25,8 @@ import {
 import FontAwesomeIconPicker from './components/hotspot/FontAwesomeIconPicker';
 import ColorPickerButton from './components/shared/color-picker/ColorPickerButton.jsx';
 import { formatClock, parseClock } from './utils/time';
+import { registerEditorLayerTypes } from './layers';
+import { useLayer, useLayerAttributes } from './layers/hooks';
 
 window.godamVideoEditorComponents = {
 	...( window.godamVideoEditorComponents || {} ),
@@ -49,6 +51,30 @@ window.godamVideoEditorUtils = {
 	formatClock,
 	parseClock,
 };
+
+// Layer API (#2292): hooks and controls for layer settings panels, imported by
+// add-ons as `@godam/layer-editor` (script handle `godam-layer-editor`).
+window.godam = window.godam || {};
+window.godam.layerEditor = {
+	...( window.godam.layerEditor || {} ),
+	useLayer,
+	useLayerAttributes,
+	LayerCanvas: LayerControls,
+	LayersHeader,
+	VeSection,
+	VeTextInput,
+	VeSegmented,
+	VeColorList,
+	VeRadioGroup,
+	FontAwesomeIconPicker,
+	ColorPickerButton,
+	formatClock,
+	parseClock,
+};
+
+// Core layer types, then add-on types described through the old PHP hooks.
+// Add-ons on the Layer API register themselves through `window.godam.layers`.
+registerEditorLayerTypes();
 
 const Index = () => {
 	return (

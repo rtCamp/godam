@@ -13,6 +13,8 @@ jest.mock( './redux/store', () => ( {} ) );
 jest.mock( './App', () => () => null );
 jest.mock( './redux/slice/videoSlice', () => ( { updateLayerField: jest.fn() } ) );
 jest.mock( './utils/time', () => ( { formatClock: jest.fn(), parseClock: jest.fn() } ) );
+jest.mock( './layers', () => ( { registerEditorLayerTypes: jest.fn() } ) );
+jest.mock( './layers/hooks', () => ( { useLayer: jest.fn(), useLayerAttributes: jest.fn() } ) );
 
 // A function declaration, so it is hoisted along with the jest.mock() calls.
 function mockComponent() {
@@ -62,6 +64,19 @@ describe( 'Layer API contract: editor globals for add-ons', () => {
 		const time = require( './utils/time' );
 		expect( window.godamVideoEditorUtils.formatClock ).toBe( time.formatClock );
 		expect( window.godamVideoEditorUtils.parseClock ).toBe( time.parseClock );
+	} );
+
+	it( 'exposes the layer editor hooks and controls on window.godam.layerEditor', () => {
+		const hooks = require( './layers/hooks' );
+		const { layerEditor } = window.godam;
+		expect( layerEditor.useLayer ).toBe( hooks.useLayer );
+		expect( layerEditor.useLayerAttributes ).toBe( hooks.useLayerAttributes );
+		[ 'LayerCanvas', 'LayersHeader', 'VeSection', 'VeTextInput', 'VeSegmented', 'VeColorList', 'VeRadioGroup', 'FontAwesomeIconPicker', 'ColorPickerButton' ]
+			.forEach( ( name ) => expect( typeof layerEditor[ name ] ).toBe( 'function' ) );
+	} );
+
+	it( 'registers the editor\'s layer types before rendering', () => {
+		expect( require( './layers' ).registerEditorLayerTypes ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'keeps entries an add-on already put on those globals', () => {
