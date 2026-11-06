@@ -30,6 +30,11 @@ class LayerAssetsTest extends TestCase {
 			'enqueued'   => array(),
 			'inline'     => array(),
 		);
+		$GLOBALS['rtgodam_styles']  = array(
+			'registered' => array(),
+			'enqueued'   => array(),
+			'data'       => array(),
+		);
 		rtgodam_test_register_core_layer_types();
 		godam_register_layer_type(
 			RTGODAM_PATH . 'tests/fixtures/layers/acme-countdown',
@@ -151,14 +156,105 @@ class LayerAssetsTest extends TestCase {
 			$sent
 		);
 		$this->assertSame( array( 'acme-countdown-file-view-script', 'acme-shared-lib' ), $GLOBALS['rtgodam_scripts']['enqueued'] );
+		$this->assertSame( array( 'acme-countdown-file-style', 'acme-countdown-file-view-style', 'acme-shared-style' ), $GLOBALS['rtgodam_styles']['enqueued'] );
 	}
 
 	/**
-	 * The video editor loads every type's editor script.
+	 * The video editor loads every type's editor script, and its `style` and `editorStyle`.
 	 */
 	public function test_loads_editor_scripts_in_the_editor(): void {
 		$this->registry()->enqueue_editor_scripts();
 		$this->assertSame( array( 'acme-countdown-file-editor-script' ), $GLOBALS['rtgodam_scripts']['enqueued'] );
+		$this->assertSame( array( 'acme-countdown-file-style', 'acme-countdown-file-editor-style' ), $GLOBALS['rtgodam_styles']['enqueued'] );
+	}
+
+	/**
+	 * `file:` styles in layer.json are registered as handles, with their path for
+	 * inlining and their `-rtl.css` twin; other values are used as handles.
+	 */
+	public function test_registers_the_styles_layer_json_names(): void {
+		$type   = godam_get_layer_type( 'acme/countdown-file' );
+		$styles = $GLOBALS['rtgodam_styles'];
+
+		$this->assertSame( array( 'acme-countdown-file-style' ), $type['style_handles'] );
+		$this->assertSame( array( 'acme-countdown-file-view-style', 'acme-shared-style' ), $type['view_style_handles'] );
+		$this->assertSame( array( 'acme-countdown-file-editor-style' ), $type['editor_style_handles'] );
+		$this->assertSame(
+			array( 'acme-countdown-file-style', 'acme-countdown-file-view-style', 'acme-countdown-file-editor-style' ),
+			array_keys( $styles['registered'] )
+		);
+		$this->assertStringEndsWith( '/build/style.css', $styles['registered']['acme-countdown-file-style']['src'] );
+		$this->assertSame( RTGODAM_PATH . 'tests/fixtures/layers/acme-countdown/build/style.css', $styles['data']['acme-countdown-file-style']['path'] );
+		$this->assertSame( 'replace', $styles['data']['acme-countdown-file-style']['rtl'] );
+		$this->assertArrayNotHasKey( 'rtl', $styles['data']['acme-countdown-file-view-style'] );
+	}
+
+	/**
+	 * A `file:` style that doesn't exist, or isn't CSS, isn't registered.
+	 */
+	public function test_skips_missing_and_non_css_styles(): void {
+		$type = godam_register_layer_type(
+			array(
+				'name'      => 'acme/unbuilt',
+				'file'      => RTGODAM_PATH . 'tests/fixtures/layers/acme-countdown/layer.json',
+				'style'     => 'file:./build/view.js',
+				'viewStyle' => array( 'file:./build/missing.css', 'file:./src/style.scss' ),
+			)
+		);
+
+		$this->assertSame( array(), $type['style_handles'] );
+		$this->assertSame( array(), $type['view_style_handles'] );
+		$this->assertArrayNotHasKey( 'acme-unbuilt-style', $GLOBALS['rtgodam_styles']['registered'] );
+	}
+
+	/**
+	 * A layer's `style` and `viewStyle` load only once a layer of its type renders
+	 * something, and its `editorStyle` never loads on the page.
+	 */
+	public function test_loads_view_styles_only_when_a_layer_renders(): void {
+		godam_render_layer(
+			array(
+				'id'   => 'a1',
+				'type' => 'acme/countdown-file',
+			),
+			'video_1'
+		);
+		$this->assertSame( array(), $GLOBALS['rtgodam_styles']['enqueued'] );
+
+		godam_render_layer(
+			array(
+				'id'    => 'a1',
+				'type'  => 'acme/countdown-file',
+				'label' => 'Hi',
+			),
+			'video_1'
+		);
+		$this->assertSame( array( 'acme-countdown-file-style', 'acme-countdown-file-view-style', 'acme-shared-style' ), $GLOBALS['rtgodam_styles']['enqueued'] );
+	}
+
+	/**
+	 * Page-builder editors that load every image type's view scripts get their styles too.
+	 */
+	public function test_loads_the_view_styles_with_the_view_scripts_for_a_media_type(): void {
+		$this->registry()->enqueue_view_scripts_for_media( 'image' );
+		$this->assertSame( array( 'acme-countdown-file-style', 'acme-countdown-file-view-style', 'acme-shared-style' ), $GLOBALS['rtgodam_styles']['enqueued'] );
+	}
+
+	/**
+	 * The block editor canvas gets the view styles of image layer types, without their scripts,
+	 * and only in the admin: on the front end the image block loads them per layer.
+	 */
+	public function test_loads_image_layer_styles_into_the_block_editor_canvas(): void {
+		require_once RTGODAM_PATH . 'inc/classes/class-blocks.php';
+		$blocks = \RTGODAM\Inc\Blocks::get_instance();
+
+		$blocks->enqueue_image_layer_view_styles();
+		$this->assertSame( array(), $GLOBALS['rtgodam_styles']['enqueued'] );
+
+		$GLOBALS['rtgodam_stub']['is_admin'] = true;
+		$blocks->enqueue_image_layer_view_styles();
+		$this->assertSame( array( 'acme-countdown-file-style', 'acme-countdown-file-view-style', 'acme-shared-style' ), $GLOBALS['rtgodam_styles']['enqueued'] );
+		$this->assertSame( array(), $GLOBALS['rtgodam_scripts']['enqueued'] );
 	}
 
 	/**

@@ -68,6 +68,19 @@ describe( 'Layer API: registerLayerType', () => {
 		delete window.godamVideoEditorConfig;
 	} );
 
+	it( 'uses the title and description PHP translated over the ones in layer.json', () => {
+		window.godamVideoEditorConfig = {
+			layerTypes: {
+				'acme/countdown': { name: 'acme/countdown', title: 'Compte à rebours', description: 'Jusqu’à une date' },
+			},
+		};
+
+		const registered = registerLayerType( { name: 'acme/countdown', title: 'Countdown', description: 'Count down to a date', color: '#e24a4a' } );
+
+		expect( registered ).toMatchObject( { title: 'Compte à rebours', description: 'Jusqu’à une date', color: '#e24a4a' } );
+		delete window.godamVideoEditorConfig;
+	} );
+
 	it( 'fills in defaults for supports, label, description, attributes and variations', () => {
 		const registered = registerLayerType( { name: 'acme/countdown', title: 'Countdown', supports: { media: [ 'video', 'image' ] } } );
 

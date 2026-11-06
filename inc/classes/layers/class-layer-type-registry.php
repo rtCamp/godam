@@ -33,6 +33,36 @@ class Layer_Type_Registry {
 	const HOOKS_DEPRECATED_SINCE = '2.7.0';
 
 	/**
+	 * The handle suffix of each asset key a `layer.json` can name, as core names block asset handles.
+	 *
+	 * @var array<string, string>
+	 */
+	const ASSET_HANDLE_SUFFIXES = array(
+		'editorScript' => 'editor-script',
+		'viewScript'   => 'view-script',
+		'style'        => 'style',
+		'viewStyle'    => 'view-style',
+		'editorStyle'  => 'editor-style',
+	);
+
+	/**
+	 * The translatable `layer.json` strings and their gettext contexts, as core's
+	 * `get_block_metadata_i18n_schema()` gives them for `block.json`.
+	 *
+	 * @var array<string, mixed>
+	 */
+	const I18N_SCHEMA = array(
+		'title'       => 'layer title',
+		'description' => 'layer description',
+		'variations'  => array(
+			array(
+				'title'       => 'layer variation title',
+				'description' => 'layer variation description',
+			),
+		),
+	);
+
+	/**
 	 * Registered layer types, keyed by name, in registration order.
 	 *
 	 * @var array<string, array>
@@ -107,6 +137,12 @@ class Layer_Type_Registry {
 		$metadata = apply_filters( 'godam_layer_type_metadata', $metadata );
 		$name     = isset( $metadata['name'] ) && is_string( $metadata['name'] ) ? $metadata['name'] : '';
 
+		// Translate the metadata's strings with the type's text domain, as core
+		// translates block.json, so `$args` needn't repeat them translated.
+		if ( ! empty( $metadata['textdomain'] ) && is_string( $metadata['textdomain'] ) ) {
+			$metadata = $this->translate_metadata( self::I18N_SCHEMA, $metadata, $metadata['textdomain'] );
+		}
+
 		if ( '' === $name ) {
 			$this->notice( __FUNCTION__, __( 'A layer type needs a name.', 'godam' ) );
 			return false;
@@ -137,6 +173,9 @@ class Layer_Type_Registry {
 
 		$type['editor_script_handles'] = $this->register_scripts( $type, 'editorScript', array( 'godam-layers', 'godam-layer-editor' ) );
 		$type['view_script_handles']   = $this->register_scripts( $type, 'viewScript', array( 'godam-layer-runtime' ) );
+		$type['style_handles']         = $this->register_styles( $type, 'style' );
+		$type['view_style_handles']    = $this->register_styles( $type, 'viewStyle' );
+		$type['editor_style_handles']  = $this->register_styles( $type, 'editorStyle' );
 
 		$variations         = array_merge( (array) $type['variations'], $this->pending_variations[ $name ] ?? array() );
 		$type['variations'] = array();
@@ -470,12 +509,14 @@ class Layer_Type_Registry {
 	}
 
 	/**
-	 * Enqueue every registered type's `editorScript`. Called on the video editor page.
+	 * Enqueue every registered type's `editorScript`, `editorStyle` and `style`.
+	 * Called on the video editor page.
 	 *
 	 * @return void
 	 */
 	public function enqueue_editor_scripts() {
 		foreach ( $this->types as $type ) {
+			$this->enqueue_styles( array_merge( $type['style_handles'] ?? array(), $type['editor_style_handles'] ?? array() ) );
 			foreach ( $type['editor_script_handles'] ?? array() as $handle ) {
 				wp_enqueue_script( $handle );
 			}
@@ -483,11 +524,11 @@ class Layer_Type_Registry {
 	}
 
 	/**
-	 * Enqueue the view scripts of every type that runs on a kind of media.
+	 * Enqueue the view scripts and styles of every type that runs on a kind of media.
 	 *
 	 * For places that draw layers without the page rendering them: the block
 	 * editor's godam/image preview, and page-builder editors that render
-	 * previews over AJAX (where scripts enqueued during the render never print).
+	 * previews over AJAX (where assets enqueued during the render never print).
 	 *
 	 * @param string|null $media `video`, `image`, or null for any.
 	 * @return void
@@ -501,14 +542,57 @@ class Layer_Type_Registry {
 	}
 
 	/**
-	 * Enqueue a type's `viewScript`, so it loads only on pages that show its layers.
+	 * Enqueue the `style` and `viewStyle` of every type that runs on a kind of media.
+	 *
+	 * For the block editor canvas, an iframe that gets the styles enqueued on
+	 * `enqueue_block_assets` but not the editor window's scripts.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string|null $media `video`, `image`, or null for any.
+	 * @return void
+	 */
+	public function enqueue_view_styles_for_media( $media = null ) {
+		foreach ( $this->types as $type ) {
+			if ( null === $media || $this->supports_media( $type, $media ) ) {
+				$this->enqueue_view_styles( $type );
+			}
+		}
+	}
+
+	/**
+	 * Enqueue a type's `viewScript`, `style` and `viewStyle`, so they load only on
+	 * pages that show its layers.
 	 *
 	 * @param array $type Layer type.
 	 * @return void
 	 */
 	private function enqueue_view_scripts( $type ) {
+		$this->enqueue_view_styles( $type );
 		foreach ( $type['view_script_handles'] ?? array() as $handle ) {
 			wp_enqueue_script( $handle );
+		}
+	}
+
+	/**
+	 * Enqueue a type's `style` and `viewStyle`.
+	 *
+	 * @param array $type Layer type.
+	 * @return void
+	 */
+	private function enqueue_view_styles( $type ) {
+		$this->enqueue_styles( array_merge( $type['style_handles'] ?? array(), $type['view_style_handles'] ?? array() ) );
+	}
+
+	/**
+	 * Enqueue style handles.
+	 *
+	 * @param string[] $handles Handles.
+	 * @return void
+	 */
+	private function enqueue_styles( $handles ) {
+		foreach ( array_unique( $handles ) as $handle ) {
+			wp_enqueue_style( $handle );
 		}
 	}
 
@@ -531,24 +615,18 @@ class Layer_Type_Registry {
 				$handles[] = $script;
 				continue;
 			}
-			if ( empty( $type['file'] ) ) {
-				continue;
-			}
 
-			$real = realpath( dirname( $type['file'] ) . '/' . substr( $script, 5 ) );
-			$path = $real ? wp_normalize_path( $real ) : '';
+			$path = $this->get_asset_path( $type, $script );
 			// Only a built script (with the `*.asset.php` `@wordpress/scripts`
 			// writes beside it) is registered, never a source file.
 			$asset_file = $path ? preg_replace( '/\.js$/', '.asset.php', $path ) : '';
-			if ( ! $path || ! file_exists( $path ) || ! $asset_file || ! file_exists( $asset_file ) ) {
+			if ( ! $path || ! $asset_file || $asset_file === $path || ! file_exists( $asset_file ) ) {
 				continue;
 			}
 
 			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- the build's `*.asset.php` beside a registered layer.json, checked to exist above.
-			$asset = include $asset_file;
-			// Core types (no namespace) get a `godam-layer-` prefix, as core blocks get `wp-block-`.
-			$prefix = false === strpos( $type['name'], '/' ) ? 'godam-layer-' . $type['name'] : str_replace( '/', '-', $type['name'] );
-			$handle = sprintf( '%s-%s%s', $prefix, 'editorScript' === $key ? 'editor-script' : 'view-script', $index ? '-' . ( $index + 1 ) : '' );
+			$asset  = include $asset_file;
+			$handle = $this->get_asset_handle( $type, $key, $index );
 
 			wp_register_script(
 				$handle,
@@ -558,11 +636,151 @@ class Layer_Type_Registry {
 				true
 			);
 			if ( function_exists( 'wp_set_script_translations' ) ) {
-				wp_set_script_translations( $handle, $type['textdomain'] ?? 'godam', defined( 'RTGODAM_PATH' ) ? RTGODAM_PATH . 'languages' : '' );
+				// GoDAM's own layers load their translations from GoDAM's languages
+				// folder; an add-on's use WordPress's lookup for its text domain.
+				if ( $this->is_godam_file( $type['file'] ) ) {
+					wp_set_script_translations( $handle, $type['textdomain'] ?? 'godam', RTGODAM_PATH . 'languages' );
+				} elseif ( ! empty( $type['textdomain'] ) ) {
+					wp_set_script_translations( $handle, $type['textdomain'] );
+				}
 			}
 			$handles[] = $handle;
 		}
 		return $handles;
+	}
+
+	/**
+	 * Register the stylesheets a `layer.json` names under a key.
+	 *
+	 * A value is a registered style handle, or `file:./path.css` relative to the
+	 * `layer.json`. A `*-rtl.css` beside the file (as `@wordpress/scripts` builds
+	 * it) replaces it on right-to-left sites.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array  $type Layer type.
+	 * @param string $key  `style`, `viewStyle` or `editorStyle`.
+	 * @return string[] Handles.
+	 */
+	private function register_styles( $type, $key ) {
+		$handles = array();
+		foreach ( array_filter( (array) ( $type[ $key ] ?? array() ), 'is_string' ) as $index => $style ) {
+			if ( 0 !== strpos( $style, 'file:' ) ) {
+				$handles[] = $style;
+				continue;
+			}
+
+			$path = $this->get_asset_path( $type, $style );
+			// Only CSS is registered: a stylesheet that isn't built yet (say a
+			// core layer's `.scss` source) loads nothing.
+			if ( ! $path || '.css' !== substr( $path, -4 ) ) {
+				continue;
+			}
+
+			$handle = $this->get_asset_handle( $type, $key, $index );
+			wp_register_style(
+				$handle,
+				plugins_url( basename( $path ), $path ),
+				array(),
+				isset( $type['version'] ) && is_string( $type['version'] ) ? $type['version'] : (string) filemtime( $path )
+			);
+			wp_style_add_data( $handle, 'path', $path );
+			if ( file_exists( substr( $path, 0, -4 ) . '-rtl.css' ) ) {
+				wp_style_add_data( $handle, 'rtl', 'replace' );
+			}
+			$handles[] = $handle;
+		}
+		return $handles;
+	}
+
+	/**
+	 * The file a `file:` asset in a `layer.json` points to.
+	 *
+	 * @param array  $type  Layer type.
+	 * @param string $asset `file:./path`, relative to the type's `layer.json`.
+	 * @return string The normalized path, or '' when the type has no `layer.json` or the file doesn't exist.
+	 */
+	private function get_asset_path( $type, $asset ) {
+		if ( empty( $type['file'] ) ) {
+			return '';
+		}
+		$real = realpath( dirname( $type['file'] ) . '/' . substr( $asset, 5 ) );
+		return $real && is_file( $real ) ? wp_normalize_path( $real ) : '';
+	}
+
+	/**
+	 * The handle a type's `file:` asset registers under, e.g. `acme-countdown-view-style`.
+	 *
+	 * @param array  $type  Layer type.
+	 * @param string $key   Asset key, e.g. `viewStyle`.
+	 * @param int    $index Position in the key's list; the second asset gets a `-2` suffix.
+	 * @return string The handle.
+	 */
+	private function get_asset_handle( $type, $key, $index ) {
+		// Core types (no namespace) get a `godam-layer-` prefix, as core blocks get `wp-block-`.
+		$prefix = false === strpos( $type['name'], '/' ) ? 'godam-layer-' . $type['name'] : str_replace( '/', '-', $type['name'] );
+		return sprintf( '%s-%s%s', $prefix, self::ASSET_HANDLE_SUFFIXES[ $key ], $index ? '-' . ( $index + 1 ) : '' );
+	}
+
+	/**
+	 * Whether a file is part of GoDAM itself.
+	 *
+	 * @param string $file Path.
+	 * @return bool
+	 */
+	private function is_godam_file( $file ) {
+		if ( ! defined( 'RTGODAM_PATH' ) ) {
+			return false;
+		}
+		$godam = wp_normalize_path( (string) realpath( RTGODAM_PATH ) );
+		$real  = wp_normalize_path( (string) realpath( $file ) );
+		return '' !== $godam && '' !== $real && 0 === strpos( $real, trailingslashit( $godam ) );
+	}
+
+	/**
+	 * Translate a type's metadata strings with its text domain, as core's
+	 * `translate_settings_using_i18n_schema()` does for `block.json`.
+	 *
+	 * A string is looked up with its gettext context first (`layer title`, …),
+	 * then without one, so a translation the text domain already has for the
+	 * same string, say from the add-on's editor script, is used too.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string|array $schema     Context, or the schema of an array of settings.
+	 * @param mixed        $settings   Metadata, or part of it.
+	 * @param string       $textdomain Text domain.
+	 * @return mixed The translated metadata.
+	 */
+	private function translate_metadata( $schema, $settings, $textdomain ) {
+		if ( is_string( $schema ) ) {
+			if ( ! is_string( $settings ) || '' === $settings ) {
+				return $settings;
+			}
+			// phpcs:ignore WordPress.WP.I18n.LowLevelTranslationFunction, WordPress.WP.I18n.NonSingularStringLiteralText, WordPress.WP.I18n.NonSingularStringLiteralContext, WordPress.WP.I18n.NonSingularStringLiteralDomain -- translating layer.json strings, as core translates block.json.
+			$translated = translate_with_gettext_context( $settings, $schema, $textdomain );
+			if ( $translated === $settings ) {
+				// phpcs:ignore WordPress.WP.I18n.LowLevelTranslationFunction, WordPress.WP.I18n.NonSingularStringLiteralText, WordPress.WP.I18n.NonSingularStringLiteralDomain -- as above.
+				$translated = translate( $settings, $textdomain );
+			}
+			return $translated;
+		}
+		if ( ! is_array( $schema ) || ! is_array( $settings ) ) {
+			return $settings;
+		}
+		// A list: every item uses the schema's one entry.
+		if ( isset( $schema[0] ) ) {
+			foreach ( $settings as $index => $item ) {
+				$settings[ $index ] = $this->translate_metadata( $schema[0], $item, $textdomain );
+			}
+			return $settings;
+		}
+		foreach ( $schema as $key => $item_schema ) {
+			if ( isset( $settings[ $key ] ) ) {
+				$settings[ $key ] = $this->translate_metadata( $item_schema, $settings[ $key ], $textdomain );
+			}
+		}
+		return $settings;
 	}
 
 	/**

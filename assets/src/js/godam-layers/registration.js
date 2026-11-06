@@ -100,6 +100,21 @@ function getServerMetadata( name ) {
 }
 
 /**
+ * The strings PHP translated from a type's `layer.json`.
+ *
+ * @param {Object} server Server metadata.
+ * @return {Object} Its `title` and `description`, when set.
+ */
+function pickTranslated( server ) {
+	return [ 'title', 'description' ].reduce( ( picked, key ) => {
+		if ( typeof server[ key ] === 'string' && server[ key ] !== '' ) {
+			picked[ key ] = server[ key ];
+		}
+		return picked;
+	}, {} );
+}
+
+/**
  * Register a layer type.
  *
  * @param {Object|string} metadata Contents of the type's `layer.json`, or just its name.
@@ -109,8 +124,11 @@ function getServerMetadata( name ) {
 export function registerLayerType( metadata, settings = {} ) {
 	const own = typeof metadata === 'string' ? { name: metadata } : metadata;
 	// Metadata the type registered in PHP (`godam_register_layer_type()`) fills
-	// in what the script doesn't pass, so an add-on can register by name.
-	const merged = { ...getServerMetadata( own?.name ), ...own, ...settings };
+	// in what the script doesn't pass, so an add-on can register by name. PHP
+	// translates the layer.json strings, so its title and description win over
+	// the untranslated ones in `metadata`; `settings` still win over both.
+	const server = getServerMetadata( own?.name );
+	const merged = { ...server, ...own, ...pickTranslated( server ), ...settings };
 	const { name } = merged;
 
 	if ( typeof name !== 'string' || ( ! NAME_PATTERN.test( name ) && ! CORE_LAYER_TYPES.includes( name ) && ! LEGACY_LAYER_TYPE_NAMES.includes( name ) ) ) {
