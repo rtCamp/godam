@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { useState } from '@wordpress/element';
-import { ToggleControl, Notice, Panel, PanelBody, ExternalLink } from '@wordpress/components';
+import { ToggleControl, Notice, Panel, PanelBody, ExternalLink, Button } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -82,7 +82,7 @@ const AiAgentsSettings = () => {
 							<Notice status="warning" isDismissible={ false } className="godam-margin-bottom">
 								{ __( 'Agents connect through the MCP Adapter plugin, version 0.7 or later. Install or update it from WordPress.org first.', 'godam' ) }
 								{ ' ' }
-								<a href={ data.installAdapterUrl }>{ __( 'Find the MCP Adapter plugin', 'godam' ) }</a>
+								<Button variant="link" href={ data.installAdapterUrl }>{ __( 'Find the MCP Adapter plugin', 'godam' ) }</Button>
 							</Notice>
 						) }
 						<p>
@@ -95,14 +95,14 @@ const AiAgentsSettings = () => {
 						<p>
 							{ __( 'Agents sign in with an Application Password of the WordPress user they act as.', 'godam' ) }
 							{ ' ' }
-							<a href={ data.appPasswordsUrl }>{ __( 'Create an Application Password', 'godam' ) }</a>
+							<Button variant="link" href={ data.appPasswordsUrl }>{ __( 'Create an Application Password', 'godam' ) }</Button>
 						</p>
 						<p>
 							{ data.writesEnabled
 								? __( 'Agents can make changes as well as read.', 'godam' )
 								: __( 'Agents can only read: changes are turned off.', 'godam' ) }
 							{ ' ' }
-							<a href={ data.writingSettingsUrl }>{ __( 'Change this in Settings › Writing', 'godam' ) }</a>
+							<Button variant="link" href={ data.writingSettingsUrl }>{ __( 'Change this in Settings › Writing', 'godam' ) }</Button>
 						</p>
 					</div>
 				) }
