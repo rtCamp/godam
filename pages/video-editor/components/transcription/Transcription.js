@@ -302,7 +302,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 									{ __( 'Generating transcription…', 'godam' ) }
 								</p>
 								<p className="godam-ve-transcription__progress-note">
-									{ __( "This usually takes a few seconds, longer for long videos. We'll notify you once it's ready", 'godam' ) }
+									{ __( "This usually takes a few minutes, longer for long videos. We'll notify you once it's ready", 'godam' ) }
 								</p>
 								<span className="godam-ve-transcription__progress-bar" aria-hidden="true" />
 							</div>
