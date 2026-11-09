@@ -18,6 +18,7 @@ import 'videojs-flvjs-es6';
  */
 import GoDAM from '../../assets/src/images/godam-branding.svg';
 import PlayerProgressStripe from './components/player/PlayerProgressStripe';
+import { normalizeSkipButtons } from '../../assets/src/js/godam-player/managers/configurationManager.js';
 
 /**
  * WordPress dependencies
@@ -218,8 +219,10 @@ export const VideoJS = ( props ) => {
 		syncBrandingIcon( controlBar, controlBarSettings );
 
 		// Rebuilding the skip buttons throws away live components, so only do it
-		// when the duration actually changed (not on every colour tweak).
-		const skipSeconds = Number( controlBarSettings.skipButtons?.forward ) || 0;
+		// when the duration actually changed (not on every colour tweak). Normalize
+		// exactly as the front-end player does (5/10/30, default 10) so the preview
+		// applies the same duration the front end will.
+		const skipSeconds = normalizeSkipButtons( controlBarSettings.skipButtons ).forward;
 		if ( appliedSkipSecondsRef.current !== skipSeconds ) {
 			appliedSkipSecondsRef.current = skipSeconds;
 			syncSkipButtons( controlBar, skipSeconds );
