@@ -125,6 +125,71 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 	}
 
 	/**
+	 * Make Central answer the caption list with the given captions.
+	 *
+	 * @param array $captions Caption rows, as Central lists them.
+	 */
+	private function central_lists( $captions ) {
+		$GLOBALS['rtgodam_stub']['post_handler'] = static function () use ( $captions ) {
+			return array(
+				'code' => 200,
+				'body' => json_encode( // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- test fixture.
+					array(
+						'message' => array(
+							'success'  => true,
+							'captions' => $captions,
+						),
+					)
+				),
+			);
+		};
+	}
+
+	/**
+	 * A default AI transcript that is still pending or has failed has no file
+	 * yet. The transcript WordPress has stays while Central still lists it.
+	 */
+	public function test_keeps_the_cache_when_the_default_has_no_file() {
+		$this->central_lists(
+			array(
+				array(
+					'language'   => 'en',
+					'vtt_path'   => 'https://cdn.example/job/en.vtt',
+					'is_default' => false,
+				),
+				array(
+					'language'   => 'und',
+					'vtt_path'   => null,
+					'status'     => 'Pending',
+					'is_default' => true,
+				),
+			)
+		);
+
+		$this->assertTrue( Transcription::refresh_cached_default( 7 ) );
+		$this->assertSame( 'https://cdn.example/job/en.vtt', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
+	}
+
+	/**
+	 * A cached transcript Central no longer lists is cleared.
+	 */
+	public function test_clears_a_transcript_central_no_longer_has() {
+		$this->central_lists(
+			array(
+				array(
+					'language'   => 'und',
+					'vtt_path'   => null,
+					'status'     => 'Failed',
+					'is_default' => true,
+				),
+			)
+		);
+
+		$this->assertTrue( Transcription::refresh_cached_default( 7 ) );
+		$this->assertArrayNotHasKey( 'rtgodam_transcript_path', $GLOBALS['rtgodam_stub']['post_meta'] );
+	}
+
+	/**
 	 * A failed call keeps what WordPress has.
 	 */
 	public function test_keeps_the_cache_when_central_fails() {

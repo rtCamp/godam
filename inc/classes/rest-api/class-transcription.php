@@ -836,10 +836,14 @@ class Transcription extends Base {
 	 */
 	public static function sync_cached_transcript( $attachment_id, $captions, $switch_context = true ) {
 		$default_path = '';
+		$listed_paths = array();
 		foreach ( $captions as $caption ) {
-			if ( is_array( $caption ) && ! empty( $caption['is_default'] ) && ! empty( $caption['vtt_path'] ) ) {
+			if ( ! is_array( $caption ) || empty( $caption['vtt_path'] ) ) {
+				continue;
+			}
+			$listed_paths[] = esc_url_raw( $caption['vtt_path'] );
+			if ( '' === $default_path && ! empty( $caption['is_default'] ) ) {
 				$default_path = esc_url_raw( $caption['vtt_path'] );
-				break;
 			}
 		}
 
@@ -850,8 +854,14 @@ class Transcription extends Base {
 		delete_post_meta( $attachment_id, self::DELETED_META );
 		if ( 'upload' !== get_post_meta( $attachment_id, self::SOURCE_META, true ) ) {
 			update_post_meta( $attachment_id, self::CHECKED_META, time() );
+			$cached_path = (string) get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
 			if ( '' !== $default_path ) {
 				update_post_meta( $attachment_id, 'rtgodam_transcript_path', $default_path );
+				update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
+			} elseif ( '' !== $cached_path && in_array( $cached_path, $listed_paths, true ) ) {
+				// The default has no file yet (an AI transcript still pending, or one
+				// that failed). Keep the transcript WordPress has while Central still
+				// lists it, so the Transcription tab and the player don't lose it.
 				update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
 			} else {
 				delete_post_meta( $attachment_id, 'rtgodam_transcript_path' );
