@@ -5,7 +5,7 @@
  * Joel's rules from the 2.5.2 release thread: a WP-admin notice, only for free
  * and trial sites (never paid), gone after each offer ends, and a message
  * picked by the integrations the site uses. Halloween runs through November 9,
- * Black Friday from November 14 to 30 (the BFCM 2026 campaign doc).
+ * Black Friday and Cyber Monday from November 14 to 30 (the BFCM 2026 campaign doc).
  *
  * @package GoDAM
  */
@@ -280,8 +280,8 @@ class OfferNoticeTest extends TestCase {
 
 		$this->assertStringContainsString( 'https://godam.io/deals/?utm_source=godam-plugin&utm_medium=admin-notice&utm_campaign=bfcm2026&utm_content=media-library-lifterlms', $html );
 		$this->assertStringContainsString( 'data-code="BFCM2026"', $html );
-		$this->assertStringContainsString( 'Black Friday offer', $html );
-		$this->assertStringContainsString( 'Black Friday deal: <span>Get 50% off</span> GoDAM', $html );
+		$this->assertStringContainsString( 'Black Friday and Cyber Monday offer', $html );
+		$this->assertStringContainsString( 'Black Friday and Cyber Monday deal: <span>Get 50% off</span> GoDAM', $html );
 		$this->assertStringContainsString( 'Ends November 30 at 11:59 p.m. 50% off your first month or year on any plan.', $html );
 		$this->assertStringContainsString( 'rtgodam-offer-notice--no-art', $html );
 		$this->assertStringNotContainsString( 'rtgodam-offer-notice__art', $html );

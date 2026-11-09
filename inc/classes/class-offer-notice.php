@@ -3,8 +3,8 @@
  * Seasonal offer notice shown in wp-admin to free and trial sites.
  *
  * Each campaign has fixed dates, a code and its own dismissal: the Halloween
- * 2026 offer (SPOOKY50, through November 9) and the Black Friday 2026 offer
- * (BFCM2026, November 14 to 30). Nothing shows between or after them. The
+ * 2026 offer (SPOOKY50, through November 9) and the Black Friday and Cyber Monday
+ * 2026 offer (BFCM2026, November 14 to 30). Nothing shows between or after them. The
  * message names the integrations the site already uses, so a LifterLMS site
  * reads about course videos and a WooCommerce store about shoppable video.
  *
@@ -304,7 +304,7 @@ class Offer_Notice {
 						<path d="M8 12l2-2 1 2zM13 12l2-2 1 2zM8 16q4 3 8 0l-1.5 1-1.2-.8-1.3 1-1.3-1-1.2.8z" fill="#fff"/>
 					</svg>
 					<?php else : ?>
-						<?php esc_html_e( 'Black Friday offer', 'godam' ); ?>
+						<?php esc_html_e( 'Black Friday and Cyber Monday offer', 'godam' ); ?>
 					<?php endif; ?>
 				</p>
 				<p class="rtgodam-offer-notice__title">
@@ -313,7 +313,7 @@ class Offer_Notice {
 						/* translators: %s: the discount, shown in the accent colour, for example "Get 50% off". */
 						? esc_html__( 'No tricks, just treats: %s GoDAM!', 'godam' )
 						/* translators: %s: the discount, shown in the accent colour, for example "Get 50% off". */
-						: esc_html__( 'Black Friday deal: %s GoDAM', 'godam' );
+						: esc_html__( 'Black Friday and Cyber Monday deal: %s GoDAM', 'godam' );
 					echo wp_kses(
 						sprintf( $title, '<span>' . esc_html__( 'Get 50% off', 'godam' ) . '</span>' ),
 						array( 'span' => array() )
