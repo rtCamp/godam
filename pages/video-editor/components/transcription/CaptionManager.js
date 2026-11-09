@@ -37,6 +37,15 @@ import CaptionCueEditor from './CaptionCueEditor';
 
 const FREE_TEXT = '__other__';
 
+/**
+ * The name a caption shows in the list and the subtitles menu: its label, or
+ * the language name when it has none.
+ *
+ * @param {Object} caption Caption track row.
+ * @return {string} Display label.
+ */
+const captionDisplayLabel = ( caption ) => caption.label || languageLabel( caption.language );
+
 // Same marks as GoDAM Central's caption dialog: an outlined check for "make this the default",
 // a filled green one on the track that already is, and circular arrows for "replace".
 // Stroke-only icons: the --stroke class stops the button's fill rule from filling them.
@@ -119,7 +128,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 	// Central's caption endpoints return `{ success, captions: [...] }`.
 	// A to Z by the name shown, so a row does not jump when it becomes the default.
 	const captions = ( Array.isArray( data?.captions ) ? [ ...data.captions ] : [] ).sort( ( a, b ) =>
-		( a.label || languageLabel( a.language ) ).localeCompare( b.label || languageLabel( b.language ), undefined, { sensitivity: 'base' } ),
+		captionDisplayLabel( a ).localeCompare( captionDisplayLabel( b ), undefined, { sensitivity: 'base' } ),
 	);
 
 	const resolvedLanguage = form.language === FREE_TEXT ? form.freeLang.trim() : form.language;
@@ -136,7 +145,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 	// no two tracks on a video may share one (ignoring case and outer spaces).
 	const newLabel = form.label.trim();
 	const labelTaken = '' !== newLabel && captions.some(
-		( caption ) => ( caption.label || languageLabel( caption.language ) ).trim().toLowerCase() === newLabel.toLowerCase(),
+		( caption ) => captionDisplayLabel( caption ).trim().toLowerCase() === newLabel.toLowerCase(),
 	);
 	const labelError = labelTaken
 		? sprintf(
@@ -331,12 +340,12 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 								className="godam-ve-caption-manager__row"
 								data-test-id={ `godam-caption-row-${ id }` }
 								data-caption-language={ caption.language }
-								data-caption-label={ caption.label || languageLabel( caption.language ) }
+								data-caption-label={ captionDisplayLabel( caption ) }
 							>
 								<div className="godam-ve-caption-manager__meta">
 									<span className="godam-ve-caption-manager__title">
 										<span className="godam-ve-caption-manager__label">
-											{ caption.label || languageLabel( caption.language ) }
+											{ captionDisplayLabel( caption ) }
 										</span>
 										{ caption.is_default && (
 											<span className="godam-ve-caption-manager__badge is-default">
@@ -419,7 +428,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 											{ sprintf(
 												/* translators: %s: caption track name. */
 												__( 'Delete "%s"? It is removed from GoDAM, so every site and page that plays this video loses it. This cannot be undone.', 'godam' ),
-												caption.label || languageLabel( caption.language ),
+												captionDisplayLabel( caption ),
 											) }
 										</p>
 										<div className="godam-ve-caption-manager__confirm-actions">
