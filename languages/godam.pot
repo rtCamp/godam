@@ -10375,7 +10375,7 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/transcription/Transcription.js:305
-msgid "This usually takes a few minutes, longer for long videos. We'll notify you once it's ready"
+msgid "This usually takes a few seconds, longer for long videos. We'll notify you once it's ready"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
