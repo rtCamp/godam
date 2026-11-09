@@ -152,7 +152,7 @@ class Abilities {
 			self::MCP_ENABLED_OPTION,
 			array(
 				'type'              => 'boolean',
-				'description'       => __( 'Let AI agents connect to GoDAM through the MCP Adapter plugin at /wp-json/godam/mcp.', 'godam' ),
+				'description'       => __( 'Let AI agents use GoDAM through MCP. When off, GoDAM\'s tools are hidden from every MCP server.', 'godam' ),
 				'sanitize_callback' => 'rest_sanitize_boolean',
 				'default'           => false,
 				'show_in_rest'      => true,

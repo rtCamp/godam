@@ -41,7 +41,7 @@ class AbilityRulesTest extends TestCase {
 	 */
 	protected function setUp(): void {
 		$GLOBALS['rtgodam_stub'] = array(
-			'options'   => array(),
+			'options'   => array( Abilities::MCP_ENABLED_OPTION => '1' ),
 			'caps'      => array(),
 			'abilities' => array(),
 		);
@@ -159,6 +159,21 @@ class AbilityRulesTest extends TestCase {
 	}
 
 	/**
+	 * With the MCP switch off, no GoDAM ability is offered to any MCP server.
+	 *
+	 * @return void
+	 */
+	public function test_mcp_switch_off_hides_every_ability() {
+		$GLOBALS['rtgodam_stub']['options'][ Abilities::MCP_ENABLED_OPTION ] = '0';
+
+		$read = $this->register( 'godam/list-media' );
+		$this->assertFalse( $read['meta']['mcp']['public'] );
+		$this->assertFalse( $read['meta']['public'] );
+		$this->assertTrue( $read['meta']['show_in_rest'], 'The WordPress Abilities REST API is not an MCP server.' );
+		$this->assertFalse( $this->register( 'godam/create-folder', true )['meta']['mcp']['public'] );
+	}
+
+	/**
 	 * On a free site a Central-backed tool says it needs a plan and returns one clear error.
 	 *
 	 * @return void
@@ -202,6 +217,8 @@ class AbilityRulesTest extends TestCase {
 	 * @return void
 	 */
 	public function test_mcp_switch_starting_value() {
+		$GLOBALS['rtgodam_stub']['options'] = array();
+
 		Abilities::maybe_set_mcp_default();
 		$this->assertSame( '1', $GLOBALS['rtgodam_stub']['options'][ Abilities::MCP_ENABLED_OPTION ], 'New install: on.' );
 

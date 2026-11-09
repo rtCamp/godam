@@ -69,7 +69,7 @@ const AiAgentsSettings = () => {
 					__nextHasNoMarginBottom
 					className="godam-margin-bottom"
 					label={ __( 'Let AI agents connect to GoDAM', 'godam' ) }
-					help={ __( 'Lets AI agents such as Claude or Cursor work with your GoDAM media through MCP. Each agent can only do what its WordPress user is allowed to do. Saves immediately.', 'godam' ) }
+					help={ __( 'Lets AI agents such as Claude or Cursor work with your GoDAM media through MCP. Each agent can only do what its WordPress user is allowed to do. When off, GoDAM is hidden from every MCP server on this site. Saves immediately.', 'godam' ) }
 					checked={ enabled }
 					disabled={ saving }
 					onChange={ handleToggle }

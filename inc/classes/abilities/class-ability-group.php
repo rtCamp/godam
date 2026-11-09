@@ -189,11 +189,15 @@ abstract class Ability_Group {
 			$annotations['openWorldHint'] = true;
 		}
 
+		// The MCP switch in GoDAM settings hides every GoDAM ability from every
+		// MCP server, the adapter's default server included, not only GoDAM's own.
+		$mcp_public = $public && Abilities::mcp_enabled();
+
 		$defaults = array(
-			'public'       => $public,
+			'public'       => $mcp_public,
 			'show_in_rest' => $public,
 			'mcp'          => array(
-				'public' => $public,
+				'public' => $mcp_public,
 				'type'   => 'tool',
 			),
 			'annotations'  => $annotations,
