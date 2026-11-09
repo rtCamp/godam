@@ -326,7 +326,13 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 						const canEditCues = ! caption.has_rich_formatting;
 						const rowBusy = busyId === id;
 						return (
-							<li key={ id } className="godam-ve-caption-manager__row" data-test-id={ `godam-caption-row-${ id }` }>
+							<li
+								key={ id }
+								className="godam-ve-caption-manager__row"
+								data-test-id={ `godam-caption-row-${ id }` }
+								data-caption-language={ caption.language }
+								data-caption-label={ caption.label || languageLabel( caption.language ) }
+							>
 								<div className="godam-ve-caption-manager__meta">
 									<span className="godam-ve-caption-manager__title">
 										<span className="godam-ve-caption-manager__label">
@@ -364,6 +370,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 										icon={ edit }
 										label={ __( 'Edit captions', 'godam' ) }
 										showTooltip
+										data-test-id="godam-caption-button-edit"
 										disabled={ ! canEditCues || rowBusy || ! caption.vtt_path }
 										onClick={ () => setEditing( caption ) }
 									/>
@@ -371,6 +378,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 										icon={ ReplaceIcon }
 										label={ __( 'Replace file', 'godam' ) }
 										showTooltip
+										data-test-id="godam-caption-button-replace"
 										disabled={ rowBusy }
 										onClick={ () => triggerReplace( id ) }
 									/>
@@ -379,6 +387,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 											icon={ download }
 											label={ __( 'Download', 'godam' ) }
 											showTooltip
+											data-test-id="godam-caption-button-download"
 											href={ caption.vtt_path }
 											target="_blank"
 											rel="noreferrer"
@@ -390,6 +399,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 										label={ caption.is_default ? __( 'Shown by default', 'godam' ) : __( 'Show this caption by default', 'godam' ) }
 										showTooltip
 										className="godam-ve-caption-manager__default-btn"
+										data-test-id="godam-caption-button-set-default"
 										disabled={ caption.is_default || rowBusy || ! caption.vtt_path }
 										onClick={ () => handleSetDefault( id ) }
 									/>
@@ -398,6 +408,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 										label={ __( 'Delete', 'godam' ) }
 										showTooltip
 										isDestructive
+										data-test-id="godam-caption-button-delete"
 										disabled={ rowBusy }
 										onClick={ () => setConfirmDeleteId( id ) }
 									/>
@@ -445,6 +456,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 							<SelectControl
 								__nextHasNoMarginBottom
 								label={ __( 'Language', 'godam' ) }
+								data-test-id="godam-caption-select-language"
 								value={ form.language }
 								options={ languageOptions }
 								onChange={ ( language ) => setForm( ( f ) => ( { ...f, language } ) ) }
@@ -455,6 +467,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 								<TextControl
 									__nextHasNoMarginBottom
 									label={ __( 'Language code', 'godam' ) }
+									data-test-id="godam-caption-input-language-code"
 									placeholder="e.g. cy, pt-BR"
 									value={ form.freeLang }
 									className={ languageCodeError ? 'godam-ve-caption-manager__label-field has-error' : undefined }
@@ -467,6 +480,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 							<TextControl
 								__nextHasNoMarginBottom
 								label={ __( 'Label', 'godam' ) }
+								data-test-id="godam-caption-input-label"
 								placeholder={ __( 'Shown in the menu', 'godam' ) }
 								value={ form.label }
 								required
@@ -477,7 +491,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 						</FlexItem>
 					</Flex>
 					<div className="godam-ve-caption-manager__add-row">
-						<Button variant="secondary" onClick={ () => addFileRef.current?.click() }>
+						<Button variant="secondary" data-test-id="godam-caption-button-choose-file" onClick={ () => addFileRef.current?.click() }>
 							{ pendingFile ? __( 'Choose another file', 'godam' ) : __( 'Choose file', 'godam' ) }
 						</Button>
 						{ pendingFile && (
@@ -488,6 +502,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 						<CheckboxControl
 							__nextHasNoMarginBottom
 							label={ __( 'Set as default', 'godam' ) }
+							data-test-id="godam-caption-checkbox-set-default"
 							checked={ form.isDefault }
 							onChange={ ( isDefault ) => setForm( ( f ) => ( { ...f, isDefault } ) ) }
 						/>
@@ -496,6 +511,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 						<Button
 							variant="tertiary"
 							className="w-full justify-center"
+							data-test-id="godam-caption-button-cancel-add"
 							onClick={ () => {
 								setShowAdd( false );
 								setPendingFile( null );
@@ -508,6 +524,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 							className="w-full justify-center"
 							isBusy={ isUploading }
 							disabled={ isUploading || labelTaken || !! languageCodeError }
+							data-test-id="godam-caption-button-add"
 							onClick={ handleAdd }
 						>
 							{ __( 'Add caption', 'godam' ) }
@@ -520,6 +537,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 					variant="secondary"
 					icon={ plus }
 					className="godam-ve-caption-manager__add-btn"
+					data-test-id="godam-caption-button-add-track"
 					onClick={ () => setShowAdd( true ) }
 				>
 					{ __( 'Add caption track', 'godam' ) }
@@ -530,6 +548,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 			<input
 				ref={ addFileRef }
 				type="file"
+				data-test-id="godam-caption-input-add-file"
 				accept=".vtt,.srt"
 				style={ { display: 'none' } }
 				onChange={ onAddFilePicked }
@@ -537,6 +556,7 @@ const CaptionManager = ( { attachmentID, onClose } ) => {
 			<input
 				ref={ replaceFileRef }
 				type="file"
+				data-test-id="godam-caption-input-replace-file"
 				accept=".vtt,.srt"
 				style={ { display: 'none' } }
 				onChange={ onReplaceFilePicked }
