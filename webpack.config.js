@@ -456,6 +456,14 @@ const pages = {
 	},
 	resolve: {
 		extensions: [ '.js', '.jsx' ], // Automatically resolve these extensions
+		// Packages bundled from node_modules import `react/jsx-runtime`. Resolve
+		// it to a module built on the externalized `React`, so no copy of React's
+		// element factory is inlined (Plugin Check `inlined_react_jsx_runtime`).
+		// See pages/jsx-runtime.js.
+		alias: {
+			'react/jsx-runtime$': path.resolve( __dirname, 'pages/jsx-runtime.js' ),
+			'react/jsx-dev-runtime$': path.resolve( __dirname, 'pages/jsx-runtime.js' ),
+		},
 	},
 	// Only generate source maps in development mode
 	devtool: isProduction ? false : 'source-map',
