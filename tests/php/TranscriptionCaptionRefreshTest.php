@@ -171,6 +171,55 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 	}
 
 	/**
+	 * Central signs caption URLs with a fresh token on every request, so the
+	 * cached URL and the listed one differ only in their query string. The
+	 * transcript is still the same file and stays.
+	 */
+	public function test_keeps_a_signed_cache_when_the_default_has_no_file() {
+		$GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] = 'https://cdn.example/job/en.vtt?token=A&expires=1';
+		$this->central_lists(
+			array(
+				array(
+					'language'   => 'en',
+					'vtt_path'   => 'https://cdn.example/job/en.vtt?token=B&expires=2',
+					'is_default' => false,
+				),
+				array(
+					'language'   => 'und',
+					'vtt_path'   => null,
+					'status'     => 'Pending',
+					'is_default' => true,
+				),
+			)
+		);
+
+		$this->assertTrue( Transcription::refresh_cached_default( 7 ) );
+		$this->assertSame( 'https://cdn.example/job/en.vtt?token=A&expires=1', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
+	}
+
+	/**
+	 * A transcription still running keeps its status, so the tab opens on the
+	 * progress state instead of the Generate form.
+	 */
+	public function test_keeps_an_in_flight_status_when_nothing_is_cached() {
+		unset( $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
+		$GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_status'] = 'Transcribing';
+		$this->central_lists(
+			array(
+				array(
+					'language'   => 'und',
+					'vtt_path'   => null,
+					'status'     => 'Pending',
+					'is_default' => true,
+				),
+			)
+		);
+
+		$this->assertTrue( Transcription::refresh_cached_default( 7 ) );
+		$this->assertSame( 'Transcribing', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_status'] );
+	}
+
+	/**
 	 * A cached transcript Central no longer lists is cleared.
 	 */
 	public function test_clears_a_transcript_central_no_longer_has() {
