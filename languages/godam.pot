@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-06T05:37:51+00:00\n"
+"POT-Creation-Date: 2026-11-09T09:49:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -1244,7 +1244,7 @@ msgstr ""
 #: assets/src/blocks/godam-pdf/caption.js:48
 #: assets/src/blocks/godam-player/caption.js:50
 #: assets/src/blocks/godam-player/caption.js:56
-#: pages/video-editor/components/transcription/CaptionManager.js:513
+#: pages/video-editor/components/transcription/CaptionManager.js:530
 msgid "Add caption"
 msgstr ""
 
@@ -1777,8 +1777,8 @@ msgstr ""
 #: pages/video-editor/components/chapters/ChapterForm.js:124
 #: pages/video-editor/components/layers/LayersHeader.js:105
 #: pages/video-editor/components/transcription/CaptionCueEditor.js:134
-#: pages/video-editor/components/transcription/CaptionManager.js:416
-#: pages/video-editor/components/transcription/CaptionManager.js:504
+#: pages/video-editor/components/transcription/CaptionManager.js:427
+#: pages/video-editor/components/transcription/CaptionManager.js:520
 #: pages/video-editor/components/transcription/Transcription.js:354
 msgid "Cancel"
 msgstr ""
@@ -2212,7 +2212,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:90
 #: assets/src/blocks/godam-player/track-uploader.js:77
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:167
-#: pages/video-editor/components/transcription/CaptionManager.js:469
+#: pages/video-editor/components/transcription/CaptionManager.js:482
 msgid "Label"
 msgstr ""
 
@@ -2601,8 +2601,8 @@ msgstr ""
 #: pages/media-library/components/context-menu/ContextMenu.jsx:518
 #: pages/media-library/components/modal/DeleteModal.jsx:132
 #: pages/video-editor/components/SidebarLayers.js:777
-#: pages/video-editor/components/transcription/CaptionManager.js:398
-#: pages/video-editor/components/transcription/CaptionManager.js:424
+#: pages/video-editor/components/transcription/CaptionManager.js:408
+#: pages/video-editor/components/transcription/CaptionManager.js:435
 #: pages/video-editor/components/transcription/Transcription.js:363
 msgid "Delete"
 msgstr ""
@@ -6491,7 +6491,7 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-video.php:126
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:29
 #: pages/video-editor/components/forms/CF7.js:26
-#: pages/video-editor/components/transcription/CaptionManager.js:337
+#: pages/video-editor/components/transcription/CaptionManager.js:343
 msgid "Default"
 msgstr ""
 
@@ -10102,7 +10102,7 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/transcription/CaptionCueEditor.js:89
-#: pages/video-editor/components/transcription/CaptionManager.js:365
+#: pages/video-editor/components/transcription/CaptionManager.js:371
 msgid "Edit captions"
 msgstr ""
 
@@ -10174,18 +10174,18 @@ msgid "Could not load the caption tracks."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:341
+#: pages/video-editor/components/transcription/CaptionManager.js:347
 msgid "Uploaded"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:341
+#: pages/video-editor/components/transcription/CaptionManager.js:347
 msgid "Generated"
 msgstr ""
 
 #. translators: %d: number of cues in the caption file.
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:350
+#: pages/video-editor/components/transcription/CaptionManager.js:356
 #, js-format
 msgid "%d cue"
 msgid_plural "%d cues"
@@ -10193,22 +10193,22 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:372
+#: pages/video-editor/components/transcription/CaptionManager.js:379
 msgid "Replace file"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:380
+#: pages/video-editor/components/transcription/CaptionManager.js:388
 msgid "Download"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:390
+#: pages/video-editor/components/transcription/CaptionManager.js:399
 msgid "Shown by default"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:390
+#: pages/video-editor/components/transcription/CaptionManager.js:399
 msgid "Show this caption by default"
 msgstr ""
 
@@ -10219,7 +10219,7 @@ msgstr ""
 
 #. translators: %s: caption track name.
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:410
+#: pages/video-editor/components/transcription/CaptionManager.js:421
 #, js-format
 msgid "Delete \"%s\"? It is removed from GoDAM, so every site and page that plays this video loses it. This cannot be undone."
 msgstr ""
@@ -10230,37 +10230,37 @@ msgid "Could not delete the caption track."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:434
+#: pages/video-editor/components/transcription/CaptionManager.js:445
 msgid "No caption tracks yet."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:447
+#: pages/video-editor/components/transcription/CaptionManager.js:458
 msgid "Language"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:457
+#: pages/video-editor/components/transcription/CaptionManager.js:469
 msgid "Language code"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:470
+#: pages/video-editor/components/transcription/CaptionManager.js:484
 msgid "Shown in the menu"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:481
+#: pages/video-editor/components/transcription/CaptionManager.js:495
 msgid "Choose another file"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:481
+#: pages/video-editor/components/transcription/CaptionManager.js:495
 msgid "Choose file"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:490
+#: pages/video-editor/components/transcription/CaptionManager.js:504
 msgid "Set as default"
 msgstr ""
 
@@ -10285,7 +10285,7 @@ msgid "Choose a caption file first."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/CaptionManager.js:525
+#: pages/video-editor/components/transcription/CaptionManager.js:543
 msgid "Add caption track"
 msgstr ""
 
