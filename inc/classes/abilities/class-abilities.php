@@ -23,7 +23,7 @@ use RTGODAM\Inc\Traits\Singleton;
 /**
  * Class Abilities
  *
- * @since 2.8.0
+ * @since n.e.x.t
  */
 class Abilities {
 
@@ -32,15 +32,29 @@ class Abilities {
 	/**
 	 * Option that exposes abilities which change data.
 	 *
-	 * Read abilities are exposed by default: they reveal nothing the user could
-	 * not already see in wp-admin. Abilities that change data stay registered
-	 * but unexposed until a site administrator turns this on.
+	 * On by default. Each change is still limited to what the connected
+	 * WordPress user may do, and tools that overwrite data are flagged so MCP
+	 * clients ask first. A site administrator can turn it off in
+	 * Settings › Writing as a kill switch for every write.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @var string
 	 */
 	const WRITE_ABILITIES_OPTION = 'rtgodam_expose_write_abilities';
+
+	/**
+	 * Option that turns the GoDAM MCP server on or off.
+	 *
+	 * Set the first time this version runs on a site: on for a new install,
+	 * off for a site that updates from an earlier version, so nobody gets an
+	 * AI agent endpoint they did not ask for.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string
+	 */
+	const MCP_ENABLED_OPTION = 'rtgodam_mcp_enabled';
 
 	/**
 	 * Construct method.
@@ -55,7 +69,59 @@ class Abilities {
 		add_action( 'init', array( $this, 'register_setting' ) );
 		add_action( 'admin_init', array( $this, 'add_settings_field' ) );
 
+		self::maybe_set_mcp_default();
+
 		Mcp_Server::get_instance();
+	}
+
+	/**
+	 * Whether abilities that change data are exposed.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return bool
+	 */
+	public static function writes_enabled() {
+		return (bool) get_option( self::WRITE_ABILITIES_OPTION, true );
+	}
+
+	/**
+	 * Whether the GoDAM MCP server is on.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return bool
+	 */
+	public static function mcp_enabled() {
+		/**
+		 * Filters whether the GoDAM MCP server is on.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param bool $enabled Whether the server is on.
+		 */
+		return (bool) apply_filters( 'rtgodam_mcp_enabled', (bool) get_option( self::MCP_ENABLED_OPTION, false ) );
+	}
+
+	/**
+	 * Stores the MCP switch's starting value the first time this version runs.
+	 *
+	 * A site that has run GoDAM before has `rtgodam_plugin_version` saved, so
+	 * it is an update and the server starts off. A new install has not saved
+	 * it yet, so the server starts on.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public static function maybe_set_mcp_default() {
+		if ( false !== get_option( self::MCP_ENABLED_OPTION ) ) {
+			return;
+		}
+
+		$is_new_install = false === get_option( 'rtgodam_plugin_version' );
+
+		add_option( self::MCP_ENABLED_OPTION, $is_new_install ? '1' : '0' );
 	}
 
 	/**
@@ -64,7 +130,7 @@ class Abilities {
 	 * Registering it on `init` also exposes it to the `/wp/v2/settings` REST
 	 * route, which only site administrators can use.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -76,6 +142,18 @@ class Abilities {
 				'type'              => 'boolean',
 				'description'       => __( 'Let AI agents connected through MCP make changes in GoDAM.', 'godam' ),
 				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => true,
+				'show_in_rest'      => true,
+			)
+		);
+
+		register_setting(
+			'general',
+			self::MCP_ENABLED_OPTION,
+			array(
+				'type'              => 'boolean',
+				'description'       => __( 'Let AI agents connect to GoDAM through the MCP Adapter plugin at /wp-json/godam/mcp.', 'godam' ),
+				'sanitize_callback' => 'rest_sanitize_boolean',
 				'default'           => false,
 				'show_in_rest'      => true,
 			)
@@ -85,7 +163,7 @@ class Abilities {
 	/**
 	 * Adds the write-abilities checkbox to Settings › Writing.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -101,17 +179,17 @@ class Abilities {
 	/**
 	 * Renders the write-abilities checkbox.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
 	public function render_settings_field() {
 		?>
 		<label for="<?php echo esc_attr( self::WRITE_ABILITIES_OPTION ); ?>">
-			<input type="checkbox" id="<?php echo esc_attr( self::WRITE_ABILITIES_OPTION ); ?>" name="<?php echo esc_attr( self::WRITE_ABILITIES_OPTION ); ?>" value="1" <?php checked( (bool) get_option( self::WRITE_ABILITIES_OPTION, false ) ); ?> />
+			<input type="checkbox" id="<?php echo esc_attr( self::WRITE_ABILITIES_OPTION ); ?>" name="<?php echo esc_attr( self::WRITE_ABILITIES_OPTION ); ?>" value="1" <?php checked( self::writes_enabled() ); ?> />
 			<?php esc_html_e( 'Let AI agents connected through MCP make changes: create folders, import media, edit layers and chapters, add media to pages, change player settings and more.', 'godam' ); ?>
 		</label>
-		<p class="description"><?php esc_html_e( 'Agents can always read the library. Each change is still limited to what the connected user is allowed to do.', 'godam' ); ?></p>
+		<p class="description"><?php esc_html_e( 'On by default. Agents can always read the library. Each change is still limited to what the connected user is allowed to do. Turn this off to stop every change from AI agents.', 'godam' ); ?></p>
 		<?php
 	}
 
@@ -122,7 +200,7 @@ class Abilities {
 	 * `wp_abilities_api_init`; an ability naming an unregistered category is
 	 * rejected.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -179,7 +257,7 @@ class Abilities {
 	/**
 	 * Registers every GoDAM ability.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -195,6 +273,7 @@ class Abilities {
 			Site_Settings_Abilities::class,
 			Processing_Abilities::class,
 			Analytics_Abilities::class,
+			Prompt_Abilities::class,
 		);
 
 		foreach ( $groups as $group ) {

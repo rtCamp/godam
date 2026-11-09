@@ -20,14 +20,14 @@ defined( 'ABSPATH' ) || exit;
  * picks that media from the library. With fewer, the editor would show an
  * empty placeholder or rewrite the block as soon as the post is opened.
  *
- * @since 2.8.0
+ * @since n.e.x.t
  */
 class Block_Abilities extends Ability_Group {
 
 	/**
 	 * Post types media can be added to.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @var string[]
 	 */
@@ -36,7 +36,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * The block each media type is placed with.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @var array<string, string>
 	 */
@@ -52,7 +52,7 @@ class Block_Abilities extends Ability_Group {
 	 * What a video player does when it leaves the visitor's view, as the video
 	 * block offers it. An empty string uses the site-wide setting.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @var string[]
 	 */
@@ -61,7 +61,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -70,7 +70,7 @@ class Block_Abilities extends Ability_Group {
 			'godam/add-media-to-page',
 			array(
 				'label'               => __( 'Add media to a page', 'godam' ),
-				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post, or create a new one with it. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
+				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post, or create a new one with it. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
 				'category'            => 'godam-player',
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -105,9 +105,9 @@ class Block_Abilities extends Ability_Group {
 							'default' => 'page',
 						),
 						'status'    => array(
-							'type'    => 'string',
-							'enum'    => array( 'draft', 'publish' ),
-							'default' => 'draft',
+							'type'        => 'string',
+							'enum'        => array( 'draft', 'publish' ),
+							'description' => __( 'Status to set. A new page or post is a draft when this is omitted. Omit it for an existing one to keep its current status.', 'godam' ),
 						),
 						'player'    => array(
 							'type'        => 'object',
@@ -151,7 +151,7 @@ class Block_Abilities extends Ability_Group {
 	 *
 	 * Publishing is checked by the post type's REST route.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -174,7 +174,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/add-media-to-page.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -250,7 +250,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Builds the block for the requested media, after checking it.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input  Ability input.
 	 * @param array $player Player settings.
@@ -320,7 +320,7 @@ class Block_Abilities extends Ability_Group {
 	 * The block renders on the server from its attributes; its saved markup is
 	 * the empty wrapper its save() produces.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int   $media_id Video attachment ID.
 	 * @param array $player   Player settings from the ability input.
@@ -397,7 +397,7 @@ class Block_Abilities extends Ability_Group {
 	 * DASH, then the original file. A video still transcoding has only the
 	 * original; the player reads the transcoded URLs from the attachment later.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $media_id Video attachment ID.
 	 *
@@ -438,7 +438,7 @@ class Block_Abilities extends Ability_Group {
 	 * (without the URLs WordPress sometimes seeds it with), and GoDAM's cover
 	 * image when the file has one.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param \WP_Post $media Audio attachment.
 	 *
@@ -465,7 +465,7 @@ class Block_Abilities extends Ability_Group {
 	 * Serialised markup for a GoDAM Image block, with what its editor stores
 	 * when a library image is picked.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param \WP_Post $media Image attachment.
 	 *
@@ -490,7 +490,7 @@ class Block_Abilities extends Ability_Group {
 	 * Serialised markup for a GoDAM Document block, with what its editor
 	 * stores when a library document is picked.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param \WP_Post $media Document attachment.
 	 *
@@ -529,7 +529,7 @@ class Block_Abilities extends Ability_Group {
 	 * block in its "Handpicked" mode with one item block per video, as the
 	 * editor builds it when videos are picked.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int[] $media_ids Video attachment IDs, in gallery order.
 	 *
@@ -583,7 +583,7 @@ class Block_Abilities extends Ability_Group {
 	 * Serialises a block the way the block editor does. The editor puts a line
 	 * break inside a block's comments around its content; callers include it.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param string $name          Block name.
 	 * @param array  $attrs         Attributes.
@@ -609,7 +609,7 @@ class Block_Abilities extends Ability_Group {
 	 * order the block declares them, leaving out unset values and values equal
 	 * to the attribute's default.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param string $name  Block name.
 	 * @param array  $attrs Attributes.
@@ -648,7 +648,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Text of an HTML fragment, as the browser's textContent gives it.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param string $html HTML.
 	 *
@@ -663,7 +663,7 @@ class Block_Abilities extends Ability_Group {
 	 * A GMT date from the REST API as the editor's ISO string, e.g.
 	 * `2026-11-05T13:25:18.000+00:00`.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param string $date_gmt Date in GMT, `Y-m-d\TH:i:s`.
 	 *
@@ -678,7 +678,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * The REST collection route for a post type.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param string $post_type Post type.
 	 *

@@ -20,14 +20,14 @@ use RTGODAM\Inc\Taxonomies\Media_Folders;
  * per-attachment edit check and the locked-folder guard on moves — rather than
  * re-implementing them.
  *
- * @since 2.8.0
+ * @since n.e.x.t
  */
 class Library_Abilities extends Ability_Group {
 
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -194,7 +194,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Permission: the user can browse the media library.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -208,7 +208,7 @@ class Library_Abilities extends Ability_Group {
 	 * Reads the capability from the taxonomy itself, so it follows whatever
 	 * the folder taxonomy is registered with.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -223,7 +223,7 @@ class Library_Abilities extends Ability_Group {
 	 *
 	 * Matches the assign-folder route; that route then checks each attachment.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -234,7 +234,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/list-folders.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -280,7 +280,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/create-folder through the folder taxonomy's REST route.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -311,7 +311,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/move-media-to-folder through the media library route.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -343,7 +343,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/update-media-details through the core media route.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -382,7 +382,7 @@ class Library_Abilities extends Ability_Group {
 	 * the site allows. GoDAM's upload hooks then pick the attachment up like any
 	 * other upload.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -409,6 +409,13 @@ class Library_Abilities extends Ability_Group {
 			'name'     => sanitize_file_name( wp_basename( (string) wp_parse_url( $url, PHP_URL_PATH ) ) ),
 			'tmp_name' => $tmp_file,
 		);
+
+		$too_big = $this->check_upload_limits( $tmp_file );
+
+		if ( is_wp_error( $too_big ) ) {
+			wp_delete_file( $tmp_file );
+			return $too_big;
+		}
 
 		$post_data = array();
 
@@ -442,5 +449,47 @@ class Library_Abilities extends Ability_Group {
 		}
 
 		return $this->shape_media( $this->attachment_post( $attachment_id ) );
+	}
+
+	/**
+	 * Applies the limits a normal upload gets on multisite: the network's
+	 * upload size limit, the site's storage quota and the user's quota.
+	 *
+	 * Sideloading fires `wp_handle_sideload_prefilter`, but core runs these
+	 * checks only for uploads, so without this an import could go past them.
+	 * The checks and error codes match the REST media route's.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $tmp_file Path of the downloaded file.
+	 *
+	 * @return true|\WP_Error
+	 */
+	private function check_upload_limits( $tmp_file ) {
+		if ( ! is_multisite() || get_site_option( 'upload_space_check_disabled' ) ) {
+			return true;
+		}
+
+		$size = (int) filesize( $tmp_file );
+
+		if ( $size > get_upload_space_available() ) {
+			/* translators: %s: required disk space in kilobytes. */
+			return new \WP_Error( 'rest_upload_limited_space', sprintf( __( 'Not enough space to import this file. %s KB needed.', 'godam' ), number_format( ( $size - get_upload_space_available() ) / KB_IN_BYTES ) ), array( 'status' => 400 ) );
+		}
+
+		if ( $size > KB_IN_BYTES * (int) get_site_option( 'fileupload_maxk', 1500 ) ) {
+			/* translators: %s: maximum allowed file size in kilobytes. */
+			return new \WP_Error( 'rest_upload_file_too_big', sprintf( __( 'This file is too big. Files must be less than %s KB in size.', 'godam' ), get_site_option( 'fileupload_maxk', 1500 ) ), array( 'status' => 400 ) );
+		}
+
+		if ( ! function_exists( 'upload_is_user_over_quota' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/ms.php';
+		}
+
+		if ( upload_is_user_over_quota( false ) ) {
+			return new \WP_Error( 'rest_upload_user_quota_exceeded', __( 'You have used your space quota. Please delete files before uploading.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		return true;
 	}
 }

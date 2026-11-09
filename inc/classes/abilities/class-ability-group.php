@@ -18,14 +18,111 @@ use RTGODAM\Inc\Taxonomies\Media_Folders;
  * GoDAM's exposure defaults, runs GoDAM's own REST routes in-process, and gives
  * every ability the same shape for a media item.
  *
- * @since 2.8.0
+ * @since n.e.x.t
  */
 abstract class Ability_Group {
 
 	/**
+	 * Writes that replace what is already there, so MCP clients ask the user
+	 * before running them.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string[]
+	 */
+	const DESTRUCTIVE_WRITES = array(
+		'godam/update-media-details',
+		'godam/update-video-settings',
+		'godam/update-site-settings',
+		'godam/add-media-to-page',
+		'godam/set-chapters',
+		'godam/remove-layer',
+	);
+
+	/**
+	 * Abilities that reach outside the site: GoDAM Central or another server.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string[]
+	 */
+	const OPEN_WORLD = array(
+		'godam/import-media-from-url',
+		'godam/get-transcript',
+		'godam/request-transcription',
+		'godam/retranscode-media',
+		'godam/get-media-analytics',
+		'godam/get-top-videos',
+		'godam/get-storage-usage',
+		'godam/get-layer-analytics',
+		'godam/get-video-funnel',
+		'godam/get-placement-performance',
+		'godam/get-revenue-summary',
+		'godam/get-top-products',
+	);
+
+	/**
+	 * Abilities that need a GoDAM plan: a verified GoDAM API key, because the
+	 * work is done by GoDAM Central. On a free site they stay listed, say so in
+	 * their description, and return one clear error.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string[]
+	 */
+	const PLAN_REQUIRED = array(
+		'godam/request-transcription',
+		'godam/retranscode-media',
+		'godam/get-media-analytics',
+		'godam/get-top-videos',
+		'godam/get-storage-usage',
+		'godam/get-layer-analytics',
+		'godam/get-video-funnel',
+		'godam/get-placement-performance',
+		'godam/get-revenue-summary',
+		'godam/get-top-products',
+	);
+
+	/**
+	 * Default maximum length of a string input, in characters.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int
+	 */
+	const MAX_STRING_LENGTH = 2000;
+
+	/**
+	 * Maximum length of free-text inputs such as descriptions and layer HTML.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int
+	 */
+	const MAX_TEXT_LENGTH = 20000;
+
+	/**
+	 * Input properties that hold free text and get MAX_TEXT_LENGTH.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string[]
+	 */
+	const TEXT_PROPERTIES = array( 'description', 'caption', 'html', 'text', 'content', 'css', 'custom_css' );
+
+	/**
+	 * Default maximum number of items in an array input.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int
+	 */
+	const MAX_ITEMS = 100;
+
+	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -35,11 +132,15 @@ abstract class Ability_Group {
 	 * Registers one ability with GoDAM's exposure defaults applied.
 	 *
 	 * Abilities are private unless their meta says otherwise. Reads are made
-	 * public; writes follow the WRITE_ABILITIES_OPTION setting. Both
-	 * `meta.public` and `meta.mcp.public` are set because the MCP Adapter has
-	 * read each of them in different releases.
+	 * public; writes follow the WRITE_ABILITIES_OPTION setting, which is on
+	 * unless an administrator turns it off. Both `meta.public` and
+	 * `meta.mcp.public` are set because the MCP Adapter has read each of them
+	 * in different releases.
 	 *
-	 * @since 2.8.0
+	 * The input schema gets length and size limits, and abilities that need a
+	 * GoDAM plan refuse to run on a site without a verified API key.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @param string $name   Ability name, `godam/<verb-noun>`.
 	 * @param array  $args   Arguments for wp_register_ability().
@@ -52,7 +153,7 @@ abstract class Ability_Group {
 			return;
 		}
 
-		$public = $writes ? (bool) get_option( Abilities::WRITE_ABILITIES_OPTION, false ) : true;
+		$public = $writes ? Abilities::writes_enabled() : true;
 
 		/**
 		 * Filters whether a GoDAM ability is exposed to clients such as MCP.
@@ -60,7 +161,7 @@ abstract class Ability_Group {
 		 * The acting user's capabilities are still checked on every call; this
 		 * only controls whether the ability is listed at all.
 		 *
-		 * @since 2.8.0
+		 * @since n.e.x.t
 		 *
 		 * @param bool   $public Whether the ability is exposed.
 		 * @param string $name   Ability name.
@@ -80,6 +181,14 @@ abstract class Ability_Group {
 				'idempotent'  => true,
 			);
 
+		if ( $writes && in_array( $name, static::DESTRUCTIVE_WRITES, true ) ) {
+			$annotations['destructive'] = true;
+		}
+
+		if ( in_array( $name, static::OPEN_WORLD, true ) ) {
+			$annotations['openWorldHint'] = true;
+		}
+
 		$defaults = array(
 			'public'       => $public,
 			'show_in_rest' => $public,
@@ -92,7 +201,107 @@ abstract class Ability_Group {
 
 		$args['meta'] = array_replace_recursive( $defaults, $args['meta'] ?? array() );
 
+		if ( ! empty( $args['input_schema'] ) ) {
+			$args['input_schema'] = $this->limit_schema( $args['input_schema'] );
+		}
+
+		if ( in_array( $name, static::PLAN_REQUIRED, true ) && isset( $args['execute_callback'] ) ) {
+			$args['description']      = trim( ( $args['description'] ?? '' ) . ' ' . __( 'Needs a GoDAM plan: the site must be connected to GoDAM with a verified API key.', 'godam' ) );
+			$args['execute_callback'] = $this->require_plan( $args['execute_callback'] );
+		}
+
 		wp_register_ability( $name, $args );
+	}
+
+	/**
+	 * Wraps an execute callback so it returns one clear error on a site
+	 * without a verified GoDAM API key.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param callable $callback Execute callback.
+	 *
+	 * @return callable
+	 */
+	protected function require_plan( $callback ) {
+		return function ( $input = null ) use ( $callback ) {
+			if ( ! $this->site_has_plan() ) {
+				return self::plan_required_error();
+			}
+
+			return call_user_func( $callback, $input );
+		};
+	}
+
+	/**
+	 * Whether the site is connected to GoDAM with a verified API key.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return bool
+	 */
+	protected function site_has_plan() {
+		return rtgodam_is_api_key_valid();
+	}
+
+	/**
+	 * The error an ability returns when it needs a GoDAM plan and the site has none.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return \WP_Error
+	 */
+	public static function plan_required_error() {
+		return new \WP_Error(
+			'rtgodam_plan_required',
+			__( 'This needs a GoDAM plan. Connect this site to GoDAM with a verified API key in GoDAM > Settings, then try again.', 'godam' ),
+			array( 'status' => 403 )
+		);
+	}
+
+	/**
+	 * Adds input limits to a JSON Schema: `additionalProperties: false` on
+	 * objects that list their properties, `maxLength` on strings and
+	 * `maxItems` on arrays. A limit the schema already sets is kept.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array  $schema   JSON Schema.
+	 * @param string $property Name of the property this schema describes, if any.
+	 *
+	 * @return array
+	 */
+	protected function limit_schema( array $schema, $property = '' ) {
+		$type  = $schema['type'] ?? null;
+		$types = (array) $type;
+
+		if ( in_array( 'object', $types, true ) && ! empty( $schema['properties'] ) && is_array( $schema['properties'] ) ) {
+			if ( ! array_key_exists( 'additionalProperties', $schema ) ) {
+				$schema['additionalProperties'] = false;
+			}
+
+			foreach ( $schema['properties'] as $key => $child ) {
+				if ( is_array( $child ) ) {
+					$schema['properties'][ $key ] = $this->limit_schema( $child, (string) $key );
+				}
+			}
+		}
+
+		if ( 'string' === $type && ! isset( $schema['maxLength'] ) && ! isset( $schema['enum'] ) ) {
+			$schema['maxLength'] = in_array( $property, self::TEXT_PROPERTIES, true ) ? self::MAX_TEXT_LENGTH : self::MAX_STRING_LENGTH;
+		}
+
+		if ( in_array( 'array', $types, true ) ) {
+			if ( ! isset( $schema['maxItems'] ) ) {
+				$schema['maxItems'] = self::MAX_ITEMS;
+			}
+
+			if ( isset( $schema['items'] ) && is_array( $schema['items'] ) ) {
+				$schema['items'] = $this->limit_schema( $schema['items'] );
+			}
+		}
+
+		return $schema;
 	}
 
 	/**
@@ -102,7 +311,7 @@ abstract class Ability_Group {
 	 * logic, so each route's own validation and permission checks still apply
 	 * on top of the ability's.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param string $method HTTP method.
 	 * @param string $route  Full route, e.g. `/godam/v1/transcription`.
@@ -135,7 +344,7 @@ abstract class Ability_Group {
 	/**
 	 * Returns the attachment if it exists, or an error an agent can act on.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -162,7 +371,7 @@ abstract class Ability_Group {
 	 * Keeps what an agent acts on — IDs, status, links — and leaves out the
 	 * dozens of internal meta keys an attachment carries.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param \WP_Post $post Attachment.
 	 *
@@ -219,7 +428,7 @@ abstract class Ability_Group {
 	 * 45.5s file was seen in testing. Agents are told so rather than handed
 	 * the number as fact.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -255,7 +464,7 @@ abstract class Ability_Group {
 	 * ("What&#8217;s new"), which an agent would then quote or search for
 	 * verbatim.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param \WP_Post $post Post.
 	 *
@@ -272,7 +481,7 @@ abstract class Ability_Group {
 	 * (`Transcoded` and `transcoded`, `failed` and `blocked`, `Queued` and
 	 * `not_started`). Agents get four stable values instead.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -299,7 +508,7 @@ abstract class Ability_Group {
 	/**
 	 * Maps a MIME type to the four media types GoDAM's abilities speak.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param string $mime MIME type.
 	 *
@@ -315,7 +524,7 @@ abstract class Ability_Group {
 	 * A media item's stored GoDAM settings: the layers, chapters and player
 	 * configuration (`videoConfig`) the media editor saves.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -335,7 +544,7 @@ abstract class Ability_Group {
 	 * of what godam_meta() returned and the rest is kept as it was. The field
 	 * keeps its own rules, such as the custom-CSS limit for non-admins.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int   $attachment_id Attachment ID.
 	 * @param array $meta          Settings to save.
@@ -351,7 +560,7 @@ abstract class Ability_Group {
 	/**
 	 * The media editor's address for a media item.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -364,7 +573,7 @@ abstract class Ability_Group {
 	/**
 	 * Reads a single attachment meta value, returning null rather than an empty string.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int    $attachment_id Attachment ID.
 	 * @param string $key           Meta key.
@@ -393,7 +602,7 @@ abstract class Ability_Group {
 	/**
 	 * The attachment post, or null.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -410,7 +619,7 @@ abstract class Ability_Group {
 	/**
 	 * An attachment's MIME type.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int|\WP_Post $attachment Attachment ID or post.
 	 *
@@ -427,7 +636,7 @@ abstract class Ability_Group {
 	/**
 	 * An attachment's file URL.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -444,7 +653,7 @@ abstract class Ability_Group {
 	/**
 	 * An attachment's WordPress metadata (dimensions, length and so on).
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -461,7 +670,7 @@ abstract class Ability_Group {
 	/**
 	 * Permission: the user can edit the media item named by the input's `id`.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -484,7 +693,7 @@ abstract class Ability_Group {
 	/**
 	 * JSON Schema for the media object returned by shape_media().
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */
@@ -517,7 +726,7 @@ abstract class Ability_Group {
 	/**
 	 * Input schema for abilities that act on one media item.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */

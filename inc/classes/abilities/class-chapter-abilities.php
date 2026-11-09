@@ -18,14 +18,14 @@ defined( 'ABSPATH' ) || exit;
  * editor's own rules apply: every chapter has a title, ends after it starts,
  * stays within the media's length, and does not overlap another chapter.
  *
- * @since 2.8.0
+ * @since n.e.x.t
  */
 class Chapter_Abilities extends Ability_Group {
 
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -121,7 +121,7 @@ class Chapter_Abilities extends Ability_Group {
 	/**
 	 * JSON Schema for a chapter as these abilities return it.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */
@@ -143,7 +143,7 @@ class Chapter_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/list-chapters.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -177,7 +177,7 @@ class Chapter_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/set-chapters.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -234,7 +234,7 @@ class Chapter_Abilities extends Ability_Group {
 	 * missing end stays empty, which the editor reads as "to the end of the
 	 * media"; the player ends the last chapter there in any case.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array    $requested Chapters from the ability input.
 	 * @param int|null $duration  Media length in seconds, if WordPress knows it.
@@ -315,7 +315,7 @@ class Chapter_Abilities extends Ability_Group {
 	/**
 	 * A compact description of a stored chapter.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $chapter Stored chapter.
 	 *
@@ -336,7 +336,7 @@ class Chapter_Abilities extends Ability_Group {
 	/**
 	 * Seconds as the editor stores them: JavaScript's String() of the number.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param float $seconds Seconds.
 	 *
@@ -350,7 +350,7 @@ class Chapter_Abilities extends Ability_Group {
 	 * Seconds as the editor's clock-style copy: `mm:ss.ss`, or `hh:mm:ss.ss`
 	 * from an hour on.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param float $seconds Seconds.
 	 *
@@ -369,7 +369,7 @@ class Chapter_Abilities extends Ability_Group {
 	/**
 	 * Error for chapters the media editor would not accept.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param string $message What is wrong.
 	 *
@@ -382,7 +382,7 @@ class Chapter_Abilities extends Ability_Group {
 	/**
 	 * Returns the attachment if it is a video or audio item.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *

@@ -18,14 +18,14 @@ defined( 'ABSPATH' ) || exit;
  * attachment's REST field; thumbnails go through the same media-library
  * routes the editor's thumbnail picker uses.
  *
- * @since 2.8.0
+ * @since n.e.x.t
  */
 class Video_Settings_Abilities extends Ability_Group {
 
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -88,7 +88,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * JSON Schema for the settings both abilities return.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */
@@ -130,7 +130,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-video-settings.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -149,7 +149,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/update-video-settings.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -168,6 +168,17 @@ class Video_Settings_Abilities extends Ability_Group {
 
 		if ( ! empty( $input['thumbnail_url'] ) && ! empty( $input['thumbnail_image_id'] ) ) {
 			return new \WP_Error( 'rtgodam_two_thumbnails', __( 'Give thumbnail_url or thumbnail_image_id, not both.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		// Check every part before saving any, so a call that fails changes nothing.
+		$valid = $this->validate_thumbnail_input( $post->ID, $input );
+
+		if ( is_wp_error( $valid ) ) {
+			return $valid;
+		}
+
+		if ( isset( $input['ad_tag_url'] ) && '' !== trim( (string) $input['ad_tag_url'] ) && '' === esc_url_raw( trim( (string) $input['ad_tag_url'] ), array( 'http', 'https' ) ) ) {
+			return self::invalid_ad_tag_error();
 		}
 
 		if ( isset( $input['ad_tag_url'] ) ) {
@@ -196,7 +207,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	 * editor's "Use ad server's ad" toggle does. Switching back keeps the tag,
 	 * as the editor does, so it is there if the toggle is turned on again.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int    $attachment_id Video attachment ID.
 	 * @param string $ad_tag_url    Ad tag URL, or an empty string for ad layers.
@@ -213,7 +224,7 @@ class Video_Settings_Abilities extends Ability_Group {
 			$url = esc_url_raw( trim( $ad_tag_url ), array( 'http', 'https' ) );
 
 			if ( '' === $url ) {
-				return new \WP_Error( 'rtgodam_invalid_ad_tag_url', __( 'ad_tag_url must be an http or https URL, or an empty string.', 'godam' ), array( 'status' => 400 ) );
+				return self::invalid_ad_tag_error();
 			}
 
 			$config['adServer'] = 'ad-server';
@@ -226,12 +237,74 @@ class Video_Settings_Abilities extends Ability_Group {
 	}
 
 	/**
+	 * The error for an ad tag that is not an http or https URL.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return \WP_Error
+	 */
+	private static function invalid_ad_tag_error() {
+		return new \WP_Error( 'rtgodam_invalid_ad_tag_url', __( 'ad_tag_url must be an http or https URL, or an empty string.', 'godam' ), array( 'status' => 400 ) );
+	}
+
+	/**
+	 * Checks the thumbnail part of an update before anything is saved.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int   $attachment_id Video attachment ID.
+	 * @param array $input         Ability input.
+	 *
+	 * @return true|\WP_Error
+	 */
+	private function validate_thumbnail_input( $attachment_id, array $input ) {
+		if ( ! empty( $input['thumbnail_image_id'] ) ) {
+			do_action( 'rtgodam_before_attachment_lookup' );
+			$is_image = wp_attachment_is_image( absint( $input['thumbnail_image_id'] ) );
+			do_action( 'rtgodam_after_attachment_lookup' );
+
+			if ( ! $is_image ) {
+				return new \WP_Error( 'rtgodam_thumbnail_not_image', __( 'thumbnail_image_id is not an image in the media library.', 'godam' ), array( 'status' => 400 ) );
+			}
+		}
+
+		if ( ! empty( $input['thumbnail_url'] ) ) {
+			$thumbnails = $this->thumbnails( $attachment_id );
+
+			if ( is_wp_error( $thumbnails ) ) {
+				return $thumbnails;
+			}
+
+			if ( ! in_array( (string) $input['thumbnail_url'], array_merge( $thumbnails['generated'], $thumbnails['custom'] ), true ) ) {
+				return self::unknown_thumbnail_error();
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * The error for a thumbnail URL that is not one of the video's thumbnails.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return \WP_Error
+	 */
+	private static function unknown_thumbnail_error() {
+		return new \WP_Error(
+			'rtgodam_unknown_thumbnail',
+			__( 'thumbnail_url is not one of this video\'s thumbnails. Pick one from godam/get-video-settings, or use thumbnail_image_id to add an image as a thumbnail.', 'godam' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
 	 * Selects one of the video's thumbnails through the editor's route.
 	 *
 	 * The route takes any URL; the editor only ever offers the video's own
 	 * thumbnails, so this does the same.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int    $attachment_id Video attachment ID.
 	 * @param string $url           Thumbnail URL.
@@ -246,11 +319,7 @@ class Video_Settings_Abilities extends Ability_Group {
 		}
 
 		if ( ! in_array( $url, array_merge( $thumbnails['generated'], $thumbnails['custom'] ), true ) ) {
-			return new \WP_Error(
-				'rtgodam_unknown_thumbnail',
-				__( 'thumbnail_url is not one of this video\'s thumbnails. Pick one from godam/get-video-settings, or use thumbnail_image_id to add an image as a thumbnail.', 'godam' ),
-				array( 'status' => 400 )
-			);
+			return self::unknown_thumbnail_error();
 		}
 
 		$result = $this->rest(
@@ -269,7 +338,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	 * Adds a library image as a custom thumbnail and selects it, as the
 	 * editor's "Upload" button does after an image is picked.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Video attachment ID.
 	 * @param int $image_id      Image attachment ID.
@@ -277,10 +346,6 @@ class Video_Settings_Abilities extends Ability_Group {
 	 * @return true|\WP_Error
 	 */
 	private function add_custom_thumbnail( $attachment_id, $image_id ) {
-		if ( ! wp_attachment_is_image( $image_id ) ) {
-			return new \WP_Error( 'rtgodam_thumbnail_not_image', __( 'thumbnail_image_id is not an image in the media library.', 'godam' ), array( 'status' => 400 ) );
-		}
-
 		$result = $this->rest(
 			'POST',
 			'/godam/v1/media-library/upload-custom-video-thumbnail',
@@ -299,7 +364,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	 * The route answers "no thumbnails" with a 204 status, which is not an
 	 * error status, so that answer is recognised here.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Video attachment ID.
 	 *
@@ -324,7 +389,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * The settings as both abilities return them.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Video attachment ID.
 	 *
@@ -365,7 +430,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * Returns the attachment if it is a video.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *

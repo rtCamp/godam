@@ -17,14 +17,14 @@ defined( 'ABSPATH' ) || exit;
  * this site, so an agent should check godam/get-media afterwards rather than
  * expect a finished result.
  *
- * @since 2.8.0
+ * @since n.e.x.t
  */
 class Processing_Abilities extends Ability_Group {
 
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -52,27 +52,16 @@ class Processing_Abilities extends Ability_Group {
 				'input_schema'        => $this->media_id_input(),
 				'output_schema'       => array( 'type' => 'object' ),
 				'execute_callback'    => array( $this, 'retranscode_media' ),
-				'permission_callback' => array( $this, 'can_retranscode' ),
+				'permission_callback' => array( $this, 'can_edit_media' ),
 			),
 			true
 		);
 	}
 
 	/**
-	 * Permission: matches the retranscode REST route.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @return bool
-	 */
-	public function can_retranscode() {
-		return current_user_can( 'edit_others_posts' );
-	}
-
-	/**
 	 * Executes godam/request-transcription.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -112,7 +101,7 @@ class Processing_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/retranscode-media.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -125,7 +114,7 @@ class Processing_Abilities extends Ability_Group {
 			return $post;
 		}
 
-		$result = $this->rest( 'POST', '/godam/v1/transcoding/retranscode/', array( 'id' => $post->ID ) );
+		$result = $this->rest( 'POST', '/godam/v1/transcoding/retranscode', array( 'id' => $post->ID ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;

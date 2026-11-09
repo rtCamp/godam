@@ -20,14 +20,14 @@ defined( 'ABSPATH' ) || exit;
  * a successful response with `status: error`; insights() turns that into an
  * error the agent can act on rather than data.
  *
- * @since 2.8.0
+ * @since n.e.x.t
  */
 class Analytics_Abilities extends Ability_Group {
 
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -231,7 +231,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Input properties for an optional date range, as the analytics routes take it.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */
@@ -253,7 +253,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Input schema for abilities that take only a date range.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */
@@ -267,7 +267,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Permission: matches the analytics fetch route, which then checks the video.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -278,7 +278,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Permission: matches the analytics dashboard routes.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -290,7 +290,7 @@ class Analytics_Abilities extends Ability_Group {
 	 * Permission: matches the layer-analytics route, which reads one video's
 	 * analytics for a user who can edit that video.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -305,7 +305,7 @@ class Analytics_Abilities extends Ability_Group {
 	 * dashboard's capability and WooCommerce's report permission, which
 	 * WooCommerce gives shop managers and administrators.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -316,7 +316,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Permission: account usage is a billing concern, so administrators only.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -327,7 +327,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-media-analytics.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -356,7 +356,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-top-videos.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -378,7 +378,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-storage-usage.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return array|\WP_Error
 	 */
@@ -389,7 +389,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-layer-analytics.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -428,7 +428,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-video-funnel.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -441,7 +441,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-placement-performance.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -454,7 +454,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-revenue-summary.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -467,7 +467,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-top-products.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -492,7 +492,7 @@ class Analytics_Abilities extends Ability_Group {
 	/**
 	 * Reads an analytics route, passing on an optional date range.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param string $route  Route.
 	 * @param array  $params Route parameters.

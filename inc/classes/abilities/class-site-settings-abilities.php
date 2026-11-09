@@ -21,14 +21,14 @@ defined( 'ABSPATH' ) || exit;
  * settings, changes only the curated keys and sends everything back. Every
  * other setting stays as it was.
  *
- * @since 2.8.0
+ * @since n.e.x.t
  */
 class Site_Settings_Abilities extends Ability_Group {
 
 	/**
 	 * The settings route.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @var string
 	 */
@@ -38,7 +38,7 @@ class Site_Settings_Abilities extends Ability_Group {
 	 * What a player does when it leaves the visitor's view, as the Settings
 	 * page offers it.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @var string[]
 	 */
@@ -47,7 +47,7 @@ class Site_Settings_Abilities extends Ability_Group {
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
@@ -98,7 +98,7 @@ class Site_Settings_Abilities extends Ability_Group {
 	/**
 	 * JSON Schema for the settings both abilities return.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return array
 	 */
@@ -123,7 +123,7 @@ class Site_Settings_Abilities extends Ability_Group {
 	/**
 	 * Permission: matches the settings route, which only administrators use.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return bool
 	 */
@@ -134,7 +134,7 @@ class Site_Settings_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-site-settings.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @return array|\WP_Error
 	 */
@@ -147,7 +147,7 @@ class Site_Settings_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/update-site-settings.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -202,7 +202,7 @@ class Site_Settings_Abilities extends Ability_Group {
 	/**
 	 * The curated settings from the route's full settings object.
 	 *
-	 * @since 2.8.0
+	 * @since n.e.x.t
 	 *
 	 * @param array $settings Settings as the route returns them.
 	 *
