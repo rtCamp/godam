@@ -101,8 +101,10 @@ class Addon_Registry {
 		$minimums = apply_filters(
 			'godam_addon_minimum_compatible_versions',
 			array(
+				// 2.3.1: earlier versions send their Shoppable Video and Reel Pops
+				// analytics without waiting for the visitor's consent.
 				'godam-for-woo' => array(
-					'version' => '2.2.1',
+					'version' => '2.3.1',
 					'name'    => __( 'GoDAM for WooCommerce', 'godam' ),
 				),
 			)
