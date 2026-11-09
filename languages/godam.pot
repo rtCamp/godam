@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GoDAM 2.8.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam-2347\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam-2-8-0-date\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-09T10:47:03+00:00\n"
+"POT-Creation-Date: 2026-11-09T11:18:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -121,7 +121,7 @@ msgstr ""
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:415
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:422
 #: pages/video-editor/components/audio/AudioCardPreview.js:253
-#: pages/video-editor/components/transcription/Transcription.js:188
+#: pages/video-editor/components/transcription/Transcription.js:192
 msgid "Transcript"
 msgstr ""
 
@@ -436,7 +436,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-audio/edit.js:571
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:20
-#: pages/video-editor/components/transcription/Transcription.js:194
+#: pages/video-editor/components/transcription/Transcription.js:198
 msgid "Transcription"
 msgstr ""
 
@@ -1779,7 +1779,7 @@ msgstr ""
 #: pages/video-editor/components/transcription/CaptionCueEditor.js:134
 #: pages/video-editor/components/transcription/CaptionManager.js:436
 #: pages/video-editor/components/transcription/CaptionManager.js:529
-#: pages/video-editor/components/transcription/Transcription.js:354
+#: pages/video-editor/components/transcription/Transcription.js:358
 msgid "Cancel"
 msgstr ""
 
@@ -2603,7 +2603,7 @@ msgstr ""
 #: pages/video-editor/components/SidebarLayers.js:777
 #: pages/video-editor/components/transcription/CaptionManager.js:417
 #: pages/video-editor/components/transcription/CaptionManager.js:444
-#: pages/video-editor/components/transcription/Transcription.js:363
+#: pages/video-editor/components/transcription/Transcription.js:367
 msgid "Delete"
 msgstr ""
 
@@ -7704,7 +7704,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/onboarding/components/screens/EntryScreen.jsx:49
 #: pages/onboarding/components/screens/SignupScreen.jsx:70
-#: pages/video-editor/components/transcription/Transcription.js:295
+#: pages/video-editor/components/transcription/Transcription.js:299
 msgid "OR"
 msgstr ""
 
@@ -10115,7 +10115,7 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/transcription/CaptionCueEditor.js:126
-#: pages/video-editor/components/transcription/Transcription.js:255
+#: pages/video-editor/components/transcription/Transcription.js:259
 msgid "No cues found in this caption file."
 msgstr ""
 
@@ -10143,8 +10143,8 @@ msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/transcription/CaptionManager.js:288
-#: pages/video-editor/components/transcription/Transcription.js:217
-#: pages/video-editor/components/transcription/Transcription.js:326
+#: pages/video-editor/components/transcription/Transcription.js:221
+#: pages/video-editor/components/transcription/Transcription.js:330
 msgid "Manage caption tracks"
 msgstr ""
 
@@ -10303,7 +10303,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/transcription/CaptionManager.js:167
 #: pages/video-editor/components/transcription/CaptionManager.js:232
-#: pages/video-editor/components/transcription/Transcription.js:162
+#: pages/video-editor/components/transcription/Transcription.js:166
 msgid "Please choose a .vtt or .srt caption file."
 msgstr ""
 
@@ -10318,83 +10318,84 @@ msgid "Transcription failed. Please try again."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:152
+#: pages/video-editor/components/transcription/Transcription.js:156
 msgid "Select a caption file"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:153
+#: pages/video-editor/components/transcription/Transcription.js:157
 msgid "Use this file"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:168
+#: pages/video-editor/components/transcription/Transcription.js:172
 msgid "Could not attach the caption file."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:224
+#: pages/video-editor/components/transcription/Transcription.js:228
 msgid "Replace transcription file"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:231
-#: pages/video-editor/components/transcription/Transcription.js:343
+#: pages/video-editor/components/transcription/Transcription.js:235
+#: pages/video-editor/components/transcription/Transcription.js:347
 msgid "Delete transcription"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:265
+#: pages/video-editor/components/transcription/Transcription.js:269
 msgid "Automatically transcribe the audio using GoDAM's AI engine"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:270
+#: pages/video-editor/components/transcription/Transcription.js:274
 msgid "Transcription language"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/transcription/Transcription.js:142
+#: pages/video-editor/components/transcription/Transcription.js:146
 msgid "Could not start transcription. Please try again."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:286
+#: pages/video-editor/components/transcription/Transcription.js:290
 msgid "Generate Transcription"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:290
+#: pages/video-editor/components/transcription/Transcription.js:294
 msgid "Transcription runs on GoDAM, and this video has not been transcoded by GoDAM yet. You can still upload a caption file."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:302
+#: pages/video-editor/components/transcription/Transcription.js:306
 msgid "Generating transcription…"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:305
+#: pages/video-editor/components/transcription/Transcription.js:309
 msgid "This usually takes a few minutes, longer for long videos. We'll notify you once it's ready"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:318
+#: pages/video-editor/components/transcription/Transcription.js:322
 msgid "Upload File"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:346
+#: pages/video-editor/components/transcription/Transcription.js:350
 msgid "Delete this transcription from WordPress? This cannot be undone."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:347
+#: pages/video-editor/components/transcription/Transcription.js:351
 msgid "Caption tracks stored in GoDAM keep playing for visitors. To remove one, use Manage caption tracks."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/transcription/Transcription.js:182
+#: pages/video-editor/components/transcription/Transcription.js:186
 msgid "Could not remove the transcript."
 msgstr ""
 
