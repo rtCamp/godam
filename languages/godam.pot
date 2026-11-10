@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-10T09:05:46+00:00\n"
+"POT-Creation-Date: 2026-11-10T09:36:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -11512,26 +11512,26 @@ msgstr ""
 msgid "Video attachment not found for the provided job ID."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:681
+#: admin/class-rtgodam-transcoder-rest-routes.php:682
 msgid "Transcript path saved successfully."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:691
+#: admin/class-rtgodam-transcoder-rest-routes.php:692
 msgid "Transcription callback received."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:732
+#: admin/class-rtgodam-transcoder-rest-routes.php:733
 #: admin/godam-transcoder-functions.php:607
 #: inc/classes/rest-api/class-media-library.php:652
 #: inc/classes/rest-api/class-transcoding.php:481
 msgid "API key is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:736
+#: admin/class-rtgodam-transcoder-rest-routes.php:737
 msgid "API key not configured on the site."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:740
+#: admin/class-rtgodam-transcoder-rest-routes.php:741
 #: inc/classes/rest-api/class-media-library.php:659
 #: inc/classes/rest-api/class-settings.php:192
 #: inc/classes/rest-api/class-transcoding.php:487
@@ -14023,83 +14023,83 @@ msgstr ""
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:171
+#: inc/classes/rest-api/class-transcription.php:184
 msgid "The video attachment ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:192
+#: inc/classes/rest-api/class-transcription.php:205
 msgid "Re-read the default caption from GoDAM Central first, so changes made in Central show."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:218
+#: inc/classes/rest-api/class-transcription.php:231
 msgid "BCP 47 language code to transcribe in, or \"auto\"/\"multi\" for Deepgram detection. Omitted falls back to the org/default language."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:224
+#: inc/classes/rest-api/class-transcription.php:237
 msgid "Audio stream to transcribe on a multi-audio asset. Omitted transcribes the default track."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:244
+#: inc/classes/rest-api/class-transcription.php:257
 msgid "URL of the uploaded .vtt / .srt caption file."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:319
+#: inc/classes/rest-api/class-transcription.php:332
 msgid "BCP 47 language tag for the caption track."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:327
+#: inc/classes/rest-api/class-transcription.php:340
 msgid "Label shown in the subtitle menu. Unique on the video."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:334
+#: inc/classes/rest-api/class-transcription.php:347
 msgid "Track kind: subtitles or captions."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:340
+#: inc/classes/rest-api/class-transcription.php:353
 msgid "Make this the default caption track."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:350
+#: inc/classes/rest-api/class-transcription.php:363
 msgid "Caption file text (VTT or SRT)."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:359
+#: inc/classes/rest-api/class-transcription.php:372
 msgid "Format of the uploaded caption text."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:377
+#: inc/classes/rest-api/class-transcription.php:390
 msgid "Caption track handle returned by the list endpoint."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:511
+#: inc/classes/rest-api/class-transcription.php:524
 msgid "This video has not been transcoded yet, so it cannot be transcribed."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:520
+#: inc/classes/rest-api/class-transcription.php:533
 msgid "Connect your GoDAM account to generate transcriptions."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:553
+#: inc/classes/rest-api/class-transcription.php:566
 msgid "Could not reach the transcription service. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:621
+#: inc/classes/rest-api/class-transcription.php:634
 msgid "Only .vtt or .srt caption files are supported."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:1095
+#: inc/classes/rest-api/class-transcription.php:1135
 msgid "Connect your GoDAM account to manage captions."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:1116
+#: inc/classes/rest-api/class-transcription.php:1156
 msgid "This video has not been transcoded yet, so it has no captions."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:1148
+#: inc/classes/rest-api/class-transcription.php:1188
 msgid "Could not reach the caption service. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:1169
+#: inc/classes/rest-api/class-transcription.php:1209
 msgid "The caption service rejected the request."
 msgstr ""
 
@@ -14769,23 +14769,23 @@ msgstr ""
 msgid "s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2474
+#: inc/helpers/custom-functions.php:2477
 msgid "Oops! We could not locate your video"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2485
+#: inc/helpers/custom-functions.php:2488
 msgid "Note: This is a simple image preview. The image and its layers may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2487
+#: inc/helpers/custom-functions.php:2490
 msgid "Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2489
+#: inc/helpers/custom-functions.php:2492
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2679
+#: inc/helpers/custom-functions.php:2682
 msgid "Video not found"
 msgstr ""
 

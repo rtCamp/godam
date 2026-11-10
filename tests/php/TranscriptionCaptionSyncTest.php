@@ -185,6 +185,8 @@ class TranscriptionCaptionSyncTest extends TestCase {
 			'unmarked offloaded file'       => array( $offload, '', true ),
 			'unmarked Central copy'         => array( $central, '', false ),
 			'generated, old file still set' => array( $site, 'central', false ),
+			'Generate running, file stored' => array( $site, 'central-pending', true ),
+			'Generate running, nothing'     => array( '', 'central-pending', false ),
 			'nothing stored'                => array( '', '', false ),
 		);
 	}

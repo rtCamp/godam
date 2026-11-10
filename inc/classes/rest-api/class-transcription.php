@@ -48,8 +48,10 @@ class Transcription extends Base {
 	 * the user uploaded in WordPress, rather than a cached copy of GoDAM
 	 * Central's default caption. An uploaded file never reaches Central, so the
 	 * player plays it ahead of Central's tracks and Central updates never
-	 * overwrite it. Set to `central` (SOURCE_CENTRAL) on generate, cleared on
-	 * delete. Unset on transcripts stored before 2.8.0: see is_wordpress_upload().
+	 * overwrite it. `central-pending` (SOURCE_PENDING) while a Generate job
+	 * runs, `central` (SOURCE_CENTRAL) once Central's transcript is stored,
+	 * cleared on delete. Unset on transcripts stored before 2.8.0: see
+	 * is_wordpress_upload().
 	 *
 	 * @since 2.8.0
 	 *
@@ -65,6 +67,17 @@ class Transcription extends Base {
 	 * @var string
 	 */
 	const SOURCE_CENTRAL = 'central';
+
+	/**
+	 * SOURCE_META value while a Generate job runs. The file stored before it
+	 * (often an upload) is kept and played until Central has a ready default
+	 * caption, so a job that is slow or fails never leaves the video without one.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @var string
+	 */
+	const SOURCE_PENDING = 'central-pending';
 
 	/**
 	 * Meta holding when the cached transcript was last checked against GoDAM
@@ -583,10 +596,10 @@ class Transcription extends Base {
 			// A job is genuinely in progress — clear the delete marker and
 			// remember the in-flight status so the editor keeps polling. On a
 			// hard error we leave the delete marker intact.
-			// Marked as Central's, so the finished transcript replaces an upload
-			// still stored from before 2.8.0 (see is_wordpress_upload()).
+			// Marked pending: the stored file stays until Central reports a ready
+			// default, which then replaces it (see sync_cached_transcript()).
 			delete_post_meta( $attachment_id, self::DELETED_META );
-			update_post_meta( $attachment_id, self::SOURCE_META, self::SOURCE_CENTRAL );
+			update_post_meta( $attachment_id, self::SOURCE_META, self::SOURCE_PENDING );
 			$track = $current_status ? $current_status : $status;
 			update_post_meta( $attachment_id, self::STATUS_META, $track );
 		}
@@ -833,7 +846,9 @@ class Transcription extends Base {
 	 * uploaded in WordPress, which GoDAM Central does not have.
 	 *
 	 * From 2.8.0 on, {@see self::SOURCE_META} says which it is: `upload`, or
-	 * `central` after Generate. Earlier versions left no mark, so an unmarked
+	 * `central` for Central's transcript. While a Generate job runs
+	 * (`central-pending`), the stored file is kept and played like an upload
+	 * until Central's transcript is ready. Earlier versions left no mark, so an unmarked
 	 * transcript counts as an upload when it is not on Central's CDN: Central
 	 * serves its caption files only from there, so any other address is a file
 	 * the site holds itself.
@@ -851,7 +866,26 @@ class Transcription extends Base {
 
 		$path = is_string( $path ) ? $path : '';
 
+		if ( self::SOURCE_PENDING === $source ) {
+			return '' !== $path;
+		}
+
 		return '' === $source && '' !== $path && ! rtgodam_is_transcoder_file_url( $path );
+	}
+
+	/**
+	 * Whether Central's caption list may update the stored transcript: it is
+	 * Central's copy, nothing is stored, or a Generate job is waiting for
+	 * Central's transcript. False only for a file uploaded in WordPress.
+	 *
+	 * @since 2.8.0
+	 *
+	 * @param mixed $path   Value of the `rtgodam_transcript_path` meta.
+	 * @param mixed $source Value of the {@see self::SOURCE_META} meta.
+	 * @return bool
+	 */
+	public static function takes_central_transcript( $path, $source ) {
+		return self::SOURCE_PENDING === $source || ! self::is_wordpress_upload( $path, $source );
 	}
 
 	/**
@@ -896,22 +930,28 @@ class Transcription extends Base {
 		}
 		delete_post_meta( $attachment_id, self::DELETED_META );
 		$cached_path = (string) get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
-		if ( ! self::is_wordpress_upload( $cached_path, get_post_meta( $attachment_id, self::SOURCE_META, true ) ) ) {
+		$source      = get_post_meta( $attachment_id, self::SOURCE_META, true );
+		if ( self::takes_central_transcript( $cached_path, $source ) ) {
 			update_post_meta( $attachment_id, self::CHECKED_META, time() );
 			if ( '' !== $default_path ) {
 				update_post_meta( $attachment_id, 'rtgodam_transcript_path', $default_path );
 				update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
-			} elseif ( '' !== $cached_path && in_array( $file_key( $cached_path ), $listed_files, true ) ) {
-				// The default has no file yet (an AI transcript still pending, or one
-				// that failed). Keep the transcript WordPress has while Central still
-				// lists it, so the Transcription tab and the player don't lose it.
-				update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
-			} else {
-				delete_post_meta( $attachment_id, 'rtgodam_transcript_path' );
-				// Keep an in-flight status (such as "Transcribing") so the tab still
-				// shows the job in progress; only a finished one goes with the file.
-				if ( 'Transcribed' === get_post_meta( $attachment_id, self::STATUS_META, true ) ) {
-					delete_post_meta( $attachment_id, self::STATUS_META );
+				update_post_meta( $attachment_id, self::SOURCE_META, self::SOURCE_CENTRAL );
+			} elseif ( self::SOURCE_PENDING !== $source ) {
+				// While Generate runs, or after it failed, the stored file and status
+				// stay as they are until Central has a ready default caption.
+				if ( '' !== $cached_path && in_array( $file_key( $cached_path ), $listed_files, true ) ) {
+					// The default has no file yet (an AI transcript still pending, or one
+					// that failed). Keep the transcript WordPress has while Central still
+					// lists it, so the Transcription tab and the player don't lose it.
+					update_post_meta( $attachment_id, self::STATUS_META, 'Transcribed' );
+				} else {
+					delete_post_meta( $attachment_id, 'rtgodam_transcript_path' );
+					// Keep an in-flight status (such as "Transcribing") so the tab still
+					// shows the job in progress; only a finished one goes with the file.
+					if ( 'Transcribed' === get_post_meta( $attachment_id, self::STATUS_META, true ) ) {
+						delete_post_meta( $attachment_id, self::STATUS_META );
+					}
 				}
 			}
 		}
@@ -944,7 +984,7 @@ class Transcription extends Base {
 		/** This action is documented in inc/classes/rest-api/class-transcription.php */
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$is_deleted = (bool) get_post_meta( $attachment_id, self::DELETED_META, true );
-		$is_upload  = self::is_wordpress_upload(
+		$is_upload  = ! self::takes_central_transcript(
 			get_post_meta( $attachment_id, 'rtgodam_transcript_path', true ),
 			get_post_meta( $attachment_id, self::SOURCE_META, true )
 		);

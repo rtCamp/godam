@@ -643,7 +643,7 @@ class Seo {
 		// The transcript may be a cached copy of GoDAM Central's default caption,
 		// which can change in Central's own dashboard without telling WordPress.
 		// Re-check it in the background at most every 12 hours.
-		if ( class_exists( '\RTGODAM\Inc\REST_API\Transcription' ) && ! \RTGODAM\Inc\REST_API\Transcription::is_wordpress_upload( $transcript_path, $source ) ) {
+		if ( class_exists( '\RTGODAM\Inc\REST_API\Transcription' ) && \RTGODAM\Inc\REST_API\Transcription::takes_central_transcript( $transcript_path, $source ) ) {
 			\RTGODAM\Inc\REST_API\Transcription::maybe_schedule_refresh( $attachment_id, $checked_at );
 		}
 
