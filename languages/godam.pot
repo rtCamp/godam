@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-09T12:09:21+00:00\n"
+"POT-Creation-Date: 2026-11-10T09:05:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -14023,83 +14023,83 @@ msgstr ""
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:161
+#: inc/classes/rest-api/class-transcription.php:171
 msgid "The video attachment ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:182
+#: inc/classes/rest-api/class-transcription.php:192
 msgid "Re-read the default caption from GoDAM Central first, so changes made in Central show."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:208
+#: inc/classes/rest-api/class-transcription.php:218
 msgid "BCP 47 language code to transcribe in, or \"auto\"/\"multi\" for Deepgram detection. Omitted falls back to the org/default language."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:214
+#: inc/classes/rest-api/class-transcription.php:224
 msgid "Audio stream to transcribe on a multi-audio asset. Omitted transcribes the default track."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:234
+#: inc/classes/rest-api/class-transcription.php:244
 msgid "URL of the uploaded .vtt / .srt caption file."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:309
+#: inc/classes/rest-api/class-transcription.php:319
 msgid "BCP 47 language tag for the caption track."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:317
+#: inc/classes/rest-api/class-transcription.php:327
 msgid "Label shown in the subtitle menu. Unique on the video."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:324
+#: inc/classes/rest-api/class-transcription.php:334
 msgid "Track kind: subtitles or captions."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:330
+#: inc/classes/rest-api/class-transcription.php:340
 msgid "Make this the default caption track."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:340
+#: inc/classes/rest-api/class-transcription.php:350
 msgid "Caption file text (VTT or SRT)."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:349
+#: inc/classes/rest-api/class-transcription.php:359
 msgid "Format of the uploaded caption text."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:367
+#: inc/classes/rest-api/class-transcription.php:377
 msgid "Caption track handle returned by the list endpoint."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:501
+#: inc/classes/rest-api/class-transcription.php:511
 msgid "This video has not been transcoded yet, so it cannot be transcribed."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:510
+#: inc/classes/rest-api/class-transcription.php:520
 msgid "Connect your GoDAM account to generate transcriptions."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:543
+#: inc/classes/rest-api/class-transcription.php:553
 msgid "Could not reach the transcription service. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:609
+#: inc/classes/rest-api/class-transcription.php:621
 msgid "Only .vtt or .srt caption files are supported."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:1054
+#: inc/classes/rest-api/class-transcription.php:1095
 msgid "Connect your GoDAM account to manage captions."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:1075
+#: inc/classes/rest-api/class-transcription.php:1116
 msgid "This video has not been transcoded yet, so it has no captions."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:1107
+#: inc/classes/rest-api/class-transcription.php:1148
 msgid "Could not reach the caption service. Please try again."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcription.php:1128
+#: inc/classes/rest-api/class-transcription.php:1169
 msgid "The caption service rejected the request."
 msgstr ""
 
