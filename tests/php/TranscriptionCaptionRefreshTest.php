@@ -31,7 +31,7 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 		$GLOBALS['rtgodam_stub'] = array(
 			'post_meta' => array(
 				'rtgodam_transcoding_job_id' => 'job-1',
-				'rtgodam_transcript_path'    => 'https://cdn.example/job/en.vtt',
+				'rtgodam_transcript_path'    => 'https://n8e0ka87m9.gdcdn.us/job/en.vtt',
 			),
 			'options'   => array( 'rtgodam-api-key' => 'key' ),
 			'scheduled' => array(),
@@ -62,12 +62,12 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 							'captions' => array(
 								array(
 									'language'   => 'en',
-									'vtt_path'   => 'https://cdn.example/job/en.vtt',
+									'vtt_path'   => 'https://n8e0ka87m9.gdcdn.us/job/en.vtt',
 									'is_default' => false,
 								),
 								array(
 									'language'   => 'es',
-									'vtt_path'   => 'https://cdn.example/job/es.vtt',
+									'vtt_path'   => 'https://n8e0ka87m9.gdcdn.us/job/es.vtt',
 									'is_default' => true,
 								),
 							),
@@ -88,7 +88,7 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 		$this->assertTrue( Transcription::refresh_cached_default( 7 ) );
 
 		$meta = $GLOBALS['rtgodam_stub']['post_meta'];
-		$this->assertSame( 'https://cdn.example/job/es.vtt', $meta['rtgodam_transcript_path'] );
+		$this->assertSame( 'https://n8e0ka87m9.gdcdn.us/job/es.vtt', $meta['rtgodam_transcript_path'] );
 		$this->assertGreaterThan( time() - 5, $meta[ Transcription::CHECKED_META ] );
 		$this->assertStringEndsWith( 'godam_core.api.captions.list_captions', $GLOBALS['rtgodam_stub']['posts'][0]['url'] );
 	}
@@ -109,7 +109,21 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 		$this->assertFalse( Transcription::refresh_cached_default( 7 ) );
 
 		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['posts'] );
-		$this->assertSame( 'https://cdn.example/job/en.vtt', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
+		$this->assertSame( 'https://n8e0ka87m9.gdcdn.us/job/en.vtt', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
+	}
+
+	/**
+	 * An upload from before 2.8.0 carries no source mark. Its address is not
+	 * on Central's CDN, so Central is not asked and the file stays.
+	 */
+	public function test_leaves_an_unmarked_upload_from_before_2_8_alone() {
+		$GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] = 'https://site.example/wp-content/uploads/fixed.vtt';
+		$this->central_default_is_spanish();
+
+		$this->assertFalse( Transcription::refresh_cached_default( 7 ) );
+
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['posts'] );
+		$this->assertSame( 'https://site.example/wp-content/uploads/fixed.vtt', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
 	}
 
 	/**
@@ -154,7 +168,7 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 			array(
 				array(
 					'language'   => 'en',
-					'vtt_path'   => 'https://cdn.example/job/en.vtt',
+					'vtt_path'   => 'https://n8e0ka87m9.gdcdn.us/job/en.vtt',
 					'is_default' => false,
 				),
 				array(
@@ -167,7 +181,7 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 		);
 
 		$this->assertTrue( Transcription::refresh_cached_default( 7 ) );
-		$this->assertSame( 'https://cdn.example/job/en.vtt', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
+		$this->assertSame( 'https://n8e0ka87m9.gdcdn.us/job/en.vtt', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
 	}
 
 	/**
@@ -176,12 +190,12 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 	 * transcript is still the same file and stays.
 	 */
 	public function test_keeps_a_signed_cache_when_the_default_has_no_file() {
-		$GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] = 'https://cdn.example/job/en.vtt?token=A&expires=1';
+		$GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] = 'https://n8e0ka87m9.gdcdn.us/job/en.vtt?token=A&expires=1';
 		$this->central_lists(
 			array(
 				array(
 					'language'   => 'en',
-					'vtt_path'   => 'https://cdn.example/job/en.vtt?token=B&expires=2',
+					'vtt_path'   => 'https://n8e0ka87m9.gdcdn.us/job/en.vtt?token=B&expires=2',
 					'is_default' => false,
 				),
 				array(
@@ -194,7 +208,7 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 		);
 
 		$this->assertTrue( Transcription::refresh_cached_default( 7 ) );
-		$this->assertSame( 'https://cdn.example/job/en.vtt?token=A&expires=1', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
+		$this->assertSame( 'https://n8e0ka87m9.gdcdn.us/job/en.vtt?token=A&expires=1', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
 	}
 
 	/**
@@ -250,7 +264,7 @@ class TranscriptionCaptionRefreshTest extends TestCase {
 		};
 
 		$this->assertFalse( Transcription::refresh_cached_default( 7 ) );
-		$this->assertSame( 'https://cdn.example/job/en.vtt', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
+		$this->assertSame( 'https://n8e0ka87m9.gdcdn.us/job/en.vtt', $GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path'] );
 	}
 
 	/**

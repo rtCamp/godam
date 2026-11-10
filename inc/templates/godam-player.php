@@ -775,6 +775,10 @@ if ( $godam_is_shortcode || $godam_is_elementor_widget ) {
 $godam_transcript_url     = (string) ( $godam_attachment_data['transcript_path'] ?? '' );
 $godam_transcript_deleted = ! empty( $godam_attachment_data['transcript_deleted'] );
 $godam_transcript_source  = (string) ( $godam_attachment_data['transcript_source'] ?? '' );
+// An upload from before 2.8.0 carries no source mark; recognise it by its address.
+if ( \RTGODAM\Inc\REST_API\Transcription::is_wordpress_upload( $godam_transcript_url, $godam_transcript_source ) ) {
+	$godam_transcript_source = 'upload';
+}
 
 $godam_attachment_title = '';
 
