@@ -270,7 +270,7 @@ class OfferNoticeTest extends TestCase {
 		$this->assertFalse( Offer_Notice::should_show( $this->moment( '2026-11-20 12:00:00' ), $this->user_data() ) );
 	}
 
-	public function test_black_friday_render_has_its_code_copy_and_deals_link_and_no_halloween_art() {
+	public function test_black_friday_render_has_its_code_copy_and_pricing_link_and_no_halloween_art() {
 		$this->stub_render();
 		$GLOBALS['rtgodam_stub']['active_plugins'] = array( 'lifterlms/lifterlms.php' );
 
@@ -278,7 +278,7 @@ class OfferNoticeTest extends TestCase {
 		Offer_Notice::render( 'media-library', $this->moment( '2026-11-20 12:00:00' ), $this->user_data() );
 		$html = ob_get_clean();
 
-		$this->assertStringContainsString( 'https://godam.io/deals/?utm_source=godam-plugin&utm_medium=admin-notice&utm_campaign=bfcm2026&utm_content=media-library-lifterlms', $html );
+		$this->assertStringContainsString( 'https://godam.io/pricing/?utm_source=godam-plugin&utm_medium=admin-notice&utm_campaign=bfcm2026&utm_content=media-library-lifterlms', $html );
 		$this->assertStringContainsString( 'data-code="BFCM2026"', $html );
 		$this->assertStringContainsString( 'Black Friday and Cyber Monday offer', $html );
 		$this->assertStringContainsString( 'Black Friday and Cyber Monday deal: <span>Get 50% off</span> GoDAM', $html );

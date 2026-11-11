@@ -53,7 +53,7 @@ class Offer_Notice {
 			'end'            => '2026-12-03 23:59:59',
 			'code'           => 'BFCM2026',
 			'dismiss_option' => 'rtgodam_offer_bfcm_2026_dismissed',
-			'path'           => '/deals/',
+			'path'           => '/pricing/',
 			'utm'            => array(
 				'utm_source'   => 'godam-plugin',
 				'utm_medium'   => 'admin-notice',
