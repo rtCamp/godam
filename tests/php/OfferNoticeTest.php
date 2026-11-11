@@ -5,7 +5,7 @@
  * Joel's rules from the 2.5.2 release thread: a WP-admin notice, only for free
  * and trial sites (never paid), gone after each offer ends, and a message
  * picked by the integrations the site uses. Halloween runs through November 9,
- * Black Friday and Cyber Monday from November 14 to 30 (the BFCM 2026 campaign doc).
+ * Black Friday and Cyber Monday from November 13 to 30 (the BFCM 2026 campaign doc).
  *
  * @package GoDAM
  */
@@ -234,15 +234,15 @@ class OfferNoticeTest extends TestCase {
 		$this->assertSame( '', trim( ob_get_clean() ) );
 	}
 
-	public function test_black_friday_shows_from_the_first_second_of_november_14_to_the_last_of_november_30() {
+	public function test_black_friday_shows_from_the_first_second_of_november_13_to_the_last_of_november_30() {
 		foreach ( array( 'Asia/Kolkata', 'America/New_York' ) as $zone ) {
 			$timezone                            = new \DateTimeZone( $zone );
 			$GLOBALS['rtgodam_stub']['timezone'] = $timezone;
 
 			$at = static fn( $time ) => new \DateTime( $time, $timezone );
 
-			$this->assertFalse( Offer_Notice::should_show( $at( '2026-11-13 23:59:59' ), $this->user_data() ), $zone );
-			$this->assertTrue( Offer_Notice::should_show( $at( '2026-11-14 00:00:00' ), $this->user_data() ), $zone );
+			$this->assertFalse( Offer_Notice::should_show( $at( '2026-11-12 23:59:59' ), $this->user_data() ), $zone );
+			$this->assertTrue( Offer_Notice::should_show( $at( '2026-11-13 00:00:00' ), $this->user_data() ), $zone );
 			$this->assertTrue( Offer_Notice::should_show( $at( '2026-11-30 23:59:59' ), $this->user_data() ), $zone );
 			$this->assertFalse( Offer_Notice::should_show( $at( '2026-12-01 00:00:00' ), $this->user_data() ), $zone );
 			$this->assertSame( 'bfcm-2026', Offer_Notice::get_campaign( $at( '2026-11-20 12:00:00' ) ), $zone );
@@ -250,7 +250,7 @@ class OfferNoticeTest extends TestCase {
 	}
 
 	public function test_nothing_shows_between_halloween_and_black_friday_or_on_a_later_year() {
-		foreach ( array( '2026-11-10 00:00:00', '2026-11-12 12:00:00', '2026-11-13 23:59:59', '2027-11-20 12:00:00' ) as $time ) {
+		foreach ( array( '2026-11-10 00:00:00', '2026-11-11 12:00:00', '2026-11-12 23:59:59', '2027-11-20 12:00:00' ) as $time ) {
 			$this->assertNull( Offer_Notice::get_campaign( $this->moment( $time ) ), $time );
 			$this->assertFalse( Offer_Notice::should_show( $this->moment( $time ), $this->user_data() ), $time );
 		}
