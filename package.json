@@ -158,7 +158,8 @@
 		"css-minimizer-webpack-plugin": {
 			"postcss-selector-parser": "7.1.6"
 		},
-		"minimatch@>=9.0.0 <9.0.7": "9.0.7",
+		"minimatch@>=9.0.0 <11.0.1": "11.0.4",
+		"@isaacs/nonrecursive-glob-match": "1.0.3",
 		"webpack-dev-server": "5.2.6",
 		"yauzl": "3.2.1",
 		"postcss-selector-parser": "^7.1.6",
