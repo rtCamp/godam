@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 2.8.0\n"
+"Project-Id-Version: GoDAM 2.8.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-10T09:36:25+00:00\n"
+"POT-Creation-Date: 2026-11-11T09:27:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -238,7 +238,7 @@ msgstr ""
 #: assets/build/blocks/godam-audio/index.js:1
 #: assets/build/blocks/godam-audio/view.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/class-offer-notice.php:306
+#: inc/classes/class-offer-notice.php:308
 #: assets/src/blocks/godam-audio/tabs.js:194
 #: assets/src/blocks/godam-audio/view.js:135
 #: pages/video-editor/components/audio/AudioCardPreview.js:304
@@ -4364,7 +4364,7 @@ msgstr[1] ""
 #. translators: 1: first position, 2: second position.
 #. translators: 1: comma-separated positions, 2: last position.
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/class-offer-notice.php:199
+#: inc/classes/class-offer-notice.php:219
 #: pages/analytics/timeline/LayerModifiedNotice.js:63
 #: pages/analytics/timeline/LayerModifiedNotice.js:71
 #, js-format,php-format
@@ -12024,83 +12024,83 @@ msgstr ""
 msgid "Action Scheduler is required to run the GoDAM media usage backfill."
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:177
+#: inc/classes/class-offer-notice.php:197
 msgid "Host your LifterLMS course videos on GoDAM, with adaptive streaming and video analytics. We move your entire video library from Vimeo for free."
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:181
+#: inc/classes/class-offer-notice.php:201
 msgid "Add shoppable videos and product hotspots to your WooCommerce store with GoDAM for Woo. Turn video views into product clicks, and product clicks into sales."
 msgstr ""
 
 #. translators: %s: page builder name, Elementor or WPBakery.
-#: inc/classes/class-offer-notice.php:188
+#: inc/classes/class-offer-notice.php:208
 #, php-format
 msgid "Add GoDAM videos, galleries and audio to your %s pages, with adaptive streaming on every paid plan."
 msgstr ""
 
 #. translators: %s: one or two form plugin names.
-#: inc/classes/class-offer-notice.php:204
+#: inc/classes/class-offer-notice.php:224
 #, php-format
 msgid "Show forms from %s inside your videos, and collect video and audio answers with the GoDAM recorder field."
 msgstr ""
 
 #. translators: %s: one or two form plugin names.
-#: inc/classes/class-offer-notice.php:206
+#: inc/classes/class-offer-notice.php:226
 #, php-format
 msgid "Show forms from %s inside your videos, so viewers can sign up without leaving the video."
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:211
+#: inc/classes/class-offer-notice.php:231
 msgid "Video hosting, transcoding and analytics for your WordPress media, with interactive layers and a custom player."
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:263
-msgid "Halloween offer"
+#: inc/classes/class-offer-notice.php:272
+msgid "Black Friday and Cyber Monday offer"
 msgstr ""
 
 #. translators: %s: the discount, shown in the accent colour, for example "Get 50% off".
-#: inc/classes/class-offer-notice.php:275
+#: inc/classes/class-offer-notice.php:277
 #, php-format
-msgid "No tricks, just treats: %s GoDAM!"
+msgid "Black Friday and Cyber Monday deal: %s GoDAM"
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:276
+#: inc/classes/class-offer-notice.php:279
 msgid "Get 50% off"
 msgstr ""
 
 #. translators: %s: plugin name, for example LifterLMS.
-#: inc/classes/class-offer-notice.php:289
+#: inc/classes/class-offer-notice.php:291
 #, php-format
 msgid "Works with %s"
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:297
+#: inc/classes/class-offer-notice.php:299
 msgid "Claim 50% off"
 msgstr ""
 
 #. translators: %s: offer code.
-#: inc/classes/class-offer-notice.php:302
+#: inc/classes/class-offer-notice.php:304
 #, php-format
 msgid "Copy the code %s"
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:305
+#: inc/classes/class-offer-notice.php:307
 msgid "Code"
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:311
+#: inc/classes/class-offer-notice.php:313
 msgid "Code copied"
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:315
-msgid "Through November 9. Don't let this treat disappear!"
+#: inc/classes/class-offer-notice.php:317
+msgid "Ends December 3 at 11:59 p.m. 50% off your first month or year on any plan."
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:318
+#: inc/classes/class-offer-notice.php:320
 msgid "Dismiss this offer"
 msgstr ""
 
-#: inc/classes/class-offer-notice.php:334
+#: inc/classes/class-offer-notice.php:338
 msgid "You are not allowed to dismiss this offer."
 msgstr ""
 
