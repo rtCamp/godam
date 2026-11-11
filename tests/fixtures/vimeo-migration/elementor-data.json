@@ -1,0 +1,70 @@
+[
+ {
+  "id": "a1b2c01",
+  "elType": "container",
+  "settings": {
+   "background_background": "video",
+   "background_video_link": "https://vimeo.com/1126119215?fl=pl&fe=sh"
+  },
+  "elements": [
+   {
+    "id": "a1b2c02",
+    "elType": "container",
+    "settings": [],
+    "elements": [
+     {
+      "id": "a1b2c03",
+      "elType": "widget",
+      "settings": {
+       "video_type": "vimeo",
+       "vimeo_url": "https://vimeo.com/1126119215?fl=pl&fe=sh"
+      },
+      "elements": [],
+      "widgetType": "video"
+     }
+    ],
+    "isInner": true
+   },
+   {
+    "id": "a1b2c04",
+    "elType": "widget",
+    "settings": {
+     "video_type": "vimeo",
+     "vimeo_url": "https://vimeo.com/1126119215?fl=pl&fe=sh",
+     "autoplay": "yes",
+     "mute": "yes",
+     "loop": "yes",
+     "aspect_ratio": "219",
+     "show_image_overlay": "yes",
+     "image_overlay": {
+      "id": 4810,
+      "url": "https://example.org/wp-content/uploads/poster.jpeg"
+     },
+     "lightbox": "yes",
+     "_css_classes": "my-vimeo-video",
+     "_margin": {
+      "unit": "px",
+      "top": "20",
+      "right": "0",
+      "bottom": "20",
+      "left": "0",
+      "isLinked": false
+     }
+    },
+    "elements": [],
+    "widgetType": "video"
+   },
+   {
+    "id": "a1b2c05",
+    "elType": "widget",
+    "settings": {
+     "video_type": "youtube",
+     "youtube_url": "https://www.youtube.com/watch?v=XHOmBV4js_E"
+    },
+    "elements": [],
+    "widgetType": "video"
+   }
+  ],
+  "isInner": false
+ }
+]
