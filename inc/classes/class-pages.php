@@ -11,6 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
 use WP_REST_Request;
+use RTGODAM\Inc\Layers\Layer_Type_Registry;
 
 /**
  * Class Assets
@@ -673,7 +674,7 @@ class Pages {
 			// Whether each form provider can run here, from the Layer API registry
 			// (each provider's `is_available`). The `*Active` flags in `videoData`
 			// below are kept for code that still reads them.
-			$layer_registry       = \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance();
+			$layer_registry       = Layer_Type_Registry::get_instance();
 			$layer_editor_config  = $layer_registry->get_editor_settings();
 			$form_provider_active = function ( $name ) use ( $layer_editor_config ) {
 				$form = $layer_editor_config['layerAvailability']->form ?? null;
@@ -830,8 +831,8 @@ class Pages {
 
 			// Localize video editor layer options and components via PHP filters.
 			// Deprecated (#2296): add-ons register layer types with godam_register_layer_type().
-			$layer_options    = apply_filters_deprecated( 'godam_video_editor_layer_options', array( array() ), \RTGODAM\Inc\Layers\Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
-			$layer_components = apply_filters_deprecated( 'godam_video_editor_layer_components', array( array() ), \RTGODAM\Inc\Layers\Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type() with an editorScript' );
+			$layer_options    = apply_filters_deprecated( 'godam_video_editor_layer_options', array( array() ), Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
+			$layer_components = apply_filters_deprecated( 'godam_video_editor_layer_components', array( array() ), Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type() with an editorScript' );
 
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
@@ -1060,12 +1061,12 @@ class Pages {
 			// surface. Built-in types (cta/form/hotspot/poll) have icons
 			// hardcoded in the React bundle; this exposes only the URL-based
 			// icons that come from PHP land.
-			$addon_layer_options = apply_filters_deprecated( 'godam_video_editor_layer_options', array( array() ), \RTGODAM\Inc\Layers\Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
+			$addon_layer_options = apply_filters_deprecated( 'godam_video_editor_layer_options', array( array() ), Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
 			$addon_layer_options = is_array( $addon_layer_options ) ? $addon_layer_options : array();
 
 			// Layer types registered through the Layer API name their icon in layer.json.
 			$addon_layer_types = array_column( $addon_layer_options, 'type' );
-			foreach ( \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->get_all() as $layer_type_name => $layer_type ) {
+			foreach ( Layer_Type_Registry::get_instance()->get_all() as $layer_type_name => $layer_type ) {
 				if ( ! empty( $layer_type['iconUrl'] ) && ! in_array( $layer_type_name, $addon_layer_types, true ) ) {
 					$addon_layer_options[] = array(
 						'type'    => $layer_type_name,

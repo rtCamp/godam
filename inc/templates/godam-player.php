@@ -8,6 +8,7 @@
  */
 
 use RTGODAM\Inc\Assets\IMA_Assets;
+use RTGODAM\Inc\Layers\Layer_Type_Registry;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -618,7 +619,7 @@ $godam_frontend_layers = apply_filters(
 	array_map(
 		function ( $godam_frontend_layer ) {
 			// Leave out attributes the layer's type marks private (Layer API, RFC D3).
-			$godam_frontend_layer = \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->get_public_layer( $godam_frontend_layer );
+			$godam_frontend_layer = Layer_Type_Registry::get_instance()->get_public_layer( $godam_frontend_layer );
 			return is_array( $godam_frontend_layer ) ? array_diff_key( $godam_frontend_layer, array_flip( array( 'html', 'text' ) ) ) : $godam_frontend_layer;
 		},
 		$godam_frontend_layers
@@ -655,7 +656,7 @@ $godam_layers     = $godam_meta_data['layers'] ?? array();
 $godam_ad_tag_url = '';
 
 // Layers whose type plays through an ad tag (the core Ad layer).
-$godam_ads_layers = \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->filter_layers_by_support( $godam_layers, 'adTag' );
+$godam_ads_layers = Layer_Type_Registry::get_instance()->filter_layers_by_support( $godam_layers, 'adTag' );
 
 $godam_ad_server = isset( $godam_meta_data['videoConfig']['adServer'] ) ? sanitize_text_field( $godam_meta_data['videoConfig']['adServer'] ) : 'self-hosted';
 

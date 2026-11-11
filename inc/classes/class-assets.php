@@ -11,6 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
 use RTGODAM\Inc\REST_API\Media_Library;
+use RTGODAM\Inc\Layers\Layer_Type_Registry;
 
 /**
  * Class Assets
@@ -101,7 +102,7 @@ class Assets {
 
 		// Whether each layer type and form provider can run here, from their
 		// `is_available` (`dependency_key` names the flag the player reads).
-		$plugin_dependencies = \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->get_dependency_flags();
+		$plugin_dependencies = Layer_Type_Registry::get_instance()->get_dependency_flags();
 
 		/**
 		 * Filter the plugin dependencies data exposed to the frontend player.

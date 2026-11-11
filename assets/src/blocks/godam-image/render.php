@@ -12,6 +12,8 @@
  * @var array $attributes Block attributes.
  */
 
+use RTGODAM\Inc\Layers\Layer_Type_Registry;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -75,7 +77,7 @@ if ( $godam_show_layers && $godam_attachment_id ) {
 	do_action( 'rtgodam_after_attachment_lookup' );
 	// Layers of types that support images and have something to draw
 	// (`supports.media` and `should_render` in the layer type registry).
-	$godam_layers = \RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->filter_layers_for_media( $godam_all_layers, 'image' );
+	$godam_layers = Layer_Type_Registry::get_instance()->filter_layers_for_media( $godam_all_layers, 'image' );
 }
 
 // A hotspot link becomes the `href` of a link on the front end, so only http, https

@@ -33,6 +33,13 @@ class Core_Layer_Types {
 	const TYPES = array( 'cta', 'form', 'poll', 'hotspot', 'ad' );
 
 	/**
+	 * The folder `register()` is loading the core types from, so their PHP finds its own `layer.json`.
+	 *
+	 * @var string|null
+	 */
+	private static $layers_dir = null;
+
+	/**
 	 * Register on `godam_init`, before add-ons (priority 10).
 	 */
 	final protected function __construct() {
@@ -49,8 +56,9 @@ class Core_Layer_Types {
 	 * @return void
 	 */
 	public function register( $layers_dir = null ) {
-		$layers_dir = $layers_dir ? $layers_dir : self::get_layers_dir();
-		$registry   = Layer_Type_Registry::get_instance();
+		$layers_dir       = untrailingslashit( $layers_dir ? $layers_dir : self::get_default_layers_dir() );
+		self::$layers_dir = $layers_dir;
+		$registry         = Layer_Type_Registry::get_instance();
 
 		foreach ( self::TYPES as $type ) {
 			$file = trailingslashit( $layers_dir ) . $type . '/' . $type . '.php';
@@ -67,13 +75,25 @@ class Core_Layer_Types {
 	}
 
 	/**
-	 * Where the core layer folders are: the build, or the source when the plugin isn't built.
+	 * Where the core layer folders are: the one `register()` loaded them from.
+	 *
+	 * Each core type's PHP builds its `layer.json` path from this, so the JSON and
+	 * the `file:` scripts it names come from the same folder as the PHP.
+	 *
+	 * @return string The folder, without a trailing slash.
+	 */
+	public static function get_layers_dir() {
+		return self::$layers_dir ? self::$layers_dir : self::get_default_layers_dir();
+	}
+
+	/**
+	 * The build, or the source when the plugin isn't built.
 	 *
 	 * Only one of them is ever loaded per request, since both declare the same functions.
 	 *
 	 * @return string The folder.
 	 */
-	public static function get_layers_dir() {
+	private static function get_default_layers_dir() {
 		$build = RTGODAM_PATH . 'assets/build/layers';
 		return file_exists( $build . '/cta/cta.php' ) ? $build : RTGODAM_PATH . 'assets/src/layers';
 	}

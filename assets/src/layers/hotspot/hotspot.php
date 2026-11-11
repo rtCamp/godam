@@ -21,7 +21,7 @@ use RTGODAM\Inc\Layers\Core_Layer_Types;
  */
 function register_hotspot() {
 	godam_register_layer_type(
-		__DIR__ . '/layer.json',
+		Core_Layer_Types::get_layers_dir() . '/hotspot/layer.json',
 		array(
 			'render_callback'            => __NAMESPACE__ . '\\render_hotspot',
 			// The image block skips a hotspot layer with nothing to draw.

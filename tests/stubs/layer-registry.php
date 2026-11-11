@@ -49,6 +49,17 @@ if ( ! function_exists( 'trailingslashit' ) ) {
 	}
 }
 
+if ( ! function_exists( 'untrailingslashit' ) ) {
+
+	/**
+	 * @param string $value Path.
+	 * @return string
+	 */
+	function untrailingslashit( $value ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return rtrim( $value, '/\\' );
+	}
+}
+
 if ( ! function_exists( 'wp_normalize_path' ) ) {
 
 	/**

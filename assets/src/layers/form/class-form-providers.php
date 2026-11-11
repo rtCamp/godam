@@ -24,6 +24,7 @@ use RTGODAM\Inc\Assets\Jetpack_Form_Assets;
 use RTGODAM\Inc\Assets\Marketo_Form_Assets;
 use RTGODAM\Inc\Hubspot;
 use RTGODAM\Inc\Marketo;
+use RTGODAM\Inc\REST_API\Jetpack;
 
 /**
  * Class Form_Providers
@@ -204,7 +205,7 @@ class Form_Providers {
 		// Enqueue GoDAM's Jetpack form script only when a Jetpack form is on the page.
 		Jetpack_Form_Assets::get_instance();
 
-		$html = \RTGODAM\Inc\REST_API\Jetpack::get_rendered_form_html_static( $layer['jp_id'] );
+		$html = Jetpack::get_rendered_form_html_static( $layer['jp_id'] );
 		if ( ! $html || is_wp_error( $html ) ) {
 			return '';
 		}

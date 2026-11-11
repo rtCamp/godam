@@ -18,6 +18,7 @@ use RTGODAM\Inc\Elementor_Widgets\Godam_Gallery;
 use RTGODAM\Inc\Elementor_Widgets\Godam_Image;
 use RTGODAM\Inc\Elementor_Widgets\GoDAM_Video;
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Layers\Layer_Type_Registry;
 
 /**
  * Class Elementor Widgets.
@@ -113,7 +114,7 @@ class Elementor_Widgets {
 
 		// The editor renders widgets over AJAX, where scripts a layer enqueues
 		// while rendering never print: load every layer type's view script now.
-		\RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->enqueue_view_scripts_for_media();
+		Layer_Type_Registry::get_instance()->enqueue_view_scripts_for_media();
 	}
 
 	/**

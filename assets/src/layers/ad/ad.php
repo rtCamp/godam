@@ -14,6 +14,8 @@ namespace RTGODAM\Inc\Layers\Core;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Layers\Core_Layer_Types;
+
 /**
  * Register the Ad layer type.
  *
@@ -21,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  */
 function register_ad() {
 	godam_register_layer_type(
-		__DIR__ . '/layer.json',
+		Core_Layer_Types::get_layers_dir() . '/ad/layer.json',
 		array(
 			'supports'                   => array(
 				'adTag'   => true,

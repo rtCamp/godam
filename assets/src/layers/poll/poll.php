@@ -21,7 +21,7 @@ use RTGODAM\Inc\Layers\Core_Layer_Types;
  */
 function register_poll() {
 	godam_register_layer_type(
-		__DIR__ . '/layer.json',
+		Core_Layer_Types::get_layers_dir() . '/poll/layer.json',
 		array(
 			'render_callback'            => __NAMESPACE__ . '\\render_poll',
 			'is_available'               => __NAMESPACE__ . '\\is_wp_polls_active',

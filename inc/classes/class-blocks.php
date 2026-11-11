@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Layers\Layer_Type_Registry;
 
 /**
  * Class Blocks
@@ -53,7 +54,7 @@ class Blocks {
 		if ( ! is_admin() ) {
 			return;
 		}
-		\RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->enqueue_view_styles_for_media( 'image' );
+		Layer_Type_Registry::get_instance()->enqueue_view_styles_for_media( 'image' );
 	}
 
 	/**
@@ -64,7 +65,7 @@ class Blocks {
 	 * @return void
 	 */
 	public function enqueue_image_layer_view_scripts() {
-		\RTGODAM\Inc\Layers\Layer_Type_Registry::get_instance()->enqueue_view_scripts_for_media( 'image' );
+		Layer_Type_Registry::get_instance()->enqueue_view_scripts_for_media( 'image' );
 	}
 
 	/**

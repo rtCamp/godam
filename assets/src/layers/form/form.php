@@ -13,9 +13,10 @@ namespace RTGODAM\Inc\Layers\Core;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Layers\Core_Layer_Types;
 use RTGODAM\Inc\Layers\Form_Providers;
 
-require_once __DIR__ . '/class-form-providers.php';
+require_once Core_Layer_Types::get_layers_dir() . '/form/class-form-providers.php';
 
 /**
  * Register the Form layer type and the core form providers.
@@ -24,7 +25,7 @@ require_once __DIR__ . '/class-form-providers.php';
  */
 function register_form() {
 	godam_register_layer_type(
-		__DIR__ . '/layer.json',
+		Core_Layer_Types::get_layers_dir() . '/form/layer.json',
 		array(
 			'variationAttribute'         => 'form_type',
 			'render_callback'            => array( Form_Providers::class, 'render' ),
