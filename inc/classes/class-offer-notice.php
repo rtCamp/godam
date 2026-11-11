@@ -31,7 +31,7 @@ class Offer_Notice {
 	 * dismissed an earlier offer still sees the next one. `path` is the godam.io page the Claim
 	 * button opens, and `utm` its tracking (`utm_content` is added per placement and message).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.1
 	 *
 	 * @var array
 	 */
@@ -86,7 +86,7 @@ class Offer_Notice {
 	/**
 	 * The campaign running at the given moment, in the site's time zone.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.8.1
 	 *
 	 * @param \DateTimeInterface|null $now The moment to check, now when null. Tests pass a fixed time.
 	 *
