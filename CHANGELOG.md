@@ -1,6 +1,6 @@
 # Changelog #
 
-## v2.8.0 (November 9, 2026) ##
+## v2.8.0 (November 10, 2026) ##
 
 - Feat: Videos can now have captions in several languages. In the video editor's Transcription tab, add, edit, replace or remove a caption file for any language and choose which one shows by default. Visitors pick a language from the player's subtitles menu. Needs a paid GoDAM plan.
 - Feat: Choose the language for AI transcription, or let GoDAM detect it.

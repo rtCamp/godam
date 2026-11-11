@@ -47,13 +47,13 @@ class TranscriptionCaptionSyncTest extends TestCase {
 			array(
 				'caption_id' => 'es1',
 				'language'   => 'es',
-				'vtt_path'   => 'https://cdn.example/job/es.vtt',
+				'vtt_path'   => 'https://n8e0ka87m9.gdcdn.us/job/es.vtt',
 				'is_default' => false,
 			),
 			array(
 				'caption_id' => 'en1',
 				'language'   => 'en',
-				'vtt_path'   => 'https://cdn.example/job/en.vtt',
+				'vtt_path'   => 'https://n8e0ka87m9.gdcdn.us/job/en.vtt',
 				'is_default' => true,
 			),
 		);
@@ -65,14 +65,14 @@ class TranscriptionCaptionSyncTest extends TestCase {
 	 */
 	public function test_caches_the_default_caption() {
 		$GLOBALS['rtgodam_stub']['post_meta'] = array(
-			'rtgodam_transcript_path'    => 'https://cdn.example/job/old.vtt',
+			'rtgodam_transcript_path'    => 'https://n8e0ka87m9.gdcdn.us/job/old.vtt',
 			'rtgodam_transcript_deleted' => '1',
 		);
 
 		Transcription::sync_cached_transcript( 7, $this->captions() );
 
 		$meta = $GLOBALS['rtgodam_stub']['post_meta'];
-		$this->assertSame( 'https://cdn.example/job/en.vtt', $meta['rtgodam_transcript_path'] );
+		$this->assertSame( 'https://n8e0ka87m9.gdcdn.us/job/en.vtt', $meta['rtgodam_transcript_path'] );
 		$this->assertSame( 'Transcribed', $meta['rtgodam_transcript_status'] );
 		$this->assertArrayNotHasKey( 'rtgodam_transcript_deleted', $meta );
 	}
@@ -83,7 +83,7 @@ class TranscriptionCaptionSyncTest extends TestCase {
 	 */
 	public function test_clears_the_cache_when_no_default_is_ready() {
 		$GLOBALS['rtgodam_stub']['post_meta'] = array(
-			'rtgodam_transcript_path'   => 'https://cdn.example/job/en.vtt',
+			'rtgodam_transcript_path'   => 'https://n8e0ka87m9.gdcdn.us/job/en.vtt',
 			'rtgodam_transcript_status' => 'Transcribed',
 		);
 
@@ -118,6 +118,76 @@ class TranscriptionCaptionSyncTest extends TestCase {
 		$this->assertSame(
 			'https://site.example/wp-content/uploads/fixed.vtt',
 			$GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path']
+		);
+	}
+
+	/**
+	 * An upload from before 2.8.0 has no source mark. Its address is not on
+	 * Central's CDN, so it is still kept.
+	 */
+	public function test_keeps_an_unmarked_upload_from_before_2_8() {
+		$GLOBALS['rtgodam_stub']['post_meta'] = array(
+			'rtgodam_transcript_path' => 'https://site.example/wp-content/uploads/fixed.vtt',
+		);
+
+		Transcription::sync_cached_transcript( 7, $this->captions() );
+
+		$this->assertSame(
+			'https://site.example/wp-content/uploads/fixed.vtt',
+			$GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path']
+		);
+	}
+
+	/**
+	 * After Generate on a video with an old upload, the source is `central`,
+	 * so the finished transcript replaces the upload.
+	 */
+	public function test_generate_replaces_an_unmarked_upload() {
+		$GLOBALS['rtgodam_stub']['post_meta'] = array(
+			'rtgodam_transcript_path'   => 'https://site.example/wp-content/uploads/fixed.vtt',
+			'rtgodam_transcript_source' => 'central',
+		);
+
+		Transcription::sync_cached_transcript( 7, $this->captions() );
+
+		$this->assertSame(
+			'https://n8e0ka87m9.gdcdn.us/job/en.vtt',
+			$GLOBALS['rtgodam_stub']['post_meta']['rtgodam_transcript_path']
+		);
+	}
+
+	/**
+	 * Which stored transcripts count as uploaded in WordPress.
+	 *
+	 * @dataProvider upload_cases
+	 *
+	 * @param mixed $path     Stored transcript path.
+	 * @param mixed $source   Stored source mark.
+	 * @param bool  $expected Whether it is an upload.
+	 */
+	public function test_is_wordpress_upload( $path, $source, $expected ) {
+		$this->assertSame( $expected, Transcription::is_wordpress_upload( $path, $source ) );
+	}
+
+	/**
+	 * Cases for test_is_wordpress_upload.
+	 *
+	 * @return array
+	 */
+	public function upload_cases() {
+		$site    = 'https://site.example/wp-content/uploads/2026/10/fixed.vtt';
+		$offload = 'https://bucket.s3.amazonaws.com/uploads/fixed.srt';
+		$central = 'https://n8e0ka87m9.gdcdn.us/job/en.vtt?token=a&expires=1';
+
+		return array(
+			'marked upload'                 => array( $central, 'upload', true ),
+			'unmarked site file'            => array( $site, '', true ),
+			'unmarked offloaded file'       => array( $offload, '', true ),
+			'unmarked Central copy'         => array( $central, '', false ),
+			'generated, old file still set' => array( $site, 'central', false ),
+			'Generate running, file stored' => array( $site, 'central-pending', true ),
+			'Generate running, nothing'     => array( '', 'central-pending', false ),
+			'nothing stored'                => array( '', '', false ),
 		);
 	}
 

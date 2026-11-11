@@ -20,7 +20,7 @@ import {
 	useDeleteTranscriptionMutation,
 	useRefreshTranscriptionMutation,
 } from '../../redux/api/transcription';
-import { parseCaptions, formatClock, formatBytes, isTranscribingStatus } from './utils';
+import { parseCaptions, formatClock, formatBytes, getGenerateRefusal } from './utils';
 import { TRANSCRIBE_LANGUAGES } from './languages';
 import CaptionManager from './CaptionManager';
 
@@ -132,10 +132,14 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 			// SaaS may answer synchronously when the transcript already exists.
 			if ( result?.transcript_path ) {
 				setIsGenerating( false );
-			} else if ( result?.success === false && result?.error && ! isTranscribingStatus( result?.current_status ) ) {
-				// Anything other than "already in progress" surfaces as an error.
+				return;
+			}
+			// A refusal (such as "Transcription limit exceeded") starts no job, so
+			// stop waiting and say why. "Already in progress" keeps polling.
+			const refusal = getGenerateRefusal( result );
+			if ( null !== refusal ) {
 				setIsGenerating( false );
-				setError( result.error );
+				setError( refusal || __( 'Could not start transcription. Please try again.', 'godam' ) );
 			}
 		} catch ( err ) {
 			setIsGenerating( false );
@@ -302,7 +306,7 @@ const Transcription = ( { attachmentID, duration, fileSize } ) => {
 									{ __( 'Generating transcription…', 'godam' ) }
 								</p>
 								<p className="godam-ve-transcription__progress-note">
-									{ __( "This usually takes 10–15 minutes. We'll notify you once it's ready", 'godam' ) }
+									{ __( "This usually takes a few minutes, longer for long videos. We'll notify you once it's ready", 'godam' ) }
 								</p>
 								<span className="godam-ve-transcription__progress-bar" aria-hidden="true" />
 							</div>

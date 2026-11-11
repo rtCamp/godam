@@ -669,10 +669,11 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					// language. Cache the default caption from the full list instead,
 					// and leave a transcript the user uploaded in WordPress alone.
 					\RTGODAM\Inc\REST_API\Transcription::sync_cached_transcript( (int) $attachment_id, $caption_tracks, false );
-				} elseif ( 'upload' !== get_post_meta( $attachment_id, 'rtgodam_transcript_source', true ) ) {
+				} elseif ( \RTGODAM\Inc\REST_API\Transcription::takes_central_transcript( get_post_meta( $attachment_id, 'rtgodam_transcript_path', true ), get_post_meta( $attachment_id, 'rtgodam_transcript_source', true ) ) ) {
 					// Older Central: only the one transcript path is sent.
 					// The transcript_path parameter is already sanitized by the REST API framework via esc_url_raw sanitize_callback.
 					update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+					update_post_meta( $attachment_id, 'rtgodam_transcript_source', \RTGODAM\Inc\REST_API\Transcription::SOURCE_CENTRAL );
 				}
 
 				return new WP_REST_Response(

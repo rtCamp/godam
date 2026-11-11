@@ -2172,6 +2172,9 @@ function godam_get_transcript_path( $attachment_id, $job_id = null ) {
 			 */
 			do_action( 'rtgodam_before_attachment_lookup' );
 			update_post_meta( $attachment_id, 'rtgodam_transcript_path', $transcript_path );
+			// Marked as Central's, so only transcripts stored before 2.8.0 need the
+			// address check in Transcription::is_wordpress_upload().
+			update_post_meta( $attachment_id, 'rtgodam_transcript_source', 'central' );
 			do_action( 'rtgodam_after_attachment_lookup' );
 		}
 
@@ -3559,6 +3562,11 @@ function rtgodam_get_transcoder_file_hosts() {
 	 *
 	 * A name matches that host and any subdomain of it. Add the CDN domain of a
 	 * self-hosted or staging GoDAM Central here, or a domain the CDN is served from.
+	 *
+	 * Since 2.8.0 these hosts also tell a caption file uploaded in WordPress apart
+	 * from a copy of Central's caption, for transcripts stored before 2.8.0 (which
+	 * carry no `rtgodam_transcript_source`): a file on any other host is kept as
+	 * an upload and never replaced by Central's caption list.
 	 *
 	 * @since 2.7.0
 	 *

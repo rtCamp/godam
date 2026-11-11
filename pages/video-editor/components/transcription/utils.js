@@ -129,6 +129,27 @@ export const formatBytes = ( bytes ) => {
 export const isTranscribingStatus = ( status ) => status === 'Transcribing' || status === 'Transcoding';
 
 /**
+ * Whether a "Generate Transcription" answer means GoDAM refused to start, and why.
+ *
+ * Central gives the reason in `error` for some refusals and in `message` for
+ * others (for example "Transcription limit exceeded" when the account's quota
+ * is used up), with `success` false and no job status either way. A refusal is
+ * final: no job runs, so the editor must stop waiting and say so.
+ *
+ * @param {Object} [result] Response from `/godam/v1/transcription/generate`.
+ * @return {string|null} The reason ('' when Central gave none); null when a transcript exists or a job started or is running.
+ */
+export const getGenerateRefusal = ( result ) => {
+	if ( ! result || result.success !== false || result.transcript_path ) {
+		return null;
+	}
+	if ( isTranscribingStatus( result.current_status ) || isTranscribingStatus( result.status ) ) {
+		return null;
+	}
+	return result.error || result.message || '';
+};
+
+/**
  * Serialise cue objects back into a WebVTT file.
  *
  * Uses the player's writer, so the editor and the player round timestamps the

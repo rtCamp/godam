@@ -631,7 +631,7 @@ class Seo {
 		do_action( 'rtgodam_before_attachment_lookup' );
 		$transcript_path = (string) get_post_meta( $attachment_id, 'rtgodam_transcript_path', true );
 		$is_deleted      = (bool) get_post_meta( $attachment_id, 'rtgodam_transcript_deleted', true );
-		$is_upload       = 'upload' === get_post_meta( $attachment_id, 'rtgodam_transcript_source', true );
+		$source          = get_post_meta( $attachment_id, 'rtgodam_transcript_source', true );
 		$checked_at      = (int) get_post_meta( $attachment_id, 'rtgodam_transcript_checked_at', true );
 		$cache           = get_post_meta( $attachment_id, self::TRANSCRIPT_EXCERPT_META_KEY, true );
 		do_action( 'rtgodam_after_attachment_lookup' );
@@ -643,7 +643,7 @@ class Seo {
 		// The transcript may be a cached copy of GoDAM Central's default caption,
 		// which can change in Central's own dashboard without telling WordPress.
 		// Re-check it in the background at most every 12 hours.
-		if ( ! $is_upload && class_exists( '\RTGODAM\Inc\REST_API\Transcription' ) ) {
+		if ( class_exists( '\RTGODAM\Inc\REST_API\Transcription' ) && \RTGODAM\Inc\REST_API\Transcription::takes_central_transcript( $transcript_path, $source ) ) {
 			\RTGODAM\Inc\REST_API\Transcription::maybe_schedule_refresh( $attachment_id, $checked_at );
 		}
 
