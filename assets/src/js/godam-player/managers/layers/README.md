@@ -4,11 +4,12 @@ This directory contains the refactored components of the LayersManager class, sp
 
 ## Structure
 
-- **`LayerValidator.js`** - Handles layer dependency checking and validation logic
-- **`FormLayerManager.js`** - Manages form layer functionality including skip buttons, form observation, and time-based updates
+- **`FormLayerManager.js`** - Manages the CTA, form and poll layers (pause on display, skip button, outcome observation, time-based updates). Each type's runtime passes it a `behaviour`; it never branches on the layer type.
 - **`HotspotLayerManager.js`** - Manages hotspot layer functionality including creation, positioning, tooltip management, and interactions
 - **`WooCommerceLayerManager.js`** - Manages WooCommerce layer functionality including creation, positioning, tooltip management, and interactions of Product Hotspots
-- **`../layersManager.js`** - Main orchestrator that coordinates the above components
+- **`../layersManager.js`** - Mounts every saved layer through its type's Layer API runtime and forwards player events to it
+
+Each core type's runtime lives in `../../layers/` (`cta.js`, `form.js` with `form-providers.js`, `poll.js`, `hotspot.js`). Whether a layer runs is decided by its runtime's `validate()` (see `godam-layers/runtime/registry.js`).
 
 ## Benefits of this refactoring
 

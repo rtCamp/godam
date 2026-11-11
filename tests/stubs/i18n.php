@@ -123,3 +123,43 @@ if ( ! function_exists( 'wp_kses_post' ) ) {
 		return $data;
 	}
 }
+
+if ( ! function_exists( 'translate' ) ) {
+
+	/**
+	 * Looks the text up in `$GLOBALS['rtgodam_stub']['gettext'][ $domain ][ $text ]`.
+	 *
+	 * @param string $text   Text to translate.
+	 * @param string $domain Text domain.
+	 *
+	 * @return string
+	 */
+	function translate( $text, $domain = 'default' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_translated'][] = array(
+			'text'   => $text,
+			'domain' => $domain,
+		);
+		return $GLOBALS['rtgodam_stub']['gettext'][ $domain ][ $text ] ?? $text;
+	}
+}
+
+if ( ! function_exists( 'translate_with_gettext_context' ) ) {
+
+	/**
+	 * Looks the text up in `$GLOBALS['rtgodam_stub']['gettext'][ $domain ][ "$context\4$text" ]`,
+	 * the key gettext uses for a string with a context.
+	 *
+	 * @param string $text    Text to translate.
+	 * @param string $context Context.
+	 * @param string $domain  Text domain.
+	 *
+	 * @return string
+	 */
+	function translate_with_gettext_context( $text, $context, $domain = 'default' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_translated'][] = array(
+			'text'   => $text,
+			'domain' => $domain,
+		);
+		return $GLOBALS['rtgodam_stub']['gettext'][ $domain ][ $context . "\4" . $text ] ?? $text;
+	}
+}

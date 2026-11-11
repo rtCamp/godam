@@ -1,0 +1,17 @@
+{
+	"apiVersion": 1,
+	"name": "ad",
+	"title": "Ad",
+	"description": "Insert an advertisement",
+	"color": "#CD860D",
+	"supports": {
+		"media": [ "video" ]
+	},
+	"attributes": {
+		"adTagUrl": { "type": "string", "format": "url", "default": "" },
+		"ad_url": { "type": "string", "format": "url", "default": "" },
+		"skippable": { "type": "boolean", "default": false },
+		"skip_offset": { "type": "integer", "default": 5 }
+	},
+	"textdomain": "godam"
+}
