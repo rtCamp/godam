@@ -26,11 +26,11 @@ class Layer_Type_Registry {
 
 	/**
 	 * GoDAM version that deprecated the add-on hooks the Layer API replaces (#2296).
-	 * They are removed two minor releases later, in 2.10.0.
+	 * They are removed two minor releases later, in 2.11.0.
 	 *
 	 * @var string
 	 */
-	const HOOKS_DEPRECATED_SINCE = '2.8.0';
+	const HOOKS_DEPRECATED_SINCE = '2.9.0';
 
 	/**
 	 * The handle suffix of each asset key a `layer.json` can name, as core names block asset handles.
@@ -394,7 +394,7 @@ class Layer_Type_Registry {
 		/**
 		 * Renders the container of a layer type that has no PHP registration.
 		 *
-		 * @deprecated 2.8.0 Use `godam_register_layer_type()` with a `render_callback` instead.
+		 * @deprecated 2.9.0 Use `godam_register_layer_type()` with a `render_callback` instead.
 		 *
 		 * @param array  $layer       Layer configuration.
 		 * @param string $instance_id Player instance ID.
