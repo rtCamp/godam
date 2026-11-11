@@ -77,6 +77,7 @@ function autoloader( $file_resource = '' ) {
 			case 'migrations': // phpcs:ignore
 			case 'wpbakery-elements': // phpcs:ignore
 			case 'addons': // phpcs:ignore
+			case 'layers': // phpcs:ignore
 			case 'vimeo-migration': // phpcs:ignore
 				/**
 				 * If there is class name provided for specific directory then load that.

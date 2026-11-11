@@ -13,6 +13,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { getLayerType, getLayerVariation, store as layersStore } from '@godam/layers';
 
 /**
  * WordPress dependencies
@@ -20,37 +21,17 @@ import { useDispatch, useSelector } from 'react-redux';
 import { plus } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { Icon } from '@wordpress/components';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import { layerTypes, FORM_PLUGIN_META, LAYER_TYPE_COLORS } from '../../utils/layerTypes';
 import { setCurrentLayer, setAddLayerModalTime, updateLayerField } from '../../redux/slice/videoSlice';
 import { notify as notifyGuide } from '../../onboarding/productGuide';
 
 // Timeline accent — mirrors the rest of the editor (uses the live WordPress
 // admin theme colour, falling back to the GoDAM purple from the design).
 const TIMELINE_ACCENT = 'var(--wp-components-color-accent, var(--wp-admin-theme-color, #5d31ff))';
-
-/**
- * Shopping-cart glyph (white line art) for commerce layer markers.
- * `@wordpress/icons` ships no cart icon, so it's defined inline here.
- *
- * @return {JSX.Element} Cart SVG.
- */
-const CartIcon = () => (
-	<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-		<circle cx="9" cy="20" r="1.5" />
-		<circle cx="18" cy="20" r="1.5" />
-		<path d="M2 3h3l2.4 12a1.5 1.5 0 0 0 1.5 1.2h8.2a1.5 1.5 0 0 0 1.5-1.2L22 7H6" />
-	</svg>
-);
-
-// Per-type marker icon override. Takes precedence over a layer type's WordPress
-// icon or add-on `iconUrl` (e.g. the WooCommerce layer shows a cart, not a logo).
-const LAYER_MARKER_ICONS = {
-	woo: CartIcon,
-};
 
 const Slider = ( props ) => {
 	const { max, value, onChange, className, layers, onLayerSelect, disabled, currentLayerID, chapters, formatTimeForInput, onInteract, onAddLayer, onLayerDrag } = props;
@@ -335,22 +316,23 @@ const Slider = ( props ) => {
 							layerLeft = ( layer.displayTime / max ) * 100;
 						}
 
-						const layerType = layerTypes.find( ( type ) => type.type === layer.type );
+						const layerType = getLayerType( layer.type );
 						const isActive = layer.id === currentLayerID;
-						const markerColor = LAYER_TYPE_COLORS[ layer.type ] || TIMELINE_ACCENT;
-						// Form layers resolve to their specific plugin (icon + name) so the
-						// chip shows e.g. "WPForms" with the WPForms logo on a white chip.
-						const formMeta = layer.type === 'form' ? FORM_PLUGIN_META[ layer.form_type ] : null;
+						const markerColor = layerType?.color || TIMELINE_ACCENT;
+						// Layers with a variation (e.g. a form plugin) show it (icon + name),
+						// so the chip reads e.g. "WPForms" with the WPForms logo on a white chip.
+						const variation = layerType?.variations.length ? getLayerVariation( layerType, layer ) : undefined;
+						const variationIcon = variation?.iconUrl || null;
 						// Timeline chips identify the layer by its type (e.g. "Hotspot"),
 						// not its custom name — the sidebar already shows the custom name.
-						const markerName = formMeta?.name || layerType?.title || layer.name || layer?.type;
+						const markerName = variation?.title || layerType?.title || layer.name || layer?.type;
 						const markerTime = formatTime( isBeingDragged ? ( dragPosition / 100 ) * max : layer.displayTime );
 
 						return (
 							// eslint-disable-next-line jsx-a11y/click-events-have-key-events
 							<div
 								key={ layer.id }
-								className={ `godam-ve-timeline__marker ${ formMeta ? 'godam-ve-timeline__marker--form' : '' } ${ isActive ? 'is-active' : '' } ${ isBeingDragged ? 'is-dragging' : '' }` }
+								className={ `godam-ve-timeline__marker ${ variationIcon ? 'godam-ve-timeline__marker--form' : '' } ${ isActive ? 'is-active' : '' } ${ isBeingDragged ? 'is-dragging' : '' }` }
 								style={ {
 									left: `${ layerLeft }%`,
 									'--marker-color': markerColor,
@@ -365,12 +347,14 @@ const Slider = ( props ) => {
 								<div className="godam-ve-timeline__chip">
 									<span className="godam-ve-timeline__chip-icon">
 										{ ( () => {
-											if ( formMeta?.icon ) {
-												return <img src={ formMeta.icon } alt={ markerName } />;
+											if ( variationIcon ) {
+												return <img src={ variationIcon } alt={ markerName } />;
 											}
-											const OverrideIcon = LAYER_MARKER_ICONS[ layer.type ];
-											if ( OverrideIcon ) {
-												return <OverrideIcon />;
+											// A marker-specific icon wins over the type's icon or add-on
+											// `iconUrl` (e.g. the WooCommerce layer shows a cart, not a logo).
+											const MarkerIcon = layerType?.markerIcon;
+											if ( MarkerIcon ) {
+												return <MarkerIcon />;
 											}
 											if ( layerType?.iconUrl ) {
 												return <img src={ layerType.iconUrl } alt={ layerType.title } />;
@@ -512,6 +496,8 @@ const Slider = ( props ) => {
 const Timeline = ( { currentTime, duration, onSeek, formatTimeForInput } ) => {
 	const dispatch = useDispatch();
 	const allLayers = useSelector( ( state ) => state.videoReducer.layers );
+	// Layer types come from the registry; add-ons can register after the editor loads.
+	const layerTypes = useSelect( ( select ) => select( layersStore ).getLayerTypes(), [] );
 	const chapters = useSelector( ( state ) => state.videoReducer.chapters );
 	const currentLayer = useSelector( ( state ) => state.videoReducer.currentLayer );
 	const currentTab = useSelector( ( state ) => state.videoReducer.currentTab );
@@ -542,11 +528,12 @@ const Timeline = ( { currentTime, duration, onSeek, formatTimeForInput } ) => {
 		);
 	}
 
-	// Exclude layers whose type isn't known (e.g. added in another branch/version)
-	// so they don't appear on the seeker.
-	const layers = allLayers.filter(
-		( layer ) => layerTypes.some( ( lt ) => lt.type === layer.type ),
-	);
+	// Exclude layers whose type isn't registered (e.g. its add-on is inactive) or
+	// doesn't sit on a timeline, so they don't appear on the seeker.
+	const layers = allLayers.filter( ( layer ) => {
+		const layerType = layerTypes.find( ( lt ) => lt.name === layer.type );
+		return layerType && false !== layerType.supports.timeline;
+	} );
 
 	return (
 		<Slider

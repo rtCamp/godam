@@ -1,0 +1,22 @@
+{
+	"apiVersion": 1,
+	"name": "hotspot",
+	"title": "Hotspot",
+	"description": "Add an info hotspot",
+	"color": "#10B77F",
+	"supports": {
+		"media": [ "video", "image" ]
+	},
+	"attributes": {
+		"duration": { "default": 5 },
+		"pauseOnHover": { "type": "boolean", "default": false },
+		"hotspots": { "type": "array", "default": [] },
+		"styleType": { "type": "string", "default": "pulse" },
+		"icon": { "type": "string", "default": "" },
+		"customIconUrl": { "type": [ "string", "null" ], "format": "url", "default": null },
+		"customIconId": { "type": [ "integer", "null" ], "default": null },
+		"isNew": { "type": "boolean", "default": true }
+	},
+	"viewScript": "file:./view.js",
+	"textdomain": "godam"
+}

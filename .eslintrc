@@ -8,6 +8,10 @@
 	"env": {
 	  "browser": true
 	},
+	"settings": {
+	  // Provided at runtime by the `godam-layers` script (a webpack external).
+	  "import/core-modules": [ "@godam/layers" ]
+	},
 	"rules": {
 	  "jsdoc/check-indentation": "error",
 	  "@wordpress/dependency-group": "error"

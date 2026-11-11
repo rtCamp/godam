@@ -196,7 +196,8 @@ if ( ! function_exists( 'add_post_meta' ) ) {
 if ( ! function_exists( 'delete_post_meta' ) ) {
 
 	/**
-	 * Records the write.
+	 * Records the write and removes the stored value, as the other
+	 * delete_post_meta() stubs do (whichever loads first serves every test).
 	 *
 	 * @param int    $post_id Post ID.
 	 * @param string $key     Meta key.
@@ -204,6 +205,8 @@ if ( ! function_exists( 'delete_post_meta' ) ) {
 	 */
 	function delete_post_meta( $post_id, $key ) {
 		$GLOBALS['rtgodam_stub']['meta_writes'][ $key ] = null;
+		unset( $GLOBALS['rtgodam_stub']['post_meta'][ $key ] );
+		$GLOBALS['rtgodam_stub']['meta_deletes'][] = $key;
 		return true;
 	}
 }
