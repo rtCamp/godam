@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.8.0
+Stable tag: 2.8.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -273,6 +273,10 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 == Changelog ==
 
+= v2.8.1 (November 11, 2026) =
+
+- Fix: Security fixes.
+
 = v2.8.0 (November 10, 2026) =
 
 - Feat: Videos can now have captions in several languages. In the video editor's Transcription tab, add, edit, replace or remove a caption file for any language and choose which one shows by default. Visitors pick a language from the player's subtitles menu. Needs a paid GoDAM plan.
@@ -291,10 +295,6 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 - Tweak: Authors see analytics only for the videos they can edit.
 - Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
 - Fix: Security fixes.
-
-= v2.6.2 (November 4, 2026) =
-
-- Tweak: Our team now moves your entire video library from Vimeo for free.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
