@@ -2,9 +2,9 @@
 /**
  * Seasonal offer notice shown in wp-admin to free and trial sites.
  *
- * Each campaign has fixed dates, a code and its own dismissal: the Halloween
- * 2026 offer (SPOOKY50, through November 9) and the Black Friday and Cyber Monday
- * 2026 offer (BFCM2026, November 13 to December 3). Nothing shows between or after them. The
+ * Each campaign has fixed dates, a code and its own dismissal: today only the
+ * Black Friday and Cyber Monday 2026 offer (BFCM2026, November 13 to December 3).
+ * Nothing shows outside a campaign's dates, so nothing repeats next year. The
  * message names the integrations the site already uses, so a LifterLMS site
  * reads about course videos and a WooCommerce store about shoppable video.
  *
@@ -36,19 +36,7 @@ class Offer_Notice {
 	 * @var array
 	 */
 	const CAMPAIGNS = array(
-		'halloween-2026' => array(
-			'start'          => '2026-10-01 00:00:00', // Before 2.5.2 shipped it: the notice showed from install.
-			'end'            => '2026-11-09 23:59:59',
-			'code'           => 'SPOOKY50',
-			'dismiss_option' => 'rtgodam_offer_halloween_2026_dismissed',
-			'path'           => '/pricing/',
-			'utm'            => array(
-				'utm_campaign' => 'halloween-2026',
-				'utm_source'   => '', // The site's host, filled in at render.
-				'utm_medium'   => 'plugin',
-			),
-		),
-		'bfcm-2026'      => array(
+		'bfcm-2026' => array(
 			'start'          => '2026-11-13 00:00:00',
 			'end'            => '2026-12-03 23:59:59',
 			'code'           => 'BFCM2026',
@@ -270,50 +258,23 @@ class Offer_Notice {
 
 		$campaign_key = self::get_campaign( $now );
 		$campaign     = self::CAMPAIGNS[ $campaign_key ];
-		$is_halloween = 'halloween-2026' === $campaign_key;
 		$integrations = self::get_active_integrations();
 		$message      = self::get_message( $integrations );
 		$chips        = array_slice( array_unique( array_column( $integrations, 'name' ) ), 0, 3 );
 		$utm          = $campaign['utm'];
-		if ( '' === $utm['utm_source'] ) {
-			$utm['utm_source'] = wp_parse_url( home_url(), PHP_URL_HOST );
-		}
+
 		$utm['utm_content'] = $placement . '-' . $message['key'];
 		$claim_url          = add_query_arg( $utm, RTGODAM_IO_API_BASE . $campaign['path'] );
 		?>
-		<div class="notice rtgodam-offer-notice<?php echo $is_halloween ? '' : ' rtgodam-offer-notice--no-art'; ?>" data-nonce="<?php echo esc_attr( wp_create_nonce( self::DISMISS_ACTION ) ); ?>">
-			<?php if ( $is_halloween ) : ?>
-			<svg class="rtgodam-offer-notice__art" viewBox="0 0 92 104" width="92" height="104" aria-hidden="true" focusable="false">
-				<g stroke="#b9aee8" stroke-width="1" fill="none">
-					<path d="M0 0 L80 0"/><path d="M0 0 L70 40"/><path d="M0 0 L40 72"/><path d="M0 0 L0 90"/>
-					<path d="M18 0 Q20 12 12 14 Q6 18 0 18"/><path d="M38 0 Q42 22 28 30 Q14 36 0 38"/><path d="M58 0 Q62 32 42 46 Q22 56 0 58"/>
-				</g>
-				<line x1="62" y1="14" x2="62" y2="62" stroke="#787c82" stroke-width="1"/>
-				<g fill="#2b1a66"><ellipse cx="62" cy="70" rx="6.5" ry="7.5"/><circle cx="62" cy="60" r="4.5"/></g>
-				<g stroke="#2b1a66" stroke-width="1.5" fill="none" stroke-linecap="round"><path d="M57 65 l-7 -5 M56 70 l-8 0 M57 75 l-7 6 M67 65 l7 -5 M68 70 l8 0 M67 75 l7 6"/></g>
-				<circle cx="60.5" cy="59" r="1" fill="#fff"/><circle cx="63.5" cy="59" r="1" fill="#fff"/>
-			</svg>
-			<?php endif; ?>
+		<div class="notice rtgodam-offer-notice" data-nonce="<?php echo esc_attr( wp_create_nonce( self::DISMISS_ACTION ) ); ?>">
 			<div class="rtgodam-offer-notice__body">
 				<p class="rtgodam-offer-notice__eyebrow">
-					<?php if ( $is_halloween ) : ?>
-						<?php esc_html_e( 'Halloween offer', 'godam' ); ?>
-					<svg class="rtgodam-offer-notice__pumpkin" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
-						<path d="M12 6c-1-2 0-4 2-4" stroke="#5d31ff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-						<ellipse cx="7.5" cy="14" rx="5" ry="7" fill="#7a57ff"/><ellipse cx="16.5" cy="14" rx="5" ry="7" fill="#7a57ff"/><ellipse cx="12" cy="14" rx="4" ry="7.5" fill="#5d31ff"/>
-						<path d="M8 12l2-2 1 2zM13 12l2-2 1 2zM8 16q4 3 8 0l-1.5 1-1.2-.8-1.3 1-1.3-1-1.2.8z" fill="#fff"/>
-					</svg>
-					<?php else : ?>
-						<?php esc_html_e( 'Black Friday and Cyber Monday offer', 'godam' ); ?>
-					<?php endif; ?>
+					<?php esc_html_e( 'Black Friday and Cyber Monday offer', 'godam' ); ?>
 				</p>
 				<p class="rtgodam-offer-notice__title">
 					<?php
-					$title = $is_halloween
-						/* translators: %s: the discount, shown in the accent colour, for example "Get 50% off". */
-						? esc_html__( 'No tricks, just treats: %s GoDAM!', 'godam' )
-						/* translators: %s: the discount, shown in the accent colour, for example "Get 50% off". */
-						: esc_html__( 'Black Friday and Cyber Monday deal: %s GoDAM', 'godam' );
+					/* translators: %s: the discount, shown in the accent colour, for example "Get 50% off". */
+					$title = esc_html__( 'Black Friday and Cyber Monday deal: %s GoDAM', 'godam' );
 					echo wp_kses(
 						sprintf( $title, '<span>' . esc_html__( 'Get 50% off', 'godam' ) . '</span>' ),
 						array( 'span' => array() )
@@ -353,13 +314,7 @@ class Offer_Notice {
 				</p>
 				<p class="rtgodam-offer-notice__ends">
 					<span class="dashicons dashicons-calendar-alt" aria-hidden="true"></span>
-					<?php
-					if ( $is_halloween ) {
-						esc_html_e( 'Through November 9. Don\'t let this treat disappear!', 'godam' );
-					} else {
-						esc_html_e( 'Ends December 3 at 11:59 p.m. 50% off your first month or year on any plan.', 'godam' );
-					}
-					?>
+					<?php esc_html_e( 'Ends December 3 at 11:59 p.m. 50% off your first month or year on any plan.', 'godam' ); ?>
 				</p>
 			</div>
 			<button type="button" class="notice-dismiss rtgodam-offer-notice__dismiss"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss this offer', 'godam' ); ?></span></button>
