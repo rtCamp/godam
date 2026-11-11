@@ -4,7 +4,7 @@
  *
  * Each campaign has fixed dates, a code and its own dismissal: the Halloween
  * 2026 offer (SPOOKY50, through November 9) and the Black Friday and Cyber Monday
- * 2026 offer (BFCM2026, November 13 to 30). Nothing shows between or after them. The
+ * 2026 offer (BFCM2026, November 13 to December 3). Nothing shows between or after them. The
  * message names the integrations the site already uses, so a LifterLMS site
  * reads about course videos and a WooCommerce store about shoppable video.
  *
@@ -50,7 +50,7 @@ class Offer_Notice {
 		),
 		'bfcm-2026'      => array(
 			'start'          => '2026-11-13 00:00:00',
-			'end'            => '2026-11-30 23:59:59',
+			'end'            => '2026-12-03 23:59:59',
 			'code'           => 'BFCM2026',
 			'dismiss_option' => 'rtgodam_offer_bfcm_2026_dismissed',
 			'path'           => '/deals/',
@@ -357,7 +357,7 @@ class Offer_Notice {
 					if ( $is_halloween ) {
 						esc_html_e( 'Through November 9. Don\'t let this treat disappear!', 'godam' );
 					} else {
-						esc_html_e( 'Ends November 30 at 11:59 p.m. 50% off your first month or year on any plan.', 'godam' );
+						esc_html_e( 'Ends December 3 at 11:59 p.m. 50% off your first month or year on any plan.', 'godam' );
 					}
 					?>
 				</p>

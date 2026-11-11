@@ -5,7 +5,7 @@
  * Joel's rules from the 2.5.2 release thread: a WP-admin notice, only for free
  * and trial sites (never paid), gone after each offer ends, and a message
  * picked by the integrations the site uses. Halloween runs through November 9,
- * Black Friday and Cyber Monday from November 13 to 30 (the BFCM 2026 campaign doc).
+ * Black Friday and Cyber Monday from November 13 to December 3 (the BFCM 2026 campaign doc).
  *
  * @package GoDAM
  */
@@ -234,7 +234,7 @@ class OfferNoticeTest extends TestCase {
 		$this->assertSame( '', trim( ob_get_clean() ) );
 	}
 
-	public function test_black_friday_shows_from_the_first_second_of_november_13_to_the_last_of_november_30() {
+	public function test_black_friday_shows_from_the_first_second_of_november_13_to_the_last_of_december_3() {
 		foreach ( array( 'Asia/Kolkata', 'America/New_York' ) as $zone ) {
 			$timezone                            = new \DateTimeZone( $zone );
 			$GLOBALS['rtgodam_stub']['timezone'] = $timezone;
@@ -243,8 +243,8 @@ class OfferNoticeTest extends TestCase {
 
 			$this->assertFalse( Offer_Notice::should_show( $at( '2026-11-12 23:59:59' ), $this->user_data() ), $zone );
 			$this->assertTrue( Offer_Notice::should_show( $at( '2026-11-13 00:00:00' ), $this->user_data() ), $zone );
-			$this->assertTrue( Offer_Notice::should_show( $at( '2026-11-30 23:59:59' ), $this->user_data() ), $zone );
-			$this->assertFalse( Offer_Notice::should_show( $at( '2026-12-01 00:00:00' ), $this->user_data() ), $zone );
+			$this->assertTrue( Offer_Notice::should_show( $at( '2026-12-03 23:59:59' ), $this->user_data() ), $zone );
+			$this->assertFalse( Offer_Notice::should_show( $at( '2026-12-04 00:00:00' ), $this->user_data() ), $zone );
 			$this->assertSame( 'bfcm-2026', Offer_Notice::get_campaign( $at( '2026-11-20 12:00:00' ) ), $zone );
 		}
 	}
@@ -282,7 +282,7 @@ class OfferNoticeTest extends TestCase {
 		$this->assertStringContainsString( 'data-code="BFCM2026"', $html );
 		$this->assertStringContainsString( 'Black Friday and Cyber Monday offer', $html );
 		$this->assertStringContainsString( 'Black Friday and Cyber Monday deal: <span>Get 50% off</span> GoDAM', $html );
-		$this->assertStringContainsString( 'Ends November 30 at 11:59 p.m. 50% off your first month or year on any plan.', $html );
+		$this->assertStringContainsString( 'Ends December 3 at 11:59 p.m. 50% off your first month or year on any plan.', $html );
 		$this->assertStringContainsString( 'rtgodam-offer-notice--no-art', $html );
 		$this->assertStringNotContainsString( 'rtgodam-offer-notice__art', $html );
 		$this->assertStringNotContainsString( 'rtgodam-offer-notice__pumpkin', $html );
