@@ -53,7 +53,7 @@ class GoDAM_Player {
 	 * `godam/image` block's `godam-player-style` out of the canvas, and every
 	 * add-on stylesheet that depends on it, such as the Woo product hotspot's.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.9.0
 	 *
 	 * @return void
 	 */

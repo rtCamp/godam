@@ -1580,7 +1580,7 @@ class Pages {
 	 * (`window.godam.layers`). The video editor depends on it, and so can an
 	 * add-on's editor script that registers its own layer types.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.9.0
 	 *
 	 * @return void
 	 */

@@ -1,5 +1,12 @@
 # Changelog #
 
+## v2.9.0 (November XX, 2026) ##
+
+- Feat: Developers can now build their own layer types for GoDAM videos and images with the Layer API: describe the layer in a `layer.json` file and register it from PHP, the video editor and the front end, the way blocks are built. Custom layers appear in the "Add layer" menu and render in the player and the GoDAM Image block.
+- Tweak: A layer's front-end script now loads only on pages that show that kind of layer, instead of on every page with a GoDAM video.
+- Tweak: GoDAM's own layers (CTA, forms, hotspots, polls and ads) now run on the Layer API. Layers you already added keep working as before.
+- Tweak: The old add-on layer hooks (`godam_video_editor_layer_options`, `godam_video_editor_layer_components`, `godam_player_render_layer` and the `window.godamLayer*` globals) are deprecated and will be removed in 2.11.0. They keep working until then, with a deprecation notice.
+
 ## v2.8.1 (November 11, 2026) ##
 
 - Fix: Security fixes.
