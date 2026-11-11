@@ -16,6 +16,7 @@ defined( 'ABSPATH' ) || exit;
 use RTGODAM\Inc\Layers\Core_Layer_Types;
 use RTGODAM\Inc\Layers\Form_Providers;
 
+// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant -- the plugin's own core layer folder (RTGODAM_PATH based) plus a fixed filename.
 require_once Core_Layer_Types::get_layers_dir() . '/form/class-form-providers.php';
 
 /**
