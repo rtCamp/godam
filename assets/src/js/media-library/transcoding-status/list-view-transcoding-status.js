@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import TranscodingChecker from './transcoding-checker';
-import { isRefusal } from './refusal';
+import { cssString, renderNextStep } from './failure';
 
 /**
  * SVG icons used for different transcoding states
@@ -109,9 +109,19 @@ class ListViewTranscodingStatus {
 		this._resetStatusClasses( element );
 
 		const statusText = element.querySelector( '.status-text' );
+
+		// Only a failed or stuck file has a next step.
+		renderNextStep( element, null );
+
 		// Handle failed transcoding state
 		if ( data.status === 'failed' ) {
 			this._updateFailedStatus( element, loader, statusText, existingIcon, data );
+			return;
+		}
+
+		// Central accepted the job but hasn't reported back for a long time.
+		if ( data.status === 'stalled' ) {
+			this._updateFailedStatus( element, loader, statusText, existingIcon, { error_msg: data.message, failure: data.failure } );
 			return;
 		}
 
@@ -182,17 +192,19 @@ class ListViewTranscodingStatus {
 	 * @param {HTMLElement}      loader       - The loader element
 	 * @param {HTMLElement}      statusText   - The status text element
 	 * @param {HTMLElement|null} existingIcon - Any existing icon element to replace
-	 * @param {Object}           data         - The status data; `error_code` and `error_msg` say why it failed
+	 * @param {Object}           data         - The status data; `error_msg` says why it failed and `failure` what to do next
 	 */
 	_updateFailedStatus( element, loader, statusText, existingIcon, data = {} ) {
 		element.classList.add( STATUS_CLASSES.FAILED );
 
 		this._replaceIcon( loader, existingIcon, ICONS.exclamation );
 
-		// When Central refused the job, its reason is what the admin needs, not a generic retry hint.
-		const failureMessage = isRefusal( data.error_code ) && data.error_msg ? data.error_msg : __( 'Transcoding failed, please try again.', 'godam' );
-		loader.style.setProperty( '--status-text', failureMessage );
+		// The server only ever sends its own wording here, never Central's raw error.
+		const failureMessage = data.error_msg || __( 'Transcoding failed, please try again.', 'godam' );
+		loader.style.setProperty( '--status-text', cssString( failureMessage ) );
 		statusText.textContent = failureMessage;
+
+		renderNextStep( element, data.failure );
 	}
 
 	/**

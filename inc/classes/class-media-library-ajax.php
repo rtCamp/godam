@@ -603,6 +603,7 @@ class Media_Library_Ajax {
 			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
 			delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
+			delete_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason' );
 			rtgodam_remove_from_retry_queue( $attachment_id );
 		}
 		// Central refused the job on purpose (4xx): record why, so the file says so.
@@ -835,6 +836,15 @@ class Media_Library_Ajax {
 			// retranscode button to whoever the retranscode route lets in.
 			$response['transcoding_error_needs_plan'] = rtgodam_refusal_needs_plan( get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_detail', true ) );
 			$response['transcoding_can_retranscode']  = current_user_can( 'edit_others_posts' );
+		}
+
+		// Why any failed or stuck file is in that state and what to do next, for the grid
+		// item and the attachment details panel. Always the plugin's own wording.
+		$transcoding_failure = rtgodam_get_transcoding_failure_for_display( $attachment->ID );
+
+		if ( ! empty( $transcoding_failure ) ) {
+			$response['transcoding_failure']         = $transcoding_failure;
+			$response['transcoding_can_retranscode'] = current_user_can( 'edit_others_posts' );
 		}
 
 		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );

@@ -524,9 +524,12 @@ class RTGODAM_Transcoder_Handler {
 					// Job successfully submitted to Central — reset any prior failure state so the
 					// media library shows the item as in-queue rather than failed.
 					update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'Queued' );
+					// When Central last had something to say, so a job it never reports on shows as stuck.
+					update_post_meta( $attachment_id, 'rtgodam_transcoding_status_updated', time() );
 					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
 					delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
+					delete_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason' );
 
 					if ( 'document' === $job_type ) {
 						/*
@@ -590,9 +593,11 @@ class RTGODAM_Transcoder_Handler {
 				// error state right away (the cron will clear this once retries succeed or are exhausted).
 				update_post_meta( $attachment_id, 'rtgodam_transcoding_status', 'failed' );
 
-				// A server error replaces any earlier refusal: drop its code and Central's wording.
-				delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
+				// A server error replaces any earlier refusal or failure: drop its wording, and say
+				// the file is waiting for an automatic retry so the media library can tell.
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', RTGODAM_RETRY_QUEUED_CODE );
 				delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
+				delete_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason' );
 
 				$max_retries = class_exists( '\RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media' )
 					? \RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media::MAX_RETRY_ATTEMPTS
