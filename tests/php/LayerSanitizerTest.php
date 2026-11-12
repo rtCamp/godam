@@ -110,6 +110,21 @@ class LayerSanitizerTest extends TestCase {
 	}
 
 	/**
+	 * A layer's name is kept as typed, on core and add-on types alike: it is
+	 * only a label, escaped where it shows, as it was before 2.9.0.
+	 */
+	public function test_keeps_the_layer_name_as_typed(): void {
+		$name = "Promo <sale> & more\tnow";
+		foreach ( array( 'acme/countdown', 'cta' ) as $type ) {
+			$layer = array(
+				'type' => $type,
+				'name' => $name,
+			);
+			$this->assertSame( $name, $this->clean( $layer )['name'], $type );
+		}
+	}
+
+	/**
 	 * A value of the wrong type falls back to the attribute's default, or is removed.
 	 */
 	public function test_replaces_wrong_types_with_the_default(): void {
