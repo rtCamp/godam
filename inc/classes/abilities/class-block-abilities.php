@@ -70,7 +70,7 @@ class Block_Abilities extends Ability_Group {
 			'godam/add-media-to-page',
 			array(
 				'label'               => __( 'Add media to a page', 'godam' ),
-				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post, or create a new one with it. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
+				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post, or create a new one with it. When the person names a page that may already exist, pass it as page (its URL, path or exact title) rather than title: title always creates a new page. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
 				'category'            => 'godam-player',
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -102,7 +102,7 @@ class Block_Abilities extends Ability_Group {
 						),
 						'title'     => array(
 							'type'        => 'string',
-							'description' => __( 'Title of the new page or post. Required when post_id is omitted.', 'godam' ),
+							'description' => __( 'Title of a new page or post to create. Only for a page that does not exist yet; for an existing one use page or post_id.', 'godam' ),
 						),
 						'post_type' => array(
 							'type'    => 'string',
