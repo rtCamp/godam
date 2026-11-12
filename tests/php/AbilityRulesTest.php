@@ -128,6 +128,8 @@ class AbilityRulesTest extends TestCase {
 	public function test_overwriting_writes_are_destructive() {
 		$this->assertTrue( $this->register( 'godam/update-media-details', true )['meta']['annotations']['destructive'] );
 		$this->assertTrue( $this->register( 'godam/add-media-to-page', true )['meta']['annotations']['destructive'] );
+		$this->assertTrue( $this->register( 'godam/move-media-to-folder', true )['meta']['annotations']['destructive'] );
+		$this->assertTrue( $this->register( 'godam/retranscode-media', true )['meta']['annotations']['destructive'] );
 		$this->assertFalse( $this->register( 'godam/create-folder', true )['meta']['annotations']['destructive'] );
 		$this->assertTrue( $this->register( 'godam/list-media' )['meta']['annotations']['readonly'] );
 	}
@@ -159,7 +161,7 @@ class AbilityRulesTest extends TestCase {
 	}
 
 	/**
-	 * With the MCP switch off, no GoDAM ability is offered to any MCP server.
+	 * With the MCP switch off, no GoDAM ability is offered to any MCP server or over REST.
 	 *
 	 * @return void
 	 */
@@ -169,7 +171,7 @@ class AbilityRulesTest extends TestCase {
 		$read = $this->register( 'godam/list-media' );
 		$this->assertFalse( $read['meta']['mcp']['public'] );
 		$this->assertFalse( $read['meta']['public'] );
-		$this->assertTrue( $read['meta']['show_in_rest'], 'The WordPress Abilities REST API is not an MCP server.' );
+		$this->assertFalse( $read['meta']['show_in_rest'], 'Off also hides it from the WordPress Abilities REST API.' );
 		$this->assertFalse( $this->register( 'godam/create-folder', true )['meta']['mcp']['public'] );
 	}
 

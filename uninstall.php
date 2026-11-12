@@ -32,6 +32,8 @@ $rtgodam_uninstall_options = array(
 	'rtgodam-account-token',
 	'rtgodam-api-key-status',
 	'rtgodam-api-key-error-since',
+	'rtgodam_mcp_enabled',
+	'rtgodam_expose_write_abilities',
 );
 
 $rtgodam_uninstall_transients = array(

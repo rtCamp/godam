@@ -37,6 +37,8 @@ abstract class Ability_Group {
 		'godam/add-media-to-page',
 		'godam/set-chapters',
 		'godam/remove-layer',
+		'godam/move-media-to-folder',
+		'godam/retranscode-media',
 	);
 
 	/**
@@ -190,12 +192,13 @@ abstract class Ability_Group {
 		}
 
 		// The MCP switch in GoDAM settings hides every GoDAM ability from every
-		// MCP server, the adapter's default server included, not only GoDAM's own.
+		// MCP server, the adapter's default server included, not only GoDAM's own,
+		// and from the WordPress Abilities REST API, so off means off.
 		$mcp_public = $public && Abilities::mcp_enabled();
 
 		$defaults = array(
 			'public'       => $mcp_public,
-			'show_in_rest' => $public,
+			'show_in_rest' => $mcp_public,
 			'mcp'          => array(
 				'public' => $mcp_public,
 				'type'   => 'tool',

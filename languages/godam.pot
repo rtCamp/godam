@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-12T10:37:24+00:00\n"
+"POT-Creation-Date: 2026-11-12T10:57:30+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -11662,93 +11662,93 @@ msgstr ""
 msgid "Let AI agents connected through MCP make changes in GoDAM."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:155
-msgid "Let AI agents use GoDAM through MCP. When off, GoDAM's tools are hidden from every MCP server."
+#: inc/classes/abilities/class-abilities.php:158
+msgid "Let AI agents use GoDAM through MCP. When off, GoDAM's tools are hidden from every MCP server and from the WordPress Abilities REST API."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:173
+#: inc/classes/abilities/class-abilities.php:176
 msgid "GoDAM and AI agents"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:190
+#: inc/classes/abilities/class-abilities.php:193
 msgid "Let AI agents connected through MCP make changes: create folders, import media, edit layers and chapters, add media to pages, change player settings and more."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:192
+#: inc/classes/abilities/class-abilities.php:195
 msgid "On by default. Agents can always read the library. Each change is still limited to what the connected user is allowed to do. Turn this off to stop every change from AI agents."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:211
+#: inc/classes/abilities/class-abilities.php:214
 msgid "GoDAM media"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:212
+#: inc/classes/abilities/class-abilities.php:215
 msgid "Find and inspect media in the GoDAM library, see where it is used, and read transcripts."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:219
+#: inc/classes/abilities/class-abilities.php:222
 msgid "GoDAM library"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:220
+#: inc/classes/abilities/class-abilities.php:223
 msgid "Organise the GoDAM library: folders and media details."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:227
+#: inc/classes/abilities/class-abilities.php:230
 msgid "GoDAM player"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:228
+#: inc/classes/abilities/class-abilities.php:231
 msgid "Interactive layers, chapters and per-video player settings, and placing GoDAM blocks on pages."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:235
+#: inc/classes/abilities/class-abilities.php:238
 msgid "GoDAM settings"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:236
+#: inc/classes/abilities/class-abilities.php:239
 msgid "Site-wide GoDAM player settings."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:243
+#: inc/classes/abilities/class-abilities.php:246
 msgid "GoDAM processing"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:244
+#: inc/classes/abilities/class-abilities.php:247
 msgid "Request transcoding and transcription from GoDAM."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:251
+#: inc/classes/abilities/class-abilities.php:254
 msgid "GoDAM analytics"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:252
+#: inc/classes/abilities/class-abilities.php:255
 msgid "Video performance, layer and store insights, and account usage."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:213
+#: inc/classes/abilities/class-ability-group.php:216
 msgid "Needs a GoDAM plan: the site must be connected to GoDAM with a verified API key."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:261
+#: inc/classes/abilities/class-ability-group.php:264
 msgid "This needs a GoDAM plan. Connect this site to GoDAM with a verified API key in GoDAM > Settings, then try again."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:340
+#: inc/classes/abilities/class-ability-group.php:343
 msgid "The GoDAM request failed."
 msgstr ""
 
 #. translators: %d: attachment ID.
-#: inc/classes/abilities/class-ability-group.php:364
+#: inc/classes/abilities/class-ability-group.php:367
 #, php-format
 msgid "No media item with ID %d exists. Use godam/list-media to find IDs."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:478
+#: inc/classes/abilities/class-ability-group.php:481
 msgid "(no title)"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:744
+#: inc/classes/abilities/class-ability-group.php:747
 msgid "Media (attachment) ID, as returned by godam/list-media."
 msgstr ""
 
@@ -12264,25 +12264,31 @@ msgstr ""
 msgid "Give a public http or https URL."
 msgstr ""
 
+#. translators: %s: maximum allowed file size, e.g. "64 MB".
+#: inc/classes/abilities/class-library-abilities.php:427
+#, php-format
+msgid "This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library."
+msgstr ""
+
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:445
+#: inc/classes/abilities/class-library-abilities.php:469
 #, php-format
 msgid "Imported as media ID %1$d, but it could not be put in the folder: %2$s"
 msgstr ""
 
 #. translators: %s: required disk space in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:477
+#: inc/classes/abilities/class-library-abilities.php:501
 #, php-format
 msgid "Not enough space to import this file. %s KB needed."
 msgstr ""
 
 #. translators: %s: maximum allowed file size in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:482
+#: inc/classes/abilities/class-library-abilities.php:506
 #, php-format
 msgid "This file is too big. Files must be less than %s KB in size."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:490
+#: inc/classes/abilities/class-library-abilities.php:514
 msgid "You have used your space quota. Please delete files before uploading."
 msgstr ""
 

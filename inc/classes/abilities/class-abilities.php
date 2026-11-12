@@ -147,12 +147,15 @@ class Abilities {
 			)
 		);
 
+		// Its own group, not 'general': WordPress sets every option of a core
+		// settings page's group that the page's form does not send to null, so
+		// saving Settings › General would turn the switch off.
 		register_setting(
-			'general',
+			'rtgodam_mcp',
 			self::MCP_ENABLED_OPTION,
 			array(
 				'type'              => 'boolean',
-				'description'       => __( 'Let AI agents use GoDAM through MCP. When off, GoDAM\'s tools are hidden from every MCP server.', 'godam' ),
+				'description'       => __( 'Let AI agents use GoDAM through MCP. When off, GoDAM\'s tools are hidden from every MCP server and from the WordPress Abilities REST API.', 'godam' ),
 				'sanitize_callback' => 'rest_sanitize_boolean',
 				'default'           => false,
 				'show_in_rest'      => true,

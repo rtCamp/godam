@@ -399,10 +399,34 @@ class Library_Abilities extends Ability_Group {
 		require_once ABSPATH . 'wp-admin/includes/media.php';
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 
+		// The same size limit as an upload in the Media Library. The download
+		// stops one byte past it, so a huge file cannot fill the disk.
+		$max_size       = (int) wp_max_upload_size();
+		$limit_download = static function ( $args ) use ( $max_size ) {
+			if ( $max_size > 0 ) {
+				$args['limit_response_size'] = $max_size + 1;
+			}
+
+			return $args;
+		};
+
+		add_filter( 'http_request_args', $limit_download ); // phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- sets the response size limit, not the timeout.
 		$tmp_file = download_url( $url );
+		remove_filter( 'http_request_args', $limit_download );
 
 		if ( is_wp_error( $tmp_file ) ) {
 			return $tmp_file;
+		}
+
+		if ( $max_size > 0 && (int) filesize( $tmp_file ) > $max_size ) {
+			wp_delete_file( $tmp_file );
+
+			return new \WP_Error(
+				'rest_upload_file_too_big',
+				/* translators: %s: maximum allowed file size, e.g. "64 MB". */
+				sprintf( __( 'This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library.', 'godam' ), size_format( $max_size ) ),
+				array( 'status' => 413 )
+			);
 		}
 
 		$file = array(
