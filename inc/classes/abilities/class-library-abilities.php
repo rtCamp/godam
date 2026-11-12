@@ -151,7 +151,7 @@ class Library_Abilities extends Ability_Group {
 				'execute_callback'    => array( $this, 'update_media_details' ),
 				'permission_callback' => array( $this, 'can_edit_media' ),
 				'meta'                => array(
-					'annotations' => array( 'idempotent' => true ),
+					'annotations' => array( 'idempotent' => false ),
 				),
 			),
 			true

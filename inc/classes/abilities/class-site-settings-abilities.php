@@ -88,7 +88,7 @@ class Site_Settings_Abilities extends Ability_Group {
 				'execute_callback'    => array( $this, 'update_site_settings' ),
 				'permission_callback' => array( $this, 'can_manage_settings' ),
 				'meta'                => array(
-					'annotations' => array( 'idempotent' => true ),
+					'annotations' => array( 'idempotent' => false ),
 				),
 			),
 			true

@@ -78,7 +78,7 @@ class Video_Settings_Abilities extends Ability_Group {
 				'execute_callback'    => array( $this, 'update_video_settings' ),
 				'permission_callback' => array( $this, 'can_edit_media' ),
 				'meta'                => array(
-					'annotations' => array( 'idempotent' => true ),
+					'annotations' => array( 'idempotent' => false ),
 				),
 			),
 			true

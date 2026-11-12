@@ -110,7 +110,7 @@ class Chapter_Abilities extends Ability_Group {
 				'meta'                => array(
 					'annotations' => array(
 						'destructive' => true,
-						'idempotent'  => true,
+						'idempotent'  => false,
 					),
 				),
 			),
