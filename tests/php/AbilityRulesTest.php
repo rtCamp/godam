@@ -245,4 +245,17 @@ class AbilityRulesTest extends TestCase {
 		$GLOBALS['rtgodam_stub']['options'][ Abilities::MCP_ENABLED_OPTION ] = '0';
 		$this->assertFalse( Abilities::mcp_enabled(), 'An admin\'s choice stays.' );
 	}
+
+	/**
+	 * Switches are stored as 1 or 0, never an empty string the settings REST route rejects.
+	 *
+	 * @return void
+	 */
+	public function test_switches_are_stored_as_one_or_zero() {
+		$this->assertSame( 0, Abilities::sanitize_switch( false ) );
+		$this->assertSame( 0, Abilities::sanitize_switch( '' ) );
+		$this->assertSame( 0, Abilities::sanitize_switch( '0' ) );
+		$this->assertSame( 1, Abilities::sanitize_switch( true ) );
+		$this->assertSame( 1, Abilities::sanitize_switch( '1' ) );
+	}
 }
