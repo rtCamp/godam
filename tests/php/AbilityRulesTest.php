@@ -29,7 +29,7 @@ require_once dirname( __DIR__ ) . '/stubs/class-test-ability-group.php';
 /**
  * @covers \RTGODAM\Inc\Abilities\Ability_Group
  * @covers \RTGODAM\Inc\Abilities\Abilities::writes_enabled
- * @covers \RTGODAM\Inc\Abilities\Abilities::maybe_set_mcp_default
+ * @covers \RTGODAM\Inc\Abilities\Abilities::mcp_enabled
  * @covers \RTGODAM\Inc\Abilities\Mcp_Server::can_connect
  */
 class AbilityRulesTest extends TestCase {
@@ -213,26 +213,19 @@ class AbilityRulesTest extends TestCase {
 	}
 
 	/**
-	 * The MCP switch starts on for a new install and off for an updated site,
-	 * and a stored choice is never changed.
+	 * The MCP switch is on until an administrator turns it off, on new and
+	 * updated sites alike.
 	 *
 	 * @return void
 	 */
-	public function test_mcp_switch_starting_value() {
+	public function test_mcp_switch_is_on_by_default() {
 		$GLOBALS['rtgodam_stub']['options'] = array();
+		$this->assertTrue( Abilities::mcp_enabled(), 'Never saved: on.' );
 
-		Abilities::maybe_set_mcp_default();
-		$this->assertSame( '1', $GLOBALS['rtgodam_stub']['options'][ Abilities::MCP_ENABLED_OPTION ], 'New install: on.' );
+		$GLOBALS['rtgodam_stub']['options'] = array( 'rtgodam_plugin_version' => '2.9.0' );
+		$this->assertTrue( Abilities::mcp_enabled(), 'Updated site: on.' );
 
-		$GLOBALS['rtgodam_stub']['options'] = array( 'rtgodam_plugin_version' => '2.8.0' );
-		Abilities::maybe_set_mcp_default();
-		$this->assertSame( '0', $GLOBALS['rtgodam_stub']['options'][ Abilities::MCP_ENABLED_OPTION ], 'Updated site: off.' );
-
-		$GLOBALS['rtgodam_stub']['options'] = array(
-			'rtgodam_plugin_version'      => '2.8.0',
-			Abilities::MCP_ENABLED_OPTION => '1',
-		);
-		Abilities::maybe_set_mcp_default();
-		$this->assertSame( '1', $GLOBALS['rtgodam_stub']['options'][ Abilities::MCP_ENABLED_OPTION ], 'An admin\'s choice stays.' );
+		$GLOBALS['rtgodam_stub']['options'][ Abilities::MCP_ENABLED_OPTION ] = '0';
+		$this->assertFalse( Abilities::mcp_enabled(), 'An admin\'s choice stays.' );
 	}
 }

@@ -46,9 +46,9 @@ class Abilities {
 	/**
 	 * Option that turns the GoDAM MCP server on or off.
 	 *
-	 * Set the first time this version runs on a site: on for a new install,
-	 * off for a site that updates from an earlier version, so nobody gets an
-	 * AI agent endpoint they did not ask for.
+	 * On by default on every site, new or updated. Nothing can connect until an
+	 * administrator installs the MCP Adapter plugin and creates an Application
+	 * Password, and that is the opt-in.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -68,8 +68,6 @@ class Abilities {
 		add_action( 'wp_abilities_api_init', array( $this, 'register_abilities' ) );
 		add_action( 'init', array( $this, 'register_setting' ) );
 		add_action( 'admin_init', array( $this, 'add_settings_field' ) );
-
-		self::maybe_set_mcp_default();
 
 		Mcp_Server::get_instance();
 	}
@@ -100,28 +98,7 @@ class Abilities {
 		 *
 		 * @param bool $enabled Whether the server is on.
 		 */
-		return (bool) apply_filters( 'rtgodam_mcp_enabled', (bool) get_option( self::MCP_ENABLED_OPTION, false ) );
-	}
-
-	/**
-	 * Stores the MCP switch's starting value the first time this version runs.
-	 *
-	 * A site that has run GoDAM before has `rtgodam_plugin_version` saved, so
-	 * it is an update and the server starts off. A new install has not saved
-	 * it yet, so the server starts on.
-	 *
-	 * @since n.e.x.t
-	 *
-	 * @return void
-	 */
-	public static function maybe_set_mcp_default() {
-		if ( false !== get_option( self::MCP_ENABLED_OPTION ) ) {
-			return;
-		}
-
-		$is_new_install = false === get_option( 'rtgodam_plugin_version' );
-
-		add_option( self::MCP_ENABLED_OPTION, $is_new_install ? '1' : '0' );
+		return (bool) apply_filters( 'rtgodam_mcp_enabled', (bool) get_option( self::MCP_ENABLED_OPTION, true ) );
 	}
 
 	/**
@@ -157,7 +134,7 @@ class Abilities {
 				'type'              => 'boolean',
 				'description'       => __( 'Let AI agents use GoDAM through MCP. When off, GoDAM\'s tools are hidden from every MCP server and from the WordPress Abilities REST API.', 'godam' ),
 				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => false,
+				'default'           => true,
 				'show_in_rest'      => true,
 			)
 		);
