@@ -859,3 +859,115 @@
 .dashboard-container > .godam-placement-funnel-card {
 	margin-bottom: 1.5rem;
 }
+
+// "Get your first video live" setup view, shown instead of zeroed metrics on a
+// site with no plays yet. Same card primitives as the metrics dashboard.
+.godam-setup {
+	display: grid;
+	grid-template-columns: 2fr minmax(260px, 1fr);
+	gap: 16px;
+	align-items: start;
+
+	@media (max-width: 1024px) {
+		grid-template-columns: 1fr;
+	}
+
+	&__side {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		min-width: 0;
+	}
+}
+
+.godam-setup-progress {
+	height: 8px;
+	border-radius: 4px;
+	background: #f0f0f1;
+	overflow: hidden;
+
+	span {
+		display: block;
+		height: 100%;
+		background: var(--wp-admin-theme-color, #ab3a6c);
+	}
+}
+
+.godam-setup-checklist {
+	min-width: 0;
+
+	&__count {
+		font-size: 13px;
+		color: #50575e;
+	}
+
+	&__steps {
+		list-style: none;
+		margin: 8px 0 0;
+		padding: 0;
+	}
+
+	&__status,
+	&__note {
+		margin: 12px 0 0;
+		font-size: 13px;
+		color: #50575e;
+	}
+}
+
+.godam-setup-step {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	margin: 0;
+	padding: 14px 0;
+	border-bottom: 1px solid #e5e7eb;
+
+	&:last-child {
+		border-bottom: 0;
+	}
+
+	&__label {
+		flex: 1 1 240px;
+		font-size: 14px;
+		color: #1e1e1e;
+	}
+
+	&__badge {
+		flex: 0 0 auto;
+		min-width: 48px;
+		padding: 2px 8px;
+		border: 1px solid #e5e7eb;
+		border-radius: 6px;
+		font-size: 12px;
+		font-weight: 500;
+		text-align: center;
+		color: #50575e;
+	}
+
+	&.is-done {
+
+		.godam-setup-step__label {
+			color: #757575;
+			text-decoration: line-through;
+		}
+
+		.godam-setup-step__badge {
+			border-color: #b8e6bf;
+			background: #edfaef;
+			color: #00450c;
+		}
+	}
+
+	&.is-next .godam-setup-step__badge {
+		border-color: var(--wp-admin-theme-color, #ab3a6c);
+		color: var(--wp-admin-theme-color, #ab3a6c);
+	}
+}
+
+.godam-setup-side-card__text {
+	margin: 8px 0 12px;
+	font-size: 13px;
+	color: #50575e;
+}
