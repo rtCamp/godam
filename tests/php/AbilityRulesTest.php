@@ -128,7 +128,6 @@ class AbilityRulesTest extends TestCase {
 	public function test_overwriting_writes_are_destructive() {
 		$this->assertTrue( $this->register( 'godam/update-media-details', true )['meta']['annotations']['destructive'] );
 		$this->assertTrue( $this->register( 'godam/add-media-to-page', true )['meta']['annotations']['destructive'] );
-		$this->assertTrue( $this->register( 'godam/move-media-to-folder', true )['meta']['annotations']['destructive'] );
 		$this->assertTrue( $this->register( 'godam/retranscode-media', true )['meta']['annotations']['destructive'] );
 		$this->assertFalse( $this->register( 'godam/create-folder', true )['meta']['annotations']['destructive'] );
 		$this->assertTrue( $this->register( 'godam/list-media' )['meta']['annotations']['readonly'] );

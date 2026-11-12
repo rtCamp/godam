@@ -39,3 +39,45 @@ if ( ! function_exists( 'add_option' ) ) {
 		return true;
 	}
 }
+
+if ( ! function_exists( 'get_current_user_id' ) ) {
+
+	/**
+	 * The user the notice tests act as.
+	 *
+	 * @return int
+	 */
+	function get_current_user_id() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return 1;
+	}
+}
+
+if ( ! function_exists( 'get_user_meta' ) ) {
+
+	/**
+	 * Reads user meta from the stub.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $key     Meta key.
+	 * @return mixed
+	 */
+	function get_user_meta( $user_id, $key ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return $GLOBALS['rtgodam_stub']['user_meta'][ $user_id ][ $key ] ?? '';
+	}
+}
+
+if ( ! function_exists( 'update_user_meta' ) ) {
+
+	/**
+	 * Stores user meta in the stub.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $key     Meta key.
+	 * @param mixed  $value   Value.
+	 * @return bool
+	 */
+	function update_user_meta( $user_id, $key, $value ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_stub']['user_meta'][ $user_id ][ $key ] = $value;
+		return true;
+	}
+}

@@ -526,8 +526,9 @@ class Analytics_Abilities extends Ability_Group {
 				'rtgodam_analytics_' . $type,
 				in_array( $type, array( 'missing_key', 'unverified_account' ), true )
 					/* translators: %s: the analytics route's own message. */
-					? sprintf( __( '%s Analytics need this site to be connected to a GoDAM account with a verified API key (GoDAM > Settings).', 'godam' ), $data['message'] ?? '' )
-					: (string) ( $data['message'] ?? __( 'Analytics are unavailable right now.', 'godam' ) ),
+					? sprintf( __( '%s Analytics need a GoDAM plan. Connect this site to GoDAM with a verified API key in GoDAM > Settings, then try again.', 'godam' ), $data['message'] ?? '' )
+					/* translators: %s: the analytics route's own message. */
+					: sprintf( __( '%s Try again in a moment. If it keeps failing, ask a site administrator to check the GoDAM connection in GoDAM > Settings.', 'godam' ), (string) ( $data['message'] ?? __( 'Analytics are unavailable right now.', 'godam' ) ) ),
 				array( 'status' => 503 )
 			);
 		}

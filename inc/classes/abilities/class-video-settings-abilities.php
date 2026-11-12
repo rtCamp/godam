@@ -264,7 +264,7 @@ class Video_Settings_Abilities extends Ability_Group {
 			do_action( 'rtgodam_after_attachment_lookup' );
 
 			if ( ! $is_image ) {
-				return new \WP_Error( 'rtgodam_thumbnail_not_image', __( 'thumbnail_image_id is not an image in the media library.', 'godam' ), array( 'status' => 400 ) );
+				return new \WP_Error( 'rtgodam_thumbnail_not_image', __( 'thumbnail_image_id is not an image in the media library. Use godam/list-media with type image to find an image ID.', 'godam' ), array( 'status' => 400 ) );
 			}
 		}
 
@@ -444,7 +444,7 @@ class Video_Settings_Abilities extends Ability_Group {
 		}
 
 		if ( 'video' !== $this->media_type( $this->attachment_mime_type( $post ) ) ) {
-			return new \WP_Error( 'rtgodam_not_a_video', __( 'These settings are for videos only.', 'godam' ), array( 'status' => 400 ) );
+			return new \WP_Error( 'rtgodam_not_a_video', __( 'These settings are for videos only. Use godam/list-media with type video to find a video.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		return $post;

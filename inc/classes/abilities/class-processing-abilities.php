@@ -80,7 +80,7 @@ class Processing_Abilities extends Ability_Group {
 			return new \WP_Error(
 				'rtgodam_not_transcribable',
 				/* translators: %s: media type, e.g. image. */
-				sprintf( __( 'Only video and audio can be transcribed; this item is %s.', 'godam' ), $type )
+				sprintf( __( 'Only video and audio can be transcribed; this item is %s. Use godam/list-media to find a video or audio item.', 'godam' ), $type )
 			);
 		}
 

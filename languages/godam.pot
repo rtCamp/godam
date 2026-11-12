@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-12T11:20:37+00:00\n"
+"POT-Creation-Date: 2026-11-12T11:46:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -2839,7 +2839,7 @@ msgstr ""
 #: inc/classes/class-media-library-ajax.php:1757
 #: inc/templates/video-preview.php:78
 #: assets/src/js/media-library/views/attachment.js:184
-#: pages/godam/components/GoDAMHeader.jsx:74
+#: pages/godam/components/GoDAMHeader.jsx:75
 #: pages/whats-new/components/Header.js:19
 msgid "GoDAM Logo"
 msgstr ""
@@ -2906,7 +2906,7 @@ msgstr ""
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:123
-#: pages/godam/components/GoDAMHeader.jsx:118
+#: pages/godam/components/GoDAMHeader.jsx:119
 msgid "Upgrade plan"
 msgstr ""
 
@@ -3045,7 +3045,7 @@ msgstr ""
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/media-library/utility.js:102
-#: pages/godam/components/GoDAMHeader.jsx:102
+#: pages/godam/components/GoDAMHeader.jsx:103
 msgid "Manage Media"
 msgstr ""
 
@@ -3401,10 +3401,60 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
+#: assets/build/pages/tools.min.js:1
+#: assets/build/pages/video-editor.min.js:2
+#: pages/godam/components/AiAgentsNotice.jsx:57
+msgid "New: use GoDAM from your AI agent."
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/help.min.js:2
+#: assets/build/pages/tools.min.js:1
+#: assets/build/pages/video-editor.min.js:2
+#: pages/godam/components/AiAgentsNotice.jsx:59
+msgid "Claude, Cursor and other AI agents can now work with your GoDAM media on this site."
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/help.min.js:2
+#: assets/build/pages/tools.min.js:1
+#: assets/build/pages/video-editor.min.js:2
+#: pages/godam/components/AiAgentsNotice.jsx:62
+msgid "Connect your agent"
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/help.min.js:2
+#: assets/build/pages/tools.min.js:1
+#: assets/build/pages/video-editor.min.js:2
+#: pages/godam/components/AiAgentsNotice.jsx:65
+msgid "Read the guide"
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/help.min.js:2
+#: assets/build/pages/tools.min.js:1
+#: assets/build/pages/video-editor.min.js:2
+#: pages/godam/components/AiAgentsNotice.jsx:71
+msgid "Dismiss this notice"
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/help.min.js:2
 #: assets/build/pages/onboarding.min.js:2
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: pages/godam/components/GoDAMHeader.jsx:92
+#: pages/godam/components/GoDAMHeader.jsx:93
 #: pages/onboarding/components/screens/WorkspaceScreen.jsx:119
 msgid "Need help?"
 msgstr ""
@@ -3416,7 +3466,7 @@ msgstr ""
 #: assets/build/pages/media-library-tour.min.js:1
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: pages/godam/components/GoDAMHeader.jsx:107
+#: pages/godam/components/GoDAMHeader.jsx:108
 #: pages/godam/components/tabs/IntegrationsSettings/HubSpotSettings.jsx:108
 #: pages/media-library-tour/steps.js:428
 msgid "GoDAM Central"
@@ -3428,7 +3478,7 @@ msgstr ""
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: pages/godam/components/GoDAMHeader.jsx:107
+#: pages/godam/components/GoDAMHeader.jsx:108
 msgid "Premium feature"
 msgstr ""
 
@@ -3438,7 +3488,7 @@ msgstr ""
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: pages/godam/components/GoDAMHeader.jsx:130
+#: pages/godam/components/GoDAMHeader.jsx:131
 msgid "Get GoDAM"
 msgstr ""
 
@@ -11658,97 +11708,101 @@ msgstr ""
 msgid "API key verified and stored successfully!"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:120
+#: inc/classes/abilities/class-abilities.php:138
 msgid "Let AI agents connected through MCP make changes in GoDAM."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:135
+#: inc/classes/abilities/class-abilities.php:153
 msgid "Let AI agents use GoDAM through MCP. When off, GoDAM's tools are hidden from every MCP server and from the WordPress Abilities REST API."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:153
+#: inc/classes/abilities/class-abilities.php:171
 msgid "GoDAM and AI agents"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:170
+#: inc/classes/abilities/class-abilities.php:188
 msgid "Let AI agents connected through MCP make changes: create folders, import media, edit layers and chapters, add media to pages, change player settings and more."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:172
+#: inc/classes/abilities/class-abilities.php:190
 msgid "On by default. Agents can always read the library. Each change is still limited to what the connected user is allowed to do. Turn this off to stop every change from AI agents."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:191
+#: inc/classes/abilities/class-abilities.php:209
 msgid "GoDAM media"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:192
+#: inc/classes/abilities/class-abilities.php:210
 msgid "Find and inspect media in the GoDAM library, see where it is used, and read transcripts."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:199
+#: inc/classes/abilities/class-abilities.php:217
 msgid "GoDAM library"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:200
+#: inc/classes/abilities/class-abilities.php:218
 msgid "Organise the GoDAM library: folders and media details."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:207
+#: inc/classes/abilities/class-abilities.php:225
 msgid "GoDAM player"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:208
+#: inc/classes/abilities/class-abilities.php:226
 msgid "Interactive layers, chapters and per-video player settings, and placing GoDAM blocks on pages."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:215
+#: inc/classes/abilities/class-abilities.php:233
 msgid "GoDAM settings"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:216
+#: inc/classes/abilities/class-abilities.php:234
 msgid "Site-wide GoDAM player settings."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:223
+#: inc/classes/abilities/class-abilities.php:241
 msgid "GoDAM processing"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:224
+#: inc/classes/abilities/class-abilities.php:242
 msgid "Request transcoding and transcription from GoDAM."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:231
+#: inc/classes/abilities/class-abilities.php:249
 msgid "GoDAM analytics"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:232
+#: inc/classes/abilities/class-abilities.php:250
 msgid "Video performance, layer and store insights, and account usage."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:216
+#: inc/classes/abilities/class-ability-group.php:215
 msgid "Needs a GoDAM plan: the site must be connected to GoDAM with a verified API key."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:264
+#: inc/classes/abilities/class-ability-group.php:263
 msgid "This needs a GoDAM plan. Connect this site to GoDAM with a verified API key in GoDAM > Settings, then try again."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:343
-msgid "The GoDAM request failed."
+#: inc/classes/abilities/class-ability-group.php:342
+msgid "The GoDAM request failed. Try again in a moment. If it keeps failing, see https://godam.io/docs/ai-agents/"
+msgstr ""
+
+#: inc/classes/abilities/class-ability-group.php:346
+msgid "Your WordPress user's role does not allow this. Ask a site administrator, or connect as a user who can."
 msgstr ""
 
 #. translators: %d: attachment ID.
-#: inc/classes/abilities/class-ability-group.php:367
+#: inc/classes/abilities/class-ability-group.php:371
 #, php-format
 msgid "No media item with ID %d exists. Use godam/list-media to find IDs."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:481
+#: inc/classes/abilities/class-ability-group.php:485
 msgid "(no title)"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:747
+#: inc/classes/abilities/class-ability-group.php:751
 msgid "Media (attachment) ID, as returned by godam/list-media."
 msgstr ""
 
@@ -11848,10 +11902,17 @@ msgstr ""
 #. translators: %s: the analytics route's own message.
 #: inc/classes/abilities/class-analytics-abilities.php:529
 #, php-format
-msgid "%s Analytics need this site to be connected to a GoDAM account with a verified API key (GoDAM > Settings)."
+msgid "%s Analytics need a GoDAM plan. Connect this site to GoDAM with a verified API key in GoDAM > Settings, then try again."
 msgstr ""
 
-#: inc/classes/abilities/class-analytics-abilities.php:530
+#. translators: %s: the analytics route's own message.
+#: inc/classes/abilities/class-analytics-abilities.php:531
+#, php-format
+msgid "%s Try again in a moment. If it keeps failing, ask a site administrator to check the GoDAM connection in GoDAM > Settings."
+msgstr ""
+
+#. translators: %s: the analytics route's own message.
+#: inc/classes/abilities/class-analytics-abilities.php:531
 msgid "Analytics are unavailable right now."
 msgstr ""
 
@@ -11900,7 +11961,7 @@ msgid "When the player scrolls out of view: off (do nothing), autoplay (pause au
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:195
-msgid "post_id is not a page or post on this site."
+msgid "post_id is not a page or post on this site. Give the ID of an existing page or post, or leave post_id out and give a title to create a new page."
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:206
@@ -11916,17 +11977,17 @@ msgid "Give either media_id for one media item, or media_ids for a gallery of vi
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:270
-msgid "player settings apply to a single video, not to a gallery."
+msgid "player settings apply to a single video, not to a gallery. Leave player out, or use media_id with one video."
 msgstr ""
 
 #. translators: %s: media type, e.g. image.
 #: inc/classes/abilities/class-block-abilities.php:286
 #, php-format
-msgid "player settings apply to videos only; this media item is %s."
+msgid "player settings apply to videos only; this media item is %s. Leave player out."
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:509
-msgid "The GoDAM Document block shows PDF, Word, Excel, PowerPoint, OpenDocument, TXT and CSV files; this file is none of those."
+msgid "The GoDAM Document block shows PDF, Word, Excel, PowerPoint, OpenDocument, TXT and CSV files; this file is none of those. Use godam/list-media with type document to find another file."
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:540
@@ -11936,7 +11997,7 @@ msgstr ""
 #. translators: %d: attachment ID.
 #: inc/classes/abilities/class-block-abilities.php:554
 #, php-format
-msgid "Media ID %d is not a video; galleries hold videos only."
+msgid "Media ID %d is not a video; galleries hold videos only. Remove it from media_ids, or use godam/list-media with type video to find video IDs."
 msgstr ""
 
 #: inc/classes/abilities/class-chapter-abilities.php:36
@@ -11982,19 +12043,19 @@ msgstr ""
 #. translators: 1: chapter title, 2: sentence giving the media length.
 #: inc/classes/abilities/class-chapter-abilities.php:288
 #, php-format
-msgid "\"%1$s\" starts after the end of the media. %2$s"
+msgid "\"%1$s\" starts after the end of the media. %2$s Use a start time inside the media."
 msgstr ""
 
 #. translators: %s: chapter title.
 #: inc/classes/abilities/class-chapter-abilities.php:293
 #, php-format
-msgid "\"%s\" must end after it starts."
+msgid "\"%s\" must end after it starts. Give an end later than its start, or leave end out."
 msgstr ""
 
 #. translators: 1: chapter title, 2: sentence giving the media length.
 #: inc/classes/abilities/class-chapter-abilities.php:298
 #, php-format
-msgid "\"%1$s\" ends after the end of the media. %2$s"
+msgid "\"%1$s\" ends after the end of the media. %2$s Use an end time inside the media, or leave end out."
 msgstr ""
 
 #. translators: 1: chapter title, 2: the overlapping chapter's title.
@@ -12004,7 +12065,7 @@ msgid "\"%1$s\" overlaps \"%2$s\". Each chapter must end at or before the next o
 msgstr ""
 
 #: inc/classes/abilities/class-chapter-abilities.php:399
-msgid "Only videos and audio have chapters."
+msgid "Only videos and audio have chapters. Use godam/list-media to find a video or audio item."
 msgstr ""
 
 #: inc/classes/abilities/class-form-abilities.php:96
@@ -12039,7 +12100,7 @@ msgstr ""
 
 #: inc/classes/abilities/class-form-abilities.php:255
 #: inc/classes/abilities/class-layer-abilities.php:569
-msgid "Poll layers need the WP-Polls plugin, which is not active on this site."
+msgid "Poll layers need the WP-Polls plugin, which is not active on this site. Ask a site administrator to install and activate WP-Polls (Plugins > Add New Plugin)."
 msgstr ""
 
 #: inc/classes/abilities/class-layer-abilities.php:135
@@ -12139,7 +12200,7 @@ msgid "Seconds before a skippable ad can be skipped."
 msgstr ""
 
 #: inc/classes/abilities/class-layer-abilities.php:424
-msgid "Images take hotspot layers only. Other layer types need a video."
+msgid "Images take hotspot layers only. Other layer types need a video. Use type hotspot, or give the ID of a video."
 msgstr ""
 
 #: inc/classes/abilities/class-layer-abilities.php:432
@@ -12161,7 +12222,7 @@ msgid "That media item has no layer with this ID. Use godam/list-layers to see i
 msgstr ""
 
 #: inc/classes/abilities/class-layer-abilities.php:595
-msgid "Unknown layer type."
+msgid "Unknown layer type. Use one of cta, hotspot, form, poll or ad."
 msgstr ""
 
 #: inc/classes/abilities/class-layer-abilities.php:621
@@ -12173,13 +12234,13 @@ msgid "A card CTA needs at least cta.heading or cta.button_text."
 msgstr ""
 
 #: inc/classes/abilities/class-layer-abilities.php:637
-msgid "cta.image_id is not an image in the media library."
+msgid "cta.image_id is not an image in the media library. Use godam/list-media with type image to find an image ID."
 msgstr ""
 
 #. translators: %s: form plugin name.
 #: inc/classes/abilities/class-layer-abilities.php:726
 #, php-format
-msgid "%s is not active on this site, so its forms cannot be shown in a layer."
+msgid "%s is not active on this site, so its forms cannot be shown in a layer. Use godam/list-forms to see which form plugins are active."
 msgstr ""
 
 #. translators: %s: layer type, which is also the name of its settings object.
@@ -12189,7 +12250,7 @@ msgid "A %1$s layer needs its settings in the \"%1$s\" object; see the input sch
 msgstr ""
 
 #: inc/classes/abilities/class-layer-abilities.php:875
-msgid "Layers can only be added to videos, and hotspot layers to images."
+msgid "Layers can only be added to videos, and hotspot layers to images. Use godam/list-media to find a video or image."
 msgstr ""
 
 #: inc/classes/abilities/class-library-abilities.php:38
@@ -12264,31 +12325,35 @@ msgstr ""
 msgid "Give a public http or https URL."
 msgstr ""
 
+#: inc/classes/abilities/class-library-abilities.php:411
+msgid "This site cannot take new uploads right now: its upload size limit is zero or its storage space is used up. Delete files to free up space, or ask a site administrator to raise the upload limit."
+msgstr ""
+
 #. translators: %s: maximum allowed file size, e.g. "64 MB".
-#: inc/classes/abilities/class-library-abilities.php:427
+#: inc/classes/abilities/class-library-abilities.php:436
 #, php-format
-msgid "This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library."
+msgid "This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library. Use a smaller file, or ask a site administrator to raise the site's maximum upload size."
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:469
+#: inc/classes/abilities/class-library-abilities.php:478
 #, php-format
-msgid "Imported as media ID %1$d, but it could not be put in the folder: %2$s"
+msgid "Imported as media ID %1$d, but it could not be put in the folder: %2$s Use godam/move-media-to-folder to move it."
 msgstr ""
 
 #. translators: %s: required disk space in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:501
+#: inc/classes/abilities/class-library-abilities.php:510
 #, php-format
-msgid "Not enough space to import this file. %s KB needed."
+msgid "Not enough space to import this file. %s KB needed. Free up space by deleting unused media in the Media Library, or ask a network administrator to raise the site's storage limit."
 msgstr ""
 
 #. translators: %s: maximum allowed file size in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:506
+#: inc/classes/abilities/class-library-abilities.php:515
 #, php-format
-msgid "This file is too big. Files must be less than %s KB in size."
+msgid "This file is too big. Files must be less than %s KB in size. Use a smaller file, or ask a network administrator to raise the limit in Network Admin > Settings > Network Settings."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:514
+#: inc/classes/abilities/class-library-abilities.php:523
 msgid "You have used your space quota. Please delete files before uploading."
 msgstr ""
 
@@ -12365,7 +12430,7 @@ msgid "No transcript yet. Request one with godam/request-transcription, then che
 msgstr ""
 
 #: inc/classes/abilities/class-media-abilities.php:511
-msgid "A transcript is recorded for this media but could not be downloaded from the CDN."
+msgid "A transcript is recorded for this media but could not be downloaded from the CDN. Try godam/get-transcript again in a moment."
 msgstr ""
 
 #: inc/classes/abilities/class-media-abilities.php:610
@@ -12391,7 +12456,7 @@ msgstr ""
 #. translators: %s: media type, e.g. image.
 #: inc/classes/abilities/class-processing-abilities.php:83
 #, php-format
-msgid "Only video and audio can be transcribed; this item is %s."
+msgid "Only video and audio can be transcribed; this item is %s. Use godam/list-media to find a video or audio item."
 msgstr ""
 
 #: inc/classes/abilities/class-processing-abilities.php:97
@@ -12602,7 +12667,7 @@ msgid "Give thumbnail_url or thumbnail_image_id, not both."
 msgstr ""
 
 #: inc/classes/abilities/class-video-settings-abilities.php:267
-msgid "thumbnail_image_id is not an image in the media library."
+msgid "thumbnail_image_id is not an image in the media library. Use godam/list-media with type image to find an image ID."
 msgstr ""
 
 #: inc/classes/abilities/class-video-settings-abilities.php:296
@@ -12618,7 +12683,7 @@ msgid "The player shows the video's ad layers, if it has any."
 msgstr ""
 
 #: inc/classes/abilities/class-video-settings-abilities.php:447
-msgid "These settings are for videos only."
+msgid "These settings are for videos only. Use godam/list-media with type video to find a video."
 msgstr ""
 
 #: inc/classes/addons/class-addon-registry.php:108

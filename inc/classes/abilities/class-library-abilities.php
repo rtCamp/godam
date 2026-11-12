@@ -401,11 +401,20 @@ class Library_Abilities extends Ability_Group {
 
 		// The same size limit as an upload in the Media Library. The download
 		// stops one byte past it, so a huge file cannot fill the disk.
-		$max_size       = (int) wp_max_upload_size();
+		$max_size = (int) wp_max_upload_size();
+
+		// Zero means the site takes no uploads right now: the storage quota is
+		// used up, or uploads are switched off. Refuse before downloading.
+		if ( $max_size <= 0 ) {
+			return new \WP_Error(
+				'rest_upload_limited_space',
+				__( 'This site cannot take new uploads right now: its upload size limit is zero or its storage space is used up. Delete files to free up space, or ask a site administrator to raise the upload limit.', 'godam' ),
+				array( 'status' => 400 )
+			);
+		}
+
 		$limit_download = static function ( $args ) use ( $max_size ) {
-			if ( $max_size > 0 ) {
-				$args['limit_response_size'] = $max_size + 1;
-			}
+			$args['limit_response_size'] = $max_size + 1;
 
 			return $args;
 		};
@@ -418,13 +427,13 @@ class Library_Abilities extends Ability_Group {
 			return $tmp_file;
 		}
 
-		if ( $max_size > 0 && (int) filesize( $tmp_file ) > $max_size ) {
+		if ( (int) filesize( $tmp_file ) > $max_size ) {
 			wp_delete_file( $tmp_file );
 
 			return new \WP_Error(
 				'rest_upload_file_too_big',
 				/* translators: %s: maximum allowed file size, e.g. "64 MB". */
-				sprintf( __( 'This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library.', 'godam' ), size_format( $max_size ) ),
+				sprintf( __( 'This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library. Use a smaller file, or ask a site administrator to raise the site\'s maximum upload size.', 'godam' ), size_format( $max_size ) ),
 				array( 'status' => 413 )
 			);
 		}
@@ -466,7 +475,7 @@ class Library_Abilities extends Ability_Group {
 				return new \WP_Error(
 					$moved->get_error_code(),
 					/* translators: 1: attachment ID, 2: reason the move failed. */
-					sprintf( __( 'Imported as media ID %1$d, but it could not be put in the folder: %2$s', 'godam' ), $attachment_id, $moved->get_error_message() ),
+					sprintf( __( 'Imported as media ID %1$d, but it could not be put in the folder: %2$s Use godam/move-media-to-folder to move it.', 'godam' ), $attachment_id, $moved->get_error_message() ),
 					array( 'status' => 400 )
 				);
 			}
@@ -498,12 +507,12 @@ class Library_Abilities extends Ability_Group {
 
 		if ( $size > get_upload_space_available() ) {
 			/* translators: %s: required disk space in kilobytes. */
-			return new \WP_Error( 'rest_upload_limited_space', sprintf( __( 'Not enough space to import this file. %s KB needed.', 'godam' ), number_format( ( $size - get_upload_space_available() ) / KB_IN_BYTES ) ), array( 'status' => 400 ) );
+			return new \WP_Error( 'rest_upload_limited_space', sprintf( __( 'Not enough space to import this file. %s KB needed. Free up space by deleting unused media in the Media Library, or ask a network administrator to raise the site\'s storage limit.', 'godam' ), number_format( ( $size - get_upload_space_available() ) / KB_IN_BYTES ) ), array( 'status' => 400 ) );
 		}
 
 		if ( $size > KB_IN_BYTES * (int) get_site_option( 'fileupload_maxk', 1500 ) ) {
 			/* translators: %s: maximum allowed file size in kilobytes. */
-			return new \WP_Error( 'rest_upload_file_too_big', sprintf( __( 'This file is too big. Files must be less than %s KB in size.', 'godam' ), get_site_option( 'fileupload_maxk', 1500 ) ), array( 'status' => 400 ) );
+			return new \WP_Error( 'rest_upload_file_too_big', sprintf( __( 'This file is too big. Files must be less than %s KB in size. Use a smaller file, or ask a network administrator to raise the limit in Network Admin > Settings > Network Settings.', 'godam' ), get_site_option( 'fileupload_maxk', 1500 ) ), array( 'status' => 400 ) );
 		}
 
 		if ( ! function_exists( 'upload_is_user_over_quota' ) ) {

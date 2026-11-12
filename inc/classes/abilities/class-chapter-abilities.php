@@ -285,17 +285,17 @@ class Chapter_Abilities extends Ability_Group {
 
 			if ( null !== $duration && $range['start'] > $duration ) {
 				/* translators: 1: chapter title, 2: sentence giving the media length. */
-				return $this->invalid( sprintf( __( '"%1$s" starts after the end of the media. %2$s', 'godam' ), $range['title'], $length ) );
+				return $this->invalid( sprintf( __( '"%1$s" starts after the end of the media. %2$s Use a start time inside the media.', 'godam' ), $range['title'], $length ) );
 			}
 
 			if ( null !== $end && $end <= $range['start'] ) {
 				/* translators: %s: chapter title. */
-				return $this->invalid( sprintf( __( '"%s" must end after it starts.', 'godam' ), $range['title'] ) );
+				return $this->invalid( sprintf( __( '"%s" must end after it starts. Give an end later than its start, or leave end out.', 'godam' ), $range['title'] ) );
 			}
 
 			if ( null !== $duration && null !== $end && $end > $duration ) {
 				/* translators: 1: chapter title, 2: sentence giving the media length. */
-				return $this->invalid( sprintf( __( '"%1$s" ends after the end of the media. %2$s', 'godam' ), $range['title'], $length ) );
+				return $this->invalid( sprintf( __( '"%1$s" ends after the end of the media. %2$s Use an end time inside the media, or leave end out.', 'godam' ), $range['title'], $length ) );
 			}
 
 			// Ranges overlap when each starts before the other ends; an open end runs to the end.
@@ -396,7 +396,7 @@ class Chapter_Abilities extends Ability_Group {
 		}
 
 		if ( ! in_array( $this->media_type( $this->attachment_mime_type( $post ) ), array( 'video', 'audio' ), true ) ) {
-			return new \WP_Error( 'rtgodam_no_chapters_for_type', __( 'Only videos and audio have chapters.', 'godam' ), array( 'status' => 400 ) );
+			return new \WP_Error( 'rtgodam_no_chapters_for_type', __( 'Only videos and audio have chapters. Use godam/list-media to find a video or audio item.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		return $post;

@@ -252,7 +252,7 @@ class Form_Abilities extends Ability_Group {
 		if ( is_wp_error( $listed ) ) {
 			return new \WP_Error(
 				$listed->get_error_code(),
-				__( 'Poll layers need the WP-Polls plugin, which is not active on this site.', 'godam' ),
+				__( 'Poll layers need the WP-Polls plugin, which is not active on this site. Ask a site administrator to install and activate WP-Polls (Plugins > Add New Plugin).', 'godam' ),
 				array( 'status' => 404 )
 			);
 		}

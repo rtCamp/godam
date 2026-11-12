@@ -421,7 +421,7 @@ class Layer_Abilities extends Ability_Group {
 			if ( ! in_array( $input['type'], self::IMAGE_LAYER_TYPES, true ) ) {
 				return new \WP_Error(
 					'rtgodam_layer_type_not_for_images',
-					__( 'Images take hotspot layers only. Other layer types need a video.', 'godam' ),
+					__( 'Images take hotspot layers only. Other layer types need a video. Use type hotspot, or give the ID of a video.', 'godam' ),
 					array( 'status' => 400 )
 				);
 			}
@@ -566,7 +566,7 @@ class Layer_Abilities extends Ability_Group {
 				}
 
 				if ( ! shortcode_exists( 'poll' ) ) {
-					return new \WP_Error( 'rtgodam_poll_plugin_missing', __( 'Poll layers need the WP-Polls plugin, which is not active on this site.', 'godam' ), array( 'status' => 400 ) );
+					return new \WP_Error( 'rtgodam_poll_plugin_missing', __( 'Poll layers need the WP-Polls plugin, which is not active on this site. Ask a site administrator to install and activate WP-Polls (Plugins > Add New Plugin).', 'godam' ), array( 'status' => 400 ) );
 				}
 
 				return array(
@@ -592,7 +592,7 @@ class Layer_Abilities extends Ability_Group {
 				);
 		}
 
-		return new \WP_Error( 'rtgodam_unknown_layer_type', __( 'Unknown layer type.', 'godam' ), array( 'status' => 400 ) );
+		return new \WP_Error( 'rtgodam_unknown_layer_type', __( 'Unknown layer type. Use one of cta, hotspot, form, poll or ad.', 'godam' ), array( 'status' => 400 ) );
 	}
 
 	/**
@@ -634,7 +634,7 @@ class Layer_Abilities extends Ability_Group {
 		$image_id = absint( $cta['image_id'] ?? 0 );
 
 		if ( $image_id && ! wp_attachment_is_image( $image_id ) ) {
-			return new \WP_Error( 'rtgodam_cta_image_invalid', __( 'cta.image_id is not an image in the media library.', 'godam' ), array( 'status' => 400 ) );
+			return new \WP_Error( 'rtgodam_cta_image_invalid', __( 'cta.image_id is not an image in the media library. Use godam/list-media with type image to find an image ID.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		return array_merge(
@@ -723,7 +723,7 @@ class Layer_Abilities extends Ability_Group {
 			return new \WP_Error(
 				'rtgodam_form_plugin_missing',
 				/* translators: %s: form plugin name. */
-				sprintf( __( '%s is not active on this site, so its forms cannot be shown in a layer.', 'godam' ), $config['label'] ),
+				sprintf( __( '%s is not active on this site, so its forms cannot be shown in a layer. Use godam/list-forms to see which form plugins are active.', 'godam' ), $config['label'] ),
 				array( 'status' => 400 )
 			);
 		}
@@ -872,7 +872,7 @@ class Layer_Abilities extends Ability_Group {
 		}
 
 		if ( ! in_array( $this->media_type( $this->attachment_mime_type( $post ) ), array( 'video', 'image' ), true ) ) {
-			return new \WP_Error( 'rtgodam_no_layers_for_type', __( 'Layers can only be added to videos, and hotspot layers to images.', 'godam' ), array( 'status' => 400 ) );
+			return new \WP_Error( 'rtgodam_no_layers_for_type', __( 'Layers can only be added to videos, and hotspot layers to images. Use godam/list-media to find a video or image.', 'godam' ), array( 'status' => 400 ) );
 		}
 
 		return $post;

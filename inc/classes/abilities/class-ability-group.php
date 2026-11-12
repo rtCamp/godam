@@ -37,7 +37,6 @@ abstract class Ability_Group {
 		'godam/add-media-to-page',
 		'godam/set-chapters',
 		'godam/remove-layer',
-		'godam/move-media-to-folder',
 		'godam/retranscode-media',
 	);
 
@@ -340,7 +339,12 @@ abstract class Ability_Group {
 
 		if ( $response->is_error() ) {
 			$code    = is_array( $data ) && ! empty( $data['code'] ) ? $data['code'] : 'rtgodam_ability_failed';
-			$message = is_array( $data ) && ! empty( $data['message'] ) ? $data['message'] : __( 'The GoDAM request failed.', 'godam' );
+			$message = is_array( $data ) && ! empty( $data['message'] ) ? $data['message'] : __( 'The GoDAM request failed. Try again in a moment. If it keeps failing, see https://godam.io/docs/ai-agents/', 'godam' );
+
+			// WordPress and WooCommerce refusals ("Sorry, you are not allowed to ...") name no next step.
+			if ( false !== strpos( (string) $code, 'rest_cannot_' ) || false !== strpos( (string) $code, 'rest_forbidden' ) ) {
+				$message = trim( (string) $message ) . ' ' . __( 'Your WordPress user\'s role does not allow this. Ask a site administrator, or connect as a user who can.', 'godam' );
+			}
 
 			return new \WP_Error( $code, $message, array( 'status' => $response->get_status() ) );
 		}

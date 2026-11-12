@@ -46,9 +46,10 @@ class Abilities {
 	/**
 	 * Option that turns the GoDAM MCP server on or off.
 	 *
-	 * On by default on every site, new or updated. Nothing can connect until an
-	 * administrator installs the MCP Adapter plugin and creates an Application
-	 * Password, and that is the opt-in.
+	 * On by default on every site, new or updated. An agent needs a WordPress
+	 * user's Application Password, and can only do what that user's role
+	 * allows. MCP clients also need the MCP Adapter plugin; without it the
+	 * abilities are reachable only through the WordPress Abilities REST API.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -70,6 +71,7 @@ class Abilities {
 		add_action( 'admin_init', array( $this, 'add_settings_field' ) );
 
 		Mcp_Server::get_instance();
+		Ai_Agents_Notice::get_instance();
 	}
 
 	/**
@@ -102,6 +104,22 @@ class Abilities {
 	}
 
 	/**
+	 * Stores a switch as 1 or 0.
+	 *
+	 * Core's rest_sanitize_boolean() alone stores false as an empty string,
+	 * which the settings REST route then reports as an invalid stored value.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $value Submitted value.
+	 *
+	 * @return int
+	 */
+	public static function sanitize_switch( $value ) {
+		return rest_sanitize_boolean( $value ) ? 1 : 0;
+	}
+
+	/**
 	 * Registers the write-abilities option as a setting.
 	 *
 	 * Registering it on `init` also exposes it to the `/wp/v2/settings` REST
@@ -118,7 +136,7 @@ class Abilities {
 			array(
 				'type'              => 'boolean',
 				'description'       => __( 'Let AI agents connected through MCP make changes in GoDAM.', 'godam' ),
-				'sanitize_callback' => 'rest_sanitize_boolean',
+				'sanitize_callback' => array( __CLASS__, 'sanitize_switch' ),
 				'default'           => true,
 				'show_in_rest'      => true,
 			)
@@ -133,7 +151,7 @@ class Abilities {
 			array(
 				'type'              => 'boolean',
 				'description'       => __( 'Let AI agents use GoDAM through MCP. When off, GoDAM\'s tools are hidden from every MCP server and from the WordPress Abilities REST API.', 'godam' ),
-				'sanitize_callback' => 'rest_sanitize_boolean',
+				'sanitize_callback' => array( __CLASS__, 'sanitize_switch' ),
 				'default'           => true,
 				'show_in_rest'      => true,
 			)

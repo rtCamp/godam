@@ -192,7 +192,7 @@ class Block_Abilities extends Ability_Group {
 			$target = get_post( absint( $input['post_id'] ) ); // godam-coverage-ignore -- add_media_to_page(): post_id is the host page or post being edited, checked below to be a page or post, not an attachment.
 
 			if ( ! $target || ! in_array( $target->post_type, self::POST_TYPES, true ) ) {
-				return new \WP_Error( 'rtgodam_post_not_found', __( 'post_id is not a page or post on this site.', 'godam' ), array( 'status' => 404 ) );
+				return new \WP_Error( 'rtgodam_post_not_found', __( 'post_id is not a page or post on this site. Give the ID of an existing page or post, or leave post_id out and give a title to create a new page.', 'godam' ), array( 'status' => 404 ) );
 			}
 
 			$route  = $this->posts_route( $target->post_type ) . '/' . $target->ID;
@@ -267,7 +267,7 @@ class Block_Abilities extends Ability_Group {
 
 		if ( $has_many ) {
 			if ( ! empty( $player ) ) {
-				return new \WP_Error( 'rtgodam_player_not_for_gallery', __( 'player settings apply to a single video, not to a gallery.', 'godam' ), array( 'status' => 400 ) );
+				return new \WP_Error( 'rtgodam_player_not_for_gallery', __( 'player settings apply to a single video, not to a gallery. Leave player out, or use media_id with one video.', 'godam' ), array( 'status' => 400 ) );
 			}
 
 			return $this->gallery_block( array_values( array_unique( array_map( 'absint', (array) $input['media_ids'] ) ) ) );
@@ -283,7 +283,7 @@ class Block_Abilities extends Ability_Group {
 
 		if ( 'video' !== $type && ! empty( $player ) ) {
 			/* translators: %s: media type, e.g. image. */
-			return new \WP_Error( 'rtgodam_player_not_for_type', sprintf( __( 'player settings apply to videos only; this media item is %s.', 'godam' ), $type ), array( 'status' => 400 ) );
+			return new \WP_Error( 'rtgodam_player_not_for_type', sprintf( __( 'player settings apply to videos only; this media item is %s. Leave player out.', 'godam' ), $type ), array( 'status' => 400 ) );
 		}
 
 		switch ( $type ) {
@@ -506,7 +506,7 @@ class Block_Abilities extends Ability_Group {
 		if ( ! isset( $supported[ $mime ] ) || ! in_array( $extension, array_values( $supported ), true ) ) {
 			return new \WP_Error(
 				'rtgodam_unsupported_document',
-				__( 'The GoDAM Document block shows PDF, Word, Excel, PowerPoint, OpenDocument, TXT and CSV files; this file is none of those.', 'godam' ),
+				__( 'The GoDAM Document block shows PDF, Word, Excel, PowerPoint, OpenDocument, TXT and CSV files; this file is none of those. Use godam/list-media with type document to find another file.', 'godam' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -551,7 +551,7 @@ class Block_Abilities extends Ability_Group {
 
 			if ( 'video' !== $this->media_type( $this->attachment_mime_type( $media ) ) ) {
 				/* translators: %d: attachment ID. */
-				return new \WP_Error( 'rtgodam_gallery_not_video', sprintf( __( 'Media ID %d is not a video; galleries hold videos only.', 'godam' ), $media_id ), array( 'status' => 400 ) );
+				return new \WP_Error( 'rtgodam_gallery_not_video', sprintf( __( 'Media ID %d is not a video; galleries hold videos only. Remove it from media_ids, or use godam/list-media with type video to find video IDs.', 'godam' ), $media_id ), array( 'status' => 400 ) );
 			}
 
 			$items[] = array(

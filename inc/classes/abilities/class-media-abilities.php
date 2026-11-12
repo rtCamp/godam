@@ -508,7 +508,7 @@ class Media_Abilities extends Ability_Group {
 		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
 			return new \WP_Error(
 				'rtgodam_transcript_unreachable',
-				__( 'A transcript is recorded for this media but could not be downloaded from the CDN.', 'godam' ),
+				__( 'A transcript is recorded for this media but could not be downloaded from the CDN. Try godam/get-transcript again in a moment.', 'godam' ),
 				array( 'path' => $found['transcript_path'] )
 			);
 		}
