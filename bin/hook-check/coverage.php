@@ -61,6 +61,27 @@
 
 require_once __DIR__ . '/shared.php';
 
+// Phase 1 keeps every scanned file's tokens in memory at once (see
+// $file_tokens below), which already needs about 160 MB and grows with the
+// codebase. PHP's stock CLI limit is 128 MB, so without this the pre-commit
+// hook dies with "Allowed memory size exhausted" on most local setups. CI
+// never saw it because setup-php removes the limit. Only ever raises it.
+$godam_coverage_memory_limit = trim( (string) ini_get( 'memory_limit' ) );
+$godam_coverage_memory_bytes = (int) $godam_coverage_memory_limit;
+$godam_coverage_memory_unit  = strtolower( substr( $godam_coverage_memory_limit, -1 ) );
+
+if ( 'g' === $godam_coverage_memory_unit ) {
+	$godam_coverage_memory_bytes *= 1024 * 1024 * 1024;
+} elseif ( 'm' === $godam_coverage_memory_unit ) {
+	$godam_coverage_memory_bytes *= 1024 * 1024;
+} elseif ( 'k' === $godam_coverage_memory_unit ) {
+	$godam_coverage_memory_bytes *= 1024;
+}
+
+if ( $godam_coverage_memory_bytes >= 0 && $godam_coverage_memory_bytes < 512 * 1024 * 1024 ) {
+	ini_set( 'memory_limit', '512M' ); // phpcs:ignore WordPress.PHP.IniSet.memory_limit_Disallowed -- CLI script with no WP bootstrap, so wp_raise_memory_limit() isn't available.
+}
+
 const BEFORE_HOOK = 'rtgodam_before_attachment_lookup';
 const AFTER_HOOK  = 'rtgodam_after_attachment_lookup';
 
