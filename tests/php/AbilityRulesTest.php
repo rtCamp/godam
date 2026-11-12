@@ -145,6 +145,24 @@ class AbilityRulesTest extends TestCase {
 	}
 
 	/**
+	 * The GoDAM Central tools reach outside the site, and adding from Central is a write that overwrites nothing.
+	 *
+	 * @return void
+	 */
+	public function test_central_media_tools_are_flagged() {
+		$list = $this->register( 'godam/list-central-media' );
+		$this->assertTrue( $list['meta']['annotations']['openWorldHint'] );
+		$this->assertTrue( $list['meta']['annotations']['readonly'] );
+
+		$add = $this->register( 'godam/add-central-media', true );
+		$this->assertTrue( $add['meta']['annotations']['openWorldHint'] );
+		$this->assertFalse( $add['meta']['annotations']['readonly'] );
+		$this->assertFalse( $add['meta']['annotations']['destructive'] );
+		$this->assertContains( 'godam/list-central-media', \RTGODAM\Inc\Abilities\Ability_Group::PLAN_REQUIRED );
+		$this->assertContains( 'godam/add-central-media', \RTGODAM\Inc\Abilities\Ability_Group::PLAN_REQUIRED );
+	}
+
+	/**
 	 * Write tools are listed unless an administrator turned them off.
 	 *
 	 * @return void

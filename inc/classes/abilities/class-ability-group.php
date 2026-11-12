@@ -60,6 +60,8 @@ abstract class Ability_Group {
 		'godam/get-placement-performance',
 		'godam/get-revenue-summary',
 		'godam/get-top-products',
+		'godam/list-central-media',
+		'godam/add-central-media',
 	);
 
 	/**
@@ -82,6 +84,8 @@ abstract class Ability_Group {
 		'godam/get-placement-performance',
 		'godam/get-revenue-summary',
 		'godam/get-top-products',
+		'godam/list-central-media',
+		'godam/add-central-media',
 	);
 
 	/**
