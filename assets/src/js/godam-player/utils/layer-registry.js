@@ -15,7 +15,7 @@
  * `updateProductHotspotPositions()`. Only a manager with
  * `createProductHotspots()` runs on images.
  *
- * Deprecated since GoDAM 2.8.0 (#2296), removed in 2.10.0: new code calls
+ * Deprecated since GoDAM 2.9.0 (#2296), removed in 2.11.0: new code calls
  * `registerLayerRuntime()`. Each call logs a deprecation notice once per page.
  */
 
