@@ -3625,3 +3625,54 @@ function rtgodam_is_transcoder_file_url( $url ) {
 
 	return false;
 }
+
+/**
+ * Splits a block's `style.border.radius` into its four corners as CSS values.
+ *
+ * The block editor saves either one value for all corners, or an array with
+ * `topLeft`, `topRight`, `bottomRight` and `bottomLeft`, any of which may be
+ * missing. Numbers get `px`, and a preset reference such as
+ * `var:preset|border-radius|md` becomes `var(--wp--preset--border-radius--md)`.
+ * A value with characters that cannot be part of a length is dropped, so the
+ * result is safe to print in a `style` attribute.
+ *
+ * @since n.e.x.t
+ *
+ * @param mixed $radius Saved radius.
+ *
+ * @return array|null `array( 'tl' => …, 'tr' => …, 'br' => …, 'bl' => … )`, with an empty string for a corner that is not set, or null when no corner is set.
+ */
+function rtgodam_get_border_radius_corners( $radius ) {
+	$to_css = static function ( $value ) {
+		if ( is_int( $value ) || is_float( $value ) ) {
+			return $value . 'px';
+		}
+		if ( ! is_string( $value ) ) {
+			return '';
+		}
+
+		$value = trim( $value );
+		if ( 0 === strpos( $value, 'var:' ) ) {
+			$value = 'var(--wp--' . str_replace( '|', '--', substr( $value, 4 ) ) . ')';
+		}
+
+		return 1 === preg_match( '/^[a-zA-Z0-9.%()\-\s,+*\/]+$/', $value ) ? $value : '';
+	};
+
+	if ( is_array( $radius ) ) {
+		$values = array(
+			$to_css( $radius['topLeft'] ?? '' ),
+			$to_css( $radius['topRight'] ?? '' ),
+			$to_css( $radius['bottomRight'] ?? '' ),
+			$to_css( $radius['bottomLeft'] ?? '' ),
+		);
+	} else {
+		$values = array_fill( 0, 4, $to_css( $radius ) );
+	}
+
+	if ( '' === implode( '', $values ) ) {
+		return null;
+	}
+
+	return array_combine( array( 'tl', 'tr', 'br', 'bl' ), $values );
+}

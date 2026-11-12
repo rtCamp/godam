@@ -1,3 +1,8 @@
+// Card corners follow the block's Styles → Border → Radius, printed as one CSS
+// variable per corner on the gallery wrapper. An unset corner keeps 0.5rem.
+$godam-card-radius: var(--godam-gallery-radius-tl, 0.5rem) var(--godam-gallery-radius-tr, 0.5rem) var(--godam-gallery-radius-br, 0.5rem) var(--godam-gallery-radius-bl, 0.5rem);
+$godam-card-top-radius: var(--godam-gallery-radius-tl, 0.5rem) var(--godam-gallery-radius-tr, 0.5rem) 0 0;
+
 .godam-gallery-v2 {
 	--godam-gallery-item-width: 200px;
 	--godam-gallery-gap: 16px;
@@ -43,7 +48,7 @@
 
 .godam-gallery-v2__query-item {
 	background: #fff;
-	border-radius: 0.5rem;
+	border-radius: $godam-card-radius;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 	overflow: hidden;
 }
@@ -198,7 +203,7 @@
 	container-name: gallery-item;
 	min-width: 180px;
 	background: #fff;
-	border-radius: 0.5rem;
+	border-radius: $godam-card-radius;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 	overflow: hidden;
 	transition: box-shadow 0.2s ease;
@@ -216,7 +221,7 @@
 		justify-content: center;
 		position: relative;
 		overflow: hidden;
-		border-radius: 0.5rem 0.5rem 0 0;
+		border-radius: $godam-card-top-radius;
 	}
 
 	&__placeholder {
@@ -385,7 +390,7 @@
 		width: 100%;
 		min-width: 0;
 		padding: 20px;
-		border-radius: 0.5rem;
+		border-radius: $godam-card-radius;
 		background: #fff;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 	}

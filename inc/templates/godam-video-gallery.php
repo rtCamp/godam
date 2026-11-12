@@ -330,6 +330,17 @@ $godam_inline_styles = sprintf(
 	esc_attr( $godam_block_gap )
 );
 
+// Styles → Border → Radius rounds each card, not the wrapper (see block.json).
+// One variable per corner, so an unset corner keeps the 0.5rem default.
+$godam_radius_corners = rtgodam_get_border_radius_corners( $attributes['style']['border']['radius'] ?? null );
+if ( $godam_radius_corners ) {
+	foreach ( $godam_radius_corners as $godam_corner => $godam_corner_radius ) {
+		if ( '' !== $godam_corner_radius ) {
+			$godam_inline_styles .= sprintf( ' --godam-gallery-radius-%s: %s;', $godam_corner, esc_attr( $godam_corner_radius ) );
+		}
+	}
+}
+
 $godam_autoplay         = ! empty( $attributes['autoplay'] );
 $godam_play_on_hover    = isset( $attributes['playOnHover'] ) ? (bool) $attributes['playOnHover'] : true;
 $godam_show_play_button = ! isset( $attributes['showPlayButton'] ) || (bool) $attributes['showPlayButton'];

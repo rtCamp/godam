@@ -171,6 +171,28 @@ $godam_frame_style = $godam_width
 	? sprintf( 'position:relative;display:block;width:100%%;max-width:%dpx;line-height:0;', $godam_width )
 	: 'position:relative;display:inline-block;max-width:100%;line-height:0;';
 
+// Border (Styles → Border) skips the wrapper (see block.json) and is drawn on
+// the image itself, so it follows the image's edges as in core/image. A palette
+// color is saved as `borderColor` and printed as a class; everything else comes
+// from the style engine. The shortcode has no block styles, so this is empty.
+$godam_img_border_class = '';
+$godam_img_border_style = '';
+if ( empty( $godam_is_shortcode ) ) {
+	$godam_border = isset( $attributes['style']['border'] ) && is_array( $attributes['style']['border'] ) ? $attributes['style']['border'] : array();
+
+	if ( ! empty( $attributes['borderColor'] ) ) {
+		$godam_img_border_class = 'has-border-color has-' . sanitize_html_class( $attributes['borderColor'] ) . '-border-color';
+		unset( $godam_border['color'] );
+	} elseif ( ! empty( $godam_border['color'] ) ) {
+		$godam_img_border_class = 'has-border-color';
+	}
+
+	if ( ! empty( $godam_border ) ) {
+		$godam_border_styles    = wp_style_engine_get_styles( array( 'border' => $godam_border ) );
+		$godam_img_border_style = $godam_border_styles['css'] ?? '';
+	}
+}
+
 // Block-support wrapper attributes (align / spacing / anchor + our hook class).
 // The [godam_image] shortcode (WPBakery element) sets $godam_is_shortcode and
 // runs outside a block, where get_block_wrapper_attributes() would warn, so it
@@ -195,9 +217,9 @@ if ( empty( $godam_is_shortcode ) ) {
 		<?php endif; ?>
 	>
 		<img
-			class="godam-image__img"
+			class="<?php echo esc_attr( trim( 'godam-image__img ' . $godam_img_border_class ) ); ?>"
 			data-test-id="godam-image-render-img"
-			style="display:block;width:100%;height:auto;"
+			style="<?php echo esc_attr( 'display:block;width:100%;height:auto;box-sizing:border-box;' . $godam_img_border_style ); ?>"
 			src="<?php echo esc_url( $godam_src ); ?>"
 			alt="<?php echo esc_attr( $godam_alt ); ?>"
 			<?php echo $godam_width ? 'width="' . esc_attr( (string) $godam_width ) . '"' : ''; ?>

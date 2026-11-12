@@ -725,6 +725,35 @@ foreach ( $godam_custom_css_properties as $godam_property => $godam_value ) {
 	}
 }
 
+// The block's border (Styles → Border) skips the block wrapper (see block.json)
+// and is drawn on the video itself, so it does not run around the caption. A
+// palette color is saved as `borderColor` and printed as a class; everything
+// else comes from the style engine. A radius also clips the video's corners.
+$godam_video_wrapper_class = '';
+$godam_video_wrapper_style = '';
+if ( ! $godam_is_shortcode && ! $godam_is_elementor_widget ) {
+	$godam_border = isset( $attributes['style']['border'] ) && is_array( $attributes['style']['border'] ) ? $attributes['style']['border'] : array();
+
+	if ( ! empty( $attributes['borderColor'] ) ) {
+		$godam_video_wrapper_class = ' has-border-color has-' . sanitize_html_class( $attributes['borderColor'] ) . '-border-color';
+		unset( $godam_border['color'] );
+	} elseif ( ! empty( $godam_border['color'] ) ) {
+		$godam_video_wrapper_class = ' has-border-color';
+	}
+
+	if ( ! empty( $godam_border ) ) {
+		$godam_border_styles       = wp_style_engine_get_styles( array( 'border' => $godam_border ) );
+		$godam_video_wrapper_style = $godam_border_styles['css'] ?? '';
+	}
+
+	if ( '' !== $godam_video_wrapper_style || '' !== $godam_video_wrapper_class ) {
+		$godam_video_wrapper_style .= 'box-sizing:border-box;';
+	}
+	if ( ! empty( $godam_border['radius'] ) ) {
+		$godam_video_wrapper_style .= 'overflow:hidden;';
+	}
+}
+
 // Get WPBakery Design Options CSS class if available.
 $godam_css_class = ! empty( $attributes['css_class'] ) ? trim( $attributes['css_class'] ) : '';
 
@@ -802,7 +831,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 <?php if ( ! empty( $godam_sources ) ) : ?>
 	<div <?php echo wp_kses_data( $godam_figure_attributes ); ?>>
 		<figure id="godam-player-container-<?php echo esc_attr( $godam_instance_id ); ?>">
-			<div class="godam-video-wrapper<?php echo $godam_show_in_lightbox ? ' godam-show-in-lightbox' : ''; ?>">
+			<div class="godam-video-wrapper<?php echo $godam_show_in_lightbox ? ' godam-show-in-lightbox' : ''; ?><?php echo esc_attr( $godam_video_wrapper_class ); ?>"<?php echo $godam_video_wrapper_style ? ' style="' . esc_attr( $godam_video_wrapper_style ) . '"' : ''; ?>>
 				<?php if ( $godam_show_overlay && ! empty( $godam_inner_blocks_content ) ) : ?>
 					<div
 						class="godam-video-overlay-container godam-overlay-alignment-<?php echo esc_attr( $godam_vertical_alignment ); ?>"
