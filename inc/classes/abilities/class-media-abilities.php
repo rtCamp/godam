@@ -431,7 +431,7 @@ class Media_Abilities extends Ability_Group {
 		$switched = is_multisite() && get_current_blog_id() !== $entry['blog_id'];
 
 		if ( $switched ) {
-			switch_to_blog( $entry['blog_id'] );
+			switch_to_blog( $entry['blog_id'] ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.switch_to_blog_switch_to_blog -- only reads the post title, status and links of the site that uses the media.
 		}
 
 		$usage_post = get_post( $entry['post_id'] ); // godam-coverage-ignore -- describe_usage(): post_id is the host post that embeds the media, read on its own site (switched to above), not the attachment.
@@ -547,7 +547,7 @@ class Media_Abilities extends Ability_Group {
 
 		do_action( 'rtgodam_before_attachment_lookup' );
 
-		$posts = get_posts(
+		$posts = get_posts( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- a small, capped read run on request by a signed-in user, not on a front-end page.
 			array(
 				'post_type'      => 'attachment',
 				'post_status'    => 'inherit',

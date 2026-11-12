@@ -168,7 +168,7 @@ class Block_Abilities extends Ability_Group {
 
 		$post_type = get_post_type_object( $input['post_type'] ?? 'page' );
 
-		return $post_type && current_user_can( $post_type->cap->create_posts );
+		return $post_type && current_user_can( $post_type->cap->create_posts ); // phpcs:ignore WordPress.WP.Capabilities.Undetermined -- the post type's own capability, as registered.
 	}
 
 	/**

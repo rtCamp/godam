@@ -120,7 +120,7 @@ class Mcp_Server {
 	 * @return bool
 	 */
 	public function can_connect() {
-		return current_user_can( self::TRANSPORT_CAPABILITY );
+		return current_user_can( self::TRANSPORT_CAPABILITY ); // phpcs:ignore WordPress.WP.Capabilities.Undetermined -- the constant is 'upload_files'.
 	}
 
 	/**

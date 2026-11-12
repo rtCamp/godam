@@ -119,7 +119,7 @@ class Prompt_Abilities extends Ability_Group {
 	 * @return bool
 	 */
 	public function can_use_prompts() {
-		return current_user_can( Mcp_Server::TRANSPORT_CAPABILITY );
+		return current_user_can( Mcp_Server::TRANSPORT_CAPABILITY ); // phpcs:ignore WordPress.WP.Capabilities.Undetermined -- the constant is 'upload_files'.
 	}
 
 	/**
