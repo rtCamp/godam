@@ -3,6 +3,7 @@
  */
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { getLayerType } from '@godam/layers';
 
 /**
  * WordPress dependencies
@@ -52,7 +53,6 @@ import { formatBytes } from './components/transcription/utils';
 import Timeline from './components/timeline/Timeline';
 import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from './utils/index';
 import { openAttachmentDetailsModal } from './utils/openAttachmentDetails';
-import { getFormIdFromLayer } from './utils/formUtils';
 import { canManageAttachment } from '../../assets/src/js/media-library/utility.js';
 import { ensureAddonLayersRegistered } from './utils/loadAddonLayers';
 
@@ -203,7 +203,6 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 			mediaType: mediaCapability.mediaType,
 			tabs: mediaCapability.tabs,
 			defaultTab: mediaCapability.defaultTab,
-			allowedLayerTypes: mediaCapability.allowedLayerTypes,
 		} ) );
 
 		// Initialize the store if meta exists
@@ -484,19 +483,14 @@ const VideoEditor = ( { attachmentID, onBackToAttachmentPicker } ) => {
 	};
 	const pauseVideo = () => playerRef.current?.pause();
 
-	const validateLayers = ( videoLayers ) => {
-		const invalidFormLayers = [];
-		for ( const layer of videoLayers ) {
-			if ( layer.type === 'form' ) {
-				const formType = layer.form_type;
-				const formId = getFormIdFromLayer( layer, formType );
-				if ( ! formId ) {
-					invalidFormLayers.push( layer.displayTime );
-				}
-			}
-		}
-		return invalidFormLayers;
-	};
+	// Each layer type can refuse to save an incomplete layer (e.g. a form layer
+	// with no form picked) through its registered `validate( layer )`.
+	const validateLayers = ( videoLayers ) => videoLayers
+		.filter( ( layer ) => {
+			const validate = getLayerType( layer.type )?.validate;
+			return typeof validate === 'function' && ! validate( layer );
+		} )
+		.map( ( layer ) => layer.displayTime );
 
 	const handleSaveAttachmentMeta = async () => {
 		const invalidLayers = validateLayers( layers );

@@ -24,6 +24,8 @@ class GoDAM_Player {
 	 */
 	final protected function __construct() {
 		add_shortcode( 'godam_video', array( $this, 'render' ) );
+		// Player styles register early, so the block editor canvas can resolve them.
+		add_action( 'init', array( __CLASS__, 'register_player_styles' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'register_scripts' ) );
 		// Priority 20: must run after register_scripts() above has registered the handles.
 		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue_lightbox_runtime' ), 20 );
@@ -39,6 +41,50 @@ class GoDAM_Player {
 		// Fallback: invalidate on attachment save/delete.
 		add_action( 'edit_attachment', array( $this, 'invalidate_video_cache_for_post' ) );
 		add_action( 'delete_attachment', array( $this, 'invalidate_video_cache_for_post' ) );
+	}
+
+	/**
+	 * Register the player stylesheets: `godam-player-style` and its
+	 * `godam-player-wrapper-style` dependency.
+	 *
+	 * Runs on `init`, not only with the player scripts: the block editor builds
+	 * its canvas styles before `admin_enqueue_scripts`, and a style whose
+	 * dependency isn't registered yet is silently dropped there. That took the
+	 * `godam/image` block's `godam-player-style` out of the canvas, and every
+	 * add-on stylesheet that depends on it, such as the Woo product hotspot's.
+	 *
+	 * @since 2.9.0
+	 *
+	 * @return void
+	 */
+	public static function register_player_styles() {
+		/**
+		 * Player wrapper styles (placeholder / poster / loading states).
+		 *
+		 * Shipped as a real stylesheet rather than an inline <style> emitted by
+		 * inc/templates/godam-player.php: the style tag rendered as a sibling of
+		 * the player markup, so in a flow-layout container (core/column, core/group)
+		 * the player became the second child and picked up the container's
+		 * `margin-block-start` blockGap rule, adding phantom spacing above the video.
+		 * The CSS is static — nothing per-video — so there is nothing to inline.
+		 *
+		 * Registered as a dependency of `godam-player-style` so every existing
+		 * enqueue point (block.json `style`, shortcodes, Elementor `depended_styles`,
+		 * gallery) pulls it in with no further changes.
+		 */
+		wp_register_style(
+			'godam-player-wrapper-style',
+			RTGODAM_URL . 'assets/build/css/godam-player-wrapper.css',
+			array(),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css' )
+		);
+
+		wp_register_style(
+			'godam-player-style',
+			RTGODAM_URL . 'assets/build/css/godam-player.css',
+			array( 'godam-player-wrapper-style' ),
+			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
+		);
 	}
 
 	/**
@@ -158,33 +204,7 @@ class GoDAM_Player {
 			);
 		}
 
-		/**
-		 * Player wrapper styles (placeholder / poster / loading states).
-		 *
-		 * Shipped as a real stylesheet rather than an inline <style> emitted by
-		 * inc/templates/godam-player.php: the style tag rendered as a sibling of
-		 * the player markup, so in a flow-layout container (core/column, core/group)
-		 * the player became the second child and picked up the container's
-		 * `margin-block-start` blockGap rule, adding phantom spacing above the video.
-		 * The CSS is static — nothing per-video — so there is nothing to inline.
-		 *
-		 * Registered as a dependency of `godam-player-style` so every existing
-		 * enqueue point (block.json `style`, shortcodes, Elementor `depended_styles`,
-		 * gallery) pulls it in with no further changes.
-		 */
-		wp_register_style(
-			'godam-player-wrapper-style',
-			RTGODAM_URL . 'assets/build/css/godam-player-wrapper.css',
-			array(),
-			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player-wrapper.css' )
-		);
-
-		wp_register_style(
-			'godam-player-style',
-			RTGODAM_URL . 'assets/build/css/godam-player.css',
-			array( 'godam-player-wrapper-style' ),
-			filemtime( RTGODAM_PATH . 'assets/build/css/godam-player.css' )
-		);
+		self::register_player_styles();
 
 		wp_register_style(
 			'godam-player-minimal-skin',

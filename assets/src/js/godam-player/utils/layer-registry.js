@@ -1,54 +1,109 @@
 /**
- * Layer Registry
- * Manages dynamic layer type registration for add-ons
+ * The old front-end layer registry, `window.godamLayerRegistry`, kept for
+ * add-ons built before the Layer API (#2294).
  *
- * The registry store lives on `window` so every webpack bundle that imports
- * this module shares ONE store. The main player build and the separate
- * image-layers build each carry their own module-scoped copy of this file; a
- * module-local store would give each build a private registry. Add-ons (e.g.
- * the Woo layer) register once — into whichever build initialized
- * `window.godamLayerRegistry` first (it drains the queue) — so with private
- * stores the other build never sees that registration. The player reads its
- * own copy via getLayerManager(), so on a page that had both a godam/video and
- * a godam/image block, if the image build won the init race the player's store
- * stayed empty and the video's Woo hotspots never rendered. A shared,
- * window-backed store makes every copy of these functions read/write the same
- * data, independent of bundle load order.
+ * It is now a thin layer over the Layer API runtime registry
+ * (`godam-layers/runtime/registry.js`): `registerLayerType( id, { label,
+ * validator, manager } )` registers a runtime whose `mount()` drives the
+ * add-on's manager class through the informal interface core used to call:
+ *
+ * On video it calls `new Manager( player, isDisplayingLayers, instanceId )`,
+ * then `setupLayer( layer, element )`, `handleTimeUpdate( time )`,
+ * `handleResize()` and `handleFullscreenChange( isFullscreen, container )`.
+ * On images it calls what core used to call on godam-for-woo's manager:
+ * `setupLayer()`, `createProductHotspots()`, `emitLayerVisible()` and
+ * `updateProductHotspotPositions()`. Only a manager with
+ * `createProductHotspots()` runs on images.
+ *
+ * Deprecated since GoDAM 2.9.0 (#2296), removed in 2.11.0: new code calls
+ * `registerLayerRuntime()`. Each call logs a deprecation notice once per page.
  */
-
-const STORE_KEY = '__godamLayerRegistryStore';
 
 /**
- * Create an empty registry store.
- *
- * @return {Object} A fresh store for layer types, validators, managers and hooks.
+ * Internal dependencies
  */
-function createStore() {
-	return {
-		types: {},
-		validators: {},
-		managers: {},
-		hooks: [],
-	};
-}
+import {
+	registerLayerRuntime,
+	getLayerRuntime,
+	getLayerRuntimes,
+} from '../../godam-layers/runtime/registry.js';
+import { deprecated } from '../../godam-layers/deprecated.js';
 
-// Module-local fallback for non-browser contexts (SSR / unit tests with no
-// window). In the browser the store is a singleton hung off `window`.
-const fallbackStore = createStore();
+const CORE_TYPES = [ 'form', 'cta', 'poll', 'hotspot' ];
 
-/**
- * Get the shared registry store.
- *
- * @return {Object} The window-backed store, or the module-local fallback when there is no `window`.
- */
-function getStore() {
+// Callbacks added with addLayerRegistryHook(), shared by every bundle's copy.
+const getHooks = () => {
 	if ( typeof window === 'undefined' ) {
-		return fallbackStore;
+		return [];
 	}
-	if ( ! window[ STORE_KEY ] ) {
-		window[ STORE_KEY ] = createStore();
-	}
-	return window[ STORE_KEY ];
+	window.godam = window.godam || {};
+	window.godam.__legacyLayerRegistryHooks = window.godam.__legacyLayerRegistryHooks || [];
+	return window.godam.__legacyLayerRegistryHooks;
+};
+
+/**
+ * Whether a legacy manager class can draw on an image.
+ *
+ * @param {Function} Manager Manager class.
+ * @return {boolean} True when it has the image methods godam-for-woo's manager has.
+ */
+const runsOnImages = ( Manager ) => typeof Manager?.prototype?.createProductHotspots === 'function';
+
+/**
+ * What core used to check for the Woo layer before loading FontAwesome: a
+ * layer-level icon, or an icon on any product hotspot.
+ *
+ * @param {Object} layer Saved layer.
+ * @return {boolean} True when FontAwesome must load first.
+ */
+const legacyUsesIconFont = ( layer ) =>
+	Boolean( ( layer?.styleType === 'icon' && layer?.icon ) || layer?.productHotspots?.some( ( hotspot ) => hotspot.icon ) );
+
+/**
+ * Build the `mount()` that drives a legacy manager class.
+ *
+ * @param {string}   id      Layer type.
+ * @param {Function} Manager Manager class, if any.
+ * @return {Function} The mount function.
+ */
+function legacyMount( id, Manager ) {
+	return ( ctx ) => {
+		if ( ! Manager ) {
+			return {};
+		}
+
+		const onImage = ctx.media?.type === 'image';
+		const state = ctx.shared( `legacy:${ id }`, () => {
+			const manager = new Manager( ctx.player, ctx.isDisplayingLayers, ctx.instanceId );
+			if ( onImage ) {
+				manager.computeContentRect = () => ctx.player.computeContentRect();
+				return { manager, handlers: { onResize: () => manager.updateProductHotspotPositions?.() } };
+			}
+			return {
+				manager,
+				handlers: {
+					onTimeUpdate: ( currentTime ) => manager.handleTimeUpdate?.( currentTime ),
+					onResize: () => manager.handleResize?.(),
+					onFullscreenChange: ( isFullscreen, container ) => manager.handleFullscreenChange?.( isFullscreen, container ),
+				},
+			};
+		} );
+
+		const { manager } = state;
+		manager.setupLayer?.( ctx.layer, ctx.container );
+
+		if ( onImage ) {
+			// A still image has no timeline, so the layer is drawn now and its
+			// impression fires once, on render.
+			const layerObj = manager.wooLayers?.[ manager.wooLayers.length - 1 ];
+			if ( layerObj ) {
+				manager.createProductHotspots( layerObj );
+				manager.emitLayerVisible?.( layerObj.layer );
+			}
+		}
+
+		return state.handlers;
+	};
 }
 
 /**
@@ -62,36 +117,33 @@ function getStore() {
  * @return {boolean} True if registration successful, false if already registered
  */
 export function registerLayerType( id, config ) {
-	const layerRegistry = getStore();
+	deprecated( 'window.godamLayerRegistry.registerLayerType()', 'window.godam.layers.registerLayerRuntime()' );
 
-	if ( layerRegistry.types[ id ] ) {
+	if ( getLayerRuntime( id ) ) {
 		// eslint-disable-next-line no-console
 		console.warn( `Layer type "${ id }" is already registered. Skipping duplicate registration.` );
 		return false;
 	}
 
-	if ( ! id || ! config.label || ! config.validator ) {
+	if ( ! id || ! config?.label || ! config?.validator ) {
 		// eslint-disable-next-line no-console
 		console.error( 'Layer type registration requires: id, label, and validator function' );
 		return false;
 	}
 
-	layerRegistry.types[ id ] = {
-		label: config.label,
-		...( config.manager && { manager: config.manager } ),
-	};
-
-	layerRegistry.validators[ id ] = config.validator;
-
-	if ( config.manager ) {
-		layerRegistry.managers[ id ] = config.manager;
+	const registered = registerLayerRuntime( id, {
+		title: config.label,
+		supports: { media: runsOnImages( config.manager ) ? [ 'video', 'image' ] : [ 'video' ] },
+		validate: ( layer, { dependencies } ) => config.validator( layer, dependencies ),
+		usesIconFont: legacyUsesIconFont,
+		mount: legacyMount( id, config.manager ),
+		legacy: { label: config.label, validator: config.validator, manager: config.manager },
+	} );
+	if ( ! registered ) {
+		return false;
 	}
 
-	// Call any registered hooks
-	layerRegistry.hooks.forEach( ( callback ) => {
-		callback( 'register', id, config );
-	} );
-
+	getHooks().forEach( ( callback ) => callback( 'register', id, config ) );
 	return true;
 }
 
@@ -101,28 +153,27 @@ export function registerLayerType( id, config ) {
  * @return {Object} Object with all registered layer type IDs as keys
  */
 export function getLayerTypes() {
-	const layerRegistry = getStore();
-	const defaultTypes = {
-		FORM: 'form',
-		CTA: 'cta',
-		POLL: 'poll',
-		HOTSPOT: 'hotspot',
-		...Object.keys( layerRegistry.types ).reduce( ( acc, key ) => {
-			acc[ key.toUpperCase() ] = key;
-			return acc;
-		}, {} ),
-	};
-	return defaultTypes;
+	return [ ...CORE_TYPES, ...getLayerRuntimes().map( ( { name } ) => name ) ].reduce( ( types, name ) => {
+		types[ name.toUpperCase() ] = name;
+		return types;
+	}, {} );
 }
 
 /**
  * Get validator for a specific layer type
  *
  * @param {string} layerType - The layer type ID
- * @return {Function|null} Validator function if found, null otherwise
+ * @return {Function|null} `validator( layer, dependencies )` if the type has one, null otherwise
  */
 export function getLayerValidator( layerType ) {
-	return getStore().validators[ layerType ] || null;
+	const runtime = getLayerRuntime( layerType );
+	if ( runtime?.legacy?.validator ) {
+		return runtime.legacy.validator;
+	}
+	if ( typeof runtime?.validate === 'function' ) {
+		return ( layer, dependencies ) => runtime.validate( layer, { dependencies } );
+	}
+	return null;
 }
 
 /**
@@ -132,7 +183,7 @@ export function getLayerValidator( layerType ) {
  * @return {Function|null} Manager class if found, null otherwise
  */
 export function getLayerManager( layerType ) {
-	return getStore().managers[ layerType ] || null;
+	return getLayerRuntime( layerType )?.legacy?.manager || null;
 }
 
 /**
@@ -142,7 +193,7 @@ export function getLayerManager( layerType ) {
  * @return {boolean} True if layer type is registered
  */
 export function isLayerTypeRegistered( layerType ) {
-	return !! getStore().types[ layerType ] || [ 'form', 'cta', 'poll', 'hotspot' ].includes( layerType );
+	return Boolean( getLayerRuntime( layerType ) ) || CORE_TYPES.includes( layerType );
 }
 
 /**
@@ -152,16 +203,19 @@ export function isLayerTypeRegistered( layerType ) {
  * @param {Function} callback - Callback function to execute
  */
 export function addLayerRegistryHook( callback ) {
-	getStore().hooks.push( callback );
+	getHooks().push( callback );
 }
 
 /**
- * Get all registered layer types info
+ * Get all layer types registered through this API
  *
- * @return {Object} Object with metadata for all registered types
+ * @return {Object} `{ [ id ]: { label, manager? } }`
  */
 export function getAllRegisteredLayerTypes() {
-	return {
-		...getStore().types,
-	};
+	return getLayerRuntimes()
+		.filter( ( { legacy } ) => legacy )
+		.reduce( ( types, { name, legacy } ) => {
+			types[ name ] = { label: legacy.label, ...( legacy.manager && { manager: legacy.manager } ) };
+			return types;
+		}, {} );
 }

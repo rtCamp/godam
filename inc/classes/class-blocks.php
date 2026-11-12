@@ -10,6 +10,7 @@ namespace RTGODAM\Inc;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Layers\Layer_Type_Registry;
 
 /**
  * Class Blocks
@@ -33,6 +34,38 @@ class Blocks {
 	 */
 	public function setup_hooks() {
 		add_action( 'init', array( $this, 'register_blocks' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_image_layer_view_scripts' ) );
+		add_action( 'enqueue_block_assets', array( $this, 'enqueue_image_layer_view_styles' ) );
+	}
+
+	/**
+	 * Load the `style` and `viewStyle` of layer types that run on images into
+	 * the block editor canvas, where the godam/image block draws its preview.
+	 *
+	 * The canvas is an iframe that gets the styles enqueued on
+	 * `enqueue_block_assets`, not those of the editor window. On the front end
+	 * the block loads them itself, only for the layers it shows.
+	 *
+	 * @since 2.9.0
+	 *
+	 * @return void
+	 */
+	public function enqueue_image_layer_view_styles() {
+		if ( ! is_admin() ) {
+			return;
+		}
+		Layer_Type_Registry::get_instance()->enqueue_view_styles_for_media( 'image' );
+	}
+
+	/**
+	 * Load the view scripts of layer types that run on images, for the
+	 * godam/image block's preview. The block's edit script draws the layers in
+	 * the editor window, so the layer runtimes must be registered there.
+	 *
+	 * @return void
+	 */
+	public function enqueue_image_layer_view_scripts() {
+		Layer_Type_Registry::get_instance()->enqueue_view_scripts_for_media( 'image' );
 	}
 
 	/**
@@ -72,8 +105,9 @@ class Blocks {
 		// godam/image block with the player's aspect-ratio CSS missing, so the
 		// video poster rendered at its natural (oversized) height. Declaring the
 		// same dependency here keeps it regardless of which registration wins the
-		// race; the wrapper handle itself is registered by the always-booted
-		// player shortcode class, so it resolves at print time.
+		// race. GoDAM_Player::register_player_styles() registers both handles on
+		// `init`, so the dependency also resolves in the block editor canvas, whose
+		// styles are collected before `admin_enqueue_scripts` registers anything.
 		if ( function_exists( 'wp_enqueue_block_style' ) ) {
 			$godam_player_css = RTGODAM_PATH . 'assets/build/css/godam-player.css';
 			wp_enqueue_block_style(

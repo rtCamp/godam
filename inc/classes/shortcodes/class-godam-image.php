@@ -10,6 +10,7 @@ namespace RTGODAM\Inc\Shortcodes;
 defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
+use RTGODAM\Inc\Layers\Layer_Type_Registry;
 
 /**
  * Class GoDAM_Image.
@@ -94,6 +95,10 @@ class GoDAM_Image {
 		}
 		wp_enqueue_style( 'godam-image-style' );
 		wp_enqueue_style( 'godam-player-style' );
+
+		// The inline editor renders shortcodes over AJAX, where scripts a layer
+		// enqueues while rendering never print: load every layer type's view script now.
+		Layer_Type_Registry::get_instance()->enqueue_view_scripts_for_media();
 	}
 
 	/**

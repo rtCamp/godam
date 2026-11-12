@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.8.1
+Stable tag: 2.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -273,6 +273,13 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 == Changelog ==
 
+= v2.9.0 (November 12, 2026) =
+
+- Feat: Developers can now build their own layer types for GoDAM videos and images with the Layer API: describe the layer in a `layer.json` file and register it from PHP, the video editor and the front end, the way blocks are built. Custom layers appear in the "Add layer" menu and render in the player and the GoDAM Image block.
+- Tweak: A layer's front-end script now loads only on pages that show that kind of layer, instead of on every page with a GoDAM video.
+- Tweak: GoDAM's own layers (CTA, forms, hotspots, polls and ads) now run on the Layer API. Layers you already added keep working as before.
+- Tweak: The old add-on layer hooks (`godam_video_editor_layer_options`, `godam_video_editor_layer_components`, `godam_player_render_layer` and the `window.godamLayer*` globals) are deprecated and will be removed in 2.11.0. They keep working until then, with a deprecation notice.
+
 = v2.8.1 (November 11, 2026) =
 
 - Fix: Security fixes.
@@ -286,14 +293,6 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 - Tweak: Sites running GoDAM for WooCommerce older than 2.3.1 are asked to update it.
 - Fix: Pages no longer include the visitor's IP address or the signed-in user's ID for analytics. If you use a page cache, purge it after updating.
 - Fix: GoDAM elements no longer cause deprecation notices with WPBakery 9.1.
-- Fix: Security fixes.
-
-= v2.7.0 (November 5, 2026) =
-
-- Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each GoDAM Video block, widget or shortcode can override it.
-- Feat: Developers can pause all GoDAM videos from their own code, for example when a carousel changes slide.
-- Tweak: Authors see analytics only for the videos they can edit.
-- Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
 - Fix: Security fixes.
 
 == External Services ==

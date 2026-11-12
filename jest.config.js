@@ -25,5 +25,7 @@ module.exports = {
 		'\\.(scss|css)$':
 			'<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/style-mock.js',
 		'\\.(svg|png|jpe?g|gif|webp)$': '<rootDir>/bin/jest/asset-mock.js',
+		// A webpack external at runtime (`window.godam.layers`); tests use the source.
+		'^@godam/layers$': '<rootDir>/assets/src/js/godam-layers/index.js',
 	},
 };
