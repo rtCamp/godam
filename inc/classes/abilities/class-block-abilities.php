@@ -95,6 +95,11 @@ class Block_Abilities extends Ability_Group {
 							'minimum'     => 1,
 							'description' => __( 'Existing page or post to add the media to. Omit to create a new one.', 'godam' ),
 						),
+						'page'      => array(
+							'type'        => 'string',
+							'maxLength'   => 500,
+							'description' => __( 'Existing page or post to add the media to, by its URL, its path (such as /courses/lesson-1/) or its exact title. Use instead of post_id when the ID is not known.', 'godam' ),
+						),
 						'title'     => array(
 							'type'        => 'string',
 							'description' => __( 'Title of the new page or post. Required when post_id is omitted.', 'godam' ),
@@ -162,6 +167,11 @@ class Block_Abilities extends Ability_Group {
 			return false;
 		}
 
+		// A page the user cannot edit is never found, so add_media_to_page() reports it as not found.
+		if ( empty( $input['post_id'] ) && ! empty( $input['page'] ) ) {
+			return true;
+		}
+
 		if ( ! empty( $input['post_id'] ) ) {
 			return current_user_can( 'edit_post', absint( $input['post_id'] ) ); // godam-coverage-ignore -- can_add_media(): post_id is the host page or post the media is placed on, never the attachment.
 		}
@@ -186,6 +196,22 @@ class Block_Abilities extends Ability_Group {
 
 		if ( is_wp_error( $block ) ) {
 			return $block;
+		}
+
+		if ( empty( $input['post_id'] ) && ! empty( $input['page'] ) ) {
+			$input['post_id'] = $this->find_page( (string) $input['page'] );
+
+			if ( ! $input['post_id'] ) {
+				return new \WP_Error(
+					'rtgodam_page_not_found',
+					__( 'No page or post you can edit matches that URL, path or title. Give the page\'s full URL or exact title, or its post_id.', 'godam' ),
+					array( 'status' => 404 )
+				);
+			}
+
+			if ( ! current_user_can( 'edit_post', $input['post_id'] ) ) { // godam-coverage-ignore -- add_media_to_page(): post_id is the host page found above, never the attachment.
+				return new \WP_Error( 'rtgodam_page_not_found', __( 'No page or post you can edit matches that URL, path or title.', 'godam' ), array( 'status' => 404 ) );
+			}
 		}
 
 		if ( ! empty( $input['post_id'] ) ) {
@@ -689,5 +715,67 @@ class Block_Abilities extends Ability_Group {
 		$base   = ( $object && ! empty( $object->rest_base ) ) ? $object->rest_base : $post_type . 's';
 
 		return '/wp/v2/' . $base;
+	}
+
+	/**
+	 * Finds an existing page or post, from its URL, path or exact title.
+	 *
+	 * Only pages and posts the current user can edit are returned, so the
+	 * lookup never confirms that a page they cannot edit exists.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $page URL, path or exact title.
+	 *
+	 * @return int Post ID, or 0 when none matches or several titles match.
+	 */
+	private function find_page( $page ) {
+		$page = trim( sanitize_text_field( $page ) );
+
+		if ( '' === $page ) {
+			return 0;
+		}
+
+		$editable = static function ( $post_id ) {
+			$post_id = absint( $post_id );
+
+			return ( $post_id && in_array( get_post_type( $post_id ), self::POST_TYPES, true ) && current_user_can( 'edit_post', $post_id ) ) ? $post_id : 0; // godam-coverage-ignore -- find_page(): a host page or post, never an attachment.
+		};
+
+		// A URL on this site, or a path such as /courses/lesson-1/.
+		if ( preg_match( '#^(https?://|/)#i', $page ) ) {
+			$url = 0 === strpos( $page, '/' ) ? home_url( $page ) : esc_url_raw( $page );
+
+			if ( wp_parse_url( $url, PHP_URL_HOST ) === wp_parse_url( home_url(), PHP_URL_HOST ) ) {
+				$found = $editable( url_to_postid( $url ) ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.url_to_postid_url_to_postid -- one lookup per agent request, not on page loads.
+
+				if ( $found ) {
+					return $found;
+				}
+
+				$path = trim( (string) wp_parse_url( $url, PHP_URL_PATH ), '/' );
+				$post = '' !== $path ? get_page_by_path( $path, OBJECT, self::POST_TYPES ) : null;
+
+				return $post ? $editable( $post->ID ) : 0;
+			}
+
+			return 0;
+		}
+
+		// An exact title. Several matches are refused rather than guessed.
+		$ids = get_posts(
+			array(
+				'post_type'      => self::POST_TYPES,
+				'post_status'    => array( 'publish', 'draft', 'pending', 'private', 'future' ),
+				'title'          => $page,
+				'posts_per_page' => 2,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+			)
+		);
+
+		$ids = array_values( array_filter( array_map( $editable, $ids ) ) );
+
+		return 1 === count( $ids ) ? $ids[0] : 0;
 	}
 }
