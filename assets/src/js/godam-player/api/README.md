@@ -59,32 +59,37 @@ document.addEventListener('godamAllPlayersReady', () => {
 
 ### `godamPlayerReady`
 
-This event is dispatched on the `document` when a **single** player instance is ready. The event detail contains the player instance.
+Dispatched on the `document` once for **each** player, as soon as that player is ready (from inside Video.js `player.ready()`, after GoDAM has set up its controls and layers). Use it when you want to act on a player as early as possible, without waiting for every other player on the page.
+
+**Event detail:**
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `attachmentId` | string | The video's attachment ID, from the player's `data-id` attribute, e.g. `'1641'`. |
+| `videoElement` | HTMLVideoElement | The `<video>` tag the player was built from. |
+| `player` | Object | The Video.js player instance. |
+
+`window.GoDAMAPI.getPlayer()` is safe to call inside this listener: the player has finished starting up by the time the event fires.
 
 **Usage:**
 
 ```javascript
 document.addEventListener('godamPlayerReady', (event) => {
-    const { player, attachmentId, videoElement } = event.detail;
+    const { attachmentId, videoElement, player } = event.detail;
     console.log(`Player ${attachmentId} is ready!`);
-    
-    // The 'player' property in event.detail is the native VideoJS instance.
-    // To use GoDAM API methods, obtain the GoDAM Player wrapper:
-    if (window.GoDAMAPI) {
-        let godamPlayer;
-        if (attachmentId) {
-             godamPlayer = window.GoDAMAPI.getPlayer(attachmentId);
-        } else if (videoElement) {
-             // Pass videoElement as second argument if attachmentId is missing
-             godamPlayer = window.GoDAMAPI.getPlayer(null, videoElement);
-        }
 
-        if (godamPlayer) {
-            godamPlayer.play();
-        }
-    }
+    // event.detail.player is the Video.js instance.
+    // For the GoDAM API methods, get the GoDAM Player wrapper.
+    // Passing videoElement picks this exact copy when the same video
+    // appears more than once on the page.
+    const godamPlayer = window.GoDAMAPI.getPlayer(attachmentId, videoElement);
+    godamPlayer.play();
 });
 ```
+
+> **Add the listener early.** The event is not replayed. If your script runs after the players have started (for example, it is loaded late or deferred), you will miss it. In that case use `window.GoDAMAPI.getAllPlayers()` to reach the players that have already started.
+
+These events and `getPlayer()` are covered by regression tests in [`godam-api.test.js`](godam-api.test.js), which run on every pull request.
 
 ## Main API Methods
 
@@ -92,12 +97,12 @@ document.addEventListener('godamPlayerReady', (event) => {
 
 Get a player instance for a specific video.
 
-> **Important:** This function should only be called after the `godamAllPlayersReady` event has fired. Calling it earlier may result in an error if the player is still initializing.
+> **Important:** Call this after the `godamAllPlayersReady` event, or inside a `godamPlayerReady` listener for that player. Calling it while the player is still starting up throws an error.
 
 **Parameters:**
 
 - `attachmentID` (string): The attachment ID of the video
-- `videoElement` (HTMLElement, optional): The video element or container
+- `videoElement` (HTMLElement, optional): The `<video>` tag or the player container. Pass it when the same video is on the page more than once, to get that copy rather than the first one
 - `player` (Object, optional): The VideoJS player instance
 
 **Returns:** `Player` instance
