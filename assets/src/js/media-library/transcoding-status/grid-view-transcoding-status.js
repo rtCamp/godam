@@ -4,6 +4,7 @@
  * Internal dependencies
  */
 import TranscodingChecker from './transcoding-checker';
+import { setFailureText } from './failure';
 
 const icons = {
 
@@ -52,7 +53,13 @@ class GridViewTranscodingStatus {
 
 		// Handle failure first — takes priority over any progress value.
 		if ( status === 'failed' ) {
-			this.updateFailedStatus();
+			this.updateFailedStatus( data.error_msg );
+			return;
+		}
+
+		// Central accepted the job but hasn't reported back for a long time.
+		if ( status === 'stalled' ) {
+			this.updateFailedStatus( data.message );
 			return;
 		}
 
@@ -92,7 +99,7 @@ class GridViewTranscodingStatus {
 		this.transcodingStatusLoader.style.removeProperty( '--status-text' );
 	}
 
-	updateFailedStatus() {
+	updateFailedStatus( message = '' ) {
 		if ( this.transcodingStatusSVG ) {
 			this.transcodingStatusSVG.remove();
 		}
@@ -101,7 +108,7 @@ class GridViewTranscodingStatus {
 
 		this.transcodingStatusElement.classList.remove( 'transcoding-status--in-progress' );
 		this.transcodingStatusElement.classList.add( 'transcoding-status--failed' );
-		this.transcodingStatusLoader.style.removeProperty( '--status-text' );
+		setFailureText( this.transcodingStatusLoader, message );
 	}
 
 	updateNotTranscodingStatus() {

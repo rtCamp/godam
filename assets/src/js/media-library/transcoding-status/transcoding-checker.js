@@ -86,7 +86,7 @@ class TranscodingChecker {
 			if ( ! post ) {
 				return false;
 			}
-			return post.progress !== 100 && post.status !== 'not_transcoding' && post.status !== 'failed';
+			return post.progress !== 100 && ! [ 'not_transcoding', 'failed', 'stalled' ].includes( post.status );
 		} );
 	}
 

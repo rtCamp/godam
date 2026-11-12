@@ -120,37 +120,43 @@ class Transcoding extends Base {
 					'callback'            => array( $this, 'update_transcoding_status' ),
 					'permission_callback' => array( $this, 'verify_status_permission' ),
 					'args'                => array(
-						'job_id'     => array(
+						'job_id'         => array(
 							'required'          => true,
 							'type'              => 'string',
 							'description'       => __( 'The jobID of transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
-						'status'     => array(
+						'status'         => array(
 							'required'          => true,
 							'type'              => 'string',
 							'description'       => __( 'The status of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
-						'progress'   => array(
+						'progress'       => array(
 							'required'          => false,
 							'type'              => 'integer',
 							'description'       => __( 'The progress of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'absint',
 						),
-						'error_msg'  => array(
+						'error_msg'      => array(
 							'required'          => false,
 							'type'              => 'string',
 							'description'       => __( 'The error message of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
-						'error_code' => array(
+						'error_code'     => array(
 							'required'          => false,
 							'type'              => 'string',
 							'description'       => __( 'The error code of the transcoding job.', 'godam' ),
 							'sanitize_callback' => 'sanitize_text_field',
 						),
-						'api_key'    => array(
+						'failure_reason' => array(
+							'required'          => false,
+							'type'              => 'string',
+							'description'       => __( 'Why the transcoding job failed, as a reason code.', 'godam' ),
+							'sanitize_callback' => 'sanitize_key',
+						),
+						'api_key'        => array(
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'sanitize_text_field',
@@ -249,6 +255,7 @@ class Transcoding extends Base {
 		$progress   = $request->get_param( 'progress' );
 		$error_msg  = $request->get_param( 'error_msg' );
 		$error_code = $request->get_param( 'error_code' );
+		$reason     = $request->get_param( 'failure_reason' );
 
 		/**
 		 * Fires before resolving/mutating attachment data for this
@@ -279,6 +286,12 @@ class Transcoding extends Base {
 
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $error_msg );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', $error_code );
+
+			if ( ! empty( $reason ) ) {
+				update_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason', $reason );
+			} else {
+				delete_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason' );
+			}
 
 			$progress = 0;
 		}
@@ -353,25 +366,22 @@ class Transcoding extends Base {
 
 			// Handle failure even if job id is missing.
 			if ( ! empty( $status ) && 'failed' === strtolower( $status ) ) {
-				$error_code = sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true ) );
-				$error_msg  = sanitize_textarea_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true ) );
-				$can_edit   = current_user_can( 'edit_post', $attachment_id );
-
-				// This route is public, and a refusal's message can be Central's own wording (an
-				// unknown reason), which can carry URLs. Only someone who can edit the file sees it.
-				if ( rtgodam_is_job_refusal( $error_code ) && ! $can_edit ) {
-					$error_msg = __( 'This file can\'t be transcoded.', 'godam' );
-				}
+				// This route is public, so it says why in the plugin's own words only. Central's
+				// raw error text (exception messages, internal names) never leaves the server, and
+				// a refusal's wording reaches only someone who can edit the file.
+				$failure    = rtgodam_get_transcoding_failure_for_display( $attachment_id );
+				$is_refused = ! empty( $failure ) && 'refusal' === $failure['kind'];
 
 				return array(
 					'status'       => 'failed',
 					'progress'     => 0,
-					'error_code'   => $error_code,
-					'error_msg'    => $error_msg,
+					'error_code'   => $failure['code'] ?? '',
+					'error_msg'    => $failure['message'] ?? __( 'Transcoding failed, please try again.', 'godam' ),
 					// Central's own wording when it refused the job, for support.
-					'error_detail' => $can_edit
+					'error_detail' => $is_refused && current_user_can( 'edit_post', $attachment_id )
 						? sanitize_text_field( get_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', true ) )
 						: '',
+					'failure'      => $failure,
 				);
 			}
 
@@ -391,6 +401,19 @@ class Transcoding extends Base {
 
 			// Get and sanitize transcoding progress.
 			$progress = intval( get_post_meta( $attachment_id, 'rtgodam_transcoding_progress', true ) );
+
+			// Central accepted the job but hasn't said anything for a day: say so, instead of
+			// "queued" or "transcoding" forever.
+			$failure = rtgodam_get_transcoding_failure_for_display( $attachment_id );
+
+			if ( ! empty( $failure ) && 'stalled' === $failure['kind'] ) {
+				return array(
+					'status'   => 'stalled',
+					'progress' => $progress,
+					'message'  => $failure['message'],
+					'failure'  => $failure,
+				);
+			}
 
 			// Define status messages.
 			$status_messages = array(
@@ -980,6 +1003,7 @@ class Transcoding extends Base {
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_code' );
 		delete_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail' );
+		delete_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason' );
 
 		$wp_metadata              = array();
 		$wp_metadata['mime_type'] = $mime_type;

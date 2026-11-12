@@ -145,9 +145,10 @@ class Retranscode_Failed_Media {
 				do_action( 'rtgodam_before_attachment_lookup' );
 				update_post_meta( $real_attachment_id, 'rtgodam_transcoding_status', 'failed' );
 				// The final cause is transient (server error, timeout or rate limit), so drop any
-				// earlier refusal's code and wording.
-				delete_post_meta( $real_attachment_id, 'rtgodam_transcoding_error_code' );
+				// earlier refusal's wording, and say every retry was used.
+				update_post_meta( $real_attachment_id, 'rtgodam_transcoding_error_code', RTGODAM_RETRIES_EXHAUSTED_CODE );
 				delete_post_meta( $real_attachment_id, 'rtgodam_transcoding_error_detail' );
+				delete_post_meta( $real_attachment_id, 'rtgodam_transcoding_failure_reason' );
 				update_post_meta(
 					$real_attachment_id,
 					'rtgodam_transcoding_error_msg',

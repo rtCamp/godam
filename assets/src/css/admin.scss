@@ -682,6 +682,16 @@ $media-frame-width: calc(300px + 2 * 24px);
 			width: calc(100% - 2 * $padding);
 		}
 	}
+
+	// What to do about a failed transcode, under its reason.
+	.status-next-step {
+		display: flex;
+		flex-basis: 100%;
+		flex-wrap: wrap;
+		gap: 0.5em;
+		color: #50575e;
+		font-size: 12px;
+	}
 }
 
 .rt-godam-modal {
@@ -1164,7 +1174,7 @@ to ensure proper responsiveness and avoid layout issues.
 	gap: 12px;
 }
 
-// Why GoDAM Central refused to transcode the file, at the top of the attachment details
+// Why the file's transcode failed or seems stuck, at the top of the attachment details
 // sidebar (see views/fields/transcoding-refusal-panel.js).
 .godam-transcoding-refusal {
 	margin: 0 0 16px;
@@ -1184,6 +1194,7 @@ to ensure proper responsiveness and avoid layout issues.
 	&__actions {
 		display: flex;
 		flex-wrap: wrap;
+		align-items: center;
 		gap: 8px;
 		margin-bottom: 8px;
 	}

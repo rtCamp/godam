@@ -132,6 +132,17 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					),
 
 					/*
+					 * Why an accepted job failed (oom, timeout, download, transcode, upload,
+					 * license, storage_limit, unknown). Safe to show, unlike error_msg: see
+					 * rtgodam_get_transcoding_failure_reasons().
+					 */
+					'failure_reason'        => array(
+						'required'          => false,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+
+					/*
 					 * The converted preview PDF for a `document` job. Read from the top-level
 					 * field rather than from files['preview_pdf']: the callback is form-encoded,
 					 * and a nested array does not survive that encoding reliably.
@@ -283,6 +294,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		$file_status = $request->get_param( 'file_status' );
 		$error_msg   = $request->get_param( 'error_msg' );
 		$error_code  = $request->get_param( 'error_code' );
+		$reason      = $request->get_param( 'failure_reason' );
 		$job_for     = $request->get_param( 'job_for' );
 		$thumbnail   = $request->get_param( 'thumbnail' );
 		$format      = $request->get_param( 'format' );
@@ -322,6 +334,15 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					 */
 					if ( ! empty( $error_code ) ) {
 						update_post_meta( $failed_id, 'rtgodam_transcoding_error_code', sanitize_text_field( $error_code ) );
+					}
+
+					// What the media library shows. Central's error_msg above is for support only.
+					if ( ! empty( $failed_id ) && is_numeric( $failed_id ) ) {
+						if ( ! empty( $reason ) ) {
+							update_post_meta( $failed_id, 'rtgodam_transcoding_failure_reason', sanitize_key( $reason ) );
+						} else {
+							delete_post_meta( $failed_id, 'rtgodam_transcoding_failure_reason' );
+						}
 					}
 				} finally {
 					do_action( 'rtgodam_after_attachment_lookup' );

@@ -943,6 +943,7 @@ function rtgodam_record_job_refusal( $attachment_id, $response ) {
 	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $refusal['message'] );
 	// Central's own wording, for support: the plain message above can't carry every cause.
 	update_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', $refusal['detail'] );
+	delete_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason' );
 
 	rtgodam_remove_from_retry_queue( $attachment_id );
 
@@ -1003,6 +1004,369 @@ function rtgodam_refusal_needs_plan( $detail ) {
  */
 function rtgodam_is_job_refusal( $error_code ) {
 	return in_array( $error_code, array( 'preflight_failed', 'job_refused' ), true );
+}
+
+/**
+ * Error code the plugin stores while a file waits in the 5xx retry queue.
+ *
+ * @since n.e.x.t
+ */
+const RTGODAM_RETRY_QUEUED_CODE = 'retry_queued';
+
+/**
+ * Error code the plugin stores once every automatic retry has failed.
+ *
+ * @since n.e.x.t
+ */
+const RTGODAM_RETRIES_EXHAUSTED_CODE = 'retries_exhausted';
+
+/**
+ * Why GoDAM Central says an accepted job failed, keyed by the `failure_reason` code its
+ * callback sends, with the next step for each.
+ *
+ * Central's own wording is English only, so the plugin keeps a translated copy. A missing
+ * or unrecognised code reads as `unknown`.
+ *
+ * Next steps: `upload_smaller` and `upload_different` (replace the file), `retry`,
+ * `settings` (check the API key), `upgrade` (plan page), `retry_support` (retry, then
+ * contact support).
+ *
+ * @since n.e.x.t
+ *
+ * @see https://github.com/rtCamp/godam-core/issues/1887
+ *
+ * @return array<string, array{message: string, action: string}>
+ */
+function rtgodam_get_transcoding_failure_reasons() {
+	return array(
+		'oom'           => array(
+			'message' => __( 'The file needed more memory than processing allows. Try a smaller or lower-resolution file.', 'godam' ),
+			'action'  => 'upload_smaller',
+		),
+		'timeout'       => array(
+			'message' => __( 'Processing took too long and was stopped.', 'godam' ),
+			'action'  => 'retry',
+		),
+		'download'      => array(
+			'message' => __( 'We couldn\'t download the source file.', 'godam' ),
+			'action'  => 'retry',
+		),
+		'transcode'     => array(
+			'message' => __( 'We couldn\'t process the file. It may be damaged or in a format we don\'t support.', 'godam' ),
+			'action'  => 'upload_different',
+		),
+		'upload'        => array(
+			'message' => __( 'We couldn\'t save the processed file to storage.', 'godam' ),
+			'action'  => 'retry',
+		),
+		'license'       => array(
+			'message' => __( 'The license is invalid or inactive.', 'godam' ),
+			'action'  => 'settings',
+		),
+		'storage_limit' => array(
+			'message' => __( 'Your plan\'s storage limit has been reached.', 'godam' ),
+			'action'  => 'upgrade',
+		),
+		'unknown'       => array(
+			'message' => __( 'Something went wrong while processing the file.', 'godam' ),
+			'action'  => 'retry_support',
+		),
+	);
+}
+
+/**
+ * Where a customer opens a support ticket.
+ *
+ * @since n.e.x.t
+ *
+ * @return string
+ */
+function rtgodam_get_support_url() {
+	/**
+	 * Filters the Contact support link shown with failed transcodes.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $url Support URL.
+	 */
+	return (string) apply_filters( 'rtgodam_support_url', 'https://app.godam.io/helpdesk/my-tickets' );
+}
+
+/**
+ * Describe why an attachment's transcode failed or seems stuck, and what to do next.
+ *
+ * The one place the list view, grid view, attachment details panel and status route read
+ * from, so all of them say the same thing. Every message is the plugin's own translated
+ * text, except a refusal's, which stays as recorded (rtgodam_record_job_refusal()): callers
+ * that can show it to someone who can't edit the file must mask it, as they do today.
+ * Central's raw error text is never returned.
+ *
+ * @since n.e.x.t
+ *
+ * @param int $attachment_id Attachment ID.
+ *
+ * @return array{kind: string, code: string, message: string, action: string, support: bool}|null
+ *         Null when the file isn't failed or stuck. `kind` is `refusal`, `retrying`,
+ *         `retries_exhausted`, `site`, `failed` (Central's reason) or `stalled`.
+ */
+function rtgodam_get_transcoding_failure( $attachment_id ) {
+	$attachment_id = absint( $attachment_id );
+
+	if ( ! $attachment_id ) {
+		return null;
+	}
+
+	/** This action is documented in admin/godam-transcoder-functions.php */
+	do_action( 'rtgodam_before_attachment_lookup' );
+	try {
+		$status     = strtolower( (string) get_post_meta( $attachment_id, 'rtgodam_transcoding_status', true ) );
+		$error_code = (string) get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true );
+
+		if ( 'failed' === $status ) {
+			return rtgodam_describe_failed_transcode( $attachment_id, $error_code );
+		}
+
+		return rtgodam_describe_stalled_transcode( $attachment_id, $status );
+	} finally {
+		do_action( 'rtgodam_after_attachment_lookup' );
+	}
+}
+
+/**
+ * The failure description for an attachment whose status is `failed`.
+ *
+ * @since n.e.x.t
+ *
+ * @param int    $attachment_id Attachment ID.
+ * @param string $error_code    Its `rtgodam_transcoding_error_code`.
+ *
+ * @return array{kind: string, code: string, message: string, action: string, support: bool}
+ */
+function rtgodam_describe_failed_transcode( $attachment_id, $error_code ) {
+	if ( rtgodam_is_job_refusal( $error_code ) ) {
+		$detail = (string) get_post_meta( $attachment_id, 'rtgodam_transcoding_error_detail', true );
+		$msg    = (string) get_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', true );
+
+		return array(
+			'kind'    => 'refusal',
+			'code'    => $error_code,
+			'message' => '' !== $msg ? $msg : __( 'This file can\'t be transcoded.', 'godam' ),
+			'action'  => rtgodam_refusal_needs_plan( $detail ) ? 'upgrade' : 'retry',
+			'support' => false,
+		);
+	}
+
+	// Files queued by older versions have no code while they wait in the queue.
+	$queued = RTGODAM_RETRY_QUEUED_CODE === $error_code
+		|| ( '' === $error_code && rtgodam_is_in_retry_queue( $attachment_id ) );
+
+	if ( $queued ) {
+		return array(
+			'kind'    => 'retrying',
+			'code'    => RTGODAM_RETRY_QUEUED_CODE,
+			'message' => __( 'Couldn\'t reach GoDAM. Retrying automatically.', 'godam' ),
+			'action'  => '',
+			'support' => false,
+		);
+	}
+
+	if ( RTGODAM_RETRIES_EXHAUSTED_CODE === $error_code ) {
+		$max_retries = class_exists( '\RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media' )
+			? \RTGODAM\Inc\Cron_Jobs\Retranscode_Failed_Media::MAX_RETRY_ATTEMPTS
+			: 3;
+
+		return array(
+			'kind'    => 'retries_exhausted',
+			'code'    => RTGODAM_RETRIES_EXHAUSTED_CODE,
+			// translators: %d is the number of automatic retries.
+			'message' => sprintf( _n( 'Failed after %d retry.', 'Failed after %d retries.', $max_retries, 'godam' ), $max_retries ),
+			'action'  => 'retry',
+			'support' => true,
+		);
+	}
+
+	// The plugin's own check found HTTP authentication on the site: its message says what to do.
+	if ( 'http_auth_enabled' === $error_code ) {
+		return array(
+			'kind'    => 'site',
+			'code'    => $error_code,
+			'message' => __( 'HTTP authentication is enabled on your site, preventing transcoding.', 'godam' ),
+			'action'  => 'retry',
+			'support' => false,
+		);
+	}
+
+	// Central accepted the job, then it failed. Its callback says why in `failure_reason`.
+	$reasons = rtgodam_get_transcoding_failure_reasons();
+	$reason  = (string) get_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason', true );
+
+	if ( ! isset( $reasons[ $reason ] ) ) {
+		$reason = 'unknown';
+	}
+
+	return array(
+		'kind'    => 'failed',
+		'code'    => $reason,
+		'message' => $reasons[ $reason ]['message'],
+		'action'  => $reasons[ $reason ]['action'],
+		'support' => 'retry_support' === $reasons[ $reason ]['action'],
+	);
+}
+
+/**
+ * The failure description for a job Central accepted but hasn't reported on for a day.
+ *
+ * Central may never call back (a site firewall, the site offline), and the file would say
+ * "queued" or "transcoding" forever.
+ *
+ * @since n.e.x.t
+ *
+ * @param int    $attachment_id Attachment ID.
+ * @param string $status        Its `rtgodam_transcoding_status`, lowercased.
+ *
+ * @return array{kind: string, code: string, message: string, action: string, support: bool}|null
+ */
+function rtgodam_describe_stalled_transcode( $attachment_id, $status ) {
+	if ( ! in_array( $status, array( 'queued', 'downloading', 'downloaded', 'transcoding' ), true ) ) {
+		return null;
+	}
+
+	if ( empty( get_post_meta( $attachment_id, 'rtgodam_transcoding_job_id', true ) )
+		|| ! empty( get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true ) ) ) {
+		return null;
+	}
+
+	$last_update = intval( get_post_meta( $attachment_id, 'rtgodam_transcoding_status_updated', true ) );
+
+	// Jobs sent by older versions have no time stored: the upload time is the best guess.
+	if ( ! $last_update ) {
+		$last_update = intval( get_post_time( 'U', true, $attachment_id ) );
+	}
+
+	/**
+	 * Filters how long a job can go without word from Central before it's shown as stuck.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $seconds       Seconds. Default one day.
+	 * @param int $attachment_id Attachment ID.
+	 */
+	$stalled_after = (int) apply_filters( 'rtgodam_transcoding_stalled_after', DAY_IN_SECONDS, $attachment_id );
+
+	if ( ! $last_update || time() - $last_update < $stalled_after ) {
+		return null;
+	}
+
+	return array(
+		'kind'    => 'stalled',
+		'code'    => 'stalled',
+		'message' => __( 'This is taking longer than expected.', 'godam' ),
+		'action'  => 'retry',
+		'support' => true,
+	);
+}
+
+/**
+ * Whether an attachment waits in the 5xx retry queue.
+ *
+ * @since n.e.x.t
+ *
+ * @param int $attachment_id Attachment ID.
+ *
+ * @return bool
+ */
+function rtgodam_is_in_retry_queue( $attachment_id ) {
+	foreach ( (array) get_option( 'rtgodam-failed-transcoding-attachments', array() ) as $key => $entry ) {
+		$entry_id = is_array( $entry ) && isset( $entry['attachment_id'] ) ? $entry['attachment_id'] : $key;
+
+		if ( (int) $entry_id === (int) $attachment_id ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * The fields the media library needs to show a failed or stuck transcode, for one viewer.
+ *
+ * A refusal's message can be Central's own wording, which can carry URLs, so only someone
+ * who can edit the file sees it.
+ *
+ * @since n.e.x.t
+ *
+ * @param int $attachment_id Attachment ID.
+ *
+ * @return array Empty when the file isn't failed or stuck. Otherwise rtgodam_get_transcoding_failure()'s
+ *               fields, plus `support_url`, `next_step` and `next_step_url`.
+ */
+function rtgodam_get_transcoding_failure_for_display( $attachment_id ) {
+	$failure = rtgodam_get_transcoding_failure( $attachment_id );
+
+	if ( null === $failure ) {
+		return array();
+	}
+
+	if ( 'refusal' === $failure['kind'] && ! current_user_can( 'edit_post', $attachment_id ) ) {
+		$failure['message'] = __( 'This file can\'t be transcoded.', 'godam' );
+	}
+
+	$failure['support_url'] = $failure['support'] ? rtgodam_get_support_url() : '';
+
+	$next_step                = rtgodam_get_transcoding_next_step( $failure['action'] );
+	$failure['next_step']     = $next_step['text'];
+	$failure['next_step_url'] = $next_step['url'];
+
+	return $failure;
+}
+
+/**
+ * What the customer should do about a failed transcode, as one line and an optional link.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $action A next step from rtgodam_get_transcoding_failure().
+ *
+ * @return array{text: string, url: string}
+ */
+function rtgodam_get_transcoding_next_step( $action ) {
+	switch ( $action ) {
+		case 'upload_smaller':
+			return array(
+				'text' => __( 'Upload a smaller file.', 'godam' ),
+				'url'  => '',
+			);
+		case 'upload_different':
+			return array(
+				'text' => __( 'Upload a different file.', 'godam' ),
+				'url'  => '',
+			);
+		case 'retry':
+			return array(
+				'text' => __( 'Retranscode to try again.', 'godam' ),
+				'url'  => '',
+			);
+		case 'retry_support':
+			return array(
+				'text' => __( 'Retranscode to try again, and contact support if it keeps failing.', 'godam' ),
+				'url'  => '',
+			);
+		case 'settings':
+			return array(
+				'text' => __( 'Check your GoDAM settings', 'godam' ),
+				'url'  => current_user_can( 'manage_options' ) ? admin_url( 'admin.php?page=rtgodam_settings#api-key' ) : '',
+			);
+		case 'upgrade':
+			return array(
+				'text' => __( 'Upgrade plan', 'godam' ),
+				'url'  => 'https://app.godam.io/web/billing?tab=Plans',
+			);
+		default:
+			return array(
+				'text' => '',
+				'url'  => '',
+			);
+	}
 }
 
 /**

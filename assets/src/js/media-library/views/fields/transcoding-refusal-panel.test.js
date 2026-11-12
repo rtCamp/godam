@@ -1,5 +1,5 @@
 /**
- * Unit tests for the attachment details panel that says why GoDAM refused a file.
+ * Unit tests for the attachment details panel that says why a file's transcode failed.
  */
 
 /**
@@ -28,9 +28,25 @@ const refused = {
 	transcoding_error_code: 'job_refused',
 	transcoding_error_msg: 'Your GoDAM storage is full. Upgrade your plan or delete unused files.',
 	transcoding_error_detail: 'Storage limit exceeded',
-	transcoding_error_needs_plan: true,
 	transcoding_can_retranscode: true,
+	transcoding_failure: {
+		kind: 'refusal',
+		code: 'job_refused',
+		message: 'Your GoDAM storage is full. Upgrade your plan or delete unused files.',
+		action: 'upgrade',
+		next_step: 'Upgrade plan',
+		next_step_url: 'https://app.godam.io/web/billing?tab=Plans',
+		support_url: '',
+	},
 };
+
+const failed = ( failure, attributes = {} ) => ( {
+	transcoding_status: 'failed',
+	transcoding_can_retranscode: true,
+	transcoding_error_detail: 'Watchdog: max retries exceeded',
+	transcoding_failure: { next_step_url: '', support_url: '', ...failure },
+	...attributes,
+} );
 
 const panel = () => document.querySelector( '.godam-transcoding-refusal' );
 
@@ -50,10 +66,9 @@ describe( 'transcoding refusal panel', () => {
 	it( 'leaves out what the user can\'t use or doesn\'t need', () => {
 		renderTranscodingRefusalPanel( view( {
 			...refused,
-			transcoding_error_code: 'preflight_failed',
 			transcoding_error_detail: '',
-			transcoding_error_needs_plan: false,
 			transcoding_can_retranscode: false,
+			transcoding_failure: { ...refused.transcoding_failure, code: 'preflight_failed', action: 'retry', next_step: 'Retranscode to try again.', next_step_url: '' },
 		} ) );
 
 		expect( panel() ).not.toBeNull();
@@ -63,11 +78,62 @@ describe( 'transcoding refusal panel', () => {
 
 	it.each( [
 		[ 'a file that isn\'t failed', { transcoding_status: 'transcoded' } ],
-		[ 'a failure that isn\'t a refusal', { transcoding_error_code: 'transcoder_error' } ],
+		[ 'a file with no failure', { transcoding_failure: undefined } ],
 	] )( 'renders nothing for %s', ( _label, attributes ) => {
 		renderTranscodingRefusalPanel( view( { ...refused, ...attributes } ) );
 
 		expect( panel() ).toBeNull();
+	} );
+
+	it( 'says why Central failed an accepted job and what to do, without its raw error', () => {
+		renderTranscodingRefusalPanel( view( failed( {
+			kind: 'failed',
+			code: 'oom',
+			action: 'upload_smaller',
+			message: 'The file needed more memory than processing allows. Try a smaller or lower-resolution file.',
+			next_step: 'Upload a smaller file.',
+		} ) ) );
+
+		expect( panel().querySelector( '.godam-transcoding-refusal__reason' ).textContent ).toContain( 'more memory' );
+		expect( panel().querySelector( '.godam-transcoding-refusal__next-step' ).textContent ).toBe( 'Upload a smaller file.' );
+		expect( panel().textContent ).not.toContain( 'Watchdog' );
+		expect( panel().querySelector( 'details' ) ).toBeNull();
+	} );
+
+	it( 'offers Retranscode and Contact support when every retry failed', () => {
+		renderTranscodingRefusalPanel( view( failed( {
+			kind: 'retries_exhausted',
+			code: 'retries_exhausted',
+			action: 'retry',
+			message: 'Failed after 3 retries.',
+			next_step: 'Retranscode to try again.',
+			support_url: 'https://app.godam.io/helpdesk/my-tickets',
+		} ) ) );
+
+		expect( panel().querySelector( 'button' ).textContent ).toBe( 'Retranscode' );
+		expect( panel().querySelector( '.godam-transcoding-refusal__support' ).href ).toBe( 'https://app.godam.io/helpdesk/my-tickets' );
+	} );
+
+	it( 'offers no manual retry while the plugin is still retrying', () => {
+		renderTranscodingRefusalPanel( view( failed( {
+			kind: 'retrying',
+			code: 'retry_queued',
+			action: '',
+			message: 'Couldn\'t reach GoDAM. Retrying automatically.',
+			next_step: '',
+		} ) ) );
+
+		expect( panel().querySelector( '.godam-transcoding-refusal__title' ).textContent ).toBe( 'Transcoding will be retried' );
+		expect( panel().querySelector( 'button' ) ).toBeNull();
+	} );
+
+	it( 'shows a stuck job even though its status is still queued', () => {
+		renderTranscodingRefusalPanel( view( failed(
+			{ kind: 'stalled', code: 'stalled', action: 'retry', message: 'This is taking longer than expected.', next_step: 'Retranscode to try again.' },
+			{ transcoding_status: 'queued' },
+		) ) );
+
+		expect( panel().querySelector( '.godam-transcoding-refusal__reason' ).textContent ).toBe( 'This is taking longer than expected.' );
 	} );
 
 	it( 'does not stack panels when the view re-renders', () => {
