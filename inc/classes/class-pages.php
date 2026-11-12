@@ -11,6 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 use RTGODAM\Inc\Traits\Singleton;
 use WP_REST_Request;
+use RTGODAM\Inc\Layers\Layer_Type_Registry;
 
 /**
  * Class Assets
@@ -655,6 +656,8 @@ class Pages {
 
 		// Check if this is your custom admin page.
 		if ( $screen && $this->video_editor_page_id === $screen->id ) {
+			$this->register_layer_api_script();
+
 			wp_register_script(
 				'transcoder-page-script-video-editor',
 				RTGODAM_URL . 'assets/build/pages/video-editor.min.js',
@@ -662,24 +665,32 @@ class Pages {
 				// but depends on the WP-provided builds of these packages being
 				// present. `wp-private-apis` in particular must load so the
 				// bundled DataViews can unlock `@wordpress/components` private APIs.
-				array( 'wp-element', 'wp-components', 'wp-primitives', 'wp-api-fetch', 'wp-data', 'wp-notices', 'wp-private-apis', 'wp-i18n' ),
+				// `godam-layers` is the layer type registry the editor reads.
+				array( 'wp-element', 'wp-components', 'wp-primitives', 'wp-api-fetch', 'wp-data', 'wp-notices', 'wp-private-apis', 'wp-i18n', 'godam-layers' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/video-editor.min.js' ),
 				true
 			);
 
-			$is_gf_active           = is_plugin_active( 'gravityforms/gravityforms.php' );
-			$is_cf7_active          = is_plugin_active( 'contact-form-7/wp-contact-form-7.php' );
-			$is_wpforms_active      = is_plugin_active( 'wpforms-lite/wpforms.php' ) || is_plugin_active( 'wpforms/wpforms.php' );
-			$is_jetpack_active      = is_plugin_active( 'jetpack/jetpack.php' );
-			$is_sure_form_active    = is_plugin_active( 'sureforms/sureforms.php' );
-			$is_forminator_active   = is_plugin_active( 'forminator/forminator.php' );
-			$is_fluent_forms_active = is_plugin_active( 'fluentform/fluentform.php' );
-			$is_met_form_active     = is_plugin_active( 'metform/metform.php' );
+			// Whether each form provider can run here, from the Layer API registry
+			// (each provider's `is_available`). The `*Active` flags in `videoData`
+			// below are kept for code that still reads them.
+			$layer_registry       = Layer_Type_Registry::get_instance();
+			$layer_editor_config  = $layer_registry->get_editor_settings();
+			$form_provider_active = function ( $name ) use ( $layer_editor_config ) {
+				$form = $layer_editor_config['layerAvailability']->form ?? null;
+				return ! empty( $form['variations']->$name );
+			};
 
-			// TODO Handle Everest Forms pro versions as well in future.
-			$is_everest_forms_active = is_plugin_active( 'everest-forms/everest-forms.php' );
-
-			$is_ninja_forms_active = is_plugin_active( 'ninja-forms/ninja-forms.php' );
+			$is_gf_active            = $form_provider_active( 'gravity' );
+			$is_cf7_active           = $form_provider_active( 'cf7' );
+			$is_wpforms_active       = $form_provider_active( 'wpforms' );
+			$is_jetpack_active       = $form_provider_active( 'jetpack' );
+			$is_sure_form_active     = $form_provider_active( 'sureforms' );
+			$is_forminator_active    = $form_provider_active( 'forminator' );
+			$is_fluent_forms_active  = $form_provider_active( 'fluentforms' );
+			$is_met_form_active      = $form_provider_active( 'metform' );
+			$is_everest_forms_active = $form_provider_active( 'everestforms' );
+			$is_ninja_forms_active   = $form_provider_active( 'ninjaforms' );
 
 			// Pass dynamic data to React using wp_localize_script.
 			wp_localize_script(
@@ -819,20 +830,33 @@ class Pages {
 			);
 
 			// Localize video editor layer options and components via PHP filters.
-			$layer_options    = apply_filters( 'godam_video_editor_layer_options', array() );
-			$layer_components = apply_filters( 'godam_video_editor_layer_components', array() );
+			// Deprecated (#2296): add-ons register layer types with godam_register_layer_type().
+			$layer_options    = apply_filters_deprecated( 'godam_video_editor_layer_options', array( array() ), Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
+			$layer_components = apply_filters_deprecated( 'godam_video_editor_layer_components', array( array() ), Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type() with an editorScript' );
 
 			wp_localize_script(
 				'transcoder-page-script-video-editor',
 				'godamVideoEditorConfig',
 				array(
-					'layerOptions'    => $layer_options,
-					'layerComponents' => $layer_components,
+					'layerOptions'      => $layer_options,
+					'layerComponents'   => $layer_components,
+					// Layer types registered in PHP: their metadata, merged into
+					// `registerLayerType()`, and whether each type and variation can run here.
+					'layerTypes'        => $layer_editor_config['layerTypes'],
+					'layerAvailability' => $layer_editor_config['layerAvailability'],
 				)
 			);
 
+			// Each layer type's `editorScript` from its layer.json.
+			$layer_registry->enqueue_editor_scripts();
+
 			wp_set_script_translations( 'transcoder-page-script-video-editor', 'godam', RTGODAM_PATH . 'languages' );
 			wp_enqueue_script( 'transcoder-page-script-video-editor' );
+
+			// The editor bundle provides `window.godam.layerEditor` (hooks and controls
+			// for layer settings panels). This handle lets an add-on's editor script
+			// depend on it by name, as `@godam/layer-editor`.
+			wp_register_script( 'godam-layer-editor', false, array( 'transcoder-page-script-video-editor' ), RTGODAM_VERSION, true );
 
 			// The "Edit metadata" action reuses the native two-column attachment
 			// details modal (wp.media.view.MediaFrame.EditAttachments), which is
@@ -1037,7 +1061,20 @@ class Pages {
 			// surface. Built-in types (cta/form/hotspot/poll) have icons
 			// hardcoded in the React bundle; this exposes only the URL-based
 			// icons that come from PHP land.
-			$addon_layer_options = apply_filters( 'godam_video_editor_layer_options', array() );
+			$addon_layer_options = apply_filters_deprecated( 'godam_video_editor_layer_options', array( array() ), Layer_Type_Registry::HOOKS_DEPRECATED_SINCE, 'godam_register_layer_type()' );
+			$addon_layer_options = is_array( $addon_layer_options ) ? $addon_layer_options : array();
+
+			// Layer types registered through the Layer API name their icon in layer.json.
+			$addon_layer_types = array_column( $addon_layer_options, 'type' );
+			foreach ( Layer_Type_Registry::get_instance()->get_all() as $layer_type_name => $layer_type ) {
+				if ( ! empty( $layer_type['iconUrl'] ) && ! in_array( $layer_type_name, $addon_layer_types, true ) ) {
+					$addon_layer_options[] = array(
+						'type'    => $layer_type_name,
+						'title'   => $layer_type['title'],
+						'iconUrl' => $layer_type['iconUrl'],
+					);
+				}
+			}
 
 			// Published layer config for the analytics page's "active vs
 			// removed" rendering. The analytics service stores events
@@ -1536,6 +1573,38 @@ class Pages {
 		}
 
 		return admin_url( str_replace( '{id}', (string) $form_id, $template ) );
+	}
+
+	/**
+	 * Register `godam-layers`, the Layer API's layer type registry
+	 * (`window.godam.layers`). The video editor depends on it, and so can an
+	 * add-on's editor script that registers its own layer types.
+	 *
+	 * @since 2.9.0
+	 *
+	 * @return void
+	 */
+	private function register_layer_api_script() {
+		if ( wp_script_is( 'godam-layers', 'registered' ) ) {
+			return;
+		}
+
+		$asset_path = RTGODAM_PATH . 'assets/build/js/godam-layers.min.asset.php';
+		$asset      = file_exists( $asset_path )
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- file path is a plugin constant + hardcoded build filename.
+			? include $asset_path
+			: array(
+				'dependencies' => array( 'wp-data', 'wp-hooks' ),
+				'version'      => RTGODAM_VERSION,
+			);
+
+		wp_register_script(
+			'godam-layers',
+			RTGODAM_URL . 'assets/build/js/godam-layers.min.js',
+			$asset['dependencies'],
+			$asset['version'],
+			true
+		);
 	}
 
 	/**

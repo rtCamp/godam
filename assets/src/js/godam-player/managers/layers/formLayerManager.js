@@ -6,7 +6,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { LAYER_TYPES } from '../../utils/constants.js';
 import { getLayerDisplayName, shouldSuppressSkip } from '../../utils/layerActions.js';
 
 /**
@@ -40,8 +39,10 @@ function getVideoKey( player ) {
  *
  * Handles form layer functionality including skip buttons and form observation.
  * Despite the name, this manager also runs for CTA and Poll layers — they
- * share the pause-on-display + skip-button mechanics. Analytics tracking
- * branches on `layer.type` to emit the right event semantics for each type.
+ * share the pause-on-display + skip-button mechanics. Each layer type's runtime
+ * (`godam-player/layers/`) passes a `behaviour` to `setupFormLayer()` that says
+ * what differs: the skip label, what counts as a conversion, and its analytics
+ * label. The manager itself never branches on the layer type.
  */
 export default class FormLayerManager {
 	constructor( player, isDisplayingLayers, currentPlayerVideoInstanceId ) {
@@ -71,6 +72,9 @@ export default class FormLayerManager {
 		// Per-layer interaction sequence — incremented on each emit so the
 		// receiver can distinguish first-touch from repeat events. Map<layer_id, number>.
 		this._interactionSeq = new Map();
+
+		// Per-layer behaviour from the layer type's runtime. Map<layer_id, Object>.
+		this._behaviours = new Map();
 	}
 
 	/**
@@ -187,16 +191,15 @@ export default class FormLayerManager {
 		// form-integration label (e.g. "WPForms") via `layer.form_type`. Same
 		// string is used for parent_layer_name in metadata so the backend's
 		// argMax aggregation surfaces the same value.
-		const displayName = getLayerDisplayName( layer, layerType );
+		const behaviour = this._behaviours.get( layerId ) || {};
+		const displayName = getLayerDisplayName( layer, layerType, behaviour.analyticsLabel?.( layer ) );
 
-		// Stash form_type when present so the analytics UI can pick the
-		// matching form-integration icon at render time (different from the
-		// generic Form glyph). Empty string for non-form layers — keeps the
-		// metadata shape uniform across layer types.
-		const formType =
-			layerType === 'form' && layer?.form_type
-				? String( layer.form_type )
-				: '';
+		// Stash form_type when the runtime reports one, so the analytics UI can
+		// pick the matching form-integration icon at render time (different from
+		// the generic Form glyph). Empty string otherwise — keeps the metadata
+		// shape uniform across layer types.
+		const runtimeMetadata = behaviour.analyticsMetadata?.( layer ) || {};
+		const formType = runtimeMetadata.form_type ? String( runtimeMetadata.form_type ) : '';
 
 		const enrichedMetadata = {
 			parent_layer_id: layerId,
@@ -225,17 +228,24 @@ export default class FormLayerManager {
 	/**
 	 * Setup form layer
 	 *
-	 * @param {Object}      layer        - Layer configuration object
-	 * @param {HTMLElement} layerElement - Layer DOM element
+	 * @param {Object}      layer                         - Layer configuration object
+	 * @param {HTMLElement} layerElement                  - Layer DOM element
+	 * @param {Object}      [behaviour]                   - What the layer type's runtime changes.
+	 * @param {Function}    [behaviour.skipText]          - `skipText( layer )`: the skip button label.
+	 * @param {boolean}     [behaviour.trackClicks]       - Count link and button clicks as `clicked`.
+	 * @param {Function}    [behaviour.watchOutcome]      - `watchOutcome( element )` returns a check that reports `{ converted }` once the layer is done (a form sent, a poll voted), or null until then.
+	 * @param {string}      [behaviour.conversionAction]  - Event fired when `converted` is true, e.g. `submitted`.
+	 * @param {Function}    [behaviour.analyticsLabel]    - `analyticsLabel( layer )`: type label in analytics names.
+	 * @param {Function}    [behaviour.analyticsMetadata] - `analyticsMetadata( layer )`: extra analytics fields.
 	 */
-	setupFormLayer( layer, layerElement ) {
+	setupFormLayer( layer, layerElement, behaviour = {} ) {
 		if ( layer.custom_css ) {
 			const styleElement = document.createElement( 'style' );
 			styleElement.textContent = layer.custom_css;
 			layerElement.appendChild( styleElement );
 		}
 
-		const skipText = this.getSkipText( layer.type, layer.trigger );
+		const skipText = behaviour.skipText?.( layer ) || __( 'Skip', 'godam' );
 		const allowSkip = layer.allow_skip !== undefined ? layer.allow_skip : true;
 
 		const existingLayer = this.formLayers.some(
@@ -261,14 +271,16 @@ export default class FormLayerManager {
 				// access to id, name, type without threading them through every
 				// method signature.
 				layer,
+				behaviour,
 			};
 
+			this._behaviours.set( String( layer.id ), behaviour );
 			this.formLayers.push( layerObj );
 			this.setupFormLayerSkipButton( layerObj );
-			// CTA-specific click tracking: anchor / button clicks inside the
-			// layer count as `clicked`. Forms use `submitted` (fired from the
-			// confirmation MutationObserver below); polls don't ship in v1.
-			if ( layer.type === LAYER_TYPES.CTA ) {
+			// Click tracking (CTA): anchor / button clicks inside the layer
+			// count as `clicked`. Forms and polls report their conversion from
+			// the outcome observer instead.
+			if ( behaviour.trackClicks ) {
 				this.setupCtaClickTracking( layerObj );
 			}
 		}
@@ -306,30 +318,6 @@ export default class FormLayerManager {
 	}
 
 	/**
-	 * Get skip-button text based on layer type and trigger.
-	 *
-	 * An end-of-video CTA has nothing left to skip to, so its dismiss button
-	 * reads "Done" instead of "Skip".
-	 *
-	 * @param {string} layerType - Type of layer
-	 * @param {string} [trigger] - Layer trigger (e.g. 'end_of_video')
-	 * @return {string} Skip button text
-	 */
-	getSkipText( layerType, trigger ) {
-		if ( layerType === LAYER_TYPES.CTA && trigger === 'end_of_video' ) {
-			return __( 'Done', 'godam' );
-		}
-
-		const skipTexts = {
-			[ LAYER_TYPES.FORM ]: __( 'Skip Form', 'godam' ),
-			[ LAYER_TYPES.CTA ]: __( 'Skip', 'godam' ),
-			[ LAYER_TYPES.POLL ]: __( 'Skip Poll', 'godam' ),
-		};
-
-		return skipTexts[ layerType ] || __( 'Skip', 'godam' );
-	}
-
-	/**
 	 * Setup form layer skip button
 	 *
 	 * @param {Object} layerObj - Layer object containing element and configuration
@@ -345,7 +333,9 @@ export default class FormLayerManager {
 			skipButton.classList.add( 'hidden' );
 		}
 
-		this.setupFormObserver( layerObj, skipButton );
+		if ( typeof layerObj.behaviour?.watchOutcome === 'function' ) {
+			this.setupFormObserver( layerObj, skipButton );
+		}
 		this.setupSkipButtonHandler( layerObj, skipButton );
 
 		layerObj.layerElement.appendChild( skipButton );
@@ -378,68 +368,47 @@ export default class FormLayerManager {
 	}
 
 	/**
-	 * Setup form observer for confirmation messages
+	 * Watch the layer for its outcome — a form submitted, a poll voted, or a
+	 * form that could not load — and turn the skip button into "Continue".
+	 * The runtime's `behaviour.watchOutcome()` decides what counts.
 	 *
 	 * @param {Object}      layerObj   - Layer object containing element and configuration
 	 * @param {HTMLElement} skipButton - Skip button element
 	 */
 	setupFormObserver( layerObj, skipButton ) {
-		const isPoll = layerObj.layer?.type === LAYER_TYPES.POLL;
-		// Polls: only count a vote on a genuine voting-form → results-view
-		// transition. WP-Polls renders the results immediately for a viewer who
-		// already voted in a prior session, which would otherwise be miscounted
-		// as a fresh vote. Seed from the current DOM, then keep it updated as
-		// the form (re)appears (some WP-Polls setups AJAX-load the form too).
-		let pollFormSeen = isPoll
-			? !! layerObj.layerElement?.querySelector( '.wp-polls-form' )
-			: false;
+		const checkOutcome = layerObj.behaviour.watchOutcome( layerObj.layerElement );
 
 		const observer = new MutationObserver( () => {
-			if ( isPoll && ! pollFormSeen &&
-				layerObj.layerElement?.querySelector( '.wp-polls-form' ) ) {
-				pollFormSeen = true;
+			const outcome = checkOutcome();
+			if ( ! outcome ) {
+				return;
 			}
-			const isConfirmed = this.hasConfirmationMessage( layerObj.layerElement );
-			// A Marketo form that could not load (marketo-form.js): let the viewer
-			// continue, even with skip turned off, but record no submission.
-			const isUnavailable = !! layerObj.layerElement?.querySelector( '.godam-marketo-unavailable' );
-			if ( isConfirmed || isUnavailable ) {
-				// Update button text while preserving the arrow icon
-				let textNode = null;
-				for ( let i = 0; i < skipButton.childNodes.length; i++ ) {
-					if ( skipButton.childNodes[ i ].nodeType === Node.TEXT_NODE ) {
-						textNode = skipButton.childNodes[ i ];
-						break;
-					}
-				}
 
-				if ( textNode ) {
-					textNode.textContent = __( 'Continue', 'godam' );
-				} else {
-					// Fallback: if no text node exists, update all content
-					skipButton.textContent = __( 'Continue', 'godam' );
-					skipButton.appendChild( this.createArrowIcon() );
+			// Update button text while preserving the arrow icon
+			let textNode = null;
+			for ( let i = 0; i < skipButton.childNodes.length; i++ ) {
+				if ( skipButton.childNodes[ i ].nodeType === Node.TEXT_NODE ) {
+					textNode = skipButton.childNodes[ i ];
+					break;
 				}
-				skipButton.classList.remove( 'hidden' );
-
-				// Fire the conversion event when the integration's
-				// confirmation appears. For FORM that's `submitted`; for
-				// POLL it's `voted` (WP-Polls confirmation = the form was
-				// replaced by the results view, detected in hasConfirmationMessage
-				// via the .wp-polls-form → .wp-polls-ans transition).
-				// CTA layers don't run this observer — their click events
-				// fire separately via setupCtaClickTracking.
-				// An unavailable form records nothing: no submission happened.
-				if ( isConfirmed && layerObj.layer?.type === LAYER_TYPES.FORM ) {
-					this.emitLayerEvent( layerObj.layer, 'submitted' );
-				} else if ( isConfirmed && isPoll && pollFormSeen ) {
-					// pollFormSeen guards against counting an already-voted
-					// viewer (results shown without a vote this session).
-					this.emitLayerEvent( layerObj.layer, 'voted' );
-				}
-
-				observer.disconnect();
 			}
+
+			if ( textNode ) {
+				textNode.textContent = __( 'Continue', 'godam' );
+			} else {
+				// Fallback: if no text node exists, update all content
+				skipButton.textContent = __( 'Continue', 'godam' );
+				skipButton.appendChild( this.createArrowIcon() );
+			}
+			skipButton.classList.remove( 'hidden' );
+
+			// Fire the conversion event (`submitted` for a form, `voted` for a
+			// poll). A form that could not load records nothing.
+			if ( outcome.converted && layerObj.behaviour.conversionAction ) {
+				this.emitLayerEvent( layerObj.layer, layerObj.behaviour.conversionAction );
+			}
+
+			observer.disconnect();
 		} );
 
 		observer.observe( layerObj.layerElement, {
@@ -448,58 +417,6 @@ export default class FormLayerManager {
 			attributes: true,
 			attributeFilter: [ 'class' ],
 		} );
-	}
-
-	/**
-	 * Check for confirmation messages in various form types
-	 *
-	 * @param {HTMLElement} element - Form element to check for confirmation messages
-	 * @return {boolean} True if confirmation message is found
-	 */
-	hasConfirmationMessage( element ) {
-		const confirmationSelectors = [
-			'.gform_confirmation_message',
-			'.wpforms-confirmation-container-full',
-			'form.wpcf7-form.sent',
-			'.srfm-success-box.srfm-active',
-			'.ff-message-success',
-			'.contact-form-success',
-			'.forminator-success.forminator-show',
-			'.everest-forms-notice--success',
-			// HubSpot: `.submitted-message` / `.hs-form__submitted-message` cover a
-			// non-iframe (Legacy/raw) form; `.godam-hubspot-submitted` is set by
-			// hubspot-form.js onFormSubmitted for the usual iframe-rendered form,
-			// whose success node lives inside the iframe and cannot be queried.
-			'.submitted-message',
-			'.hs-form__submitted-message',
-			'.godam-hubspot-submitted',
-			// Marketo: inserted by marketo-form.js onSuccess (stays on the page).
-			'.godam-marketo-success',
-		];
-
-		// Check for standard selectors
-		if ( confirmationSelectors.some( ( selector ) => element.querySelector( selector ) ) ) {
-			return true;
-		}
-
-		// Special cases
-		const wpPollsForm = element.querySelector( '.wp-polls-form' );
-		const wpPollsResult = element.querySelector( '.wp-polls-ans' );
-		if ( ! wpPollsForm && wpPollsResult ) {
-			return true;
-		}
-
-		const nfResponse = element.querySelector( '.nf-response-msg' );
-		if ( nfResponse && nfResponse.innerHTML !== '' ) {
-			return true;
-		}
-
-		const mfResponse = element.querySelector( '.mf-response-msg>p' );
-		if ( mfResponse && mfResponse.textContent !== '' ) {
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
@@ -514,9 +431,8 @@ export default class FormLayerManager {
 			// as a "Continue" after a successful form submit / poll vote
 			// (label swap in setupFormObserver) — in that case we deliberately
 			// do NOT fire `skipped`, since the conversion event already fired.
-			const layerType = layerObj.layer?.type;
 			const isConversionContinue =
-				( layerType === LAYER_TYPES.FORM || layerType === LAYER_TYPES.POLL ) &&
+				typeof layerObj.behaviour?.watchOutcome === 'function' &&
 				skipButton.textContent &&
 				skipButton.textContent.includes( __( 'Continue', 'godam' ) );
 

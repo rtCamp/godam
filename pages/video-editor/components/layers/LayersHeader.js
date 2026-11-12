@@ -16,7 +16,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { updateLayerField, removeLayer } from '../../redux/slice/videoSlice';
-import { layerTypes } from '../SidebarLayers';
+import { getLayerType, getLayerVariation } from '@godam/layers';
 
 /**
  * Header for the selected layer's configuration panel: an editable layer name,
@@ -42,12 +42,9 @@ const LayersHeader = ( { layer, goBack, layerName: customLayerName } ) => {
 	/**
 	 * Resolve the layer type label (e.g. "CTA", or the specific form integration).
 	 */
-	const layerTypeData = layerTypes.find( ( l ) => l.type === layer.type );
-	const typeLabel = customLayerName || (
-		'form' === layer.type
-			? layerTypeData?.formType[ layer?.form_type ?? 'gravity' ]?.layerText
-			: layerTypeData?.layerText
-	) || '';
+	const layerType = getLayerType( layer.type );
+	const variation = layerType?.variations.length ? getLayerVariation( layerType, layer ) : undefined;
+	const typeLabel = customLayerName || variation?.title || layerType?.label || '';
 
 	const handleDeleteLayer = () => {
 		dispatch( removeLayer( { id: layer.id } ) );

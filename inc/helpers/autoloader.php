@@ -78,6 +78,7 @@ function autoloader( $file_resource = '' ) {
 			case 'wpbakery-elements': // phpcs:ignore
 			case 'addons': // phpcs:ignore
 			case 'abilities': // phpcs:ignore
+			case 'layers': // phpcs:ignore
 				/**
 				 * If there is class name provided for specific directory then load that.
 				 * otherwise find in inc/ directory.

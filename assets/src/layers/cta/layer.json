@@ -1,0 +1,22 @@
+{
+	"apiVersion": 1,
+	"name": "cta",
+	"title": "CTA",
+	"description": "Add a clickable button",
+	"color": "#3858e9",
+	"supports": {
+		"media": [ "video" ],
+		"skip": true
+	},
+	"attributes": {
+		"cta_type": { "type": "string", "default": "image" },
+		"cardLayout": { "type": "string", "default": "card-layout--imagecover-text" },
+		"trigger": { "default": "timestamp" },
+		"watchDepth": { "default": 50 },
+		"html": { "type": "string", "format": "html", "default": "" },
+		"link": { "type": "string", "format": "url", "default": "" },
+		"allow_skip": { "default": true }
+	},
+	"viewScript": "file:./view.js",
+	"textdomain": "godam"
+}
