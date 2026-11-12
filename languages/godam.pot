@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 2.8.1\n"
+"Project-Id-Version: GoDAM 2.9.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-11T09:27:22+00:00\n"
+"POT-Creation-Date: 2026-11-12T07:12:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -20,9 +20,9 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/class-dashboard-widget.php:278
 #: inc/classes/class-dashboard-widget.php:293
-#: inc/classes/class-elementor-widgets.php:240
-#: inc/classes/class-pages.php:186
+#: inc/classes/class-elementor-widgets.php:245
 #: inc/classes/class-pages.php:187
+#: inc/classes/class-pages.php:188
 #: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:72
 #: inc/classes/wpbakery-elements/class-wpb-godam-document.php:106
 #: inc/classes/wpbakery-elements/class-wpb-godam-image.php:72
@@ -66,7 +66,7 @@ msgstr ""
 #: assets/src/blocks/godam-audio/render.php:171
 #: assets/src/blocks/godam-audio/edit.js:687
 #: pages/video-editor/components/audio/AudioCardPreview.js:70
-#: pages/video-editor/VideoEditor.js:684
+#: pages/video-editor/VideoEditor.js:678
 msgid "Untitled audio"
 msgstr ""
 
@@ -113,7 +113,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-audio/render.php:261
 #: assets/build/blocks/godam-audio/index.js:1
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-audio/render.php:261
 #: assets/src/blocks/godam-audio/tabs.js:147
@@ -247,7 +247,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:1
 #: assets/build/blocks/godam-audio/view.js:1
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-audio/tabs.js:194
 #: assets/src/blocks/godam-audio/view.js:124
@@ -464,9 +464,9 @@ msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: godam.php:108
-#: inc/classes/class-pages.php:244
+#: godam.php:109
 #: inc/classes/class-pages.php:245
+#: inc/classes/class-pages.php:246
 #: assets/src/blocks/godam-audio/edit.js:602
 #: pages/video-editor/components/appearance/Appearance.js:113
 #: pages/video-editor/components/editor-shell/EditorTabRail.js:19
@@ -582,7 +582,7 @@ msgstr ""
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:163
 #: assets/src/blocks/godam-gallery-v2/edit.js:716
 #: pages/analytics/Analytics.js:633
-#: pages/video-editor/VideoEditor.js:686
+#: pages/video-editor/VideoEditor.js:680
 msgid "Untitled video"
 msgstr ""
 
@@ -1088,7 +1088,7 @@ msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/index.js:1
 #: assets/build/blocks/godam-player/index.js:5
-#: assets/build/js/godam-player-frontend.min.js:7
+#: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/tools.min.js:1
 #: inc/classes/elementor-widgets/class-godam-gallery.php:78
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:108
@@ -1102,7 +1102,7 @@ msgid "Video"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/view.js:1
-#: assets/build/js/godam-player-frontend.min.js:7
+#: assets/build/js/godam-player-frontend.min.js:1
 #: assets/src/blocks/godam-gallery-v2/view.js:129
 #: assets/src/blocks/godam-gallery-v2/view.js:136
 #: assets/src/js/godam-player/managers/modalManager.js:370
@@ -1110,7 +1110,7 @@ msgid "Video player"
 msgstr ""
 
 #: assets/build/blocks/godam-gallery-v2/view.js:1
-#: assets/build/js/godam-player-frontend.min.js:7
+#: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/onboarding.min.js:2
 #: assets/src/blocks/godam-gallery-v2/view.js:142
 #: assets/src/js/godam-player/managers/modalManager.js:360
@@ -1128,90 +1128,59 @@ msgstr ""
 msgid "Next video"
 msgstr ""
 
-#. translators: %d: hotspot number
-#. translators: %d is the hotspot index
-#: assets/build/blocks/godam-image/index.js:3
-#: assets/build/blocks/godam-image/index.js:5
-#: assets/build/blocks/godam-image/index.js:7
-#: assets/build/js/godam-image-layers-frontend.min.js:3
-#: assets/build/js/godam-image-layers-frontend.min.js:5
-#: assets/build/js/godam-image-layers-frontend.min.js:7
-#: assets/build/js/godam-player-frontend.min.js:3
-#: assets/build/js/godam-player-frontend.min.js:5
-#: assets/build/js/godam-player-frontend.min.js:7
-#: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:791
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:995
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:1003
-#: pages/video-editor/components/layers/HotspotLayer.js:484
-#: pages/video-editor/components/layers/HotspotLayer.js:702
-#, js-format
-msgid "Hotspot %d"
-msgstr ""
-
-#: assets/build/blocks/godam-image/index.js:3
-#: assets/build/js/godam-image-layers-frontend.min.js:3
-#: assets/build/js/godam-player-frontend.min.js:3
-#: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:953
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:200
-#: pages/video-editor/components/layers/HotspotLayer.js:913
-msgid "Custom Icon"
-msgstr ""
-
-#: assets/build/blocks/godam-image/index.js:7
+#: assets/build/blocks/godam-image/index.js:1
 #: assets/src/blocks/godam-image/edit.js:84
 msgid "Only image files are allowed in the GoDAM Image block."
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:7
+#: assets/build/blocks/godam-image/index.js:1
 #: assets/src/blocks/godam-image/edit.js:182
 msgid "Customize Image"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:7
+#: assets/build/blocks/godam-image/index.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-image/edit.js:197
 #: pages/video-editor/components/cta/CardCTA.js:399
 msgid "Remove image"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:7
+#: assets/build/blocks/godam-image/index.js:1
 #: assets/src/blocks/godam-image/edit.js:165
 #: assets/src/blocks/godam-image/edit.js:264
 msgid "Add Image"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:7
+#: assets/build/blocks/godam-image/index.js:1
 #: inc/classes/elementor-widgets/class-godam-image.php:54
 #: assets/src/blocks/godam-image/edit.js:222
 msgid "Image Selection"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:7
+#: assets/build/blocks/godam-image/index.js:1
 #: assets/src/blocks/godam-image/edit.js:224
 msgid "Add hotspot and product layers to make your image stand out."
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:7
+#: assets/build/blocks/godam-image/index.js:1
 #: inc/classes/elementor-widgets/class-godam-image.php:72
 #: assets/src/blocks/godam-image/edit.js:231
 msgid "Show image layers"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:7
+#: assets/build/blocks/godam-image/index.js:1
 #: inc/classes/elementor-widgets/class-godam-image.php:78
 #: assets/src/blocks/godam-image/edit.js:234
 msgid "Overlays the hotspot / product layers authored in the GoDAM image editor."
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:7
+#: assets/build/blocks/godam-image/index.js:1
 #: inc/classes/elementor-widgets/class-godam-image.php:165
 #: assets/src/blocks/godam-image/edit.js:246
 msgid "Add Image Here"
 msgstr ""
 
-#: assets/build/blocks/godam-image/index.js:7
+#: assets/build/blocks/godam-image/index.js:1
 #: assets/src/blocks/godam-image/edit.js:249
 msgid "Upload or select an image from your media library to get started."
 msgstr ""
@@ -1704,8 +1673,8 @@ msgstr ""
 #: inc/classes/wpbakery-elements/class-wpb-godam-video-gallery.php:133
 #: inc/classes/wpbakery-elements/class-wpb-godam-video.php:447
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:302
+#: assets/src/layers/hotspot/edit.js:552
 #: pages/analytics/helper.js:548
-#: pages/video-editor/components/layers/HotspotLayer.js:552
 msgid "Duration"
 msgstr ""
 
@@ -1775,7 +1744,7 @@ msgstr ""
 #: pages/media-library/components/modal/MoveToFolderModal.jsx:335
 #: pages/media-library/components/modal/RenameModal.jsx:104
 #: pages/video-editor/components/chapters/ChapterForm.js:124
-#: pages/video-editor/components/layers/LayersHeader.js:105
+#: pages/video-editor/components/layers/LayersHeader.js:102
 #: pages/video-editor/components/transcription/CaptionCueEditor.js:134
 #: pages/video-editor/components/transcription/CaptionManager.js:436
 #: pages/video-editor/components/transcription/CaptionManager.js:529
@@ -2600,7 +2569,7 @@ msgstr ""
 #: assets/src/js/godam-player/engagement.js:947
 #: pages/media-library/components/context-menu/ContextMenu.jsx:518
 #: pages/media-library/components/modal/DeleteModal.jsx:132
-#: pages/video-editor/components/SidebarLayers.js:777
+#: pages/video-editor/components/SidebarLayers.js:547
 #: pages/video-editor/components/transcription/CaptionManager.js:417
 #: pages/video-editor/components/transcription/CaptionManager.js:444
 #: pages/video-editor/components/transcription/Transcription.js:367
@@ -2704,20 +2673,7 @@ msgid "Mute"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/build/pages/media-library-tour.min.js:1
-#: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/managers/layers/formLayerManager.js:320
-#: pages/media-library-tour/components/FinishModal.jsx:34
-#: pages/video-editor/components/layers/CTALayer.js:266
-msgid "Done"
-msgstr ""
-
-#: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/managers/layers/formLayerManager.js:324
-msgid "Skip Form"
-msgstr ""
-
-#: assets/build/js/godam-player-frontend.min.js:1
+#: assets/build/layers/cta/view.js:1
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/godam.min.js:2
@@ -2725,98 +2681,93 @@ msgstr ""
 #: assets/build/pages/media-library-tour.min.js:1
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/managers/layers/formLayerManager.js:325
-#: assets/src/js/godam-player/managers/layers/formLayerManager.js:329
+#: assets/src/js/godam-player/managers/layers/formLayerManager.js:248
+#: assets/src/layers/cta/edit.js:266
+#: assets/src/layers/cta/view.js:28
 #: pages/godam/components/WooUnlockedNotice.jsx:202
 #: pages/media-library-tour/controller.js:333
 #: pages/video-editor/components/forms/FormPreview.js:90
-#: pages/video-editor/components/layers/CTALayer.js:266
 msgid "Skip"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/managers/layers/formLayerManager.js:326
-msgid "Skip Poll"
-msgstr ""
-
-#: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/onboarding.min.js:2
-#: assets/src/js/godam-player/managers/layers/formLayerManager.js:417
-#: assets/src/js/godam-player/managers/layers/formLayerManager.js:420
-#: assets/src/js/godam-player/managers/layers/formLayerManager.js:521
+#: assets/src/js/godam-player/managers/layers/formLayerManager.js:397
+#: assets/src/js/godam-player/managers/layers/formLayerManager.js:400
+#: assets/src/js/godam-player/managers/layers/formLayerManager.js:437
 #: pages/onboarding/components/screens/WorkspaceScreen.jsx:171
 msgid "Continue"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:7
+#: assets/build/js/godam-player-frontend.min.js:1
 #: assets/src/js/godam-player/managers/modalManager.js:42
 msgid "Play video in a lightbox"
 msgstr ""
 
 #. translators: %d: number of seconds to seek backward
 #. translators: %d: number of seconds to seek forward
-#: assets/build/js/godam-player-frontend.min.js:9
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:3
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/playerManager.js:469
 #: assets/src/js/godam-player/managers/playerManager.js:485
 #, js-format
 msgid "%ds"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/shareManager.js:289
 msgid "Check out this video!"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/shareManager.js:315
 msgid "Share Media"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/shareManager.js:324
 msgid "Page Link"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/shareManager.js:333
 msgid "Start at"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/shareManager.js:337
 msgid "mm:ss"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/shareManager.js:627
 msgid "copy icon"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:348
 msgid "Toggle transcript"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:439
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:441
 msgid "Close transcript"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:512
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:513
 msgid "Search transcript"
 msgstr ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:579
 msgid "No matches"
 msgstr ""
 
 #. translators: %d: number of transcript lines that match the search.
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/src/js/godam-player/managers/transcriptPanelManager.js:582
 #, js-format
 msgid "%d match"
@@ -2824,7 +2775,7 @@ msgid_plural "%d matches"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/build/js/godam-player-frontend.min.js:11
+#: assets/build/js/godam-player-frontend.min.js:5
 #: assets/build/pages/godam.min.js:2
 #: assets/src/js/godam-player/masterSettings.js:264
 msgid "Invalid item"
@@ -3026,8 +2977,8 @@ msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/class-pages.php:221
 #: inc/classes/class-pages.php:222
+#: inc/classes/class-pages.php:223
 #: inc/templates/video-preview.php:103
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:785
 #: assets/src/js/media-library/views/attachment-detail-two-column.js:792
@@ -3190,6 +3141,48 @@ msgstr ""
 #: assets/build/js/wpforms-godam-recorder-editor.min.js:1
 #: assets/src/js/wpforms-godam-recorder-editor.js:20
 msgid "Use this video"
+msgstr ""
+
+#: assets/build/layers/cta/view.js:1
+#: assets/build/pages/media-library-tour.min.js:1
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/edit.js:266
+#: assets/src/layers/cta/view.js:28
+#: pages/media-library-tour/components/FinishModal.jsx:34
+msgid "Done"
+msgstr ""
+
+#: assets/build/layers/form/view.js:1
+#: assets/src/layers/form/view.js:76
+msgid "Skip Form"
+msgstr ""
+
+#. translators: %d: hotspot number
+#. translators: %d is the hotspot index
+#: assets/build/layers/hotspot/view.js:3
+#: assets/build/layers/hotspot/view.js:5
+#: assets/build/layers/hotspot/view.js:7
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:791
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:995
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:1003
+#: assets/src/layers/hotspot/edit.js:484
+#: assets/src/layers/hotspot/edit.js:702
+#, js-format
+msgid "Hotspot %d"
+msgstr ""
+
+#: assets/build/layers/hotspot/view.js:3
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/js/godam-player/managers/layers/hotspotLayerManager.js:953
+#: assets/src/layers/hotspot/edit.js:913
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:200
+msgid "Custom Icon"
+msgstr ""
+
+#: assets/build/layers/poll/view.js:1
+#: assets/src/layers/poll/view.js:48
+msgid "Skip Poll"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
@@ -4131,42 +4124,34 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/editor.js:16
 #: pages/analytics/constants/layerTypes.js:129
-#: pages/video-editor/components/SidebarLayers.js:40
-#: pages/video-editor/components/SidebarLayers.js:43
-#: pages/video-editor/components/SidebarLayers.js:489
-#: pages/video-editor/utils/layerTypes.js:75
 msgid "CTA"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/edit.js:52
+#: assets/src/layers/form/editor.js:28
 #: pages/analytics/constants/layerTypes.js:139
 #: pages/video-editor/components/forms/FormFields.js:49
 #: pages/video-editor/components/forms/HubSpotForm.js:179
 #: pages/video-editor/components/forms/Marketo.js:253
-#: pages/video-editor/components/SidebarLayers.js:508
 msgid "Form"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/editor.js:16
 #: pages/analytics/constants/layerTypes.js:147
-#: pages/video-editor/components/SidebarLayers.js:46
-#: pages/video-editor/components/SidebarLayers.js:49
-#: pages/video-editor/components/SidebarLayers.js:490
-#: pages/video-editor/utils/layerTypes.js:80
 msgid "Hotspot"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/poll/edit.js:42
+#: assets/src/layers/poll/editor.js:16
 #: pages/analytics/constants/layerTypes.js:157
-#: pages/video-editor/components/layers/PollLayer.js:42
-#: pages/video-editor/components/SidebarLayers.js:151
-#: pages/video-editor/components/SidebarLayers.js:154
-#: pages/video-editor/components/SidebarLayers.js:525
-#: pages/video-editor/utils/layerTypes.js:90
 msgid "Poll"
 msgstr ""
 
@@ -5450,8 +5435,8 @@ msgid "vs prev %d days"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: inc/classes/class-pages.php:201
 #: inc/classes/class-pages.php:202
+#: inc/classes/class-pages.php:203
 #: pages/dashboard/Dashboard.js:432
 msgid "Dashboard"
 msgstr ""
@@ -5559,8 +5544,8 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:1
-#: inc/classes/class-pages.php:270
 #: inc/classes/class-pages.php:271
+#: inc/classes/class-pages.php:272
 #: pages/dashboard/components/MarketingCarousel.jsx:94
 #: pages/godam/components/GoDAMFooter.jsx:31
 msgid "What's New"
@@ -6023,13 +6008,12 @@ msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:191
 #: pages/godam/components/tabs/IntegrationsSettings/HubSpotSettings.jsx:139
 #: pages/godam/components/tabs/IntegrationsSettings/HubSpotSettings.jsx:447
 #: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:56
 #: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:57
 #: pages/video-editor/components/forms/HubSpotForm.js:168
-#: pages/video-editor/components/SidebarLayers.js:126
-#: pages/video-editor/utils/layerTypes.js:51
 msgid "HubSpot"
 msgstr ""
 
@@ -6207,11 +6191,10 @@ msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:181
 #: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:47
 #: pages/godam/components/tabs/IntegrationsSettings/integration-tabs.js:48
 #: pages/godam/components/tabs/IntegrationsSettings/MarketoSettings.jsx:285
-#: pages/video-editor/components/SidebarLayers.js:117
-#: pages/video-editor/utils/layerTypes.js:50
 msgid "Marketo"
 msgstr ""
 
@@ -6735,9 +6718,7 @@ msgid "Hotspots"
 msgstr ""
 
 #: assets/build/pages/help.min.js:2
-#: assets/build/pages/video-editor.min.js:2
 #: pages/help/App.js:85
-#: pages/video-editor/components/SidebarLayers.js:52
 msgid "Forms"
 msgstr ""
 
@@ -8526,88 +8507,6 @@ msgid "Chapter %d"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/GravityForm.js:55
-#: pages/video-editor/components/SidebarLayers.js:57
-#: pages/video-editor/utils/layerTypes.js:40
-#: pages/video-editor/utils/layerTypes.js:70
-msgid "Gravity Forms"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/WPForm.js:42
-#: pages/video-editor/components/SidebarLayers.js:63
-#: pages/video-editor/utils/layerTypes.js:41
-msgid "WPForms"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/CF7.js:57
-#: pages/video-editor/components/SidebarLayers.js:69
-#: pages/video-editor/utils/layerTypes.js:42
-msgid "Contact Form 7"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:75
-#: pages/video-editor/utils/layerTypes.js:43
-msgid "Jetpack Forms"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Sureform.js:42
-#: pages/video-editor/components/SidebarLayers.js:81
-#: pages/video-editor/utils/layerTypes.js:44
-msgid "SureForms"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/forminatorForms.js:42
-#: pages/video-editor/components/SidebarLayers.js:87
-#: pages/video-editor/utils/layerTypes.js:45
-msgid "Forminator Forms"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/FluentForm.js:44
-#: pages/video-editor/components/SidebarLayers.js:93
-#: pages/video-editor/utils/layerTypes.js:46
-msgid "Fluent Forms"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: inc/classes/everest-forms/class-everest-forms-integration.php:196
-#: inc/classes/everest-forms/class-everest-forms-integration.php:244
-#: pages/video-editor/components/forms/EverestForm.js:42
-#: pages/video-editor/components/SidebarLayers.js:99
-#: pages/video-editor/utils/layerTypes.js:47
-msgid "Everest Forms"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:541
-#: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:591
-#: pages/video-editor/components/forms/NinjaForm.js:43
-#: pages/video-editor/components/SidebarLayers.js:105
-#: pages/video-editor/utils/layerTypes.js:48
-msgid "Ninja Forms"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/MetForm.js:43
-#: pages/video-editor/components/SidebarLayers.js:111
-#: pages/video-editor/utils/layerTypes.js:49
-msgid "MetForm"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:144
-#: pages/video-editor/components/SidebarLayers.js:147
-#: pages/video-editor/components/SidebarLayers.js:537
-#: pages/video-editor/utils/layerTypes.js:85
-msgid "Ad"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/onboarding/steps.js:37
 #: pages/video-editor/onboarding/steps.js:38
 msgid "Start by adding layers to this video to make it interactive."
@@ -8648,155 +8547,55 @@ msgstr ""
 msgid "Now copy the video to use it in a page."
 msgstr ""
 
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:60
-msgid "Gravity Forms plugin is not active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:66
-msgid "WPForms plugin is not active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:72
-msgid "Contact Form 7 plugin is not active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:78
-msgid "Jetpack plugin is not active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:84
-msgid "SureForms plugin is not active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:90
-msgid "Forminator Forms plugin is not active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:96
-msgid "Fluent Forms plugin is not active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:102
-msgid "Everest Forms plugin is not active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:108
-msgid "Ninja Forms plugin is not active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:114
-msgid "MetForm plugin is not active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:134
-msgid "Turn on HubSpot in Settings → Integrations → HubSpot to use this form"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:137
-msgid "Activate and connect the HubSpot plugin to use this form"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:138
-msgid "Connect HubSpot in Settings → Integrations → HubSpot to use this form"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:148
-msgid "This ad will be overridden by Ad server's ads"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:156
-msgid "Poll plugin is not active"
-msgstr ""
-
 #. translators: %s is the layer type label; e.g. "CTA" produces "CTA Layer".
 #. translators: %s is the layer type label; e.g. "CTA Layer".
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:186
-#: pages/video-editor/components/SidebarLayers.js:740
+#: pages/video-editor/components/SidebarLayers.js:72
+#: pages/video-editor/components/SidebarLayers.js:510
 #, js-format
 msgid "%s Layer"
 msgstr ""
 
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:489
-msgid "Add a clickable button"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:490
-msgid "Add an info hotspot"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:509
-msgid "Embed a lead form"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:513
-msgid "No form plugin is active"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:526
-msgid "Create an interactive poll"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:538
-msgid "Insert an advertisement"
-msgstr ""
-
 #. translators: %d is the number of layers.
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:571
+#: pages/video-editor/components/SidebarLayers.js:340
 #, js-format
 msgid "Layers (%d)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:602
-#: pages/video-editor/components/timeline/Timeline.js:428
+#: pages/video-editor/components/SidebarLayers.js:371
+#: pages/video-editor/components/timeline/Timeline.js:412
 msgid "Add layer"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:659
+#: pages/video-editor/components/SidebarLayers.js:428
 msgid "To add a layer, pick a spot on the timeline where you want the layer."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:680
+#: pages/video-editor/components/SidebarLayers.js:449
 msgid "No layers yet"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:682
+#: pages/video-editor/components/SidebarLayers.js:451
 msgid "Add interactive elements like CTAs, polls, and forms to your video"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:755
+#: pages/video-editor/components/SidebarLayers.js:469
+msgid "This layer needs an add-on that isn't active."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/SidebarLayers.js:525
 msgid "Layer options"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/SidebarLayers.js:767
+#: pages/video-editor/components/SidebarLayers.js:537
 msgid "Duplicate"
 msgstr ""
 
@@ -9024,820 +8823,32 @@ msgid "Editor sections"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/LayersHeader.js:65
-#: pages/video-editor/components/layers/LayersHeader.js:66
-msgid "Layer name"
-msgstr ""
-
-#. translators: %s is the layer display time in seconds.
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/LayersHeader.js:77
-#, js-format
-msgid "%ss"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/LayersHeader.js:90
-#: pages/video-editor/components/layers/LayersHeader.js:96
-#: pages/video-editor/components/layers/LayersHeader.js:113
-msgid "Delete layer"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/FormSelector.js:34
-msgid "Select Form"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/AjaxWarning.js:19
-msgid "AJAX submission is required to prevent the form from reloading the video page on submit."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/AjaxWarning.js:20
-msgid "Make sure it's enabled in your"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/AjaxWarning.js:28
-msgid "form settings"
-msgstr ""
-
-#. translators: %s is the form plugin name, e.g. "Gravity Forms".
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/FormFields.js:58
-#, js-format
-msgid "Please activate the %s plugin to use this feature."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/FormFields.js:74
-msgid "Select Theme"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/FormFields.js:90
-msgid "Edit Form"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/FormPreview.js:53
-#: pages/video-editor/components/forms/HubSpotForm.js:225
-#: pages/video-editor/components/forms/JetpackForm.js:193
-#: pages/video-editor/components/forms/MetForm.js:67
-#: pages/video-editor/components/forms/NinjaForm.js:67
-msgid "Loading form…"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/GravityForm.js:22
-msgid "Orbital"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/GravityForm.js:26
-msgid "Gravity"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:167
-msgid "Jetpack"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:200
-msgid "Error loading form. Please check if the form exists."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:207
-msgid "No form selected or form not found."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:219
-msgid "No Jetpack forms found. Please"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:226
-msgid "create a Jetpack contact form"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/JetpackForm.js:228
-msgid "first."
-msgstr ""
-
-#. translators: %s is a Marketo form ID.
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:95
-#, js-format
-msgid "Form %s"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:205
-msgid "Connect Marketo in Settings → Integrations to preview the form."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:207
-msgid "Select a Marketo form to preview it here."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:209
-msgid "Enter a Marketo Form ID to preview the form here."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:225
-msgid "Loading Marketo form…"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:231
-msgid "Could not load this Marketo form. Check the Form ID and your Marketo connection, and your browser console for Marketo errors."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:260
-msgid "Marketo is not connected, or the integration is turned off, so this form will not show on your videos. Connect and enable Marketo in"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:263
-msgid "Settings → Integrations → Marketo"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:275
-msgid "This site is served over HTTP. Marketo forms can only be submitted on HTTPS pages; on HTTP the submit button stays on \"Please Wait\"."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:288
-msgid "Marketo Form ID"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:290
-msgid "The numeric ID of the Marketo form to embed, e.g. 1234. Add the Client ID and Client Secret in Settings → Integrations → Marketo to pick from a list of your forms instead."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:291
-msgid "The numeric ID of the Marketo form to embed, e.g. 1234."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/Marketo.js:295
-msgid "e.g. 1234"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/HubSpotForm.js:184
-msgid "The HubSpot integration is turned off, so this form will not show on your videos. Turn it on in"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/HubSpotForm.js:187
-#: pages/video-editor/components/forms/HubSpotForm.js:200
-msgid "Settings → Integrations → HubSpot"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/HubSpotForm.js:193
-msgid "Activate and connect the HubSpot plugin to use this form."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/HubSpotForm.js:197
-msgid "HubSpot is not connected, so this form will not show on your videos. Connect HubSpot in"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/HubSpotForm.js:209
-msgid "HubSpot Form ID"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/HubSpotForm.js:210
-msgid "The HubSpot form GUID, e.g. 1a2b3c4d-5e6f-7890-abcd-ef1234567890."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/forms/HubSpotForm.js:213
-msgid "e.g. 1a2b3c4d-5e6f-7890-abcd-ef1234567890"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:174
-msgid "Select Custom Background Image"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:176
-msgid "Use this Background Image"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:268
-#: pages/video-editor/components/cta/CardCTA.js:274
-#: pages/video-editor/components/cta/CardCTA.js:284
-#: pages/video-editor/components/layers/HotspotLayer.js:521
-msgid "Please enter a valid URL (e.g., https://example.com)"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:310
-msgid "Image Left, Text Right (Full Height)"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:311
-msgid "Text Left, Image Right (Full Height)"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:312
-msgid "Image Left, Text Right"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:313
-msgid "Text Left, Image Right"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:314
-msgid "Image Top, Text Bottom"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:315
-msgid "Text Top, Image Bottom"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:316
-msgid "Image Background"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:317
-msgid "Text Only (No Image)"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:338
-msgid "Card Layout"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:79
-#: pages/video-editor/components/cta/CardCTA.js:357
-msgid "Select Image"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:360
-msgid "Recommended size: 100KB"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:376
-msgid "Click to replace image"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:381
-msgid "Replace image"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:386
-msgid "Selected CTA image"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:423
-msgid "Width"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:436
-#: pages/video-editor/components/cta/CardCTA.js:438
-msgid "Card Title"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:441
-msgid "Add title here"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:446
-msgid "Character limit"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:449
-msgid "Your description"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:455
-msgid "Button Settings"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:457
-msgid "Button Title"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: inc/helpers/custom-functions.php:284
-#: pages/video-editor/components/cta/CardCTA.js:460
-#: pages/video-editor/components/layers/CTALayer.js:130
-msgid "Check now"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:464
-msgid "Button Link"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:472
-msgid "Button Colour"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:477
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:53
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:176
-msgid "Text"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:484
-#: pages/video-editor/components/layers/FormLayer.js:165
-#: pages/video-editor/components/layers/HotspotLayer.js:630
-#: pages/video-editor/components/layers/PollLayer.js:75
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:175
-msgid "Background"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/HtmlCTA.js:25
-msgid "Custom HTML"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:27
-msgid "Fixed Timestamp"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:28
-msgid "Appears at a set second"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:32
-msgid "Watch Depth"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:33
-msgid "Fires after the user crosses a watch %"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:37
-msgid "On Pause"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:38
-msgid "Shows when the viewer pauses (single CTA only)"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:42
-msgid "End of Video"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:43
-msgid "Overlays on the final frame when playback ends"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:60
-msgid "CTA Trigger"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:98
-msgid "Another CTA already uses On Pause — only one CTA per video can."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:554
-#: pages/video-editor/components/layers/shared/TriggerSection.jsx:107
-msgid "Start Time"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:85
-msgid "Select or Upload Custom Icon"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:87
-msgid "Use this icon"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:147
-msgid "Search icons…"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:192
-msgid "Add Icon"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:216
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:224
-msgid "Replace icon"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:232
-msgid "Remove icon"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:250
-msgid "Select from library"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:261
-msgid "Add custom"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: inc/classes/elementor-widgets/class-godam-video.php:364
-#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:186
-#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:199
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:46
-msgid "None"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:68
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:47
-msgid "Pulse"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:48
-msgid "Glow"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:54
-msgid "Sticker"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:119
-msgid "Type"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:163
-msgid "Attention animation"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:171
-msgid "Colours"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:177
-msgid "Hover Background"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:178
-msgid "Hover Text"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:185
-msgid "Fill colour"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:189
-msgid "Fill"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:69
-#: pages/video-editor/components/layers/HotspotLayer.js:623
-msgid "Icon"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:70
-msgid "Button"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:96
-msgid "Select / Upload Ad video"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:98
-msgid "Add video"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:160
-msgid "Ad video"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:169
-msgid "This ad will be overridden by the Ad server's ads."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:175
-msgid "Ad Video"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:186
-msgid "Select Ad Video"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:189
-msgid "Upload or choose a self-hosted video (MP4 recommended)."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:196
-msgid "Click to replace video"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:201
-msgid "Replace ad video"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:237
-msgid "Skippable"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:238
-msgid "Allow viewers to skip the ad"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:249
-msgid "Skip after (seconds)"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:250
-msgid "Time in seconds before the skip button appears"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:262
-msgid "Click-through"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:264
-msgid "Click link"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/ads/CustomAdSettings.js:267
-msgid "URL to open when the ad is clicked"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/layers/LayerErrorBoundary.js:46
 msgid "This layer could not be opened. It may be provided by an add-on that needs updating to work with this version of GoDAM."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/layers/LayerErrorBoundary.js:53
+#: pages/video-editor/components/layers/UnregisteredLayerNotice.js:33
 msgid "Back to layers"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/FormLayer.js:146
-#: pages/video-editor/components/layers/HotspotLayer.js:640
-#: pages/video-editor/components/layers/PollLayer.js:57
-msgid "Behaviour"
+#: pages/video-editor/components/layers/UnregisteredLayerNotice.js:21
+msgid "This layer needs an add-on that isn't active. It is kept as it was; activate the add-on to edit it, or delete it."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/FormLayer.js:149
-#: pages/video-editor/components/layers/PollLayer.js:60
-msgid "Allow user to skip"
+#: pages/video-editor/components/layers/LayersHeader.js:87
+#: pages/video-editor/components/layers/LayersHeader.js:93
+#: pages/video-editor/components/layers/LayersHeader.js:110
+#: pages/video-editor/components/layers/UnregisteredLayerNotice.js:28
+msgid "Delete layer"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/FormLayer.js:154
-msgid "If enabled, the user will be able to skip the form submission."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/FormLayer.js:160
-#: pages/video-editor/components/layers/PollLayer.js:70
-msgid "Background Colour"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:57
-msgid "Card Style"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:57
-msgid "Perfect for everyone"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:58
-msgid "HTML"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:58
-msgid "Great for developers"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:207
-msgid "Call To Action"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:227
-msgid "Advanced"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:228
-msgid "Layer Background Colour"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/CTALayer.js:231
-msgid "Layer background color"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: inc/helpers/custom-functions.php:309
-#: pages/video-editor/components/layers/CTALayer.js:109
-msgid "No Image"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:250
-msgid "New Hotspot"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:464
-msgid "Add Hotspots"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:468
-msgid "Drag the hotspot in video to reposition it."
-msgstr ""
-
-#. translators: %d is the hotspot index
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:492
-#, js-format
-msgid "Delete Hotspot %d"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:516
-#: pages/video-editor/components/layers/HotspotLayer.js:511
-msgid "Button Text"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:511
-msgid "Tooltip Text"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:512
-msgid "Click here"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:512
-msgid "Click Me!"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:518
-msgid "Link"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:545
-msgid "Add Hotspot"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:561
-msgid "Layer Duration (seconds)"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:202
-msgid "Layer duration exceeds the remaining video length. Please reduce the duration."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:568
-msgid "Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:574
-msgid "Style"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:584
-msgid "Each hotspot is a button. Set its type, text, colours and animation in the hotspot cards above."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:605
-msgid "Pulse colour"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:643
-msgid "Pause video when hotspot is hovered"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/HotspotLayer.js:646
-msgid "Player will pause the video while the layer is displayed and users hover over the hotspots."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/AdsLayer.js:51
-msgid "Self hosted video Ad"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/PollLayer.js:48
-msgid "Select Poll"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/PollLayer.js:65
-msgid "If enabled, the user will be able to skip the poll."
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/Layer.js:86
+#: pages/video-editor/components/layers/Layer.js:52
 msgid "Loading layer…"
-msgstr ""
-
-#: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/layers/Layer.js:90
-msgid "Error: No layer components registered"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
@@ -10400,22 +9411,22 @@ msgid "Could not remove the transcript."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/timeline/Timeline.js:399
+#: pages/video-editor/components/timeline/Timeline.js:383
 msgid "Click to add layer"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/timeline/Timeline.js:424
+#: pages/video-editor/components/timeline/Timeline.js:408
 msgid "Add layer at this time"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:685
+#: pages/video-editor/VideoEditor.js:679
 msgid "Untitled image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:506
+#: pages/video-editor/VideoEditor.js:500
 msgid "Please select a form for the layer at timestamp:"
 msgid_plural "Please select a form for the layers at timestamps:"
 msgstr[0] ""
@@ -10423,48 +9434,48 @@ msgstr[1] ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:487
-#: pages/video-editor/VideoEditor.js:556
+#: pages/video-editor/VideoEditor.js:550
 msgid "GoDAM block copied to clipboard"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:488
-#: pages/video-editor/VideoEditor.js:559
+#: pages/video-editor/VideoEditor.js:553
 msgid "Failed to copy GoDAM block"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:602
+#: pages/video-editor/VideoEditor.js:596
 msgid "Edit video metadata"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:604
+#: pages/video-editor/VideoEditor.js:598
 msgid "Edit image metadata"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:606
+#: pages/video-editor/VideoEditor.js:600
 msgid "Edit audio metadata"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:608
+#: pages/video-editor/VideoEditor.js:602
 msgid "Edit metadata"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:634
+#: pages/video-editor/VideoEditor.js:628
 msgid "Title updated"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:638
+#: pages/video-editor/VideoEditor.js:632
 msgid "Failed to update title"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/VideoEditor.js:746
+#: pages/video-editor/VideoEditor.js:740
 msgid "Changes saved successfully"
 msgstr ""
 
@@ -10577,8 +9588,8 @@ msgid "Last edited %s"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/class-pages.php:211
 #: inc/classes/class-pages.php:212
+#: inc/classes/class-pages.php:213
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:648
 msgid "Media Editor"
 msgstr ""
@@ -10745,6 +9756,981 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/video-editor/onboarding/ProductGuide.jsx:243
 msgid "We’ll open a new draft page and drop the video right in."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/LayersHeader.js:62
+#: pages/video-editor/components/layers/LayersHeader.js:63
+msgid "Layer name"
+msgstr ""
+
+#. translators: %s is the layer display time in seconds.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/LayersHeader.js:74
+#, js-format
+msgid "%ss"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:85
+msgid "Select or Upload Custom Icon"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:87
+msgid "Use this icon"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:147
+msgid "Search icons…"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:192
+msgid "Add Icon"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:216
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:224
+msgid "Replace icon"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:232
+msgid "Remove icon"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:250
+msgid "Select from library"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:261
+msgid "Add custom"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:174
+msgid "Select Custom Background Image"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:176
+msgid "Use this Background Image"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:521
+#: pages/video-editor/components/ads/CustomAdSettings.js:268
+#: pages/video-editor/components/cta/CardCTA.js:274
+#: pages/video-editor/components/cta/CardCTA.js:284
+msgid "Please enter a valid URL (e.g., https://example.com)"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:310
+msgid "Image Left, Text Right (Full Height)"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:311
+msgid "Text Left, Image Right (Full Height)"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:312
+msgid "Image Left, Text Right"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:313
+msgid "Text Left, Image Right"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:314
+msgid "Image Top, Text Bottom"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:315
+msgid "Text Top, Image Bottom"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:316
+msgid "Image Background"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:317
+msgid "Text Only (No Image)"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:338
+msgid "Card Layout"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: inc/classes/wpbakery-elements/class-wpb-godam-image.php:79
+#: pages/video-editor/components/cta/CardCTA.js:357
+msgid "Select Image"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:360
+msgid "Recommended size: 100KB"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:376
+msgid "Click to replace image"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:381
+msgid "Replace image"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:386
+msgid "Selected CTA image"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:423
+msgid "Width"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:436
+#: pages/video-editor/components/cta/CardCTA.js:438
+msgid "Card Title"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:441
+msgid "Add title here"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:446
+msgid "Character limit"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:449
+msgid "Your description"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:455
+msgid "Button Settings"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:457
+msgid "Button Title"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: inc/helpers/custom-functions.php:284
+#: assets/src/layers/cta/edit.js:130
+#: pages/video-editor/components/cta/CardCTA.js:460
+msgid "Check now"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:464
+msgid "Button Link"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:472
+msgid "Button Colour"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/CardCTA.js:477
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:53
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:176
+msgid "Text"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/edit.js:82
+#: assets/src/layers/hotspot/edit.js:630
+#: assets/src/layers/poll/edit.js:75
+#: pages/video-editor/components/cta/CardCTA.js:484
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:175
+msgid "Background"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/cta/HtmlCTA.js:25
+msgid "Custom HTML"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:27
+msgid "Fixed Timestamp"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:28
+msgid "Appears at a set second"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:32
+msgid "Watch Depth"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:33
+msgid "Fires after the user crosses a watch %"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:37
+msgid "On Pause"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:38
+msgid "Shows when the viewer pauses (single CTA only)"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:42
+msgid "End of Video"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:43
+msgid "Overlays on the final frame when playback ends"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:60
+msgid "CTA Trigger"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:98
+msgid "Another CTA already uses On Pause — only one CTA per video can."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:554
+#: pages/video-editor/components/layers/shared/TriggerSection.jsx:107
+msgid "Start Time"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/editor.js:17
+msgid "Add a clickable button"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/edit.js:57
+msgid "Card Style"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/edit.js:57
+msgid "Perfect for everyone"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/edit.js:58
+msgid "HTML"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/edit.js:58
+msgid "Great for developers"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/edit.js:207
+msgid "Call To Action"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/edit.js:227
+msgid "Advanced"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/edit.js:228
+msgid "Layer Background Colour"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/cta/edit.js:231
+msgid "Layer background color"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: inc/helpers/custom-functions.php:309
+#: assets/src/layers/cta/edit.js:109
+msgid "No Image"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: inc/classes/elementor-widgets/class-godam-video.php:364
+#: inc/classes/wpbakery-elements/class-wpb-godam-audio.php:186
+#: inc/classes/wpbakery-elements/class-wpb-godam-video.php:199
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:46
+msgid "None"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:68
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:47
+msgid "Pulse"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:48
+msgid "Glow"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:54
+msgid "Sticker"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:119
+msgid "Type"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:163
+msgid "Attention animation"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:171
+msgid "Colours"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:177
+msgid "Hover Background"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:178
+msgid "Hover Text"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:185
+msgid "Fill colour"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:189
+msgid "Fill"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:69
+#: assets/src/layers/hotspot/edit.js:623
+msgid "Icon"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:70
+msgid "Button"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/editor.js:17
+msgid "Add an info hotspot"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:250
+msgid "New Hotspot"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:464
+msgid "Add Hotspots"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:468
+msgid "Drag the hotspot in video to reposition it."
+msgstr ""
+
+#. translators: %d is the hotspot index
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:492
+#, js-format
+msgid "Delete Hotspot %d"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:516
+#: assets/src/layers/hotspot/edit.js:511
+msgid "Button Text"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:511
+msgid "Tooltip Text"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:512
+msgid "Click here"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:512
+msgid "Click Me!"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:518
+msgid "Link"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:545
+msgid "Add Hotspot"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:561
+msgid "Layer Duration (seconds)"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:202
+msgid "Layer duration exceeds the remaining video length. Please reduce the duration."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:568
+msgid "Duration (in seconds) this layer will stay visible. Maximum: 10 hours (36000 seconds)"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:574
+msgid "Style"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:584
+msgid "Each hotspot is a button. Set its type, text, colours and animation in the hotspot cards above."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:605
+msgid "Pulse colour"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/edit.js:63
+#: assets/src/layers/hotspot/edit.js:640
+#: assets/src/layers/poll/edit.js:57
+msgid "Behaviour"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:643
+msgid "Pause video when hotspot is hovered"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/hotspot/edit.js:646
+msgid "Player will pause the video while the layer is displayed and users hover over the hotspots."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/FormSelector.js:34
+msgid "Select Form"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/AjaxWarning.js:19
+msgid "AJAX submission is required to prevent the form from reloading the video page on submit."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/AjaxWarning.js:20
+msgid "Make sure it's enabled in your"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/AjaxWarning.js:28
+msgid "form settings"
+msgstr ""
+
+#. translators: %s is the form plugin name, e.g. "Gravity Forms".
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/FormFields.js:58
+#, js-format
+msgid "Please activate the %s plugin to use this feature."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/FormFields.js:74
+msgid "Select Theme"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/FormFields.js:90
+msgid "Edit Form"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/FormPreview.js:53
+#: pages/video-editor/components/forms/HubSpotForm.js:225
+#: pages/video-editor/components/forms/JetpackForm.js:193
+#: pages/video-editor/components/forms/MetForm.js:67
+#: pages/video-editor/components/forms/NinjaForm.js:67
+msgid "Loading form…"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/FormProviderPanel.js:82
+msgid "The form could not be loaded."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/editor.js:29
+msgid "Embed a lead form"
+msgstr ""
+
+#. translators: %s is a form provider name stored on the layer, e.g. "acme-forms".
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/edit.js:56
+#, js-format
+msgid "This layer uses the \"%s\" form, which isn't available. Activate the add-on that provides it, or delete the layer."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/edit.js:66
+#: assets/src/layers/poll/edit.js:60
+msgid "Allow user to skip"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/edit.js:71
+msgid "If enabled, the user will be able to skip the form submission."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/edit.js:77
+#: assets/src/layers/poll/edit.js:70
+msgid "Background Colour"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/editor.js:36
+msgid "No form plugin is active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/poll/editor.js:17
+msgid "Create an interactive poll"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/poll/edit.js:48
+msgid "Select Poll"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/poll/edit.js:65
+msgid "If enabled, the user will be able to skip the poll."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/poll/editor.js:23
+msgid "Poll plugin is not active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:96
+msgid "Select / Upload Ad video"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:98
+msgid "Add video"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:160
+msgid "Ad video"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:169
+msgid "This ad will be overridden by the Ad server's ads."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:175
+msgid "Ad Video"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:186
+msgid "Select Ad Video"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:189
+msgid "Upload or choose a self-hosted video (MP4 recommended)."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:196
+msgid "Click to replace video"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:201
+msgid "Replace ad video"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:237
+msgid "Skippable"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:238
+msgid "Allow viewers to skip the ad"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:249
+msgid "Skip after (seconds)"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:250
+msgid "Time in seconds before the skip button appears"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:262
+msgid "Click-through"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:264
+msgid "Click link"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/ads/CustomAdSettings.js:267
+msgid "URL to open when the ad is clicked"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/ad/editor.js:16
+msgid "Ad"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/ad/editor.js:17
+msgid "Insert an advertisement"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/ad/edit.js:51
+msgid "Self hosted video Ad"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/ad/editor.js:24
+msgid "This ad will be overridden by Ad server's ads"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/GravityForm.js:22
+msgid "Orbital"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/GravityForm.js:26
+msgid "Gravity"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:78
+#: pages/video-editor/components/forms/GravityForm.js:55
+msgid "Gravity Forms"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:89
+#: pages/video-editor/components/forms/WPForm.js:42
+msgid "WPForms"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: inc/classes/everest-forms/class-everest-forms-integration.php:196
+#: inc/classes/everest-forms/class-everest-forms-integration.php:244
+#: assets/src/layers/form/providers.js:149
+#: pages/video-editor/components/forms/EverestForm.js:42
+msgid "Everest Forms"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:99
+#: pages/video-editor/components/forms/CF7.js:57
+msgid "Contact Form 7"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/JetpackForm.js:167
+msgid "Jetpack"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/JetpackForm.js:200
+msgid "Error loading form. Please check if the form exists."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/JetpackForm.js:207
+msgid "No form selected or form not found."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/JetpackForm.js:219
+msgid "No Jetpack forms found. Please"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/JetpackForm.js:226
+msgid "create a Jetpack contact form"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/JetpackForm.js:228
+msgid "first."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:119
+#: pages/video-editor/components/forms/Sureform.js:42
+msgid "SureForms"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:139
+#: pages/video-editor/components/forms/FluentForm.js:44
+msgid "Fluent Forms"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:169
+#: pages/video-editor/components/forms/MetForm.js:43
+msgid "MetForm"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:129
+#: pages/video-editor/components/forms/forminatorForms.js:42
+msgid "Forminator Forms"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:541
+#: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:591
+#: assets/src/layers/form/providers.js:159
+#: pages/video-editor/components/forms/NinjaForm.js:43
+msgid "Ninja Forms"
+msgstr ""
+
+#. translators: %s is a Marketo form ID.
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:95
+#, js-format
+msgid "Form %s"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:205
+msgid "Connect Marketo in Settings → Integrations to preview the form."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:207
+msgid "Select a Marketo form to preview it here."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:209
+msgid "Enter a Marketo Form ID to preview the form here."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:225
+msgid "Loading Marketo form…"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:231
+msgid "Could not load this Marketo form. Check the Form ID and your Marketo connection, and your browser console for Marketo errors."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:260
+msgid "Marketo is not connected, or the integration is turned off, so this form will not show on your videos. Connect and enable Marketo in"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:263
+msgid "Settings → Integrations → Marketo"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:275
+msgid "This site is served over HTTP. Marketo forms can only be submitted on HTTPS pages; on HTTP the submit button stays on \"Please Wait\"."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:288
+msgid "Marketo Form ID"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:290
+msgid "The numeric ID of the Marketo form to embed, e.g. 1234. Add the Client ID and Client Secret in Settings → Integrations → Marketo to pick from a list of your forms instead."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:291
+msgid "The numeric ID of the Marketo form to embed, e.g. 1234."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/Marketo.js:295
+msgid "e.g. 1234"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/HubSpotForm.js:184
+msgid "The HubSpot integration is turned off, so this form will not show on your videos. Turn it on in"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/HubSpotForm.js:187
+#: pages/video-editor/components/forms/HubSpotForm.js:200
+msgid "Settings → Integrations → HubSpot"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/HubSpotForm.js:193
+msgid "Activate and connect the HubSpot plugin to use this form."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/HubSpotForm.js:197
+msgid "HubSpot is not connected, so this form will not show on your videos. Connect HubSpot in"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/HubSpotForm.js:209
+msgid "HubSpot Form ID"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/HubSpotForm.js:210
+msgid "The HubSpot form GUID, e.g. 1a2b3c4d-5e6f-7890-abcd-ef1234567890."
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: pages/video-editor/components/forms/HubSpotForm.js:213
+msgid "e.g. 1a2b3c4d-5e6f-7890-abcd-ef1234567890"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:62
+msgid "Turn on HubSpot in Settings → Integrations → HubSpot to use this form"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:65
+msgid "Activate and connect the HubSpot plugin to use this form"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:66
+msgid "Connect HubSpot in Settings → Integrations → HubSpot to use this form"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:82
+msgid "Gravity Forms plugin is not active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:92
+msgid "WPForms plugin is not active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:102
+msgid "Contact Form 7 plugin is not active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:109
+msgid "Jetpack Forms"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:112
+msgid "Jetpack plugin is not active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:122
+msgid "SureForms plugin is not active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:132
+msgid "Forminator Forms plugin is not active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:142
+msgid "Fluent Forms plugin is not active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:152
+msgid "Everest Forms plugin is not active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:162
+msgid "Ninja Forms plugin is not active"
+msgstr ""
+
+#: assets/build/pages/video-editor.min.js:2
+#: assets/src/layers/form/providers.js:172
+msgid "MetForm plugin is not active"
 msgstr ""
 
 #: assets/build/pages/whats-new.min.js:1
@@ -11642,7 +11628,7 @@ msgstr ""
 msgid "This form could not be loaded."
 msgstr ""
 
-#: inc/classes/class-assets.php:98
+#: inc/classes/class-assets.php:99
 msgid "No video found for attachment ID"
 msgstr ""
 
@@ -12104,29 +12090,29 @@ msgstr ""
 msgid "You are not allowed to dismiss this offer."
 msgstr ""
 
-#: inc/classes/class-pages.php:233
 #: inc/classes/class-pages.php:234
+#: inc/classes/class-pages.php:235
 msgid "Tools"
 msgstr ""
 
-#: inc/classes/class-pages.php:254
 #: inc/classes/class-pages.php:255
+#: inc/classes/class-pages.php:256
 msgid "Help"
 msgstr ""
 
-#: inc/classes/class-pages.php:467
+#: inc/classes/class-pages.php:468
 msgid "Sorry, you are not allowed to edit this item."
 msgstr ""
 
-#: inc/classes/class-pages.php:875
+#: inc/classes/class-pages.php:899
 msgid "Your last request is still being processed. Please wait a while ..."
 msgstr ""
 
-#: inc/classes/class-pages.php:876
+#: inc/classes/class-pages.php:900
 msgid "Please choose a valid poll answer."
 msgstr ""
 
-#: inc/classes/class-pages.php:877
+#: inc/classes/class-pages.php:901
 msgid "Maximum number of choices allowed: "
 msgstr ""
 
@@ -12872,6 +12858,32 @@ msgstr ""
 #: inc/classes/gravity-forms/class-init.php:314
 #: inc/helpers/custom-functions.php:1810
 msgid "Gravity forms"
+msgstr ""
+
+#: inc/classes/layers/class-layer-type-registry.php:126
+msgid "Layer type metadata could not be read."
+msgstr ""
+
+#: inc/classes/layers/class-layer-type-registry.php:147
+msgid "A layer type needs a name."
+msgstr ""
+
+#. translators: %s: layer type name.
+#: inc/classes/layers/class-layer-type-registry.php:153
+#, php-format
+msgid "Layer type \"%s\" is already registered."
+msgstr ""
+
+#. translators: %s: layer type name.
+#: inc/classes/layers/class-layer-type-registry.php:225
+#, php-format
+msgid "A variation of layer type \"%s\" needs a name."
+msgstr ""
+
+#. translators: 1: variation name, 2: layer type name.
+#: inc/classes/layers/class-layer-type-registry.php:237
+#, php-format
+msgid "Variation \"%1$s\" of layer type \"%2$s\" is already registered."
 msgstr ""
 
 #: inc/classes/lifter-lms/class-llms-av-integration-godam.php:117
