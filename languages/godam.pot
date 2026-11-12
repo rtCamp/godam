@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-12T18:00:16+00:00\n"
+"POT-Creation-Date: 2026-11-12T18:24:31+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -11921,7 +11921,7 @@ msgid "Add media to a page"
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:73
-msgid "Add a GoDAM block for a media item to the end of an existing page or post, or create a new one with it. When the person names a page that may already exist, pass it as page (its URL, path or exact title) rather than title: title always creates a new page. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it."
+msgid "Add a GoDAM block for a media item to the end of an existing page or post, or create a new one with it. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one existing page you can edit adds to that page instead of creating a duplicate. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it."
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:81
@@ -11941,7 +11941,7 @@ msgid "Existing page or post to add the media to, by its URL, its path (such as 
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:105
-msgid "Title of a new page or post to create. Only for a page that does not exist yet; for an existing one use page or post_id."
+msgid "Title of a new page or post to create. If exactly one page of this type with this title already exists and you can edit it, the media is added to it instead."
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:115
@@ -11964,50 +11964,50 @@ msgstr ""
 msgid "When the player scrolls out of view: off (do nothing), autoplay (pause autoplaying videos only), pause (pause all videos) or mute (keep playing, muted). Empty or omitted uses the site setting from godam/get-site-settings."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:207
+#: inc/classes/abilities/class-block-abilities.php:218
 msgid "No page or post you can edit matches that URL, path or title. Give the page's full URL or exact title, or its post_id."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:213
+#: inc/classes/abilities/class-block-abilities.php:224
 msgid "No page or post you can edit matches that URL, path or title."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:221
+#: inc/classes/abilities/class-block-abilities.php:232
 msgid "post_id is not a page or post on this site. Give the ID of an existing page or post, or leave post_id out and give a title to create a new page."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:232
+#: inc/classes/abilities/class-block-abilities.php:243
 msgid "Give a title for the new page, or a post_id to add the media to."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:269
+#: inc/classes/abilities/class-block-abilities.php:280
 msgid "Both autoplay and lightbox are saved on the block, as the editor allows. On the page the lightbox wins: the video shows as a poster and starts playing when the viewer opens it."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:291
+#: inc/classes/abilities/class-block-abilities.php:302
 msgid "Give either media_id for one media item, or media_ids for a gallery of videos."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:296
+#: inc/classes/abilities/class-block-abilities.php:307
 msgid "player settings apply to a single video, not to a gallery. Leave player out, or use media_id with one video."
 msgstr ""
 
 #. translators: %s: media type, e.g. image.
-#: inc/classes/abilities/class-block-abilities.php:312
+#: inc/classes/abilities/class-block-abilities.php:323
 #, php-format
 msgid "player settings apply to videos only; this media item is %s. Leave player out."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:535
+#: inc/classes/abilities/class-block-abilities.php:546
 msgid "The GoDAM Document block shows PDF, Word, Excel, PowerPoint, OpenDocument, TXT and CSV files; this file is none of those. Use godam/list-media with type document to find another file."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:566
+#: inc/classes/abilities/class-block-abilities.php:577
 msgid "A gallery needs at least two different videos. Use media_id for one."
 msgstr ""
 
 #. translators: %d: attachment ID.
-#: inc/classes/abilities/class-block-abilities.php:580
+#: inc/classes/abilities/class-block-abilities.php:591
 #, php-format
 msgid "Media ID %d is not a video; galleries hold videos only. Remove it from media_ids, or use godam/list-media with type video to find video IDs."
 msgstr ""

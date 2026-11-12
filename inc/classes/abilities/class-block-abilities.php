@@ -70,7 +70,7 @@ class Block_Abilities extends Ability_Group {
 			'godam/add-media-to-page',
 			array(
 				'label'               => __( 'Add media to a page', 'godam' ),
-				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post, or create a new one with it. When the person names a page that may already exist, pass it as page (its URL, path or exact title) rather than title: title always creates a new page. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
+				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post, or create a new one with it. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one existing page you can edit adds to that page instead of creating a duplicate. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
 				'category'            => 'godam-player',
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -102,7 +102,7 @@ class Block_Abilities extends Ability_Group {
 						),
 						'title'     => array(
 							'type'        => 'string',
-							'description' => __( 'Title of a new page or post to create. Only for a page that does not exist yet; for an existing one use page or post_id.', 'godam' ),
+							'description' => __( 'Title of a new page or post to create. If exactly one page of this type with this title already exists and you can edit it, the media is added to it instead.', 'godam' ),
 						),
 						'post_type' => array(
 							'type'    => 'string',
@@ -196,6 +196,17 @@ class Block_Abilities extends Ability_Group {
 
 		if ( is_wp_error( $block ) ) {
 			return $block;
+		}
+
+		// Agents often pass an existing page's name as title. When exactly one page
+		// of that type with that title exists and the user can edit it, add to that
+		// page instead of creating a duplicate.
+		if ( empty( $input['post_id'] ) && empty( $input['page'] ) && ! empty( $input['title'] ) ) {
+			$existing = $this->find_by_exact_title( (string) $input['title'], (string) ( $input['post_type'] ?? 'page' ) );
+
+			if ( $existing ) {
+				$input['post_id'] = $existing;
+			}
 		}
 
 		if ( empty( $input['post_id'] ) && ! empty( $input['page'] ) ) {
@@ -777,5 +788,58 @@ class Block_Abilities extends Ability_Group {
 		$ids = array_values( array_filter( array_map( $editable, $ids ) ) );
 
 		return 1 === count( $ids ) ? $ids[0] : 0;
+	}
+
+	/**
+	 * Finds the one page or post of a type with exactly this title that the user can edit.
+	 *
+	 * Published items are preferred over drafts; when two or more editable items share
+	 * the title, none is returned, so the caller creates a new one as asked.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $title     Exact title.
+	 * @param string $post_type 'page' or 'post'.
+	 *
+	 * @return int Post ID, or 0.
+	 */
+	private function find_by_exact_title( $title, $post_type ) {
+		$title = trim( sanitize_text_field( $title ) );
+
+		if ( '' === $title || ! in_array( $post_type, self::POST_TYPES, true ) ) {
+			return 0;
+		}
+
+		foreach ( array( array( 'publish' ), array( 'draft', 'pending', 'private', 'future' ) ) as $statuses ) {
+			$ids = get_posts(
+				array(
+					'post_type'      => $post_type,
+					'post_status'    => $statuses,
+					'title'          => $title,
+					'posts_per_page' => 3,
+					'fields'         => 'ids',
+					'no_found_rows'  => true,
+				)
+			);
+
+			$ids = array_values(
+				array_filter(
+					$ids,
+					static function ( $id ) {
+						return current_user_can( 'edit_post', $id ); // godam-coverage-ignore -- find_by_exact_title(): a host page or post, never an attachment.
+					}
+				)
+			);
+
+			if ( 1 === count( $ids ) ) {
+				return (int) $ids[0];
+			}
+
+			if ( count( $ids ) > 1 ) {
+				return 0;
+			}
+		}
+
+		return 0;
 	}
 }
