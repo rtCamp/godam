@@ -1604,6 +1604,82 @@ class Media_Library_Ajax {
 	}
 
 	/**
+	 * Build an image's srcset from its GoDAM CDN sizes, with WordPress core's rules.
+	 *
+	 * Like core's `wp_calculate_image_srcset()`, a size is listed only when it has the
+	 * shape of the image being shown (`wp_image_matches_ratio()`), so a square crop is
+	 * never offered for a landscape or portrait image and stretched to fit. Sizes wider
+	 * than `max_srcset_image_width` are left out. The full-size CDN file is added too:
+	 * the CDN's sizes can stop at 768px, and without the full file a large or high-DPI
+	 * screen could only get the 768px copy.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $rtgodam_image_sizes CDN size map keyed by size name.
+	 * @param array $size_array          The displayed size as [width, height].
+	 * @param array $image_meta          The image meta data.
+	 * @param int   $attachment_id       The image attachment ID.
+	 *
+	 * @return array|false Sources keyed by width, or false when fewer than two fit.
+	 */
+	private function build_cdn_srcset_sources( $rtgodam_image_sizes, $size_array, $image_meta, $attachment_id ) {
+		$shown_width  = isset( $size_array[0] ) ? absint( $size_array[0] ) : 0;
+		$shown_height = isset( $size_array[1] ) ? absint( $size_array[1] ) : 0;
+		if ( ! $shown_width || ! $shown_height ) {
+			return false;
+		}
+
+		/** This filter is documented in wp-includes/media.php */
+		$max_width = apply_filters( 'max_srcset_image_width', 2048, $size_array );
+
+		$candidates = array_values( $rtgodam_image_sizes );
+
+		// The full-size file on the CDN.
+		$full_url = get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+		if ( ! empty( $full_url ) && ! empty( $image_meta['width'] ) && ! empty( $image_meta['height'] ) ) {
+			$candidates[] = array(
+				'url'    => $full_url,
+				'width'  => $image_meta['width'],
+				'height' => $image_meta['height'],
+			);
+		}
+
+		// Keyed by width to deduplicate, as core does.
+		$sources = array();
+		foreach ( $candidates as $candidate ) {
+			if ( ! is_array( $candidate ) || empty( $candidate['url'] ) ) {
+				continue;
+			}
+
+			$width  = absint( $candidate['width'] ?? 0 );
+			$height = absint( $candidate['height'] ?? 0 );
+
+			// A size of unknown shape could be a crop, so it is left out.
+			if ( ! $width || ! $height || isset( $sources[ $width ] ) ) {
+				continue;
+			}
+
+			// Core keeps the size being shown even when it is wider than the limit.
+			if ( $max_width && $width > $max_width && $width !== $shown_width ) {
+				continue;
+			}
+
+			if ( ! wp_image_matches_ratio( $shown_width, $shown_height, $width, $height ) ) {
+				continue;
+			}
+
+			$sources[ $width ] = array(
+				'url'        => esc_url( $candidate['url'] ),
+				'descriptor' => 'w',
+				'value'      => $width,
+			);
+		}
+
+		// Core prints a srcset only when there is more than one source.
+		return count( $sources ) > 1 ? $sources : false;
+	}
+
+	/**
 	 * Filter srcset calculation for virtual media to use full URLs.
 	 *
 	 * @since 1.5.0
@@ -1649,25 +1725,7 @@ class Media_Library_Ajax {
 			// If rtgodam_image_sizes meta exists, use it to build the srcset.
 			// This is the case for GoDAM-managed images which may not be virtual but still need correct srcset URLs.
 			if ( ! empty( $rtgodam_image_sizes ) ) {
-
-				// Prepare new sources array based on rtgodam_image_sizes meta.
-				// Keyed by width to deduplicate and match WordPress's expected format.
-				$new_sources = array();
-				foreach ( $rtgodam_image_sizes as $image_size ) {
-					// Skip entries that do not have a valid URL or width to avoid invalid srcset entries.
-					if ( empty( $image_size['url'] ) || empty( $image_size['width'] ) ) {
-						continue;
-					}
-
-					$width                 = intval( $image_size['width'] );
-					$new_sources[ $width ] = array(
-						'url'        => esc_url( $image_size['url'] ),
-						'descriptor' => 'w',
-						'value'      => $width,
-					);
-				}
-
-				$sources = $new_sources;
+				$sources = $this->build_cdn_srcset_sources( $rtgodam_image_sizes, $size_array, $image_meta, $attachment_id );
 			} elseif ( ! empty( $godam_original_id ) ) {
 				// Compatibility handling for virtual media created before GoDAM image sizes meta was implemented.
 				// In this case, we will reconstruct the URLs based on the original image URL and the file names in the sources array.
