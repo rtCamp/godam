@@ -237,7 +237,9 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 		}
 
 		// For regular WordPress media, fetch from the API.
-		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
+		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ), {
+			headers: { 'X-WP-Nonce': window.videoData?.nonce },
+		} )
 			.then( ( response ) => {
 				if ( ! response.ok ) {
 					throw new Error( 'Media not found' );

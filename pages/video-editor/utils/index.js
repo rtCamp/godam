@@ -234,6 +234,7 @@ async function fetchMediaData( attachmentId ) {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
+				'X-WP-Nonce': window.videoData?.nonce,
 			},
 		} );
 		if ( ! response.ok ) {
