@@ -1,6 +1,7 @@
 <?php
 /**
- * Tests that godam/import-media-from-url keeps to the Media Library's upload size limit.
+ * Tests that godam/import-media-from-url keeps to the Media Library's upload size limit,
+ * and names the file it sideloads.
  *
  * @package GoDAM
  */
@@ -14,7 +15,8 @@ use RTGODAM\Inc\Abilities\Library_Abilities;
 
 /**
  * An agent's URL import must stop at the same size limit as an upload in the
- * Media Library, so it cannot fill the disk.
+ * Media Library, so it cannot fill the disk. The file it hands to core's sideload
+ * must carry an extension, or core refuses it as a disallowed type.
  *
  * Runs in its own process because it defines core functions.
  *
@@ -28,12 +30,14 @@ class ImportMediaLimitTest extends TestCase {
 	/**
 	 * Loads the ability with stubs for the core functions it calls.
 	 *
-	 * @param int $max_size What wp_max_upload_size() returns.
-	 * @param int $file_size Size of the file the URL serves.
+	 * @param int    $max_size      What wp_max_upload_size() returns.
+	 * @param int    $file_size     Size of the file the URL serves.
+	 * @param string $tmp_extension Extension of the temp file core's download_url() names from
+	 *                              the response headers; empty when it has none.
 	 *
 	 * @return Library_Abilities
 	 */
-	private function ability( $max_size, $file_size ) {
+	private function ability( $max_size, $file_size, $tmp_extension = '' ) {
 		$GLOBALS['rtgodam_stub'] = array(
 			'options'   => array(),
 			'caps'      => array(),
@@ -43,6 +47,8 @@ class ImportMediaLimitTest extends TestCase {
 			'args'      => array(),
 			'deleted'   => array(),
 			'sideload'  => 0,
+			'tmp_ext'   => $tmp_extension,
+			'names'     => array(),
 		);
 
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/abilities/class-ability-group.php';
@@ -70,12 +76,16 @@ class ImportMediaLimitTest extends TestCase {
 		if ( ! function_exists( 'wp_delete_file' ) ) {
 			eval( 'function wp_delete_file( $file ) { $GLOBALS["rtgodam_stub"]["deleted"][] = $file; return is_file( $file ) && unlink( $file ); }' ); }
 		if ( ! function_exists( 'media_handle_sideload' ) ) {
-			eval( 'function media_handle_sideload( $file ) { $GLOBALS["rtgodam_stub"]["sideload"]++; return 7; }' ); }
+			eval( 'function media_handle_sideload( $file ) { $GLOBALS["rtgodam_stub"]["sideload"]++; $GLOBALS["rtgodam_stub"]["names"][] = $file["name"]; return new WP_Error( "rtgodam_stub_sideload", "Stopped here." ); }' ); }
 		eval(
 			'function download_url( $url ) {
 				$GLOBALS["rtgodam_stub"]["downloads"][] = $url;
 				$GLOBALS["rtgodam_stub"]["args"][] = apply_filters( "http_request_args", array(), $url );
 				$temp = tempnam( sys_get_temp_dir(), "godam-import-" );
+				if ( "" !== $GLOBALS["rtgodam_stub"]["tmp_ext"] ) {
+					rename( $temp, $temp . "." . $GLOBALS["rtgodam_stub"]["tmp_ext"] );
+					$temp .= "." . $GLOBALS["rtgodam_stub"]["tmp_ext"];
+				}
 				file_put_contents( $temp, str_repeat( "x", $GLOBALS["rtgodam_stub"]["file_size"] ) );
 				return $temp;
 			}'
@@ -125,5 +135,38 @@ class ImportMediaLimitTest extends TestCase {
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'rest_upload_limited_space', $result->get_error_code() );
 		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['downloads'] );
+	}
+
+	/**
+	 * A URL path with no extension takes it from the temp file core named from the response headers.
+	 *
+	 * @dataProvider sideload_names
+	 *
+	 * @param string $url           URL to import.
+	 * @param string $tmp_extension Extension of the temp file; empty for none.
+	 * @param string $expected      The file name handed to media_handle_sideload().
+	 *
+	 * @return void
+	 */
+	public function test_the_file_name_gets_an_extension_when_the_url_has_none( $url, $tmp_extension, $expected ) {
+		$this->ability( 1000, 10, $tmp_extension )->import_media_from_url( array( 'url' => $url ) );
+
+		$this->assertSame( array( $expected ), $GLOBALS['rtgodam_stub']['names'] );
+	}
+
+	/**
+	 * URL, extension of the temp file, and the name the sideload should get.
+	 *
+	 * @return array
+	 */
+	public function sideload_names() {
+		return array(
+			'query string link'           => array( 'https://example.com/get?id=42', 'mp4', 'get.mp4' ),
+			'numeric download path'       => array( 'https://example.com/download/12345', 'mp4', '12345.mp4' ),
+			'no name in the path'         => array( 'https://example.com/', 'mp4', 'import.mp4' ),
+			'URL with an extension'       => array( 'https://example.com/clip.mp4', 'webm', 'clip.mp4' ),
+			'temp file left as .tmp'      => array( 'https://example.com/get?id=42', 'tmp', 'get' ),
+			'temp file with no extension' => array( 'https://example.com/get?id=42', '', 'get' ),
+		);
 	}
 }

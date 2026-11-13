@@ -514,8 +514,25 @@ class Library_Abilities extends Ability_Group {
 			);
 		}
 
+		$name = sanitize_file_name( wp_basename( (string) wp_parse_url( $url, PHP_URL_PATH ) ) );
+
+		/*
+		 * A download link often has no extension in its path (/get?id=42, /download/12345), and
+		 * core's sideload refuses a file with no extension as a disallowed type. Core's
+		 * download_url() names the temp file from the response's Content-Disposition or
+		 * Content-Type, so take the extension from there. A response with neither still gets
+		 * core's file-type error, as before.
+		 */
+		if ( '' === pathinfo( $name, PATHINFO_EXTENSION ) ) {
+			$extension = pathinfo( $tmp_file, PATHINFO_EXTENSION );
+
+			if ( '' !== $extension && 'tmp' !== $extension ) {
+				$name = sanitize_file_name( ( '' !== $name ? $name : 'import' ) . '.' . $extension );
+			}
+		}
+
 		$file = array(
-			'name'     => sanitize_file_name( wp_basename( (string) wp_parse_url( $url, PHP_URL_PATH ) ) ),
+			'name'     => $name,
 			'tmp_name' => $tmp_file,
 		);
 
