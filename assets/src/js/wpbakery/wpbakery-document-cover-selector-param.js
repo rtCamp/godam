@@ -58,8 +58,11 @@
 			cb( '' );
 			return;
 		}
-		fetch( restRoot + 'wp/v2/media/' + id )
-			.then( ( res ) => ( res.ok ? res.json() : null ) )
+		// wp.apiFetch adds the REST nonce; a plain fetch is answered as logged out.
+		const request = window.wp?.apiFetch
+			? window.wp.apiFetch( { path: '/wp/v2/media/' + id } )
+			: fetch( restRoot + 'wp/v2/media/' + id ).then( ( res ) => ( res.ok ? res.json() : null ) );
+		request
 			.then( ( media ) => {
 				let cover = '';
 				if ( media && media.meta ) {

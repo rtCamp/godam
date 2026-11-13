@@ -12,6 +12,7 @@ import { Button } from '@wordpress/components';
 import { chevronRight } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -45,8 +46,6 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 	const [ formHTML, setFormHTML ] = useState( '' );
 	const [ imageCtaUrl, setImageCtaUrl ] = useState( '' );
 	const dispatch = useDispatch();
-
-	const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 	const layer = useSelector( ( state ) =>
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
@@ -82,15 +81,7 @@ const CTALayer = ( { layerID, goBack, duration } ) => {
 		}
 
 		// For regular WordPress media, fetch from the API
-		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ), {
-			headers: { 'X-WP-Nonce': window.videoData?.nonce },
-		} )
-			.then( ( response ) => {
-				if ( ! response.ok ) {
-					throw new Error( 'Media not found' );
-				}
-				return response.json();
-			} )
+		apiFetch( { path: `/wp/v2/media/${ mediaId }` } )
 			.then( ( media ) => {
 				setImageCtaUrl( media.source_url );
 			} )

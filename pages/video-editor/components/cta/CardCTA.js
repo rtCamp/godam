@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button, Notice, Tooltip } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { trash, plus } from '@wordpress/icons';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -152,8 +153,6 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 	);
 	const dispatch = useDispatch();
 
-	const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
-
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
 	};
@@ -237,15 +236,7 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 		}
 
 		// For regular WordPress media, fetch from the API.
-		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ), {
-			headers: { 'X-WP-Nonce': window.videoData?.nonce },
-		} )
-			.then( ( response ) => {
-				if ( ! response.ok ) {
-					throw new Error( 'Media not found' );
-				}
-				return response.json();
-			} )
+		apiFetch( { path: `/wp/v2/media/${ mediaId }` } )
 			.then( ( media ) => {
 				setSelectedImageUrl( media.source_url );
 				setSelectedImageName(
@@ -257,7 +248,7 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 				removeCTAImage();
 			} );
 	},
-	[ restURL, layer?.imageUrlExt ] );
+	[ layer?.imageUrlExt ] );
 
 	useEffect( () => {
 		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {

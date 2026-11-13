@@ -1,4 +1,7 @@
-const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
+/**
+ * WordPress dependencies
+ */
+import apiFetch from '@wordpress/api-fetch';
 
 const MEDIA_ENDPOINT = 'wp/v2/media';
 
@@ -229,18 +232,8 @@ export function createBlockAttributes( attachmentId, mediaData, mediaType ) {
 
 async function fetchMediaData( attachmentId ) {
 	try {
-		const endpoint = window.pathJoin( [ restURL, `/${ MEDIA_ENDPOINT }/${ attachmentId }` ] );
-		const response = await fetch( endpoint, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-WP-Nonce': window.videoData?.nonce,
-			},
-		} );
-		if ( ! response.ok ) {
-			return null;
-		}
-		return await response.json();
+		// apiFetch adds the REST root and the nonce, and refreshes an expired nonce.
+		return await apiFetch( { path: `/${ MEDIA_ENDPOINT }/${ attachmentId }` } );
 	} catch ( error ) {
 		return null;
 	}

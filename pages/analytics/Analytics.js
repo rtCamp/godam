@@ -8,7 +8,6 @@ import 'video.js/dist/video-js.css';
  * Internal dependencies
  */
 import '../video-editor/style.scss';
-import fetchMediaItem from './fetchMediaItem';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import {
@@ -24,6 +23,7 @@ import DateRangePicker, { triggerLabelFor } from './components/DateRangePicker';
  * WordPress dependencies
  */
 import { __, sprintf, _n } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
 import VideoToCartCard from './VideoToCartCard.js';
@@ -279,14 +279,13 @@ const Analytics = ( { attachmentID } ) => {
 		if ( attachmentID ) {
 			const loadingEl = document.getElementById( 'loading-analytics-animation' );
 
-			fetchMediaItem( attachmentID )
-				.then( ( response ) => {
-					const data = response.data;
+			apiFetch( { path: `/wp/v2/media/${ attachmentID }` } )
+				.then( ( data ) => {
 					setAttachmentData( data );
 					setMediaNotFound( false );
 				} )
 				.catch( ( error ) => {
-					if ( error.response?.data?.code === 'rest_post_invalid_id' ) {
+					if ( error?.code === 'rest_post_invalid_id' ) {
 						setMediaNotFound( true );
 						if ( loadingEl ) {
 							loadingEl.style.display = 'none';
@@ -481,8 +480,7 @@ const Analytics = ( { attachmentID } ) => {
 
 			setAbComparisonUrl( attachment.url );
 
-			fetchMediaItem( attachment?.id ).then( ( response ) => {
-				const data = response.data;
+			apiFetch( { path: `/wp/v2/media/${ attachment?.id }` } ).then( ( data ) => {
 				setMediaLibraryAttachment( data );
 			} );
 		} );
