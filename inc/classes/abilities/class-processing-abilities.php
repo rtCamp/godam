@@ -120,6 +120,22 @@ class Processing_Abilities extends Ability_Group {
 			return $result;
 		}
 
+		/*
+		 * The route answers 200 with `skipped: true` when it does not send the job (virtual
+		 * media, storage over the limit, HTTP auth, a Central refusal). That is not an
+		 * accepted job, so report it as an error. The route's own message already names the
+		 * next step; it is built with esc_html(), so hand the agent plain text.
+		 */
+		if ( is_array( $result ) && ! empty( $result['skipped'] ) ) {
+			$reason = isset( $result['reason'] ) ? sanitize_key( (string) $result['reason'] ) : '';
+
+			return new \WP_Error(
+				'' !== $reason ? $reason : 'rtgodam_retranscode_skipped',
+				html_entity_decode( wp_strip_all_tags( (string) ( $result['message'] ?? '' ) ), ENT_QUOTES, 'UTF-8' ),
+				array( 'status' => 409 )
+			);
+		}
+
 		return array(
 			'media_id' => $post->ID,
 			'accepted' => true,
