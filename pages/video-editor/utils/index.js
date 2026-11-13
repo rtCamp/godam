@@ -252,6 +252,9 @@ export const prefetchMediaDataForCopy = async ( attachmentId, { blockName = 'god
 	}
 	try {
 		const mediaData = await fetchMediaData( attachmentId );
+		if ( ! mediaData ) {
+			return; // Don't cache a failed fetch; the next copy fetches again.
+		}
 		const attrs = createBlockAttributes( attachmentId, mediaData, mediaType );
 		const html = createGoDAMVideoBlockMarkup( attrs, blockName );
 		mediaDataCache.set( key, html );
@@ -278,7 +281,9 @@ export const getGoDAMVideoBlockMarkup = async ( attachmentId, { blockName = 'god
 	const mediaData = await fetchMediaData( attachmentId );
 	const attrs = createBlockAttributes( attachmentId, mediaData, mediaType );
 	const html = createGoDAMVideoBlockMarkup( attrs, blockName );
-	mediaDataCache.set( key, html );
+	if ( mediaData ) {
+		mediaDataCache.set( key, html );
+	}
 	return html;
 };
 
@@ -297,6 +302,9 @@ export const copyGoDAMVideoBlock = async ( attachmentId, { blockName = 'godam/vi
 
 	try {
 		const mediaData = await fetchMediaData( attachmentId );
+		if ( ! mediaData ) {
+			return false;
+		}
 
 		const attrs = createBlockAttributes( attachmentId, mediaData, mediaType );
 
