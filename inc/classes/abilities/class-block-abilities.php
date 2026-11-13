@@ -70,7 +70,7 @@ class Block_Abilities extends Ability_Group {
 			'godam/add-media-to-page',
 			array(
 				'label'               => __( 'Add media to a page', 'godam' ),
-				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post, or create a new one with it. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one existing page you can edit adds to that page instead of creating a duplicate. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
+				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post (or, with LifterLMS active, an existing course or lesson), or create a new page or post with it. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one existing page you can edit adds to that page instead of creating a duplicate. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
 				'category'            => 'godam-player',
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -228,7 +228,7 @@ class Block_Abilities extends Ability_Group {
 		if ( ! empty( $input['post_id'] ) ) {
 			$target = get_post( absint( $input['post_id'] ) ); // godam-coverage-ignore -- add_media_to_page(): post_id is the host page or post being edited, checked below to be a page or post, not an attachment.
 
-			if ( ! $target || ! in_array( $target->post_type, self::POST_TYPES, true ) ) {
+			if ( ! $target || ! in_array( $target->post_type, self::host_post_types(), true ) ) {
 				return new \WP_Error( 'rtgodam_post_not_found', __( 'post_id is not a page or post on this site. Give the ID of an existing page or post, or leave post_id out and give a title to create a new page.', 'godam' ), array( 'status' => 404 ) );
 			}
 
@@ -237,6 +237,18 @@ class Block_Abilities extends Ability_Group {
 
 			if ( ! empty( $input['status'] ) ) {
 				$params['status'] = $input['status'];
+			}
+
+			// LifterLMS lessons and courses have no core REST route, so they are saved directly.
+			// The permission callback and the page lookup have already checked edit_post.
+			if ( ! $this->has_rest_route( $target->post_type ) ) {
+				$saved = $this->save_without_rest( $target, $params );
+
+				if ( is_wp_error( $saved ) ) {
+					return $saved;
+				}
+
+				$route = '';
 			}
 		} else {
 			if ( empty( $input['title'] ) ) {
@@ -251,10 +263,12 @@ class Block_Abilities extends Ability_Group {
 			);
 		}
 
-		$saved = $this->rest( 'POST', $route, $params );
+		if ( '' !== $route ) {
+			$saved = $this->rest( 'POST', $route, $params );
 
-		if ( is_wp_error( $saved ) ) {
-			return $saved;
+			if ( is_wp_error( $saved ) ) {
+				return $saved;
+			}
 		}
 
 		$post_id = (int) $saved['id'];
@@ -750,7 +764,7 @@ class Block_Abilities extends Ability_Group {
 		$editable = static function ( $post_id ) {
 			$post_id = absint( $post_id );
 
-			return ( $post_id && in_array( get_post_type( $post_id ), self::POST_TYPES, true ) && current_user_can( 'edit_post', $post_id ) ) ? $post_id : 0; // godam-coverage-ignore -- find_page(): a host page or post, never an attachment.
+			return ( $post_id && in_array( get_post_type( $post_id ), self::host_post_types(), true ) && current_user_can( 'edit_post', $post_id ) ) ? $post_id : 0; // godam-coverage-ignore -- find_page(): a host page or post, never an attachment.
 		};
 
 		// A URL on this site, or a path such as /courses/lesson-1/.
@@ -765,7 +779,7 @@ class Block_Abilities extends Ability_Group {
 				}
 
 				$path = trim( (string) wp_parse_url( $url, PHP_URL_PATH ), '/' );
-				$post = '' !== $path ? get_page_by_path( $path, OBJECT, self::POST_TYPES ) : null;
+				$post = '' !== $path ? get_page_by_path( $path, OBJECT, self::host_post_types() ) : null;
 
 				return $post ? $editable( $post->ID ) : 0;
 			}
@@ -776,7 +790,7 @@ class Block_Abilities extends Ability_Group {
 		// An exact title. Several matches are refused rather than guessed.
 		$ids = get_posts( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- a capped title lookup run on request by a signed-in user, not on a front-end page.
 			array(
-				'post_type'      => self::POST_TYPES,
+				'post_type'      => self::host_post_types(),
 				'post_status'    => array( 'publish', 'draft', 'pending', 'private', 'future' ),
 				'title'          => $page,
 				'posts_per_page' => 2,
@@ -841,5 +855,89 @@ class Block_Abilities extends Ability_Group {
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Post types an existing item can be for media to be added to it.
+	 *
+	 * Pages and posts always; LifterLMS courses and lessons when LifterLMS is active.
+	 * New items are still only pages and posts: a course or lesson is created in LifterLMS.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return string[]
+	 */
+	public static function host_post_types() {
+		$types = self::POST_TYPES;
+
+		if ( function_exists( 'llms' ) || class_exists( 'LifterLMS' ) ) {
+			$types[] = 'course';
+			$types[] = 'lesson';
+		}
+
+		/**
+		 * Filters the post types whose existing items GoDAM media can be added to through abilities.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param string[] $types Post type names.
+		 */
+		$types = (array) apply_filters( 'rtgodam_ability_host_post_types', $types );
+
+		return array_values( array_unique( array_filter( array_map( 'sanitize_key', $types ), 'post_type_exists' ) ) );
+	}
+
+	/**
+	 * Whether a post type can be saved through the core REST posts route.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $post_type Post type name.
+	 *
+	 * @return bool
+	 */
+	private function has_rest_route( $post_type ) {
+		$object = get_post_type_object( $post_type );
+
+		return $object && ! empty( $object->show_in_rest );
+	}
+
+	/**
+	 * Saves new content to an existing post whose type has no REST route.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_Post $target Post to update.
+	 * @param array    $params `content`, and optionally `status`.
+	 *
+	 * @return array|\WP_Error `id` of the saved post.
+	 */
+	private function save_without_rest( \WP_Post $target, array $params ) {
+		if ( ! current_user_can( 'edit_post', $target->ID ) ) { // godam-coverage-ignore -- save_without_rest(): the host course or lesson, never an attachment.
+			return new \WP_Error( 'rtgodam_page_not_found', __( 'No page or post you can edit matches that URL, path or title.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		$update = array(
+			'ID'           => $target->ID,
+			'post_content' => $params['content'],
+		);
+
+		if ( ! empty( $params['status'] ) ) {
+			$object = get_post_type_object( $target->post_type );
+
+			if ( 'publish' === $params['status'] && ( ! $object || ! current_user_can( $object->cap->publish_posts ) ) ) { // phpcs:ignore WordPress.WP.Capabilities.Undetermined -- the post type's own capability, as registered.
+				return new \WP_Error( 'rest_cannot_publish', __( 'Your WordPress user\'s role does not allow publishing this. Ask a site administrator, or leave status out.', 'godam' ), array( 'status' => 403 ) );
+			}
+
+			$update['post_status'] = $params['status'];
+		}
+
+		$saved = wp_update_post( wp_slash( $update ), true ); // godam-coverage-ignore -- save_without_rest(): updates the host course or lesson, never an attachment.
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		return array( 'id' => (int) $saved );
 	}
 }
