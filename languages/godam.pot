@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-13T09:20:26+00:00\n"
+"POT-Creation-Date: 2026-11-13T13:04:25+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -12021,71 +12021,71 @@ msgstr ""
 msgid "Your WordPress user's role does not allow publishing this. Ask a site administrator, or leave status out."
 msgstr ""
 
-#: inc/classes/abilities/class-chapter-abilities.php:36
+#: inc/classes/abilities/class-chapter-abilities.php:48
 msgid "List chapters"
 msgstr ""
 
-#: inc/classes/abilities/class-chapter-abilities.php:37
+#: inc/classes/abilities/class-chapter-abilities.php:49
 msgid "List the chapters of a video or audio item in playback order, with start and end in seconds."
 msgstr ""
 
-#: inc/classes/abilities/class-chapter-abilities.php:59
+#: inc/classes/abilities/class-chapter-abilities.php:71
 msgid "Set chapters"
 msgstr ""
 
-#: inc/classes/abilities/class-chapter-abilities.php:60
+#: inc/classes/abilities/class-chapter-abilities.php:72
 msgid "Replace all chapters of a video or audio item. Each chapter needs a title and a start second; end defaults to where the next chapter starts, and the last chapter runs to the end. Chapters may not overlap or run past the end of the media. To make chapters from speech, read godam/get-transcript with format \"segments\" first. An empty list removes every chapter."
 msgstr ""
 
-#: inc/classes/abilities/class-chapter-abilities.php:68
+#: inc/classes/abilities/class-chapter-abilities.php:80
 msgid "Media (attachment) ID of the video or audio item."
 msgstr ""
 
-#: inc/classes/abilities/class-chapter-abilities.php:82
+#: inc/classes/abilities/class-chapter-abilities.php:94
 msgid "Second at which the chapter starts."
 msgstr ""
 
-#: inc/classes/abilities/class-chapter-abilities.php:87
+#: inc/classes/abilities/class-chapter-abilities.php:99
 msgid "Second at which the chapter ends. Optional."
 msgstr ""
 
 #. translators: %d: chapter number, counting from 1.
-#: inc/classes/abilities/class-chapter-abilities.php:252
+#: inc/classes/abilities/class-chapter-abilities.php:268
 #, php-format
 msgid "Chapter %d needs a title."
 msgstr ""
 
 #. translators: %d: media length in seconds.
-#: inc/classes/abilities/class-chapter-abilities.php:279
+#: inc/classes/abilities/class-chapter-abilities.php:295
 #, php-format
 msgid "WordPress reads this file as %d seconds long."
 msgstr ""
 
 #. translators: 1: chapter title, 2: sentence giving the media length.
-#: inc/classes/abilities/class-chapter-abilities.php:288
+#: inc/classes/abilities/class-chapter-abilities.php:304
 #, php-format
 msgid "\"%1$s\" starts after the end of the media. %2$s Use a start time inside the media."
 msgstr ""
 
 #. translators: %s: chapter title.
-#: inc/classes/abilities/class-chapter-abilities.php:293
+#: inc/classes/abilities/class-chapter-abilities.php:309
 #, php-format
 msgid "\"%s\" must end after it starts. Give an end later than its start, or leave end out."
 msgstr ""
 
 #. translators: 1: chapter title, 2: sentence giving the media length.
-#: inc/classes/abilities/class-chapter-abilities.php:298
+#: inc/classes/abilities/class-chapter-abilities.php:314
 #, php-format
 msgid "\"%1$s\" ends after the end of the media. %2$s Use an end time inside the media, or leave end out."
 msgstr ""
 
 #. translators: 1: chapter title, 2: the overlapping chapter's title.
-#: inc/classes/abilities/class-chapter-abilities.php:307
+#: inc/classes/abilities/class-chapter-abilities.php:323
 #, php-format
 msgid "\"%1$s\" overlaps \"%2$s\". Each chapter must end at or before the next one starts."
 msgstr ""
 
-#: inc/classes/abilities/class-chapter-abilities.php:399
+#: inc/classes/abilities/class-chapter-abilities.php:419
 msgid "Only videos and audio have chapters. Use godam/list-media to find a video or audio item."
 msgstr ""
 
@@ -12390,51 +12390,51 @@ msgid "This file is too big to import. Files must be %s or smaller, the same lim
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:554
+#: inc/classes/abilities/class-library-abilities.php:571
 #, php-format
 msgid "Imported as media ID %1$d, but it could not be put in the folder: %2$s Use godam/move-media-to-folder to move it."
 msgstr ""
 
 #. translators: %s: required disk space in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:586
+#: inc/classes/abilities/class-library-abilities.php:603
 #, php-format
 msgid "Not enough space to import this file. %s KB needed. Free up space by deleting unused media in the Media Library, or ask a network administrator to raise the site's storage limit."
 msgstr ""
 
 #. translators: %s: maximum allowed file size in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:591
+#: inc/classes/abilities/class-library-abilities.php:608
 #, php-format
 msgid "This file is too big. Files must be less than %s KB in size. Use a smaller file, or ask a network administrator to raise the limit in Network Admin > Settings > Network Settings."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:599
+#: inc/classes/abilities/class-library-abilities.php:616
 msgid "You have used your space quota. Please delete files before uploading."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:654
+#: inc/classes/abilities/class-library-abilities.php:671
 msgid "GoDAM Central did not return the media list. Try again in a moment. If it keeps failing, the site owner can contact GoDAM support at https://app.godam.io/helpdesk."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:755
+#: inc/classes/abilities/class-library-abilities.php:772
 msgid "Give the central_id of an item from godam/list-central-media."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:789
+#: inc/classes/abilities/class-library-abilities.php:806
 msgid "No media with that central_id is in this site's GoDAM Central account. Use godam/list-central-media to find it."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:797
+#: inc/classes/abilities/class-library-abilities.php:814
 msgid "GoDAM Central is still processing this media. Check godam/list-central-media again in a few minutes and add it once its status is Transcoded."
 msgstr ""
 
 #. translators: %s: reason the media could not be added.
-#: inc/classes/abilities/class-library-abilities.php:815
+#: inc/classes/abilities/class-library-abilities.php:832
 #, php-format
 msgid "The media could not be added to the library: %s"
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:834
+#: inc/classes/abilities/class-library-abilities.php:851
 #, php-format
 msgid "Added as media ID %1$d, but it could not be put in the folder: %2$s"
 msgstr ""
@@ -12549,7 +12549,7 @@ msgstr ""
 msgid "Transcription runs in the background. Call godam/get-transcript later to read it."
 msgstr ""
 
-#: inc/classes/abilities/class-processing-abilities.php:127
+#: inc/classes/abilities/class-processing-abilities.php:143
 msgid "Transcoding runs in the background. Call godam/get-media later to see its status."
 msgstr ""
 
@@ -12708,7 +12708,7 @@ msgid "Give at least one of global_ads_enabled, ad_tag_url or out_of_view_behavi
 msgstr ""
 
 #: inc/classes/abilities/class-site-settings-abilities.php:173
-#: inc/classes/abilities/class-video-settings-abilities.php:247
+#: inc/classes/abilities/class-video-settings-abilities.php:251
 msgid "ad_tag_url must be an http or https URL, or an empty string."
 msgstr ""
 
@@ -12752,23 +12752,23 @@ msgstr ""
 msgid "Give thumbnail_url or thumbnail_image_id, not both."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:267
+#: inc/classes/abilities/class-video-settings-abilities.php:271
 msgid "thumbnail_image_id is not an image in the media library. Use godam/list-media with type image to find an image ID."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:296
+#: inc/classes/abilities/class-video-settings-abilities.php:300
 msgid "thumbnail_url is not one of this video's thumbnails. Pick one from godam/get-video-settings, or use thumbnail_image_id to add an image as a thumbnail."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:423
+#: inc/classes/abilities/class-video-settings-abilities.php:427
 msgid "The player requests ads from ad_tag_url; the video's ad layers are turned off."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:424
+#: inc/classes/abilities/class-video-settings-abilities.php:428
 msgid "The player shows the video's ad layers, if it has any."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:447
+#: inc/classes/abilities/class-video-settings-abilities.php:451
 msgid "These settings are for videos only. Use godam/list-media with type video to find a video."
 msgstr ""
 
