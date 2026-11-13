@@ -271,7 +271,7 @@ export const prefetchMediaDataForCopy = async ( attachmentId, { blockName = 'god
  * @param {Object} [options]           Options.
  * @param {string} [options.blockName] Block to emit (default `godam/video`).
  * @param {string} [options.mediaType] Media type for attribute building.
- * @return {Promise<string>} Serialized block markup.
+ * @return {Promise<string|null>} Serialized block markup, or null when the media request failed.
  */
 export const getGoDAMVideoBlockMarkup = async ( attachmentId, { blockName = 'godam/video', mediaType = 'video' } = {} ) => {
 	const key = cacheKey( attachmentId, blockName );
@@ -279,11 +279,12 @@ export const getGoDAMVideoBlockMarkup = async ( attachmentId, { blockName = 'god
 		return mediaDataCache.get( key );
 	}
 	const mediaData = await fetchMediaData( attachmentId );
+	if ( ! mediaData ) {
+		return null; // A block without the video's source would paste as an empty player.
+	}
 	const attrs = createBlockAttributes( attachmentId, mediaData, mediaType );
 	const html = createGoDAMVideoBlockMarkup( attrs, blockName );
-	if ( mediaData ) {
-		mediaDataCache.set( key, html );
-	}
+	mediaDataCache.set( key, html );
 	return html;
 };
 

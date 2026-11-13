@@ -16,7 +16,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { copyGoDAMVideoBlock, prefetchMediaDataForCopy } from './index';
+import { copyGoDAMVideoBlock, getGoDAMVideoBlockMarkup, prefetchMediaDataForCopy } from './index';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -68,5 +68,14 @@ describe( 'Copy block helpers', () => {
 
 		expect( apiFetch ).toHaveBeenCalledTimes( 2 );
 		expect( writeText.mock.calls[ 0 ][ 0 ] ).toContain( '"src":"https://example.test/video-103.mp4"' );
+	} );
+
+	it( 'returns no markup for the product guide when the media request fails', async () => {
+		apiFetch.mockRejectedValueOnce( { code: 'rest_not_logged_in', data: { status: 401 } } );
+		await expect( getGoDAMVideoBlockMarkup( 104 ) ).resolves.toBeNull();
+
+		apiFetch.mockResolvedValueOnce( media( 104 ) );
+		await expect( getGoDAMVideoBlockMarkup( 104 ) ).resolves.toContain( '"src":"https://example.test/video-104.mp4"' );
+		expect( apiFetch ).toHaveBeenCalledTimes( 2 );
 	} );
 } );
