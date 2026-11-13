@@ -774,7 +774,7 @@ class Block_Abilities extends Ability_Group {
 		}
 
 		// An exact title. Several matches are refused rather than guessed.
-		$ids = get_posts(
+		$ids = get_posts( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- a capped title lookup run on request by a signed-in user, not on a front-end page.
 			array(
 				'post_type'      => self::POST_TYPES,
 				'post_status'    => array( 'publish', 'draft', 'pending', 'private', 'future' ),
@@ -811,7 +811,7 @@ class Block_Abilities extends Ability_Group {
 		}
 
 		foreach ( array( array( 'publish' ), array( 'draft', 'pending', 'private', 'future' ) ) as $statuses ) {
-			$ids = get_posts(
+			$ids = get_posts( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- a capped title lookup run on request by a signed-in user, not on a front-end page.
 				array(
 					'post_type'      => $post_type,
 					'post_status'    => $statuses,

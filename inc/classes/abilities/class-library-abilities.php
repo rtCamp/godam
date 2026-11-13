@@ -671,7 +671,7 @@ class Library_Abilities extends Ability_Group {
 	private function media_id_for_central_id( $central_id ) {
 		do_action( 'rtgodam_before_attachment_lookup' );
 
-		$ids = get_posts(
+		$ids = get_posts( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- a single-ID lookup run on request by a signed-in user, not on a front-end page.
 			array(
 				'post_type'      => 'attachment',
 				'post_status'    => 'inherit',
