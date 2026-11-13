@@ -70,7 +70,7 @@ class Block_Abilities extends Ability_Group {
 			'godam/add-media-to-page',
 			array(
 				'label'               => __( 'Add media to a page', 'godam' ),
-				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post (or, with LifterLMS active, an existing course or lesson), or create a new page or post with it. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one existing page you can edit adds to that page instead of creating a duplicate. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
+				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post (or, with LifterLMS active, an existing course or lesson), or create a new page or post with it. On an existing page built with WPBakery, the media goes in as the GoDAM WPBakery element, in a new row at the end. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one existing page you can edit adds to that page instead of creating a duplicate. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
 				'category'            => 'godam-player',
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -191,8 +191,9 @@ class Block_Abilities extends Ability_Group {
 	 * @return array|\WP_Error
 	 */
 	public function add_media_to_page( $input = array() ) {
-		$player = (array) ( $input['player'] ?? array() );
-		$block  = $this->build_block( $input, $player );
+		$player   = (array) ( $input['player'] ?? array() );
+		$block    = $this->build_block( $input, $player );
+		$wpbakery = null;
 
 		if ( is_wp_error( $block ) ) {
 			return $block;
@@ -232,8 +233,21 @@ class Block_Abilities extends Ability_Group {
 				return new \WP_Error( 'rtgodam_post_not_found', __( 'post_id is not a page or post on this site. Give the ID of an existing page or post, or leave post_id out and give a title to create a new page.', 'godam' ), array( 'status' => 404 ) );
 			}
 
-			$route  = $this->posts_route( $target->post_type ) . '/' . $target->ID;
-			$params = array( 'content' => rtrim( $target->post_content ) . "\n\n" . $block['markup'] );
+			$route     = $this->posts_route( $target->post_type ) . '/' . $target->ID;
+			$markup    = $block['markup'];
+			$separator = "\n\n";
+
+			// A page built with WPBakery is a run of rows of shortcodes. A block added
+			// after them would sit outside the layout and could not be edited in the
+			// builder, so the media goes in as GoDAM's own WPBakery element instead.
+			if ( $this->is_wpbakery_page( $target ) ) {
+				$wpbakery = $this->wpbakery_markup( $block, $player );
+				$markup   = $wpbakery['markup'];
+				// WPBakery reads any text between rows, a blank line too, as an empty text row.
+				$separator = '';
+			}
+
+			$params = array( 'content' => rtrim( $target->post_content ) . $separator . $markup );
 
 			if ( ! empty( $input['status'] ) ) {
 				$params['status'] = $input['status'];
@@ -283,6 +297,13 @@ class Block_Abilities extends Ability_Group {
 			'media_ids' => $block['media_ids'],
 		);
 
+		if ( $wpbakery ) {
+			unset( $result['block'] );
+			$result['builder'] = 'wpbakery';
+			$result['element'] = $wpbakery['element'];
+			$result['note']    = __( 'The page is built with WPBakery, so the media was added as the GoDAM WPBakery element, in a new row at the end of the page. Move or edit it in the WPBakery editor.', 'godam' );
+		}
+
 		if ( 'godam/video' === $block['name'] ) {
 			$result['player'] = array(
 				'autoplay'             => ! empty( $player['autoplay'] ),
@@ -291,7 +312,7 @@ class Block_Abilities extends Ability_Group {
 			);
 
 			if ( ! empty( $player['autoplay'] ) && ! empty( $player['show_in_lightbox'] ) ) {
-				$result['note'] = __( 'Both autoplay and lightbox are saved on the block, as the editor allows. On the page the lightbox wins: the video shows as a poster and starts playing when the viewer opens it.', 'godam' );
+				$result['note'] = ( isset( $result['note'] ) ? $result['note'] . ' ' : '' ) . __( 'Both autoplay and lightbox are saved on the block, as the editor allows. On the page the lightbox wins: the video shows as a poster and starts playing when the viewer opens it.', 'godam' );
 			}
 		}
 
@@ -627,6 +648,95 @@ class Block_Abilities extends Ability_Group {
 			'name'      => self::BLOCKS['gallery'],
 			'markup'    => $this->serialize( 'godam/gallery-v2', array( 'mode' => 'handpicked' ), $items, $content ),
 			'media_ids' => $media_ids,
+		);
+	}
+
+	/**
+	 * Whether a page is laid out with WPBakery Page Builder.
+	 *
+	 * WPBakery saves its layout as [vc_row] shortcodes in the content and marks
+	 * a page whose backend editor is on with `_wpb_vc_js_status`.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_Post $post Host page or post.
+	 *
+	 * @return bool
+	 */
+	private function is_wpbakery_page( \WP_Post $post ) {
+		if ( false !== strpos( (string) $post->post_content, '[vc_row' ) ) {
+			return true;
+		}
+
+		return 'true' === get_post_meta( $post->ID, '_wpb_vc_js_status', true ); // godam-coverage-ignore -- is_wpbakery_page(): reads the host page's WPBakery flag, not an attachment.
+	}
+
+	/**
+	 * The GoDAM WPBakery element for the media, in a new row and column.
+	 *
+	 * Uses the same shortcodes and attribute names that the WPBakery elements
+	 * save, so the element opens with its settings in the WPBakery editor.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $block  The block built for the media: name and media_ids.
+	 * @param array $player Player settings from the ability input.
+	 *
+	 * @return array{element: string, markup: string}
+	 */
+	private function wpbakery_markup( array $block, array $player ) {
+		$ids   = array_values( array_map( 'absint', (array) $block['media_ids'] ) );
+		$atts  = array( 'id' => $ids[0] );
+		$names = array(
+			self::BLOCKS['video']    => 'godam_video',
+			self::BLOCKS['audio']    => 'godam_audio',
+			self::BLOCKS['image']    => 'godam_image',
+			self::BLOCKS['document'] => 'godam_document',
+			self::BLOCKS['gallery']  => 'godam_video_gallery',
+		);
+		$tag   = $names[ $block['name'] ] ?? 'godam_video';
+
+		if ( 'godam_video_gallery' === $tag ) {
+			$atts = array(
+				'mode' => 'handpicked',
+				'ids'  => implode( ',', $ids ),
+			);
+		}
+
+		if ( 'godam_video' === $tag ) {
+			foreach ( array( 'autoplay', 'loop', 'muted', 'controls', 'show_in_lightbox', 'show_share_button' ) as $key ) {
+				if ( isset( $player[ $key ] ) ) {
+					$atts[ $key ] = rest_sanitize_boolean( $player[ $key ] ) ? '1' : '0';
+				}
+			}
+
+			// Browsers only autoplay muted video; the block does the same.
+			if ( isset( $atts['autoplay'] ) && '1' === $atts['autoplay'] ) {
+				$atts['muted'] = '1';
+			}
+
+			if ( ! empty( $player['out_of_view_behavior'] ) && in_array( $player['out_of_view_behavior'], self::OUT_OF_VIEW, true ) ) {
+				$atts['out_of_view'] = $player['out_of_view_behavior'];
+			}
+
+			// A shortcode attribute cannot hold quotes or square brackets.
+			$caption = ! empty( $player['caption'] ) ? str_replace( array( '"', '[', ']' ), '', sanitize_text_field( $player['caption'] ) ) : '';
+
+			if ( '' !== $caption ) {
+				$atts['caption']      = $caption;
+				$atts['show_caption'] = '1';
+			}
+		}
+
+		$pairs = '';
+
+		foreach ( $atts as $key => $value ) {
+			$pairs .= sprintf( ' %s="%s"', $key, $value );
+		}
+
+		return array(
+			'element' => $tag,
+			'markup'  => '[vc_row][vc_column][' . $tag . $pairs . '][/vc_column][/vc_row]',
 		);
 	}
 
