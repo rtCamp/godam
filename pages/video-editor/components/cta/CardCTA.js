@@ -141,6 +141,16 @@ const formatSize = ( bytes ) => {
 	return `${ ( bytes / ( 1024 * 1024 ) ).toFixed( 1 ) } MB`;
 };
 
+/**
+ * Whether a failed `wp/v2/media` request means the attachment no longer exists.
+ *
+ * @since 2.9.1
+ *
+ * @param {Object} error The error apiFetch rejected with.
+ * @return {boolean} True for a 404 or `rest_post_invalid_id`.
+ */
+export const isMediaGone = ( error ) => 'rest_post_invalid_id' === error?.code || 404 === error?.data?.status;
+
 const CardCTA = ( { layerID, triggerSlot } ) => {
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 	const [ selectedImageUrl, setSelectedImageUrl ] = useState( '' );
@@ -244,8 +254,12 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 				);
 				setSelectedImageSize( formatSize( media?.media_details?.filesize ) );
 			} )
-			.catch( () => {
-				removeCTAImage();
+			.catch( ( error ) => {
+				// Clear the saved image only when it is really gone. A server error,
+				// a firewall block or an expired nonce must not erase it from the layer.
+				if ( isMediaGone( error ) ) {
+					removeCTAImage();
+				}
 			} );
 	},
 	[ layer?.imageUrlExt ] );
