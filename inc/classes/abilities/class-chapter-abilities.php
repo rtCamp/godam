@@ -23,6 +23,18 @@ defined( 'ABSPATH' ) || exit;
 class Chapter_Abilities extends Ability_Group {
 
 	/**
+	 * Seconds a chapter may run past the media's stored length before it is refused.
+	 *
+	 * The stored length is rounded to a whole second, so it can be off by up to half a
+	 * second; a last chapter ending at 45.4 on a file stored as 45 is not past the end.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int
+	 */
+	const DURATION_TOLERANCE = 1;
+
+	/**
 	 * Registers this group's abilities.
 	 *
 	 * @since n.e.x.t
@@ -234,10 +246,14 @@ class Chapter_Abilities extends Ability_Group {
 	 * missing end stays empty, which the editor reads as "to the end of the
 	 * media"; the player ends the last chapter there in any case.
 	 *
+	 * The stored length is rounded to a whole second, so a start or end is
+	 * refused only when it is more than DURATION_TOLERANCE seconds past it. The
+	 * media editor compares with the player's own, unrounded length.
+	 *
 	 * @since n.e.x.t
 	 *
-	 * @param array    $requested Chapters from the ability input.
-	 * @param int|null $duration  Media length in seconds, if WordPress knows it.
+	 * @param array    $requested Chapters from the ability input, in seconds.
+	 * @param int|null $duration  Media length in whole seconds, if WordPress knows it.
 	 *
 	 * @return array[]|\WP_Error Ranges of `{title, start, end}`, end null when open.
 	 */
@@ -283,7 +299,7 @@ class Chapter_Abilities extends Ability_Group {
 		foreach ( $ranges as $i => $range ) {
 			$end = null === $range['end'] ? null : $range['end'];
 
-			if ( null !== $duration && $range['start'] > $duration ) {
+			if ( null !== $duration && $range['start'] > $duration + self::DURATION_TOLERANCE ) {
 				/* translators: 1: chapter title, 2: sentence giving the media length. */
 				return $this->invalid( sprintf( __( '"%1$s" starts after the end of the media. %2$s Use a start time inside the media.', 'godam' ), $range['title'], $length ) );
 			}
@@ -293,7 +309,7 @@ class Chapter_Abilities extends Ability_Group {
 				return $this->invalid( sprintf( __( '"%s" must end after it starts. Give an end later than its start, or leave end out.', 'godam' ), $range['title'] ) );
 			}
 
-			if ( null !== $duration && null !== $end && $end > $duration ) {
+			if ( null !== $duration && null !== $end && $end > $duration + self::DURATION_TOLERANCE ) {
 				/* translators: 1: chapter title, 2: sentence giving the media length. */
 				return $this->invalid( sprintf( __( '"%1$s" ends after the end of the media. %2$s Use an end time inside the media, or leave end out.', 'godam' ), $range['title'], $length ) );
 			}
