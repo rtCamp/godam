@@ -8,7 +8,7 @@ import 'video.js/dist/video-js.css';
  * Internal dependencies
  */
 import '../video-editor/style.scss';
-import axios from 'axios';
+import fetchMediaItem from './fetchMediaItem';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import {
@@ -44,8 +44,6 @@ import { canViewStoreData } from '../shared/canViewStoreData';
 import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
-
-const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 const RenderVideo = ( { attachmentID, attachmentData, className, videoId } ) => {
 	const getMimiType = ( mime ) => {
@@ -279,11 +277,9 @@ const Analytics = ( { attachmentID } ) => {
 
 	useEffect( () => {
 		if ( attachmentID ) {
-			const url = window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] );
 			const loadingEl = document.getElementById( 'loading-analytics-animation' );
 
-			axios
-				.get( url )
+			fetchMediaItem( attachmentID )
 				.then( ( response ) => {
 					const data = response.data;
 					setAttachmentData( data );
@@ -485,9 +481,7 @@ const Analytics = ( { attachmentID } ) => {
 
 			setAbComparisonUrl( attachment.url );
 
-			const url = window.pathJoin( [ restURL, `/wp/v2/media/${ attachment?.id }` ] );
-
-			axios.get( url ).then( ( response ) => {
+			fetchMediaItem( attachment?.id ).then( ( response ) => {
 				const data = response.data;
 				setMediaLibraryAttachment( data );
 			} );
