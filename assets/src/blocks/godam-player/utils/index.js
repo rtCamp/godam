@@ -220,4 +220,59 @@ function isFilenameLikeTitle( title, fileName = '' ) {
 	return false;
 }
 
-export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601, isSEODataEmpty, stripHtmlTags, getFileNameFromUrl, isFilenameLikeTitle };
+/**
+ * Corner keys used by the block editor's border radius control, in CSS
+ * shorthand order (top-left, top-right, bottom-right, bottom-left).
+ */
+const BORDER_RADIUS_CORNERS = [ 'topLeft', 'topRight', 'bottomRight', 'bottomLeft' ];
+
+/**
+ * Turns one border radius value into CSS.
+ *
+ * Numbers get `px`, and a preset reference such as `var:preset|border-radius|md`
+ * becomes `var(--wp--preset--border-radius--md)`.
+ *
+ * @param {string|number} value Radius value saved by the block editor.
+ * @return {string} CSS value, or an empty string when there is none.
+ */
+function toRadiusCSSValue( value ) {
+	if ( typeof value === 'number' ) {
+		return `${ value }px`;
+	}
+	if ( typeof value !== 'string' ) {
+		return '';
+	}
+	const trimmed = value.trim();
+	if ( trimmed.startsWith( 'var:' ) ) {
+		return `var(--wp--${ trimmed.slice( 4 ).split( '|' ).join( '--' ) })`;
+	}
+	return trimmed;
+}
+
+/**
+ * Splits a block's `style.border.radius` into its four corners.
+ *
+ * The block editor saves either one value for all corners, or an object with
+ * `topLeft`, `topRight`, `bottomRight` and `bottomLeft`, any of which may be
+ * missing.
+ *
+ * @param {string|number|Object} radius Saved radius.
+ * @return {{tl: string, tr: string, br: string, bl: string}|null} CSS value per corner (empty when unset), or `null` when no corner is set.
+ */
+function getBorderRadiusCorners( radius ) {
+	let values;
+	if ( radius && typeof radius === 'object' ) {
+		values = BORDER_RADIUS_CORNERS.map( ( corner ) => toRadiusCSSValue( radius[ corner ] ) );
+	} else {
+		values = Array( 4 ).fill( toRadiusCSSValue( radius ) );
+	}
+
+	if ( values.every( ( value ) => value === '' ) ) {
+		return null;
+	}
+
+	const [ tl, tr, br, bl ] = values;
+	return { tl, tr, br, bl };
+}
+
+export { getFirstNonEmpty, appendTimezoneOffsetToUTC, isObjectEmpty, secondsToISO8601, isSEODataEmpty, stripHtmlTags, getFileNameFromUrl, isFilenameLikeTitle, getBorderRadiusCorners };

@@ -155,12 +155,13 @@
 		},
 		"__experimentalBorder": {
 			"color": true,
-			"radius": false,
+			"radius": true,
 			"style": true,
 			"width": true,
+			"__experimentalSkipSerialization": true,
 			"__experimentalDefaultControls": {
 				"color": true,
-				"radius": false,
+				"radius": true,
 				"style": true,
 				"width": true
 			}
