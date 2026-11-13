@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-13T10:44:41+00:00\n"
+"POT-Creation-Date: 2026-11-13T11:31:37+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -314,7 +314,7 @@ msgstr ""
 #: assets/src/blocks/godam-pdf/edit.js:831
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:283
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:183
-#: pages/video-editor/components/cta/CardCTA.js:452
+#: pages/video-editor/components/cta/CardCTA.js:455
 msgid "Description"
 msgstr ""
 
@@ -615,7 +615,7 @@ msgstr ""
 #: assets/src/blocks/godam-gallery-v2/edit.js:207
 #: pages/media-library/components/folder-tree/FolderTree.jsx:333
 #: pages/media-library/components/folder-tree/FolderTree.jsx:376
-#: pages/video-editor/components/cta/CardCTA.js:376
+#: pages/video-editor/components/cta/CardCTA.js:379
 msgid "Loading…"
 msgstr ""
 
@@ -1141,7 +1141,7 @@ msgstr ""
 #: assets/build/blocks/godam-image/index.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-image/edit.js:197
-#: pages/video-editor/components/cta/CardCTA.js:406
+#: pages/video-editor/components/cta/CardCTA.js:409
 msgid "Remove image"
 msgstr ""
 
@@ -1376,7 +1376,7 @@ msgstr ""
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
 #: assets/src/blocks/godam-pdf/edit.js:884
-#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:121
+#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:126
 msgid "Auto-generated cover"
 msgstr ""
 
@@ -1393,7 +1393,7 @@ msgstr ""
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
 #: assets/src/blocks/godam-pdf/edit.js:943
-#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:106
+#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:111
 msgid "Remove cover"
 msgstr ""
 
@@ -3064,17 +3064,17 @@ msgid "Upload failed. Please try again."
 msgstr ""
 
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
-#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:125
+#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:130
 msgid "Custom cover"
 msgstr ""
 
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
-#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:160
+#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:165
 msgid "Select Cover Image"
 msgstr ""
 
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
-#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:161
+#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:166
 msgid "Use image"
 msgstr ""
 
@@ -5929,7 +5929,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:53
 #: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:59
-#: pages/video-editor/components/cta/CardCTA.js:197
+#: pages/video-editor/components/cta/CardCTA.js:200
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:100
 msgid "Only Image files are allowed"
 msgstr ""
@@ -7105,7 +7105,7 @@ msgstr ""
 #: assets/build/pages/media-library-tour.min.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: pages/media-library-tour/components/TourApp.jsx:142
-#: pages/video-editor/onboarding/ProductGuide.jsx:225
+#: pages/video-editor/onboarding/ProductGuide.jsx:229
 msgid "Keep going"
 msgstr ""
 
@@ -8167,8 +8167,8 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-image.php:61
 #: inc/classes/wpbakery-elements/class-wpb-godam-image.php:70
 #: pages/tools/components/tabs/RetranscodeTab.jsx:38
-#: pages/video-editor/components/cta/CardCTA.js:354
-#: pages/video-editor/components/cta/CardCTA.js:398
+#: pages/video-editor/components/cta/CardCTA.js:357
+#: pages/video-editor/components/cta/CardCTA.js:401
 msgid "Image"
 msgstr ""
 
@@ -9718,43 +9718,43 @@ msgid "Get started by adding interactive layers to your video"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:223
+#: pages/video-editor/onboarding/ProductGuide.jsx:227
 msgid "Do you want to end the product guide?"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:224
+#: pages/video-editor/onboarding/ProductGuide.jsx:228
 msgid "End guide"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:230
+#: pages/video-editor/onboarding/ProductGuide.jsx:234
 msgid "You can start it anytime using the “See how it works” button on the Media Editor."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:235
+#: pages/video-editor/onboarding/ProductGuide.jsx:239
 msgid "Do you want to add it to a page?"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:236
+#: pages/video-editor/onboarding/ProductGuide.jsx:240
 msgid "Yes, Continue"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/class-dashboard-widget.php:1842
-#: pages/video-editor/onboarding/ProductGuide.jsx:237
+#: pages/video-editor/onboarding/ProductGuide.jsx:241
 msgid "Not now"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:187
+#: pages/video-editor/onboarding/ProductGuide.jsx:191
 msgid "GoDAM video"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:243
+#: pages/video-editor/onboarding/ProductGuide.jsx:247
 msgid "We’ll open a new draft page and drop the video right in."
 msgstr ""
 
@@ -9813,149 +9813,149 @@ msgid "Add custom"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:183
+#: pages/video-editor/components/cta/CardCTA.js:186
 msgid "Select Custom Background Image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:185
+#: pages/video-editor/components/cta/CardCTA.js:188
 msgid "Use this Background Image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/layers/hotspot/edit.js:521
 #: pages/video-editor/components/ads/CustomAdSettings.js:268
-#: pages/video-editor/components/cta/CardCTA.js:281
-#: pages/video-editor/components/cta/CardCTA.js:291
+#: pages/video-editor/components/cta/CardCTA.js:284
+#: pages/video-editor/components/cta/CardCTA.js:294
 msgid "Please enter a valid URL (e.g., https://example.com)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:317
+#: pages/video-editor/components/cta/CardCTA.js:320
 msgid "Image Left, Text Right (Full Height)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:318
+#: pages/video-editor/components/cta/CardCTA.js:321
 msgid "Text Left, Image Right (Full Height)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:319
+#: pages/video-editor/components/cta/CardCTA.js:322
 msgid "Image Left, Text Right"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:320
+#: pages/video-editor/components/cta/CardCTA.js:323
 msgid "Text Left, Image Right"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:321
+#: pages/video-editor/components/cta/CardCTA.js:324
 msgid "Image Top, Text Bottom"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:322
+#: pages/video-editor/components/cta/CardCTA.js:325
 msgid "Text Top, Image Bottom"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:323
+#: pages/video-editor/components/cta/CardCTA.js:326
 msgid "Image Background"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:324
+#: pages/video-editor/components/cta/CardCTA.js:327
 msgid "Text Only (No Image)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:345
+#: pages/video-editor/components/cta/CardCTA.js:348
 msgid "Card Layout"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/wpbakery-elements/class-wpb-godam-image.php:79
-#: pages/video-editor/components/cta/CardCTA.js:364
+#: pages/video-editor/components/cta/CardCTA.js:367
 msgid "Select Image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:367
+#: pages/video-editor/components/cta/CardCTA.js:370
 msgid "Recommended size: 100KB"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:383
+#: pages/video-editor/components/cta/CardCTA.js:386
 msgid "Click to replace image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:388
+#: pages/video-editor/components/cta/CardCTA.js:391
 msgid "Replace image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:393
+#: pages/video-editor/components/cta/CardCTA.js:396
 msgid "Selected CTA image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:430
+#: pages/video-editor/components/cta/CardCTA.js:433
 msgid "Width"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:443
-#: pages/video-editor/components/cta/CardCTA.js:445
+#: pages/video-editor/components/cta/CardCTA.js:446
+#: pages/video-editor/components/cta/CardCTA.js:448
 msgid "Card Title"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:448
+#: pages/video-editor/components/cta/CardCTA.js:451
 msgid "Add title here"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:453
+#: pages/video-editor/components/cta/CardCTA.js:456
 msgid "Character limit"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:456
+#: pages/video-editor/components/cta/CardCTA.js:459
 msgid "Your description"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:462
+#: pages/video-editor/components/cta/CardCTA.js:465
 msgid "Button Settings"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:464
+#: pages/video-editor/components/cta/CardCTA.js:467
 msgid "Button Title"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/helpers/custom-functions.php:284
 #: assets/src/layers/cta/edit.js:123
-#: pages/video-editor/components/cta/CardCTA.js:467
+#: pages/video-editor/components/cta/CardCTA.js:470
 msgid "Check now"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:471
+#: pages/video-editor/components/cta/CardCTA.js:474
 msgid "Button Link"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:479
+#: pages/video-editor/components/cta/CardCTA.js:482
 msgid "Button Colour"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:484
+#: pages/video-editor/components/cta/CardCTA.js:487
 #: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:53
 #: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:176
 msgid "Text"
@@ -9965,7 +9965,7 @@ msgstr ""
 #: assets/src/layers/form/edit.js:82
 #: assets/src/layers/hotspot/edit.js:630
 #: assets/src/layers/poll/edit.js:75
-#: pages/video-editor/components/cta/CardCTA.js:491
+#: pages/video-editor/components/cta/CardCTA.js:494
 #: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:175
 msgid "Background"
 msgstr ""
