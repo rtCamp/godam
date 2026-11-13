@@ -111,6 +111,7 @@ describe( 'CardCTA saved image', () => {
 		[ 'a logged-out answer', { code: 'rest_not_logged_in', data: { status: 401 } } ],
 		[ 'a server error', { code: 'internal_server_error', data: { status: 500 } } ],
 		[ 'a network failure', { code: 'fetch_error', message: 'You are probably offline.' } ],
+		[ 'a hidden route', { code: 'rest_no_route', data: { status: 404 } } ],
 	] )( 'keeps the image after %s', async ( label, error ) => {
 		apiFetch.mockRejectedValue( error );
 
@@ -120,8 +121,8 @@ describe( 'CardCTA saved image', () => {
 
 describe( 'isMediaGone', () => {
 	it( 'is true only for a missing attachment', () => {
-		expect( isMediaGone( { code: 'rest_post_invalid_id' } ) ).toBe( true );
-		expect( isMediaGone( { data: { status: 404 } } ) ).toBe( true );
+		expect( isMediaGone( { code: 'rest_post_invalid_id', data: { status: 404 } } ) ).toBe( true );
+		expect( isMediaGone( { code: 'rest_no_route', data: { status: 404 } } ) ).toBe( false );
 		expect( isMediaGone( { code: 'rest_cookie_invalid_nonce', data: { status: 403 } } ) ).toBe( false );
 		expect( isMediaGone( undefined ) ).toBe( false );
 	} );

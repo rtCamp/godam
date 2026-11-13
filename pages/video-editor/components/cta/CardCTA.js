@@ -144,12 +144,15 @@ const formatSize = ( bytes ) => {
 /**
  * Whether a failed `wp/v2/media` request means the attachment no longer exists.
  *
+ * Only `rest_post_invalid_id` counts: a bare 404 can also be `rest_no_route` on a
+ * site that hides the route, where the attachment still exists.
+ *
  * @since 2.9.1
  *
  * @param {Object} error The error apiFetch rejected with.
- * @return {boolean} True for a 404 or `rest_post_invalid_id`.
+ * @return {boolean} True for `rest_post_invalid_id`.
  */
-export const isMediaGone = ( error ) => 'rest_post_invalid_id' === error?.code || 404 === error?.data?.status;
+export const isMediaGone = ( error ) => 'rest_post_invalid_id' === error?.code;
 
 const CardCTA = ( { layerID, triggerSlot } ) => {
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
