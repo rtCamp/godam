@@ -366,6 +366,9 @@ class Chapter_Abilities extends Ability_Group {
 	 * Seconds as the editor's clock-style copy: `mm:ss.ss`, or `hh:mm:ss.ss`
 	 * from an hour on.
 	 *
+	 * The time is rounded to the two decimals shown before it is split, so a
+	 * start like 59.996 reads `01:00.00` and not `00:60.00`.
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @param float $seconds Seconds.
@@ -373,6 +376,7 @@ class Chapter_Abilities extends Ability_Group {
 	 * @return string
 	 */
 	private function clock( $seconds ) {
+		$seconds = round( (float) $seconds, 2 );
 		$hours   = (int) floor( $seconds / 3600 );
 		$minutes = (int) floor( fmod( $seconds, 3600 ) / 60 );
 		$rest    = sprintf( '%05.2f', fmod( $seconds, 60 ) );

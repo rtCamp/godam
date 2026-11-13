@@ -1,6 +1,7 @@
 <?php
 /**
- * Tests how godam/set-chapters checks chapter times against the media's length.
+ * Tests how godam/set-chapters checks chapter times against the media's length,
+ * and how it writes a time as the editor's clock-style copy.
  *
  * @package GoDAM
  */
@@ -15,7 +16,8 @@ use RTGODAM\Inc\Abilities\Chapter_Abilities;
 /**
  * The media's length the ability knows is WordPress's stored `_video_duration`,
  * rounded to whole seconds, so a chapter may run up to a second past it before
- * it is refused.
+ * it is refused. A time is written as `mm:ss.ss` (or `hh:mm:ss.ss`), and a time
+ * just under a whole minute must carry into the minute rather than read `00:60.00`.
  *
  * Runs in its own process because it loads the ability classes.
  *
@@ -157,5 +159,36 @@ class ChapterRangesTest extends TestCase {
 		);
 
 		$this->assertIsArray( $unknown, 'With no stored length there is nothing to check against.' );
+	}
+
+	/**
+	 * Times just under a whole minute or hour carry over instead of showing 60 seconds.
+	 *
+	 * @dataProvider clock_times
+	 *
+	 * @param float  $seconds  Seconds.
+	 * @param string $expected The clock-style copy.
+	 *
+	 * @return void
+	 */
+	public function test_clock_carries_a_rounded_up_second_into_the_minute( $seconds, $expected ) {
+		$this->assertSame( $expected, $this->call( 'clock', array( $seconds ) ) );
+	}
+
+	/**
+	 * Seconds and the clock-style copy the editor shows for them.
+	 *
+	 * @return array
+	 */
+	public function clock_times() {
+		return array(
+			'59.996 rounds up to a minute'     => array( 59.996, '01:00.00' ),
+			'59.999 rounds up to a minute'     => array( 59.999, '01:00.00' ),
+			'119.996 rounds up to two minutes' => array( 119.996, '02:00.00' ),
+			'3599.999 rounds up to an hour'    => array( 3599.999, '01:00:00.00' ),
+			'45.4 is unchanged'                => array( 45.4, '00:45.40' ),
+			'5 is unchanged'                   => array( 5.0, '00:05.00' ),
+			'an hour and a bit keeps its hour' => array( 3725.5, '01:02:05.50' ),
+		);
 	}
 }
