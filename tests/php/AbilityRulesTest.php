@@ -258,4 +258,33 @@ class AbilityRulesTest extends TestCase {
 		$this->assertSame( 1, Abilities::sanitize_switch( true ) );
 		$this->assertSame( 1, Abilities::sanitize_switch( '1' ) );
 	}
+
+	/**
+	 * A number with no maximum gets one, so 1e999 (infinity) is refused.
+	 *
+	 * @return void
+	 */
+	public function test_numbers_get_a_maximum() {
+		$limited = ( new Test_Ability_Group() )->limit(
+			array(
+				'type'       => 'object',
+				'properties' => array(
+					'display_time' => array(
+						'type'    => 'number',
+						'minimum' => 0,
+					),
+					'count'        => array( 'type' => 'integer' ),
+					'capped'       => array(
+						'type'    => 'integer',
+						'maximum' => 5,
+					),
+				),
+			)
+		);
+
+		$this->assertSame( Ability_Group::MAX_NUMBER, $limited['properties']['display_time']['maximum'] );
+		$this->assertSame( Ability_Group::MAX_NUMBER, $limited['properties']['count']['maximum'] );
+		$this->assertSame( 5, $limited['properties']['capped']['maximum'], 'A maximum already set stays.' );
+		$this->assertTrue( is_finite( (float) Ability_Group::MAX_NUMBER ) );
+	}
 }

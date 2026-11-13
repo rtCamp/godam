@@ -404,7 +404,7 @@ class Block_Abilities extends Ability_Group {
 
 		foreach ( $map as $input_key => $attribute ) {
 			if ( isset( $player[ $input_key ] ) ) {
-				$attrs[ $attribute ] = (bool) $player[ $input_key ];
+				$attrs[ $attribute ] = rest_sanitize_boolean( $player[ $input_key ] );
 			}
 		}
 

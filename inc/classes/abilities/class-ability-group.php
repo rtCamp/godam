@@ -125,6 +125,15 @@ abstract class Ability_Group {
 	const MAX_ITEMS = 100;
 
 	/**
+	 * Largest value a number input may hold when its schema sets no maximum.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var int
+	 */
+	const MAX_NUMBER = 1000000000000;
+
+	/**
 	 * Registers this group's abilities.
 	 *
 	 * @since n.e.x.t
@@ -299,6 +308,12 @@ abstract class Ability_Group {
 
 		if ( 'string' === $type && ! isset( $schema['maxLength'] ) && ! isset( $schema['enum'] ) ) {
 			$schema['maxLength'] = in_array( $property, self::TEXT_PROPERTIES, true ) ? self::MAX_TEXT_LENGTH : self::MAX_STRING_LENGTH;
+		}
+
+		// An unbounded number accepts 1e999, which PHP reads as infinity. Saved
+		// infinity cannot be turned into JSON, so every read of that item fails.
+		if ( array_intersect( array( 'number', 'integer' ), $types ) && ! isset( $schema['maximum'] ) ) {
+			$schema['maximum'] = self::MAX_NUMBER;
 		}
 
 		if ( in_array( 'array', $types, true ) ) {

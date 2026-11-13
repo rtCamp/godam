@@ -546,7 +546,7 @@ class Layer_Abilities extends Ability_Group {
 	 * @return array|\WP_Error
 	 */
 	private function build_layer( $type, array $input ) {
-		$allow_skip = isset( $input['allow_skip'] ) ? (bool) $input['allow_skip'] : true;
+		$allow_skip = isset( $input['allow_skip'] ) ? rest_sanitize_boolean( $input['allow_skip'] ) : true;
 
 		switch ( $type ) {
 			case 'cta':

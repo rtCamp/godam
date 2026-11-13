@@ -495,9 +495,25 @@ class Media_Abilities extends Ability_Group {
 			);
 		}
 
+		// The path is stored per media and can be set by anyone who can edit it,
+		// so only a file on GoDAM's CDN or on this site is fetched. Anything else
+		// would let the server be pointed at an address of the caller's choosing.
+		if ( ! $this->is_transcript_url_allowed( $found['transcript_path'] ) ) {
+			return new \WP_Error(
+				'rtgodam_transcript_not_fetchable',
+				__( 'The transcript for this media is stored outside GoDAM and this site, so it cannot be read here. Open the media in the GoDAM Video Editor to see it, or request a new one with godam/request-transcription.', 'godam' ),
+				array( 'status' => 400 )
+			);
+		}
+
 		// A transcript is a small CDN file; keep the timeout short so a slow CDN
-		// can't hold the agent's request open. Matches the VIP branch's 3s.
-		$args = array( 'timeout' => 3 );
+		// can't hold the agent's request open. Matches the VIP branch's 3s. No
+		// redirects, and a size limit, so the fetch stays on the checked host.
+		$args = array(
+			'timeout'             => 3,
+			'redirection'         => 0,
+			'limit_response_size' => 2 * MB_IN_BYTES,
+		);
 
 		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
 			$response = vip_safe_wp_remote_get( $found['transcript_path'], '', 3, 3, 20, $args );
@@ -728,5 +744,39 @@ class Media_Abilities extends Ability_Group {
 		}
 
 		return round( $seconds, 3 );
+	}
+
+	/**
+	 * Whether a stored transcript URL may be fetched by the server.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $url Stored transcript URL.
+	 *
+	 * @return bool
+	 */
+	private function is_transcript_url_allowed( $url ) {
+		if ( ! is_string( $url ) || '' === $url ) {
+			return false;
+		}
+
+		if ( rtgodam_is_transcoder_file_url( $url ) ) {
+			return true;
+		}
+
+		$scheme = strtolower( (string) wp_parse_url( $url, PHP_URL_SCHEME ) );
+		$host   = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+
+		if ( ! in_array( $scheme, array( 'http', 'https' ), true ) || '' === $host || null !== wp_parse_url( $url, PHP_URL_USER ) ) {
+			return false;
+		}
+
+		$uploads    = wp_get_upload_dir();
+		$site_hosts = array(
+			strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) ),
+			strtolower( (string) wp_parse_url( (string) ( $uploads['baseurl'] ?? '' ), PHP_URL_HOST ) ),
+		);
+
+		return in_array( $host, array_filter( $site_hosts ), true );
 	}
 }

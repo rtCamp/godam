@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-12T18:24:31+00:00\n"
+"POT-Creation-Date: 2026-11-13T07:31:38+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -11776,33 +11776,33 @@ msgstr ""
 msgid "Video performance, layer and store insights, and account usage."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:219
+#: inc/classes/abilities/class-ability-group.php:228
 msgid "Needs a GoDAM plan: the site must be connected to GoDAM with a verified API key."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:267
+#: inc/classes/abilities/class-ability-group.php:276
 msgid "This needs a GoDAM plan. Connect this site to GoDAM with a verified API key in GoDAM > Settings, then try again."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:346
+#: inc/classes/abilities/class-ability-group.php:361
 msgid "The GoDAM request failed. Try again in a moment. If it keeps failing, see https://godam.io/docs/ai-agents/"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:350
+#: inc/classes/abilities/class-ability-group.php:365
 msgid "Your WordPress user's role does not allow this. Ask a site administrator, or connect as a user who can."
 msgstr ""
 
 #. translators: %d: attachment ID.
-#: inc/classes/abilities/class-ability-group.php:375
+#: inc/classes/abilities/class-ability-group.php:390
 #, php-format
 msgid "No media item with ID %d exists. Use godam/list-media to find IDs."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:489
+#: inc/classes/abilities/class-ability-group.php:504
 msgid "(no title)"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:755
+#: inc/classes/abilities/class-ability-group.php:770
 msgid "Media (attachment) ID, as returned by godam/list-media."
 msgstr ""
 
@@ -12502,11 +12502,15 @@ msgstr ""
 msgid "No transcript yet. Request one with godam/request-transcription, then check back."
 msgstr ""
 
-#: inc/classes/abilities/class-media-abilities.php:511
+#: inc/classes/abilities/class-media-abilities.php:504
+msgid "The transcript for this media is stored outside GoDAM and this site, so it cannot be read here. Open the media in the GoDAM Video Editor to see it, or request a new one with godam/request-transcription."
+msgstr ""
+
+#: inc/classes/abilities/class-media-abilities.php:527
 msgid "A transcript is recorded for this media but could not be downloaded from the CDN. Try godam/get-transcript again in a moment."
 msgstr ""
 
-#: inc/classes/abilities/class-media-abilities.php:610
+#: inc/classes/abilities/class-media-abilities.php:626
 msgid "\"unused\" relies on the usage index; run the media usage sync under GoDAM Tools if this site has content from before GoDAM was installed."
 msgstr ""
 

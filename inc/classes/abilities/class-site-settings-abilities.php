@@ -177,7 +177,7 @@ class Site_Settings_Abilities extends Ability_Group {
 		}
 
 		if ( isset( $input['global_ads_enabled'] ) ) {
-			$settings['ads_settings']['enable_global_video_ads'] = (bool) $input['global_ads_enabled'];
+			$settings['ads_settings']['enable_global_video_ads'] = rest_sanitize_boolean( $input['global_ads_enabled'] );
 		}
 
 		if ( isset( $input['out_of_view_behavior'] ) ) {
