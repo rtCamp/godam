@@ -70,7 +70,7 @@ class Block_Abilities extends Ability_Group {
 			'godam/add-media-to-page',
 			array(
 				'label'               => __( 'Add media to a page', 'godam' ),
-				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post (or, with LifterLMS active, an existing course or lesson), or create a new page or post with it. On an existing page built with WPBakery, the media goes in as the GoDAM WPBakery element, in a new row at the end. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one existing page you can edit adds to that page instead of creating a duplicate. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
+				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post (or, with LifterLMS active, an existing course or lesson), or create a new page or post with it. On an existing page built with WPBakery, the media goes in as the GoDAM WPBakery element, in a new row at the end. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one draft, pending, private or scheduled page you can edit adds to that page instead of creating a duplicate; a title that matches a published page is refused, so pass that page as page or post_id. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
 				'category'            => 'godam-player',
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -102,7 +102,7 @@ class Block_Abilities extends Ability_Group {
 						),
 						'title'     => array(
 							'type'        => 'string',
-							'description' => __( 'Title of a new page or post to create. If exactly one page of this type with this title already exists and you can edit it, the media is added to it instead.', 'godam' ),
+							'description' => __( 'Title of a new page or post to create. If exactly one unpublished page of this type with this title exists and you can edit it, the media is added to it instead. A published page with this title is refused: pass it as page or post_id.', 'godam' ),
 						),
 						'post_type' => array(
 							'type'    => 'string',
@@ -201,9 +201,13 @@ class Block_Abilities extends Ability_Group {
 
 		// Agents often pass an existing page's name as title. When exactly one page
 		// of that type with that title exists and the user can edit it, add to that
-		// page instead of creating a duplicate.
+		// page instead of creating a duplicate, unless it is published.
 		if ( empty( $input['post_id'] ) && empty( $input['page'] ) && ! empty( $input['title'] ) ) {
-			$existing = $this->find_by_exact_title( (string) $input['title'], (string) ( $input['post_type'] ?? 'page' ) );
+			$existing = $this->existing_page_for_title( (string) $input['title'], (string) ( $input['post_type'] ?? 'page' ) );
+
+			if ( is_wp_error( $existing ) ) {
+				return $existing;
+			}
 
 			if ( $existing ) {
 				$input['post_id'] = $existing;
@@ -912,6 +916,38 @@ class Block_Abilities extends Ability_Group {
 		$ids = array_values( array_filter( array_map( $editable, $ids ) ) );
 
 		return 1 === count( $ids ) ? $ids[0] : 0;
+	}
+
+	/**
+	 * The existing page a title points at, refused when it is published.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $title     Exact title.
+	 * @param string $post_type 'page' or 'post'.
+	 *
+	 * @return int|\WP_Error Post ID, 0 when none matches, or an error for a published match.
+	 */
+	private function existing_page_for_title( $title, $post_type ) {
+		$existing = $this->find_by_exact_title( $title, $post_type );
+
+		// A title is how a new page is named, so it must not change a live page by
+		// accident. A published match is refused; naming it as page or post_id is
+		// the deliberate way to add to it.
+		if ( $existing && 'publish' === get_post_status( $existing ) ) { // godam-coverage-ignore -- existing_page_for_title(): a host page or post, never an attachment.
+			return new \WP_Error(
+				'rtgodam_title_matches_published_page',
+				sprintf(
+					/* translators: 1: page title, 2: page ID. */
+					__( 'A published page titled "%1$s" already exists (ID %2$d), so nothing was changed. To add the media to that page, call again with page or post_id set to it. To create a new draft instead, use a different title.', 'godam' ),
+					trim( sanitize_text_field( $title ) ),
+					$existing
+				),
+				array( 'status' => 409 )
+			);
+		}
+
+		return $existing;
 	}
 
 	/**
