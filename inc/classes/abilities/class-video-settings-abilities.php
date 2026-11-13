@@ -170,7 +170,11 @@ class Video_Settings_Abilities extends Ability_Group {
 			return new \WP_Error( 'rtgodam_two_thumbnails', __( 'Give thumbnail_url or thumbnail_image_id, not both.', 'godam' ), array( 'status' => 400 ) );
 		}
 
-		// Check every part before saving any, so a call that fails changes nothing.
+		/*
+		 * Check every part before saving any, so invalid input changes nothing. The thumbnail
+		 * step runs first because it calls GoDAM and is the likeliest to fail; the ad source
+		 * is a local save and goes last.
+		 */
 		$valid = $this->validate_thumbnail_input( $post->ID, $input );
 
 		if ( is_wp_error( $valid ) ) {
@@ -181,14 +185,6 @@ class Video_Settings_Abilities extends Ability_Group {
 			return self::invalid_ad_tag_error();
 		}
 
-		if ( isset( $input['ad_tag_url'] ) ) {
-			$saved = $this->set_ad_source( $post->ID, (string) $input['ad_tag_url'] );
-
-			if ( is_wp_error( $saved ) ) {
-				return $saved;
-			}
-		}
-
 		if ( ! empty( $input['thumbnail_url'] ) ) {
 			$saved = $this->select_thumbnail( $post->ID, (string) $input['thumbnail_url'] );
 		} elseif ( ! empty( $input['thumbnail_image_id'] ) ) {
@@ -197,6 +193,14 @@ class Video_Settings_Abilities extends Ability_Group {
 
 		if ( isset( $saved ) && is_wp_error( $saved ) ) {
 			return $saved;
+		}
+
+		if ( isset( $input['ad_tag_url'] ) ) {
+			$saved = $this->set_ad_source( $post->ID, (string) $input['ad_tag_url'] );
+
+			if ( is_wp_error( $saved ) ) {
+				return $saved;
+			}
 		}
 
 		return $this->describe( $post->ID );
