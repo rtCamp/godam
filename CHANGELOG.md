@@ -1,5 +1,10 @@
 # Changelog #
 
+## v2.9.1 (November 16, 2026) ##
+
+- Fix: Single Video Analytics, a CTA layer's image, Copy block and the WPBakery document cover now load on sites that block the WordPress media REST API for logged-out visitors.
+- Fix: A CTA layer's image is no longer removed when it fails to load for a reason other than being deleted.
+
 ## v2.9.0 (November 12, 2026) ##
 
 - Feat: Developers can now build their own layer types for GoDAM videos and images with the Layer API: describe the layer in a `layer.json` file and register it from PHP, the video editor and the front end, the way blocks are built. Custom layers appear in the "Add layer" menu and render in the player and the GoDAM Image block.
