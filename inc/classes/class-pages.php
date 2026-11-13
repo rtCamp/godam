@@ -1004,7 +1004,7 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-analytics',
 				RTGODAM_URL . 'assets/build/pages/analytics.min.js',
-				array( 'wp-element', 'wp-i18n' ),
+				array( 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.min.js' ),
 				true
 			);

@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button, Notice, Tooltip } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { trash, plus } from '@wordpress/icons';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -140,6 +141,19 @@ const formatSize = ( bytes ) => {
 	return `${ ( bytes / ( 1024 * 1024 ) ).toFixed( 1 ) } MB`;
 };
 
+/**
+ * Whether a failed `wp/v2/media` request means the attachment no longer exists.
+ *
+ * Only `rest_post_invalid_id` counts: a bare 404 can also be `rest_no_route` on a
+ * site that hides the route, where the attachment still exists.
+ *
+ * @since 2.9.1
+ *
+ * @param {Object} error The error apiFetch rejected with.
+ * @return {boolean} True for `rest_post_invalid_id`.
+ */
+export const isMediaGone = ( error ) => 'rest_post_invalid_id' === error?.code;
+
 const CardCTA = ( { layerID, triggerSlot } ) => {
 	const [ notice, setNotice ] = useState( { message: '', status: 'success', isVisible: false } );
 	const [ selectedImageUrl, setSelectedImageUrl ] = useState( '' );
@@ -151,8 +165,6 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 		state.videoReducer.layers.find( ( _layer ) => _layer.id === layerID ),
 	);
 	const dispatch = useDispatch();
-
-	const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 	const showNotice = ( message, status = 'success' ) => {
 		setNotice( { message, status, isVisible: true } );
@@ -237,13 +249,7 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 		}
 
 		// For regular WordPress media, fetch from the API.
-		fetch( window.pathJoin( [ restURL, `/wp/v2/media/${ mediaId }` ] ) )
-			.then( ( response ) => {
-				if ( ! response.ok ) {
-					throw new Error( 'Media not found' );
-				}
-				return response.json();
-			} )
+		apiFetch( { path: `/wp/v2/media/${ mediaId }` } )
 			.then( ( media ) => {
 				setSelectedImageUrl( media.source_url );
 				setSelectedImageName(
@@ -251,11 +257,15 @@ const CardCTA = ( { layerID, triggerSlot } ) => {
 				);
 				setSelectedImageSize( formatSize( media?.media_details?.filesize ) );
 			} )
-			.catch( () => {
-				removeCTAImage();
+			.catch( ( error ) => {
+				// Clear the saved image only when it is really gone. A server error,
+				// a firewall block or an expired nonce must not erase it from the layer.
+				if ( isMediaGone( error ) ) {
+					removeCTAImage();
+				}
 			} );
 	},
-	[ restURL, layer?.imageUrlExt ] );
+	[ layer?.imageUrlExt ] );
 
 	useEffect( () => {
 		if ( 'image' === layer?.cta_type && layer?.image && layer?.image !== 0 ) {

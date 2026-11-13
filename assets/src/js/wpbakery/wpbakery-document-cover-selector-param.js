@@ -58,8 +58,16 @@
 			cb( '' );
 			return;
 		}
-		fetch( restRoot + 'wp/v2/media/' + id )
-			.then( ( res ) => ( res.ok ? res.json() : null ) )
+		// Send the REST nonce: without it WordPress answers as logged out, and sites
+		// that close wp/v2/media to logged-out requests refuse it. wp.apiFetch adds it,
+		// but WPBakery loads this script with no dependencies, so it may be missing.
+		const nonce = window.wpApiSettings?.nonce || window.godamRestRoute?.nonce;
+		const request = window.wp?.apiFetch
+			? window.wp.apiFetch( { path: '/wp/v2/media/' + id } )
+			: fetch( restRoot + 'wp/v2/media/' + id, {
+				headers: nonce ? { 'X-WP-Nonce': nonce } : {},
+			} ).then( ( res ) => ( res.ok ? res.json() : null ) );
+		request
 			.then( ( media ) => {
 				let cover = '';
 				if ( media && media.meta ) {

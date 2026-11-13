@@ -1,4 +1,7 @@
-const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
+/**
+ * WordPress dependencies
+ */
+import apiFetch from '@wordpress/api-fetch';
 
 const MEDIA_ENDPOINT = 'wp/v2/media';
 
@@ -229,17 +232,8 @@ export function createBlockAttributes( attachmentId, mediaData, mediaType ) {
 
 async function fetchMediaData( attachmentId ) {
 	try {
-		const endpoint = window.pathJoin( [ restURL, `/${ MEDIA_ENDPOINT }/${ attachmentId }` ] );
-		const response = await fetch( endpoint, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		} );
-		if ( ! response.ok ) {
-			return null;
-		}
-		return await response.json();
+		// apiFetch adds the REST root and the nonce, and refreshes an expired nonce.
+		return await apiFetch( { path: `/${ MEDIA_ENDPOINT }/${ attachmentId }` } );
 	} catch ( error ) {
 		return null;
 	}
@@ -258,6 +252,9 @@ export const prefetchMediaDataForCopy = async ( attachmentId, { blockName = 'god
 	}
 	try {
 		const mediaData = await fetchMediaData( attachmentId );
+		if ( ! mediaData ) {
+			return; // Don't cache a failed fetch; the next copy fetches again.
+		}
 		const attrs = createBlockAttributes( attachmentId, mediaData, mediaType );
 		const html = createGoDAMVideoBlockMarkup( attrs, blockName );
 		mediaDataCache.set( key, html );
@@ -274,7 +271,7 @@ export const prefetchMediaDataForCopy = async ( attachmentId, { blockName = 'god
  * @param {Object} [options]           Options.
  * @param {string} [options.blockName] Block to emit (default `godam/video`).
  * @param {string} [options.mediaType] Media type for attribute building.
- * @return {Promise<string>} Serialized block markup.
+ * @return {Promise<string|null>} Serialized block markup, or null when the media request failed.
  */
 export const getGoDAMVideoBlockMarkup = async ( attachmentId, { blockName = 'godam/video', mediaType = 'video' } = {} ) => {
 	const key = cacheKey( attachmentId, blockName );
@@ -282,6 +279,9 @@ export const getGoDAMVideoBlockMarkup = async ( attachmentId, { blockName = 'god
 		return mediaDataCache.get( key );
 	}
 	const mediaData = await fetchMediaData( attachmentId );
+	if ( ! mediaData ) {
+		return null; // A block without the video's source would paste as an empty player.
+	}
 	const attrs = createBlockAttributes( attachmentId, mediaData, mediaType );
 	const html = createGoDAMVideoBlockMarkup( attrs, blockName );
 	mediaDataCache.set( key, html );
@@ -303,6 +303,9 @@ export const copyGoDAMVideoBlock = async ( attachmentId, { blockName = 'godam/vi
 
 	try {
 		const mediaData = await fetchMediaData( attachmentId );
+		if ( ! mediaData ) {
+			return false;
+		}
 
 		const attrs = createBlockAttributes( attachmentId, mediaData, mediaType );
 
