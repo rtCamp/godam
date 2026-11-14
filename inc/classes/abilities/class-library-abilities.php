@@ -238,7 +238,7 @@ class Library_Abilities extends Ability_Group {
 			'godam/add-central-media',
 			array(
 				'label'               => __( 'Add media from GoDAM Central', 'godam' ),
-				'description'         => __( 'Add one media item from this site\'s GoDAM Central account to the site\'s library, optionally straight into a folder. The file stays on GoDAM Central and is already transcoded, so it can be transcribed. Adding the same item again returns the existing one.', 'godam' ),
+				'description'         => __( 'Add one media item from this site\'s GoDAM Central account to the site\'s library, optionally straight into a folder. The file stays on GoDAM Central and is already transcoded, so it can be transcribed. Adding the same item again returns the existing one. Pass the item\'s type and title from godam/list-central-media too: the item is then found in one request instead of a read of the whole account.', 'godam' ),
 				'category'            => 'godam-library',
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -247,6 +247,16 @@ class Library_Abilities extends Ability_Group {
 							'type'        => 'string',
 							'pattern'     => '^[A-Za-z0-9_-]{1,64}$',
 							'description' => __( 'The item\'s central_id from godam/list-central-media.', 'godam' ),
+						),
+						'type'       => array(
+							'type'        => 'string',
+							'enum'        => array_keys( self::CENTRAL_MEDIA_TYPES ),
+							'description' => __( 'The item\'s kind, as listed by godam/list-central-media. Optional, but it makes the item quicker to find.', 'godam' ),
+						),
+						'title'      => array(
+							'type'        => 'string',
+							'maxLength'   => 200,
+							'description' => __( 'The item\'s title from godam/list-central-media. Optional, but it makes the item quicker to find.', 'godam' ),
 						),
 						'folder_id'  => array(
 							'type'        => 'integer',
@@ -705,6 +715,106 @@ class Library_Abilities extends Ability_Group {
 	}
 
 	/**
+	 * Fetches one page of GoDAM Central media, trying once more if it fails.
+	 *
+	 * GoDAM Central's list sometimes fails for a moment under load. One more
+	 * try saves the agent a failed tool call and a retry of its own.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $type     One of the CENTRAL_MEDIA_TYPES keys.
+	 * @param int    $page     Page number.
+	 * @param int    $per_page Items per page.
+	 * @param string $search   Optional text to match against the name.
+	 *
+	 * @return array|\WP_Error
+	 */
+	private function central_media_page_with_retry( $type, $page, $per_page, $search = '' ) {
+		$result = $this->central_media_page( $type, $page, $per_page, $search );
+
+		if ( is_wp_error( $result ) ) {
+			$result = $this->central_media_page( $type, $page, $per_page, $search );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Finds one item in this site's GoDAM Central account by its ID.
+	 *
+	 * GoDAM Central has no lookup by ID for a site key. With the item's type and
+	 * title the search finds it in one request. Without them, or when the search
+	 * misses, the whole list is read, 100 at a time, the given type first.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $central_id The item's ID on GoDAM Central.
+	 * @param string $type       Optional CENTRAL_MEDIA_TYPES key to look in first.
+	 * @param string $title      Optional title to search for.
+	 *
+	 * @return array|null|\WP_Error The item, null when it is not in the account, or the error from GoDAM Central.
+	 */
+	private function find_central_item( $central_id, $type = '', $title = '' ) {
+		$types = array_keys( self::CENTRAL_MEDIA_TYPES );
+
+		if ( isset( self::CENTRAL_MEDIA_TYPES[ $type ] ) ) {
+			$types = array_merge( array( $type ), array_diff( $types, array( $type ) ) );
+		} else {
+			$type = '';
+		}
+
+		$pick = static function ( $result ) use ( $central_id ) {
+			foreach ( $result['data'] as $item ) {
+				if ( is_array( $item ) && isset( $item['id'] ) && (string) $item['id'] === $central_id ) {
+					return $item;
+				}
+			}
+
+			return null;
+		};
+
+		// The quick way: search by title, in the given type or in each one.
+		if ( '' !== $title ) {
+			foreach ( '' !== $type ? array( $type ) : $types as $search_type ) {
+				$result = $this->central_media_page_with_retry( $search_type, 1, 100, $title );
+
+				// A failed search is not final: the full read below gets its own tries.
+				if ( is_wp_error( $result ) ) {
+					continue;
+				}
+
+				$found = $pick( $result );
+
+				if ( null !== $found ) {
+					return $found;
+				}
+			}
+		}
+
+		foreach ( $types as $list_type ) {
+			for ( $page = 1; $page <= 5; $page++ ) {
+				$result = $this->central_media_page_with_retry( $list_type, $page, 100 );
+
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
+
+				$found = $pick( $result );
+
+				if ( null !== $found ) {
+					return $found;
+				}
+
+				if ( empty( $result['has_more'] ) ) {
+					break;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Executes godam/list-central-media.
 	 *
 	 * @since n.e.x.t
@@ -772,32 +882,10 @@ class Library_Abilities extends Ability_Group {
 			return new \WP_Error( 'rtgodam_invalid_central_id', __( 'Give the central_id of an item from godam/list-central-media.', 'godam' ), array( 'status' => 400 ) );
 		}
 
-		$found = null;
+		$found = $this->find_central_item( $central_id, (string) ( $input['type'] ?? '' ), sanitize_text_field( (string) ( $input['title'] ?? '' ) ) );
 
-		// GoDAM Central has no lookup by ID for a site key, so read its list, 100 at a time.
-		foreach ( array_keys( self::CENTRAL_MEDIA_TYPES ) as $type ) {
-			for ( $page = 1; $page <= 5 && null === $found; $page++ ) {
-				$result = $this->central_media_page( $type, $page, 100 );
-
-				if ( is_wp_error( $result ) ) {
-					return $result;
-				}
-
-				foreach ( $result['data'] as $item ) {
-					if ( is_array( $item ) && isset( $item['id'] ) && (string) $item['id'] === $central_id ) {
-						$found = $item;
-						break;
-					}
-				}
-
-				if ( empty( $result['has_more'] ) ) {
-					break;
-				}
-			}
-
-			if ( null !== $found ) {
-				break;
-			}
+		if ( is_wp_error( $found ) ) {
+			return $found;
 		}
 
 		if ( null === $found ) {

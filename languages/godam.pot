@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-13T13:18:22+00:00\n"
+"POT-Creation-Date: 2026-11-14T18:28:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -12341,7 +12341,7 @@ msgid "Title for the media item. Defaults to the file name."
 msgstr ""
 
 #: inc/classes/abilities/class-library-abilities.php:181
-#: inc/classes/abilities/class-library-abilities.php:254
+#: inc/classes/abilities/class-library-abilities.php:264
 msgid "Folder to put the media in, from godam/list-folders. 0 or omitted leaves it outside any folder."
 msgstr ""
 
@@ -12370,77 +12370,85 @@ msgid "Add media from GoDAM Central"
 msgstr ""
 
 #: inc/classes/abilities/class-library-abilities.php:241
-msgid "Add one media item from this site's GoDAM Central account to the site's library, optionally straight into a folder. The file stays on GoDAM Central and is already transcoded, so it can be transcribed. Adding the same item again returns the existing one."
+msgid "Add one media item from this site's GoDAM Central account to the site's library, optionally straight into a folder. The file stays on GoDAM Central and is already transcoded, so it can be transcribed. Adding the same item again returns the existing one. Pass the item's type and title from godam/list-central-media too: the item is then found in one request instead of a read of the whole account."
 msgstr ""
 
 #: inc/classes/abilities/class-library-abilities.php:249
 msgid "The item's central_id from godam/list-central-media."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:441
+#: inc/classes/abilities/class-library-abilities.php:254
+msgid "The item's kind, as listed by godam/list-central-media. Optional, but it makes the item quicker to find."
+msgstr ""
+
+#: inc/classes/abilities/class-library-abilities.php:259
+msgid "The item's title from godam/list-central-media. Optional, but it makes the item quicker to find."
+msgstr ""
+
+#: inc/classes/abilities/class-library-abilities.php:451
 msgid "Give at least one of title, caption, description or alt_text."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:471
+#: inc/classes/abilities/class-library-abilities.php:481
 msgid "Give a public http or https URL."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:487
+#: inc/classes/abilities/class-library-abilities.php:497
 msgid "This site cannot take new uploads right now: its upload size limit is zero or its storage space is used up. Delete files to free up space, or ask a site administrator to raise the upload limit."
 msgstr ""
 
 #. translators: %s: maximum allowed file size, e.g. "64 MB".
-#: inc/classes/abilities/class-library-abilities.php:512
+#: inc/classes/abilities/class-library-abilities.php:522
 #, php-format
 msgid "This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library. Use a smaller file, or ask a site administrator to raise the site's maximum upload size."
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:571
+#: inc/classes/abilities/class-library-abilities.php:581
 #, php-format
 msgid "Imported as media ID %1$d, but it could not be put in the folder: %2$s Use godam/move-media-to-folder to move it."
 msgstr ""
 
 #. translators: %s: required disk space in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:603
+#: inc/classes/abilities/class-library-abilities.php:613
 #, php-format
 msgid "Not enough space to import this file. %s KB needed. Free up space by deleting unused media in the Media Library, or ask a network administrator to raise the site's storage limit."
 msgstr ""
 
 #. translators: %s: maximum allowed file size in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:608
+#: inc/classes/abilities/class-library-abilities.php:618
 #, php-format
 msgid "This file is too big. Files must be less than %s KB in size. Use a smaller file, or ask a network administrator to raise the limit in Network Admin > Settings > Network Settings."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:616
+#: inc/classes/abilities/class-library-abilities.php:626
 msgid "You have used your space quota. Please delete files before uploading."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:671
+#: inc/classes/abilities/class-library-abilities.php:681
 msgid "GoDAM Central did not return the media list. Try again in a moment. If it keeps failing, the site owner can contact GoDAM support at https://app.godam.io/helpdesk."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:772
+#: inc/classes/abilities/class-library-abilities.php:882
 msgid "Give the central_id of an item from godam/list-central-media."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:806
+#: inc/classes/abilities/class-library-abilities.php:894
 msgid "No media with that central_id is in this site's GoDAM Central account. Use godam/list-central-media to find it."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:814
+#: inc/classes/abilities/class-library-abilities.php:902
 msgid "GoDAM Central is still processing this media. Check godam/list-central-media again in a few minutes and add it once its status is Transcoded."
 msgstr ""
 
 #. translators: %s: reason the media could not be added.
-#: inc/classes/abilities/class-library-abilities.php:832
+#: inc/classes/abilities/class-library-abilities.php:920
 #, php-format
 msgid "The media could not be added to the library: %s"
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:851
+#: inc/classes/abilities/class-library-abilities.php:939
 #, php-format
 msgid "Added as media ID %1$d, but it could not be put in the folder: %2$s"
 msgstr ""
