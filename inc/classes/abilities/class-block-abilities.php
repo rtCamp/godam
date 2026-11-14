@@ -1,0 +1,1089 @@
+<?php
+/**
+ * Abilities for placing GoDAM blocks in content.
+ *
+ * @package GoDAM
+ */
+
+namespace RTGODAM\Inc\Abilities;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class Block_Abilities
+ *
+ * Posts are created and updated through core's REST routes for their post
+ * type, so the user's capabilities for that type — including whether they
+ * may publish — are checked the same way as in the block editor.
+ *
+ * Each block is saved with the attributes its block editor stores when a user
+ * picks that media from the library. With fewer, the editor would show an
+ * empty placeholder or rewrite the block as soon as the post is opened.
+ *
+ * @since n.e.x.t
+ */
+class Block_Abilities extends Ability_Group {
+
+	/**
+	 * Post types media can be added to.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string[]
+	 */
+	const POST_TYPES = array( 'page', 'post' );
+
+	/**
+	 * The block each media type is placed with.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var array<string, string>
+	 */
+	const BLOCKS = array(
+		'video'    => 'godam/video',
+		'audio'    => 'godam/audio',
+		'image'    => 'godam/image',
+		'document' => 'godam/pdf',
+		'gallery'  => 'godam/gallery-v2',
+	);
+
+	/**
+	 * What a video player does when it leaves the visitor's view, as the video
+	 * block offers it. An empty string uses the site-wide setting.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string[]
+	 */
+	const OUT_OF_VIEW = array( '', 'off', 'autoplay', 'pause', 'mute' );
+
+	/**
+	 * Registers this group's abilities.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public function register() {
+		$this->add(
+			'godam/add-media-to-page',
+			array(
+				'label'               => __( 'Add media to a page', 'godam' ),
+				'description'         => __( 'Add a GoDAM block for a media item to the end of an existing page or post (or, with LifterLMS active, an existing course or lesson), or create a new page or post with it. On an existing page built with WPBakery, the media goes in as the GoDAM WPBakery element, in a new row at the end. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one draft, pending, private or scheduled page you can edit adds to that page instead of creating a duplicate; a title that matches a published page is refused, so pass that page as page or post_id. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it.', 'godam' ),
+				'category'            => 'godam-player',
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'media_id'  => array(
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'description' => __( 'Media ID of the video, audio, image or document.', 'godam' ),
+						),
+						'media_ids' => array(
+							'type'        => 'array',
+							'items'       => array(
+								'type'    => 'integer',
+								'minimum' => 1,
+							),
+							'minItems'    => 2,
+							'uniqueItems' => true,
+							'description' => __( 'Media IDs of two or more videos, to add as a gallery in this order. Use instead of media_id.', 'godam' ),
+						),
+						'post_id'   => array(
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'description' => __( 'Existing page or post to add the media to. Omit to create a new one.', 'godam' ),
+						),
+						'page'      => array(
+							'type'        => 'string',
+							'maxLength'   => 500,
+							'description' => __( 'Existing page or post to add the media to, by its URL, its path (such as /courses/lesson-1/) or its exact title. Use instead of post_id when the ID is not known.', 'godam' ),
+						),
+						'title'     => array(
+							'type'        => 'string',
+							'description' => __( 'Title of a new page or post to create. If exactly one unpublished page of this type with this title exists and you can edit it, the media is added to it instead. A published page with this title is refused: pass it as page or post_id.', 'godam' ),
+						),
+						'post_type' => array(
+							'type'    => 'string',
+							'enum'    => self::POST_TYPES,
+							'default' => 'page',
+						),
+						'status'    => array(
+							'type'        => 'string',
+							'enum'        => array( 'draft', 'publish' ),
+							'description' => __( 'Status to set. A new page or post is a draft when this is omitted. Omit it for an existing one to keep its current status.', 'godam' ),
+						),
+						'player'    => array(
+							'type'        => 'object',
+							'description' => __( 'Video player settings. Videos only.', 'godam' ),
+							'properties'  => array(
+								'autoplay'             => array(
+									'type'        => 'boolean',
+									'description' => __( 'Start playing on load. Autoplaying videos are muted.', 'godam' ),
+								),
+								'show_in_lightbox'     => array(
+									'type'        => 'boolean',
+									'description' => __( 'Show a poster that opens the video in a lightbox.', 'godam' ),
+								),
+								'loop'                 => array( 'type' => 'boolean' ),
+								'muted'                => array( 'type' => 'boolean' ),
+								'controls'             => array(
+									'type'    => 'boolean',
+									'default' => true,
+								),
+								'show_share_button'    => array( 'type' => 'boolean' ),
+								'caption'              => array( 'type' => 'string' ),
+								'out_of_view_behavior' => array(
+									'type'        => 'string',
+									'enum'        => self::OUT_OF_VIEW,
+									'description' => __( 'When the player scrolls out of view: off (do nothing), autoplay (pause autoplaying videos only), pause (pause all videos) or mute (keep playing, muted). Empty or omitted uses the site setting from godam/get-site-settings.', 'godam' ),
+								),
+							),
+						),
+					),
+				),
+				'output_schema'       => array( 'type' => 'object' ),
+				'execute_callback'    => array( $this, 'add_media_to_page' ),
+				'permission_callback' => array( $this, 'can_add_media' ),
+			),
+			true
+		);
+	}
+
+	/**
+	 * Permission: the user can edit the target post, or create one of that type.
+	 *
+	 * Publishing is checked by the post type's REST route.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $input Ability input.
+	 *
+	 * @return bool
+	 */
+	public function can_add_media( $input = array() ) {
+		if ( ! current_user_can( 'upload_files' ) ) {
+			return false;
+		}
+
+		// A page the user cannot edit is never found, so add_media_to_page() reports it as not found.
+		if ( empty( $input['post_id'] ) && ! empty( $input['page'] ) ) {
+			return true;
+		}
+
+		if ( ! empty( $input['post_id'] ) ) {
+			return current_user_can( 'edit_post', absint( $input['post_id'] ) ); // godam-coverage-ignore -- can_add_media(): post_id is the host page or post the media is placed on, never the attachment.
+		}
+
+		$post_type = get_post_type_object( $input['post_type'] ?? 'page' );
+
+		return $post_type && current_user_can( $post_type->cap->create_posts ); // phpcs:ignore WordPress.WP.Capabilities.Undetermined -- the post type's own capability, as registered.
+	}
+
+	/**
+	 * Executes godam/add-media-to-page.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $input Ability input.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function add_media_to_page( $input = array() ) {
+		$player   = (array) ( $input['player'] ?? array() );
+		$block    = $this->build_block( $input, $player );
+		$wpbakery = null;
+
+		if ( is_wp_error( $block ) ) {
+			return $block;
+		}
+
+		// Agents often pass an existing page's name as title. When exactly one page
+		// of that type with that title exists and the user can edit it, add to that
+		// page instead of creating a duplicate, unless it is published.
+		if ( empty( $input['post_id'] ) && empty( $input['page'] ) && ! empty( $input['title'] ) ) {
+			$existing = $this->existing_page_for_title( (string) $input['title'], (string) ( $input['post_type'] ?? 'page' ) );
+
+			if ( is_wp_error( $existing ) ) {
+				return $existing;
+			}
+
+			if ( $existing ) {
+				$input['post_id'] = $existing;
+			}
+		}
+
+		if ( empty( $input['post_id'] ) && ! empty( $input['page'] ) ) {
+			$input['post_id'] = $this->find_page( (string) $input['page'] );
+
+			if ( ! $input['post_id'] ) {
+				return new \WP_Error(
+					'rtgodam_page_not_found',
+					__( 'No page or post you can edit matches that URL, path or title. Give the page\'s full URL or exact title, or its post_id.', 'godam' ),
+					array( 'status' => 404 )
+				);
+			}
+
+			if ( ! current_user_can( 'edit_post', $input['post_id'] ) ) { // godam-coverage-ignore -- add_media_to_page(): post_id is the host page found above, never the attachment.
+				return new \WP_Error( 'rtgodam_page_not_found', __( 'No page or post you can edit matches that URL, path or title.', 'godam' ), array( 'status' => 404 ) );
+			}
+		}
+
+		if ( ! empty( $input['post_id'] ) ) {
+			$target = get_post( absint( $input['post_id'] ) ); // godam-coverage-ignore -- add_media_to_page(): post_id is the host page or post being edited, checked below to be a page or post, not an attachment.
+
+			if ( ! $target || ! in_array( $target->post_type, self::host_post_types(), true ) ) {
+				return new \WP_Error( 'rtgodam_post_not_found', __( 'post_id is not a page or post on this site. Give the ID of an existing page or post, or leave post_id out and give a title to create a new page.', 'godam' ), array( 'status' => 404 ) );
+			}
+
+			$route     = $this->posts_route( $target->post_type ) . '/' . $target->ID;
+			$markup    = $block['markup'];
+			$separator = "\n\n";
+
+			// A page built with WPBakery is a run of rows of shortcodes. A block added
+			// after them would sit outside the layout and could not be edited in the
+			// builder, so the media goes in as GoDAM's own WPBakery element instead.
+			if ( $this->is_wpbakery_page( $target ) ) {
+				$wpbakery = $this->wpbakery_markup( $block, $player );
+				$markup   = $wpbakery['markup'];
+				// WPBakery reads any text between rows, a blank line too, as an empty text row.
+				$separator = '';
+			}
+
+			$params = array( 'content' => rtrim( $target->post_content ) . $separator . $markup );
+
+			if ( ! empty( $input['status'] ) ) {
+				$params['status'] = $input['status'];
+			}
+
+			// LifterLMS lessons and courses have no core REST route, so they are saved directly.
+			// The permission callback and the page lookup have already checked edit_post.
+			if ( ! $this->has_rest_route( $target->post_type ) ) {
+				$saved = $this->save_without_rest( $target, $params );
+
+				if ( is_wp_error( $saved ) ) {
+					return $saved;
+				}
+
+				$route = '';
+			}
+		} else {
+			if ( empty( $input['title'] ) ) {
+				return new \WP_Error( 'rtgodam_title_missing', __( 'Give a title for the new page, or a post_id to add the media to.', 'godam' ), array( 'status' => 400 ) );
+			}
+
+			$route  = $this->posts_route( $input['post_type'] ?? 'page' );
+			$params = array(
+				'title'   => sanitize_text_field( $input['title'] ),
+				'status'  => $input['status'] ?? 'draft',
+				'content' => $block['markup'],
+			);
+		}
+
+		if ( '' !== $route ) {
+			$saved = $this->rest( 'POST', $route, $params );
+
+			if ( is_wp_error( $saved ) ) {
+				return $saved;
+			}
+		}
+
+		$post_id = (int) $saved['id'];
+		$result  = array(
+			'post_id'   => $post_id,
+			'title'     => $this->plain_title( get_post( $post_id ) ), // godam-coverage-ignore -- add_media_to_page(): $post_id is the host page or post the REST route just saved, not an attachment.
+			'post_type' => get_post_type( $post_id ), // godam-coverage-ignore -- add_media_to_page(): same host post as above.
+			'status'    => get_post_status( $post_id ),
+			'url'       => 'publish' === get_post_status( $post_id ) ? get_permalink( $post_id ) : get_preview_post_link( $post_id ),
+			'edit_url'  => get_edit_post_link( $post_id, 'raw' ),
+			'block'     => $block['name'],
+			'media_ids' => $block['media_ids'],
+		);
+
+		if ( $wpbakery ) {
+			unset( $result['block'] );
+			$result['builder'] = 'wpbakery';
+			$result['element'] = $wpbakery['element'];
+			$result['note']    = __( 'The page is built with WPBakery, so the media was added as the GoDAM WPBakery element, in a new row at the end of the page. Move or edit it in the WPBakery editor.', 'godam' );
+		}
+
+		if ( 'godam/video' === $block['name'] ) {
+			$result['player'] = array(
+				'autoplay'             => ! empty( $player['autoplay'] ),
+				'show_in_lightbox'     => ! empty( $player['show_in_lightbox'] ),
+				'out_of_view_behavior' => rtgodam_get_out_of_view_behavior( $player['out_of_view_behavior'] ?? '' ),
+			);
+
+			if ( ! empty( $player['autoplay'] ) && ! empty( $player['show_in_lightbox'] ) ) {
+				$result['note'] = ( isset( $result['note'] ) ? $result['note'] . ' ' : '' ) . __( 'Both autoplay and lightbox are saved on the block, as the editor allows. On the page the lightbox wins: the video shows as a poster and starts playing when the viewer opens it.', 'godam' );
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Builds the block for the requested media, after checking it.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $input  Ability input.
+	 * @param array $player Player settings.
+	 *
+	 * @return array{name: string, markup: string, media_ids: int[]}|\WP_Error
+	 */
+	private function build_block( array $input, array $player ) {
+		$has_one  = ! empty( $input['media_id'] );
+		$has_many = ! empty( $input['media_ids'] );
+
+		if ( $has_one === $has_many ) {
+			return new \WP_Error( 'rtgodam_media_choice', __( 'Give either media_id for one media item, or media_ids for a gallery of videos.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		if ( $has_many ) {
+			if ( ! empty( $player ) ) {
+				return new \WP_Error( 'rtgodam_player_not_for_gallery', __( 'player settings apply to a single video, not to a gallery. Leave player out, or use media_id with one video.', 'godam' ), array( 'status' => 400 ) );
+			}
+
+			return $this->gallery_block( array_values( array_unique( array_map( 'absint', (array) $input['media_ids'] ) ) ) );
+		}
+
+		$media = $this->get_attachment( $input['media_id'] );
+
+		if ( is_wp_error( $media ) ) {
+			return $media;
+		}
+
+		$type = $this->media_type( $this->attachment_mime_type( $media ) );
+
+		if ( 'video' !== $type && ! empty( $player ) ) {
+			/* translators: %s: media type, e.g. image. */
+			return new \WP_Error( 'rtgodam_player_not_for_type', sprintf( __( 'player settings apply to videos only; this media item is %s. Leave player out.', 'godam' ), $type ), array( 'status' => 400 ) );
+		}
+
+		switch ( $type ) {
+			case 'video':
+				$markup = $this->video_block( $media->ID, $player );
+				break;
+
+			case 'audio':
+				$markup = $this->audio_block( $media );
+				break;
+
+			case 'image':
+				$markup = $this->image_block( $media );
+				break;
+
+			default:
+				$markup = $this->document_block( $media );
+		}
+
+		if ( is_wp_error( $markup ) ) {
+			return $markup;
+		}
+
+		return array(
+			'name'      => self::BLOCKS[ $type ],
+			'markup'    => $markup,
+			'media_ids' => array( $media->ID ),
+		);
+	}
+
+	/**
+	 * Serialised markup for a GoDAM Video block.
+	 *
+	 * The block renders on the server from its attributes; its saved markup is
+	 * the empty wrapper its save() produces.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int   $media_id Video attachment ID.
+	 * @param array $player   Player settings from the ability input.
+	 *
+	 * @return string|\WP_Error
+	 */
+	private function video_block( $media_id, array $player ) {
+		// The block editor reads the attachment through the media route when a
+		// library video is picked, and stores what it finds.
+		$record = $this->rest( 'GET', '/wp/v2/media/' . $media_id, array( 'context' => 'view' ) );
+
+		if ( is_wp_error( $record ) ) {
+			return $record;
+		}
+
+		$meta    = (array) ( $record['meta'] ?? array() );
+		$details = (array) ( $record['media_details'] ?? array() );
+		$attrs   = array(
+			'src'         => $this->attachment_url( $media_id ),
+			'id'          => $media_id,
+			'cmmId'       => $media_id,
+			'caption'     => (string) ( $this->attachment_post( $media_id )->post_excerpt ?? '' ),
+			'seo'         => array(
+				'contentUrl'       => ! empty( $meta['rtgodam_hls_transcoded_url'] ) ? $meta['rtgodam_hls_transcoded_url'] : $record['source_url'],
+				'headline'         => (string) ( $record['title']['rendered'] ?? '' ),
+				'description'      => $this->text_content( (string) ( $record['description']['rendered'] ?? '' ) ),
+				'uploadDate'       => $this->utc_iso( (string) ( $record['date_gmt'] ?? '' ) ),
+				'duration'         => (string) ( $record['video_duration_iso8601'] ?? '' ),
+				'thumbnailUrl'     => (string) ( $meta['rtgodam_media_video_thumbnail'] ?? '' ),
+				'isFamilyFriendly' => true,
+			),
+			'sources'     => $this->video_sources( $media_id ),
+			'videoWidth'  => ! empty( $details['width'] ) ? (string) $details['width'] : null,
+			'videoHeight' => ! empty( $details['height'] ) ? (string) $details['height'] : null,
+		);
+		$map     = array(
+			'autoplay'          => 'autoplay',
+			'show_in_lightbox'  => 'showInLightbox',
+			'loop'              => 'loop',
+			'muted'             => 'muted',
+			'controls'          => 'controls',
+			'show_share_button' => 'showShareButton',
+		);
+
+		foreach ( $map as $input_key => $attribute ) {
+			if ( isset( $player[ $input_key ] ) ) {
+				$attrs[ $attribute ] = rest_sanitize_boolean( $player[ $input_key ] );
+			}
+		}
+
+		// The block editor mutes a video when autoplay is turned on; browsers only autoplay muted video.
+		if ( ! empty( $attrs['autoplay'] ) ) {
+			$attrs['muted'] = true;
+		}
+
+		if ( ! empty( $player['caption'] ) ) {
+			$attrs['caption']     = sanitize_text_field( $player['caption'] );
+			$attrs['showCaption'] = true;
+		} else {
+			// The editor sets "Show caption" from the video's own captions setting
+			// as soon as the video is picked.
+			$attrs['showCaption'] = false !== ( $record['rtgodam_meta']['videoConfig']['controlBar']['subsCapsButton'] ?? null );
+		}
+
+		if ( ! empty( $player['out_of_view_behavior'] ) ) {
+			$attrs['outOfViewBehavior'] = $player['out_of_view_behavior'];
+		}
+
+		return $this->serialize( 'godam/video', $attrs, array(), array( "\n<div class=\"wp-block-godam-video\"></div>\n" ) );
+	}
+
+	/**
+	 * Playback sources in the order the block editor stores them: HLS, then
+	 * DASH, then the original file. A video still transcoding has only the
+	 * original; the player reads the transcoded URLs from the attachment later.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $media_id Video attachment ID.
+	 *
+	 * @return array[]
+	 */
+	private function video_sources( $media_id ) {
+		$sources = array();
+		$hls     = $this->meta_or_null( $media_id, 'rtgodam_hls_transcoded_url' );
+		$dash    = $this->meta_or_null( $media_id, 'rtgodam_transcoded_url' );
+
+		if ( $hls ) {
+			$sources[] = array(
+				'src'  => $hls,
+				'type' => str_ends_with( $hls, '.m3u8' ) ? 'application/x-mpegURL' : $this->attachment_mime_type( $media_id ),
+			);
+		}
+
+		if ( $dash ) {
+			$sources[] = array(
+				'src'  => $dash,
+				'type' => str_ends_with( $dash, '.mpd' ) ? 'application/dash+xml' : $this->attachment_mime_type( $media_id ),
+			);
+		}
+
+		$original = $this->attachment_url( $media_id );
+
+		$sources[] = array(
+			'src'  => $original,
+			'type' => str_ends_with( $original, '.mov' ) ? 'video/mp4' : $this->attachment_mime_type( $media_id ),
+		);
+
+		return $sources;
+	}
+
+	/**
+	 * Serialised markup for a GoDAM Audio block, with what its editor stores
+	 * when a library file is picked: the file, its title and description
+	 * (without the URLs WordPress sometimes seeds it with), and GoDAM's cover
+	 * image when the file has one.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_Post $media Audio attachment.
+	 *
+	 * @return string
+	 */
+	private function audio_block( \WP_Post $media ) {
+		$description = trim( preg_replace( '/\s+/', ' ', preg_replace( '#https?://\S+#', '', (string) $media->post_content ) ) );
+		$attrs       = array(
+			'src'         => $this->attachment_url( $media->ID ),
+			'id'          => $media->ID,
+			'audioTitle'  => $media->post_title,
+			'description' => $description,
+		);
+		$cover       = $this->meta_or_null( $media->ID, 'rtgodam_media_audio_thumbnail' );
+
+		if ( $cover ) {
+			$attrs['thumbnail'] = $cover;
+		}
+
+		return $this->serialize( 'godam/audio', $attrs );
+	}
+
+	/**
+	 * Serialised markup for a GoDAM Image block, with what its editor stores
+	 * when a library image is picked.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_Post $media Image attachment.
+	 *
+	 * @return string
+	 */
+	private function image_block( \WP_Post $media ) {
+		$metadata = $this->attachment_metadata( $media->ID );
+
+		return $this->serialize(
+			'godam/image',
+			array(
+				'id'     => $media->ID,
+				'url'    => $this->attachment_url( $media->ID ),
+				'alt'    => (string) $this->meta_or_null( $media->ID, '_wp_attachment_image_alt' ),
+				'width'  => ! empty( $metadata['width'] ) ? (int) $metadata['width'] : null,
+				'height' => ! empty( $metadata['height'] ) ? (int) $metadata['height'] : null,
+			)
+		);
+	}
+
+	/**
+	 * Serialised markup for a GoDAM Document block, with what its editor
+	 * stores when a library document is picked.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_Post $media Document attachment.
+	 *
+	 * @return string|\WP_Error
+	 */
+	private function document_block( \WP_Post $media ) {
+		$mime      = $this->attachment_mime_type( $media );
+		$supported = function_exists( 'rtgodam_get_supported_document_types' ) ? rtgodam_get_supported_document_types() : array( 'application/pdf' => 'pdf' );
+		$extension = strtolower( pathinfo( (string) wp_parse_url( (string) $this->attachment_url( $media->ID ), PHP_URL_PATH ), PATHINFO_EXTENSION ) );
+
+		// The editor checks the MIME type; text/plain also covers files it does
+		// not show (.srt, .c), so the extension must be a listed one too.
+		if ( ! isset( $supported[ $mime ] ) || ! in_array( $extension, array_values( $supported ), true ) ) {
+			return new \WP_Error(
+				'rtgodam_unsupported_document',
+				__( 'The GoDAM Document block shows PDF, Word, Excel, PowerPoint, OpenDocument, TXT and CSV files; this file is none of those. Use godam/list-media with type document to find another file.', 'godam' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		return $this->serialize(
+			'godam/pdf',
+			array(
+				'src'         => $this->attachment_url( $media->ID ),
+				'caption'     => $media->post_excerpt,
+				'id'          => $media->ID,
+				'docTitle'    => $media->post_title,
+				'description' => $media->post_content,
+				'pageCount'   => 0,
+			)
+		);
+	}
+
+	/**
+	 * Serialised markup for a GoDAM Gallery of hand-picked videos: the gallery
+	 * block in its "Handpicked" mode with one item block per video, as the
+	 * editor builds it when videos are picked.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int[] $media_ids Video attachment IDs, in gallery order.
+	 *
+	 * @return array{name: string, markup: string, media_ids: int[]}|\WP_Error
+	 */
+	private function gallery_block( array $media_ids ) {
+		if ( count( $media_ids ) < 2 ) {
+			return new \WP_Error( 'rtgodam_gallery_too_small', __( 'A gallery needs at least two different videos. Use media_id for one.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		$items = array();
+
+		foreach ( $media_ids as $media_id ) {
+			$media = $this->get_attachment( $media_id );
+
+			if ( is_wp_error( $media ) ) {
+				return $media;
+			}
+
+			if ( 'video' !== $this->media_type( $this->attachment_mime_type( $media ) ) ) {
+				/* translators: %d: attachment ID. */
+				return new \WP_Error( 'rtgodam_gallery_not_video', sprintf( __( 'Media ID %d is not a video; galleries hold videos only. Remove it from media_ids, or use godam/list-media with type video to find video IDs.', 'godam' ), $media_id ), array( 'status' => 400 ) );
+			}
+
+			$items[] = array(
+				'blockName'    => 'godam/gallery-v2-item',
+				'attrs'        => $this->editor_attributes( 'godam/gallery-v2-item', array( 'videoId' => $media_id ) ),
+				'innerBlocks'  => array(),
+				'innerHTML'    => '',
+				'innerContent' => array(),
+			);
+		}
+
+		// The gallery saves only its items, laid out as the editor lays out blocks.
+		$content = array( "\n", null );
+
+		for ( $i = 1, $count = count( $items ); $i < $count; $i++ ) {
+			array_push( $content, "\n\n", null );
+		}
+
+		$content[] = "\n";
+
+		return array(
+			'name'      => self::BLOCKS['gallery'],
+			'markup'    => $this->serialize( 'godam/gallery-v2', array( 'mode' => 'handpicked' ), $items, $content ),
+			'media_ids' => $media_ids,
+		);
+	}
+
+	/**
+	 * Whether a page is laid out with WPBakery Page Builder.
+	 *
+	 * WPBakery saves its layout as [vc_row] shortcodes in the content and marks
+	 * a page whose backend editor is on with `_wpb_vc_js_status`.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_Post $post Host page or post.
+	 *
+	 * @return bool
+	 */
+	private function is_wpbakery_page( \WP_Post $post ) {
+		if ( false !== strpos( (string) $post->post_content, '[vc_row' ) ) {
+			return true;
+		}
+
+		return 'true' === get_post_meta( $post->ID, '_wpb_vc_js_status', true ); // godam-coverage-ignore -- is_wpbakery_page(): reads the host page's WPBakery flag, not an attachment.
+	}
+
+	/**
+	 * The GoDAM WPBakery element for the media, in a new row and column.
+	 *
+	 * Uses the same shortcodes and attribute names that the WPBakery elements
+	 * save, so the element opens with its settings in the WPBakery editor.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $block  The block built for the media: name and media_ids.
+	 * @param array $player Player settings from the ability input.
+	 *
+	 * @return array{element: string, markup: string}
+	 */
+	private function wpbakery_markup( array $block, array $player ) {
+		$ids   = array_values( array_map( 'absint', (array) $block['media_ids'] ) );
+		$atts  = array( 'id' => $ids[0] );
+		$names = array(
+			self::BLOCKS['video']    => 'godam_video',
+			self::BLOCKS['audio']    => 'godam_audio',
+			self::BLOCKS['image']    => 'godam_image',
+			self::BLOCKS['document'] => 'godam_document',
+			self::BLOCKS['gallery']  => 'godam_video_gallery',
+		);
+		$tag   = $names[ $block['name'] ] ?? 'godam_video';
+
+		if ( 'godam_video_gallery' === $tag ) {
+			$atts = array(
+				'mode' => 'handpicked',
+				'ids'  => implode( ',', $ids ),
+			);
+		}
+
+		if ( 'godam_video' === $tag ) {
+			foreach ( array( 'autoplay', 'loop', 'muted', 'controls', 'show_in_lightbox', 'show_share_button' ) as $key ) {
+				if ( isset( $player[ $key ] ) ) {
+					$atts[ $key ] = rest_sanitize_boolean( $player[ $key ] ) ? '1' : '0';
+				}
+			}
+
+			// Browsers only autoplay muted video; the block does the same.
+			if ( isset( $atts['autoplay'] ) && '1' === $atts['autoplay'] ) {
+				$atts['muted'] = '1';
+			}
+
+			if ( ! empty( $player['out_of_view_behavior'] ) && in_array( $player['out_of_view_behavior'], self::OUT_OF_VIEW, true ) ) {
+				$atts['out_of_view'] = $player['out_of_view_behavior'];
+			}
+
+			// A shortcode attribute cannot hold quotes or square brackets.
+			$caption = ! empty( $player['caption'] ) ? str_replace( array( '"', '[', ']' ), '', sanitize_text_field( $player['caption'] ) ) : '';
+
+			if ( '' !== $caption ) {
+				$atts['caption']      = $caption;
+				$atts['show_caption'] = '1';
+			}
+		}
+
+		$pairs = '';
+
+		foreach ( $atts as $key => $value ) {
+			$pairs .= sprintf( ' %s="%s"', $key, $value );
+		}
+
+		return array(
+			'element' => $tag,
+			'markup'  => '[vc_row][vc_column][' . $tag . $pairs . '][/vc_column][/vc_row]',
+		);
+	}
+
+	/**
+	 * Serialises a block the way the block editor does. The editor puts a line
+	 * break inside a block's comments around its content; callers include it.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $name          Block name.
+	 * @param array  $attrs         Attributes.
+	 * @param array  $inner_blocks  Parsed inner blocks.
+	 * @param array  $inner_content Inner content, with null where each inner block goes.
+	 *
+	 * @return string
+	 */
+	private function serialize( $name, array $attrs, array $inner_blocks = array(), array $inner_content = array() ) {
+		return serialize_block(
+			array(
+				'blockName'    => $name,
+				'attrs'        => $this->editor_attributes( $name, $attrs ),
+				'innerBlocks'  => $inner_blocks,
+				'innerHTML'    => implode( '', array_filter( $inner_content, 'is_string' ) ),
+				'innerContent' => $inner_content,
+			)
+		);
+	}
+
+	/**
+	 * The attributes the block editor writes into a block's comment: in the
+	 * order the block declares them, leaving out unset values and values equal
+	 * to the attribute's default.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $name  Block name.
+	 * @param array  $attrs Attributes.
+	 *
+	 * @return array
+	 */
+	private function editor_attributes( $name, array $attrs ) {
+		$type = \WP_Block_Type_Registry::get_instance()->get_registered( $name );
+
+		if ( ! $type || empty( $type->attributes ) ) {
+			return array_filter(
+				$attrs,
+				static function ( $value ) {
+					return null !== $value;
+				}
+			);
+		}
+
+		$ordered = array();
+
+		foreach ( $type->attributes as $key => $schema ) {
+			if ( ! array_key_exists( $key, $attrs ) || null === $attrs[ $key ] ) {
+				continue;
+			}
+
+			if ( array_key_exists( 'default', $schema ) && wp_json_encode( $schema['default'] ) === wp_json_encode( $attrs[ $key ] ) ) {
+				continue;
+			}
+
+			$ordered[ $key ] = $attrs[ $key ];
+		}
+
+		return $ordered;
+	}
+
+	/**
+	 * Text of an HTML fragment, as the browser's textContent gives it.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $html HTML.
+	 *
+	 * @return string
+	 */
+	private function text_content( $html ) {
+		// Not wp_strip_all_tags(): it trims, and textContent keeps whitespace.
+		return html_entity_decode( strip_tags( $html ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags, WordPressVIPMinimum.Functions.StripTags.StripTagsOneParameter -- Matches the editor, which keeps script text as textContent does.
+	}
+
+	/**
+	 * A GMT date from the REST API as the editor's ISO string, e.g.
+	 * `2026-11-05T13:25:18.000+00:00`.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $date_gmt Date in GMT, `Y-m-d\TH:i:s`.
+	 *
+	 * @return string
+	 */
+	private function utc_iso( $date_gmt ) {
+		$time = strtotime( $date_gmt . ' UTC' );
+
+		return false === $time ? $date_gmt : gmdate( 'Y-m-d\TH:i:s', $time ) . '.000+00:00';
+	}
+
+	/**
+	 * The REST collection route for a post type.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $post_type Post type.
+	 *
+	 * @return string
+	 */
+	private function posts_route( $post_type ) {
+		$object = get_post_type_object( $post_type );
+		$base   = ( $object && ! empty( $object->rest_base ) ) ? $object->rest_base : $post_type . 's';
+
+		return '/wp/v2/' . $base;
+	}
+
+	/**
+	 * Finds an existing page or post, from its URL, path or exact title.
+	 *
+	 * Only pages and posts the current user can edit are returned, so the
+	 * lookup never confirms that a page they cannot edit exists.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $page URL, path or exact title.
+	 *
+	 * @return int Post ID, or 0 when none matches or several titles match.
+	 */
+	private function find_page( $page ) {
+		$page = trim( sanitize_text_field( $page ) );
+
+		if ( '' === $page ) {
+			return 0;
+		}
+
+		$editable = static function ( $post_id ) {
+			$post_id = absint( $post_id );
+
+			return ( $post_id && in_array( get_post_type( $post_id ), self::host_post_types(), true ) && current_user_can( 'edit_post', $post_id ) ) ? $post_id : 0; // godam-coverage-ignore -- find_page(): a host page or post, never an attachment.
+		};
+
+		// A URL on this site, or a path such as /courses/lesson-1/.
+		if ( preg_match( '#^(https?://|/)#i', $page ) ) {
+			$url = 0 === strpos( $page, '/' ) ? home_url( $page ) : esc_url_raw( $page );
+
+			if ( wp_parse_url( $url, PHP_URL_HOST ) === wp_parse_url( home_url(), PHP_URL_HOST ) ) {
+				$found = $editable( url_to_postid( $url ) ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.url_to_postid_url_to_postid -- one lookup per agent request, not on page loads.
+
+				if ( $found ) {
+					return $found;
+				}
+
+				$path = trim( (string) wp_parse_url( $url, PHP_URL_PATH ), '/' );
+				$post = '' !== $path ? get_page_by_path( $path, OBJECT, self::host_post_types() ) : null;
+
+				return $post ? $editable( $post->ID ) : 0;
+			}
+
+			return 0;
+		}
+
+		// An exact title. Several matches are refused rather than guessed.
+		$ids = get_posts( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- a capped title lookup run on request by a signed-in user, not on a front-end page.
+			array(
+				'post_type'      => self::host_post_types(),
+				'post_status'    => array( 'publish', 'draft', 'pending', 'private', 'future' ),
+				'title'          => $page,
+				'posts_per_page' => 2,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+			)
+		);
+
+		$ids = array_values( array_filter( array_map( $editable, $ids ) ) );
+
+		return 1 === count( $ids ) ? $ids[0] : 0;
+	}
+
+	/**
+	 * The existing page a title points at, refused when it is published.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $title     Exact title.
+	 * @param string $post_type 'page' or 'post'.
+	 *
+	 * @return int|\WP_Error Post ID, 0 when none matches, or an error for a published match.
+	 */
+	private function existing_page_for_title( $title, $post_type ) {
+		$existing = $this->find_by_exact_title( $title, $post_type );
+
+		// A title is how a new page is named, so it must not change a live page by
+		// accident. A published match is refused; naming it as page or post_id is
+		// the deliberate way to add to it.
+		if ( $existing && 'publish' === get_post_status( $existing ) ) { // godam-coverage-ignore -- existing_page_for_title(): a host page or post, never an attachment.
+			return new \WP_Error(
+				'rtgodam_title_matches_published_page',
+				sprintf(
+					/* translators: 1: page title, 2: page ID. */
+					__( 'A published page titled "%1$s" already exists (ID %2$d), so nothing was changed. To add the media to that page, call again with page or post_id set to it. To create a new draft instead, use a different title.', 'godam' ),
+					trim( sanitize_text_field( $title ) ),
+					$existing
+				),
+				array( 'status' => 409 )
+			);
+		}
+
+		return $existing;
+	}
+
+	/**
+	 * Finds the one page or post of a type with exactly this title that the user can edit.
+	 *
+	 * Published items are preferred over drafts; when two or more editable items share
+	 * the title, none is returned, so the caller creates a new one as asked.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $title     Exact title.
+	 * @param string $post_type 'page' or 'post'.
+	 *
+	 * @return int Post ID, or 0.
+	 */
+	private function find_by_exact_title( $title, $post_type ) {
+		$title = trim( sanitize_text_field( $title ) );
+
+		if ( '' === $title || ! in_array( $post_type, self::POST_TYPES, true ) ) {
+			return 0;
+		}
+
+		foreach ( array( array( 'publish' ), array( 'draft', 'pending', 'private', 'future' ) ) as $statuses ) {
+			$ids = get_posts( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- a capped title lookup run on request by a signed-in user, not on a front-end page.
+				array(
+					'post_type'      => $post_type,
+					'post_status'    => $statuses,
+					'title'          => $title,
+					'posts_per_page' => 3,
+					'fields'         => 'ids',
+					'no_found_rows'  => true,
+				)
+			);
+
+			$ids = array_values(
+				array_filter(
+					$ids,
+					static function ( $id ) {
+						return current_user_can( 'edit_post', $id ); // godam-coverage-ignore -- find_by_exact_title(): a host page or post, never an attachment.
+					}
+				)
+			);
+
+			if ( 1 === count( $ids ) ) {
+				return (int) $ids[0];
+			}
+
+			if ( count( $ids ) > 1 ) {
+				return 0;
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Post types an existing item can be for media to be added to it.
+	 *
+	 * Pages and posts always; LifterLMS courses and lessons when LifterLMS is active.
+	 * New items are still only pages and posts: a course or lesson is created in LifterLMS.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return string[]
+	 */
+	public static function host_post_types() {
+		$types = self::POST_TYPES;
+
+		if ( function_exists( 'llms' ) || class_exists( 'LifterLMS' ) ) {
+			$types[] = 'course';
+			$types[] = 'lesson';
+		}
+
+		/**
+		 * Filters the post types whose existing items GoDAM media can be added to through abilities.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param string[] $types Post type names.
+		 */
+		$types = (array) apply_filters( 'rtgodam_ability_host_post_types', $types );
+
+		return array_values( array_unique( array_filter( array_map( 'sanitize_key', $types ), 'post_type_exists' ) ) );
+	}
+
+	/**
+	 * Whether a post type can be saved through the core REST posts route.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $post_type Post type name.
+	 *
+	 * @return bool
+	 */
+	private function has_rest_route( $post_type ) {
+		$object = get_post_type_object( $post_type );
+
+		return $object && ! empty( $object->show_in_rest );
+	}
+
+	/**
+	 * Saves new content to an existing post whose type has no REST route.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_Post $target Post to update.
+	 * @param array    $params `content`, and optionally `status`.
+	 *
+	 * @return array|\WP_Error `id` of the saved post.
+	 */
+	private function save_without_rest( \WP_Post $target, array $params ) {
+		if ( ! current_user_can( 'edit_post', $target->ID ) ) { // godam-coverage-ignore -- save_without_rest(): the host course or lesson, never an attachment.
+			return new \WP_Error( 'rtgodam_page_not_found', __( 'No page or post you can edit matches that URL, path or title.', 'godam' ), array( 'status' => 404 ) );
+		}
+
+		$update = array(
+			'ID'           => $target->ID,
+			'post_content' => $params['content'],
+		);
+
+		if ( ! empty( $params['status'] ) ) {
+			$object = get_post_type_object( $target->post_type );
+
+			if ( 'publish' === $params['status'] && ( ! $object || ! current_user_can( $object->cap->publish_posts ) ) ) { // phpcs:ignore WordPress.WP.Capabilities.Undetermined -- the post type's own capability, as registered.
+				return new \WP_Error( 'rest_cannot_publish', __( 'Your WordPress user\'s role does not allow publishing this. Ask a site administrator, or leave status out.', 'godam' ), array( 'status' => 403 ) );
+			}
+
+			$update['post_status'] = $params['status'];
+		}
+
+		$saved = wp_update_post( wp_slash( $update ), true ); // godam-coverage-ignore -- save_without_rest(): updates the host course or lesson, never an attachment.
+
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		return array( 'id' => (int) $saved );
+	}
+}

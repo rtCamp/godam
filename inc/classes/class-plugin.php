@@ -85,6 +85,7 @@ use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
 use RTGODAM\Inc\Metform\Metform_Integration;
 use RTGODAM\Inc\Metform\Metform_Rest_Api;
 use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
+use RTGODAM\Inc\Abilities\Abilities;
 
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Params;
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video;
@@ -168,6 +169,9 @@ class Plugin {
 
 		// Load LifterLMS integration.
 		Lifter_LMS::get_instance();
+
+		// Register abilities for the WordPress Abilities API (WordPress 6.9+).
+		Abilities::get_instance();
 
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();

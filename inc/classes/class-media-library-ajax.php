@@ -834,7 +834,7 @@ class Media_Library_Ajax {
 			// For the attachment details panel: offer the plan page when that's the fix, and a
 			// retranscode button to whoever the retranscode route lets in.
 			$response['transcoding_error_needs_plan'] = rtgodam_refusal_needs_plan( get_post_meta( $attachment->ID, 'rtgodam_transcoding_error_detail', true ) );
-			$response['transcoding_can_retranscode']  = current_user_can( 'edit_others_posts' );
+			$response['transcoding_can_retranscode']  = current_user_can( 'edit_others_posts' ) || $can_edit;
 		}
 
 		$godam_original_id = get_post_meta( $attachment->ID, '_godam_original_id', true );

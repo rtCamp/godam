@@ -460,6 +460,20 @@ class Assets {
 			$godam_settings_obj['enableGlobalVideoEngagement'] = false;
 		}
 
+		// AI agents (MCP) panel in GoDAM > Settings > General. Administrators only.
+		if ( is_admin() && current_user_can( 'manage_options' ) ) {
+			$godam_settings_obj['aiAgents'] = array(
+				'enabled'            => \RTGODAM\Inc\Abilities\Abilities::mcp_enabled(),
+				'available'          => function_exists( 'wp_register_ability' ),
+				'adapterSupported'   => \RTGODAM\Inc\Abilities\Mcp_Server::adapter_is_supported(),
+				'serverUrl'          => rest_url( 'godam/mcp' ),
+				'writesEnabled'      => \RTGODAM\Inc\Abilities\Abilities::writes_enabled(),
+				'writingSettingsUrl' => admin_url( 'options-writing.php' ),
+				'installAdapterUrl'  => admin_url( 'plugin-install.php?s=mcp-adapter&tab=search&type=term' ),
+				'appPasswordsUrl'    => admin_url( 'profile.php#application-passwords-section' ),
+			);
+		}
+
 		wp_localize_script(
 			'rtgodam-script',
 			'godamSettings',
