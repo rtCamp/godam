@@ -34,6 +34,7 @@ class VisitorConsentTest extends TestCase {
 		}
 
 		$GLOBALS['rtgodam_hooks'] = array();
+		$GLOBALS['rtgodam_stub']  = array( 'options' => array() );
 
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/class-visitor-consent.php';
 	}
@@ -108,5 +109,55 @@ class VisitorConsentTest extends TestCase {
 		Visitor_Consent::get_instance()->register_cookie_info();
 
 		$this->assertFalse( function_exists( 'wp_add_cookie_info' ) );
+	}
+
+	public function test_the_track_visitors_setting_turns_visitor_tracking_off(): void {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings'] = array( 'general' => array( 'enable_visitor_tracking' => false ) );
+
+		$this->assertFalse( Visitor_Consent::get_script_config()['trackingEnabled'] );
+	}
+
+	public function test_tracking_stays_on_when_the_setting_was_never_saved(): void {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings'] = array( 'general' => array( 'enable_gtm_tracking' => true ) );
+
+		$this->assertTrue( Visitor_Consent::get_script_config()['trackingEnabled'], 'Sites updating from 2.8.0 have no saved value and keep tracking.' );
+	}
+
+	public function test_the_filter_overrides_the_setting(): void {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-settings'] = array( 'general' => array( 'enable_visitor_tracking' => false ) );
+		add_filter(
+			'godam_visitor_tracking_enabled',
+			static function ( $enabled ) {
+				return ! $enabled;
+			}
+		);
+
+		$this->assertTrue( Visitor_Consent::get_script_config()['trackingEnabled'], 'The filter receives the setting as its default and wins.' );
+	}
+
+	public function test_suggests_privacy_policy_text(): void {
+		$GLOBALS['rtgodam_privacy'] = array();
+		eval( // phpcs:ignore Squiz.PHP.Eval.Discouraged -- defines the WP function for this process only.
+			'function wp_add_privacy_policy_content( $name, $content ) { $GLOBALS["rtgodam_privacy"][] = array( $name, $content ); }'
+		);
+
+		Visitor_Consent::get_instance()->add_privacy_policy_content();
+
+		$this->assertCount( 1, $GLOBALS['rtgodam_privacy'] );
+		list( $name, $content ) = $GLOBALS['rtgodam_privacy'][0];
+		$this->assertSame( 'GoDAM', $name );
+		$this->assertStringContainsString( 'analytics.godam.io', $content );
+		foreach ( array( '__anon_id', 'godamVideoSeen:*', 'godamLayerInteractions' ) as $item ) {
+			$this->assertStringContainsString( $item, $content, 'The text names every item GoDAM stores in the browser.' );
+		}
+	}
+
+	public function test_hooks_the_privacy_policy_text_on_admin_init(): void {
+		$instance = Visitor_Consent::get_instance();
+
+		$this->assertContains(
+			array( $instance, 'add_privacy_policy_content' ),
+			$GLOBALS['rtgodam_hooks']['admin_init'][10] ?? array()
+		);
 	}
 }
