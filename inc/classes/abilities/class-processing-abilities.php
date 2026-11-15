@@ -123,15 +123,19 @@ class Processing_Abilities extends Ability_Group {
 		/*
 		 * The route answers 200 with `skipped: true` when it does not send the job (virtual
 		 * media, storage over the limit, HTTP auth, a Central refusal). That is not an
-		 * accepted job, so report it as an error. The route's own message already names the
-		 * next step; it is built with esc_html(), so hand the agent plain text.
+		 * accepted job, so report it as an error. The route's message is built with
+		 * esc_html(), so hand the agent plain text. Most messages name the next step; the
+		 * ones that do not get it appended. The code is the route's reason in the same
+		 * rtgodam_ family as the other ability errors.
 		 */
 		if ( is_array( $result ) && ! empty( $result['skipped'] ) ) {
-			$reason = isset( $result['reason'] ) ? sanitize_key( (string) $result['reason'] ) : '';
+			$reason  = isset( $result['reason'] ) ? sanitize_key( (string) $result['reason'] ) : '';
+			$message = html_entity_decode( wp_strip_all_tags( (string) ( $result['message'] ?? '' ) ), ENT_QUOTES, 'UTF-8' );
+			$next    = $this->retranscode_next_step( $reason );
 
 			return new \WP_Error(
-				'' !== $reason ? $reason : 'rtgodam_retranscode_skipped',
-				html_entity_decode( wp_strip_all_tags( (string) ( $result['message'] ?? '' ) ), ENT_QUOTES, 'UTF-8' ),
+				'rtgodam_retranscode_' . ( '' !== $reason ? $reason : 'skipped' ),
+				'' !== $next ? $message . ' ' . $next : $message,
 				array( 'status' => 409 )
 			);
 		}
@@ -142,5 +146,34 @@ class Processing_Abilities extends Ability_Group {
 			'response' => $result,
 			'next'     => __( 'Transcoding runs in the background. Call godam/get-media later to see its status.', 'godam' ),
 		);
+	}
+
+	/**
+	 * The next step to add to a skipped retranscode whose route message does not name one.
+	 *
+	 * The other reasons (virtual_media, migrated_vimeo, storage_exceeded and
+	 * http_auth_enabled) already end their message with a step.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $reason The route's `reason`.
+	 *
+	 * @return string The step, or an empty string when the message already has one.
+	 */
+	private function retranscode_next_step( $reason ) {
+		switch ( $reason ) {
+			case 'local_environment':
+				return __( 'Transcoding runs on GoDAM Central, which cannot reach a local site. Try again on a site that is online.', 'godam' );
+
+			case 'unsupported_document':
+				return __( 'Use godam/list-media with type document to find a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file.', 'godam' );
+
+			// GoDAM Central refused the job; its reason is in the message.
+			case 'preflight_failed':
+			case 'job_refused':
+				return __( 'Fix what the message names, then call godam/retranscode-media again.', 'godam' );
+		}
+
+		return '';
 	}
 }

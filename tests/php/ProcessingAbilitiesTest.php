@@ -91,13 +91,15 @@ class ProcessingAbilitiesTest extends TestCase {
 	}
 
 	/**
-	 * A skipped retranscode is an error that carries the route's reason and its own message.
+	 * A skipped retranscode is an error that carries the route's reason, prefixed, and its message.
+	 *
+	 * A message that names no next step gets one appended.
 	 *
 	 * @dataProvider skipped_routes
 	 *
 	 * @param string $reason  The route's `reason`.
 	 * @param string $message The route's message, as the route builds it.
-	 * @param string $plain   The same message as plain text.
+	 * @param string $plain   The message the agent gets: plain text, with a next step when the route's has none.
 	 *
 	 * @return void
 	 */
@@ -111,8 +113,8 @@ class ProcessingAbilitiesTest extends TestCase {
 		)->retranscode_media( array( 'id' => 55 ) );
 
 		$this->assertInstanceOf( \WP_Error::class, $result, 'A skipped retranscode is not "accepted".' );
-		$this->assertSame( $reason, $result->get_error_code() );
-		$this->assertSame( $plain, $result->get_error_message(), 'The route names the next step; the agent gets that text, without HTML.' );
+		$this->assertSame( 'rtgodam_retranscode_' . $reason, $result->get_error_code(), 'The same rtgodam_ family as the other ability errors.' );
+		$this->assertSame( $plain, $result->get_error_message(), 'The agent gets the route\'s text without HTML, and a next step when the route names none.' );
 		$this->assertSame( array( 'status' => 409 ), $result->get_error_data() );
 	}
 
@@ -133,10 +135,25 @@ class ProcessingAbilitiesTest extends TestCase {
 				'Intro (ID 55) cannot be retranscoded. Storage limit exceeded (104.2%). Please upgrade your plan to continue transcoding.',
 				'Intro (ID 55) cannot be retranscoded. Storage limit exceeded (104.2%). Please upgrade your plan to continue transcoding.',
 			),
+			'local site'           => array(
+				'local_environment',
+				'Intro (ID 55) transcoding request failed. Transcoding requests are not allowed in the localhost environment.',
+				'Intro (ID 55) transcoding request failed. Transcoding requests are not allowed in the localhost environment. Transcoding runs on GoDAM Central, which cannot reach a local site. Try again on a site that is online.',
+			),
+			'unsupported document' => array(
+				'unsupported_document',
+				'Notes (ID 55) is not a document format GoDAM can convert, so it was skipped.',
+				'Notes (ID 55) is not a document format GoDAM can convert, so it was skipped. Use godam/list-media with type document to find a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file.',
+			),
 			'Central refusal code' => array(
 				'preflight_failed',
 				'It&#039;s here (ID 55) cannot be transcoded. The file is too long for your plan. (Details: duration limit)',
-				'It\'s here (ID 55) cannot be transcoded. The file is too long for your plan. (Details: duration limit)',
+				'It\'s here (ID 55) cannot be transcoded. The file is too long for your plan. (Details: duration limit) Fix what the message names, then call godam/retranscode-media again.',
+			),
+			'Central job refused'  => array(
+				'job_refused',
+				'Intro (ID 55) cannot be transcoded. This file can&#039;t be transcoded.',
+				'Intro (ID 55) cannot be transcoded. This file can\'t be transcoded. Fix what the message names, then call godam/retranscode-media again.',
 			),
 		);
 	}
