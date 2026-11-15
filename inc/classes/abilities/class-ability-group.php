@@ -229,7 +229,131 @@ abstract class Ability_Group {
 			$args['execute_callback'] = $this->require_plan( $args['execute_callback'] );
 		}
 
+		// Last wrapper, so it sees everything any callback or route returned.
+		if ( isset( $args['execute_callback'] ) ) {
+			$args['execute_callback'] = $this->without_secrets( $args['execute_callback'] );
+		}
+
 		wp_register_ability( $name, $args );
+	}
+
+	/**
+	 * Option names whose values must never reach an agent.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string[]
+	 */
+	const SECRET_OPTIONS = array( 'rtgodam-api-key', 'rtgodam-api-key-stored', 'rtgodam-account-token' );
+
+	/**
+	 * Wraps an execute callback so its result and errors never carry the GoDAM
+	 * API key or account token, whatever a route or GoDAM Central put in them.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param callable $callback Execute callback.
+	 *
+	 * @return \Closure
+	 */
+	protected function without_secrets( $callback ) {
+		return function ( $input = null ) use ( $callback ) {
+			return self::redact_secrets( call_user_func( $callback, $input ) );
+		};
+	}
+
+	/**
+	 * Replaces every occurrence of the API key and account token in a value.
+	 *
+	 * Walks arrays, objects and WP_Error messages and data.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $value Ability result.
+	 *
+	 * @return mixed
+	 */
+	public static function redact_secrets( $value ) {
+		$secrets = array();
+
+		foreach ( self::SECRET_OPTIONS as $option ) {
+			$secret = get_option( $option, '' );
+
+			// Short or placeholder values ("unverified", "1") are not secrets and would mangle text.
+			if ( is_string( $secret ) && strlen( $secret ) >= 8 && 'unverified' !== $secret ) {
+				$secrets[] = $secret;
+			}
+		}
+
+		if ( empty( $secrets ) ) {
+			return $value;
+		}
+
+		return self::replace_secrets( $value, $secrets );
+	}
+
+	/**
+	 * Recursive helper for redact_secrets().
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed    $value   Value.
+	 * @param string[] $secrets Secret strings.
+	 *
+	 * @return mixed
+	 */
+	private static function replace_secrets( $value, array $secrets ) {
+		if ( is_string( $value ) ) {
+			return str_replace( $secrets, '[redacted]', $value );
+		}
+
+		if ( is_array( $value ) ) {
+			$clean = array();
+
+			foreach ( $value as $key => $item ) {
+				$clean[ is_string( $key ) ? str_replace( $secrets, '[redacted]', $key ) : $key ] = self::replace_secrets( $item, $secrets );
+			}
+
+			return $clean;
+		}
+
+		if ( $value instanceof \WP_Error ) {
+			$codes = method_exists( $value, 'get_error_codes' ) ? $value->get_error_codes() : array( $value->get_error_code() );
+			$clean = null;
+
+			foreach ( $codes as $code ) {
+				$messages = method_exists( $value, 'get_error_messages' ) ? $value->get_error_messages( $code ) : array( $value->get_error_message() );
+				$data     = self::replace_secrets( $value->get_error_data( $code ), $secrets );
+
+				foreach ( $messages as $message ) {
+					$message = self::replace_secrets( $message, $secrets );
+
+					if ( null === $clean ) {
+						$clean = new \WP_Error( $code, $message, $data );
+					} else {
+						$clean->add( $code, $message, $data );
+					}
+
+					$data = '';
+				}
+
+				if ( empty( $messages ) ) {
+					if ( null === $clean ) {
+						$clean = new \WP_Error( $code, '', $data );
+					} else {
+						$clean->add( $code, '', $data );
+					}
+				}
+			}
+
+			return $clean ? $clean : $value;
+		}
+
+		if ( is_object( $value ) ) {
+			return self::replace_secrets( json_decode( (string) wp_json_encode( $value ), true ), $secrets );
+		}
+
+		return $value;
 	}
 
 	/**
