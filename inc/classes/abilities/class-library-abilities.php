@@ -527,17 +527,21 @@ class Library_Abilities extends Ability_Group {
 		$name = sanitize_file_name( wp_basename( (string) wp_parse_url( $url, PHP_URL_PATH ) ) );
 
 		/*
-		 * A download link often has no extension in its path (/get?id=42, /download/12345), and
-		 * core's sideload refuses a file with no extension as a disallowed type. Core's
-		 * download_url() names the temp file from the response's Content-Disposition or
-		 * Content-Type, so take the extension from there. A response with neither still gets
-		 * core's file-type error, as before.
+		 * A download link often has no extension in its path (/get?id=42, /download/12345), or
+		 * one that is not a media type (stream.php?id=42 serving an MP4), and core's sideload
+		 * refuses a file whose extension is not an allowed type. Core's download_url() names the
+		 * temp file from the response's Content-Disposition or Content-Type, so take the
+		 * extension from there, but only when it is an allowed type itself: a .tmp file, no
+		 * extension, or a disallowed name from Content-Disposition (.php) is not adopted and
+		 * still ends in core's file-type error, as before. The path's name is kept as the stem,
+		 * because the temp file's own stem has a random suffix.
 		 */
-		if ( '' === pathinfo( $name, PATHINFO_EXTENSION ) ) {
-			$extension = pathinfo( $tmp_file, PATHINFO_EXTENSION );
+		if ( ! wp_check_filetype( $name )['ext'] ) {
+			$extension = wp_check_filetype( $tmp_file )['ext'];
 
-			if ( '' !== $extension && 'tmp' !== $extension ) {
-				$name = sanitize_file_name( ( '' !== $name ? $name : 'import' ) . '.' . $extension );
+			if ( $extension ) {
+				$stem = pathinfo( $name, PATHINFO_FILENAME );
+				$name = sanitize_file_name( ( '' !== $stem ? $stem : 'import' ) . '.' . $extension );
 			}
 		}
 

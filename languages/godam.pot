@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-14T18:28:18+00:00\n"
+"POT-Creation-Date: 2026-11-15T05:52:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -11921,7 +11921,7 @@ msgid "Add media to a page"
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:73
-msgid "Add a GoDAM block for a media item to the end of an existing page or post (or, with LifterLMS active, an existing course or lesson), or create a new page or post with it. On an existing page built with WPBakery, the media goes in as the GoDAM WPBakery element, in a new row at the end. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one draft, pending, private or scheduled page you can edit adds to that page instead of creating a duplicate; a title that matches a published page is refused, so pass that page as page or post_id. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it."
+msgid "Add a GoDAM block for a media item to the end of an existing page or post (or, with LifterLMS active, an existing course or lesson), or create a new page or post with it. On an existing page built with WPBakery, the media goes in as the GoDAM WPBakery element, in a new row at the end. When the person names a page that may already exist, pass it as page (its URL, path or exact title). A title that matches exactly one draft, pending, private or scheduled page you can edit adds to that page instead of creating a duplicate, even when a published page has the same title; otherwise a title that matches a published page is refused, so pass that page as page or post_id. The block follows the media type: a video gets the GoDAM Video block (its layers and chapters show automatically), audio the GoDAM Audio block, an image the GoDAM Image block (with its hotspots), and a document the GoDAM Document block. Give media_ids instead of media_id to add a gallery of several videos. New posts are drafts unless status is publish; an existing post keeps its status unless status is given. player settings apply to videos only. Autoplay and lightbox cannot both apply: a lightbox video plays when the viewer opens it."
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:81
@@ -11941,7 +11941,7 @@ msgid "Existing page or post to add the media to, by its URL, its path (such as 
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:105
-msgid "Title of a new page or post to create. If exactly one unpublished page of this type with this title exists and you can edit it, the media is added to it instead. A published page with this title is refused: pass it as page or post_id."
+msgid "Title of a new page or post to create. If exactly one unpublished page of this type with this title exists and you can edit it, the media is added to it instead, even when a published page has the same title. Otherwise a title that matches a published page is refused: pass it as page or post_id."
 msgstr ""
 
 #: inc/classes/abilities/class-block-abilities.php:115
@@ -11964,66 +11964,66 @@ msgstr ""
 msgid "When the player scrolls out of view: off (do nothing), autoplay (pause autoplaying videos only), pause (pause all videos) or mute (keep playing, muted). Empty or omitted uses the site setting from godam/get-site-settings."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:223
+#: inc/classes/abilities/class-block-abilities.php:224
 msgid "No page or post you can edit matches that URL, path or title. Give the page's full URL or exact title, or its post_id."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:229
-#: inc/classes/abilities/class-block-abilities.php:1063
+#: inc/classes/abilities/class-block-abilities.php:230
+#: inc/classes/abilities/class-block-abilities.php:1089
 msgid "No page or post you can edit matches that URL, path or title."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:237
+#: inc/classes/abilities/class-block-abilities.php:238
 msgid "post_id is not a page or post on this site. Give the ID of an existing page or post, or leave post_id out and give a title to create a new page."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:273
+#: inc/classes/abilities/class-block-abilities.php:275
 msgid "Give a title for the new page, or a post_id to add the media to."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:308
+#: inc/classes/abilities/class-block-abilities.php:310
 msgid "The page is built with WPBakery, so the media was added as the GoDAM WPBakery element, in a new row at the end of the page. Move or edit it in the WPBakery editor."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:319
+#: inc/classes/abilities/class-block-abilities.php:321
 msgid "Both autoplay and lightbox are saved on the block, as the editor allows. On the page the lightbox wins: the video shows as a poster and starts playing when the viewer opens it."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:341
+#: inc/classes/abilities/class-block-abilities.php:343
 msgid "Give either media_id for one media item, or media_ids for a gallery of videos."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:346
+#: inc/classes/abilities/class-block-abilities.php:348
 msgid "player settings apply to a single video, not to a gallery. Leave player out, or use media_id with one video."
 msgstr ""
 
 #. translators: %s: media type, e.g. image.
-#: inc/classes/abilities/class-block-abilities.php:362
+#: inc/classes/abilities/class-block-abilities.php:364
 #, php-format
 msgid "player settings apply to videos only; this media item is %s. Leave player out."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:585
+#: inc/classes/abilities/class-block-abilities.php:587
 msgid "The GoDAM Document block shows PDF, Word, Excel, PowerPoint, OpenDocument, TXT and CSV files; this file is none of those. Use godam/list-media with type document to find another file."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:616
+#: inc/classes/abilities/class-block-abilities.php:618
 msgid "A gallery needs at least two different videos. Use media_id for one."
 msgstr ""
 
 #. translators: %d: attachment ID.
-#: inc/classes/abilities/class-block-abilities.php:630
+#: inc/classes/abilities/class-block-abilities.php:632
 #, php-format
 msgid "Media ID %d is not a video; galleries hold videos only. Remove it from media_ids, or use godam/list-media with type video to find video IDs."
 msgstr ""
 
 #. translators: 1: page title, 2: page ID.
-#: inc/classes/abilities/class-block-abilities.php:942
+#: inc/classes/abilities/class-block-abilities.php:976
 #, php-format
 msgid "A published page titled \"%1$s\" already exists (ID %2$d), so nothing was changed. To add the media to that page, call again with page or post_id set to it. To create a new draft instead, use a different title."
 msgstr ""
 
-#: inc/classes/abilities/class-block-abilities.php:1075
+#: inc/classes/abilities/class-block-abilities.php:1101
 msgid "Your WordPress user's role does not allow publishing this. Ask a site administrator, or leave status out."
 msgstr ""
 
@@ -12404,51 +12404,51 @@ msgid "This file is too big to import. Files must be %s or smaller, the same lim
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:581
+#: inc/classes/abilities/class-library-abilities.php:585
 #, php-format
 msgid "Imported as media ID %1$d, but it could not be put in the folder: %2$s Use godam/move-media-to-folder to move it."
 msgstr ""
 
 #. translators: %s: required disk space in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:613
+#: inc/classes/abilities/class-library-abilities.php:617
 #, php-format
 msgid "Not enough space to import this file. %s KB needed. Free up space by deleting unused media in the Media Library, or ask a network administrator to raise the site's storage limit."
 msgstr ""
 
 #. translators: %s: maximum allowed file size in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:618
+#: inc/classes/abilities/class-library-abilities.php:622
 #, php-format
 msgid "This file is too big. Files must be less than %s KB in size. Use a smaller file, or ask a network administrator to raise the limit in Network Admin > Settings > Network Settings."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:626
+#: inc/classes/abilities/class-library-abilities.php:630
 msgid "You have used your space quota. Please delete files before uploading."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:681
+#: inc/classes/abilities/class-library-abilities.php:685
 msgid "GoDAM Central did not return the media list. Try again in a moment. If it keeps failing, the site owner can contact GoDAM support at https://app.godam.io/helpdesk."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:882
+#: inc/classes/abilities/class-library-abilities.php:886
 msgid "Give the central_id of an item from godam/list-central-media."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:894
+#: inc/classes/abilities/class-library-abilities.php:898
 msgid "No media with that central_id is in this site's GoDAM Central account. Use godam/list-central-media to find it."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:902
+#: inc/classes/abilities/class-library-abilities.php:906
 msgid "GoDAM Central is still processing this media. Check godam/list-central-media again in a few minutes and add it once its status is Transcoded."
 msgstr ""
 
 #. translators: %s: reason the media could not be added.
-#: inc/classes/abilities/class-library-abilities.php:920
+#: inc/classes/abilities/class-library-abilities.php:924
 #, php-format
 msgid "The media could not be added to the library: %s"
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:939
+#: inc/classes/abilities/class-library-abilities.php:943
 #, php-format
 msgid "Added as media ID %1$d, but it could not be put in the folder: %2$s"
 msgstr ""
@@ -12563,8 +12563,20 @@ msgstr ""
 msgid "Transcription runs in the background. Call godam/get-transcript later to read it."
 msgstr ""
 
-#: inc/classes/abilities/class-processing-abilities.php:143
+#: inc/classes/abilities/class-processing-abilities.php:147
 msgid "Transcoding runs in the background. Call godam/get-media later to see its status."
+msgstr ""
+
+#: inc/classes/abilities/class-processing-abilities.php:166
+msgid "Transcoding runs on GoDAM Central, which cannot reach a local site. Try again on a site that is online."
+msgstr ""
+
+#: inc/classes/abilities/class-processing-abilities.php:169
+msgid "Use godam/list-media with type document to find a PDF, Word, Excel, PowerPoint, OpenDocument, TXT or CSV file."
+msgstr ""
+
+#: inc/classes/abilities/class-processing-abilities.php:174
+msgid "Fix what the message names, then call godam/retranscode-media again."
 msgstr ""
 
 #: inc/classes/abilities/class-prompt-abilities.php:35

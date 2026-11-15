@@ -75,6 +75,9 @@ class ImportMediaLimitTest extends TestCase {
 			eval( 'function wp_parse_url( $url, $component = -1 ) { return parse_url( $url, $component ); }' ); }
 		if ( ! function_exists( 'wp_delete_file' ) ) {
 			eval( 'function wp_delete_file( $file ) { $GLOBALS["rtgodam_stub"]["deleted"][] = $file; return is_file( $file ) && unlink( $file ); }' ); }
+		if ( ! function_exists( 'wp_check_filetype' ) ) {
+			// Like core, takes the extension from the end of the whole name; only a few types are allowed here.
+			eval( 'function wp_check_filetype( $filename ) { return preg_match( "!\\.(mp4|webm|pdf)$!i", (string) $filename, $m ) ? array( "ext" => $m[1], "type" => "stub/" . $m[1] ) : array( "ext" => false, "type" => false ); }' ); }
 		if ( ! function_exists( 'media_handle_sideload' ) ) {
 			eval( 'function media_handle_sideload( $file ) { $GLOBALS["rtgodam_stub"]["sideload"]++; $GLOBALS["rtgodam_stub"]["names"][] = $file["name"]; return new WP_Error( "rtgodam_stub_sideload", "Stopped here." ); }' ); }
 		eval(
@@ -138,7 +141,10 @@ class ImportMediaLimitTest extends TestCase {
 	}
 
 	/**
-	 * A URL path with no extension takes it from the temp file core named from the response headers.
+	 * A URL path with no usable extension takes it from the temp file core named from the response headers.
+	 *
+	 * The path has none (/get?id=42), or one that is not an allowed type (stream.php?id=42
+	 * serving an MP4), which the sideload would refuse after the whole download.
 	 *
 	 * @dataProvider sideload_names
 	 *
@@ -148,7 +154,7 @@ class ImportMediaLimitTest extends TestCase {
 	 *
 	 * @return void
 	 */
-	public function test_the_file_name_gets_an_extension_when_the_url_has_none( $url, $tmp_extension, $expected ) {
+	public function test_the_file_name_takes_the_downloads_extension_when_the_url_has_no_usable_one( $url, $tmp_extension, $expected ) {
 		$this->ability( 1000, 10, $tmp_extension )->import_media_from_url( array( 'url' => $url ) );
 
 		$this->assertSame( array( $expected ), $GLOBALS['rtgodam_stub']['names'] );
@@ -161,12 +167,16 @@ class ImportMediaLimitTest extends TestCase {
 	 */
 	public function sideload_names() {
 		return array(
-			'query string link'           => array( 'https://example.com/get?id=42', 'mp4', 'get.mp4' ),
-			'numeric download path'       => array( 'https://example.com/download/12345', 'mp4', '12345.mp4' ),
-			'no name in the path'         => array( 'https://example.com/', 'mp4', 'import.mp4' ),
-			'URL with an extension'       => array( 'https://example.com/clip.mp4', 'webm', 'clip.mp4' ),
-			'temp file left as .tmp'      => array( 'https://example.com/get?id=42', 'tmp', 'get' ),
-			'temp file with no extension' => array( 'https://example.com/get?id=42', '', 'get' ),
+			'query string link'              => array( 'https://example.com/get?id=42', 'mp4', 'get.mp4' ),
+			'numeric download path'          => array( 'https://example.com/download/12345', 'mp4', '12345.mp4' ),
+			'no name in the path'            => array( 'https://example.com/', 'mp4', 'import.mp4' ),
+			'URL with an extension'          => array( 'https://example.com/clip.mp4', 'webm', 'clip.mp4' ),
+			'temp file left as .tmp'         => array( 'https://example.com/get?id=42', 'tmp', 'get' ),
+			'temp file with no extension'    => array( 'https://example.com/get?id=42', '', 'get' ),
+			'script path serving an MP4'     => array( 'https://example.com/stream.php?id=42', 'mp4', 'stream.mp4' ),
+			'script path serving a PDF'      => array( 'https://example.com/report.php', 'pdf', 'report.pdf' ),
+			'script path, temp left as .tmp' => array( 'https://example.com/stream.php?id=42', 'tmp', 'stream.php' ),
+			'script path, disallowed temp'   => array( 'https://example.com/stream.php?id=42', 'exe', 'stream.php' ),
 		);
 	}
 }
