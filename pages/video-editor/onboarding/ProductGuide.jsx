@@ -176,6 +176,10 @@ const ProductGuide = ( { attachmentID } ) => {
 		setBusy( true );
 		try {
 			const content = await getGoDAMVideoBlockMarkup( attachmentID );
+			if ( ! content ) {
+				// The media request failed: don't create a page with an empty player.
+				return;
+			}
 			const response = await fetch( window.pathJoin( [ restURL, 'wp/v2/pages' ] ), {
 				method: 'POST',
 				headers: {

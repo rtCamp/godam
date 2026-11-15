@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 2.9.0\n"
+"Project-Id-Version: GoDAM 2.9.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-12T07:15:48+00:00\n"
+"POT-Creation-Date: 2026-11-13T12:35:48+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -314,7 +314,7 @@ msgstr ""
 #: assets/src/blocks/godam-pdf/edit.js:831
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:283
 #: assets/src/blocks/sureforms/blocks/recorder/edit.js:183
-#: pages/video-editor/components/cta/CardCTA.js:445
+#: pages/video-editor/components/cta/CardCTA.js:455
 msgid "Description"
 msgstr ""
 
@@ -581,7 +581,7 @@ msgstr ""
 #: inc/templates/godam-video-gallery.php:264
 #: assets/src/blocks/godam-gallery-v2-item/edit.js:163
 #: assets/src/blocks/godam-gallery-v2/edit.js:716
-#: pages/analytics/Analytics.js:633
+#: pages/analytics/Analytics.js:625
 #: pages/video-editor/VideoEditor.js:680
 msgid "Untitled video"
 msgstr ""
@@ -615,7 +615,7 @@ msgstr ""
 #: assets/src/blocks/godam-gallery-v2/edit.js:207
 #: pages/media-library/components/folder-tree/FolderTree.jsx:333
 #: pages/media-library/components/folder-tree/FolderTree.jsx:376
-#: pages/video-editor/components/cta/CardCTA.js:369
+#: pages/video-editor/components/cta/CardCTA.js:379
 msgid "Loading…"
 msgstr ""
 
@@ -1141,7 +1141,7 @@ msgstr ""
 #: assets/build/blocks/godam-image/index.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-image/edit.js:197
-#: pages/video-editor/components/cta/CardCTA.js:399
+#: pages/video-editor/components/cta/CardCTA.js:409
 msgid "Remove image"
 msgstr ""
 
@@ -1376,7 +1376,7 @@ msgstr ""
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
 #: assets/src/blocks/godam-pdf/edit.js:884
-#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:118
+#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:126
 msgid "Auto-generated cover"
 msgstr ""
 
@@ -1393,7 +1393,7 @@ msgstr ""
 #: assets/build/blocks/godam-pdf/index.js:1
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
 #: assets/src/blocks/godam-pdf/edit.js:943
-#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:103
+#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:111
 msgid "Remove cover"
 msgstr ""
 
@@ -2682,7 +2682,7 @@ msgstr ""
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/js/godam-player/managers/layers/formLayerManager.js:248
-#: assets/src/layers/cta/edit.js:266
+#: assets/src/layers/cta/edit.js:259
 #: assets/src/layers/cta/view.js:28
 #: pages/godam/components/WooUnlockedNotice.jsx:202
 #: pages/media-library-tour/controller.js:333
@@ -3064,17 +3064,17 @@ msgid "Upload failed. Please try again."
 msgstr ""
 
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
-#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:122
+#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:130
 msgid "Custom cover"
 msgstr ""
 
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
-#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:157
+#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:165
 msgid "Select Cover Image"
 msgstr ""
 
 #: assets/build/js/wpbakery-document-cover-selector-param.min.js:1
-#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:158
+#: assets/src/js/wpbakery/wpbakery-document-cover-selector-param.js:166
 msgid "Use image"
 msgstr ""
 
@@ -3146,7 +3146,7 @@ msgstr ""
 #: assets/build/layers/cta/view.js:1
 #: assets/build/pages/media-library-tour.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/layers/cta/edit.js:266
+#: assets/src/layers/cta/edit.js:259
 #: assets/src/layers/cta/view.js:28
 #: pages/media-library-tour/components/FinishModal.jsx:34
 msgid "Done"
@@ -3582,9 +3582,9 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:130
-#: pages/analytics/Analytics.js:180
-#: pages/analytics/Analytics.js:194
+#: pages/analytics/Analytics.js:128
+#: pages/analytics/Analytics.js:178
+#: pages/analytics/Analytics.js:192
 #: pages/analytics/PlaysVsViewers.js:93
 #: pages/analytics/SingleMetrics.js:122
 #: pages/dashboard/components/GA4ConnectionWidget.js:174
@@ -4097,8 +4097,8 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:678
-#: pages/analytics/Analytics.js:1031
+#: pages/analytics/Analytics.js:670
+#: pages/analytics/Analytics.js:1023
 #: pages/analytics/components/Placements/index.js:230
 #: pages/analytics/PlaybackPerformance.js:422
 #: pages/analytics/PlaybackPerformance.js:546
@@ -4550,7 +4550,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:1022
+#: pages/analytics/Analytics.js:1014
 #: pages/analytics/components/Placements/index.js:229
 #: pages/dashboard/components/TopVideosTable.js:226
 #: pages/dashboard/components/TopVideosTable.js:349
@@ -4647,12 +4647,12 @@ msgid "Analytics is shown only for videos you can edit. Choose one of your own v
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:107
+#: pages/analytics/Analytics.js:105
 msgid "Back to Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:108
+#: pages/analytics/Analytics.js:106
 msgid "Back to Media Editor"
 msgstr ""
 
@@ -4667,40 +4667,40 @@ msgid "viewers"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:471
+#: pages/analytics/Analytics.js:466
 msgid "Select Video to Perform Performance Comparison Testing"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:473
+#: pages/analytics/Analytics.js:468
 msgid "Use this Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:581
+#: pages/analytics/Analytics.js:573
 msgid "This media doesn't exist."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:583
+#: pages/analytics/Analytics.js:575
 msgid "Go to Dashboard"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:595
+#: pages/analytics/Analytics.js:587
 msgid "Single Video Analytics"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:607
+#: pages/analytics/Analytics.js:599
 #: pages/dashboard/Dashboard.js:437
 msgid "Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:621
+#: pages/analytics/Analytics.js:613
 #: pages/dashboard/components/TopVideosTable.js:426
 #: pages/dashboard/components/TopVideosTable.js:438
 msgid "Video thumbnail"
@@ -4710,7 +4710,7 @@ msgstr ""
 #. translators: %d is the number of layers.
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: pages/analytics/Analytics.js:641
+#: pages/analytics/Analytics.js:633
 #: pages/video-editor/components/editor-shell/EditorTopBar.js:233
 #, js-format
 msgid "%d layer"
@@ -4720,34 +4720,34 @@ msgstr[1] ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:657
+#: pages/analytics/Analytics.js:649
 #: pages/dashboard/Dashboard.js:499
 msgid "Insights"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:667
-#: pages/analytics/Analytics.js:1015
+#: pages/analytics/Analytics.js:659
+#: pages/analytics/Analytics.js:1007
 #: pages/dashboard/components/TopVideosTable.js:371
 msgid "Average Engagement"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:668
+#: pages/analytics/Analytics.js:660
 msgid "Video engagement rate is the percentage of video watched. Average Engagement = Total time played / (Total plays x Video length)"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:679
+#: pages/analytics/Analytics.js:671
 #: pages/dashboard/Dashboard.js:535
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:689
+#: pages/analytics/Analytics.js:681
 #: pages/dashboard/components/TopVideosTable.js:227
 #: pages/dashboard/Dashboard.js:548
 msgid "Watch Time"
@@ -4755,89 +4755,89 @@ msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
-#: pages/analytics/Analytics.js:690
+#: pages/analytics/Analytics.js:682
 #: pages/dashboard/Dashboard.js:549
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:781
+#: pages/analytics/Analytics.js:773
 msgid "Viewer Retention Curve"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:795
+#: pages/analytics/Analytics.js:787
 msgid "Viewer retention will appear here once this video receives views."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:843
+#: pages/analytics/Analytics.js:835
 msgid "Views by Source"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:854
+#: pages/analytics/Analytics.js:846
 msgid "Performance Comparison"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:875
+#: pages/analytics/Analytics.js:867
 msgid "The test is complete! Review results to identify the best-performing video."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:865
+#: pages/analytics/Analytics.js:857
 msgid "In Progress"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:870
+#: pages/analytics/Analytics.js:862
 msgid "Initiate the test comparison to generate analytical insights."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:887
+#: pages/analytics/Analytics.js:879
 msgid "Start Test"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: inc/classes/elementor-controls/class-godam-media.php:140
-#: pages/analytics/Analytics.js:906
+#: pages/analytics/Analytics.js:898
 msgid "Choose Video"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:918
+#: pages/analytics/Analytics.js:910
 msgid "Test this video against others to see which performs better."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:927
+#: pages/analytics/Analytics.js:919
 msgid "Upload or Replace CTA Image"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:932
+#: pages/analytics/Analytics.js:924
 msgid "Choose"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1003
+#: pages/analytics/Analytics.js:995
 msgid "Views"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1043
+#: pages/analytics/Analytics.js:1035
 msgid "Page Loads"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1057
+#: pages/analytics/Analytics.js:1049
 msgid "Play Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
-#: pages/analytics/Analytics.js:1071
+#: pages/analytics/Analytics.js:1063
 msgid "Video Length"
 msgstr ""
 
@@ -5929,7 +5929,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/tabs/GeneralSettings/BrandImageSelector.jsx:53
 #: pages/godam/components/tabs/VideoSettings/VideoWatermark.jsx:59
-#: pages/video-editor/components/cta/CardCTA.js:188
+#: pages/video-editor/components/cta/CardCTA.js:200
 #: pages/video-editor/components/hotspot/FontAwesomeIconPicker.js:100
 msgid "Only Image files are allowed"
 msgstr ""
@@ -7105,7 +7105,7 @@ msgstr ""
 #: assets/build/pages/media-library-tour.min.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: pages/media-library-tour/components/TourApp.jsx:142
-#: pages/video-editor/onboarding/ProductGuide.jsx:225
+#: pages/video-editor/onboarding/ProductGuide.jsx:229
 msgid "Keep going"
 msgstr ""
 
@@ -8167,8 +8167,8 @@ msgstr ""
 #: inc/classes/elementor-widgets/class-godam-image.php:61
 #: inc/classes/wpbakery-elements/class-wpb-godam-image.php:70
 #: pages/tools/components/tabs/RetranscodeTab.jsx:38
-#: pages/video-editor/components/cta/CardCTA.js:347
-#: pages/video-editor/components/cta/CardCTA.js:391
+#: pages/video-editor/components/cta/CardCTA.js:357
+#: pages/video-editor/components/cta/CardCTA.js:401
 msgid "Image"
 msgstr ""
 
@@ -9718,43 +9718,43 @@ msgid "Get started by adding interactive layers to your video"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:223
+#: pages/video-editor/onboarding/ProductGuide.jsx:227
 msgid "Do you want to end the product guide?"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:224
+#: pages/video-editor/onboarding/ProductGuide.jsx:228
 msgid "End guide"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:230
+#: pages/video-editor/onboarding/ProductGuide.jsx:234
 msgid "You can start it anytime using the “See how it works” button on the Media Editor."
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:235
+#: pages/video-editor/onboarding/ProductGuide.jsx:239
 msgid "Do you want to add it to a page?"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:236
+#: pages/video-editor/onboarding/ProductGuide.jsx:240
 msgid "Yes, Continue"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/class-dashboard-widget.php:1842
-#: pages/video-editor/onboarding/ProductGuide.jsx:237
+#: pages/video-editor/onboarding/ProductGuide.jsx:241
 msgid "Not now"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:187
+#: pages/video-editor/onboarding/ProductGuide.jsx:191
 msgid "GoDAM video"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/onboarding/ProductGuide.jsx:243
+#: pages/video-editor/onboarding/ProductGuide.jsx:247
 msgid "We’ll open a new draft page and drop the video right in."
 msgstr ""
 
@@ -9813,149 +9813,149 @@ msgid "Add custom"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:174
+#: pages/video-editor/components/cta/CardCTA.js:186
 msgid "Select Custom Background Image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:176
+#: pages/video-editor/components/cta/CardCTA.js:188
 msgid "Use this Background Image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/layers/hotspot/edit.js:521
 #: pages/video-editor/components/ads/CustomAdSettings.js:268
-#: pages/video-editor/components/cta/CardCTA.js:274
 #: pages/video-editor/components/cta/CardCTA.js:284
+#: pages/video-editor/components/cta/CardCTA.js:294
 msgid "Please enter a valid URL (e.g., https://example.com)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:310
+#: pages/video-editor/components/cta/CardCTA.js:320
 msgid "Image Left, Text Right (Full Height)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:311
+#: pages/video-editor/components/cta/CardCTA.js:321
 msgid "Text Left, Image Right (Full Height)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:312
+#: pages/video-editor/components/cta/CardCTA.js:322
 msgid "Image Left, Text Right"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:313
+#: pages/video-editor/components/cta/CardCTA.js:323
 msgid "Text Left, Image Right"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:314
+#: pages/video-editor/components/cta/CardCTA.js:324
 msgid "Image Top, Text Bottom"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:315
+#: pages/video-editor/components/cta/CardCTA.js:325
 msgid "Text Top, Image Bottom"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:316
+#: pages/video-editor/components/cta/CardCTA.js:326
 msgid "Image Background"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:317
+#: pages/video-editor/components/cta/CardCTA.js:327
 msgid "Text Only (No Image)"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:338
+#: pages/video-editor/components/cta/CardCTA.js:348
 msgid "Card Layout"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/classes/wpbakery-elements/class-wpb-godam-image.php:79
-#: pages/video-editor/components/cta/CardCTA.js:357
+#: pages/video-editor/components/cta/CardCTA.js:367
 msgid "Select Image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:360
+#: pages/video-editor/components/cta/CardCTA.js:370
 msgid "Recommended size: 100KB"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:376
+#: pages/video-editor/components/cta/CardCTA.js:386
 msgid "Click to replace image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:381
+#: pages/video-editor/components/cta/CardCTA.js:391
 msgid "Replace image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:386
+#: pages/video-editor/components/cta/CardCTA.js:396
 msgid "Selected CTA image"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:423
+#: pages/video-editor/components/cta/CardCTA.js:433
 msgid "Width"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:436
-#: pages/video-editor/components/cta/CardCTA.js:438
+#: pages/video-editor/components/cta/CardCTA.js:446
+#: pages/video-editor/components/cta/CardCTA.js:448
 msgid "Card Title"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:441
+#: pages/video-editor/components/cta/CardCTA.js:451
 msgid "Add title here"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:446
+#: pages/video-editor/components/cta/CardCTA.js:456
 msgid "Character limit"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:449
+#: pages/video-editor/components/cta/CardCTA.js:459
 msgid "Your description"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:455
+#: pages/video-editor/components/cta/CardCTA.js:465
 msgid "Button Settings"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:457
+#: pages/video-editor/components/cta/CardCTA.js:467
 msgid "Button Title"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/helpers/custom-functions.php:284
-#: assets/src/layers/cta/edit.js:130
-#: pages/video-editor/components/cta/CardCTA.js:460
+#: assets/src/layers/cta/edit.js:123
+#: pages/video-editor/components/cta/CardCTA.js:470
 msgid "Check now"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:464
+#: pages/video-editor/components/cta/CardCTA.js:474
 msgid "Button Link"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:472
+#: pages/video-editor/components/cta/CardCTA.js:482
 msgid "Button Colour"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: pages/video-editor/components/cta/CardCTA.js:477
+#: pages/video-editor/components/cta/CardCTA.js:487
 #: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:53
 #: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:176
 msgid "Text"
@@ -9965,7 +9965,7 @@ msgstr ""
 #: assets/src/layers/form/edit.js:82
 #: assets/src/layers/hotspot/edit.js:630
 #: assets/src/layers/poll/edit.js:75
-#: pages/video-editor/components/cta/CardCTA.js:484
+#: pages/video-editor/components/cta/CardCTA.js:494
 #: pages/video-editor/components/shared/button-cta/ButtonControls.jsx:175
 msgid "Background"
 msgstr ""
@@ -10037,48 +10037,48 @@ msgid "Add a clickable button"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/layers/cta/edit.js:57
+#: assets/src/layers/cta/edit.js:56
 msgid "Card Style"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/layers/cta/edit.js:57
+#: assets/src/layers/cta/edit.js:56
 msgid "Perfect for everyone"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/layers/cta/edit.js:58
+#: assets/src/layers/cta/edit.js:57
 msgid "HTML"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/layers/cta/edit.js:58
+#: assets/src/layers/cta/edit.js:57
 msgid "Great for developers"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/layers/cta/edit.js:207
+#: assets/src/layers/cta/edit.js:200
 msgid "Call To Action"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/layers/cta/edit.js:227
+#: assets/src/layers/cta/edit.js:220
 msgid "Advanced"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/layers/cta/edit.js:228
+#: assets/src/layers/cta/edit.js:221
 msgid "Layer Background Colour"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/layers/cta/edit.js:231
+#: assets/src/layers/cta/edit.js:224
 msgid "Layer background color"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
 #: inc/helpers/custom-functions.php:309
-#: assets/src/layers/cta/edit.js:109
+#: assets/src/layers/cta/edit.js:102
 msgid "No Image"
 msgstr ""
 
