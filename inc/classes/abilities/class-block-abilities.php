@@ -679,7 +679,9 @@ class Block_Abilities extends Ability_Group {
 	 * The GoDAM WPBakery element for the media, in a new row and column.
 	 *
 	 * Uses the same shortcodes and attribute names that the WPBakery elements
-	 * save, so the element opens with its settings in the WPBakery editor.
+	 * save, so the element opens with its settings in the WPBakery editor. The
+	 * gallery's videos go in as the element's `handpicked_items` param group
+	 * (rawurlencoded JSON, one `video_id` row per video), as WPBakery saves it.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -701,9 +703,19 @@ class Block_Abilities extends Ability_Group {
 		$tag   = $names[ $block['name'] ] ?? 'godam_video';
 
 		if ( 'godam_video_gallery' === $tag ) {
+			// The gallery element edits its videos as a param group, one row per
+			// video. Leave `ids` out: a kept `ids` wins over the group when the
+			// shortcode renders, so a change made in the editor would be ignored.
+			$rows = array_map(
+				static function ( $id ) {
+					return array( 'video_id' => (string) $id );
+				},
+				$ids
+			);
+
 			$atts = array(
-				'mode' => 'handpicked',
-				'ids'  => implode( ',', $ids ),
+				'mode'             => 'handpicked',
+				'handpicked_items' => rawurlencode( wp_json_encode( $rows ) ),
 			);
 		}
 

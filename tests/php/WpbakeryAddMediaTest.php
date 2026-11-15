@@ -128,7 +128,7 @@ class WpbakeryAddMediaTest extends TestCase {
 			'godam/audio'      => '[godam_audio id="3"]',
 			'godam/image'      => '[godam_image id="3"]',
 			'godam/pdf'        => '[godam_document id="3"]',
-			'godam/gallery-v2' => '[godam_video_gallery mode="handpicked" ids="3,4"]',
+			'godam/gallery-v2' => '[godam_video_gallery mode="handpicked" handpicked_items="%5B%7B%22video_id%22%3A%223%22%7D%2C%7B%22video_id%22%3A%224%22%7D%5D"]',
 		);
 
 		foreach ( $cases as $block => $shortcode ) {
@@ -145,5 +145,40 @@ class WpbakeryAddMediaTest extends TestCase {
 
 			$this->assertSame( '[vc_row][vc_column]' . $shortcode . '[/vc_column][/vc_row]', $result['markup'], $block );
 		}
+	}
+
+	/**
+	 * The gallery goes in as the element's own param group, not as ids.
+	 *
+	 * The WPBakery gallery element edits handpicked_items. A kept ids attribute
+	 * would win over it when the shortcode renders, so an editor change would be
+	 * ignored.
+	 *
+	 * @return void
+	 */
+	public function test_gallery_is_written_as_the_handpicked_items_param_group() {
+		$result = $this->call(
+			'wpbakery_markup',
+			array(
+				array(
+					'name'      => 'godam/gallery-v2',
+					'media_ids' => array( 3, 4 ),
+				),
+				array(),
+			)
+		);
+
+		$this->assertSame( 1, preg_match( '/ handpicked_items="([^"]*)"/', $result['markup'], $matches ), 'The gallery carries handpicked_items.' );
+		$this->assertStringContainsString( ' mode="handpicked"', $result['markup'] );
+		$this->assertStringNotContainsString( ' ids=', $result['markup'], 'ids would win over what the editor saves.' );
+
+		// Decoded the way Godam_Video_Gallery::render() reads it.
+		$this->assertSame(
+			array(
+				array( 'video_id' => '3' ),
+				array( 'video_id' => '4' ),
+			),
+			json_decode( rawurldecode( $matches[1] ), true )
+		);
 	}
 }
