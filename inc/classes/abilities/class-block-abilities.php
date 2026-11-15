@@ -242,9 +242,10 @@ class Block_Abilities extends Ability_Group {
 			$markup    = $block['markup'];
 			$separator = "\n\n";
 
-			// A page built with WPBakery is a run of rows of shortcodes. A block added
-			// after them would sit outside the layout and could not be edited in the
-			// builder, so the media goes in as GoDAM's own WPBakery element instead.
+			// A page built with WPBakery (active, with rows or still empty) is a run of
+			// rows of shortcodes. A block added after them would sit outside the layout
+			// and could not be edited in the builder, so the media goes in as GoDAM's own
+			// WPBakery element instead. Any other page gets the block.
 			if ( $this->is_wpbakery_page( $target ) ) {
 				$wpbakery = $this->wpbakery_markup( $block, $player );
 				$markup   = $wpbakery['markup'];
@@ -659,8 +660,12 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Whether a page is laid out with WPBakery Page Builder.
 	 *
-	 * WPBakery saves its layout as [vc_row] shortcodes in the content and marks
-	 * a page whose backend editor is on with `_wpb_vc_js_status`.
+	 * WPBakery has to be active: its [vc_row] shortcodes only render while it is,
+	 * and a page that still has them after it was deactivated shows them as text.
+	 * Then a page is a WPBakery page when its content has [vc_row] shortcodes, or
+	 * when it is still empty and `_wpb_vc_js_status` marks its backend editor as
+	 * on, which leaves nothing to glue a shortcode onto. A page with that flag and
+	 * block or plain content is not one: a row added there would join its last block.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -669,11 +674,17 @@ class Block_Abilities extends Ability_Group {
 	 * @return bool
 	 */
 	private function is_wpbakery_page( \WP_Post $post ) {
-		if ( false !== strpos( (string) $post->post_content, '[vc_row' ) ) {
+		if ( ! defined( 'WPB_VC_VERSION' ) ) {
+			return false;
+		}
+
+		$content = trim( (string) $post->post_content );
+
+		if ( false !== strpos( $content, '[vc_row' ) ) {
 			return true;
 		}
 
-		return 'true' === get_post_meta( $post->ID, '_wpb_vc_js_status', true ); // godam-coverage-ignore -- is_wpbakery_page(): reads the host page's WPBakery flag, not an attachment.
+		return '' === $content && 'true' === get_post_meta( $post->ID, '_wpb_vc_js_status', true ); // godam-coverage-ignore -- is_wpbakery_page(): reads the host page's WPBakery flag, not an attachment.
 	}
 
 	/**

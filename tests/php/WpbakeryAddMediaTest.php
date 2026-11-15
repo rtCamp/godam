@@ -77,16 +77,83 @@ class WpbakeryAddMediaTest extends TestCase {
 	}
 
 	/**
-	 * A page with WPBakery rows, or with the WPBakery editor turned on, is a WPBakery page.
+	 * Pretends WPBakery is active, as it is once js_composer.php has loaded.
+	 *
+	 * Each test runs in its own process, so the constant does not leak.
+	 *
+	 * @return void
+	 */
+	private function activate_wpbakery() {
+		define( 'WPB_VC_VERSION', '8.7.1' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- the constant WPBakery defines, isolated process.
+	}
+
+	/**
+	 * A page that still has [vc_row] is not a WPBakery page while WPBakery is inactive.
+	 *
+	 * The rows would print as text, so the media goes in as a block instead.
+	 *
+	 * @return void
+	 */
+	public function test_a_page_with_rows_is_not_a_wpbakery_page_while_wpbakery_is_inactive() {
+		$GLOBALS['rtgodam_stub'] = array( 'post_meta_by_id' => array( 7 => array( '_wpb_vc_js_status' => 'true' ) ) );
+
+		$this->assertFalse( $this->call( 'is_wpbakery_page', array( $this->post( 5, '[vc_row][vc_column][vc_column_text]Hi[/vc_column_text][/vc_column][/vc_row]' ) ) ) );
+		$this->assertFalse( $this->call( 'is_wpbakery_page', array( $this->post( 7, '' ) ) ), 'An empty page with the editor flag on.' );
+	}
+
+	/**
+	 * With WPBakery active, a page with rows, or an empty page with the editor on, is a WPBakery page.
 	 *
 	 * @return void
 	 */
 	public function test_detects_wpbakery_pages() {
-		$GLOBALS['rtgodam_stub'] = array( 'post_meta_by_id' => array( 7 => array( '_wpb_vc_js_status' => 'true' ) ) );
+		$this->activate_wpbakery();
+
+		$GLOBALS['rtgodam_stub'] = array(
+			'post_meta_by_id' => array(
+				7 => array( '_wpb_vc_js_status' => 'true' ),
+				8 => array( '_wpb_vc_js_status' => 'true' ),
+			),
+		);
 
 		$this->assertTrue( $this->call( 'is_wpbakery_page', array( $this->post( 5, '[vc_row][vc_column][vc_column_text]Hi[/vc_column_text][/vc_column][/vc_row]' ) ) ) );
 		$this->assertTrue( $this->call( 'is_wpbakery_page', array( $this->post( 7, '' ) ) ), 'An empty page with the WPBakery editor on.' );
-		$this->assertFalse( $this->call( 'is_wpbakery_page', array( $this->post( 9, '<!-- wp:paragraph --><p>Hi</p><!-- /wp:paragraph -->' ) ) ) );
+		$this->assertTrue( $this->call( 'is_wpbakery_page', array( $this->post( 8, " \n\t " ) ) ), 'A page with only whitespace and the WPBakery editor on.' );
+	}
+
+	/**
+	 * The editor flag alone does not make a page with block or plain content a WPBakery page.
+	 *
+	 * A shortcode row added there would be glued onto the last block.
+	 *
+	 * @return void
+	 */
+	public function test_the_editor_flag_does_not_claim_a_page_that_has_other_content() {
+		$this->activate_wpbakery();
+
+		$GLOBALS['rtgodam_stub'] = array(
+			'post_meta_by_id' => array(
+				9  => array( '_wpb_vc_js_status' => 'true' ),
+				10 => array( '_wpb_vc_js_status' => 'true' ),
+			),
+		);
+
+		$this->assertFalse( $this->call( 'is_wpbakery_page', array( $this->post( 9, '<!-- wp:paragraph --><p>Hi</p><!-- /wp:paragraph -->' ) ) ), 'Block content with the editor flag on.' );
+		$this->assertFalse( $this->call( 'is_wpbakery_page', array( $this->post( 10, 'Plain text.' ) ) ), 'Plain content with the editor flag on.' );
+	}
+
+	/**
+	 * With WPBakery active, a page with no rows and no editor flag is not a WPBakery page.
+	 *
+	 * @return void
+	 */
+	public function test_a_page_without_rows_or_the_editor_flag_is_not_a_wpbakery_page() {
+		$this->activate_wpbakery();
+
+		$GLOBALS['rtgodam_stub'] = array();
+
+		$this->assertFalse( $this->call( 'is_wpbakery_page', array( $this->post( 11, '<!-- wp:paragraph --><p>Hi</p><!-- /wp:paragraph -->' ) ) ) );
+		$this->assertFalse( $this->call( 'is_wpbakery_page', array( $this->post( 12, '' ) ) ), 'An empty page that was never opened in WPBakery.' );
 	}
 
 	/**
