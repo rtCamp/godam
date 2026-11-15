@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-12T07:15:48+00:00\n"
+"POT-Creation-Date: 2026-11-15T09:56:52+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -1758,7 +1758,7 @@ msgstr ""
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:337
 #: assets/src/js/godam-player/engagement.js:1124
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:136
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:140
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:150
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:400
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:153
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:535
@@ -5737,7 +5737,7 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:136
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:140
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:150
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:400
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:153
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:535
@@ -5796,7 +5796,7 @@ msgid "Yes, Remove"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: inc/classes/rest-api/class-settings.php:265
+#: inc/classes/rest-api/class-settings.php:266
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:60
 msgid "API key removed. This site is now disconnected from GoDAM."
 msgstr ""
@@ -5970,6 +5970,16 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:122
 msgid "Enable Google Tag Manager video tracking for analytics and conversion tracking."
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:131
+msgid "Track visitors"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:132
+msgid "Count views of GoDAM videos and images, and clicks on their layers, in GoDAM analytics. Turn it off and GoDAM stores nothing in visitors' browsers and sends no view or click events, for every visitor; GoDAM analytics then shows no new data for this site. With a consent banner that supports the WP Consent API, you can leave this on: GoDAM waits for each visitor's statistics consent. A developer can also set this with the godam_visitor_tracking_enabled filter, which overrides this switch."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
@@ -11519,7 +11529,7 @@ msgstr ""
 
 #: admin/class-rtgodam-transcoder-rest-routes.php:741
 #: inc/classes/rest-api/class-media-library.php:659
-#: inc/classes/rest-api/class-settings.php:192
+#: inc/classes/rest-api/class-settings.php:193
 #: inc/classes/rest-api/class-transcoding.php:487
 msgid "Invalid API key."
 msgstr ""
@@ -12142,29 +12152,61 @@ msgstr ""
 msgid "Failed to remove virtual media site from GoDAM Central."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:159
-#: inc/classes/class-visitor-consent.php:165
+#: inc/classes/class-visitor-consent.php:187
+#: inc/classes/class-visitor-consent.php:193
 msgid "Until deleted"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:160
+#: inc/classes/class-visitor-consent.php:188
 msgid "Ties one visitor's video views and clicks together without naming them."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:161
+#: inc/classes/class-visitor-consent.php:189
 msgid "Anonymous visitor ID"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:166
+#: inc/classes/class-visitor-consent.php:194
 msgid "Counts a viewer once per video."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:171
+#: inc/classes/class-visitor-consent.php:199
 msgid "Until the browser tab closes"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:172
+#: inc/classes/class-visitor-consent.php:200
 msgid "Holds clicks on video and image layers until they are sent to GoDAM analytics."
+msgstr ""
+
+#. translators: %s: how long the item is kept, e.g. "Until deleted".
+#: inc/classes/class-visitor-consent.php:248
+#, php-format
+msgid "Kept: %s."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:252
+msgid "GoDAM counts views of the videos and images on this site, and clicks on their layers, so the site owner can see how the media performs. Edit this text to match your site. If you turned visitor tracking off in GoDAM > Settings > General, you can leave it out."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:253
+msgid "Suggested text:"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:254
+msgid "When you view a video or an interactive image on this site, we use GoDAM to measure how our media is watched. GoDAM sends these details to GoDAM analytics (analytics.godam.io), run by rtCamp: an anonymous visitor ID, the page you are on and the page that referred you, which video you watched and for how long, clicks on video and image layers, your browser, operating system, screen size and language, and your IP address, which is used to find your country. If you are signed in, your user ID on this site is sent too."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:255
+msgid "GoDAM keeps these items in your browser:"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:257
+msgid "If this site asks for your consent to statistics, GoDAM stores nothing and sends nothing until you agree, and deletes these items if you withdraw your consent."
+msgstr ""
+
+#. translators: %s: link to the GoDAM privacy policy.
+#: inc/classes/class-visitor-consent.php:260
+#, php-format
+msgid "GoDAM's privacy policy: %s"
 msgstr ""
 
 #: inc/classes/cron-jobs/class-retranscode-failed-media.php:60
@@ -12633,7 +12675,7 @@ msgid "Select a video in the Player Settings panel to get started."
 msgstr ""
 
 #: inc/classes/enums/class-api-key-status.php:72
-#: inc/classes/rest-api/class-settings.php:308
+#: inc/classes/rest-api/class-settings.php:309
 msgid "API key status refreshed."
 msgstr ""
 
@@ -13840,33 +13882,33 @@ msgstr ""
 msgid "Invalid poll ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:95
+#: inc/classes/rest-api/class-settings.php:96
 msgid "The API key to verify."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:147
+#: inc/classes/rest-api/class-settings.php:148
 msgid "The godam settings to save."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:177
-#: inc/classes/rest-api/class-settings.php:184
+#: inc/classes/rest-api/class-settings.php:178
+#: inc/classes/rest-api/class-settings.php:185
 #: inc/classes/rest-api/class-video-migration.php:1189
 msgid "GoDAM API key is required."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:188
+#: inc/classes/rest-api/class-settings.php:189
 msgid "GoDAM API key is not set on this site."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:274
+#: inc/classes/rest-api/class-settings.php:275
 msgid "Failed to remove the API key. It might not exist."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:293
+#: inc/classes/rest-api/class-settings.php:294
 msgid "Failed to refresh API key status."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:358
+#: inc/classes/rest-api/class-settings.php:359
 msgid "EasyDAM settings updated successfully!"
 msgstr ""
 
