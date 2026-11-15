@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-15T05:52:14+00:00\n"
+"POT-Creation-Date: 2026-11-15T05:56:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -11780,29 +11780,29 @@ msgstr ""
 msgid "Needs a GoDAM plan: the site must be connected to GoDAM with a verified API key."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:276
+#: inc/classes/abilities/class-ability-group.php:400
 msgid "This needs a GoDAM plan. Connect this site to GoDAM with a verified API key in GoDAM > Settings, then try again."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:361
+#: inc/classes/abilities/class-ability-group.php:485
 msgid "The GoDAM request failed. Try again in a moment. If it keeps failing, see https://godam.io/docs/ai-agents/"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:365
+#: inc/classes/abilities/class-ability-group.php:489
 msgid "Your WordPress user's role does not allow this. Ask a site administrator, or connect as a user who can."
 msgstr ""
 
 #. translators: %d: attachment ID.
-#: inc/classes/abilities/class-ability-group.php:390
+#: inc/classes/abilities/class-ability-group.php:514
 #, php-format
 msgid "No media item with ID %d exists. Use godam/list-media to find IDs."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:504
+#: inc/classes/abilities/class-ability-group.php:628
 msgid "(no title)"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:770
+#: inc/classes/abilities/class-ability-group.php:894
 msgid "Media (attachment) ID, as returned by godam/list-media."
 msgstr ""
 
