@@ -240,15 +240,18 @@ abstract class Ability_Group {
 	/**
 	 * Option names whose values must never reach an agent.
 	 *
+	 * Not the account token: it is the organisation's public CDN subdomain
+	 * (`<token>.gdcdn.us`), in every video URL, so replacing it would break them.
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @var string[]
 	 */
-	const SECRET_OPTIONS = array( 'rtgodam-api-key', 'rtgodam-api-key-stored', 'rtgodam-account-token' );
+	const SECRET_OPTIONS = array( 'rtgodam-api-key', 'rtgodam-api-key-stored' );
 
 	/**
 	 * Wraps an execute callback so its result and errors never carry the GoDAM
-	 * API key or account token, whatever a route or GoDAM Central put in them.
+	 * API key, whatever a route or GoDAM Central put in them.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -263,7 +266,7 @@ abstract class Ability_Group {
 	}
 
 	/**
-	 * Replaces every occurrence of the API key and account token in a value.
+	 * Replaces every occurrence of the API key in a value.
 	 *
 	 * Walks arrays, objects and WP_Error messages and data.
 	 *

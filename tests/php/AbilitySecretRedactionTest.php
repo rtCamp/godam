@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests that no ability result or error carries the GoDAM API key or account token.
+ * Tests that no ability result or error carries the GoDAM API key.
  *
  * @package GoDAM
  */
@@ -18,7 +18,7 @@ require_once dirname( __DIR__ ) . '/stubs/abilities-functions.php';
 require_once dirname( __DIR__ ) . '/stubs/class-test-ability-group.php';
 
 /**
- * Every execute callback is wrapped so the key and token are replaced in
+ * Every execute callback is wrapped so the key is replaced in
  * strings, arrays, objects and WP_Error messages and data, even when a route
  * or GoDAM Central put them there.
  *
@@ -27,7 +27,7 @@ require_once dirname( __DIR__ ) . '/stubs/class-test-ability-group.php';
 class AbilitySecretRedactionTest extends TestCase {
 
 	const KEY   = 'gdk_live_1234567890abcdef';
-	const TOKEN = 'tok_9f8e7d6c5b4a3210';
+	const TOKEN = 'cuunl3cre4';
 
 	/**
 	 * Sets a key and token on the site.
@@ -67,7 +67,7 @@ class AbilitySecretRedactionTest extends TestCase {
 	}
 
 	/**
-	 * Strings, nested arrays and objects lose the key and token.
+	 * Strings, nested arrays and objects lose the key; CDN URLs with the account token stay intact.
 	 *
 	 * @return void
 	 */
@@ -76,28 +76,32 @@ class AbilitySecretRedactionTest extends TestCase {
 			array(
 				'message' => 'Central said: key ' . self::KEY . ' rejected',
 				'nested'  => array( array( 'token' => self::TOKEN ) ),
-				'object'  => (object) array( 'raw' => 'Bearer ' . self::TOKEN ),
+				'object'  => (object) array(
+					'raw' => 'Bearer ' . self::KEY,
+					'url' => 'https://' . self::TOKEN . '.gdcdn.us/abc/video.m3u8',
+				),
 			)
 		);
 		$json = wp_json_encode( $out );
 
 		$this->assertStringNotContainsString( self::KEY, $json );
-		$this->assertStringNotContainsString( self::TOKEN, $json );
+		$this->assertStringContainsString( self::TOKEN, $json, 'The account token is the public CDN subdomain and stays.' );
 		$this->assertStringContainsString( 'Central said: key [redacted] rejected', $json );
 	}
 
 	/**
-	 * A WP_Error's message and data lose them too, and the code is kept.
+	 * A WP_Error's message and data lose the key too, and the code is kept.
 	 *
 	 * @return void
 	 */
 	public function test_errors_are_redacted() {
-		$out = $this->run_ability( new \WP_Error( 'godam_api_error', 'Invalid key ' . self::KEY, array( 'body' => 'token=' . self::TOKEN ) ) );
+		$out = $this->run_ability( new \WP_Error( 'godam_api_error', 'Invalid key ' . self::KEY, array( 'body' => 'key=' . self::KEY . ' org=' . self::TOKEN ) ) );
 
 		$this->assertInstanceOf( \WP_Error::class, $out );
 		$this->assertSame( 'godam_api_error', $out->get_error_code() );
 		$this->assertSame( 'Invalid key [redacted]', $out->get_error_message() );
-		$this->assertStringNotContainsString( self::TOKEN, wp_json_encode( $out->get_error_data() ) );
+		$this->assertStringNotContainsString( self::KEY, wp_json_encode( $out->get_error_data() ) );
+		$this->assertStringContainsString( self::TOKEN, wp_json_encode( $out->get_error_data() ) );
 	}
 
 	/**
