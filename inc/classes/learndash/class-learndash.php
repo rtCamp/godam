@@ -360,6 +360,16 @@ class LearnDash {
 			return $settings;
 		}
 
+		/*
+		 * Only the settings form has the switch. LearnDash runs this filter for
+		 * REST saves too, which never post it; an unchecked switch posts nothing
+		 * either, so the form itself has to be there to read the switch as off.
+		 */
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- LearnDash verified the metabox nonce before running this filter.
+		if ( ! isset( $_POST[ $metabox_key ] ) || ! is_array( $_POST[ $metabox_key ] ) ) {
+			return $settings;
+		}
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- LearnDash verified the metabox nonce before running this filter.
 		$posted = isset( $_POST[ $metabox_key ][ self::FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ $metabox_key ][ self::FIELD ] ) ) : '';
 

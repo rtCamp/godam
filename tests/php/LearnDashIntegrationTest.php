@@ -213,6 +213,31 @@ class LearnDashIntegrationTest extends TestCase {
 		$this->assertSame( LearnDash::BLOCK_MARKER, $settings['lesson_video_url'] );
 	}
 
+	public function test_save_reads_an_unchecked_switch_as_off_when_the_form_was_posted() {
+		$_POST['learndash-lesson-display-content-settings'] = array( 'lesson_video_url' => '[video_godam]' );
+
+		$settings = $this->integration()->save_settings_field(
+			array( 'lesson_video_url' => '[video_godam]' ),
+			'learndash-lesson-display-content-settings'
+		);
+
+		$this->assertSame( '', $settings['lesson_video_url'] );
+	}
+
+	public function test_rest_saves_keep_the_marker_they_set() {
+		unset( $_POST['learndash-lesson-display-content-settings'] );
+
+		$settings = $this->integration()->save_settings_field(
+			array(
+				'lesson_video_enabled' => 'on',
+				'lesson_video_url'     => '[video_godam]',
+			),
+			'learndash-lesson-display-content-settings'
+		);
+
+		$this->assertSame( '[video_godam]', $settings['lesson_video_url'] );
+	}
+
 	public function test_save_leaves_settings_alone_when_learndash_did_not_read_the_form() {
 		$_POST['learndash-lesson-display-content-settings'] = array( LearnDash::FIELD => 'on' );
 
