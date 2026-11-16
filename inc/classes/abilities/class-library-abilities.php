@@ -736,11 +736,35 @@ class Library_Abilities extends Ability_Group {
 	private function central_media_page_with_retry( $type, $page, $per_page, $search = '' ) {
 		$result = $this->central_media_page( $type, $page, $per_page, $search );
 
-		if ( is_wp_error( $result ) ) {
+		if ( is_wp_error( $result ) && self::is_retryable_central_error( $result ) ) {
 			$result = $this->central_media_page( $type, $page, $per_page, $search );
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Whether a second try could fix a GoDAM Central error.
+	 *
+	 * Only a server or connection fault is worth one more try. A 4xx from
+	 * Central, such as 401 for an invalid or revoked API key, comes back the
+	 * same every time, and a retry only adds a wait.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param \WP_Error $error Error from central_media_page().
+	 *
+	 * @return bool
+	 */
+	public static function is_retryable_central_error( \WP_Error $error ) {
+		if ( 1 === preg_match( '/HTTP status:\s*4\d\d/i', $error->get_error_message() ) ) {
+			return false;
+		}
+
+		$data   = $error->get_error_data();
+		$status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : 0;
+
+		return 0 === $status || $status >= 500;
 	}
 
 	/**
@@ -782,9 +806,10 @@ class Library_Abilities extends Ability_Group {
 			foreach ( '' !== $type ? array( $type ) : $types as $search_type ) {
 				$result = $this->central_media_page_with_retry( $search_type, 1, 100, $title );
 
-				// A failed search is not final: the full read below gets its own tries.
+				// The full read below would hit the same outage, so a failed
+				// search ends the lookup. Each try waits up to 5 s on Central.
 				if ( is_wp_error( $result ) ) {
-					continue;
+					return $result;
 				}
 
 				$found = $pick( $result );

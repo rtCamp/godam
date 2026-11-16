@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-16T05:11:55+00:00\n"
+"POT-Creation-Date: 2026-11-16T05:48:41+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -12429,26 +12429,26 @@ msgstr ""
 msgid "GoDAM Central did not return the media list. Try again in a moment. If it keeps failing, the site owner can contact GoDAM support at https://app.godam.io/helpdesk."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:886
+#: inc/classes/abilities/class-library-abilities.php:911
 msgid "Give the central_id of an item from godam/list-central-media."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:898
+#: inc/classes/abilities/class-library-abilities.php:923
 msgid "No media with that central_id is in this site's GoDAM Central account. Use godam/list-central-media to find it."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:906
+#: inc/classes/abilities/class-library-abilities.php:931
 msgid "GoDAM Central is still processing this media. Check godam/list-central-media again in a few minutes and add it once its status is Transcoded."
 msgstr ""
 
 #. translators: %s: reason the media could not be added.
-#: inc/classes/abilities/class-library-abilities.php:924
+#: inc/classes/abilities/class-library-abilities.php:949
 #, php-format
 msgid "The media could not be added to the library: %s"
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:943
+#: inc/classes/abilities/class-library-abilities.php:968
 #, php-format
 msgid "Added as media ID %1$d, but it could not be put in the folder: %2$s"
 msgstr ""
