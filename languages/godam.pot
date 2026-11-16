@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-16T06:37:36+00:00\n"
+"POT-Creation-Date: 2026-11-16T10:55:26+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -415,6 +415,7 @@ msgstr ""
 #: inc/classes/elementor-controls/class-godam-media.php:165
 #: inc/classes/elementor-controls/class-godam-media.php:211
 #: inc/classes/elementor-controls/class-godam-media.php:213
+#: inc/classes/learndash/class-learndash.php:440
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:123
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:170
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:205
@@ -2617,6 +2618,7 @@ msgid "Enter your email"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
+#: inc/classes/learndash/class-learndash.php:391
 #: assets/src/js/godam-player/engagement.js:1160
 msgid "GoDAM Video"
 msgstr ""
@@ -3118,6 +3120,8 @@ msgstr ""
 
 #: assets/build/js/wpbakery-video-selector-param.min.js:1
 #: assets/build/pages/analytics.min.js:2
+#: inc/classes/learndash/class-learndash.php:438
+#: inc/classes/learndash/class-learndash.php:546
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:102
 #: assets/src/js/wpbakery/wpbakery-video-selector-param.js:148
 #: pages/analytics/index.js:37
@@ -3140,6 +3144,7 @@ msgid "Select or Upload Video Of Your Choice"
 msgstr ""
 
 #: assets/build/js/wpforms-godam-recorder-editor.min.js:1
+#: inc/classes/learndash/class-learndash.php:545
 #: assets/src/js/wpforms-godam-recorder-editor.js:20
 msgid "Use this video"
 msgstr ""
@@ -14102,16 +14107,29 @@ msgstr ""
 msgid "Variation \"%1$s\" of layer type \"%2$s\" is already registered."
 msgstr ""
 
-#: inc/classes/learndash/class-learndash.php:328
+#: inc/classes/learndash/class-learndash.php:377
 msgid "Use GoDAM Video"
 msgstr ""
 
-#: inc/classes/learndash/class-learndash.php:332
-msgid "Use the first GoDAM Video block in the content as the progression video. Add [ld_video] to the content to choose where it appears."
+#: inc/classes/learndash/class-learndash.php:381
+msgid "Use a GoDAM video as the progression video. Add [ld_video] to the content to choose where it appears."
 msgstr ""
 
-#: inc/classes/learndash/class-learndash.php:334
-msgid "The first GoDAM Video block in the content is the progression video"
+#: inc/classes/learndash/class-learndash.php:383
+msgid "A GoDAM video is the progression video"
+msgstr ""
+
+#: inc/classes/learndash/class-learndash.php:394
+msgid "The video learners watch to complete this step. With none selected, the first GoDAM Video block in the content is used."
+msgstr ""
+
+#: inc/classes/learndash/class-learndash.php:438
+#: inc/classes/learndash/class-learndash.php:547
+msgid "Replace video"
+msgstr ""
+
+#: inc/classes/learndash/class-learndash.php:544
+msgid "Select the progression video"
 msgstr ""
 
 #: inc/classes/lifter-lms/class-llms-av-integration-godam.php:117

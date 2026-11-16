@@ -44,18 +44,61 @@ class LearnDashIntegrationTest extends TestCase {
 		return ( new \ReflectionClass( LearnDash::class ) )->newInstanceWithoutConstructor();
 	}
 
-	public function test_block_marker_is_recognised_with_surrounding_whitespace() {
-		$this->assertTrue( LearnDash::is_block_marker( LearnDash::BLOCK_MARKER ) );
-		$this->assertTrue( LearnDash::is_block_marker( '  ' . LearnDash::BLOCK_MARKER . "\n" ) );
+	public function test_marker_without_a_video_means_the_content_block() {
+		$this->assertSame( 0, LearnDash::get_marker_video_id( LearnDash::BLOCK_MARKER ) );
+		$this->assertSame( 0, LearnDash::get_marker_video_id( '  ' . LearnDash::BLOCK_MARKER . "\n" ) );
+		$this->assertTrue( LearnDash::is_marker( LearnDash::BLOCK_MARKER ) );
 	}
 
-	public function test_other_values_are_not_the_block_marker() {
-		$this->assertFalse( LearnDash::is_block_marker( '' ) );
-		$this->assertFalse( LearnDash::is_block_marker( '[video src="https://example.test/a.mp4"][/video]' ) );
-		$this->assertFalse( LearnDash::is_block_marker( '[video_godam id="1"]' ) );
-		$this->assertFalse( LearnDash::is_block_marker( 'https://www.youtube.com/watch?v=abc' ) );
-		$this->assertFalse( LearnDash::is_block_marker( null ) );
-		$this->assertFalse( LearnDash::is_block_marker( array( LearnDash::BLOCK_MARKER ) ) );
+	/**
+	 * Markers that carry a picked video, as saved or escaped by LearnDash.
+	 *
+	 * @return array<string, array{0: string}>
+	 */
+	public function picked_markers() {
+		return array(
+			'double quotes'  => array( '[video_godam id="123"]' ),
+			'single quotes'  => array( "[video_godam id='123']" ),
+			'no quotes'      => array( '[video_godam id=123]' ),
+			'escaped quotes' => array( '[video_godam id=&quot;123&quot;]' ),
+			'whitespace'     => array( " [video_godam  id=\"123\" ]\n" ),
+		);
+	}
+
+	/**
+	 * @dataProvider picked_markers
+	 *
+	 * @param string $value Video URL setting value.
+	 */
+	public function test_marker_carries_the_picked_video( $value ) {
+		$this->assertSame( 123, LearnDash::get_marker_video_id( $value ) );
+		$this->assertTrue( LearnDash::is_marker( $value ) );
+	}
+
+	public function test_other_values_are_not_the_marker() {
+		$this->assertNull( LearnDash::get_marker_video_id( '' ) );
+		$this->assertNull( LearnDash::get_marker_video_id( '[video src="https://example.test/a.mp4"][/video]' ) );
+		$this->assertNull( LearnDash::get_marker_video_id( '[video_godam id="12" extra="1"]' ) );
+		$this->assertNull( LearnDash::get_marker_video_id( '[video_godam id="abc"]' ) );
+		$this->assertNull( LearnDash::get_marker_video_id( '[video_godam id="1\']' ) );
+		$this->assertNull( LearnDash::get_marker_video_id( '[video_godamx]' ) );
+		$this->assertNull( LearnDash::get_marker_video_id( 'https://www.youtube.com/watch?v=abc' ) );
+		$this->assertNull( LearnDash::get_marker_video_id( null ) );
+		$this->assertNull( LearnDash::get_marker_video_id( array( LearnDash::BLOCK_MARKER ) ) );
+		$this->assertFalse( LearnDash::is_marker( 'https://www.youtube.com/watch?v=abc' ) );
+	}
+
+	public function test_marker_is_built_for_a_picked_video_or_the_content_block() {
+		$this->assertSame( '[video_godam id="45"]', LearnDash::build_marker( 45 ) );
+		$this->assertSame( LearnDash::BLOCK_MARKER, LearnDash::build_marker( 0 ) );
+		$this->assertSame( 45, LearnDash::get_marker_video_id( LearnDash::build_marker( 45 ) ) );
+	}
+
+	public function test_picked_video_plays_in_a_godam_video_block() {
+		$block = LearnDash::build_video_block( 45 );
+
+		$this->assertSame( 'godam/video', $block['blockName'] );
+		$this->assertSame( array( 'id' => 45 ), $block['attrs'] );
 	}
 
 	/**
@@ -194,12 +237,102 @@ class LearnDashIntegrationTest extends TestCase {
 		$this->assertSame( 'on', $settings['lesson_video_enabled'] );
 	}
 
+	public function test_turning_use_godam_on_with_a_picked_video_stores_it_in_the_marker() {
+		$settings = LearnDash::apply_use_godam_setting( array( 'lesson_video_url' => '[video_godam]' ), true, 77 );
+
+		$this->assertSame( '[video_godam id="77"]', $settings['lesson_video_url'] );
+	}
+
 	public function test_turning_use_godam_off_clears_only_the_marker() {
 		$cleared = LearnDash::apply_use_godam_setting( array( 'lesson_video_url' => " [video_godam]\n" ), false );
+		$picked  = LearnDash::apply_use_godam_setting( array( 'lesson_video_url' => '[video_godam id=&quot;77&quot;]' ), false );
 		$kept    = LearnDash::apply_use_godam_setting( array( 'lesson_video_url' => 'https://api.test/web/video/abc' ), false );
 
 		$this->assertSame( '', $cleared['lesson_video_url'] );
+		$this->assertSame( '', $picked['lesson_video_url'] );
 		$this->assertSame( 'https://api.test/web/video/abc', $kept['lesson_video_url'] );
+	}
+
+	/**
+	 * LearnDash integration whose attachment check answers from a list of video IDs.
+	 *
+	 * @param int[] $video_ids Attachment IDs that are videos.
+	 *
+	 * @return LearnDash
+	 */
+	private function integration_with_videos( array $video_ids ) {
+		$GLOBALS['rtgodam_ld_test_videos'] = $video_ids;
+
+		$class = get_class(
+			new class() extends LearnDash {
+
+				public function __construct() {} // phpcs:ignore Squiz.Commenting.FunctionComment.Missing -- test double.
+
+				public static function is_video_attachment( int $attachment_id ): bool { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing -- test double.
+					return in_array( $attachment_id, $GLOBALS['rtgodam_ld_test_videos'], true );
+				}
+			}
+		);
+
+		return new $class();
+	}
+
+	public function test_save_stores_the_picked_video() {
+		$_POST['learndash-lesson-display-content-settings'] = array(
+			LearnDash::FIELD       => 'on',
+			LearnDash::VIDEO_FIELD => '77',
+		);
+
+		$settings = $this->integration_with_videos( array( 77 ) )->save_settings_field(
+			array( 'lesson_video_url' => '' ),
+			'learndash-lesson-display-content-settings'
+		);
+
+		$this->assertSame( '[video_godam id="77"]', $settings['lesson_video_url'] );
+	}
+
+	public function test_save_ignores_a_picked_attachment_that_is_not_a_video() {
+		$_POST['learndash-lesson-display-content-settings'] = array(
+			LearnDash::FIELD       => 'on',
+			LearnDash::VIDEO_FIELD => '88',
+		);
+
+		$settings = $this->integration_with_videos( array( 77 ) )->save_settings_field(
+			array( 'lesson_video_url' => '' ),
+			'learndash-lesson-display-content-settings'
+		);
+
+		$this->assertSame( LearnDash::BLOCK_MARKER, $settings['lesson_video_url'] );
+	}
+
+	public function test_save_ignores_an_unresolved_godam_id() {
+		$_POST['learndash-lesson-display-content-settings'] = array(
+			LearnDash::FIELD       => 'on',
+			LearnDash::VIDEO_FIELD => 'qvbgt6hd9u',
+		);
+
+		$settings = $this->integration_with_videos( array( 77 ) )->save_settings_field(
+			array( 'lesson_video_url' => '' ),
+			'learndash-lesson-display-content-settings'
+		);
+
+		$this->assertSame( LearnDash::BLOCK_MARKER, $settings['lesson_video_url'] );
+	}
+
+	public function test_picked_video_goes_down_the_local_path_while_it_is_a_video() {
+		$integration = $this->integration_with_videos( array( 77 ) );
+
+		$this->assertSame( 'local', $integration->filter_video_provider( false, array( 'lesson_video_url' => '[video_godam id="77"]' ) ) );
+		$this->assertFalse( $integration->filter_video_provider( false, array( 'lesson_video_url' => '[video_godam id="88"]' ) ) );
+	}
+
+	public function test_picked_video_is_renamed_to_the_godam_provider() {
+		$data = $this->integration()->filter_video_data(
+			array( 'videos_found_provider' => 'local' ),
+			array( 'lesson_video_url' => '[video_godam id="77"]' )
+		);
+
+		$this->assertSame( LearnDash::PROVIDER, $data['videos_found_provider'] );
 	}
 
 	public function test_save_reads_the_switch_from_the_metabox_form() {
@@ -249,7 +382,7 @@ class LearnDashIntegrationTest extends TestCase {
 		$this->assertSame( array( 'lesson_video_shown' => 'AFTER' ), $settings );
 	}
 
-	public function test_switch_is_added_right_before_the_video_url() {
+	public function test_switch_and_picker_are_added_right_before_the_video_url() {
 		$fields = $this->integration()->add_settings_field(
 			array(
 				'lesson_video_enabled' => array( 'name' => 'lesson_video_enabled' ),
@@ -263,12 +396,29 @@ class LearnDashIntegrationTest extends TestCase {
 		);
 
 		$this->assertSame(
-			array( 'lesson_video_enabled', LearnDash::FIELD, 'lesson_video_url', 'lesson_video_shown' ),
+			array( 'lesson_video_enabled', LearnDash::FIELD, LearnDash::VIDEO_FIELD, 'lesson_video_url', 'lesson_video_shown' ),
 			array_keys( $fields )
 		);
 		$this->assertSame( 'on', $fields[ LearnDash::FIELD ]['value'] );
 		$this->assertSame( 'checkbox-switch', $fields[ LearnDash::FIELD ]['type'] );
 		$this->assertSame( 'lesson_video_enabled', $fields[ LearnDash::FIELD ]['parent_setting'] );
+		$this->assertSame( 'custom', $fields[ LearnDash::VIDEO_FIELD ]['type'] );
+		$this->assertSame( 'lesson_video_enabled', $fields[ LearnDash::VIDEO_FIELD ]['parent_setting'] );
+		$this->assertStringContainsString( 'name="learndash-topic-display-content-settings[lesson_video_godam_id]" value=""', $fields[ LearnDash::VIDEO_FIELD ]['html'] );
+	}
+
+	public function test_picker_shows_the_saved_video() {
+		$GLOBALS['rtgodam_stub']['title'] = 'Intro <video>';
+
+		$html = LearnDash::get_picker_html( 'learndash-lesson-display-content-settings', 77 );
+
+		unset( $GLOBALS['rtgodam_stub']['title'] );
+
+		$this->assertStringContainsString( 'id="learndash-lesson-display-content-settings_lesson_video_godam_id_picker"', $html );
+		$this->assertStringContainsString( 'value="77"', $html );
+		$this->assertStringContainsString( 'Intro &lt;video&gt;', $html );
+		$this->assertStringContainsString( 'Replace video', $html );
+		$this->assertStringNotContainsString( 'rtgodam-ld-video-picker__remove" hidden', $html );
 	}
 
 	public function test_switch_is_off_for_another_video_and_absent_from_other_metaboxes() {

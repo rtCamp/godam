@@ -12,18 +12,22 @@
  * - `ld_video_provider` sends a GoDAM source down LearnDash's `local` path,
  *   which is the only path that renders shortcodes, iframes and URLs for a
  *   provider LearnDash does not know.
- * - The `[video_godam]` shortcode (BLOCK_MARKER) renders the lesson's GoDAM
- *   Video block when "Use GoDAM Video" is on, and `wp_video_shortcode_override`
- *   renders the GoDAM embed for a GoDAM URL, which that path wraps in `[video]`.
+ * - The `[video_godam]` shortcode renders the video when "Use GoDAM Video" is
+ *   on: the one picked in the lesson settings (`[video_godam id="123"]`), or
+ *   the lesson's first GoDAM Video block when none is picked (BLOCK_MARKER).
+ *   `wp_video_shortcode_override` renders the GoDAM embed for a GoDAM URL,
+ *   which that path wraps in `[video]`.
  * - `learndash_lesson_video_data` renames the provider to `godam` right before
  *   LearnDash writes the wrapper and the `learndash_video_data` script object,
  *   so LearnDash's own player code leaves the video alone and
  *   `assets/src/js/learndash/frontend.js` drives it with LearnDash's progress
  *   helpers.
  *
- * "Use GoDAM Video" is not a LearnDash setting LearnDash saves, since it saves
- * only the fields in its own map. It is stored as BLOCK_MARKER in the Video URL
- * setting, which LearnDash needs to be non-empty for progression to stay on.
+ * "Use GoDAM Video" and the picked video are not settings LearnDash saves, since
+ * it saves only the fields in its own map. Both are stored as the marker in the
+ * Video URL setting, which LearnDash needs to be non-empty for progression to
+ * stay on. Its cookie key includes that value, so picking another video starts
+ * the learner's progress over.
  *
  * @since n.e.x.t
  *
@@ -59,6 +63,9 @@ class LearnDash {
 	/**
 	 * Video URL setting value that means "use the GoDAM Video block in the content".
 	 *
+	 * With a video picked in the settings, the marker carries it instead:
+	 * `[video_godam id="123"]` (see build_marker()).
+	 *
 	 * LearnDash treats a value starting with `[video` as a video shortcode and
 	 * renders it with do_shortcode(). It is GoDAM's own shortcode, not WordPress's
 	 * `[video]`, so other plugins that override `[video]` (Jetpack VideoPress
@@ -87,6 +94,15 @@ class LearnDash {
 	 * @var string
 	 */
 	const FIELD = 'lesson_video_godam';
+
+	/**
+	 * Name of the picked GoDAM video field in the lesson and topic settings.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string
+	 */
+	const VIDEO_FIELD = 'lesson_video_godam_id';
 
 	/**
 	 * LearnDash settings metaboxes that hold the Video Progression settings.
@@ -185,7 +201,7 @@ class LearnDash {
 	}
 
 	/**
-	 * Whether a Video URL setting value is BLOCK_MARKER.
+	 * Read the picked video out of a Video URL setting value that is the marker.
 	 *
 	 * LearnDash escapes the value when it saves it, so the stored value can hold
 	 * HTML entities.
@@ -194,14 +210,45 @@ class LearnDash {
 	 *
 	 * @param mixed $video_url Video URL setting value.
 	 *
-	 * @return bool
+	 * @return int|null The picked attachment ID, 0 for BLOCK_MARKER, or null when the value is not the marker.
 	 */
-	public static function is_block_marker( $video_url ): bool {
+	public static function get_marker_video_id( $video_url ) {
 		if ( ! is_string( $video_url ) ) {
-			return false;
+			return null;
 		}
 
-		return self::BLOCK_MARKER === trim( html_entity_decode( $video_url, ENT_QUOTES ) );
+		$value = trim( html_entity_decode( $video_url, ENT_QUOTES ) );
+		if ( ! preg_match( '/^\[' . self::SHORTCODE . '(?:\s+id=(["\']?)(\d+)\1)?\s*\]$/', $value, $matches ) ) {
+			return null;
+		}
+
+		return isset( $matches[2] ) ? (int) $matches[2] : 0;
+	}
+
+	/**
+	 * Whether a Video URL setting value is the marker "Use GoDAM Video" stores.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param mixed $video_url Video URL setting value.
+	 *
+	 * @return bool
+	 */
+	public static function is_marker( $video_url ): bool {
+		return null !== self::get_marker_video_id( $video_url );
+	}
+
+	/**
+	 * Build the marker for a picked video, or BLOCK_MARKER when none is picked.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $video_id Picked attachment ID, or 0.
+	 *
+	 * @return string
+	 */
+	public static function build_marker( int $video_id ): string {
+		return $video_id > 0 ? sprintf( '[%s id="%d"]', self::SHORTCODE, $video_id ) : self::BLOCK_MARKER;
 	}
 
 	/**
@@ -249,7 +296,7 @@ class LearnDash {
 	 * @return bool
 	 */
 	public static function is_godam_source( $video_url ): bool {
-		return self::is_block_marker( $video_url ) || self::is_godam_url( $video_url );
+		return self::is_marker( $video_url ) || self::is_godam_url( $video_url );
 	}
 
 	/**
@@ -285,21 +332,23 @@ class LearnDash {
 	/**
 	 * Apply the "Use GoDAM Video" choice to the settings LearnDash is about to save.
 	 *
-	 * On, it stores BLOCK_MARKER as the Video URL. Off, it clears a Video URL
-	 * that is still BLOCK_MARKER, so LearnDash turns progression off unless a
-	 * different video is entered.
+	 * On, it stores the marker for the picked video (BLOCK_MARKER when none is
+	 * picked) as the Video URL. Off, it clears a Video URL that is still the
+	 * marker, so LearnDash turns progression off unless a different video is
+	 * entered.
 	 *
 	 * @since n.e.x.t
 	 *
 	 * @param array $settings  Settings LearnDash is about to save.
 	 * @param bool  $use_godam Whether "Use GoDAM Video" is on.
+	 * @param int   $video_id  Picked attachment ID, or 0.
 	 *
 	 * @return array
 	 */
-	public static function apply_use_godam_setting( array $settings, bool $use_godam ): array {
+	public static function apply_use_godam_setting( array $settings, bool $use_godam, int $video_id = 0 ): array {
 		if ( $use_godam ) {
-			$settings['lesson_video_url'] = self::BLOCK_MARKER;
-		} elseif ( isset( $settings['lesson_video_url'] ) && self::is_block_marker( $settings['lesson_video_url'] ) ) {
+			$settings['lesson_video_url'] = self::build_marker( $video_id );
+		} elseif ( isset( $settings['lesson_video_url'] ) && self::is_marker( $settings['lesson_video_url'] ) ) {
 			$settings['lesson_video_url'] = '';
 		}
 
@@ -307,7 +356,7 @@ class LearnDash {
 	}
 
 	/**
-	 * Add the "Use GoDAM Video" switch above the Video URL field.
+	 * Add the "Use GoDAM Video" switch and the video picker above the Video URL field.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -321,27 +370,75 @@ class LearnDash {
 			return $fields;
 		}
 
-		$video_url = $fields['lesson_video_url']['value'] ?? '';
+		$video_id = self::get_marker_video_id( $fields['lesson_video_url']['value'] ?? '' );
 
-		$field = array(
+		$switch = array(
 			'name'           => self::FIELD,
 			'label'          => esc_html__( 'Use GoDAM Video', 'godam' ),
 			'type'           => 'checkbox-switch',
-			'value'          => self::is_block_marker( $video_url ) ? 'on' : '',
+			'value'          => null !== $video_id ? 'on' : '',
 			'default'        => '',
-			'help_text'      => esc_html__( 'Use the first GoDAM Video block in the content as the progression video. Add [ld_video] to the content to choose where it appears.', 'godam' ),
+			'help_text'      => esc_html__( 'Use a GoDAM video as the progression video. Add [ld_video] to the content to choose where it appears.', 'godam' ),
 			'options'        => array(
-				'on' => esc_html__( 'The first GoDAM Video block in the content is the progression video', 'godam' ),
+				'on' => esc_html__( 'A GoDAM video is the progression video', 'godam' ),
 				''   => '',
 			),
+			'parent_setting' => 'lesson_video_enabled',
+		);
+
+		$picker = array(
+			'name'           => self::VIDEO_FIELD,
+			'label'          => esc_html__( 'GoDAM Video', 'godam' ),
+			'type'           => 'custom',
+			'html'           => self::get_picker_html( $metabox_key, (int) $video_id ),
+			'help_text'      => esc_html__( 'The video learners watch to complete this step. With none selected, the first GoDAM Video block in the content is used.', 'godam' ),
 			'parent_setting' => 'lesson_video_enabled',
 		);
 
 		$position = array_search( 'lesson_video_url', array_keys( $fields ), true );
 
 		return array_slice( $fields, 0, $position, true )
-			+ array( self::FIELD => $field )
+			+ array(
+				self::FIELD       => $switch,
+				self::VIDEO_FIELD => $picker,
+			)
 			+ array_slice( $fields, $position, null, true );
+	}
+
+	/**
+	 * Build the video picker markup: the posted field, a preview and its buttons.
+	 *
+	 * The media library opens from it through assets/src/js/learndash/admin.js.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $metabox_key Metabox key.
+	 * @param int    $video_id    Picked attachment ID, or 0.
+	 *
+	 * @return string
+	 */
+	public static function get_picker_html( string $metabox_key, int $video_id ): string {
+		$field_id = $metabox_key . '_' . self::VIDEO_FIELD;
+		$title    = $video_id > 0 ? get_the_title( $video_id ) : '';
+
+		return sprintf(
+			'<div class="rtgodam-ld-video-picker" id="%1$s_picker">'
+			. '<input type="hidden" id="%1$s" name="%2$s[%3$s]" value="%4$s" />'
+			. '<p class="rtgodam-ld-video-picker__title"%5$s>%6$s</p>'
+			. '<div class="rtgodam-ld-video-picker__preview"></div>'
+			. '<button type="button" class="button rtgodam-ld-video-picker__select">%7$s</button> '
+			. '<button type="button" class="button-link rtgodam-ld-video-picker__remove" style="margin-left:8px;vertical-align:middle;"%8$s>%9$s</button>'
+			. '</div>',
+			esc_attr( $field_id ),
+			esc_attr( $metabox_key ),
+			esc_attr( self::VIDEO_FIELD ),
+			esc_attr( $video_id > 0 ? (string) $video_id : '' ),
+			$video_id > 0 ? '' : ' hidden',
+			esc_html( $title ),
+			$video_id > 0 ? esc_html__( 'Replace video', 'godam' ) : esc_html__( 'Select video', 'godam' ),
+			$video_id > 0 ? '' : ' hidden',
+			esc_html__( 'Remove', 'godam' )
+		);
 	}
 
 	/**
@@ -372,8 +469,32 @@ class LearnDash {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- LearnDash verified the metabox nonce before running this filter.
 		$posted = isset( $_POST[ $metabox_key ][ self::FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ $metabox_key ][ self::FIELD ] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- LearnDash verified the metabox nonce before running this filter.
+		$video_id = isset( $_POST[ $metabox_key ][ self::VIDEO_FIELD ] ) ? absint( wp_unslash( $_POST[ $metabox_key ][ self::VIDEO_FIELD ] ) ) : 0;
 
-		return self::apply_use_godam_setting( $settings, 'on' === $posted );
+		// Only a video can be the progression video.
+		if ( $video_id > 0 && ! static::is_video_attachment( $video_id ) ) {
+			$video_id = 0;
+		}
+
+		return self::apply_use_godam_setting( $settings, 'on' === $posted, $video_id );
+	}
+
+	/**
+	 * Whether an attachment is a video.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 *
+	 * @return bool
+	 */
+	public static function is_video_attachment( int $attachment_id ): bool {
+		if ( $attachment_id <= 0 || 'attachment' !== get_post_type( $attachment_id ) ) {
+			return false;
+		}
+
+		return 0 === strpos( (string) get_post_mime_type( $attachment_id ), 'video/' );
 	}
 
 	/**
@@ -400,10 +521,13 @@ class LearnDash {
 			return;
 		}
 
+		// The video picker opens the media library, GoDAM tab included.
+		wp_enqueue_media();
+
 		wp_enqueue_script(
 			'rtgodam-learndash-admin',
 			RTGODAM_URL . 'assets/build/js/godam-learndash-admin.min.js',
-			array(),
+			array( 'media-editor' ),
 			filemtime( $asset ),
 			true
 		);
@@ -413,8 +537,15 @@ class LearnDash {
 			'rtgodamLearnDashAdmin',
 			array(
 				'field'       => self::FIELD,
-				'blockMarker' => self::BLOCK_MARKER,
+				'videoField'  => self::VIDEO_FIELD,
+				'markerTag'   => self::SHORTCODE,
 				'metaboxKeys' => self::METABOX_KEYS,
+				'i18n'        => array(
+					'frameTitle'  => __( 'Select the progression video', 'godam' ),
+					'frameButton' => __( 'Use this video', 'godam' ),
+					'select'      => __( 'Select video', 'godam' ),
+					'replace'     => __( 'Replace video', 'godam' ),
+				),
 			)
 		);
 	}
@@ -443,6 +574,8 @@ class LearnDash {
 	/**
 	 * Get the lesson or topic being shown, when it uses the GoDAM Video block for progression.
 	 *
+	 * That is "Use GoDAM Video" on with no video picked in the settings.
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @return int Post ID, or 0.
@@ -454,7 +587,7 @@ class LearnDash {
 		}
 
 		$settings = learndash_get_setting( $post );
-		if ( ! is_array( $settings ) || 'on' !== ( $settings['lesson_video_enabled'] ?? '' ) || ! self::is_block_marker( $settings['lesson_video_url'] ?? '' ) ) {
+		if ( ! is_array( $settings ) || 'on' !== ( $settings['lesson_video_enabled'] ?? '' ) || 0 !== self::get_marker_video_id( $settings['lesson_video_url'] ?? '' ) ) {
 			return 0;
 		}
 
@@ -462,11 +595,30 @@ class LearnDash {
 	}
 
 	/**
+	 * Build the parsed GoDAM Video block that plays a picked attachment.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $video_id Attachment ID.
+	 *
+	 * @return array
+	 */
+	public static function build_video_block( int $video_id ): array {
+		return array(
+			'blockName'    => self::VIDEO_BLOCK,
+			'attrs'        => array( 'id' => $video_id ),
+			'innerBlocks'  => array(),
+			'innerHTML'    => '',
+			'innerContent' => array(),
+		);
+	}
+
+	/**
 	 * Send GoDAM sources down LearnDash's `local` video path.
 	 *
-	 * BLOCK_MARKER counts only when the content has a GoDAM Video block. Without
-	 * one there is no video to finish, so returning no provider keeps Mark
-	 * Complete usable.
+	 * The marker counts only when there is a video to finish: the picked one,
+	 * while it is still a video, or else a GoDAM Video block in the content.
+	 * Without one, returning no provider keeps Mark Complete usable.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -477,8 +629,13 @@ class LearnDash {
 	 */
 	public function filter_video_provider( $provider, $settings ) {
 		$video_url = is_array( $settings ) ? ( $settings['lesson_video_url'] ?? '' ) : '';
+		$video_id  = self::get_marker_video_id( $video_url );
 
-		if ( self::is_block_marker( $video_url ) ) {
+		if ( null !== $video_id && $video_id > 0 ) {
+			return static::is_video_attachment( $video_id ) ? 'local' : false;
+		}
+
+		if ( 0 === $video_id ) {
 			$post_id = $this->get_block_progression_post_id();
 
 			return ( $post_id && $this->get_video_block( $post_id ) ) ? 'local' : false;
@@ -492,16 +649,25 @@ class LearnDash {
 	}
 
 	/**
-	 * Render the `[video_godam]` shortcode: the lesson's GoDAM Video block.
+	 * Render the `[video_godam]` shortcode for LearnDash.
 	 *
-	 * Renders only for the lesson or topic being shown when it uses the block
-	 * for progression, which is where LearnDash runs it.
+	 * With an `id`, it plays that video in the GoDAM player. Without one it
+	 * renders the GoDAM Video block of the lesson or topic being shown, when
+	 * that lesson uses the block for progression.
 	 *
 	 * @since n.e.x.t
 	 *
+	 * @param array|string $atts Shortcode attributes.
+	 *
 	 * @return string
 	 */
-	public function render_block_shortcode() {
+	public function render_block_shortcode( $atts = array() ) {
+		$video_id = is_array( $atts ) && isset( $atts['id'] ) ? absint( $atts['id'] ) : 0;
+
+		if ( $video_id > 0 ) {
+			return static::is_video_attachment( $video_id ) ? render_block( self::build_video_block( $video_id ) ) : '';
+		}
+
 		$post_id = $this->get_block_progression_post_id();
 		$block   = $post_id ? $this->get_video_block( $post_id ) : null;
 
