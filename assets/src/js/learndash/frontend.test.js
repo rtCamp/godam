@@ -55,11 +55,8 @@ function fakeLearnDash( saved = {} ) {
 	const values = { ...saved };
 	return {
 		values,
+		// Like LearnDash_Video_Progress_setSetting(), which replaces a `complete` state too.
 		setSetting: jest.fn( ( player, key, value ) => {
-			// LearnDash never moves a completed video back to another state.
-			if ( key === 'video_state' && values.video_state === 'complete' ) {
-				return;
-			}
 			values[ key ] = value;
 		} ),
 		getSetting: jest.fn( ( player, key ) => values[ key ] ),
@@ -106,6 +103,22 @@ describe( 'connectPlayer', () => {
 		adapter.time = 59.9;
 		adapter.emit( 'timeupdate' );
 		expect( ld.complete ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'keeps the state complete when the learner watches the video again', () => {
+		const adapter = fakeAdapter( { duration: 10, time: 10 } );
+		const ld = fakeLearnDash();
+
+		connect( { adapter, ld, now: () => 999999 } );
+		adapter.emit( 'ended' );
+
+		adapter.time = 2;
+		adapter.emit( 'play' );
+		adapter.emit( 'timeupdate' );
+		adapter.emit( 'pause' );
+
+		expect( ld.values.video_state ).toBe( 'complete' );
+		expect( ld.values.video_time ).toBe( 10 );
 	} );
 
 	it( 'keeps the state complete when the player pauses at the end', () => {

@@ -257,7 +257,17 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 		save( 'video_state', 'play' );
 	}
 
-	adapter.on( 'play', () => save( 'video_state', 'play' ) );
+	/*
+	 * Once the video is complete the progress stays as it is, like LearnDash
+	 * stops tracking its own players. LearnDash_Video_Progress_setSetting()
+	 * replaces a `complete` state, and its Mark Complete check needs to find
+	 * it, so watching the video again must not save `play`.
+	 */
+	adapter.on( 'play', () => {
+		if ( ! completed ) {
+			save( 'video_state', 'play' );
+		}
+	} );
 
 	adapter.on( 'pause', () => {
 		if ( completed ) {
@@ -268,6 +278,10 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 	} );
 
 	adapter.on( 'timeupdate', () => {
+		if ( completed ) {
+			return;
+		}
+
 		const time = adapter.getCurrentTime();
 		const duration = adapter.getDuration();
 
