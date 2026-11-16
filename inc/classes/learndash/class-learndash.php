@@ -419,7 +419,15 @@ class LearnDash {
 	 */
 	public static function get_picker_html( string $metabox_key, int $video_id ): string {
 		$field_id = $metabox_key . '_' . self::VIDEO_FIELD;
-		$title    = $video_id > 0 ? get_the_title( $video_id ) : '';
+		$title    = '';
+
+		if ( $video_id > 0 ) {
+			/** This action is documented in inc/classes/class-pages.php */
+			do_action( 'rtgodam_before_attachment_lookup' );
+			$title = get_the_title( $video_id );
+			/** This action is documented in inc/classes/class-pages.php */
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 
 		$picked = $video_id > 0;
 
@@ -478,7 +486,7 @@ class LearnDash {
 		$video_id = isset( $_POST[ $metabox_key ][ self::VIDEO_FIELD ] ) ? absint( wp_unslash( $_POST[ $metabox_key ][ self::VIDEO_FIELD ] ) ) : 0;
 
 		// Only a video can be the progression video.
-		if ( $video_id > 0 && ! static::is_video_attachment( $video_id ) ) {
+		if ( $video_id > 0 && ! static::is_picked_video( $video_id ) ) {
 			$video_id = 0;
 		}
 
@@ -486,7 +494,7 @@ class LearnDash {
 	}
 
 	/**
-	 * Whether an attachment is a video.
+	 * Whether a picked attachment is a video, so it can be the progression video.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -494,12 +502,19 @@ class LearnDash {
 	 *
 	 * @return bool
 	 */
-	public static function is_video_attachment( int $attachment_id ): bool {
-		if ( $attachment_id <= 0 || 'attachment' !== get_post_type( $attachment_id ) ) {
+	public static function is_picked_video( int $attachment_id ): bool {
+		if ( $attachment_id <= 0 ) {
 			return false;
 		}
 
-		return 0 === strpos( (string) get_post_mime_type( $attachment_id ), 'video/' );
+		/** This action is documented in inc/classes/class-pages.php */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$is_video = 'attachment' === get_post_type( $attachment_id )
+			&& 0 === strpos( (string) get_post_mime_type( $attachment_id ), 'video/' );
+		/** This action is documented in inc/classes/class-pages.php */
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		return $is_video;
 	}
 
 	/**
@@ -661,7 +676,7 @@ class LearnDash {
 		$video_id  = self::get_marker_video_id( $video_url );
 
 		if ( null !== $video_id && $video_id > 0 ) {
-			return static::is_video_attachment( $video_id ) ? 'local' : false;
+			return static::is_picked_video( $video_id ) ? 'local' : false;
 		}
 
 		if ( 0 === $video_id ) {
@@ -694,7 +709,7 @@ class LearnDash {
 		$video_id = is_array( $atts ) && isset( $atts['id'] ) ? absint( $atts['id'] ) : 0;
 
 		if ( $video_id > 0 ) {
-			return static::is_video_attachment( $video_id ) ? render_block( self::build_video_block( $video_id ) ) : '';
+			return static::is_picked_video( $video_id ) ? render_block( self::build_video_block( $video_id ) ) : '';
 		}
 
 		$post_id = $this->get_block_progression_post_id();

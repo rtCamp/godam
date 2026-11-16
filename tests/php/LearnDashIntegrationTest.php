@@ -14,6 +14,7 @@ namespace RTGODAM\Tests;
 use PHPUnit\Framework\TestCase;
 use RTGODAM\Inc\LearnDash\LearnDash;
 
+require_once dirname( __DIR__ ) . '/stubs/hooks.php';
 require_once dirname( __DIR__ ) . '/stubs/site-functions.php';
 require_once dirname( __DIR__ ) . '/stubs/i18n.php';
 require_once dirname( __DIR__ ) . '/stubs/learndash-functions.php';
@@ -268,7 +269,7 @@ class LearnDashIntegrationTest extends TestCase {
 
 				public function __construct() {} // phpcs:ignore Squiz.Commenting.FunctionComment.Missing -- test double.
 
-				public static function is_video_attachment( int $attachment_id ): bool { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing -- test double.
+				public static function is_picked_video( int $attachment_id ): bool { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing -- test double.
 					return in_array( $attachment_id, $GLOBALS['rtgodam_ld_test_videos'], true );
 				}
 			}
