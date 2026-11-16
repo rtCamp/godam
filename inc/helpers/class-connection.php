@@ -42,6 +42,13 @@ class Connection {
 	const OPTION_KEY = 'rtgodam-connection';
 
 	/**
+	 * Option set when an administrator dismisses the "subscription has ended" notice.
+	 *
+	 * @var string
+	 */
+	const SUBSCRIPTION_ENDED_DISMISSED_OPTION_KEY = 'rtgodam-subscription-ended-notice-dismissed';
+
+	/**
 	 * Remember what Central said about the stored key.
 	 *
 	 * @since n.e.x.t
@@ -68,6 +75,11 @@ class Connection {
 		// plan's real status: connected, trial or expired. Kept as sent. Whether this site
 		// may use the key is the key status (rtgodam_is_api_key_valid()), not this.
 
+		// A dismissed "subscription has ended" notice comes back for the next lapse.
+		if ( Connection_Status::EXPIRED !== $status ) {
+			delete_option( self::SUBSCRIPTION_ENDED_DISMISSED_OPTION_KEY );
+		}
+
 		update_option(
 			self::OPTION_KEY,
 			array(
@@ -90,6 +102,38 @@ class Connection {
 	 */
 	public static function clear() {
 		delete_option( self::OPTION_KEY );
+		delete_option( self::SUBSCRIPTION_ENDED_DISMISSED_OPTION_KEY );
+	}
+
+	/**
+	 * Whether to ask the administrator to renew a subscription that ended while the licence
+	 * still works: Pro features keep working, so it's a dismissible notice, not a screen.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array|null $user_data The cached user data, when the caller already has it.
+	 *
+	 * @return bool
+	 */
+	public static function should_show_subscription_ended_notice( $user_data = null ) {
+		if ( null === $user_data ) {
+			$user_data = rtgodam_get_user_data();
+		}
+
+		return Connection_Status::EXPIRED === self::get_status( $user_data )
+			&& ! empty( $user_data['valid_api_key'] )
+			&& ! get_option( self::SUBSCRIPTION_ENDED_DISMISSED_OPTION_KEY, false );
+	}
+
+	/**
+	 * Hide the "subscription has ended" notice until the subscription lapses again.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public static function dismiss_subscription_ended_notice() {
+		update_option( self::SUBSCRIPTION_ENDED_DISMISSED_OPTION_KEY, time(), false );
 	}
 
 	/**
@@ -172,18 +216,27 @@ class Connection {
 	}
 
 	/**
-	 * When the plan lapsed, as a Unix time.
+	 * When the licence stopped working on this site, as a Unix time: the start of Woo's
+	 * grace period before it turns features off.
 	 *
-	 * Central's `expired_at` when it sends one (not yet: the lapse date is stored in
-	 * billing by rtCamp/frappe-stripe-subscription#289, but `verify_api_key` doesn't send it).
-	 * Otherwise the first time this site saw the key as expired, which is later than the
-	 * real date if the site didn't check in.
+	 * Counted from the licence failing (Central answering 401 or 403 for the stored key),
+	 * not from `connection_status` saying `expired`: a subscription can end while the
+	 * licence still works, and then nothing is turned off. Central being unreachable
+	 * doesn't start or move it, and a key that verifies again clears it, so a later lapse
+	 * starts a new grace period (rtgodam_clear_api_key_invalid_timestamp()).
+	 *
+	 * Central's `expired_at` when it sends one (not yet). Otherwise the first time this
+	 * site saw the licence fail, which is later than the real date if it didn't check in.
 	 *
 	 * @since n.e.x.t
 	 *
-	 * @return int 0 when the plan hasn't lapsed or nothing recorded when.
+	 * @return int 0 while the licence works, or when nothing recorded when it failed.
 	 */
-	public static function get_expired_since() {
+	public static function get_licence_failed_since() {
+		if ( Api_Key_Status::EXPIRED !== Api_Key::get_status() ) {
+			return 0;
+		}
+
 		$stored = self::get_stored();
 
 		if ( Connection_Status::EXPIRED === $stored['status'] && $stored['expired_at'] ) {

@@ -245,7 +245,7 @@ class ConnectionStatusTest extends TestCase {
 		$this->assertNull( Connection::get_trial_days_left() );
 	}
 
-	public function test_the_lapse_date_is_centrals_when_it_sends_one() {
+	public function test_once_the_licence_fails_the_lapse_date_is_centrals_when_it_sends_one() {
 		$this->store_key( 'expired' );
 		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-error-since'] = 1000;
 		Connection::record(
@@ -253,18 +253,74 @@ class ConnectionStatusTest extends TestCase {
 				'connection_status' => 'expired',
 				'expired_at'        => '2026-11-01T00:00:00Z',
 			),
-			false 
+			false
 		);
 
-		$this->assertSame( strtotime( '2026-11-01T00:00:00Z' ), Connection::get_expired_since() );
+		$this->assertSame( strtotime( '2026-11-01T00:00:00Z' ), Connection::get_licence_failed_since() );
 	}
 
-	public function test_without_centrals_lapse_date_the_first_expired_check_counts() {
+	public function test_without_centrals_lapse_date_the_first_failed_check_counts() {
 		$this->store_key( 'expired' );
 		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-error-since'] = 1000;
 		Connection::record( array( 'connection_status' => 'expired' ), false );
 
-		$this->assertSame( 1000, Connection::get_expired_since() );
+		$this->assertSame( 1000, Connection::get_licence_failed_since() );
+	}
+
+	/**
+	 * A subscription that ended while the licence still works starts no grace period.
+	 */
+	public function test_an_ended_subscription_on_a_working_licence_has_not_failed() {
+		$this->store_key( 'valid' );
+		Connection::record(
+			array(
+				'connection_status' => 'expired',
+				'expired_at'        => '2026-11-01T00:00:00Z',
+			),
+			true
+		);
+
+		$this->assertSame( 0, Connection::get_licence_failed_since() );
+	}
+
+	/**
+	 * A refused site with a live plan (not on the key's allowed sites) counts from when the
+	 * licence failed here, not from a subscription lapse date.
+	 */
+	public function test_a_refused_site_counts_from_the_failed_check() {
+		$this->store_key( 'expired' );
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-error-since'] = 1000;
+		Connection::record( array( 'connection_status' => 'connected' ), false );
+
+		$this->assertSame( 1000, Connection::get_licence_failed_since() );
+	}
+
+	public function test_the_subscription_ended_notice_shows_while_the_licence_works() {
+		$this->store_key( 'valid' );
+		Connection::record( array( 'connection_status' => 'expired' ), true );
+
+		$this->assertTrue( Connection::should_show_subscription_ended_notice( array( 'valid_api_key' => true ) ) );
+	}
+
+	public function test_the_subscription_ended_notice_is_not_for_a_failed_licence() {
+		$this->store_key( 'expired' );
+		Connection::record( array( 'connection_status' => 'expired' ), false );
+
+		$this->assertFalse( Connection::should_show_subscription_ended_notice( array( 'valid_api_key' => false ) ) );
+	}
+
+	public function test_a_dismissed_subscription_ended_notice_comes_back_for_the_next_lapse() {
+		$this->store_key( 'valid' );
+		Connection::record( array( 'connection_status' => 'expired' ), true );
+		Connection::dismiss_subscription_ended_notice();
+
+		$this->assertFalse( Connection::should_show_subscription_ended_notice( array( 'valid_api_key' => true ) ) );
+
+		// Renewed, then lapsed again.
+		Connection::record( array( 'connection_status' => 'connected' ), true );
+		Connection::record( array( 'connection_status' => 'expired' ), true );
+
+		$this->assertTrue( Connection::should_show_subscription_ended_notice( array( 'valid_api_key' => true ) ) );
 	}
 
 	public function test_renewal_goes_to_the_organizations_upgrade_page() {

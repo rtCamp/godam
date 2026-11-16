@@ -252,10 +252,33 @@ function initOfferNotice() {
 	}
 }
 
+/**
+ * "Your GoDAM subscription has ended" notice: save its dismissal for the whole site.
+ *
+ * WordPress adds the dismiss button to `.is-dismissible` notices after the page loads,
+ * so the click is caught on the document.
+ */
+function initSubscriptionEndedNotice() {
+	document.addEventListener( 'click', ( event ) => {
+		const notice = event.target.closest?.( '.godam-subscription-ended-notice' );
+
+		if ( ! notice || ! event.target.closest( '.notice-dismiss' ) || ! window.ajaxurl ) {
+			return;
+		}
+
+		const body = new window.FormData();
+		body.append( 'action', 'godam_dismiss_subscription_ended_notice' );
+		body.append( 'nonce', notice.dataset.nonce || '' );
+		// keepalive lets the request finish even if the admin leaves the page right away.
+		window.fetch( window.ajaxurl, { method: 'POST', credentials: 'same-origin', keepalive: true, body } );
+	} );
+}
+
 function initAdminUI() {
 	initTogglePostboxes();
 	handleBannerClose();
 	initOfferNotice();
+	initSubscriptionEndedNotice();
 	new ParticleEffect();
 	initHandleInsightsDataNotice();
 }

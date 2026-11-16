@@ -42,6 +42,8 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
 			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
 			add_action( 'admin_notices', array( $this, 'api_key_status_notice' ) );
+			add_action( 'admin_notices', array( $this, 'subscription_ended_notice' ) );
+			add_action( 'wp_ajax_godam_dismiss_subscription_ended_notice', array( $this, 'dismiss_subscription_ended_notice' ) );
 			add_action( 'admin_notices', array( $this, 'preflight_notices' ) );
 			add_action( 'admin_notices', array( $this, 'woo_integration_promo_notice' ) );
 			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
@@ -728,12 +730,6 @@ class RTGODAM_Transcoder_Admin {
 			return;
 		}
 
-		// The subscription lapsed but the licence is still active, so Pro features still
-		// work for now: ask to renew without covering anything.
-		if ( $key_works && \RTGODAM\Inc\Enums\Connection_Status::EXPIRED === $connection_status ) {
-			$this->render_plan_expired_notice( $user_data['renewalUrl'] ?? '' );
-			return;
-		}
 
 		// Only show notice for expired or verification_failed status.
 		if ( \RTGODAM\Inc\Enums\Api_Key_Status::VALID === $api_key_status ) {
@@ -781,24 +777,68 @@ class RTGODAM_Transcoder_Admin {
 	}
 
 	/**
-	 * Ask to renew a lapsed plan whose key still works (an active licence with a cancelled
-	 * subscription), with a link to renew.
+	 * Ask to renew a subscription that ended while the licence is still active.
+	 *
+	 * Pro features keep working, so this is a dismissible notice in wp-admin only, never a
+	 * screen over the dashboard and never on the site. Dismissed, it stays hidden until the
+	 * subscription lapses again (\RTGODAM\Inc\Helpers\Connection::record()).
 	 *
 	 * @since n.e.x.t
 	 *
-	 * @param string $renewal_url Where to renew.
+	 * @return void
+	 */
+	public function subscription_ended_notice() {
+		if ( ! current_user_can( 'manage_options' ) || '' === \RTGODAM\Inc\Helpers\Api_Key::get_key() ) {
+			return;
+		}
+
+		if ( ! \RTGODAM\Inc\Helpers\Connection::should_show_subscription_ended_notice() ) {
+			return;
+		}
+
+		$renewal_url = \RTGODAM\Inc\Helpers\Connection::get_renewal_url();
+		?>
+		<div class="notice notice-warning is-dismissible godam-subscription-ended-notice" data-nonce="<?php echo esc_attr( wp_create_nonce( 'godam_dismiss_subscription_ended_notice' ) ); ?>">
+			<p>
+				<?php
+				echo wp_kses(
+					sprintf(
+						/* translators: 1: opening link tag to renew the GoDAM subscription, 2: closing link tag */
+						__( 'Your GoDAM subscription has ended. %1$sRenew%2$s to keep Pro features.', 'godam' ),
+						'<a href="' . esc_url( $renewal_url ) . '" target="_blank" rel="noopener noreferrer">',
+						'</a>'
+					),
+					array(
+						'a' => array(
+							'href'   => array(),
+							'target' => array(),
+							'rel'    => array(),
+						),
+					)
+				);
+				?>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Save the dismissal of the "subscription has ended" notice for the whole site.
+	 *
+	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
-	private function render_plan_expired_notice( $renewal_url ) {
-		echo '<div class="notice notice-warning godam-plan-expired-notice">';
-		echo '<p>' . esc_html__( 'Your GoDAM plan has expired. Renew it to keep transcoding and other Pro features.', 'godam' );
+	public function dismiss_subscription_ended_notice() {
+		check_ajax_referer( 'godam_dismiss_subscription_ended_notice', 'nonce' );
 
-		if ( '' !== $renewal_url ) {
-			echo ' <a href="' . esc_url( $renewal_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Renew plan', 'godam' ) . '</a>';
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to dismiss this notice.', 'godam' ) ), 403 );
 		}
 
-		echo '</p></div>';
+		\RTGODAM\Inc\Helpers\Connection::dismiss_subscription_ended_notice();
+
+		wp_send_json_success();
 	}
 
 	/**
