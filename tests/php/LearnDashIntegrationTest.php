@@ -335,6 +335,33 @@ class LearnDashIntegrationTest extends TestCase {
 		$this->assertSame( LearnDash::PROVIDER, $data['videos_found_provider'] );
 	}
 
+	public function test_player_settings_come_from_the_step_settings() {
+		$data = $this->integration()->filter_video_data(
+			array(
+				'videos_found_provider' => 'local',
+				'videos_auto_start'     => false,
+				'videos_show_controls'  => false,
+			),
+			array(
+				'lesson_video_url'           => LearnDash::BLOCK_MARKER,
+				'lesson_video_auto_start'    => 'on',
+				'lesson_video_show_controls' => '',
+				'lesson_video_focus_pause'   => 'on',
+				'lesson_video_track_time'    => 'on',
+			)
+		);
+
+		$this->assertSame(
+			array(
+				'auto_start'    => true,
+				'show_controls' => false,
+				'focus_pause'   => true,
+				'track_time'    => true,
+			),
+			$data['rtgodam_player']
+		);
+	}
+
 	public function test_save_reads_the_switch_from_the_metabox_form() {
 		$_POST['learndash-lesson-display-content-settings'] = array( LearnDash::FIELD => 'on' );
 

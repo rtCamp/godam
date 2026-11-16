@@ -29,6 +29,39 @@
 export const isOn = ( value ) => value === true || value === 1 || value === '1';
 
 /**
+ * Read the player settings of the step: autostart, controls, pause when
+ * unfocused and resume.
+ *
+ * LearnDash fills its own copies only while it applies progression, so they
+ * are empty for admins and on completed steps. GoDAM passes the step's
+ * settings as `rtgodam_player` so the player follows them every time.
+ *
+ * @since n.e.x.t
+ *
+ * @param {Object} data `learndash_video_data`.
+ * @return {{autoStart: boolean, showControls: boolean, focusPause: boolean, trackTime: boolean}} Settings.
+ */
+export function getPlayerSettings( data ) {
+	const own = data?.rtgodam_player;
+
+	if ( own && typeof own === 'object' ) {
+		return {
+			autoStart: isOn( own.auto_start ),
+			showControls: isOn( own.show_controls ),
+			focusPause: isOn( own.focus_pause ),
+			trackTime: isOn( own.track_time ),
+		};
+	}
+
+	return {
+		autoStart: isOn( data?.videos_auto_start ),
+		showControls: isOn( data?.videos_show_controls ),
+		focusPause: isOn( data?.video_focus_pause ),
+		trackTime: isOn( data?.video_track_time ),
+	};
+}
+
+/**
  * Run a call that may return a promise, ignoring a rejected one.
  *
  * Browsers reject play() when autoplay is blocked, which is not an error here.
@@ -222,6 +255,7 @@ export function createEmbedAdapter( iframe, win, apiOrigin, readyTimeout = 5000 
  * @param {Function} [args.now]    Clock, for tests.
  */
 export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.now } ) {
+	const settings = getPlayerSettings( data );
 	let completed = false;
 	let pausedByFocus = false;
 	let lastSaved = 0;
@@ -239,7 +273,7 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 	};
 
 	adapter.whenReady( () => {
-		if ( ! isOn( data.video_track_time ) ) {
+		if ( ! settings.trackTime ) {
 			return;
 		}
 
@@ -251,7 +285,7 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 		}
 	} );
 
-	if ( isOn( data.videos_auto_start ) ) {
+	if ( settings.autoStart ) {
 		adapter.mute();
 		adapter.play();
 		save( 'video_state', 'play' );
@@ -301,7 +335,7 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 
 	adapter.on( 'ended', complete );
 
-	if ( ! isOn( data.video_focus_pause ) ) {
+	if ( ! settings.focusPause ) {
 		return;
 	}
 
@@ -324,7 +358,7 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 		pausedByFocus = false;
 
 		// Like LearnDash: with controls shown the learner resumes it themselves.
-		if ( ! completed && ! isOn( data.videos_show_controls ) ) {
+		if ( ! completed && ! settings.showControls ) {
 			adapter.play();
 		}
 	};
@@ -336,7 +370,12 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 }
 
 /**
- * Connect every GoDAM progression video on the page to LearnDash.
+ * Connect every GoDAM video LearnDash shows on the page.
+ *
+ * The player settings (autostart, controls, pause when unfocused, resume)
+ * apply to every one of them. Locking the lesson until the video ends applies
+ * only where LearnDash enforces progression (`data-video-progression="true"`):
+ * not for admins who bypass it, and not on a step the learner completed.
  *
  * @since n.e.x.t
  *
@@ -362,9 +401,7 @@ export function init( win = window ) {
 		return [];
 	}
 
-	const wrappers = win.document.querySelectorAll(
-		`.ld-video[data-video-progression="true"][data-video-provider="${ provider }"]`,
-	);
+	const wrappers = win.document.querySelectorAll( `.ld-video[data-video-provider="${ provider }"]` );
 
 	// Only players it can control: locking the lesson for one it cannot would lock it for good.
 	const players = [];
@@ -379,7 +416,7 @@ export function init( win = window ) {
 			: createBlockAdapter( element, win );
 
 		if ( adapter ) {
-			players.push( { wrapper, element, adapter } );
+			players.push( { wrapper, element, adapter, locks: 'true' === wrapper.getAttribute( 'data-video-progression' ) } );
 		}
 	} );
 
@@ -401,13 +438,20 @@ export function init( win = window ) {
 		},
 	};
 
+	// Without progression there is nothing to unlock, and unlocking could auto-complete the step.
+	const ldWithoutLock = { ...ld, complete() {} };
+
 	// `ld_video_players` is a global LearnDash's script declares; keep ours there too.
 	const registry = win.ld_video_players && typeof win.ld_video_players === 'object' ? win.ld_video_players : {};
 
-	win.LearnDash_disable_assets( true );
+	if ( players.some( ( { locks } ) => locks ) ) {
+		win.LearnDash_disable_assets( true );
+	}
 
-	return players.map( ( { wrapper, element, adapter }, index ) => {
-		if ( ! isOn( data.videos_show_controls ) ) {
+	const settings = getPlayerSettings( data );
+
+	return players.map( ( { wrapper, element, adapter, locks }, index ) => {
+		if ( ! settings.showControls ) {
 			wrapper.classList.add( 'rtgodam-ld-no-controls' );
 		}
 
@@ -423,7 +467,7 @@ export function init( win = window ) {
 		ldPlayer.player_cookie_values = win.LearnDash_Video_Progress_initSettings( ldPlayer );
 		registry[ key ] = ldPlayer;
 
-		connectPlayer( { adapter, ldPlayer, data, ld, win } );
+		connectPlayer( { adapter, ldPlayer, data, ld: locks ? ld : ldWithoutLock, win } );
 
 		return ldPlayer;
 	} );

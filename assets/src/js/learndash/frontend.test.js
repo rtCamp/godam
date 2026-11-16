@@ -5,7 +5,7 @@
 /**
  * Internal dependencies
  */
-import { connectPlayer, createBlockAdapter, createEmbedAdapter, init, isOn } from './frontend';
+import { connectPlayer, createBlockAdapter, createEmbedAdapter, getPlayerSettings, init, isOn } from './frontend';
 
 /**
  * A player adapter the tests drive by hand.
@@ -66,6 +66,24 @@ function fakeLearnDash( saved = {} ) {
 
 const connect = ( { adapter, ld, data = {}, now } ) =>
 	connectPlayer( { adapter, ld, data, win: window, ldPlayer: { player_cookie_key: 'key' }, now } );
+
+describe( 'getPlayerSettings', () => {
+	it( 'prefers the settings GoDAM passes for the step', () => {
+		expect(
+			getPlayerSettings( {
+				videos_auto_start: '',
+				videos_show_controls: '',
+				rtgodam_player: { auto_start: true, show_controls: false, focus_pause: true, track_time: true },
+			} ),
+		).toEqual( { autoStart: true, showControls: false, focusPause: true, trackTime: true } );
+	} );
+
+	it( 'falls back to LearnDash\'s values', () => {
+		expect(
+			getPlayerSettings( { videos_auto_start: '1', videos_show_controls: '0', video_focus_pause: '', video_track_time: '1' } ),
+		).toEqual( { autoStart: true, showControls: false, focusPause: false, trackTime: true } );
+	} );
+} );
 
 describe( 'isOn', () => {
 	it( 'reads the flag values wp_localize_script() produces', () => {
@@ -411,11 +429,31 @@ describe( 'init', () => {
 		expect( document.querySelector( '.ld-video' ).classList.contains( 'rtgodam-ld-no-controls' ) ).toBe( false );
 	} );
 
-	it( 'leaves a video LearnDash does not apply progression to alone', () => {
-		setUpPage( blockWrapper( 'false' ) );
+	it( 'applies the player settings without locking the step when progression is off', () => {
+		setUpPage( blockWrapper( 'false' ), {
+			videos_show_controls: '',
+			videos_auto_complete: '1',
+			rtgodam_player: { auto_start: false, show_controls: false, focus_pause: false, track_time: true },
+		} );
 
-		expect( init( window ) ).toEqual( [] );
+		const players = init( window );
+		document.querySelector( '.ld-video video' ).dispatchEvent( new Event( 'ended' ) );
+
+		expect( players ).toHaveLength( 1 );
+		expect( document.querySelector( '.ld-video' ).classList.contains( 'rtgodam-ld-no-controls' ) ).toBe( true );
 		expect( window.LearnDash_disable_assets ).not.toHaveBeenCalled();
+	} );
+
+	it( 'locks only for the videos LearnDash applies progression to', () => {
+		setUpPage( blockWrapper( 'false' ) + blockWrapper( 'true' ), { rtgodam_player: { show_controls: true } } );
+
+		init( window );
+		document.querySelectorAll( '.ld-video video' )[ 0 ].dispatchEvent( new Event( 'ended' ) );
+		expect( window.LearnDash_disable_assets ).toHaveBeenCalledTimes( 1 );
+		expect( window.LearnDash_disable_assets ).toHaveBeenCalledWith( true );
+
+		document.querySelectorAll( '.ld-video video' )[ 1 ].dispatchEvent( new Event( 'ended' ) );
+		expect( window.LearnDash_disable_assets ).toHaveBeenLastCalledWith( false );
 	} );
 
 	it( 'leaves other providers to LearnDash', () => {

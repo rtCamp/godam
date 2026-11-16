@@ -791,9 +791,32 @@ class LearnDash {
 		}
 
 		$video_data['videos_found_provider'] = self::PROVIDER;
+		$video_data['rtgodam_player']        = self::get_player_settings( $settings );
 		$this->has_godam_video               = true;
 
 		return $video_data;
+	}
+
+	/**
+	 * Read the player settings of a lesson or topic for the GoDAM player.
+	 *
+	 * LearnDash fills its own copies in the video data only while it applies
+	 * progression, so admins and learners on a completed step would not get
+	 * them. The GoDAM player follows these every time it shows.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $settings Lesson or topic settings.
+	 *
+	 * @return array<string, bool>
+	 */
+	public static function get_player_settings( array $settings ): array {
+		return array(
+			'auto_start'    => 'on' === ( $settings['lesson_video_auto_start'] ?? '' ),
+			'show_controls' => 'on' === ( $settings['lesson_video_show_controls'] ?? '' ),
+			'focus_pause'   => 'on' === ( $settings['lesson_video_focus_pause'] ?? '' ),
+			'track_time'    => 'on' === ( $settings['lesson_video_track_time'] ?? '' ),
+		);
 	}
 
 	/**
