@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.9.0
+Stable tag: 2.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -273,6 +273,11 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 == Changelog ==
 
+= v2.9.1 (November 16, 2026) =
+
+- Fix: Single Video Analytics, a CTA layer's image, Copy block and the WPBakery document cover now load on sites that block the WordPress media REST API for logged-out visitors.
+- Fix: A CTA layer's image is no longer removed when it fails to load for a reason other than being deleted.
+
 = v2.9.0 (November 12, 2026) =
 
 - Feat: Developers can now build their own layer types for GoDAM videos and images with the Layer API: describe the layer in a `layer.json` file and register it from PHP, the video editor and the front end, the way blocks are built. Custom layers appear in the "Add layer" menu and render in the player and the GoDAM Image block.
@@ -282,17 +287,6 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 = v2.8.1 (November 11, 2026) =
 
-- Fix: Security fixes.
-
-= v2.8.0 (November 10, 2026) =
-
-- Feat: Videos can now have captions in several languages. In the video editor's Transcription tab, add, edit, replace or remove a caption file for any language and choose which one shows by default. Visitors pick a language from the player's subtitles menu. Needs a paid GoDAM plan.
-- Feat: Choose the language for AI transcription, or let GoDAM detect it.
-- Feat: With a consent banner that supports the WP Consent API (such as Complianz, Cookiebot, CookieYes or iubenda), GoDAM analytics now waits for the visitor's statistics consent before it stores or sends anything.
-- Tweak: The Vimeo migration tab now links straight to the screen in GoDAM Central where you connect your Vimeo account.
-- Tweak: Sites running GoDAM for WooCommerce older than 2.3.1 are asked to update it.
-- Fix: Pages no longer include the visitor's IP address or the signed-in user's ID for analytics. If you use a page cache, purge it after updating.
-- Fix: GoDAM elements no longer cause deprecation notices with WPBakery 9.1.
 - Fix: Security fixes.
 
 == External Services ==
