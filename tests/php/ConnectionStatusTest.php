@@ -142,25 +142,18 @@ class ConnectionStatusTest extends TestCase {
 	}
 
 	/**
-	 * Central refused this site (it isn't on the key's allowed sites) but the plan is fine:
-	 * no trial countdown or renewal for a key the site can't use.
+	 * Central refused this site (it isn't on the key's allowed sites) but sent the plan's
+	 * real status: kept as sent. The key status decides whether the site may use the key.
 	 *
 	 * @dataProvider live_statuses
 	 *
 	 * @param string $status What Central sent with the refusal.
 	 */
-	public function test_a_refused_site_with_a_live_plan_has_no_usable_key( $status ) {
+	public function test_a_refused_site_keeps_its_plans_status( $status ) {
 		$this->store_key( 'expired' );
-		Connection::record(
-			array(
-				'connection_status' => $status,
-				'trial_ends_at'     => '2030-01-01T00:00:00Z',
-			),
-			false
-		);
+		Connection::record( array( 'connection_status' => $status ), false );
 
-		$this->assertSame( 'none', $this->status() );
-		$this->assertNull( Connection::get_trial_days_left() );
+		$this->assertSame( $status, $this->status() );
 	}
 
 	/**

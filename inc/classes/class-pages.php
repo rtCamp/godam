@@ -547,13 +547,18 @@ class Pages {
 			return false;
 		}
 
-		// No key: the connect screens. A lapsed plan: the renewal screen, not signup. While
-		// Central can't be reached the site keeps working, so nothing covers the page.
-		return in_array(
-			\RTGODAM\Inc\Helpers\Connection::get_status(),
-			array( \RTGODAM\Inc\Enums\Connection_Status::NONE, \RTGODAM\Inc\Enums\Connection_Status::EXPIRED ),
-			true
-		);
+		$status = \RTGODAM\Inc\Helpers\Connection::get_status();
+
+		// No key: the connect screens.
+		if ( \RTGODAM\Inc\Enums\Connection_Status::NONE === $status ) {
+			return true;
+		}
+
+		// A lapsed plan: the renewal screen, not signup. Only once the key stops working:
+		// a cancelled subscription on a still-active licence keeps Pro features on, so it gets
+		// a renewal notice instead of a screen over the dashboard. While Central can't be
+		// reached the site keeps working, so nothing covers the page.
+		return \RTGODAM\Inc\Enums\Connection_Status::EXPIRED === $status && ! rtgodam_is_api_key_valid();
 	}
 
 	/**

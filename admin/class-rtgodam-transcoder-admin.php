@@ -719,9 +719,19 @@ class RTGODAM_Transcoder_Admin {
 		// Check API key status from user data (includes transient verification_failed).
 		$api_key_status = isset( $user_data['apiKeyStatus'] ) ? $user_data['apiKeyStatus'] : \RTGODAM\Inc\Enums\Api_Key_Status::VALID;
 
+		$connection_status = $user_data['connectionStatus'] ?? '';
+		$key_works         = \RTGODAM\Inc\Enums\Api_Key_Status::VALID === $api_key_status;
+
 		// On a trial, say how long is left so the owner can upgrade before features stop.
-		if ( \RTGODAM\Inc\Enums\Connection_Status::TRIAL === ( $user_data['connectionStatus'] ?? '' ) ) {
+		if ( $key_works && \RTGODAM\Inc\Enums\Connection_Status::TRIAL === $connection_status ) {
 			$this->render_trial_notice( $user_data['trialDaysLeft'] ?? null, $user_data['renewalUrl'] ?? '' );
+			return;
+		}
+
+		// The subscription lapsed but the licence is still active, so Pro features still
+		// work for now: ask to renew without covering anything.
+		if ( $key_works && \RTGODAM\Inc\Enums\Connection_Status::EXPIRED === $connection_status ) {
+			$this->render_plan_expired_notice( $user_data['renewalUrl'] ?? '' );
 			return;
 		}
 
@@ -734,10 +744,11 @@ class RTGODAM_Transcoder_Admin {
 		// A lapsed plan is renewed on GoDAM, for this site's organization when known.
 		$renewal_url = ! empty( $user_data['renewalUrl'] ) ? $user_data['renewalUrl'] : $settings_url;
 
-		// Central refused the key for a reason renewing can't fix (this site isn't on the
-		// key's allowed sites, or Central doesn't know the key): point to the settings, not
-		// to renewal, with the generic message below.
-		if ( \RTGODAM\Inc\Enums\Connection_Status::NONE === ( $user_data['connectionStatus'] ?? '' ) && \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status ) {
+		// Central refused the key but the plan hasn't lapsed (this site isn't on the key's
+		// allowed sites, or Central doesn't know the key): renewing can't fix that, so point
+		// to the settings with the generic message below.
+		$plan_lapsed = in_array( $connection_status, array( '', \RTGODAM\Inc\Enums\Connection_Status::EXPIRED ), true );
+		if ( \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status && ! $plan_lapsed ) {
 			$api_key_status = 'refused';
 		}
 
@@ -767,6 +778,27 @@ class RTGODAM_Transcoder_Admin {
 		echo '<div class="notice notice-' . esc_attr( $notice_type ) . ' is-dismissible">';
 		echo '<p>' . wp_kses_post( $message ) . '</p>';
 		echo '</div>';
+	}
+
+	/**
+	 * Ask to renew a lapsed plan whose key still works (an active licence with a cancelled
+	 * subscription), with a link to renew.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $renewal_url Where to renew.
+	 *
+	 * @return void
+	 */
+	private function render_plan_expired_notice( $renewal_url ) {
+		echo '<div class="notice notice-warning godam-plan-expired-notice">';
+		echo '<p>' . esc_html__( 'Your GoDAM plan has expired. Renew it to keep transcoding and other Pro features.', 'godam' );
+
+		if ( '' !== $renewal_url ) {
+			echo ' <a href="' . esc_url( $renewal_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Renew plan', 'godam' ) . '</a>';
+		}
+
+		echo '</p></div>';
 	}
 
 	/**

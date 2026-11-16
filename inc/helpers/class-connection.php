@@ -24,6 +24,12 @@ use RTGODAM\Inc\Enums\Connection_Status;
  * They are stored here; on an older Central that doesn't send them, the status is
  * worked out from the key status, as before.
  *
+ * The status describes the plan, for choosing the screen (connect, renewal, trial days).
+ * It doesn't switch features on or off: whether this site may use the key is still the
+ * key status, rtgodam_is_api_key_valid(). The two can differ: a cancelled subscription on
+ * an active licence is `expired` while the key still works, and a site that isn't on the
+ * key's allowed sites can't use a key whose plan is `connected`.
+ *
  * @since n.e.x.t
  */
 class Connection {
@@ -56,12 +62,11 @@ class Connection {
 			// The key works but Central has no subscription to read yet (one still being
 			// set up). The connect screen would be wrong: the key status decides instead.
 			$status = '';
-		} elseif ( ! $succeeded && in_array( $status, array( Connection_Status::CONNECTED, Connection_Status::TRIAL ), true ) ) {
-			// The plan is fine but Central refused this site (it isn't on the key's allowed
-			// sites). Pro features are off here, so it can't read as connected or trial, and
-			// renewing wouldn't help: same as no usable key.
-			$status = Connection_Status::NONE;
 		}
+
+		// Central refusing this site (it isn't on the key's allowed sites) still sends the
+		// plan's real status: connected, trial or expired. Kept as sent. Whether this site
+		// may use the key is the key status (rtgodam_is_api_key_valid()), not this.
 
 		update_option(
 			self::OPTION_KEY,
