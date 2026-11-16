@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-13T12:35:48+00:00\n"
+"POT-Creation-Date: 2026-11-16T05:58:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -457,7 +457,7 @@ msgstr ""
 #: assets/src/blocks/godam-audio/edit.js:597
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:252
 #: assets/src/blocks/godam-player/track-uploader.js:57
-#: assets/src/js/godam-player/engagement.js:955
+#: assets/src/js/godam-player/engagement.js:1022
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:553
 msgid "Edit"
 msgstr ""
@@ -1735,7 +1735,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:334
 #: assets/src/js/deactivation-feedback.js:42
-#: assets/src/js/godam-player/engagement.js:750
+#: assets/src/js/godam-player/engagement.js:818
 #: pages/godam/components/ConfirmModal.jsx:38
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:191
 #: pages/media-library/App.js:293
@@ -1756,7 +1756,7 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:337
-#: assets/src/js/godam-player/engagement.js:1124
+#: assets/src/js/godam-player/engagement.js:1190
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:136
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:140
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:400
@@ -2519,8 +2519,8 @@ msgstr ""
 #: assets/build/js/fluentforms.min.js:1
 #: assets/build/js/ninja-forms.min.js:1
 #: assets/src/js/everestforms/index.js:231
-#: assets/src/js/fluentforms/index.js:245
-#: assets/src/js/ninja-forms/index.js:216
+#: assets/src/js/fluentforms/index.js:252
+#: assets/src/js/ninja-forms/index.js:223
 msgid "File upload in progress…"
 msgstr ""
 
@@ -2530,43 +2530,43 @@ msgid "This title looks like a file name. Search engines show it as the video ti
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:731
+#: assets/src/js/godam-player/engagement.js:799
 msgid "Add timestamp"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:737
+#: assets/src/js/godam-player/engagement.js:805
 msgid "Add emoji"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:745
-#: assets/src/js/godam-player/engagement.js:937
-#: assets/src/js/godam-player/engagement.js:977
+#: assets/src/js/godam-player/engagement.js:813
+#: assets/src/js/godam-player/engagement.js:1004
+#: assets/src/js/godam-player/engagement.js:1044
 msgid "Reply"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:745
+#: assets/src/js/godam-player/engagement.js:813
 msgid "Comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: inc/helpers/custom-functions.php:1927
-#: assets/src/js/godam-player/engagement.js:908
-#: assets/src/js/godam-player/engagement.js:915
+#: assets/src/js/godam-player/engagement.js:975
+#: assets/src/js/godam-player/engagement.js:982
 msgid "Anonymous"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:924
+#: assets/src/js/godam-player/engagement.js:991
 msgid "This comment has been deleted"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/media-library.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/engagement.js:947
+#: assets/src/js/godam-player/engagement.js:1014
 #: pages/media-library/components/context-menu/ContextMenu.jsx:518
 #: pages/media-library/components/modal/DeleteModal.jsx:132
 #: pages/video-editor/components/SidebarLayers.js:547
@@ -2577,33 +2577,33 @@ msgid "Delete"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:977
+#: assets/src/js/godam-player/engagement.js:1044
 msgid "Replies"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1029
+#: assets/src/js/godam-player/engagement.js:1096
 msgid "No comments yet. Be the first to comment!"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1090
+#: assets/src/js/godam-player/engagement.js:1156
 msgid "Register"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1090
+#: assets/src/js/godam-player/engagement.js:1156
 msgid "Login"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1090
+#: assets/src/js/godam-player/engagement.js:1156
 msgid "to comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/onboarding.min.js:2
-#: assets/src/js/godam-player/engagement.js:1097
+#: assets/src/js/godam-player/engagement.js:1163
 #: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:58
 #: pages/onboarding/components/screens/LoginScreen.jsx:54
 #: pages/onboarding/components/screens/SignupScreen.jsx:77
@@ -2611,22 +2611,22 @@ msgid "Email"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1101
+#: assets/src/js/godam-player/engagement.js:1167
 msgid "Enter your email"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1160
+#: assets/src/js/godam-player/engagement.js:1226
 msgid "GoDAM Video"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1271
+#: assets/src/js/godam-player/engagement.js:1350
 msgid "Comments"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1276
+#: assets/src/js/godam-player/engagement.js:1355
 msgid "Hide Comments"
 msgstr ""
 
@@ -3059,7 +3059,7 @@ msgid "Search Media"
 msgstr ""
 
 #: assets/build/js/ninja-forms.min.js:1
-#: assets/src/js/ninja-forms/index.js:280
+#: assets/src/js/ninja-forms/index.js:287
 msgid "Upload failed. Please try again."
 msgstr ""
 
@@ -6849,7 +6849,7 @@ msgid "Next"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:1
-#: assets/src/js/godam-player/engagement.js:1114
+#: assets/src/js/godam-player/engagement.js:1180
 #: pages/media-library-tour/controller.js:355
 msgid "Back"
 msgstr ""
@@ -11628,7 +11628,7 @@ msgstr ""
 msgid "This form could not be loaded."
 msgstr ""
 
-#: inc/classes/class-assets.php:99
+#: inc/classes/class-assets.php:91
 msgid "No video found for attachment ID"
 msgstr ""
 
@@ -12114,6 +12114,10 @@ msgstr ""
 
 #: inc/classes/class-pages.php:901
 msgid "Maximum number of choices allowed: "
+msgstr ""
+
+#: inc/classes/class-recorder-upload-nonce.php:86
+msgid "Unknown recorder field."
 msgstr ""
 
 #: inc/classes/class-update.php:93
@@ -14952,7 +14956,7 @@ msgctxt "verb"
 msgid "Upload"
 msgstr ""
 
-#: assets/src/js/godam-player/engagement.js:1124
+#: assets/src/js/godam-player/engagement.js:1190
 msgid "Continue as Guest"
 msgstr ""
 
