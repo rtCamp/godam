@@ -281,6 +281,54 @@ describe( 'createEmbedAdapter', () => {
 		expect( createEmbedAdapter( document.createElement( 'iframe' ), {}, 'https://app.godam.io' ) ).toBeNull();
 	} );
 
+	/**
+	 * A GoDAM Player SDK double whose ready() the test resolves.
+	 *
+	 * @return {Object} `GoDAMPlayer`, the commands it received and `resolveReady()`.
+	 */
+	const sdkDouble = () => {
+		const calls = [];
+		let resolveReady;
+		const ready = new Promise( ( resolve ) => {
+			resolveReady = resolve;
+		} );
+		const GoDAMPlayer = jest.fn( function() {
+			this.on = () => {};
+			this.ready = () => ready;
+			this.setMuted = () => calls.push( 'mute' ) && Promise.resolve();
+			this.play = () => calls.push( 'play' ) && Promise.resolve();
+			this.seek = ( time ) => calls.push( `seek ${ time }` ) && Promise.resolve();
+			this.getDuration = () => Promise.resolve( 8 );
+		} );
+		return { GoDAMPlayer, calls, resolveReady: () => resolveReady() };
+	};
+
+	const flush = () => new Promise( ( resolve ) => setTimeout( resolve, 0 ) );
+
+	it( 'holds autostart until the embed says it is ready', async () => {
+		const sdk = sdkDouble();
+		const adapter = createEmbedAdapter( document.createElement( 'iframe' ), { GoDAMPlayer: sdk.GoDAMPlayer, setTimeout: ( ...a ) => setTimeout( ...a ) }, 'https://app.godam.io', 60000 );
+
+		adapter.mute();
+		adapter.play();
+		await flush();
+		expect( sdk.calls ).toEqual( [] );
+
+		sdk.resolveReady();
+		await flush();
+		expect( sdk.calls ).toEqual( [ 'mute', 'play' ] );
+	} );
+
+	it( 'sends commands after the timeout when it missed the ready message', async () => {
+		const sdk = sdkDouble();
+		const adapter = createEmbedAdapter( document.createElement( 'iframe' ), { GoDAMPlayer: sdk.GoDAMPlayer, setTimeout: ( ...a ) => setTimeout( ...a ) }, 'https://app.godam.io', 10 );
+
+		adapter.seek( 3 );
+		await new Promise( ( resolve ) => setTimeout( resolve, 30 ) );
+
+		expect( sdk.calls ).toEqual( [ 'seek 3' ] );
+	} );
+
 	it( 'only accepts messages from the GoDAM origin and tracks the time from events', () => {
 		const listeners = {};
 		const GoDAMPlayer = jest.fn( function() {

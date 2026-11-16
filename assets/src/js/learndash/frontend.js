@@ -116,14 +116,20 @@ export function createBlockAdapter( video, win ) {
  * The SDK answers questions asynchronously, so the time, duration and paused
  * state come from the events the embed sends.
  *
+ * Commands wait until the embed says it is ready: the page sends autostart
+ * and resume before the iframe has loaded, and a command the embed is not yet
+ * listening for is lost. If the ready message came before the SDK was
+ * listening, they go out after `readyTimeout` anyway.
+ *
  * @since n.e.x.t
  *
- * @param {HTMLIFrameElement} iframe    The embed iframe.
- * @param {Window}            win       Window.
- * @param {string}            apiOrigin GoDAM origin the embed messages come from.
+ * @param {HTMLIFrameElement} iframe         The embed iframe.
+ * @param {Window}            win            Window.
+ * @param {string}            apiOrigin      GoDAM origin the embed messages come from.
+ * @param {number}            [readyTimeout] Milliseconds to wait for the ready message.
  * @return {Object|null} Player controls, or null when the SDK is missing.
  */
-export function createEmbedAdapter( iframe, win, apiOrigin ) {
+export function createEmbedAdapter( iframe, win, apiOrigin, readyTimeout = 5000 ) {
 	if ( typeof win.GoDAMPlayer !== 'function' ) {
 		return null;
 	}
@@ -161,31 +167,41 @@ export function createEmbedAdapter( iframe, win, apiOrigin ) {
 		state.paused = true;
 	} );
 
+	const ready = Promise.race( [
+		Promise.resolve().then( () => player.ready() ),
+		new Promise( ( resolve ) => win.setTimeout( resolve, readyTimeout ) ),
+	] ).catch( () => {} );
+
+	// Commands run in the order they are given, once the embed is ready.
+	const send = ( command ) => {
+		ready.then( () => quietly( command ) );
+	};
+
 	return {
 		on( event, callback ) {
 			player.on( event, () => callback() );
 		},
 		whenReady( callback ) {
-			quietly( () => player.ready().then( () => {
+			ready.then( () => {
 				quietly( () => player.getDuration().then( ( duration ) => {
 					update( { duration } );
 				} ).finally( callback ) );
-			} ) );
+			} );
 		},
 		getCurrentTime: () => state.currentTime,
 		getDuration: () => state.duration,
 		isPaused: () => state.paused,
 		seek( time ) {
-			quietly( () => player.seek( time ) );
+			send( () => player.seek( time ) );
 		},
 		play() {
-			quietly( () => player.play() );
+			send( () => player.play() );
 		},
 		pause() {
-			quietly( () => player.pause() );
+			send( () => player.pause() );
 		},
 		mute() {
-			quietly( () => player.setMuted( true ) );
+			send( () => player.setMuted( true ) );
 		},
 	};
 }
