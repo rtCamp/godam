@@ -15,6 +15,7 @@ import { hasAPIKey } from '../utils/index.js';
 import ProUpgradeNotice, { startUpgrade } from './ProUpgradeNotice';
 import TrialCountdownBanner from './TrialCountdownBanner';
 import WooUnlockedNotice from './WooUnlockedNotice';
+import AiAgentsNotice from './AiAgentsNotice';
 import './GoDAMHeader.scss';
 
 const GodamHeader = () => {
@@ -134,6 +135,7 @@ const GodamHeader = () => {
 					</div>
 				</div>
 			</div>
+			<AiAgentsNotice />
 			<ProUpgradeNotice />
 			<WooUnlockedNotice />
 		</header>
