@@ -421,22 +421,27 @@ class LearnDash {
 		$field_id = $metabox_key . '_' . self::VIDEO_FIELD;
 		$title    = $video_id > 0 ? get_the_title( $video_id ) : '';
 
+		$picked = $video_id > 0;
+
 		return sprintf(
-			'<div class="rtgodam-ld-video-picker" id="%1$s_picker">'
-			. '<input type="hidden" id="%1$s" name="%2$s[%3$s]" value="%4$s" />'
-			. '<p class="rtgodam-ld-video-picker__title"%5$s>%6$s</p>'
+			'<div class="rtgodam-ld-video-picker%1$s" id="%2$s_picker">'
+			. '<input type="hidden" id="%2$s" name="%3$s[%4$s]" value="%5$s" />'
 			. '<div class="rtgodam-ld-video-picker__preview"></div>'
-			. '<button type="button" class="button rtgodam-ld-video-picker__select">%7$s</button> '
-			. '<button type="button" class="button-link rtgodam-ld-video-picker__remove" style="margin-left:8px;vertical-align:middle;"%8$s>%9$s</button>'
+			. '<p class="rtgodam-ld-video-picker__title"%6$s>%7$s</p>'
+			. '<div class="rtgodam-ld-video-picker__actions">'
+			. '<button type="button" class="button rtgodam-ld-video-picker__select">%8$s</button>'
+			. '<button type="button" class="button rtgodam-ld-video-picker__remove"%9$s>%10$s</button>'
+			. '</div>'
 			. '</div>',
+			$picked ? ' is-picked' : '',
 			esc_attr( $field_id ),
 			esc_attr( $metabox_key ),
 			esc_attr( self::VIDEO_FIELD ),
-			esc_attr( $video_id > 0 ? (string) $video_id : '' ),
-			$video_id > 0 ? '' : ' hidden',
+			esc_attr( $picked ? (string) $video_id : '' ),
+			$picked ? '' : ' hidden',
 			esc_html( $title ),
-			$video_id > 0 ? esc_html__( 'Replace video', 'godam' ) : esc_html__( 'Select video', 'godam' ),
-			$video_id > 0 ? '' : ' hidden',
+			$picked ? esc_html__( 'Replace', 'godam' ) : esc_html__( 'Select video', 'godam' ),
+			$picked ? '' : ' hidden',
 			esc_html__( 'Remove', 'godam' )
 		);
 	}
@@ -544,10 +549,34 @@ class LearnDash {
 					'frameTitle'  => __( 'Select the progression video', 'godam' ),
 					'frameButton' => __( 'Use this video', 'godam' ),
 					'select'      => __( 'Select video', 'godam' ),
-					'replace'     => __( 'Replace video', 'godam' ),
+					'replace'     => __( 'Replace', 'godam' ),
 				),
 			)
 		);
+
+		wp_register_style( 'rtgodam-learndash-admin', false, array(), RTGODAM_VERSION );
+		wp_enqueue_style( 'rtgodam-learndash-admin' );
+		wp_add_inline_style( 'rtgodam-learndash-admin', self::get_picker_css() );
+	}
+
+	/**
+	 * Styles for the video picker, in the look of the editor's featured image panel.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return string
+	 */
+	public static function get_picker_css(): string {
+		return '.rtgodam-ld-video-picker [hidden]{display:none!important}'
+			. '.rtgodam-ld-video-picker{max-width:320px}'
+			. '.rtgodam-ld-video-picker__preview:empty{display:none}'
+			. '.rtgodam-ld-video-picker__preview video{display:block;width:100%;aspect-ratio:16/9;background:#000;border-radius:4px}'
+			. '.rtgodam-ld-video-picker__title{margin:8px 0 0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'
+			. '.rtgodam-ld-video-picker__actions{display:flex;gap:8px;align-items:center;margin-top:8px}'
+			. '.rtgodam-ld-video-picker:not(.is-picked) .rtgodam-ld-video-picker__actions{margin-top:0}'
+			. '.rtgodam-ld-video-picker .rtgodam-ld-video-picker__remove.button{color:#b32d2e;border-color:#b32d2e}'
+			. '.rtgodam-ld-video-picker .rtgodam-ld-video-picker__remove.button:hover,'
+			. '.rtgodam-ld-video-picker .rtgodam-ld-video-picker__remove.button:focus{color:#8a2424;border-color:#8a2424;background:#fcf0f1;box-shadow:none}';
 	}
 
 	/**

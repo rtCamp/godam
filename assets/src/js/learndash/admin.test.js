@@ -13,7 +13,7 @@ const CONFIG = {
 	videoField: 'lesson_video_godam_id',
 	markerTag: 'video_godam',
 	metaboxKeys: [ KEY, 'learndash-topic-display-content-settings' ],
-	i18n: { frameTitle: 'Pick', frameButton: 'Use', select: 'Select video', replace: 'Replace video' },
+	i18n: { frameTitle: 'Pick', frameButton: 'Use', select: 'Select video', replace: 'Replace' },
 };
 
 /**
@@ -27,12 +27,14 @@ function render( checked, videoUrl, videoId = '' ) {
 	document.body.innerHTML = `
 		<input type="checkbox" id="${ KEY }_lesson_video_godam" ${ checked ? 'checked' : '' }>
 		<div id="${ KEY }_lesson_video_godam_id_field">
-			<div class="rtgodam-ld-video-picker" id="${ KEY }_lesson_video_godam_id_picker">
+			<div class="rtgodam-ld-video-picker${ videoId ? ' is-picked' : '' }" id="${ KEY }_lesson_video_godam_id_picker">
 				<input type="hidden" id="${ KEY }_lesson_video_godam_id" name="${ KEY }[lesson_video_godam_id]" value="${ videoId }">
-				<p class="rtgodam-ld-video-picker__title" ${ videoId ? '' : 'hidden' }>Saved title</p>
 				<div class="rtgodam-ld-video-picker__preview"></div>
-				<button type="button" class="button rtgodam-ld-video-picker__select">${ videoId ? 'Replace video' : 'Select video' }</button>
-				<button type="button" class="button-link rtgodam-ld-video-picker__remove" ${ videoId ? '' : 'hidden' }>Remove</button>
+				<p class="rtgodam-ld-video-picker__title" ${ videoId ? '' : 'hidden' }>Saved title</p>
+				<div class="rtgodam-ld-video-picker__actions">
+					<button type="button" class="button rtgodam-ld-video-picker__select">${ videoId ? 'Replace' : 'Select video' }</button>
+					<button type="button" class="button rtgodam-ld-video-picker__remove" ${ videoId ? '' : 'hidden' }>Remove</button>
+				</div>
 			</div>
 		</div>
 		<div id="${ KEY }_lesson_video_url_field"><textarea id="${ KEY }_lesson_video_url"></textarea></div>
@@ -154,7 +156,8 @@ describe( 'setupVideoPicker', () => {
 		expect( pickerPart( 'title' ).textContent ).toBe( 'Lesson intro' );
 		expect( pickerPart( 'title' ).hidden ).toBe( false );
 		expect( pickerPart( 'preview' ).querySelector( 'video' ).getAttribute( 'src' ) ).toBe( 'https://cdn.test/intro.mp4' );
-		expect( pickerPart( 'select' ).textContent ).toBe( 'Replace video' );
+		expect( pickerPart( 'select' ).textContent ).toBe( 'Replace' );
+		expect( picker().classList.contains( 'is-picked' ) ).toBe( true );
 		expect( pickerPart( 'remove' ).hidden ).toBe( false );
 	} );
 
@@ -180,6 +183,7 @@ describe( 'setupVideoPicker', () => {
 		expect( pickerPart( 'title' ).hidden ).toBe( true );
 		expect( pickerPart( 'select' ).textContent ).toBe( 'Select video' );
 		expect( pickerPart( 'remove' ).hidden ).toBe( true );
+		expect( picker().classList.contains( 'is-picked' ) ).toBe( false );
 	} );
 
 	it( 'loads a preview for the saved video', async () => {

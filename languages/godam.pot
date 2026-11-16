@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-16T10:55:26+00:00\n"
+"POT-Creation-Date: 2026-11-16T11:14:15+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -371,6 +371,8 @@ msgstr ""
 #: assets/build/js/wpbakery-image-selector-param.min.js:1
 #: assets/build/js/wpbakery-video-selector-param.min.js:1
 #: assets/build/pages/godam.min.js:2
+#: inc/classes/learndash/class-learndash.php:443
+#: inc/classes/learndash/class-learndash.php:552
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:102
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:149
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:196
@@ -415,7 +417,7 @@ msgstr ""
 #: inc/classes/elementor-controls/class-godam-media.php:165
 #: inc/classes/elementor-controls/class-godam-media.php:211
 #: inc/classes/elementor-controls/class-godam-media.php:213
-#: inc/classes/learndash/class-learndash.php:440
+#: inc/classes/learndash/class-learndash.php:445
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:123
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:170
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:205
@@ -3120,8 +3122,8 @@ msgstr ""
 
 #: assets/build/js/wpbakery-video-selector-param.min.js:1
 #: assets/build/pages/analytics.min.js:2
-#: inc/classes/learndash/class-learndash.php:438
-#: inc/classes/learndash/class-learndash.php:546
+#: inc/classes/learndash/class-learndash.php:443
+#: inc/classes/learndash/class-learndash.php:551
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:102
 #: assets/src/js/wpbakery/wpbakery-video-selector-param.js:148
 #: pages/analytics/index.js:37
@@ -3144,7 +3146,7 @@ msgid "Select or Upload Video Of Your Choice"
 msgstr ""
 
 #: assets/build/js/wpforms-godam-recorder-editor.min.js:1
-#: inc/classes/learndash/class-learndash.php:545
+#: inc/classes/learndash/class-learndash.php:550
 #: assets/src/js/wpforms-godam-recorder-editor.js:20
 msgid "Use this video"
 msgstr ""
@@ -14123,12 +14125,7 @@ msgstr ""
 msgid "The video learners watch to complete this step. With none selected, the first GoDAM Video block in the content is used."
 msgstr ""
 
-#: inc/classes/learndash/class-learndash.php:438
-#: inc/classes/learndash/class-learndash.php:547
-msgid "Replace video"
-msgstr ""
-
-#: inc/classes/learndash/class-learndash.php:544
+#: inc/classes/learndash/class-learndash.php:549
 msgid "Select the progression video"
 msgstr ""
 

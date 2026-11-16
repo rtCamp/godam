@@ -102,8 +102,10 @@ export function renderPicked( picker, attachment, i18n ) {
 	const remove = picker.querySelector( '.rtgodam-ld-video-picker__remove' );
 
 	input.value = attachment ? String( attachment.id ) : '';
+	picker.classList.toggle( 'is-picked', !! attachment );
 
 	title.textContent = attachment ? attachment.title || attachment.filename || `#${ attachment.id }` : '';
+	title.title = title.textContent;
 	title.hidden = ! attachment;
 
 	preview.replaceChildren();
@@ -112,8 +114,6 @@ export function renderPicked( picker, attachment, i18n ) {
 		video.src = attachment.url;
 		video.controls = true;
 		video.preload = 'metadata';
-		video.style.maxWidth = '320px';
-		video.style.width = '100%';
 		preview.appendChild( video );
 	}
 
