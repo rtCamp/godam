@@ -6,12 +6,13 @@ import { createSlice } from '@reduxjs/toolkit';
 /**
  * Internal dependencies
  */
-import { STEPS } from '../../utils/constants';
+import { CONNECTION_STATUS, STEPS, config } from '../../utils/constants';
 
 // The GoDAM JWT and the durable org API key both live server-side (held/stored
 // by the WP proxy); the SPA only tracks UI state + the resolved user/workspaces.
 const initialState = {
-	step: STEPS.ENTRY,
+	// A lapsed plan opens on renewal, not on the signup screens (#101).
+	step: CONNECTION_STATUS.EXPIRED === config.connectionStatus ? STEPS.RENEW : STEPS.ENTRY,
 	email: '',
 	user: null,
 	organizations: [],

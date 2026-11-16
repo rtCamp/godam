@@ -257,6 +257,7 @@ class Settings extends Base {
 		// Clear API key status and grace period timestamp.
 		delete_option( 'rtgodam-api-key-status' );
 		delete_option( 'rtgodam-api-key-error-since' );
+		\RTGODAM\Inc\Helpers\Connection::clear();
 
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(

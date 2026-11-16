@@ -42,6 +42,7 @@ class ApiKeyVerificationResilienceTest extends TestCase {
 		$stubs = array(
 			'update_option'            => 'function update_option( $key, $value ) { $GLOBALS["rtgodam_stub"]["options"][ $key ] = $value; return true; }',
 			'delete_option'            => 'function delete_option( $key ) { unset( $GLOBALS["rtgodam_stub"]["options"][ $key ] ); return true; }',
+			'sanitize_key'             => 'function sanitize_key( $key ) { return preg_replace( "/[^a-z0-9_\\-]/", "", strtolower( (string) $key ) ); }',
 			'get_current_user_id'      => 'function get_current_user_id() { return 1; }',
 			'get_site_url'             => 'function get_site_url() { return "https://site.example"; }',
 			'get_bloginfo'             => 'function get_bloginfo( $show = "" ) { return "Site"; }',
@@ -398,6 +399,80 @@ class ApiKeyVerificationResilienceTest extends TestCase {
 			'status'        => 'Active',
 			'account_token' => 'token',
 		);
+	}
+
+	/**
+	 * A trial key: Central's status and trial end date are kept (#101).
+	 */
+	public function test_a_trial_is_recorded_with_its_end_date() {
+		$this->store_key( 'valid' );
+		$this->queue_response(
+			200,
+			$this->licence() + array(
+				'connection_status' => 'trial',
+				'trial_ends_at'     => '2030-01-15T00:00:00Z',
+				'organization'      => 'acme',
+			)
+		);
+
+		rtgodam_verify_api_key( 'key' );
+
+		$connection = $this->option( 'rtgodam-connection' );
+		$this->assertSame( 'trial', $connection['status'] );
+		$this->assertSame( strtotime( '2030-01-15T00:00:00Z' ), $connection['trial_ends_at'] );
+		$this->assertSame( 'acme', $connection['organization'] );
+	}
+
+	/**
+	 * An older Central sends no connection_status: a success still reads as connected.
+	 */
+	public function test_a_success_without_a_status_reads_as_connected() {
+		$this->store_key( 'valid' );
+		$this->queue_response( 200, $this->licence() );
+
+		rtgodam_verify_api_key( 'key' );
+
+		$this->assertSame( 'connected', $this->option( 'rtgodam-connection' )['status'] );
+	}
+
+	/**
+	 * A lapsed plan (403) keeps Central's status and lapse date for the stored key.
+	 */
+	public function test_an_expired_plan_is_recorded_with_its_lapse_date() {
+		$this->store_key( 'valid' );
+		$this->queue_response(
+			403,
+			array(
+				'error'             => 'License is not active',
+				'connection_status' => 'expired',
+				'expired_at'        => '2026-11-01T00:00:00Z',
+			)
+		);
+
+		rtgodam_verify_api_key( 'key' );
+
+		$connection = $this->option( 'rtgodam-connection' );
+		$this->assertSame( 'expired', $connection['status'] );
+		$this->assertSame( strtotime( '2026-11-01T00:00:00Z' ), $connection['expired_at'] );
+		$this->assertSame( 'expired', $this->option( 'rtgodam-api-key-status' ) );
+	}
+
+	/**
+	 * A mistyped new key (401) changes nothing about the stored key's status.
+	 */
+	public function test_a_rejected_new_key_leaves_the_stored_status_alone() {
+		$this->store_key( 'valid' );
+		$this->queue_response(
+			401,
+			array(
+				'error'             => 'Invalid API key',
+				'connection_status' => 'none',
+			) 
+		);
+
+		rtgodam_verify_api_key( 'another-key' );
+
+		$this->assertNull( $this->option( 'rtgodam-connection' ) );
 	}
 
 	/**

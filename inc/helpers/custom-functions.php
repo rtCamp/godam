@@ -406,11 +406,14 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 
 		if ( $use_for_localize_array ) {
 			return array(
-				'currentUserId' => $no_key_data['currentUserId'],
-				'validApiKey'   => false,
-				'apiKeyStatus'  => \RTGODAM\Inc\Enums\Api_Key_Status::NO_API_KEY,
-				'userApiData'   => $no_key_data['user_data'],
-				'timestamp'     => $no_key_data['timestamp'],
+				'currentUserId'    => $no_key_data['currentUserId'],
+				'validApiKey'      => false,
+				'apiKeyStatus'     => \RTGODAM\Inc\Enums\Api_Key_Status::NO_API_KEY,
+				'userApiData'      => $no_key_data['user_data'],
+				'timestamp'        => $no_key_data['timestamp'],
+				'connectionStatus' => \RTGODAM\Inc\Enums\Connection_Status::NONE,
+				'trialDaysLeft'    => null,
+				'renewalUrl'       => \RTGODAM\Inc\Helpers\Connection::get_renewal_url(),
 			);
 		}
 
@@ -561,6 +564,12 @@ function rtgodam_get_user_data( $use_for_localize_array = false, $timeout = HOUR
 		if ( isset( $rtgodam_user_data['storageBandwidthError'] ) && ! empty( $rtgodam_user_data['storageBandwidthError'] ) ) {
 			$localized_array_data['storageBandwidthError'] = $rtgodam_user_data['storageBandwidthError'];
 		}
+
+		// One status for every screen (connected, trial, expired, unreachable, none), with
+		// the trial's days left and where to renew.
+		$localized_array_data['connectionStatus'] = \RTGODAM\Inc\Helpers\Connection::get_status( $rtgodam_user_data );
+		$localized_array_data['trialDaysLeft']    = \RTGODAM\Inc\Helpers\Connection::get_trial_days_left();
+		$localized_array_data['renewalUrl']       = \RTGODAM\Inc\Helpers\Connection::get_renewal_url();
 
 		// Use isset() instead of !empty() to allow 0 values.
 		if ( isset( $rtgodam_user_data['storage_used'] ) ) {

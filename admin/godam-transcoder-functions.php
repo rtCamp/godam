@@ -680,6 +680,12 @@ function rtgodam_verify_api_key( $api_key, $save = false, $timeout = Api_Key::VE
 		$previous_status  = rtgodam_get_api_key_status();
 		$has_existing_key = ! empty( $existing_api_key ) && $existing_api_key === $api_key;
 
+		// Central says why with `connection_status` (expired, or none for a key it doesn't
+		// know). Only the stored key's answer is kept: a mistyped new key changes nothing.
+		if ( $has_existing_key ) {
+			\RTGODAM\Inc\Helpers\Connection::record( $body['message'], false );
+		}
+
 		if ( $has_existing_key && ( Api_Key_Status::VALID === $previous_status ) ) {
 			// Previously saved key is expired - preserve it and mark as expired. This function will also check if it is already expired.
 			rtgodam_mark_api_key_expired();
@@ -699,6 +705,12 @@ function rtgodam_verify_api_key( $api_key, $save = false, $timeout = Api_Key::VE
 		// Mark API key as valid and clear any invalid timestamp.
 		rtgodam_set_api_key_status( Api_Key_Status::VALID );
 		rtgodam_clear_api_key_invalid_timestamp();
+
+		// Connected or on a trial, and when the trial ends. Kept for the stored key, or for
+		// a new key being saved now.
+		if ( $save || $existing_api_key === $api_key ) {
+			\RTGODAM\Inc\Helpers\Connection::record( $body['message'], true );
+		}
 
 		if ( $save ) {
 			// Save the API key in the site options only if it is verified.

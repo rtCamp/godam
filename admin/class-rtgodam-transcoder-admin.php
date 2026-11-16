@@ -719,18 +719,33 @@ class RTGODAM_Transcoder_Admin {
 		// Check API key status from user data (includes transient verification_failed).
 		$api_key_status = isset( $user_data['apiKeyStatus'] ) ? $user_data['apiKeyStatus'] : \RTGODAM\Inc\Enums\Api_Key_Status::VALID;
 
+		// On a trial, say how long is left so the owner can upgrade before features stop.
+		if ( \RTGODAM\Inc\Enums\Connection_Status::TRIAL === ( $user_data['connectionStatus'] ?? '' ) ) {
+			$this->render_trial_notice( $user_data['trialDaysLeft'] ?? null, $user_data['renewalUrl'] ?? '' );
+			return;
+		}
+
 		// Only show notice for expired or verification_failed status.
 		if ( \RTGODAM\Inc\Enums\Api_Key_Status::VALID === $api_key_status ) {
 			return;
 		}
 
 		$settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
+		// A lapsed plan is renewed on GoDAM, for this site's organization when known.
+		$renewal_url = ! empty( $user_data['renewalUrl'] ) ? $user_data['renewalUrl'] : $settings_url;
+
+		// Central refused the key for a reason renewing can't fix (this site isn't on the
+		// key's allowed sites, or Central doesn't know the key): point to the settings, not
+		// to renewal, with the generic message below.
+		if ( \RTGODAM\Inc\Enums\Connection_Status::NONE === ( $user_data['connectionStatus'] ?? '' ) && \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status ) {
+			$api_key_status = 'refused';
+		}
 
 		$status_messages = array(
 			\RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED => sprintf(
 				/* translators: %s: URL to settings page */
 				__( 'Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href="%s">renew your subscription</a> to restore access.', 'godam' ),
-				esc_url( $settings_url )
+				esc_url( $renewal_url )
 			),
 			\RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED => sprintf(
 				/* translators: %s: URL to settings page */
@@ -752,6 +767,41 @@ class RTGODAM_Transcoder_Admin {
 		echo '<div class="notice notice-' . esc_attr( $notice_type ) . ' is-dismissible">';
 		echo '<p>' . wp_kses_post( $message ) . '</p>';
 		echo '</div>';
+	}
+
+	/**
+	 * Say how long the GoDAM trial has left, with a link to upgrade.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int|null $days_left   Whole days left, or null when Central didn't say.
+	 * @param string   $upgrade_url Where to upgrade.
+	 *
+	 * @return void
+	 */
+	private function render_trial_notice( $days_left, $upgrade_url ) {
+		if ( null === $days_left ) {
+			return;
+		}
+
+		if ( 0 === (int) $days_left ) {
+			$message = __( 'Your GoDAM trial ends today.', 'godam' );
+		} else {
+			$message = sprintf(
+				/* translators: %d: days left in the GoDAM trial */
+				_n( 'Your GoDAM trial ends in %d day.', 'Your GoDAM trial ends in %d days.', (int) $days_left, 'godam' ),
+				(int) $days_left
+			);
+		}
+
+		echo '<div class="notice notice-info godam-trial-notice">';
+		echo '<p>' . esc_html( $message );
+
+		if ( '' !== $upgrade_url ) {
+			echo ' <a href="' . esc_url( $upgrade_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Upgrade to keep transcoding and other Pro features', 'godam' ) . '</a>';
+		}
+
+		echo '</p></div>';
 	}
 
 	/**

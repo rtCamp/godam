@@ -543,7 +543,17 @@ class Pages {
 	 * @return bool
 	 */
 	private function should_overlay_onboarding() {
-		return ! rtgodam_is_api_key_valid() && current_user_can( 'manage_options' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return false;
+		}
+
+		// No key: the connect screens. A lapsed plan: the renewal screen, not signup. While
+		// Central can't be reached the site keeps working, so nothing covers the page.
+		return in_array(
+			\RTGODAM\Inc\Helpers\Connection::get_status(),
+			array( \RTGODAM\Inc\Enums\Connection_Status::NONE, \RTGODAM\Inc\Enums\Connection_Status::EXPIRED ),
+			true
+		);
 	}
 
 	/**
@@ -633,17 +643,20 @@ class Pages {
 				'godam-page-script-onboarding',
 				'godamOnboarding',
 				array(
-					'restUrl'      => esc_url_raw( rest_url() ),
-					'nonce'        => wp_create_nonce( 'wp_rest' ),
-					'siteUrl'      => home_url(),
-					'adminUrl'     => admin_url(),
-					'dashboardUrl' => admin_url( 'admin.php?page=' . $this->menu_slug ),
-					'isConnected'  => rtgodam_is_api_key_valid(),
-					'displayName'  => $current_user->display_name,
-					'appOrigin'    => $app_origin,
-					'isE2E'        => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
+					'restUrl'          => esc_url_raw( rest_url() ),
+					'nonce'            => wp_create_nonce( 'wp_rest' ),
+					'siteUrl'          => home_url(),
+					'adminUrl'         => admin_url(),
+					'dashboardUrl'     => admin_url( 'admin.php?page=' . $this->menu_slug ),
+					'isConnected'      => rtgodam_is_api_key_valid(),
+					// `expired` opens the renewal screen instead of the connect screens.
+					'connectionStatus' => \RTGODAM\Inc\Helpers\Connection::get_status(),
+					'renewalUrl'       => \RTGODAM\Inc\Helpers\Connection::get_renewal_url(),
+					'displayName'      => $current_user->display_name,
+					'appOrigin'        => $app_origin,
+					'isE2E'            => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
 					// O9: WooCommerce active → the entry screen shows the Woo signup variant.
-					'isWoo'        => class_exists( 'WooCommerce' ),
+					'isWoo'            => class_exists( 'WooCommerce' ),
 				)
 			);
 
