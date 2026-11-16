@@ -136,7 +136,22 @@ describe( 'connectPlayer', () => {
 		adapter.emit( 'pause' );
 
 		expect( ld.values.video_state ).toBe( 'complete' );
-		expect( ld.values.video_time ).toBe( 10 );
+		// The position still follows, so Video Resume works for the next view.
+		expect( ld.values.video_time ).toBe( 2 );
+	} );
+
+	it( 'keeps a complete state an earlier view saved', () => {
+		const adapter = fakeAdapter( { duration: 10 } );
+		const ld = fakeLearnDash( { video_state: 'complete', video_time: 10 } );
+
+		connect( { adapter, ld, data: { videos_auto_start: '1' }, now: () => 999999 } );
+		adapter.time = 3;
+		adapter.emit( 'play' );
+		adapter.emit( 'timeupdate' );
+		adapter.emit( 'pause' );
+
+		expect( ld.values.video_state ).toBe( 'complete' );
+		expect( ld.values.video_time ).toBe( 3 );
 	} );
 
 	it( 'keeps the state complete when the player pauses at the end', () => {

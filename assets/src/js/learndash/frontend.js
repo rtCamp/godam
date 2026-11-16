@@ -262,6 +262,19 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 
 	const save = ( key, value ) => ld.setSetting( ldPlayer, key, value );
 
+	/*
+	 * A `complete` state must stay: LearnDash_Video_Progress_setSetting()
+	 * replaces it, and LearnDash's Mark Complete check needs to find it. So once
+	 * the video is complete, from this view or an earlier one, watching it again
+	 * saves only the position (for Video Resume), never `play` or `pause`.
+	 */
+	const isComplete = () => completed || 'complete' === ld.getSetting( ldPlayer, 'video_state' );
+	const saveState = ( state ) => {
+		if ( ! isComplete() ) {
+			save( 'video_state', state );
+		}
+	};
+
 	const complete = () => {
 		if ( completed ) {
 			return;
@@ -288,34 +301,20 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 	if ( settings.autoStart ) {
 		adapter.mute();
 		adapter.play();
-		save( 'video_state', 'play' );
+		saveState( 'play' );
 	}
 
-	/*
-	 * Once the video is complete the progress stays as it is, like LearnDash
-	 * stops tracking its own players. LearnDash_Video_Progress_setSetting()
-	 * replaces a `complete` state, and its Mark Complete check needs to find
-	 * it, so watching the video again must not save `play`.
-	 */
-	adapter.on( 'play', () => {
-		if ( ! completed ) {
-			save( 'video_state', 'play' );
-		}
-	} );
+	adapter.on( 'play', () => saveState( 'play' ) );
 
 	adapter.on( 'pause', () => {
-		if ( completed ) {
-			return;
+		// The `pause` the player fires when the video ends keeps the end position.
+		if ( ! completed ) {
+			save( 'video_time', adapter.getCurrentTime() );
 		}
-		save( 'video_time', adapter.getCurrentTime() );
-		save( 'video_state', 'pause' );
+		saveState( 'pause' );
 	} );
 
 	adapter.on( 'timeupdate', () => {
-		if ( completed ) {
-			return;
-		}
-
 		const time = adapter.getCurrentTime();
 		const duration = adapter.getDuration();
 
@@ -344,7 +343,7 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 	const pauseIfUnfocused = () => {
 		// Focus inside the embed iframe still counts as focus on this page.
 		const unfocused = doc.hidden || ( typeof doc.hasFocus === 'function' && ! doc.hasFocus() );
-		if ( completed || ! unfocused || adapter.isPaused() ) {
+		if ( ! unfocused || adapter.isPaused() ) {
 			return;
 		}
 		pausedByFocus = true;
@@ -358,7 +357,7 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
 		pausedByFocus = false;
 
 		// Like LearnDash: with controls shown the learner resumes it themselves.
-		if ( ! completed && ! settings.showControls ) {
+		if ( ! settings.showControls ) {
 			adapter.play();
 		}
 	};
