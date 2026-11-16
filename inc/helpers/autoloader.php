@@ -49,6 +49,17 @@ function autoloader( $file_resource = '' ) {
 	if ( 'inc' === $path[0] ) {
 
 		switch ( $path[1] ) {
+			case 'mcp':
+				if ( ! empty( $path[3] ) ) {
+					$sub_directories = implode( '/', array_slice( $path, 2, -1 ) );
+					$directory       = sprintf( 'classes/%s/%s', $path[1], $sub_directories );
+					$file_name       = sprintf( 'class-%s', trim( strtolower( end( $path ) ) ) );
+					break;
+				}
+
+				$directory = 'classes/mcp';
+				$file_name = sprintf( 'class-%s', trim( strtolower( end( $path ) ) ) );
+				break;
 			case 'traits':
 				$directory = 'traits';
 				$file_name = sprintf( 'trait-%s', trim( strtolower( $path[2] ) ) );
