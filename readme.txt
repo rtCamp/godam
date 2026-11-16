@@ -346,7 +346,7 @@ Data Sent:
 
 1. IP Address (read by the service from the request, to find the visitor's country)
 
-2. An anonymous visitor ID, and the signed-in visitor's WordPress user ID (0 when signed out)
+2. An anonymous visitor ID (no WordPress user ID: the field is always sent as 0)
 
 3. The page (URL, title, post ID, post type, categories, tags and author's display name), the referring URL and any campaign (UTM) parameters
 

@@ -281,7 +281,7 @@ This plugin relies on third-party services to provide specific features. Below i
     <tr>
       <td>analytics.godam.io</td>
       <td>Collects video and image analytics</td>
-      <td>IP (read from the request), anonymous visitor ID, signed-in WordPress user ID, page and referrer, video watched and parts played, layer clicks, Browser info, OS, User Agent, screen size. In the visitor's browser: <code>__anon_id</code> and <code>godamVideoSeen:&lt;video&gt;</code> (local storage), <code>godamLayerInteractions</code> (session storage)</td>
+      <td>IP (read from the request), anonymous visitor ID (no WordPress user ID), page and referrer, video watched and parts played, layer clicks, Browser info, OS, User Agent, screen size. In the visitor's browser: <code>__anon_id</code> and <code>godamVideoSeen:&lt;video&gt;</code> (local storage), <code>godamLayerInteractions</code> (session storage)</td>
       <td>When a video or interactive image comes into view, on exit, and after layer clicks; with a WP Consent API banner, only after "statistics" consent; never when "Track visitors" is off</td>
       <td>
         analytics.godam.io<br>
