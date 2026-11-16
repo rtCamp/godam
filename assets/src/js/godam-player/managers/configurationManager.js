@@ -8,16 +8,19 @@ import { parseDataAttribute } from '../utils/dataHelpers.js';
  * SkipForward / SkipBackward components) and hides them for anything else —
  * a missing value or a numeric string included.
  */
-const VALID_SKIP_DURATIONS = [ 5, 10, 30 ];
-const DEFAULT_SKIP_DURATION = 10;
+export const VALID_SKIP_DURATIONS = [ 5, 10, 30 ];
+export const DEFAULT_SKIP_DURATION = 10;
 
 /**
  * Coerce a skip-buttons config into a value Video.js will actually render.
  *
+ * Exported so the Video Editor's Settings preview can normalize saved durations
+ * exactly as the front-end player does, keeping the two in step.
+ *
  * @param {Object|boolean|undefined} skipButtons - Raw skipButtons config.
  * @return {Object} Normalized `{ forward, backward }` config.
  */
-function normalizeSkipButtons( skipButtons ) {
+export function normalizeSkipButtons( skipButtons ) {
 	const raw = ( skipButtons && typeof skipButtons === 'object' ) ? skipButtons : {};
 	const candidates = [ raw.forward, raw.backward ].map( ( value ) => parseInt( value, 10 ) );
 	const duration = candidates.find( ( value ) => VALID_SKIP_DURATIONS.includes( value ) ) ?? DEFAULT_SKIP_DURATION;

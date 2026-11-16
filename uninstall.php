@@ -25,13 +25,19 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 $rtgodam_uninstall_options = array(
 	'rtgodam_plugin_version',
+	'rtgodam_plugin_activation_time',
 	'rtgodam_show_whats_new',
 	'rtgodam_user_data',
+	'rtgodam-settings',
 	'rtgodam-api-key',
 	'rtgodam-api-key-stored',
 	'rtgodam-account-token',
 	'rtgodam-api-key-status',
 	'rtgodam-api-key-error-since',
+	'rtgodam-offer-banner',
+	'rtgodam-failed-transcoding-attachments',
+	'rtgodam_new_attachment',
+	'rtgodam_video_metadata_migration_completed',
 );
 
 $rtgodam_uninstall_transients = array(
