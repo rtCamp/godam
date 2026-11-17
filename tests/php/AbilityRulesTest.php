@@ -193,6 +193,72 @@ class AbilityRulesTest extends TestCase {
 	}
 
 	/**
+	 * Registers an ability whose own permission check allows the call.
+	 *
+	 * @param string $name   Ability name.
+	 * @param bool   $writes Whether it writes.
+	 * @return array
+	 */
+	private function register_allowed( $name, $writes = false ) {
+		( new Test_Ability_Group() )->add_for_test(
+			$name,
+			array(
+				'label'               => 'Test',
+				'description'         => 'Does a thing.',
+				'execute_callback'    => function () {
+					return array( 'ran' => true );
+				},
+				'permission_callback' => function () {
+					return true;
+				},
+			),
+			$writes
+		);
+
+		return $GLOBALS['rtgodam_stub']['abilities'][ $name ];
+	}
+
+	/**
+	 * A write turned off is refused when called by name, not only hidden.
+	 *
+	 * @return void
+	 */
+	public function test_a_write_turned_off_refuses_to_run() {
+		$GLOBALS['rtgodam_stub']['options'][ Abilities::WRITE_ABILITIES_OPTION ] = false;
+
+		$denied = call_user_func( $this->register_allowed( 'godam/create-folder', true )['permission_callback'], array() );
+
+		$this->assertInstanceOf( \WP_Error::class, $denied );
+		$this->assertSame( 'rtgodam_writes_off', $denied->get_error_code() );
+		$this->assertTrue( call_user_func( $this->register_allowed( 'godam/list-media' )['permission_callback'], array() ), 'Reads still run.' );
+	}
+
+	/**
+	 * With writes on, the ability's own check decides.
+	 *
+	 * @return void
+	 */
+	public function test_a_write_turned_on_runs_its_own_check() {
+		$this->assertTrue( call_user_func( $this->register_allowed( 'godam/create-folder', true )['permission_callback'], array() ) );
+	}
+
+	/**
+	 * With the MCP switch off, nothing runs, read or write, even when called by name.
+	 *
+	 * @return void
+	 */
+	public function test_mcp_switch_off_refuses_every_ability() {
+		$read = $this->register_allowed( 'godam/list-media' );
+
+		$GLOBALS['rtgodam_stub']['options'][ Abilities::MCP_ENABLED_OPTION ] = '0';
+
+		$denied = call_user_func( $read['permission_callback'], array() );
+
+		$this->assertInstanceOf( \WP_Error::class, $denied, 'Read at call time, so turning it off applies at once.' );
+		$this->assertSame( 'rtgodam_mcp_off', $denied->get_error_code() );
+	}
+
+	/**
 	 * Without the MCP Adapter, nothing is listed on the WordPress Abilities REST API.
 	 *
 	 * @return void

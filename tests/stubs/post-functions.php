@@ -1,6 +1,6 @@
 <?php
 /**
- * Narrow post stubs: get_post() and is_post_publicly_viewable().
+ * Narrow post stubs: get_post(), is_post_publicly_viewable() and wp_attachment_is_image().
  *
  * Shared by the video SEO / sitemap tests (through video-seo-functions.php) and
  * the Engagement and Analytics route tests, which need them without the rest of
@@ -34,5 +34,18 @@ if ( ! function_exists( 'is_post_publicly_viewable' ) ) {
 	 */
 	function is_post_publicly_viewable( $post = null ) {
 		return is_object( $post ) && 'publish' === ( $post->post_status ?? 'publish' );
+	}
+}
+
+if ( ! function_exists( 'wp_attachment_is_image' ) ) {
+
+	/**
+	 * Answers from $GLOBALS['rtgodam_stub']['is_image'] (true when unset).
+	 *
+	 * @param int $post_id Attachment ID.
+	 * @return bool
+	 */
+	function wp_attachment_is_image( $post_id = 0 ) {
+		return (bool) ( $GLOBALS['rtgodam_stub']['is_image'] ?? true );
 	}
 }
