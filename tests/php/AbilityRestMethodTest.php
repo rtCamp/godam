@@ -32,6 +32,8 @@ class AbilityRestMethodTest extends TestCase {
 	 * @return void
 	 */
 	public function test_only_removals_need_delete() {
+		define( 'WP_MCP_VERSION', '0.7.1' );
+
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/abilities/class-ability-group.php';
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/abilities/class-abilities.php';
 

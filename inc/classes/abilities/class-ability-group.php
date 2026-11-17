@@ -147,9 +147,12 @@ abstract class Ability_Group {
 	 *
 	 * Abilities are private unless their meta says otherwise. Reads are made
 	 * public; writes follow the WRITE_ABILITIES_OPTION setting, which is on
-	 * unless an administrator turns it off. Both `meta.public` and
-	 * `meta.mcp.public` are set because the MCP Adapter has read each of them
-	 * in different releases.
+	 * unless an administrator turns it off. `meta.mcp.public` decides what MCP
+	 * servers list. `meta.public` and `meta.show_in_rest` decide what the
+	 * WordPress Abilities REST API lists, and also need a supported MCP Adapter,
+	 * so they can be false while `meta.mcp.public` is true. Keep them apart:
+	 * joining them again would list GoDAM's abilities over REST on sites without
+	 * the adapter, such as GoDAM for WooCommerce's, which register on their own.
 	 *
 	 * The input schema gets length and size limits, and abilities that need a
 	 * GoDAM plan refuse to run on a site without a verified API key.
@@ -208,9 +211,17 @@ abstract class Ability_Group {
 		// and from the WordPress Abilities REST API, so off means off.
 		$mcp_public = $public && Abilities::mcp_enabled();
 
+		// The WordPress Abilities REST API (/wp-json/wp-abilities/v1/) lists them
+		// only while the MCP Adapter is active, so a site that never installed it
+		// exposes nothing new over REST. MCP itself needs the adapter anyway.
+		// WP_MCP_VERSION is defined when the adapter's plugin file loads, before
+		// `wp_abilities_api_init`; an adapter that defined it later would leave
+		// the abilities off REST, never on.
+		$rest_public = $mcp_public && Mcp_Server::adapter_is_supported();
+
 		$defaults = array(
-			'public'       => $mcp_public,
-			'show_in_rest' => $mcp_public,
+			'public'       => $rest_public,
+			'show_in_rest' => $rest_public,
 			'mcp'          => array(
 				'public' => $mcp_public,
 				'type'   => 'tool',
@@ -499,7 +510,12 @@ abstract class Ability_Group {
 	}
 
 	/**
-	 * Returns the attachment if it exists, or an error an agent can act on.
+	 * Returns the attachment if it exists and the current user may read it, or
+	 * an error an agent can act on.
+	 *
+	 * An attachment the user may not read gets the same "not found" answer as a
+	 * missing one, so an agent cannot use IDs to find out which private media
+	 * exists.
 	 *
 	 * @since 2.10.0
 	 *
@@ -510,7 +526,7 @@ abstract class Ability_Group {
 	protected function get_attachment( $attachment_id ) {
 		$post = $this->attachment_post( $attachment_id );
 
-		if ( ! $post || 'attachment' !== $post->post_type ) {
+		if ( ! $post || 'attachment' !== $post->post_type || ! $this->can_read_attachment( $post ) ) {
 			return new \WP_Error(
 				'rtgodam_media_not_found',
 				/* translators: %d: attachment ID. */
@@ -771,6 +787,29 @@ abstract class Ability_Group {
 		do_action( 'rtgodam_after_attachment_lookup' );
 
 		return $post;
+	}
+
+	/**
+	 * Whether the current user may read the attachment.
+	 *
+	 * The same rule as the Media Library REST routes: WordPress's own
+	 * `read_post`, or `upload_files` for an `inherit` attachment, which the
+	 * Media Library already lists to any user who can upload. A private
+	 * attachment still needs `read_post`.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param \WP_Post $post Attachment post.
+	 *
+	 * @return bool
+	 */
+	protected function can_read_attachment( $post ) {
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$can = current_user_can( 'read_post', $post->ID )
+			|| ( current_user_can( 'upload_files' ) && 'inherit' === $post->post_status );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		return $can;
 	}
 
 	/**
