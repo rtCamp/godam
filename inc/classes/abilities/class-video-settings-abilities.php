@@ -18,14 +18,14 @@ defined( 'ABSPATH' ) || exit;
  * attachment's REST field; thumbnails go through the same media-library
  * routes the editor's thumbnail picker uses.
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 class Video_Settings_Abilities extends Ability_Group {
 
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -88,7 +88,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * JSON Schema for the settings both abilities return.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return array
 	 */
@@ -130,7 +130,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-video-settings.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -149,7 +149,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/update-video-settings.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -211,7 +211,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	 * editor's "Use ad server's ad" toggle does. Switching back keeps the tag,
 	 * as the editor does, so it is there if the toggle is turned on again.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int    $attachment_id Video attachment ID.
 	 * @param string $ad_tag_url    Ad tag URL, or an empty string for ad layers.
@@ -243,7 +243,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * The error for an ad tag that is not an http or https URL.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return \WP_Error
 	 */
@@ -254,7 +254,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * Checks the thumbnail part of an update before anything is saved.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int   $attachment_id Video attachment ID.
 	 * @param array $input         Ability input.
@@ -290,7 +290,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * The error for a thumbnail URL that is not one of the video's thumbnails.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return \WP_Error
 	 */
@@ -308,7 +308,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	 * The route takes any URL; the editor only ever offers the video's own
 	 * thumbnails, so this does the same.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int    $attachment_id Video attachment ID.
 	 * @param string $url           Thumbnail URL.
@@ -342,7 +342,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	 * Adds a library image as a custom thumbnail and selects it, as the
 	 * editor's "Upload" button does after an image is picked.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Video attachment ID.
 	 * @param int $image_id      Image attachment ID.
@@ -368,7 +368,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	 * The route answers "no thumbnails" with a 204 status, which is not an
 	 * error status, so that answer is recognised here.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Video attachment ID.
 	 *
@@ -393,7 +393,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * The settings as both abilities return them.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Video attachment ID.
 	 *
@@ -434,7 +434,7 @@ class Video_Settings_Abilities extends Ability_Group {
 	/**
 	 * Returns the attachment if it is a video.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *

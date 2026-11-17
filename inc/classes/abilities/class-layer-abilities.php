@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  * the GoDAM Image block shows them. An image has no timeline, so its layers
  * are always on screen and are saved at 0 seconds, as the editor saves them.
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 class Layer_Abilities extends Ability_Group {
 
@@ -32,7 +32,7 @@ class Layer_Abilities extends Ability_Group {
 	 *
 	 * Jetpack forms are left out: they also need the post the form lives in.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var array<string, array{field: string, shortcode: string|null, label: string}>
 	 */
@@ -98,7 +98,7 @@ class Layer_Abilities extends Ability_Group {
 	 * Layer types the media editor offers on an image. Product hotspots belong
 	 * to GoDAM for WooCommerce.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string[]
 	 */
@@ -107,7 +107,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * CTA card layouts the player supports.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string[]
 	 */
@@ -124,7 +124,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -205,7 +205,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Input schema for godam/add-layer.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return array
 	 */
@@ -367,7 +367,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/list-layers.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -401,7 +401,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/add-layer.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -488,7 +488,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/remove-layer.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -538,7 +538,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Builds the type-specific part of a new layer, starting from the editor's defaults.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $type  Layer type.
 	 * @param array  $input Ability input.
@@ -598,7 +598,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Builds a CTA layer.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $cta        CTA settings.
 	 * @param bool  $allow_skip Whether viewers can skip it.
@@ -654,7 +654,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Builds a hotspot layer.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $hotspot Hotspot settings.
 	 *
@@ -703,7 +703,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Builds a form layer.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $form       Form settings.
 	 * @param bool  $allow_skip Whether viewers can skip it.
@@ -749,7 +749,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Error for a layer whose type-specific settings are missing.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $type Layer type.
 	 *
@@ -767,7 +767,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * The name the video editor would give a new layer of this type.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -792,7 +792,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * A compact description of a stored layer.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $layer Stored layer.
 	 *
@@ -858,7 +858,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * Returns the attachment if it can carry layers: a video, or an image.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -881,7 +881,7 @@ class Layer_Abilities extends Ability_Group {
 	/**
 	 * The media item's stored GoDAM settings, with a layers list to work on.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *

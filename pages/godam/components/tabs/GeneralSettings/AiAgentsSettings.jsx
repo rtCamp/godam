@@ -11,7 +11,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * how to connect an agent. The switch saves at once through WordPress's own
  * settings route, which only administrators can use.
  *
- * @since n.e.x.t
+ * @since 2.10.0
  *
  * @return {JSX.Element|null} The panel, or nothing for users who are not administrators.
  */

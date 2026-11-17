@@ -4,7 +4,7 @@
  *
  * @package GoDAM
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 
 namespace RTGODAM\Inc\Abilities;
@@ -24,7 +24,7 @@ use RTGODAM\Inc\Traits\Singleton;
  * GoDAM's pages remove WordPress admin notices, so the notice is part of the
  * GoDAM header and asks this route whether to show.
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 class Ai_Agents_Notice {
 
@@ -36,7 +36,7 @@ class Ai_Agents_Notice {
 	 * Uninstall runs without loading the plugin, so uninstall.php repeats this
 	 * key. Keep the two in sync.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string
 	 */
@@ -45,7 +45,7 @@ class Ai_Agents_Notice {
 	/**
 	 * Help page that explains how to connect an agent.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string
 	 */
@@ -61,7 +61,7 @@ class Ai_Agents_Notice {
 	/**
 	 * Registers the route the GoDAM header reads and dismisses the notice through.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -87,7 +87,7 @@ class Ai_Agents_Notice {
 	/**
 	 * Only site administrators see or dismiss the notice.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -98,7 +98,7 @@ class Ai_Agents_Notice {
 	/**
 	 * Whether the notice should show to the current user.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -117,7 +117,7 @@ class Ai_Agents_Notice {
 	/**
 	 * Says whether to show the notice, and where its links go.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return \WP_REST_Response
 	 */
@@ -134,7 +134,7 @@ class Ai_Agents_Notice {
 	/**
 	 * Records that the current user dismissed the notice.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return \WP_REST_Response
 	 */

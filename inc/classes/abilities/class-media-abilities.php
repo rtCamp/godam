@@ -15,7 +15,7 @@ use RTGODAM\Inc\Taxonomies\Media_Folders;
 /**
  * Class Media_Abilities
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 class Media_Abilities extends Ability_Group {
 
@@ -36,7 +36,7 @@ class Media_Abilities extends Ability_Group {
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -207,7 +207,7 @@ class Media_Abilities extends Ability_Group {
 	/**
 	 * Permission: the user can browse the media library.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -220,7 +220,7 @@ class Media_Abilities extends Ability_Group {
 	 *
 	 * Mirrors the transcription REST route this ability delegates to.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -235,7 +235,7 @@ class Media_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/list-media.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -299,7 +299,7 @@ class Media_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-media.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -317,7 +317,7 @@ class Media_Abilities extends Ability_Group {
 	 * Reads the usage index the plugin already maintains on every save, so this
 	 * is a lookup, not a scan of site content.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -375,7 +375,7 @@ class Media_Abilities extends Ability_Group {
 	 * `{blog_id, post_id, sources[]}`. The constant's docblock describes an
 	 * older `post_id => sources[]` shape, which is also accepted here.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $sources Raw `_godam_usage_sources` meta.
 	 *
@@ -408,7 +408,7 @@ class Media_Abilities extends Ability_Group {
 	/**
 	 * Describes one usage entry for an agent, resolving the post on its own site.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $entry Entry from normalise_usage_sources().
 	 *
@@ -465,7 +465,7 @@ class Media_Abilities extends Ability_Group {
 	 * The transcription route returns where the transcript lives, not the
 	 * transcript itself, so the WebVTT file is fetched from the CDN here.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -552,7 +552,7 @@ class Media_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/get-media-health.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -630,7 +630,7 @@ class Media_Abilities extends Ability_Group {
 	/**
 	 * Builds the meta query clause for a normalised transcoding status.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $status One of transcoded, processing, failed, not_transcoded.
 	 *
@@ -684,7 +684,7 @@ class Media_Abilities extends Ability_Group {
 	/**
 	 * Parses WebVTT into timed segments.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $vtt WebVTT document.
 	 *
@@ -729,7 +729,7 @@ class Media_Abilities extends Ability_Group {
 	/**
 	 * Converts a WebVTT timestamp to seconds.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $stamp `hh:mm:ss.mmm` or `mm:ss.mmm`.
 	 *
@@ -749,7 +749,7 @@ class Media_Abilities extends Ability_Group {
 	/**
 	 * Whether a stored transcript URL may be fetched by the server.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param mixed $url Stored transcript URL.
 	 *

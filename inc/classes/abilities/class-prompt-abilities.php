@@ -18,14 +18,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Prompt_Abilities
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 class Prompt_Abilities extends Ability_Group {
 
 	/**
 	 * Registers this group's prompts.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -69,7 +69,7 @@ class Prompt_Abilities extends Ability_Group {
 	 * Prompt arguments are always strings in MCP, so each becomes an optional
 	 * string property of the input schema.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string   $name        Ability name.
 	 * @param string   $label       Label.
@@ -114,7 +114,7 @@ class Prompt_Abilities extends Ability_Group {
 	/**
 	 * Permission: the same capability as connecting to the GoDAM MCP server.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -125,7 +125,7 @@ class Prompt_Abilities extends Ability_Group {
 	/**
 	 * Text of godam/prompt-add-video-to-page.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Prompt arguments.
 	 *
@@ -156,7 +156,7 @@ class Prompt_Abilities extends Ability_Group {
 	/**
 	 * Text of godam/prompt-organise-library.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Prompt arguments.
 	 *
@@ -181,7 +181,7 @@ class Prompt_Abilities extends Ability_Group {
 	/**
 	 * Text of godam/prompt-video-report.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Prompt arguments.
 	 *
