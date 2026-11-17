@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-17T09:48:01+00:00\n"
+"POT-Creation-Date: 2026-11-17T10:07:54+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -11776,39 +11776,47 @@ msgstr ""
 msgid "Video performance, layer and store insights, and account usage."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:239
+#: inc/classes/abilities/class-ability-group.php:249
 msgid "Needs a GoDAM plan: the site must be connected to GoDAM with a verified API key."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:414
+#: inc/classes/abilities/class-ability-group.php:277
+msgid "GoDAM is turned off for AI agents on this site. A site administrator can turn it on in GoDAM > Settings > General."
+msgstr ""
+
+#: inc/classes/abilities/class-ability-group.php:285
+msgid "Changes by AI agents are turned off on this site. A site administrator can turn them on in Settings > Writing > GoDAM and AI agents."
+msgstr ""
+
+#: inc/classes/abilities/class-ability-group.php:457
 msgid "This needs a GoDAM plan. Connect this site to GoDAM with a verified API key in GoDAM > Settings, then try again."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:499
+#: inc/classes/abilities/class-ability-group.php:542
 msgid "The GoDAM request failed. Try again in a moment. If it keeps failing, see https://godam.io/docs/ai-agents/"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:503
+#: inc/classes/abilities/class-ability-group.php:546
 msgid "Your WordPress user's role does not allow this. Ask a site administrator, or connect as a user who can."
 msgstr ""
 
 #. translators: %d: attachment ID.
-#: inc/classes/abilities/class-ability-group.php:533
+#: inc/classes/abilities/class-ability-group.php:576
 #, php-format
 msgid "No media item with ID %d exists. Use godam/list-media to find IDs."
 msgstr ""
 
 #. translators: %s: input field name, e.g. thumbnail_image_id.
-#: inc/classes/abilities/class-ability-group.php:572
+#: inc/classes/abilities/class-ability-group.php:615
 #, php-format
 msgid "%s is not an image in the media library. Use godam/list-media with type image to find an image ID."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:686
+#: inc/classes/abilities/class-ability-group.php:729
 msgid "(no title)"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:975
+#: inc/classes/abilities/class-ability-group.php:1018
 msgid "Media (attachment) ID, as returned by godam/list-media."
 msgstr ""
 
@@ -15179,72 +15187,76 @@ msgstr ""
 msgid "Storage limit exceeded (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:825
+#: inc/classes/rest-api/class-transcoding.php:885
 msgid "Attachment ID not provided"
 msgstr ""
 
+#: inc/classes/rest-api/class-transcoding.php:894
+msgid "You have started the most retranscodes allowed in an hour. Try again later, or ask an Editor or administrator to retranscode it."
+msgstr ""
+
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:869
+#: inc/classes/rest-api/class-transcoding.php:940
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Transcoding requests are not allowed in the localhost environment."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:889
+#: inc/classes/rest-api/class-transcoding.php:960
 #, php-format
 msgid "%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this media on GoDAM Central."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:909
+#: inc/classes/rest-api/class-transcoding.php:980
 #, php-format
 msgid "%1$s (ID %2$d) is migrated Vimeo video. Please retranscode this video on GoDAM Central."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: storage usage percent.
-#: inc/classes/rest-api/class-transcoding.php:932
+#: inc/classes/rest-api/class-transcoding.php:1003
 #, php-format
 msgid "%1$s (ID %2$d) cannot be retranscoded. Storage limit exceeded (%3$s%%). Please upgrade your plan to continue transcoding."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:953
+#: inc/classes/rest-api/class-transcoding.php:1024
 #, php-format
 msgid "%1$s (ID %2$d) cannot be transcoded. HTTP authentication is enabled on your site. Please disable it to allow transcoding."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:990
+#: inc/classes/rest-api/class-transcoding.php:1061
 #, php-format
 msgid "%1$s (ID %2$d) is not a document format GoDAM can convert, so it was skipped."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: Why GoDAM could not use the source file.
-#: inc/classes/rest-api/class-transcoding.php:1042
+#: inc/classes/rest-api/class-transcoding.php:1113
 #, php-format
 msgid "%1$s (ID %2$d) cannot be transcoded. %3$s"
 msgstr ""
 
 #. translators: %s: GoDAM Central's own wording of why it refused the file.
-#: inc/classes/rest-api/class-transcoding.php:1050
+#: inc/classes/rest-api/class-transcoding.php:1121
 #, php-format
 msgid "(Details: %s)"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: Why the request failed and whether it will be retried.
-#: inc/classes/rest-api/class-transcoding.php:1070
+#: inc/classes/rest-api/class-transcoding.php:1141
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. %3$s"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:1089
+#: inc/classes/rest-api/class-transcoding.php:1160
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Unknown error"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:1105
+#: inc/classes/rest-api/class-transcoding.php:1176
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""
