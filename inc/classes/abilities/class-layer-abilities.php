@@ -633,8 +633,13 @@ class Layer_Abilities extends Ability_Group {
 
 		$image_id = absint( $cta['image_id'] ?? 0 );
 
-		if ( $image_id && ! wp_attachment_is_image( $image_id ) ) {
-			return new \WP_Error( 'rtgodam_cta_image_invalid', __( 'cta.image_id is not an image in the media library. Use godam/list-media with type image to find an image ID.', 'godam' ), array( 'status' => 400 ) );
+		if ( $image_id ) {
+			// Read access first: the player shows the image to every visitor.
+			$image = $this->get_image( $image_id, 'cta.image_id' );
+
+			if ( is_wp_error( $image ) ) {
+				return $image;
+			}
 		}
 
 		return array_merge(

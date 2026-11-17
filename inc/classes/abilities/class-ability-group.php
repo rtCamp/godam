@@ -539,6 +539,45 @@ abstract class Ability_Group {
 	}
 
 	/**
+	 * Returns the image attachment if the current user may read it, or an error
+	 * an agent can act on.
+	 *
+	 * For abilities that take a second, image ID (a custom thumbnail, a CTA
+	 * image) and turn it into a public URL. An image the user may not read gets
+	 * the same "not found" answer as a missing one, so its URL never reaches
+	 * the agent or the player.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param int    $image_id Image attachment ID.
+	 * @param string $field    Input field the ID came from, for the error message.
+	 *
+	 * @return \WP_Post|\WP_Error
+	 */
+	protected function get_image( $image_id, $field ) {
+		$post = $this->get_attachment( $image_id );
+
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$is_image = wp_attachment_is_image( $post->ID );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( ! $is_image ) {
+			return new \WP_Error(
+				'rtgodam_not_an_image',
+				/* translators: %s: input field name, e.g. thumbnail_image_id. */
+				sprintf( __( '%s is not an image in the media library. Use godam/list-media with type image to find an image ID.', 'godam' ), $field ),
+				array( 'status' => 400 )
+			);
+		}
+
+		return $post;
+	}
+
+	/**
 	 * Shapes an attachment into the media object every ability returns.
 	 *
 	 * Keeps what an agent acts on — IDs, status, links — and leaves out the
