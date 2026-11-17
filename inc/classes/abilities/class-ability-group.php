@@ -231,6 +231,16 @@ abstract class Ability_Group {
 
 		$args['meta'] = array_replace_recursive( $defaults, $args['meta'] ?? array() );
 
+		/*
+		 * The switches also decide whether the ability runs, not only whether it is
+		 * listed: an MCP server that names GoDAM tools itself, or code calling
+		 * wp_get_ability()->execute(), would otherwise still reach a write the
+		 * administrator turned off.
+		 */
+		if ( isset( $args['permission_callback'] ) ) {
+			$args['permission_callback'] = $this->within_switches( $args['permission_callback'], $writes && ! $public );
+		}
+
 		if ( ! empty( $args['input_schema'] ) ) {
 			$args['input_schema'] = $this->limit_schema( $args['input_schema'] );
 		}
@@ -246,6 +256,39 @@ abstract class Ability_Group {
 		}
 
 		wp_register_ability( $name, $args );
+	}
+
+	/**
+	 * Wraps a permission callback so the ability refuses to run while the MCP
+	 * switch is off, or while it is a write and changes are turned off.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param callable $callback    Permission callback.
+	 * @param bool     $writes_off  Whether this is a write that is turned off.
+	 *
+	 * @return \Closure
+	 */
+	protected function within_switches( $callback, $writes_off ) {
+		return function ( $input = null ) use ( $callback, $writes_off ) {
+			if ( ! Abilities::mcp_enabled() ) {
+				return new \WP_Error(
+					'rtgodam_mcp_off',
+					__( 'GoDAM is turned off for AI agents on this site. A site administrator can turn it on in GoDAM > Settings > General.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+
+			if ( $writes_off ) {
+				return new \WP_Error(
+					'rtgodam_writes_off',
+					__( 'Changes by AI agents are turned off on this site. A site administrator can turn them on in Settings > Writing > GoDAM and AI agents.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+
+			return call_user_func( $callback, $input );
+		};
 	}
 
 	/**
