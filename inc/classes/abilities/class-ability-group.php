@@ -208,9 +208,14 @@ abstract class Ability_Group {
 		// and from the WordPress Abilities REST API, so off means off.
 		$mcp_public = $public && Abilities::mcp_enabled();
 
+		// The WordPress Abilities REST API (/wp-json/wp-abilities/v1/) lists them
+		// only while the MCP Adapter is active, so a site that never installed it
+		// exposes nothing new over REST. MCP itself needs the adapter anyway.
+		$rest_public = $mcp_public && Mcp_Server::adapter_is_supported();
+
 		$defaults = array(
-			'public'       => $mcp_public,
-			'show_in_rest' => $mcp_public,
+			'public'       => $rest_public,
+			'show_in_rest' => $rest_public,
 			'mcp'          => array(
 				'public' => $mcp_public,
 				'type'   => 'tool',
