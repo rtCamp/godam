@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-17T15:30:28+00:00\n"
+"POT-Creation-Date: 2026-11-17T15:45:09+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -6111,7 +6111,7 @@ msgstr ""
 
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:136
-msgid "Count views of GoDAM videos and images, and clicks on their layers, in GoDAM analytics. Turn it off and GoDAM stores nothing in visitors' browsers and sends no view or click events, for every visitor; GoDAM analytics then shows no new data for this site. With a consent banner that supports the WP Consent API, you can leave this on: GoDAM waits for each visitor's statistics consent. A developer can also set this with the godam_visitor_tracking_enabled filter, which overrides this switch."
+msgid "Count views of GoDAM videos and images, and clicks on their layers, in GoDAM analytics. Turn it off and GoDAM stores nothing in visitors' browsers and sends no view or click events to GoDAM analytics, for every visitor; GoDAM analytics then shows no new data for this site. The Google Tag Manager option is separate. If you use a page cache, purge it after changing this. With a consent banner that supports the WP Consent API, you can leave this on: GoDAM waits for each visitor's statistics consent. A developer can also set this with the godam_visitor_tracking_enabled filter, which overrides this switch."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
@@ -13414,7 +13414,7 @@ msgid "Suggested text:"
 msgstr ""
 
 #: inc/classes/class-visitor-consent.php:254
-msgid "When you view a video or an interactive image on this site, we use GoDAM to measure how our media is watched. GoDAM sends these details to GoDAM analytics (analytics.godam.io), run by rtCamp: an anonymous visitor ID, the page you are on and the page that referred you, which video you watched and for how long, clicks on video and image layers, your browser, operating system, screen size and language, and your IP address, which is used to find your country."
+msgid "When you view a video or an interactive image on this site, we use GoDAM to measure how our media is watched. GoDAM sends these details to GoDAM analytics (analytics.godam.io), run by rtCamp: an anonymous visitor ID, the page you are on and the page that referred you, including campaign (UTM) parameters, which video you watched and for how long, clicks on video and image layers, your browser, operating system, screen size and language, and your IP address, which is used to find your country."
 msgstr ""
 
 #: inc/classes/class-visitor-consent.php:255

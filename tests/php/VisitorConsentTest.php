@@ -135,6 +135,23 @@ class VisitorConsentTest extends TestCase {
 		$this->assertTrue( Visitor_Consent::get_script_config()['trackingEnabled'], 'The filter receives the setting as its default and wins.' );
 	}
 
+	public function test_suggests_no_privacy_policy_text_without_the_wordpress_function(): void {
+		if ( function_exists( 'wp_add_privacy_policy_content' ) ) {
+			$this->markTestSkipped( 'wp_add_privacy_policy_content() is defined in this process.' );
+		}
+
+		Visitor_Consent::get_instance()->add_privacy_policy_content();
+
+		$this->assertFalse( function_exists( 'wp_add_privacy_policy_content' ) );
+	}
+
+	/**
+	 * Runs in its own process: the stub it defines would otherwise stay defined for
+	 * every later test and hide the function_exists() guard.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 */
 	public function test_suggests_privacy_policy_text(): void {
 		$GLOBALS['rtgodam_privacy'] = array();
 		eval( // phpcs:ignore Squiz.PHP.Eval.Discouraged -- defines the WP function for this process only.
@@ -147,6 +164,7 @@ class VisitorConsentTest extends TestCase {
 		list( $name, $content ) = $GLOBALS['rtgodam_privacy'][0];
 		$this->assertSame( 'GoDAM', $name );
 		$this->assertStringContainsString( 'analytics.godam.io', $content );
+		$this->assertStringContainsString( 'UTM', $content );
 		foreach ( array( '__anon_id', 'godamVideoSeen:*', 'godamLayerInteractions' ) as $item ) {
 			$this->assertStringContainsString( $item, $content, 'The text names every item GoDAM stores in the browser.' );
 		}
