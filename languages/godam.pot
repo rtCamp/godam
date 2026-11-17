@@ -12391,66 +12391,66 @@ msgstr ""
 msgid "Give at least one of title, caption, description or alt_text."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:481
+#: inc/classes/abilities/class-library-abilities.php:483
 msgid "Give a public http or https URL."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:497
+#: inc/classes/abilities/class-library-abilities.php:499
 msgid "This site cannot take new uploads right now: its upload size limit is zero or its storage space is used up. Delete files to free up space, or ask a site administrator to raise the upload limit."
 msgstr ""
 
 #. translators: %s: maximum allowed file size, e.g. "64 MB".
-#: inc/classes/abilities/class-library-abilities.php:536
+#: inc/classes/abilities/class-library-abilities.php:559
 #, php-format
 msgid "This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library. Use a smaller file, or ask a site administrator to raise the site's maximum upload size."
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:599
+#: inc/classes/abilities/class-library-abilities.php:622
 #, php-format
 msgid "Imported as media ID %1$d, but it could not be put in the folder: %2$s Use godam/move-media-to-folder to move it."
 msgstr ""
 
 #. translators: %s: required disk space in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:740
+#: inc/classes/abilities/class-library-abilities.php:799
 #, php-format
 msgid "Not enough space to import this file. %s KB needed. Free up space by deleting unused media in the Media Library, or ask a network administrator to raise the site's storage limit."
 msgstr ""
 
 #. translators: %s: maximum allowed file size in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:745
+#: inc/classes/abilities/class-library-abilities.php:804
 #, php-format
 msgid "This file is too big. Files must be less than %s KB in size. Use a smaller file, or ask a network administrator to raise the limit in Network Admin > Settings > Network Settings."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:753
+#: inc/classes/abilities/class-library-abilities.php:812
 msgid "You have used your space quota. Please delete files before uploading."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:808
+#: inc/classes/abilities/class-library-abilities.php:867
 msgid "GoDAM Central did not return the media list. Try again in a moment. If it keeps failing, the site owner can contact GoDAM support at https://app.godam.io/helpdesk."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:1034
+#: inc/classes/abilities/class-library-abilities.php:1093
 msgid "Give the central_id of an item from godam/list-central-media."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:1046
+#: inc/classes/abilities/class-library-abilities.php:1105
 msgid "No media with that central_id is in this site's GoDAM Central account. Use godam/list-central-media to find it."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:1054
+#: inc/classes/abilities/class-library-abilities.php:1113
 msgid "GoDAM Central is still processing this media. Check godam/list-central-media again in a few minutes and add it once its status is Transcoded."
 msgstr ""
 
 #. translators: %s: reason the media could not be added.
-#: inc/classes/abilities/class-library-abilities.php:1072
+#: inc/classes/abilities/class-library-abilities.php:1131
 #, php-format
 msgid "The media could not be added to the library: %s"
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:1091
+#: inc/classes/abilities/class-library-abilities.php:1150
 #, php-format
 msgid "Added as media ID %1$d, but it could not be put in the folder: %2$s"
 msgstr ""

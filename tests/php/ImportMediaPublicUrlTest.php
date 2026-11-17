@@ -22,7 +22,9 @@ use RTGODAM\Inc\Abilities\Library_Abilities;
  * Runs in its own process because it defines core functions.
  *
  * @covers \RTGODAM\Inc\Abilities\Library_Abilities::import_media_from_url
- * @covers \RTGODAM\Inc\Abilities\Library_Abilities::is_public_url
+ * @covers \RTGODAM\Inc\Abilities\Library_Abilities::public_addresses
+ * @covers \RTGODAM\Inc\Abilities\Library_Abilities::resolve_host
+ * @covers \RTGODAM\Inc\Abilities\Library_Abilities::pin_entry
  * @covers \RTGODAM\Inc\Abilities\Library_Abilities::is_public_ip
  *
  * @runTestsInSeparateProcesses
@@ -66,6 +68,7 @@ class ImportMediaPublicUrlTest extends TestCase {
 			'function download_url( $url ) {
 				$GLOBALS["rtgodam_stub"]["downloads"][] = $url;
 				$GLOBALS["rtgodam_stub"]["redirect_checks"] = array_values( $GLOBALS["rtgodam_hooks"]["requests-requests.before_redirect"][10] ?? array() );
+				$GLOBALS["rtgodam_stub"]["pins"] = array_values( $GLOBALS["rtgodam_hooks"]["http_api_curl"][10] ?? array() );
 				return new WP_Error( "http_404", "Not Found", array( "code" => 404, "body" => "secret body" ) );
 			}'
 		);
@@ -101,7 +104,7 @@ class ImportMediaPublicUrlTest extends TestCase {
 			 * @return bool
 			 */
 			public function public_url( $url ) {
-				return $this->is_public_url( $url );
+				return null !== $this->public_addresses( $url );
 			}
 		};
 	}
@@ -202,6 +205,86 @@ class ImportMediaPublicUrlTest extends TestCase {
 		}
 
 		$this->assertSame( 'WpOrg\Requests\Exception', $stopped, 'The redirect is stopped the way core stops an invalid one.' );
+	}
+
+	/**
+	 * The download is pinned to the checked addresses while it runs, so a host
+	 * that answers a second lookup with an internal address (DNS rebinding) is
+	 * not followed there.
+	 *
+	 * @return void
+	 */
+	public function test_the_download_is_pinned_to_the_checked_addresses() {
+		$this->ability( array( 'cdn.example.com' => array( '93.184.215.14' ) ) )
+			->import_media_from_url( array( 'url' => 'https://cdn.example.com/clip.mp4' ) );
+
+		$this->assertCount( 1, $GLOBALS['rtgodam_stub']['pins'], 'The addresses are pinned during the download.' );
+		$this->assertSame( array(), $GLOBALS['rtgodam_hooks']['http_api_curl'][10] ?? array(), 'The pin is removed afterwards.' );
+	}
+
+	/**
+	 * The entry cURL is given for a checked host.
+	 *
+	 * @return void
+	 */
+	public function test_pin_entries() {
+		$this->ability();
+
+		$this->assertSame( 'cdn.example.com:443:93.184.215.14,2606:4700:4700::1111', Library_Abilities::pin_entry( 'https://CDN.example.com/clip.mp4', array( '93.184.215.14', '2606:4700:4700::1111' ) ) );
+		$this->assertSame( 'cdn.example.com:80:93.184.215.14', Library_Abilities::pin_entry( 'http://cdn.example.com/clip.mp4', array( '93.184.215.14' ) ) );
+		$this->assertSame( 'cdn.example.com:8080:93.184.215.14', Library_Abilities::pin_entry( 'http://cdn.example.com:8080/clip.mp4', array( '93.184.215.14' ) ) );
+		$this->assertSame( '', Library_Abilities::pin_entry( 'https://93.184.215.14/clip.mp4', array( '93.184.215.14' ) ), 'An IP address needs no pin.' );
+		$this->assertSame( '', Library_Abilities::pin_entry( 'https://site.test/clip.mp4', array() ), 'The site itself is not pinned.' );
+	}
+
+	/**
+	 * A host the site owner allowed with core's filter can be imported from,
+	 * as core's own requests can reach it. Without the filter it is refused.
+	 *
+	 * @return void
+	 */
+	public function test_a_host_allowed_with_cores_filter_is_allowed() {
+		$ability = $this->ability( array( 'media.lan' => array( '10.0.0.5' ) ) );
+
+		$this->assertFalse( $ability->public_url( 'http://media.lan/clip.mp4' ) );
+
+		$allow = function ( $external, $host ) {
+			return 'media.lan' === $host ? true : $external;
+		};
+		add_filter( 'http_request_host_is_external', $allow );
+
+		$this->assertTrue( $ability->public_url( 'http://media.lan/clip.mp4' ), 'The allowed host passes.' );
+		$this->assertFalse( $ability->public_url( 'http://169.254.169.254/latest/meta-data/' ), 'Another internal host is still refused.' );
+
+		remove_filter( 'http_request_host_is_external', $allow );
+	}
+
+	/**
+	 * The download may connect over IPv6, so a host whose IPv6 addresses
+	 * cannot be read is refused instead of being checked on IPv4 alone.
+	 *
+	 * @return void
+	 */
+	public function test_a_host_whose_ipv6_lookup_fails_is_refused() {
+		$ability = $this->ability();
+
+		// The class calls these without a namespace, so stubs in its namespace are used.
+		eval( 'namespace RTGODAM\\Inc\\Abilities; function gethostbynamel( $host ) { return $GLOBALS["rtgodam_stub"]["a"]; } function dns_get_record( $host, $type ) { return $GLOBALS["rtgodam_stub"]["aaaa"]; }' ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stubs, isolated process.
+
+		$resolve = new \ReflectionMethod( Library_Abilities::class, 'resolve_host' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$resolve->setAccessible( true );
+		}
+
+		$GLOBALS['rtgodam_stub']['a']    = array( '93.184.215.14' );
+		$GLOBALS['rtgodam_stub']['aaaa'] = false;
+		$this->assertSame( array(), $resolve->invoke( $ability, 'cdn.example.com' ), 'A failed IPv6 lookup gives no addresses, so the host is refused.' );
+
+		$GLOBALS['rtgodam_stub']['aaaa'] = array();
+		$this->assertSame( array( '93.184.215.14' ), $resolve->invoke( $ability, 'cdn.example.com' ), 'A host with no IPv6 address is checked on IPv4.' );
+
+		$GLOBALS['rtgodam_stub']['aaaa'] = array( array( 'ipv6' => 'fd00:ec2::254' ) );
+		$this->assertSame( array( '93.184.215.14', 'fd00:ec2::254' ), $resolve->invoke( $ability, 'cdn.example.com' ), 'IPv6 addresses are checked too.' );
 	}
 
 	/**

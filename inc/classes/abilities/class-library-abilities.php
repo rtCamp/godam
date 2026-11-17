@@ -477,7 +477,9 @@ class Library_Abilities extends Ability_Group {
 	public function import_media_from_url( $input = array() ) {
 		$url = esc_url_raw( $input['url'] ?? '', array( 'http', 'https' ) );
 
-		if ( ! $url || ! wp_http_validate_url( $url ) || ! $this->is_public_url( $url ) ) {
+		$addresses = ( $url && wp_http_validate_url( $url ) ) ? $this->public_addresses( $url ) : null;
+
+		if ( null === $addresses ) {
 			return new \WP_Error( 'rtgodam_invalid_url', __( 'Give a public http or https URL.', 'godam' ), array( 'status' => 400 ) );
 		}
 
@@ -505,17 +507,38 @@ class Library_Abilities extends Ability_Group {
 			return $args;
 		};
 
+		/*
+		 * The download looks the host up again, and a host can answer that second
+		 * lookup with an internal address (DNS rebinding). So each host is pinned
+		 * to the addresses that passed the check, and cURL connects only to those.
+		 */
+		$pins = array( self::pin_entry( $url, $addresses ) );
+
 		// Every redirect must lead to a public address too, or a public URL could
 		// bounce the download to an internal one.
-		$check_redirect = function ( $location ) {
-			if ( ! $this->is_public_url( (string) $location ) ) {
+		$check_redirect = function ( $location ) use ( &$pins ) {
+			$addresses = $this->public_addresses( (string) $location );
+
+			if ( null === $addresses ) {
 				throw new \WpOrg\Requests\Exception( 'A valid URL was not provided.', 'wp_http.redirect_failed' );
+			}
+
+			$pins[] = self::pin_entry( (string) $location, $addresses );
+		};
+
+		$pin_addresses = function ( $handle ) use ( &$pins ) {
+			$entries = array_values( array_filter( $pins ) );
+
+			if ( $entries && defined( 'CURLOPT_RESOLVE' ) ) {
+				curl_setopt( $handle, CURLOPT_RESOLVE, $entries ); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt -- sets an option on the handle WordPress is about to send, through its own http_api_curl action.
 			}
 		};
 
 		add_filter( 'http_request_args', $limit_download ); // phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- sets the response size limit, not the timeout.
 		add_action( 'requests-requests.before_redirect', $check_redirect );
+		add_action( 'http_api_curl', $pin_addresses );
 		$tmp_file = download_url( $url );
+		remove_action( 'http_api_curl', $pin_addresses );
 		remove_action( 'requests-requests.before_redirect', $check_redirect );
 		remove_filter( 'http_request_args', $limit_download );
 
@@ -606,7 +629,9 @@ class Library_Abilities extends Ability_Group {
 	}
 
 	/**
-	 * Whether a URL's host is the site itself or resolves only to public addresses.
+	 * The addresses a URL's host may be downloaded from, or null when the URL
+	 * must not be downloaded: its host does not resolve, or resolves to an
+	 * address that is not public.
 	 *
 	 * Core's wp_http_validate_url() refuses private and loopback addresses, but
 	 * before WordPress 6.9.6 and 7.0.3 it let link-local (169.254.0.0/16, where
@@ -614,41 +639,72 @@ class Library_Abilities extends Ability_Group {
 	 * (100.64.0.0/10) addresses through. An import saves what it downloads in
 	 * the public uploads folder, so check every address here as well.
 	 *
+	 * As in core, the site's own host is allowed, and so is a host the site
+	 * owner allowed with the http_request_host_is_external filter.
+	 *
 	 * @since 2.10.0
 	 *
 	 * @param string $url URL.
 	 *
-	 * @return bool
+	 * @return string[]|null Addresses to pin the download to (none for the site's own host), or null.
 	 */
-	protected function is_public_url( $url ) {
+	protected function public_addresses( $url ) {
 		$host = strtolower( trim( (string) wp_parse_url( $url, PHP_URL_HOST ), '[]' ) );
 
 		if ( '' === $host ) {
-			return false;
+			return null;
 		}
 
 		// The site itself, which core also allows.
 		if ( strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) ) === $host ) {
-			return true;
+			return array();
 		}
 
 		$ips = $this->resolve_host( $host );
 
 		if ( empty( $ips ) ) {
-			return false;
+			return null;
 		}
 
 		foreach ( $ips as $ip ) {
 			if ( ! self::is_public_ip( $ip ) ) {
-				return false;
+				/** This filter is documented in wp-includes/http.php */
+				return apply_filters( 'http_request_host_is_external', false, $host, $url ) ? $ips : null; // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core's filter, so a host allowed for core's requests is allowed here.
 			}
 		}
 
-		return true;
+		return $ips;
 	}
 
 	/**
-	 * The IPv4 and IPv6 addresses a host resolves to (the host itself for an IP literal).
+	 * The cURL "host:port:addresses" entry that makes a download of the URL
+	 * connect only to the given addresses, or an empty string when there is
+	 * nothing to pin (no addresses, or the host is an IP address already).
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string   $url URL.
+	 * @param string[] $ips Addresses that passed the check.
+	 *
+	 * @return string
+	 */
+	public static function pin_entry( $url, array $ips ) {
+		$parts = wp_parse_url( $url );
+		$host  = strtolower( trim( (string) ( $parts['host'] ?? '' ), '[]' ) );
+
+		if ( '' === $host || empty( $ips ) || filter_var( $host, FILTER_VALIDATE_IP ) ) {
+			return '';
+		}
+
+		$port = $parts['port'] ?? ( 'https' === strtolower( (string) ( $parts['scheme'] ?? '' ) ) ? 443 : 80 );
+
+		return $host . ':' . (int) $port . ':' . implode( ',', $ips );
+	}
+
+	/**
+	 * The IPv4 and IPv6 addresses a host resolves to (the host itself for an IP
+	 * literal), or none when its IPv6 addresses cannot be read: the download may
+	 * use one of them, so a host that is only half checked is refused.
 	 *
 	 * @since 2.10.0
 	 *
@@ -664,13 +720,16 @@ class Library_Abilities extends Ability_Group {
 		$ips = gethostbynamel( $host );
 		$ips = is_array( $ips ) ? $ips : array();
 
-		if ( function_exists( 'dns_get_record' ) ) {
-			$records = dns_get_record( $host, DNS_AAAA ); // A failed lookup returns false, answered by the empty list below.
+		// False when the lookup failed; a host with no IPv6 address gives an empty list.
+		$records = function_exists( 'dns_get_record' ) ? dns_get_record( $host, DNS_AAAA ) : false;
 
-			foreach ( is_array( $records ) ? $records : array() as $record ) {
-				if ( ! empty( $record['ipv6'] ) ) {
-					$ips[] = $record['ipv6'];
-				}
+		if ( ! is_array( $records ) ) {
+			return array();
+		}
+
+		foreach ( $records as $record ) {
+			if ( ! empty( $record['ipv6'] ) ) {
+				$ips[] = $record['ipv6'];
 			}
 		}
 
