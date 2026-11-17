@@ -76,6 +76,22 @@ if ( ! function_exists( 'add_action' ) ) {
 	}
 }
 
+if ( ! function_exists( 'remove_action' ) ) {
+
+	/**
+	 * Same registry as remove_filter(), as in core.
+	 *
+	 * @param string   $hook     Hook name.
+	 * @param callable $callback Callback, compared by identity.
+	 * @param int      $priority Priority it was added at.
+	 *
+	 * @return bool Whether a callback was removed.
+	 */
+	function remove_action( $hook, $callback, $priority = 10 ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return remove_filter( $hook, $callback, $priority );
+	}
+}
+
 if ( ! function_exists( 'apply_filters' ) ) {
 
 	/**

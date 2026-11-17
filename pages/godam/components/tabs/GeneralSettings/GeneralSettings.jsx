@@ -23,6 +23,7 @@ import { __ } from '@wordpress/i18n';
 import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
+import AiAgentsSettings from './AiAgentsSettings.jsx';
 
 const GeneralSettings = () => {
 	const dispatch = useDispatch();
@@ -98,6 +99,9 @@ const GeneralSettings = () => {
 				</Notice>
 			) }
 
+			{ /* Saves on its own, so it sits above the card that the Save button below belongs to. */ }
+			<AiAgentsSettings />
+
 			<Panel header={ __( 'General Settings', 'godam' ) } className="godam-panel godam-margin-bottom">
 				<PanelBody opened>
 					<ToggleControl
@@ -150,6 +154,7 @@ const GeneralSettings = () => {
 					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>
 			</div>
+
 		</>
 	);
 };

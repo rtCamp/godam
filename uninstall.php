@@ -32,6 +32,8 @@ $rtgodam_uninstall_options = array(
 	'rtgodam-account-token',
 	'rtgodam-api-key-status',
 	'rtgodam-api-key-error-since',
+	'rtgodam_mcp_enabled',
+	'rtgodam_expose_write_abilities',
 );
 
 $rtgodam_uninstall_transients = array(
@@ -75,3 +77,6 @@ foreach ( $rtgodam_blog_ids as $rtgodam_blog_id ) {
 // removed once rather than per site. Uninstall runs without loading the plugin, so
 // this mirrors Onboarding::MEDIA_LIBRARY_GUIDE_META_KEY — keep the two in sync.
 delete_metadata( 'user', 0, 'rtgodam_media_library_guide_state', '', true );
+
+// Mirrors Abilities\Ai_Agents_Notice::DISMISSED_META_KEY.
+delete_metadata( 'user', 0, 'rtgodam_ai_agents_notice_dismissed', '', true );

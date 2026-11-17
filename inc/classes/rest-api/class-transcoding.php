@@ -210,9 +210,7 @@ class Transcoding extends Base {
 				'args'      => array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'retranscode_media' ),
-					'permission_callback' => function () {
-						return current_user_can( 'edit_others_posts' );
-					},
+					'permission_callback' => array( $this, 'can_retranscode_item' ),
 				),
 			),
 			array(
@@ -777,6 +775,36 @@ class Transcoding extends Base {
 			),
 			200
 		);
+	}
+
+	/**
+	 * Permission for the retranscode route: Editors and above can retranscode
+	 * anything, and anyone else can retranscode a media item they can edit,
+	 * such as an Author's own upload. The ID must be a media item: a
+	 * Contributor can edit their own draft post, but that is not media.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 *
+	 * @return bool
+	 */
+	public function can_retranscode_item( $request ) {
+		if ( current_user_can( 'edit_others_posts' ) ) {
+			return true;
+		}
+
+		$attachment_id = absint( $request->get_param( 'id' ) );
+
+		if ( ! $attachment_id ) {
+			return false;
+		}
+
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$can = 'attachment' === get_post_type( $attachment_id ) && current_user_can( 'edit_post', $attachment_id );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		return $can;
 	}
 
 	/**
