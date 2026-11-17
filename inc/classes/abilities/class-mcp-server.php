@@ -22,7 +22,7 @@ use RTGODAM\Inc\Traits\Singleton;
 /**
  * Class Mcp_Server
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 class Mcp_Server {
 
@@ -40,7 +40,7 @@ class Mcp_Server {
 	 * calls. The adapter is pre-1.0 and takes positional arguments, so an
 	 * older or unknown version is skipped rather than called wrongly.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string
 	 */
@@ -50,7 +50,7 @@ class Mcp_Server {
 	 * Capability needed to open the server at all. It is the broadest one any
 	 * GoDAM tool needs; each tool still checks its own permission on every call.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string
 	 */
@@ -66,7 +66,7 @@ class Mcp_Server {
 	/**
 	 * Registers the GoDAM server with the adapter.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param object $adapter The adapter instance (\WP\MCP\Core\McpAdapter).
 	 *
@@ -101,7 +101,7 @@ class Mcp_Server {
 	/**
 	 * Whether the installed MCP Adapter is one this class knows how to call.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -115,7 +115,7 @@ class Mcp_Server {
 	 * Without this the adapter lets in any logged-in user, so a subscriber
 	 * could list every GoDAM tool.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -130,7 +130,7 @@ class Mcp_Server {
 	 * `meta.public` flags, so the flags are honoured here explicitly. Otherwise
 	 * this server would quietly expose write abilities a site has not enabled.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $type MCP type to list: `tool` or `prompt`.
 	 *
@@ -148,7 +148,7 @@ class Mcp_Server {
 		 * add it here, so one GoDAM server carries the whole product. For
 		 * example, GoDAM for WooCommerce adds `godam-woo`.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.10.0
 		 *
 		 * @param string[] $namespaces Ability namespaces, without the trailing slash.
 		 */

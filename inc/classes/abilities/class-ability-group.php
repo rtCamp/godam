@@ -18,7 +18,7 @@ use RTGODAM\Inc\Taxonomies\Media_Folders;
  * GoDAM's exposure defaults, runs GoDAM's own REST routes in-process, and gives
  * every ability the same shape for a media item.
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 abstract class Ability_Group {
 
@@ -26,7 +26,7 @@ abstract class Ability_Group {
 	 * Writes that replace what is already there, so MCP clients ask the user
 	 * before running them.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string[]
 	 */
@@ -43,7 +43,7 @@ abstract class Ability_Group {
 	/**
 	 * Abilities that reach outside the site: GoDAM Central or another server.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string[]
 	 */
@@ -69,7 +69,7 @@ abstract class Ability_Group {
 	 * work is done by GoDAM Central. On a free site they stay listed, say so in
 	 * their description, and return one clear error.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string[]
 	 */
@@ -91,7 +91,7 @@ abstract class Ability_Group {
 	/**
 	 * Default maximum length of a string input, in characters.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var int
 	 */
@@ -100,7 +100,7 @@ abstract class Ability_Group {
 	/**
 	 * Maximum length of free-text inputs such as descriptions and layer HTML.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var int
 	 */
@@ -109,7 +109,7 @@ abstract class Ability_Group {
 	/**
 	 * Input properties that hold free text and get MAX_TEXT_LENGTH.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string[]
 	 */
@@ -118,7 +118,7 @@ abstract class Ability_Group {
 	/**
 	 * Default maximum number of items in an array input.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var int
 	 */
@@ -127,7 +127,7 @@ abstract class Ability_Group {
 	/**
 	 * Largest value a number input may hold when its schema sets no maximum.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var int
 	 */
@@ -136,7 +136,7 @@ abstract class Ability_Group {
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -157,7 +157,7 @@ abstract class Ability_Group {
 	 * The input schema gets length and size limits, and abilities that need a
 	 * GoDAM plan refuse to run on a site without a verified API key.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $name   Ability name, `godam/<verb-noun>`.
 	 * @param array  $args   Arguments for wp_register_ability().
@@ -178,7 +178,7 @@ abstract class Ability_Group {
 		 * The acting user's capabilities are still checked on every call; this
 		 * only controls whether the ability is listed at all.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.10.0
 		 *
 		 * @param bool   $public Whether the ability is exposed.
 		 * @param string $name   Ability name.
@@ -254,7 +254,7 @@ abstract class Ability_Group {
 	 * Not the account token: it is the organisation's public CDN subdomain
 	 * (`<token>.gdcdn.us`), in every video URL, so replacing it would break them.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string[]
 	 */
@@ -264,7 +264,7 @@ abstract class Ability_Group {
 	 * Wraps an execute callback so its result and errors never carry the GoDAM
 	 * API key, whatever a route or GoDAM Central put in them.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param callable $callback Execute callback.
 	 *
@@ -281,7 +281,7 @@ abstract class Ability_Group {
 	 *
 	 * Walks arrays, objects and WP_Error messages and data.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param mixed $value Ability result.
 	 *
@@ -309,7 +309,7 @@ abstract class Ability_Group {
 	/**
 	 * Recursive helper for redact_secrets().
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param mixed    $value   Value.
 	 * @param string[] $secrets Secret strings.
@@ -374,7 +374,7 @@ abstract class Ability_Group {
 	 * Wraps an execute callback so it returns one clear error on a site
 	 * without a verified GoDAM API key.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param callable $callback Execute callback.
 	 *
@@ -393,7 +393,7 @@ abstract class Ability_Group {
 	/**
 	 * Whether the site is connected to GoDAM with a verified API key.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -404,7 +404,7 @@ abstract class Ability_Group {
 	/**
 	 * The error an ability returns when it needs a GoDAM plan and the site has none.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return \WP_Error
 	 */
@@ -421,7 +421,7 @@ abstract class Ability_Group {
 	 * objects that list their properties, `maxLength` on strings and
 	 * `maxItems` on arrays. A limit the schema already sets is kept.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array  $schema   JSON Schema.
 	 * @param string $property Name of the property this schema describes, if any.
@@ -474,7 +474,7 @@ abstract class Ability_Group {
 	 * logic, so each route's own validation and permission checks still apply
 	 * on top of the ability's.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $method HTTP method.
 	 * @param string $route  Full route, e.g. `/godam/v1/transcription`.
@@ -517,7 +517,7 @@ abstract class Ability_Group {
 	 * missing one, so an agent cannot use IDs to find out which private media
 	 * exists.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -544,7 +544,7 @@ abstract class Ability_Group {
 	 * Keeps what an agent acts on — IDs, status, links — and leaves out the
 	 * dozens of internal meta keys an attachment carries.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param \WP_Post $post Attachment.
 	 *
@@ -601,7 +601,7 @@ abstract class Ability_Group {
 	 * 45.5s file was seen in testing. Agents are told so rather than handed
 	 * the number as fact.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -637,7 +637,7 @@ abstract class Ability_Group {
 	 * ("What&#8217;s new"), which an agent would then quote or search for
 	 * verbatim.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param \WP_Post $post Post.
 	 *
@@ -654,7 +654,7 @@ abstract class Ability_Group {
 	 * (`Transcoded` and `transcoded`, `failed` and `blocked`, `Queued` and
 	 * `not_started`). Agents get four stable values instead.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -681,7 +681,7 @@ abstract class Ability_Group {
 	/**
 	 * Maps a MIME type to the four media types GoDAM's abilities speak.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $mime MIME type.
 	 *
@@ -697,7 +697,7 @@ abstract class Ability_Group {
 	 * A media item's stored GoDAM settings: the layers, chapters and player
 	 * configuration (`videoConfig`) the media editor saves.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -717,7 +717,7 @@ abstract class Ability_Group {
 	 * of what godam_meta() returned and the rest is kept as it was. The field
 	 * keeps its own rules, such as the custom-CSS limit for non-admins.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int   $attachment_id Attachment ID.
 	 * @param array $meta          Settings to save.
@@ -733,7 +733,7 @@ abstract class Ability_Group {
 	/**
 	 * The media editor's address for a media item.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -746,7 +746,7 @@ abstract class Ability_Group {
 	/**
 	 * Reads a single attachment meta value, returning null rather than an empty string.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int    $attachment_id Attachment ID.
 	 * @param string $key           Meta key.
@@ -775,7 +775,7 @@ abstract class Ability_Group {
 	/**
 	 * The attachment post, or null.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -797,7 +797,7 @@ abstract class Ability_Group {
 	 * Media Library already lists to any user who can upload. A private
 	 * attachment still needs `read_post`.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param \WP_Post $post Attachment post.
 	 *
@@ -815,7 +815,7 @@ abstract class Ability_Group {
 	/**
 	 * An attachment's MIME type.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int|\WP_Post $attachment Attachment ID or post.
 	 *
@@ -832,7 +832,7 @@ abstract class Ability_Group {
 	/**
 	 * An attachment's file URL.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -849,7 +849,7 @@ abstract class Ability_Group {
 	/**
 	 * An attachment's WordPress metadata (dimensions, length and so on).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -866,7 +866,7 @@ abstract class Ability_Group {
 	/**
 	 * Permission: the user can edit the media item named by the input's `id`.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -889,7 +889,7 @@ abstract class Ability_Group {
 	/**
 	 * JSON Schema for the media object returned by shape_media().
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return array
 	 */
@@ -922,7 +922,7 @@ abstract class Ability_Group {
 	/**
 	 * Input schema for abilities that act on one media item.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return array
 	 */

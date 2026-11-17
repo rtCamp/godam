@@ -23,7 +23,7 @@ use RTGODAM\Inc\Traits\Singleton;
 /**
  * Class Abilities
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 class Abilities {
 
@@ -37,7 +37,7 @@ class Abilities {
 	 * clients ask first. A site administrator can turn it off in
 	 * Settings › Writing as a kill switch for every write.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string
 	 */
@@ -51,7 +51,7 @@ class Abilities {
 	 * allows. MCP clients also need the MCP Adapter plugin; without it the
 	 * abilities are reachable only through the WordPress Abilities REST API.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string
 	 */
@@ -77,7 +77,7 @@ class Abilities {
 	/**
 	 * Whether abilities that change data are exposed.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -88,7 +88,7 @@ class Abilities {
 	/**
 	 * Whether the GoDAM MCP server is on.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -96,7 +96,7 @@ class Abilities {
 		/**
 		 * Filters whether the GoDAM MCP server is on.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.10.0
 		 *
 		 * @param bool $enabled Whether the server is on.
 		 */
@@ -109,7 +109,7 @@ class Abilities {
 	 * Core's rest_sanitize_boolean() alone stores false as an empty string,
 	 * which the settings REST route then reports as an invalid stored value.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param mixed $value Submitted value.
 	 *
@@ -125,7 +125,7 @@ class Abilities {
 	 * Registering it on `init` also exposes it to the `/wp/v2/settings` REST
 	 * route, which only site administrators can use.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -161,7 +161,7 @@ class Abilities {
 	/**
 	 * Adds the write-abilities checkbox to Settings › Writing.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -177,7 +177,7 @@ class Abilities {
 	/**
 	 * Renders the write-abilities checkbox.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -200,7 +200,7 @@ class Abilities {
 	 * Adapter is active, so /wp-json/wp-abilities/v1/categories lists no GoDAM
 	 * category without it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -267,7 +267,7 @@ class Abilities {
 	 * Checked here, not in the constructor, because the adapter's plugin file,
 	 * which defines WP_MCP_VERSION, can load after GoDAM's.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */

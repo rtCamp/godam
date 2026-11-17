@@ -782,7 +782,7 @@ class Transcoding extends Base {
 	 * anything, and anyone else can retranscode a media item they can edit,
 	 * such as an Author's own upload.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 *

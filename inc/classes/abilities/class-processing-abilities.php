@@ -17,14 +17,14 @@ defined( 'ABSPATH' ) || exit;
  * this site, so an agent should check godam/get-media afterwards rather than
  * expect a finished result.
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 class Processing_Abilities extends Ability_Group {
 
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -61,7 +61,7 @@ class Processing_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/request-transcription.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -101,7 +101,7 @@ class Processing_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/retranscode-media.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -154,7 +154,7 @@ class Processing_Abilities extends Ability_Group {
 	 * The other reasons (virtual_media, migrated_vimeo, storage_exceeded and
 	 * http_auth_enabled) already end their message with a step.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $reason The route's `reason`.
 	 *

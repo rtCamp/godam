@@ -20,14 +20,14 @@ defined( 'ABSPATH' ) || exit;
  * picks that media from the library. With fewer, the editor would show an
  * empty placeholder or rewrite the block as soon as the post is opened.
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 class Block_Abilities extends Ability_Group {
 
 	/**
 	 * Post types media can be added to.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string[]
 	 */
@@ -36,7 +36,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * The block each media type is placed with.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var array<string, string>
 	 */
@@ -52,7 +52,7 @@ class Block_Abilities extends Ability_Group {
 	 * What a video player does when it leaves the visitor's view, as the video
 	 * block offers it. An empty string uses the site-wide setting.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var string[]
 	 */
@@ -61,7 +61,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -156,7 +156,7 @@ class Block_Abilities extends Ability_Group {
 	 *
 	 * Publishing is checked by the post type's REST route.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -184,7 +184,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/add-media-to-page.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -328,7 +328,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Builds the block for the requested media, after checking it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input  Ability input.
 	 * @param array $player Player settings.
@@ -398,7 +398,7 @@ class Block_Abilities extends Ability_Group {
 	 * The block renders on the server from its attributes; its saved markup is
 	 * the empty wrapper its save() produces.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int   $media_id Video attachment ID.
 	 * @param array $player   Player settings from the ability input.
@@ -475,7 +475,7 @@ class Block_Abilities extends Ability_Group {
 	 * DASH, then the original file. A video still transcoding has only the
 	 * original; the player reads the transcoded URLs from the attachment later.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int $media_id Video attachment ID.
 	 *
@@ -516,7 +516,7 @@ class Block_Abilities extends Ability_Group {
 	 * (without the URLs WordPress sometimes seeds it with), and GoDAM's cover
 	 * image when the file has one.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param \WP_Post $media Audio attachment.
 	 *
@@ -543,7 +543,7 @@ class Block_Abilities extends Ability_Group {
 	 * Serialised markup for a GoDAM Image block, with what its editor stores
 	 * when a library image is picked.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param \WP_Post $media Image attachment.
 	 *
@@ -568,7 +568,7 @@ class Block_Abilities extends Ability_Group {
 	 * Serialised markup for a GoDAM Document block, with what its editor
 	 * stores when a library document is picked.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param \WP_Post $media Document attachment.
 	 *
@@ -607,7 +607,7 @@ class Block_Abilities extends Ability_Group {
 	 * block in its "Handpicked" mode with one item block per video, as the
 	 * editor builds it when videos are picked.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param int[] $media_ids Video attachment IDs, in gallery order.
 	 *
@@ -667,7 +667,7 @@ class Block_Abilities extends Ability_Group {
 	 * on, which leaves nothing to glue a shortcode onto. A page with that flag and
 	 * block or plain content is not one: a row added there would join its last block.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param \WP_Post $post Host page or post.
 	 *
@@ -695,7 +695,7 @@ class Block_Abilities extends Ability_Group {
 	 * gallery's videos go in as the element's `handpicked_items` param group
 	 * (rawurlencoded JSON, one `video_id` row per video), as WPBakery saves it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $block  The block built for the media: name and media_ids.
 	 * @param array $player Player settings from the ability input.
@@ -772,7 +772,7 @@ class Block_Abilities extends Ability_Group {
 	 * Serialises a block the way the block editor does. The editor puts a line
 	 * break inside a block's comments around its content; callers include it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $name          Block name.
 	 * @param array  $attrs         Attributes.
@@ -798,7 +798,7 @@ class Block_Abilities extends Ability_Group {
 	 * order the block declares them, leaving out unset values and values equal
 	 * to the attribute's default.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $name  Block name.
 	 * @param array  $attrs Attributes.
@@ -837,7 +837,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Text of an HTML fragment, as the browser's textContent gives it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $html HTML.
 	 *
@@ -852,7 +852,7 @@ class Block_Abilities extends Ability_Group {
 	 * A GMT date from the REST API as the editor's ISO string, e.g.
 	 * `2026-11-05T13:25:18.000+00:00`.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $date_gmt Date in GMT, `Y-m-d\TH:i:s`.
 	 *
@@ -867,7 +867,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * The REST collection route for a post type.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $post_type Post type.
 	 *
@@ -886,7 +886,7 @@ class Block_Abilities extends Ability_Group {
 	 * Only pages and posts the current user can edit are returned, so the
 	 * lookup never confirms that a page they cannot edit exists.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $page URL, path or exact title.
 	 *
@@ -949,7 +949,7 @@ class Block_Abilities extends Ability_Group {
 	 * even when a published page has the same title. A published match is refused
 	 * only when there is no single unpublished page to reuse.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $title     Exact title.
 	 * @param string $post_type 'page' or 'post'.
@@ -991,7 +991,7 @@ class Block_Abilities extends Ability_Group {
 	 * When two or more editable items share the title, none is returned, so the
 	 * caller creates a new one as asked rather than guessing between them.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string   $title     Exact title.
 	 * @param string   $post_type 'page' or 'post'.
@@ -1035,7 +1035,7 @@ class Block_Abilities extends Ability_Group {
 	 * Pages and posts always; LifterLMS courses and lessons when LifterLMS is active.
 	 * New items are still only pages and posts: a course or lesson is created in LifterLMS.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return string[]
 	 */
@@ -1050,7 +1050,7 @@ class Block_Abilities extends Ability_Group {
 		/**
 		 * Filters the post types whose existing items GoDAM media can be added to through abilities.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.10.0
 		 *
 		 * @param string[] $types Post type names.
 		 */
@@ -1062,7 +1062,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Whether a post type can be saved through the core REST posts route.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $post_type Post type name.
 	 *
@@ -1077,7 +1077,7 @@ class Block_Abilities extends Ability_Group {
 	/**
 	 * Saves new content to an existing post whose type has no REST route.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param \WP_Post $target Post to update.
 	 * @param array    $params `content`, and optionally `status`.

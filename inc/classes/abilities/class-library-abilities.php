@@ -20,14 +20,14 @@ use RTGODAM\Inc\Taxonomies\Media_Folders;
  * per-attachment edit check and the locked-folder guard on moves — rather than
  * re-implementing them.
  *
- * @since n.e.x.t
+ * @since 2.10.0
  */
 class Library_Abilities extends Ability_Group {
 
 	/**
 	 * Registers this group's abilities.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return void
 	 */
@@ -280,7 +280,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Permission: the user can browse the media library.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -294,7 +294,7 @@ class Library_Abilities extends Ability_Group {
 	 * Reads the capability from the taxonomy itself, so it follows whatever
 	 * the folder taxonomy is registered with.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -309,7 +309,7 @@ class Library_Abilities extends Ability_Group {
 	 *
 	 * Matches the assign-folder route; that route then checks each attachment.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @return bool
 	 */
@@ -320,7 +320,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/list-folders.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -366,7 +366,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/create-folder through the folder taxonomy's REST route.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -397,7 +397,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/move-media-to-folder through the media library route.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -429,7 +429,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/update-media-details through the core media route.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -468,7 +468,7 @@ class Library_Abilities extends Ability_Group {
 	 * the site allows. GoDAM's upload hooks then pick the attachment up like any
 	 * other upload.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -599,7 +599,7 @@ class Library_Abilities extends Ability_Group {
 	 * checks only for uploads, so without this an import could go past them.
 	 * The checks and error codes match the REST media route's.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $tmp_file Path of the downloaded file.
 	 *
@@ -636,7 +636,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Job type GoDAM Central's file list takes for each kind of media.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @var array<string,string>
 	 */
@@ -653,7 +653,7 @@ class Library_Abilities extends Ability_Group {
 	 * Goes through the route the Media Library's GoDAM tab uses, which sends the
 	 * site's API key to GoDAM Central. The key is never part of the result.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $type     One of the CENTRAL_MEDIA_TYPES keys.
 	 * @param int    $page     Page number.
@@ -693,7 +693,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Finds the site's media item made from a GoDAM Central item, if any.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $central_id GoDAM Central item ID.
 	 *
@@ -724,7 +724,7 @@ class Library_Abilities extends Ability_Group {
 	 * GoDAM Central's list sometimes fails for a moment under load. One more
 	 * try saves the agent a failed tool call and a retry of its own.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $type     One of the CENTRAL_MEDIA_TYPES keys.
 	 * @param int    $page     Page number.
@@ -750,7 +750,7 @@ class Library_Abilities extends Ability_Group {
 	 * Central, such as 401 for an invalid or revoked API key, comes back the
 	 * same every time, and a retry only adds a wait.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param \WP_Error $error Error from central_media_page().
 	 *
@@ -774,7 +774,7 @@ class Library_Abilities extends Ability_Group {
 	 * title the search finds it in one request. Without them, or when the search
 	 * misses, the whole list is read, 100 at a time, the given type first.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param string $central_id The item's ID on GoDAM Central.
 	 * @param string $type       Optional CENTRAL_MEDIA_TYPES key to look in first.
@@ -846,7 +846,7 @@ class Library_Abilities extends Ability_Group {
 	/**
 	 * Executes godam/list-central-media.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
@@ -898,7 +898,7 @@ class Library_Abilities extends Ability_Group {
 	 * caller cannot make a library entry that points at an address of its
 	 * choosing.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.0
 	 *
 	 * @param array $input Ability input.
 	 *
