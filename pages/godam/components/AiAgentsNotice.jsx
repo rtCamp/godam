@@ -54,7 +54,7 @@ const AiAgentsNotice = () => {
 		>
 			<div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2 text-sm text-slate-900">
 				<span>
-					<strong>{ __( 'New: use GoDAM from your AI agent.', 'godam' ) }</strong>
+					<strong>{ __( 'New: Use GoDAM from your AI agent.', 'godam' ) }</strong>
 					{ ' ' }
 					{ __( 'Claude, Cursor and other AI agents can now work with your GoDAM media on this site.', 'godam' ) }
 				</span>

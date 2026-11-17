@@ -99,6 +99,9 @@ const GeneralSettings = () => {
 				</Notice>
 			) }
 
+			{ /* Saves on its own, so it sits above the card that the Save button below belongs to. */ }
+			<AiAgentsSettings />
+
 			<Panel header={ __( 'General Settings', 'godam' ) } className="godam-panel godam-margin-bottom">
 				<PanelBody opened>
 					<ToggleControl
@@ -142,7 +145,6 @@ const GeneralSettings = () => {
 				</Button>
 			</div>
 
-			<AiAgentsSettings />
 		</>
 	);
 };
