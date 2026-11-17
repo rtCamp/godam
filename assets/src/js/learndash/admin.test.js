@@ -204,11 +204,42 @@ describe( 'setupVideoPicker', () => {
 
 		pickerPart( 'select' ).click();
 		media.select( { id: 'qvbgt6hd9u', title: 'From GoDAM', url: 'https://cdn.test/g.m3u8', mime: 'video/mp4' } );
+
+		// Until then the form holds no ID, so a save cannot store the GoDAM ID.
+		expect( $( 'lesson_video_godam_id' ).value ).toBe( '' );
+		expect( pickerPart( 'title' ).textContent ).toBe( 'From GoDAM' );
+
 		document.dispatchEvent( new CustomEvent( 'godam-virtual-attachment-created', {
 			detail: { virtualMediaId: 'qvbgt6hd9u', attachment: { id: 901, title: 'From GoDAM', url: 'https://cdn.test/g.mp4' } },
 		} ) );
 
 		expect( $( 'lesson_video_godam_id' ).value ).toBe( '901' );
+	} );
+
+	it( 'never puts a GoDAM ID that starts with digits in the form', () => {
+		render( true, '[video_godam]' );
+		const media = mediaDouble();
+		setupVideoPicker( document, CONFIG, media.wp );
+
+		pickerPart( 'select' ).click();
+		media.select( { id: '88o035h31e', title: 'From GoDAM', url: 'https://cdn.test/g.m3u8', mime: 'video/mp4' } );
+
+		expect( $( 'lesson_video_godam_id' ).value ).toBe( '' );
+	} );
+
+	it( 'ignores the attachment event for a pick that was replaced', () => {
+		render( true, '[video_godam]' );
+		const media = mediaDouble();
+		setupVideoPicker( document, CONFIG, media.wp );
+
+		pickerPart( 'select' ).click();
+		media.select( { id: 'qvbgt6hd9u', title: 'From GoDAM', url: 'https://cdn.test/g.m3u8', mime: 'video/mp4' } );
+		media.select( { id: 55, title: 'Lesson intro', url: 'https://cdn.test/intro.mp4', mime: 'video/mp4' } );
+		document.dispatchEvent( new CustomEvent( 'godam-virtual-attachment-created', {
+			detail: { virtualMediaId: 'qvbgt6hd9u', attachment: { id: 901, title: 'From GoDAM', url: 'https://cdn.test/g.mp4' } },
+		} ) );
+
+		expect( $( 'lesson_video_godam_id' ).value ).toBe( '55' );
 	} );
 
 	it( 'does nothing without the media library', () => {

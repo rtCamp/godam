@@ -483,7 +483,13 @@ class LearnDash {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- LearnDash verified the metabox nonce before running this filter.
 		$posted = isset( $_POST[ $metabox_key ][ self::FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ $metabox_key ][ self::FIELD ] ) ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- LearnDash verified the metabox nonce before running this filter.
-		$video_id = isset( $_POST[ $metabox_key ][ self::VIDEO_FIELD ] ) ? absint( wp_unslash( $_POST[ $metabox_key ][ self::VIDEO_FIELD ] ) ) : 0;
+		$raw_id = isset( $_POST[ $metabox_key ][ self::VIDEO_FIELD ] ) ? sanitize_text_field( wp_unslash( $_POST[ $metabox_key ][ self::VIDEO_FIELD ] ) ) : '';
+
+		/*
+		 * Only an all-digit value is an attachment ID. A GoDAM ID such as
+		 * `88o035h31e` would otherwise cast to attachment 88.
+		 */
+		$video_id = ctype_digit( $raw_id ) ? absint( $raw_id ) : 0;
 
 		// Only a video can be the progression video.
 		if ( $video_id > 0 && ! static::is_picked_video( $video_id ) ) {
@@ -746,12 +752,10 @@ class LearnDash {
 			return $html;
 		}
 
-		$embed = wp_oembed_get( $src );
-		if ( is_string( $embed ) && '' !== $embed ) {
-			return $embed;
-		}
-
-		// GoDAM's oEmbed API does not answer for every video; the embed page still works.
+		/*
+		 * Build the embed iframe here rather than through oEmbed: wp_oembed_get()
+		 * is not cached, so it would call the GoDAM API on every lesson view.
+		 */
 		return self::build_embed_iframe( $src );
 	}
 
@@ -775,6 +779,12 @@ class LearnDash {
 		}
 
 		$embed_url = untrailingslashit( RTGODAM_API_BASE ) . '/web/embed/' . $matches[1];
+
+		// Keep the query string, such as `?org=`.
+		$query = wp_parse_url( $url, PHP_URL_QUERY );
+		if ( is_string( $query ) && '' !== $query ) {
+			$embed_url .= '?' . $query;
+		}
 
 		return sprintf(
 			'<div class="rtgodam-ld-embed" style="position:relative;aspect-ratio:16/9;"><iframe src="%s" style="position:absolute;inset:0;width:100%%;height:100%%;border:0;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>',

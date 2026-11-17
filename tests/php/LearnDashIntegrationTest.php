@@ -162,7 +162,27 @@ class LearnDashIntegrationTest extends TestCase {
 
 		$this->assertStringContainsString( '<iframe src="https://api.test/web/embed/abc_12-x"', $from_video );
 		$this->assertStringContainsString( 'allowfullscreen', $from_video );
-		$this->assertStringContainsString( '<iframe src="https://api.test/web/embed/abc_12-x"', $from_embed );
+		$this->assertStringContainsString( '<iframe src="https://api.test/web/embed/abc_12-x?autoplay=1"', $from_embed );
+	}
+
+	public function test_embed_iframe_keeps_the_query_string() {
+		$iframe = LearnDash::build_embed_iframe( 'https://api.test/web/video/1qciebqba9?org=860eda8a66' );
+
+		$this->assertStringContainsString( '<iframe src="https://api.test/web/embed/1qciebqba9?org=860eda8a66"', $iframe );
+	}
+
+	public function test_video_shortcode_renders_the_embed_iframe_for_a_godam_url() {
+		$integration = $this->integration_with_videos( array() );
+		$html        = $integration->render_video_shortcode( '', array( 'src' => 'https://api.test/web/video/1qciebqba9?org=860eda8a66' ) );
+
+		$this->assertSame( LearnDash::build_embed_iframe( 'https://api.test/web/video/1qciebqba9?org=860eda8a66' ), $html );
+	}
+
+	public function test_video_shortcode_leaves_other_urls_to_wordpress() {
+		$integration = $this->integration_with_videos( array() );
+
+		$this->assertSame( '', $integration->render_video_shortcode( '', array( 'src' => 'https://example.test/a.mp4' ) ) );
+		$this->assertSame( '<p>x</p>', $integration->render_video_shortcode( '<p>x</p>', array( 'src' => 'https://api.test/web/video/abc' ) ) );
 	}
 
 	public function test_no_embed_iframe_for_other_urls() {
@@ -313,6 +333,21 @@ class LearnDashIntegrationTest extends TestCase {
 		);
 
 		$settings = $this->integration_with_videos( array( 77 ) )->save_settings_field(
+			array( 'lesson_video_url' => '' ),
+			'learndash-lesson-display-content-settings'
+		);
+
+		$this->assertSame( LearnDash::BLOCK_MARKER, $settings['lesson_video_url'] );
+	}
+
+	public function test_save_does_not_cast_a_godam_id_to_an_attachment_id() {
+		$_POST['learndash-lesson-display-content-settings'] = array(
+			LearnDash::FIELD       => 'on',
+			LearnDash::VIDEO_FIELD => '88o035h31e',
+		);
+
+		// 88 is a video, so a plain absint() would store it.
+		$settings = $this->integration_with_videos( array( 88 ) )->save_settings_field(
 			array( 'lesson_video_url' => '' ),
 			'learndash-lesson-display-content-settings'
 		);

@@ -101,7 +101,21 @@ export function renderPicked( picker, attachment, i18n ) {
 	const select = picker.querySelector( '.rtgodam-ld-video-picker__select' );
 	const remove = picker.querySelector( '.rtgodam-ld-video-picker__remove' );
 
-	input.value = attachment ? String( attachment.id ) : '';
+	const id = attachment ? String( attachment.id ) : '';
+
+	/*
+	 * A video picked from the GoDAM tab has a GoDAM ID until its WordPress
+	 * attachment exists. Keep it out of the form so a save in the meantime
+	 * cannot store it: the server would read `88o035h31e` as attachment 88.
+	 */
+	const isAttachmentId = /^\d+$/.test( id );
+	input.value = isAttachmentId ? id : '';
+	if ( attachment && ! isAttachmentId ) {
+		picker.dataset.pendingId = id;
+	} else {
+		delete picker.dataset.pendingId;
+	}
+
 	picker.classList.toggle( 'is-picked', !! attachment );
 
 	title.textContent = attachment ? attachment.title || attachment.filename || `#${ attachment.id }` : '';
@@ -208,8 +222,7 @@ export function setupVideoPicker( doc, config, wp ) {
 			}
 
 			pickers.forEach( ( picker ) => {
-				const input = picker.querySelector( 'input[type="hidden"]' );
-				if ( input.value === String( virtualMediaId ) ) {
+				if ( picker.dataset.pendingId === String( virtualMediaId ) ) {
 					renderPicked( picker, attachment, i18n );
 				}
 			} );
