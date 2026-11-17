@@ -18,7 +18,7 @@ import { createRoot } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import TrialDaysNotice, { trialMessage } from './TrialDaysNotice';
+import TrialDaysNotice, { parseDaysLeft, trialMessage } from './TrialDaysNotice';
 
 const TRIAL = {
 	connectionStatus: 'trial',
@@ -81,9 +81,41 @@ describe( 'TrialDaysNotice', () => {
 		expect( trialMessage( 0 ) ).toBe( 'Your GoDAM trial ends today.' );
 	} );
 
-	it( 'is a warning in the last three days, information before that', () => {
-		expect( render( { ...TRIAL, trialDaysLeft: 3 } ) ).toContain( 'is-warning' );
+	it( 'is a warning in the last three days (2, 1 and 0 left), information before that', () => {
+		expect( render( { ...TRIAL, trialDaysLeft: 2 } ) ).toContain( 'is-warning' );
+		expect( render( { ...TRIAL, trialDaysLeft: 0 } ) ).toContain( 'is-warning' );
+		expect( render( { ...TRIAL, trialDaysLeft: 3 } ) ).toContain( 'is-info' );
 		expect( render( TRIAL ) ).toContain( 'is-info' );
+	} );
+
+	it.each( [
+		[ 5, 5 ],
+		[ '5', 5 ],
+		[ ' 5 ', 5 ],
+		[ '4.5', 5 ],
+		[ 0.2, 1 ],
+		[ '0', 0 ],
+		[ null, null ],
+		[ undefined, null ],
+		[ '', null ],
+		[ false, null ],
+		[ '-1', null ],
+		[ 'soon', null ],
+	] )( 'reads %p days left as %p', ( value, expected ) => {
+		expect( parseDaysLeft( value ) ).toBe( expected );
+	} );
+
+	it( 'still counts down when the days left come as a fraction', () => {
+		expect( render( { ...TRIAL, trialDaysLeft: '4.5' } ) ).toContain( 'Your GoDAM trial ends in 5 days.' );
+	} );
+
+	it( 'stays quiet while the header shows the Free plan banner', () => {
+		const html = render( {
+			...TRIAL,
+			userApiData: { active_plan: 'Free', end_date: new Date( Date.now() + ( 5 * 86400000 ) ).toISOString() },
+		} );
+
+		expect( html ).toBe( '' );
 	} );
 
 	it.each( [
