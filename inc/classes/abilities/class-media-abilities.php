@@ -777,16 +777,6 @@ class Media_Abilities extends Ability_Group {
 		 * server fetches it without the user's login, so any other path on the site
 		 * (or a page only the server itself may open) stays out of reach.
 		 */
-		$uploads = wp_get_upload_dir();
-		$baseurl = strtolower( rtrim( (string) ( $uploads['baseurl'] ?? '' ), '/' ) );
-		$path    = rawurldecode( (string) wp_parse_url( $url, PHP_URL_PATH ) ); // Decoded, so %2e%2e cannot hide a '..'.
-
-		if ( '' === $baseurl || false !== strpos( $path, '..' ) || false !== strpos( $path, '\\' ) || ! preg_match( '/\.(vtt|srt)$/i', $path ) ) {
-			return false;
-		}
-
-		$base_path = rtrim( (string) wp_parse_url( $baseurl, PHP_URL_PATH ), '/' ) . '/';
-
-		return strtolower( (string) wp_parse_url( $baseurl, PHP_URL_HOST ) ) === $host && 0 === strpos( strtolower( $path ), $base_path );
+		return 1 === preg_match( '/\.(vtt|srt)$/i', (string) wp_parse_url( $url, PHP_URL_PATH ) ) && $this->is_uploads_url( $url );
 	}
 }

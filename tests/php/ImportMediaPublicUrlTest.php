@@ -41,10 +41,11 @@ class ImportMediaPublicUrlTest extends TestCase {
 	 */
 	private function ability( array $dns = array() ) {
 		$GLOBALS['rtgodam_stub'] = array(
-			'options'   => array(),
-			'downloads' => array(),
-			'dns'       => $dns,
-			'home_url'  => 'https://site.test',
+			'options'         => array(),
+			'downloads'       => array(),
+			'dns'             => $dns,
+			'home_url'        => 'https://site.test',
+			'uploads_baseurl' => 'https://site.test/wp-content/uploads',
 		);
 
 		require_once dirname( __DIR__, 2 ) . '/inc/classes/abilities/class-ability-group.php';
@@ -169,12 +170,32 @@ class ImportMediaPublicUrlTest extends TestCase {
 	}
 
 	/**
-	 * The site's own host stays allowed, as core allows it.
+	 * The site's own host stays allowed, as core allows it, but only its uploads folder.
 	 *
 	 * @return void
 	 */
 	public function test_the_sites_own_host_is_allowed() {
 		$this->assertTrue( $this->ability()->public_url( 'https://site.test/wp-content/uploads/a.mp4' ) );
+	}
+
+	/**
+	 * Any other page on the site's own host is refused: the server fetches it,
+	 * so it may be a page only the server can open, and the import would save
+	 * its text publicly. A redirect there is stopped by the same check.
+	 *
+	 * @return void
+	 */
+	public function test_the_sites_own_host_outside_uploads_is_refused() {
+		$ability = $this->ability();
+
+		$this->assertFalse( $ability->public_url( 'https://site.test/server-status?auto' ), 'A server-only status page.' );
+		$this->assertFalse( $ability->public_url( 'https://site.test:8080/wp-content/uploads/a.mp4' ), 'Another port.' );
+		$this->assertFalse( $ability->public_url( 'https://site.test/wp-content/uploads/%2e%2e/%2e%2e/server-status' ), 'Climbs out of uploads.' );
+		$this->assertFalse( $ability->public_url( 'https://site.test/wp-content/uploads-other/a.mp4' ), 'A sibling folder whose name starts the same.' );
+
+		$GLOBALS['rtgodam_stub']['uploads_baseurl'] = 'https://site.test';
+
+		$this->assertFalse( $ability->public_url( 'https://site.test/a.mp4' ), 'Uploads at the root of the host: nothing on it is allowed.' );
 	}
 
 	/**
@@ -197,15 +218,17 @@ class ImportMediaPublicUrlTest extends TestCase {
 		$check = $GLOBALS['rtgodam_stub']['redirect_checks'][0];
 		$check( 'https://cdn.example.com/other.mp4' );
 
-		$stopped = '';
+		foreach ( array( 'http://169.254.169.254/latest/meta-data/', 'https://site.test/server-status?auto' ) as $location ) {
+			$stopped = '';
 
-		try {
-			$check( 'http://169.254.169.254/latest/meta-data/' );
-		} catch ( \Exception $e ) {
-			$stopped = get_class( $e );
+			try {
+				$check( $location );
+			} catch ( \Exception $e ) {
+				$stopped = get_class( $e );
+			}
+
+			$this->assertSame( 'WpOrg\Requests\Exception', $stopped, 'The redirect to ' . $location . ' is stopped the way core stops an invalid one.' );
 		}
-
-		$this->assertSame( 'WpOrg\Requests\Exception', $stopped, 'The redirect is stopped the way core stops an invalid one.' );
 	}
 
 	/**
@@ -296,11 +319,11 @@ class ImportMediaPublicUrlTest extends TestCase {
 	public function test_public_ip_rules() {
 		$this->ability();
 
-		foreach ( array( '93.184.215.14', '8.8.8.8', '2606:4700:4700::1111', '::ffff:8.8.8.8', '::ffff:808:808', '64:ff9b::808:808', '2002:808:808::1' ) as $ip ) {
+		foreach ( array( '93.184.215.14', '8.8.8.8', '2606:4700:4700::1111', '::ffff:8.8.8.8', '::ffff:808:808', '64:ff9b::808:808', '2002:808:808::1', '198.20.0.1', '223.255.255.255', '2a00:1450:4001::1' ) as $ip ) {
 			$this->assertTrue( Library_Abilities::is_public_ip( $ip ), $ip );
 		}
 
-		foreach ( array( '169.254.169.254', '100.64.0.1', '100.127.255.255', '10.0.0.1', '172.16.0.1', '192.168.1.1', '127.0.0.1', '0.0.0.0', '192.0.0.1', '::1', 'fd00::1', 'fe80::1', 'ff02::1', 'FF05::2', '::ffff:127.0.0.1', 'not-an-ip' ) as $ip ) {
+		foreach ( array( '169.254.169.254', '100.64.0.1', '100.127.255.255', '10.0.0.1', '172.16.0.1', '192.168.1.1', '127.0.0.1', '0.0.0.0', '192.0.0.1', '::1', 'fd00::1', 'fe80::1', 'ff02::1', 'FF05::2', 'ff05::1:3', 'fec0::1', '100::1', '64:ff9b:1::a9fe:a9fe', '224.0.0.1', '239.255.255.250', '198.18.0.1', '198.19.255.255', '::ffff:127.0.0.1', 'not-an-ip' ) as $ip ) {
 			$this->assertFalse( Library_Abilities::is_public_ip( $ip ), $ip );
 		}
 	}

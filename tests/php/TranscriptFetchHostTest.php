@@ -80,6 +80,18 @@ class TranscriptFetchHostTest extends TestCase {
 		$this->assertFalse( $this->allowed( 'https://example.com/wp-content/uploads/report.txt' ), 'Not a caption file.' );
 		$this->assertFalse( $this->allowed( 'https://example.com/wp-content/uploads-other/x.vtt' ), 'A sibling folder whose name starts the same.' );
 		$this->assertFalse( $this->allowed( 'https://shop.example/wp-content/uploads/x.vtt' ), 'The home host, when uploads live elsewhere.' );
+		$this->assertFalse( $this->allowed( 'https://example.com:8080/wp-content/uploads/x.vtt' ), 'Another port.' );
+	}
+
+	/**
+	 * When uploads sit at the root of their host, every path would be "in uploads", so none is.
+	 *
+	 * @return void
+	 */
+	public function test_uploads_at_the_host_root_allow_nothing() {
+		$GLOBALS['rtgodam_stub']['uploads_baseurl'] = 'https://example.com';
+
+		$this->assertFalse( $this->allowed( 'https://example.com/private/notes.vtt' ) );
 	}
 
 	/**

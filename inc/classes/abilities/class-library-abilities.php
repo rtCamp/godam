@@ -639,8 +639,8 @@ class Library_Abilities extends Ability_Group {
 	 * (100.64.0.0/10) addresses through. An import saves what it downloads in
 	 * the public uploads folder, so check every address here as well.
 	 *
-	 * As in core, the site's own host is allowed, and so is a host the site
-	 * owner allowed with the http_request_host_is_external filter.
+	 * As in core, the site's own host is allowed (only its uploads folder), and
+	 * so is a host the site owner allowed with the http_request_host_is_external filter.
 	 *
 	 * @since 2.10.0
 	 *
@@ -655,9 +655,14 @@ class Library_Abilities extends Ability_Group {
 			return null;
 		}
 
-		// The site itself, which core also allows.
+		/*
+		 * The site itself, which core also allows, but only its uploads folder. The
+		 * request comes from the server, so another page on the site's host may be
+		 * one only the server can open (a status page, an IP-locked tool), and the
+		 * import would save its text publicly and return the URL.
+		 */
 		if ( strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) ) === $host ) {
-			return array();
+			return $this->is_uploads_url( $url ) ? array() : null;
 		}
 
 		$ips = $this->resolve_host( $host );
@@ -761,16 +766,19 @@ class Library_Abilities extends Ability_Group {
 		if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
 			$parts = array_map( 'intval', explode( '.', $ip ) );
 
-			// 100.64.0.0/10 (CGNAT) and 192.0.0.0/24 (IETF protocol assignments).
-			if ( ( 100 === $parts[0] && $parts[1] >= 64 && $parts[1] <= 127 ) || ( 192 === $parts[0] && 0 === $parts[1] && 0 === $parts[2] ) ) {
+			// 100.64.0.0/10 (CGNAT), 192.0.0.0/24 (IETF protocol assignments),
+			// 198.18.0.0/15 (benchmarking, used as internal space) and 224.0.0.0/4 (multicast).
+			if ( ( 100 === $parts[0] && $parts[1] >= 64 && $parts[1] <= 127 ) || ( 192 === $parts[0] && 0 === $parts[1] && 0 === $parts[2] ) || ( 198 === $parts[0] && in_array( $parts[1], array( 18, 19 ), true ) ) || $parts[0] >= 224 ) {
 				return false;
 			}
 
 			return true;
 		}
 
-		// IPv6 link-local (fe80::/10), unique local (fc00::/7) and multicast (ff00::/8) addresses.
-		return ! preg_match( '/^(fe[89ab]|f[cdf])/i', $ip );
+		// Only global unicast IPv6 (2000::/3). This leaves out link-local, unique
+		// local, site-local, multicast, discard-only (100::/64) and local-use
+		// NAT64 (64:ff9b:1::/48), and any such range defined later.
+		return 0x20 === ( ord( substr( (string) inet_pton( $ip ), 0, 1 ) ) & 0xe0 );
 	}
 
 	/**

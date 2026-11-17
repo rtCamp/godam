@@ -582,6 +582,35 @@ abstract class Ability_Group {
 	}
 
 	/**
+	 * Whether a URL points into the site's uploads folder: the uploads host and
+	 * port, a path under the uploads path, and no ".." or backslash even when
+	 * percent-encoded. Used where the server itself fetches a URL on the site's
+	 * own host, so that pages only the server may open (a status page, an
+	 * IP-locked tool) stay out of reach. Refuses everything when the uploads
+	 * folder is the root of its host, since every path would then match.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $url URL.
+	 *
+	 * @return bool
+	 */
+	protected function is_uploads_url( $url ) {
+		$uploads   = wp_get_upload_dir();
+		$baseurl   = strtolower( rtrim( (string) ( $uploads['baseurl'] ?? '' ), '/' ) );
+		$base_path = rtrim( (string) wp_parse_url( $baseurl, PHP_URL_PATH ), '/' ) . '/';
+		$path      = rawurldecode( (string) wp_parse_url( (string) $url, PHP_URL_PATH ) ); // Decoded, so %2e%2e cannot hide a '..'.
+
+		if ( '' === $baseurl || '/' === $base_path || false !== strpos( $path, '..' ) || false !== strpos( $path, '\\' ) ) {
+			return false;
+		}
+
+		return strtolower( (string) wp_parse_url( $baseurl, PHP_URL_HOST ) ) === strtolower( (string) wp_parse_url( (string) $url, PHP_URL_HOST ) )
+			&& wp_parse_url( $baseurl, PHP_URL_PORT ) === wp_parse_url( (string) $url, PHP_URL_PORT )
+			&& 0 === strpos( strtolower( $path ), $base_path );
+	}
+
+	/**
 	 * Returns the image attachment if the current user may read it, or an error
 	 * an agent can act on.
 	 *
