@@ -63,7 +63,21 @@ class TranscriptFetchHostTest extends TestCase {
 	 */
 	public function test_cdn_and_own_site_are_allowed() {
 		$this->assertTrue( $this->allowed( 'https://abc123.gdcdn.us/job1/captions.vtt' ) );
-		$this->assertTrue( $this->allowed( strtolower( (string) home_url() ) . '/wp-content/uploads/captions.vtt' ) );
+		$this->assertTrue( $this->allowed( 'https://example.com/wp-content/uploads/2026/11/captions.vtt' ) );
+		$this->assertTrue( $this->allowed( 'https://example.com/wp-content/uploads/captions.SRT' ) );
+	}
+
+	/**
+	 * On the site's own host, only a caption file in the uploads folder is fetched.
+	 *
+	 * @return void
+	 */
+	public function test_own_site_paths_outside_uploads_are_refused() {
+		$this->assertFalse( $this->allowed( 'https://example.com/private/notes.vtt' ), 'Outside uploads.' );
+		$this->assertFalse( $this->allowed( 'https://example.com/wp-content/uploads/../../wp-config.vtt' ), 'Climbs out of uploads.' );
+		$this->assertFalse( $this->allowed( 'https://example.com/wp-content/uploads/report.txt' ), 'Not a caption file.' );
+		$this->assertFalse( $this->allowed( 'https://example.com/wp-content/uploads-other/x.vtt' ), 'A sibling folder whose name starts the same.' );
+		$this->assertFalse( $this->allowed( 'https://shop.example/wp-content/uploads/x.vtt' ), 'The home host, when uploads live elsewhere.' );
 	}
 
 	/**
