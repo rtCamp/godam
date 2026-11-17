@@ -123,6 +123,7 @@ class ImportMediaPublicUrlTest extends TestCase {
 			'IPv6 loopback'            => array( 'http://[::1]/file.mp4' ),
 			'IPv6 unique local'        => array( 'http://[fd00::1]/file.mp4' ),
 			'IPv6 link-local'          => array( 'http://[fe80::1]/file.mp4' ),
+			'IPv6 multicast'           => array( 'http://[ff02::1]/file.mp4' ),
 			'IPv4-mapped metadata'     => array( 'http://[::ffff:169.254.169.254]/x' ),
 			'name to metadata address' => array( 'http://metadata.attacker.test/x.mp4' ),
 			'name to a mix'            => array( 'http://mixed.attacker.test/x.mp4' ),
@@ -299,7 +300,7 @@ class ImportMediaPublicUrlTest extends TestCase {
 			$this->assertTrue( Library_Abilities::is_public_ip( $ip ), $ip );
 		}
 
-		foreach ( array( '169.254.169.254', '100.64.0.1', '100.127.255.255', '10.0.0.1', '172.16.0.1', '192.168.1.1', '127.0.0.1', '0.0.0.0', '192.0.0.1', '::1', 'fd00::1', 'fe80::1', '::ffff:127.0.0.1', 'not-an-ip' ) as $ip ) {
+		foreach ( array( '169.254.169.254', '100.64.0.1', '100.127.255.255', '10.0.0.1', '172.16.0.1', '192.168.1.1', '127.0.0.1', '0.0.0.0', '192.0.0.1', '::1', 'fd00::1', 'fe80::1', 'ff02::1', 'FF05::2', '::ffff:127.0.0.1', 'not-an-ip' ) as $ip ) {
 			$this->assertFalse( Library_Abilities::is_public_ip( $ip ), $ip );
 		}
 	}

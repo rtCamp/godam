@@ -769,8 +769,8 @@ class Library_Abilities extends Ability_Group {
 			return true;
 		}
 
-		// IPv6 link-local (fe80::/10) and unique local (fc00::/7) addresses.
-		return ! preg_match( '/^(fe[89ab]|f[cd])/', $ip );
+		// IPv6 link-local (fe80::/10), unique local (fc00::/7) and multicast (ff00::/8) addresses.
+		return ! preg_match( '/^(fe[89ab]|f[cdf])/i', $ip );
 	}
 
 	/**
