@@ -665,7 +665,7 @@ class Library_Abilities extends Ability_Group {
 		$ips = is_array( $ips ) ? $ips : array();
 
 		if ( function_exists( 'dns_get_record' ) ) {
-			$records = @dns_get_record( $host, DNS_AAAA ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- a failed lookup is answered by the empty list.
+			$records = dns_get_record( $host, DNS_AAAA ); // A failed lookup returns false, answered by the empty list below.
 
 			foreach ( is_array( $records ) ? $records : array() as $record ) {
 				if ( ! empty( $record['ipv6'] ) ) {
