@@ -75,6 +75,8 @@ class TranscriptFetchHostTest extends TestCase {
 	public function test_own_site_paths_outside_uploads_are_refused() {
 		$this->assertFalse( $this->allowed( 'https://example.com/private/notes.vtt' ), 'Outside uploads.' );
 		$this->assertFalse( $this->allowed( 'https://example.com/wp-content/uploads/../../wp-config.vtt' ), 'Climbs out of uploads.' );
+		$this->assertFalse( $this->allowed( 'https://example.com/wp-content/uploads/%2e%2e/%2E%2E/wp-config.vtt' ), 'Climbs out with an encoded "..".' );
+		$this->assertFalse( $this->allowed( 'https://example.com/wp-content/uploads/%5c..%5cx.vtt' ), 'Climbs out with encoded backslashes.' );
 		$this->assertFalse( $this->allowed( 'https://example.com/wp-content/uploads/report.txt' ), 'Not a caption file.' );
 		$this->assertFalse( $this->allowed( 'https://example.com/wp-content/uploads-other/x.vtt' ), 'A sibling folder whose name starts the same.' );
 		$this->assertFalse( $this->allowed( 'https://shop.example/wp-content/uploads/x.vtt' ), 'The home host, when uploads live elsewhere.' );

@@ -779,9 +779,9 @@ class Media_Abilities extends Ability_Group {
 		 */
 		$uploads = wp_get_upload_dir();
 		$baseurl = strtolower( rtrim( (string) ( $uploads['baseurl'] ?? '' ), '/' ) );
-		$path    = (string) wp_parse_url( $url, PHP_URL_PATH );
+		$path    = rawurldecode( (string) wp_parse_url( $url, PHP_URL_PATH ) ); // Decoded, so %2e%2e cannot hide a '..'.
 
-		if ( '' === $baseurl || false !== strpos( $path, '..' ) || ! preg_match( '/\.(vtt|srt)$/i', $path ) ) {
+		if ( '' === $baseurl || false !== strpos( $path, '..' ) || false !== strpos( $path, '\\' ) || ! preg_match( '/\.(vtt|srt)$/i', $path ) ) {
 			return false;
 		}
 
