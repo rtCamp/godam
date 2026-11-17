@@ -1,6 +1,6 @@
 <?php
 /**
- * Tests who may retranscode which item, and the hourly limit below Editor.
+ * Tests who may retranscode which item.
  *
  * @package GoDAM
  */
@@ -15,14 +15,11 @@ use RTGODAM\Inc\REST_API\Transcoding;
 /**
  * The retranscode route (and godam/retranscode-media, which calls it) let
  * anyone who can edit an item retranscode it. A Contributor can edit their
- * own draft post, so the route must also require a media item. Each
- * retranscode uses the site's GoDAM plan, so users below Editor get an
- * hourly limit.
+ * own draft post, so the route must also require a media item.
  *
  * Runs in its own process because it sets the bootstrap's stub globals.
  *
  * @covers \RTGODAM\Inc\REST_API\Transcoding::can_retranscode_item
- * @covers \RTGODAM\Inc\REST_API\Transcoding::retranscode_media
  *
  * @runTestsInSeparateProcesses
  * @preserveGlobalState disabled
@@ -88,67 +85,5 @@ class RetranscodePermissionTest extends TestCase {
 		$route = $this->route( array(), array( 82 => 'attachment' ) );
 
 		$this->assertFalse( $route->can_retranscode_item( $this->request( 82 ) ) );
-	}
-
-	/**
-	 * Counts one retranscode, as the route does before sending anything.
-	 *
-	 * @param Transcoding $route Route.
-	 *
-	 * @return bool
-	 */
-	private function claim( Transcoding $route ) {
-		$claim = new \ReflectionMethod( Transcoding::class, 'claim_retranscode_slot' );
-
-		if ( PHP_VERSION_ID < 80100 ) {
-			$claim->setAccessible( true );
-		}
-
-		return $claim->invoke( $route );
-	}
-
-	/**
-	 * Below Editor, the eleventh retranscode in an hour is refused before anything is sent.
-	 */
-	public function test_users_below_editor_have_an_hourly_limit() {
-		$route = $this->route( array( 'edit_post:81' ), array( 81 => 'attachment' ) );
-
-		for ( $i = 0; $i < Transcoding::RETRANSCODE_HOURLY_LIMIT; $i++ ) {
-			$this->assertTrue( $this->claim( $route ), 'Within the limit.' );
-		}
-
-		$this->assertFalse( $this->claim( $route ), 'Over the limit.' );
-
-		$response = $route->retranscode_media( $this->request( 81 ) );
-
-		$this->assertSame( 429, $response->get_status() );
-		$this->assertSame( 'rate_limited', $response->get_data()['reason'] );
-	}
-
-	/**
-	 * The count starts again once the hour is over.
-	 */
-	public function test_the_limit_resets_after_the_hour() {
-		$route = $this->route( array( 'edit_post:81' ), array( 81 => 'attachment' ) );
-
-		$GLOBALS['rtgodam_stub']['transient']['rtgodam_retranscode_count_1'] = array(
-			'count' => Transcoding::RETRANSCODE_HOURLY_LIMIT,
-			'until' => time() - 1,
-		);
-
-		$this->assertTrue( $this->claim( $route ) );
-	}
-
-	/**
-	 * Editors and above are not limited; the bulk Retranscoding page is theirs.
-	 */
-	public function test_editors_are_not_limited() {
-		$route = $this->route( array( 'edit_others_posts' ), array( 81 => 'attachment' ) );
-
-		for ( $i = 0; $i <= Transcoding::RETRANSCODE_HOURLY_LIMIT + 2; $i++ ) {
-			$this->assertTrue( $this->claim( $route ) );
-		}
-
-		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['transient'], 'Nothing is counted for an Editor.' );
 	}
 }

@@ -778,16 +778,6 @@ class Transcoding extends Base {
 	}
 
 	/**
-	 * Most retranscodes a user below Editor can start in an hour. Each one uses
-	 * the site's GoDAM plan, so a loop cannot burn through it.
-	 *
-	 * @since 2.10.0
-	 *
-	 * @var int
-	 */
-	const RETRANSCODE_HOURLY_LIMIT = 10;
-
-	/**
 	 * Permission for the retranscode route: Editors and above can retranscode
 	 * anything, and anyone else can retranscode a media item they can edit,
 	 * such as an Author's own upload. The ID must be a media item: a
@@ -818,55 +808,6 @@ class Transcoding extends Base {
 	}
 
 	/**
-	 * Counts one retranscode against the current user's hourly limit.
-	 *
-	 * Editors and above are not limited: the bulk Retranscoding page is theirs.
-	 *
-	 * @since 2.10.0
-	 *
-	 * @return bool False when the user has used up this hour's retranscodes.
-	 */
-	private function claim_retranscode_slot() {
-		if ( current_user_can( 'edit_others_posts' ) ) {
-			return true;
-		}
-
-		/**
-		 * Filters how many retranscodes a user below Editor can start in an hour.
-		 *
-		 * @since 2.10.0
-		 *
-		 * @param int $limit   Retranscodes per hour. 0 or less turns the limit off.
-		 * @param int $user_id The user.
-		 */
-		$limit = (int) apply_filters( 'rtgodam_retranscode_hourly_limit', self::RETRANSCODE_HOURLY_LIMIT, get_current_user_id() );
-
-		if ( $limit <= 0 ) {
-			return true;
-		}
-
-		$key  = 'rtgodam_retranscode_count_' . get_current_user_id();
-		$now  = time();
-		$used = get_transient( $key );
-
-		if ( ! is_array( $used ) || ! isset( $used['count'], $used['until'] ) || $used['until'] <= $now ) {
-			$used = array(
-				'count' => 0,
-				'until' => $now + HOUR_IN_SECONDS,
-			);
-		}
-
-		if ( $used['count'] >= $limit ) {
-			return false;
-		}
-
-		++$used['count'];
-		set_transient( $key, $used, max( 1, $used['until'] - $now ) );
-
-		return true;
-	}
-
-	/**
 	 * Retranscode media.
 	 *
 	 * This function handles the retranscoding of media files, but skips virtual media
@@ -885,17 +826,6 @@ class Transcoding extends Base {
 					'message' => __( 'Attachment ID not provided', 'godam' ),
 				),
 				400
-			);
-		}
-
-		if ( ! $this->claim_retranscode_slot() ) {
-			return new \WP_REST_Response(
-				array(
-					'message' => __( 'You have started the most retranscodes allowed in an hour. Try again later, or ask an Editor or administrator to retranscode it.', 'godam' ),
-					'skipped' => true,
-					'reason'  => 'rate_limited',
-				),
-				429
 			);
 		}
 
