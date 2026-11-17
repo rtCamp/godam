@@ -207,6 +207,39 @@ class AbilityRulesTest extends TestCase {
 	}
 
 	/**
+	 * Without the MCP Adapter, GoDAM registers no ability and no category, so
+	 * /wp-json/wp-abilities/v1/ lists nothing of GoDAM's.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 *
+	 * @return void
+	 */
+	public function test_nothing_registers_without_the_mcp_adapter() {
+		$GLOBALS['rtgodam_stub']['categories'] = array();
+		// phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
+		eval( 'function wp_register_ability_category( $slug, $args ) { $GLOBALS["rtgodam_stub"]["categories"][] = $slug; }' );
+
+		foreach ( glob( dirname( __DIR__, 2 ) . '/inc/classes/abilities/class-*.php' ) as $file ) {
+			require_once $file;
+		}
+
+		$abilities = ( new \ReflectionClass( Abilities::class ) )->newInstanceWithoutConstructor();
+		$abilities->register_categories();
+		$abilities->register_abilities();
+
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['categories'] );
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['abilities'] );
+
+		define( 'WP_MCP_VERSION', '0.7.1' );
+		$abilities->register_categories();
+		$abilities->register_abilities();
+
+		$this->assertContains( 'godam-media', $GLOBALS['rtgodam_stub']['categories'] );
+		$this->assertArrayHasKey( 'godam/list-media', $GLOBALS['rtgodam_stub']['abilities'] );
+	}
+
+	/**
 	 * With a supported MCP Adapter active, GoDAM abilities are listed on the REST API too.
 	 *
 	 * @runInSeparateProcess

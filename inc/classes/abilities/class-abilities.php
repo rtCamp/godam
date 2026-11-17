@@ -196,13 +196,19 @@ class Abilities {
 	 *
 	 * Categories register on their own hook, which fires before
 	 * `wp_abilities_api_init`; an ability naming an unregistered category is
-	 * rejected.
+	 * rejected. Like the abilities, they register only while a supported MCP
+	 * Adapter is active, so /wp-json/wp-abilities/v1/categories lists no GoDAM
+	 * category without it.
 	 *
 	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
 	public function register_categories() {
+		if ( ! Mcp_Server::adapter_is_supported() ) {
+			return;
+		}
+
 		wp_register_ability_category(
 			'godam-media',
 			array(
@@ -255,11 +261,21 @@ class Abilities {
 	/**
 	 * Registers every GoDAM ability.
 	 *
+	 * Only while a supported MCP Adapter is active: abilities exist for AI agents,
+	 * and without the adapter a site must look exactly as it did before them,
+	 * including on the WordPress Abilities REST API (/wp-json/wp-abilities/v1/).
+	 * Checked here, not in the constructor, because the adapter's plugin file,
+	 * which defines WP_MCP_VERSION, can load after GoDAM's.
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @return void
 	 */
 	public function register_abilities() {
+		if ( ! Mcp_Server::adapter_is_supported() ) {
+			return;
+		}
+
 		$groups = array(
 			Media_Abilities::class,
 			Library_Abilities::class,
