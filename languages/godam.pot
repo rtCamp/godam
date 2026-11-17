@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-17T04:42:03+00:00\n"
+"POT-Creation-Date: 2026-11-17T09:09:56+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -11728,81 +11728,81 @@ msgstr ""
 msgid "On by default. Agents can always read the library. Each change is still limited to what the connected user is allowed to do. Turn this off to stop every change from AI agents."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:209
+#: inc/classes/abilities/class-abilities.php:215
 msgid "GoDAM media"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:210
+#: inc/classes/abilities/class-abilities.php:216
 msgid "Find and inspect media in the GoDAM library, see where it is used, and read transcripts."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:217
+#: inc/classes/abilities/class-abilities.php:223
 msgid "GoDAM library"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:218
+#: inc/classes/abilities/class-abilities.php:224
 msgid "Organise the GoDAM library: folders and media details."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:225
+#: inc/classes/abilities/class-abilities.php:231
 msgid "GoDAM player"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:226
+#: inc/classes/abilities/class-abilities.php:232
 msgid "Interactive layers, chapters and per-video player settings, and placing GoDAM blocks on pages."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:233
+#: inc/classes/abilities/class-abilities.php:239
 msgid "GoDAM settings"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:234
+#: inc/classes/abilities/class-abilities.php:240
 msgid "Site-wide GoDAM player settings."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:241
+#: inc/classes/abilities/class-abilities.php:247
 msgid "GoDAM processing"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:242
+#: inc/classes/abilities/class-abilities.php:248
 msgid "Request transcoding and transcription from GoDAM."
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:249
+#: inc/classes/abilities/class-abilities.php:255
 msgid "GoDAM analytics"
 msgstr ""
 
-#: inc/classes/abilities/class-abilities.php:250
+#: inc/classes/abilities/class-abilities.php:256
 msgid "Video performance, layer and store insights, and account usage."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:228
+#: inc/classes/abilities/class-ability-group.php:239
 msgid "Needs a GoDAM plan: the site must be connected to GoDAM with a verified API key."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:403
+#: inc/classes/abilities/class-ability-group.php:414
 msgid "This needs a GoDAM plan. Connect this site to GoDAM with a verified API key in GoDAM > Settings, then try again."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:488
+#: inc/classes/abilities/class-ability-group.php:499
 msgid "The GoDAM request failed. Try again in a moment. If it keeps failing, see https://godam.io/docs/ai-agents/"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:492
+#: inc/classes/abilities/class-ability-group.php:503
 msgid "Your WordPress user's role does not allow this. Ask a site administrator, or connect as a user who can."
 msgstr ""
 
 #. translators: %d: attachment ID.
-#: inc/classes/abilities/class-ability-group.php:517
+#: inc/classes/abilities/class-ability-group.php:533
 #, php-format
 msgid "No media item with ID %d exists. Use godam/list-media to find IDs."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:631
+#: inc/classes/abilities/class-ability-group.php:647
 msgid "(no title)"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:897
+#: inc/classes/abilities/class-ability-group.php:936
 msgid "Media (attachment) ID, as returned by godam/list-media."
 msgstr ""
 
