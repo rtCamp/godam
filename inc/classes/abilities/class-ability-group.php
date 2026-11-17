@@ -231,6 +231,16 @@ abstract class Ability_Group {
 
 		$args['meta'] = array_replace_recursive( $defaults, $args['meta'] ?? array() );
 
+		/*
+		 * The switches also decide whether the ability runs, not only whether it is
+		 * listed: an MCP server that names GoDAM tools itself, or code calling
+		 * wp_get_ability()->execute(), would otherwise still reach a write the
+		 * administrator turned off.
+		 */
+		if ( isset( $args['permission_callback'] ) ) {
+			$args['permission_callback'] = $this->within_switches( $args['permission_callback'], $writes && ! $public );
+		}
+
 		if ( ! empty( $args['input_schema'] ) ) {
 			$args['input_schema'] = $this->limit_schema( $args['input_schema'] );
 		}
@@ -246,6 +256,39 @@ abstract class Ability_Group {
 		}
 
 		wp_register_ability( $name, $args );
+	}
+
+	/**
+	 * Wraps a permission callback so the ability refuses to run while the MCP
+	 * switch is off, or while it is a write and changes are turned off.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param callable $callback    Permission callback.
+	 * @param bool     $writes_off  Whether this is a write that is turned off.
+	 *
+	 * @return \Closure
+	 */
+	protected function within_switches( $callback, $writes_off ) {
+		return function ( $input = null ) use ( $callback, $writes_off ) {
+			if ( ! Abilities::mcp_enabled() ) {
+				return new \WP_Error(
+					'rtgodam_mcp_off',
+					__( 'GoDAM is turned off for AI agents on this site. A site administrator can turn it on in GoDAM > Settings > General.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+
+			if ( $writes_off ) {
+				return new \WP_Error(
+					'rtgodam_writes_off',
+					__( 'Changes by AI agents are turned off on this site. A site administrator can turn them on in Settings > Writing > GoDAM and AI agents.', 'godam' ),
+					array( 'status' => 403 )
+				);
+			}
+
+			return call_user_func( $callback, $input );
+		};
 	}
 
 	/**
@@ -532,6 +575,74 @@ abstract class Ability_Group {
 				/* translators: %d: attachment ID. */
 				sprintf( __( 'No media item with ID %d exists. Use godam/list-media to find IDs.', 'godam' ), absint( $attachment_id ) ),
 				array( 'status' => 404 )
+			);
+		}
+
+		return $post;
+	}
+
+	/**
+	 * Whether a URL points into the site's uploads folder: the uploads host and
+	 * port, a path under the uploads path, and no ".." or backslash even when
+	 * percent-encoded. Used where the server itself fetches a URL on the site's
+	 * own host, so that pages only the server may open (a status page, an
+	 * IP-locked tool) stay out of reach. Refuses everything when the uploads
+	 * folder is the root of its host, since every path would then match.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $url URL.
+	 *
+	 * @return bool
+	 */
+	protected function is_uploads_url( $url ) {
+		$uploads   = wp_get_upload_dir();
+		$baseurl   = strtolower( rtrim( (string) ( $uploads['baseurl'] ?? '' ), '/' ) );
+		$base_path = rtrim( (string) wp_parse_url( $baseurl, PHP_URL_PATH ), '/' ) . '/';
+		$path      = rawurldecode( (string) wp_parse_url( (string) $url, PHP_URL_PATH ) ); // Decoded, so %2e%2e cannot hide a '..'.
+
+		if ( '' === $baseurl || '/' === $base_path || false !== strpos( $path, '..' ) || false !== strpos( $path, '\\' ) ) {
+			return false;
+		}
+
+		return strtolower( (string) wp_parse_url( $baseurl, PHP_URL_HOST ) ) === strtolower( (string) wp_parse_url( (string) $url, PHP_URL_HOST ) )
+			&& wp_parse_url( $baseurl, PHP_URL_PORT ) === wp_parse_url( (string) $url, PHP_URL_PORT )
+			&& 0 === strpos( strtolower( $path ), $base_path );
+	}
+
+	/**
+	 * Returns the image attachment if the current user may read it, or an error
+	 * an agent can act on.
+	 *
+	 * For abilities that take a second, image ID (a custom thumbnail, a CTA
+	 * image) and turn it into a public URL. An image the user may not read gets
+	 * the same "not found" answer as a missing one, so its URL never reaches
+	 * the agent or the player.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param int    $image_id Image attachment ID.
+	 * @param string $field    Input field the ID came from, for the error message.
+	 *
+	 * @return \WP_Post|\WP_Error
+	 */
+	protected function get_image( $image_id, $field ) {
+		$post = $this->get_attachment( $image_id );
+
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+
+		do_action( 'rtgodam_before_attachment_lookup' );
+		$is_image = wp_attachment_is_image( $post->ID );
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		if ( ! $is_image ) {
+			return new \WP_Error(
+				'rtgodam_not_an_image',
+				/* translators: %s: input field name, e.g. thumbnail_image_id. */
+				sprintf( __( '%s is not an image in the media library. Use godam/list-media with type image to find an image ID.', 'godam' ), $field ),
+				array( 'status' => 400 )
 			);
 		}
 

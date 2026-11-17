@@ -771,12 +771,12 @@ class Media_Abilities extends Ability_Group {
 			return false;
 		}
 
-		$uploads    = wp_get_upload_dir();
-		$site_hosts = array(
-			strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) ),
-			strtolower( (string) wp_parse_url( (string) ( $uploads['baseurl'] ?? '' ), PHP_URL_HOST ) ),
-		);
-
-		return in_array( $host, array_filter( $site_hosts ), true );
+		/*
+		 * On the site's own host, only a caption file in the uploads folder. Anyone who
+		 * can edit the media can store any .vtt or .srt URL as its transcript, and the
+		 * server fetches it without the user's login, so any other path on the site
+		 * (or a page only the server itself may open) stays out of reach.
+		 */
+		return 1 === preg_match( '/\.(vtt|srt)$/i', (string) wp_parse_url( $url, PHP_URL_PATH ) ) && $this->is_uploads_url( $url );
 	}
 }

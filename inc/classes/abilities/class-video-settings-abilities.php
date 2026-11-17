@@ -263,12 +263,11 @@ class Video_Settings_Abilities extends Ability_Group {
 	 */
 	private function validate_thumbnail_input( $attachment_id, array $input ) {
 		if ( ! empty( $input['thumbnail_image_id'] ) ) {
-			do_action( 'rtgodam_before_attachment_lookup' );
-			$is_image = wp_attachment_is_image( absint( $input['thumbnail_image_id'] ) );
-			do_action( 'rtgodam_after_attachment_lookup' );
+			// Read access first: the image's URL becomes the video's public poster.
+			$image = $this->get_image( absint( $input['thumbnail_image_id'] ), 'thumbnail_image_id' );
 
-			if ( ! $is_image ) {
-				return new \WP_Error( 'rtgodam_thumbnail_not_image', __( 'thumbnail_image_id is not an image in the media library. Use godam/list-media with type image to find an image ID.', 'godam' ), array( 'status' => 400 ) );
+			if ( is_wp_error( $image ) ) {
+				return $image;
 			}
 		}
 

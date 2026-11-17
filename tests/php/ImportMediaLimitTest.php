@@ -95,9 +95,29 @@ class ImportMediaLimitTest extends TestCase {
 		);
 		// phpcs:enable Squiz.PHP.Eval.Discouraged
 
-		$reflection = new \ReflectionClass( Library_Abilities::class );
+		if ( ! function_exists( 'home_url' ) ) {
+			eval( 'function home_url() { return "https://site.test"; }' ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
+		}
 
-		return $reflection->newInstanceWithoutConstructor();
+		// The test URLs resolve to a public address, without a DNS lookup.
+		return new class() extends Library_Abilities {
+
+			/**
+			 * Skips the parent's hooks.
+			 */
+			public function __construct() {}
+
+			/**
+			 * A public address for every host.
+			 *
+			 * @param string $host Host.
+			 *
+			 * @return string[]
+			 */
+			protected function resolve_host( $host ) {
+				return array( '93.184.215.14' );
+			}
+		};
 	}
 
 	/**

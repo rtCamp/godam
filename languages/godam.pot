@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-17T11:10:35+00:00\n"
+"POT-Creation-Date: 2026-11-17T12:43:10+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -8675,7 +8675,7 @@ msgstr ""
 #. translators: %s is the layer type label; e.g. "CTA" produces "CTA Layer".
 #. translators: %s is the layer type label; e.g. "CTA Layer".
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/abilities/class-layer-abilities.php:789
+#: inc/classes/abilities/class-layer-abilities.php:794
 #: pages/video-editor/components/SidebarLayers.js:72
 #: pages/video-editor/components/SidebarLayers.js:510
 #, js-format,php-format
@@ -11776,33 +11776,47 @@ msgstr ""
 msgid "Video performance, layer and store insights, and account usage."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:239
+#: inc/classes/abilities/class-ability-group.php:249
 msgid "Needs a GoDAM plan: the site must be connected to GoDAM with a verified API key."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:414
+#: inc/classes/abilities/class-ability-group.php:277
+msgid "GoDAM is turned off for AI agents on this site. A site administrator can turn it on in GoDAM > Settings > General."
+msgstr ""
+
+#: inc/classes/abilities/class-ability-group.php:285
+msgid "Changes by AI agents are turned off on this site. A site administrator can turn them on in Settings > Writing > GoDAM and AI agents."
+msgstr ""
+
+#: inc/classes/abilities/class-ability-group.php:457
 msgid "This needs a GoDAM plan. Connect this site to GoDAM with a verified API key in GoDAM > Settings, then try again."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:499
+#: inc/classes/abilities/class-ability-group.php:542
 msgid "The GoDAM request failed. Try again in a moment. If it keeps failing, see https://godam.io/docs/ai-agents/"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:503
+#: inc/classes/abilities/class-ability-group.php:546
 msgid "Your WordPress user's role does not allow this. Ask a site administrator, or connect as a user who can."
 msgstr ""
 
 #. translators: %d: attachment ID.
-#: inc/classes/abilities/class-ability-group.php:533
+#: inc/classes/abilities/class-ability-group.php:576
 #, php-format
 msgid "No media item with ID %d exists. Use godam/list-media to find IDs."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:647
+#. translators: %s: input field name, e.g. thumbnail_image_id.
+#: inc/classes/abilities/class-ability-group.php:644
+#, php-format
+msgid "%s is not an image in the media library. Use godam/list-media with type image to find an image ID."
+msgstr ""
+
+#: inc/classes/abilities/class-ability-group.php:758
 msgid "(no title)"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:936
+#: inc/classes/abilities/class-ability-group.php:1047
 msgid "Media (attachment) ID, as returned by godam/list-media."
 msgstr ""
 
@@ -12260,23 +12274,19 @@ msgstr ""
 msgid "A card CTA needs at least cta.heading or cta.button_text."
 msgstr ""
 
-#: inc/classes/abilities/class-layer-abilities.php:637
-msgid "cta.image_id is not an image in the media library. Use godam/list-media with type image to find an image ID."
-msgstr ""
-
 #. translators: %s: form plugin name.
-#: inc/classes/abilities/class-layer-abilities.php:726
+#: inc/classes/abilities/class-layer-abilities.php:731
 #, php-format
 msgid "%s is not active on this site, so its forms cannot be shown in a layer. Use godam/list-forms to see which form plugins are active."
 msgstr ""
 
 #. translators: %s: layer type, which is also the name of its settings object.
-#: inc/classes/abilities/class-layer-abilities.php:762
+#: inc/classes/abilities/class-layer-abilities.php:767
 #, php-format
 msgid "A %1$s layer needs its settings in the \"%1$s\" object; see the input schema."
 msgstr ""
 
-#: inc/classes/abilities/class-layer-abilities.php:875
+#: inc/classes/abilities/class-layer-abilities.php:880
 msgid "Layers can only be added to videos, and hotspot layers to images. Use godam/list-media to find a video or image."
 msgstr ""
 
@@ -12389,66 +12399,66 @@ msgstr ""
 msgid "Give at least one of title, caption, description or alt_text."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:481
+#: inc/classes/abilities/class-library-abilities.php:483
 msgid "Give a public http or https URL."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:497
+#: inc/classes/abilities/class-library-abilities.php:499
 msgid "This site cannot take new uploads right now: its upload size limit is zero or its storage space is used up. Delete files to free up space, or ask a site administrator to raise the upload limit."
 msgstr ""
 
 #. translators: %s: maximum allowed file size, e.g. "64 MB".
-#: inc/classes/abilities/class-library-abilities.php:522
+#: inc/classes/abilities/class-library-abilities.php:559
 #, php-format
 msgid "This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library. Use a smaller file, or ask a site administrator to raise the site's maximum upload size."
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:585
+#: inc/classes/abilities/class-library-abilities.php:622
 #, php-format
 msgid "Imported as media ID %1$d, but it could not be put in the folder: %2$s Use godam/move-media-to-folder to move it."
 msgstr ""
 
 #. translators: %s: required disk space in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:617
+#: inc/classes/abilities/class-library-abilities.php:807
 #, php-format
 msgid "Not enough space to import this file. %s KB needed. Free up space by deleting unused media in the Media Library, or ask a network administrator to raise the site's storage limit."
 msgstr ""
 
 #. translators: %s: maximum allowed file size in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:622
+#: inc/classes/abilities/class-library-abilities.php:812
 #, php-format
 msgid "This file is too big. Files must be less than %s KB in size. Use a smaller file, or ask a network administrator to raise the limit in Network Admin > Settings > Network Settings."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:630
+#: inc/classes/abilities/class-library-abilities.php:820
 msgid "You have used your space quota. Please delete files before uploading."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:685
+#: inc/classes/abilities/class-library-abilities.php:875
 msgid "GoDAM Central did not return the media list. Try again in a moment. If it keeps failing, the site owner can contact GoDAM support at https://app.godam.io/helpdesk."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:911
+#: inc/classes/abilities/class-library-abilities.php:1101
 msgid "Give the central_id of an item from godam/list-central-media."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:923
+#: inc/classes/abilities/class-library-abilities.php:1113
 msgid "No media with that central_id is in this site's GoDAM Central account. Use godam/list-central-media to find it."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:931
+#: inc/classes/abilities/class-library-abilities.php:1121
 msgid "GoDAM Central is still processing this media. Check godam/list-central-media again in a few minutes and add it once its status is Transcoded."
 msgstr ""
 
 #. translators: %s: reason the media could not be added.
-#: inc/classes/abilities/class-library-abilities.php:949
+#: inc/classes/abilities/class-library-abilities.php:1139
 #, php-format
 msgid "The media could not be added to the library: %s"
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:968
+#: inc/classes/abilities/class-library-abilities.php:1158
 #, php-format
 msgid "Added as media ID %1$d, but it could not be put in the folder: %2$s"
 msgstr ""
@@ -12778,23 +12788,19 @@ msgstr ""
 msgid "Give thumbnail_url or thumbnail_image_id, not both."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:271
-msgid "thumbnail_image_id is not an image in the media library. Use godam/list-media with type image to find an image ID."
-msgstr ""
-
-#: inc/classes/abilities/class-video-settings-abilities.php:300
+#: inc/classes/abilities/class-video-settings-abilities.php:299
 msgid "thumbnail_url is not one of this video's thumbnails. Pick one from godam/get-video-settings, or use thumbnail_image_id to add an image as a thumbnail."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:427
+#: inc/classes/abilities/class-video-settings-abilities.php:426
 msgid "The player requests ads from ad_tag_url; the video's ad layers are turned off."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:428
+#: inc/classes/abilities/class-video-settings-abilities.php:427
 msgid "The player shows the video's ad layers, if it has any."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:451
+#: inc/classes/abilities/class-video-settings-abilities.php:450
 msgid "These settings are for videos only. Use godam/list-media with type video to find a video."
 msgstr ""
 
@@ -15181,72 +15187,72 @@ msgstr ""
 msgid "Storage limit exceeded (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:825
+#: inc/classes/rest-api/class-transcoding.php:826
 msgid "Attachment ID not provided"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:869
+#: inc/classes/rest-api/class-transcoding.php:870
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Transcoding requests are not allowed in the localhost environment."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:889
+#: inc/classes/rest-api/class-transcoding.php:890
 #, php-format
 msgid "%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this media on GoDAM Central."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:909
+#: inc/classes/rest-api/class-transcoding.php:910
 #, php-format
 msgid "%1$s (ID %2$d) is migrated Vimeo video. Please retranscode this video on GoDAM Central."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: storage usage percent.
-#: inc/classes/rest-api/class-transcoding.php:932
+#: inc/classes/rest-api/class-transcoding.php:933
 #, php-format
 msgid "%1$s (ID %2$d) cannot be retranscoded. Storage limit exceeded (%3$s%%). Please upgrade your plan to continue transcoding."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:953
+#: inc/classes/rest-api/class-transcoding.php:954
 #, php-format
 msgid "%1$s (ID %2$d) cannot be transcoded. HTTP authentication is enabled on your site. Please disable it to allow transcoding."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:990
+#: inc/classes/rest-api/class-transcoding.php:991
 #, php-format
 msgid "%1$s (ID %2$d) is not a document format GoDAM can convert, so it was skipped."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: Why GoDAM could not use the source file.
-#: inc/classes/rest-api/class-transcoding.php:1042
+#: inc/classes/rest-api/class-transcoding.php:1043
 #, php-format
 msgid "%1$s (ID %2$d) cannot be transcoded. %3$s"
 msgstr ""
 
 #. translators: %s: GoDAM Central's own wording of why it refused the file.
-#: inc/classes/rest-api/class-transcoding.php:1050
+#: inc/classes/rest-api/class-transcoding.php:1051
 #, php-format
 msgid "(Details: %s)"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: Why the request failed and whether it will be retried.
-#: inc/classes/rest-api/class-transcoding.php:1070
+#: inc/classes/rest-api/class-transcoding.php:1071
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. %3$s"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:1089
+#: inc/classes/rest-api/class-transcoding.php:1090
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Unknown error"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:1105
+#: inc/classes/rest-api/class-transcoding.php:1106
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""
