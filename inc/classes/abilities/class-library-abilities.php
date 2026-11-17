@@ -477,7 +477,7 @@ class Library_Abilities extends Ability_Group {
 	public function import_media_from_url( $input = array() ) {
 		$url = esc_url_raw( $input['url'] ?? '', array( 'http', 'https' ) );
 
-		if ( ! $url || ! wp_http_validate_url( $url ) ) {
+		if ( ! $url || ! wp_http_validate_url( $url ) || ! $this->is_public_url( $url ) ) {
 			return new \WP_Error( 'rtgodam_invalid_url', __( 'Give a public http or https URL.', 'godam' ), array( 'status' => 400 ) );
 		}
 
@@ -505,12 +505,26 @@ class Library_Abilities extends Ability_Group {
 			return $args;
 		};
 
+		// Every redirect must lead to a public address too, or a public URL could
+		// bounce the download to an internal one.
+		$check_redirect = function ( $location ) {
+			if ( ! $this->is_public_url( (string) $location ) ) {
+				throw new \WpOrg\Requests\Exception( 'A valid URL was not provided.', 'wp_http.redirect_failed' );
+			}
+		};
+
 		add_filter( 'http_request_args', $limit_download ); // phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- sets the response size limit, not the timeout.
+		add_action( 'requests-requests.before_redirect', $check_redirect );
 		$tmp_file = download_url( $url );
+		remove_action( 'requests-requests.before_redirect', $check_redirect );
 		remove_filter( 'http_request_args', $limit_download );
 
+		/*
+		 * download_url() puts the first KB of a failed response's body in the error data.
+		 * Keep only the message, so a failed import never reads back what a server said.
+		 */
 		if ( is_wp_error( $tmp_file ) ) {
-			return $tmp_file;
+			return new \WP_Error( $tmp_file->get_error_code(), $tmp_file->get_error_message(), array( 'status' => 400 ) );
 		}
 
 		if ( (int) filesize( $tmp_file ) > $max_size ) {
@@ -589,6 +603,115 @@ class Library_Abilities extends Ability_Group {
 		}
 
 		return $this->shape_media( $this->attachment_post( $attachment_id ) );
+	}
+
+	/**
+	 * Whether a URL's host is the site itself or resolves only to public addresses.
+	 *
+	 * Core's wp_http_validate_url() refuses private and loopback addresses, but
+	 * before WordPress 6.9.6 and 7.0.3 it let link-local (169.254.0.0/16, where
+	 * cloud servers answer metadata and credential requests) and CGNAT
+	 * (100.64.0.0/10) addresses through. An import saves what it downloads in
+	 * the public uploads folder, so check every address here as well.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $url URL.
+	 *
+	 * @return bool
+	 */
+	protected function is_public_url( $url ) {
+		$host = strtolower( trim( (string) wp_parse_url( $url, PHP_URL_HOST ), '[]' ) );
+
+		if ( '' === $host ) {
+			return false;
+		}
+
+		// The site itself, which core also allows.
+		if ( strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) ) === $host ) {
+			return true;
+		}
+
+		$ips = $this->resolve_host( $host );
+
+		if ( empty( $ips ) ) {
+			return false;
+		}
+
+		foreach ( $ips as $ip ) {
+			if ( ! self::is_public_ip( $ip ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * The IPv4 and IPv6 addresses a host resolves to (the host itself for an IP literal).
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $host Host name or IP address.
+	 *
+	 * @return string[]
+	 */
+	protected function resolve_host( $host ) {
+		if ( filter_var( $host, FILTER_VALIDATE_IP ) ) {
+			return array( $host );
+		}
+
+		$ips = gethostbynamel( $host );
+		$ips = is_array( $ips ) ? $ips : array();
+
+		if ( function_exists( 'dns_get_record' ) ) {
+			$records = @dns_get_record( $host, DNS_AAAA ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- a failed lookup is answered by the empty list.
+
+			foreach ( is_array( $records ) ? $records : array() as $record ) {
+				if ( ! empty( $record['ipv6'] ) ) {
+					$ips[] = $record['ipv6'];
+				}
+			}
+		}
+
+		return $ips;
+	}
+
+	/**
+	 * Whether an IP address is a public one: not private, loopback, link-local,
+	 * reserved or CGNAT, including an IPv4 address mapped into IPv6.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $ip IP address.
+	 *
+	 * @return bool
+	 */
+	public static function is_public_ip( $ip ) {
+		$ip = strtolower( (string) $ip );
+
+		// ::ffff:169.254.169.254 reaches the IPv4 address.
+		if ( 0 === strpos( $ip, '::ffff:' ) && filter_var( substr( $ip, 7 ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+			$ip = substr( $ip, 7 );
+		}
+
+		if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+			return false;
+		}
+
+		if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+			$parts = array_map( 'intval', explode( '.', $ip ) );
+
+			// 100.64.0.0/10 (CGNAT) and 192.0.0.0/24 (IETF protocol assignments).
+			if ( ( 100 === $parts[0] && $parts[1] >= 64 && $parts[1] <= 127 ) || ( 192 === $parts[0] && 0 === $parts[1] && 0 === $parts[2] ) ) {
+				return false;
+			}
+
+			return true;
+		}
+
+		// IPv6 link-local (fe80::/10) and unique local (fc00::/7) addresses.
+		return ! preg_match( '/^(fe[89ab]|f[cd])/', $ip );
 	}
 
 	/**
