@@ -193,6 +193,86 @@ class AbilityRulesTest extends TestCase {
 	}
 
 	/**
+	 * Without the MCP Adapter, nothing is listed on the WordPress Abilities REST API.
+	 *
+	 * @return void
+	 */
+	public function test_rest_api_lists_nothing_without_the_mcp_adapter() {
+		$this->assertFalse( defined( 'WP_MCP_VERSION' ), 'This test needs a process with no adapter loaded.' );
+
+		$read = $this->register( 'godam/list-media' );
+		$this->assertFalse( $read['meta']['show_in_rest'] );
+		$this->assertFalse( $read['meta']['public'] );
+		$this->assertTrue( $read['meta']['mcp']['public'], 'Still offered to MCP once the adapter is installed.' );
+	}
+
+	/**
+	 * Without the MCP Adapter, GoDAM registers no ability and no category, so
+	 * /wp-json/wp-abilities/v1/ lists nothing of GoDAM's.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 *
+	 * @return void
+	 */
+	public function test_nothing_registers_without_the_mcp_adapter() {
+		$GLOBALS['rtgodam_stub']['categories'] = array();
+		// phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
+		eval( 'function wp_register_ability_category( $slug, $args ) { $GLOBALS["rtgodam_stub"]["categories"][] = $slug; }' );
+
+		foreach ( glob( dirname( __DIR__, 2 ) . '/inc/classes/abilities/class-*.php' ) as $file ) {
+			require_once $file;
+		}
+
+		$abilities = ( new \ReflectionClass( Abilities::class ) )->newInstanceWithoutConstructor();
+		$abilities->register_categories();
+		$abilities->register_abilities();
+
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['categories'] );
+		$this->assertSame( array(), $GLOBALS['rtgodam_stub']['abilities'] );
+
+		define( 'WP_MCP_VERSION', '0.7.1' );
+		$abilities->register_categories();
+		$abilities->register_abilities();
+
+		$this->assertContains( 'godam-media', $GLOBALS['rtgodam_stub']['categories'] );
+		$this->assertArrayHasKey( 'godam/list-media', $GLOBALS['rtgodam_stub']['abilities'] );
+	}
+
+	/**
+	 * With a supported MCP Adapter active, GoDAM abilities are listed on the REST API too.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 *
+	 * @return void
+	 */
+	public function test_rest_api_lists_them_with_the_mcp_adapter() {
+		define( 'WP_MCP_VERSION', '0.7.1' );
+
+		$read = $this->register( 'godam/list-media' );
+		$this->assertTrue( $read['meta']['show_in_rest'] );
+		$this->assertTrue( $read['meta']['public'] );
+
+		$GLOBALS['rtgodam_stub']['options'][ Abilities::MCP_ENABLED_OPTION ] = '0';
+		$this->assertFalse( $this->register( 'godam/list-media' )['meta']['show_in_rest'], 'The MCP switch still hides it.' );
+	}
+
+	/**
+	 * An MCP Adapter older than GoDAM supports does not open the REST API either.
+	 *
+	 * @runInSeparateProcess
+	 * @preserveGlobalState disabled
+	 *
+	 * @return void
+	 */
+	public function test_rest_api_lists_nothing_with_an_old_mcp_adapter() {
+		define( 'WP_MCP_VERSION', '0.5.0' );
+
+		$this->assertFalse( $this->register( 'godam/list-media' )['meta']['show_in_rest'] );
+	}
+
+	/**
 	 * On a free site a Central-backed tool says it needs a plan and returns one clear error.
 	 *
 	 * @return void

@@ -147,9 +147,12 @@ abstract class Ability_Group {
 	 *
 	 * Abilities are private unless their meta says otherwise. Reads are made
 	 * public; writes follow the WRITE_ABILITIES_OPTION setting, which is on
-	 * unless an administrator turns it off. Both `meta.public` and
-	 * `meta.mcp.public` are set because the MCP Adapter has read each of them
-	 * in different releases.
+	 * unless an administrator turns it off. `meta.mcp.public` decides what MCP
+	 * servers list. `meta.public` and `meta.show_in_rest` decide what the
+	 * WordPress Abilities REST API lists, and also need a supported MCP Adapter,
+	 * so they can be false while `meta.mcp.public` is true. Keep them apart:
+	 * joining them again would list GoDAM's abilities over REST on sites without
+	 * the adapter, such as GoDAM for WooCommerce's, which register on their own.
 	 *
 	 * The input schema gets length and size limits, and abilities that need a
 	 * GoDAM plan refuse to run on a site without a verified API key.
@@ -208,9 +211,17 @@ abstract class Ability_Group {
 		// and from the WordPress Abilities REST API, so off means off.
 		$mcp_public = $public && Abilities::mcp_enabled();
 
+		// The WordPress Abilities REST API (/wp-json/wp-abilities/v1/) lists them
+		// only while the MCP Adapter is active, so a site that never installed it
+		// exposes nothing new over REST. MCP itself needs the adapter anyway.
+		// WP_MCP_VERSION is defined when the adapter's plugin file loads, before
+		// `wp_abilities_api_init`; an adapter that defined it later would leave
+		// the abilities off REST, never on.
+		$rest_public = $mcp_public && Mcp_Server::adapter_is_supported();
+
 		$defaults = array(
-			'public'       => $mcp_public,
-			'show_in_rest' => $mcp_public,
+			'public'       => $rest_public,
+			'show_in_rest' => $rest_public,
 			'mcp'          => array(
 				'public' => $mcp_public,
 				'type'   => 'tool',
