@@ -193,12 +193,29 @@ if ( ! function_exists( 'get_posts' ) ) {
 	 * Answers the job lookup: the attachments rtgodam_stub_video() registered for the
 	 * job the query asks for. The query is recorded.
 	 *
+	 * A test that sets `title_pages` (post ID => status) also gets only the pages
+	 * whose status the query asks for in `post_status`.
+	 *
 	 * @param array $args Query args; the job is the first meta_query value.
 	 * @return int[]
 	 */
 	function get_posts( $args = array() ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
 		$GLOBALS['rtgodam_stub']['get_posts_args'][] = $args;
 
-		return $GLOBALS['rtgodam_stub']['video_posts'][ $args['meta_query'][0]['value'] ?? '' ] ?? array();
+		$ids = $GLOBALS['rtgodam_stub']['video_posts'][ $args['meta_query'][0]['value'] ?? '' ] ?? array();
+
+		if ( isset( $GLOBALS['rtgodam_stub']['title_pages'] ) ) {
+			$statuses = (array) ( $args['post_status'] ?? array() );
+			$ids      = array_values(
+				array_filter(
+					$ids,
+					static function ( $id ) use ( $statuses ) {
+						return in_array( $GLOBALS['rtgodam_stub']['title_pages'][ $id ] ?? '', $statuses, true );
+					}
+				)
+			);
+		}
+
+		return $ids;
 	}
 }

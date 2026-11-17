@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.9.1
+Stable tag: 2.10.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -273,6 +273,12 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 == Changelog ==
 
+= v2.10.0 (November 17, 2026) =
+
+- Feat: AI agents such as Claude and Cursor can now use GoDAM through MCP. They can find and organise media, add layers and chapters, place GoDAM blocks on pages, change player settings, start processing and read analytics, as the connected WordPress user and within that user's permissions. Needs WordPress 6.9 or later and the MCP Adapter plugin.
+- Tweak: Administrators can turn off the changes an AI agent can make in Settings > Writing > GoDAM and AI agents, or turn MCP off entirely in GoDAM > Settings > General.
+- Tweak: When the MCP Adapter plugin is active, GoDAM's admin pages show a dismissible notice on connecting an AI agent.
+
 = v2.9.1 (November 16, 2026) =
 
 - Fix: Single Video Analytics, a CTA layer's image, Copy block and the WPBakery document cover now load on sites that block the WordPress media REST API for logged-out visitors.
@@ -284,10 +290,6 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 - Tweak: A layer's front-end script now loads only on pages that show that kind of layer, instead of on every page with a GoDAM video.
 - Tweak: GoDAM's own layers (CTA, forms, hotspots, polls and ads) now run on the Layer API. Layers you already added keep working as before.
 - Tweak: The old add-on layer hooks (`godam_video_editor_layer_options`, `godam_video_editor_layer_components`, `godam_player_render_layer` and the `window.godamLayer*` globals) are deprecated and will be removed in 2.11.0. They keep working until then, with a deprecation notice.
-
-= v2.8.1 (November 11, 2026) =
-
-- Fix: Security fixes.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
