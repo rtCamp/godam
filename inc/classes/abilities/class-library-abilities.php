@@ -679,7 +679,7 @@ class Library_Abilities extends Ability_Group {
 
 	/**
 	 * Whether an IP address is a public one: not private, loopback, link-local,
-	 * reserved or CGNAT, including an IPv4 address mapped into IPv6.
+	 * reserved or CGNAT, including an IPv4 address carried inside an IPv6 one.
 	 *
 	 * @since 2.10.0
 	 *
@@ -688,12 +688,12 @@ class Library_Abilities extends Ability_Group {
 	 * @return bool
 	 */
 	public static function is_public_ip( $ip ) {
-		$ip = strtolower( (string) $ip );
+		$ip = (string) $ip;
 
-		// ::ffff:169.254.169.254 reaches the IPv4 address.
-		if ( 0 === strpos( $ip, '::ffff:' ) && filter_var( substr( $ip, 7 ), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
-			$ip = substr( $ip, 7 );
-		}
+		// Checked on the address's bytes, so every spelling gets the same answer:
+		// ::ffff:a9fe:a9fe is 169.254.169.254, and PHP before 8.2 compares IPv6
+		// addresses as text.
+		$ip = filter_var( $ip, FILTER_VALIDATE_IP ) ? (string) inet_ntop( self::embedded_ipv4( inet_pton( $ip ) ) ) : '';
 
 		if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
 			return false;
@@ -1095,5 +1095,36 @@ class Library_Abilities extends Ability_Group {
 		}
 
 		return $this->shape_media( $this->attachment_post( $attachment_id ) );
+	}
+
+	/**
+	 * The IPv4 address an IPv6 address carries, when it has one, so the IPv4
+	 * rules apply to it: IPv4-mapped (::ffff:0:0/96), IPv4-compatible (::/96),
+	 * NAT64 (64:ff9b::/96) and 6to4 (2002::/16). Any other address is returned
+	 * as it is.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $packed Address in inet_pton() form.
+	 *
+	 * @return string Address in inet_pton() form.
+	 */
+	private static function embedded_ipv4( $packed ) {
+		if ( 16 !== strlen( $packed ) ) {
+			return $packed;
+		}
+
+		$carriers = array(
+			str_repeat( "\0", 10 ) . "\xff\xff",        // IPv4-mapped.
+			str_repeat( "\0", 12 ),                      // IPv4-compatible.
+			"\0\x64\xff\x9b" . str_repeat( "\0", 8 ), // NAT64.
+		);
+
+		if ( in_array( substr( $packed, 0, 12 ), $carriers, true ) ) {
+			return substr( $packed, 12 );
+		}
+
+		// 6to4 carries the IPv4 address right after its 2002 prefix.
+		return "\x20\x02" === substr( $packed, 0, 2 ) ? substr( $packed, 2, 4 ) : $packed;
 	}
 }
