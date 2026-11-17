@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-17T09:09:56+00:00\n"
+"POT-Creation-Date: 2026-11-17T09:48:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -8675,7 +8675,7 @@ msgstr ""
 #. translators: %s is the layer type label; e.g. "CTA" produces "CTA Layer".
 #. translators: %s is the layer type label; e.g. "CTA Layer".
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/abilities/class-layer-abilities.php:789
+#: inc/classes/abilities/class-layer-abilities.php:794
 #: pages/video-editor/components/SidebarLayers.js:72
 #: pages/video-editor/components/SidebarLayers.js:510
 #, js-format,php-format
@@ -11798,11 +11798,17 @@ msgstr ""
 msgid "No media item with ID %d exists. Use godam/list-media to find IDs."
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:647
+#. translators: %s: input field name, e.g. thumbnail_image_id.
+#: inc/classes/abilities/class-ability-group.php:572
+#, php-format
+msgid "%s is not an image in the media library. Use godam/list-media with type image to find an image ID."
+msgstr ""
+
+#: inc/classes/abilities/class-ability-group.php:686
 msgid "(no title)"
 msgstr ""
 
-#: inc/classes/abilities/class-ability-group.php:936
+#: inc/classes/abilities/class-ability-group.php:975
 msgid "Media (attachment) ID, as returned by godam/list-media."
 msgstr ""
 
@@ -12260,23 +12266,19 @@ msgstr ""
 msgid "A card CTA needs at least cta.heading or cta.button_text."
 msgstr ""
 
-#: inc/classes/abilities/class-layer-abilities.php:637
-msgid "cta.image_id is not an image in the media library. Use godam/list-media with type image to find an image ID."
-msgstr ""
-
 #. translators: %s: form plugin name.
-#: inc/classes/abilities/class-layer-abilities.php:726
+#: inc/classes/abilities/class-layer-abilities.php:731
 #, php-format
 msgid "%s is not active on this site, so its forms cannot be shown in a layer. Use godam/list-forms to see which form plugins are active."
 msgstr ""
 
 #. translators: %s: layer type, which is also the name of its settings object.
-#: inc/classes/abilities/class-layer-abilities.php:762
+#: inc/classes/abilities/class-layer-abilities.php:767
 #, php-format
 msgid "A %1$s layer needs its settings in the \"%1$s\" object; see the input schema."
 msgstr ""
 
-#: inc/classes/abilities/class-layer-abilities.php:875
+#: inc/classes/abilities/class-layer-abilities.php:880
 msgid "Layers can only be added to videos, and hotspot layers to images. Use godam/list-media to find a video or image."
 msgstr ""
 
@@ -12398,57 +12400,57 @@ msgid "This site cannot take new uploads right now: its upload size limit is zer
 msgstr ""
 
 #. translators: %s: maximum allowed file size, e.g. "64 MB".
-#: inc/classes/abilities/class-library-abilities.php:522
+#: inc/classes/abilities/class-library-abilities.php:536
 #, php-format
 msgid "This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library. Use a smaller file, or ask a site administrator to raise the site's maximum upload size."
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:585
+#: inc/classes/abilities/class-library-abilities.php:599
 #, php-format
 msgid "Imported as media ID %1$d, but it could not be put in the folder: %2$s Use godam/move-media-to-folder to move it."
 msgstr ""
 
 #. translators: %s: required disk space in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:617
+#: inc/classes/abilities/class-library-abilities.php:740
 #, php-format
 msgid "Not enough space to import this file. %s KB needed. Free up space by deleting unused media in the Media Library, or ask a network administrator to raise the site's storage limit."
 msgstr ""
 
 #. translators: %s: maximum allowed file size in kilobytes.
-#: inc/classes/abilities/class-library-abilities.php:622
+#: inc/classes/abilities/class-library-abilities.php:745
 #, php-format
 msgid "This file is too big. Files must be less than %s KB in size. Use a smaller file, or ask a network administrator to raise the limit in Network Admin > Settings > Network Settings."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:630
+#: inc/classes/abilities/class-library-abilities.php:753
 msgid "You have used your space quota. Please delete files before uploading."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:685
+#: inc/classes/abilities/class-library-abilities.php:808
 msgid "GoDAM Central did not return the media list. Try again in a moment. If it keeps failing, the site owner can contact GoDAM support at https://app.godam.io/helpdesk."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:911
+#: inc/classes/abilities/class-library-abilities.php:1034
 msgid "Give the central_id of an item from godam/list-central-media."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:923
+#: inc/classes/abilities/class-library-abilities.php:1046
 msgid "No media with that central_id is in this site's GoDAM Central account. Use godam/list-central-media to find it."
 msgstr ""
 
-#: inc/classes/abilities/class-library-abilities.php:931
+#: inc/classes/abilities/class-library-abilities.php:1054
 msgid "GoDAM Central is still processing this media. Check godam/list-central-media again in a few minutes and add it once its status is Transcoded."
 msgstr ""
 
 #. translators: %s: reason the media could not be added.
-#: inc/classes/abilities/class-library-abilities.php:949
+#: inc/classes/abilities/class-library-abilities.php:1072
 #, php-format
 msgid "The media could not be added to the library: %s"
 msgstr ""
 
 #. translators: 1: attachment ID, 2: reason the move failed.
-#: inc/classes/abilities/class-library-abilities.php:968
+#: inc/classes/abilities/class-library-abilities.php:1091
 #, php-format
 msgid "Added as media ID %1$d, but it could not be put in the folder: %2$s"
 msgstr ""
@@ -12778,23 +12780,19 @@ msgstr ""
 msgid "Give thumbnail_url or thumbnail_image_id, not both."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:271
-msgid "thumbnail_image_id is not an image in the media library. Use godam/list-media with type image to find an image ID."
-msgstr ""
-
-#: inc/classes/abilities/class-video-settings-abilities.php:300
+#: inc/classes/abilities/class-video-settings-abilities.php:299
 msgid "thumbnail_url is not one of this video's thumbnails. Pick one from godam/get-video-settings, or use thumbnail_image_id to add an image as a thumbnail."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:427
+#: inc/classes/abilities/class-video-settings-abilities.php:426
 msgid "The player requests ads from ad_tag_url; the video's ad layers are turned off."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:428
+#: inc/classes/abilities/class-video-settings-abilities.php:427
 msgid "The player shows the video's ad layers, if it has any."
 msgstr ""
 
-#: inc/classes/abilities/class-video-settings-abilities.php:451
+#: inc/classes/abilities/class-video-settings-abilities.php:450
 msgid "These settings are for videos only. Use godam/list-media with type video to find a video."
 msgstr ""
 
