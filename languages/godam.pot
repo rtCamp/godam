@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-17T11:59:32+00:00\n"
+"POT-Creation-Date: 2026-11-17T12:43:10+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -1759,7 +1759,7 @@ msgstr ""
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:337
 #: assets/src/js/godam-player/engagement.js:1124
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:136
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:141
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:144
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:400
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:153
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:535
@@ -3404,7 +3404,7 @@ msgstr ""
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/AiAgentsNotice.jsx:57
-msgid "New: use GoDAM from your AI agent."
+msgid "New: Use GoDAM from your AI agent."
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
@@ -5541,7 +5541,7 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/help.min.js:2
 #: pages/godam/App.js:46
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:102
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:105
 #: pages/help/App.js:55
 msgid "General Settings"
 msgstr ""
@@ -5788,7 +5788,7 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:136
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:141
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:144
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:400
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:153
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:535
@@ -6080,27 +6080,27 @@ msgid "Change this in Settings › Writing"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:107
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:110
 msgid "Enable folder organization in media library."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:110
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:113
 msgid "This setting is managed by your site administrator and can’t be changed here."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:111
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:114
 msgid "Keep this option enabled to organize media into folders within the media library. Disabling it will remove folder organization."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:122
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:125
 msgid "Enable GTM Tracking"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:123
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:126
 msgid "Enable Google Tag Manager video tracking for analytics and conversion tracking."
 msgstr ""
 
