@@ -15,6 +15,7 @@ import { info } from '@wordpress/icons';
  */
 import { ERROR_TYPE } from '../shared/enums';
 import AnalyticsUnavailableNotice from '../shared/AnalyticsUnavailableNotice';
+import TrialDaysNotice from '../shared/TrialDaysNotice';
 import AnalyticsSectionError from '../shared/AnalyticsSectionError';
 import { generateCountryHeatmap } from '../analytics/helper';
 import { useFetchDashboardMetricsQuery, useFetchDashboardMetricsHistoryQuery, useFetchRevenueSummaryQuery, useFetchVideoFunnelQuery } from './redux/api/dashboardAnalyticsApi';
@@ -426,6 +427,9 @@ const Dashboard = () => {
 			</div>
 
 			{ analyticsUnreachable && <AnalyticsUnavailableNotice area="dashboard" /> }
+
+			{ /* On a GoDAM trial: how many days are left, with a link to upgrade (#114). */ }
+			<TrialDaysNotice area="dashboard" />
 
 			<div id="dashboard-container" className="dashboard-container hidden">
 				<div className="godam-dashboard-head">
