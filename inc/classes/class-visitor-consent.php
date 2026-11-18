@@ -76,7 +76,7 @@ class Visitor_Consent {
 	 * Stored as `rtgodam-settings` > general > `enable_visitor_tracking`; on unless
 	 * an administrator turned it off.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.1
 	 *
 	 * @return bool
 	 */
@@ -111,7 +111,7 @@ class Visitor_Consent {
 		 * not need this: GoDAM waits for "statistics" consent on its own.
 		 *
 		 * @since 2.8.0
-		 * @since n.e.x.t The default follows the "Track visitors" setting.
+		 * @since 2.10.1 The default follows the "Track visitors" setting.
 		 *
 		 * @param bool $enabled Whether visitor tracking is on. Default: the "Track
 		 *                      visitors" setting in GoDAM > Settings > General (on).
@@ -233,7 +233,7 @@ class Visitor_Consent {
 	/**
 	 * Suggested text for the site's privacy policy (Settings > Privacy).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.1
 	 *
 	 * @return string HTML.
 	 */
@@ -267,7 +267,7 @@ class Visitor_Consent {
 	/**
 	 * Suggest GoDAM's text in the privacy policy guide.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.10.1
 	 *
 	 * @return void
 	 */

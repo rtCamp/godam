@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * GoDAM Central sends `connected`, `trial`, `expired` or `none` as `connection_status`
  * from `verify_api_key`. `unreachable` is the plugin's own: Central didn't answer.
  *
- * @since n.e.x.t
+ * @since 2.10.1
  */
 class Connection_Status {
 

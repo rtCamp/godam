@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.10.0
+Stable tag: 2.10.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -273,6 +273,15 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 == Changelog ==
 
+= v2.10.1 (November 19, 2026) =
+
+- Feat: The media library now says why a transcode failed and what to do next, in the list view, the grid view's warning tooltip and the attachment details panel. Needs GoDAM Central v2.12.1; files that failed earlier show the generic message.
+- Feat: The GoDAM dashboard and the Media Library show how many days are left in a trial, with a link to upgrade. When a plan has expired, GoDAM offers to renew it instead of showing the signup screens.
+- Tweak: A new "Track visitors" setting in GoDAM > Settings > General turns visitor tracking off. It is on by default, and the `godam_visitor_tracking_enabled` filter still overrides it.
+- Tweak: GoDAM now suggests privacy-policy text in Settings > Privacy > Policy Guide, and the readme lists what GoDAM stores in the visitor's browser.
+- Fix: Fluent Forms and Ninja Forms recorder uploads, likes and comments now work on pages served from a full-page cache.
+- Fix: Fluent Forms and Ninja Forms recorder uploads accept only the form's recorder field, and only audio and video files.
+
 = v2.10.0 (November 17, 2026) =
 
 - Feat: AI agents such as Claude and Cursor can now use GoDAM through MCP. They can find and organise media, add layers and chapters, place GoDAM blocks on pages, change player settings, start processing and read analytics, as the connected WordPress user and within that user's permissions. Needs WordPress 6.9 or later and the MCP Adapter plugin.
@@ -283,13 +292,6 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 - Fix: Single Video Analytics, a CTA layer's image, Copy block and the WPBakery document cover now load on sites that block the WordPress media REST API for logged-out visitors.
 - Fix: A CTA layer's image is no longer removed when it fails to load for a reason other than being deleted.
-
-= v2.9.0 (November 12, 2026) =
-
-- Feat: Developers can now build their own layer types for GoDAM videos and images with the Layer API: describe the layer in a `layer.json` file and register it from PHP, the video editor and the front end, the way blocks are built. Custom layers appear in the "Add layer" menu and render in the player and the GoDAM Image block.
-- Tweak: A layer's front-end script now loads only on pages that show that kind of layer, instead of on every page with a GoDAM video.
-- Tweak: GoDAM's own layers (CTA, forms, hotspots, polls and ads) now run on the Layer API. Layers you already added keep working as before.
-- Tweak: The old add-on layer hooks (`godam_video_editor_layer_options`, `godam_video_editor_layer_components`, `godam_player_render_layer` and the `window.godamLayer*` globals) are deprecated and will be removed in 2.11.0. They keep working until then, with a deprecation notice.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.

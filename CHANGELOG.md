@@ -1,5 +1,14 @@
 # Changelog #
 
+## v2.10.1 (November 19, 2026) ##
+
+- Feat: The media library now says why a transcode failed and what to do next, in the list view, the grid view's warning tooltip and the attachment details panel. Needs GoDAM Central v2.12.1; files that failed earlier show the generic message.
+- Feat: The GoDAM dashboard and the Media Library show how many days are left in a trial, with a link to upgrade. When a plan has expired, GoDAM offers to renew it instead of showing the signup screens.
+- Tweak: A new "Track visitors" setting in GoDAM > Settings > General turns visitor tracking off. It is on by default, and the `godam_visitor_tracking_enabled` filter still overrides it.
+- Tweak: GoDAM now suggests privacy-policy text in Settings > Privacy > Policy Guide, and the readme lists what GoDAM stores in the visitor's browser.
+- Fix: Fluent Forms and Ninja Forms recorder uploads, likes and comments now work on pages served from a full-page cache.
+- Fix: Fluent Forms and Ninja Forms recorder uploads accept only the form's recorder field, and only audio and video files.
+
 ## v2.10.0 (November 17, 2026) ##
 
 - Feat: AI agents such as Claude and Cursor can now use GoDAM through MCP. They can find and organise media, add layers and chapters, place GoDAM blocks on pages, change player settings, start processing and read analytics, as the connected WordPress user and within that user's permissions. Needs WordPress 6.9 or later and the MCP Adapter plugin.
