@@ -8,10 +8,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { isRefusal } from '../../transcoding-status/refusal';
+import { isLinkable, link } from '../../transcoding-status/failure';
 
 const PANEL_CLASS = 'godam-transcoding-refusal';
-
-const PLANS_URL = 'https://app.godam.io/web/billing?tab=Plans';
 
 /**
  * Build an element with a class and optional text.
@@ -92,19 +91,46 @@ const retranscode = async ( model, button, status ) => {
 };
 
 /**
- * Show why GoDAM Central refused to transcode an attachment, at the top of the
- * attachment details sidebar: the plain reason, what to do about it, and Central's own
- * wording for support.
+ * The panel's heading for each kind of failure (see rtgodam_get_transcoding_failure()).
+ *
+ * @param {string} kind The failure's kind.
+ *
+ * @return {string} The heading.
+ */
+const titleFor = ( kind ) => {
+	switch ( kind ) {
+		case 'retrying':
+			return __( 'Transcoding will be retried', 'godam' );
+		case 'stalled':
+			return __( 'Transcoding is taking longer than expected', 'godam' );
+		default:
+			return __( 'This file couldn\'t be transcoded', 'godam' );
+	}
+};
+
+/**
+ * Show why a file's transcode failed or seems stuck, at the top of the attachment details
+ * sidebar: the reason, what to do about it, and for a refusal Central's own wording for
+ * support.
+ *
+ * Everything shown comes from `transcoding_failure` (rtgodam_get_transcoding_failure_for_display()),
+ * which is always the plugin's own translated wording, never Central's raw error.
  *
  * @param {Object} view An Attachment.Details view (one- or two-column).
  */
 const renderTranscodingRefusalPanel = ( view ) => {
 	const model = view.model;
 	const info = view.el.querySelector( '.attachment-info' );
+	const failure = model.get( 'transcoding_failure' );
 
 	view.el.querySelectorAll( `.${ PANEL_CLASS }` ).forEach( ( node ) => node.remove() );
 
-	if ( ! info || 'failed' !== model.get( 'transcoding_status' ) || ! isRefusal( model.get( 'transcoding_error_code' ) ) ) {
+	if ( ! info || ! failure?.message ) {
+		return;
+	}
+
+	// A stuck file is still `queued` or `transcoding`; anything else must have failed.
+	if ( 'stalled' !== failure.kind && 'failed' !== model.get( 'transcoding_status' ) ) {
 		return;
 	}
 
@@ -112,26 +138,33 @@ const renderTranscodingRefusalPanel = ( view ) => {
 	panel.setAttribute( 'role', 'status' );
 
 	panel.append(
-		el( 'p', `${ PANEL_CLASS }__title`, __( 'This file couldn\'t be transcoded', 'godam' ) ),
-		el( 'p', `${ PANEL_CLASS }__reason`, model.get( 'transcoding_error_msg' ) || __( 'This file can\'t be transcoded.', 'godam' ) ),
+		el( 'p', `${ PANEL_CLASS }__title`, titleFor( failure.kind ) ),
+		el( 'p', `${ PANEL_CLASS }__reason`, failure.message ),
 	);
+
+	// "Upload a smaller file" and the like: nothing to click, so say it.
+	if ( failure.next_step && ! failure.next_step_url && String( failure.action ).startsWith( 'upload_' ) ) {
+		panel.append( el( 'p', `${ PANEL_CLASS }__next-step`, failure.next_step ) );
+	}
 
 	const actions = el( 'div', `${ PANEL_CLASS }__actions` );
 	const status = el( 'p', `${ PANEL_CLASS }__status` );
 
-	if ( model.get( 'transcoding_error_needs_plan' ) ) {
-		const upgrade = el( 'a', 'button', __( 'Upgrade plan', 'godam' ) );
-		upgrade.href = PLANS_URL;
-		upgrade.target = '_blank';
-		upgrade.rel = 'noopener noreferrer';
-		actions.append( upgrade );
+	if ( failure.next_step && isLinkable( failure.next_step_url ) ) {
+		actions.append( link( failure.next_step_url, failure.next_step, 'button' ) );
 	}
 
-	if ( model.get( 'transcoding_can_retranscode' ) ) {
+	// While the plugin is still retrying on its own, a manual retry would only race it, and a
+	// failure that would happen the same way again (a password-protected document) gets none.
+	if ( model.get( 'transcoding_can_retranscode' ) && 'retrying' !== failure.kind && false !== failure.retryable ) {
 		const button = el( 'button', 'button', __( 'Retranscode', 'godam' ) );
 		button.type = 'button';
 		button.addEventListener( 'click', () => retranscode( model, button, status ) );
 		actions.append( button );
+	}
+
+	if ( isLinkable( failure.support_url ) ) {
+		actions.append( link( failure.support_url, __( 'Contact support', 'godam' ), `${ PANEL_CLASS }__support` ) );
 	}
 
 	if ( actions.childElementCount ) {
@@ -140,7 +173,7 @@ const renderTranscodingRefusalPanel = ( view ) => {
 
 	panel.append( status );
 
-	const detail = model.get( 'transcoding_error_detail' );
+	const detail = isRefusal( failure.code ) ? model.get( 'transcoding_error_detail' ) : '';
 
 	if ( detail ) {
 		const details = el( 'details', `${ PANEL_CLASS }__details` );

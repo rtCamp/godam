@@ -130,13 +130,46 @@ class Media_Tracker {
 
 		if ( ! empty( $data[ $attachment_id ]['status'] ) ) {
 			$status = $data[ $attachment_id ]['status'];
-			if ( 'failed' === $status && isset( $data[ $attachment_id ]['error_code'] ) && '404' === $data[ $attachment_id ]['error_code'] ) {
-				return 'not_found';
-			}
-			return $status;
+
+			return self::status_with_not_found( $status, 'failed' === $status ? $this->get_stored_error_code( $attachment_id ) : '' );
 		}
 
 		return '';
+	}
+
+	/**
+	 * `not_found` for a failed file Central answered with a 404 (it couldn't fetch the file,
+	 * which a CDN in front of the site can cause), otherwise the status as it is.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $status     The status route's status.
+	 * @param string $error_code The error code stored for the file.
+	 *
+	 * @return string
+	 */
+	public static function status_with_not_found( $status, $error_code ) {
+		return 'failed' === $status && '404' === (string) $error_code ? 'not_found' : $status;
+	}
+
+	/**
+	 * The error code stored for the file, as Central sent it.
+	 *
+	 * Read here rather than from the status route: that route is public, so its `error_code`
+	 * is the plugin's own reason code (download, unknown, ...), never Central's raw code.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 *
+	 * @return string
+	 */
+	private function get_stored_error_code( $attachment_id ) {
+		/** This action is documented in admin/godam-transcoder-functions.php */
+		do_action( 'rtgodam_before_attachment_lookup' );
+		try {
+			return (string) get_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', true );
+		} finally {
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
 	}
 
 	/**

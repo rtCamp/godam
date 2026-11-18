@@ -465,9 +465,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 
 		// only display the check status button for media that are transcoding.
 		$transcoding_status = get_post_meta( $post_id, 'rtgodam_transcoding_status', true );
-		$preflight_reason   = rtgodam_is_job_refusal( get_post_meta( $post_id, 'rtgodam_transcoding_error_code', true ) )
-			? get_post_meta( $post_id, 'rtgodam_transcoding_error_msg', true )
-			: '';
+		$failure            = rtgodam_get_transcoding_failure_for_display( $post_id );
 	} finally {
 		do_action( 'rtgodam_after_attachment_lookup' );
 	}
@@ -476,7 +474,9 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		return;
 	}
 
-	if ( empty( $transcoded_files ) && in_array( strtolower( (string) $transcoding_status ), array( 'failed', 'blocked' ), true ) ) {
+	$is_stalled = ! empty( $failure ) && 'stalled' === $failure['kind'];
+
+	if ( empty( $transcoded_files ) && ( $is_stalled || in_array( strtolower( (string) $transcoding_status ), array( 'failed', 'blocked' ), true ) ) ) {
 		// Show error indicator for both: items where Central rejected the job (no job_id)
 		// and items where the job was accepted but later failed. JS polling will update
 		// this element if a subsequent retry succeeds.
@@ -487,8 +487,9 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 					<path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
 				</svg>
 			</div>
-			<?php if ( '' !== $preflight_reason ) : ?>
-				<span class="status-text"><?php echo esc_html( $preflight_reason ); ?></span>
+			<?php if ( ! empty( $failure ) ) : ?>
+				<span class="status-text"><?php echo esc_html( $failure['message'] ); ?></span>
+				<?php rtgodam_render_transcoding_next_step( $failure ); ?>
 			<?php else : ?>
 				<span class="status-text"><?php esc_html_e( 'Transcoding failed, please try again.', 'godam' ); ?></span>
 			<?php endif; ?>
@@ -518,6 +519,34 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 		</div>
 		<?php
 	}
+}
+
+/**
+ * Print what to do about a failed transcode under its reason in the media list table.
+ *
+ * Mirrors renderNextStep() in assets/src/js/media-library/transcoding-status/failure.js,
+ * which redraws it while the page polls.
+ *
+ * @since n.e.x.t
+ *
+ * @param array $failure From rtgodam_get_transcoding_failure_for_display().
+ */
+function rtgodam_render_transcoding_next_step( $failure ) {
+	if ( empty( $failure['next_step'] ) && empty( $failure['support_url'] ) ) {
+		return;
+	}
+	?>
+	<span class="status-next-step">
+		<?php if ( ! empty( $failure['next_step'] ) && ! empty( $failure['next_step_url'] ) ) : ?>
+			<a href="<?php echo esc_url( $failure['next_step_url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $failure['next_step'] ); ?></a>
+		<?php elseif ( ! empty( $failure['next_step'] ) ) : ?>
+			<?php echo esc_html( $failure['next_step'] ); ?>
+		<?php endif; ?>
+		<?php if ( ! empty( $failure['support_url'] ) ) : ?>
+			<a href="<?php echo esc_url( $failure['support_url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Contact support', 'godam' ); ?></a>
+		<?php endif; ?>
+	</span>
+	<?php
 }
 
 /**
