@@ -683,7 +683,7 @@ function rtgodam_verify_api_key( $api_key, $save = false, $timeout = Api_Key::VE
 		// Central says why with `connection_status` (expired, or none for a key it doesn't
 		// know). Only the stored key's answer is kept: a mistyped new key changes nothing.
 		if ( $has_existing_key ) {
-			\RTGODAM\Inc\Helpers\Connection::record( $body['message'], false );
+			\RTGODAM\Inc\Helpers\Connection::record( $body['message'], false, (int) $status_code );
 		}
 
 		if ( $has_existing_key && ( Api_Key_Status::VALID === $previous_status ) ) {
@@ -709,7 +709,13 @@ function rtgodam_verify_api_key( $api_key, $save = false, $timeout = Api_Key::VE
 		// Connected or on a trial, and when the trial ends. Kept for the stored key, or for
 		// a new key being saved now.
 		if ( $save || $existing_api_key === $api_key ) {
-			\RTGODAM\Inc\Helpers\Connection::record( $body['message'], true );
+			// A different key: forget the previous key's answer first, so its organization
+			// doesn't carry over to this key's renewal link.
+			if ( $existing_api_key !== $api_key ) {
+				\RTGODAM\Inc\Helpers\Connection::clear();
+			}
+
+			\RTGODAM\Inc\Helpers\Connection::record( $body['message'], true, (int) $status_code );
 		}
 
 		if ( $save ) {

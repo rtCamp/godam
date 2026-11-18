@@ -62,18 +62,26 @@ class Connection {
 	 *
 	 * @since n.e.x.t
 	 *
-	 * @param array $message   The `message` of Central's `verify_api_key` answer.
-	 * @param bool  $succeeded Whether Central accepted the key (HTTP 200).
+	 * @param array $message     The `message` of Central's `verify_api_key` answer.
+	 * @param bool  $succeeded   Whether Central accepted the key (HTTP 200).
+	 * @param int   $http_status Central's HTTP status code; 0 when unknown.
 	 *
 	 * @return void
 	 */
-	public static function record( $message, $succeeded ) {
+	public static function record( $message, $succeeded, $http_status = 0 ) {
 		$message = is_array( $message ) ? $message : array();
 		$status  = isset( $message['connection_status'] ) ? sanitize_key( $message['connection_status'] ) : '';
 
 		if ( ! in_array( $status, Connection_Status::from_central(), true ) ) {
-			// An older Central: only a success says anything for sure.
-			$status = $succeeded ? Connection_Status::CONNECTED : '';
+			// An older Central: a success is connected, and a 401 is a key it doesn't know
+			// (the connect screens, not renewal). Anything else falls back to the key status.
+			if ( $succeeded ) {
+				$status = Connection_Status::CONNECTED;
+			} elseif ( 401 === (int) $http_status ) {
+				$status = Connection_Status::NONE;
+			} else {
+				$status = '';
+			}
 		} elseif ( $succeeded && Connection_Status::NONE === $status ) {
 			// The key works but Central has no subscription to read yet (one still being
 			// set up). The connect screen would be wrong: the key status decides instead.

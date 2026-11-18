@@ -32,6 +32,8 @@ $rtgodam_uninstall_options = array(
 	'rtgodam-account-token',
 	'rtgodam-api-key-status',
 	'rtgodam-api-key-error-since',
+	'rtgodam-connection',
+	'rtgodam-subscription-ended-notice-dismissed',
 );
 
 $rtgodam_uninstall_transients = array(

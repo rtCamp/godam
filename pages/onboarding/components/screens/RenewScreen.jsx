@@ -20,7 +20,11 @@ import { config, STEPS, SUPPORT_URL } from '../../utils/constants';
 /**
  * Ask GoDAM Central again whether the stored key is live (Settings → Refresh status).
  *
- * @return {Promise<boolean>} True once the key is valid again.
+ * The refresh route answers 200 even when it couldn't reach Central: it says so with
+ * `api_key_status: verification_failed`. A failed request (an expired nonce, a server
+ * error) isn't an answer about the plan either.
+ *
+ * @return {Promise<{ok: boolean, valid: boolean, status: string}>} Whether the request worked, whether the key is valid again, and its status.
  */
 export const checkConnectionAgain = async () => {
 	const response = await window.fetch( `${ config.restUrl || '/wp-json/' }godam/v1/settings/refresh-api-key-status`, {
@@ -28,10 +32,23 @@ export const checkConnectionAgain = async () => {
 		credentials: 'same-origin',
 		headers: { 'X-WP-Nonce': config.nonce || window.wpApiSettings?.nonce || '' },
 	} );
-	const body = await response.json();
+	const body = await response.json().catch( () => ( {} ) );
 
-	return !! body?.valid_api_key;
+	return {
+		ok: !! response.ok,
+		valid: !! body?.valid_api_key,
+		status: String( body?.api_key_status || '' ),
+	};
 };
+
+/**
+ * Whether a check couldn't get an answer about the plan.
+ *
+ * @param {{ok: boolean, status: string}} result What checkConnectionAgain() returned.
+ *
+ * @return {boolean} True when GoDAM couldn't be reached or the request failed.
+ */
+export const isUnanswered = ( result ) => ! result.ok || 'verification_failed' === result.status;
 
 /**
  * Renewal screen for a site whose GoDAM plan lapsed (#101).
@@ -47,15 +64,21 @@ const RenewScreen = () => {
 	const handleCheck = async () => {
 		setIsChecking( true );
 
+		const unreachable = { status: 'error', message: __( 'Couldn\'t reach GoDAM. Try again in a moment.', 'godam' ) };
+
 		try {
-			if ( await checkConnectionAgain() ) {
+			const result = await checkConnectionAgain();
+
+			if ( result.ok && result.valid ) {
 				window.location.reload();
 				return;
 			}
 
-			dispatch( setNotice( { status: 'warning', message: __( 'Your plan still shows as expired. If you just renewed, wait a minute and check again.', 'godam' ) } ) );
+			dispatch( setNotice( isUnanswered( result )
+				? unreachable
+				: { status: 'warning', message: __( 'Your plan still shows as expired. If you just renewed, wait a minute and check again.', 'godam' ) } ) );
 		} catch ( error ) {
-			dispatch( setNotice( { status: 'error', message: __( 'Couldn\'t reach GoDAM. Try again in a moment.', 'godam' ) } ) );
+			dispatch( setNotice( unreachable ) );
 		}
 
 		setIsChecking( false );
