@@ -417,7 +417,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 			wp_send_json_error( __( 'Ninja Forms is not active', 'godam' ), 400 );
 		}
 
-		$field = Ninja_Forms()->form( $form_id )->field( $field_id )->get();
+		$field = $this->get_recorder_field( $form_id, $field_id );
 
 		if ( ! $field ) {
 			wp_send_json_error( __( 'Field not found', 'godam' ), 404 );
@@ -431,12 +431,13 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 
 		$file_data = $_FILES[ $file_key ]; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
-		// Validate file size.
+		// Validate file size: the field's own limit, or the server's when the field has none.
 		$max_file_size_mb   = intval( $field->get_setting( 'max_file_size' ) );
-		$max_file_size      = $max_file_size_mb * 1024 * 1024;
+		$max_file_size      = $max_file_size_mb > 0 ? $max_file_size_mb * 1024 * 1024 : wp_max_upload_size();
+		$max_file_size_mb   = (int) floor( $max_file_size / ( 1024 * 1024 ) );
 		$uploaded_file_size = $file_data['size'];
 
-		if ( $max_file_size && $uploaded_file_size > $max_file_size ) {
+		if ( $uploaded_file_size > $max_file_size ) {
 			wp_send_json_error(
 				sprintf(
 					// Translators: %s: Maximum allowed file size in MB.
@@ -458,20 +459,26 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 
 		$file_name = $this->update_filename( $file_name );
 
-		$upload_file       = array(
+		$upload_file      = array(
 			'name'     => $file_name,
 			'type'     => $file_type,
 			'tmp_name' => $temp_path,
 			'error'    => $file_error,
 			'size'     => $file_size,
 		);
-		$upload_overrides  = array(
+		$upload_overrides = array(
 			'test_form' => false,
+			'mimes'     => rtgodam_get_recorder_upload_mimes(),
 		);
-		$move_file         = wp_handle_upload( $upload_file, $upload_overrides );
-		$move_file['file'] = wp_basename( $move_file['file'] );
+		$move_file        = wp_handle_upload( $upload_file, $upload_overrides );
 
 		remove_filter( 'upload_dir', array( $this, 'change_upload_dir' ) );
+
+		if ( isset( $move_file['error'] ) ) {
+			wp_send_json_error( $move_file['error'], 400 );
+		}
+
+		$move_file['file'] = wp_basename( $move_file['file'] );
 
 		wp_send_json_success(
 			array(
@@ -479,6 +486,33 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 				'file_path' => $move_file['url'],
 			)
 		);
+	}
+
+	/**
+	 * Get a recorder field of a form.
+	 *
+	 * The upload nonce only names a field, and the form comes from the request, so the
+	 * field has to be a recorder field that belongs to that form.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int $form_id  Form ID.
+	 * @param int $field_id Field ID.
+	 *
+	 * @return object|null The field, or null when the form has no such recorder field.
+	 */
+	private function get_recorder_field( $form_id, $field_id ) {
+		if ( $form_id <= 0 || $field_id <= 0 ) {
+			return null;
+		}
+
+		$fields = Ninja_Forms()->form( $form_id )->get_fields();
+
+		if ( empty( $fields[ $field_id ] ) || self::$field_type !== $fields[ $field_id ]->get_setting( 'type' ) ) {
+			return null;
+		}
+
+		return $fields[ $field_id ];
 	}
 
 	/**
