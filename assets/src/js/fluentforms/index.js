@@ -8,6 +8,11 @@
 import { __ } from '@wordpress/i18n';
 
 /**
+ * Internal dependencies
+ */
+import { getRecorderUploadNonce } from '../godam-recorder/upload-nonce';
+
+/**
  * class FluentForms.
  */
 class FluentForms {
@@ -165,9 +170,11 @@ class FluentForms {
 
 		// Add nonce or action if needed for WordPress
 		formData.append( 'action', this.uploadAction );
-		formData.append( 'nonce', this.nonce );
-
-		this.sendAjax( formData, uploadedList );
+		// The nonce printed into the page can be stale on a cached page, so ask for a fresh one.
+		getRecorderUploadNonce( this.ajaxUrl, 'fluentforms', 0, this.nonce ).then( ( nonce ) => {
+			formData.append( 'nonce', nonce );
+			this.sendAjax( formData, uploadedList );
+		} );
 	}
 
 	/**

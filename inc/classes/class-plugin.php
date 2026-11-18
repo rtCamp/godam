@@ -17,6 +17,7 @@ use RTGODAM\Inc\Deactivation;
 use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Visitor_Consent;
 use RTGODAM\Inc\Map_Tracker;
+use RTGODAM\Inc\Recorder_Upload_Nonce;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Embed;
@@ -159,6 +160,10 @@ class Plugin {
 
 		WPForms_Integration::get_instance()->init();
 		Ninja_Forms_Integration::get_instance()->init();
+
+		// Fresh upload nonces for the Fluent Forms and Ninja Forms recorders on cached pages.
+		Recorder_Upload_Nonce::get_instance();
+
 		Metform_Integration::get_instance()->init();
 
 		// Load cron jobs.
