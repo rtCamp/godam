@@ -18,6 +18,8 @@ import { configureStore } from '@reduxjs/toolkit';
  * WordPress dependencies
  */
 import { createRoot } from '@wordpress/element';
+// eslint-disable-next-line import/no-extraneous-dependencies -- test-only: comes with @wordpress/components, which logs the deprecation.
+import { logged } from '@wordpress/deprecated';
 
 /**
  * Internal dependencies
@@ -71,6 +73,10 @@ describe( 'LicenseKeyScreen Back', () => {
 	};
 
 	beforeEach( () => {
+		// TextControl logs its 36px-size deprecation once per page: forget it, so every test
+		// sees it, in any order (not from this screen's change).
+		Object.keys( logged ).forEach( ( key ) => delete logged[ key ] );
+
 		container = document.createElement( 'div' );
 		document.body.appendChild( container );
 		root = createRoot( container );
@@ -83,11 +89,11 @@ describe( 'LicenseKeyScreen Back', () => {
 
 	it( 'goes back to renewal for a site with a lapsed plan', async () => {
 		expect( await back( 'expired' ) ).toBe( STEPS.RENEW );
-		// TextControl's own 36px-size deprecation notice, shown once (not from this screen's change).
 		expect( console ).toHaveWarned();
 	} );
 
 	it( 'goes back to the start for a site that isn\'t connected', async () => {
 		expect( await back( 'none' ) ).toBe( STEPS.ENTRY );
+		expect( console ).toHaveWarned();
 	} );
 } );
