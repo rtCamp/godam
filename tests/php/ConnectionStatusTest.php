@@ -245,9 +245,26 @@ class ConnectionStatusTest extends TestCase {
 		$this->assertNull( Connection::get_trial_days_left() );
 	}
 
-	public function test_once_the_licence_fails_the_lapse_date_is_centrals_when_it_sends_one() {
+	/**
+	 * Central's `expired_at` is when the subscription lapsed; the licence can keep working
+	 * after it, so the grace period counts from the first failed check instead.
+	 */
+	public function test_once_the_licence_fails_the_first_failed_check_counts_not_the_lapse_date() {
 		$this->store_key( 'expired' );
-		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-error-since'] = 1000;
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-error-since'] = strtotime( '2026-12-01T09:30:00Z' );
+		Connection::record(
+			array(
+				'connection_status' => 'expired',
+				'expired_at'        => '2026-11-01T00:00:00Z',
+			),
+			false
+		);
+
+		$this->assertSame( strtotime( '2026-12-01T09:30:00Z' ), Connection::get_licence_failed_since() );
+	}
+
+	public function test_without_a_failed_check_on_record_centrals_lapse_date_counts() {
+		$this->store_key( 'expired' );
 		Connection::record(
 			array(
 				'connection_status' => 'expired',
@@ -257,6 +274,110 @@ class ConnectionStatusTest extends TestCase {
 		);
 
 		$this->assertSame( strtotime( '2026-11-01T00:00:00Z' ), Connection::get_licence_failed_since() );
+	}
+
+	/**
+	 * Central's answers to the stored key, as godam-core#1957 sends them.
+	 *
+	 * @return array
+	 */
+	public function central_answers() {
+		return array(
+			'200 active'              => array(
+				array(
+					'connection_status' => 'connected',
+					'trial_ends_at'     => null,
+					'expired_at'        => null,
+					'organization'      => 'acme',
+				),
+				true,
+				'valid',
+				'connected',
+			),
+			'200 trial'               => array(
+				array(
+					'connection_status' => 'trial',
+					'trial_ends_at'     => '2030-01-01T00:00:00Z',
+					'expired_at'        => null,
+					'organization'      => 'acme',
+				),
+				true,
+				'valid',
+				'trial',
+			),
+			'200 subscription ended'  => array(
+				array(
+					'connection_status' => 'expired',
+					'trial_ends_at'     => null,
+					'expired_at'        => '2026-11-01T00:00:00Z',
+					'organization'      => 'acme',
+				),
+				true,
+				'valid',
+				'expired',
+			),
+			'200 no subscription yet' => array(
+				array(
+					'connection_status' => 'none',
+					'trial_ends_at'     => null,
+					'expired_at'        => null,
+					'organization'      => 'acme',
+				),
+				true,
+				'valid',
+				'connected',
+			),
+			'401 unknown key'         => array(
+				array(
+					'error'             => 'Invalid API key',
+					'connection_status' => 'none',
+					'trial_ends_at'     => null,
+					'expired_at'        => null,
+				),
+				false,
+				'expired',
+				'none',
+			),
+			'403 inactive licence'    => array(
+				array(
+					'error'             => 'License is not active',
+					'connection_status' => 'expired',
+					'trial_ends_at'     => null,
+					'expired_at'        => null,
+					'organization'      => 'acme',
+				),
+				false,
+				'expired',
+				'expired',
+			),
+			'403 site not allowed'    => array(
+				array(
+					'error'             => 'Site is not whitelisted',
+					'connection_status' => 'trial',
+					'trial_ends_at'     => '2030-01-01T00:00:00Z',
+					'expired_at'        => null,
+					'organization'      => 'acme',
+				),
+				false,
+				'expired',
+				'trial',
+			),
+		);
+	}
+
+	/**
+	 * @dataProvider central_answers
+	 *
+	 * @param array  $message    Central's answer.
+	 * @param bool   $succeeded  Whether Central accepted the key.
+	 * @param string $key_status The key status after the answer.
+	 * @param string $expected   The connection status.
+	 */
+	public function test_centrals_final_answers( $message, $succeeded, $key_status, $expected ) {
+		$this->store_key( $key_status );
+		Connection::record( $message, $succeeded );
+
+		$this->assertSame( $expected, $this->status() );
 	}
 
 	public function test_without_centrals_lapse_date_the_first_failed_check_counts() {

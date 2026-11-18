@@ -19,8 +19,17 @@ use RTGODAM\Inc\Enums\Connection_Status;
  *
  * Before this the plugins only knew "valid key or not", so a lapsed trial was sent to
  * signup instead of renewal and Woo couldn't tell an expired plan from a missing key.
- * Central now sends `connection_status`, `trial_ends_at` and (when it knows)
- * `expired_at` and `organization` with every `verify_api_key` answer: 200, 401 and 403.
+ * Central sends `connection_status`, `trial_ends_at`, `expired_at` and (when the key has
+ * one) `organization` with every `verify_api_key` answer (godam-core#1957):
+ *
+ * - 200: the subscription's status: connected (active or payment grace), trial, expired
+ *   (the subscription lapsed while the licence still works) or none (no subscription yet).
+ * - 401, a key Central doesn't know: none, with no organization.
+ * - 403, an inactive licence: expired, with the organization but no `expired_at`.
+ * - 403, a site not on the key's allowed sites: the subscription's real status.
+ *
+ * `trial_ends_at` and `expired_at` are calendar dates sent as that date's UTC midnight;
+ * `expired_at` is the day the subscription lapsed (frappe-stripe-subscription#289).
  * They are stored here; on an older Central that doesn't send them, the status is
  * worked out from the key status, as before.
  *
@@ -225,8 +234,10 @@ class Connection {
 	 * doesn't start or move it, and a key that verifies again clears it, so a later lapse
 	 * starts a new grace period (rtgodam_clear_api_key_invalid_timestamp()).
 	 *
-	 * Central's `expired_at` when it sends one (not yet). Otherwise the first time this
-	 * site saw the licence fail, which is later than the real date if it didn't check in.
+	 * The first time this site saw the licence fail, not Central's `expired_at`: that is the
+	 * day the subscription lapsed, and the licence can keep working well after it (Central's
+	 * own grace), so counting from it would cut the grace period short or skip it. Central's
+	 * `expired_at` only when this site has no failed check on record.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -237,13 +248,15 @@ class Connection {
 			return 0;
 		}
 
-		$stored = self::get_stored();
+		$failed_since = (int) get_option( Api_Key::ERROR_SINCE_OPTION_KEY, 0 );
 
-		if ( Connection_Status::EXPIRED === $stored['status'] && $stored['expired_at'] ) {
-			return $stored['expired_at'];
+		if ( $failed_since ) {
+			return $failed_since;
 		}
 
-		return (int) get_option( Api_Key::ERROR_SINCE_OPTION_KEY, 0 );
+		$stored = self::get_stored();
+
+		return Connection_Status::EXPIRED === $stored['status'] ? $stored['expired_at'] : 0;
 	}
 
 	/**
