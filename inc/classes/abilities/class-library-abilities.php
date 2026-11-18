@@ -477,7 +477,9 @@ class Library_Abilities extends Ability_Group {
 	public function import_media_from_url( $input = array() ) {
 		$url = esc_url_raw( $input['url'] ?? '', array( 'http', 'https' ) );
 
-		if ( ! $url || ! wp_http_validate_url( $url ) ) {
+		$addresses = ( $url && wp_http_validate_url( $url ) ) ? $this->public_addresses( $url ) : null;
+
+		if ( null === $addresses ) {
 			return new \WP_Error( 'rtgodam_invalid_url', __( 'Give a public http or https URL.', 'godam' ), array( 'status' => 400 ) );
 		}
 
@@ -505,12 +507,47 @@ class Library_Abilities extends Ability_Group {
 			return $args;
 		};
 
+		/*
+		 * The download looks the host up again, and a host can answer that second
+		 * lookup with an internal address (DNS rebinding). So each host is pinned
+		 * to the addresses that passed the check, and cURL connects only to those.
+		 */
+		$pins = array( self::pin_entry( $url, $addresses ) );
+
+		// Every redirect must lead to a public address too, or a public URL could
+		// bounce the download to an internal one.
+		$check_redirect = function ( $location ) use ( &$pins ) {
+			$addresses = $this->public_addresses( (string) $location );
+
+			if ( null === $addresses ) {
+				throw new \WpOrg\Requests\Exception( 'A valid URL was not provided.', 'wp_http.redirect_failed' );
+			}
+
+			$pins[] = self::pin_entry( (string) $location, $addresses );
+		};
+
+		$pin_addresses = function ( $handle ) use ( &$pins ) {
+			$entries = array_values( array_filter( $pins ) );
+
+			if ( $entries && defined( 'CURLOPT_RESOLVE' ) ) {
+				curl_setopt( $handle, CURLOPT_RESOLVE, $entries ); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt -- sets an option on the handle WordPress is about to send, through its own http_api_curl action.
+			}
+		};
+
 		add_filter( 'http_request_args', $limit_download ); // phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- sets the response size limit, not the timeout.
+		add_action( 'requests-requests.before_redirect', $check_redirect );
+		add_action( 'http_api_curl', $pin_addresses );
 		$tmp_file = download_url( $url );
+		remove_action( 'http_api_curl', $pin_addresses );
+		remove_action( 'requests-requests.before_redirect', $check_redirect );
 		remove_filter( 'http_request_args', $limit_download );
 
+		/*
+		 * download_url() puts the first KB of a failed response's body in the error data.
+		 * Keep only the message, so a failed import never reads back what a server said.
+		 */
 		if ( is_wp_error( $tmp_file ) ) {
-			return $tmp_file;
+			return new \WP_Error( $tmp_file->get_error_code(), $tmp_file->get_error_message(), array( 'status' => 400 ) );
 		}
 
 		if ( (int) filesize( $tmp_file ) > $max_size ) {
@@ -589,6 +626,159 @@ class Library_Abilities extends Ability_Group {
 		}
 
 		return $this->shape_media( $this->attachment_post( $attachment_id ) );
+	}
+
+	/**
+	 * The addresses a URL's host may be downloaded from, or null when the URL
+	 * must not be downloaded: its host does not resolve, or resolves to an
+	 * address that is not public.
+	 *
+	 * Core's wp_http_validate_url() refuses private and loopback addresses, but
+	 * before WordPress 6.9.6 and 7.0.3 it let link-local (169.254.0.0/16, where
+	 * cloud servers answer metadata and credential requests) and CGNAT
+	 * (100.64.0.0/10) addresses through. An import saves what it downloads in
+	 * the public uploads folder, so check every address here as well.
+	 *
+	 * As in core, the site's own host is allowed (only its uploads folder), and
+	 * so is a host the site owner allowed with the http_request_host_is_external filter.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $url URL.
+	 *
+	 * @return string[]|null Addresses to pin the download to (none for the site's own host), or null.
+	 */
+	protected function public_addresses( $url ) {
+		$host = strtolower( trim( (string) wp_parse_url( $url, PHP_URL_HOST ), '[]' ) );
+
+		if ( '' === $host ) {
+			return null;
+		}
+
+		/*
+		 * The site itself, which core also allows, but only its uploads folder. The
+		 * request comes from the server, so another page on the site's host may be
+		 * one only the server can open (a status page, an IP-locked tool), and the
+		 * import would save its text publicly and return the URL.
+		 */
+		if ( strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) ) === $host ) {
+			return $this->is_uploads_url( $url ) ? array() : null;
+		}
+
+		$ips = $this->resolve_host( $host );
+
+		if ( empty( $ips ) ) {
+			return null;
+		}
+
+		foreach ( $ips as $ip ) {
+			if ( ! self::is_public_ip( $ip ) ) {
+				/** This filter is documented in wp-includes/http.php */
+				return apply_filters( 'http_request_host_is_external', false, $host, $url ) ? $ips : null; // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core's filter, so a host allowed for core's requests is allowed here.
+			}
+		}
+
+		return $ips;
+	}
+
+	/**
+	 * The cURL "host:port:addresses" entry that makes a download of the URL
+	 * connect only to the given addresses, or an empty string when there is
+	 * nothing to pin (no addresses, or the host is an IP address already).
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string   $url URL.
+	 * @param string[] $ips Addresses that passed the check.
+	 *
+	 * @return string
+	 */
+	public static function pin_entry( $url, array $ips ) {
+		$parts = wp_parse_url( $url );
+		$host  = strtolower( trim( (string) ( $parts['host'] ?? '' ), '[]' ) );
+
+		if ( '' === $host || empty( $ips ) || filter_var( $host, FILTER_VALIDATE_IP ) ) {
+			return '';
+		}
+
+		$port = $parts['port'] ?? ( 'https' === strtolower( (string) ( $parts['scheme'] ?? '' ) ) ? 443 : 80 );
+
+		return $host . ':' . (int) $port . ':' . implode( ',', $ips );
+	}
+
+	/**
+	 * The IPv4 and IPv6 addresses a host resolves to (the host itself for an IP
+	 * literal), or none when its IPv6 addresses cannot be read: the download may
+	 * use one of them, so a host that is only half checked is refused.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $host Host name or IP address.
+	 *
+	 * @return string[]
+	 */
+	protected function resolve_host( $host ) {
+		if ( filter_var( $host, FILTER_VALIDATE_IP ) ) {
+			return array( $host );
+		}
+
+		$ips = gethostbynamel( $host );
+		$ips = is_array( $ips ) ? $ips : array();
+
+		// False when the lookup failed; a host with no IPv6 address gives an empty list.
+		$records = function_exists( 'dns_get_record' ) ? dns_get_record( $host, DNS_AAAA ) : false;
+
+		if ( ! is_array( $records ) ) {
+			return array();
+		}
+
+		foreach ( $records as $record ) {
+			if ( ! empty( $record['ipv6'] ) ) {
+				$ips[] = $record['ipv6'];
+			}
+		}
+
+		return $ips;
+	}
+
+	/**
+	 * Whether an IP address is a public one: not private, loopback, link-local,
+	 * reserved or CGNAT, including an IPv4 address carried inside an IPv6 one.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $ip IP address.
+	 *
+	 * @return bool
+	 */
+	public static function is_public_ip( $ip ) {
+		$ip = (string) $ip;
+
+		// Checked on the address's bytes, so every spelling gets the same answer:
+		// ::ffff:a9fe:a9fe is 169.254.169.254, and PHP before 8.2 compares IPv6
+		// addresses as text.
+		$ip = filter_var( $ip, FILTER_VALIDATE_IP ) ? (string) inet_ntop( self::embedded_ipv4( inet_pton( $ip ) ) ) : '';
+
+		if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+			return false;
+		}
+
+		if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+			$parts = array_map( 'intval', explode( '.', $ip ) );
+
+			// 100.64.0.0/10 (CGNAT), 192.0.0.0/24 (IETF protocol assignments),
+			// 198.18.0.0/15 (benchmarking, used as internal space) and 224.0.0.0/4 (multicast).
+			if ( ( 100 === $parts[0] && $parts[1] >= 64 && $parts[1] <= 127 ) || ( 192 === $parts[0] && 0 === $parts[1] && 0 === $parts[2] ) || ( 198 === $parts[0] && in_array( $parts[1], array( 18, 19 ), true ) ) || $parts[0] >= 224 ) {
+				return false;
+			}
+
+			return true;
+		}
+
+		// Only global unicast IPv6 (2000::/3). This leaves out link-local, unique
+		// local, site-local, multicast, discard-only (100::/64) and local-use
+		// NAT64 (64:ff9b:1::/48), and any such range defined later.
+		return 0x20 === ( ord( substr( (string) inet_pton( $ip ), 0, 1 ) ) & 0xe0 );
 	}
 
 	/**
@@ -972,5 +1162,36 @@ class Library_Abilities extends Ability_Group {
 		}
 
 		return $this->shape_media( $this->attachment_post( $attachment_id ) );
+	}
+
+	/**
+	 * The IPv4 address an IPv6 address carries, when it has one, so the IPv4
+	 * rules apply to it: IPv4-mapped (::ffff:0:0/96), IPv4-compatible (::/96),
+	 * NAT64 (64:ff9b::/96) and 6to4 (2002::/16). Any other address is returned
+	 * as it is.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $packed Address in inet_pton() form.
+	 *
+	 * @return string Address in inet_pton() form.
+	 */
+	private static function embedded_ipv4( $packed ) {
+		if ( 16 !== strlen( $packed ) ) {
+			return $packed;
+		}
+
+		$carriers = array(
+			str_repeat( "\0", 10 ) . "\xff\xff",        // IPv4-mapped.
+			str_repeat( "\0", 12 ),                      // IPv4-compatible.
+			"\0\x64\xff\x9b" . str_repeat( "\0", 8 ), // NAT64.
+		);
+
+		if ( in_array( substr( $packed, 0, 12 ), $carriers, true ) ) {
+			return substr( $packed, 12 );
+		}
+
+		// 6to4 carries the IPv4 address right after its 2002 prefix.
+		return "\x20\x02" === substr( $packed, 0, 2 ) ? substr( $packed, 2, 4 ) : $packed;
 	}
 }
