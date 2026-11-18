@@ -107,8 +107,16 @@ describe( 'DateRangePicker helpers', () => {
 		} );
 
 		it( 'labels a custom range as a start - end span', () => {
-			const label = triggerLabelFor( { startDate: '2026-11-07', endDate: '2026-11-13' } );
-			expect( label ).toMatch( /Nov 7\s*-\s*Nov 13/ );
+			// Presets are relative to today, so pin today. Otherwise, on 13 Nov 2026
+			// this range is "Last 7 days" and the label is the preset's.
+			jest.useFakeTimers().setSystemTime( new Date( 2026, 0, 15 ) );
+
+			try {
+				const label = triggerLabelFor( { startDate: '2026-11-07', endDate: '2026-11-13' } );
+				expect( label ).toMatch( /Nov 7\s*-\s*Nov 13/ );
+			} finally {
+				jest.useRealTimers();
+			}
 		} );
 	} );
 } );

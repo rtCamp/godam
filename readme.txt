@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.9.0
+Stable tag: 2.10.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -273,27 +273,23 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 == Changelog ==
 
+= v2.10.0 (November 17, 2026) =
+
+- Feat: AI agents such as Claude and Cursor can now use GoDAM through MCP. They can find and organise media, add layers and chapters, place GoDAM blocks on pages, change player settings, start processing and read analytics, as the connected WordPress user and within that user's permissions. Needs WordPress 6.9 or later and the MCP Adapter plugin.
+- Tweak: Administrators can turn off the changes an AI agent can make in Settings > Writing > GoDAM and AI agents, or turn MCP off entirely in GoDAM > Settings > General.
+- Tweak: When the MCP Adapter plugin is active, GoDAM's admin pages show a dismissible notice on connecting an AI agent.
+
+= v2.9.1 (November 16, 2026) =
+
+- Fix: Single Video Analytics, a CTA layer's image, Copy block and the WPBakery document cover now load on sites that block the WordPress media REST API for logged-out visitors.
+- Fix: A CTA layer's image is no longer removed when it fails to load for a reason other than being deleted.
+
 = v2.9.0 (November 12, 2026) =
 
 - Feat: Developers can now build their own layer types for GoDAM videos and images with the Layer API: describe the layer in a `layer.json` file and register it from PHP, the video editor and the front end, the way blocks are built. Custom layers appear in the "Add layer" menu and render in the player and the GoDAM Image block.
 - Tweak: A layer's front-end script now loads only on pages that show that kind of layer, instead of on every page with a GoDAM video.
 - Tweak: GoDAM's own layers (CTA, forms, hotspots, polls and ads) now run on the Layer API. Layers you already added keep working as before.
 - Tweak: The old add-on layer hooks (`godam_video_editor_layer_options`, `godam_video_editor_layer_components`, `godam_player_render_layer` and the `window.godamLayer*` globals) are deprecated and will be removed in 2.11.0. They keep working until then, with a deprecation notice.
-
-= v2.8.1 (November 11, 2026) =
-
-- Fix: Security fixes.
-
-= v2.8.0 (November 10, 2026) =
-
-- Feat: Videos can now have captions in several languages. In the video editor's Transcription tab, add, edit, replace or remove a caption file for any language and choose which one shows by default. Visitors pick a language from the player's subtitles menu. Needs a paid GoDAM plan.
-- Feat: Choose the language for AI transcription, or let GoDAM detect it.
-- Feat: With a consent banner that supports the WP Consent API (such as Complianz, Cookiebot, CookieYes or iubenda), GoDAM analytics now waits for the visitor's statistics consent before it stores or sends anything.
-- Tweak: The Vimeo migration tab now links straight to the screen in GoDAM Central where you connect your Vimeo account.
-- Tweak: Sites running GoDAM for WooCommerce older than 2.3.1 are asked to update it.
-- Fix: Pages no longer include the visitor's IP address or the signed-in user's ID for analytics. If you use a page cache, purge it after updating.
-- Fix: GoDAM elements no longer cause deprecation notices with WPBakery 9.1.
-- Fix: Security fixes.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
