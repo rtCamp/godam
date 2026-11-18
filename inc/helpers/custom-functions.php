@@ -1097,7 +1097,7 @@ function rtgodam_save_transcoding_failure_reason( $attachment_id, $reason ) {
 		return false;
 	}
 
-	update_post_meta( (int) $attachment_id, 'rtgodam_transcoding_failure_reason', $reason );
+	update_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason', $reason );
 
 	return true;
 }
