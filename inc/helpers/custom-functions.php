@@ -1034,6 +1034,7 @@ const RTGODAM_RETRIES_EXHAUSTED_CODE = 'retries_exhausted';
  * @since n.e.x.t
  *
  * @see https://github.com/rtCamp/godam-core/issues/1887
+ * @see https://github.com/rtCamp/godam-core/pull/1969
  *
  * @return array<string, array{message: string, action: string}>
  */
@@ -1072,6 +1073,33 @@ function rtgodam_get_transcoding_failure_reasons() {
 			'action'  => 'retry_support',
 		),
 	);
+}
+
+/**
+ * Save why a transcode failed, from a GoDAM Central callback.
+ *
+ * Central names a reason code on every Failed update, in both the main callback and the
+ * status callback (`unknown` when it has none), and "" on progress updates
+ * (godam-core#1969). The two callbacks can arrive in either order, so an empty one keeps a
+ * reason already saved rather than wiping it. A new job clears the reason when it is sent.
+ *
+ * @since n.e.x.t
+ *
+ * @param int    $attachment_id Attachment ID.
+ * @param string $reason        The `failure_reason` Central sent; empty when none.
+ *
+ * @return bool True when a reason was saved.
+ */
+function rtgodam_save_transcoding_failure_reason( $attachment_id, $reason ) {
+	$reason = sanitize_key( (string) $reason );
+
+	if ( empty( $attachment_id ) || '' === $reason ) {
+		return false;
+	}
+
+	update_post_meta( (int) $attachment_id, 'rtgodam_transcoding_failure_reason', $reason );
+
+	return true;
 }
 
 /**

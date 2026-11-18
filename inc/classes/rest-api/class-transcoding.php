@@ -287,11 +287,8 @@ class Transcoding extends Base {
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_msg', $error_msg );
 			update_post_meta( $attachment_id, 'rtgodam_transcoding_error_code', $error_code );
 
-			if ( ! empty( $reason ) ) {
-				update_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason', $reason );
-			} else {
-				delete_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason' );
-			}
+			// Why the job failed, as a reason code. An empty one keeps a reason already saved.
+			rtgodam_save_transcoding_failure_reason( $attachment_id, $reason );
 
 			$progress = 0;
 		}

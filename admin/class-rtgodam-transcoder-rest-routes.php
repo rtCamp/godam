@@ -337,12 +337,9 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 					}
 
 					// What the media library shows. Central's error_msg above is for support only.
+					// An empty reason (an older Central) keeps one the status callback saved.
 					if ( ! empty( $failed_id ) && is_numeric( $failed_id ) ) {
-						if ( ! empty( $reason ) ) {
-							update_post_meta( $failed_id, 'rtgodam_transcoding_failure_reason', sanitize_key( $reason ) );
-						} else {
-							delete_post_meta( $failed_id, 'rtgodam_transcoding_failure_reason' );
-						}
+						rtgodam_save_transcoding_failure_reason( $failed_id, $reason );
 					}
 				} finally {
 					do_action( 'rtgodam_after_attachment_lookup' );
