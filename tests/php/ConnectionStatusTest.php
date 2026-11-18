@@ -1,0 +1,487 @@
+<?php
+/**
+ * One connection status for GoDAM and GoDAM for WooCommerce.
+ *
+ * @see https://github.com/rtCamp/godam-plugin-wp/issues/101
+ *
+ * @package GoDAM
+ */
+
+namespace RTGODAM\Tests;
+
+use PHPUnit\Framework\TestCase;
+use RTGODAM\Inc\Helpers\Connection;
+
+/**
+ * Runs in separate processes: each test stubs the option writes.
+ *
+ * @covers \RTGODAM\Inc\Helpers\Connection
+ *
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
+ */
+class ConnectionStatusTest extends TestCase {
+
+	/**
+	 * Stub the WordPress functions the helper calls.
+	 */
+	protected function setUp(): void {
+		parent::setUp();
+
+		$GLOBALS['rtgodam_stub'] = array( 'options' => array() );
+
+		$stubs = array(
+			'update_option' => 'function update_option( $key, $value, $autoload = null ) { $GLOBALS["rtgodam_stub"]["options"][ $key ] = $value; return true; }',
+			'delete_option' => 'function delete_option( $key ) { unset( $GLOBALS["rtgodam_stub"]["options"][ $key ] ); return true; }',
+			'sanitize_key'  => 'function sanitize_key( $key ) { return preg_replace( "/[^a-z0-9_\\\\-]/", "", strtolower( (string) $key ) ); }',
+			'admin_url'     => 'function admin_url( $path = "" ) { return "https://site.example/wp-admin/" . $path; }',
+			// Today in the site's timezone: the test's date when it sets one.
+			'wp_date'       => 'function wp_date( $format, $timestamp = null ) { return $GLOBALS["rtgodam_stub"]["today"] ?? gmdate( $format ); }',
+		);
+
+		foreach ( $stubs as $name => $code ) {
+			if ( ! function_exists( $name ) ) {
+				eval( $code ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
+			}
+		}
+
+		$root = dirname( __DIR__, 2 );
+		require_once $root . '/inc/classes/enums/class-api-key-status.php';
+		require_once $root . '/inc/helpers/class-api-key.php';
+	}
+
+	/**
+	 * Store a key with this key status.
+	 *
+	 * @param string $status Key status.
+	 */
+	private function store_key( $status = 'valid' ) {
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key']        = 'key';
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-status'] = $status;
+	}
+
+	/**
+	 * The status, with cached user data from a successful check.
+	 *
+	 * @return string
+	 */
+	private function status() {
+		return Connection::get_status( array( 'valid_api_key' => true ) );
+	}
+
+	public function test_no_key_is_none() {
+		$this->assertSame( 'none', $this->status() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function central_statuses() {
+		return array(
+			'connected' => array( 'connected', true ),
+			'trial'     => array( 'trial', true ),
+			'expired'   => array( 'expired', false ),
+			'none'      => array( 'none', false ),
+		);
+	}
+
+	/**
+	 * @dataProvider central_statuses
+	 *
+	 * @param string $status    What Central sent.
+	 * @param bool   $succeeded Whether Central accepted the key.
+	 */
+	public function test_centrals_status_is_used( $status, $succeeded ) {
+		$this->store_key();
+		Connection::record( array( 'connection_status' => $status ), $succeeded );
+
+		$this->assertSame( $status, $this->status() );
+	}
+
+	public function test_an_unknown_status_from_central_is_ignored() {
+		$this->store_key( 'expired' );
+		Connection::record( array( 'connection_status' => 'banana' ), false );
+
+		$this->assertSame( 'expired', $this->status() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function key_statuses() {
+		return array(
+			'valid'      => array( 'valid', 'connected' ),
+			'expired'    => array( 'expired', 'expired' ),
+			'no_api_key' => array( 'no_api_key', 'none' ),
+		);
+	}
+
+	/**
+	 * Before Central sends a status (or an older Central), the key status decides.
+	 *
+	 * @dataProvider key_statuses
+	 *
+	 * @param string $key_status The stored key status.
+	 * @param string $expected   Expected connection status.
+	 */
+	public function test_without_centrals_status_the_key_status_decides( $key_status, $expected ) {
+		$this->store_key( $key_status );
+
+		$this->assertSame( $expected, $this->status() );
+	}
+
+	/**
+	 * A 200 with no subscription to read yet (one still being set up): the key works, so
+	 * it isn't sent to the connect screen.
+	 */
+	public function test_a_working_key_without_a_subscription_yet_reads_as_connected() {
+		$this->store_key();
+		Connection::record( array( 'connection_status' => 'none' ), true );
+
+		$this->assertSame( 'connected', $this->status() );
+	}
+
+	/**
+	 * Central refused this site (it isn't on the key's allowed sites) but sent the plan's
+	 * real status: kept as sent. The key status decides whether the site may use the key.
+	 *
+	 * @dataProvider live_statuses
+	 *
+	 * @param string $status What Central sent with the refusal.
+	 */
+	public function test_a_refused_site_keeps_its_plans_status( $status ) {
+		$this->store_key( 'expired' );
+		Connection::record( array( 'connection_status' => $status ), false );
+
+		$this->assertSame( $status, $this->status() );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function live_statuses() {
+		return array(
+			'connected' => array( 'connected' ),
+			'trial'     => array( 'trial' ),
+		);
+	}
+
+	public function test_a_check_central_could_not_answer_is_unreachable() {
+		$this->store_key();
+		Connection::record( array( 'connection_status' => 'connected' ), true );
+
+		$this->assertSame(
+			'unreachable',
+			Connection::get_status(
+				array(
+					'valid_api_key' => true,
+					'retry_at'      => time() + 300,
+				) 
+			) 
+		);
+	}
+
+	/**
+	 * A trial whose last day is this one, as Central sends it (that date's UTC midnight).
+	 *
+	 * @param string $last_day Last day of the trial, Y-m-d.
+	 */
+	private function trial_until( $last_day ) {
+		$this->store_key();
+		Connection::record(
+			array(
+				'connection_status' => 'trial',
+				'trial_ends_at'     => $last_day . 'T00:00:00Z',
+			),
+			true
+		);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function trial_days() {
+		return array(
+			'three days to go' => array( '2026-11-28', '2026-12-01', 3 ),
+			'last day'         => array( '2026-12-01', '2026-12-01', 0 ),
+			'already over'     => array( '2026-12-03', '2026-12-01', 0 ),
+		);
+	}
+
+	/**
+	 * @dataProvider trial_days
+	 *
+	 * @param string $today    Today in the site's timezone.
+	 * @param string $last_day The trial's last day.
+	 * @param int    $expected Days left.
+	 */
+	public function test_trial_days_left_count_calendar_days( $today, $last_day, $expected ) {
+		$GLOBALS['rtgodam_stub']['today'] = $today;
+		$this->trial_until( $last_day );
+
+		$this->assertSame( $expected, Connection::get_trial_days_left() );
+	}
+
+	/**
+	 * Late on 30 Nov in New York it's already 1 Dec in UTC: still one day left, not none.
+	 */
+	public function test_trial_days_left_follow_the_sites_date_not_utc() {
+		$GLOBALS['rtgodam_stub']['today'] = '2026-11-30';
+		$this->trial_until( '2026-12-01' );
+
+		$this->assertSame( 1, Connection::get_trial_days_left() );
+	}
+
+	public function test_no_trial_has_no_days_left() {
+		$this->store_key();
+		Connection::record(
+			array(
+				'connection_status' => 'connected',
+				'trial_ends_at'     => '2030-01-01T00:00:00Z',
+			),
+			true 
+		);
+
+		$this->assertNull( Connection::get_trial_days_left() );
+	}
+
+	/**
+	 * Central's `expired_at` is when the subscription lapsed; the licence can keep working
+	 * after it, so the grace period counts from the first failed check instead.
+	 */
+	public function test_once_the_licence_fails_the_first_failed_check_counts_not_the_lapse_date() {
+		$this->store_key( 'expired' );
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-error-since'] = strtotime( '2026-12-01T09:30:00Z' );
+		Connection::record(
+			array(
+				'connection_status' => 'expired',
+				'expired_at'        => '2026-11-01T00:00:00Z',
+			),
+			false
+		);
+
+		$this->assertSame( strtotime( '2026-12-01T09:30:00Z' ), Connection::get_licence_failed_since() );
+	}
+
+	public function test_without_a_failed_check_on_record_centrals_lapse_date_counts() {
+		$this->store_key( 'expired' );
+		Connection::record(
+			array(
+				'connection_status' => 'expired',
+				'expired_at'        => '2026-11-01T00:00:00Z',
+			),
+			false
+		);
+
+		$this->assertSame( strtotime( '2026-11-01T00:00:00Z' ), Connection::get_licence_failed_since() );
+	}
+
+	/**
+	 * Central's answers to the stored key, as godam-core#1957 sends them.
+	 *
+	 * @return array
+	 */
+	public function central_answers() {
+		return array(
+			'200 active'              => array(
+				array(
+					'connection_status' => 'connected',
+					'trial_ends_at'     => null,
+					'expired_at'        => null,
+					'organization'      => 'acme',
+				),
+				true,
+				'valid',
+				'connected',
+			),
+			'200 trial'               => array(
+				array(
+					'connection_status' => 'trial',
+					'trial_ends_at'     => '2030-01-01T00:00:00Z',
+					'expired_at'        => null,
+					'organization'      => 'acme',
+				),
+				true,
+				'valid',
+				'trial',
+			),
+			'200 subscription ended'  => array(
+				array(
+					'connection_status' => 'expired',
+					'trial_ends_at'     => null,
+					'expired_at'        => '2026-11-01T00:00:00Z',
+					'organization'      => 'acme',
+				),
+				true,
+				'valid',
+				'expired',
+			),
+			'200 no subscription yet' => array(
+				array(
+					'connection_status' => 'none',
+					'trial_ends_at'     => null,
+					'expired_at'        => null,
+					'organization'      => 'acme',
+				),
+				true,
+				'valid',
+				'connected',
+			),
+			'401 unknown key'         => array(
+				array(
+					'error'             => 'Invalid API key',
+					'connection_status' => 'none',
+					'trial_ends_at'     => null,
+					'expired_at'        => null,
+				),
+				false,
+				'expired',
+				'none',
+			),
+			'403 inactive licence'    => array(
+				array(
+					'error'             => 'License is not active',
+					'connection_status' => 'expired',
+					'trial_ends_at'     => null,
+					'expired_at'        => null,
+					'organization'      => 'acme',
+				),
+				false,
+				'expired',
+				'expired',
+			),
+			'403 site not allowed'    => array(
+				array(
+					'error'             => 'Site is not whitelisted',
+					'connection_status' => 'trial',
+					'trial_ends_at'     => '2030-01-01T00:00:00Z',
+					'expired_at'        => null,
+					'organization'      => 'acme',
+				),
+				false,
+				'expired',
+				'trial',
+			),
+		);
+	}
+
+	/**
+	 * @dataProvider central_answers
+	 *
+	 * @param array  $message    Central's answer.
+	 * @param bool   $succeeded  Whether Central accepted the key.
+	 * @param string $key_status The key status after the answer.
+	 * @param string $expected   The connection status.
+	 */
+	public function test_centrals_final_answers( $message, $succeeded, $key_status, $expected ) {
+		$this->store_key( $key_status );
+		Connection::record( $message, $succeeded );
+
+		$this->assertSame( $expected, $this->status() );
+	}
+
+	public function test_without_centrals_lapse_date_the_first_failed_check_counts() {
+		$this->store_key( 'expired' );
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-error-since'] = 1000;
+		Connection::record( array( 'connection_status' => 'expired' ), false );
+
+		$this->assertSame( 1000, Connection::get_licence_failed_since() );
+	}
+
+	/**
+	 * A subscription that ended while the licence still works starts no grace period.
+	 */
+	public function test_an_ended_subscription_on_a_working_licence_has_not_failed() {
+		$this->store_key( 'valid' );
+		Connection::record(
+			array(
+				'connection_status' => 'expired',
+				'expired_at'        => '2026-11-01T00:00:00Z',
+			),
+			true
+		);
+
+		$this->assertSame( 0, Connection::get_licence_failed_since() );
+	}
+
+	/**
+	 * A refused site with a live plan (not on the key's allowed sites) counts from when the
+	 * licence failed here, not from a subscription lapse date.
+	 */
+	public function test_a_refused_site_counts_from_the_failed_check() {
+		$this->store_key( 'expired' );
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-api-key-error-since'] = 1000;
+		Connection::record( array( 'connection_status' => 'connected' ), false );
+
+		$this->assertSame( 1000, Connection::get_licence_failed_since() );
+	}
+
+	public function test_the_subscription_ended_notice_shows_while_the_licence_works() {
+		$this->store_key( 'valid' );
+		Connection::record( array( 'connection_status' => 'expired' ), true );
+
+		$this->assertTrue( Connection::should_show_subscription_ended_notice( array( 'valid_api_key' => true ) ) );
+	}
+
+	public function test_the_subscription_ended_notice_is_not_for_a_failed_licence() {
+		$this->store_key( 'expired' );
+		Connection::record( array( 'connection_status' => 'expired' ), false );
+
+		$this->assertFalse( Connection::should_show_subscription_ended_notice( array( 'valid_api_key' => false ) ) );
+	}
+
+	public function test_a_dismissed_subscription_ended_notice_comes_back_for_the_next_lapse() {
+		$this->store_key( 'valid' );
+		Connection::record( array( 'connection_status' => 'expired' ), true );
+		Connection::dismiss_subscription_ended_notice();
+
+		$this->assertFalse( Connection::should_show_subscription_ended_notice( array( 'valid_api_key' => true ) ) );
+
+		// Renewed, then lapsed again.
+		Connection::record( array( 'connection_status' => 'connected' ), true );
+		Connection::record( array( 'connection_status' => 'expired' ), true );
+
+		$this->assertTrue( Connection::should_show_subscription_ended_notice( array( 'valid_api_key' => true ) ) );
+	}
+
+	public function test_renewal_goes_to_the_organizations_upgrade_page() {
+		Connection::record(
+			array(
+				'connection_status' => 'expired',
+				'organization'      => 'acme',
+			),
+			false 
+		);
+
+		$url = Connection::get_renewal_url();
+
+		$this->assertStringStartsWith( RTGODAM_API_BASE . '/godam_upgrade?', $url );
+		$this->assertStringContainsString( 'organization=acme', $url );
+		$this->assertStringContainsString( 'wp_return=', $url );
+	}
+
+	public function test_without_the_organization_renewal_goes_to_the_plans_page() {
+		$this->assertSame( RTGODAM_API_BASE . '/web/billing?tab=Plans', Connection::get_renewal_url() );
+	}
+
+	public function test_the_organization_is_kept_when_a_later_answer_leaves_it_out() {
+		Connection::record(
+			array(
+				'connection_status' => 'connected',
+				'organization'      => 'acme',
+			),
+			true 
+		);
+		Connection::record( array( 'connection_status' => 'expired' ), false );
+
+		$this->assertSame( 'acme', Connection::get_organization() );
+	}
+
+	public function test_removing_the_key_forgets_centrals_answer() {
+		$this->store_key();
+		Connection::record( array( 'connection_status' => 'trial' ), true );
+		Connection::clear();
+
+		$this->assertSame( 'connected', $this->status() );
+	}
+}
