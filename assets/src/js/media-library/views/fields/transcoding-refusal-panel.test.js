@@ -127,6 +127,19 @@ describe( 'transcoding refusal panel', () => {
 		expect( panel().querySelector( 'button' ) ).toBeNull();
 	} );
 
+	it( 'offers no Retranscode for a document that would fail the same way again', () => {
+		renderTranscodingRefusalPanel( view( failed( {
+			kind: 'failed',
+			code: 'DOCUMENT_ENCRYPTED',
+			action: '',
+			retryable: false,
+			message: 'This document is password protected, so no preview could be generated. Remove the password and upload it again.',
+		} ) ) );
+
+		expect( panel().querySelector( '.godam-transcoding-refusal__reason' ).textContent ).toContain( 'password protected' );
+		expect( panel().querySelector( 'button' ) ).toBeNull();
+	} );
+
 	it( 'shows a stuck job even though its status is still queued', () => {
 		renderTranscodingRefusalPanel( view( failed(
 			{ kind: 'stalled', code: 'stalled', action: 'retry', message: 'This is taking longer than expected.', next_step: 'Retranscode to try again.' },

@@ -171,6 +171,62 @@ class TranscodingFailureTest extends TestCase {
 	}
 
 	/**
+	 * A refusal the plan didn't cause (an unsupported file, a failed check) is refused again
+	 * on a retry, so it gets no next step: only Central's reason, as before.
+	 */
+	public function test_a_refusal_not_caused_by_the_plan_has_no_next_step() {
+		$this->failed(
+			'job_refused',
+			array(
+				'rtgodam_transcoding_error_msg'    => 'This file type is not supported.',
+				'rtgodam_transcoding_error_detail' => 'Unsupported format',
+			)
+		);
+
+		$failure = rtgodam_get_transcoding_failure_for_display( self::ID );
+
+		$this->assertSame( 'refusal', $failure['kind'] );
+		$this->assertSame( '', $failure['action'] );
+		$this->assertSame( '', $failure['next_step'] );
+	}
+
+	/**
+	 * @return array
+	 */
+	public function document_failures() {
+		return array(
+			'password protected' => array( 'DOCUMENT_ENCRYPTED', 'This document is password protected', '', false ),
+			'too large'          => array( 'DOCUMENT_TOO_LARGE', 'This document is too large', '', false ),
+			'unsupported type'   => array( 'DOCUMENT_UNSUPPORTED_TYPE', 'This file type isn\'t supported for preview', '', false ),
+			'processing failed'  => array( 'DOCUMENT_PROCESSING_FAILED', 'We couldn\'t generate a preview', 'retry', true ),
+		);
+	}
+
+	/**
+	 * Central sends `transcode` as the reason for every document failure; its error code says
+	 * which, and whether retrying can help.
+	 *
+	 * @dataProvider document_failures
+	 *
+	 * @param string $code      Central's error code.
+	 * @param string $message   Start of the expected sentence.
+	 * @param string $action    Expected next step.
+	 * @param bool   $retryable Whether retranscoding can help.
+	 */
+	public function test_a_document_failure_says_why_from_its_error_code( $code, $message, $action, $retryable ) {
+		$this->failed( $code, array( 'rtgodam_transcoding_failure_reason' => 'transcode' ) );
+
+		$failure = rtgodam_get_transcoding_failure_for_display( self::ID );
+
+		$this->assertSame( 'failed', $failure['kind'] );
+		$this->assertSame( $code, $failure['code'] );
+		$this->assertStringStartsWith( $message, $failure['message'] );
+		$this->assertSame( $action, $failure['action'] );
+		$this->assertSame( $retryable, $failure['retryable'] );
+		$this->assertSame( '', $failure['support_url'] );
+	}
+
+	/**
 	 * A job Central accepted, last heard from this long ago.
 	 *
 	 * @param int   $seconds_ago When Central last said something; 0 for never recorded.

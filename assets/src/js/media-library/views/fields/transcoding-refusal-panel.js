@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { isRefusal } from '../../transcoding-status/refusal';
+import { isLinkable, link } from '../../transcoding-status/failure';
 
 const PANEL_CLASS = 'godam-transcoding-refusal';
 
@@ -26,33 +27,6 @@ const el = ( tag, className, text = '' ) => {
 	node.textContent = text;
 
 	return node;
-};
-
-/**
- * Whether a URL from the server is safe to link to.
- *
- * @param {string} url URL.
- *
- * @return {boolean} True for an http(s) URL.
- */
-const isLinkable = ( url ) => typeof url === 'string' && /^https?:\/\//i.test( url );
-
-/**
- * Build a link that opens in a new tab.
- *
- * @param {string} className Class name.
- * @param {string} href      URL.
- * @param {string} text      Link text.
- *
- * @return {HTMLAnchorElement} The link.
- */
-const link = ( className, href, text ) => {
-	const anchor = el( 'a', className, text );
-	anchor.href = href;
-	anchor.target = '_blank';
-	anchor.rel = 'noopener noreferrer';
-
-	return anchor;
 };
 
 /**
@@ -177,11 +151,12 @@ const renderTranscodingRefusalPanel = ( view ) => {
 	const status = el( 'p', `${ PANEL_CLASS }__status` );
 
 	if ( failure.next_step && isLinkable( failure.next_step_url ) ) {
-		actions.append( link( 'button', failure.next_step_url, failure.next_step ) );
+		actions.append( link( failure.next_step_url, failure.next_step, 'button' ) );
 	}
 
-	// While the plugin is still retrying on its own, a manual retry would only race it.
-	if ( model.get( 'transcoding_can_retranscode' ) && 'retrying' !== failure.kind ) {
+	// While the plugin is still retrying on its own, a manual retry would only race it, and a
+	// failure that would happen the same way again (a password-protected document) gets none.
+	if ( model.get( 'transcoding_can_retranscode' ) && 'retrying' !== failure.kind && false !== failure.retryable ) {
 		const button = el( 'button', 'button', __( 'Retranscode', 'godam' ) );
 		button.type = 'button';
 		button.addEventListener( 'click', () => retranscode( model, button, status ) );
@@ -189,7 +164,7 @@ const renderTranscodingRefusalPanel = ( view ) => {
 	}
 
 	if ( isLinkable( failure.support_url ) ) {
-		actions.append( link( `${ PANEL_CLASS }__support`, failure.support_url, __( 'Contact support', 'godam' ) ) );
+		actions.append( link( failure.support_url, __( 'Contact support', 'godam' ), `${ PANEL_CLASS }__support` ) );
 	}
 
 	if ( actions.childElementCount ) {

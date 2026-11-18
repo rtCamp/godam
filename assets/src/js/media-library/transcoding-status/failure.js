@@ -15,18 +15,22 @@ export const NEXT_STEP_CLASS = 'status-next-step';
  *
  * @return {boolean} True for an http(s) URL.
  */
-const isLinkable = ( url ) => typeof url === 'string' && /^https?:\/\//i.test( url );
+export const isLinkable = ( url ) => typeof url === 'string' && /^https?:\/\//i.test( url );
 
 /**
  * Build a link that opens in a new tab.
  *
- * @param {string} href URL.
- * @param {string} text Link text.
+ * @param {string} href      URL.
+ * @param {string} text      Link text.
+ * @param {string} className Optional class name.
  *
  * @return {HTMLAnchorElement} The link.
  */
-const link = ( href, text ) => {
+export const link = ( href, text, className = '' ) => {
 	const anchor = document.createElement( 'a' );
+	if ( className ) {
+		anchor.className = className;
+	}
 	anchor.href = href;
 	anchor.target = '_blank';
 	anchor.rel = 'noopener noreferrer';

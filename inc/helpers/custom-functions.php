@@ -1076,6 +1076,42 @@ function rtgodam_get_transcoding_failure_reasons() {
 }
 
 /**
+ * Why GoDAM Central couldn't make a document's preview, keyed by the error code its
+ * callback sends, with the next step and whether retrying can help.
+ *
+ * Same wording as GoDAM's own media page (getFailureReason() in godam-core). The original
+ * file stays in the media library either way; only the preview is missing.
+ *
+ * @since n.e.x.t
+ *
+ * @return array<string, array{message: string, action: string, retryable: bool}>
+ */
+function rtgodam_get_document_failure_reasons() {
+	return array(
+		'DOCUMENT_ENCRYPTED'         => array(
+			'message'   => __( 'This document is password protected, so no preview could be generated. Remove the password and upload it again.', 'godam' ),
+			'action'    => '',
+			'retryable' => false,
+		),
+		'DOCUMENT_TOO_LARGE'         => array(
+			'message'   => __( 'This document is too large to generate a preview. The original file is still available to download.', 'godam' ),
+			'action'    => '',
+			'retryable' => false,
+		),
+		'DOCUMENT_UNSUPPORTED_TYPE'  => array(
+			'message'   => __( 'This file type isn\'t supported for preview. The original file is still available to download.', 'godam' ),
+			'action'    => '',
+			'retryable' => false,
+		),
+		'DOCUMENT_PROCESSING_FAILED' => array(
+			'message'   => __( 'We couldn\'t generate a preview for this document. The original file is still available to download.', 'godam' ),
+			'action'    => 'retry',
+			'retryable' => true,
+		),
+	);
+}
+
+/**
  * Save why a transcode failed, from a GoDAM Central callback.
  *
  * Central names a reason code on every Failed update, in both the main callback and the
@@ -1133,9 +1169,11 @@ function rtgodam_get_support_url() {
  *
  * @param int $attachment_id Attachment ID.
  *
- * @return array{kind: string, code: string, message: string, action: string, support: bool}|null
+ * @return array{kind: string, code: string, message: string, action: string, support: bool, retryable?: bool}|null
  *         Null when the file isn't failed or stuck. `kind` is `refusal`, `retrying`,
  *         `retries_exhausted`, `site`, `failed` (Central's reason) or `stalled`.
+ *         `retryable` is false when retranscoding would fail the same way again (a
+ *         password-protected, oversized or unsupported document).
  */
 function rtgodam_get_transcoding_failure( $attachment_id ) {
 	$attachment_id = absint( $attachment_id );
@@ -1168,7 +1206,7 @@ function rtgodam_get_transcoding_failure( $attachment_id ) {
  * @param int    $attachment_id Attachment ID.
  * @param string $error_code    Its `rtgodam_transcoding_error_code`.
  *
- * @return array{kind: string, code: string, message: string, action: string, support: bool}
+ * @return array{kind: string, code: string, message: string, action: string, support: bool, retryable?: bool}
  */
 function rtgodam_describe_failed_transcode( $attachment_id, $error_code ) {
 	if ( rtgodam_is_job_refusal( $error_code ) ) {
@@ -1179,7 +1217,9 @@ function rtgodam_describe_failed_transcode( $attachment_id, $error_code ) {
 			'kind'    => 'refusal',
 			'code'    => $error_code,
 			'message' => '' !== $msg ? $msg : __( 'This file can\'t be transcoded.', 'godam' ),
-			'action'  => rtgodam_refusal_needs_plan( $detail ) ? 'upgrade' : 'retry',
+			// Central refuses the same file again unless the plan changes, so only a plan
+			// problem gets a next step (Upgrade plan); otherwise its reason says it all.
+			'action'  => rtgodam_refusal_needs_plan( $detail ) ? 'upgrade' : '',
 			'support' => false,
 		);
 	}
@@ -1224,6 +1264,22 @@ function rtgodam_describe_failed_transcode( $attachment_id, $error_code ) {
 		);
 	}
 
+	// A document Central couldn't make a preview for. Its error code is more specific than
+	// `failure_reason` (Central sends `transcode` for all of them), and says whether retrying
+	// can help: a password-protected, oversized or unsupported file fails the same way again.
+	$documents = rtgodam_get_document_failure_reasons();
+
+	if ( isset( $documents[ $error_code ] ) ) {
+		return array(
+			'kind'      => 'failed',
+			'code'      => $error_code,
+			'message'   => $documents[ $error_code ]['message'],
+			'action'    => $documents[ $error_code ]['action'],
+			'support'   => false,
+			'retryable' => $documents[ $error_code ]['retryable'],
+		);
+	}
+
 	// Central accepted the job, then it failed. Its callback says why in `failure_reason`.
 	$reasons = rtgodam_get_transcoding_failure_reasons();
 	$reason  = (string) get_post_meta( $attachment_id, 'rtgodam_transcoding_failure_reason', true );
@@ -1252,7 +1308,7 @@ function rtgodam_describe_failed_transcode( $attachment_id, $error_code ) {
  * @param int    $attachment_id Attachment ID.
  * @param string $status        Its `rtgodam_transcoding_status`, lowercased.
  *
- * @return array{kind: string, code: string, message: string, action: string, support: bool}|null
+ * @return array{kind: string, code: string, message: string, action: string, support: bool, retryable?: bool}|null
  */
 function rtgodam_describe_stalled_transcode( $attachment_id, $status ) {
 	if ( ! in_array( $status, array( 'queued', 'downloading', 'downloaded', 'transcoding' ), true ) ) {
