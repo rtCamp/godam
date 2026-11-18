@@ -23,6 +23,7 @@ import { __ } from '@wordpress/i18n';
 import { scrollToTop } from '../../../utils/index.js';
 import { useSaveMediaSettingsMutation } from '../../../redux/api/media-settings.js';
 import { updateMediaSetting, resetChangeFlag } from '../../../redux/slice/media-settings.js';
+import AiAgentsSettings from './AiAgentsSettings.jsx';
 
 const GeneralSettings = () => {
 	const dispatch = useDispatch();
@@ -98,6 +99,9 @@ const GeneralSettings = () => {
 				</Notice>
 			) }
 
+			{ /* Saves on its own, so it sits above the card that the Save button below belongs to. */ }
+			<AiAgentsSettings />
+
 			<Panel header={ __( 'General Settings', 'godam' ) } className="godam-panel godam-margin-bottom">
 				<PanelBody opened>
 					<ToggleControl
@@ -125,6 +129,16 @@ const GeneralSettings = () => {
 						data-test-id="godam-settings-general-control-gtm"
 					/>
 
+					<ToggleControl
+						__nextHasNoMarginBottom
+						className="godam-margin-bottom"
+						label={ __( 'Track visitors', 'godam' ) }
+						help={ __( 'Count views of GoDAM videos and images, and clicks on their layers, in GoDAM analytics. Turn it off and GoDAM stores nothing in visitors\' browsers and sends no view or click events to GoDAM analytics, for every visitor; GoDAM analytics then shows no new data for this site. The Google Tag Manager option is separate. If you use a page cache, purge it after changing this. With a consent banner that supports the WP Consent API, you can leave this on: GoDAM waits for each visitor\'s statistics consent. A developer can also set this with the godam_visitor_tracking_enabled filter, which overrides this switch.', 'godam' ) }
+						checked={ mediaSettings?.general?.enable_visitor_tracking ?? true }
+						onChange={ ( value ) => handleSettingChange( 'enable_visitor_tracking', value ) }
+						data-test-id="godam-settings-general-control-visitor-tracking"
+					/>
+
 				</PanelBody>
 			</Panel>
 
@@ -140,6 +154,7 @@ const GeneralSettings = () => {
 					{ saveMediaSettingsLoading ? __( 'Saving…', 'godam' ) : __( 'Save', 'godam' ) }
 				</Button>
 			</div>
+
 		</>
 	);
 };

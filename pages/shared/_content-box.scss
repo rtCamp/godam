@@ -1,0 +1,5 @@
+/* The box GoDAM admin page content sits in: centred, at most this wide, with this gutter
+   either side. Shared so anything placed above the content (like TrialDaysNotice) lines
+   up with it at every width. */
+$max-width: 1440px;
+$gutter: 1rem;

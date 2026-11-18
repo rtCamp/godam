@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { isAPIKeyValid, isDocumentModel, isFolderOrgDisabled } from '../utility';
 import GodamLogo from '../../../images/godam-logo-gradient.svg';
+import { setFailureText } from '../transcoding-status/failure';
 
 /**
  * SVG icons for transcoding states
@@ -178,6 +179,10 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 			const transcodingStatus = this.model.get( 'transcoding_status' );
 			const virtual = this.model.get( 'virtual' );
 
+			// Why a file failed, or that Central hasn't reported back on it for a long time.
+			const failure = this.model.get( 'transcoding_failure' );
+			const isStalled = 'stalled' === failure?.kind;
+
 			if ( undefined !== virtual && virtual ) {
 				this.$el.append( `
 					<div class="transcoding-status__loader" data-percent="100">
@@ -197,13 +202,15 @@ const Attachment = wp?.media?.view?.Attachment?.extend( {
 
 				this.$el.addClass( 'transcoding-status' );
 				this.$el.addClass( 'transcoding-status--completed' );
-			} else if ( transcodingStatus === 'failed' ) {
-				// Show transcoding failed status with warning icon.
+			} else if ( transcodingStatus === 'failed' || isStalled ) {
+				// Show transcoding failed status with warning icon, and say why on it.
 				this.$el.append( `
 					<div class="transcoding-status__loader" data-percent="100">
 						${ ICONS.exclamation }
 					</div>
 				` );
+
+				setFailureText( this.el.querySelector( ':scope > .transcoding-status__loader:last-child' ), failure?.message );
 
 				this.$el.addClass( 'transcoding-status' );
 				this.$el.addClass( 'transcoding-status--failed' );

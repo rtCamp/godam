@@ -42,6 +42,7 @@ class ApiKeyVerificationResilienceTest extends TestCase {
 		$stubs = array(
 			'update_option'            => 'function update_option( $key, $value ) { $GLOBALS["rtgodam_stub"]["options"][ $key ] = $value; return true; }',
 			'delete_option'            => 'function delete_option( $key ) { unset( $GLOBALS["rtgodam_stub"]["options"][ $key ] ); return true; }',
+			'sanitize_key'             => 'function sanitize_key( $key ) { return preg_replace( "/[^a-z0-9_\\-]/", "", strtolower( (string) $key ) ); }',
 			'get_current_user_id'      => 'function get_current_user_id() { return 1; }',
 			'get_site_url'             => 'function get_site_url() { return "https://site.example"; }',
 			'get_bloginfo'             => 'function get_bloginfo( $show = "" ) { return "Site"; }',
@@ -398,6 +399,161 @@ class ApiKeyVerificationResilienceTest extends TestCase {
 			'status'        => 'Active',
 			'account_token' => 'token',
 		);
+	}
+
+	/**
+	 * A trial key: Central's status and trial end date are kept (#101).
+	 */
+	public function test_a_trial_is_recorded_with_its_end_date() {
+		$this->store_key( 'valid' );
+		$this->queue_response(
+			200,
+			$this->licence() + array(
+				'connection_status' => 'trial',
+				'trial_ends_at'     => '2030-01-15T00:00:00Z',
+				'organization'      => 'acme',
+			)
+		);
+
+		rtgodam_verify_api_key( 'key' );
+
+		$connection = $this->option( 'rtgodam-connection' );
+		$this->assertSame( 'trial', $connection['status'] );
+		$this->assertSame( strtotime( '2030-01-15T00:00:00Z' ), $connection['trial_ends_at'] );
+		$this->assertSame( 'acme', $connection['organization'] );
+	}
+
+	/**
+	 * An older Central sends no connection_status: a success still reads as connected.
+	 */
+	public function test_a_success_without_a_status_reads_as_connected() {
+		$this->store_key( 'valid' );
+		$this->queue_response( 200, $this->licence() );
+
+		rtgodam_verify_api_key( 'key' );
+
+		$this->assertSame( 'connected', $this->option( 'rtgodam-connection' )['status'] );
+	}
+
+	/**
+	 * A subscription that ended while the licence still works (200 + expired) keeps
+	 * Central's lapse date; the key stays valid.
+	 */
+	public function test_an_ended_subscription_is_recorded_with_its_lapse_date() {
+		$this->store_key( 'valid' );
+		$this->queue_response(
+			200,
+			$this->licence() + array(
+				'connection_status' => 'expired',
+				'expired_at'        => '2026-11-01T00:00:00Z',
+				'organization'      => 'acme',
+			)
+		);
+
+		rtgodam_verify_api_key( 'key' );
+
+		$connection = $this->option( 'rtgodam-connection' );
+		$this->assertSame( 'expired', $connection['status'] );
+		$this->assertSame( strtotime( '2026-11-01T00:00:00Z' ), $connection['expired_at'] );
+		$this->assertSame( 'valid', $this->option( 'rtgodam-api-key-status' ) );
+	}
+
+	/**
+	 * An inactive licence (403): Central sends expired with no lapse date, so the grace
+	 * period counts from the first failed check.
+	 */
+	public function test_an_inactive_licence_counts_from_the_first_failed_check() {
+		$this->store_key( 'valid' );
+		$this->queue_response(
+			403,
+			array(
+				'error'             => 'License is not active',
+				'connection_status' => 'expired',
+				'trial_ends_at'     => null,
+				'expired_at'        => null,
+				'organization'      => 'acme',
+			)
+		);
+
+		rtgodam_verify_api_key( 'key' );
+
+		$connection = $this->option( 'rtgodam-connection' );
+		$this->assertSame( 'expired', $connection['status'] );
+		$this->assertSame( 0, $connection['expired_at'] );
+		$this->assertSame( 'expired', $this->option( 'rtgodam-api-key-status' ) );
+		$this->assertGreaterThan( 0, $this->option( 'rtgodam-api-key-error-since' ) );
+		$this->assertSame( $this->option( 'rtgodam-api-key-error-since' ), \RTGODAM\Inc\Helpers\Connection::get_licence_failed_since() );
+	}
+
+	/**
+	 * Saving a different key forgets the previous key's organization, so the renewal
+	 * link never points at the old organization's billing.
+	 */
+	public function test_saving_a_different_key_forgets_the_previous_organization() {
+		if ( ! class_exists( 'RTGODAM_Transcoder_Handler', false ) ) {
+			eval( 'class RTGODAM_Transcoder_Handler { public function __construct( $a = false ) {} public function update_usage( $key ) {} }' ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
+		}
+
+		$this->store_key( 'valid' );
+		$GLOBALS['rtgodam_stub']['options']['rtgodam-connection'] = array(
+			'status'       => 'connected',
+			'organization' => 'old-org',
+		);
+		$this->queue_response(
+			200,
+			$this->licence() + array(
+				'connection_status' => 'connected',
+				'organization'      => null,
+			)
+		);
+
+		rtgodam_verify_api_key( 'new-key', true );
+
+		$this->assertSame( 'new-key', $this->option( 'rtgodam-api-key' ) );
+		$this->assertSame( '', $this->option( 'rtgodam-connection' )['organization'] );
+	}
+
+	/**
+	 * An older Central's 401 (no connection_status) is a key it doesn't know: the
+	 * connect screens, not renewal.
+	 */
+	public function test_an_older_centrals_401_reads_as_not_connected() {
+		$this->store_key( 'valid' );
+		$this->queue_response( 401, array( 'error' => 'Invalid API key' ) );
+
+		rtgodam_verify_api_key( 'key' );
+
+		$this->assertSame( 'none', $this->option( 'rtgodam-connection' )['status'] );
+	}
+
+	/**
+	 * An older Central's 403 (no connection_status) leaves the status to the key status.
+	 */
+	public function test_an_older_centrals_403_falls_back_to_the_key_status() {
+		$this->store_key( 'valid' );
+		$this->queue_response( 403, array( 'error' => 'License is not active' ) );
+
+		rtgodam_verify_api_key( 'key' );
+
+		$this->assertSame( '', $this->option( 'rtgodam-connection' )['status'] );
+	}
+
+	/**
+	 * A mistyped new key (401) changes nothing about the stored key's status.
+	 */
+	public function test_a_rejected_new_key_leaves_the_stored_status_alone() {
+		$this->store_key( 'valid' );
+		$this->queue_response(
+			401,
+			array(
+				'error'             => 'Invalid API key',
+				'connection_status' => 'none',
+			) 
+		);
+
+		rtgodam_verify_api_key( 'another-key' );
+
+		$this->assertNull( $this->option( 'rtgodam-connection' ) );
 	}
 
 	/**

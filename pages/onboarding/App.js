@@ -15,6 +15,7 @@ import ForgotPasswordScreen from './components/screens/ForgotPasswordScreen';
 import LicenseKeyScreen from './components/screens/LicenseKeyScreen';
 import WorkspaceScreen from './components/screens/WorkspaceScreen';
 import WelcomeScreen from './components/screens/WelcomeScreen';
+import RenewScreen from './components/screens/RenewScreen';
 import { STEPS, config } from './utils/constants';
 
 // Each step → its screen + how the modal frames it (split two-pane vs small dialog).
@@ -28,6 +29,7 @@ const SCREENS = {
 	[ STEPS.LICENSE ]: { Comp: LicenseKeyScreen, layout: 'split', sidePanel: 'features' },
 	[ STEPS.WORKSPACE ]: { Comp: WorkspaceScreen, layout: 'dialog' },
 	[ STEPS.WELCOME ]: { Comp: WelcomeScreen, layout: 'dialog' },
+	[ STEPS.RENEW ]: { Comp: RenewScreen, layout: 'dialog' },
 };
 
 const App = () => {

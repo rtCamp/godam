@@ -14,6 +14,18 @@ export const STEPS = {
 	LICENSE: 'license',
 	WORKSPACE: 'workspace',
 	WELCOME: 'welcome',
+	RENEW: 'renew',
+};
+
+/**
+ * The site's GoDAM connection status, mirrored from RTGODAM\Inc\Enums\Connection_Status.
+ */
+export const CONNECTION_STATUS = {
+	CONNECTED: 'connected',
+	TRIAL: 'trial',
+	EXPIRED: 'expired',
+	UNREACHABLE: 'unreachable',
+	NONE: 'none',
 };
 
 /**

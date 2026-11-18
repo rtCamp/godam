@@ -5,6 +5,12 @@
 const MAX_IDS_PER_REQUEST = 100;
 
 /**
+ * How often to check a file waiting for an automatic retry, in milliseconds. The retry runs
+ * from WP-Cron every 10 minutes, so once a minute is plenty.
+ */
+export const RETRYING_INTERVAL = 60000;
+
+/**
  * Class to check the Transcoding status from API.
  */
 class TranscodingChecker {
@@ -15,6 +21,11 @@ class TranscodingChecker {
 		this.interval = interval;
 
 		this.polling = null;
+
+		// Files waiting for an automatic retry: still `failed`, so they'd stop being polled, but
+		// they change on their own. Checked every RETRYING_INTERVAL instead of every tick.
+		this.retryingIds = [];
+		this.lastRetryingCheck = 0;
 	}
 
 	/**
@@ -62,17 +73,24 @@ class TranscodingChecker {
 		}
 	}
 
-	async fetchStatus() {
+	async fetchStatus( now = Date.now() ) {
 		try {
-			const data = await this.fetchBatches( this.postIds );
+			const checkRetrying = this.retryingIds.length > 0 && now - this.lastRetryingCheck >= RETRYING_INTERVAL;
+			const ids = checkRetrying ? [ ...this.postIds, ...this.retryingIds ] : this.postIds;
+
+			if ( checkRetrying ) {
+				this.lastRetryingCheck = now;
+			}
+
+			const data = await this.fetchBatches( ids );
 			if ( ! data ) {
 				return;
 			}
 
 			this.updateCallback( data );
-			this.filterPostIds( data );
+			this.filterPostIds( data, ids, now );
 
-			if ( this.postIds.length === 0 ) {
+			if ( this.postIds.length === 0 && this.retryingIds.length === 0 ) {
 				this.stopPolling();
 			}
 		} catch ( error ) {
@@ -80,14 +98,40 @@ class TranscodingChecker {
 		}
 	}
 
-	filterPostIds( data ) {
-		this.postIds = this.postIds.filter( ( id ) => {
+	/**
+	 * Keep polling files still in progress, and move files waiting for an automatic retry to
+	 * the slower check, until they're done or fail for good.
+	 *
+	 * @param {Object} data    Statuses keyed by ID.
+	 * @param {Array}  checked IDs this request asked about. Defaults to the ones in progress.
+	 * @param {number} now     Current time in milliseconds.
+	 */
+	filterPostIds( data, checked = this.postIds, now = Date.now() ) {
+		const inProgress = [];
+		const retrying = this.retryingIds.filter( ( id ) => ! checked.includes( id ) );
+
+		checked.forEach( ( id ) => {
 			const post = data[ id ];
 			if ( ! post ) {
-				return false;
+				return;
 			}
-			return post.progress !== 100 && post.status !== 'not_transcoding' && post.status !== 'failed';
+
+			if ( 'retrying' === post.failure?.kind ) {
+				if ( ! this.retryingIds.includes( id ) ) {
+					// Wait a full interval before the first slow check.
+					this.lastRetryingCheck = this.retryingIds.length ? this.lastRetryingCheck : now;
+				}
+				retrying.push( id );
+				return;
+			}
+
+			if ( post.progress !== 100 && ! [ 'not_transcoding', 'failed', 'stalled' ].includes( post.status ) ) {
+				inProgress.push( id );
+			}
 		} );
+
+		this.postIds = [ ...new Set( inProgress ) ];
+		this.retryingIds = [ ...new Set( retrying ) ];
 	}
 
 	buildUrl( postIds ) {

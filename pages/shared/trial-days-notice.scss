@@ -1,0 +1,22 @@
+@use 'content-box';
+
+/* How many GoDAM trial days are left (TrialDaysNotice), above the Dashboard.
+   Same box as the dashboard content below it (.dashboard-container), from the shared
+   content-box values, so its edges line up with the cards at every width. */
+.godam-trial-days {
+	box-sizing: border-box;
+	max-width: content-box.$max-width;
+	margin: 16px auto 0;
+	padding: 0 content-box.$gutter;
+
+	.components-notice {
+		margin: 0;
+	}
+
+	/* Inline, so the arrow and the full stop after it wrap with the last word. */
+	&__arrow {
+		display: inline-block;
+		margin-left: 4px;
+		text-decoration: none;
+	}
+}

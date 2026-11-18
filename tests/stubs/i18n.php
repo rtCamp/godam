@@ -72,6 +72,21 @@ if ( ! function_exists( '_x' ) ) {
 	}
 }
 
+if ( ! function_exists( '_n' ) ) {
+
+	/**
+	 * @param string $single Text for one.
+	 * @param string $plural Text for more than one.
+	 * @param int    $number How many.
+	 * @param string $domain Text domain.
+	 *
+	 * @return string
+	 */
+	function _n( $single, $plural, $number, $domain = 'default' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return __( 1 === (int) $number ? $single : $plural, $domain );
+	}
+}
+
 if ( ! function_exists( 'esc_html' ) ) {
 
 	/**

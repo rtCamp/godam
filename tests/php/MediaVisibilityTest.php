@@ -963,6 +963,36 @@ class MediaVisibilityTest extends TestCase {
 		$this->assertSame( array( 11 ), array_keys( $response->get_data() ) );
 	}
 
+	public function test_status_route_never_sends_centrals_raw_error() {
+		$this->add_video( 10, 0 );
+		$this->set_status_meta(
+			10,
+			array(
+				'rtgodam_transcoding_status'         => 'failed',
+				'rtgodam_transcoding_error_msg'      => 'Watchdog: max retries exceeded',
+				'rtgodam_transcoding_error_code'     => 'transcoder_error',
+				'rtgodam_transcoding_failure_reason' => 'oom',
+			)
+		);
+
+		$status = $this->transcoding_route()->get_transcoding_status( new \WP_REST_Request( array( 'ids' => array( 10 ) ) ) )->get_data()[10];
+
+		$this->assertSame( 'failed', $status['status'] );
+		$this->assertSame( 'oom', $status['error_code'] );
+		$this->assertStringStartsWith( 'The file needed more memory', $status['error_msg'] );
+		$this->assertStringNotContainsString( 'Watchdog', wp_json_encode( $status ) );
+	}
+
+	public function test_status_route_says_when_central_has_gone_quiet() {
+		$this->add_video( 10, 0 );
+		$this->set_status_meta( 10, array( 'rtgodam_transcoding_status_updated' => time() - 2 * DAY_IN_SECONDS ) );
+
+		$status = $this->transcoding_route()->get_transcoding_status( new \WP_REST_Request( array( 'ids' => array( 10 ) ) ) )->get_data()[10];
+
+		$this->assertSame( 'stalled', $status['status'] );
+		$this->assertSame( 'This is taking longer than expected.', $status['message'] );
+	}
+
 	/**
 	 * The status a transcoded video without a thumbnail reports.
 	 *

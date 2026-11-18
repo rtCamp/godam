@@ -1,3 +1,5 @@
+@use '../shared/content-box';
+
 .godam-button-icon {
 
 	svg {
@@ -64,8 +66,8 @@
 }
 
 .dashboard-container {
-	padding: 1rem;
-	max-width: 1440px;
+	padding: content-box.$gutter;
+	max-width: content-box.$max-width;
 	margin-left: auto;
 	margin-right: auto;
 }

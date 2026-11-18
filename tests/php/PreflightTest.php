@@ -418,6 +418,10 @@ class PreflightTest extends TestCase {
 			eval( 'function update_post_meta( $id, $key, $value ) { $GLOBALS["rtgodam_meta"][ $id ][ $key ] = $value; return true; }' ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
 		}
 
+		if ( ! function_exists( 'delete_post_meta' ) ) {
+			eval( 'function delete_post_meta( $id, $key ) { unset( $GLOBALS["rtgodam_meta"][ $id ][ $key ] ); return true; }' ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
+		}
+
 		if ( ! function_exists( 'update_option' ) ) {
 			eval( 'function update_option( $key, $value ) { $GLOBALS["rtgodam_stub"]["options"][ $key ] = $value; return true; }' ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- test-only stub, isolated process.
 		}
