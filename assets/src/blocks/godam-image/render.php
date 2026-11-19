@@ -37,11 +37,16 @@ $godam_show_layers = ! array_key_exists( 'showImageLayers', $attributes ) || ! e
  */
 do_action( 'rtgodam_before_attachment_lookup' );
 
-// Fall back to the attachment's own URL / alt / dimensions when not stored on
-// the block (e.g. a copied block that carries only the id).
+// Use the attachment's current URL, not the one saved on the block. The saved URL
+// is whatever the editor had when the image was picked: the local uploads file for
+// an image later served from the GoDAM CDN, or an older version of an image that
+// was replaced since. The saved URL stays as the fallback for a deleted attachment.
+// Alt and dimensions still come from the attachment only when not stored on the
+// block (e.g. a copied block that carries only the id).
 if ( $godam_attachment_id ) {
-	if ( '' === $godam_src ) {
-		$godam_src = (string) wp_get_attachment_image_url( $godam_attachment_id, 'full' );
+	$godam_current_src = (string) wp_get_attachment_image_url( $godam_attachment_id, 'full' );
+	if ( '' !== $godam_current_src ) {
+		$godam_src = $godam_current_src;
 	}
 	if ( '' === $godam_alt ) {
 		$godam_alt = (string) get_post_meta( $godam_attachment_id, '_wp_attachment_image_alt', true );
