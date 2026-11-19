@@ -13,18 +13,29 @@ import { isLinkable, link } from '../../transcoding-status/failure';
 const PANEL_CLASS = 'godam-transcoding-refusal';
 
 /**
+ * Prefix of the panel's `data-test-id`s, for the E2E tests.
+ */
+const TEST_ID = 'godam-transcode-failure-panel';
+
+/**
  * Build an element with a class and optional text.
+ *
+ * @since 2.11.0 Takes an optional `testId`.
  *
  * @param {string} tag       Tag name.
  * @param {string} className Class name.
  * @param {string} text      Text content.
+ * @param {string} testId    Optional `data-test-id`.
  *
  * @return {HTMLElement} The element.
  */
-const el = ( tag, className, text = '' ) => {
+const el = ( tag, className, text = '', testId = '' ) => {
 	const node = document.createElement( tag );
 	node.className = className;
 	node.textContent = text;
+	if ( testId ) {
+		node.setAttribute( 'data-test-id', testId );
+	}
 
 	return node;
 };
@@ -134,37 +145,37 @@ const renderTranscodingRefusalPanel = ( view ) => {
 		return;
 	}
 
-	const panel = el( 'div', PANEL_CLASS );
+	const panel = el( 'div', PANEL_CLASS, '', TEST_ID );
 	panel.setAttribute( 'role', 'status' );
 
 	panel.append(
-		el( 'p', `${ PANEL_CLASS }__title`, titleFor( failure.kind ) ),
-		el( 'p', `${ PANEL_CLASS }__reason`, failure.message ),
+		el( 'p', `${ PANEL_CLASS }__title`, titleFor( failure.kind ), `${ TEST_ID }-title` ),
+		el( 'p', `${ PANEL_CLASS }__reason`, failure.message, `${ TEST_ID }-reason` ),
 	);
 
 	// "Upload a smaller file" and the like: nothing to click, so say it.
 	if ( failure.next_step && ! failure.next_step_url && String( failure.action ).startsWith( 'upload_' ) ) {
-		panel.append( el( 'p', `${ PANEL_CLASS }__next-step`, failure.next_step ) );
+		panel.append( el( 'p', `${ PANEL_CLASS }__next-step`, failure.next_step, `${ TEST_ID }-next-step` ) );
 	}
 
 	const actions = el( 'div', `${ PANEL_CLASS }__actions` );
-	const status = el( 'p', `${ PANEL_CLASS }__status` );
+	const status = el( 'p', `${ PANEL_CLASS }__status`, '', `${ TEST_ID }-status` );
 
 	if ( failure.next_step && isLinkable( failure.next_step_url ) ) {
-		actions.append( link( failure.next_step_url, failure.next_step, 'button' ) );
+		actions.append( link( failure.next_step_url, failure.next_step, 'button', `${ TEST_ID }-next-step-link` ) );
 	}
 
 	// While the plugin is still retrying on its own, a manual retry would only race it, and a
 	// failure that would happen the same way again (a password-protected document) gets none.
 	if ( model.get( 'transcoding_can_retranscode' ) && 'retrying' !== failure.kind && false !== failure.retryable ) {
-		const button = el( 'button', 'button', __( 'Retranscode', 'godam' ) );
+		const button = el( 'button', 'button', __( 'Retranscode', 'godam' ), `${ TEST_ID }-retranscode` );
 		button.type = 'button';
 		button.addEventListener( 'click', () => retranscode( model, button, status ) );
 		actions.append( button );
 	}
 
 	if ( isLinkable( failure.support_url ) ) {
-		actions.append( link( failure.support_url, __( 'Contact support', 'godam' ), `${ PANEL_CLASS }__support` ) );
+		actions.append( link( failure.support_url, __( 'Contact support', 'godam' ), `${ PANEL_CLASS }__support`, `${ TEST_ID }-support-link` ) );
 	}
 
 	if ( actions.childElementCount ) {
@@ -176,7 +187,7 @@ const renderTranscodingRefusalPanel = ( view ) => {
 	const detail = isRefusal( failure.code ) ? model.get( 'transcoding_error_detail' ) : '';
 
 	if ( detail ) {
-		const details = el( 'details', `${ PANEL_CLASS }__details` );
+		const details = el( 'details', `${ PANEL_CLASS }__details`, '', `${ TEST_ID }-details` );
 		details.append(
 			el( 'summary', '', __( 'Details for support', 'godam' ) ),
 			el( 'p', '', detail ),

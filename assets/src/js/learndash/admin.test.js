@@ -100,6 +100,7 @@ describe( 'setupUseGoDAMSwitch', () => {
 		expect( setupUseGoDAMSwitch( document, CONFIG ) ).toBe( 1 );
 		expect( $( 'lesson_video_url_field' ).style.display ).toBe( 'none' );
 		expect( $( 'lesson_video_godam_id_field' ).style.display ).toBe( '' );
+		expect( $( 'lesson_video_godam' ).getAttribute( 'data-test-id' ) ).toBe( 'godam-learndash-use-godam-switch' );
 	} );
 
 	it( 'hides the picker, shows the field and clears the marker when the switch is turned off', () => {
@@ -156,6 +157,7 @@ describe( 'setupVideoPicker', () => {
 		expect( pickerPart( 'title' ).textContent ).toBe( 'Lesson intro' );
 		expect( pickerPart( 'title' ).hidden ).toBe( false );
 		expect( pickerPart( 'preview' ).querySelector( 'video' ).getAttribute( 'src' ) ).toBe( 'https://cdn.test/intro.mp4' );
+		expect( pickerPart( 'preview' ).querySelector( 'video' ).getAttribute( 'data-test-id' ) ).toBe( 'godam-learndash-video-preview-player' );
 		expect( pickerPart( 'select' ).textContent ).toBe( 'Replace' );
 		expect( picker().classList.contains( 'is-picked' ) ).toBe( true );
 		expect( pickerPart( 'remove' ).hidden ).toBe( false );

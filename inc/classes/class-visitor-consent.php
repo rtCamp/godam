@@ -176,28 +176,99 @@ class Visitor_Consent {
 	/**
 	 * Items GoDAM keeps in the visitor's browser, for consent banners.
 	 *
-	 * @since 2.8.0
+	 * Each item names its WP Consent API category and where the browser keeps it
+	 * (`LOCALSTORAGE`, `SESSIONSTORAGE` or `HTTP` for a cookie), as GoDAM for Woo does.
 	 *
-	 * @return array<int, array{name: string, expires: string, purpose: string, personal_data: string}>
+	 * @since 2.8.0
+	 * @since 2.11.0 Each item has a `category` and a `type`.
+	 *
+	 * @return array<int, array{name: string, category: string, type: string, expires: string, purpose: string, personal_data: string}>
 	 */
 	public static function get_storage_items() {
 		return array(
 			array(
 				'name'          => '__anon_id',
+				'category'      => self::CONSENT_CATEGORY,
+				'type'          => 'LOCALSTORAGE',
 				'expires'       => __( 'Until deleted', 'godam' ),
 				'purpose'       => __( 'Ties one visitor\'s video views and clicks together without naming them.', 'godam' ),
 				'personal_data' => __( 'Anonymous visitor ID', 'godam' ),
 			),
 			array(
 				'name'          => 'godamVideoSeen:*',
+				'category'      => self::CONSENT_CATEGORY,
+				'type'          => 'LOCALSTORAGE',
 				'expires'       => __( 'Until deleted', 'godam' ),
 				'purpose'       => __( 'Counts a viewer once per video.', 'godam' ),
 				'personal_data' => '',
 			),
 			array(
 				'name'          => 'godamLayerInteractions',
+				'category'      => self::CONSENT_CATEGORY,
+				'type'          => 'SESSIONSTORAGE',
 				'expires'       => __( 'Until the browser tab closes', 'godam' ),
 				'purpose'       => __( 'Holds clicks on video and image layers until they are sent to GoDAM analytics.', 'godam' ),
+				'personal_data' => '',
+			),
+			// Functional: needed for a feature the visitor is using, not for analytics.
+			array(
+				'name'          => 'godam-ff-recorder-data',
+				'category'      => 'functional',
+				'type'          => 'LOCALSTORAGE',
+				'expires'       => __( '10 minutes', 'godam' ),
+				'purpose'       => __( 'Keeps the link to a recording made in a Fluent Forms form, so it is not lost if the page reloads before the form is sent.', 'godam' ),
+				'personal_data' => __( 'Link to your unsent recording', 'godam' ),
+			),
+			array(
+				'name'          => 'godam-nf-recorder-data',
+				'category'      => 'functional',
+				'type'          => 'LOCALSTORAGE',
+				'expires'       => __( '10 minutes', 'godam' ),
+				'purpose'       => __( 'Keeps the link to a recording made in a Ninja Forms form, so it is not lost if the page reloads before the form is sent.', 'godam' ),
+				'personal_data' => __( 'Link to your unsent recording', 'godam' ),
+			),
+			array(
+				'name'          => 'godam-evf-recorder-data',
+				'category'      => 'functional',
+				'type'          => 'LOCALSTORAGE',
+				'expires'       => __( '10 minutes', 'godam' ),
+				'purpose'       => __( 'Keeps the link to a recording made in an Everest Forms form, so it is not lost if the page reloads before the form is sent.', 'godam' ),
+				'personal_data' => __( 'Link to your unsent recording', 'godam' ),
+			),
+			array(
+				'name'          => 'uppyState:*',
+				'category'      => 'functional',
+				'type'          => 'LOCALSTORAGE',
+				'expires'       => __( '10 minutes', 'godam' ),
+				'purpose'       => __( 'Keeps an upload in the GoDAM recorder field, so it can carry on if the page reloads.', 'godam' ),
+				'personal_data' => __( 'Details of your unsent recording', 'godam' ),
+			),
+			// Uppy's Golden Retriever keeps the recording itself in this IndexedDB database.
+			// The WP Consent API documents only HTTP, LOCALSTORAGE and API as types, and
+			// stores any other value as given; INDEXEDDB says where it really is.
+			array(
+				'name'          => 'uppy-blobs',
+				'category'      => 'functional',
+				'type'          => 'INDEXEDDB',
+				'expires'       => __( '10 minutes', 'godam' ),
+				'purpose'       => __( 'Holds a recording made in the GoDAM recorder field until it is uploaded, so it is not lost if the page reloads.', 'godam' ),
+				'personal_data' => __( 'Your unsent recording', 'godam' ),
+			),
+			array(
+				'name'          => 'godam_llms_video_progress_*',
+				'category'      => 'functional',
+				'type'          => 'LOCALSTORAGE',
+				'expires'       => __( 'Until deleted', 'godam' ),
+				'purpose'       => __( 'Remembers how far a learner watched a LifterLMS lesson video, so it can carry on from there.', 'godam' ),
+				'personal_data' => '',
+			),
+			// Marketing: only on sites with a connected Marketo or HubSpot account (see map-tracking.js).
+			array(
+				'name'          => 'godam-map-session-*',
+				'category'      => 'marketing',
+				'type'          => 'SESSIONSTORAGE',
+				'expires'       => __( 'Until the browser tab closes', 'godam' ),
+				'purpose'       => __( 'Groups one view of a video when how far it was watched is sent to the site\'s connected Marketo or HubSpot account.', 'godam' ),
 				'personal_data' => '',
 			),
 		);
@@ -219,19 +290,22 @@ class Visitor_Consent {
 			wp_add_cookie_info(
 				$item['name'],
 				'GoDAM',
-				self::CONSENT_CATEGORY,
+				$item['category'],
 				$item['expires'],
 				$item['purpose'],
 				$item['personal_data'],
 				false,
 				false,
-				'LOCALSTORAGE'
+				$item['type']
 			);
 		}
 	}
 
 	/**
 	 * Suggested text for the site's privacy policy (Settings > Privacy).
+	 *
+	 * Lists the analytics items, then a paragraph for sites that send video views to
+	 * Marketo or HubSpot.
 	 *
 	 * @since 2.11.0
 	 *
@@ -240,6 +314,12 @@ class Visitor_Consent {
 	public static function get_privacy_policy_content() {
 		$items = '';
 		foreach ( self::get_storage_items() as $item ) {
+			// This text is about analytics, which waits for statistics consent; the
+			// functional items are only listed for consent banners.
+			if ( self::CONSENT_CATEGORY !== $item['category'] ) {
+				continue;
+			}
+
 			$items .= sprintf(
 				'<li><code>%1$s</code>: %2$s %3$s</li>',
 				esc_html( $item['name'] ),
@@ -255,6 +335,12 @@ class Visitor_Consent {
 		$content .= '<p>' . esc_html__( 'GoDAM keeps these items in your browser:', 'godam' ) . '</p>';
 		$content .= '<ul>' . $items . '</ul>';
 		$content .= '<p>' . esc_html__( 'If this site asks for your consent to statistics, GoDAM stores nothing and sends nothing until you agree, and deletes these items if you withdraw your consent.', 'godam' ) . '</p>';
+		$content .= '<p class="privacy-policy-tutorial">' . esc_html__( 'Only if GoDAM is connected to Marketo or HubSpot in GoDAM Central:', 'godam' ) . '</p>';
+		$content .= '<p>' . sprintf(
+			/* translators: %s: name of the browser item, godam-map-session-<video>. */
+			esc_html__( 'How much of a video you watch is also sent to this site\'s Marketo or HubSpot account, matched to that service\'s own cookie in your browser. GoDAM keeps %s in your browser until you close the tab. If this site asks for your consent to marketing, this waits for it.', 'godam' ),
+			'<code>godam-map-session-&lt;video&gt;</code>'
+		) . '</p>';
 		$content .= '<p>' . sprintf(
 			/* translators: %s: link to the GoDAM privacy policy. */
 			esc_html__( 'GoDAM\'s privacy policy: %s', 'godam' ),

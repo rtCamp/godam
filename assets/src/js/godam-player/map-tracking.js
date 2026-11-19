@@ -80,6 +80,27 @@ function privacyOptedOut() {
 }
 
 /**
+ * Whether the site's consent banner says this visitor declined marketing.
+ *
+ * With the WP Consent API active, `wp_has_consent( 'marketing' )` is false until
+ * the visitor accepts marketing, and stays false if they refuse; with no consent
+ * banner the API answers true. Without the WP Consent API nothing changes.
+ * GoDAM declares `godam-map-session-*` to the API as a marketing item, so the
+ * view is only sent, and the session only written, with marketing consent.
+ *
+ * @since 2.11.0
+ *
+ * @return {boolean} True when the WP Consent API is active and marketing is not allowed.
+ */
+function marketingConsentWithheld() {
+	try {
+		return typeof window.wp_has_consent === 'function' && ! window.wp_has_consent( 'marketing' );
+	} catch ( e ) {
+		return false;
+	}
+}
+
+/**
  * Whether the visitor has opted out of HubSpot's own tracking.
  *
  * HubSpot sets `__hs_opt_out=yes` when a visitor declines its cookie banner and
@@ -91,6 +112,23 @@ function privacyOptedOut() {
  */
 function hubspotOptedOut() {
 	return 'yes' === readCookie( '__hs_opt_out' ) || '' !== readCookie( '__hs_do_not_track' );
+}
+
+/**
+ * Whether GoDAM may attribute this view to the visitor's marketing profile.
+ *
+ * Marketing/attribution tools — Woo's consent module included — expose nothing
+ * on `window`, so a site's banner or a tester otherwise has to infer consent
+ * from whether a request went out. Exposed as `window.GoDAM.hasAttributionConsent`
+ * so GoDAM's own decision is observable. It is false when the browser carries a
+ * page-wide "do not sell or share" opt-out (Global Privacy Control), the one
+ * signal that suppresses every tool; per-tool opt-outs (such as HubSpot's) still
+ * apply on top of it when a view is collected.
+ *
+ * @return {boolean} True when attribution is allowed for this visitor.
+ */
+function hasAttributionConsent() {
+	return ! privacyOptedOut();
 }
 
 /**
@@ -106,8 +144,10 @@ function hubspotOptedOut() {
 function collectVisitorIds( providers ) {
 	const ids = {};
 
-	// A page-wide opt-out means no tool should hear about this view at all.
-	if ( privacyOptedOut() ) {
+	// A page-wide opt-out means no tool should hear about this view at all, and so
+	// does a consent banner on which the visitor hasn't accepted marketing. Read on
+	// every milestone, so accepting mid-view still carries the rest of the view.
+	if ( privacyOptedOut() || marketingConsentWithheld() ) {
 		return ids;
 	}
 
@@ -380,6 +420,11 @@ function trackPlayer( config, player, video ) {
  * @return {void}
  */
 function init() {
+	// Expose GoDAM's attribution-consent decision even when no tool is connected,
+	// so a consent banner or a tester can read it instead of inferring it.
+	window.GoDAM = window.GoDAM || {};
+	window.GoDAM.hasAttributionConsent = hasAttributionConsent;
+
 	const config = window.godamMapTracking;
 
 	if ( ! config || ! config.restUrl || ! Array.isArray( config.providers ) || config.providers.length === 0 ) {
@@ -436,6 +481,8 @@ export {
 	readCookie,
 	watchedPercent,
 	privacyOptedOut,
+	marketingConsentWithheld,
 	hubspotOptedOut,
+	hasAttributionConsent,
 	MILESTONES,
 };

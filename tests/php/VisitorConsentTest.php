@@ -93,16 +93,40 @@ class VisitorConsentTest extends TestCase {
 
 		Visitor_Consent::get_instance()->register_cookie_info();
 
-		$names = array_column( $GLOBALS['rtgodam_cookie_info'], 0 );
-		$this->assertSame( array( '__anon_id', 'godamVideoSeen:*', 'godamLayerInteractions' ), $names );
+		// One call per item: a name registered twice would collapse in the map below.
+		$this->assertCount( count( Visitor_Consent::get_storage_items() ), $GLOBALS['rtgodam_cookie_info'] );
+		$this->assertCount( 10, $GLOBALS['rtgodam_cookie_info'] );
 
+		// The recorder items hold the visitor's own recording, so they say so.
+		$personal = array_column( $GLOBALS['rtgodam_cookie_info'], 5, 0 );
+		foreach ( array( 'godam-ff-recorder-data', 'godam-nf-recorder-data', 'godam-evf-recorder-data', 'uppyState:*', 'uppy-blobs' ) as $name ) {
+			$this->assertNotSame( '', $personal[ $name ], "$name says it holds personal data." );
+		}
+
+		$items = array();
 		foreach ( $GLOBALS['rtgodam_cookie_info'] as $args ) {
 			$this->assertSame( 'GoDAM', $args[1] );
-			$this->assertSame( 'statistics', $args[2] );
 			$this->assertNotSame( '', $args[3], 'Each item says how long it is kept.' );
 			$this->assertNotSame( '', $args[4], 'Each item says what it is for.' );
-			$this->assertSame( 'LOCALSTORAGE', $args[8] );
+			$items[ $args[0] ] = array( $args[2], $args[8] );
 		}
+
+		// Name => [ category, where the browser keeps it ].
+		$this->assertSame(
+			array(
+				'__anon_id'                   => array( 'statistics', 'LOCALSTORAGE' ),
+				'godamVideoSeen:*'            => array( 'statistics', 'LOCALSTORAGE' ),
+				'godamLayerInteractions'      => array( 'statistics', 'SESSIONSTORAGE' ),
+				'godam-ff-recorder-data'      => array( 'functional', 'LOCALSTORAGE' ),
+				'godam-nf-recorder-data'      => array( 'functional', 'LOCALSTORAGE' ),
+				'godam-evf-recorder-data'     => array( 'functional', 'LOCALSTORAGE' ),
+				'uppyState:*'                 => array( 'functional', 'LOCALSTORAGE' ),
+				'uppy-blobs'                  => array( 'functional', 'INDEXEDDB' ),
+				'godam_llms_video_progress_*' => array( 'functional', 'LOCALSTORAGE' ),
+				'godam-map-session-*'         => array( 'marketing', 'SESSIONSTORAGE' ),
+			),
+			$items
+		);
 	}
 
 	public function test_lists_nothing_without_the_consent_api(): void {
@@ -166,8 +190,17 @@ class VisitorConsentTest extends TestCase {
 		$this->assertStringContainsString( 'analytics.godam.io', $content );
 		$this->assertStringContainsString( 'UTM', $content );
 		foreach ( array( '__anon_id', 'godamVideoSeen:*', 'godamLayerInteractions' ) as $item ) {
-			$this->assertStringContainsString( $item, $content, 'The text names every item GoDAM stores in the browser.' );
+			$this->assertStringContainsString( $item, $content, 'The text names every analytics item GoDAM stores in the browser.' );
 		}
+		// The text says these items wait for statistics consent, so it leaves the functional ones out.
+		$this->assertStringNotContainsString( 'recorder-data', $content );
+		$this->assertStringNotContainsString( 'godam_llms_video_progress_', $content );
+		$this->assertStringNotContainsString( '<li><code>godam-map-session-', $content );
+
+		// The Marketo/HubSpot flow is disclosed in its own paragraph, with its item.
+		$this->assertStringContainsString( 'Marketo or HubSpot', $content );
+		$this->assertStringContainsString( 'godam-map-session-&lt;video&gt;', $content );
+		$this->assertStringContainsString( 'consent to marketing', $content );
 	}
 
 	public function test_hooks_the_privacy_policy_text_on_admin_init(): void {

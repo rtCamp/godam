@@ -488,10 +488,10 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
 				</svg>
 			</div>
 			<?php if ( ! empty( $failure ) ) : ?>
-				<span class="status-text"><?php echo esc_html( $failure['message'] ); ?></span>
+				<span class="status-text" data-test-id="godam-transcode-failure-reason"><?php echo esc_html( $failure['message'] ); ?></span>
 				<?php rtgodam_render_transcoding_next_step( $failure ); ?>
 			<?php else : ?>
-				<span class="status-text"><?php esc_html_e( 'Transcoding failed, please try again.', 'godam' ); ?></span>
+				<span class="status-text" data-test-id="godam-transcode-failure-reason"><?php esc_html_e( 'Transcoding failed, please try again.', 'godam' ); ?></span>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -536,14 +536,14 @@ function rtgodam_render_transcoding_next_step( $failure ) {
 		return;
 	}
 	?>
-	<span class="status-next-step">
+	<span class="status-next-step" data-test-id="godam-transcode-next-step">
 		<?php if ( ! empty( $failure['next_step'] ) && ! empty( $failure['next_step_url'] ) ) : ?>
-			<a href="<?php echo esc_url( $failure['next_step_url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $failure['next_step'] ); ?></a>
+			<a href="<?php echo esc_url( $failure['next_step_url'] ); ?>" target="_blank" rel="noopener noreferrer" data-test-id="godam-transcode-next-step-link"><?php echo esc_html( $failure['next_step'] ); ?></a>
 		<?php elseif ( ! empty( $failure['next_step'] ) ) : ?>
 			<?php echo esc_html( $failure['next_step'] ); ?>
 		<?php endif; ?>
 		<?php if ( ! empty( $failure['support_url'] ) ) : ?>
-			<a href="<?php echo esc_url( $failure['support_url'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Contact support', 'godam' ); ?></a>
+			<a href="<?php echo esc_url( $failure['support_url'] ); ?>" target="_blank" rel="noopener noreferrer" data-test-id="godam-transcode-support-link"><?php esc_html_e( 'Contact support', 'godam' ); ?></a>
 		<?php endif; ?>
 	</span>
 	<?php
