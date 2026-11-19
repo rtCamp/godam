@@ -275,8 +275,8 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 = v2.10.1 (November 19, 2026) =
 
-- Feat: The media library now says why a transcode failed and what to do next, in the list view, the grid view's warning tooltip and the attachment details panel. Needs GoDAM Central v2.12.1; files that failed earlier show the generic message.
-- Feat: The GoDAM dashboard and the Media Library show how many days are left in a trial, with a link to upgrade. When a plan has expired, GoDAM offers to renew it instead of showing the signup screens.
+- Tweak: The media library now says why a transcode failed and what to do next, in the list view, the grid view's warning tooltip and the attachment details panel. Needs GoDAM Central v2.12.1; files that failed earlier show the generic message.
+- Tweak: The GoDAM dashboard and the Media Library show how many days are left in a trial, with a link to upgrade. When a plan has expired, GoDAM offers to renew it instead of showing the signup screens.
 - Tweak: A new "Track visitors" setting in GoDAM > Settings > General turns visitor tracking off. It is on by default, and the `godam_visitor_tracking_enabled` filter still overrides it.
 - Tweak: GoDAM now suggests privacy-policy text in Settings > Privacy > Policy Guide, and the readme lists what GoDAM stores in the visitor's browser.
 - Fix: Fluent Forms and Ninja Forms recorder uploads, likes and comments now work on pages served from a full-page cache.
