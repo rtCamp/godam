@@ -93,20 +93,27 @@ class VisitorConsentTest extends TestCase {
 
 		Visitor_Consent::get_instance()->register_cookie_info();
 
-		$names = array_column( $GLOBALS['rtgodam_cookie_info'], 0 );
-		$this->assertSame( array( '__anon_id', 'godamVideoSeen:*', 'godamLayerInteractions' ), $names );
-
+		$items = array();
 		foreach ( $GLOBALS['rtgodam_cookie_info'] as $args ) {
 			$this->assertSame( 'GoDAM', $args[1] );
-			$this->assertSame( 'statistics', $args[2] );
 			$this->assertNotSame( '', $args[3], 'Each item says how long it is kept.' );
 			$this->assertNotSame( '', $args[4], 'Each item says what it is for.' );
+			$items[ $args[0] ] = array( $args[2], $args[8] );
 		}
 
-		// Where each item really lives: the layer buffer is per tab (utils/storage.js).
+		// Name => [ category, where the browser keeps it ].
 		$this->assertSame(
-			array( 'LOCALSTORAGE', 'LOCALSTORAGE', 'SESSIONSTORAGE' ),
-			array_column( $GLOBALS['rtgodam_cookie_info'], 8 )
+			array(
+				'__anon_id'                   => array( 'statistics', 'LOCALSTORAGE' ),
+				'godamVideoSeen:*'            => array( 'statistics', 'LOCALSTORAGE' ),
+				'godamLayerInteractions'      => array( 'statistics', 'SESSIONSTORAGE' ),
+				'godam-ff-recorder-data'      => array( 'functional', 'LOCALSTORAGE' ),
+				'godam-nf-recorder-data'      => array( 'functional', 'LOCALSTORAGE' ),
+				'godam-evf-recorder-data'     => array( 'functional', 'LOCALSTORAGE' ),
+				'uppyState:*'                 => array( 'functional', 'LOCALSTORAGE' ),
+				'godam_llms_video_progress_*' => array( 'functional', 'LOCALSTORAGE' ),
+			),
+			$items
 		);
 	}
 
@@ -171,8 +178,11 @@ class VisitorConsentTest extends TestCase {
 		$this->assertStringContainsString( 'analytics.godam.io', $content );
 		$this->assertStringContainsString( 'UTM', $content );
 		foreach ( array( '__anon_id', 'godamVideoSeen:*', 'godamLayerInteractions' ) as $item ) {
-			$this->assertStringContainsString( $item, $content, 'The text names every item GoDAM stores in the browser.' );
+			$this->assertStringContainsString( $item, $content, 'The text names every analytics item GoDAM stores in the browser.' );
 		}
+		// The text says these items wait for statistics consent, so it leaves the functional ones out.
+		$this->assertStringNotContainsString( 'recorder-data', $content );
+		$this->assertStringNotContainsString( 'godam_llms_video_progress_', $content );
 	}
 
 	public function test_hooks_the_privacy_policy_text_on_admin_init(): void {

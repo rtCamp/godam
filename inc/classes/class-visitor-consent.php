@@ -210,6 +210,47 @@ class Visitor_Consent {
 				'purpose'       => __( 'Holds clicks on video and image layers until they are sent to GoDAM analytics.', 'godam' ),
 				'personal_data' => '',
 			),
+			// Functional: needed for a feature the visitor is using, not for analytics.
+			array(
+				'name'          => 'godam-ff-recorder-data',
+				'category'      => 'functional',
+				'type'          => 'LOCALSTORAGE',
+				'expires'       => __( '10 minutes', 'godam' ),
+				'purpose'       => __( 'Keeps the link to a recording made in a Fluent Forms form, so it is not lost if the page reloads before the form is sent.', 'godam' ),
+				'personal_data' => '',
+			),
+			array(
+				'name'          => 'godam-nf-recorder-data',
+				'category'      => 'functional',
+				'type'          => 'LOCALSTORAGE',
+				'expires'       => __( '10 minutes', 'godam' ),
+				'purpose'       => __( 'Keeps the link to a recording made in a Ninja Forms form, so it is not lost if the page reloads before the form is sent.', 'godam' ),
+				'personal_data' => '',
+			),
+			array(
+				'name'          => 'godam-evf-recorder-data',
+				'category'      => 'functional',
+				'type'          => 'LOCALSTORAGE',
+				'expires'       => __( '10 minutes', 'godam' ),
+				'purpose'       => __( 'Keeps the link to a recording made in an Everest Forms form, so it is not lost if the page reloads before the form is sent.', 'godam' ),
+				'personal_data' => '',
+			),
+			array(
+				'name'          => 'uppyState:*',
+				'category'      => 'functional',
+				'type'          => 'LOCALSTORAGE',
+				'expires'       => __( '10 minutes', 'godam' ),
+				'purpose'       => __( 'Keeps an upload in the GoDAM recorder field, so it can carry on if the page reloads.', 'godam' ),
+				'personal_data' => '',
+			),
+			array(
+				'name'          => 'godam_llms_video_progress_*',
+				'category'      => 'functional',
+				'type'          => 'LOCALSTORAGE',
+				'expires'       => __( 'Until deleted', 'godam' ),
+				'purpose'       => __( 'Remembers how far a learner watched a LifterLMS lesson video, so it can carry on from there.', 'godam' ),
+				'personal_data' => '',
+			),
 		);
 	}
 
@@ -250,6 +291,12 @@ class Visitor_Consent {
 	public static function get_privacy_policy_content() {
 		$items = '';
 		foreach ( self::get_storage_items() as $item ) {
+			// This text is about analytics, which waits for statistics consent; the
+			// functional items are only listed for consent banners.
+			if ( self::CONSENT_CATEGORY !== $item['category'] ) {
+				continue;
+			}
+
 			$items .= sprintf(
 				'<li><code>%1$s</code>: %2$s %3$s</li>',
 				esc_html( $item['name'] ),
