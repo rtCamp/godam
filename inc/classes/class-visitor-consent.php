@@ -217,7 +217,7 @@ class Visitor_Consent {
 				'type'          => 'LOCALSTORAGE',
 				'expires'       => __( '10 minutes', 'godam' ),
 				'purpose'       => __( 'Keeps the link to a recording made in a Fluent Forms form, so it is not lost if the page reloads before the form is sent.', 'godam' ),
-				'personal_data' => '',
+				'personal_data' => __( 'Link to your unsent recording', 'godam' ),
 			),
 			array(
 				'name'          => 'godam-nf-recorder-data',
@@ -225,7 +225,7 @@ class Visitor_Consent {
 				'type'          => 'LOCALSTORAGE',
 				'expires'       => __( '10 minutes', 'godam' ),
 				'purpose'       => __( 'Keeps the link to a recording made in a Ninja Forms form, so it is not lost if the page reloads before the form is sent.', 'godam' ),
-				'personal_data' => '',
+				'personal_data' => __( 'Link to your unsent recording', 'godam' ),
 			),
 			array(
 				'name'          => 'godam-evf-recorder-data',
@@ -233,7 +233,7 @@ class Visitor_Consent {
 				'type'          => 'LOCALSTORAGE',
 				'expires'       => __( '10 minutes', 'godam' ),
 				'purpose'       => __( 'Keeps the link to a recording made in an Everest Forms form, so it is not lost if the page reloads before the form is sent.', 'godam' ),
-				'personal_data' => '',
+				'personal_data' => __( 'Link to your unsent recording', 'godam' ),
 			),
 			array(
 				'name'          => 'uppyState:*',
@@ -241,7 +241,7 @@ class Visitor_Consent {
 				'type'          => 'LOCALSTORAGE',
 				'expires'       => __( '10 minutes', 'godam' ),
 				'purpose'       => __( 'Keeps an upload in the GoDAM recorder field, so it can carry on if the page reloads.', 'godam' ),
-				'personal_data' => '',
+				'personal_data' => __( 'Details of your unsent recording', 'godam' ),
 			),
 			// Uppy's Golden Retriever keeps the recording itself in this IndexedDB database.
 			// The WP Consent API documents only HTTP, LOCALSTORAGE and API as types, and
@@ -252,7 +252,7 @@ class Visitor_Consent {
 				'type'          => 'INDEXEDDB',
 				'expires'       => __( '10 minutes', 'godam' ),
 				'purpose'       => __( 'Holds a recording made in the GoDAM recorder field until it is uploaded, so it is not lost if the page reloads.', 'godam' ),
-				'personal_data' => '',
+				'personal_data' => __( 'Your unsent recording', 'godam' ),
 			),
 			array(
 				'name'          => 'godam_llms_video_progress_*',

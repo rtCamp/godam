@@ -97,6 +97,12 @@ class VisitorConsentTest extends TestCase {
 		$this->assertCount( count( Visitor_Consent::get_storage_items() ), $GLOBALS['rtgodam_cookie_info'] );
 		$this->assertCount( 10, $GLOBALS['rtgodam_cookie_info'] );
 
+		// The recorder items hold the visitor's own recording, so they say so.
+		$personal = array_column( $GLOBALS['rtgodam_cookie_info'], 5, 0 );
+		foreach ( array( 'godam-ff-recorder-data', 'godam-nf-recorder-data', 'godam-evf-recorder-data', 'uppyState:*', 'uppy-blobs' ) as $name ) {
+			$this->assertNotSame( '', $personal[ $name ], "$name says it holds personal data." );
+		}
+
 		$items = array();
 		foreach ( $GLOBALS['rtgodam_cookie_info'] as $args ) {
 			$this->assertSame( 'GoDAM', $args[1] );
