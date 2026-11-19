@@ -95,7 +95,7 @@ class VisitorConsentTest extends TestCase {
 
 		// One call per item: a name registered twice would collapse in the map below.
 		$this->assertCount( count( Visitor_Consent::get_storage_items() ), $GLOBALS['rtgodam_cookie_info'] );
-		$this->assertCount( 9, $GLOBALS['rtgodam_cookie_info'] );
+		$this->assertCount( 10, $GLOBALS['rtgodam_cookie_info'] );
 
 		$items = array();
 		foreach ( $GLOBALS['rtgodam_cookie_info'] as $args ) {
@@ -115,6 +115,7 @@ class VisitorConsentTest extends TestCase {
 				'godam-nf-recorder-data'      => array( 'functional', 'LOCALSTORAGE' ),
 				'godam-evf-recorder-data'     => array( 'functional', 'LOCALSTORAGE' ),
 				'uppyState:*'                 => array( 'functional', 'LOCALSTORAGE' ),
+				'uppy-blobs'                  => array( 'functional', 'INDEXEDDB' ),
 				'godam_llms_video_progress_*' => array( 'functional', 'LOCALSTORAGE' ),
 				'godam-map-session-*'         => array( 'marketing', 'SESSIONSTORAGE' ),
 			),

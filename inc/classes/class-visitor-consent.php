@@ -243,6 +243,17 @@ class Visitor_Consent {
 				'purpose'       => __( 'Keeps an upload in the GoDAM recorder field, so it can carry on if the page reloads.', 'godam' ),
 				'personal_data' => '',
 			),
+			// Uppy's Golden Retriever keeps the recording itself in this IndexedDB database.
+			// The WP Consent API documents only HTTP, LOCALSTORAGE and API as types, and
+			// stores any other value as given; INDEXEDDB says where it really is.
+			array(
+				'name'          => 'uppy-blobs',
+				'category'      => 'functional',
+				'type'          => 'INDEXEDDB',
+				'expires'       => __( '10 minutes', 'godam' ),
+				'purpose'       => __( 'Holds a recording made in the GoDAM recorder field until it is uploaded, so it is not lost if the page reloads.', 'godam' ),
+				'personal_data' => '',
+			),
 			array(
 				'name'          => 'godam_llms_video_progress_*',
 				'category'      => 'functional',
