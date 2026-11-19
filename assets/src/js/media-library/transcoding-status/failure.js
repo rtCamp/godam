@@ -20,16 +20,22 @@ export const isLinkable = ( url ) => typeof url === 'string' && /^https?:\/\//i.
 /**
  * Build a link that opens in a new tab.
  *
+ * @since n.e.x.t Takes an optional `testId`.
+ *
  * @param {string} href      URL.
  * @param {string} text      Link text.
  * @param {string} className Optional class name.
+ * @param {string} testId    Optional `data-test-id`, for the E2E tests.
  *
  * @return {HTMLAnchorElement} The link.
  */
-export const link = ( href, text, className = '' ) => {
+export const link = ( href, text, className = '', testId = '' ) => {
 	const anchor = document.createElement( 'a' );
 	if ( className ) {
 		anchor.className = className;
+	}
+	if ( testId ) {
+		anchor.setAttribute( 'data-test-id', testId );
 	}
 	anchor.href = href;
 	anchor.target = '_blank';
@@ -58,9 +64,10 @@ export const renderNextStep = ( container, failure ) => {
 
 	const line = document.createElement( 'span' );
 	line.className = NEXT_STEP_CLASS;
+	line.setAttribute( 'data-test-id', 'godam-transcode-next-step' );
 
 	if ( failure.next_step && isLinkable( failure.next_step_url ) ) {
-		line.append( link( failure.next_step_url, failure.next_step ) );
+		line.append( link( failure.next_step_url, failure.next_step, '', 'godam-transcode-next-step-link' ) );
 	} else if ( failure.next_step ) {
 		line.append( document.createTextNode( failure.next_step ) );
 	}
@@ -69,7 +76,7 @@ export const renderNextStep = ( container, failure ) => {
 		if ( line.childNodes.length ) {
 			line.append( document.createTextNode( ' ' ) );
 		}
-		line.append( link( failure.support_url, __( 'Contact support', 'godam' ) ) );
+		line.append( link( failure.support_url, __( 'Contact support', 'godam' ), '', 'godam-transcode-support-link' ) );
 	}
 
 	container.append( line );
