@@ -93,6 +93,10 @@ class VisitorConsentTest extends TestCase {
 
 		Visitor_Consent::get_instance()->register_cookie_info();
 
+		// One call per item: a name registered twice would collapse in the map below.
+		$this->assertCount( count( Visitor_Consent::get_storage_items() ), $GLOBALS['rtgodam_cookie_info'] );
+		$this->assertCount( 9, $GLOBALS['rtgodam_cookie_info'] );
+
 		$items = array();
 		foreach ( $GLOBALS['rtgodam_cookie_info'] as $args ) {
 			$this->assertSame( 'GoDAM', $args[1] );
