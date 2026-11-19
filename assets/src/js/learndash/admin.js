@@ -7,7 +7,7 @@
  * Turning the switch off clears that marker from the field so a real video URL
  * can go in.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  */
 
 /**
@@ -17,7 +17,7 @@
  * replacement, so the value is never reinterpreted as HTML. `&amp;` is decoded
  * last so an already-escaped ampersand (`&amp;lt;`) is not decoded twice.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {string} value Field value.
  * @return {string} Decoded value.
@@ -34,7 +34,7 @@ const decode = ( value ) =>
 /**
  * Whether a Video URL value is the GoDAM marker, with or without a picked video.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {string} value Decoded Video URL value.
  * @param {string} tag   Marker shortcode tag.
@@ -46,7 +46,7 @@ export const isMarker = ( value, tag ) =>
 /**
  * Wire up the switch in each LearnDash settings metabox on the page.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {Document} doc    Document.
  * @param {Object}   config `rtgodamLearnDashAdmin`.
@@ -95,7 +95,7 @@ export function setupUseGoDAMSwitch( doc, config ) {
 /**
  * Show a video in a picker: its title, a preview player and the buttons.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {HTMLElement} picker     The `.rtgodam-ld-video-picker` element.
  * @param {Object|null} attachment Media attachment, or null for none.
@@ -147,7 +147,7 @@ export function renderPicked( picker, attachment, i18n ) {
 /**
  * Wire up the video picker in each LearnDash settings metabox on the page.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {Document} doc    Document.
  * @param {Object}   config `rtgodamLearnDashAdmin`.
