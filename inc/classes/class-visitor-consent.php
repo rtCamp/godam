@@ -293,6 +293,9 @@ class Visitor_Consent {
 	/**
 	 * Suggested text for the site's privacy policy (Settings > Privacy).
 	 *
+	 * Lists the analytics items, then a paragraph for sites that send video views to
+	 * Marketo or HubSpot.
+	 *
 	 * @since 2.11.0
 	 *
 	 * @return string HTML.
@@ -321,6 +324,12 @@ class Visitor_Consent {
 		$content .= '<p>' . esc_html__( 'GoDAM keeps these items in your browser:', 'godam' ) . '</p>';
 		$content .= '<ul>' . $items . '</ul>';
 		$content .= '<p>' . esc_html__( 'If this site asks for your consent to statistics, GoDAM stores nothing and sends nothing until you agree, and deletes these items if you withdraw your consent.', 'godam' ) . '</p>';
+		$content .= '<p class="privacy-policy-tutorial">' . esc_html__( 'Only if GoDAM is connected to Marketo or HubSpot in GoDAM Central:', 'godam' ) . '</p>';
+		$content .= '<p>' . sprintf(
+			/* translators: %s: name of the browser item, godam-map-session-<video>. */
+			esc_html__( 'How much of a video you watch is also sent to this site\'s Marketo or HubSpot account, matched to that service\'s own cookie in your browser. GoDAM keeps %s in your browser until you close the tab. If this site asks for your consent to marketing, this waits for it.', 'godam' ),
+			'<code>godam-map-session-&lt;video&gt;</code>'
+		) . '</p>';
 		$content .= '<p>' . sprintf(
 			/* translators: %s: link to the GoDAM privacy policy. */
 			esc_html__( 'GoDAM\'s privacy policy: %s', 'godam' ),

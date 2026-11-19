@@ -184,7 +184,12 @@ class VisitorConsentTest extends TestCase {
 		// The text says these items wait for statistics consent, so it leaves the functional ones out.
 		$this->assertStringNotContainsString( 'recorder-data', $content );
 		$this->assertStringNotContainsString( 'godam_llms_video_progress_', $content );
-		$this->assertStringNotContainsString( 'godam-map-session-', $content );
+		$this->assertStringNotContainsString( '<li><code>godam-map-session-', $content );
+
+		// The Marketo/HubSpot flow is disclosed in its own paragraph, with its item.
+		$this->assertStringContainsString( 'Marketo or HubSpot', $content );
+		$this->assertStringContainsString( 'godam-map-session-&lt;video&gt;', $content );
+		$this->assertStringContainsString( 'consent to marketing', $content );
 	}
 
 	public function test_hooks_the_privacy_policy_text_on_admin_init(): void {
