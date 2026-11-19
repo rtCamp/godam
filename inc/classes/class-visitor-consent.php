@@ -180,7 +180,7 @@ class Visitor_Consent {
 	 * (`LOCALSTORAGE`, `SESSIONSTORAGE` or `HTTP` for a cookie), as GoDAM for Woo does.
 	 *
 	 * @since 2.8.0
-	 * @since n.e.x.t Each item has a `category` and a `type`.
+	 * @since 2.11.0 Each item has a `category` and a `type`.
 	 *
 	 * @return array<int, array{name: string, category: string, type: string, expires: string, purpose: string, personal_data: string}>
 	 */
