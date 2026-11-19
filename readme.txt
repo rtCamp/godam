@@ -283,6 +283,7 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 - Fix: Fluent Forms and Ninja Forms recorder uploads, likes and comments now work on pages served from a full-page cache.
 - Fix: Fluent Forms and Ninja Forms recorder uploads accept only the form's recorder field, and only audio and video files.
 - Fix: A `[video]` shortcode for anything other than a `.mov` file rendered empty while GoDAM was active, including LearnDash's self-hosted lesson videos. Such shortcodes now play in WordPress's own player again.
+- Fix: Images served from GoDAM's CDN could appear cropped to a square or soft on large and high-DPI screens, because the `srcset` offered square crops for landscape and portrait images and left out the full-size file. The `srcset` now lists only sizes with the image's own shape and includes the full-size file, following WordPress's own rules.
 
 = v2.10.0 (November 17, 2026) =
 
