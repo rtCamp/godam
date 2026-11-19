@@ -204,4 +204,28 @@ describe( 'transcoding refusal panel', () => {
 		expect( text ).not.toContain( '(ID 55)' );
 		expect( button.disabled ).toBe( false );
 	} );
+
+	it( 'marks the panel and its parts for the E2E tests', () => {
+		renderTranscodingRefusalPanel( view( {
+			...refused,
+			transcoding_failure: { ...refused.transcoding_failure, support_url: 'https://app.godam.io/helpdesk/my-tickets' },
+		} ) );
+
+		const byTestId = ( id ) => document.querySelector( `[data-test-id="${ id }"]` );
+
+		expect( byTestId( 'godam-transcode-failure-panel' ) ).toBe( panel() );
+		expect( byTestId( 'godam-transcode-failure-panel-title' ).textContent ).toBe( 'This file couldn\'t be transcoded' );
+		expect( byTestId( 'godam-transcode-failure-panel-reason' ).textContent ).toBe( refused.transcoding_error_msg );
+		expect( byTestId( 'godam-transcode-failure-panel-next-step-link' ).href ).toContain( 'app.godam.io/web/billing' );
+		expect( byTestId( 'godam-transcode-failure-panel-retranscode' ).textContent ).toBe( 'Retranscode' );
+		expect( byTestId( 'godam-transcode-failure-panel-support-link' ).href ).toBe( 'https://app.godam.io/helpdesk/my-tickets' );
+		expect( byTestId( 'godam-transcode-failure-panel-status' ) ).not.toBeNull();
+		expect( byTestId( 'godam-transcode-failure-panel-details' ) ).not.toBeNull();
+	} );
+
+	it( 'marks the next step that has nothing to click', () => {
+		renderTranscodingRefusalPanel( view( failed( { kind: 'failed', code: 'oom', message: 'Too big.', action: 'upload_smaller', next_step: 'Upload a smaller file.' } ) ) );
+
+		expect( document.querySelector( '[data-test-id="godam-transcode-failure-panel-next-step"]' ).textContent ).toBe( 'Upload a smaller file.' );
+	} );
 } );
