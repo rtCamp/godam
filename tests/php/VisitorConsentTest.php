@@ -101,8 +101,13 @@ class VisitorConsentTest extends TestCase {
 			$this->assertSame( 'statistics', $args[2] );
 			$this->assertNotSame( '', $args[3], 'Each item says how long it is kept.' );
 			$this->assertNotSame( '', $args[4], 'Each item says what it is for.' );
-			$this->assertSame( 'LOCALSTORAGE', $args[8] );
 		}
+
+		// Where each item really lives: the layer buffer is per tab (utils/storage.js).
+		$this->assertSame(
+			array( 'LOCALSTORAGE', 'LOCALSTORAGE', 'SESSIONSTORAGE' ),
+			array_column( $GLOBALS['rtgodam_cookie_info'], 8 )
+		);
 	}
 
 	public function test_lists_nothing_without_the_consent_api(): void {

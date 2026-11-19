@@ -176,26 +176,36 @@ class Visitor_Consent {
 	/**
 	 * Items GoDAM keeps in the visitor's browser, for consent banners.
 	 *
-	 * @since 2.8.0
+	 * Each item names its WP Consent API category and where the browser keeps it
+	 * (`LOCALSTORAGE`, `SESSIONSTORAGE` or `HTTP` for a cookie), as GoDAM for Woo does.
 	 *
-	 * @return array<int, array{name: string, expires: string, purpose: string, personal_data: string}>
+	 * @since 2.8.0
+	 * @since n.e.x.t Each item has a `category` and a `type`.
+	 *
+	 * @return array<int, array{name: string, category: string, type: string, expires: string, purpose: string, personal_data: string}>
 	 */
 	public static function get_storage_items() {
 		return array(
 			array(
 				'name'          => '__anon_id',
+				'category'      => self::CONSENT_CATEGORY,
+				'type'          => 'LOCALSTORAGE',
 				'expires'       => __( 'Until deleted', 'godam' ),
 				'purpose'       => __( 'Ties one visitor\'s video views and clicks together without naming them.', 'godam' ),
 				'personal_data' => __( 'Anonymous visitor ID', 'godam' ),
 			),
 			array(
 				'name'          => 'godamVideoSeen:*',
+				'category'      => self::CONSENT_CATEGORY,
+				'type'          => 'LOCALSTORAGE',
 				'expires'       => __( 'Until deleted', 'godam' ),
 				'purpose'       => __( 'Counts a viewer once per video.', 'godam' ),
 				'personal_data' => '',
 			),
 			array(
 				'name'          => 'godamLayerInteractions',
+				'category'      => self::CONSENT_CATEGORY,
+				'type'          => 'SESSIONSTORAGE',
 				'expires'       => __( 'Until the browser tab closes', 'godam' ),
 				'purpose'       => __( 'Holds clicks on video and image layers until they are sent to GoDAM analytics.', 'godam' ),
 				'personal_data' => '',
@@ -219,13 +229,13 @@ class Visitor_Consent {
 			wp_add_cookie_info(
 				$item['name'],
 				'GoDAM',
-				self::CONSENT_CATEGORY,
+				$item['category'],
 				$item['expires'],
 				$item['purpose'],
 				$item['personal_data'],
 				false,
 				false,
-				'LOCALSTORAGE'
+				$item['type']
 			);
 		}
 	}
