@@ -506,6 +506,8 @@ require_once __DIR__ . '/stubs/wp-http-functions.php';
 require_once __DIR__ . '/stubs/site-functions.php';
 // Current-user, avatar and wp_remote_post stubs for the Engagement route tests.
 require_once __DIR__ . '/stubs/engagement-functions.php';
+// wp_image_matches_ratio() for the CDN image srcset tests.
+require_once __DIR__ . '/stubs/image-functions.php';
 
 // Version-compatibility checks read this. High enough that any add-on minimum
 // passes, so tests exercising the incompatible branch raise their own minimum.
