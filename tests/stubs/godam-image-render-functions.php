@@ -2,8 +2,8 @@
 /**
  * Narrow stubs for rendering the GoDAM Image block template in unit tests.
  *
- * Used by HotspotLinkSanitizeTest, which includes the real render.php and reads the
- * layers it hands to the front end. Per-test state lives in
+ * Used by HotspotLinkSanitizeTest and GodamImageCurrentUrlTest, which include the
+ * real render.php and read the markup it prints. Per-test state lives in
  * `$GLOBALS['rtgodam_stub']`, as elsewhere in the suite: `post_meta` is read by the
  * bootstrap's get_post_meta() stub.
  *
@@ -87,10 +87,11 @@ if ( ! function_exists( 'wp_enqueue_script' ) ) {
 if ( ! function_exists( 'wp_get_attachment_image_url' ) ) {
 
 	/**
-	 * @return string The block carries its own URL in these tests.
+	 * @return string|false `$GLOBALS['rtgodam_stub']['attachment_image_url']`, or '' when
+	 *                      not set (the block then uses the URL saved on it).
 	 */
 	function wp_get_attachment_image_url() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return '';
+		return $GLOBALS['rtgodam_stub']['attachment_image_url'] ?? '';
 	}
 }
 
