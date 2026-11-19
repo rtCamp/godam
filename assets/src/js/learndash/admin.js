@@ -67,6 +67,8 @@ export function setupUseGoDAMSwitch( doc, config ) {
 			return;
 		}
 
+		toggle.setAttribute( 'data-test-id', 'godam-learndash-use-godam-switch' );
+
 		const urlInput = doc.getElementById( `${ metaboxKey }_lesson_video_url` );
 		const pickerRow = doc.getElementById( `${ metaboxKey }_${ config.videoField }_field` );
 
@@ -134,6 +136,7 @@ export function renderPicked( picker, attachment, i18n ) {
 		video.src = attachment.url;
 		video.controls = true;
 		video.preload = 'metadata';
+		video.setAttribute( 'data-test-id', 'godam-learndash-video-preview-player' );
 		preview.appendChild( video );
 	}
 
