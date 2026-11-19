@@ -17,6 +17,7 @@ import {
 	watchedPercent,
 	privacyOptedOut,
 	hubspotOptedOut,
+	hasAttributionConsent,
 	MILESTONES,
 } from './map-tracking';
 
@@ -156,6 +157,27 @@ describe( 'privacyOptedOut', () => {
 			configurable: true,
 		} );
 		expect( privacyOptedOut() ).toBe( true );
+	} );
+} );
+
+describe( 'hasAttributionConsent', () => {
+	afterEach( () => {
+		delete window.navigator.globalPrivacyControl;
+	} );
+
+	it( 'is the inverse of a page-wide opt-out', () => {
+		expect( hasAttributionConsent() ).toBe( true );
+
+		Object.defineProperty( window.navigator, 'globalPrivacyControl', {
+			value: true,
+			configurable: true,
+		} );
+		expect( hasAttributionConsent() ).toBe( false );
+	} );
+
+	it( 'is exposed on window.GoDAM for banners and testers to read', () => {
+		expect( typeof window.GoDAM.hasAttributionConsent ).toBe( 'function' );
+		expect( window.GoDAM.hasAttributionConsent() ).toBe( true );
 	} );
 } );
 
