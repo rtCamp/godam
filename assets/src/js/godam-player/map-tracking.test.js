@@ -16,6 +16,7 @@ import {
 	readCookie,
 	watchedPercent,
 	privacyOptedOut,
+	marketingConsentWithheld,
 	hubspotOptedOut,
 	MILESTONES,
 } from './map-tracking';
@@ -140,6 +141,45 @@ describe( 'collectVisitorIds', () => {
 		document.cookie = '__hs_do_not_track=true; path=/';
 
 		expect( collectVisitorIds( [ 'HubSpot' ] ) ).toEqual( {} );
+	} );
+} );
+
+describe( 'marketing consent (WP Consent API)', () => {
+	afterEach( () => {
+		clearCookies();
+		delete window.wp_has_consent;
+	} );
+
+	it( 'reports nothing while the visitor has not accepted marketing', () => {
+		document.cookie = `_mkto_trk=${ encodeURIComponent( MKTO ) }; path=/`;
+		document.cookie = `hubspotutk=${ HUTK }; path=/`;
+		window.wp_has_consent = ( category ) => 'marketing' !== category;
+
+		expect( marketingConsentWithheld() ).toBe( true );
+		expect( collectVisitorIds( [ 'Marketo', 'HubSpot' ] ) ).toEqual( {} );
+	} );
+
+	it( 'reports the view once marketing is accepted', () => {
+		document.cookie = `hubspotutk=${ HUTK }; path=/`;
+		window.wp_has_consent = () => true;
+
+		expect( marketingConsentWithheld() ).toBe( false );
+		expect( collectVisitorIds( [ 'HubSpot' ] ) ).toEqual( { hubspotutk: HUTK } );
+	} );
+
+	it( 'changes nothing without the WP Consent API', () => {
+		document.cookie = `hubspotutk=${ HUTK }; path=/`;
+
+		expect( marketingConsentWithheld() ).toBe( false );
+		expect( collectVisitorIds( [ 'HubSpot' ] ) ).toEqual( { hubspotutk: HUTK } );
+	} );
+
+	it( 'does not block tracking if the consent check throws', () => {
+		window.wp_has_consent = () => {
+			throw new Error( 'banner not ready' );
+		};
+
+		expect( marketingConsentWithheld() ).toBe( false );
 	} );
 } );
 
