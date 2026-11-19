@@ -95,6 +95,8 @@ export const cssString = ( text ) => JSON.stringify( String( text ) );
  * Put a failed file's reason on its grid status icon: in the hover tooltip, and as the
  * icon's accessible name. With no reason, the stylesheet's generic label shows instead.
  *
+ * @since n.e.x.t Marks the icon with a `data-test-id` while it carries a reason.
+ *
  * @param {HTMLElement} loader  The `.transcoding-status__loader` element.
  * @param {string}      message Why it failed, from the server.
  */
@@ -108,6 +110,7 @@ export const setFailureText = ( loader, message ) => {
 		loader.removeAttribute( 'title' );
 		loader.removeAttribute( 'aria-label' );
 		loader.removeAttribute( 'role' );
+		loader.removeAttribute( 'data-test-id' );
 		return;
 	}
 
@@ -115,4 +118,5 @@ export const setFailureText = ( loader, message ) => {
 	loader.setAttribute( 'title', message );
 	loader.setAttribute( 'role', 'img' );
 	loader.setAttribute( 'aria-label', message );
+	loader.setAttribute( 'data-test-id', 'godam-transcode-failure-tooltip' );
 };
