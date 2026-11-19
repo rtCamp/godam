@@ -251,6 +251,15 @@ class Visitor_Consent {
 				'purpose'       => __( 'Remembers how far a learner watched a LifterLMS lesson video, so it can carry on from there.', 'godam' ),
 				'personal_data' => '',
 			),
+			// Marketing: only on sites with a connected Marketo or HubSpot account (see map-tracking.js).
+			array(
+				'name'          => 'godam-map-session-*',
+				'category'      => 'marketing',
+				'type'          => 'SESSIONSTORAGE',
+				'expires'       => __( 'Until the browser tab closes', 'godam' ),
+				'purpose'       => __( 'Groups one view of a video when how far it was watched is sent to the site\'s connected Marketo or HubSpot account.', 'godam' ),
+				'personal_data' => '',
+			),
 		);
 	}
 

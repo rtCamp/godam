@@ -112,6 +112,7 @@ class VisitorConsentTest extends TestCase {
 				'godam-evf-recorder-data'     => array( 'functional', 'LOCALSTORAGE' ),
 				'uppyState:*'                 => array( 'functional', 'LOCALSTORAGE' ),
 				'godam_llms_video_progress_*' => array( 'functional', 'LOCALSTORAGE' ),
+				'godam-map-session-*'         => array( 'marketing', 'SESSIONSTORAGE' ),
 			),
 			$items
 		);
@@ -183,6 +184,7 @@ class VisitorConsentTest extends TestCase {
 		// The text says these items wait for statistics consent, so it leaves the functional ones out.
 		$this->assertStringNotContainsString( 'recorder-data', $content );
 		$this->assertStringNotContainsString( 'godam_llms_video_progress_', $content );
+		$this->assertStringNotContainsString( 'godam-map-session-', $content );
 	}
 
 	public function test_hooks_the_privacy_policy_text_on_admin_init(): void {
