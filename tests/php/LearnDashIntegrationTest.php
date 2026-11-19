@@ -482,7 +482,8 @@ class LearnDashIntegrationTest extends TestCase {
 		$this->assertStringContainsString( 'Intro &lt;video&gt;', $html );
 		$this->assertStringContainsString( '>Replace</button>', $html );
 		$this->assertStringContainsString( 'rtgodam-ld-video-picker is-picked', $html );
-		$this->assertStringContainsString( '<button type="button" class="button rtgodam-ld-video-picker__remove">', $html );
+		$this->assertStringContainsString( '<button type="button" class="button rtgodam-ld-video-picker__remove" data-test-id="godam-learndash-video-remove">', $html );
+		$this->assertStringContainsString( 'data-test-id="godam-learndash-video-picker"', $html );
 	}
 
 	public function test_switch_is_off_for_another_video_and_absent_from_other_metaboxes() {

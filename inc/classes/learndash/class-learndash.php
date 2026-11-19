@@ -432,13 +432,13 @@ class LearnDash {
 		$picked = $video_id > 0;
 
 		return sprintf(
-			'<div class="rtgodam-ld-video-picker%1$s" id="%2$s_picker">'
-			. '<input type="hidden" id="%2$s" name="%3$s[%4$s]" value="%5$s" />'
-			. '<div class="rtgodam-ld-video-picker__preview"></div>'
-			. '<p class="rtgodam-ld-video-picker__title"%6$s>%7$s</p>'
+			'<div class="rtgodam-ld-video-picker%1$s" id="%2$s_picker" data-test-id="godam-learndash-video-picker">'
+			. '<input type="hidden" data-test-id="godam-learndash-video-input" id="%2$s" name="%3$s[%4$s]" value="%5$s" />'
+			. '<div class="rtgodam-ld-video-picker__preview" data-test-id="godam-learndash-video-preview"></div>'
+			. '<p class="rtgodam-ld-video-picker__title" data-test-id="godam-learndash-video-title"%6$s>%7$s</p>'
 			. '<div class="rtgodam-ld-video-picker__actions">'
-			. '<button type="button" class="button rtgodam-ld-video-picker__select">%8$s</button>'
-			. '<button type="button" class="button rtgodam-ld-video-picker__remove"%9$s>%10$s</button>'
+			. '<button type="button" class="button rtgodam-ld-video-picker__select" data-test-id="godam-learndash-video-select">%8$s</button>'
+			. '<button type="button" class="button rtgodam-ld-video-picker__remove" data-test-id="godam-learndash-video-remove"%9$s>%10$s</button>'
 			. '</div>'
 			. '</div>',
 			$picked ? ' is-picked' : '',
