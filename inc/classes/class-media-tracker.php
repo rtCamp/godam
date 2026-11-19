@@ -141,7 +141,7 @@ class Media_Tracker {
 	 * `not_found` for a failed file Central answered with a 404 (it couldn't fetch the file,
 	 * which a CDN in front of the site can cause), otherwise the status as it is.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param string $status     The status route's status.
 	 * @param string $error_code The error code stored for the file.

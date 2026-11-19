@@ -39,7 +39,7 @@ use RTGODAM\Inc\Enums\Connection_Status;
  * an active licence is `expired` while the key still works, and a site that isn't on the
  * key's allowed sites can't use a key whose plan is `connected`.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  */
 class Connection {
 
@@ -60,7 +60,7 @@ class Connection {
 	/**
 	 * Remember what Central said about the stored key.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array $message     The `message` of Central's `verify_api_key` answer.
 	 * @param bool  $succeeded   Whether Central accepted the key (HTTP 200).
@@ -113,7 +113,7 @@ class Connection {
 	/**
 	 * Forget what Central said, when the key is removed.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return void
 	 */
@@ -126,7 +126,7 @@ class Connection {
 	 * Whether to ask the administrator to renew a subscription that ended while the licence
 	 * still works: Pro features keep working, so it's a dismissible notice, not a screen.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array|null $user_data The cached user data, when the caller already has it.
 	 *
@@ -145,7 +145,7 @@ class Connection {
 	/**
 	 * Hide the "subscription has ended" notice until the subscription lapses again.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return void
 	 */
@@ -156,7 +156,7 @@ class Connection {
 	/**
 	 * The site's connection status.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array|null $user_data The cached user data (rtgodam_get_user_data()), when the
 	 *                              caller already has it. Read when null.
@@ -197,7 +197,7 @@ class Connection {
 	/**
 	 * When the trial ends, as a Unix time.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return int 0 when the site isn't on a trial or Central didn't say.
 	 */
@@ -214,7 +214,7 @@ class Connection {
 	 * calendar date, not an instant. So this counts calendar days from today in the
 	 * site's timezone; counting seconds would show a day short west of UTC.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return int|null Null when the site isn't on a trial or Central didn't say when it ends.
 	 */
@@ -247,7 +247,7 @@ class Connection {
 	 * own grace), so counting from it would cut the grace period short or skip it. Central's
 	 * `expired_at` only when this site has no failed check on record.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return int 0 while the licence works, or when nothing recorded when it failed.
 	 */
@@ -270,7 +270,7 @@ class Connection {
 	/**
 	 * The GoDAM organization the key belongs to, when Central said.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return string
 	 */
@@ -284,7 +284,7 @@ class Connection {
 	 * Central's `/godam_upgrade` opens billing for the organization and returns to
 	 * WordPress afterwards. Without the organization, the plans page.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param string $return_url Where to come back to. Defaults to the GoDAM dashboard.
 	 *
@@ -307,7 +307,7 @@ class Connection {
 		/**
 		 * Filters where a site with a lapsed plan is sent to renew.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.11.0
 		 *
 		 * @param string $url          Renewal URL.
 		 * @param string $organization The GoDAM organization, or empty when unknown.

@@ -783,7 +783,7 @@ class RTGODAM_Transcoder_Admin {
 	 * screen over the dashboard and never on the site. Dismissed, it stays hidden until the
 	 * subscription lapses again (\RTGODAM\Inc\Helpers\Connection::record()).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return void
 	 */
@@ -825,7 +825,7 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Save the dismissal of the "subscription has ended" notice for the whole site.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return void
 	 */
@@ -844,7 +844,7 @@ class RTGODAM_Transcoder_Admin {
 	/**
 	 * Say how long the GoDAM trial has left, with a link to upgrade.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param int|null $days_left   Whole days left, or null when Central didn't say.
 	 * @param string   $upgrade_url Where to upgrade.

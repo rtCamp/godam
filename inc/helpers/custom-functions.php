@@ -1018,14 +1018,14 @@ function rtgodam_is_job_refusal( $error_code ) {
 /**
  * Error code the plugin stores while a file waits in the 5xx retry queue.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  */
 const RTGODAM_RETRY_QUEUED_CODE = 'retry_queued';
 
 /**
  * Error code the plugin stores once every automatic retry has failed.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  */
 const RTGODAM_RETRIES_EXHAUSTED_CODE = 'retries_exhausted';
 
@@ -1040,7 +1040,7 @@ const RTGODAM_RETRIES_EXHAUSTED_CODE = 'retries_exhausted';
  * `settings` (check the API key), `upgrade` (plan page), `retry_support` (retry, then
  * contact support).
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @see https://github.com/rtCamp/godam-core/issues/1887
  * @see https://github.com/rtCamp/godam-core/pull/1969
@@ -1091,7 +1091,7 @@ function rtgodam_get_transcoding_failure_reasons() {
  * Same wording as GoDAM's own media page (getFailureReason() in godam-core). The original
  * file stays in the media library either way; only the preview is missing.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @return array<string, array{message: string, action: string, retryable: bool}>
  */
@@ -1128,7 +1128,7 @@ function rtgodam_get_document_failure_reasons() {
  * (godam-core#1969). The two callbacks can arrive in either order, so an empty one keeps a
  * reason already saved rather than wiping it. A new job clears the reason when it is sent.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param int    $attachment_id Attachment ID.
  * @param string $reason        The `failure_reason` Central sent; empty when none.
@@ -1150,7 +1150,7 @@ function rtgodam_save_transcoding_failure_reason( $attachment_id, $reason ) {
 /**
  * Where a customer opens a support ticket.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @return string
  */
@@ -1158,7 +1158,7 @@ function rtgodam_get_support_url() {
 	/**
 	 * Filters the Contact support link shown with failed transcodes.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param string $url Support URL.
 	 */
@@ -1174,7 +1174,7 @@ function rtgodam_get_support_url() {
  * that can show it to someone who can't edit the file must mask it, as they do today.
  * Central's raw error text is never returned.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param int $attachment_id Attachment ID.
  *
@@ -1210,7 +1210,7 @@ function rtgodam_get_transcoding_failure( $attachment_id ) {
 /**
  * The failure description for an attachment whose status is `failed`.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param int    $attachment_id Attachment ID.
  * @param string $error_code    Its `rtgodam_transcoding_error_code`.
@@ -1312,7 +1312,7 @@ function rtgodam_describe_failed_transcode( $attachment_id, $error_code ) {
  * Central may never call back (a site firewall, the site offline), and the file would say
  * "queued" or "transcoding" forever.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param int    $attachment_id Attachment ID.
  * @param string $status        Its `rtgodam_transcoding_status`, lowercased.
@@ -1339,7 +1339,7 @@ function rtgodam_describe_stalled_transcode( $attachment_id, $status ) {
 	/**
 	 * Filters how long a job can go without word from Central before it's shown as stuck.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param int $seconds       Seconds. Default one day.
 	 * @param int $attachment_id Attachment ID.
@@ -1362,7 +1362,7 @@ function rtgodam_describe_stalled_transcode( $attachment_id, $status ) {
 /**
  * Whether an attachment waits in the 5xx retry queue.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param int $attachment_id Attachment ID.
  *
@@ -1386,7 +1386,7 @@ function rtgodam_is_in_retry_queue( $attachment_id ) {
  * A refusal's message can be Central's own wording, which can carry URLs, so only someone
  * who can edit the file sees it.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param int $attachment_id Attachment ID.
  *
@@ -1416,7 +1416,7 @@ function rtgodam_get_transcoding_failure_for_display( $attachment_id ) {
 /**
  * What the customer should do about a failed transcode, as one line and an optional link.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param string $action A next step from rtgodam_get_transcoding_failure().
  *
@@ -2136,7 +2136,7 @@ function rtgodam_handle_form_transcoding_failure( $form_type, $entry_id, $respon
  * apply, and it is what the recorder upload handlers pass to wp_handle_upload() as its
  * `mimes` override.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @return array<string, string> File extensions (separated by `|`) => MIME type.
  */
@@ -2152,7 +2152,7 @@ function rtgodam_get_recorder_upload_mimes() {
 	/**
 	 * Filters the audio and video types a form recorder field accepts for an upload.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array<string, string> $mimes File extensions (separated by `|`) => MIME type.
 	 */

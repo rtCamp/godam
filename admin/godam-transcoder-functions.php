@@ -527,7 +527,7 @@ function rtgodam_add_status_columns_content( $column_name, $post_id ) {
  * Mirrors renderNextStep() in assets/src/js/media-library/transcoding-status/failure.js,
  * which redraws it while the page polls.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param array $failure From rtgodam_get_transcoding_failure_for_display().
  */
