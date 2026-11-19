@@ -12,7 +12,7 @@
  * Both GoDAM Video blocks (a `<video>` the GoDAM player wraps) and GoDAM embeds
  * (an iframe driven through the GoDAM Player SDK) are supported.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  */
 
 /**
@@ -21,7 +21,7 @@
  * LearnDash passes its flags through wp_localize_script(), which turns `true`
  * and `1` into "1" and `false` and `0` into "" and "0".
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {*} value Flag value.
  * @return {boolean} Whether the flag is on.
@@ -36,7 +36,7 @@ export const isOn = ( value ) => value === true || value === 1 || value === '1';
  * are empty for admins and on completed steps. GoDAM passes the step's
  * settings as `rtgodam_player` so the player follows them every time.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {Object} data `learndash_video_data`.
  * @return {{autoStart: boolean, showControls: boolean, focusPause: boolean, trackTime: boolean}} Settings.
@@ -66,7 +66,7 @@ export function getPlayerSettings( data ) {
  *
  * Browsers reject play() when autoplay is blocked, which is not an error here.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {Function} call Call to run.
  */
@@ -88,7 +88,7 @@ const quietly = ( call ) => {
  * not the GoDAM player has wrapped it yet, and goes through the video.js
  * player for commands when there is one.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {HTMLVideoElement} video The block's video element.
  * @param {Window}           win   Window.
@@ -154,7 +154,7 @@ export function createBlockAdapter( video, win ) {
  * listening for is lost. If the ready message came before the SDK was
  * listening, they go out after `readyTimeout` anyway.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {HTMLIFrameElement} iframe         The embed iframe.
  * @param {Window}            win            Window.
@@ -244,7 +244,7 @@ export function createEmbedAdapter( iframe, win, apiOrigin, readyTimeout = 5000 
  *
  * Follows LearnDash's handling of its `local` provider (assets/js/learndash_video_script.js).
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {Object}   args
  * @param {Object}   args.adapter  Player controls, from createBlockAdapter() or createEmbedAdapter().
@@ -376,7 +376,7 @@ export function connectPlayer( { adapter, ldPlayer, data, ld, win, now = Date.no
  * only where LearnDash enforces progression (`data-video-progression="true"`):
  * not for admins who bypass it, and not on a step the learner completed.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @param {Window} win Window.
  * @return {Object[]} The LearnDash player entries it connected.
