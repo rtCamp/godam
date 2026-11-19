@@ -104,6 +104,10 @@ function hubspotOptedOut() {
  * signal that suppresses every tool; per-tool opt-outs (such as HubSpot's) still
  * apply on top of it when a view is collected.
  *
+ * This reflects only the page-wide GPC opt-out, not the WP Consent API marketing
+ * decision: it still returns true when the visitor declined marketing in a WP
+ * Consent API banner, because the tracker does not gate on `wp_has_consent()`.
+ *
  * @return {boolean} True when attribution is allowed for this visitor.
  */
 function hasAttributionConsent() {
@@ -398,7 +402,10 @@ function trackPlayer( config, player, video ) {
  */
 function init() {
 	// Expose GoDAM's attribution-consent decision even when no tool is connected,
-	// so a consent banner or a tester can read it instead of inferring it.
+	// so a consent banner or a tester can read it instead of inferring it. The
+	// script is only enqueued where MAP tracking is on and a player was rendered,
+	// so on every other page `window.GoDAM.hasAttributionConsent` is undefined,
+	// which itself means GoDAM will not attribute there.
 	window.GoDAM = window.GoDAM || {};
 	window.GoDAM.hasAttributionConsent = hasAttributionConsent;
 
