@@ -13,17 +13,23 @@
 /**
  * Decode the HTML entities LearnDash may leave in the saved Video URL.
  *
+ * Only the entities WordPress escaping produces are decoded, by plain string
+ * replacement, so the value is never reinterpreted as HTML. `&amp;` is decoded
+ * last so an already-escaped ampersand (`&amp;lt;`) is not decoded twice.
+ *
  * @since n.e.x.t
  *
- * @param {string}   value Field value.
- * @param {Document} doc   Document.
+ * @param {string} value Field value.
  * @return {string} Decoded value.
  */
-const decode = ( value, doc ) => {
-	const textarea = doc.createElement( 'textarea' );
-	textarea.innerHTML = value;
-	return textarea.value;
-};
+const decode = ( value ) =>
+	String( value )
+		.replace( /&lt;/g, '<' )
+		.replace( /&gt;/g, '>' )
+		.replace( /&quot;/g, '"' )
+		.replace( /&#0*39;/g, "'" )
+		.replace( /&#x0*27;/gi, "'" )
+		.replace( /&amp;/g, '&' );
 
 /**
  * Whether a Video URL value is the GoDAM marker, with or without a picked video.
@@ -71,7 +77,7 @@ export function setupUseGoDAMSwitch( doc, config ) {
 				pickerRow.style.display = toggle.checked ? '' : 'none';
 			}
 
-			if ( ! toggle.checked && urlInput && isMarker( decode( urlInput.value, doc ), config.markerTag ) ) {
+			if ( ! toggle.checked && urlInput && isMarker( decode( urlInput.value ), config.markerTag ) ) {
 				urlInput.value = '';
 			}
 		};
