@@ -494,7 +494,7 @@ class Ninja_Forms_Field_Godam_Recorder extends \NF_Abstracts_Field {
 	 * The upload nonce only names a field, and the form comes from the request, so the
 	 * field has to be a recorder field that belongs to that form.
 	 *
-	 * @since 2.10.1
+	 * @since 2.11.0
 	 *
 	 * @param int $form_id  Form ID.
 	 * @param int $field_id Field ID.

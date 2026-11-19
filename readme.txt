@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.10.1
+Stable tag: 2.11.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -273,14 +273,16 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 == Changelog ==
 
-= v2.10.1 (November 19, 2026) =
+= v2.11.0 (November 19, 2026) =
 
+- Feat: GoDAM videos now work with LearnDash Video Progression on lessons and topics. Turn on "Use GoDAM Video" to use a GoDAM Video block or a picked video, or paste a GoDAM video URL into LearnDash's Video URL field. Mark Complete stays locked until the video ends, and the player follows LearnDash's Autostart, Video Resume and controls settings.
 - Tweak: The media library now says why a transcode failed and what to do next, in the list view, the grid view's warning tooltip and the attachment details panel. Needs GoDAM Central v2.12.1; files that failed earlier show the generic message.
 - Tweak: The GoDAM dashboard and the Media Library show how many days are left in a trial, with a link to upgrade. When a plan has expired, GoDAM offers to renew it instead of showing the signup screens.
 - Tweak: A new "Track visitors" setting in GoDAM > Settings > General turns visitor tracking off. It is on by default, and the `godam_visitor_tracking_enabled` filter still overrides it.
 - Tweak: GoDAM now suggests privacy-policy text in Settings > Privacy > Policy Guide, and the readme lists what GoDAM stores in the visitor's browser.
 - Fix: Fluent Forms and Ninja Forms recorder uploads, likes and comments now work on pages served from a full-page cache.
 - Fix: Fluent Forms and Ninja Forms recorder uploads accept only the form's recorder field, and only audio and video files.
+- Fix: A `[video]` shortcode for anything other than a `.mov` file rendered empty while GoDAM was active, including LearnDash's self-hosted lesson videos. Such shortcodes now play in WordPress's own player again.
 
 = v2.10.0 (November 17, 2026) =
 

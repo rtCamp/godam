@@ -24,7 +24,7 @@ use RTGODAM\Inc\Traits\Singleton;
  * The nonce actions are the ones the upload handlers already check, so the
  * handlers do not change.
  *
- * @since 2.10.1
+ * @since 2.11.0
  */
 class Recorder_Upload_Nonce {
 
@@ -46,7 +46,7 @@ class Recorder_Upload_Nonce {
 	/**
 	 * The nonce action a recorder upload is checked against.
 	 *
-	 * @since 2.10.1
+	 * @since 2.11.0
 	 *
 	 * @param string $form     'fluentforms' or 'ninja-forms'.
 	 * @param int    $field_id Ninja Forms field ID. Not used for Fluent Forms.
@@ -70,7 +70,7 @@ class Recorder_Upload_Nonce {
 	/**
 	 * Send a fresh nonce for the requested recorder field.
 	 *
-	 * @since 2.10.1
+	 * @since 2.11.0
 	 *
 	 * @return void
 	 */
