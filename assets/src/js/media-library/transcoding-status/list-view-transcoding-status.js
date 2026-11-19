@@ -110,8 +110,9 @@ class ListViewTranscodingStatus {
 
 		const statusText = element.querySelector( '.status-text' );
 
-		// Only a failed or stuck file has a next step.
+		// Only a failed or stuck file has a next step, and a reason to point the tests at.
 		renderNextStep( element, null );
+		statusText.removeAttribute( 'data-test-id' );
 
 		// Handle failed transcoding state
 		if ( data.status === 'failed' ) {
@@ -203,6 +204,7 @@ class ListViewTranscodingStatus {
 		const failureMessage = data.error_msg || __( 'Transcoding failed, please try again.', 'godam' );
 		loader.style.setProperty( '--status-text', cssString( failureMessage ) );
 		statusText.textContent = failureMessage;
+		statusText.setAttribute( 'data-test-id', 'godam-transcode-failure-reason' );
 
 		renderNextStep( element, data.failure );
 	}

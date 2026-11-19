@@ -125,4 +125,34 @@ describe( 'ListViewTranscodingStatus — failed state', () => {
 
 		expect( document.querySelector( '#list-transcoder-status-55 .status-next-step' ) ).toBeNull();
 	} );
+
+	it( 'marks the reason, next step and links for the E2E tests', () => {
+		render();
+
+		new ListViewTranscodingStatus().updateAttachmentStatus( '55', {
+			status: 'failed',
+			error_msg: 'Your GoDAM storage is full.',
+			failure: {
+				next_step: 'Upgrade plan',
+				next_step_url: 'https://app.godam.io/plans',
+				support_url: 'https://app.godam.io/helpdesk/my-tickets',
+			},
+		} );
+
+		const element = document.querySelector( '#list-transcoder-status-55' );
+		expect( element.querySelector( '[data-test-id="godam-transcode-failure-reason"]' ).textContent ).toBe( 'Your GoDAM storage is full.' );
+		expect( element.querySelector( '[data-test-id="godam-transcode-next-step"]' ) ).not.toBeNull();
+		expect( element.querySelector( '[data-test-id="godam-transcode-next-step-link"]' ).href ).toBe( 'https://app.godam.io/plans' );
+		expect( element.querySelector( '[data-test-id="godam-transcode-support-link"]' ).href ).toBe( 'https://app.godam.io/helpdesk/my-tickets' );
+	} );
+
+	it( 'drops the reason\'s test ID once the file transcodes', () => {
+		render();
+		const status = new ListViewTranscodingStatus();
+
+		status.updateAttachmentStatus( '55', { status: 'failed', error_msg: 'x' } );
+		status.updateAttachmentStatus( '55', { status: 'transcoded', progress: 100 } );
+
+		expect( document.querySelector( '[data-test-id^="godam-transcode-"]' ) ).toBeNull();
+	} );
 } );
