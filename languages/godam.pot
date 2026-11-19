@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-19T08:31:54+00:00\n"
+"POT-Creation-Date: 2026-11-19T10:07:21+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -15755,59 +15755,92 @@ msgstr ""
 msgid "Failed to remove virtual media site from GoDAM Central."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:187
 #: inc/classes/class-visitor-consent.php:193
+#: inc/classes/class-visitor-consent.php:201
+#: inc/classes/class-visitor-consent.php:250
 msgid "Until deleted"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:188
+#: inc/classes/class-visitor-consent.php:194
 msgid "Ties one visitor's video views and clicks together without naming them."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:189
+#: inc/classes/class-visitor-consent.php:195
 msgid "Anonymous visitor ID"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:194
+#: inc/classes/class-visitor-consent.php:202
 msgid "Counts a viewer once per video."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:199
+#: inc/classes/class-visitor-consent.php:209
+#: inc/classes/class-visitor-consent.php:259
 msgid "Until the browser tab closes"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:200
+#: inc/classes/class-visitor-consent.php:210
 msgid "Holds clicks on video and image layers until they are sent to GoDAM analytics."
 msgstr ""
 
+#: inc/classes/class-visitor-consent.php:218
+#: inc/classes/class-visitor-consent.php:226
+#: inc/classes/class-visitor-consent.php:234
+#: inc/classes/class-visitor-consent.php:242
+msgid "10 minutes"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:219
+msgid "Keeps the link to a recording made in a Fluent Forms form, so it is not lost if the page reloads before the form is sent."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:227
+msgid "Keeps the link to a recording made in a Ninja Forms form, so it is not lost if the page reloads before the form is sent."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:235
+msgid "Keeps the link to a recording made in an Everest Forms form, so it is not lost if the page reloads before the form is sent."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:243
+msgid "Keeps an upload in the GoDAM recorder field, so it can carry on if the page reloads."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:251
+msgid "Remembers how far a learner watched a LifterLMS lesson video, so it can carry on from there."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:260
+msgid "Groups one view of a video when how far it was watched is sent to the site's connected Marketo or HubSpot account."
+msgstr ""
+
 #. translators: %s: how long the item is kept, e.g. "Until deleted".
-#: inc/classes/class-visitor-consent.php:248
+#: inc/classes/class-visitor-consent.php:314
 #, php-format
 msgid "Kept: %s."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:252
+#: inc/classes/class-visitor-consent.php:318
 msgid "GoDAM counts views of the videos and images on this site, and clicks on their layers, so the site owner can see how the media performs. Edit this text to match your site. If you turned visitor tracking off in GoDAM > Settings > General, you can leave it out."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:253
+#: inc/classes/class-visitor-consent.php:319
 msgid "Suggested text:"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:254
+#: inc/classes/class-visitor-consent.php:320
 msgid "When you view a video or an interactive image on this site, we use GoDAM to measure how our media is watched. GoDAM sends these details to GoDAM analytics (analytics.godam.io), run by rtCamp: an anonymous visitor ID, the page you are on and the page that referred you, including campaign (UTM) parameters, which video you watched and for how long, clicks on video and image layers, your browser, operating system, screen size and language, and your IP address, which is used to find your country."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:255
+#: inc/classes/class-visitor-consent.php:321
 msgid "GoDAM keeps these items in your browser:"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:257
+#: inc/classes/class-visitor-consent.php:323
 msgid "If this site asks for your consent to statistics, GoDAM stores nothing and sends nothing until you agree, and deletes these items if you withdraw your consent."
 msgstr ""
 
 #. translators: %s: link to the GoDAM privacy policy.
-#: inc/classes/class-visitor-consent.php:260
+#: inc/classes/class-visitor-consent.php:326
 #, php-format
 msgid "GoDAM's privacy policy: %s"
 msgstr ""
