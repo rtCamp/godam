@@ -20,7 +20,7 @@ const TEST_ID = 'godam-transcode-failure-panel';
 /**
  * Build an element with a class and optional text.
  *
- * @since n.e.x.t Takes an optional `testId`.
+ * @since 2.11.0 Takes an optional `testId`.
  *
  * @param {string} tag       Tag name.
  * @param {string} className Class name.

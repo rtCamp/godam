@@ -20,7 +20,7 @@ export const isLinkable = ( url ) => typeof url === 'string' && /^https?:\/\//i.
 /**
  * Build a link that opens in a new tab.
  *
- * @since n.e.x.t Takes an optional `testId`.
+ * @since 2.11.0 Takes an optional `testId`.
  *
  * @param {string} href      URL.
  * @param {string} text      Link text.
@@ -95,7 +95,7 @@ export const cssString = ( text ) => JSON.stringify( String( text ) );
  * Put a failed file's reason on its grid status icon: in the hover tooltip, and as the
  * icon's accessible name. With no reason, the stylesheet's generic label shows instead.
  *
- * @since n.e.x.t Marks the icon with a `data-test-id` while it carries a reason.
+ * @since 2.11.0 Marks the icon with a `data-test-id` while it carries a reason.
  *
  * @param {HTMLElement} loader  The `.transcoding-status__loader` element.
  * @param {string}      message Why it failed, from the server.
