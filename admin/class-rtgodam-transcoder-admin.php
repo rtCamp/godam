@@ -595,7 +595,7 @@ class RTGODAM_Transcoder_Admin {
 	private function display_bandwidth_exceeded_notice( $bandwidth_percentage ) {
 		$message = sprintf(
 			/* translators: %s: bandwidth percentage */
-			__( 'Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend.', 'godam' ),
+			__( 'Your bandwidth usage (%s%%) has exceeded your plan limit. Your videos keep playing; upgrade your plan to stay within your limit.', 'godam' ),
 			'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>'
 		);
 
