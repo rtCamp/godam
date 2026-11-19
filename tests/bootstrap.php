@@ -506,6 +506,8 @@ require_once __DIR__ . '/stubs/wp-http-functions.php';
 require_once __DIR__ . '/stubs/site-functions.php';
 // Current-user, avatar and wp_remote_post stubs for the Engagement route tests.
 require_once __DIR__ . '/stubs/engagement-functions.php';
+// wp_image_matches_ratio() for the CDN image srcset tests.
+require_once __DIR__ . '/stubs/image-functions.php';
 
 // Version-compatibility checks read this. High enough that any add-on minimum
 // passes, so tests exercising the incompatible branch raise their own minimum.
@@ -594,6 +596,9 @@ require_once dirname( __DIR__ ) . '/inc/classes/rest-api/class-media-library.php
 // Helper functions under test (godam_is_supported_document). The file only
 // declares functions plus a few guarded define()s, so it is safe to load here.
 require_once dirname( __DIR__ ) . '/inc/helpers/custom-functions.php';
+// The connection status helper, which the API key verification in admin/godam-transcoder-functions.php records into.
+require_once dirname( __DIR__ ) . '/inc/classes/enums/class-connection-status.php';
+require_once dirname( __DIR__ ) . '/inc/helpers/class-connection.php';
 
 // Loaded for MapTrackerValidationTest: the static request-shape checks shared by
 // Map_Tracker and the map-events REST route. Requiring the file only declares the

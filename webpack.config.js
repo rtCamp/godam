@@ -304,6 +304,14 @@ const lifterLMSEmbed = {
 	},
 };
 
+const learnDash = {
+	...sharedConfig,
+	entry: {
+		'godam-learndash': path.resolve( process.cwd(), 'assets', 'src', 'js', 'learndash', 'frontend.js' ),
+		'godam-learndash-admin': path.resolve( process.cwd(), 'assets', 'src', 'js', 'learndash', 'admin.js' ),
+	},
+};
+
 const ninjaForms = {
 	...sharedConfig,
 	entry: {
@@ -564,6 +572,7 @@ module.exports = [
 	godamPlayerSDK,
 	lifterLMSBlock,
 	lifterLMSEmbed,
+	learnDash,
 	ninjaForms,
 	wpBakeryVideoSelectorParam,
 	wpBakeryAudioSelectorParam,

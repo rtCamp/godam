@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GoDAM 2.10.0\n"
+"Project-Id-Version: GoDAM 2.11.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/godam\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-17T12:43:10+00:00\n"
+"POT-Creation-Date: 2026-11-19T11:09:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: godam\n"
@@ -371,6 +371,8 @@ msgstr ""
 #: assets/build/js/wpbakery-image-selector-param.min.js:1
 #: assets/build/js/wpbakery-video-selector-param.min.js:1
 #: assets/build/pages/godam.min.js:2
+#: inc/classes/learndash/class-learndash.php:451
+#: inc/classes/learndash/class-learndash.php:573
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:102
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:149
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:196
@@ -415,6 +417,7 @@ msgstr ""
 #: inc/classes/elementor-controls/class-godam-media.php:165
 #: inc/classes/elementor-controls/class-godam-media.php:211
 #: inc/classes/elementor-controls/class-godam-media.php:213
+#: inc/classes/learndash/class-learndash.php:453
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:123
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:170
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:205
@@ -458,14 +461,14 @@ msgstr ""
 #: assets/src/blocks/godam-audio/edit.js:597
 #: assets/src/blocks/godam-player/components/ThumbnailPanel.js:252
 #: assets/src/blocks/godam-player/track-uploader.js:57
-#: assets/src/js/godam-player/engagement.js:955
+#: assets/src/js/godam-player/engagement.js:1022
 #: pages/video-editor/components/video-dataview/VideoEditorDataView.jsx:553
 msgid "Edit"
 msgstr ""
 
 #: assets/build/blocks/godam-audio/index.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: godam.php:109
+#: godam.php:110
 #: inc/classes/class-pages.php:245
 #: inc/classes/class-pages.php:246
 #: assets/src/blocks/godam-audio/edit.js:602
@@ -1736,7 +1739,7 @@ msgstr ""
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:334
 #: assets/src/js/deactivation-feedback.js:42
-#: assets/src/js/godam-player/engagement.js:750
+#: assets/src/js/godam-player/engagement.js:818
 #: pages/godam/components/ConfirmModal.jsx:38
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:191
 #: pages/media-library/App.js:293
@@ -1757,9 +1760,9 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/components/VideoSEOModal.js:337
-#: assets/src/js/godam-player/engagement.js:1124
+#: assets/src/js/godam-player/engagement.js:1190
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:136
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:144
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:154
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:400
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:153
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:535
@@ -2050,7 +2053,7 @@ msgstr ""
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: assets/src/blocks/godam-player/edit.js:1025
-#: pages/godam/components/TrialCountdownBanner.jsx:78
+#: pages/godam/components/TrialCountdownBanner.jsx:90
 msgid "Upgrade Now"
 msgstr ""
 
@@ -2520,8 +2523,8 @@ msgstr ""
 #: assets/build/js/fluentforms.min.js:1
 #: assets/build/js/ninja-forms.min.js:1
 #: assets/src/js/everestforms/index.js:231
-#: assets/src/js/fluentforms/index.js:245
-#: assets/src/js/ninja-forms/index.js:216
+#: assets/src/js/fluentforms/index.js:252
+#: assets/src/js/ninja-forms/index.js:223
 msgid "File upload in progress…"
 msgstr ""
 
@@ -2531,43 +2534,43 @@ msgid "This title looks like a file name. Search engines show it as the video ti
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:731
+#: assets/src/js/godam-player/engagement.js:799
 msgid "Add timestamp"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:737
+#: assets/src/js/godam-player/engagement.js:805
 msgid "Add emoji"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:745
-#: assets/src/js/godam-player/engagement.js:937
-#: assets/src/js/godam-player/engagement.js:977
+#: assets/src/js/godam-player/engagement.js:813
+#: assets/src/js/godam-player/engagement.js:1004
+#: assets/src/js/godam-player/engagement.js:1044
 msgid "Reply"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:745
+#: assets/src/js/godam-player/engagement.js:813
 msgid "Comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: inc/helpers/custom-functions.php:1927
-#: assets/src/js/godam-player/engagement.js:908
-#: assets/src/js/godam-player/engagement.js:915
+#: inc/helpers/custom-functions.php:2416
+#: assets/src/js/godam-player/engagement.js:975
+#: assets/src/js/godam-player/engagement.js:982
 msgid "Anonymous"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:924
+#: assets/src/js/godam-player/engagement.js:991
 msgid "This comment has been deleted"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/media-library.min.js:2
 #: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/godam-player/engagement.js:947
+#: assets/src/js/godam-player/engagement.js:1014
 #: pages/media-library/components/context-menu/ContextMenu.jsx:518
 #: pages/media-library/components/modal/DeleteModal.jsx:132
 #: pages/video-editor/components/SidebarLayers.js:547
@@ -2578,33 +2581,33 @@ msgid "Delete"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:977
+#: assets/src/js/godam-player/engagement.js:1044
 msgid "Replies"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1029
+#: assets/src/js/godam-player/engagement.js:1096
 msgid "No comments yet. Be the first to comment!"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1090
+#: assets/src/js/godam-player/engagement.js:1156
 msgid "Register"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1090
+#: assets/src/js/godam-player/engagement.js:1156
 msgid "Login"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1090
+#: assets/src/js/godam-player/engagement.js:1156
 msgid "to comment"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
 #: assets/build/pages/onboarding.min.js:2
-#: assets/src/js/godam-player/engagement.js:1097
+#: assets/src/js/godam-player/engagement.js:1163
 #: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:58
 #: pages/onboarding/components/screens/LoginScreen.jsx:54
 #: pages/onboarding/components/screens/SignupScreen.jsx:77
@@ -2612,22 +2615,23 @@ msgid "Email"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1101
+#: assets/src/js/godam-player/engagement.js:1167
 msgid "Enter your email"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1160
+#: inc/classes/learndash/class-learndash.php:391
+#: assets/src/js/godam-player/engagement.js:1226
 msgid "GoDAM Video"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1271
+#: assets/src/js/godam-player/engagement.js:1350
 msgid "Comments"
 msgstr ""
 
 #: assets/build/js/godam-player-frontend.min.js:1
-#: assets/src/js/godam-player/engagement.js:1276
+#: assets/src/js/godam-player/engagement.js:1355
 msgid "Hide Comments"
 msgstr ""
 
@@ -2796,23 +2800,38 @@ msgid "Remove recording"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: admin/godam-transcoder-functions.php:493
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:193
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/onboarding.min.js:2
+#: admin/godam-transcoder-functions.php:546
+#: assets/src/js/media-library/transcoding-status/failure.js:79
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:178
+#: pages/godam/components/tabs/GeneralSettings/AiAgentsSettings.jsx:62
+#: pages/godam/components/tabs/IntegrationsSettings/HubSpotSettings.jsx:392
+#: pages/godam/components/tabs/IntegrationsSettings/HubSpotSettings.jsx:426
+#: pages/onboarding/components/screens/RenewScreen.jsx:122
+#: pages/onboarding/components/screens/WorkspaceScreen.jsx:120
+msgid "Contact support"
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: admin/godam-transcoder-functions.php:494
+#: inc/classes/rest-api/class-transcoding.php:374
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:204
 msgid "Transcoding failed, please try again."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:212
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:226
 msgid "Not started"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:232
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:246
 msgid "Media is transcoded"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:268
+#: assets/src/js/media-library/transcoding-status/list-view-transcoding-status.js:282
 msgid "Transcoding…"
 msgstr ""
 
@@ -2833,12 +2852,12 @@ msgstr ""
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
 #: assets/build/pages/whats-new.min.js:1
-#: admin/class-rtgodam-transcoder-admin.php:193
-#: admin/class-rtgodam-transcoder-admin.php:277
+#: admin/class-rtgodam-transcoder-admin.php:195
+#: admin/class-rtgodam-transcoder-admin.php:279
 #: admin/godam-transcoder-functions.php:458
-#: inc/classes/class-media-library-ajax.php:1757
+#: inc/classes/class-media-library-ajax.php:1825
 #: inc/templates/video-preview.php:78
-#: assets/src/js/media-library/views/attachment.js:184
+#: assets/src/js/media-library/views/attachment.js:189
 #: pages/godam/components/GoDAMHeader.jsx:75
 #: pages/whats-new/components/Header.js:19
 msgid "GoDAM Logo"
@@ -2847,7 +2866,7 @@ msgstr ""
 #: assets/build/js/media-library.min.js:1
 #: assets/build/pages/media-library-tour.min.js:1
 #: assets/build/pages/media-library.min.js:2
-#: inc/classes/class-media-library-ajax.php:1024
+#: inc/classes/class-media-library-ajax.php:1034
 #: assets/src/js/media-library/views/fields/move-to-folder-field.js:79
 #: pages/media-library-tour/dom.js:215
 #: pages/media-library/App.js:329
@@ -2861,69 +2880,59 @@ msgid "Folder"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:44
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:54
 msgid "Transcoding has started."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:53
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:63
 msgid "Transcoding isn't available on a localhost site."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:55
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:65
 msgid "Your GoDAM storage is full. Upgrade your plan to continue transcoding."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:57
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:67
 msgid "HTTP authentication is enabled on this site. Disable it to allow transcoding."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:59
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:69
 msgid "The request failed. Try again."
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:115
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:114
+msgid "Transcoding will be retried"
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:116
+msgid "Transcoding is taking longer than expected"
+msgstr ""
+
+#: assets/build/js/media-library.min.js:1
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:118
 msgid "This file couldn't be transcoded"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: inc/classes/class-media-library-ajax.php:829
-#: inc/classes/rest-api/class-transcoding.php:361
-#: inc/helpers/custom-functions.php:832
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:116
-msgid "This file can't be transcoded."
-msgstr ""
-
-#: assets/build/js/media-library.min.js:1
-#: assets/build/pages/analytics.min.js:2
-#: assets/build/pages/dashboard.min.js:2
-#: assets/build/pages/godam.min.js:2
-#: assets/build/pages/help.min.js:2
-#: assets/build/pages/tools.min.js:1
-#: assets/build/pages/video-editor.min.js:2
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:123
-#: pages/godam/components/GoDAMHeader.jsx:119
-msgid "Upgrade plan"
-msgstr ""
-
-#: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:131
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:171
 msgid "Retranscode"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
 #: assets/build/pages/onboarding.min.js:2
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:72
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:82
 #: pages/onboarding/components/screens/ForgotPasswordScreen.jsx:61
 msgid "Sending…"
 msgstr ""
 
 #: assets/build/js/media-library.min.js:1
-#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:148
+#: assets/src/js/media-library/views/fields/transcoding-refusal-panel.js:192
 msgid "Details for support"
 msgstr ""
 
@@ -3060,7 +3069,7 @@ msgid "Search Media"
 msgstr ""
 
 #: assets/build/js/ninja-forms.min.js:1
-#: assets/src/js/ninja-forms/index.js:280
+#: assets/src/js/ninja-forms/index.js:287
 msgid "Upload failed. Please try again."
 msgstr ""
 
@@ -3118,6 +3127,8 @@ msgstr ""
 
 #: assets/build/js/wpbakery-video-selector-param.min.js:1
 #: assets/build/pages/analytics.min.js:2
+#: inc/classes/learndash/class-learndash.php:451
+#: inc/classes/learndash/class-learndash.php:572
 #: inc/classes/wpbakery-elements/class-wpb-godam-params.php:102
 #: assets/src/js/wpbakery/wpbakery-video-selector-param.js:148
 #: pages/analytics/index.js:37
@@ -3140,6 +3151,7 @@ msgid "Select or Upload Video Of Your Choice"
 msgstr ""
 
 #: assets/build/js/wpforms-godam-recorder-editor.min.js:1
+#: inc/classes/learndash/class-learndash.php:571
 #: assets/src/js/wpforms-godam-recorder-editor.js:20
 msgid "Use this video"
 msgstr ""
@@ -3259,7 +3271,7 @@ msgstr ""
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
-#: pages/godam/components/TrialCountdownBanner.jsx:68
+#: pages/godam/components/TrialCountdownBanner.jsx:80
 #, js-format
 msgid "Free trial ends on %s"
 msgstr ""
@@ -3488,6 +3500,17 @@ msgstr ""
 #: assets/build/pages/help.min.js:2
 #: assets/build/pages/tools.min.js:1
 #: assets/build/pages/video-editor.min.js:2
+#: inc/helpers/custom-functions.php:1454
+#: pages/godam/components/GoDAMHeader.jsx:119
+msgid "Upgrade plan"
+msgstr ""
+
+#: assets/build/pages/analytics.min.js:2
+#: assets/build/pages/dashboard.min.js:2
+#: assets/build/pages/godam.min.js:2
+#: assets/build/pages/help.min.js:2
+#: assets/build/pages/tools.min.js:1
+#: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/GoDAMHeader.jsx:131
 msgid "Get GoDAM"
 msgstr ""
@@ -3639,8 +3662,8 @@ msgstr ""
 #: pages/analytics/PlaysVsViewers.js:93
 #: pages/analytics/SingleMetrics.js:122
 #: pages/dashboard/components/GA4ConnectionWidget.js:174
-#: pages/dashboard/Dashboard.js:288
-#: pages/dashboard/Dashboard.js:324
+#: pages/dashboard/Dashboard.js:289
+#: pages/dashboard/Dashboard.js:325
 msgid "All time"
 msgstr ""
 
@@ -4163,7 +4186,7 @@ msgstr ""
 #: pages/analytics/PlaybackPerformance.js:429
 #: pages/analytics/PlaybackPerformance.js:547
 #: pages/dashboard/components/TopVideosTable.js:228
-#: pages/dashboard/Dashboard.js:562
+#: pages/dashboard/Dashboard.js:566
 msgid "Engagement Rate"
 msgstr ""
 
@@ -4745,7 +4768,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/Analytics.js:599
-#: pages/dashboard/Dashboard.js:437
+#: pages/dashboard/Dashboard.js:441
 msgid "Heads up: analytics update periodically, so new activity may take up to 30 minutes to show here."
 msgstr ""
 
@@ -4772,7 +4795,7 @@ msgstr[1] ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/Analytics.js:649
-#: pages/dashboard/Dashboard.js:499
+#: pages/dashboard/Dashboard.js:503
 msgid "Insights"
 msgstr ""
 
@@ -4792,7 +4815,7 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/Analytics.js:671
-#: pages/dashboard/Dashboard.js:535
+#: pages/dashboard/Dashboard.js:539
 msgid "Play rate is the percentage of page visitors who clicked play. Play Rate = Total plays / Page loads"
 msgstr ""
 
@@ -4800,14 +4823,14 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/Analytics.js:681
 #: pages/dashboard/components/TopVideosTable.js:227
-#: pages/dashboard/Dashboard.js:548
+#: pages/dashboard/Dashboard.js:552
 msgid "Watch Time"
 msgstr ""
 
 #: assets/build/pages/analytics.min.js:2
 #: assets/build/pages/dashboard.min.js:2
 #: pages/analytics/Analytics.js:682
-#: pages/dashboard/Dashboard.js:549
+#: pages/dashboard/Dashboard.js:553
 msgid "Total time the video has been watched, aggregated across all plays"
 msgstr ""
 
@@ -4905,6 +4928,28 @@ msgstr ""
 #: assets/build/pages/analytics.min.js:2
 #: pages/analytics/index.js:89
 msgid "Select Video to Edit"
+msgstr ""
+
+#: assets/build/pages/dashboard.min.js:2
+#: admin/class-rtgodam-transcoder-admin.php:860
+#: pages/shared/TrialDaysNotice.jsx:62
+msgid "Your GoDAM trial ends today."
+msgstr ""
+
+#. translators: %d: days left in the GoDAM trial
+#: assets/build/pages/dashboard.min.js:2
+#: admin/class-rtgodam-transcoder-admin.php:864
+#: pages/shared/TrialDaysNotice.jsx:67
+#, js-format,php-format
+msgid "Your GoDAM trial ends in %d day."
+msgid_plural "Your GoDAM trial ends in %d days."
+msgstr[0] ""
+msgstr[1] ""
+
+#: assets/build/pages/dashboard.min.js:2
+#: admin/class-rtgodam-transcoder-admin.php:873
+#: pages/shared/TrialDaysNotice.jsx:110
+msgid "Upgrade to keep transcoding and other Pro features"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
@@ -5020,7 +5065,7 @@ msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
 #: pages/dashboard/components/TopProductsTable.js:510
-#: pages/dashboard/Dashboard.js:215
+#: pages/dashboard/Dashboard.js:216
 msgid "Top Products"
 msgstr ""
 
@@ -5260,7 +5305,7 @@ msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
 #: pages/dashboard/components/TopVideosTable.js:268
-#: pages/dashboard/Dashboard.js:206
+#: pages/dashboard/Dashboard.js:207
 msgid "Top Videos"
 msgstr ""
 
@@ -5473,14 +5518,14 @@ msgid "Sending to GA4"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:198
+#: pages/dashboard/Dashboard.js:199
 msgid "Top content"
 msgstr ""
 
 #. translators: %d: number of days in the compared previous window.
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:285
-#: pages/dashboard/Dashboard.js:334
+#: pages/dashboard/Dashboard.js:286
+#: pages/dashboard/Dashboard.js:335
 #, js-format
 msgid "vs prev %d days"
 msgstr ""
@@ -5488,47 +5533,47 @@ msgstr ""
 #: assets/build/pages/dashboard.min.js:2
 #: inc/classes/class-pages.php:202
 #: inc/classes/class-pages.php:203
-#: pages/dashboard/Dashboard.js:432
+#: pages/dashboard/Dashboard.js:436
 msgid "Dashboard"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:448
+#: pages/dashboard/Dashboard.js:452
 msgid "See Reel Pop Analytics"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:460
+#: pages/dashboard/Dashboard.js:464
 msgid "Analytics docs"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:469
+#: pages/dashboard/Dashboard.js:473
 msgid "Total Plays / Unique Viewers"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:518
+#: pages/dashboard/Dashboard.js:522
 msgid "Active Videos"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:519
+#: pages/dashboard/Dashboard.js:523
 msgid "Number of unique videos that received user interactions each day, such as views or plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:534
+#: pages/dashboard/Dashboard.js:538
 msgid "Avg. Play Rate"
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:563
+#: pages/dashboard/Dashboard.js:567
 msgid "Average share of each video that viewers watched, across all plays."
 msgstr ""
 
 #: assets/build/pages/dashboard.min.js:2
-#: pages/dashboard/Dashboard.js:586
+#: pages/dashboard/Dashboard.js:590
 msgid "WooCommerce metrics couldn’t load. This is usually temporary."
 msgstr ""
 
@@ -5659,38 +5704,38 @@ msgid "Made with ♥ by the GoDAM Team"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:845
+#: admin/class-rtgodam-transcoder-admin.php:967
 #: pages/godam/components/PreflightNotices.jsx:55
 msgid "How to fix"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:848
+#: admin/class-rtgodam-transcoder-admin.php:970
 #: pages/godam/components/PreflightNotices.jsx:58
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:180
 msgid "Contact Support"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:803
+#: admin/class-rtgodam-transcoder-admin.php:925
 #: pages/godam/components/PreflightNotices.jsx:90
 msgid "Your site can't receive transcoding updates"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:804
+#: admin/class-rtgodam-transcoder-admin.php:926
 #: pages/godam/components/PreflightNotices.jsx:91
 msgid "New videos may stay at \"Processing\" because transcoding updates can't reach this site. A firewall, security plugin or Cloudflare rule is usually blocking it."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:812
+#: admin/class-rtgodam-transcoder-admin.php:934
 #: pages/godam/components/PreflightNotices.jsx:100
 msgid "Setup check"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:817
+#: admin/class-rtgodam-transcoder-admin.php:939
 #: pages/godam/components/PreflightNotices.jsx:102
 msgid "A setup check for this site didn't pass. See how to fix it, or contact support."
 msgstr ""
@@ -5788,7 +5833,7 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: assets/build/pages/video-editor.min.js:2
 #: pages/godam/components/tabs/AdsSettings/AdsSettings.jsx:136
-#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:144
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:154
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationsSettings.jsx:400
 #: pages/godam/components/tabs/SeoSettings/SeoSettings.jsx:153
 #: pages/godam/components/tabs/VideoPlayer/VideoPlayer.jsx:535
@@ -5819,9 +5864,9 @@ msgid "Refreshing…"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:516
-#: admin/class-rtgodam-transcoder-admin.php:579
-#: admin/class-rtgodam-transcoder-admin.php:618
+#: admin/class-rtgodam-transcoder-admin.php:518
+#: admin/class-rtgodam-transcoder-admin.php:581
+#: admin/class-rtgodam-transcoder-admin.php:620
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:151
 msgid "Refresh Status"
 msgstr ""
@@ -5847,7 +5892,7 @@ msgid "Yes, Remove"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: inc/classes/rest-api/class-settings.php:265
+#: inc/classes/rest-api/class-settings.php:267
 #: pages/godam/components/tabs/VideoSettings/APISettings.jsx:60
 msgid "API key removed. This site is now disconnected from GoDAM."
 msgstr ""
@@ -6004,15 +6049,6 @@ msgid "AI agents (MCP)"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: assets/build/pages/onboarding.min.js:2
-#: pages/godam/components/tabs/GeneralSettings/AiAgentsSettings.jsx:62
-#: pages/godam/components/tabs/IntegrationsSettings/HubSpotSettings.jsx:392
-#: pages/godam/components/tabs/IntegrationsSettings/HubSpotSettings.jsx:426
-#: pages/onboarding/components/screens/WorkspaceScreen.jsx:120
-msgid "Contact support"
-msgstr ""
-
-#: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/GeneralSettings/AiAgentsSettings.jsx:71
 msgid "Let AI agents connect to GoDAM"
 msgstr ""
@@ -6102,6 +6138,16 @@ msgstr ""
 #: assets/build/pages/godam.min.js:2
 #: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:126
 msgid "Enable Google Tag Manager video tracking for analytics and conversion tracking."
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:135
+msgid "Track visitors"
+msgstr ""
+
+#: assets/build/pages/godam.min.js:2
+#: pages/godam/components/tabs/GeneralSettings/GeneralSettings.jsx:136
+msgid "Count views of GoDAM videos and images, and clicks on their layers, in GoDAM analytics. Turn it off and GoDAM stores nothing in visitors' browsers and sends no view or click events to GoDAM analytics, for every visitor; GoDAM analytics then shows no new data for this site. The Google Tag Manager option is separate. If you use a page cache, purge it after changing this. With a consent banner that supports the WP Consent API, you can leave this on: GoDAM waits for each visitor's statistics consent. A developer can also set this with the godam_visitor_tracking_enabled filter, which overrides this switch."
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
@@ -6284,10 +6330,10 @@ msgid "Install %s"
 msgstr ""
 
 #: assets/build/pages/godam.min.js:2
-#: admin/class-rtgodam-transcoder-admin.php:222
-#: admin/class-rtgodam-transcoder-admin.php:513
-#: admin/class-rtgodam-transcoder-admin.php:576
-#: admin/class-rtgodam-transcoder-admin.php:615
+#: admin/class-rtgodam-transcoder-admin.php:224
+#: admin/class-rtgodam-transcoder-admin.php:515
+#: admin/class-rtgodam-transcoder-admin.php:578
+#: admin/class-rtgodam-transcoder-admin.php:617
 #: pages/godam/components/tabs/IntegrationsSettings/IntegrationActionButton.jsx:82
 msgid "Learn More"
 msgstr ""
@@ -6973,7 +7019,7 @@ msgid "Next"
 msgstr ""
 
 #: assets/build/pages/media-library-tour.min.js:1
-#: assets/src/js/godam-player/engagement.js:1114
+#: assets/src/js/godam-player/engagement.js:1180
 #: pages/media-library-tour/controller.js:355
 msgid "Back"
 msgstr ""
@@ -7928,7 +7974,7 @@ msgid "Already have an account?"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:82
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:83
 #: pages/onboarding/components/screens/LoginScreen.jsx:62
 #: pages/onboarding/components/screens/SignupScreen.jsx:91
 msgid "Sign in"
@@ -8052,27 +8098,27 @@ msgid "Go back to sign in"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:50
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:51
 msgid "Sign in with license key"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:57
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:58
 msgid "License key"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:58
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:59
 msgid "Enter your license key"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:67
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:68
 msgid "Hide license key"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:67
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:68
 msgid "Show license key"
 msgstr ""
 
@@ -8087,22 +8133,22 @@ msgid "Please enter your license key."
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:74
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:75
 msgid "Verifying…"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:74
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:75
 msgid "Verify to Sign in"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:78
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:79
 msgid "Lost your key? Find it on your GoDAM app"
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
-#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:81
+#: pages/onboarding/components/screens/LicenseKeyScreen.jsx:82
 msgid "Login with email instead?"
 msgstr ""
 
@@ -8122,6 +8168,7 @@ msgid "This account has no workspaces. <a>Create one in the GoDAM app</a>, then 
 msgstr ""
 
 #: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/RenewScreen.jsx:114
 #: pages/onboarding/components/screens/WorkspaceScreen.jsx:114
 msgid "Checking…"
 msgstr ""
@@ -8169,6 +8216,46 @@ msgstr ""
 #: assets/build/pages/onboarding.min.js:2
 #: pages/onboarding/components/screens/WelcomeScreen.jsx:28
 msgid "Go to dashboard"
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/RenewScreen.jsx:90
+msgid "Your GoDAM plan has expired"
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/RenewScreen.jsx:92
+msgid "Transcoding and other Pro features are paused until you renew."
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/RenewScreen.jsx:103
+msgid "Renew plan"
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/RenewScreen.jsx:67
+msgid "Couldn't reach GoDAM. Try again in a moment."
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/RenewScreen.jsx:79
+msgid "Your plan still shows as expired. If you just renewed, wait a minute and check again."
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/RenewScreen.jsx:114
+msgid "I've renewed, check again"
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/RenewScreen.jsx:118
+msgid "Have a different license key?"
+msgstr ""
+
+#: assets/build/pages/onboarding.min.js:2
+#: pages/onboarding/components/screens/RenewScreen.jsx:119
+msgid "Use it instead"
 msgstr ""
 
 #: assets/build/pages/tools.min.js:1
@@ -10679,8 +10766,8 @@ msgid "Forminator Forms"
 msgstr ""
 
 #: assets/build/pages/video-editor.min.js:2
-#: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:541
-#: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:591
+#: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:575
+#: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:625
 #: assets/src/layers/form/providers.js:159
 #: pages/video-editor/components/forms/NinjaForm.js:43
 msgid "Ninja Forms"
@@ -11326,203 +11413,213 @@ msgid "Insufficient bandwidth!"
 msgstr ""
 
 #. translators: %s is the URL to the plugin settings page where the API key can be activated.
-#: admin/class-rtgodam-transcoder-admin.php:87
-#: admin/class-rtgodam-transcoder-admin.php:149
-#: admin/class-rtgodam-transcoder-admin.php:164
+#: admin/class-rtgodam-transcoder-admin.php:89
+#: admin/class-rtgodam-transcoder-admin.php:151
+#: admin/class-rtgodam-transcoder-admin.php:166
 #, php-format
 msgid "Enjoy using our <strong>DAM and Media Editor</strong> features for free! To unlock Transcoding, Analytics and more, <a href=\"%s\">please activate your API key.</a>"
 msgstr ""
 
 #. translators: %d: Number of days until trial ends
-#: admin/class-rtgodam-transcoder-admin.php:112
+#: admin/class-rtgodam-transcoder-admin.php:114
 #, php-format
 msgid "Your product is under trial. You will be charged after <strong>%d days</strong>. If you wish to cancel, please visit <a href=\"https://app.godam.io/subscription/my-account\" target=\"_blank\">your subscription settings</a>."
 msgstr ""
 
 #. translators: %d: Number of days until transcoded videos are deleted after subscription ends
-#: admin/class-rtgodam-transcoder-admin.php:136
+#: admin/class-rtgodam-transcoder-admin.php:138
 #, php-format
 msgid "Your subscription has ended. No further transcoding can be done. Transcoded videos will be removed after <strong>%d days</strong>, and Pro features will not be accessible. After the 30-day grace period, already transcoded videos will no longer be served from the CDN. Renew your subscription to keep it up and running."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:186
-#: admin/class-rtgodam-transcoder-admin.php:287
+#: admin/class-rtgodam-transcoder-admin.php:188
+#: admin/class-rtgodam-transcoder-admin.php:289
 msgid "Activate API Key"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:186
+#: admin/class-rtgodam-transcoder-admin.php:188
 msgid "Use Media Editor"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:197
+#: admin/class-rtgodam-transcoder-admin.php:199
 msgid "Welcome to GoDAM! Thank you for using our product."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:280
+#: admin/class-rtgodam-transcoder-admin.php:282
 msgid "Unlock Video Analytics, Transcoding and more with GoDAM Pro. Start with a free 60-day trial."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:284
+#: admin/class-rtgodam-transcoder-admin.php:286
 msgid "Get your Free Plan"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:323
-#: admin/class-rtgodam-transcoder-admin.php:341
-#: inc/classes/class-media-library-ajax.php:1105
-#: inc/classes/class-media-library-ajax.php:1709
+#: admin/class-rtgodam-transcoder-admin.php:325
+#: admin/class-rtgodam-transcoder-admin.php:343
+#: inc/classes/class-media-library-ajax.php:1115
+#: inc/classes/class-media-library-ajax.php:1777
 msgid "Insufficient permissions."
 msgstr ""
 
 #. translators: %1$s: bandwidth percentage, %2$s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:476
+#: admin/class-rtgodam-transcoder-admin.php:478
 #, php-format
 msgid "Your bandwidth (%1$s%%) and storage (%2$s%%) usage have exceeded your plan limits."
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:483
+#: admin/class-rtgodam-transcoder-admin.php:485
 #, php-format
 msgid "Your bandwidth usage (%s%%) has exceeded your plan limit."
 msgstr ""
 
 #. translators: %s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:489
+#: admin/class-rtgodam-transcoder-admin.php:491
 #, php-format
 msgid "Your storage usage (%s%%) has exceeded your plan limit."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:494
+#: admin/class-rtgodam-transcoder-admin.php:496
 msgid "Transcoding requests may be blocked until you upgrade your plan."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:506
+#: admin/class-rtgodam-transcoder-admin.php:508
 msgid "GoDAM Usage Limit Exceeded"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:510
-#: admin/class-rtgodam-transcoder-admin.php:612
+#: admin/class-rtgodam-transcoder-admin.php:512
+#: admin/class-rtgodam-transcoder-admin.php:614
 msgid "Upgrade Your Plan"
 msgstr ""
 
 #. translators: %1$s: bandwidth percentage, %2$s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:539
+#: admin/class-rtgodam-transcoder-admin.php:541
 #, php-format
 msgid "Your bandwidth (%1$s%%) and storage (%2$s%%) usage are approaching your plan limits."
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:546
+#: admin/class-rtgodam-transcoder-admin.php:548
 #, php-format
 msgid "Your bandwidth usage (%s%%) is approaching your plan limit."
 msgstr ""
 
 #. translators: %s: storage percentage
-#: admin/class-rtgodam-transcoder-admin.php:552
+#: admin/class-rtgodam-transcoder-admin.php:554
 #, php-format
 msgid "Your storage usage (%s%%) is approaching your plan limit."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:557
+#: admin/class-rtgodam-transcoder-admin.php:559
 msgid "Consider upgrading your plan to avoid service interruptions."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:569
+#: admin/class-rtgodam-transcoder-admin.php:571
 msgid "GoDAM Usage Warning"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:573
+#: admin/class-rtgodam-transcoder-admin.php:575
 msgid "View Plans"
 msgstr ""
 
 #. translators: %s: bandwidth percentage
-#: admin/class-rtgodam-transcoder-admin.php:596
+#: admin/class-rtgodam-transcoder-admin.php:598
 #, php-format
 msgid "Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:608
+#: admin/class-rtgodam-transcoder-admin.php:610
 msgid "GoDAM Bandwidth Exceeded"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:609
+#: admin/class-rtgodam-transcoder-admin.php:611
 msgid "Transcoding will continue to work."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:656
+#: admin/class-rtgodam-transcoder-admin.php:658
 msgid "Want to help make <strong>GoDAM</strong> even more awesome? Allow GoDAM to collect diagnostic data and usage information."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:663
+#: admin/class-rtgodam-transcoder-admin.php:665
 msgid "what we collect"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:665
+#: admin/class-rtgodam-transcoder-admin.php:667
 msgid "Data we collect:"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:667
+#: admin/class-rtgodam-transcoder-admin.php:669
 msgid "Server environment details (PHP, MySQL, Server, and WordPress versions)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:668
+#: admin/class-rtgodam-transcoder-admin.php:670
 msgid "Site and user count (Language and number of users)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:669
+#: admin/class-rtgodam-transcoder-admin.php:671
 msgid "Plugin details (Number of active and inactive plugins)"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:670
+#: admin/class-rtgodam-transcoder-admin.php:672
 msgid "Usage data (Interactions, navigation, session replays, heatmaps, and errors via PostHog)"
 msgstr ""
 
 #. translators: %s: PostHog privacy policy URL
-#: admin/class-rtgodam-transcoder-admin.php:676
+#: admin/class-rtgodam-transcoder-admin.php:678
 #, php-format
 msgid "We use PostHog to collect this data. <a href=\"%s\" target=\"_blank\">Learn more</a>. This can be disabled from the settings on the Help page."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:688
+#: admin/class-rtgodam-transcoder-admin.php:690
 msgid "Allow"
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-admin.php:689
+#: admin/class-rtgodam-transcoder-admin.php:691
 #: inc/classes/class-dashboard-widget.php:1843
 msgid "No thanks"
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:732
+#: admin/class-rtgodam-transcoder-admin.php:754
 #, php-format
 msgid "Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href=\"%s\">renew your subscription</a> to restore access."
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:737
+#: admin/class-rtgodam-transcoder-admin.php:759
 #, php-format
 msgid "Temporarily unable to verify your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a> or try refreshing the status."
 msgstr ""
 
 #. translators: %s: URL to settings page
-#: admin/class-rtgodam-transcoder-admin.php:746
+#: admin/class-rtgodam-transcoder-admin.php:768
 #, php-format
 msgid "There is an issue with your GoDAM API key. Transcoding may not work. Please <a href=\"%s\">check your settings</a>."
 msgstr ""
 
+#. translators: 1: opening link tag to renew the GoDAM subscription, 2: closing link tag
+#: admin/class-rtgodam-transcoder-admin.php:807
+#, php-format
+msgid "Your GoDAM subscription has ended. %1$sRenew%2$s to keep Pro features."
+msgstr ""
+
+#: admin/class-rtgodam-transcoder-admin.php:836
+msgid "You are not allowed to dismiss this notice."
+msgstr ""
+
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:945
+#: admin/class-rtgodam-transcoder-admin.php:1067
 #, php-format
 msgid "<strong>Shoppable video for WooCommerce is live!</strong> %1$sActivate%2$s to start selling directly from your videos."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:953
+#: admin/class-rtgodam-transcoder-admin.php:1075
 #, php-format
 msgid "<strong>GoDAM now supports WooCommerce!</strong> %1$sInstall WooCommerce%2$s to start using shoppable videos with GoDAM."
 msgstr ""
 
 #. translators: 1: opening link tag, 2: closing link tag
-#: admin/class-rtgodam-transcoder-admin.php:961
+#: admin/class-rtgodam-transcoder-admin.php:1083
 #, php-format
 msgid "<strong>Add shoppable videos to your WooCommerce store!</strong> %1$sUpgrade your plan%2$s to unlock this feature."
 msgstr ""
@@ -11539,114 +11636,115 @@ msgstr ""
 
 #: admin/class-rtgodam-transcoder-handler.php:340
 #: inc/classes/class-media-library-ajax.php:486
+#: inc/helpers/custom-functions.php:1270
 msgid "HTTP authentication is enabled on your site, preventing transcoding."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:604
+#: admin/class-rtgodam-transcoder-handler.php:609
 msgid "Too many transcoding requests right now."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:606
+#: admin/class-rtgodam-transcoder-handler.php:611
 msgid "The transcoding request timed out."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:608
+#: admin/class-rtgodam-transcoder-handler.php:613
 msgid "The transcoding service couldn't be reached."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:610
+#: admin/class-rtgodam-transcoder-handler.php:615
 msgid "The transcoding service had a server error."
 msgstr ""
 
 #. translators: 1: why the job couldn't be sent, 2: max retry attempts, 3: retry interval in minutes
-#: admin/class-rtgodam-transcoder-handler.php:618
+#: admin/class-rtgodam-transcoder-handler.php:623
 #, php-format
 msgid "%1$s Transcoding will be retried automatically (up to %2$d times, every %3$d minutes)."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:723
+#: admin/class-rtgodam-transcoder-handler.php:728
 msgid "You have successfully subscribed."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:745
+#: admin/class-rtgodam-transcoder-handler.php:750
 msgid "This API key is invalid."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-handler.php:760
+#: admin/class-rtgodam-transcoder-handler.php:765
 msgid "Transcoding service can not be activated on the localhost"
 msgstr ""
 
 #. translators: Return an error if the value is neither a string nor an array.
-#: admin/class-rtgodam-transcoder-rest-routes.php:253
+#: admin/class-rtgodam-transcoder-rest-routes.php:264
 #, php-format
 msgid "%s must be a valid URL or an array of URLs."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:333
+#: admin/class-rtgodam-transcoder-rest-routes.php:351
 msgid "Transcoding error received and recorded."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:465
+#: admin/class-rtgodam-transcoder-rest-routes.php:483
 msgid "Callback processed successfully."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:510
+#: admin/class-rtgodam-transcoder-rest-routes.php:528
 msgid "Thumbnail created successfully."
 msgstr ""
 
 #. translators: %s is replaced with the attachment ID for which subsizes generation failed.
-#: admin/class-rtgodam-transcoder-rest-routes.php:581
+#: admin/class-rtgodam-transcoder-rest-routes.php:599
 #, php-format
 msgid "GoDAM: Failed to request image subsizes for attachment ID %s. The transcoded image URL has been saved; subsizes may be retried separately."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:589
+#: admin/class-rtgodam-transcoder-rest-routes.php:607
 msgid "Transcoded image URL saved, but failed to request subsizes."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:606
+#: admin/class-rtgodam-transcoder-rest-routes.php:624
 msgid "Attachment not found; it may have been deleted."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:633
+#: admin/class-rtgodam-transcoder-rest-routes.php:651
 msgid "Job ID is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:637
+#: admin/class-rtgodam-transcoder-rest-routes.php:655
 msgid "Transcription status is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:641
+#: admin/class-rtgodam-transcoder-rest-routes.php:659
 msgid "Transcript path is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:659
+#: admin/class-rtgodam-transcoder-rest-routes.php:677
 msgid "Video attachment not found for the provided job ID."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:682
+#: admin/class-rtgodam-transcoder-rest-routes.php:700
 msgid "Transcript path saved successfully."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:692
+#: admin/class-rtgodam-transcoder-rest-routes.php:710
 msgid "Transcription callback received."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:733
-#: admin/godam-transcoder-functions.php:607
+#: admin/class-rtgodam-transcoder-rest-routes.php:751
+#: admin/godam-transcoder-functions.php:636
 #: inc/classes/rest-api/class-media-library.php:652
-#: inc/classes/rest-api/class-transcoding.php:479
+#: inc/classes/rest-api/class-transcoding.php:499
 msgid "API key is required."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:737
+#: admin/class-rtgodam-transcoder-rest-routes.php:755
 msgid "API key not configured on the site."
 msgstr ""
 
-#: admin/class-rtgodam-transcoder-rest-routes.php:741
+#: admin/class-rtgodam-transcoder-rest-routes.php:759
 #: inc/classes/rest-api/class-media-library.php:659
-#: inc/classes/rest-api/class-settings.php:192
-#: inc/classes/rest-api/class-transcoding.php:485
+#: inc/classes/rest-api/class-settings.php:193
+#: inc/classes/rest-api/class-transcoding.php:505
 msgid "Invalid API key."
 msgstr ""
 
@@ -11685,26 +11783,26 @@ msgid "Transcode Status"
 msgstr ""
 
 #: admin/godam-transcoder-functions.php:460
-#: admin/godam-transcoder-functions.php:517
-#: inc/classes/rest-api/class-transcoding.php:399
+#: admin/godam-transcoder-functions.php:518
+#: inc/classes/rest-api/class-transcoding.php:419
 msgid "Media is transcoded."
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:616
+#: admin/godam-transcoder-functions.php:645
 msgid "API key verification is blocked for localhost environments. To use production API keys on localhost, please add the following constant to your wp-config.php file: define('RTGODAM_API_KEY', 'your-api-key-here');"
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:625
+#: admin/godam-transcoder-functions.php:654
 msgid "The provided API key does not match the RTGODAM_API_KEY constant defined in wp-config.php."
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:672
-#: admin/godam-transcoder-functions.php:724
+#: admin/godam-transcoder-functions.php:701
+#: admin/godam-transcoder-functions.php:771
 #: inc/classes/enums/class-api-key-status.php:84
 msgid "Unable to verify API key. Please try again later."
 msgstr ""
 
-#: admin/godam-transcoder-functions.php:717
+#: admin/godam-transcoder-functions.php:764
 msgid "API key verified and stored successfully!"
 msgstr ""
 
@@ -12850,7 +12948,7 @@ msgstr ""
 msgid "This form could not be loaded."
 msgstr ""
 
-#: inc/classes/class-assets.php:99
+#: inc/classes/class-assets.php:91
 msgid "No video found for attachment ID"
 msgstr ""
 
@@ -13151,61 +13249,68 @@ msgstr ""
 msgid "Demo asset not found."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1028
+#: inc/classes/class-media-library-ajax.php:830
+#: inc/helpers/custom-functions.php:841
+#: inc/helpers/custom-functions.php:1228
+#: inc/helpers/custom-functions.php:1404
+msgid "This file can't be transcoded."
+msgstr ""
+
+#: inc/classes/class-media-library-ajax.php:1038
 msgid "All collections"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1114
+#: inc/classes/class-media-library-ajax.php:1124
 msgid "Offer banner dismissed successfully."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1146
+#: inc/classes/class-media-library-ajax.php:1156
 msgid "Invalid attachment ID or URL."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1150
+#: inc/classes/class-media-library-ajax.php:1160
 msgid "The file is not on a host GoDAM serves files from."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1172
+#: inc/classes/class-media-library-ajax.php:1182
 #: inc/classes/rest-api/class-media-library.php:1054
 msgid "Invalid attachment ID."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1184
+#: inc/classes/class-media-library-ajax.php:1194
 msgid "Could not initialize WordPress filesystem."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1214
+#: inc/classes/class-media-library-ajax.php:1224
 msgid "The downloaded file is not an MP4 video."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1222
+#: inc/classes/class-media-library-ajax.php:1232
 msgid "Could not move file into uploads directory."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1726
+#: inc/classes/class-media-library-ajax.php:1794
 msgid "HTTP auth status saved."
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1759
+#: inc/classes/class-media-library-ajax.php:1827
 msgid "GoDAM Transcoding Blocked"
 msgstr ""
 
-#: inc/classes/class-media-library-ajax.php:1762
+#: inc/classes/class-media-library-ajax.php:1830
 msgid "HTTP authentication is enabled on your site, which prevents GoDAM from accessing media files for transcoding. Please disable HTTP authentication to enable transcoding."
 msgstr ""
 
-#: inc/classes/class-media-tracker.php:164
+#: inc/classes/class-media-tracker.php:197
 msgid "GoDAM Notice: CDN Conflict Detected!"
 msgstr ""
 
-#: inc/classes/class-media-tracker.php:165
+#: inc/classes/class-media-tracker.php:198
 msgid "It appears that a Content Delivery Network (CDN) is active on your site, which may interfere with GoDAM's video transcoding features. If the CDN issue has been resolved, you can safely ignore this warning and proceed with video transcoding."
 msgstr ""
 
 #. translators: %1$s is the name of the Transcoder plugin, %2$s is the name of the GoDAM plugin.
-#: inc/classes/class-media-tracker.php:209
+#: inc/classes/class-media-tracker.php:242
 #, php-format
 msgid "Please deactivate the <strong>%1$s</strong> plugin to ensure the <strong>%2$s</strong> plugin functions correctly."
 msgstr ""
@@ -13326,16 +13431,20 @@ msgstr ""
 msgid "Sorry, you are not allowed to edit this item."
 msgstr ""
 
-#: inc/classes/class-pages.php:899
+#: inc/classes/class-pages.php:917
 msgid "Your last request is still being processed. Please wait a while ..."
 msgstr ""
 
-#: inc/classes/class-pages.php:900
+#: inc/classes/class-pages.php:918
 msgid "Please choose a valid poll answer."
 msgstr ""
 
-#: inc/classes/class-pages.php:901
+#: inc/classes/class-pages.php:919
 msgid "Maximum number of choices allowed: "
+msgstr ""
+
+#: inc/classes/class-recorder-upload-nonce.php:86
+msgid "Unknown recorder field."
 msgstr ""
 
 #: inc/classes/class-update.php:93
@@ -13364,29 +13473,123 @@ msgstr ""
 msgid "Failed to remove virtual media site from GoDAM Central."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:159
-#: inc/classes/class-visitor-consent.php:165
+#: inc/classes/class-visitor-consent.php:193
+#: inc/classes/class-visitor-consent.php:201
+#: inc/classes/class-visitor-consent.php:261
 msgid "Until deleted"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:160
+#: inc/classes/class-visitor-consent.php:194
 msgid "Ties one visitor's video views and clicks together without naming them."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:161
+#: inc/classes/class-visitor-consent.php:195
 msgid "Anonymous visitor ID"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:166
+#: inc/classes/class-visitor-consent.php:202
 msgid "Counts a viewer once per video."
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:171
+#: inc/classes/class-visitor-consent.php:209
+#: inc/classes/class-visitor-consent.php:270
 msgid "Until the browser tab closes"
 msgstr ""
 
-#: inc/classes/class-visitor-consent.php:172
+#: inc/classes/class-visitor-consent.php:210
 msgid "Holds clicks on video and image layers until they are sent to GoDAM analytics."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:218
+#: inc/classes/class-visitor-consent.php:226
+#: inc/classes/class-visitor-consent.php:234
+#: inc/classes/class-visitor-consent.php:242
+#: inc/classes/class-visitor-consent.php:253
+msgid "10 minutes"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:219
+msgid "Keeps the link to a recording made in a Fluent Forms form, so it is not lost if the page reloads before the form is sent."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:220
+#: inc/classes/class-visitor-consent.php:228
+#: inc/classes/class-visitor-consent.php:236
+msgid "Link to your unsent recording"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:227
+msgid "Keeps the link to a recording made in a Ninja Forms form, so it is not lost if the page reloads before the form is sent."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:235
+msgid "Keeps the link to a recording made in an Everest Forms form, so it is not lost if the page reloads before the form is sent."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:243
+msgid "Keeps an upload in the GoDAM recorder field, so it can carry on if the page reloads."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:244
+msgid "Details of your unsent recording"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:254
+msgid "Holds a recording made in the GoDAM recorder field until it is uploaded, so it is not lost if the page reloads."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:255
+msgid "Your unsent recording"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:262
+msgid "Remembers how far a learner watched a LifterLMS lesson video, so it can carry on from there."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:271
+msgid "Groups one view of a video when how far it was watched is sent to the site's connected Marketo or HubSpot account."
+msgstr ""
+
+#. translators: %s: how long the item is kept, e.g. "Until deleted".
+#: inc/classes/class-visitor-consent.php:328
+#, php-format
+msgid "Kept: %s."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:332
+msgid "GoDAM counts views of the videos and images on this site, and clicks on their layers, so the site owner can see how the media performs. Edit this text to match your site. If you turned visitor tracking off in GoDAM > Settings > General, you can leave it out."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:333
+msgid "Suggested text:"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:334
+msgid "When you view a video or an interactive image on this site, we use GoDAM to measure how our media is watched. GoDAM sends these details to GoDAM analytics (analytics.godam.io), run by rtCamp: an anonymous visitor ID, the page you are on and the page that referred you, including campaign (UTM) parameters, which video you watched and for how long, clicks on video and image layers, your browser, operating system, screen size and language, and your IP address, which is used to find your country."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:335
+msgid "GoDAM keeps these items in your browser:"
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:337
+msgid "If this site asks for your consent to statistics, GoDAM stores nothing and sends nothing until you agree, and deletes these items if you withdraw your consent."
+msgstr ""
+
+#: inc/classes/class-visitor-consent.php:338
+msgid "Only if GoDAM is connected to Marketo or HubSpot in GoDAM Central:"
+msgstr ""
+
+#. translators: %s: name of the browser item, godam-map-session-<video>.
+#: inc/classes/class-visitor-consent.php:341
+#, php-format
+msgid "How much of a video you watch is also sent to this site's Marketo or HubSpot account, matched to that service's own cookie in your browser. GoDAM keeps %s in your browser until you close the tab. If this site asks for your consent to marketing, this waits for it."
+msgstr ""
+
+#. translators: %s: link to the GoDAM privacy policy.
+#: inc/classes/class-visitor-consent.php:346
+#, php-format
+msgid "GoDAM's privacy policy: %s"
 msgstr ""
 
 #: inc/classes/cron-jobs/class-retranscode-failed-media.php:60
@@ -13394,21 +13597,21 @@ msgid "Retranscode Failed Media"
 msgstr ""
 
 #. translators: %d is the maximum number of retry attempts.
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:155
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:156
 #, php-format
 msgid "Transcoding failed after %d retry attempts. Retranscode it later, or contact support if this keeps happening."
 msgstr ""
 
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:245
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:246
 msgid "GoDAM: Media queued for transcoding retry"
 msgstr ""
 
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:249
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:250
 msgid "Media Library"
 msgstr ""
 
 #. translators: 1: number of media items queued, 2: retry interval in minutes, 3: max retries, 4: Media Library link
-#: inc/classes/cron-jobs/class-retranscode-failed-media.php:253
+#: inc/classes/cron-jobs/class-retranscode-failed-media.php:254
 #, php-format
 msgid "%1$d media file(s) could not be sent to the GoDAM transcoding server and have been queued for automatic retry (every %2$d minutes, up to %3$d attempts). Visit the %4$s to see their status."
 msgstr ""
@@ -13855,7 +14058,7 @@ msgid "Select a video in the Player Settings panel to get started."
 msgstr ""
 
 #: inc/classes/enums/class-api-key-status.php:72
-#: inc/classes/rest-api/class-settings.php:308
+#: inc/classes/rest-api/class-settings.php:310
 msgid "API key status refreshed."
 msgstr ""
 
@@ -13883,13 +14086,13 @@ msgid "Audio saved and transcoded successfully on GoDAM"
 msgstr ""
 
 #: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:143
-#: inc/classes/fluentforms/fields/class-recorder-field.php:853
+#: inc/classes/fluentforms/fields/class-recorder-field.php:871
 #: inc/classes/sureforms/class-form-submit.php:404
 msgid "Video saved and transcoded successfully on GoDAM"
 msgstr ""
 
 #: inc/classes/everest-forms/class-everest-forms-field-godam-video.php:187
-#: inc/classes/fluentforms/fields/class-recorder-field.php:873
+#: inc/classes/fluentforms/fields/class-recorder-field.php:891
 #: inc/classes/gravity-forms/class-gf-field-godam-video.php:397
 #: inc/classes/sureforms/class-form-submit.php:411
 msgid "Click to view"
@@ -13970,7 +14173,11 @@ msgstr ""
 msgid "Form does not exists"
 msgstr ""
 
-#: inc/classes/fluentforms/fields/class-recorder-field.php:623
+#: inc/classes/fluentforms/fields/class-recorder-field.php:584
+msgid "Form does not have a recorder field."
+msgstr ""
+
+#: inc/classes/fluentforms/fields/class-recorder-field.php:630
 msgid "Error in file."
 msgstr ""
 
@@ -14078,7 +14285,7 @@ msgid "Leave empty to allow any duration. Example: 180 = 3 minutes."
 msgstr ""
 
 #: inc/classes/gravity-forms/class-init.php:314
-#: inc/helpers/custom-functions.php:1810
+#: inc/helpers/custom-functions.php:2299
 msgid "Gravity forms"
 msgstr ""
 
@@ -14108,6 +14315,26 @@ msgstr ""
 msgid "Variation \"%1$s\" of layer type \"%2$s\" is already registered."
 msgstr ""
 
+#: inc/classes/learndash/class-learndash.php:377
+msgid "Use GoDAM Video"
+msgstr ""
+
+#: inc/classes/learndash/class-learndash.php:381
+msgid "Use a GoDAM video as the progression video. Add [ld_video] to the content to choose where it appears."
+msgstr ""
+
+#: inc/classes/learndash/class-learndash.php:383
+msgid "A GoDAM video is the progression video"
+msgstr ""
+
+#: inc/classes/learndash/class-learndash.php:394
+msgid "The video learners watch to complete this step. With none selected, the first GoDAM Video block in the content is used."
+msgstr ""
+
+#: inc/classes/learndash/class-learndash.php:570
+msgid "Select the progression video"
+msgstr ""
+
 #: inc/classes/lifter-lms/class-llms-av-integration-godam.php:117
 msgid "Videos: GoDAM"
 msgstr ""
@@ -14116,7 +14343,7 @@ msgstr ""
 msgid "Advanced LifterLMS lesson video features for GoDAM videos."
 msgstr ""
 
-#: inc/classes/media-library/class-media-edit-enhancements.php:75
+#: inc/classes/media-library/class-media-edit-enhancements.php:77
 msgid "Your browser does not support the video tag."
 msgstr ""
 
@@ -14197,7 +14424,7 @@ msgid "No files uploaded"
 msgstr ""
 
 #. Translators: %s: Maximum allowed file size in MB.
-#: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:443
+#: inc/classes/ninja-forms/class-ninja-forms-field-godam-recorder.php:444
 #, php-format
 msgid "File exceeds maximum file size. File must be under %sMB."
 msgstr ""
@@ -15062,33 +15289,33 @@ msgstr ""
 msgid "Invalid poll ID."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:95
+#: inc/classes/rest-api/class-settings.php:96
 msgid "The API key to verify."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:147
+#: inc/classes/rest-api/class-settings.php:148
 msgid "The godam settings to save."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:177
-#: inc/classes/rest-api/class-settings.php:184
+#: inc/classes/rest-api/class-settings.php:178
+#: inc/classes/rest-api/class-settings.php:185
 #: inc/classes/rest-api/class-video-migration.php:1189
 msgid "GoDAM API key is required."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:188
+#: inc/classes/rest-api/class-settings.php:189
 msgid "GoDAM API key is not set on this site."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:274
+#: inc/classes/rest-api/class-settings.php:276
 msgid "Failed to remove the API key. It might not exist."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:293
+#: inc/classes/rest-api/class-settings.php:295
 msgid "Failed to refresh API key status."
 msgstr ""
 
-#: inc/classes/rest-api/class-settings.php:358
+#: inc/classes/rest-api/class-settings.php:360
 msgid "EasyDAM settings updated successfully!"
 msgstr ""
 
@@ -15125,134 +15352,138 @@ msgstr ""
 msgid "The error code of the transcoding job."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:173
+#: inc/classes/rest-api/class-transcoding.php:156
+msgid "Why the transcoding job failed, as a reason code."
+msgstr ""
+
+#: inc/classes/rest-api/class-transcoding.php:179
 msgid "The array of attachment IDs."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:197
+#: inc/classes/rest-api/class-transcoding.php:203
 msgid "The type of media to fetch for transcoding."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:229
+#: inc/classes/rest-api/class-transcoding.php:235
 msgid "The comma-separated string of attachment IDs to check."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:271
+#: inc/classes/rest-api/class-transcoding.php:278
 msgid "Attachment not found."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:291
+#: inc/classes/rest-api/class-transcoding.php:301
 msgid "Transcoding status updated successfully."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:379
+#: inc/classes/rest-api/class-transcoding.php:386
 msgid "Media has not been transcoded."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:386
+#: inc/classes/rest-api/class-transcoding.php:393
 msgid "Transcoding has not started."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:395
+#: inc/classes/rest-api/class-transcoding.php:415
 msgid "Media is queued for transcoding."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:396
+#: inc/classes/rest-api/class-transcoding.php:416
 msgid "Media is downloading for transcoding."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:397
+#: inc/classes/rest-api/class-transcoding.php:417
 msgid "Media is downloaded for transcoding."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:398
+#: inc/classes/rest-api/class-transcoding.php:418
 msgid "Media is transcoding."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:403
+#: inc/classes/rest-api/class-transcoding.php:423
 msgid "Unknown transcoding status."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:418
+#: inc/classes/rest-api/class-transcoding.php:438
 msgid "Transcoding complete, generating thumbnail..."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:482
+#: inc/classes/rest-api/class-transcoding.php:502
 msgid "API key not configured."
 msgstr ""
 
 #. translators: %s is the storage usage percentage.
-#: inc/classes/rest-api/class-transcoding.php:568
+#: inc/classes/rest-api/class-transcoding.php:588
 #, php-format
 msgid "Storage limit exceeded (%s%%). Retranscoding is currently blocked. Please upgrade your plan to continue."
 msgstr ""
 
-#: inc/classes/rest-api/class-transcoding.php:826
+#: inc/classes/rest-api/class-transcoding.php:846
 msgid "Attachment ID not provided"
-msgstr ""
-
-#. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:870
-#, php-format
-msgid "%1$s (ID %2$d) transcoding request failed. Transcoding requests are not allowed in the localhost environment."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
 #: inc/classes/rest-api/class-transcoding.php:890
 #, php-format
-msgid "%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this media on GoDAM Central."
+msgid "%1$s (ID %2$d) transcoding request failed. Transcoding requests are not allowed in the localhost environment."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
 #: inc/classes/rest-api/class-transcoding.php:910
 #, php-format
+msgid "%1$s (ID %2$d) is virtual media from GoDAM Central. Please retranscode this media on GoDAM Central."
+msgstr ""
+
+#. translators: 1: Attachment title, 2: Attachment ID.
+#: inc/classes/rest-api/class-transcoding.php:930
+#, php-format
 msgid "%1$s (ID %2$d) is migrated Vimeo video. Please retranscode this video on GoDAM Central."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: storage usage percent.
-#: inc/classes/rest-api/class-transcoding.php:933
+#: inc/classes/rest-api/class-transcoding.php:953
 #, php-format
 msgid "%1$s (ID %2$d) cannot be retranscoded. Storage limit exceeded (%3$s%%). Please upgrade your plan to continue transcoding."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:954
+#: inc/classes/rest-api/class-transcoding.php:974
 #, php-format
 msgid "%1$s (ID %2$d) cannot be transcoded. HTTP authentication is enabled on your site. Please disable it to allow transcoding."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:991
+#: inc/classes/rest-api/class-transcoding.php:1011
 #, php-format
 msgid "%1$s (ID %2$d) is not a document format GoDAM can convert, so it was skipped."
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: Why GoDAM could not use the source file.
-#: inc/classes/rest-api/class-transcoding.php:1043
+#: inc/classes/rest-api/class-transcoding.php:1064
 #, php-format
 msgid "%1$s (ID %2$d) cannot be transcoded. %3$s"
 msgstr ""
 
 #. translators: %s: GoDAM Central's own wording of why it refused the file.
-#: inc/classes/rest-api/class-transcoding.php:1051
+#: inc/classes/rest-api/class-transcoding.php:1072
 #, php-format
 msgid "(Details: %s)"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID, 3: Why the request failed and whether it will be retried.
-#: inc/classes/rest-api/class-transcoding.php:1071
+#: inc/classes/rest-api/class-transcoding.php:1092
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. %3$s"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:1090
+#: inc/classes/rest-api/class-transcoding.php:1111
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request failed. Unknown error"
 msgstr ""
 
 #. translators: 1: Attachment title, 2: Attachment ID.
-#: inc/classes/rest-api/class-transcoding.php:1106
+#: inc/classes/rest-api/class-transcoding.php:1127
 #, php-format
 msgid "%1$s (ID %2$d) transcoding request was sent successfully"
 msgstr ""
@@ -15927,99 +16158,183 @@ msgid "CTA Card Image"
 msgstr ""
 
 #. translators: %s: storage usage percentage
-#: inc/helpers/custom-functions.php:516
+#: inc/helpers/custom-functions.php:519
 #, php-format
 msgid "Storage limit exceeded (%s%%). Please upgrade your plan to continue."
 msgstr ""
 
 #. translators: %s: bandwidth usage percentage
-#: inc/helpers/custom-functions.php:525
+#: inc/helpers/custom-functions.php:528
 #, php-format
 msgid "Bandwidth limit exceeded (%s%%). Please upgrade your plan to continue."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:740
+#: inc/helpers/custom-functions.php:749
 msgid "Only files served over HTTPS can be transcoded. Serve your media over https://."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:745
+#: inc/helpers/custom-functions.php:754
 msgid "This file couldn't be downloaded from your site. Make sure uploaded videos are publicly accessible."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:746
+#: inc/helpers/custom-functions.php:755
 msgid "The file's link opens a web page instead of the video, often because of a login or media protection plugin."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:747
+#: inc/helpers/custom-functions.php:756
 msgid "The file is empty or too large. Try uploading it again."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:815
-#: inc/helpers/custom-functions.php:816
+#: inc/helpers/custom-functions.php:824
+#: inc/helpers/custom-functions.php:825
 msgid "This site's API key wasn't recognised. Check the key in GoDAM settings."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:817
+#: inc/helpers/custom-functions.php:826
 msgid "Your GoDAM licence is inactive. Renew your plan to transcode new uploads."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:818
+#: inc/helpers/custom-functions.php:827
 msgid "Your GoDAM storage is full. Upgrade your plan or delete unused files."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:819
+#: inc/helpers/custom-functions.php:828
 msgid "This site isn't on your GoDAM account's list of allowed sites. Ask your GoDAM admin to add it."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1018
+#: inc/helpers/custom-functions.php:1053
+msgid "The file needed more memory than processing allows. Try a smaller or lower-resolution file."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1057
+msgid "Processing took too long and was stopped."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1061
+msgid "We couldn't download the source file."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1065
+msgid "We couldn't process the file. It may be damaged or in a format we don't support."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1069
+msgid "We couldn't save the processed file to storage."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1073
+msgid "The license is invalid or inactive."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1077
+msgid "Your plan's storage limit has been reached."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1081
+msgid "Something went wrong while processing the file."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1101
+msgid "This document is password protected, so no preview could be generated. Remove the password and upload it again."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1106
+msgid "This document is too large to generate a preview. The original file is still available to download."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1111
+msgid "This file type isn't supported for preview. The original file is still available to download."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1116
+msgid "We couldn't generate a preview for this document. The original file is still available to download."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1244
+msgid "Couldn't reach GoDAM. Retrying automatically."
+msgstr ""
+
+#. translators: %d is the number of automatic retries.
+#: inc/helpers/custom-functions.php:1259
+#, php-format
+msgid "Failed after %d retry."
+msgid_plural "Failed after %d retries."
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/helpers/custom-functions.php:1356
+msgid "This is taking longer than expected."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1429
+msgid "Upload a smaller file."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1434
+msgid "Upload a different file."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1439
+msgid "Retranscode to try again."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1444
+msgid "Retranscode to try again, and contact support if it keeps failing."
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1449
+msgid "Check your GoDAM settings"
+msgstr ""
+
+#: inc/helpers/custom-functions.php:1475
 msgid "API key not found ( try refreshing the page )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1052
+#: inc/helpers/custom-functions.php:1509
 msgid "Error fetching data for storage and bandwidth ( remove and add again the API key to get usage analytics )"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1646
+#: inc/helpers/custom-functions.php:2103
 msgid "The transcoding service couldn't accept the recording. Try again later, or contact support if this keeps happening."
 msgstr ""
 
 #. translators: %s: Why the recording couldn't be transcoded.
-#: inc/helpers/custom-functions.php:1655
+#: inc/helpers/custom-functions.php:2112
 #, php-format
 msgid "The recording couldn't be transcoded. %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1704
+#: inc/helpers/custom-functions.php:2193
 msgid "Form transcoding has been disabled by the site administrator."
 msgstr ""
 
 #. translators: %s: Entry ID for which transcoding failed
-#: inc/helpers/custom-functions.php:1856
+#: inc/helpers/custom-functions.php:2345
 #, php-format
 msgid "Transcoding failed | entry Id: %s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:1893
+#: inc/helpers/custom-functions.php:2382
 msgid "s"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2477
+#: inc/helpers/custom-functions.php:2966
 msgid "Oops! We could not locate your video"
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2488
+#: inc/helpers/custom-functions.php:2977
 msgid "Note: This is a simple image preview. The image and its layers may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2490
+#: inc/helpers/custom-functions.php:2979
 msgid "Note: This is a simple audio preview. The player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2492
+#: inc/helpers/custom-functions.php:2981
 msgid "Note: This is a simple video preview. The video player may display differently when added to a page based on theme styles."
 msgstr ""
 
-#: inc/helpers/custom-functions.php:2682
+#: inc/helpers/custom-functions.php:3171
 msgid "Video not found"
 msgstr ""
 
@@ -16174,7 +16489,7 @@ msgctxt "verb"
 msgid "Upload"
 msgstr ""
 
-#: assets/src/js/godam-player/engagement.js:1124
+#: assets/src/js/godam-player/engagement.js:1190
 msgid "Continue as Guest"
 msgstr ""
 

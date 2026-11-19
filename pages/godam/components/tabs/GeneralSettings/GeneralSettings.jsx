@@ -129,6 +129,16 @@ const GeneralSettings = () => {
 						data-test-id="godam-settings-general-control-gtm"
 					/>
 
+					<ToggleControl
+						__nextHasNoMarginBottom
+						className="godam-margin-bottom"
+						label={ __( 'Track visitors', 'godam' ) }
+						help={ __( 'Count views of GoDAM videos and images, and clicks on their layers, in GoDAM analytics. Turn it off and GoDAM stores nothing in visitors\' browsers and sends no view or click events to GoDAM analytics, for every visitor; GoDAM analytics then shows no new data for this site. The Google Tag Manager option is separate. If you use a page cache, purge it after changing this. With a consent banner that supports the WP Consent API, you can leave this on: GoDAM waits for each visitor\'s statistics consent. A developer can also set this with the godam_visitor_tracking_enabled filter, which overrides this switch.', 'godam' ) }
+						checked={ mediaSettings?.general?.enable_visitor_tracking ?? true }
+						onChange={ ( value ) => handleSettingChange( 'enable_visitor_tracking', value ) }
+						data-test-id="godam-settings-general-control-visitor-tracking"
+					/>
+
 				</PanelBody>
 			</Panel>
 

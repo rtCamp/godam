@@ -38,12 +38,14 @@ class Media_Edit_Enhancements {
 	 * @param string|false $html    The video HTML markup. Default empty.
 	 * @param array        $attrs    Array of video shortcode attributes.
 	 *
-	 * @return string|false Modified video HTML or false to use default.
+	 * @return string|false Modified video HTML, or `$html` as given to leave the shortcode alone.
 	 */
 	public function video_shortcode_override( $html, array $attrs ) {
-		// Only override for .mov files.
+		// Only override for .mov files. Return what came in for the rest: WordPress
+		// renders the shortcode itself only when the override is '', so returning
+		// false here left every other [video] shortcode empty.
 		if ( ! isset( $attrs['src'] ) || false === strpos( $attrs['src'], '.mov' ) ) {
-			return false;
+			return $html;
 		}
 
 		$src    = esc_url( $attrs['src'] );

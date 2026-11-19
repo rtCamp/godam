@@ -17,7 +17,7 @@ import { useDispatch } from 'react-redux';
 import BackButton from '../BackButton';
 import { useVerifyLicenseKeyMutation } from '../../redux/api/onboarding';
 import { goToStep, setConnected, setNotice } from '../../redux/slice/onboarding';
-import { config, STEPS } from '../../utils/constants';
+import { config, CONNECTION_STATUS, STEPS } from '../../utils/constants';
 
 /**
  * O5 — "Activate with license key" (reuses the existing verify_api_key flow;
@@ -46,7 +46,8 @@ const LicenseKeyScreen = () => {
 
 	return (
 		<>
-			<BackButton onClick={ () => dispatch( goToStep( STEPS.ENTRY ) ) } />
+			{ /* A site with a lapsed plan came here from the renewal screen, not from signup (#101). */ }
+			<BackButton onClick={ () => dispatch( goToStep( CONNECTION_STATUS.EXPIRED === config.connectionStatus ? STEPS.RENEW : STEPS.ENTRY ) ) } />
 			<h1 className="godam-onboarding__title">{ __( 'Sign in with license key', 'godam' ) }</h1>
 
 			<div className="godam-onboarding__form">

@@ -36,6 +36,21 @@ const parseDate = ( value ) => {
 };
 
 /**
+ * The Free plan's end date, while the site is on the Free plan and it hasn't passed.
+ *
+ * Exported so other trial messages (TrialDaysNotice) stay quiet while this banner shows.
+ *
+ * @param {Object} userData The localized user data (`window.userData`).
+ * @return {Date|null} The end date, or null when the banner doesn't show.
+ */
+export const getFreeTrialEnd = ( userData ) => {
+	const plan = ( userData?.userApiData?.active_plan || '' ).toLowerCase();
+	const planEnd = parseDate( userData?.userApiData?.end_date );
+
+	return !! userData?.validApiKey && 'free' === plan && !! planEnd && planEnd.getTime() > Date.now() ? planEnd : null;
+};
+
+/**
  * O8 — free-trial countdown banner.
  *
  * The "60-day free trial" is modelled in godam-core as a **Free subscription**
@@ -47,12 +62,9 @@ const parseDate = ( value ) => {
  * @return {JSX.Element|null} The banner, or null when not on the free plan.
  */
 const TrialCountdownBanner = () => {
-	const userData = window.userData || {};
-	const plan = ( userData.userApiData?.active_plan || '' ).toLowerCase();
-	const planEnd = parseDate( userData.userApiData?.end_date );
-	const isFreeTrial = !! userData.validApiKey && 'free' === plan && !! planEnd && planEnd.getTime() > Date.now();
+	const planEnd = getFreeTrialEnd( window.userData );
 
-	if ( ! isFreeTrial ) {
+	if ( ! planEnd ) {
 		return null;
 	}
 

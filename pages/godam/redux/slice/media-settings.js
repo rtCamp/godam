@@ -31,6 +31,7 @@ const initialState = {
 		enable_gtm_tracking: false,
 		enable_posthog_tracking: false,
 		posthog_initialized: false,
+		enable_visitor_tracking: true,
 	},
 	video_player: {
 		brand_image: '',

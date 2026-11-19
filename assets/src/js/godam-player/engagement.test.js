@@ -33,7 +33,6 @@ window.godamData = {
 	loginUrl: '/wp-login.php',
 	registrationUrl: '/wp-login.php?action=register',
 	defaultAvatar: 'https://avatar.test/default',
-	nonce: 'nonce',
 };
 
 /**
