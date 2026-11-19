@@ -86,6 +86,7 @@ use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
 use RTGODAM\Inc\Metform\Metform_Integration;
 use RTGODAM\Inc\Metform\Metform_Rest_Api;
 use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
+use RTGODAM\Inc\LearnDash\LearnDash;
 use RTGODAM\Inc\Abilities\Abilities;
 
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Params;
@@ -174,6 +175,9 @@ class Plugin {
 
 		// Load LifterLMS integration.
 		Lifter_LMS::get_instance();
+
+		// Load LearnDash integration.
+		LearnDash::get_instance();
 
 		// Register abilities for the WordPress Abilities API (WordPress 6.9+).
 		Abilities::get_instance();
