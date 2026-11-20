@@ -1453,13 +1453,19 @@ class Analytics extends Base {
 			$dashboard_metrics = $this->video_data_in_dashboard_metrics( $dashboard_metrics );
 		}
 
-		return new WP_REST_Response(
-			array(
-				'status'            => 'success',
-				'dashboard_metrics' => $dashboard_metrics,
-			),
-			200
+		$data = array(
+			'status'            => 'success',
+			'dashboard_metrics' => $dashboard_metrics,
 		);
+
+		// Say so explicitly when the site has no data yet, so the dashboard can
+		// show the setup checklist instead of guessing from zeros. Callers read
+		// it from the all-time call: it means "never played", not "quiet range".
+		if ( null === $body['dashboard_metrics'] ) {
+			$data['no_data'] = true;
+		}
+
+		return new WP_REST_Response( $data, 200 );
 	}
 
 	/**
