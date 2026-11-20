@@ -29,7 +29,7 @@
  * stay on. Its cookie key includes that value, so picking another video starts
  * the learner's progress over.
  *
- * @since n.e.x.t
+ * @since 2.11.0
  *
  * @package GoDAM
  */
@@ -45,7 +45,7 @@ use RTGODAM\Inc\Traits\Singleton;
 /**
  * Class LearnDash
  *
- * @since n.e.x.t
+ * @since 2.11.0
  */
 class LearnDash {
 
@@ -54,7 +54,7 @@ class LearnDash {
 	/**
 	 * Provider name GoDAM videos get in LearnDash's video data and wrapper.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var string
 	 */
@@ -71,7 +71,7 @@ class LearnDash {
 	 * `[video]`, so other plugins that override `[video]` (Jetpack VideoPress
 	 * empties its output) cannot replace it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var string
 	 */
@@ -80,7 +80,7 @@ class LearnDash {
 	/**
 	 * Tag of the BLOCK_MARKER shortcode.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var string
 	 */
@@ -89,7 +89,7 @@ class LearnDash {
 	/**
 	 * Name of the "Use GoDAM Video" field in the lesson and topic settings.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var string
 	 */
@@ -98,7 +98,7 @@ class LearnDash {
 	/**
 	 * Name of the picked GoDAM video field in the lesson and topic settings.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var string
 	 */
@@ -107,7 +107,7 @@ class LearnDash {
 	/**
 	 * LearnDash settings metaboxes that hold the Video Progression settings.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var string[]
 	 */
@@ -119,7 +119,7 @@ class LearnDash {
 	/**
 	 * LearnDash post types that have Video Progression.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var string[]
 	 */
@@ -128,7 +128,7 @@ class LearnDash {
 	/**
 	 * Block name of the GoDAM Video block.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var string
 	 */
@@ -137,7 +137,7 @@ class LearnDash {
 	/**
 	 * Whether a GoDAM video went through LearnDash's video path on this request.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var bool
 	 */
@@ -146,7 +146,7 @@ class LearnDash {
 	/**
 	 * Whether the lesson's GoDAM Video block is being rendered for LearnDash.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var bool
 	 */
@@ -155,7 +155,7 @@ class LearnDash {
 	/**
 	 * First GoDAM Video block of each post, keyed by post ID (null when it has none).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @var array<int, array|null>
 	 */
@@ -164,7 +164,7 @@ class LearnDash {
 	/**
 	 * Constructor.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 */
 	protected function __construct() {
 		$this->setup_hooks();
@@ -176,7 +176,7 @@ class LearnDash {
 	 * All of them are LearnDash hooks or check for a LearnDash lesson or topic
 	 * first, so they do nothing when LearnDash is not active.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return void
 	 */
@@ -206,7 +206,7 @@ class LearnDash {
 	 * LearnDash escapes the value when it saves it, so the stored value can hold
 	 * HTML entities.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param mixed $video_url Video URL setting value.
 	 *
@@ -228,7 +228,7 @@ class LearnDash {
 	/**
 	 * Whether a Video URL setting value is the marker "Use GoDAM Video" stores.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param mixed $video_url Video URL setting value.
 	 *
@@ -241,7 +241,7 @@ class LearnDash {
 	/**
 	 * Build the marker for a picked video, or BLOCK_MARKER when none is picked.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param int $video_id Picked attachment ID, or 0.
 	 *
@@ -257,7 +257,7 @@ class LearnDash {
 	 * Accepts a URL, an iframe embed code or a shortcode, so it checks every URL
 	 * in the value. Only a URL whose host is exactly the GoDAM API host counts.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param mixed $video_url Video URL setting value.
 	 *
@@ -289,7 +289,7 @@ class LearnDash {
 	/**
 	 * Whether a Video URL setting value is a GoDAM source this class handles.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param mixed $video_url Video URL setting value.
 	 *
@@ -302,7 +302,7 @@ class LearnDash {
 	/**
 	 * Find the first GoDAM Video block in a list of parsed blocks, inner blocks included.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array $blocks Parsed blocks, as parse_blocks() returns them.
 	 *
@@ -337,7 +337,7 @@ class LearnDash {
 	 * marker, so LearnDash turns progression off unless a different video is
 	 * entered.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array $settings  Settings LearnDash is about to save.
 	 * @param bool  $use_godam Whether "Use GoDAM Video" is on.
@@ -358,7 +358,7 @@ class LearnDash {
 	/**
 	 * Add the "Use GoDAM Video" switch and the video picker above the Video URL field.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array  $fields      Settings fields of the metabox.
 	 * @param string $metabox_key Metabox key.
@@ -410,7 +410,7 @@ class LearnDash {
 	 *
 	 * The media library opens from it through assets/src/js/learndash/admin.js.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param string $metabox_key Metabox key.
 	 * @param int    $video_id    Picked attachment ID, or 0.
@@ -457,7 +457,7 @@ class LearnDash {
 	/**
 	 * Save the "Use GoDAM Video" switch into the Video URL setting.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array  $settings    Settings LearnDash is about to save.
 	 * @param string $metabox_key Metabox key.
@@ -502,7 +502,7 @@ class LearnDash {
 	/**
 	 * Whether a picked attachment is a video, so it can be the progression video.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param int $attachment_id Attachment ID.
 	 *
@@ -526,7 +526,7 @@ class LearnDash {
 	/**
 	 * Load the script that shows and hides the Video URL field with the switch.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param string $hook_suffix Admin page hook suffix.
 	 *
@@ -583,7 +583,7 @@ class LearnDash {
 	/**
 	 * Styles for the video picker, in the look of the editor's featured image panel.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return string
 	 */
@@ -603,7 +603,7 @@ class LearnDash {
 	/**
 	 * Get the first GoDAM Video block in a post's content.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param int $post_id Post ID.
 	 *
@@ -626,7 +626,7 @@ class LearnDash {
 	 *
 	 * That is "Use GoDAM Video" on with no video picked in the settings.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return int Post ID, or 0.
 	 */
@@ -647,7 +647,7 @@ class LearnDash {
 	/**
 	 * Build the parsed GoDAM Video block that plays a picked attachment.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param int $video_id Attachment ID.
 	 *
@@ -670,7 +670,7 @@ class LearnDash {
 	 * while it is still a video, or else a GoDAM Video block in the content.
 	 * Without one, returning no provider keeps Mark Complete usable.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param string|false $provider Provider LearnDash found, or an empty value.
 	 * @param array        $settings Lesson or topic settings.
@@ -705,7 +705,7 @@ class LearnDash {
 	 * renders the GoDAM Video block of the lesson or topic being shown, when
 	 * that lesson uses the block for progression.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array|string $atts Shortcode attributes.
 	 *
@@ -735,7 +735,7 @@ class LearnDash {
 	/**
 	 * Render the GoDAM embed where LearnDash wraps a GoDAM URL in `[video]`.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param string $html Output so far; empty lets WordPress render the shortcode.
 	 * @param array  $attr Shortcode attributes.
@@ -762,7 +762,7 @@ class LearnDash {
 	/**
 	 * Build the GoDAM embed iframe for a GoDAM video or embed URL.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param string $url GoDAM URL, `/web/video/<id>` or `/web/embed/<id>`.
 	 *
@@ -798,7 +798,7 @@ class LearnDash {
 	 * LearnDash applies this filter right before it writes the `.ld-video`
 	 * wrapper and, in the footer, the `learndash_video_data` script object.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array $video_data Video data LearnDash passes to its script.
 	 * @param array $settings   Lesson or topic settings.
@@ -829,7 +829,7 @@ class LearnDash {
 	 * progression, so admins and learners on a completed step would not get
 	 * them. The GoDAM player follows these every time it shows.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array $settings Lesson or topic settings.
 	 *
@@ -850,7 +850,7 @@ class LearnDash {
 	 * LearnDash shows it instead: before or after the content, at [ld_video],
 	 * or not at all while Display Timing hides it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param string $block_content Rendered block.
 	 * @param array  $block         Parsed block.
@@ -878,7 +878,7 @@ class LearnDash {
 	/**
 	 * Load the script that connects GoDAM videos to LearnDash's video progress.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @return void
 	 */

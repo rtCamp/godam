@@ -1623,7 +1623,7 @@ class Media_Library_Ajax {
 	 * the CDN's sizes can stop at 768px, and without the full file a large or high-DPI
 	 * screen could only get the 768px copy.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.0
 	 *
 	 * @param array $rtgodam_image_sizes CDN size map keyed by size name.
 	 * @param array $size_array          The displayed size as [width, height].
