@@ -36,6 +36,8 @@ import {
 	MediaReplaceFlow,
 	useBlockProps,
 	InnerBlocks,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- Same hook core/image uses to draw block border supports on an inner element.
+	__experimentalUseBorderProps as useBorderProps,
 	// eslint-disable-next-line import/no-unresolved -- resolver false positive: package resolves fine at build time, eslint-plugin-import can't parse @wordpress/block-editor's exports map.
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
@@ -727,6 +729,17 @@ function VideoEdit( {
 		...( computedMaxWidth ? { style: { maxWidth: computedMaxWidth } } : {} ),
 	} );
 
+	// The border skips the block wrapper (see block.json) and is drawn on the
+	// video only, as on the front end (inc/templates/godam-player.php): a radius
+	// rounds and clips the video, and the border is a frame laid over it, so the
+	// video keeps its size.
+	const borderProps = useBorderProps( attributes );
+	const borderStyle = borderProps.style || {};
+	const radiusStyle = Object.fromEntries( Object.entries( borderStyle ).filter( ( [ property ] ) => property.endsWith( 'Radius' ) ) );
+	const videoWrapperStyle = Object.keys( radiusStyle ).length ? { ...radiusStyle, overflow: 'hidden' } : undefined;
+	const hasBorderLine = !! borderProps.className || Object.keys( borderStyle ).some( ( property ) => ! property.endsWith( 'Radius' ) );
+	const frameStyle = { position: 'absolute', inset: 0, zIndex: 25, boxSizing: 'border-box', pointerEvents: 'none', ...borderStyle };
+
 	function onSelectPoster( image ) {
 		const nextAttributes = {
 			poster: image.url,
@@ -1158,7 +1171,10 @@ function VideoEdit( {
 
 					<figure { ...blockProps } data-test-id="godam-video-canvas">
 						<div className="godam-video-canvas-frame">
-							<div className="godam-video-wrapper">
+							<div className="godam-video-wrapper" style={ videoWrapperStyle }>
+								{ hasBorderLine && (
+									<span className={ clsx( 'godam-video-border', borderProps.className ) } style={ frameStyle } aria-hidden="true" />
+								) }
 								{ showOverlay && (
 									<div
 										className={ `godam-video-overlay-container godam-overlay-alignment-${ verticalAlignment }` }

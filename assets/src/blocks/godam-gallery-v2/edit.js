@@ -10,6 +10,7 @@ import {
 	MediaUpload,
 	MediaUploadCheck,
 	store as blockEditorStore,
+	// eslint-disable-next-line import/no-unresolved -- resolver false positive: package resolves fine at build time, eslint-plugin-import can't parse @wordpress/block-editor's exports map.
 } from '@wordpress/block-editor';
 import {
 	PanelBody,
@@ -23,8 +24,11 @@ import {
 	Notice,
 	Spinner,
 	Button,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalToggleGroupControl as ToggleGroupControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalToggleGroupControlOptionIcon as ToggleGroupControlOptionIcon,
 } from '@wordpress/components';
 import { useDispatch, useSelect, select as dataSelect } from '@wordpress/data';
@@ -55,6 +59,7 @@ import { CSS } from '@dnd-kit/utilities';
  * Internal dependencies
  */
 import './editor.scss';
+import { getBorderRadiusCorners } from '../godam-player/utils/index.js';
 
 const ALLOWED_BLOCKS = [ 'godam/gallery-v2-item' ];
 
@@ -471,11 +476,22 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const itemWidthMap = { S: 200, M: 260, L: 320 };
 	const itemWidthPx = itemWidthMap[ itemWidth ] || itemWidthMap.M;
 
+	// Styles → Border → Radius rounds each card, not the wrapper (see block.json).
+	// One variable per corner, so an unset corner keeps the 0.5rem default.
+	const radiusCorners = getBorderRadiusCorners( attributes.style?.border?.radius );
+	const radiusVars = {};
+	Object.entries( radiusCorners || {} ).forEach( ( [ corner, value ] ) => {
+		if ( value ) {
+			radiusVars[ `--godam-gallery-radius-${ corner }` ] = value;
+		}
+	} );
+
 	const blockProps = useBlockProps( {
 		className: `godam-gallery-v2 godam-gallery-v2--${ mode }`,
 		style: {
 			'--godam-gallery-item-width': `${ itemWidthPx }px`,
 			'--godam-gallery-gap': blockGap,
+			...radiusVars,
 		},
 	} );
 

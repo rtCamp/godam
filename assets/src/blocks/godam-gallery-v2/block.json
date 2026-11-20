@@ -107,6 +107,13 @@
 			"padding": true,
 			"blockGap": true
 		},
+		"__experimentalBorder": {
+			"radius": true,
+			"__experimentalSkipSerialization": true,
+			"__experimentalDefaultControls": {
+				"radius": true
+			}
+		},
 		"interactivity": {
 			"clientNavigation": true
 		}
