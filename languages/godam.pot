@@ -11524,7 +11524,7 @@ msgstr ""
 #. translators: %s: bandwidth percentage
 #: admin/class-rtgodam-transcoder-admin.php:598
 #, php-format
-msgid "Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend."
+msgid "Your bandwidth usage (%s%%) has exceeded your plan limit. Your videos keep playing; upgrade your plan to stay within your limit."
 msgstr ""
 
 #: admin/class-rtgodam-transcoder-admin.php:610
