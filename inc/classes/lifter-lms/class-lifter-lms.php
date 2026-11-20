@@ -50,6 +50,29 @@ class Lifter_LMS {
 		add_filter( 'godam_player_block_attributes', array( $this, 'modify_godam_player_block_attributes' ) );
 
 		add_filter( 'lifterlms_available_integrations', array( $this, 'add_godam_integration' ) );
+
+		add_filter( 'rtgodam_render_share_url_locally', array( $this, 'keep_share_url_embeds_in_lifterlms' ) );
+	}
+
+	/**
+	 * Keep GoDAM share URLs embedded through GoDAM's oEmbed API on LifterLMS pages.
+	 *
+	 * The LifterLMS Advanced Videos integration tracks progress and autoplays
+	 * the next lesson by talking to the embedded GoDAM iframe, so a share URL
+	 * on a LifterLMS page is not swapped for the site's own player.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param bool $render_locally Whether to render the share URL with the site's own player.
+	 *
+	 * @return bool
+	 */
+	public function keep_share_url_embeds_in_lifterlms( $render_locally ) {
+		if ( $this->is_lifterlms_active() && $this->is_lifterlms_advanced_video_active() && $this->is_lifterlms_content() ) {
+			return false;
+		}
+
+		return $render_locally;
 	}
 
 	/**

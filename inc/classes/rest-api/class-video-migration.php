@@ -2,7 +2,8 @@
 /**
  * Register REST API endpoints for Video Migration.
  *
- * This class handles the migration of Vimeo videos in Gutenberg blocks.
+ * This class handles the migration of core video blocks, and of Vimeo videos
+ * in Gutenberg blocks, Elementor, WPBakery and ACF fields.
  *
  * @since 1.4.0
  *
@@ -13,12 +14,27 @@ namespace RTGODAM\Inc\REST_API;
 
 defined( 'ABSPATH' ) || exit;
 
+use RTGODAM\Inc\Vimeo_Migration\Acf_Source;
+use RTGODAM\Inc\Vimeo_Migration\Elementor_Source;
+use RTGODAM\Inc\Vimeo_Migration\Vimeo_Resolver;
+use RTGODAM\Inc\Vimeo_Migration\Vimeo_Url;
+use RTGODAM\Inc\Vimeo_Migration\WPBakery_Source;
+
 /**
  * Class Video_Migration
  *
  * @since 1.4.0
  */
 class Video_Migration extends Base {
+
+	/**
+	 * Slug of the Gutenberg block source in the Vimeo migration status.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @var string
+	 */
+	const GUTENBERG_SOURCE = 'gutenberg';
 
 	/**
 	 * Construct method.
@@ -248,10 +264,21 @@ class Video_Migration extends Base {
 			'message'   => __( 'Migration queued for processing', 'godam' ),
 		);
 
-		// For Vimeo migration, also track embed block counts.
+		// For Vimeo migration, also track counts per place the videos sit in.
 		if ( 'vimeo' === $migration_type ) {
+			$include_acf = rest_sanitize_boolean( $request->get_param( 'include_acf' ) ) && Acf_Source::is_active();
+
 			$initial_status['vimeo_blocks_found']    = 0;
 			$initial_status['vimeo_blocks_migrated'] = 0;
+			$initial_status['include_acf']           = $include_acf;
+			$initial_status['vimeo_sources']         = array();
+
+			foreach ( $this->get_active_vimeo_sources( $include_acf ) as $source ) {
+				$initial_status['vimeo_sources'][ $source ] = array(
+					'found'    => 0,
+					'migrated' => 0,
+				);
+			}
 		}
 
 		update_option( $wp_option_key, $initial_status );
@@ -292,14 +319,23 @@ class Video_Migration extends Base {
 		// Get all post types that support Gutenberg editor.
 		$post_types = $this->get_gutenberg_enabled_post_types();
 
-		if ( empty( $post_types ) ) {
+		// Find all posts that need migration.
+		$all_post_ids = empty( $post_types ) ? array() : $this->find_all_posts_for_migration( $post_types );
+
+		// The Vimeo migration also covers page builders and custom fields, whose
+		// posts may not use the block editor at all.
+		if ( 'vimeo' === $migration_type ) {
+			$all_post_ids = array_merge( $all_post_ids, $this->find_vimeo_source_post_ids( ! empty( $status['include_acf'] ) ) );
+			$all_post_ids = array_values( array_unique( array_map( 'intval', $all_post_ids ) ) );
+			sort( $all_post_ids );
+		}
+
+		if ( empty( $post_types ) && empty( $all_post_ids ) ) {
 			$this->update_migration_status_error( $wp_option_key, __( 'No post types with Gutenberg support found', 'godam' ) );
 			return;
 		}
 
-		// Find all posts that need migration.
-		$all_post_ids = $this->find_all_posts_for_migration( $post_types );
-		$total_posts  = count( $all_post_ids );
+		$total_posts = count( $all_post_ids );
 
 		if ( 0 === $total_posts ) {
 			$this->complete_migration_with_no_posts( $wp_option_key );
@@ -484,23 +520,25 @@ class Video_Migration extends Base {
 		$migration_status = get_option( $wp_option_key, array() );
 
 		$processed_count = 0;
-		// Track Vimeo embed block counts for this batch.
-		$vimeo_found_in_batch    = 0;
-		$vimeo_migrated_in_batch = 0;
+		// Track Vimeo video counts for this batch, per place they sit in.
+		$vimeo_sources_in_batch = array();
+		$include_acf            = ! empty( $migration_status['include_acf'] );
+		$vimeo_resolver         = 'vimeo' === $migration_type ? new Vimeo_Resolver( $this ) : null;
 
 		foreach ( $post_ids as $post_id ) {
 			try {
+				$post_changed = false;
+
 				// Migrate individual post.
 				if ( 'core' === $migration_type ) {
 					$post_changed = $this->migrate_single_post_video_blocks( $post_id );
 				} elseif ( 'vimeo' === $migration_type ) {
-					$result = $this->migrate_single_post_vimeo_blocks( $post_id );
-					if ( is_array( $result ) ) {
-						$post_changed             = (bool) ( $result['changed'] ?? false );
-						$vimeo_found_in_batch    += (int) ( $result['found'] ?? 0 );
-						$vimeo_migrated_in_batch += (int) ( $result['migrated'] ?? 0 );
-					} else {
-						$post_changed = (bool) $result;
+					$result       = $this->migrate_single_post_vimeo( (int) $post_id, $include_acf, $vimeo_resolver );
+					$post_changed = $result['changed'];
+
+					foreach ( $result['sources'] as $source => $counts ) {
+						$vimeo_sources_in_batch[ $source ]['found']    = ( $vimeo_sources_in_batch[ $source ]['found'] ?? 0 ) + $counts['found'];
+						$vimeo_sources_in_batch[ $source ]['migrated'] = ( $vimeo_sources_in_batch[ $source ]['migrated'] ?? 0 ) + $counts['migrated'];
 					}
 				}
 
@@ -520,14 +558,25 @@ class Video_Migration extends Base {
 		if ( ! empty( $migration_status ) ) {
 			$lock_key = 'godam_' . $migration_type . '_video_migration_lock';
 			if ( $this->acquire_migration_lock( $lock_key ) ) {
-				// Re-read inside the lock to ensure we have the latest value before increment.
-				$migration_status         = get_option( $wp_option_key, array() );
+				// Re-read inside the lock, from the database: this request's
+				// option cache still holds the value from when it started.
+				$migration_status = $this->get_fresh_option( $wp_option_key );
+
+				// The run was aborted while this batch ran: don't bring it back.
+				if ( empty( $migration_status ) ) {
+					$this->release_migration_lock( $lock_key );
+					return $processed_count;
+				}
+
 				$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + count( $post_ids );
 
-				// Accumulate Vimeo embed block counts if applicable.
+				// Accumulate Vimeo video counts if applicable.
 				if ( 'vimeo' === $migration_type ) {
-					$migration_status['vimeo_blocks_found']    = ( $migration_status['vimeo_blocks_found'] ?? 0 ) + $vimeo_found_in_batch;
-					$migration_status['vimeo_blocks_migrated'] = ( $migration_status['vimeo_blocks_migrated'] ?? 0 ) + $vimeo_migrated_in_batch;
+					$migration_status['vimeo_sources'] = $this->add_vimeo_source_counts( $migration_status['vimeo_sources'] ?? array(), $vimeo_sources_in_batch );
+
+					// Kept for integrations that read them: Gutenberg block counts.
+					$migration_status['vimeo_blocks_found']    = (int) ( $migration_status['vimeo_sources'][ self::GUTENBERG_SOURCE ]['found'] ?? 0 );
+					$migration_status['vimeo_blocks_migrated'] = (int) ( $migration_status['vimeo_sources'][ self::GUTENBERG_SOURCE ]['migrated'] ?? 0 );
 				}
 
 				// Calculate progress percentage.
@@ -550,11 +599,11 @@ class Video_Migration extends Base {
 					$migration_status['completed'] = current_time( 'mysql' );
 					if ( 'vimeo' === $migration_type ) {
 						$migration_status['message'] = sprintf(
-						/* translators: 1: total posts processed, 2: migrated Vimeo embeds, 3: total Vimeo embeds found */
-							__( 'Migration completed! Processed %1$d posts. Migrated %2$d out of %3$d Vimeo Embed Blocks found.', 'godam' ),
+						/* translators: 1: total posts processed, 2: replaced Vimeo videos, 3: total Vimeo videos found */
+							__( 'Migration completed! Processed %1$d posts. Replaced %2$d of %3$d Vimeo videos found.', 'godam' ),
 							(int) ( $migration_status['total'] ?? 0 ),
-							(int) ( $migration_status['vimeo_blocks_migrated'] ?? 0 ),
-							(int) ( $migration_status['vimeo_blocks_found'] ?? 0 )
+							(int) array_sum( array_column( $migration_status['vimeo_sources'] ?? array(), 'migrated' ) ),
+							(int) array_sum( array_column( $migration_status['vimeo_sources'] ?? array(), 'found' ) )
 						);
 					} else {
 						$migration_status['message'] = sprintf(
@@ -569,8 +618,12 @@ class Video_Migration extends Base {
 				$this->release_migration_lock( $lock_key );
 			} else {
 				// As a fallback if we fail to acquire the lock after retries, attempt a best-effort update.
-				$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + count( $post_ids );
-				update_option( $wp_option_key, $migration_status );
+				$migration_status = $this->get_fresh_option( $wp_option_key );
+
+				if ( ! empty( $migration_status ) ) {
+					$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + count( $post_ids );
+					update_option( $wp_option_key, $migration_status );
+				}
 			}
 		}
 
@@ -578,11 +631,38 @@ class Video_Migration extends Base {
 	}
 
 	/**
+	 * Read an option from the database rather than this request's cache.
+	 *
+	 * Batches run in parallel requests, and each request caches options when
+	 * it starts, so a plain get_option() can return a value another batch has
+	 * since replaced.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $option Option name.
+	 *
+	 * @return array The option value, or an empty array when it isn't set.
+	 */
+	private function get_fresh_option( string $option ): array {
+		wp_cache_delete( $option, 'options' );
+		wp_cache_delete( 'alloptions', 'options' );
+		wp_cache_delete( 'notoptions', 'options' );
+
+		$value = get_option( $option, array() );
+
+		return is_array( $value ) ? $value : array();
+	}
+
+	/**
 	 * Acquire a short-lived lock for migration status updates.
 	 *
-	 * Uses add_option as a mutex. If an existing lock is expired, it will be taken over.
+	 * The lock is a row in the options table, created with INSERT IGNORE so
+	 * only one request can create it, and taken over only when it has
+	 * expired and still holds the expiry that was read. Both go straight to
+	 * the database: the option cache of a long-running request goes stale.
 	 *
 	 * @since 1.4.0
+	 * @since n.e.x.t Uses atomic queries instead of cached option reads, and waits longer.
 	 *
 	 * @param string $lock_key   Unique option key for the lock.
 	 * @param int    $timeout_s  Lock expiry seconds.
@@ -591,24 +671,49 @@ class Video_Migration extends Base {
 	 *
 	 * @return bool True if the lock was acquired, false otherwise.
 	 */
-	private function acquire_migration_lock( string $lock_key, int $timeout_s = 5, int $retry_ms = 100, int $max_wait_s = 5 ): bool {
-		$lock_expires_at = time() + $timeout_s;
-		$deadline        = microtime( true ) + $max_wait_s;
+	private function acquire_migration_lock( string $lock_key, int $timeout_s = 30, int $retry_ms = 100, int $max_wait_s = 30 ): bool {
+		global $wpdb;
 
-		// First attempt: create the option if it doesn't exist.
-		if ( add_option( $lock_key, $lock_expires_at, '', 'no' ) ) {
-			return true;
-		}
+		$deadline = microtime( true ) + $max_wait_s;
 
-		while ( microtime( true ) < $deadline ) {
-			$current = (int) get_option( $lock_key, 0 );
-			if ( $current < time() ) {
-				// Lock expired; take ownership.
-				update_option( $lock_key, $lock_expires_at );
+		do {
+			$lock_expires_at = (string) ( time() + $timeout_s );
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- an atomic insert is the lock.
+			$inserted = $wpdb->query(
+				$wpdb->prepare(
+					"INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')",
+					$lock_key,
+					$lock_expires_at
+				)
+			);
+
+			if ( 1 === (int) $inserted ) {
 				return true;
 			}
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- the cached value can be stale.
+			$current = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $lock_key ) );
+
+			// Lock expired: take it over, unless another request just did.
+			if ( null !== $current && (int) $current < time() ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- conditional update is the takeover.
+				$updated = $wpdb->update(
+					$wpdb->options,
+					array( 'option_value' => $lock_expires_at ),
+					array(
+						'option_name'  => $lock_key,
+						'option_value' => (string) $current,
+					)
+				);
+
+				if ( 1 === (int) $updated ) {
+					return true;
+				}
+			}
+
 			usleep( $retry_ms * 1000 );
-		}
+		} while ( microtime( true ) < $deadline );
 
 		return false;
 	}
@@ -623,7 +728,11 @@ class Video_Migration extends Base {
 	 * @return void
 	 */
 	private function release_migration_lock( string $lock_key ) {
-		delete_option( $lock_key );
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- the lock row is written directly, see acquire_migration_lock().
+		$wpdb->delete( $wpdb->options, array( 'option_name' => $lock_key ) );
+		wp_cache_delete( $lock_key, 'options' );
 	}
 
 	/**
@@ -648,16 +757,55 @@ class Video_Migration extends Base {
 		$this->traverse_and_migrate_core_video_blocks_recursive( $blocks, $changed );
 
 		if ( $changed ) {
-			$new_content = serialize_blocks( $blocks );
-			wp_update_post( // godam-coverage-ignore -- migrate_single_post_video_blocks(): rewrites the HOST post's own post_content after migrating its embedded core/video block, not attachment data — see the get_post( $post_id ) call above.
-				array(
-					'ID'           => $post_id,
-					'post_content' => $new_content,
-				)
-			);
+			$this->update_post_content( (int) $post_id, serialize_blocks( $blocks ) );
 		}
 
 		return $changed;
+	}
+
+	/**
+	 * Save a migrated post's content exactly as given.
+	 *
+	 * The content is slashed, because wp_update_post() expects slashed
+	 * data: unslashed, the JSON escapes in block attributes (a backslash
+	 * followed by u0026, for example) lose their backslash.
+	 *
+	 * The background job runs without a logged-in user, so kses would also
+	 * strip markup the post's author was allowed to save, such as an
+	 * `<iframe>` in a Custom HTML block. The migration only swaps videos, so
+	 * kses is switched off for this one write and restored afterwards.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int    $post_id Post ID.
+	 * @param string $content New post content.
+	 *
+	 * @return bool True when the post was updated.
+	 */
+	private function update_post_content( int $post_id, string $content ): bool {
+		$kses_was_active = false !== has_filter( 'content_save_pre', 'wp_filter_post_kses' );
+
+		if ( $kses_was_active ) {
+			kses_remove_filters();
+		}
+
+		try {
+			$result = wp_update_post( // godam-coverage-ignore -- update_post_content(): rewrites the HOST post's own post_content after migrating its embedded videos, not attachment data.
+				wp_slash(
+					array(
+						'ID'           => $post_id,
+						'post_content' => $content,
+					)
+				),
+				true
+			);
+		} finally {
+			if ( $kses_was_active ) {
+				kses_init_filters();
+			}
+		}
+
+		return ! is_wp_error( $result ) && 0 !== $result;
 	}
 
 	/**
@@ -733,44 +881,172 @@ class Video_Migration extends Base {
 	}
 
 	/**
-	 * Migrate Vimeo video blocks for a single post.
+	 * Migrate the Vimeo videos in a single post, wherever they sit.
 	 *
-	 * @since 1.4.0
+	 * Runs, in order: Gutenberg Vimeo embed blocks and WPBakery Video Player
+	 * elements in the post content (saved once), then Elementor Video widgets
+	 * and, when asked for, ACF oEmbed and URL fields.
 	 *
-	 * @param int $post_id The ID of the post to migrate.
+	 * @since n.e.x.t
 	 *
-	 * @return bool|array True if post content was changed, or an array with keys 'changed', 'found', 'migrated' when counting embeds.
+	 * @param int                 $post_id     The ID of the post to migrate.
+	 * @param bool                $include_acf Whether to replace Vimeo links in ACF fields.
+	 * @param Vimeo_Resolver|null $resolver    Resolver shared across the batch, so each video is looked up once.
+	 *
+	 * @return array{changed: bool, found: int, migrated: int, sources: array<string, array{found: int, migrated: int}>}
 	 */
-	private function migrate_single_post_vimeo_blocks( $post_id ) {
+	private function migrate_single_post_vimeo( int $post_id, bool $include_acf, ?Vimeo_Resolver $resolver = null ): array {
+		$result = array(
+			'changed'  => false,
+			'found'    => 0,
+			'migrated' => 0,
+			'sources'  => array(),
+		);
 
-		$post = get_post( $post_id ); // godam-coverage-ignore -- migrate_single_post_vimeo_blocks(): $post_id is the HOST post being scanned for an embedded Vimeo block, not an attachment — the attachment ID resolved from the embed is already wrapped in traverse_and_migrate_vimeo_blocks_recursive().
+		$post = get_post( $post_id ); // godam-coverage-ignore -- migrate_single_post_vimeo(): $post_id is the HOST post being scanned for embedded Vimeo videos, not an attachment — attachment reads for the resolved videos are wrapped in Vimeo_Resolver and traverse_and_migrate_vimeo_blocks_recursive().
 
-		if ( ! $post || ! has_blocks( $post->post_content ) ) {
-			return false;
+		if ( ! $post ) {
+			return $result;
 		}
 
-		$blocks   = parse_blocks( $post->post_content );
-		$changed  = false;
-		$found    = 0;
-		$migrated = 0;
+		$resolver = null !== $resolver ? $resolver : new Vimeo_Resolver( $this );
+		$resolve  = array( $resolver, 'resolve' );
 
-		$this->traverse_and_migrate_vimeo_blocks_recursive( $blocks, (int) $post_id, $found, $migrated, $changed );
+		$content     = (string) $post->post_content;
+		$new_content = $content;
 
-		if ( $changed ) {
-			$new_content = serialize_blocks( $blocks );
-			wp_update_post( // godam-coverage-ignore -- migrate_single_post_vimeo_blocks(): rewrites the HOST post's own post_content after migrating its embedded Vimeo block, not attachment data — see the get_post( $post_id ) call above.
-				array(
-					'ID'           => $post_id,
-					'post_content' => $new_content,
-				)
+		// Gutenberg blocks.
+		if ( has_blocks( $content ) ) {
+			$blocks   = parse_blocks( $content );
+			$changed  = false;
+			$found    = 0;
+			$migrated = 0;
+
+			$this->traverse_and_migrate_vimeo_blocks_recursive( $blocks, $post_id, $found, $migrated, $changed );
+
+			if ( $changed ) {
+				$new_content = serialize_blocks( $blocks );
+			}
+
+			$result['sources'][ self::GUTENBERG_SOURCE ] = array(
+				'found'    => $found,
+				'migrated' => $migrated,
 			);
 		}
 
-		return array(
-			'changed'  => $changed,
-			'found'    => $found,
-			'migrated' => $migrated,
-		);
+		// WPBakery shortcodes.
+		if ( WPBakery_Source::is_active() ) {
+			$wpbakery    = new WPBakery_Source( $resolve );
+			$new_content = $wpbakery->migrate_content( $new_content );
+
+			$result['sources'][ WPBakery_Source::SLUG ] = $wpbakery->get_counts();
+		}
+
+		if ( $new_content !== $content && $this->update_post_content( $post_id, $new_content ) ) {
+			$result['changed'] = true;
+		}
+
+		// Elementor data.
+		if ( Elementor_Source::is_active() ) {
+			$elementor_result = ( new Elementor_Source( $resolve ) )->migrate_post( $post_id );
+
+			$result['changed']                           = $result['changed'] || $elementor_result['changed'];
+			$result['sources'][ Elementor_Source::SLUG ] = array(
+				'found'    => $elementor_result['found'],
+				'migrated' => $elementor_result['migrated'],
+			);
+		}
+
+		// ACF fields.
+		if ( $include_acf && Acf_Source::is_active() ) {
+			$acf_result = ( new Acf_Source( $resolve ) )->migrate_post( $post_id );
+
+			$result['changed']                     = $result['changed'] || $acf_result['changed'];
+			$result['sources'][ Acf_Source::SLUG ] = array(
+				'found'    => $acf_result['found'],
+				'migrated' => $acf_result['migrated'],
+			);
+		}
+
+		foreach ( $result['sources'] as $counts ) {
+			$result['found']    += $counts['found'];
+			$result['migrated'] += $counts['migrated'];
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Slugs of the places the Vimeo migration covers on this site.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param bool $include_acf Whether ACF fields are included in this run.
+	 *
+	 * @return string[]
+	 */
+	private function get_active_vimeo_sources( bool $include_acf ): array {
+		$sources = array( self::GUTENBERG_SOURCE );
+
+		if ( Elementor_Source::is_active() ) {
+			$sources[] = Elementor_Source::SLUG;
+		}
+
+		if ( WPBakery_Source::is_active() ) {
+			$sources[] = WPBakery_Source::SLUG;
+		}
+
+		if ( $include_acf && Acf_Source::is_active() ) {
+			$sources[] = Acf_Source::SLUG;
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * Find the posts with Vimeo videos in page builders and custom fields.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param bool $include_acf Whether ACF fields are included in this run.
+	 *
+	 * @return int[] Post IDs.
+	 */
+	private function find_vimeo_source_post_ids( bool $include_acf ): array {
+		$post_ids = array();
+
+		if ( Elementor_Source::is_active() ) {
+			$post_ids = array_merge( $post_ids, Elementor_Source::find_post_ids() );
+		}
+
+		if ( WPBakery_Source::is_active() ) {
+			$post_ids = array_merge( $post_ids, WPBakery_Source::find_post_ids() );
+		}
+
+		if ( $include_acf && Acf_Source::is_active() ) {
+			$post_ids = array_merge( $post_ids, Acf_Source::find_post_ids() );
+		}
+
+		return $post_ids;
+	}
+
+	/**
+	 * Add one batch's per-source Vimeo counts to the running totals.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $totals Running totals: source slug => { found, migrated }.
+	 * @param array $batch  This batch's counts, same shape.
+	 *
+	 * @return array The new totals.
+	 */
+	private function add_vimeo_source_counts( array $totals, array $batch ): array {
+		foreach ( $batch as $source => $counts ) {
+			$totals[ $source ]['found']    = (int) ( $totals[ $source ]['found'] ?? 0 ) + (int) ( $counts['found'] ?? 0 );
+			$totals[ $source ]['migrated'] = (int) ( $totals[ $source ]['migrated'] ?? 0 ) + (int) ( $counts['migrated'] ?? 0 );
+		}
+
+		return $totals;
 	}
 
 	/**
@@ -1046,6 +1322,12 @@ class Video_Migration extends Base {
 	 * @return string The Vimeo video ID or same vimeo URL if not found.
 	 */
 	private function fetch_vimeo_video_id( string $vimeo_url ) {
+		$video_id = Vimeo_Url::get_video_id( $vimeo_url );
+
+		if ( '' !== $video_id ) {
+			return $video_id;
+		}
+
 		if ( preg_match( '/vimeo\.com\/(?:video\/)?(\d+)/', $vimeo_url, $matches ) ) {
 			return $matches[1];
 		}
@@ -1154,6 +1436,9 @@ class Video_Migration extends Base {
 				'ID' => $attachment_id,
 			)
 		);
+
+		// The direct write bypasses the post cache; drop it so the new guid is read back.
+		clean_post_cache( $attachment_id );
 
 		// Update attachment metadata.
 		update_post_meta( $attachment_id, 'rtgodam_transcoded_url', $video_info['transcoded_file_path'] );
@@ -1316,6 +1601,15 @@ class Video_Migration extends Base {
 				'started'   => null,
 				'completed' => null,
 				'status'    => 'pending', // processing | completed | error.
+			);
+		}
+
+		// Tell the UI which places the Vimeo migration can cover on this site.
+		if ( 'vimeo' === $migration_type ) {
+			$migration_status['available_sources'] = array(
+				Elementor_Source::SLUG => Elementor_Source::is_active(),
+				WPBakery_Source::SLUG  => WPBakery_Source::is_active(),
+				Acf_Source::SLUG       => Acf_Source::is_active(),
 			);
 		}
 
