@@ -38,6 +38,21 @@ const setup = ( dataset, response, configManager = {} ) => {
 	return { manager, added };
 };
 
+describe( 'TranscriptManager.trackSrc', () => {
+	const manager = new TranscriptManager( {}, { dataset: {} }, {} );
+
+	it( 'adds the revision to an unsigned URL so an edit reaches visitors', () => {
+		expect( manager.trackSrc( { vtt_path: 'https://cdn.example/job/en.vtt', revision: '3' } ) ).toBe(
+			'https://cdn.example/job/en.vtt?rev=3',
+		);
+	} );
+
+	it( 'leaves a signed URL as it is: the CDN refuses a parameter its token does not cover', () => {
+		const signed = 'https://cdn.example/private/p/en.vtt?token=abc&expires=1';
+		expect( manager.trackSrc( { vtt_path: signed, revision: '3' } ) ).toBe( signed );
+	} );
+} );
+
 describe( 'TranscriptManager.initialize', () => {
 	it( 'adds every ready caption track A to Z and skips ones still generating', async () => {
 		const { manager, added } = setup( { transcriptUrl: CACHED }, { exists: true, url: CACHED, caption_tracks: CAPTION_TRACKS } );
@@ -91,7 +106,8 @@ describe( 'TranscriptManager.initialize', () => {
 
 		expect( added.map( ( track ) => track.src ) ).toEqual( [
 			`${ CACHED }?rev=2026-11-05%2013%3A53%3A38.730957`,
-			'https://cdn.example/job/es.vtt?token=a&rev=r%202',
+			// Signed: already unique per signature, and the CDN refuses an extra parameter.
+			'https://cdn.example/job/es.vtt?token=a',
 		] );
 		expect( manager.transcriptUrl ).toBe( `${ CACHED }?rev=2026-11-05%2013%3A53%3A38.730957` );
 	} );
