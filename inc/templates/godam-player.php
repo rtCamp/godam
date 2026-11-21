@@ -879,6 +879,9 @@ do_action( 'rtgodam_after_attachment_lookup' );
 						data-instance-id="<?php echo esc_attr( $godam_instance_id ); ?>"
 						data-controls="<?php echo esc_attr( $godam_video_setup ); ?>"
 						data-job_id="<?php echo esc_attr( $godam_job_id ); ?>"
+						<?php if ( ! empty( $godam_job_id ) ) : ?>
+							data-playback-url="<?php echo esc_url( rest_url( 'godam/v1/playback/' . rawurlencode( $godam_job_id ) ) ); ?>"
+						<?php endif; ?>
 						data-block-source="<?php echo esc_attr( $godam_block_source ); ?>"
 						<?php if ( ! empty( $godam_host_post_id ) ) : ?>
 							data-host-post-id="<?php echo esc_attr( $godam_host_post_id ); ?>"

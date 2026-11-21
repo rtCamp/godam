@@ -68,7 +68,7 @@ $godam_wrapper_attributes = get_block_wrapper_attributes(
 	// Content to display (thumbnail or fallback).
 	$godam_content = '';
 	if ( ! empty( $godam_thumbnail_url ) ) {
-		$godam_content = '<img src="' . esc_url( $godam_thumbnail_url ) . '" alt="' . esc_attr( $godam_alt_text ) . '" class="godam-video-thumbnail" />';
+		$godam_content = '<img src="' . esc_url( $godam_thumbnail_url ) . '" alt="' . esc_attr( $godam_alt_text ) . '" class="godam-video-thumbnail" data-godam-job="' . esc_attr( rtgodam_signed_playback_job( $godam_attachment_id ?? 0 ) ) . '" />';
 	} else {
 		$godam_content = '<div class="godam-video-thumbnail__fallback"></div>';
 	}

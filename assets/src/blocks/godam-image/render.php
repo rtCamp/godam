@@ -204,6 +204,8 @@ if ( empty( $godam_is_shortcode ) ) {
 			<?php echo $godam_height ? 'height="' . esc_attr( (string) $godam_height ) . '"' : ''; ?>
 			loading="lazy"
 			decoding="async"
+			data-godam-job="<?php echo esc_attr( rtgodam_signed_playback_job( $godam_attachment_id ) ); ?>"
+			data-godam-kind="image"
 		/>
 		<?php if ( $godam_has_layers ) : ?>
 			<div id="layer-<?php echo esc_attr( $godam_instance_id ); ?>-all" class="easydam-layer hotspot-layer godam-image-layer" data-test-id="godam-image-render-layers"></div>

@@ -447,6 +447,7 @@ if ( 'query' === $godam_gallery_mode ) {
 							class="godam-gallery-v2__query-button<?php echo ( empty( $godam_item['thumbnail'] ) && ! empty( $godam_item['video_url'] ) ) ? ' godam-gallery-v2-item--no-thumb' : ''; ?>"
 							data-godam-gallery-v2-trigger="true"
 							data-video-id="<?php echo esc_attr( $godam_item['id'] ); ?>"
+							data-godam-job="<?php echo esc_attr( rtgodam_signed_playback_job( $godam_item['id'] ) ); ?>"
 							<?php /* translators: %s: video title. */ ?>
 							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $godam_item['title'] ) ); ?>"
 						>
@@ -513,6 +514,7 @@ if ( 'query' === $godam_gallery_mode ) {
 							class="godam-gallery-v2-item__button<?php echo ( empty( $godam_item['thumbnail'] ) && ! empty( $godam_item['video_url'] ) ) ? ' godam-gallery-v2-item--no-thumb' : ''; ?>"
 							data-godam-gallery-v2-trigger="true"
 							data-video-id="<?php echo esc_attr( $godam_item['id'] ); ?>"
+							data-godam-job="<?php echo esc_attr( rtgodam_signed_playback_job( $godam_item['id'] ) ); ?>"
 							<?php /* translators: %s: video title. */ ?>
 							aria-label="<?php echo esc_attr( sprintf( __( 'Open video: %s', 'godam' ), $godam_item['title'] ) ); ?>"
 						>

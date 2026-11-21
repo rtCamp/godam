@@ -14,6 +14,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { isPlayerFullscreen, setupFullscreenReparenting } from '../utils/fullscreenReparent.js';
 import { compileQuery, computeTranscriptLayout, matchRanges, normaliseQuery } from '../utils/transcriptPanelLayout.js';
 import { toWebVttTrackSrc } from '../utils/captionTrackSrc.js';
+import { defaultCaptionUrl } from '../utils/signedPlayback.js';
 
 // Minimum container width (px) at which the Bubble skin routes the button into
 // the control bar instead of overlaying it — matches ShareManager.
@@ -93,9 +94,10 @@ const COPY_FEEDBACK_DELAY = 2000;
  * @param {Object}      player            Video.js player instance.
  * @param {HTMLElement} video             The target <video> element.
  * @param {Object}      videoSetupOptions Player setup options (`showTranscription`, `showShareBtn`).
+ * @param {Array|null}  signedCaptions    Signed caption tracks from the playback route, or null.
  */
 export default class TranscriptPanelManager {
-	constructor( player, video, videoSetupOptions = {} ) {
+	constructor( player, video, videoSetupOptions = {}, signedCaptions = null ) {
 		this.player = player;
 		this.video = video;
 		this.videoSetupOptions = videoSetupOptions;
@@ -103,6 +105,7 @@ export default class TranscriptPanelManager {
 		// Transcript cached on the attachment and printed by the server.
 		this.localTranscriptUrl = video.dataset.transcriptUrl || '';
 		this.transcriptDeleted = video.dataset.transcriptDeleted === 'true';
+		this.signedCaptions = signedCaptions;
 		this.Button = videojs.getComponent( 'Button' );
 
 		this.container = null;
@@ -191,6 +194,11 @@ export default class TranscriptPanelManager {
 		// media editor's Transcription tab) takes precedence.
 		if ( this.localTranscriptUrl ) {
 			return this.localTranscriptUrl;
+		}
+		// A file served signed (Organization, Embed only): GoDAM's public endpoint refuses it,
+		// and the playback route already sent its tracks, signed.
+		if ( this.signedCaptions ) {
+			return defaultCaptionUrl( this.signedCaptions ) || null;
 		}
 
 		const endpoint = `${ this.getApiBase() }/api/method/godam_core.api.process.get_public_transcription_path`;
