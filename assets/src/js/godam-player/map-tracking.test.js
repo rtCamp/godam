@@ -1,10 +1,11 @@
 /**
- * Unit tests for the MAP milestone tracker's pure helpers.
+ * Unit tests for the MAP milestone tracker.
  *
- * The three things worth pinning here are the ones a viewer's page depends on:
- * a cookie is only read for a tool the account actually connected, a view keeps
- * one session ID across a reload, and "how far did they watch" is measured from
- * what was played rather than from where the playhead happens to sit.
+ * The things worth pinning here are the ones a viewer's page depends on: a cookie
+ * is only read for a tool the account actually connected, a view keeps one session
+ * ID across a reload, "how far did they watch" is measured from what was played
+ * rather than from where the playhead happens to sit, and a view costs one or two
+ * posts (on pause, on leaving, at 95%) rather than one per milestone crossed.
  */
 
 /**
@@ -13,8 +14,11 @@
 import {
 	collectVisitorIds,
 	getSessionId,
+	readStoredView,
 	readCookie,
 	watchedPercent,
+	milestoneFor,
+	COMPLETE_PERCENT,
 	privacyOptedOut,
 	marketingConsentWithheld,
 	hubspotOptedOut,
@@ -346,8 +350,57 @@ describe( 'watchedPercent', () => {
 	} );
 } );
 
+describe( 'milestoneFor', () => {
+	it( 'rounds down to the milestone reached', () => {
+		expect( milestoneFor( 0 ) ).toBe( 0 );
+		expect( milestoneFor( 24.9 ) ).toBe( 0 );
+		expect( milestoneFor( 25 ) ).toBe( 25 );
+		expect( milestoneFor( 49 ) ).toBe( 25 );
+		expect( milestoneFor( 50 ) ).toBe( 50 );
+		expect( milestoneFor( 74 ) ).toBe( 50 );
+		expect( milestoneFor( 75 ) ).toBe( 75 );
+		expect( milestoneFor( 94.9 ) ).toBe( 75 );
+	} );
+
+	it( 'counts COMPLETE_PERCENT and above as a full watch', () => {
+		expect( COMPLETE_PERCENT ).toBe( 95 );
+		expect( milestoneFor( 95 ) ).toBe( 100 );
+		expect( milestoneFor( 100 ) ).toBe( 100 );
+	} );
+} );
+
+describe( 'readStoredView', () => {
+	beforeEach( () => window.sessionStorage.clear() );
+
+	it( 'reads a bare session ID as a view with nothing posted yet', () => {
+		window.sessionStorage.setItem( 'godam-map-session-job-1', 'session-0001' );
+
+		expect( readStoredView( 'job-1' ) ).toEqual( { sessionId: 'session-0001', sent: -1 } );
+	} );
+
+	it( 'reads the highest milestone posted after the ID', () => {
+		window.sessionStorage.setItem( 'godam-map-session-job-1', 'session-0001.50' );
+
+		expect( readStoredView( 'job-1' ) ).toEqual( { sessionId: 'session-0001', sent: 50 } );
+		expect( getSessionId( 'job-1' ) ).toBe( 'session-0001' );
+	} );
+
+	it( 'ignores a stored milestone that is not one of MILESTONES', () => {
+		window.sessionStorage.setItem( 'godam-map-session-job-1', 'session-0001.60' );
+
+		expect( readStoredView( 'job-1' ) ).toEqual( { sessionId: 'session-0001', sent: -1 } );
+	} );
+
+	it( 'reads nothing from a value of the wrong shape', () => {
+		window.sessionStorage.setItem( 'godam-map-session-job-1', 'bad id!.50' );
+
+		expect( readStoredView( 'job-1' ) ).toEqual( { sessionId: '', sent: -1 } );
+	} );
+} );
+
 describe( 'milestones reported for one view', () => {
 	const originalFetch = window.fetch;
+	const players = [];
 
 	/**
 	 * Load a second copy of the tracker with tracking switched on, so its init()
@@ -376,6 +429,10 @@ describe( 'milestones reported for one view', () => {
 	} );
 
 	afterEach( () => {
+		// Every player listens to the page for tab switches; dispose of them so one
+		// test's hidden tab does not flush another test's player.
+		players.splice( 0 ).forEach( ( player ) => player.trigger( 'dispose' ) );
+
 		window.fetch = originalFetch;
 		clearCookies();
 	} );
@@ -422,7 +479,31 @@ describe( 'milestones reported for one view', () => {
 			new CustomEvent( 'godamPlayerReady', { detail: { player, videoElement: video } } ),
 		);
 
+		players.push( player );
+
 		return player;
+	}
+
+	/**
+	 * Play up to a point, as a stream of `timeupdate`s would leave the played ranges.
+	 *
+	 * @param {Object} player - Player from readyPlayer().
+	 * @param {number} from   - Start of the range, in seconds.
+	 * @param {number} to     - End of the range, in seconds.
+	 */
+	function play( player, from, to ) {
+		player.trigger( 'playing' );
+		player.ranges.push( [ from, to ] );
+		player.trigger( 'timeupdate' );
+	}
+
+	/**
+	 * Fire `visibilitychange` with the tab hidden.
+	 */
+	function hideTab() {
+		Object.defineProperty( document, 'visibilityState', { value: 'hidden', configurable: true } );
+		document.dispatchEvent( new Event( 'visibilitychange' ) );
+		delete document.visibilityState;
 	}
 
 	/**
@@ -432,64 +513,214 @@ describe( 'milestones reported for one view', () => {
 		return window.fetch.mock.calls.map( ( [ , init ] ) => JSON.parse( init.body ).milestone );
 	}
 
-	it( 'reports only the start when the viewer skips to the end and lets it finish', () => {
+	it( 'posts nothing while the video plays, until a pause, a leave or the end', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 80 );
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	it( 'posts once, at COMPLETE_PERCENT, for a full watch without a pause', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 94 );
+		expect( postedMilestones() ).toEqual( [] );
+
+		player.ranges[ 0 ][ 1 ] = 95;
+		player.trigger( 'timeupdate' );
+		expect( postedMilestones() ).toEqual( [ 100 ] );
+
+		player.ranges[ 0 ][ 1 ] = 100;
+		player.trigger( 'timeupdate' );
+		player.trigger( 'pause' );
+		player.trigger( 'ended' );
+
+		expect( postedMilestones() ).toEqual( [ 100 ] );
+	} );
+
+	it( 'posts the milestone reached on pause, then only a higher one', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 40 );
+		player.trigger( 'pause' );
+		expect( postedMilestones() ).toEqual( [ 25 ] );
+
+		play( player, 40, 100 );
+		expect( postedMilestones() ).toEqual( [ 25, 100 ] );
+	} );
+
+	it( 'posts nothing new for a pause after watching no further', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 40 );
+		player.trigger( 'pause' );
+		player.trigger( 'playing' );
+		player.trigger( 'pause' );
+
+		// Watched a little more, but not into the next milestone.
+		play( player, 40, 45 );
+		player.trigger( 'pause' );
+
+		expect( postedMilestones() ).toEqual( [ 25 ] );
+	} );
+
+	it( 'posts the start for a viewer who pauses before 25%', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 5 );
+		player.trigger( 'pause' );
+
+		expect( postedMilestones() ).toEqual( [ 0 ] );
+	} );
+
+	it( 'posts nothing for a pause before the video ever played (blocked autoplay)', () => {
 		const player = readyPlayer( 100 );
 
 		player.trigger( 'play' );
-		player.ranges.push( [ 0, 1 ] );
-		player.trigger( 'timeupdate' );
+		player.trigger( 'pause' );
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	it( 'counts a player that was already playing when the script ran', () => {
+		const player = readyPlayer( 100 );
+
+		// Its `playing` fired before the tracker was listening.
+		player.ranges.push( [ 0, 30 ] );
+		player.trigger( 'pause' );
+
+		expect( postedMilestones() ).toEqual( [ 25 ] );
+	} );
+
+	it( 'posts when the viewer leaves the tab, and once only when the page then goes', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 60 );
+		hideTab();
+		window.dispatchEvent( new Event( 'pagehide' ) );
+
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+	} );
+
+	it( 'posts nothing when the tab becomes visible again', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 60 );
+		document.dispatchEvent( new Event( 'visibilitychange' ) );
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	it( 'posts when the page is left', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 80 );
+		window.dispatchEvent( new Event( 'pagehide' ) );
+
+		expect( postedMilestones() ).toEqual( [ 75 ] );
+	} );
+
+	it( 'posts when the player is disposed, then stops listening to the page', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 30 );
+		player.trigger( 'dispose' );
+		expect( postedMilestones() ).toEqual( [ 25 ] );
+
+		player.ranges.push( [ 30, 60 ] );
+		window.dispatchEvent( new Event( 'pagehide' ) );
+
+		expect( postedMilestones() ).toEqual( [ 25 ] );
+	} );
+
+	it( 'reports only the start when the viewer skips to the end and lets it finish', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 1 );
 		player.ranges.push( [ 98, 100 ] );
 		player.trigger( 'timeupdate' );
+		player.trigger( 'pause' );
 		player.trigger( 'ended' );
 
 		expect( postedMilestones() ).toEqual( [ 0 ] );
 	} );
 
-	it( 'reports 100 for a full watch whose played range stops just short of the end', () => {
-		const player = readyPlayer( 100 );
+	it( 'reports 100 when a short clip ends with its played range just short of the end', () => {
+		// 94% by the played range, but the video did reach its end.
+		const player = readyPlayer( 10 );
 
-		player.trigger( 'play' );
-		player.ranges.push( [ 0, 99.7 ] );
-		player.trigger( 'timeupdate' );
+		play( player, 0, 9.4 );
+		expect( postedMilestones() ).toEqual( [] );
+
 		player.trigger( 'ended' );
 
-		expect( postedMilestones() ).toEqual( [ 0, 25, 50, 75, 100 ] );
+		expect( postedMilestones() ).toEqual( [ 100 ] );
+	} );
+
+	it( 'does not count a pause a second before the end of a short clip as a full watch', () => {
+		const player = readyPlayer( 10 );
+
+		play( player, 0, 9.2 );
+		player.trigger( 'pause' );
+
+		expect( postedMilestones() ).toEqual( [ 75 ] );
 	} );
 
 	it( 'reports what was watched before a skip to the end, and no more', () => {
 		const player = readyPlayer( 100 );
 
-		player.trigger( 'play' );
-		player.ranges.push( [ 0, 60 ] );
-		player.trigger( 'timeupdate' );
+		play( player, 0, 60 );
 		player.ranges.push( [ 99, 100 ] );
 		player.trigger( 'timeupdate' );
 		player.trigger( 'ended' );
 
-		expect( postedMilestones() ).toEqual( [ 0, 25, 50 ] );
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+	} );
+
+	it( 'does not post a lower milestone for the same view after a reload', () => {
+		const first = readyPlayer( 100 );
+
+		play( first, 0, 60 );
+		first.trigger( 'pause' );
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+
+		// The reloaded page's player starts its played ranges from nothing, but
+		// sessionStorage keeps the view.
+		const reloaded = readyPlayer( 100 );
+
+		play( reloaded, 0, 30 );
+		reloaded.trigger( 'pause' );
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+
+		play( reloaded, 30, 80 );
+		reloaded.trigger( 'pause' );
+		expect( postedMilestones() ).toEqual( [ 50, 75 ] );
+
+		const sessions = window.fetch.mock.calls.map( ( [ , init ] ) => JSON.parse( init.body ).session_id );
+		expect( sessions[ 0 ] ).toBe( sessions[ 1 ] );
 	} );
 
 	/*
 	 * The tracking script that writes the cookie is third-party and async, so on a
 	 * visitor's first page view it often lands after the player is ready. The whole
-	 * view has to survive that, not just the milestones that follow it.
+	 * view has to survive that, not just what is watched after it.
 	 */
 	it( 'carries the whole view when the cookie only arrives mid-watch', () => {
 		clearCookies();
 
 		const player = readyPlayer( 100 );
 
-		player.trigger( 'play' );
-		player.ranges.push( [ 0, 10 ] );
-		player.trigger( 'timeupdate' );
+		play( player, 0, 30 );
+		player.trigger( 'pause' );
 
 		expect( postedMilestones() ).toEqual( [] );
 
 		document.cookie = `hubspotutk=${ HUTK }; path=/`;
-		player.ranges.push( [ 10, 60 ] );
-		player.trigger( 'timeupdate' );
+		play( player, 30, 60 );
+		player.trigger( 'pause' );
 
-		expect( postedMilestones() ).toEqual( [ 0, 25, 50 ] );
+		expect( postedMilestones() ).toEqual( [ 50 ] );
 	} );
 
 	it( 'sends the cookie that arrived, not an empty set', () => {
@@ -497,14 +728,15 @@ describe( 'milestones reported for one view', () => {
 
 		const player = readyPlayer( 100 );
 
-		player.trigger( 'play' );
+		play( player, 0, 30 );
 		document.cookie = `hubspotutk=${ HUTK }; path=/`;
-		player.ranges.push( [ 0, 30 ] );
-		player.trigger( 'timeupdate' );
+		player.trigger( 'pause' );
 
 		const [ , init ] = window.fetch.mock.calls[ 0 ];
 
-		expect( JSON.parse( init.body ).ids ).toEqual( { hubspotutk: HUTK } );
+		expect( JSON.parse( init.body ) ).toEqual(
+			expect.objectContaining( { media_id: 'job-1', milestone: 25, ids: { hubspotutk: HUTK } } ),
+		);
 	} );
 
 	it( 'reports nothing for a viewer whose cookie never arrives', () => {
@@ -512,12 +744,71 @@ describe( 'milestones reported for one view', () => {
 
 		const player = readyPlayer( 100 );
 
-		player.trigger( 'play' );
-		player.ranges.push( [ 0, 100 ] );
-		player.trigger( 'timeupdate' );
+		play( player, 0, 100 );
+		player.trigger( 'pause' );
 		player.trigger( 'ended' );
+		hideTab();
 
 		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	/*
+	 * The cookie is known from the first post, but the visitor's privacy choices
+	 * can change after it: each post has to ask again, not reuse the first answer.
+	 */
+	it( 'stops posting when marketing consent is withdrawn mid-view, and resumes on consent', () => {
+		window.wp_has_consent = () => true;
+
+		try {
+			const player = readyPlayer( 100 );
+
+			play( player, 0, 30 );
+			player.trigger( 'pause' );
+			expect( postedMilestones() ).toEqual( [ 25 ] );
+
+			window.wp_has_consent = ( category ) => 'marketing' !== category;
+			play( player, 30, 60 );
+			player.trigger( 'pause' );
+			hideTab();
+			window.dispatchEvent( new Event( 'pagehide' ) );
+			expect( postedMilestones() ).toEqual( [ 25 ] );
+
+			window.wp_has_consent = () => true;
+			player.trigger( 'pause' );
+			expect( postedMilestones() ).toEqual( [ 25, 50 ] );
+		} finally {
+			delete window.wp_has_consent;
+		}
+	} );
+
+	it( 'stops posting when Global Privacy Control turns on mid-view', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 30 );
+		player.trigger( 'pause' );
+
+		Object.defineProperty( window.navigator, 'globalPrivacyControl', { value: true, configurable: true } );
+
+		try {
+			play( player, 30, 100 );
+			player.trigger( 'ended' );
+			expect( postedMilestones() ).toEqual( [ 25 ] );
+		} finally {
+			delete window.navigator.globalPrivacyControl;
+		}
+	} );
+
+	it( 'stops posting to HubSpot when the visitor opts out of it mid-view', () => {
+		const player = readyPlayer( 100 );
+
+		play( player, 0, 30 );
+		player.trigger( 'pause' );
+
+		document.cookie = '__hs_opt_out=yes; path=/';
+		play( player, 30, 60 );
+		player.trigger( 'pause' );
+
+		expect( postedMilestones() ).toEqual( [ 25 ] );
 	} );
 
 	it( 'leaves no session ID behind for a viewer no tool knows', () => {
@@ -525,9 +816,7 @@ describe( 'milestones reported for one view', () => {
 
 		const player = readyPlayer( 100 );
 
-		player.trigger( 'play' );
-		player.ranges.push( [ 0, 100 ] );
-		player.trigger( 'timeupdate' );
+		play( player, 0, 100 );
 		player.trigger( 'ended' );
 
 		expect( window.sessionStorage.length ).toBe( 0 );

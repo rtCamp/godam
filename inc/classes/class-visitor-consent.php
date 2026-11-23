@@ -268,7 +268,7 @@ class Visitor_Consent {
 				'category'      => 'marketing',
 				'type'          => 'SESSIONSTORAGE',
 				'expires'       => __( 'Until the browser tab closes', 'godam' ),
-				'purpose'       => __( 'Groups one view of a video when how far it was watched is sent to the site\'s connected Marketo or HubSpot account.', 'godam' ),
+				'purpose'       => __( 'Groups one view of a video, and remembers how far of it was already reported, when how far it was watched is sent to the site\'s connected Marketo or HubSpot account.', 'godam' ),
 				'personal_data' => '',
 			),
 		);

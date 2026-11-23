@@ -300,22 +300,35 @@ class MapEventsTrackTest extends TestCase {
 	}
 
 	/**
-	 * One (media, session, milestone) is one event: a repeat is dropped, while the
-	 * next milestone of the same view and the same milestone of another view are not.
+	 * A view only moves forward: a repeat, or a lower milestone after a higher one
+	 * (a reload that lost track), is dropped. A higher milestone of the same view,
+	 * the start of a view, and another view or video are not.
 	 *
 	 * @return void
 	 */
-	public function test_queues_each_milestone_of_a_view_once() {
+	public function test_queues_only_a_new_high_for_each_view() {
+		$this->send( array( 'milestone' => 0 ) );
+		$this->send( array( 'milestone' => 0 ) );
 		$this->send();
 		$this->send();
+		$this->send( array( 'milestone' => 75 ) );
 		$this->send( array( 'milestone' => 50 ) );
+		$this->send( array( 'milestone' => 100 ) );
 		$this->send( array( 'session_id' => 'session-0002' ) );
+		$this->send( array( 'media_id' => 'job-def456' ) );
 
 		$this->assertSame(
-			array( array( 'session-0001', 25 ), array( 'session-0001', 50 ), array( 'session-0002', 25 ) ),
+			array(
+				array( 'job-abc123', 'session-0001', 0 ),
+				array( 'job-abc123', 'session-0001', 25 ),
+				array( 'job-abc123', 'session-0001', 75 ),
+				array( 'job-abc123', 'session-0001', 100 ),
+				array( 'job-abc123', 'session-0002', 25 ),
+				array( 'job-def456', 'session-0001', 25 ),
+			),
 			array_map(
 				static function ( $event ) {
-					return array( $event['session_id'], $event['milestone'] );
+					return array( $event['media_id'], $event['session_id'], $event['milestone'] );
 				},
 				$this->queued()
 			)

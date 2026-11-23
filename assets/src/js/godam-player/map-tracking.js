@@ -1,10 +1,16 @@
 /**
- * Report video view milestones to the viewer's marketing automation platform.
+ * Report how far a viewer watched to the viewer's marketing automation platform.
  *
- * Watches every GoDAM player on the page and posts 0 (started), 25, 50, 75 and 100
- * to `godam/v1/map-events`, together with the visitor's Marketo and/or HubSpot
- * cookie. The REST route forwards it to GoDAM Central server-to-server, and Central
- * records it against the lead or contact that cookie belongs to.
+ * Watches every GoDAM player on the page and posts the highest milestone the viewer
+ * has reached (0 = started, then 25, 50, 75, 100) to `godam/v1/map-events`,
+ * together with the visitor's Marketo and/or HubSpot cookie. The REST route
+ * forwards it to GoDAM Central server-to-server, and Central records it against the
+ * lead or contact that cookie belongs to.
+ *
+ * It posts only when the viewer pauses, leaves the tab or the page, or has watched
+ * COMPLETE_PERCENT of the video, and only when the milestone has gone up since the
+ * last post. Marketo allows a limited number of API requests a day, so a view
+ * should cost one or two requests, not one per milestone crossed.
  *
  * Nothing here identifies anyone on its own: the cookie is the customer's own
  * first-party cookie, it is read but never written, and a page with neither cookie
@@ -15,6 +21,24 @@
  */
 
 const MILESTONES = [ 0, 25, 50, 75, 100 ];
+
+/**
+ * Share of the video, as a percentage, that counts as watching all of it.
+ *
+ * Reaching it posts 100 straight away, without waiting for a pause: most people
+ * who get this far close the tab or move on during the credits, and the end of a
+ * video is often a call to action rather than content.
+ */
+const COMPLETE_PERCENT = 95;
+
+/**
+ * A view's sessionStorage value: its session ID, then optionally `.` and the
+ * highest milestone already posted for it.
+ *
+ * The ID part matches Central's `^[A-Za-z0-9-]{8,64}$`. A value from before the
+ * milestone was kept (the bare ID) still matches.
+ */
+const STORED_VIEW_PATTERN = /^([A-Za-z0-9-]{8,64})(?:\.(\d{1,3}))?$/;
 
 /**
  * How far short of the end a played range can stop and still count as reaching it,
@@ -146,7 +170,7 @@ function collectVisitorIds( providers ) {
 
 	// A page-wide opt-out means no tool should hear about this view at all, and so
 	// does a consent banner on which the visitor hasn't accepted marketing. Read on
-	// every milestone, so accepting mid-view still carries the rest of the view.
+	// every post, so accepting mid-view still carries the rest of the view.
 	if ( privacyOptedOut() || marketingConsentWithheld() ) {
 		return ids;
 	}
@@ -175,11 +199,80 @@ function collectVisitorIds( providers ) {
 }
 
 /**
- * A random ID that groups the milestones of one view, so Central can tell a
- * re-watch from a duplicate.
+ * sessionStorage key for one video's view.
+ *
+ * Declared to the WP Consent API as a marketing item
+ * (RTGODAM\Inc\Visitor_Consent::get_storage_items), so keep the two in step.
+ *
+ * @param {string} jobId - GoDAM Central media ID.
+ * @return {string} Storage key.
+ */
+function viewStorageKey( jobId ) {
+	return `godam-map-session-${ jobId }`;
+}
+
+/**
+ * Read the view kept in sessionStorage for one video.
+ *
+ * @param {string} jobId - GoDAM Central media ID.
+ * @return {{sessionId: string, sent: number}} Session ID ('' when there is none) and the highest milestone posted (-1 when none).
+ */
+function readStoredView( jobId ) {
+	const view = { sessionId: '', sent: -1 };
+
+	try {
+		const match = STORED_VIEW_PATTERN.exec( window.sessionStorage.getItem( viewStorageKey( jobId ) ) || '' );
+
+		if ( match ) {
+			view.sessionId = match[ 1 ];
+
+			const sent = Number( match[ 2 ] );
+
+			if ( undefined !== match[ 2 ] && MILESTONES.includes( sent ) ) {
+				view.sent = sent;
+			}
+		}
+	} catch ( e ) {
+		// Private mode, or storage is blocked: nothing kept.
+	}
+
+	return view;
+}
+
+/**
+ * Remember the highest milestone posted for a view, so a reload of the page does
+ * not post a lower one for the same view: the played ranges start again from
+ * nothing on reload, but the session ID carries on.
+ *
+ * Never lowers what is kept, since the same video can be on the page twice and
+ * both players share the view.
+ *
+ * @param {string} jobId     - GoDAM Central media ID.
+ * @param {string} sessionId - The view's session ID.
+ * @param {number} milestone - Milestone just posted.
+ * @return {void}
+ */
+function rememberSentMilestone( jobId, sessionId, milestone ) {
+	const kept = readStoredView( jobId );
+
+	if ( kept.sessionId === sessionId && kept.sent >= milestone ) {
+		return;
+	}
+
+	try {
+		window.sessionStorage.setItem( viewStorageKey( jobId ), `${ sessionId }.${ milestone }` );
+	} catch ( e ) {
+		// Not being able to remember it only risks a lower milestone after a reload,
+		// which Central (and the REST route, given a persistent object cache) drops.
+	}
+}
+
+/**
+ * A random ID that groups the posts of one view, so Central can tell a re-watch
+ * from a duplicate.
  *
  * Kept in sessionStorage per video: a reload continues the same view rather than
- * sending every milestone again. Matches Central's `^[A-Za-z0-9-]{8,64}$`.
+ * starting a new one. Matches Central's `^[A-Za-z0-9-]{8,64}$`.
  *
  * Always from the browser's cryptographic generator: `crypto.randomUUID()`
  * where available (HTTPS pages), otherwise `crypto.getRandomValues()`, which
@@ -190,16 +283,10 @@ function collectVisitorIds( providers ) {
  * @return {string} Session ID, or '' when the browser has no crypto API.
  */
 function getSessionId( jobId ) {
-	const storageKey = `godam-map-session-${ jobId }`;
+	const existing = readStoredView( jobId ).sessionId;
 
-	try {
-		const existing = window.sessionStorage.getItem( storageKey );
-
-		if ( existing && /^[A-Za-z0-9-]{8,64}$/.test( existing ) ) {
-			return existing;
-		}
-	} catch ( e ) {
-		// Private mode, or storage is full or blocked: fall through to a fresh ID.
+	if ( existing ) {
+		return existing;
 	}
 
 	let id;
@@ -217,7 +304,7 @@ function getSessionId( jobId ) {
 	}
 
 	try {
-		window.sessionStorage.setItem( storageKey, id );
+		window.sessionStorage.setItem( viewStorageKey( jobId ), id );
 	} catch ( e ) {
 		// Not being able to remember it only costs a new ID on the next page.
 	}
@@ -264,6 +351,29 @@ function watchedPercent( player, endSlack = 0 ) {
 }
 
 /**
+ * The milestone a watched percentage has reached: COMPLETE_PERCENT and above
+ * counts as 100, anything else rounds down to 75, 50, 25 or 0.
+ *
+ * @param {number} percent - Share of the video watched, 0-100.
+ * @return {number} One of MILESTONES.
+ */
+function milestoneFor( percent ) {
+	if ( percent >= COMPLETE_PERCENT ) {
+		return 100;
+	}
+
+	let reached = 0;
+
+	MILESTONES.forEach( ( milestone ) => {
+		if ( milestone < 100 && percent >= milestone ) {
+			reached = milestone;
+		}
+	} );
+
+	return reached;
+}
+
+/**
  * Post one milestone. Failures are deliberately silent: tracking must never
  * interrupt playback or fill the console on a viewer's page.
  *
@@ -279,7 +389,7 @@ function sendMilestone( config, event ) {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body,
-			// The last milestone usually fires as the viewer leaves the page.
+			// Often sent as the viewer leaves the page: keepalive lets it finish.
 			keepalive: true,
 			credentials: 'omit',
 		} ).catch( () => {} );
@@ -318,36 +428,58 @@ function trackPlayer( config, player, video ) {
 	tracked.add( video );
 
 	let sessionId = '';
-	let knownIds = null;
-	const sent = new Set();
+	let started = false;
+
+	// Highest milestone this player has posted. A reload's earlier posts are
+	// checked in sessionStorage at send time, in flush().
+	let lastSent = -1;
 
 	/**
-	 * The visitor's cookies, read afresh until they turn up.
+	 * The visitor's cookies and privacy choices, read afresh on every post.
 	 *
 	 * Both tracking scripts are third-party and load asynchronously, so on a
 	 * visitor's first page view the cookie is often written after the player is
 	 * ready. Reading it once at setup would drop that whole view — which is the
 	 * view that matters most, someone arriving on a landing page for the first
-	 * time. Once found it is kept, so a known visitor costs one read per view.
+	 * time.
 	 *
-	 * @return {Object} Map of cookie key to value. Empty while the visitor is unknown.
+	 * Never kept between posts, because the answer can also go the other way: a
+	 * visitor who withdraws marketing consent on the site's banner, or opts out of
+	 * HubSpot, partway through a view must not have the rest of it sent. A view
+	 * posts a handful of times at most, so reading the cookies each time costs
+	 * nothing worth saving.
+	 *
+	 * @return {Object} Map of cookie key to value. Empty while the visitor is unknown or opted out.
 	 */
-	const visitorIds = () => {
-		if ( knownIds ) {
-			return knownIds;
+	const visitorIds = () => collectVisitorIds( config.providers );
+
+	/**
+	 * Post the highest milestone reached, if it is higher than anything posted
+	 * for this view so far.
+	 *
+	 * Counts only what was played: skipping to the end and letting it finish is
+	 * not watching it.
+	 *
+	 * The end slack is only for `ended`, where the video really did reach the end.
+	 * On a pause, a short clip stopped a second before the end has not been
+	 * watched to the end.
+	 *
+	 * @param {number} [endSlack] - Seconds short of the end that still reach it.
+	 * @return {void}
+	 */
+	const flush = ( endSlack = 0 ) => {
+		const percent = watchedPercent( player, endSlack );
+
+		// `playing` covers a normal start. Played ranges cover a player that was
+		// already playing when this script ran, whose `playing` has come and gone.
+		// Neither means the viewer never started, and there is no view to report.
+		if ( ! started && percent <= 0 ) {
+			return;
 		}
 
-		const found = collectVisitorIds( config.providers );
+		const milestone = milestoneFor( percent );
 
-		if ( Object.keys( found ).length > 0 ) {
-			knownIds = found;
-		}
-
-		return found;
-	};
-
-	const report = ( milestone ) => {
-		if ( sent.has( milestone ) ) {
+		if ( milestone <= lastSent ) {
 			return;
 		}
 
@@ -355,8 +487,8 @@ function trackPlayer( config, player, video ) {
 
 		// The visitor is not known to any connected tool yet, so there is no record
 		// to put this on. Leave the milestone unsent rather than sending something
-		// that can only be dropped: the handlers below re-report every milestone
-		// already passed, so a cookie that arrives mid-view still carries the view.
+		// that can only be dropped: lastSent stays where it is, so the next pause or
+		// leave carries the whole view once the cookie turns up.
 		if ( Object.keys( ids ).length === 0 ) {
 			return;
 		}
@@ -373,7 +505,17 @@ function trackPlayer( config, player, video ) {
 			return;
 		}
 
-		sent.add( milestone );
+		// Before a reload, or in another player of the same video, this view may
+		// already have posted this much or more.
+		const kept = readStoredView( jobId );
+
+		if ( kept.sessionId === sessionId && milestone <= kept.sent ) {
+			lastSent = kept.sent;
+			return;
+		}
+
+		lastSent = milestone;
+		rememberSentMilestone( jobId, sessionId, milestone );
 
 		sendMilestone( config, {
 			media_id: jobId,
@@ -384,33 +526,52 @@ function trackPlayer( config, player, video ) {
 		} );
 	};
 
-	player.one( 'play', () => report( 0 ) );
-
-	player.on( 'timeupdate', () => {
-		// Also covers a player that was already playing when this script ran, where
-		// the `play` above has already fired and will not fire again.
-		report( 0 );
-
-		const percent = watchedPercent( player );
-
-		MILESTONES.forEach( ( milestone ) => {
-			if ( milestone > 0 && percent >= milestone ) {
-				report( milestone );
-			}
-		} );
+	// `playing`, not `play`: a blocked autoplay fires `play` and then `pause`
+	// without a frame being shown, which is not a view.
+	player.one( 'playing', () => {
+		started = true;
 	} );
 
-	// `timeupdate` stops a little short of the end on most browsers, so 100 would
-	// otherwise never fire for someone who watched the whole thing. Still count only
-	// what was played: skipping to the end and letting it finish is not watching it.
-	player.on( 'ended', () => {
-		const percent = watchedPercent( player, END_SLACK_SECONDS );
+	// Listeners get an event as their first argument, so none of these hand
+	// flush() straight to `on()`: the event would arrive as endSlack.
+	player.on( 'pause', () => flush() );
 
-		MILESTONES.forEach( ( milestone ) => {
-			if ( percent >= milestone ) {
-				report( milestone );
-			}
-		} );
+	// `timeupdate` stops a little short of the end on most browsers, so a full
+	// watch can finish with its played range a fraction of a second shy.
+	player.on( 'ended', () => flush( END_SLACK_SECONDS ) );
+
+	// Reaching COMPLETE_PERCENT posts straight away. Once 100 has gone out, the
+	// check on lastSent skips scanning the played ranges on every tick.
+	player.on( 'timeupdate', () => {
+		if ( lastSent < 100 && watchedPercent( player ) >= COMPLETE_PERCENT ) {
+			flush();
+		}
+	} );
+
+	// Leaving the tab is the last chance on mobile, where a page in the background
+	// can be discarded without `pagehide` ever firing.
+	const onVisibilityChange = () => {
+		if ( 'hidden' === document.visibilityState ) {
+			flush();
+		}
+	};
+
+	const onPageHide = () => flush();
+
+	document.addEventListener( 'visibilitychange', onVisibilityChange );
+	window.addEventListener( 'pagehide', onPageHide );
+
+	// A player closed with its modal or gallery: report it, then stop listening to
+	// the page on its behalf.
+	player.on( 'dispose', () => {
+		try {
+			flush();
+		} catch ( e ) {
+			// The tech may already be gone; nothing to report then.
+		}
+
+		document.removeEventListener( 'visibilitychange', onVisibilityChange );
+		window.removeEventListener( 'pagehide', onPageHide );
 	} );
 }
 
@@ -478,8 +639,11 @@ init();
 export {
 	collectVisitorIds,
 	getSessionId,
+	readStoredView,
 	readCookie,
 	watchedPercent,
+	milestoneFor,
+	COMPLETE_PERCENT,
 	privacyOptedOut,
 	marketingConsentWithheld,
 	hubspotOptedOut,
