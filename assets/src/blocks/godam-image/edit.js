@@ -13,6 +13,9 @@ import {
 	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- Same hook core/image uses to draw block border supports on the <img>.
+	__experimentalUseBorderProps as useBorderProps,
+	// eslint-disable-next-line import/no-unresolved -- resolver false positive: package resolves fine at build time, eslint-plugin-import can't parse @wordpress/block-editor's exports map.
 } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
@@ -97,6 +100,10 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 	}
 
 	const blockProps = useBlockProps( { className: 'godam-image' } );
+	// Border supports skip the wrapper (see block.json), so the border is drawn
+	// on the image itself and follows its edges, as in core/image.
+	const borderProps = useBorderProps( attributes );
+	const imgClassName = [ 'godam-image__img', borderProps.className ].filter( Boolean ).join( ' ' );
 	const hasImage = !! url;
 
 	// Fetch the attachment's authored layers so the editor canvas can preview the
@@ -280,16 +287,16 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 							style={ { position: 'relative', display: 'inline-block', maxWidth: '100%', lineHeight: 0 } }
 						>
 							<img
-								className="godam-image__img"
+								className={ imgClassName }
 								src={ url }
 								alt={ alt || '' }
-								style={ { display: 'block', width: '100%', height: 'auto' } }
+								style={ { display: 'block', width: '100%', height: 'auto', boxSizing: 'border-box', ...borderProps.style } }
 							/>
 							<div className="easydam-layer hotspot-layer godam-image-layer"></div>
 						</div>
 					) : (
 						<div className="godam-image__frame">
-							<img className="godam-image__img" src={ url } alt={ alt || '' } />
+							<img className={ imgClassName } src={ url } alt={ alt || '' } style={ borderProps.style } />
 						</div>
 					) }
 				</figure>

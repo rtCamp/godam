@@ -218,6 +218,22 @@ describe( 'Layer API contract: image layers', () => {
 		expect( frame.querySelector( '.godam-image-layer-item' ).textContent ).toBe( 'Late' );
 	} );
 
+	it( 'places hotspots inside the image border, not on its outer edge', () => {
+		const frame = makeFrame( [ { id: 'h1', type: 'hotspot', hotspots: [ { id: 's1' } ] } ] );
+		const img = frame.querySelector( 'img' );
+		// A 300x200 image with a 10px border, 5px into the frame.
+		frame.getBoundingClientRect = () => ( { left: 100, top: 50, width: 330, height: 230 } );
+		img.getBoundingClientRect = () => ( { left: 105, top: 55, width: 320, height: 220 } );
+		Object.defineProperty( img, 'clientLeft', { value: 10 } );
+		Object.defineProperty( img, 'clientTop', { value: 10 } );
+		Object.defineProperty( img, 'clientWidth', { value: 300 } );
+		Object.defineProperty( img, 'clientHeight', { value: 200 } );
+		init( frame );
+
+		const adapter = HotspotLayerManager.mock.calls[ 0 ][ 0 ];
+		expect( adapter.computeContentRect() ).toEqual( { left: 15, top: 15, width: 300, height: 200 } );
+	} );
+
 	it( 'draws nothing for a frame with no layers', () => {
 		const frame = makeFrame( [] );
 		init( frame );

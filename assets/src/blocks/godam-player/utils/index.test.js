@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getFileNameFromUrl, isFilenameLikeTitle } from './index';
+import { getBorderRadiusCorners, getFileNameFromUrl, isFilenameLikeTitle } from './index';
 
 describe( 'isFilenameLikeTitle', () => {
 	it.each( [
@@ -89,5 +89,27 @@ describe( 'getFileNameFromUrl', () => {
 	it( 'returns an empty string for empty input', () => {
 		expect( getFileNameFromUrl( '' ) ).toBe( '' );
 		expect( getFileNameFromUrl( undefined ) ).toBe( '' );
+	} );
+} );
+
+describe( 'getBorderRadiusCorners', () => {
+	it( 'returns null when no radius is set', () => {
+		expect( getBorderRadiusCorners( undefined ) ).toBeNull();
+		expect( getBorderRadiusCorners( '' ) ).toBeNull();
+		expect( getBorderRadiusCorners( {} ) ).toBeNull();
+		expect( getBorderRadiusCorners( { topLeft: '' } ) ).toBeNull();
+	} );
+
+	it( 'uses one value for every corner', () => {
+		expect( getBorderRadiusCorners( '12px' ) ).toEqual( { tl: '12px', tr: '12px', br: '12px', bl: '12px' } );
+		expect( getBorderRadiusCorners( 8 ) ).toEqual( { tl: '8px', tr: '8px', br: '8px', bl: '8px' } );
+	} );
+
+	it( 'keeps per-corner values and leaves missing corners empty', () => {
+		expect( getBorderRadiusCorners( { topLeft: '4px', bottomRight: '1rem' } ) ).toEqual( { tl: '4px', tr: '', br: '1rem', bl: '' } );
+	} );
+
+	it( 'turns preset references into CSS variables', () => {
+		expect( getBorderRadiusCorners( 'var:preset|border-radius|md' ).tl ).toBe( 'var(--wp--preset--border-radius--md)' );
 	} );
 } );
