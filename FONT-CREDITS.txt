@@ -1,0 +1,36 @@
+GoDAM - Font Credits
+====================
+
+GoDAM bundles the fonts below. Each one is free to use, including commercially,
+under the license named here. Every other font named in the plugin's CSS
+(Manrope, Roboto, Inter, system fonts and the like) is not bundled: browsers use
+a copy already installed on the visitor's device or fall back to the next font
+in the stack.
+
+
+Geist
+-----
+Copyright 2024 The Geist Project Authors
+Source:  https://github.com/vercel/geist-font (via the @fontsource/geist package)
+License: SIL Open Font License 1.1, full text in assets/src/fonts/OFL.txt
+Used in: the onboarding screens (latin subset, weights 400-700)
+
+
+Titan One
+---------
+Copyright (c) 2011 Rodrigo Fuenzalida, with Reserved Font Name "Titan One"
+Source:  https://fonts.google.com/specimen/Titan+One
+License: SIL Open Font License 1.1, full text in assets/src/fonts/OFL.txt
+Used in: the "sticker" variant of the hotspot Button style (latin subset)
+
+The file is the unmodified latin subset that Google Fonts serves. "Titan One" is
+a Reserved Font Name: if the glyphs are ever edited, the modified font must be
+renamed.
+
+
+VideoJS icon font
+-----------------
+Copyright Brightcove, Inc.
+Source:  https://github.com/videojs/video.js (embedded in the Video.js stylesheet)
+License: Apache License 2.0, https://www.apache.org/licenses/LICENSE-2.0
+Used in: the video player's control icons
