@@ -21,6 +21,7 @@ jest.mock( '../godam-player/managers/layers/hotspotLayerManager.js', () => ( {
 		this.hotspotLayers = [];
 		this.setupHotspotLayer = jest.fn( ( layer ) => this.hotspotLayers.push( { layer } ) );
 		this.createHotspots = jest.fn();
+		this.emitLayerVisible = jest.fn();
 		this.updateHotspotPositions = jest.fn();
 	} ),
 } ) );
@@ -87,21 +88,43 @@ describe( 'Layer API contract: image layers', () => {
 		return teardown;
 	};
 
-	it( 'merges every hotspot layer into one hotspot manager layer', () => {
+	it( 'draws each hotspot layer as itself, on one shared manager', async () => {
+		const layers = [
+			{ id: 'h1', name: 'Promo', type: 'hotspot', styleType: 'icon', icon: 'star', iconColor: '#ff0000', hotspots: [ { id: 's1' } ] },
+			{ id: 'h2', type: 'hotspot', pauseOnHover: true, hotspots: [ { id: 's2' } ] },
+		];
+		const frame = makeFrame( layers );
+		init( frame );
+		// An icon hotspot draws once FontAwesome has loaded.
+		await Promise.resolve();
+
+		expect( HotspotLayerManager ).toHaveBeenCalledTimes( 1 );
+		const manager = HotspotLayerManager.mock.instances[ 0 ];
+		const drawn = manager.setupHotspotLayer.mock.calls.map( ( [ layer ] ) => layer );
+		// Each layer keeps its own id, name and style (icon colour included),
+		// and never pauses on hover: an image has no playback.
+		expect( drawn ).toEqual( [
+			{ ...layers[ 0 ], pauseOnHover: false },
+			{ ...layers[ 1 ], pauseOnHover: false },
+		] );
+		// Each layer draws into its own container.
+		const containers = manager.setupHotspotLayer.mock.calls.map( ( [ , container ] ) => container );
+		expect( containers[ 0 ] ).not.toBe( containers[ 1 ] );
+		expect( frame.querySelectorAll( '.godam-image-hotspots' ) ).toHaveLength( 2 );
+		expect( manager.createHotspots ).toHaveBeenCalledTimes( 2 );
+	} );
+
+	it( 'records each hotspot layer\'s impressions once it is drawn', () => {
 		init( makeFrame( [
 			{ id: 'h1', type: 'hotspot', hotspots: [ { id: 's1' } ] },
 			{ id: 'h2', type: 'hotspot', hotspots: [ { id: 's2' } ] },
 		] ) );
 
-		expect( HotspotLayerManager ).toHaveBeenCalledTimes( 1 );
 		const manager = HotspotLayerManager.mock.instances[ 0 ];
-		const [ merged ] = manager.setupHotspotLayer.mock.calls[ 0 ];
-		expect( merged ).toMatchObject( { id: 'godam-image-hotspots', type: 'hotspot' } );
-		expect( merged.hotspots.map( ( h ) => h.id ) ).toEqual( [ 's1', 's2' ] );
-		expect( manager.createHotspots ).toHaveBeenCalledTimes( 1 );
+		expect( manager.emitLayerVisible.mock.calls.map( ( [ layer ] ) => layer.id ) ).toEqual( [ 'h1', 'h2' ] );
 	} );
 
-	it( 'draws late hotspot layers once, not once per layer mounted', () => {
+	it( 'draws late hotspot layers once each, on the same manager', () => {
 		unregisterLayerRuntime( 'hotspot' );
 		const frame = makeFrame( [
 			{ id: 'h1', type: 'hotspot', hotspots: [ { id: 's1' } ] },
@@ -113,14 +136,13 @@ describe( 'Layer API contract: image layers', () => {
 		// The hotspot view script loads after the frame rendered.
 		registerHotspotRuntime();
 
-		// Each late mount redraws from scratch: one drawing is left in the frame,
-		// and it holds both layers' hotspots once each.
-		const drawings = frame.querySelectorAll( '.godam-image-hotspots' );
-		expect( drawings ).toHaveLength( 1 );
-		const latest = HotspotLayerManager.mock.instances.at( -1 );
-		const [ merged, container ] = latest.setupHotspotLayer.mock.calls[ 0 ];
-		expect( merged.hotspots.map( ( h ) => h.id ) ).toEqual( [ 's1', 's2' ] );
-		expect( container ).toBe( drawings[ 0 ] );
+		// One manager for both late mounts, so its analytics dedupe holds, and
+		// each layer is drawn and recorded once.
+		expect( HotspotLayerManager ).toHaveBeenCalledTimes( 1 );
+		const manager = HotspotLayerManager.mock.instances[ 0 ];
+		expect( manager.setupHotspotLayer.mock.calls.map( ( [ layer ] ) => layer.id ) ).toEqual( [ 'h1', 'h2' ] );
+		expect( manager.emitLayerVisible ).toHaveBeenCalledTimes( 2 );
+		expect( frame.querySelectorAll( '.godam-image-hotspots' ) ).toHaveLength( 2 );
 	} );
 
 	it( 'hands each woo layer to the registered woo manager and fires its impression', () => {
@@ -194,6 +216,22 @@ describe( 'Layer API contract: image layers', () => {
 		} } );
 
 		expect( frame.querySelector( '.godam-image-layer-item' ).textContent ).toBe( 'Late' );
+	} );
+
+	it( 'places hotspots inside the image border, not on its outer edge', () => {
+		const frame = makeFrame( [ { id: 'h1', type: 'hotspot', hotspots: [ { id: 's1' } ] } ] );
+		const img = frame.querySelector( 'img' );
+		// A 300x200 image with a 10px border, 5px into the frame.
+		frame.getBoundingClientRect = () => ( { left: 100, top: 50, width: 330, height: 230 } );
+		img.getBoundingClientRect = () => ( { left: 105, top: 55, width: 320, height: 220 } );
+		Object.defineProperty( img, 'clientLeft', { value: 10 } );
+		Object.defineProperty( img, 'clientTop', { value: 10 } );
+		Object.defineProperty( img, 'clientWidth', { value: 300 } );
+		Object.defineProperty( img, 'clientHeight', { value: 200 } );
+		init( frame );
+
+		const adapter = HotspotLayerManager.mock.calls[ 0 ][ 0 ];
+		expect( adapter.computeContentRect() ).toEqual( { left: 15, top: 15, width: 300, height: 200 } );
 	} );
 
 	it( 'draws nothing for a frame with no layers', () => {

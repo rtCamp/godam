@@ -46,7 +46,7 @@ class Blocks {
 	 * `enqueue_block_assets`, not those of the editor window. On the front end
 	 * the block loads them itself, only for the layers it shows.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.9.0
 	 *
 	 * @return void
 	 */

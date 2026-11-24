@@ -42,6 +42,8 @@ class RTGODAM_Transcoder_Admin {
 			add_action( 'admin_notices', array( $this, 'usage_limit_notices' ) );
 			add_action( 'admin_notices', array( $this, 'posthog_tracking_notice' ) );
 			add_action( 'admin_notices', array( $this, 'api_key_status_notice' ) );
+			add_action( 'admin_notices', array( $this, 'subscription_ended_notice' ) );
+			add_action( 'wp_ajax_godam_dismiss_subscription_ended_notice', array( $this, 'dismiss_subscription_ended_notice' ) );
 			add_action( 'admin_notices', array( $this, 'preflight_notices' ) );
 			add_action( 'admin_notices', array( $this, 'woo_integration_promo_notice' ) );
 			add_action( 'admin_init', array( $this, 'handle_posthog_tracking_action' ) );
@@ -593,7 +595,7 @@ class RTGODAM_Transcoder_Admin {
 	private function display_bandwidth_exceeded_notice( $bandwidth_percentage ) {
 		$message = sprintf(
 			/* translators: %s: bandwidth percentage */
-			__( 'Your bandwidth usage (%s%%) has exceeded your plan limit. Videos might not be served from CDN on frontend.', 'godam' ),
+			__( 'Your bandwidth usage (%s%%) has exceeded your plan limit. Your videos keep playing; upgrade your plan to stay within your limit.', 'godam' ),
 			'<strong>' . number_format( $bandwidth_percentage, 1 ) . '</strong>'
 		);
 
@@ -719,18 +721,38 @@ class RTGODAM_Transcoder_Admin {
 		// Check API key status from user data (includes transient verification_failed).
 		$api_key_status = isset( $user_data['apiKeyStatus'] ) ? $user_data['apiKeyStatus'] : \RTGODAM\Inc\Enums\Api_Key_Status::VALID;
 
+		$connection_status = $user_data['connectionStatus'] ?? '';
+		$key_works         = \RTGODAM\Inc\Enums\Api_Key_Status::VALID === $api_key_status;
+
+		// On a trial, say how long is left so the owner can upgrade before features stop.
+		if ( $key_works && \RTGODAM\Inc\Enums\Connection_Status::TRIAL === $connection_status ) {
+			$this->render_trial_notice( $user_data['trialDaysLeft'] ?? null, $user_data['renewalUrl'] ?? '' );
+			return;
+		}
+
+
 		// Only show notice for expired or verification_failed status.
 		if ( \RTGODAM\Inc\Enums\Api_Key_Status::VALID === $api_key_status ) {
 			return;
 		}
 
 		$settings_url = admin_url( 'admin.php?page=rtgodam_settings#video-settings' );
+		// A lapsed plan is renewed on GoDAM, for this site's organization when known.
+		$renewal_url = ! empty( $user_data['renewalUrl'] ) ? $user_data['renewalUrl'] : $settings_url;
+
+		// Central refused the key but the plan hasn't lapsed (this site isn't on the key's
+		// allowed sites, or Central doesn't know the key): renewing can't fix that, so point
+		// to the settings with the generic message below.
+		$plan_lapsed = in_array( $connection_status, array( '', \RTGODAM\Inc\Enums\Connection_Status::EXPIRED ), true );
+		if ( \RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED === $api_key_status && ! $plan_lapsed ) {
+			$api_key_status = 'refused';
+		}
 
 		$status_messages = array(
 			\RTGODAM\Inc\Enums\Api_Key_Status::EXPIRED => sprintf(
 				/* translators: %s: URL to settings page */
 				__( 'Your GoDAM API key has expired. Transcoding and other Pro features are currently disabled. Please <a href="%s">renew your subscription</a> to restore access.', 'godam' ),
-				esc_url( $settings_url )
+				esc_url( $renewal_url )
 			),
 			\RTGODAM\Inc\Enums\Api_Key_Status::VERIFICATION_FAILED => sprintf(
 				/* translators: %s: URL to settings page */
@@ -752,6 +774,106 @@ class RTGODAM_Transcoder_Admin {
 		echo '<div class="notice notice-' . esc_attr( $notice_type ) . ' is-dismissible">';
 		echo '<p>' . wp_kses_post( $message ) . '</p>';
 		echo '</div>';
+	}
+
+	/**
+	 * Ask to renew a subscription that ended while the licence is still active.
+	 *
+	 * Pro features keep working, so this is a dismissible notice in wp-admin only, never a
+	 * screen over the dashboard and never on the site. Dismissed, it stays hidden until the
+	 * subscription lapses again (\RTGODAM\Inc\Helpers\Connection::record()).
+	 *
+	 * @since 2.11.0
+	 *
+	 * @return void
+	 */
+	public function subscription_ended_notice() {
+		if ( ! current_user_can( 'manage_options' ) || '' === \RTGODAM\Inc\Helpers\Api_Key::get_key() ) {
+			return;
+		}
+
+		if ( ! \RTGODAM\Inc\Helpers\Connection::should_show_subscription_ended_notice() ) {
+			return;
+		}
+
+		$renewal_url = \RTGODAM\Inc\Helpers\Connection::get_renewal_url();
+		?>
+		<div class="notice notice-warning is-dismissible godam-subscription-ended-notice" data-nonce="<?php echo esc_attr( wp_create_nonce( 'godam_dismiss_subscription_ended_notice' ) ); ?>">
+			<p>
+				<?php
+				echo wp_kses(
+					sprintf(
+						/* translators: 1: opening link tag to renew the GoDAM subscription, 2: closing link tag */
+						__( 'Your GoDAM subscription has ended. %1$sRenew%2$s to keep Pro features.', 'godam' ),
+						'<a href="' . esc_url( $renewal_url ) . '" target="_blank" rel="noopener noreferrer">',
+						'</a>'
+					),
+					array(
+						'a' => array(
+							'href'   => array(),
+							'target' => array(),
+							'rel'    => array(),
+						),
+					)
+				);
+				?>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Save the dismissal of the "subscription has ended" notice for the whole site.
+	 *
+	 * @since 2.11.0
+	 *
+	 * @return void
+	 */
+	public function dismiss_subscription_ended_notice() {
+		check_ajax_referer( 'godam_dismiss_subscription_ended_notice', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to dismiss this notice.', 'godam' ) ), 403 );
+		}
+
+		\RTGODAM\Inc\Helpers\Connection::dismiss_subscription_ended_notice();
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * Say how long the GoDAM trial has left, with a link to upgrade.
+	 *
+	 * @since 2.11.0
+	 *
+	 * @param int|null $days_left   Whole days left, or null when Central didn't say.
+	 * @param string   $upgrade_url Where to upgrade.
+	 *
+	 * @return void
+	 */
+	private function render_trial_notice( $days_left, $upgrade_url ) {
+		if ( null === $days_left ) {
+			return;
+		}
+
+		if ( 0 === (int) $days_left ) {
+			$message = __( 'Your GoDAM trial ends today.', 'godam' );
+		} else {
+			$message = sprintf(
+				/* translators: %d: days left in the GoDAM trial */
+				_n( 'Your GoDAM trial ends in %d day.', 'Your GoDAM trial ends in %d days.', (int) $days_left, 'godam' ),
+				(int) $days_left
+			);
+		}
+
+		echo '<div class="notice notice-info godam-trial-notice">';
+		echo '<p>' . esc_html( $message );
+
+		if ( '' !== $upgrade_url ) {
+			echo ' <a href="' . esc_url( $upgrade_url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Upgrade to keep transcoding and other Pro features', 'godam' ) . '</a>';
+		}
+
+		echo '</p></div>';
 	}
 
 	/**

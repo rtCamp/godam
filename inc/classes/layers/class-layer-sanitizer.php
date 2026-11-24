@@ -43,7 +43,13 @@ class Layer_Sanitizer {
 	const MANAGED_KEYS = array(
 		'id'          => array( 'type' => 'string' ),
 		'type'        => array( 'type' => 'string' ),
-		'name'        => array( 'type' => 'string' ),
+		// The label in the editor's layer list, kept as typed: React escapes it
+		// where it shows, and `sanitize_text_field()` would drop `<sale>` from
+		// `Promo <sale> & more`.
+		'name'        => array(
+			'type'   => 'string',
+			'format' => 'text',
+		),
 		'displayTime' => array( 'type' => array( 'number', 'string' ) ),
 	);
 
@@ -249,11 +255,14 @@ class Layer_Sanitizer {
 	 * Sanitize a string by its format.
 	 *
 	 * @param string $value  Value.
-	 * @param string $format `plain`, `html`, `url`, `color` or `css`.
+	 * @param string $format `plain`, `html`, `url`, `color`, `css` or `text`.
 	 * @return string|null The value, or null for an invalid color.
 	 */
 	private static function format_string( $value, $format ) {
 		switch ( $format ) {
+			case 'text':
+				// Text kept as typed, for values only ever printed escaped.
+				return $value;
 			case 'html':
 				return wp_kses_post( $value );
 			case 'url':

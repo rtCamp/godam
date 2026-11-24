@@ -178,7 +178,7 @@ class LayerTypeRegistryTest extends TestCase {
 		);
 
 		$this->assertSame( '<div data-legacy="video_1:a1"></div>', godam_render_layer( $layer, 'video_1' ) );
-		$this->assertSame( array( 'godam_player_render_layer@2.8.0' ), $GLOBALS['rtgodam_stub']['deprecated_hooks'] );
+		$this->assertSame( array( 'godam_player_render_layer@2.9.0' ), $GLOBALS['rtgodam_stub']['deprecated_hooks'] );
 		$this->assertSame( '', godam_render_layer( $layer, 'img_1', array( 'media' => 'image' ) ) );
 	}
 

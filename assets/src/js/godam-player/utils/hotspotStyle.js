@@ -51,9 +51,8 @@ export function resolveHotspotStyle( layer, hotspot = {} ) {
 	const icon = layer?.icon || legacy.icon || null;
 	const customIconUrl = layer?.customIconUrl || legacy.customIconUrl || null;
 	const hasIcon = !! ( icon || customIconUrl );
-	// A per-hotspot `styleType` only reaches us on the legacy path — the godam/image
-	// block merges every hotspot layer into one synthetic, style-less layer and
-	// tags button hotspots with `styleType: 'button'` (see render-image-frame.js).
+	// A per-hotspot `styleType` only reaches us on the legacy path, from layers
+	// saved by builds that tagged button hotspots with `styleType: 'button'`.
 	const styleType = layer?.styleType || legacy.styleType || ( hasIcon ? 'icon' : 'pulse' );
 
 	// Button style: each point renders as a button rather than a circle. Its look

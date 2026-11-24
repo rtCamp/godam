@@ -1,5 +1,35 @@
 # Changelog #
 
+## v2.11.0 (November 19, 2026) ##
+
+- Feat: GoDAM videos now work with LearnDash Video Progression on lessons and topics. Turn on "Use GoDAM Video" to use a GoDAM Video block or a picked video, or paste a GoDAM video URL into LearnDash's Video URL field. Mark Complete stays locked until the video ends, and the player follows LearnDash's Autostart, Video Resume and controls settings.
+- Tweak: The media library now says why a transcode failed and what to do next, in the list view, the grid view's warning tooltip and the attachment details panel. Needs GoDAM Central v2.12.1; files that failed earlier show the generic message.
+- Tweak: The GoDAM dashboard and the Media Library show how many days are left in a trial, with a link to upgrade. When a plan has expired, GoDAM offers to renew it instead of showing the signup screens.
+- Tweak: A new "Track visitors" setting in GoDAM > Settings > General turns visitor tracking off. It is on by default, and the `godam_visitor_tracking_enabled` filter still overrides it.
+- Tweak: GoDAM now suggests privacy-policy text in Settings > Privacy > Policy Guide, and the readme lists what GoDAM stores in the visitor's browser.
+- Fix: Fluent Forms and Ninja Forms recorder uploads, likes and comments now work on pages served from a full-page cache.
+- Fix: Fluent Forms and Ninja Forms recorder uploads accept only the form's recorder field, and only audio and video files.
+- Fix: A `[video]` shortcode for anything other than a `.mov` file rendered empty while GoDAM was active, including LearnDash's self-hosted lesson videos. Such shortcodes now play in WordPress's own player again.
+- Fix: Images served from GoDAM's CDN could appear cropped to a square or soft on large and high-DPI screens, because the `srcset` offered square crops for landscape and portrait images and left out the full-size file. The `srcset` now lists only sizes with the image's own shape and includes the full-size file, following WordPress's own rules.
+
+## v2.10.0 (November 17, 2026) ##
+
+- Feat: AI agents such as Claude and Cursor can now use GoDAM through MCP. They can find and organise media, add layers and chapters, place GoDAM blocks on pages, change player settings, start processing and read analytics, as the connected WordPress user and within that user's permissions. Needs WordPress 6.9 or later and the MCP Adapter plugin.
+- Tweak: Administrators can turn off the changes an AI agent can make in Settings > Writing > GoDAM and AI agents, or turn MCP off entirely in GoDAM > Settings > General.
+- Tweak: When the MCP Adapter plugin is active, GoDAM's admin pages show a dismissible notice on connecting an AI agent.
+
+## v2.9.1 (November 16, 2026) ##
+
+- Fix: Single Video Analytics, a CTA layer's image, Copy block and the WPBakery document cover now load on sites that block the WordPress media REST API for logged-out visitors.
+- Fix: A CTA layer's image is no longer removed when it fails to load for a reason other than being deleted.
+
+## v2.9.0 (November 12, 2026) ##
+
+- Feat: Developers can now build their own layer types for GoDAM videos and images with the Layer API: describe the layer in a `layer.json` file and register it from PHP, the video editor and the front end, the way blocks are built. Custom layers appear in the "Add layer" menu and render in the player and the GoDAM Image block.
+- Tweak: A layer's front-end script now loads only on pages that show that kind of layer, instead of on every page with a GoDAM video.
+- Tweak: GoDAM's own layers (CTA, forms, hotspots, polls and ads) now run on the Layer API. Layers you already added keep working as before.
+- Tweak: The old add-on layer hooks (`godam_video_editor_layer_options`, `godam_video_editor_layer_components`, `godam_player_render_layer` and the `window.godamLayer*` globals) are deprecated and will be removed in 2.11.0. They keep working until then, with a deprecation notice.
+
 ## v2.8.1 (November 11, 2026) ##
 
 - Fix: Security fixes.

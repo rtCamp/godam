@@ -48,72 +48,62 @@ function mountOnVideo( ctx ) {
 /**
  * Mount on an image: hotspots show at once, with no timeline.
  *
- * Every hotspot layer is merged into ONE manager layer, drawn into the first
- * layer's container once all layers are mounted, so the manager's index-based
- * reposition stays consistent. Per-layer style is flattened onto each hotspot
- * (legacy per-hotspot fields) so distinct layer colours and icons survive.
+ * Every hotspot layer on the image shares one manager, as on a video, and is
+ * drawn as itself into its own container. So each point keeps its layer's id
+ * and name in analytics and its layer's style (colours, icon, icon colour),
+ * exactly as in the editor preview and on video. Each layer's drawing is a
+ * `display:contents` wrapper, which scopes the manager's index-based
+ * reposition to that layer's points without adding a stacking context.
  *
- * A layer mounted after `onReady` (its view script loaded late) gets `onReady`
- * again on the same handlers, so each call replaces the previous drawing
- * instead of adding to it.
+ * Layers are drawn on `onReady`. A layer mounted later (its view script loaded
+ * late) gets `onReady` again on the same handlers, and only the layers not yet
+ * drawn are drawn then. The manager is kept across those calls, so its
+ * once-per-page analytics dedupe holds.
  *
  * @param {Object} ctx Mount context.
  * @return {Object} Handlers.
  */
 function mountOnImage( ctx ) {
-	const state = ctx.shared( 'godam/image-hotspots', () => {
-		const image = { layers: [], container: ctx.container, manager: null, drawing: null };
-		image.handlers = {
+	const image = ctx.shared( 'godam/image-hotspots', () => {
+		const state = { toDraw: [], drawings: [], manager: null };
+		state.handlers = {
 			onReady: () => {
-				// Redraw from scratch: drop the hotspots (and their listeners) drawn
-				// by an earlier call, so a late layer doesn't duplicate the others.
-				image.drawing?.remove();
-				image.drawing = document.createElement( 'div' );
-				image.drawing.className = 'godam-image-hotspots';
-				image.drawing.style.display = 'contents';
-				image.container.appendChild( image.drawing );
+				if ( ! state.manager ) {
+					state.manager = new HotspotLayerManager( ctx.player, ctx.isDisplayingLayers, ctx.instanceId );
+					state.manager.computeContentRect = () => ctx.player.computeContentRect();
+				}
+				const manager = state.manager;
 
-				const hotspots = [];
-				image.layers.forEach( ( layer ) => {
-					( layer.hotspots || [] ).forEach( ( hotspot ) => {
-						const style = resolveHotspotStyle( layer, hotspot );
-						// Button-style hotspots keep their own button fields; tag them so
-						// the style-less merged layer still renders them as buttons.
-						if ( style.styleType === 'button' ) {
-							hotspots.push( { ...hotspot, styleType: 'button' } );
-							return;
-						}
-						hotspots.push( {
-							...hotspot,
-							icon: style.icon || '',
-							customIconUrl: style.customIconUrl || null,
-							backgroundColor: style.color,
-						} );
-					} );
+				state.toDraw.splice( 0 ).forEach( ( { layer, container } ) => {
+					const drawing = document.createElement( 'div' );
+					drawing.className = 'godam-image-hotspots';
+					drawing.style.display = 'contents';
+					container.appendChild( drawing );
+					state.drawings.push( drawing );
+
+					// An image has no playback to pause on hover.
+					const imageLayer = { ...layer, pauseOnHover: false };
+					manager.setupHotspotLayer( imageLayer, drawing );
+					// The analytics runtime loads on image pages too, so hotspot
+					// interactions are recorded like on video.
+					manager.createHotspots( manager.hotspotLayers[ manager.hotspotLayers.length - 1 ] );
+					// The points show as soon as they're drawn, so record the
+					// impressions now, as a video does when the layer appears.
+					manager.emitLayerVisible( imageLayer );
 				} );
-
-				const manager = new HotspotLayerManager( ctx.player, ctx.isDisplayingLayers, ctx.instanceId );
-				manager.computeContentRect = () => ctx.player.computeContentRect();
-				manager.setupHotspotLayer(
-					{ id: 'godam-image-hotspots', type: 'hotspot', pauseOnHover: false, hotspots },
-					image.drawing,
-				);
-				// The analytics runtime loads on image pages too, so hotspot
-				// interactions are recorded like on video.
-				manager.createHotspots( manager.hotspotLayers[ manager.hotspotLayers.length - 1 ] );
-				image.manager = manager;
 			},
-			onResize: () => image.manager?.updateHotspotPositions(),
+			onResize: () => state.manager?.updateHotspotPositions(),
 			destroy: () => {
-				image.drawing?.remove();
-				image.drawing = null;
-				image.manager = null;
+				state.drawings.forEach( ( drawing ) => drawing.remove() );
+				state.drawings = [];
+				state.toDraw = [];
+				state.manager = null;
 			},
 		};
-		return image;
+		return state;
 	} );
-	state.layers.push( ctx.layer );
-	return state.handlers;
+	image.toDraw.push( { layer: ctx.layer, container: ctx.container } );
+	return image.handlers;
 }
 
 /**

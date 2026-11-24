@@ -74,9 +74,11 @@ function autoloader( $file_resource = '' ) {
 			case 'everest-forms': // phpcs:ignore
 			case 'metform': // phpcs:ignore
 			case 'lifter-lms': // phpcs:ignore
+			case 'learndash': // phpcs:ignore
 			case 'migrations': // phpcs:ignore
 			case 'wpbakery-elements': // phpcs:ignore
 			case 'addons': // phpcs:ignore
+			case 'abilities': // phpcs:ignore
 			case 'layers': // phpcs:ignore
 			case 'vimeo-migration': // phpcs:ignore
 				/**

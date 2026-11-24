@@ -71,14 +71,6 @@ class Assets {
 			true
 		);
 
-		wp_localize_script(
-			'rtgodam-script',
-			'nonceData',
-			array(
-				'nonce' => wp_create_nonce( 'wp_rest' ),
-			)
-		);
-
 		$localize_array = rtgodam_get_localize_array();
 
 		// Whether front-end analytics waits for the visitor's consent (WP Consent API)
@@ -453,11 +445,29 @@ class Assets {
 		$current_time = new \DateTime( 'now', $timezone );
 		$end_time     = new \DateTime( '2026-01-20 23:59:59', $timezone );
 
-		$godam_settings_obj['showOfferBanner']      = ( $current_time <= $end_time ) && ( '0' !== get_option( 'rtgodam-offer-banner', '1' ) );
-		$godam_settings_obj['showOfferBannerNonce'] = wp_create_nonce( 'godam-dismiss-offer-banner-nonce' );
+		$godam_settings_obj['showOfferBanner'] = ( $current_time <= $end_time ) && ( '0' !== get_option( 'rtgodam-offer-banner', '1' ) );
+
+		// Only an administrator can dismiss the banner, and a cached front-end page must not carry the nonce.
+		if ( current_user_can( 'manage_options' ) ) {
+			$godam_settings_obj['showOfferBannerNonce'] = wp_create_nonce( 'godam-dismiss-offer-banner-nonce' );
+		}
 
 		if ( ! rtgodam_is_api_key_valid() ) {
 			$godam_settings_obj['enableGlobalVideoEngagement'] = false;
+		}
+
+		// AI agents (MCP) panel in GoDAM > Settings > General. Administrators only.
+		if ( is_admin() && current_user_can( 'manage_options' ) ) {
+			$godam_settings_obj['aiAgents'] = array(
+				'enabled'            => \RTGODAM\Inc\Abilities\Abilities::mcp_enabled(),
+				'available'          => function_exists( 'wp_register_ability' ),
+				'adapterSupported'   => \RTGODAM\Inc\Abilities\Mcp_Server::adapter_is_supported(),
+				'serverUrl'          => rest_url( 'godam/mcp' ),
+				'writesEnabled'      => \RTGODAM\Inc\Abilities\Abilities::writes_enabled(),
+				'writingSettingsUrl' => admin_url( 'options-writing.php' ),
+				'installAdapterUrl'  => admin_url( 'plugin-install.php?s=mcp-adapter&tab=search&type=term' ),
+				'appPasswordsUrl'    => admin_url( 'profile.php#application-passwords-section' ),
+			);
 		}
 
 		wp_localize_script(

@@ -543,7 +543,22 @@ class Pages {
 	 * @return bool
 	 */
 	private function should_overlay_onboarding() {
-		return ! rtgodam_is_api_key_valid() && current_user_can( 'manage_options' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return false;
+		}
+
+		$status = \RTGODAM\Inc\Helpers\Connection::get_status();
+
+		// No key: the connect screens.
+		if ( \RTGODAM\Inc\Enums\Connection_Status::NONE === $status ) {
+			return true;
+		}
+
+		// A lapsed plan: the renewal screen, not signup. Only once the key stops working:
+		// a cancelled subscription on a still-active licence keeps Pro features on, so it gets
+		// a renewal notice instead of a screen over the dashboard. While Central can't be
+		// reached the site keeps working, so nothing covers the page.
+		return \RTGODAM\Inc\Enums\Connection_Status::EXPIRED === $status && ! rtgodam_is_api_key_valid();
 	}
 
 	/**
@@ -633,17 +648,20 @@ class Pages {
 				'godam-page-script-onboarding',
 				'godamOnboarding',
 				array(
-					'restUrl'      => esc_url_raw( rest_url() ),
-					'nonce'        => wp_create_nonce( 'wp_rest' ),
-					'siteUrl'      => home_url(),
-					'adminUrl'     => admin_url(),
-					'dashboardUrl' => admin_url( 'admin.php?page=' . $this->menu_slug ),
-					'isConnected'  => rtgodam_is_api_key_valid(),
-					'displayName'  => $current_user->display_name,
-					'appOrigin'    => $app_origin,
-					'isE2E'        => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
+					'restUrl'          => esc_url_raw( rest_url() ),
+					'nonce'            => wp_create_nonce( 'wp_rest' ),
+					'siteUrl'          => home_url(),
+					'adminUrl'         => admin_url(),
+					'dashboardUrl'     => admin_url( 'admin.php?page=' . $this->menu_slug ),
+					'isConnected'      => rtgodam_is_api_key_valid(),
+					// `expired` opens the renewal screen instead of the connect screens.
+					'connectionStatus' => \RTGODAM\Inc\Helpers\Connection::get_status(),
+					'renewalUrl'       => \RTGODAM\Inc\Helpers\Connection::get_renewal_url(),
+					'displayName'      => $current_user->display_name,
+					'appOrigin'        => $app_origin,
+					'isE2E'            => ( defined( 'GODAM_E2E' ) && GODAM_E2E ),
 					// O9: WooCommerce active → the entry screen shows the Woo signup variant.
-					'isWoo'        => class_exists( 'WooCommerce' ),
+					'isWoo'            => class_exists( 'WooCommerce' ),
 				)
 			);
 
@@ -1004,7 +1022,7 @@ class Pages {
 			wp_register_script(
 				'transcoder-page-script-analytics',
 				RTGODAM_URL . 'assets/build/pages/analytics.min.js',
-				array( 'wp-element', 'wp-i18n' ),
+				array( 'wp-element', 'wp-i18n', 'wp-api-fetch' ),
 				filemtime( RTGODAM_PATH . 'assets/build/pages/analytics.min.js' ),
 				true
 			);
@@ -1580,7 +1598,7 @@ class Pages {
 	 * (`window.godam.layers`). The video editor depends on it, and so can an
 	 * add-on's editor script that registers its own layer types.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.9.0
 	 *
 	 * @return void
 	 */

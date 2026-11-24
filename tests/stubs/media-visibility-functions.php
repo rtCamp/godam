@@ -193,6 +193,27 @@ if ( ! function_exists( 'add_post_meta' ) ) {
 	}
 }
 
+if ( ! function_exists( 'get_post_time' ) ) {
+
+	/**
+	 * A stub post's `post_date_gmt` as a Unix time, or false when it has none.
+	 *
+	 * @param string $format Ignored; always 'U'.
+	 * @param bool   $gmt    Ignored; always GMT.
+	 * @param int    $post   Post ID.
+	 * @return int|false
+	 */
+	function get_post_time( $format = 'U', $gmt = false, $post = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundBeforeLastUsed -- signature mirrors the WP function.
+		$post = $GLOBALS['rtgodam_stub']['posts'][ (int) $post ] ?? null;
+
+		if ( ! $post || empty( $post->post_date_gmt ) ) {
+			return false;
+		}
+
+		return strtotime( $post->post_date_gmt . ' UTC' );
+	}
+}
+
 if ( ! function_exists( 'delete_post_meta' ) ) {
 
 	/**

@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.8.1
+Stable tag: 2.11.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -245,9 +245,9 @@ A. Yes! You can start with a 60-day free trial to explore all features. No credi
 A. Yes, GoDAM provides robust analytics tools to track video engagement, including metrics like play counts, watch time, and a viewer retention curve that shows where viewers drop off. These insights help you optimize your content strategy.
 
 = Can GoDAM wait for my cookie consent banner? =
-A. Yes. With the [WP Consent API](https://wordpress.org/plugins/wp-consent-api/) plugin and a banner that supports it (for example Complianz, CookieYes, Cookiebot or iubenda), GoDAM's own video, image and layer analytics wait for the visitor's "statistics" consent. Until then GoDAM stores nothing in the visitor's browser and sends nothing. (GoDAM for Woo's Shoppable Video and Reel Pop counts follow in a GoDAM for Woo update.) Views and clicks from before the choice are sent if the visitor accepts on that page, and discarded if they refuse. Withdrawing consent deletes GoDAM's browser data. Sites without a consent banner are not affected.
+A. Yes. With the [WP Consent API](https://wordpress.org/plugins/wp-consent-api/) plugin and a banner that supports it (for example Complianz, CookieYes, Cookiebot or iubenda), GoDAM's own video, image and layer analytics wait for the visitor's "statistics" consent. Until then GoDAM stores nothing in the visitor's browser and sends nothing. GoDAM for Woo 2.3.1 and later follows the same choice. Views and clicks from before the choice are sent if the visitor accepts on that page, and discarded if they refuse. Withdrawing consent deletes GoDAM's browser data. Sites without a consent banner are not affected.
 
-If your banner does not support the WP Consent API, add `add_filter( 'godam_visitor_tracking_requires_consent', '__return_true' );` and have the banner call `window.GoDAM.setAnalyticsConsent( true )` when the visitor accepts, or `window.GoDAM.setAnalyticsConsent( false )` when they refuse. To turn visitor tracking off completely, use `add_filter( 'godam_visitor_tracking_enabled', '__return_false' );`.
+If your banner does not support the WP Consent API, add `add_filter( 'godam_visitor_tracking_requires_consent', '__return_true' );` and have the banner call `window.GoDAM.setAnalyticsConsent( true )` when the visitor accepts, or `window.GoDAM.setAnalyticsConsent( false )` when they refuse. To turn visitor tracking off completely, turn off "Track visitors" in GoDAM > Settings > General, or use `add_filter( 'godam_visitor_tracking_enabled', '__return_false' );` (the filter overrides the setting). Purge your page cache after changing this, since the choice is printed into each page. The Google Tag Manager option is separate: it keeps sending video events to your own Google Tag Manager. GoDAM also suggests text for your privacy policy under Settings > Privacy > Policy Guide.
 
 == Screenshots ==
 1. Video Editor: add interactive layers to a video, with its plays and watch time on top
@@ -273,28 +273,28 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 == Changelog ==
 
-= v2.8.1 (November 11, 2026) =
+= v2.11.0 (November 19, 2026) =
 
-- Fix: Security fixes.
+- Feat: GoDAM videos now work with LearnDash Video Progression on lessons and topics. Turn on "Use GoDAM Video" to use a GoDAM Video block or a picked video, or paste a GoDAM video URL into LearnDash's Video URL field. Mark Complete stays locked until the video ends, and the player follows LearnDash's Autostart, Video Resume and controls settings.
+- Tweak: The media library now says why a transcode failed and what to do next, in the list view, the grid view's warning tooltip and the attachment details panel. Needs GoDAM Central v2.12.1; files that failed earlier show the generic message.
+- Tweak: The GoDAM dashboard and the Media Library show how many days are left in a trial, with a link to upgrade. When a plan has expired, GoDAM offers to renew it instead of showing the signup screens.
+- Tweak: A new "Track visitors" setting in GoDAM > Settings > General turns visitor tracking off. It is on by default, and the `godam_visitor_tracking_enabled` filter still overrides it.
+- Tweak: GoDAM now suggests privacy-policy text in Settings > Privacy > Policy Guide, and the readme lists what GoDAM stores in the visitor's browser.
+- Fix: Fluent Forms and Ninja Forms recorder uploads, likes and comments now work on pages served from a full-page cache.
+- Fix: Fluent Forms and Ninja Forms recorder uploads accept only the form's recorder field, and only audio and video files.
+- Fix: A `[video]` shortcode for anything other than a `.mov` file rendered empty while GoDAM was active, including LearnDash's self-hosted lesson videos. Such shortcodes now play in WordPress's own player again.
+- Fix: Images served from GoDAM's CDN could appear cropped to a square or soft on large and high-DPI screens, because the `srcset` offered square crops for landscape and portrait images and left out the full-size file. The `srcset` now lists only sizes with the image's own shape and includes the full-size file, following WordPress's own rules.
 
-= v2.8.0 (November 10, 2026) =
+= v2.10.0 (November 17, 2026) =
 
-- Feat: Videos can now have captions in several languages. In the video editor's Transcription tab, add, edit, replace or remove a caption file for any language and choose which one shows by default. Visitors pick a language from the player's subtitles menu. Needs a paid GoDAM plan.
-- Feat: Choose the language for AI transcription, or let GoDAM detect it.
-- Feat: With a consent banner that supports the WP Consent API (such as Complianz, Cookiebot, CookieYes or iubenda), GoDAM analytics now waits for the visitor's statistics consent before it stores or sends anything.
-- Tweak: The Vimeo migration tab now links straight to the screen in GoDAM Central where you connect your Vimeo account.
-- Tweak: Sites running GoDAM for WooCommerce older than 2.3.1 are asked to update it.
-- Fix: Pages no longer include the visitor's IP address or the signed-in user's ID for analytics. If you use a page cache, purge it after updating.
-- Fix: GoDAM elements no longer cause deprecation notices with WPBakery 9.1.
-- Fix: Security fixes.
+- Feat: AI agents such as Claude and Cursor can now use GoDAM through MCP. They can find and organise media, add layers and chapters, place GoDAM blocks on pages, change player settings, start processing and read analytics, as the connected WordPress user and within that user's permissions. Needs WordPress 6.9 or later and the MCP Adapter plugin.
+- Tweak: Administrators can turn off the changes an AI agent can make in Settings > Writing > GoDAM and AI agents, or turn MCP off entirely in GoDAM > Settings > General.
+- Tweak: When the MCP Adapter plugin is active, GoDAM's admin pages show a dismissible notice on connecting an AI agent.
 
-= v2.7.0 (November 5, 2026) =
+= v2.9.1 (November 16, 2026) =
 
-- Feat: Videos can now pause or mute when they scroll out of view, move to another slide, or sit in a closed tab or popup. Turn it on in GoDAM > Settings > Video Player. It is off by default, and each GoDAM Video block, widget or shortcode can override it.
-- Feat: Developers can pause all GoDAM videos from their own code, for example when a carousel changes slide.
-- Tweak: Authors see analytics only for the videos they can edit.
-- Tweak: Time a video plays muted while out of view no longer counts as watched in analytics.
-- Fix: Security fixes.
+- Fix: Single Video Analytics, a CTA layer's image, Copy block and the WPBakery document cover now load on sites that block the WordPress media REST API for logged-out visitors.
+- Fix: A CTA layer's image is no longer removed when it fails to load for a reason other than being deleted.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.
@@ -347,25 +347,35 @@ Service Provider: app.godam.io
 [Terms of Service](https://godam.io/tos/) | [Privacy Policy](https://godam.io/privacy-policy/)
 
 === analytics.godam.io ===
-Purpose: This service collects analytics data when a user watches a video on the frontend. It helps track video performance, user engagement, and campaign effectiveness.
+Purpose: This service collects analytics data when a visitor views a video or an interactive image on the frontend. It helps track video performance, user engagement, and campaign effectiveness.
 
 Data Sent:
 
-1. IP Address
+1. IP Address (read by the service from the request, to find the visitor's country)
 
-2. Author of the post's display name
+2. An anonymous visitor ID (no WordPress user ID: the field is always sent as 0)
 
-3. Browser version, name, and browser language
+3. The page (URL, title, post ID, post type, categories, tags and author's display name), the referring URL and any campaign (UTM) parameters
 
-4. User Agent String
+4. The video watched and which parts of it were played, and clicks on video and image layers
 
-5. The operating system of the user's device (e.g., Windows, macOS, Android)
+5. Browser version, name, and browser language, the User Agent String, the screen size, and the operating system of the user's device (e.g., Windows, macOS, Android)
 
 When Data is Sent:
 
-1. When the page containing the video loads.
+1. When a video or interactive image comes into view.
 
-2. When the user exits the page after watching the video.
+2. When the user exits the page after watching the video, and after clicks on layers.
+
+Stored in the visitor's browser:
+
+1. `__anon_id` (local storage, kept until deleted): the anonymous visitor ID that ties one visitor's views and clicks together.
+
+2. `godamVideoSeen:<video>` (local storage, kept until deleted): counts a viewer once per video.
+
+3. `godamLayerInteractions` (session storage, kept until the tab closes): holds layer clicks until they are sent.
+
+With a consent banner that supports the WP Consent API, nothing is stored or sent until the visitor gives "statistics" consent, and these items are deleted if they withdraw it. Turning "Track visitors" off in GoDAM > Settings > General stops all of it for every visitor.
 
 Service Provider: analytics.godam.io
 

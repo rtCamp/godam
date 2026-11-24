@@ -31,23 +31,26 @@ const createPlayer = () => {
 /**
  * Builds a LayersManager with one add-on layer on the page.
  *
- * @param {Object} player - Player stub.
- * @return {Object} `{ manager, handlers }`; `handlers` holds the add-on's jest.fn() handlers.
+ * @param {Object}  player                     - Player stub.
+ * @param {Object}  [options]                  - Options.
+ * @param {boolean} [options.isPreviewEnabled] - Whether the video has the hover preview (`preview="true"`).
+ * @return {Object} `{ manager, handlers, mount }`; `handlers` holds the add-on's jest.fn() handlers.
  */
-const createManager = ( player ) => {
+const createManager = ( player, { isPreviewEnabled = false } = {} ) => {
 	const handlers = {
 		onTimeUpdate: jest.fn(),
 		onPause: jest.fn(),
 		onEnded: jest.fn(),
 		onResize: jest.fn(),
 	};
-	registerLayerRuntime( 'acme/probe', { mount: () => handlers } );
+	const mount = jest.fn( () => handlers );
+	registerLayerRuntime( 'acme/probe', { mount } );
 
 	document.body.innerHTML = '<div id="layer-1-p"></div>';
 	const video = document.createElement( 'video' );
 	video.dataset.instanceId = '1';
-	const config = { isPreviewEnabled: false, videoSetupOptions: { layers: [ { id: 'p', type: 'acme/probe' } ] } };
-	return { manager: new LayersManager( player, video, config, {}, 'player-1' ), handlers };
+	const config = { isPreviewEnabled, videoSetupOptions: { layers: [ { id: 'p', type: 'acme/probe' } ] } };
+	return { manager: new LayersManager( player, video, config, {}, 'player-1' ), handlers, mount };
 };
 
 describe( 'LayersManager suppression gate', () => {
@@ -113,6 +116,50 @@ describe( 'LayersManager suppression gate', () => {
 		manager.handleVideoResize();
 
 		expect( handlers.onResize ).toHaveBeenCalled();
+	} );
+} );
+
+describe( 'LayersManager on a video with the hover preview', () => {
+	afterEach( () => {
+		delete window.godam;
+	} );
+
+	it( 'mounts no layer while the preview plays', async () => {
+		const { manager, mount } = createManager( createPlayer(), { isPreviewEnabled: true } );
+		await manager.setupLayers();
+		manager.handlePreviewStateChange( true );
+
+		expect( mount ).not.toHaveBeenCalled();
+	} );
+
+	it( 'mounts the saved layers and their triggers once real playback starts', async () => {
+		const player = createPlayer();
+		const { manager, handlers, mount } = createManager( player, { isPreviewEnabled: true } );
+		await manager.setupLayers();
+
+		manager.handlePreviewStateChange( false );
+		manager.handleTimeUpdate( 3 );
+		player.emit( 'pause' );
+		player.emit( 'ended' );
+
+		expect( mount ).toHaveBeenCalledTimes( 1 );
+		expect( handlers.onTimeUpdate ).toHaveBeenCalledWith( 3 );
+		expect( handlers.onPause ).toHaveBeenCalledTimes( 1 );
+		expect( handlers.onEnded ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'mounts the layers and installs the triggers only once', async () => {
+		const player = createPlayer();
+		const { manager, handlers, mount } = createManager( player, { isPreviewEnabled: true } );
+		await manager.setupLayers();
+
+		manager.handlePreviewStateChange( false );
+		manager.handlePreviewStateChange( true );
+		manager.handlePreviewStateChange( false );
+		player.emit( 'pause' );
+
+		expect( mount ).toHaveBeenCalledTimes( 1 );
+		expect( handlers.onPause ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
 

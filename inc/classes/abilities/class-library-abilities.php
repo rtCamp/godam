@@ -1,0 +1,1197 @@
+<?php
+/**
+ * Abilities for organising the GoDAM library.
+ *
+ * @package GoDAM
+ */
+
+namespace RTGODAM\Inc\Abilities;
+
+defined( 'ABSPATH' ) || exit;
+
+use RTGODAM\Inc\Media_Library\Media_Folder_Utils;
+use RTGODAM\Inc\Taxonomies\Media_Folders;
+
+/**
+ * Class Library_Abilities
+ *
+ * The write abilities here go through the same REST routes the GoDAM media
+ * library UI uses. That keeps the protections those routes carry — the
+ * per-attachment edit check and the locked-folder guard on moves — rather than
+ * re-implementing them.
+ *
+ * @since 2.10.0
+ */
+class Library_Abilities extends Ability_Group {
+
+	/**
+	 * Registers this group's abilities.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @return void
+	 */
+	public function register() {
+		$this->add(
+			'godam/list-folders',
+			array(
+				'label'               => __( 'List folders', 'godam' ),
+				'description'         => __( 'List every folder in the GoDAM library with its parent and how many media items it holds. Folder IDs are used by godam/list-media and godam/move-media-to-folder.', 'godam' ),
+				'category'            => 'godam-library',
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'parent_id' => array(
+							'type'        => 'integer',
+							'minimum'     => 0,
+							'description' => __( 'Only list folders directly inside this folder. 0 lists top-level folders. Omit to list all.', 'godam' ),
+						),
+					),
+				),
+				'output_schema'       => array(
+					'type'       => 'object',
+					'properties' => array(
+						'count'   => array( 'type' => 'integer' ),
+						'folders' => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'object' ),
+						),
+					),
+				),
+				'execute_callback'    => array( $this, 'list_folders' ),
+				'permission_callback' => array( $this, 'can_browse_library' ),
+			)
+		);
+
+		$this->add(
+			'godam/create-folder',
+			array(
+				'label'               => __( 'Create folder', 'godam' ),
+				'description'         => __( 'Create a folder in the GoDAM library, optionally inside another folder.', 'godam' ),
+				'category'            => 'godam-library',
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'name'      => array(
+							'type'      => 'string',
+							'minLength' => 1,
+						),
+						'parent_id' => array(
+							'type'        => 'integer',
+							'minimum'     => 0,
+							'default'     => 0,
+							'description' => __( 'Parent folder ID. 0 creates a top-level folder.', 'godam' ),
+						),
+					),
+					'required'   => array( 'name' ),
+				),
+				'output_schema'       => array( 'type' => 'object' ),
+				'execute_callback'    => array( $this, 'create_folder' ),
+				'permission_callback' => array( $this, 'can_manage_folders' ),
+			),
+			true
+		);
+
+		$this->add(
+			'godam/move-media-to-folder',
+			array(
+				'label'               => __( 'Move media to a folder', 'godam' ),
+				'description'         => __( 'Move one or more media items into a folder, or out of their folder with folder_id 0. Media in a locked folder cannot be moved out.', 'godam' ),
+				'category'            => 'godam-library',
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'media_ids' => array(
+							'type'     => 'array',
+							'items'    => array(
+								'type'    => 'integer',
+								'minimum' => 1,
+							),
+							'minItems' => 1,
+						),
+						'folder_id' => array(
+							'type'        => 'integer',
+							'minimum'     => 0,
+							'description' => __( 'Destination folder ID. 0 removes the media from its folder.', 'godam' ),
+						),
+					),
+					'required'   => array( 'media_ids', 'folder_id' ),
+				),
+				'output_schema'       => array( 'type' => 'object' ),
+				'execute_callback'    => array( $this, 'move_media_to_folder' ),
+				'permission_callback' => array( $this, 'can_assign_folders' ),
+				'meta'                => array(
+					'annotations' => array( 'idempotent' => true ),
+				),
+			),
+			true
+		);
+
+		$this->add(
+			'godam/update-media-details',
+			array(
+				'label'               => __( 'Update media details', 'godam' ),
+				'description'         => __( 'Change a media item\'s title, caption, description or alt text. Only the fields given are changed.', 'godam' ),
+				'category'            => 'godam-library',
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'id'          => array(
+							'type'    => 'integer',
+							'minimum' => 1,
+						),
+						'title'       => array( 'type' => 'string' ),
+						'caption'     => array( 'type' => 'string' ),
+						'description' => array( 'type' => 'string' ),
+						'alt_text'    => array( 'type' => 'string' ),
+					),
+					'required'   => array( 'id' ),
+				),
+				'output_schema'       => $this->media_schema(),
+				'execute_callback'    => array( $this, 'update_media_details' ),
+				'permission_callback' => array( $this, 'can_edit_media' ),
+				'meta'                => array(
+					'annotations' => array( 'idempotent' => false ),
+				),
+			),
+			true
+		);
+
+		$this->add(
+			'godam/import-media-from-url',
+			array(
+				'label'               => __( 'Import media from a URL', 'godam' ),
+				'description'         => __( 'Download a file from a public URL into the GoDAM library, optionally straight into a folder. A video or audio file is then sent to GoDAM for transcoding as with any upload, which takes a few minutes; check progress with godam/get-media.', 'godam' ),
+				'category'            => 'godam-library',
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'url'       => array(
+							'type'        => 'string',
+							'format'      => 'uri',
+							'description' => __( 'Public http(s) URL of the file. Its type must be one the site allows uploading.', 'godam' ),
+						),
+						'title'     => array(
+							'type'        => 'string',
+							'description' => __( 'Title for the media item. Defaults to the file name.', 'godam' ),
+						),
+						'folder_id' => array(
+							'type'        => 'integer',
+							'minimum'     => 0,
+							'description' => __( 'Folder to put the media in, from godam/list-folders. 0 or omitted leaves it outside any folder.', 'godam' ),
+						),
+					),
+					'required'   => array( 'url' ),
+				),
+				'output_schema'       => $this->media_schema(),
+				'execute_callback'    => array( $this, 'import_media_from_url' ),
+				'permission_callback' => array( $this, 'can_browse_library' ),
+			),
+			true
+		);
+		$this->add(
+			'godam/list-central-media',
+			array(
+				'label'               => __( 'List media on GoDAM Central', 'godam' ),
+				'description'         => __( 'List the media stored in this site\'s GoDAM Central account, newest first, 20 per page. These are not in the site\'s library until added with godam/add-central-media. Each item says whether it is already on the site.', 'godam' ),
+				'category'            => 'godam-library',
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'type'   => array(
+							'type'        => 'string',
+							'enum'        => array( 'video', 'audio', 'image', 'document' ),
+							'default'     => 'video',
+							'description' => __( 'Kind of media to list.', 'godam' ),
+						),
+						'search' => array(
+							'type'        => 'string',
+							'maxLength'   => 200,
+							'description' => __( 'Only list media whose name matches this text.', 'godam' ),
+						),
+						'page'   => array(
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'default'     => 1,
+							'description' => __( 'Page of results.', 'godam' ),
+						),
+					),
+				),
+				'output_schema'       => array(
+					'type'       => 'object',
+					'properties' => array(
+						'items'    => array(
+							'type'  => 'array',
+							'items' => array( 'type' => 'object' ),
+						),
+						'page'     => array( 'type' => 'integer' ),
+						'total'    => array( 'type' => 'integer' ),
+						'has_more' => array( 'type' => 'boolean' ),
+					),
+				),
+				'execute_callback'    => array( $this, 'list_central_media' ),
+				'permission_callback' => array( $this, 'can_browse_library' ),
+			)
+		);
+
+		$this->add(
+			'godam/add-central-media',
+			array(
+				'label'               => __( 'Add media from GoDAM Central', 'godam' ),
+				'description'         => __( 'Add one media item from this site\'s GoDAM Central account to the site\'s library, optionally straight into a folder. The file stays on GoDAM Central and is already transcoded, so it can be transcribed. Adding the same item again returns the existing one. Pass the item\'s type and title from godam/list-central-media too: the item is then found in one request instead of a read of the whole account.', 'godam' ),
+				'category'            => 'godam-library',
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'central_id' => array(
+							'type'        => 'string',
+							'pattern'     => '^[A-Za-z0-9_-]{1,64}$',
+							'description' => __( 'The item\'s central_id from godam/list-central-media.', 'godam' ),
+						),
+						'type'       => array(
+							'type'        => 'string',
+							'enum'        => array_keys( self::CENTRAL_MEDIA_TYPES ),
+							'description' => __( 'The item\'s kind, as listed by godam/list-central-media. Optional, but it makes the item quicker to find.', 'godam' ),
+						),
+						'title'      => array(
+							'type'        => 'string',
+							'maxLength'   => 200,
+							'description' => __( 'The item\'s title from godam/list-central-media. Optional, but it makes the item quicker to find.', 'godam' ),
+						),
+						'folder_id'  => array(
+							'type'        => 'integer',
+							'minimum'     => 0,
+							'description' => __( 'Folder to put the media in, from godam/list-folders. 0 or omitted leaves it outside any folder.', 'godam' ),
+						),
+					),
+					'required'   => array( 'central_id' ),
+				),
+				'output_schema'       => $this->media_schema(),
+				'execute_callback'    => array( $this, 'add_central_media' ),
+				'permission_callback' => array( $this, 'can_browse_library' ),
+				'meta'                => array(
+					'annotations' => array( 'idempotent' => true ),
+				),
+			),
+			true
+		);
+	}
+
+	/**
+	 * Permission: the user can browse the media library.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @return bool
+	 */
+	public function can_browse_library() {
+		return current_user_can( 'upload_files' );
+	}
+
+	/**
+	 * Permission: the user can create folders.
+	 *
+	 * Reads the capability from the taxonomy itself, so it follows whatever
+	 * the folder taxonomy is registered with.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @return bool
+	 */
+	public function can_manage_folders() {
+		$taxonomy = get_taxonomy( Media_Folders::SLUG );
+
+		return $taxonomy && current_user_can( $taxonomy->cap->edit_terms ); // phpcs:ignore WordPress.WP.Capabilities.Undetermined -- the folder taxonomy's own capability, as registered.
+	}
+
+	/**
+	 * Permission: the user can assign folders.
+	 *
+	 * Matches the assign-folder route; that route then checks each attachment.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @return bool
+	 */
+	public function can_assign_folders() {
+		return current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * Executes godam/list-folders.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param array $input Ability input.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function list_folders( $input = array() ) {
+		$args = array(
+			'taxonomy'   => Media_Folders::SLUG,
+			'hide_empty' => false,
+			'orderby'    => 'name',
+		);
+
+		if ( isset( $input['parent_id'] ) ) {
+			$args['parent'] = absint( $input['parent_id'] );
+		}
+
+		$terms = get_terms( $args );
+
+		if ( is_wp_error( $terms ) ) {
+			return $terms;
+		}
+
+		$utils   = Media_Folder_Utils::get_instance();
+		$folders = array();
+
+		foreach ( $terms as $term ) {
+			$folders[] = array(
+				'id'          => (int) $term->term_id,
+				'name'        => $term->name,
+				'parent_id'   => (int) $term->parent,
+				// The term's own count skips unattached media, which is most of a library.
+				'media_count' => (int) $utils->get_attachment_count( $term->term_id ),
+				'locked'      => (bool) $utils->is_folder_locked( $term->term_id ),
+			);
+		}
+
+		return array(
+			'count'   => count( $folders ),
+			'folders' => $folders,
+		);
+	}
+
+	/**
+	 * Executes godam/create-folder through the folder taxonomy's REST route.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param array $input Ability input.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function create_folder( $input = array() ) {
+		$taxonomy  = get_taxonomy( Media_Folders::SLUG );
+		$rest_base = ( $taxonomy && ! empty( $taxonomy->rest_base ) ) ? $taxonomy->rest_base : Media_Folders::SLUG;
+		$params    = array( 'name' => sanitize_text_field( $input['name'] ?? '' ) );
+
+		if ( ! empty( $input['parent_id'] ) ) {
+			$params['parent'] = absint( $input['parent_id'] );
+		}
+
+		$term = $this->rest( 'POST', '/wp/v2/' . $rest_base, $params );
+
+		if ( is_wp_error( $term ) ) {
+			return $term;
+		}
+
+		return array(
+			'id'        => (int) $term['id'],
+			'name'      => $term['name'],
+			'parent_id' => (int) $term['parent'],
+		);
+	}
+
+	/**
+	 * Executes godam/move-media-to-folder through the media library route.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param array $input Ability input.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function move_media_to_folder( $input = array() ) {
+		$media_ids = array_map( 'absint', (array) ( $input['media_ids'] ?? array() ) );
+		$folder_id = absint( $input['folder_id'] ?? 0 );
+
+		$result = $this->rest(
+			'POST',
+			'/godam/v1/media-library/assign-folder',
+			array(
+				'attachment_ids' => $media_ids,
+				'folder_term_id' => $folder_id,
+			)
+		);
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return array(
+			'moved'     => $media_ids,
+			'folder_id' => $folder_id,
+		);
+	}
+
+	/**
+	 * Executes godam/update-media-details through the core media route.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param array $input Ability input.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function update_media_details( $input = array() ) {
+		$post = $this->get_attachment( $input['id'] ?? 0 );
+
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+
+		$params = array_intersect_key(
+			(array) $input,
+			array_flip( array( 'title', 'caption', 'description', 'alt_text' ) )
+		);
+
+		if ( empty( $params ) ) {
+			return new \WP_Error( 'rtgodam_nothing_to_update', __( 'Give at least one of title, caption, description or alt_text.', 'godam' ) );
+		}
+
+		$updated = $this->rest( 'POST', '/wp/v2/media/' . $post->ID, $params );
+
+		if ( is_wp_error( $updated ) ) {
+			return $updated;
+		}
+
+		return $this->shape_media( $this->attachment_post( $post->ID ) );
+	}
+
+	/**
+	 * Executes godam/import-media-from-url.
+	 *
+	 * Uses core's sideload, the same path as "Upload from URL" tools: the
+	 * download refuses private and local addresses, and the file must be a type
+	 * the site allows. GoDAM's upload hooks then pick the attachment up like any
+	 * other upload.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param array $input Ability input.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function import_media_from_url( $input = array() ) {
+		$url = esc_url_raw( $input['url'] ?? '', array( 'http', 'https' ) );
+
+		$addresses = ( $url && wp_http_validate_url( $url ) ) ? $this->public_addresses( $url ) : null;
+
+		if ( null === $addresses ) {
+			return new \WP_Error( 'rtgodam_invalid_url', __( 'Give a public http or https URL.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		// The same size limit as an upload in the Media Library. The download
+		// stops one byte past it, so a huge file cannot fill the disk.
+		$max_size = (int) wp_max_upload_size();
+
+		// Zero means the site takes no uploads right now: the storage quota is
+		// used up, or uploads are switched off. Refuse before downloading.
+		if ( $max_size <= 0 ) {
+			return new \WP_Error(
+				'rest_upload_limited_space',
+				__( 'This site cannot take new uploads right now: its upload size limit is zero or its storage space is used up. Delete files to free up space, or ask a site administrator to raise the upload limit.', 'godam' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$limit_download = static function ( $args ) use ( $max_size ) {
+			$args['limit_response_size'] = $max_size + 1;
+
+			return $args;
+		};
+
+		/*
+		 * The download looks the host up again, and a host can answer that second
+		 * lookup with an internal address (DNS rebinding). So each host is pinned
+		 * to the addresses that passed the check, and cURL connects only to those.
+		 */
+		$pins = array( self::pin_entry( $url, $addresses ) );
+
+		// Every redirect must lead to a public address too, or a public URL could
+		// bounce the download to an internal one.
+		$check_redirect = function ( $location ) use ( &$pins ) {
+			$addresses = $this->public_addresses( (string) $location );
+
+			if ( null === $addresses ) {
+				throw new \WpOrg\Requests\Exception( 'A valid URL was not provided.', 'wp_http.redirect_failed' );
+			}
+
+			$pins[] = self::pin_entry( (string) $location, $addresses );
+		};
+
+		$pin_addresses = function ( $handle ) use ( &$pins ) {
+			$entries = array_values( array_filter( $pins ) );
+
+			if ( $entries && defined( 'CURLOPT_RESOLVE' ) ) {
+				curl_setopt( $handle, CURLOPT_RESOLVE, $entries ); // phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt -- sets an option on the handle WordPress is about to send, through its own http_api_curl action.
+			}
+		};
+
+		add_filter( 'http_request_args', $limit_download ); // phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- sets the response size limit, not the timeout.
+		add_action( 'requests-requests.before_redirect', $check_redirect );
+		add_action( 'http_api_curl', $pin_addresses );
+		$tmp_file = download_url( $url );
+		remove_action( 'http_api_curl', $pin_addresses );
+		remove_action( 'requests-requests.before_redirect', $check_redirect );
+		remove_filter( 'http_request_args', $limit_download );
+
+		/*
+		 * download_url() puts the first KB of a failed response's body in the error data.
+		 * Keep only the message, so a failed import never reads back what a server said.
+		 */
+		if ( is_wp_error( $tmp_file ) ) {
+			return new \WP_Error( $tmp_file->get_error_code(), $tmp_file->get_error_message(), array( 'status' => 400 ) );
+		}
+
+		if ( (int) filesize( $tmp_file ) > $max_size ) {
+			wp_delete_file( $tmp_file );
+
+			return new \WP_Error(
+				'rest_upload_file_too_big',
+				/* translators: %s: maximum allowed file size, e.g. "64 MB". */
+				sprintf( __( 'This file is too big to import. Files must be %s or smaller, the same limit as an upload in the Media Library. Use a smaller file, or ask a site administrator to raise the site\'s maximum upload size.', 'godam' ), size_format( $max_size ) ),
+				array( 'status' => 413 )
+			);
+		}
+
+		$name = sanitize_file_name( wp_basename( (string) wp_parse_url( $url, PHP_URL_PATH ) ) );
+
+		/*
+		 * A download link often has no extension in its path (/get?id=42, /download/12345), or
+		 * one that is not a media type (stream.php?id=42 serving an MP4), and core's sideload
+		 * refuses a file whose extension is not an allowed type. Core's download_url() names the
+		 * temp file from the response's Content-Disposition or Content-Type, so take the
+		 * extension from there, but only when it is an allowed type itself: a .tmp file, no
+		 * extension, or a disallowed name from Content-Disposition (.php) is not adopted and
+		 * still ends in core's file-type error, as before. The path's name is kept as the stem,
+		 * because the temp file's own stem has a random suffix.
+		 */
+		if ( ! wp_check_filetype( $name )['ext'] ) {
+			$extension = wp_check_filetype( $tmp_file )['ext'];
+
+			if ( $extension ) {
+				$stem = pathinfo( $name, PATHINFO_FILENAME );
+				$name = sanitize_file_name( ( '' !== $stem ? $stem : 'import' ) . '.' . $extension );
+			}
+		}
+
+		$file = array(
+			'name'     => $name,
+			'tmp_name' => $tmp_file,
+		);
+
+		$too_big = $this->check_upload_limits( $tmp_file );
+
+		if ( is_wp_error( $too_big ) ) {
+			wp_delete_file( $tmp_file );
+			return $too_big;
+		}
+
+		$post_data = array();
+
+		if ( ! empty( $input['title'] ) ) {
+			$post_data['post_title'] = sanitize_text_field( $input['title'] );
+		}
+
+		$attachment_id = media_handle_sideload( $file, 0, null, $post_data );
+
+		if ( is_wp_error( $attachment_id ) ) {
+			wp_delete_file( $tmp_file );
+			return $attachment_id;
+		}
+
+		if ( ! empty( $input['folder_id'] ) ) {
+			$moved = $this->move_media_to_folder(
+				array(
+					'media_ids' => array( $attachment_id ),
+					'folder_id' => $input['folder_id'],
+				)
+			);
+
+			if ( is_wp_error( $moved ) ) {
+				return new \WP_Error(
+					$moved->get_error_code(),
+					/* translators: 1: attachment ID, 2: reason the move failed. */
+					sprintf( __( 'Imported as media ID %1$d, but it could not be put in the folder: %2$s Use godam/move-media-to-folder to move it.', 'godam' ), $attachment_id, $moved->get_error_message() ),
+					array( 'status' => 400 )
+				);
+			}
+		}
+
+		return $this->shape_media( $this->attachment_post( $attachment_id ) );
+	}
+
+	/**
+	 * The addresses a URL's host may be downloaded from, or null when the URL
+	 * must not be downloaded: its host does not resolve, or resolves to an
+	 * address that is not public.
+	 *
+	 * Core's wp_http_validate_url() refuses private and loopback addresses, but
+	 * before WordPress 6.9.6 and 7.0.3 it let link-local (169.254.0.0/16, where
+	 * cloud servers answer metadata and credential requests) and CGNAT
+	 * (100.64.0.0/10) addresses through. An import saves what it downloads in
+	 * the public uploads folder, so check every address here as well.
+	 *
+	 * As in core, the site's own host is allowed (only its uploads folder), and
+	 * so is a host the site owner allowed with the http_request_host_is_external filter.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $url URL.
+	 *
+	 * @return string[]|null Addresses to pin the download to (none for the site's own host), or null.
+	 */
+	protected function public_addresses( $url ) {
+		$host = strtolower( trim( (string) wp_parse_url( $url, PHP_URL_HOST ), '[]' ) );
+
+		if ( '' === $host ) {
+			return null;
+		}
+
+		/*
+		 * The site itself, which core also allows, but only its uploads folder. The
+		 * request comes from the server, so another page on the site's host may be
+		 * one only the server can open (a status page, an IP-locked tool), and the
+		 * import would save its text publicly and return the URL.
+		 */
+		if ( strtolower( (string) wp_parse_url( home_url(), PHP_URL_HOST ) ) === $host ) {
+			return $this->is_uploads_url( $url ) ? array() : null;
+		}
+
+		$ips = $this->resolve_host( $host );
+
+		if ( empty( $ips ) ) {
+			return null;
+		}
+
+		foreach ( $ips as $ip ) {
+			if ( ! self::is_public_ip( $ip ) ) {
+				/** This filter is documented in wp-includes/http.php */
+				return apply_filters( 'http_request_host_is_external', false, $host, $url ) ? $ips : null; // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core's filter, so a host allowed for core's requests is allowed here.
+			}
+		}
+
+		return $ips;
+	}
+
+	/**
+	 * The cURL "host:port:addresses" entry that makes a download of the URL
+	 * connect only to the given addresses, or an empty string when there is
+	 * nothing to pin (no addresses, or the host is an IP address already).
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string   $url URL.
+	 * @param string[] $ips Addresses that passed the check.
+	 *
+	 * @return string
+	 */
+	public static function pin_entry( $url, array $ips ) {
+		$parts = wp_parse_url( $url );
+		$host  = strtolower( trim( (string) ( $parts['host'] ?? '' ), '[]' ) );
+
+		if ( '' === $host || empty( $ips ) || filter_var( $host, FILTER_VALIDATE_IP ) ) {
+			return '';
+		}
+
+		$port = $parts['port'] ?? ( 'https' === strtolower( (string) ( $parts['scheme'] ?? '' ) ) ? 443 : 80 );
+
+		return $host . ':' . (int) $port . ':' . implode( ',', $ips );
+	}
+
+	/**
+	 * The IPv4 and IPv6 addresses a host resolves to (the host itself for an IP
+	 * literal), or none when its IPv6 addresses cannot be read: the download may
+	 * use one of them, so a host that is only half checked is refused.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $host Host name or IP address.
+	 *
+	 * @return string[]
+	 */
+	protected function resolve_host( $host ) {
+		if ( filter_var( $host, FILTER_VALIDATE_IP ) ) {
+			return array( $host );
+		}
+
+		$ips = gethostbynamel( $host );
+		$ips = is_array( $ips ) ? $ips : array();
+
+		// False when the lookup failed; a host with no IPv6 address gives an empty list.
+		$records = function_exists( 'dns_get_record' ) ? dns_get_record( $host, DNS_AAAA ) : false;
+
+		if ( ! is_array( $records ) ) {
+			return array();
+		}
+
+		foreach ( $records as $record ) {
+			if ( ! empty( $record['ipv6'] ) ) {
+				$ips[] = $record['ipv6'];
+			}
+		}
+
+		return $ips;
+	}
+
+	/**
+	 * Whether an IP address is a public one: not private, loopback, link-local,
+	 * reserved or CGNAT, including an IPv4 address carried inside an IPv6 one.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $ip IP address.
+	 *
+	 * @return bool
+	 */
+	public static function is_public_ip( $ip ) {
+		$ip = (string) $ip;
+
+		// Checked on the address's bytes, so every spelling gets the same answer:
+		// ::ffff:a9fe:a9fe is 169.254.169.254, and PHP before 8.2 compares IPv6
+		// addresses as text.
+		$ip = filter_var( $ip, FILTER_VALIDATE_IP ) ? (string) inet_ntop( self::embedded_ipv4( inet_pton( $ip ) ) ) : '';
+
+		if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+			return false;
+		}
+
+		if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+			$parts = array_map( 'intval', explode( '.', $ip ) );
+
+			// 100.64.0.0/10 (CGNAT), 192.0.0.0/24 (IETF protocol assignments),
+			// 198.18.0.0/15 (benchmarking, used as internal space) and 224.0.0.0/4 (multicast).
+			if ( ( 100 === $parts[0] && $parts[1] >= 64 && $parts[1] <= 127 ) || ( 192 === $parts[0] && 0 === $parts[1] && 0 === $parts[2] ) || ( 198 === $parts[0] && in_array( $parts[1], array( 18, 19 ), true ) ) || $parts[0] >= 224 ) {
+				return false;
+			}
+
+			return true;
+		}
+
+		// Only global unicast IPv6 (2000::/3). This leaves out link-local, unique
+		// local, site-local, multicast, discard-only (100::/64) and local-use
+		// NAT64 (64:ff9b:1::/48), and any such range defined later.
+		return 0x20 === ( ord( substr( (string) inet_pton( $ip ), 0, 1 ) ) & 0xe0 );
+	}
+
+	/**
+	 * Applies the limits a normal upload gets on multisite: the network's
+	 * upload size limit, the site's storage quota and the user's quota.
+	 *
+	 * Sideloading fires `wp_handle_sideload_prefilter`, but core runs these
+	 * checks only for uploads, so without this an import could go past them.
+	 * The checks and error codes match the REST media route's.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $tmp_file Path of the downloaded file.
+	 *
+	 * @return true|\WP_Error
+	 */
+	private function check_upload_limits( $tmp_file ) {
+		if ( ! is_multisite() || get_site_option( 'upload_space_check_disabled' ) ) {
+			return true;
+		}
+
+		$size = (int) filesize( $tmp_file );
+
+		if ( $size > get_upload_space_available() ) {
+			/* translators: %s: required disk space in kilobytes. */
+			return new \WP_Error( 'rest_upload_limited_space', sprintf( __( 'Not enough space to import this file. %s KB needed. Free up space by deleting unused media in the Media Library, or ask a network administrator to raise the site\'s storage limit.', 'godam' ), number_format( ( $size - get_upload_space_available() ) / KB_IN_BYTES ) ), array( 'status' => 400 ) );
+		}
+
+		if ( $size > KB_IN_BYTES * (int) get_site_option( 'fileupload_maxk', 1500 ) ) {
+			/* translators: %s: maximum allowed file size in kilobytes. */
+			return new \WP_Error( 'rest_upload_file_too_big', sprintf( __( 'This file is too big. Files must be less than %s KB in size. Use a smaller file, or ask a network administrator to raise the limit in Network Admin > Settings > Network Settings.', 'godam' ), get_site_option( 'fileupload_maxk', 1500 ) ), array( 'status' => 400 ) );
+		}
+
+		if ( ! function_exists( 'upload_is_user_over_quota' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/ms.php';
+		}
+
+		if ( upload_is_user_over_quota( false ) ) {
+			return new \WP_Error( 'rest_upload_user_quota_exceeded', __( 'You have used your space quota. Please delete files before uploading.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Job type GoDAM Central's file list takes for each kind of media.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @var array<string,string>
+	 */
+	const CENTRAL_MEDIA_TYPES = array(
+		'video'    => 'video',
+		'audio'    => 'audio',
+		'image'    => 'image',
+		'document' => 'application/pdf',
+	);
+
+	/**
+	 * Fetches one page of this site's GoDAM Central media.
+	 *
+	 * Goes through the route the Media Library's GoDAM tab uses, which sends the
+	 * site's API key to GoDAM Central. The key is never part of the result.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $type     One of the CENTRAL_MEDIA_TYPES keys.
+	 * @param int    $page     Page number.
+	 * @param int    $per_page Items per page.
+	 * @param string $search   Optional search text.
+	 *
+	 * @return array|\WP_Error The route's data, with `data` holding the items.
+	 */
+	private function central_media_page( $type, $page, $per_page, $search = '' ) {
+		$params = array(
+			'type'     => self::CENTRAL_MEDIA_TYPES[ $type ] ?? 'video',
+			'page'     => max( 1, absint( $page ) ),
+			'per_page' => max( 1, absint( $per_page ) ),
+		);
+
+		if ( '' !== $search ) {
+			$params['search'] = $search;
+		}
+
+		$result = $this->rest( 'GET', '/godam/v1/media-library/get-godam-cmm-files', $params );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		if ( ! is_array( $result ) || empty( $result['success'] ) || ! isset( $result['data'] ) || ! is_array( $result['data'] ) ) {
+			return new \WP_Error(
+				'rtgodam_central_unavailable',
+				__( 'GoDAM Central did not return the media list. Try again in a moment. If it keeps failing, the site owner can contact GoDAM support at https://app.godam.io/helpdesk.', 'godam' ),
+				array( 'status' => 502 )
+			);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Finds the site's media item made from a GoDAM Central item, if any.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $central_id GoDAM Central item ID.
+	 *
+	 * @return int Attachment ID, or 0.
+	 */
+	private function media_id_for_central_id( $central_id ) {
+		do_action( 'rtgodam_before_attachment_lookup' );
+
+		$ids = get_posts( // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.get_posts_get_posts -- a single-ID lookup run on request by a signed-in user, not on a front-end page.
+			array(
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'meta_key'       => '_godam_original_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- the only way to match a Central item.
+				'meta_value'     => $central_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			)
+		);
+
+		do_action( 'rtgodam_after_attachment_lookup' );
+
+		return $ids ? (int) $ids[0] : 0;
+	}
+
+	/**
+	 * Fetches one page of GoDAM Central media, trying once more if it fails.
+	 *
+	 * GoDAM Central's list sometimes fails for a moment under load. One more
+	 * try saves the agent a failed tool call and a retry of its own.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $type     One of the CENTRAL_MEDIA_TYPES keys.
+	 * @param int    $page     Page number.
+	 * @param int    $per_page Items per page.
+	 * @param string $search   Optional text to match against the name.
+	 *
+	 * @return array|\WP_Error
+	 */
+	private function central_media_page_with_retry( $type, $page, $per_page, $search = '' ) {
+		$result = $this->central_media_page( $type, $page, $per_page, $search );
+
+		if ( is_wp_error( $result ) && self::is_retryable_central_error( $result ) ) {
+			$result = $this->central_media_page( $type, $page, $per_page, $search );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Whether a second try could fix a GoDAM Central error.
+	 *
+	 * Only a server or connection fault is worth one more try. A 4xx from
+	 * Central, such as 401 for an invalid or revoked API key, comes back the
+	 * same every time, and a retry only adds a wait.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param \WP_Error $error Error from central_media_page().
+	 *
+	 * @return bool
+	 */
+	public static function is_retryable_central_error( \WP_Error $error ) {
+		if ( 1 === preg_match( '/HTTP status:\s*4\d\d/i', $error->get_error_message() ) ) {
+			return false;
+		}
+
+		$data   = $error->get_error_data();
+		$status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : 0;
+
+		return 0 === $status || $status >= 500;
+	}
+
+	/**
+	 * Finds one item in this site's GoDAM Central account by its ID.
+	 *
+	 * GoDAM Central has no lookup by ID for a site key. With the item's type and
+	 * title the search finds it in one request. Without them, or when the search
+	 * misses, the whole list is read, 100 at a time, the given type first.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $central_id The item's ID on GoDAM Central.
+	 * @param string $type       Optional CENTRAL_MEDIA_TYPES key to look in first.
+	 * @param string $title      Optional title to search for.
+	 *
+	 * @return array|null|\WP_Error The item, null when it is not in the account, or the error from GoDAM Central.
+	 */
+	private function find_central_item( $central_id, $type = '', $title = '' ) {
+		$types = array_keys( self::CENTRAL_MEDIA_TYPES );
+
+		if ( isset( self::CENTRAL_MEDIA_TYPES[ $type ] ) ) {
+			$types = array_merge( array( $type ), array_diff( $types, array( $type ) ) );
+		} else {
+			$type = '';
+		}
+
+		$pick = static function ( $result ) use ( $central_id ) {
+			foreach ( $result['data'] as $item ) {
+				if ( is_array( $item ) && isset( $item['id'] ) && (string) $item['id'] === $central_id ) {
+					return $item;
+				}
+			}
+
+			return null;
+		};
+
+		// The quick way: search by title, in the given type or in each one.
+		if ( '' !== $title ) {
+			foreach ( '' !== $type ? array( $type ) : $types as $search_type ) {
+				$result = $this->central_media_page_with_retry( $search_type, 1, 100, $title );
+
+				// The full read below would hit the same outage, so a failed
+				// search ends the lookup. Each try waits up to 5 s on Central.
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
+
+				$found = $pick( $result );
+
+				if ( null !== $found ) {
+					return $found;
+				}
+			}
+		}
+
+		foreach ( $types as $list_type ) {
+			for ( $page = 1; $page <= 5; $page++ ) {
+				$result = $this->central_media_page_with_retry( $list_type, $page, 100 );
+
+				if ( is_wp_error( $result ) ) {
+					return $result;
+				}
+
+				$found = $pick( $result );
+
+				if ( null !== $found ) {
+					return $found;
+				}
+
+				if ( empty( $result['has_more'] ) ) {
+					break;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Executes godam/list-central-media.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param array $input Ability input.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function list_central_media( $input = array() ) {
+		$type   = isset( $input['type'] ) && isset( self::CENTRAL_MEDIA_TYPES[ $input['type'] ] ) ? $input['type'] : 'video';
+		$search = sanitize_text_field( $input['search'] ?? '' );
+		$result = $this->central_media_page( $type, $input['page'] ?? 1, 20, $search );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		$items = array();
+
+		foreach ( $result['data'] as $item ) {
+			if ( ! is_array( $item ) || empty( $item['id'] ) ) {
+				continue;
+			}
+
+			$central_id = sanitize_text_field( (string) $item['id'] );
+			$media_id   = $this->media_id_for_central_id( $central_id );
+
+			$items[] = array(
+				'central_id'       => $central_id,
+				'title'            => sanitize_text_field( (string) ( $item['title'] ?? '' ) ),
+				'type'             => sanitize_key( (string) ( $item['type'] ?? '' ) ),
+				'status'           => sanitize_text_field( (string) ( $item['status'] ?? '' ) ),
+				'duration_seconds' => isset( $item['duration'] ) ? (int) round( (float) $item['duration'] ) : null,
+				'size'             => sanitize_text_field( (string) ( $item['filesizeHumanReadable'] ?? '' ) ),
+				'on_site_media_id' => $media_id ? $media_id : null,
+			);
+		}
+
+		return array(
+			'items'    => $items,
+			'page'     => (int) ( $result['current_page'] ?? 1 ),
+			'total'    => (int) ( $result['total_count'] ?? count( $items ) ),
+			'has_more' => ! empty( $result['has_more'] ),
+		);
+	}
+
+	/**
+	 * Executes godam/add-central-media.
+	 *
+	 * The agent gives only the item's ID. The item's address, type and stream
+	 * addresses are read from GoDAM Central with the site's own key, so a
+	 * caller cannot make a library entry that points at an address of its
+	 * choosing.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param array $input Ability input.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function add_central_media( $input = array() ) {
+		$central_id = (string) ( $input['central_id'] ?? '' );
+
+		if ( ! preg_match( '/^[A-Za-z0-9_-]{1,64}$/', $central_id ) ) {
+			return new \WP_Error( 'rtgodam_invalid_central_id', __( 'Give the central_id of an item from godam/list-central-media.', 'godam' ), array( 'status' => 400 ) );
+		}
+
+		$found = $this->find_central_item( $central_id, (string) ( $input['type'] ?? '' ), sanitize_text_field( (string) ( $input['title'] ?? '' ) ) );
+
+		if ( is_wp_error( $found ) ) {
+			return $found;
+		}
+
+		if ( null === $found ) {
+			return new \WP_Error(
+				'rtgodam_central_media_not_found',
+				__( 'No media with that central_id is in this site\'s GoDAM Central account. Use godam/list-central-media to find it.', 'godam' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		if ( empty( $found['url'] ) ) {
+			return new \WP_Error(
+				'rtgodam_central_media_not_ready',
+				__( 'GoDAM Central is still processing this media. Check godam/list-central-media again in a few minutes and add it once its status is Transcoded.', 'godam' ),
+				array( 'status' => 409 )
+			);
+		}
+
+		$request = new \WP_REST_Request( 'POST', '/godam/v1/media-library/create-media-entry' );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_body( wp_json_encode( $found ) );
+
+		$response = rest_do_request( $request );
+		$data     = rest_get_server()->response_to_data( $response, false );
+
+		if ( $response->is_error() || empty( $data['attachment']['id'] ) ) {
+			$reason = is_array( $data ) ? ( $data['message'] ?? ( $data['error'] ?? '' ) ) : '';
+
+			return new \WP_Error(
+				'rtgodam_central_media_not_added',
+				/* translators: %s: reason the media could not be added. */
+				sprintf( __( 'The media could not be added to the library: %s', 'godam' ), sanitize_text_field( (string) $reason ) ),
+				array( 'status' => $response->is_error() ? $response->get_status() : 500 )
+			);
+		}
+
+		$attachment_id = absint( $data['attachment']['id'] );
+
+		if ( ! empty( $input['folder_id'] ) ) {
+			$moved = $this->move_media_to_folder(
+				array(
+					'media_ids' => array( $attachment_id ),
+					'folder_id' => $input['folder_id'],
+				)
+			);
+
+			if ( is_wp_error( $moved ) ) {
+				return new \WP_Error(
+					$moved->get_error_code(),
+					/* translators: 1: attachment ID, 2: reason the move failed. */
+					sprintf( __( 'Added as media ID %1$d, but it could not be put in the folder: %2$s', 'godam' ), $attachment_id, $moved->get_error_message() ),
+					array( 'status' => 400 )
+				);
+			}
+		}
+
+		return $this->shape_media( $this->attachment_post( $attachment_id ) );
+	}
+
+	/**
+	 * The IPv4 address an IPv6 address carries, when it has one, so the IPv4
+	 * rules apply to it: IPv4-mapped (::ffff:0:0/96), IPv4-compatible (::/96),
+	 * NAT64 (64:ff9b::/96) and 6to4 (2002::/16). Any other address is returned
+	 * as it is.
+	 *
+	 * @since 2.10.0
+	 *
+	 * @param string $packed Address in inet_pton() form.
+	 *
+	 * @return string Address in inet_pton() form.
+	 */
+	private static function embedded_ipv4( $packed ) {
+		if ( 16 !== strlen( $packed ) ) {
+			return $packed;
+		}
+
+		$carriers = array(
+			str_repeat( "\0", 10 ) . "\xff\xff",        // IPv4-mapped.
+			str_repeat( "\0", 12 ),                      // IPv4-compatible.
+			"\0\x64\xff\x9b" . str_repeat( "\0", 8 ), // NAT64.
+		);
+
+		if ( in_array( substr( $packed, 0, 12 ), $carriers, true ) ) {
+			return substr( $packed, 12 );
+		}
+
+		// 6to4 carries the IPv4 address right after its 2002 prefix.
+		return "\x20\x02" === substr( $packed, 0, 2 ) ? substr( $packed, 2, 4 ) : $packed;
+	}
+}

@@ -8,7 +8,6 @@ import 'video.js/dist/video-js.css';
  * Internal dependencies
  */
 import '../video-editor/style.scss';
-import axios from 'axios';
 import GodamHeader from '../godam/components/GoDAMHeader.jsx';
 import { getAPIKeyErrorInfo, hasAPIKey } from '../godam/utils';
 import {
@@ -24,6 +23,7 @@ import DateRangePicker, { triggerLabelFor } from './components/DateRangePicker';
  * WordPress dependencies
  */
 import { __, sprintf, _n } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 import { Button, Spinner, Icon } from '@wordpress/components';
 import SingleMetrics from './SingleMetrics.js';
 import VideoToCartCard from './VideoToCartCard.js';
@@ -44,8 +44,6 @@ import { canViewStoreData } from '../shared/canViewStoreData';
 import { formatWatchTime } from '../utils/formatters';
 import UpgradePlanAnalyticsBg from '../../assets/src/images/upgrade-plan-analytics-bg.webp';
 import DefaultThumbnail from '../../assets/src/images/video-thumbnail-default.png';
-
-const restURL = window.godamRestRoute?.url || window.wpApiSettings?.root || '/wp-json/';
 
 const RenderVideo = ( { attachmentID, attachmentData, className, videoId } ) => {
 	const getMimiType = ( mime ) => {
@@ -279,18 +277,15 @@ const Analytics = ( { attachmentID } ) => {
 
 	useEffect( () => {
 		if ( attachmentID ) {
-			const url = window.pathJoin( [ restURL, `/wp/v2/media/${ attachmentID }` ] );
 			const loadingEl = document.getElementById( 'loading-analytics-animation' );
 
-			axios
-				.get( url )
-				.then( ( response ) => {
-					const data = response.data;
+			apiFetch( { path: `/wp/v2/media/${ attachmentID }` } )
+				.then( ( data ) => {
 					setAttachmentData( data );
 					setMediaNotFound( false );
 				} )
 				.catch( ( error ) => {
-					if ( error.response?.data?.code === 'rest_post_invalid_id' ) {
+					if ( error?.code === 'rest_post_invalid_id' ) {
 						setMediaNotFound( true );
 						if ( loadingEl ) {
 							loadingEl.style.display = 'none';
@@ -485,10 +480,7 @@ const Analytics = ( { attachmentID } ) => {
 
 			setAbComparisonUrl( attachment.url );
 
-			const url = window.pathJoin( [ restURL, `/wp/v2/media/${ attachment?.id }` ] );
-
-			axios.get( url ).then( ( response ) => {
-				const data = response.data;
+			apiFetch( { path: `/wp/v2/media/${ attachment?.id }` } ).then( ( data ) => {
 				setMediaLibraryAttachment( data );
 			} );
 		} );

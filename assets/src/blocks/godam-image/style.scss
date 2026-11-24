@@ -20,5 +20,6 @@
 		display: block;
 		max-width: 100%;
 		height: auto;
+		box-sizing: border-box; // Keep a border inside the image's width.
 	}
 }

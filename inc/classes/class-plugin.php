@@ -17,6 +17,7 @@ use RTGODAM\Inc\Deactivation;
 use RTGODAM\Inc\Media_Tracker;
 use RTGODAM\Inc\Visitor_Consent;
 use RTGODAM\Inc\Map_Tracker;
+use RTGODAM\Inc\Recorder_Upload_Nonce;
 use RTGODAM\Inc\Rewrite;
 use RTGODAM\Inc\Video_Preview;
 use RTGODAM\Inc\Video_Embed;
@@ -85,6 +86,8 @@ use RTGODAM\Inc\Ninja_Forms\Ninja_Forms_Integration;
 use RTGODAM\Inc\Metform\Metform_Integration;
 use RTGODAM\Inc\Metform\Metform_Rest_Api;
 use RTGODAM\Inc\Lifter_LMS\Lifter_LMS;
+use RTGODAM\Inc\LearnDash\LearnDash;
+use RTGODAM\Inc\Abilities\Abilities;
 
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Params;
 use RTGODAM\Inc\WPBakery_Elements\WPB_GoDAM_Video;
@@ -158,6 +161,10 @@ class Plugin {
 
 		WPForms_Integration::get_instance()->init();
 		Ninja_Forms_Integration::get_instance()->init();
+
+		// Fresh upload nonces for the Fluent Forms and Ninja Forms recorders on cached pages.
+		Recorder_Upload_Nonce::get_instance();
+
 		Metform_Integration::get_instance()->init();
 
 		// Load cron jobs.
@@ -168,6 +175,12 @@ class Plugin {
 
 		// Load LifterLMS integration.
 		Lifter_LMS::get_instance();
+
+		// Load LearnDash integration.
+		LearnDash::get_instance();
+
+		// Register abilities for the WordPress Abilities API (WordPress 6.9+).
+		Abilities::get_instance();
 
 		// Load Elementor widgets.
 		$this->load_elementor_widgets();

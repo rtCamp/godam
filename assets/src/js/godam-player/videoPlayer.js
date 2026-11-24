@@ -413,11 +413,28 @@ export default class GodamVideoPlayer {
 			onControlsReset: () => this.controlsManager.resetVideoControls(),
 		} );
 
-		// Suppress layers while an uncommitted hover preview ("Start Preview")
-		// is playing – the preview is meant to show playback, not layers.
+		const previewWatcher = this.previewManager.getPreviewWatcher();
+
+		// Suppress layers while an uncommitted hover preview ("Start Preview",
+		// or the muted preview of a `preview="true"` video) is playing – the
+		// preview is meant to show playback, not layers.
 		this.layersManager.setSuppressionCheck(
-			() => this.hoverManager?.isPreviewActive() === true,
+			() => this.hoverManager?.isPreviewActive() === true || previewWatcher?.value === true,
 		);
+
+		// A `preview="true"` video mounts its layers when real playback starts.
+		if ( previewWatcher ) {
+			this.previewManager.setPreviewStateChangeCallback(
+				( isPreviewing ) => this.layersManager.handlePreviewStateChange( isPreviewing ),
+			);
+			// Playback started without clicking the video (the big play button,
+			// the keyboard, GoDAMAPI) never ends a preview, but is real playback too.
+			this.player.on( 'play', () => {
+				if ( previewWatcher.value !== true ) {
+					this.layersManager.handlePreviewStateChange( false );
+				}
+			} );
+		}
 	}
 
 	/**

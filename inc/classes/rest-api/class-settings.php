@@ -51,6 +51,7 @@ class Settings extends Base {
 				'enable_gtm_tracking'        => false,
 				'enable_posthog_tracking'    => false,
 				'posthog_initialized'        => false,
+				'enable_visitor_tracking'    => true,
 			),
 			'video_player' => array(
 				'brand_image'            => '',
@@ -257,6 +258,7 @@ class Settings extends Base {
 		// Clear API key status and grace period timestamp.
 		delete_option( 'rtgodam-api-key-status' );
 		delete_option( 'rtgodam-api-key-error-since' );
+		\RTGODAM\Inc\Helpers\Connection::clear();
 
 		if ( $deleted_key || $deleted_token ) {
 			return new \WP_REST_Response(
@@ -392,6 +394,7 @@ class Settings extends Base {
 				'enable_gtm_tracking'        => rest_sanitize_boolean( $settings['general']['enable_gtm_tracking'] ?? $default['general']['enable_gtm_tracking'] ),
 				'enable_posthog_tracking'    => rest_sanitize_boolean( $settings['general']['enable_posthog_tracking'] ?? $default['general']['enable_posthog_tracking'] ),
 				'posthog_initialized'        => rest_sanitize_boolean( $settings['general']['posthog_initialized'] ?? $default['general']['posthog_initialized'] ),
+				'enable_visitor_tracking'    => rest_sanitize_boolean( $settings['general']['enable_visitor_tracking'] ?? $default['general']['enable_visitor_tracking'] ),
 			),
 			'video_player' => array(
 				'brand_image'            => sanitize_text_field( $settings['video_player']['brand_image'] ?? $default['video_player']['brand_image'] ),

@@ -26,11 +26,11 @@ class Layer_Type_Registry {
 
 	/**
 	 * GoDAM version that deprecated the add-on hooks the Layer API replaces (#2296).
-	 * They are removed two minor releases later, in 2.10.0.
+	 * They are removed two minor releases later, in 2.11.0.
 	 *
 	 * @var string
 	 */
-	const HOOKS_DEPRECATED_SINCE = '2.8.0';
+	const HOOKS_DEPRECATED_SINCE = '2.9.0';
 
 	/**
 	 * The handle suffix of each asset key a `layer.json` can name, as core names block asset handles.
@@ -98,7 +98,7 @@ class Layer_Type_Registry {
 		/**
 		 * Fires when layer types should register. Call `godam_register_layer_type()` here.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.9.0
 		 */
 		do_action( 'godam_init' );
 	}
@@ -130,7 +130,7 @@ class Layer_Type_Registry {
 		/**
 		 * Filters a layer type's metadata before it registers.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.9.0
 		 *
 		 * @param array $metadata Metadata from `layer.json`.
 		 */
@@ -377,7 +377,7 @@ class Layer_Type_Registry {
 	 * The deprecation is reported before output is buffered, so a notice printed
 	 * under `WP_DEBUG` goes to the page rather than into the layer's markup.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.9.0
 	 *
 	 * @param array  $layer       Saved layer.
 	 * @param string $instance_id Player instance id.
@@ -394,7 +394,7 @@ class Layer_Type_Registry {
 		/**
 		 * Renders the container of a layer type that has no PHP registration.
 		 *
-		 * @deprecated 2.8.0 Use `godam_register_layer_type()` with a `render_callback` instead.
+		 * @deprecated 2.9.0 Use `godam_register_layer_type()` with a `render_callback` instead.
 		 *
 		 * @param array  $layer       Layer configuration.
 		 * @param string $instance_id Player instance ID.
@@ -567,7 +567,7 @@ class Layer_Type_Registry {
 	 * For the block editor canvas, an iframe that gets the styles enqueued on
 	 * `enqueue_block_assets` but not the editor window's scripts.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.9.0
 	 *
 	 * @param string|null $media `video`, `image`, or null for any.
 	 * @return void
@@ -676,7 +676,7 @@ class Layer_Type_Registry {
 	 * `layer.json`. A `*-rtl.css` beside the file (as `@wordpress/scripts` builds
 	 * it) replaces it on right-to-left sites.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.9.0
 	 *
 	 * @param array  $type Layer type.
 	 * @param string $key  `style`, `viewStyle` or `editorStyle`.
@@ -765,7 +765,7 @@ class Layer_Type_Registry {
 	 * then without one, so a translation the text domain already has for the
 	 * same string, say from the add-on's editor script, is used too.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.9.0
 	 *
 	 * @param string|array $schema     Context, or the schema of an array of settings.
 	 * @param mixed        $settings   Metadata, or part of it.
@@ -855,7 +855,7 @@ class Layer_Type_Registry {
 	 */
 	private function notice( $method, $message ) {
 		if ( function_exists( '_doing_it_wrong' ) ) {
-			_doing_it_wrong( esc_html( __CLASS__ . '::' . $method ), esc_html( $message ), 'n.e.x.t' );
+			_doing_it_wrong( esc_html( __CLASS__ . '::' . $method ), esc_html( $message ), '2.9.0' );
 		}
 	}
 }

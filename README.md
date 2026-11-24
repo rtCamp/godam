@@ -10,7 +10,7 @@ Tested up to: 7.1
 
 Requires PHP: 7.4
 
-Stable tag: 2.8.1
+Stable tag: 2.11.0
 
 License: [GPLv2 or later](http://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -280,9 +280,9 @@ This plugin relies on third-party services to provide specific features. Below i
     </tr>
     <tr>
       <td>analytics.godam.io</td>
-      <td>Collects video analytics</td>
-      <td>IP, Author, Browser info, OS, User Agent</td>
-      <td>On video page load &amp; exit</td>
+      <td>Collects video and image analytics</td>
+      <td>IP (read from the request), anonymous visitor ID (no WordPress user ID), page and referrer, video watched and parts played, layer clicks, Browser info, OS, User Agent, screen size. In the visitor's browser: <code>__anon_id</code> and <code>godamVideoSeen:&lt;video&gt;</code> (local storage), <code>godamLayerInteractions</code> (session storage)</td>
+      <td>When a video or interactive image comes into view, on exit, and after layer clicks; with a WP Consent API banner, only after "statistics" consent; never when "Track visitors" is off</td>
       <td>
         analytics.godam.io<br>
         <a href="https://godam.io/tos/">ToS</a> | <a href="https://godam.io/privacy-policy/">Privacy</a>

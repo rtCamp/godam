@@ -261,7 +261,7 @@ describe( 'Layer API contract: SidebarLayers', () => {
 				color: 'red',
 				id: 'test-uuid',
 			} ] );
-			expect( console ).toHaveWarnedWith( 'GoDAM: window.godamLayerCreators is deprecated since version 2.8.0 and will be removed in version 2.10.0. Use the `create` setting of registerLayerType() instead.' );
+			expect( console ).toHaveWarnedWith( 'GoDAM: window.godamLayerCreators is deprecated since version 2.9.0 and will be removed in version 2.11.0. Use the `create` setting of registerLayerType() instead.' );
 		} );
 
 		it( 'lets the creator override the name but never the id', () => {

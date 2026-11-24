@@ -66,24 +66,56 @@ export default class LayersManager {
 			}
 		}
 
+		// A video with the hover preview (`preview="true"`) mounts its layers
+		// once the viewer starts real playback, see handlePreviewStateChange().
 		if ( ! this.config.isPreviewEnabled ) {
-			layers.forEach( ( layer ) => this.processLayer( layer ) );
-
-			// Event-driven triggers: `on_pause` shows a layer when the viewer
-			// pauses, `end_of_video` overlays one when playback ends. The host
-			// holds both back while layers are suppressed.
-			this.player.on( 'pause', () => {
-				// Automatic pauses (player scrolled out of view, GoDAMAPI.pauseAll)
-				// are not the viewer pausing, so they must not reveal a layer.
-				if ( ! isAutoPause( this.player ) ) {
-					this.host.dispatch( 'onPause' );
-				}
-			} );
-			this.player.on( 'ended', () => this.host.dispatch( 'onEnded' ) );
+			this.mountSavedLayers();
 		}
 
 		this.host.dispatch( 'onReady' );
 		this.isDisplayingLayers[ this.currentPlayerVideoInstanceId ] = false;
+	}
+
+	/**
+	 * Mount the video's saved layers and install the event-driven triggers.
+	 * Runs once; later calls do nothing.
+	 */
+	mountSavedLayers() {
+		if ( this.savedLayersMounted ) {
+			return;
+		}
+		this.savedLayersMounted = true;
+
+		const layers = this.config.videoSetupOptions?.layers || [];
+		layers.forEach( ( layer ) => this.processLayer( layer ) );
+
+		// Event-driven triggers: `on_pause` shows a layer when the viewer
+		// pauses, `end_of_video` overlays one when playback ends. The host
+		// holds both back while layers are suppressed.
+		this.player.on( 'pause', () => {
+			// Automatic pauses (player scrolled out of view, GoDAMAPI.pauseAll)
+			// are not the viewer pausing, so they must not reveal a layer.
+			if ( ! isAutoPause( this.player ) ) {
+				this.host.dispatch( 'onPause' );
+			}
+		} );
+		this.player.on( 'ended', () => this.host.dispatch( 'onEnded' ) );
+	}
+
+	/**
+	 * The hover preview of a `preview="true"` video started or ended.
+	 *
+	 * Layers stay unmounted while the muted preview plays. Once the preview
+	 * ends (the viewer clicked the video, or the preview timed out) they are
+	 * mounted for real playback. While a later preview replays from the start,
+	 * the suppression check holds them back.
+	 *
+	 * @param {boolean} isPreviewing Whether the preview is playing now.
+	 */
+	handlePreviewStateChange( isPreviewing ) {
+		if ( ! isPreviewing ) {
+			this.mountSavedLayers();
+		}
 	}
 
 	/**
