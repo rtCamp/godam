@@ -16,6 +16,7 @@
 namespace RTGODAM\Tests;
 
 use PHPUnit\Framework\TestCase;
+use RTGODAM\Inc\Media_Library_Ajax;
 
 /**
  * @runTestsInSeparateProcesses
@@ -97,6 +98,41 @@ class GodamImageCurrentUrlTest extends TestCase {
 		);
 
 		$this->assertSame( self::SAVED_URL, $src );
+	}
+
+	/**
+	 * Runs the real GoDAM URL filters behind the lookup, so this fails if the block asks
+	 * for a size GoDAM resolves differently, or if the filters stop returning the CDN URL
+	 * for an image offloaded from the Media Library.
+	 */
+	public function test_the_real_godam_filters_give_the_cdn_url_for_a_media_library_image(): void {
+		$godam_ajax = ( new \ReflectionClass( Media_Library_Ajax::class ) )->newInstanceWithoutConstructor();
+		add_filter( 'wp_get_attachment_url', array( $godam_ajax, 'filter_attachment_url_for_virtual_media' ), 10, 2 );
+		add_filter( 'image_downsize', array( $godam_ajax, 'filter_image_downsize_for_virtual_media' ), 10, 3 );
+
+		$GLOBALS['rtgodam_stub']['attachment_image_url_via_core'] = true;
+		$GLOBALS['rtgodam_stub']['attachment_url']                = self::SAVED_URL;
+		$GLOBALS['rtgodam_stub']['mime']                          = 'image/png';
+		$GLOBALS['rtgodam_stub']['post_meta_by_id'][42]           = array(
+			'rtgodam_transcoded_url' => 'https://abc.gdcdn.us/xyz/photo.webp?v=v3',
+			'rtgodam_image_sizes'    => array(
+				'medium' => array(
+					'url'    => 'https://abc.gdcdn.us/xyz/photo-300x200.webp?v=v3',
+					'width'  => 300,
+					'height' => 200,
+				),
+			),
+		);
+
+		$src = $this->rendered_src(
+			array(
+				'id'  => 42,
+				'url' => self::SAVED_URL,
+			)
+		);
+
+		$this->assertSame( 'full', $GLOBALS['rtgodam_stub']['attachment_image_size'] );
+		$this->assertSame( 'https://abc.gdcdn.us/xyz/photo.webp?v=v3', $src );
 	}
 
 	public function test_uses_the_attachment_url_when_the_block_saved_none(): void {

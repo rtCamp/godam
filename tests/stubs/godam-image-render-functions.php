@@ -87,10 +87,28 @@ if ( ! function_exists( 'wp_enqueue_script' ) ) {
 if ( ! function_exists( 'wp_get_attachment_image_url' ) ) {
 
 	/**
+	 * Records the requested size in `$GLOBALS['rtgodam_stub']['attachment_image_size']`.
+	 *
+	 * With `$GLOBALS['rtgodam_stub']['attachment_image_url_via_core']` set, it follows
+	 * core's path instead: the `image_downsize` filter first, then the `wp_get_attachment_url`
+	 * filter on the local URL, so the real GoDAM filters decide the URL.
+	 *
+	 * @param int          $attachment_id Attachment ID.
+	 * @param string|int[] $size          Requested size.
 	 * @return string|false `$GLOBALS['rtgodam_stub']['attachment_image_url']`, or '' when
 	 *                      not set (the block then uses the URL saved on it).
 	 */
-	function wp_get_attachment_image_url() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+	function wp_get_attachment_image_url( $attachment_id = 0, $size = 'thumbnail' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_stub']['attachment_image_size'] = $size;
+
+		if ( ! empty( $GLOBALS['rtgodam_stub']['attachment_image_url_via_core'] ) ) {
+			$downsize = apply_filters( 'image_downsize', false, $attachment_id, $size ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core hook.
+			if ( is_array( $downsize ) ) {
+				return $downsize[0];
+			}
+			return apply_filters( 'wp_get_attachment_url', wp_get_attachment_url( $attachment_id ), $attachment_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core hook.
+		}
+
 		return $GLOBALS['rtgodam_stub']['attachment_image_url'] ?? '';
 	}
 }
