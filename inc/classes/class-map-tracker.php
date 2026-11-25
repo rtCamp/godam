@@ -19,12 +19,11 @@ use RTGODAM\Inc\Traits\Singleton;
  * got. This class is the WordPress half of that path.
  *
  * Flow:
- * 1. `godam-map-tracking.min.js` watches each player, works out the highest milestone
- *    reached (0 = started, then 25/50/75, and 100 from 95% watched) and posts it,
- *    with the visitor's `_mkto_trk` and/or `hubspotutk` cookie, to
- *    `godam/v1/map-events` (REST_API\Map_Events). It posts only when the viewer
- *    pauses, leaves the tab or page, or reaches 95%, and only when the milestone
- *    went up, so a view costs one or two events rather than one per milestone.
+ * 1. `godam-map-tracking.min.js` watches each player and posts one milestone per
+ *    view: how much was played, rounded up to 25, 50, 75 or 100. It posts the first
+ *    time the viewer pauses, the video ends or the viewer leaves the page, with the
+ *    visitor's `_mkto_trk` and/or `hubspotutk` cookie, to `godam/v1/map-events`
+ *    (REST_API\Map_Events). Central shows it as "Watched N% of <video title>".
  * 2. That route validates the shape and schedules self::ASYNC_HOOK.
  * 3. async_map_event() forwards it to GoDAM Central server-to-server with the licence
  *    key in `X-Api-Key`, the same way Media_Usage_Tracker forwards `log_media_view`.

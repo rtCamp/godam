@@ -61,6 +61,7 @@ class MapEventsTrackTest extends TestCase {
 		eval( 'function wp_unslash( $value ) { return $value; }' );
 		eval( 'function wp_cache_get( $key, $group = "" ) { return $GLOBALS["rtgodam_cache"][ $group ][ $key ] ?? false; }' );
 		eval( 'function wp_cache_set( $key, $value, $group = "", $expire = 0 ) { $GLOBALS["rtgodam_cache"][ $group ][ $key ] = $value; return true; }' );
+		eval( 'function wp_cache_add( $key, $value, $group = "", $expire = 0 ) { if ( isset( $GLOBALS["rtgodam_cache"][ $group ][ $key ] ) ) { return false; } $GLOBALS["rtgodam_cache"][ $group ][ $key ] = $value; return true; }' );
 		eval( 'function as_enqueue_async_action( $hook, $args = array() ) { $GLOBALS["rtgodam_jobs"][] = array( "hook" => $hook, "args" => $args ); return count( $GLOBALS["rtgodam_jobs"] ); }' );
 		// phpcs:enable Squiz.PHP.Eval.Discouraged
 
@@ -300,29 +301,24 @@ class MapEventsTrackTest extends TestCase {
 	}
 
 	/**
-	 * A view only moves forward: a repeat, or a lower milestone after a higher one
-	 * (a reload that lost track), is dropped. A higher milestone of the same view,
-	 * the start of a view, and another view or video are not.
+	 * One event per view: once a view has an event, anything else for it is dropped,
+	 * whatever the milestone (a retry, a double-fire, or a reload that lost track).
+	 * Another view of the same video, and the same view ID on another video, are
+	 * separate views.
 	 *
 	 * @return void
 	 */
-	public function test_queues_only_a_new_high_for_each_view() {
-		$this->send( array( 'milestone' => 0 ) );
-		$this->send( array( 'milestone' => 0 ) );
-		$this->send();
-		$this->send();
-		$this->send( array( 'milestone' => 75 ) );
+	public function test_queues_one_event_per_view() {
 		$this->send( array( 'milestone' => 50 ) );
+		$this->send( array( 'milestone' => 50 ) );
+		$this->send( array( 'milestone' => 25 ) );
 		$this->send( array( 'milestone' => 100 ) );
 		$this->send( array( 'session_id' => 'session-0002' ) );
 		$this->send( array( 'media_id' => 'job-def456' ) );
 
 		$this->assertSame(
 			array(
-				array( 'job-abc123', 'session-0001', 0 ),
-				array( 'job-abc123', 'session-0001', 25 ),
-				array( 'job-abc123', 'session-0001', 75 ),
-				array( 'job-abc123', 'session-0001', 100 ),
+				array( 'job-abc123', 'session-0001', 50 ),
 				array( 'job-abc123', 'session-0002', 25 ),
 				array( 'job-def456', 'session-0001', 25 ),
 			),

@@ -53,9 +53,8 @@ class Map_Events extends Base {
 	/**
 	 * Events accepted from one IP per window.
 	 *
-	 * A viewer sends one or two per video, five at the very most (each post must be
-	 * a higher milestone than the last), so this allows a page with several videos,
-	 * or a handful of people behind one NAT, without being generous enough to matter.
+	 * A viewer sends one per video, so this allows a page with several videos, or a
+	 * handful of people behind one NAT, without being generous enough to matter.
 	 */
 	const RATE_LIMIT = 60;
 
@@ -157,11 +156,11 @@ class Map_Events extends Base {
 			return $ok;
 		}
 
-		// A view only ever moves forward. The player posts a milestone only when it is
-		// higher than the last one, so anything not higher is a retry, a double-fire,
-		// a replay or a reload that lost track; Central de-duplicates too, but there
-		// is no reason to spend a job (or a Marketo request) on it.
-		if ( ! $this->is_new_high( $media_id, $session_id, $milestone ) ) {
+		// One event per view. The player reports a view once, so a second event for
+		// the same view is a retry, a double-fire, a replay or a reload that lost
+		// track; Central de-duplicates too, but there is no reason to spend a job (or
+		// a Marketo request) on it.
+		if ( ! $this->is_first_for_view( $media_id, $session_id ) ) {
 			return $ok;
 		}
 
@@ -252,28 +251,21 @@ class Map_Events extends Base {
 	}
 
 	/**
-	 * Whether this milestone is higher than any already accepted for this view, and
-	 * if so, record it as the view's new highest.
+	 * Whether this is the first event accepted for this view, recording it if so.
+	 *
+	 * The key is stored with wp_cache_add(), which only stores a key that is not
+	 * there yet, in one step, so two requests for the same view arriving together
+	 * cannot both get through.
 	 *
 	 * Like the rate limit, this needs a persistent object cache to do anything.
 	 *
 	 * @param string $media_id   Media ID.
 	 * @param string $session_id Session ID.
-	 * @param int    $milestone  Milestone.
 	 * @return bool
 	 */
-	private function is_new_high( $media_id, $session_id, $milestone ) {
-		$key     = 'view_' . md5( $media_id . '|' . $session_id );
-		$highest = wp_cache_get( $key, self::CACHE_GROUP );
-
-		if ( false !== $highest && (int) $highest >= $milestone ) {
-			return false;
-		}
-
+	private function is_first_for_view( $media_id, $session_id ) {
 		// A view rarely outlives a few hours; Central's own unique key is what makes
 		// de-duplication actually reliable.
-		wp_cache_set( $key, $milestone, self::CACHE_GROUP, 4 * HOUR_IN_SECONDS );
-
-		return true;
+		return wp_cache_add( 'view_' . md5( $media_id . '|' . $session_id ), 1, self::CACHE_GROUP, 4 * HOUR_IN_SECONDS );
 	}
 }
