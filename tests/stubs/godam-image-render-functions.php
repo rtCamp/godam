@@ -116,9 +116,9 @@ if ( ! function_exists( 'wp_get_attachment_image_url' ) ) {
 if ( ! function_exists( 'wp_get_attachment_metadata' ) ) {
 
 	/**
-	 * @return array
+	 * @return array `$GLOBALS['rtgodam_stub']['attachment_metadata']`, or an empty array when not set.
 	 */
 	function wp_get_attachment_metadata() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return array();
+		return $GLOBALS['rtgodam_stub']['attachment_metadata'] ?? array();
 	}
 }
