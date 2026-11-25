@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import EmojiPicker from 'emoji-picker-react';
-
-/**
  * Internal dependencies
  */
 import { ACTIONS } from './utils/constants';
@@ -14,10 +9,16 @@ import { ACTIONS } from './utils/constants';
 import { createReduxStore, register, select, dispatch, subscribe } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url'; // eslint-disable-line import/no-extraneous-dependencies -- WordPress's own wp-url script, loaded as an external.
-import { createRoot, useState, useMemo, useEffect, useRef } from '@wordpress/element';
+import { createRoot, lazy, Suspense, useState, useMemo, useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 const { currentLoggedInUserData, loginUrl, registrationUrl, defaultAvatar } = window.godamData || {};
+
+/**
+ * The emoji picker is large (~260 KB) and only needed once a visitor opens it,
+ * so it is its own chunk, downloaded on first use.
+ */
+const EmojiPicker = lazy( () => import( /* webpackChunkName: "emoji-picker" */ 'emoji-picker-react' ) );
 
 /*
  * No nonce of our own: core's wp-api-fetch adds its `wp_rest` nonce to every request,
@@ -770,11 +771,13 @@ function CommentForm( props ) {
 			{
 				showEmojiPicker && (
 					<div className="rtgodam-video-engagement--comment-form-emoji-picker">
-						<EmojiPicker
-							onEmojiClick={ ( emojiObject ) => {
-								handleEmoji( emojiObject );
-							} }
-						/>
+						<Suspense fallback={ null }>
+							<EmojiPicker
+								onEmojiClick={ ( emojiObject ) => {
+									handleEmoji( emojiObject );
+								} }
+							/>
+						</Suspense>
 					</div>
 				)
 			}

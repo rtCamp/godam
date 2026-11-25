@@ -152,6 +152,7 @@ class GoDAM_Video_Gallery {
 			wp_enqueue_script( 'godam-player-frontend-script' );
 			wp_enqueue_script( 'godam-player-analytics-script' );
 			wp_enqueue_style( 'godam-player-style' );
+			GoDAM_Player::require_blocking_player_styles();
 		}
 
 		$is_shortcode = true;

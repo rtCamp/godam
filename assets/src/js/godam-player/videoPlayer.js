@@ -14,15 +14,24 @@ import ControlsManager from './managers/controlsManager.js';
 import PreviewManager from './managers/previewManager.js';
 import LayersManager from './managers/layersManager.js';
 import EventsManager from './managers/eventsManager.js';
-import ChaptersManager from './managers/chaptersManager.js';
 import AdsManager from './managers/adsManager.js';
 import HoverManager from './managers/hoverManager.js';
-import ShareManager from './managers/shareManager.js';
 import MenuButtonHoverManager from './managers/menuButtonHover.js';
 import TranscriptManager from './managers/transcriptManager.js';
-import TranscriptPanelManager from './managers/transcriptPanelManager.js';
 import { getVisibilityManager, resolveOutOfViewMode, resolvePauseOnTabHidden } from './managers/visibilityManager.js';
 import { loadFlvPlugin, requiresFlvPlugin, loadAdsPlugins } from './utils/pluginLoader.js';
+import { runWhenIdleOrPlay } from './utils/scheduling.js';
+
+/**
+ * Features a player only needs once it is on screen and about to play. Each is
+ * its own chunk, downloaded the first time a video uses it.
+ */
+const loadChaptersManager = () =>
+	import( /* webpackChunkName: "player-chapters" */ './managers/chaptersManager.js' );
+const loadShareManager = () =>
+	import( /* webpackChunkName: "player-share" */ './managers/shareManager.js' );
+const loadTranscriptPanelManager = () =>
+	import( /* webpackChunkName: "player-transcript-panel" */ './managers/transcriptPanelManager.js' );
 
 /**
  * Refactored Video Player Class
@@ -34,8 +43,6 @@ export default class GodamVideoPlayer {
 		this.isDisplayingLayers = isDisplayingLayers;
 		this.currentPlayerVideoInstanceId = video.dataset.instanceId;
 		this.player = null;
-		this.metadataPreloadObserver = null;
-		this.deferMetadataPreloadUntilInView = false;
 
 		// Initialize managers
 		this.configManager = new ConfigurationManager( video );
@@ -164,8 +171,6 @@ export default class GodamVideoPlayer {
 			this.player = videojs( this.video, this.configManager.videoSetupControls );
 		}
 
-		this.setupDeferredMetadataPreload();
-
 		// Initialize ads manager (async - loads plugins dynamically)
 		this.adsManager = new AdsManager( this.player, this.configManager );
 		this.adsManager?.setupAdsIntegration().catch( () => {
@@ -179,67 +184,17 @@ export default class GodamVideoPlayer {
 	}
 
 	/**
-	 * Defer metadata loading until the player is at least 10% visible
-	 * when preload is explicitly disabled.
+	 * Whether the player loads no media until the visitor presses play.
+	 *
+	 * Balanced videos use `preload: 'none'`: the poster image is already on
+	 * screen, so nothing is downloaded, and no manifest or segment is parsed on
+	 * the main thread, before playback is requested. Priority videos use
+	 * `preload: 'metadata'`.
+	 *
+	 * @return {boolean} True when media loading waits for play.
 	 */
-	setupDeferredMetadataPreload() {
-		const preload = this.configManager.videoSetupControls?.preload;
-
-		if ( preload !== 'none' ) {
-			this.deferMetadataPreloadUntilInView = false;
-			return;
-		}
-
-		this.deferMetadataPreloadUntilInView = true;
-
-		if ( ! ( 'IntersectionObserver' in window ) ) {
-			this.preloadVideoMetadata();
-			return;
-		}
-
-		this.metadataPreloadObserver = new IntersectionObserver(
-			( entries ) => {
-				entries.forEach( ( entry ) => {
-					if ( entry.intersectionRatio >= 0.1 ) {
-						this.preloadVideoMetadata();
-					}
-				} );
-			},
-			{
-				root: null,
-				rootMargin: '0px',
-				threshold: 0.1,
-			},
-		);
-
-		this.metadataPreloadObserver.observe( this.video );
-		this.player.one( 'dispose', () => this.cleanupMetadataPreloadObserver() );
-	}
-
-	/**
-	 * Upgrade preload mode to metadata and start loading video metadata.
-	 */
-	preloadVideoMetadata() {
-		if ( ! this.deferMetadataPreloadUntilInView ) {
-			return;
-		}
-
-		this.deferMetadataPreloadUntilInView = false;
-		this.cleanupMetadataPreloadObserver();
-
-		this.player.preload( 'metadata' );
-		this.video.setAttribute( 'preload', 'metadata' );
-		this.player.load();
-	}
-
-	/**
-	 * Disconnect the metadata preload observer when it is no longer needed.
-	 */
-	cleanupMetadataPreloadObserver() {
-		if ( this.metadataPreloadObserver ) {
-			this.metadataPreloadObserver.disconnect();
-			this.metadataPreloadObserver = null;
-		}
+	isPreloadDeferred() {
+		return this.configManager.videoSetupControls?.preload === 'none';
 	}
 
 	/**
@@ -297,15 +252,17 @@ export default class GodamVideoPlayer {
 			this.initializeManagers();
 			this.setupCaptionsButton();
 			this.player.jobId = this.video.dataset.job_id;
-			this.initializeChapters();
 			this.setupQualitySelector();
-			this.initializeTranscript();
 			this.setupDefaultSubtitle();
 
 			// Now that managers are initialized, we can safely access them
 			this.setupEventListeners();
-			new MenuButtonHoverManager( this.player );
 			this.setupVisibilityHandling();
+
+			// Work the visitor doesn't need before playback runs in a later task.
+			runWhenIdleOrPlay( this.player, () => this.initializeDeferredFeatures() );
+
+			this.video.dataset.godamReady = '1';
 
 			// Emit custom event for external developers
 			const playerReadyEvent = new CustomEvent( 'godamPlayerReady', {
@@ -383,19 +340,70 @@ export default class GodamVideoPlayer {
 		// Initialize events manager
 		this.eventsManager = new EventsManager( this.player, this.video, this.configManager );
 
-		// Initialize chapters manager
-		this.chaptersManager = new ChaptersManager( this.player, this.video );
-
-		// Initialize hover and share managers (existing)
+		// Initialize hover manager
 		this.hoverManager = new HoverManager( this.player, this.video );
-		this.shareManager = new ShareManager( this.player, this.video, this.configManager.videoSetupOptions );
 
 		// Set up cross-manager communication
 		this.setupManagerCommunication();
 
 		// Attach managers to player for external access
 		this.player.hoverManager = this.hoverManager;
-		this.player.shareManager = this.shareManager;
+	}
+
+	/**
+	 * Set up the features a player doesn't need before it plays: chapters, the
+	 * share button, the AI transcript, the transcript panel and the menu hover
+	 * behaviour. Runs once the browser is idle or the visitor starts playback,
+	 * whichever comes first, so starting a player stays a short task.
+	 */
+	initializeDeferredFeatures() {
+		const options = this.configManager.videoSetupOptions || {};
+		const report = ( feature ) => ( error ) => {
+			// eslint-disable-next-line no-console
+			console.error( `GoDAM: failed to set up ${ feature }:`, error );
+		};
+
+		new MenuButtonHoverManager( this.player );
+		this.initializeTranscript();
+
+		if ( Array.isArray( options.chapters ) && options.chapters.length > 0 ) {
+			loadChaptersManager()
+				.then( ( { default: ChaptersManager } ) => {
+					if ( this.player.isDisposed() ) {
+						return;
+					}
+					this.chaptersManager = new ChaptersManager( this.player, this.video );
+					this.chaptersManager.initialize();
+				} )
+				.catch( report( 'chapters' ) );
+		}
+
+		if ( options.showShareBtn ) {
+			loadShareManager()
+				.then( ( { default: ShareManager } ) => {
+					if ( this.player.isDisposed() ) {
+						return;
+					}
+					this.shareManager = new ShareManager( this.player, this.video, options );
+					this.player.shareManager = this.shareManager;
+				} )
+				.catch( report( 'the share button' ) );
+		}
+
+		if ( options.showTranscription !== false ) {
+			loadTranscriptPanelManager()
+				.then( ( { default: TranscriptPanelManager } ) => {
+					if ( this.player.isDisposed() ) {
+						return;
+					}
+					// Reads its own config (`showTranscription`, `showShareBtn`) and
+					// resolves the transcript independently, so it works regardless of
+					// subtitle state.
+					this.transcriptPanelManager = new TranscriptPanelManager( this.player, this.video, options );
+					this.player.transcriptPanelManager = this.transcriptPanelManager;
+				} )
+				.catch( report( 'the transcript panel' ) );
+		}
 	}
 
 	/**
@@ -445,13 +453,6 @@ export default class GodamVideoPlayer {
 	}
 
 	/**
-	 * Initialize chapters
-	 */
-	initializeChapters() {
-		this.chaptersManager.initialize();
-	}
-
-	/**
 	 * Initialize AI-generated transcript loading.
 	 * Fetches transcript from GoDAM API and adds it as a text track.
 	 */
@@ -470,16 +471,6 @@ export default class GodamVideoPlayer {
 
 		// Attach to player for external access
 		this.player.transcriptManager = this.transcriptManager;
-
-		// Initialize the on-video transcript panel (toggle button + side panel).
-		// Reads its own config (`showTranscription`, `showShareBtn`) and resolves
-		// the transcript independently, so it works regardless of subtitle state.
-		this.transcriptPanelManager = new TranscriptPanelManager(
-			this.player,
-			this.video,
-			this.configManager.videoSetupOptions,
-		);
-		this.player.transcriptPanelManager = this.transcriptPanelManager;
 	}
 
 	/**
@@ -578,7 +569,7 @@ export default class GodamVideoPlayer {
 	 * Setup quality selector button in control bar.
 	 */
 	setupQualitySelector() {
-		if ( this.deferMetadataPreloadUntilInView ) {
+		if ( this.isPreloadDeferred() ) {
 			this.player.one( 'loadedmetadata', () => this.renderQualitySelectorButton() );
 			if ( ! this.hasQualitySelectorButton() ) {
 				this.eventsManager.onQualityLevelsAvailable( () => this.renderQualitySelectorButton() );
@@ -586,8 +577,11 @@ export default class GodamVideoPlayer {
 			return;
 		}
 
-		// Force load. Required.
-		if ( this.player.readyState() === 0 ) {
+		// Start loading when nothing has started yet, so the quality levels appear.
+		// Video.js has usually begun loading already (preload is not 'none'), and a
+		// second load() would re-source the player and fetch the media again.
+		const NETWORK_EMPTY = 0;
+		if ( this.player.readyState() === 0 && this.player.networkState() === NETWORK_EMPTY ) {
 			this.player.load();
 		}
 

@@ -22,7 +22,9 @@ import { getLightbox } from './modalManager.js';
 import { KEYBOARD_CONTROLS } from '../utils/constants.js';
 import { parseDataAttribute } from '../utils/dataHelpers.js';
 import { isLightboxVideo } from '../utils/lightboxTargets.js';
-import { engagement } from '../engagement';
+import { initBlurUpPlaceholders } from '../utils/blurUp.js';
+import { whenPlayerReady } from '../utils/playerReady.js';
+import { yieldToMain } from '../utils/scheduling.js';
 import { getVisibilityManager } from './visibilityManager.js';
 
 /**
@@ -32,20 +34,37 @@ const BACKWARD_SEEK_INDICATOR_SVG = '<svg class="godam-seek-icon" xmlns="http://
 const FORWARD_SEEK_INDICATOR_SVG = '<svg class="godam-seek-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="14" height="14" fill="currentColor"><path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96C0 83.6 7.2 72.3 18.4 67s24.5-3.5 34.1 4.4L224 214.3V256v41.7L52.5 440.6zM256 352V256 128 96c0-12.4 7.2-23.7 18.4-29s24.5-3.5 34.1 4.4l192 160c7.3 6.1 11.5 15.1 11.5 24.6s-4.2 18.5-11.5 24.6l-192 160c-9.5 7.9-22.8 9.7-34.1 4.4S256 428.4 256 416V352z"/></svg>';
 
 /**
+ * Share of a video that must be on screen before autoplay-on-view starts it.
+ *
+ * @type {number}
+ */
+const AUTOPLAY_ON_VIEW_THRESHOLD = 0.35;
+
+/**
+ * One observer for every autoplay-on-view video on the page, created on first
+ * use. Players start in batches as they come near the viewport, so a
+ * per-batch observer would multiply with every batch.
+ *
+ * @type {IntersectionObserver|null}
+ */
+let autoplayObserver = null;
+
+/**
  * Main GoDAM Player Manager Class
  */
 export default class PlayerManager {
-	constructor( videoRef = null ) {
-		this.videos = this.getVideos( videoRef );
+	/**
+	 * @param {HTMLElement|null} videoRef           - Only start the players inside this element.
+	 * @param {Object}           [options]          - Options.
+	 * @param {boolean}          [options.autoInit] - Start the players found under `videoRef` now.
+	 */
+	constructor( videoRef = null, { autoInit = true } = {} ) {
 		this.isDisplayingLayers = {};
-		this.keyboardHandlerInitialized = false;
+		this.videos = autoInit ? this.getVideos( videoRef ) : [];
 
-		// Handles "Show in lightbox" players: the inline player is opened inside a
-		// lightbox on click. Players still initialise normally inline. Shared
-		// page-wide, so extra PlayerManagers never create extra overlays.
-		this.modalManager = getLightbox();
-
-		this.init();
+		if ( autoInit ) {
+			this.init();
+		}
 	}
 
 	/**
@@ -73,103 +92,84 @@ export default class PlayerManager {
 
 	/**
 	 * Initialize the player manager
+	 *
+	 * @return {Promise<void>} Resolves once every player in the batch has started.
 	 */
 	init() {
-		this.initializeDisplayLayers();
+		this.initializeGlobalKeyboardHandler();
+		initBlurUpPlaceholders();
+		return this.initializeVideos( this.videos );
+	}
+
+	/**
+	 * Start a batch of players.
+	 *
+	 * Players start one per task: each `videojs()` call is expensive, and running
+	 * them back to back would form one long task that blocks input and paint.
+	 * Already-started videos are skipped, so a batch can safely overlap another.
+	 *
+	 * Dispatches `godamAllPlayersReady` once the batch has settled.
+	 *
+	 * @param {Iterable<HTMLElement>} videos - `.easydam-player.video-js` elements.
+	 * @return {Promise<void>} Resolves once every player in the batch has started.
+	 */
+	async initializeVideos( videos ) {
+		const pending = Array.from( videos || [] ).filter(
+			( video ) => video?.dataset?.godamInitialized !== '1',
+		);
 
 		const initPromises = [];
-		this.videos.forEach( ( video ) => {
-			initPromises.push( this.initializeVideo( video ) );
-			// Show-in-lightbox players also initialise inline; a click just opens
-			// them in a lightbox instead of playing in place.
-			if ( this.isShowInLightbox( video ) ) {
-				this.modalManager.register( video );
+		for ( let index = 0; index < pending.length; index++ ) {
+			if ( index > 0 ) {
+				await yieldToMain();
 			}
-		} );
 
-		// Dispatch event when all players are initialized
-		Promise.allSettled( initPromises ).then( () => {
-			const allPlayersReadyEvent = new CustomEvent( 'godamAllPlayersReady', {
+			const video = pending[ index ];
+			// Another batch may have started it while this one was yielding.
+			if ( video.dataset.godamInitialized === '1' ) {
+				continue;
+			}
+
+			const instanceId = video.dataset.instanceId;
+			if ( instanceId && ! ( instanceId in this.isDisplayingLayers ) ) {
+				this.isDisplayingLayers[ instanceId ] = false;
+			}
+
+			initPromises.push( this.initializeVideo( video ) );
+
+			// Show-in-lightbox players also initialise inline; a click just opens
+			// them in a lightbox instead of playing in place. The lightbox is
+			// page-wide, so it is only created once a page actually needs it.
+			if ( this.isShowInLightbox( video ) ) {
+				getLightbox().register( video );
+			}
+		}
+
+		this.observeAutoplayOnView( pending );
+
+		await Promise.allSettled( initPromises );
+
+		document.dispatchEvent(
+			new CustomEvent( 'godamAllPlayersReady', {
 				detail: {
 					players: window.GoDAMAPI ? window.GoDAMAPI.getAllPlayers() : [],
 				},
-			} );
-			document.dispatchEvent( allPlayersReadyEvent );
-		} );
-
-		this.initializeGlobalKeyboardHandler();
-		this.initializeAutoplayOnView();
-		this.initEngagement = engagement();
-		this.initBlurUpPlaceholders();
-	}
-
-	/**
-	 * Initialize blur-up LQIP placeholders.
-	 *
-	 * For each .godam-blurred-img div, listen for the inner full-quality
-	 * poster image to finish loading, then add the 'loaded' class so CSS
-	 * fades it in over the blurry background placeholder.
-	 */
-	initBlurUpPlaceholders() {
-		document.querySelectorAll( '.godam-blurred-img' ).forEach( ( div ) => {
-			// Skip already-initialized placeholders to prevent duplicate listeners
-			// when multiple PlayerManager instances run (e.g. Elementor, FluentForms).
-			if ( div.dataset.godamBlurInit === '1' ) {
-				return;
-			}
-			div.dataset.godamBlurInit = '1';
-
-			const img = div.querySelector( '.godam-player-poster-image' );
-			if ( ! img ) {
-				return;
-			}
-			const markLoaded = () => div.classList.add( 'loaded' );
-			const markError = () => {
-				// On error, remove the blurry background so nothing is broken.
-				div.style.backgroundImage = '';
-				div.classList.add( 'loaded' );
-			};
-			if ( img.complete && img.naturalWidth > 0 ) {
-				markLoaded();
-			} else {
-				img.addEventListener( 'load', markLoaded, { once: true } );
-				img.addEventListener( 'error', markError, { once: true } );
-			}
-		} );
-	}
-
-	/**
-	 * Initialize display layers tracking
-	 */
-	initializeDisplayLayers() {
-		this.videos.forEach( ( video ) => {
-			this.isDisplayingLayers[ video.dataset.instanceId ] = false;
-		} );
+			} ),
+		);
 	}
 
 	/**
 	 * Initialize players that were added to the DOM after construction (e.g.
 	 * markup rendered by a page builder such as WPBakery's inline editor).
 	 *
-	 * Re-scans the document and initializes ONLY elements that are not already
-	 * initialized — initializeVideo() is guarded by `data-godam-initialized`.
-	 * This deliberately does NOT re-run the one-time global setup (keyboard
-	 * handler, autoplay-on-view observer, engagement, blur-up), so it can be
-	 * called repeatedly without ever duplicating global listeners.
+	 * Only elements that are not already initialized are started:
+	 * `initializeVideo()` is guarded by `data-godam-initialized`.
 	 *
-	 * @return {void}
+	 * @return {Promise<void>} Resolves once the new players have started.
 	 */
 	initializePendingVideos() {
-		document.querySelectorAll( '.easydam-player.video-js' ).forEach( ( video ) => {
-			const instanceId = video.dataset.instanceId;
-			if ( instanceId && ! ( instanceId in this.isDisplayingLayers ) ) {
-				this.isDisplayingLayers[ instanceId ] = false;
-			}
-			this.initializeVideo( video );
-			if ( this.isShowInLightbox( video ) ) {
-				this.modalManager.register( video );
-			}
-		} );
+		initBlurUpPlaceholders();
+		return this.initializeVideos( document.querySelectorAll( '.easydam-player.video-js' ) );
 	}
 
 	/**
@@ -206,92 +206,58 @@ export default class PlayerManager {
 	}
 
 	/**
-	 * Initialize intersection observer for autoplay-on-view
+	 * Start autoplay-on-view videos once enough of them is on screen.
+	 *
+	 * Every batch shares one page-level observer. A video already on screen is
+	 * reported by the observer straight away, so no manual geometry check is
+	 * needed.
+	 *
+	 * @param {Array<HTMLElement>} videos - Videos from the batch just started.
 	 */
-	initializeAutoplayOnView() {
-		// Check if IntersectionObserver is supported
+	observeAutoplayOnView( videos ) {
+		const autoplayVideos = videos.filter( ( video ) => video.dataset.autoplayOnView === 'true' );
+		if ( autoplayVideos.length === 0 ) {
+			return;
+		}
+
 		if ( ! ( 'IntersectionObserver' in window ) ) {
+			autoplayVideos.forEach( ( video ) => this.handleAutoplayOnView( video ) );
 			return;
 		}
 
-		// Find all videos with autoplay-on-view attribute
-		const autoplayOnViewVideos = Array.from( this.videos ).filter(
-			( video ) => video.dataset.autoplayOnView === 'true',
-		);
-
-		if ( autoplayOnViewVideos.length === 0 ) {
-			return;
+		if ( ! autoplayObserver ) {
+			autoplayObserver = new IntersectionObserver(
+				( entries ) => {
+					entries.forEach( ( entry ) => {
+						if ( entry.isIntersecting && entry.intersectionRatio >= AUTOPLAY_ON_VIEW_THRESHOLD ) {
+							// Unobserve after playing to prevent re-triggering
+							autoplayObserver.unobserve( entry.target );
+							this.handleAutoplayOnView( entry.target );
+						}
+					} );
+				},
+				{ root: null, rootMargin: '0px', threshold: AUTOPLAY_ON_VIEW_THRESHOLD },
+			);
 		}
 
-		// Create intersection observer
-		const observerOptions = {
-			root: null, // Use viewport as root
-			rootMargin: '0px',
-			threshold: 0.35, // Trigger when 35% of video is visible
-		};
-
-		const observer = new IntersectionObserver( ( entries ) => {
-			entries.forEach( ( entry ) => {
-				if ( entry.isIntersecting ) {
-					this.handleAutoplayOnView( entry.target );
-					// Unobserve after playing to prevent re-triggering
-					observer.unobserve( entry.target );
-				}
-			} );
-		}, observerOptions );
-
-		// Observe each video
-		autoplayOnViewVideos.forEach( ( video ) => {
-			// Check if video is already intersecting (35% visible threshold)
-			const rect = video.getBoundingClientRect();
-			const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-			const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-
-			// Calculate intersection ratio manually (matching threshold 0.35)
-			const visibleTop = Math.max( 0, Math.min( rect.bottom, viewportHeight ) - Math.max( rect.top, 0 ) );
-			const visibleLeft = Math.max( 0, Math.min( rect.right, viewportWidth ) - Math.max( rect.left, 0 ) );
-			const visibleArea = visibleTop * visibleLeft;
-			const totalArea = rect.height * rect.width;
-			const intersectionRatio = totalArea > 0 ? visibleArea / totalArea : 0;
-
-			if ( intersectionRatio >= 0.35 && rect.height > 0 && rect.width > 0 ) {
-				// Video is already 35%+ visible, trigger autoplay immediately
-				// Use setTimeout to ensure player initialization has started
-				setTimeout( () => {
-					this.handleAutoplayOnView( video );
-				}, 100 );
-			} else {
-				// Observe for when video enters viewport
-				observer.observe( video );
+		autoplayVideos.forEach( ( video ) => {
+			if ( video.dataset.godamAutoplayObserved === '1' ) {
+				return;
 			}
+			video.dataset.godamAutoplayObserved = '1';
+			// The `<video>` stays in place as Video.js's tech element, and its
+			// container is already visible because the player has started.
+			autoplayObserver.observe( video );
 		} );
 	}
 
 	/**
 	 * Handle autoplay when video enters viewport
 	 *
-	 * @param {HTMLElement} videoElement - Video element that entered viewport
+	 * @param {HTMLElement} video - GoDAM `<video>` element that entered the viewport.
 	 */
-	handleAutoplayOnView( videoElement ) {
-		// Get the VideoJS player instance
-		const player = videojs.getPlayer( videoElement );
-
-		if ( ! player ) {
-			// Player not ready yet, wait for it
-			const checkPlayer = setInterval( () => {
-				const playerInstance = videojs.getPlayer( videoElement );
-				if ( playerInstance ) {
-					clearInterval( checkPlayer );
-					this.playVideoWhenReady( playerInstance );
-				}
-			}, 100 );
-
-			// Stop checking after 5 seconds
-			setTimeout( () => clearInterval( checkPlayer ), 5000 );
-			return;
-		}
-
-		this.playVideoWhenReady( player );
+	handleAutoplayOnView( video ) {
+		whenPlayerReady( video ).then( ( player ) => this.playVideoWhenReady( player ) );
 	}
 
 	/**
@@ -300,7 +266,7 @@ export default class PlayerManager {
 	 * @param {Object} player - VideoJS player instance
 	 */
 	playVideoWhenReady( player ) {
-		if ( ! player ) {
+		if ( ! player || player.isDisposed?.() ) {
 			return;
 		}
 
@@ -318,18 +284,15 @@ export default class PlayerManager {
 			}
 		};
 
-		// Wait for player to be ready
-		if ( player.readyState() >= 2 ) {
-			// Player has enough data to play
+		// With `preload="none"` nothing loads until playback is requested, so
+		// waiting for `loadeddata` would wait forever: ask to play straight away.
+		if ( player.readyState() >= 2 || player.preload() === 'none' ) {
 			attemptPlay();
-		} else {
-			// Wait for loadeddata event
-			const playOnReady = () => {
-				attemptPlay();
-				player.off( 'loadeddata', playOnReady );
-			};
-			player.on( 'loadeddata', playOnReady );
+			return;
 		}
+
+		// Wait for loadeddata event
+		player.one( 'loadeddata', attemptPlay );
 	}
 
 	/**

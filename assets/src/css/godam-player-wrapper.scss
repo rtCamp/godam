@@ -2,6 +2,8 @@
 .godam-video-placeholder {
 	position: relative;
 	aspect-ratio: var(--rtgodam-video-aspect-ratio, 16 / 9);
+	// The poster starts the player on click, before the player script has loaded.
+	cursor: pointer;
 
 	&.hidden {
 		display: none !important;

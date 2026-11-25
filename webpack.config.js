@@ -55,6 +55,15 @@ const sharedConfig = {
 	devtool: isProduction ? false : 'source-map',
 };
 
+/**
+ * Front-end bundles ship with source maps in production too, so browser tools
+ * and Lighthouse can map the minified code back to its source (#2403). Admin
+ * bundles keep the shared default.
+ */
+const frontendSourceMaps = {
+	devtool: 'source-map',
+};
+
 // Generate a webpack config which includes setup for CSS extraction.
 // Look for css/scss files and extract them into a build/css directory.
 const styles = {
@@ -122,10 +131,61 @@ const mediaLibrary = {
 	},
 };
 
+// The player entry is only a small loader. Video.js and the player managers are
+// in the `player-runtime` chunk, which the loader imports once a video comes near
+// the viewport, and optional features (chapters, share, transcript panel, ads,
+// FLV…) are further chunks. Like mediaLibrary above, this build gets its own
+// runtime global and prefixed, content-hashed chunk names, so its chunks never
+// collide with another build's in the shared output dir and a browser never
+// pairs a fresh loader with a stale chunk after an update.
+//
+// WordPress script dependencies found in ANY of these chunks are listed in the
+// loader's `.asset.php`, so they load with the page. Two are avoided here:
+// - SVGs imported from JS are inlined as data URLs. The default svgr loader
+//   also wraps each one in a React component, which made the page load React.
+// - Quill (CTA rich text, its own chunk) bundles its `lodash-es` instead of
+//   using WordPress's `lodash` script, which would otherwise load on every
+//   page with a video.
 const godamPlayerFrontend = {
 	...sharedConfig,
+	...frontendSourceMaps,
 	entry: {
 		'godam-player-frontend': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'frontend.js' ),
+	},
+	output: {
+		...sharedConfig.output,
+		uniqueName: 'godamPlayerFrontend',
+		chunkFilename: 'godam-player-[name].[contenthash].min.js',
+	},
+	module: {
+		...sharedConfig.module,
+		rules: sharedConfig.module.rules.map( ( rule ) =>
+			String( rule.test ) === String( /\.svg$/ ) && String( rule.issuer ).includes( 'sx?' )
+				? { test: /\.svg$/, issuer: /\.(j|t)sx?$/, type: 'asset/inline' }
+				: rule,
+		),
+	},
+	plugins: [
+		...sharedConfig.plugins.filter( ( plugin ) => plugin.constructor.name !== 'DependencyExtractionWebpackPlugin' ),
+		new DependencyExtractionWebpackPlugin( {
+			requestToExternal: ( request ) => ( 'lodash-es' === request ? false : undefined ),
+		} ),
+	],
+};
+
+// Likes, comments and the emoji picker. Only enqueued when a video's engagement
+// bar renders, so pages without one never load React or the WordPress data
+// packages this needs.
+const godamPlayerEngagement = {
+	...sharedConfig,
+	...frontendSourceMaps,
+	entry: {
+		'godam-player-engagement': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'engagement-entry.js' ),
+	},
+	output: {
+		...sharedConfig.output,
+		uniqueName: 'godamPlayerEngagement',
+		chunkFilename: 'godam-engagement-[name].[contenthash].min.js',
 	},
 };
 
@@ -152,6 +212,7 @@ const godamImageLayersFrontend = {
 
 const godamPlayerAnalytics = {
 	...sharedConfig,
+	...frontendSourceMaps,
 	entry: {
 		'godam-player-analytics': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'analytics.js' ),
 		// Standalone layer-analytics runtime for pages without the video player
@@ -162,6 +223,7 @@ const godamPlayerAnalytics = {
 
 const godamMapTracking = {
 	...sharedConfig,
+	...frontendSourceMaps,
 	entry: {
 		'godam-map-tracking': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-player', 'map-tracking.js' ),
 	},
@@ -374,6 +436,7 @@ const ninjaFormsSubmissionsList = {
 const LAYERS_SRC = path.resolve( process.cwd(), 'assets', 'src', 'layers' );
 const coreLayers = {
 	...sharedConfig,
+	...frontendSourceMaps,
 	entry: () => {
 		const entries = {};
 		fs.readdirSync( LAYERS_SRC ).forEach( ( type ) => {
@@ -416,6 +479,7 @@ const coreLayers = {
 // Layer API front-end runtime registry (`godam-layer-runtime`), for add-on view scripts.
 const godamLayerRuntime = {
 	...sharedConfig,
+	...frontendSourceMaps,
 	entry: {
 		'godam-layer-runtime': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-layers', 'runtime', 'index.js' ),
 	},
@@ -424,6 +488,7 @@ const godamLayerRuntime = {
 // Layer API registry (`window.godam.layers`, imported elsewhere as `@godam/layers`).
 const godamLayers = {
 	...sharedConfig,
+	...frontendSourceMaps,
 	entry: {
 		'godam-layers': path.resolve( process.cwd(), 'assets', 'src', 'js', 'godam-layers', 'index.js' ),
 	},
@@ -548,6 +613,7 @@ module.exports = [
 	adminJS,
 	mediaLibrary,
 	godamPlayerFrontend,
+	godamPlayerEngagement,
 	godamImageLayersFrontend,
 	godamPlayerAnalytics,
 	godamMapTracking,

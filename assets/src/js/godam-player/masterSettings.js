@@ -2,11 +2,9 @@
  * External dependencies
  */
 import videojs from 'video.js';
-
-// Only import qualityLevels if not already registered
-if ( ! videojs.getPlugin( 'qualityLevels' ) ) {
-	await import( /* webpackChunkName: "videojs-quality-levels" */ 'videojs-contrib-quality-levels' );
-}
+// The `qualityLevels` plugin ships inside video.js 8 (it registers it itself),
+// so it needs no separate import. A top-level `await import()` here used to
+// turn every module that imports this one into an async module.
 
 import DOMPurify from 'isomorphic-dompurify';
 

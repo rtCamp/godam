@@ -1,7 +1,6 @@
 /**
  * Internal dependencies
  */
-import { openLightboxForId } from './managers/modalManager.js';
 import { ACTIVATION_KEYS, TRIGGER_ATTRIBUTE, parseStartTime } from './utils/lightboxTargets.js';
 
 /**
@@ -12,9 +11,19 @@ import { ACTIVATION_KEYS, TRIGGER_ATTRIBUTE, parseStartTime } from './utils/ligh
  * `<a href="{embedUrl}" data-godam-lightbox="4595" data-godam-lightbox-t="42">`
  * to also get a no-JS fallback and a start time.
  *
- * `openLightboxForId()` decides what actually opens — the on-page player when
- * there is a lightbox one to move, the embed page in an iframe otherwise.
+ * The opener passed to `initLightboxTriggers()` decides what actually opens:
+ * `openLightboxForId()` shows the on-page player when there is a lightbox one to
+ * move, the embed page in an iframe otherwise. Taking it as an argument keeps
+ * this module free of the player runtime, so the small loader can bind triggers
+ * before the runtime has loaded.
  */
+
+/**
+ * Opens the lightbox for an ID; set by `initLightboxTriggers()`.
+ *
+ * @type {((id: string, options: Object) => *)|null}
+ */
+let openLightbox = null;
 
 const TRIGGER_SELECTOR = `[${ TRIGGER_ATTRIBUTE }]`;
 
@@ -39,7 +48,7 @@ function openFromTrigger( trigger ) {
 		return;
 	}
 
-	openLightboxForId( id, {
+	openLightbox?.( id, {
 		startTime: parseStartTime( trigger.dataset.godamLightboxT ),
 		title: trigger.getAttribute( 'data-godam-lightbox-title' ) || trigger.textContent?.trim(),
 	} );
@@ -92,8 +101,12 @@ export function prepareTriggers() {
  * Delegation on `document` in the capture phase means markup injected later
  * needs no re-binding, and matches how `ModalManager` already beats Video.js to
  * a click.
+ *
+ * @param {Function} opener - Opens the lightbox for an ID, e.g. `openLightboxForId( id, options )`.
  */
-export function initLightboxTriggers() {
+export function initLightboxTriggers( opener ) {
+	openLightbox = opener;
+
 	if ( document.documentElement.dataset.godamLightboxTriggers === '1' ) {
 		return;
 	}

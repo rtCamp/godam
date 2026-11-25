@@ -12,7 +12,7 @@ describe( 'lightbox triggers', () => {
 	beforeAll( () => {
 		// The listeners are delegated from `document` and bound once for the page,
 		// so bind them here rather than per test.
-		initLightboxTriggers();
+		initLightboxTriggers( openLightboxForId );
 	} );
 
 	beforeEach( () => {
