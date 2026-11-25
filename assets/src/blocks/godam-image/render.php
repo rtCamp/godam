@@ -41,8 +41,13 @@ do_action( 'rtgodam_before_attachment_lookup' );
 // is whatever the editor had when the image was picked: the local uploads file for
 // an image later served from the GoDAM CDN, or an older version of an image that
 // was replaced since. The saved URL stays as the fallback for a deleted attachment.
-// Alt and dimensions still come from the attachment only when not stored on the
-// block (e.g. a copied block that carries only the id).
+// The same goes for the size: when the URL printed is GoDAM's copy, the size of the
+// image GoDAM serves now, saved from the transcoder callback, comes first. When it is
+// still the local uploads file (GoDAM's image sizes have not arrived, so the URL is not
+// switched to the CDN), that size would describe a different picture, so it is skipped.
+// WordPress's own metadata keeps the size of the file uploaded to WordPress, so it is
+// read only when the block saved no size (e.g. a copied block that carries only the
+// id). Alt likewise.
 if ( $godam_attachment_id ) {
 	$godam_current_src = (string) wp_get_attachment_image_url( $godam_attachment_id, 'full' );
 	if ( '' !== $godam_current_src ) {
@@ -50,6 +55,13 @@ if ( $godam_attachment_id ) {
 	}
 	if ( '' === $godam_alt ) {
 		$godam_alt = (string) get_post_meta( $godam_attachment_id, '_wp_attachment_image_alt', true );
+	}
+	$godam_served_host = (string) wp_parse_url( (string) get_post_meta( $godam_attachment_id, 'rtgodam_transcoded_url', true ), PHP_URL_HOST );
+	$godam_shows_cdn   = '' !== $godam_served_host && wp_parse_url( $godam_src, PHP_URL_HOST ) === $godam_served_host;
+	$godam_served_size = $godam_shows_cdn ? get_post_meta( $godam_attachment_id, 'rtgodam_image_dimensions', true ) : '';
+	if ( is_array( $godam_served_size ) && ! empty( $godam_served_size['width'] ) && ! empty( $godam_served_size['height'] ) ) {
+		$godam_width  = intval( $godam_served_size['width'] );
+		$godam_height = intval( $godam_served_size['height'] );
 	}
 	if ( ! $godam_width || ! $godam_height ) {
 		$godam_img_meta = wp_get_attachment_metadata( $godam_attachment_id );

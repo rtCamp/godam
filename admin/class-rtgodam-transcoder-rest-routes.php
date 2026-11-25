@@ -587,6 +587,10 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 				// Setting the transcoded Image URL.
 				update_post_meta( $attachment_id, 'rtgodam_transcoded_url', esc_url_raw( $post_array['download_url'] ) ); // godam-coverage-ignore -- handle_wp_media_transcoding_callback(): covered transitively — caller (handle_callback) wraps the entire call in try/finally.
 
+				// The size of the image now at that URL. Saved before the subsize request,
+				// which can return early.
+				$this->save_served_image_dimensions( $attachment_id, $post_array );
+
 				// Request CDN image subsizes and store them in dedicated meta.
 				// This is a secondary async operation; a failure here must not cause a 500 response
 				// to GoDAM Central, which would mark the already-completed transcoding job as failed.
@@ -630,6 +634,94 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 		$this->rtgodam_transcoder_handler->update_usage( $this->rtgodam_transcoder_handler->api_key );
 
 		return $attachment_id;
+	}
+
+	/**
+	 * Save the width and height of the image GoDAM now serves for an attachment.
+	 *
+	 * WordPress's own attachment metadata describes the file uploaded to WordPress. After the
+	 * image is replaced in GoDAM, the served image can have a different size, and WordPress
+	 * keeps the old one. The GoDAM Image block reads this meta to print the right size.
+	 *
+	 * Deleted when the callback carries no size, so a size from an earlier version is never
+	 * printed for a newer image.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param int   $attachment_id Attachment ID.
+	 * @param array $params        Transcoder callback parameters.
+	 * @return void
+	 */
+	private function save_served_image_dimensions( $attachment_id, $params ) {
+		$dimensions = $this->get_served_image_dimensions( $params );
+
+		if ( empty( $dimensions ) ) {
+			delete_post_meta( $attachment_id, 'rtgodam_image_dimensions' ); // godam-coverage-ignore -- save_served_image_dimensions(): called only from handle_wp_media_transcoding_callback(), whose caller (handle_callback) wraps the entire call in try/finally.
+			return;
+		}
+
+		update_post_meta( $attachment_id, 'rtgodam_image_dimensions', $dimensions ); // godam-coverage-ignore -- save_served_image_dimensions(): called only from handle_wp_media_transcoding_callback(), whose caller (handle_callback) wraps the entire call in try/finally.
+	}
+
+	/**
+	 * The width and height of the image a transcoder callback is about.
+	 *
+	 * Read from top-level `width` and `height` when the callback has them. Otherwise from
+	 * `version_history`, where GoDAM Central saves the current version's size before it sends
+	 * the callback: `{"current_version": 3, "versions": {"3": {"width": 2560, "height": 1800}}}`.
+	 * It arrives as a JSON string, or as an array when the callback body is JSON.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $params Transcoder callback parameters.
+	 * @return array{width: int, height: int}|array Empty when no positive width and height are found.
+	 */
+	private function get_served_image_dimensions( $params ) {
+		$dimensions = $this->positive_dimensions( $params );
+		if ( ! empty( $dimensions ) ) {
+			return $dimensions;
+		}
+
+		$history = isset( $params['version_history'] ) ? $params['version_history'] : null;
+		if ( is_string( $history ) ) {
+			$history = json_decode( $history, true );
+		}
+		if ( ! is_array( $history ) || empty( $history['versions'] ) || ! is_array( $history['versions'] ) ) {
+			return array();
+		}
+
+		// Central treats anything that is not a positive integer as version 1.
+		$current = isset( $history['current_version'] ) ? $history['current_version'] : 1;
+		$current = ( is_int( $current ) || ( is_string( $current ) && preg_match( '/^\d+$/', $current ) ) ) ? (int) $current : 1;
+		if ( $current < 1 ) {
+			$current = 1;
+		}
+
+		$version = isset( $history['versions'][ (string) $current ] ) ? $history['versions'][ (string) $current ] : null;
+
+		return is_array( $version ) ? $this->positive_dimensions( $version ) : array();
+	}
+
+	/**
+	 * The `width` and `height` of an array, when both are positive integers.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array $source Array that may hold `width` and `height`.
+	 * @return array{width: int, height: int}|array Empty when either is missing or not positive.
+	 */
+	private function positive_dimensions( $source ) {
+		$width  = isset( $source['width'] ) && is_numeric( $source['width'] ) ? (int) $source['width'] : 0;
+		$height = isset( $source['height'] ) && is_numeric( $source['height'] ) ? (int) $source['height'] : 0;
+
+		if ( $width < 1 || $height < 1 ) {
+			return array();
+		}
+
+		return array(
+			'width'  => $width,
+			'height' => $height,
+		);
 	}
 
 	/**
