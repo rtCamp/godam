@@ -242,6 +242,7 @@ class GoDAM_Player {
 		 */
 		$engagement_asset_path = RTGODAM_PATH . 'assets/build/js/godam-player-engagement.min.asset.php';
 		$engagement_assets     = file_exists( $engagement_asset_path )
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- RTGODAM_PATH plus a fixed build filename, checked to exist.
 			? include $engagement_asset_path
 			: array(
 				'dependencies' => array(),
