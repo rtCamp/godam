@@ -194,4 +194,29 @@ class GodamImageServedSizeTest extends TestCase {
 		$this->assertSame( '800', $out['width'] );
 		$this->assertSame( '600', $out['height'] );
 	}
+
+	/**
+	 * A block copied from another site keeps its own image, so the size GoDAM serves for
+	 * this site's attachment with the same ID is not printed for it.
+	 */
+	public function test_keeps_the_saved_size_when_the_block_shows_another_image(): void {
+		$this->served_size(
+			array(
+				'width'  => 2560,
+				'height' => 1800,
+			)
+		);
+
+		$out = $this->render(
+			array(
+				'id'     => self::ATTACHMENT_ID,
+				'url'    => 'https://abc.gdcdn.us/h7/hero.webp',
+				'width'  => 800,
+				'height' => 600,
+			)
+		);
+
+		$this->assertSame( '800', $out['width'] );
+		$this->assertSame( '600', $out['height'] );
+	}
 }

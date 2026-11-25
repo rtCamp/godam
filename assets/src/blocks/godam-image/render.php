@@ -49,15 +49,20 @@ do_action( 'rtgodam_before_attachment_lookup' );
 // read only when the block saved no size (e.g. a copied block that carries only the
 // id). Alt likewise.
 if ( $godam_attachment_id ) {
+	// A saved URL that is a different image from the attachment means the block was
+	// copied or imported to another site, where the same ID is another image. The block
+	// then keeps the image it saved, and the size saved with it.
 	$godam_current_src = (string) wp_get_attachment_image_url( $godam_attachment_id, 'full' );
-	if ( '' !== $godam_current_src ) {
+	$godam_use_current = '' !== $godam_current_src
+		&& ( '' === $godam_src || rtgodam_is_attachment_image_url( $godam_src, $godam_attachment_id, $godam_current_src ) );
+	if ( $godam_use_current ) {
 		$godam_src = $godam_current_src;
 	}
 	if ( '' === $godam_alt ) {
 		$godam_alt = (string) get_post_meta( $godam_attachment_id, '_wp_attachment_image_alt', true );
 	}
 	$godam_served_host = (string) wp_parse_url( (string) get_post_meta( $godam_attachment_id, 'rtgodam_transcoded_url', true ), PHP_URL_HOST );
-	$godam_shows_cdn   = '' !== $godam_served_host && wp_parse_url( $godam_src, PHP_URL_HOST ) === $godam_served_host;
+	$godam_shows_cdn   = $godam_use_current && '' !== $godam_served_host && wp_parse_url( $godam_src, PHP_URL_HOST ) === $godam_served_host;
 	$godam_served_size = $godam_shows_cdn ? get_post_meta( $godam_attachment_id, 'rtgodam_image_dimensions', true ) : '';
 	if ( is_array( $godam_served_size ) && ! empty( $godam_served_size['width'] ) && ! empty( $godam_served_size['height'] ) ) {
 		$godam_width  = intval( $godam_served_size['width'] );

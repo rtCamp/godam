@@ -3944,6 +3944,64 @@ function rtgodam_sanitize_hotspot_links( $layers ) {
 }
 
 /**
+ * Whether an image URL saved on a block is this attachment's image.
+ *
+ * A block saves both the attachment ID and the image URL. They stop describing the same
+ * image when the block is copied or imported to another site, where the same ID can be
+ * a different image. The URL is this attachment's when it is:
+ *
+ * - the attachment's current URL, ignoring the query string (`?v=v2` and `?v=v3` are
+ *   two versions of the same file);
+ * - the local upload, with any extension (`…/uploads/2026/11/photo.png` for the attached
+ *   file `2026/11/photo.png`, or `photo.webp` for a converted copy);
+ * - a file in this attachment's folder on the GoDAM CDN, which keeps its folder when the
+ *   image is replaced, even by a file with another name.
+ *
+ * Anything else, including a URL that can't be told apart, counts as another image.
+ *
+ * @since n.e.x.t
+ *
+ * @param string $url           Image URL saved on the block.
+ * @param int    $attachment_id Attachment ID saved on the block.
+ * @param string $current_url   The attachment's current full-size URL, or '' if unknown.
+ * @return bool
+ */
+function rtgodam_is_attachment_image_url( $url, $attachment_id, $current_url = '' ) {
+	$saved_path = (string) wp_parse_url( (string) $url, PHP_URL_PATH );
+	if ( '' === $saved_path ) {
+		return false;
+	}
+	$saved_host = strtolower( (string) wp_parse_url( (string) $url, PHP_URL_HOST ) );
+
+	$current_path = (string) wp_parse_url( (string) $current_url, PHP_URL_PATH );
+	$current_host = strtolower( (string) wp_parse_url( (string) $current_url, PHP_URL_HOST ) );
+	if ( '' !== $current_path && $current_host === $saved_host && $current_path === $saved_path ) {
+		return true;
+	}
+
+	// The local upload. `_wp_attached_file` is relative to the uploads folder; an absolute
+	// path (some migrated sites) never matches here, and the URL is treated as another image.
+	$attached_file = ltrim( (string) get_post_meta( $attachment_id, '_wp_attached_file', true ), '/' );
+	if ( '' !== $attached_file ) {
+		$attached_stem = '/' . preg_replace( '/\.[a-z0-9]+$/i', '', $attached_file );
+		$saved_stem    = preg_replace( '/\.[a-z0-9]+$/i', '', $saved_path );
+		if ( substr( $saved_stem, -strlen( $attached_stem ) ) === $attached_stem ) {
+			return true;
+		}
+	}
+
+	// The attachment's folder on the GoDAM CDN.
+	$saved_dir   = substr( $saved_path, 0, (int) strrpos( $saved_path, '/' ) + 1 );
+	$godam_url   = (string) get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+	$godam_host  = strtolower( (string) wp_parse_url( $godam_url, PHP_URL_HOST ) );
+	$godam_path  = (string) wp_parse_url( $godam_url, PHP_URL_PATH );
+	$godam_dir   = substr( $godam_path, 0, (int) strrpos( $godam_path, '/' ) + 1 );
+	$godam_files = '' !== $godam_host && strlen( $godam_dir ) > 1;
+
+	return $godam_files && $godam_host === $saved_host && $godam_dir === $saved_dir;
+}
+
+/**
  * Return a CSS colour only when it is a plain colour value.
  *
  * Meant for colours that are printed into a style attribute, where an escaped
