@@ -162,6 +162,33 @@ class VimeoMigrationElementorTest extends TestCase {
 		}
 	}
 
+	public function test_keeps_elementor_pros_custom_css() {
+		$elements = $this->fixture();
+		$css      = 'selector { border: 2px solid #c00; }';
+
+		$elements[0]['elements'][1]['settings']['custom_css'] = $css;
+
+		list( $tree ) = $this->migrate( $elements, $this->resolver() );
+
+		$this->assertSame( 'godam-video', $tree[0]['elements'][1]['widgetType'] );
+		$this->assertSame( $css, $tree[0]['elements'][1]['settings']['custom_css'] );
+	}
+
+	public function test_leaves_the_post_alone_when_the_new_data_cannot_be_encoded() {
+		$elements = $this->fixture();
+
+		// json_encode() fails on INF, so the migrated tree can't be saved.
+		$elements[0]['elements'][1]['settings']['_margin']['top'] = INF;
+
+		$GLOBALS['rtgodam_stub']['post_meta_by_id'][4909]['_elementor_data'] = $elements;
+
+		$result = ( new Elementor_Source( $this->resolver() ) )->migrate_post( 4909 );
+
+		$this->assertFalse( $result['changed'] );
+		$this->assertSame( 0, $result['migrated'] );
+		$this->assertSame( 3, $result['found'] );
+	}
+
 	public function test_leaves_youtube_widgets_alone() {
 		list( $tree ) = $this->migrate( $this->fixture(), $this->resolver() );
 

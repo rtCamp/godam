@@ -52,3 +52,38 @@ if ( ! function_exists( 'wp_oembed_add_provider' ) ) {
 		$GLOBALS['rtgodam_stub']['providers'][] = array( $format, $provider, $regex );
 	}
 }
+
+if ( ! function_exists( 'current_filter' ) ) {
+
+	/**
+	 * The filter running now, set per test via $GLOBALS['rtgodam_stub']['current_filter'].
+	 *
+	 * @return string|false
+	 */
+	function current_filter() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return $GLOBALS['rtgodam_stub']['current_filter'] ?? false;
+	}
+}
+
+if ( ! function_exists( 'wp_is_serving_rest_request' ) ) {
+
+	/**
+	 * REST-request flag, set per test via $GLOBALS['rtgodam_stub']['rest_request'].
+	 *
+	 * @return bool
+	 */
+	function wp_is_serving_rest_request() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return ! empty( $GLOBALS['rtgodam_stub']['rest_request'] );
+	}
+}
+
+if ( ! function_exists( 'untrailingslashit' ) ) {
+
+	/**
+	 * @param string $value Value.
+	 * @return string
+	 */
+	function untrailingslashit( $value ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		return rtrim( $value, '/\\' );
+	}
+}

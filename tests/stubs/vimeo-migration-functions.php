@@ -19,6 +19,20 @@ if ( ! function_exists( 'untrailingslashit' ) ) {
 	}
 }
 
+if ( ! function_exists( 'current_time' ) ) {
+
+	/**
+	 * WordPress core's current_time(), fixed for tests.
+	 *
+	 * @param string $type Type. Unused.
+	 *
+	 * @return string
+	 */
+	function current_time( $type ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound, Generic.CodeAnalysis.UnusedFunctionParameter.Found -- stub mirroring the WP function.
+		return '2026-11-25 12:00:00';
+	}
+}
+
 require_once __DIR__ . '/video-seo-functions.php';
 require_once __DIR__ . '/shortcode-functions.php';
 require_once dirname( __DIR__, 2 ) . '/inc/classes/class-seo.php';

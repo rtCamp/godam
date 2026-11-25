@@ -73,13 +73,14 @@ class Elementor_Source {
 
 	/**
 	 * Settings that sit outside the Advanced tab's `_` prefix but still belong
-	 * to it, and so carry over to the GoDAM widget unchanged.
+	 * to it, and so carry over to the GoDAM widget unchanged: the responsive
+	 * visibility switches, and Elementor Pro's Custom CSS (`custom_css`).
 	 *
 	 * @since n.e.x.t
 	 *
 	 * @var string[]
 	 */
-	const CARRIED_SETTINGS = array( 'hide_desktop', 'hide_laptop', 'hide_tablet', 'hide_tablet_extra', 'hide_mobile', 'hide_mobile_extra', 'hide_widescreen' );
+	const CARRIED_SETTINGS = array( 'hide_desktop', 'hide_laptop', 'hide_tablet', 'hide_tablet_extra', 'hide_mobile', 'hide_mobile_extra', 'hide_widescreen', 'custom_css' );
 
 	/**
 	 * Callable that resolves a Vimeo URL to its GoDAM video, see Vimeo_Resolver::resolve().
@@ -186,10 +187,20 @@ class Elementor_Source {
 			return $result;
 		}
 
+		$json = wp_json_encode( $new_elements, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+
+		// Saving a failed encode would empty the page's layout, and Elementor
+		// keeps no revision of this change: leave the post as it was.
+		if ( ! is_string( $json ) || '' === $json ) {
+			$result['migrated'] = 0;
+
+			return $result;
+		}
+
 		update_post_meta( // godam-coverage-ignore -- migrate_post(): writes the host post's own '_elementor_data' back, never attachment data.
 			$post_id,
 			self::DATA_META_KEY,
-			wp_slash( wp_json_encode( $new_elements, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) )
+			wp_slash( $json )
 		);
 
 		$this->refresh_derived_data( $post_id );

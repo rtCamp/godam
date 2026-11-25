@@ -28,6 +28,7 @@ require_once dirname( __DIR__ ) . '/stubs/class-embed-wpdb-double.php';
  * @covers \RTGODAM\Inc\Embed::render_local_embed
  * @covers \RTGODAM\Inc\Embed::get_share_url_job_id
  * @covers \RTGODAM\Inc\Embed::pre_oembed_result
+ * @covers \RTGODAM\Inc\Embed::get_share_url_pattern
  */
 class EmbedLocalRenderTest extends TestCase {
 
@@ -104,6 +105,55 @@ class EmbedLocalRenderTest extends TestCase {
 		$url = 'https://api.test/web/video/vimeomock01?org=abc';
 
 		$this->assertSame( '<div class="godam-player" data-id="4929"></div>', $this->embed()->render_local_embed( array( $url ), array(), $url ) );
+	}
+
+	public function test_in_post_content_the_embed_handler_leaves_the_shortcode_for_after_wpautop() {
+		$url = 'https://api.test/web/video/vimeomock01';
+
+		add_filter( 'the_content', 'do_shortcode', 11 );
+		$GLOBALS['rtgodam_stub']['current_filter'] = 'the_content';
+
+		$this->assertSame( '[godam_video id="4929"]', $this->embed()->render_local_embed( array( $url ), array(), $url ) );
+	}
+
+	public function test_in_the_editors_embed_preview_the_embed_handler_declines() {
+		$url = 'https://api.test/web/video/vimeomock01';
+
+		$GLOBALS['rtgodam_stub']['rest_request'] = true;
+
+		$this->assertFalse( $this->embed()->render_local_embed( array( $url ), array(), $url ) );
+		$this->assertSame( array(), $this->wpdb->lookups, 'The library is not searched.' );
+	}
+
+	/**
+	 * API bases, and a share URL each pattern must match.
+	 *
+	 * @return array<string, array{0: string, 1: string}>
+	 */
+	public function api_bases(): array {
+		return array(
+			'plain host'     => array( 'https://app.godam.io', 'https://app.godam.io/web/video/3fqjd5bmpr' ),
+			'trailing slash' => array( 'https://app.godam.io/', 'https://app.godam.io/web/video/3fqjd5bmpr?org=abc' ),
+			'with a port'    => array( 'https://godam.local:8443', 'https://godam.local:8443/web/video/3fqjd5bmpr' ),
+			'http base'      => array( 'http://godam.local', 'https://godam.local/web/video/3fqjd5bmpr/' ),
+		);
+	}
+
+	/**
+	 * @dataProvider api_bases
+	 *
+	 * @param string $api_base  API base.
+	 * @param string $share_url Share URL built from it.
+	 */
+	public function test_the_handler_pattern_matches_share_urls_of_its_base( string $api_base, string $share_url ) {
+		$this->assertSame( 1, preg_match( Embed::get_share_url_pattern( $api_base ), $share_url ) );
+	}
+
+	public function test_the_handler_pattern_does_not_match_another_port_or_page() {
+		$pattern = Embed::get_share_url_pattern( 'https://godam.local:8443' );
+
+		$this->assertSame( 0, preg_match( $pattern, 'https://godam.local/web/video/3fqjd5bmpr' ) );
+		$this->assertSame( 0, preg_match( $pattern, 'https://godam.local:8443/web/embed/3fqjd5bmpr' ) );
 	}
 
 	public function test_a_video_not_in_the_library_still_goes_to_the_oembed_api() {

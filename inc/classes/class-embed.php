@@ -146,6 +146,9 @@ class Embed {
 	 * the player renders, with its scripts, on every view. The oEmbed HTML
 	 * cache would keep the markup but skip the scripts.
 	 *
+	 * The pattern is built from the whole API base, so a base with a port
+	 * (https://godam.local:8443) matches the share URLs built from it.
+	 *
 	 * @since n.e.x.t
 	 *
 	 * @return void
@@ -159,14 +162,39 @@ class Embed {
 
 		wp_embed_register_handler(
 			'godam-local-video',
-			'#^https?://' . preg_quote( $host, '#' ) . '/web/video/[A-Za-z0-9_-]+/?(?:[?\#].*)?$#i',
+			self::get_share_url_pattern( RTGODAM_API_BASE ),
 			array( $this, 'render_local_embed' ),
 			9
 		);
 	}
 
 	/**
+	 * The regex an embed handler matches GoDAM share URLs with.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $api_base The GoDAM API base, e.g. https://app.godam.io.
+	 *
+	 * @return string The regex. It matches http and https, whatever scheme the base uses.
+	 */
+	public static function get_share_url_pattern( string $api_base ): string {
+		$base = (string) preg_replace( '#^https?://#i', '', untrailingslashit( $api_base ) );
+
+		return '#^https?://' . preg_quote( $base, '#' ) . '/web/video/[A-Za-z0-9_-]+/?(?:[?\#].*)?$#i';
+	}
+
+	/**
 	 * Embed handler callback: render a GoDAM share URL with the site's own player.
+	 *
+	 * Inside a filter that runs shortcodes later, such as `the_content`, it
+	 * returns the `[godam_video]` shortcode rather than its HTML, as core's own
+	 * video embed handler does. Embeds run at priority 8, before `wpautop`,
+	 * which would add `<p>` and `<br />` tags inside the player markup; the
+	 * shortcode renders at priority 11, after it.
+	 *
+	 * In a REST request (the block editor's Embed preview) it returns false:
+	 * the preview's sandbox gets no player styles, so the player couldn't
+	 * render there.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -174,12 +202,26 @@ class Embed {
 	 * @param array  $attr    Embed attributes.
 	 * @param string $url     The URL being embedded.
 	 *
-	 * @return string|false The player HTML, or false to let WordPress try oEmbed.
+	 * @return string|false The shortcode or player HTML, or false to let WordPress try oEmbed.
 	 */
 	public function render_local_embed( $matches, $attr, $url ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundBeforeLastUsed -- signature set by wp_embed_register_handler().
-		$html = $this->get_local_embed_html( (string) $url );
+		if ( wp_is_serving_rest_request() ) {
+			return false;
+		}
 
-		return '' === $html ? false : $html;
+		$attachment_id = $this->get_local_attachment_id( (string) $url );
+
+		if ( $attachment_id <= 0 ) {
+			return false;
+		}
+
+		$shortcode = sprintf( '[godam_video id="%d"]', $attachment_id );
+
+		if ( self::shortcodes_run_later() ) {
+			return $shortcode;
+		}
+
+		return (string) do_shortcode( $shortcode );
 	}
 
 	/**
@@ -196,20 +238,39 @@ class Embed {
 	 * @return string The player HTML, or '' when the URL isn't a share URL of a video in the media library.
 	 */
 	public function get_local_embed_html( string $url ): string {
-		if ( ! $this->is_godam_url( $url ) ) {
+		$attachment_id = $this->get_local_attachment_id( $url );
+
+		if ( $attachment_id <= 0 ) {
 			return '';
+		}
+
+		return (string) do_shortcode( sprintf( '[godam_video id="%d"]', $attachment_id ) );
+	}
+
+	/**
+	 * The media library video a GoDAM share URL renders locally, if any.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $url GoDAM share URL.
+	 *
+	 * @return int Attachment ID, or 0 when the URL isn't a share URL of a video in the media library, or shouldn't render locally.
+	 */
+	private function get_local_attachment_id( string $url ): int {
+		if ( ! $this->is_godam_url( $url ) ) {
+			return 0;
 		}
 
 		$job_id = self::get_share_url_job_id( $url );
 
 		if ( '' === $job_id ) {
-			return '';
+			return 0;
 		}
 
 		$attachment_id = $this->find_attachment_id_by_job_id( $job_id );
 
 		if ( $attachment_id <= 0 ) {
-			return '';
+			return 0;
 		}
 
 		/**
@@ -226,10 +287,26 @@ class Embed {
 		 * @param int    $attachment_id  ID of the video in the media library.
 		 */
 		if ( ! apply_filters( 'rtgodam_render_share_url_locally', true, $url, $attachment_id ) ) {
-			return '';
+			return 0;
 		}
 
-		return (string) do_shortcode( sprintf( '[godam_video id="%d"]', $attachment_id ) );
+		return $attachment_id;
+	}
+
+	/**
+	 * Whether the filter running now also runs `do_shortcode()`.
+	 *
+	 * `the_content`, `widget_text_content` and `widget_block_content` run
+	 * embeds at priority 8 and shortcodes at 11.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return bool
+	 */
+	private static function shortcodes_run_later(): bool {
+		$filter = current_filter();
+
+		return is_string( $filter ) && '' !== $filter && false !== has_filter( $filter, 'do_shortcode' );
 	}
 
 	/**

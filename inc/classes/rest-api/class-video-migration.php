@@ -557,73 +557,24 @@ class Video_Migration extends Base {
 		// Update the migration status atomically to avoid race conditions across parallel batches.
 		if ( ! empty( $migration_status ) ) {
 			$lock_key = 'godam_' . $migration_type . '_video_migration_lock';
-			if ( $this->acquire_migration_lock( $lock_key ) ) {
-				// Re-read inside the lock, from the database: this request's
-				// option cache still holds the value from when it started.
-				$migration_status = $this->get_fresh_option( $wp_option_key );
+			$locked   = $this->acquire_migration_lock( $lock_key );
 
-				// The run was aborted while this batch ran: don't bring it back.
-				if ( empty( $migration_status ) ) {
-					$this->release_migration_lock( $lock_key );
-					return $processed_count;
-				}
+			// Re-read from the database: this request's option cache still
+			// holds the value from when it started. Without the lock this is
+			// a best-effort update, but it still adds this batch's counts
+			// and can still complete the run.
+			$migration_status = $this->get_fresh_option( $wp_option_key );
 
-				$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + count( $post_ids );
-
-				// Accumulate Vimeo video counts if applicable.
-				if ( 'vimeo' === $migration_type ) {
-					$migration_status['vimeo_sources'] = $this->add_vimeo_source_counts( $migration_status['vimeo_sources'] ?? array(), $vimeo_sources_in_batch );
-
-					// Kept for integrations that read them: Gutenberg block counts.
-					$migration_status['vimeo_blocks_found']    = (int) ( $migration_status['vimeo_sources'][ self::GUTENBERG_SOURCE ]['found'] ?? 0 );
-					$migration_status['vimeo_blocks_migrated'] = (int) ( $migration_status['vimeo_sources'][ self::GUTENBERG_SOURCE ]['migrated'] ?? 0 );
-				}
-
-				// Calculate progress percentage.
-				$progress = 0;
-				if ( ! empty( $migration_status['total'] ) && $migration_status['total'] > 0 ) {
-					$progress = round( ( $migration_status['done'] / $migration_status['total'] ) * 100 );
-				}
-
-				$migration_status['message'] = sprintf(
-				/* translators: %1$d is the number of posts processed, %2$d is the total number of posts, %3$d is the progress percentage */
-					__( 'Processed %1$d/%2$d posts (%3$d%% complete)', 'godam' ),
-					$migration_status['done'],
-					$migration_status['total'],
-					$progress
+			// When the run was aborted while this batch ran, don't bring it back.
+			if ( ! empty( $migration_status ) ) {
+				update_option(
+					$wp_option_key,
+					$this->add_batch_to_status( $migration_status, $migration_type, count( $post_ids ), $vimeo_sources_in_batch )
 				);
+			}
 
-				// Check if migration is complete.
-				if ( $migration_status['done'] >= ( $migration_status['total'] ?? 0 ) ) {
-					$migration_status['status']    = 'completed';
-					$migration_status['completed'] = current_time( 'mysql' );
-					if ( 'vimeo' === $migration_type ) {
-						$migration_status['message'] = sprintf(
-						/* translators: 1: total posts processed, 2: replaced Vimeo videos, 3: total Vimeo videos found */
-							__( 'Migration completed! Processed %1$d posts. Replaced %2$d of %3$d Vimeo videos found.', 'godam' ),
-							(int) ( $migration_status['total'] ?? 0 ),
-							(int) array_sum( array_column( $migration_status['vimeo_sources'] ?? array(), 'migrated' ) ),
-							(int) array_sum( array_column( $migration_status['vimeo_sources'] ?? array(), 'found' ) )
-						);
-					} else {
-						$migration_status['message'] = sprintf(
-						/* translators: %d is the total number of posts processed */
-							__( 'Migration completed! Processed %d posts.', 'godam' ),
-							$migration_status['total'],
-						);
-					}
-				}
-
-				update_option( $wp_option_key, $migration_status );
+			if ( $locked ) {
 				$this->release_migration_lock( $lock_key );
-			} else {
-				// As a fallback if we fail to acquire the lock after retries, attempt a best-effort update.
-				$migration_status = $this->get_fresh_option( $wp_option_key );
-
-				if ( ! empty( $migration_status ) ) {
-					$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + count( $post_ids );
-					update_option( $wp_option_key, $migration_status );
-				}
 			}
 		}
 
@@ -631,11 +582,74 @@ class Video_Migration extends Base {
 	}
 
 	/**
-	 * Read an option from the database rather than this request's cache.
+	 * Add a finished batch to the migration status, and mark the run complete when it's the last.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param array  $migration_status       The stored migration status.
+	 * @param string $migration_type         The migration type, 'core' or 'vimeo'.
+	 * @param int    $batch_size             Number of posts in the batch.
+	 * @param array  $vimeo_sources_in_batch Vimeo found/migrated counts of the batch, keyed by source.
+	 *
+	 * @return array The updated migration status.
+	 */
+	private function add_batch_to_status( array $migration_status, string $migration_type, int $batch_size, array $vimeo_sources_in_batch ): array {
+		$migration_status['done'] = ( $migration_status['done'] ?? 0 ) + $batch_size;
+
+		// Accumulate Vimeo video counts if applicable.
+		if ( 'vimeo' === $migration_type ) {
+			$migration_status['vimeo_sources'] = $this->add_vimeo_source_counts( $migration_status['vimeo_sources'] ?? array(), $vimeo_sources_in_batch );
+
+			// Kept for integrations that read them: Gutenberg block counts.
+			$migration_status['vimeo_blocks_found']    = (int) ( $migration_status['vimeo_sources'][ self::GUTENBERG_SOURCE ]['found'] ?? 0 );
+			$migration_status['vimeo_blocks_migrated'] = (int) ( $migration_status['vimeo_sources'][ self::GUTENBERG_SOURCE ]['migrated'] ?? 0 );
+		}
+
+		$total = (int) ( $migration_status['total'] ?? 0 );
+
+		// Calculate progress percentage.
+		$progress = $total > 0 ? round( ( $migration_status['done'] / $total ) * 100 ) : 0;
+
+		$migration_status['message'] = sprintf(
+		/* translators: %1$d is the number of posts processed, %2$d is the total number of posts, %3$d is the progress percentage */
+			__( 'Processed %1$d/%2$d posts (%3$d%% complete)', 'godam' ),
+			$migration_status['done'],
+			$total,
+			$progress
+		);
+
+		// Check if migration is complete.
+		if ( $migration_status['done'] >= $total ) {
+			$migration_status['status']    = 'completed';
+			$migration_status['completed'] = current_time( 'mysql' );
+			if ( 'vimeo' === $migration_type ) {
+				$migration_status['message'] = sprintf(
+				/* translators: 1: total posts processed, 2: replaced Vimeo videos, 3: total Vimeo videos found */
+					__( 'Migration completed! Processed %1$d posts. Replaced %2$d of %3$d Vimeo videos found.', 'godam' ),
+					$total,
+					(int) array_sum( array_column( $migration_status['vimeo_sources'] ?? array(), 'migrated' ) ),
+					(int) array_sum( array_column( $migration_status['vimeo_sources'] ?? array(), 'found' ) )
+				);
+			} else {
+				$migration_status['message'] = sprintf(
+				/* translators: %d is the total number of posts processed */
+					__( 'Migration completed! Processed %d posts.', 'godam' ),
+					$total
+				);
+			}
+		}
+
+		return $migration_status;
+	}
+
+	/**
+	 * Read an option straight from the database rather than this request's cache.
 	 *
 	 * Batches run in parallel requests, and each request caches options when
 	 * it starts, so a plain get_option() can return a value another batch has
-	 * since replaced.
+	 * since replaced. Reading the row directly leaves the shared object cache
+	 * (`alloptions`) alone, so other requests on the site don't have to
+	 * reload it.
 	 *
 	 * @since n.e.x.t
 	 *
@@ -644,11 +658,16 @@ class Video_Migration extends Base {
 	 * @return array The option value, or an empty array when it isn't set.
 	 */
 	private function get_fresh_option( string $option ): array {
-		wp_cache_delete( $option, 'options' );
-		wp_cache_delete( 'alloptions', 'options' );
-		wp_cache_delete( 'notoptions', 'options' );
+		global $wpdb;
 
-		$value = get_option( $option, array() );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- the cached copy is what's stale here.
+		$raw = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s LIMIT 1", $option ) );
+
+		if ( null === $raw ) {
+			return array();
+		}
+
+		$value = maybe_unserialize( $raw );
 
 		return is_array( $value ) ? $value : array();
 	}
@@ -922,7 +941,7 @@ class Video_Migration extends Base {
 			$found    = 0;
 			$migrated = 0;
 
-			$this->traverse_and_migrate_vimeo_blocks_recursive( $blocks, $post_id, $found, $migrated, $changed );
+			$this->traverse_and_migrate_vimeo_blocks_recursive( $blocks, $post_id, $found, $migrated, $changed, $resolver );
 
 			if ( $changed ) {
 				$new_content = serialize_blocks( $blocks );
@@ -1053,14 +1072,16 @@ class Video_Migration extends Base {
 	 * Recursively traverse blocks to find and migrate Vimeo embeds inside nested structures.
 	 *
 	 * @since 1.4.0
+	 * @since n.e.x.t Looks videos up through the batch's shared resolver.
 	 *
-	 * @param array $blocks   Parsed Gutenberg blocks (passed by reference).
-	 * @param int   $post_id  Post ID for logging context.
-	 * @param int   $found    Counter for number of Vimeo embeds found (by reference).
-	 * @param int   $migrated Counter for number of Vimeo embeds migrated (by reference).
-	 * @param bool  $changed  Whether content changed (by reference).
+	 * @param array          $blocks   Parsed Gutenberg blocks (passed by reference).
+	 * @param int            $post_id  Post ID for logging context.
+	 * @param int            $found    Counter for number of Vimeo embeds found (by reference).
+	 * @param int            $migrated Counter for number of Vimeo embeds migrated (by reference).
+	 * @param bool           $changed  Whether content changed (by reference).
+	 * @param Vimeo_Resolver $resolver Resolver shared across the batch, so each video is looked up once.
 	 */
-	private function traverse_and_migrate_vimeo_blocks_recursive( array &$blocks, int $post_id, int &$found, int &$migrated, bool &$changed ) {
+	private function traverse_and_migrate_vimeo_blocks_recursive( array &$blocks, int $post_id, int &$found, int &$migrated, bool &$changed, Vimeo_Resolver $resolver ) {
 		foreach ( $blocks as &$block ) {
 			$block_name = $block['blockName'] ?? '';
 
@@ -1074,9 +1095,12 @@ class Video_Migration extends Base {
 					++$found;
 
 					if ( ! empty( $vimeo_url ) ) {
-						$attachment_id = $this->create_attachment_from_vimeo_video( $vimeo_url );
+						// The same video in another block, post or builder
+						// of this batch is fetched from GoDAM only once.
+						$video         = $resolver->resolve( $vimeo_url );
+						$attachment_id = null !== $video ? (int) $video['id'] : 0;
 
-						if ( ! is_wp_error( $attachment_id ) ) {
+						if ( $attachment_id > 0 ) {
 							/**
 							 * Fires before reading the migrated attachment's
 							 * URL/sources/SEO data, so integrations that
@@ -1171,7 +1195,7 @@ class Video_Migration extends Base {
 			}
 
 			if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
-				$this->traverse_and_migrate_vimeo_blocks_recursive( $block['innerBlocks'], $post_id, $found, $migrated, $changed );
+				$this->traverse_and_migrate_vimeo_blocks_recursive( $block['innerBlocks'], $post_id, $found, $migrated, $changed, $resolver );
 			}
 		}
 	}
