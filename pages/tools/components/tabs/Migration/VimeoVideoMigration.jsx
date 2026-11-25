@@ -7,12 +7,13 @@
  */
 import {
 	Button,
+	CheckboxControl,
 	Panel,
 	PanelBody,
 	Icon,
 	ExternalLink,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import axios from 'axios';
 /**
  * Internal dependencies
@@ -21,10 +22,30 @@ import ProgressBar from '../../ProgressBar.jsx';
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
 import { error } from '@wordpress/icons';
 
+/**
+ * Labels of the places the Vimeo migration reports counts for, in display order.
+ */
+const SOURCE_LABELS = {
+	gutenberg: __( 'Block editor (Vimeo Embed blocks)', 'godam' ),
+	elementor: __( 'Elementor', 'godam' ),
+	wpbakery: __( 'WPBakery (Video Player elements)', 'godam' ),
+	acf: __( 'ACF oEmbed and URL fields', 'godam' ),
+};
+
 const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice } ) => {
 	const intervalRef = useRef( null );
 	const noticeShownRef = useRef( { completed: false, failed: false } );
 	const [ godamMigrationCompleted, setGodamMigrationCompleted ] = useState( true );
+	const [ includeAcf, setIncludeAcf ] = useState( false );
+	const [ availableSources, setAvailableSources ] = useState( {} );
+
+	// The status endpoint says which page builders and plugins are active. Keep
+	// the last answer, since start/abort responses don't repeat it.
+	useEffect( () => {
+		if ( migrationStatus?.available_sources ) {
+			setAvailableSources( migrationStatus.available_sources );
+		}
+	}, [ migrationStatus?.available_sources ] );
 
 	const handleMigrationClick = async () => {
 		const url = window.godamRestRoute?.url + 'godam/v1/video-migrate';
@@ -42,6 +63,7 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 
 		axios.post( url, {
 			type: 'vimeo',
+			include_acf: Boolean( availableSources?.acf && includeAcf ),
 		},
 		{
 			headers: {
@@ -170,6 +192,16 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 		);
 	}
 
+	const sourceResults = Object.keys( SOURCE_LABELS )
+		.filter( ( source ) => migrationStatus?.vimeo_sources?.[ source ] )
+		.map( ( source ) => ( {
+			source,
+			label: SOURCE_LABELS[ source ],
+			found: Number( migrationStatus.vimeo_sources[ source ].found ) || 0,
+			migrated: Number( migrationStatus.vimeo_sources[ source ].migrated ) || 0,
+		} ) );
+	const someNotReplaced = sourceResults.some( ( result ) => result.migrated < result.found );
+
 	// Central's Settings > Third-party apps tab, where the Vimeo account is connected.
 	const vimeoConnectUrl = `${ window.godamRestRoute?.apiBase || 'https://app.godam.io' }/web/settings?setTab=ThirdPartyApps`;
 
@@ -178,7 +210,11 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 			<Panel className="godam-panel">
 				<PanelBody title={ __( 'Vimeo video Migration', 'godam' ) } initialOpen={ false }>
 					<p>
-						{ __( 'This tool replaces WordPress Vimeo Embed blocks with GoDAM Video blocks. It does not replace Vimeo videos added in the WordPress Classic Editor.', 'godam' ) }
+						{ __( 'This tool replaces Vimeo videos with the same videos from GoDAM: Vimeo Embed blocks, Elementor Video widgets and WPBakery Video Player elements. It does not replace Vimeo videos added in the WordPress Classic Editor.', 'godam' ) }
+					</p>
+
+					<p>
+						{ __( 'Back up your database before you start: Elementor and ACF changes are not saved as revisions.', 'godam' ) }
 					</p>
 
 					<p className="godam-vimeo-connect-step">
@@ -193,12 +229,48 @@ const VimeoVideoMigration = ( { migrationStatus, setMigrationStatus, showNotice 
 						<ExternalLink href={ vimeoConnectUrl } className="godam-url">{ __( 'Open', 'godam' ) }</ExternalLink>
 					</div>
 
+					{ availableSources?.acf && (
+						<CheckboxControl
+							__nextHasNoMarginBottom
+							className="mt-3"
+							label={ __( 'Also replace Vimeo links in ACF oEmbed and URL fields', 'godam' ) }
+							help={ __( 'Each link becomes the GoDAM share link of the same video. Leave this off if your theme reads the Vimeo video ID out of these fields.', 'godam' ) }
+							checked={ includeAcf }
+							onChange={ setIncludeAcf }
+							disabled={ migrationStatus?.status === 'processing' }
+						/>
+					) }
+
 					{ /* Progressbar indicating video migration progress */ }
 					{ /* Horizontal progressbar, done/total */ }
 					{ [ 'processing', 'completed' ].includes( migrationStatus?.status ) && (
 						<div>
 							<ProgressBar showInitialProgress={ 'processing' === migrationStatus?.status } done={ migrationStatus?.done } total={ migrationStatus?.total } />
 							<div className="mt-1 mb-3 px-1 py-[1px] bg-gray-200 inline-flex rounded">{ migrationStatus?.message }</div>
+						</div>
+					) }
+
+					{ /* Per-place results of a finished run */ }
+					{ migrationStatus?.status === 'completed' && sourceResults.length > 0 && (
+						<div className="godam-vimeo-migration-results mb-3">
+							<ul className="m-0">
+								{ sourceResults.map( ( result ) => (
+									<li key={ result.source }>
+										{ result.label }:{ ' ' }
+										{ sprintf(
+											/* translators: 1: number of Vimeo videos replaced, 2: number of Vimeo videos found */
+											__( '%1$d of %2$d replaced', 'godam' ),
+											result.migrated,
+											result.found,
+										) }
+									</li>
+								) ) }
+							</ul>
+							{ someNotReplaced && (
+								<p className="m-0 text-[#a77f06]">
+									{ __( 'Videos are left as they are when GoDAM Central has not imported them yet, or when they sit somewhere this tool can\'t replace, such as an Elementor background video.', 'godam' ) }
+								</p>
+							) }
 						</div>
 					) }
 
