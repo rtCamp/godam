@@ -14,6 +14,14 @@
 
 // phpcs:disable WordPress.WP.AlternativeFunctions -- CLI script, no WP bootstrap.
 
+// coverage.php keeps every file's tokens in memory across its passes, which
+// already peaks around 200 MB — past the 128 MB CLI default of a stock local
+// PHP (e.g. Homebrew), so the pre-commit hook died with a fatal error there.
+// CI's setup-php runs with no limit; this gives local runs bounded headroom.
+if ( '-1' !== ini_get( 'memory_limit' ) ) {
+	ini_set( 'memory_limit', '1G' ); // phpcs:ignore WordPress.PHP.IniSet.memory_limit_Disallowed -- CLI tooling, not plugin runtime.
+}
+
 /**
  * Function names that actually fire a hook. Just `do_action` — these are
  * notification hooks with no return value to filter, so never
@@ -82,6 +90,7 @@ function godam_shared_list_php_files( $dir ) {
  * @var string[]
  */
 const GODAM_EXCLUDED_ROOT_DIRS = array(
+	'.claude', // Local Claude Code settings and agent worktrees (full checkouts) — not plugin code.
 	'.git',
 	'.github',
 	'.husky',

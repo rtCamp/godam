@@ -9,6 +9,7 @@ on:
     # change to them needs to re-run the checks they define.
     paths:
       - '**/*.php'
+      - '!.claude/**'
       - '!.git/**'
       - '!.github/**'
       - '!.husky/**'
