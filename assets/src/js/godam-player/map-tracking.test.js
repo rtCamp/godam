@@ -404,20 +404,52 @@ describe( 'milestones reported for one view', () => {
 		document.cookie = `hubspotutk=${ HUTK }; path=/`;
 	} );
 
+	/**
+	 * Players handed out in the current test. Disposed after it, so their page-leave
+	 * listeners do not report into the next test.
+	 */
+	let players = [];
+
 	afterEach( () => {
+		players.forEach( ( player ) => player.trigger( 'dispose' ) );
+		players = [];
 		window.fetch = originalFetch;
 		clearCookies();
 	} );
 
 	/**
+	 * Fire the page events a browser sends when the viewer switches tabs or leaves.
+	 *
+	 * @param {string} name - 'visibilitychange' (the page turns hidden) or 'pagehide'.
+	 * @return {void}
+	 */
+	function leavePage( name ) {
+		if ( 'pagehide' === name ) {
+			window.dispatchEvent( new Event( 'pagehide' ) );
+			return;
+		}
+
+		Object.defineProperty( document, 'visibilityState', { configurable: true, get: () => 'hidden' } );
+		document.dispatchEvent( new Event( 'visibilitychange' ) );
+		delete document.visibilityState;
+	}
+
+	/**
 	 * Hand the tracker a Video.js-shaped player whose events the test fires itself.
 	 *
-	 * @param {number} duration - Duration in seconds.
-	 * @return {Object} The player, plus `ranges` to push played ranges to and `trigger( name )`.
+	 * Playback has started (a `playing` outside a hover preview) unless `start` is false.
+	 *
+	 * @param {number}  duration        - Duration in seconds.
+	 * @param {Object}  [options]       - Options.
+	 * @param {boolean} [options.start] - Fire `playing` once the player is tracked. Default true.
+	 * @return {Object} The player, plus `ranges` to push played ranges to, `trigger( name )`, `viewerPause()` (the viewer clicks pause) and `finish()` (the video plays to its end).
 	 */
-	function readyPlayer( duration ) {
+	function readyPlayer( duration, { start = true } = {} ) {
 		const handlers = {};
 		const ranges = [];
+		const el = document.createElement( 'div' );
+		const controlBarEl = document.createElement( 'div' );
+		let isEnded = false;
 		const listen = ( name, handler ) => {
 			handlers[ name ] = handlers[ name ] || [];
 			handlers[ name ].push( handler );
@@ -442,6 +474,24 @@ describe( 'milestones reported for one view', () => {
 				} );
 			},
 			trigger: ( name ) => ( handlers[ name ] || [] ).forEach( ( handler ) => handler() ),
+			el: () => el,
+			controlBar: { el: () => controlBarEl },
+			paused: () => true,
+			ended: () => isEnded,
+			scrubbing: () => false,
+			godamAutoPause: false,
+			// The viewer clicks the player's pause control.
+			viewerPause: () => {
+				el.dispatchEvent( new Event( 'pointerdown' ) );
+				player.trigger( 'pause' );
+			},
+			// Playback reaches the end: the browser fires `pause` with ended() already
+			// true, then `ended`.
+			finish: () => {
+				isEnded = true;
+				player.trigger( 'pause' );
+				player.trigger( 'ended' );
+			},
 		};
 
 		const video = document.createElement( 'video' );
@@ -450,6 +500,12 @@ describe( 'milestones reported for one view', () => {
 		document.dispatchEvent(
 			new CustomEvent( 'godamPlayerReady', { detail: { player, videoElement: video } } ),
 		);
+
+		players.push( player );
+
+		if ( start ) {
+			player.trigger( 'playing' );
+		}
 
 		return player;
 	}
@@ -465,9 +521,9 @@ describe( 'milestones reported for one view', () => {
 		const player = readyPlayer( 100 );
 
 		player.ranges.push( [ 0, 60 ] );
-		player.trigger( 'pause' );
+		player.viewerPause();
 		// Pausing again at the same spot adds nothing.
-		player.trigger( 'pause' );
+		player.viewerPause();
 
 		expect( postedMilestones() ).toEqual( [ 50 ] );
 	} );
@@ -476,14 +532,14 @@ describe( 'milestones reported for one view', () => {
 		const player = readyPlayer( 100 );
 
 		player.ranges.push( [ 0, 40 ] );
-		player.trigger( 'pause' ); // nearest( 40 ) = 50
+		player.viewerPause(); // nearest( 40 ) = 50
 
 		// A little more watched, still nearest 50: no new event.
 		player.ranges.push( [ 40, 45 ] );
-		player.trigger( 'pause' );
+		player.viewerPause();
 
 		player.ranges.push( [ 45, 100 ] );
-		player.trigger( 'pause' ); // nearest( 100 ) = 100
+		player.viewerPause(); // nearest( 100 ) = 100
 
 		expect( postedMilestones() ).toEqual( [ 50, 100 ] );
 	} );
@@ -493,8 +549,7 @@ describe( 'milestones reported for one view', () => {
 
 		// The browser fires pause at the end, then ended; only one 100 goes out.
 		player.ranges.push( [ 0, 99.7 ] );
-		player.trigger( 'pause' );
-		player.trigger( 'ended' );
+		player.finish();
 
 		expect( postedMilestones() ).toEqual( [ 100 ] );
 	} );
@@ -504,7 +559,7 @@ describe( 'milestones reported for one view', () => {
 
 		// No manual pause: the ended handler alone reports the floor milestone.
 		player.ranges.push( [ 0, 60 ] );
-		player.trigger( 'ended' );
+		player.finish();
 
 		expect( postedMilestones() ).toEqual( [ 50 ] );
 	} );
@@ -514,8 +569,7 @@ describe( 'milestones reported for one view', () => {
 
 		player.ranges.push( [ 0, 1 ] );
 		player.ranges.push( [ 98, 100 ] );
-		player.trigger( 'pause' ); // ~3% watched: nearest is 0
-		player.trigger( 'ended' ); // floor is 0: nothing new
+		player.finish(); // ~3% watched: floor is 0
 
 		expect( postedMilestones() ).toEqual( [ 0 ] );
 	} );
@@ -531,13 +585,13 @@ describe( 'milestones reported for one view', () => {
 		const player = readyPlayer( 100 );
 
 		player.ranges.push( [ 0, 60 ] );
-		player.trigger( 'pause' );
+		player.viewerPause();
 
 		expect( postedMilestones() ).toEqual( [] );
 
 		document.cookie = `hubspotutk=${ HUTK }; path=/`;
 		player.ranges.push( [ 60, 100 ] );
-		player.trigger( 'pause' );
+		player.viewerPause();
 
 		expect( postedMilestones() ).toEqual( [ 100 ] );
 	} );
@@ -549,7 +603,7 @@ describe( 'milestones reported for one view', () => {
 
 		document.cookie = `hubspotutk=${ HUTK }; path=/`;
 		player.ranges.push( [ 0, 30 ] );
-		player.trigger( 'pause' );
+		player.viewerPause();
 
 		const [ , init ] = window.fetch.mock.calls[ 0 ];
 
@@ -562,8 +616,7 @@ describe( 'milestones reported for one view', () => {
 		const player = readyPlayer( 100 );
 
 		player.ranges.push( [ 0, 100 ] );
-		player.trigger( 'pause' );
-		player.trigger( 'ended' );
+		player.finish();
 
 		expect( postedMilestones() ).toEqual( [] );
 	} );
@@ -574,10 +627,187 @@ describe( 'milestones reported for one view', () => {
 		const player = readyPlayer( 100 );
 
 		player.ranges.push( [ 0, 100 ] );
-		player.trigger( 'pause' );
-		player.trigger( 'ended' );
+		player.finish();
 
 		expect( window.sessionStorage.length ).toBe( 0 );
+	} );
+
+	it.each( [ 'visibilitychange', 'pagehide' ] )(
+		'reports the nearest milestone when the viewer leaves mid-video (%s)',
+		( name ) => {
+			const player = readyPlayer( 100 );
+
+			player.ranges.push( [ 0, 40 ] );
+			leavePage( name );
+
+			expect( postedMilestones() ).toEqual( [ 50 ] );
+		},
+	);
+
+	it( 'sends one event when switching tabs is followed by closing the page', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 60 ] );
+		leavePage( 'visibilitychange' );
+		leavePage( 'pagehide' );
+
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+	} );
+
+	it( 'reports nothing on leaving after a pause at the same spot', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 40 ] );
+		player.viewerPause();
+		leavePage( 'visibilitychange' );
+
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+	} );
+
+	it( 'reports a new high after coming back and watching to the end', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 40 ] );
+		leavePage( 'visibilitychange' );
+		player.ranges.push( [ 40, 99.7 ] );
+		player.finish();
+
+		expect( postedMilestones() ).toEqual( [ 50, 100 ] );
+	} );
+
+	it( 'reports nothing on leaving for a player that was never started', () => {
+		readyPlayer( 100, { start: false } );
+
+		leavePage( 'visibilitychange' );
+		leavePage( 'pagehide' );
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	it( 'ignores the page turning visible again', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 40 ] );
+		document.dispatchEvent( new Event( 'visibilitychange' ) );
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	it( 'stops listening for page leave once the player is disposed', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 40 ] );
+		player.trigger( 'dispose' );
+		leavePage( 'pagehide' );
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	/*
+	 * Review on #2412: at the end the browser fires `pause` before `ended`. Rounding
+	 * that pause would turn 89.5% watched into 100 for a viewer who skipped the end.
+	 */
+	it( 'does not credit a full watch to a viewer who skipped the last part', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 87.5 ] );
+		player.ranges.push( [ 98, 100 ] );
+		player.finish(); // 89.5% watched: floor is 75, not nearest 100
+
+		expect( postedMilestones() ).toEqual( [ 75 ] );
+	} );
+
+	it( 'ignores a pause GoDAM makes for a layer', () => {
+		const player = readyPlayer( 100 );
+
+		// A form layer pauses the video at 23% with no click from the viewer.
+		player.ranges.push( [ 0, 23 ] );
+		player.trigger( 'pause' );
+
+		expect( postedMilestones() ).toEqual( [] );
+
+		// The viewer fills it in, watches on and pauses at 60%.
+		player.ranges.push( [ 23, 60 ] );
+		player.viewerPause();
+
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+	} );
+
+	it( 'ignores an auto-pause even right after the viewer clicked', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 40 ] );
+		player.godamAutoPause = true; // Scrolled out of view, or another player started.
+		player.viewerPause();
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	it( 'ignores the pause from dragging the seek bar', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 40 ] );
+		player.scrubbing = () => true;
+		player.viewerPause();
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	it( 'counts a pause from the keyboard', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 40 ] );
+		document.dispatchEvent( new KeyboardEvent( 'keydown', { key: ' ' } ) );
+		player.trigger( 'pause' );
+
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+	} );
+
+	it( 'ignores a pause that comes more than a second after the viewer clicked', () => {
+		const now = jest.spyOn( Date, 'now' ).mockReturnValue( 1000 );
+		const player = readyPlayer( 100 );
+
+		player.el().dispatchEvent( new Event( 'pointerdown' ) );
+		now.mockReturnValue( 2500 );
+		player.ranges.push( [ 0, 40 ] );
+		player.trigger( 'pause' );
+		now.mockRestore();
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	it( 'still reports leaving the page after a layer paused the video', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 40 ] );
+		player.trigger( 'pause' ); // The layer's pause: ignored.
+		leavePage( 'pagehide' );
+
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+	} );
+
+	it( 'reports nothing on leaving after only a hover preview', () => {
+		const player = readyPlayer( 100, { start: false } );
+
+		// Hover previews hide the control bar while they play.
+		player.controlBar.el().classList.add( 'hide' );
+		player.trigger( 'playing' );
+		player.ranges.push( [ 0, 5 ] );
+		player.trigger( 'pause' );
+		leavePage( 'visibilitychange' );
+
+		expect( postedMilestones() ).toEqual( [] );
+	} );
+
+	it( 'reports nothing on leaving for a viewer whose cookie never arrives', () => {
+		clearCookies();
+
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 40 ] );
+		leavePage( 'pagehide' );
+
+		expect( postedMilestones() ).toEqual( [] );
 	} );
 } );
 
