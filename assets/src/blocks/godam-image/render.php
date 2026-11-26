@@ -37,14 +37,36 @@ $godam_show_layers = ! array_key_exists( 'showImageLayers', $attributes ) || ! e
  */
 do_action( 'rtgodam_before_attachment_lookup' );
 
-// Fall back to the attachment's own URL / alt / dimensions when not stored on
-// the block (e.g. a copied block that carries only the id).
+// Use the attachment's current URL, not the one saved on the block. The saved URL
+// is whatever the editor had when the image was picked: the local uploads file for
+// an image later served from the GoDAM CDN, or an older version of an image that
+// was replaced since. The saved URL stays as the fallback for a deleted attachment.
+// The same goes for the size: when the URL printed is GoDAM's copy, the size of the
+// image GoDAM serves now, saved from the transcoder callback, comes first. When it is
+// still the local uploads file (GoDAM's image sizes have not arrived, so the URL is not
+// switched to the CDN), that size would describe a different picture, so it is skipped.
+// WordPress's own metadata keeps the size of the file uploaded to WordPress, so it is
+// read only when the block saved no size (e.g. a copied block that carries only the
+// id). Alt likewise.
 if ( $godam_attachment_id ) {
-	if ( '' === $godam_src ) {
-		$godam_src = (string) wp_get_attachment_image_url( $godam_attachment_id, 'full' );
+	// A saved URL that is a different image from the attachment means the block was
+	// copied or imported to another site, where the same ID is another image. The block
+	// then keeps the image it saved, and the size saved with it.
+	$godam_current_src = (string) wp_get_attachment_image_url( $godam_attachment_id, 'full' );
+	$godam_use_current = '' !== $godam_current_src
+		&& ( '' === $godam_src || rtgodam_is_attachment_image_url( $godam_src, $godam_attachment_id, $godam_current_src ) );
+	if ( $godam_use_current ) {
+		$godam_src = $godam_current_src;
 	}
 	if ( '' === $godam_alt ) {
 		$godam_alt = (string) get_post_meta( $godam_attachment_id, '_wp_attachment_image_alt', true );
+	}
+	$godam_served_host = (string) wp_parse_url( (string) get_post_meta( $godam_attachment_id, 'rtgodam_transcoded_url', true ), PHP_URL_HOST );
+	$godam_shows_cdn   = $godam_use_current && '' !== $godam_served_host && wp_parse_url( $godam_src, PHP_URL_HOST ) === $godam_served_host;
+	$godam_served_size = $godam_shows_cdn ? get_post_meta( $godam_attachment_id, 'rtgodam_image_dimensions', true ) : '';
+	if ( is_array( $godam_served_size ) && ! empty( $godam_served_size['width'] ) && ! empty( $godam_served_size['height'] ) ) {
+		$godam_width  = intval( $godam_served_size['width'] );
+		$godam_height = intval( $godam_served_size['height'] );
 	}
 	if ( ! $godam_width || ! $godam_height ) {
 		$godam_img_meta = wp_get_attachment_metadata( $godam_attachment_id );

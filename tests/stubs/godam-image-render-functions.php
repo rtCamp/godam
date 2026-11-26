@@ -2,8 +2,8 @@
 /**
  * Narrow stubs for rendering the GoDAM Image block template in unit tests.
  *
- * Used by HotspotLinkSanitizeTest, which includes the real render.php and reads the
- * layers it hands to the front end. Per-test state lives in
+ * Used by HotspotLinkSanitizeTest and GodamImageCurrentUrlTest, which include the
+ * real render.php and read the markup it prints. Per-test state lives in
  * `$GLOBALS['rtgodam_stub']`, as elsewhere in the suite: `post_meta` is read by the
  * bootstrap's get_post_meta() stub.
  *
@@ -87,19 +87,38 @@ if ( ! function_exists( 'wp_enqueue_script' ) ) {
 if ( ! function_exists( 'wp_get_attachment_image_url' ) ) {
 
 	/**
-	 * @return string The block carries its own URL in these tests.
+	 * Records the requested size in `$GLOBALS['rtgodam_stub']['attachment_image_size']`.
+	 *
+	 * With `$GLOBALS['rtgodam_stub']['attachment_image_url_via_core']` set, it follows
+	 * core's path instead: the `image_downsize` filter first, then the `wp_get_attachment_url`
+	 * filter on the local URL, so the real GoDAM filters decide the URL.
+	 *
+	 * @param int          $attachment_id Attachment ID.
+	 * @param string|int[] $size          Requested size.
+	 * @return string|false `$GLOBALS['rtgodam_stub']['attachment_image_url']`, or '' when
+	 *                      not set (the block then uses the URL saved on it).
 	 */
-	function wp_get_attachment_image_url() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return '';
+	function wp_get_attachment_image_url( $attachment_id = 0, $size = 'thumbnail' ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
+		$GLOBALS['rtgodam_stub']['attachment_image_size'] = $size;
+
+		if ( ! empty( $GLOBALS['rtgodam_stub']['attachment_image_url_via_core'] ) ) {
+			$downsize = apply_filters( 'image_downsize', false, $attachment_id, $size ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core hook.
+			if ( is_array( $downsize ) ) {
+				return $downsize[0];
+			}
+			return apply_filters( 'wp_get_attachment_url', wp_get_attachment_url( $attachment_id ), $attachment_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core hook.
+		}
+
+		return $GLOBALS['rtgodam_stub']['attachment_image_url'] ?? '';
 	}
 }
 
 if ( ! function_exists( 'wp_get_attachment_metadata' ) ) {
 
 	/**
-	 * @return array
+	 * @return array `$GLOBALS['rtgodam_stub']['attachment_metadata']`, or an empty array when not set.
 	 */
 	function wp_get_attachment_metadata() { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- stub mirroring the WP function.
-		return array();
+		return $GLOBALS['rtgodam_stub']['attachment_metadata'] ?? array();
 	}
 }
