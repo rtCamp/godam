@@ -49,8 +49,17 @@ export const dashboardAnalyticsApi = createApi( {
 					};
 				}
 
-				return response.dashboard_metrics || {};
+				// `no_data` means the site has never had a play; the dashboard
+				// shows the setup checklist instead of zeros.
+				return {
+					...( response.dashboard_metrics || {} ),
+					...( response.no_data ? { no_data: true } : {} ),
+				};
 			},
+		} ),
+		// Which "Get your first video live" steps are done on this site.
+		fetchSetupChecklist: builder.query( {
+			query: () => ( { url: 'godam/v1/dashboard/setup-checklist' } ),
 		} ),
 		// Per-placement funnel (the "Funnel by placement" card). Fetched
 		// separately from the main metrics so its heavier per-placement queries
@@ -215,4 +224,5 @@ export const {
 	useFetchPlacementFunnelsQuery,
 	useFetchRevenueSummaryQuery,
 	useFetchVideoFunnelQuery,
+	useFetchSetupChecklistQuery,
 } = dashboardAnalyticsApi;
