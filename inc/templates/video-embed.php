@@ -13,6 +13,9 @@ defined( 'ABSPATH' ) || exit;
 wp_enqueue_style( 'godam-video-embed-style' );
 wp_enqueue_script( 'godam-video-embed-script' );
 
+// A single-video page: start its player as the page loads rather than waiting for it to near the viewport.
+add_action( 'wp_enqueue_scripts', array( \RTGODAM\Inc\Shortcodes\GoDAM_Player::class, 'start_players_eagerly' ), 20 );
+
 $godam_video_id = isset( $_GET['id'] ) ? intval( wp_unslash( $_GET['id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no nonce verification needed for this page.
 
 /**

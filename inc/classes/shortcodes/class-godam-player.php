@@ -20,6 +20,31 @@ class GoDAM_Player {
 	use Singleton;
 
 	/**
+	 * Stylesheets that only style the video player, so they can load without
+	 * blocking the first render: until a player starts, the visitor sees its
+	 * poster placeholder, which `godam-player-wrapper-style` styles.
+	 *
+	 * @var string[]
+	 */
+	const DEFERRABLE_STYLE_HANDLES = array(
+		'godam-player-style',
+		'godam-player-minimal-skin',
+		'godam-player-pills-skin',
+		'godam-player-bubble-skin',
+		'godam-player-classic-skin',
+	);
+
+	/**
+	 * Whether GoDAM content other than a video player, which `godam-player-style`
+	 * also styles (the engagement bar, image hotspots, galleries, recorder
+	 * fields), is on the page. That content is visible straight away, so the
+	 * stylesheet then has to block the first render to avoid a layout shift.
+	 *
+	 * @var bool
+	 */
+	private static $styles_needed_at_first_paint = false;
+
+	/**
 	 * Constructor.
 	 */
 	final protected function __construct() {
@@ -32,6 +57,11 @@ class GoDAM_Player {
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_scripts' ) );
 		add_action( 'wp_head', array( $this, 'godam_output_admin_player_css' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'godam_skin_styles_enqueue' ) );
+
+		// Player stylesheets load without blocking the first render when that is safe.
+		add_filter( 'style_loader_tag', array( $this, 'defer_player_style_tag' ), 10, 4 );
+		add_filter( 'render_block_godam/image', array( $this, 'flag_styles_needed_at_first_paint' ) );
+		add_action( 'elementor/frontend/widget/before_render', array( __CLASS__, 'require_blocking_player_styles' ) );
 
 		// Invalidate video render cache when rtgodam_meta changes.
 		add_action( 'updated_post_meta', array( $this, 'invalidate_video_cache_on_meta_change' ), 10, 3 );
@@ -204,6 +234,29 @@ class GoDAM_Player {
 			);
 		}
 
+		/**
+		 * Likes, views and comments under a video. Enqueued only when an
+		 * engagement bar renders (Video_Engagement::add_engagement_to_video()),
+		 * so pages without one never load React or the WordPress data packages
+		 * it depends on. Depends on the player loader for `godamData`.
+		 */
+		$engagement_asset_path = RTGODAM_PATH . 'assets/build/js/godam-player-engagement.min.asset.php';
+		$engagement_assets     = file_exists( $engagement_asset_path )
+			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- RTGODAM_PATH plus a fixed build filename, checked to exist.
+			? include $engagement_asset_path
+			: array(
+				'dependencies' => array(),
+				'version'      => RTGODAM_VERSION,
+			);
+
+		wp_register_script(
+			'godam-player-engagement-script',
+			RTGODAM_URL . 'assets/build/js/godam-player-engagement.min.js',
+			array_merge( $engagement_assets['dependencies'], array( 'godam-player-frontend-script' ) ),
+			$engagement_assets['version'],
+			true
+		);
+
 		self::register_player_styles();
 
 		wp_register_style(
@@ -248,6 +301,131 @@ class GoDAM_Player {
 				'registrationUrl'         => apply_filters( 'rtgodam_site_registration_url', wp_registration_url() . '&redirect_to=' . rawurlencode( get_permalink() ) ),
 				'defaultAvatar'           => get_avatar_url( 0 ),
 			)
+		);
+	}
+
+	/**
+	 * Note that the page has GoDAM content, other than a video player, which
+	 * `godam-player-style` styles and which shows before any player starts.
+	 *
+	 * The player stylesheets then keep blocking the first render, so that
+	 * content never shifts when the styles arrive.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public static function require_blocking_player_styles() {
+		self::$styles_needed_at_first_paint = true;
+	}
+
+	/**
+	 * Pass-through `render_block_*` filter that flags blocking player styles.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $block_content Rendered block markup.
+	 * @return string The same markup.
+	 */
+	public function flag_styles_needed_at_first_paint( $block_content ) {
+		self::require_blocking_player_styles();
+		return $block_content;
+	}
+
+	/**
+	 * Whether a stylesheet can load without blocking the first render.
+	 *
+	 * See {@see GoDAM_Player::defer_player_style_tag()} for when that is safe.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $handle Style handle.
+	 * @param string $media  Media attribute.
+	 * @return bool True to defer it.
+	 */
+	public static function should_defer_style( $handle, $media ) {
+		if ( is_admin() || ! in_array( $handle, self::DEFERRABLE_STYLE_HANDLES, true ) ) {
+			return false;
+		}
+
+		// A stylesheet for other media (e.g. print) is not render-blocking anyway.
+		if ( $media && 'all' !== $media ) {
+			return false;
+		}
+
+		$content_rendered = did_action( 'wp_footer' ) || ( wp_is_block_theme() && did_filter( 'render_block' ) );
+
+		/**
+		 * Filters whether the GoDAM player stylesheets load without blocking the first render.
+		 *
+		 * @since n.e.x.t
+		 *
+		 * @param bool   $defer  Whether to defer the stylesheet.
+		 * @param string $handle Style handle.
+		 */
+		return (bool) apply_filters(
+			'rtgodam_defer_player_styles',
+			$content_rendered && ! self::$styles_needed_at_first_paint,
+			$handle
+		);
+	}
+
+	/**
+	 * Load the player stylesheets without blocking the first render.
+	 *
+	 * The tag is printed as `media="print"`, which the browser downloads at low
+	 * priority without blocking rendering, and switched to its real media once
+	 * loaded. The player script also switches it before showing a player, in
+	 * case a Content Security Policy blocks the inline `onload`. A `<noscript>`
+	 * copy keeps the original tag for visitors without JavaScript.
+	 *
+	 * Only done when it cannot cause a layout shift:
+	 * - the page content has already rendered (a block theme, or a stylesheet
+	 *   printed late, in the footer), so we know what is on the page; and
+	 * - nothing on the page other than video players uses these styles.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @param string $tag    The `<link>` tag.
+	 * @param string $handle Style handle.
+	 * @param string $href   Stylesheet URL.
+	 * @param string $media  Media attribute.
+	 * @return string The tag.
+	 */
+	public function defer_player_style_tag( $tag, $handle, $href, $media ) {
+		if ( false !== strpos( $tag, 'data-godam-deferred-style' ) || ! self::should_defer_style( $handle, $media ) ) {
+			return $tag;
+		}
+
+		$processor = new \WP_HTML_Tag_Processor( $tag );
+		if ( ! $processor->next_tag( array( 'tag_name' => 'LINK' ) ) ) {
+			return $tag;
+		}
+
+		$processor->set_attribute( 'media', 'print' );
+		$processor->set_attribute( 'data-godam-deferred-style', 'all' );
+		$processor->set_attribute( 'onload', "this.media='all'" );
+
+		return $processor->get_updated_html() . '<noscript>' . trim( $tag ) . "</noscript>\n";
+	}
+
+	/**
+	 * Start every player on the page as it loads, instead of as each one nears
+	 * the viewport.
+	 *
+	 * For single-video pages (the embed page and the video preview page), whose
+	 * scripts expect the player to start straight away. Hooked onto
+	 * `wp_enqueue_scripts` after the player script is registered.
+	 *
+	 * @since n.e.x.t
+	 *
+	 * @return void
+	 */
+	public static function start_players_eagerly() {
+		wp_add_inline_script(
+			'godam-player-frontend-script',
+			'window.godamPlayerLoaderConfig = Object.assign( window.godamPlayerLoaderConfig || {}, { eager: true } );',
+			'before'
 		);
 	}
 

@@ -95,6 +95,7 @@ class GoDAM_Image {
 		}
 		wp_enqueue_style( 'godam-image-style' );
 		wp_enqueue_style( 'godam-player-style' );
+		GoDAM_Player::require_blocking_player_styles();
 
 		// The inline editor renders shortcodes over AJAX, where scripts a layer
 		// enqueues while rendering never print: load every layer type's view script now.
@@ -146,6 +147,7 @@ class GoDAM_Image {
 		// image block style + the shared hotspot styles for the shortcode path.
 		wp_enqueue_style( 'godam-image-style' );
 		wp_enqueue_style( 'godam-player-style' );
+		GoDAM_Player::require_blocking_player_styles();
 
 		// Tells the shared render.php it runs outside block context.
 		$godam_is_shortcode = true;

@@ -934,6 +934,25 @@ export function getLightbox() {
 }
 
 /**
+ * Starts a lightbox player that has not been started yet; set by the runtime.
+ *
+ * Players start lazily, as they near the viewport, so a trigger, a deep link or
+ * `GoDAMAPI.openLightbox()` can address a lightbox player before it exists.
+ *
+ * @type {((video: HTMLElement) => Promise)|null}
+ */
+let videoPreparer = null;
+
+/**
+ * Register how to start a lightbox player before it is moved into the lightbox.
+ *
+ * @param {(video: HTMLElement) => Promise} preparer - Resolves once the player is ready.
+ */
+export function setLightboxVideoPreparer( preparer ) {
+	videoPreparer = typeof preparer === 'function' ? preparer : null;
+}
+
+/**
  * Open the lightbox for a video ID, whether or not it is rendered on the page.
  *
  * The one place that decides between the two content modes, shared by element
@@ -964,13 +983,19 @@ export function openLightboxForId( id, { startTime = null, title = '', pushHisto
 	const playerRoot = isLightboxVideo( video ) ? getLightboxRoot( video ) : null;
 
 	if ( playerRoot ) {
-		instance.openElement( playerRoot, {
+		const openElement = () => instance.openElement( playerRoot, {
 			video,
 			startTime,
 			historyId: getLightboxId( video ) || id,
 			pushHistory,
 			requestedId: id,
 		} );
+
+		if ( videoPreparer && ! videojs.getPlayer( video ) ) {
+			videoPreparer( video ).then( openElement, openElement );
+		} else {
+			openElement();
+		}
 		return true;
 	}
 

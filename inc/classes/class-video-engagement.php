@@ -91,6 +91,11 @@ class Video_Engagement {
 		if ( ! empty( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'] ) ) {
 			$brand_color = rtgodam_sanitize_css_color( $easydam_meta_data['videoConfig']['controlBar']['appearanceColor'], $brand_color );
 		}
+
+		// The engagement script is only needed where a bar is rendered.
+		wp_enqueue_script( 'godam-player-engagement-script' );
+		// The bar is styled by the player stylesheet and shows at once.
+		\RTGODAM\Inc\Shortcodes\GoDAM_Player::require_blocking_player_styles();
 		?>
 		<div class="rtgodam-video-engagement rtgodam-video-engagement--link-disabled" 
 		style="--godam-video-engagement-background-color: <?php echo esc_attr( $brand_color ); ?>;"

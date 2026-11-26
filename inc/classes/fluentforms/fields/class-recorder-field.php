@@ -125,6 +125,7 @@ class Recorder_Field extends BaseFieldManager {
 		);
 
 		wp_enqueue_style( 'godam-player-style' );
+		\RTGODAM\Inc\Shortcodes\GoDAM_Player::require_blocking_player_styles();
 
 		$godam_settings = get_option( 'rtgodam-settings', array() );
 		$selected_skin  = isset( $godam_settings['video_player']['player_skin'] ) ? $godam_settings['video_player']['player_skin'] : '';

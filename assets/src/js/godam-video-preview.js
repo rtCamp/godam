@@ -50,17 +50,20 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		}
 
 		// Get the Video.js player instance using getPlayer() to avoid creating
-		// duplicate player instances.
-		const playerId = videoElement.id;
-		let player = null;
-
-		if ( playerId && window.videojs ) {
+		// duplicate player instances. Looked up on each call: the player script
+		// loads its runtime asynchronously, so the player may not exist yet at
+		// DOMContentLoaded.
+		const getPlayer = () => {
+			if ( ! window.videojs ) {
+				return null;
+			}
 			try {
-				player = window.videojs.getPlayer( playerId );
+				return window.videojs.getPlayer( videoElement ) || null;
 			} catch ( error ) {
 				// Player instance not found, continue without it.
+				return null;
 			}
-		}
+		};
 
 		/**
 		 * Sets the Video.js player aspect ratio and container width, clamped to
@@ -75,6 +78,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			}
 
 			// Set the aspect ratio on the Video.js player.
+			const player = getPlayer();
 			if ( player ) {
 				const aspectRatio = `${ videoWidth }:${ videoHeight }`;
 				player.aspectRatio( aspectRatio );

@@ -472,6 +472,9 @@ $godam_poster_render_attributes = isset( $godam_performance['poster_attributes']
 	: array();
 $godam_poster_attribute_string  = rtgodam_format_html_attributes( $godam_poster_render_attributes );
 
+// Priority videos start their player as the page loads; Balanced ones start as they near the viewport.
+$godam_performance_mode = rtgodam_normalize_video_performance_mode( isset( $godam_performance['mode'] ) ? $godam_performance['mode'] : 'balanced' );
+
 // Resolve the blur-up placeholder thumbnail.
 // For block-editor poster overrides, look up the mapping directly.
 // For auto-selected thumbnails, use the pre-synced single meta key.
@@ -923,6 +926,7 @@ do_action( 'rtgodam_after_attachment_lookup' );
 							data-show-in-lightbox="<?php echo esc_attr( $godam_show_in_lightbox ? 'true' : 'false' ); ?>"
 							data-out-of-view="<?php echo esc_attr( $godam_out_of_view ); ?>"
 							data-out-of-view-tab-hidden="<?php echo esc_attr( rtgodam_out_of_view_applies_to_hidden_tab() ? 'true' : 'false' ); ?>"
+							data-performance-mode="<?php echo esc_attr( $godam_performance_mode ); ?>"
 						>
 							<?php
 

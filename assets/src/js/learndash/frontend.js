@@ -103,6 +103,27 @@ export function createBlockAdapter( video, win ) {
 		}
 	};
 
+	/**
+	 * Run a command on the video.js player, starting the player first when the
+	 * GoDAM loader has not started it yet (players start as they near the
+	 * viewport, so it may not exist when the lesson sets itself up).
+	 *
+	 * @param {Function} command  Receives the player.
+	 * @param {Function} fallback Runs on the bare `<video>` when there is no loader.
+	 */
+	const withPlayer = ( command, fallback ) => {
+		const player = getPlayer();
+		if ( player ) {
+			command( player );
+			return;
+		}
+		if ( typeof win.godamPlayerLoader?.start === 'function' ) {
+			quietly( () => win.godamPlayerLoader.start( video ).then( ( started ) => started && command( started ) ) );
+			return;
+		}
+		fallback();
+	};
+
 	return {
 		on( event, callback ) {
 			video.addEventListener( event, callback );
@@ -118,27 +139,29 @@ export function createBlockAdapter( video, win ) {
 		getDuration: () => ( Number.isFinite( video.duration ) ? video.duration : 0 ),
 		isPaused: () => video.paused,
 		seek( time ) {
-			const player = getPlayer();
-			if ( player ) {
-				player.currentTime( time );
-			} else {
-				video.currentTime = time;
-			}
+			withPlayer(
+				( player ) => player.currentTime( time ),
+				() => {
+					video.currentTime = time;
+				},
+			);
 		},
 		play() {
-			const player = getPlayer();
-			quietly( () => ( player ? player.play() : video.play() ) );
+			withPlayer(
+				( player ) => quietly( () => player.play() ),
+				() => quietly( () => video.play() ),
+			);
 		},
 		pause() {
 			const player = getPlayer();
 			quietly( () => ( player ? player.pause() : video.pause() ) );
 		},
 		mute() {
-			const player = getPlayer();
-			if ( player ) {
-				player.muted( true );
-			}
 			video.muted = true;
+			withPlayer(
+				( player ) => player.muted( true ),
+				() => {},
+			);
 		},
 	};
 }

@@ -195,8 +195,8 @@ export const PlaybackControls = ( { setAttributes, attributes } ) => {
 };
 
 const performanceHelpText = {
-	balanced: __( 'Recommended for most videos. Loads thumbnails as visitors scroll and prepares the video just before they reach it. Best for overall page performance.', 'godam' ),
-	priority: __( 'For hero videos above the fold. Loads the thumbnail immediately and prepares the video for the fastest possible first play. Use sparingly - one or two per page.', 'godam' ),
+	balanced: __( 'Recommended for most videos. Loads thumbnails as visitors scroll and starts the player just before they reach it. Nothing is downloaded until they press play. Best for overall page performance.', 'godam' ),
+	priority: __( 'For hero videos above the fold. Starts the player as the page loads and prepares the video for the fastest possible first play. Use sparingly - one or two per page.', 'godam' ),
 };
 
 const resolveLegacyPerformanceMode = ( preload, preloadPoster ) => {
