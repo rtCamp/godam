@@ -15,6 +15,8 @@ import {
 	getSessionId,
 	readCookie,
 	watchedPercent,
+	nearestMilestone,
+	highestMilestoneReached,
 	privacyOptedOut,
 	marketingConsentWithheld,
 	hubspotOptedOut,
@@ -346,6 +348,33 @@ describe( 'watchedPercent', () => {
 	} );
 } );
 
+describe( 'nearestMilestone', () => {
+	it( 'rounds to the closest milestone, the way a pause reports it', () => {
+		expect( nearestMilestone( 0 ) ).toBe( 0 );
+		expect( nearestMilestone( 12 ) ).toBe( 0 );
+		expect( nearestMilestone( 13 ) ).toBe( 25 );
+		expect( nearestMilestone( 24 ) ).toBe( 25 );
+		expect( nearestMilestone( 60 ) ).toBe( 50 );
+		expect( nearestMilestone( 88 ) ).toBe( 100 );
+		expect( nearestMilestone( 100 ) ).toBe( 100 );
+	} );
+
+	it( 'never rounds above 100', () => {
+		expect( nearestMilestone( 100 ) ).toBe( 100 );
+	} );
+} );
+
+describe( 'highestMilestoneReached', () => {
+	it( 'floors to the highest milestone passed, the way the end reports it', () => {
+		expect( highestMilestoneReached( 0 ) ).toBe( 0 );
+		expect( highestMilestoneReached( 3 ) ).toBe( 0 );
+		expect( highestMilestoneReached( 24 ) ).toBe( 0 );
+		expect( highestMilestoneReached( 25 ) ).toBe( 25 );
+		expect( highestMilestoneReached( 88 ) ).toBe( 75 );
+		expect( highestMilestoneReached( 100 ) ).toBe( 100 );
+	} );
+} );
+
 describe( 'milestones reported for one view', () => {
 	const originalFetch = window.fetch;
 
@@ -432,64 +461,85 @@ describe( 'milestones reported for one view', () => {
 		return window.fetch.mock.calls.map( ( [ , init ] ) => JSON.parse( init.body ).milestone );
 	}
 
+	it( 'reports the nearest milestone once when the viewer pauses partway', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 60 ] );
+		player.trigger( 'pause' );
+		// Pausing again at the same spot adds nothing.
+		player.trigger( 'pause' );
+
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+	} );
+
+	it( 'reports each new high as the viewer pauses further in, and nothing when it does not climb', () => {
+		const player = readyPlayer( 100 );
+
+		player.ranges.push( [ 0, 40 ] );
+		player.trigger( 'pause' ); // nearest( 40 ) = 50
+
+		// A little more watched, still nearest 50: no new event.
+		player.ranges.push( [ 40, 45 ] );
+		player.trigger( 'pause' );
+
+		player.ranges.push( [ 45, 100 ] );
+		player.trigger( 'pause' ); // nearest( 100 ) = 100
+
+		expect( postedMilestones() ).toEqual( [ 50, 100 ] );
+	} );
+
+	it( 'reports a single 100 for a full straight-through watch', () => {
+		const player = readyPlayer( 100 );
+
+		// The browser fires pause at the end, then ended; only one 100 goes out.
+		player.ranges.push( [ 0, 99.7 ] );
+		player.trigger( 'pause' );
+		player.trigger( 'ended' );
+
+		expect( postedMilestones() ).toEqual( [ 100 ] );
+	} );
+
+	it( 'reports the highest milestone watched when the video ends', () => {
+		const player = readyPlayer( 100 );
+
+		// No manual pause: the ended handler alone reports the floor milestone.
+		player.ranges.push( [ 0, 60 ] );
+		player.trigger( 'ended' );
+
+		expect( postedMilestones() ).toEqual( [ 50 ] );
+	} );
+
 	it( 'reports only the start when the viewer skips to the end and lets it finish', () => {
 		const player = readyPlayer( 100 );
 
-		player.trigger( 'play' );
 		player.ranges.push( [ 0, 1 ] );
-		player.trigger( 'timeupdate' );
 		player.ranges.push( [ 98, 100 ] );
-		player.trigger( 'timeupdate' );
-		player.trigger( 'ended' );
+		player.trigger( 'pause' ); // ~3% watched: nearest is 0
+		player.trigger( 'ended' ); // floor is 0: nothing new
 
 		expect( postedMilestones() ).toEqual( [ 0 ] );
 	} );
 
-	it( 'reports 100 for a full watch whose played range stops just short of the end', () => {
-		const player = readyPlayer( 100 );
-
-		player.trigger( 'play' );
-		player.ranges.push( [ 0, 99.7 ] );
-		player.trigger( 'timeupdate' );
-		player.trigger( 'ended' );
-
-		expect( postedMilestones() ).toEqual( [ 0, 25, 50, 75, 100 ] );
-	} );
-
-	it( 'reports what was watched before a skip to the end, and no more', () => {
-		const player = readyPlayer( 100 );
-
-		player.trigger( 'play' );
-		player.ranges.push( [ 0, 60 ] );
-		player.trigger( 'timeupdate' );
-		player.ranges.push( [ 99, 100 ] );
-		player.trigger( 'timeupdate' );
-		player.trigger( 'ended' );
-
-		expect( postedMilestones() ).toEqual( [ 0, 25, 50 ] );
-	} );
-
 	/*
 	 * The tracking script that writes the cookie is third-party and async, so on a
-	 * visitor's first page view it often lands after the player is ready. The whole
-	 * view has to survive that, not just the milestones that follow it.
+	 * visitor's first page view it often lands after the player is ready. A pause
+	 * before the cookie arrives must not spend the view: the next pause still reports.
 	 */
-	it( 'carries the whole view when the cookie only arrives mid-watch', () => {
+	it( 'carries the view when the cookie only arrives after an earlier pause', () => {
 		clearCookies();
 
 		const player = readyPlayer( 100 );
 
-		player.trigger( 'play' );
-		player.ranges.push( [ 0, 10 ] );
-		player.trigger( 'timeupdate' );
+		player.ranges.push( [ 0, 60 ] );
+		player.trigger( 'pause' );
 
 		expect( postedMilestones() ).toEqual( [] );
 
 		document.cookie = `hubspotutk=${ HUTK }; path=/`;
-		player.ranges.push( [ 10, 60 ] );
-		player.trigger( 'timeupdate' );
+		player.ranges.push( [ 60, 100 ] );
+		player.trigger( 'pause' );
 
-		expect( postedMilestones() ).toEqual( [ 0, 25, 50 ] );
+		expect( postedMilestones() ).toEqual( [ 100 ] );
 	} );
 
 	it( 'sends the cookie that arrived, not an empty set', () => {
@@ -497,10 +547,9 @@ describe( 'milestones reported for one view', () => {
 
 		const player = readyPlayer( 100 );
 
-		player.trigger( 'play' );
 		document.cookie = `hubspotutk=${ HUTK }; path=/`;
 		player.ranges.push( [ 0, 30 ] );
-		player.trigger( 'timeupdate' );
+		player.trigger( 'pause' );
 
 		const [ , init ] = window.fetch.mock.calls[ 0 ];
 
@@ -512,9 +561,8 @@ describe( 'milestones reported for one view', () => {
 
 		const player = readyPlayer( 100 );
 
-		player.trigger( 'play' );
 		player.ranges.push( [ 0, 100 ] );
-		player.trigger( 'timeupdate' );
+		player.trigger( 'pause' );
 		player.trigger( 'ended' );
 
 		expect( postedMilestones() ).toEqual( [] );
@@ -525,9 +573,8 @@ describe( 'milestones reported for one view', () => {
 
 		const player = readyPlayer( 100 );
 
-		player.trigger( 'play' );
 		player.ranges.push( [ 0, 100 ] );
-		player.trigger( 'timeupdate' );
+		player.trigger( 'pause' );
 		player.trigger( 'ended' );
 
 		expect( window.sessionStorage.length ).toBe( 0 );

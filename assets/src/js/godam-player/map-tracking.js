@@ -1,10 +1,15 @@
 /**
  * Report video view milestones to the viewer's marketing automation platform.
  *
- * Watches every GoDAM player on the page and posts 0 (started), 25, 50, 75 and 100
- * to `godam/v1/map-events`, together with the visitor's Marketo and/or HubSpot
- * cookie. The REST route forwards it to GoDAM Central server-to-server, and Central
- * records it against the lead or contact that cookie belongs to.
+ * Watches every GoDAM player on the page and reports a milestone from the fixed set
+ * 0/25/50/75/100 at two moments: when the viewer pauses (the milestone nearest the
+ * share watched so far) and when the video ends (the highest milestone actually
+ * watched). A milestone is only sent when it is higher than the last one sent for the
+ * view, so a straight-through watch produces one event and repeated pauses at the same
+ * point produce none. Each is posted to `godam/v1/map-events` with the visitor's
+ * Marketo and/or HubSpot cookie. The REST route forwards it to GoDAM Central
+ * server-to-server, and Central records it against the lead or contact that cookie
+ * belongs to.
  *
  * Nothing here identifies anyone on its own: the cookie is the customer's own
  * first-party cookie, it is read but never written, and a page with neither cookie
@@ -264,6 +269,41 @@ function watchedPercent( player, endSlack = 0 ) {
 }
 
 /**
+ * The milestone nearest a watched percentage.
+ *
+ * Central only records the fixed set 0/25/50/75/100, so a pause partway through has
+ * to report the closest of them rather than the raw percentage: 88 becomes 100, 24
+ * becomes 25, 12 becomes 0.
+ *
+ * @param {number} percent - Share watched, 0-100.
+ * @return {number} A value from MILESTONES.
+ */
+function nearestMilestone( percent ) {
+	return Math.min( 100, Math.round( percent / 25 ) * 25 );
+}
+
+/**
+ * The highest milestone a watched percentage has reached (floored, never rounded up).
+ *
+ * Used when the video ends, so finishing a video the viewer skipped through reports
+ * only what they actually played, not 100.
+ *
+ * @param {number} percent - Share watched, 0-100.
+ * @return {number} A value from MILESTONES; 0 when none is reached.
+ */
+function highestMilestoneReached( percent ) {
+	let reached = 0;
+
+	MILESTONES.forEach( ( milestone ) => {
+		if ( percent >= milestone ) {
+			reached = milestone;
+		}
+	} );
+
+	return reached;
+}
+
+/**
  * Post one milestone. Failures are deliberately silent: tracking must never
  * interrupt playback or fill the console on a viewer's page.
  *
@@ -319,7 +359,11 @@ function trackPlayer( config, player, video ) {
 
 	let sessionId = '';
 	let knownIds = null;
-	const sent = new Set();
+
+	// Highest milestone already sent for this view. A milestone is reported only when
+	// it climbs past this, so repeated pauses at the same point send nothing and the
+	// sequence can only go up. -1 lets the first 0 through.
+	let highestSent = -1;
 
 	/**
 	 * The visitor's cookies, read afresh until they turn up.
@@ -347,7 +391,8 @@ function trackPlayer( config, player, video ) {
 	};
 
 	const report = ( milestone ) => {
-		if ( sent.has( milestone ) ) {
+		// Only ever report a milestone higher than the last one sent for this view.
+		if ( milestone <= highestSent ) {
 			return;
 		}
 
@@ -373,7 +418,7 @@ function trackPlayer( config, player, video ) {
 			return;
 		}
 
-		sent.add( milestone );
+		highestSent = milestone;
 
 		sendMilestone( config, {
 			media_id: jobId,
@@ -384,33 +429,19 @@ function trackPlayer( config, player, video ) {
 		} );
 	};
 
-	player.one( 'play', () => report( 0 ) );
-
-	player.on( 'timeupdate', () => {
-		// Also covers a player that was already playing when this script ran, where
-		// the `play` above has already fired and will not fire again.
-		report( 0 );
-
-		const percent = watchedPercent( player );
-
-		MILESTONES.forEach( ( milestone ) => {
-			if ( milestone > 0 && percent >= milestone ) {
-				report( milestone );
-			}
-		} );
+	// On pause, report the milestone nearest the share watched so far. report() drops
+	// it unless it is higher than the last one sent, so pausing again at the same spot
+	// sends nothing. A browser fires `pause` just before `ended` too, which lands the
+	// closing milestone even when the `ended` handler below does not run.
+	player.on( 'pause', () => {
+		report( nearestMilestone( watchedPercent( player ) ) );
 	} );
 
-	// `timeupdate` stops a little short of the end on most browsers, so 100 would
-	// otherwise never fire for someone who watched the whole thing. Still count only
-	// what was played: skipping to the end and letting it finish is not watching it.
+	// On end, report the highest milestone actually watched. `timeupdate` stops a
+	// little short of the end on most browsers, so END_SLACK_SECONDS lets a full watch
+	// reach 100; a viewer who skipped to the end still reports only what they played.
 	player.on( 'ended', () => {
-		const percent = watchedPercent( player, END_SLACK_SECONDS );
-
-		MILESTONES.forEach( ( milestone ) => {
-			if ( percent >= milestone ) {
-				report( milestone );
-			}
-		} );
+		report( highestMilestoneReached( watchedPercent( player, END_SLACK_SECONDS ) ) );
 	} );
 }
 
@@ -480,6 +511,8 @@ export {
 	getSessionId,
 	readCookie,
 	watchedPercent,
+	nearestMilestone,
+	highestMilestoneReached,
 	privacyOptedOut,
 	marketingConsentWithheld,
 	hubspotOptedOut,
