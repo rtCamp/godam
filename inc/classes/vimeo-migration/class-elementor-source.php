@@ -2,7 +2,7 @@
 /**
  * Vimeo migration source: Elementor.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  *
  * @package GoDAM
  */
@@ -22,14 +22,14 @@ use RTGODAM\Inc\Seo;
  * URL (a background video, a Pro widget, text) is counted as found but left
  * as it is.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  */
 class Elementor_Source {
 
 	/**
 	 * Source slug used in the migration status.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string
 	 */
@@ -38,7 +38,7 @@ class Elementor_Source {
 	/**
 	 * Post meta key holding an Elementor document's element tree.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string
 	 */
@@ -47,7 +47,7 @@ class Elementor_Source {
 	/**
 	 * Widget type of Elementor's core Video widget.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string
 	 */
@@ -56,7 +56,7 @@ class Elementor_Source {
 	/**
 	 * Widget type of the GoDAM Video widget.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string
 	 */
@@ -65,7 +65,7 @@ class Elementor_Source {
 	/**
 	 * Elementor's default Vimeo URL for a Video widget whose URL was never changed.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string
 	 */
@@ -76,7 +76,7 @@ class Elementor_Source {
 	 * to it, and so carry over to the GoDAM widget unchanged: the responsive
 	 * visibility switches, and Elementor Pro's Custom CSS (`custom_css`).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string[]
 	 */
@@ -85,7 +85,7 @@ class Elementor_Source {
 	/**
 	 * Callable that resolves a Vimeo URL to its GoDAM video, see Vimeo_Resolver::resolve().
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var callable
 	 */
@@ -94,7 +94,7 @@ class Elementor_Source {
 	/**
 	 * Constructor.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param callable $resolve Takes a Vimeo URL, returns the GoDAM video array or null.
 	 */
@@ -105,7 +105,7 @@ class Elementor_Source {
 	/**
 	 * Whether Elementor is loaded on this site.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @return bool
 	 */
@@ -118,7 +118,7 @@ class Elementor_Source {
 	 *
 	 * The LIKE is a coarse prefilter; migrate_post() decides what to change.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @return int[] Post IDs, ascending.
 	 */
@@ -147,7 +147,7 @@ class Elementor_Source {
 	/**
 	 * Migrate the Vimeo videos in one post's Elementor data.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param int $post_id Post ID.
 	 *
@@ -213,7 +213,7 @@ class Elementor_Source {
 	/**
 	 * Walk an Elementor element tree and migrate every Vimeo Video widget.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $elements Element tree (containers, sections, columns, widgets).
 	 * @param int   $post_id  Post the tree belongs to, passed to the filter.
@@ -241,7 +241,7 @@ class Elementor_Source {
 	/**
 	 * Migrate a single element, without its children.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $element Element.
 	 * @param int   $post_id Post the element belongs to.
@@ -295,7 +295,7 @@ class Elementor_Source {
 		 * number of Vimeo videos found and replaced in this element to
 		 * `found` and `migrated`.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.11.1
 		 *
 		 * @param array            $args {
 		 *     Migration arguments.
@@ -338,7 +338,7 @@ class Elementor_Source {
 	/**
 	 * Read the literal Vimeo URL of a core Video widget.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $settings Widget settings.
 	 *
@@ -363,7 +363,7 @@ class Elementor_Source {
 	 * has, and drops the Vimeo-only ones (start/end time, title, portrait,
 	 * byline, color).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $element Core Video widget element.
 	 * @param array $video   GoDAM video, see Vimeo_Resolver::resolve().
@@ -446,7 +446,7 @@ class Elementor_Source {
 	/**
 	 * Whether a setting belongs to the Advanced tab every widget shares.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $key Setting key.
 	 *
@@ -462,7 +462,7 @@ class Elementor_Source {
 	/**
 	 * Keep only the Advanced-tab keys of a `__dynamic__` or `__globals__` map.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $map Setting key => dynamic tag or global reference.
 	 *
@@ -483,7 +483,7 @@ class Elementor_Source {
 	/**
 	 * Whether any setting value holds a Vimeo URL.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $settings Element settings.
 	 *
@@ -511,7 +511,7 @@ class Elementor_Source {
 	 * rebuild from the new widgets, and update GoDAM's video SEO schema and
 	 * media usage for the post.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param int $post_id Post ID.
 	 *

@@ -4,7 +4,7 @@ Tags: video hosting, vimeo, lms, online courses, lifterlms
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.11.0
+Stable tag: 2.11.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -273,6 +273,16 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 
 == Changelog ==
 
+= v2.11.1 (November 27, 2026) =
+
+- Feat: The Vimeo migration now also replaces Vimeo videos in Elementor's Video widget, WPBakery's Video element and, if you opt in, ACF oEmbed and URL fields. The completion screen shows how many it found and replaced in each place.
+- Tweak: A GoDAM video link for a video in your media library now plays in your site's own GoDAM player, including videos that aren't shared publicly. LifterLMS lessons using Advanced Videos keep the embedded player.
+- Tweak: The GoDAM Video, Image and Video Gallery blocks now have a border radius setting in Styles > Border & Shadow. The GoDAM Image block also takes a border color, style and width.
+- Tweak: Marketo and HubSpot tracking now sends one event per view, when the viewer pauses, leaves the page or reaches the end, carrying how much they watched. GoDAM's own pauses, such as for a form layer, and skipping to the end don't count.
+- Fix: The GoDAM Image block now shows the image's current version, with its current size, on the page and in the editor. Before, it could show the local uploads file instead of GoDAM's CDN copy, or an older version after the image was replaced.
+- Fix: The Vimeo migration no longer corrupts other blocks on a migrated post, strips iframes from Custom HTML blocks, or links the new block to the attachment page instead of the video file.
+- Fix: The bandwidth-exceeded notice no longer says videos may stop being served from the CDN. Videos keep playing.
+
 = v2.11.0 (November 19, 2026) =
 
 - Feat: GoDAM videos now work with LearnDash Video Progression on lessons and topics. Turn on "Use GoDAM Video" to use a GoDAM Video block or a picked video, or paste a GoDAM video URL into LearnDash's Video URL field. Mark Complete stays locked until the video ends, and the player follows LearnDash's Autostart, Video Resume and controls settings.
@@ -290,11 +300,6 @@ If your banner does not support the WP Consent API, add `add_filter( 'godam_visi
 - Feat: AI agents such as Claude and Cursor can now use GoDAM through MCP. They can find and organise media, add layers and chapters, place GoDAM blocks on pages, change player settings, start processing and read analytics, as the connected WordPress user and within that user's permissions. Needs WordPress 6.9 or later and the MCP Adapter plugin.
 - Tweak: Administrators can turn off the changes an AI agent can make in Settings > Writing > GoDAM and AI agents, or turn MCP off entirely in GoDAM > Settings > General.
 - Tweak: When the MCP Adapter plugin is active, GoDAM's admin pages show a dismissible notice on connecting an AI agent.
-
-= v2.9.1 (November 16, 2026) =
-
-- Fix: Single Video Analytics, a CTA layer's image, Copy block and the WPBakery document cover now load on sites that block the WordPress media REST API for logged-out visitors.
-- Fix: A CTA layer's image is no longer removed when it fails to load for a reason other than being deleted.
 
 == External Services ==
 This plugin relies on third-party services to provide specific features. Below is a detailed explanation of the external services used, what data is sent, and under what conditions.

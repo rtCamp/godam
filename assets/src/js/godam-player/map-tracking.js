@@ -35,7 +35,7 @@ const END_SLACK_SECONDS = 1;
  * theirs, in milliseconds. Long enough for Video.js to act on the input, short
  * enough that a layer pausing the video a moment later is not mistaken for it.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  */
 const VIEWER_INPUT_WINDOW_MS = 1000;
 

@@ -3959,7 +3959,7 @@ function rtgodam_sanitize_hotspot_links( $layers ) {
  *
  * Anything else, including a URL that can't be told apart, counts as another image.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  *
  * @param string $url           Image URL saved on the block.
  * @param int    $attachment_id Attachment ID saved on the block.
@@ -4183,7 +4183,7 @@ function rtgodam_is_transcoder_file_url( $url ) {
  * A value with characters that cannot be part of a length is dropped, so the
  * result is safe to print in a `style` attribute.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  *
  * @param mixed $radius Saved radius.
  *

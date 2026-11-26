@@ -2,7 +2,7 @@
 /**
  * Vimeo migration source: Advanced Custom Fields.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  *
  * @package GoDAM
  */
@@ -22,14 +22,14 @@ defined( 'ABSPATH' ) || exit;
  * their own post meta rows with their own field reference, so they are
  * covered too. Options pages, term meta, user meta and ACF blocks are not.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  */
 class Acf_Source {
 
 	/**
 	 * Source slug used in the migration status.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string
 	 */
@@ -38,7 +38,7 @@ class Acf_Source {
 	/**
 	 * ACF field types whose Vimeo links are replaced.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string[]
 	 */
@@ -47,7 +47,7 @@ class Acf_Source {
 	/**
 	 * Callable that resolves a Vimeo URL to its GoDAM video, see Vimeo_Resolver::resolve().
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var callable
 	 */
@@ -56,7 +56,7 @@ class Acf_Source {
 	/**
 	 * Callable that returns an ACF field array for a field key.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var callable
 	 */
@@ -65,7 +65,7 @@ class Acf_Source {
 	/**
 	 * Constructor.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param callable      $resolve   Takes a Vimeo URL, returns the GoDAM video array or null.
 	 * @param callable|null $get_field Takes an ACF field key, returns the field array or false. Defaults to acf_get_field().
@@ -78,7 +78,7 @@ class Acf_Source {
 	/**
 	 * Whether ACF is active on this site.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @return bool
 	 */
@@ -91,7 +91,7 @@ class Acf_Source {
 	 *
 	 * The LIKE is a coarse prefilter; migrate_post() checks the field type.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @return int[] Post IDs, ascending.
 	 */
@@ -120,7 +120,7 @@ class Acf_Source {
 	/**
 	 * Migrate the Vimeo links in one post's ACF oEmbed and URL fields.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param int $post_id Post ID.
 	 *
@@ -149,7 +149,7 @@ class Acf_Source {
 	/**
 	 * Work out the new values of a post's ACF fields that hold a Vimeo link.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $meta   All post meta, as get_post_meta( $post_id ) returns it: key => list of values.
 	 * @param array $counts Running `found` / `migrated` counts (by reference).
@@ -165,7 +165,7 @@ class Acf_Source {
 		 * The new value is the video's GoDAM share URL, so only add field
 		 * types that render or store a URL.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.11.1
 		 *
 		 * @param string[] $field_types ACF field types. Default 'oembed' and 'url'.
 		 */

@@ -61,7 +61,7 @@ class Lifter_LMS {
 	 * the next lesson by talking to the embedded GoDAM iframe, so a share URL
 	 * on a LifterLMS page is not swapped for the site's own player.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param bool $render_locally Whether to render the share URL with the site's own player.
 	 *
