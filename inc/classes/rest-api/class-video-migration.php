@@ -30,7 +30,7 @@ class Video_Migration extends Base {
 	/**
 	 * Slug of the Gutenberg block source in the Vimeo migration status.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string
 	 */
@@ -584,7 +584,7 @@ class Video_Migration extends Base {
 	/**
 	 * Add a finished batch to the migration status, and mark the run complete when it's the last.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array  $migration_status       The stored migration status.
 	 * @param string $migration_type         The migration type, 'core' or 'vimeo'.
@@ -651,7 +651,7 @@ class Video_Migration extends Base {
 	 * (`alloptions`) alone, so other requests on the site don't have to
 	 * reload it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $option Option name.
 	 *
@@ -681,7 +681,7 @@ class Video_Migration extends Base {
 	 * the database: the option cache of a long-running request goes stale.
 	 *
 	 * @since 1.4.0
-	 * @since n.e.x.t Uses atomic queries instead of cached option reads, and waits longer.
+	 * @since 2.11.1 Uses atomic queries instead of cached option reads, and waits longer.
 	 *
 	 * @param string $lock_key   Unique option key for the lock.
 	 * @param int    $timeout_s  Lock expiry seconds.
@@ -794,7 +794,7 @@ class Video_Migration extends Base {
 	 * `<iframe>` in a Custom HTML block. The migration only swaps videos, so
 	 * kses is switched off for this one write and restored afterwards.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param int    $post_id Post ID.
 	 * @param string $content New post content.
@@ -906,7 +906,7 @@ class Video_Migration extends Base {
 	 * elements in the post content (saved once), then Elementor Video widgets
 	 * and, when asked for, ACF oEmbed and URL fields.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param int                 $post_id     The ID of the post to migrate.
 	 * @param bool                $include_acf Whether to replace Vimeo links in ACF fields.
@@ -998,7 +998,7 @@ class Video_Migration extends Base {
 	/**
 	 * Slugs of the places the Vimeo migration covers on this site.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param bool $include_acf Whether ACF fields are included in this run.
 	 *
@@ -1025,7 +1025,7 @@ class Video_Migration extends Base {
 	/**
 	 * Find the posts with Vimeo videos in page builders and custom fields.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param bool $include_acf Whether ACF fields are included in this run.
 	 *
@@ -1052,7 +1052,7 @@ class Video_Migration extends Base {
 	/**
 	 * Add one batch's per-source Vimeo counts to the running totals.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $totals Running totals: source slug => { found, migrated }.
 	 * @param array $batch  This batch's counts, same shape.
@@ -1072,7 +1072,7 @@ class Video_Migration extends Base {
 	 * Recursively traverse blocks to find and migrate Vimeo embeds inside nested structures.
 	 *
 	 * @since 1.4.0
-	 * @since n.e.x.t Looks videos up through the batch's shared resolver.
+	 * @since 2.11.1 Looks videos up through the batch's shared resolver.
 	 *
 	 * @param array          $blocks   Parsed Gutenberg blocks (passed by reference).
 	 * @param int            $post_id  Post ID for logging context.

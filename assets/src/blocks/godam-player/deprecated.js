@@ -7,7 +7,7 @@ import save from './save';
 /**
  * Supports before the border moved from the block wrapper to the video.
  *
- * Until n.e.x.t the border was serialized on the wrapper, so a saved post with a
+ * Before 2.11.1 the border was serialized on the wrapper, so a saved post with a
  * border carries it in the wrapper's `style` and class. Same attributes and
  * save, only the border is serialized again, so those posts still validate.
  * The border then renders on the video like a new block's.

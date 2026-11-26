@@ -34,7 +34,7 @@ class Embed {
 	/**
 	 * Attachment IDs found for GoDAM job IDs during this request; 0 when none.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var array<string, int>
 	 */
@@ -149,7 +149,7 @@ class Embed {
 	 * The pattern is built from the whole API base, so a base with a port
 	 * (https://godam.local:8443) matches the share URLs built from it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @return void
 	 */
@@ -171,7 +171,7 @@ class Embed {
 	/**
 	 * The regex an embed handler matches GoDAM share URLs with.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $api_base The GoDAM API base, e.g. https://app.godam.io.
 	 *
@@ -196,7 +196,7 @@ class Embed {
 	 * the preview's sandbox gets no player styles, so the player couldn't
 	 * render there.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array  $matches The regex matches.
 	 * @param array  $attr    Embed attributes.
@@ -231,7 +231,7 @@ class Embed {
 	 * migration writes these into ACF fields; they can also be pasted into
 	 * content.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $url GoDAM share URL.
 	 *
@@ -250,7 +250,7 @@ class Embed {
 	/**
 	 * The media library video a GoDAM share URL renders locally, if any.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $url GoDAM share URL.
 	 *
@@ -280,7 +280,7 @@ class Embed {
 		 * as LifterLMS lessons do: their player integration talks to the
 		 * embedded iframe.
 		 *
-		 * @since n.e.x.t
+		 * @since 2.11.1
 		 *
 		 * @param bool   $render_locally Whether to render with the site's own player. Default true.
 		 * @param string $url            The GoDAM share URL.
@@ -299,7 +299,7 @@ class Embed {
 	 * `the_content`, `widget_text_content` and `widget_block_content` run
 	 * embeds at priority 8 and shortcodes at 11.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @return bool
 	 */
@@ -312,7 +312,7 @@ class Embed {
 	/**
 	 * Read the GoDAM job ID from a share URL.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $url GoDAM share URL, RTGODAM_API_BASE/web/video/<job ID>.
 	 *
@@ -335,7 +335,7 @@ class Embed {
 	 * imported from GoDAM, including migrated Vimeo videos
 	 * (`_godam_original_id`).
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $job_id GoDAM job ID.
 	 *

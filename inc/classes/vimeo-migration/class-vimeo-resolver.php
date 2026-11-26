@@ -2,7 +2,7 @@
 /**
  * Turns a Vimeo URL into the GoDAM video that replaces it.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  *
  * @package GoDAM
  */
@@ -22,14 +22,14 @@ use RTGODAM\Inc\REST_API\Video_Migration;
  * lifetime of the object, so a video used many times in one batch costs one
  * Central request.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  */
 class Vimeo_Resolver {
 
 	/**
 	 * The migration that creates attachments from Vimeo videos.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var Video_Migration
 	 */
@@ -38,7 +38,7 @@ class Vimeo_Resolver {
 	/**
 	 * Resolved videos keyed by Vimeo video ID. Null marks a failed lookup.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var array<string, array|null>
 	 */
@@ -47,7 +47,7 @@ class Vimeo_Resolver {
 	/**
 	 * Constructor.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param Video_Migration $migration The migration that creates attachments from Vimeo videos.
 	 */
@@ -58,7 +58,7 @@ class Vimeo_Resolver {
 	/**
 	 * Resolve a Vimeo URL to the GoDAM video that replaces it.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $vimeo_url Vimeo video URL.
 	 *
@@ -85,7 +85,7 @@ class Vimeo_Resolver {
 	/**
 	 * Look a Vimeo URL up in GoDAM Central and read the replacement attachment.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $vimeo_url Vimeo video URL.
 	 *
@@ -141,7 +141,7 @@ class Vimeo_Resolver {
 	 * RTGODAM\Inc\Embed), so they render the GoDAM player wherever WordPress
 	 * embeds a URL.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $job_id GoDAM Central job ID.
 	 *

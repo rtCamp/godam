@@ -2,7 +2,7 @@
 /**
  * Helpers for recognising Vimeo video URLs.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  *
  * @package GoDAM
  */
@@ -17,14 +17,14 @@ defined( 'ABSPATH' ) || exit;
  * Tells whether a string is a link to a single Vimeo video, and reads the
  * video's numeric ID from it.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  */
 class Vimeo_Url {
 
 	/**
 	 * Hosts that serve Vimeo videos.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string[]
 	 */
@@ -36,7 +36,7 @@ class Vimeo_Url {
 	 * The host has to be one of Vimeo's own hosts, so a URL that only mentions
 	 * vimeo.com in its path or query string does not count.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param mixed $url Value to check.
 	 *
@@ -87,7 +87,7 @@ class Vimeo_Url {
 	 * - vimeo.com/showcase/<id>/video/123 and vimeo.com/album/<id>/video/123
 	 * - vimeo.com/manage/videos/123
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $url Vimeo URL.
 	 *

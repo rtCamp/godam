@@ -2,7 +2,7 @@
 /**
  * Vimeo migration source: WPBakery.
  *
- * @since n.e.x.t
+ * @since 2.11.1
  *
  * @package GoDAM
  */
@@ -19,14 +19,14 @@ use RTGODAM\Inc\Seo;
  * Replaces WPBakery's Video Player element (`[vc_video]`), when its link is a
  * Vimeo URL, with the GoDAM Video element (`[godam_video]`).
  *
- * @since n.e.x.t
+ * @since 2.11.1
  */
 class WPBakery_Source {
 
 	/**
 	 * Source slug used in the migration status.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string
 	 */
@@ -35,7 +35,7 @@ class WPBakery_Source {
 	/**
 	 * Shortcode tag of WPBakery's Video Player element.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string
 	 */
@@ -44,7 +44,7 @@ class WPBakery_Source {
 	/**
 	 * Shortcode tag of the GoDAM Video element.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var string
 	 */
@@ -53,7 +53,7 @@ class WPBakery_Source {
 	/**
 	 * Callable that resolves a Vimeo URL to its GoDAM video, see Vimeo_Resolver::resolve().
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var callable
 	 */
@@ -62,7 +62,7 @@ class WPBakery_Source {
 	/**
 	 * Vimeo videos found and replaced by the last migrate_content() call.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @var array{found: int, migrated: int}
 	 */
@@ -74,7 +74,7 @@ class WPBakery_Source {
 	/**
 	 * Constructor.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param callable $resolve Takes a Vimeo URL, returns the GoDAM video array or null.
 	 */
@@ -85,7 +85,7 @@ class WPBakery_Source {
 	/**
 	 * Whether WPBakery is active on this site.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @return bool
 	 */
@@ -106,7 +106,7 @@ class WPBakery_Source {
 	 *
 	 * The LIKEs are a coarse prefilter; migrate_content() decides what to change.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @return int[] Post IDs, ascending.
 	 */
@@ -137,7 +137,7 @@ class WPBakery_Source {
 	 * Content without a replaceable element comes back byte-identical.
 	 * Read the counts with get_counts() afterwards.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param string $content Post content.
 	 *
@@ -162,7 +162,7 @@ class WPBakery_Source {
 	/**
 	 * Vimeo videos found and replaced by the last migrate_content() call.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @return array{found: int, migrated: int}
 	 */
@@ -176,7 +176,7 @@ class WPBakery_Source {
 	 * Capture groups from get_shortcode_regex(): 1 and 6 are the extra
 	 * brackets of an escaped `[[vc_video]]`, 3 is the attribute string.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $matches Regex match.
 	 *
@@ -219,7 +219,7 @@ class WPBakery_Source {
 	 * title, width, alignment, CSS animation, extra class or element ID, so
 	 * those are dropped.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $attrs Attributes of the `[vc_video]`.
 	 * @param array $video GoDAM video, see Vimeo_Resolver::resolve().

@@ -646,7 +646,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	 * Deleted when the callback carries no size, so a size from an earlier version is never
 	 * printed for a newer image.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param int   $attachment_id Attachment ID.
 	 * @param array $params        Transcoder callback parameters.
@@ -671,7 +671,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	 * the callback: `{"current_version": 3, "versions": {"3": {"width": 2560, "height": 1800}}}`.
 	 * It arrives as a JSON string, or as an array when the callback body is JSON.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $params Transcoder callback parameters.
 	 * @return array{width: int, height: int}|array Empty when no positive width and height are found.
@@ -705,7 +705,7 @@ class RTGODAM_Transcoder_Rest_Routes extends WP_REST_Controller {
 	/**
 	 * The `width` and `height` of an array, when both are positive integers.
 	 *
-	 * @since n.e.x.t
+	 * @since 2.11.1
 	 *
 	 * @param array $source Array that may hold `width` and `height`.
 	 * @return array{width: int, height: int}|array Empty when either is missing or not positive.
