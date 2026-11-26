@@ -1,10 +1,17 @@
 /**
  * Report video view milestones to the viewer's marketing automation platform.
  *
- * Watches every GoDAM player on the page and posts 0 (started), 25, 50, 75 and 100
- * to `godam/v1/map-events`, together with the visitor's Marketo and/or HubSpot
- * cookie. The REST route forwards it to GoDAM Central server-to-server, and Central
- * records it against the lead or contact that cookie belongs to.
+ * Watches every GoDAM player on the page and reports a milestone from the fixed set
+ * 0/25/50/75/100 at three moments: when the viewer pauses or leaves the page (switches
+ * tabs, closes it or navigates away), the milestone nearest the share watched so far;
+ * and when the video ends, the highest milestone actually watched. Only the viewer's
+ * own pauses count (isViewerPause() in trackPlayer()): the pauses GoDAM makes itself,
+ * for layers, auto-pause and hover previews, do not. A milestone is only sent when it is higher than the last one sent for the
+ * view, so a straight-through watch produces one event and repeated pauses at the same
+ * point produce none. Each is posted to `godam/v1/map-events` with the visitor's
+ * Marketo and/or HubSpot cookie. The REST route forwards it to GoDAM Central
+ * server-to-server, and Central records it against the lead or contact that cookie
+ * belongs to.
  *
  * Nothing here identifies anyone on its own: the cookie is the customer's own
  * first-party cookie, it is read but never written, and a page with neither cookie
@@ -22,6 +29,15 @@ const MILESTONES = [ 0, 25, 50, 75, 100 ];
  * full watch can finish with its played range a fraction of a second shy.
  */
 const END_SLACK_SECONDS = 1;
+
+/**
+ * How long after the viewer's own click, tap or key press a pause still counts as
+ * theirs, in milliseconds. Long enough for Video.js to act on the input, short
+ * enough that a layer pausing the video a moment later is not mistaken for it.
+ *
+ * @since n.e.x.t
+ */
+const VIEWER_INPUT_WINDOW_MS = 1000;
 
 /**
  * Cookie each provider identifies its visitors with.
@@ -264,6 +280,41 @@ function watchedPercent( player, endSlack = 0 ) {
 }
 
 /**
+ * The milestone nearest a watched percentage.
+ *
+ * Central only records the fixed set 0/25/50/75/100, so a pause partway through has
+ * to report the closest of them rather than the raw percentage: 88 becomes 100, 24
+ * becomes 25, 12 becomes 0.
+ *
+ * @param {number} percent - Share watched, 0-100.
+ * @return {number} A value from MILESTONES.
+ */
+function nearestMilestone( percent ) {
+	return Math.min( 100, Math.round( percent / 25 ) * 25 );
+}
+
+/**
+ * The highest milestone a watched percentage has reached (floored, never rounded up).
+ *
+ * Used when the video ends, so finishing a video the viewer skipped through reports
+ * only what they actually played, not 100.
+ *
+ * @param {number} percent - Share watched, 0-100.
+ * @return {number} A value from MILESTONES; 0 when none is reached.
+ */
+function highestMilestoneReached( percent ) {
+	let reached = 0;
+
+	MILESTONES.forEach( ( milestone ) => {
+		if ( percent >= milestone ) {
+			reached = milestone;
+		}
+	} );
+
+	return reached;
+}
+
+/**
  * Post one milestone. Failures are deliberately silent: tracking must never
  * interrupt playback or fill the console on a viewer's page.
  *
@@ -319,7 +370,54 @@ function trackPlayer( config, player, video ) {
 
 	let sessionId = '';
 	let knownIds = null;
-	const sent = new Set();
+
+	// Highest milestone already sent for this view. A milestone is reported only when
+	// it climbs past this, so repeated pauses at the same point send nothing and the
+	// sequence can only go up. -1 lets the first 0 through.
+	let highestSent = -1;
+
+	// The viewer started playback: a `playing` outside a hover preview. Until then
+	// leaving the page has no view to report.
+	let started = false;
+
+	// When the viewer last clicked, tapped or pressed a key, for isViewerPause().
+	let lastViewerInputAt = -Infinity;
+
+	/**
+	 * Whether a hover preview is playing the video: both preview modes hide the
+	 * control bar while they play, and a real playback always shows it.
+	 *
+	 * @return {boolean} True during a preview.
+	 */
+	const isPreviewing = () => {
+		try {
+			return !! player.controlBar?.el()?.classList.contains( 'hide' );
+		} catch ( e ) {
+			return false;
+		}
+	};
+
+	/**
+	 * Whether this pause is the viewer's own: it follows their click, tap or key
+	 * press, and it is not GoDAM auto-pausing the player (scrolled out of view,
+	 * another player started) or the viewer dragging the seek bar, which pauses and
+	 * resumes playback. Layers (form, CTA, hotspot) and hover previews pause without
+	 * any input from the viewer, so they never count. Otherwise a form layer at 23%
+	 * would report 25 for a viewer who then watches to the end.
+	 *
+	 * @return {boolean} True for a pause the viewer made.
+	 */
+	const isViewerPause = () => {
+		if ( player.godamAutoPause ) {
+			return false;
+		}
+
+		if ( typeof player.scrubbing === 'function' && player.scrubbing() ) {
+			return false;
+		}
+
+		return Date.now() - lastViewerInputAt <= VIEWER_INPUT_WINDOW_MS;
+	};
 
 	/**
 	 * The visitor's cookies, read afresh until they turn up.
@@ -347,7 +445,8 @@ function trackPlayer( config, player, video ) {
 	};
 
 	const report = ( milestone ) => {
-		if ( sent.has( milestone ) ) {
+		// Only ever report a milestone higher than the last one sent for this view.
+		if ( milestone <= highestSent ) {
 			return;
 		}
 
@@ -373,7 +472,7 @@ function trackPlayer( config, player, video ) {
 			return;
 		}
 
-		sent.add( milestone );
+		highestSent = milestone;
 
 		sendMilestone( config, {
 			media_id: jobId,
@@ -384,33 +483,92 @@ function trackPlayer( config, player, video ) {
 		} );
 	};
 
-	player.one( 'play', () => report( 0 ) );
+	const onViewerInput = () => {
+		lastViewerInputAt = Date.now();
+	};
 
-	player.on( 'timeupdate', () => {
-		// Also covers a player that was already playing when this script ran, where
-		// the `play` above has already fired and will not fire again.
-		report( 0 );
+	// Clicks and taps on the player, caught on the way down so they are recorded
+	// before Video.js acts on them. GoDAM's keyboard shortcuts listen on the whole
+	// document, so key presses are caught there.
+	const root = typeof player.el === 'function' ? player.el() : null;
+
+	root?.addEventListener( 'pointerdown', onViewerInput, true );
+	root?.addEventListener( 'click', onViewerInput, true );
+	document.addEventListener( 'keydown', onViewerInput, true );
+
+	// `playing`, not `play`: a blocked autoplay fires `play` and then `pause` without
+	// a frame being shown, which is not a view. Neither is a hover preview.
+	const markStarted = () => {
+		if ( ! started && ! isPreviewing() ) {
+			started = true;
+		}
+	};
+
+	player.on( 'playing', markStarted );
+
+	// A player that was already playing when this script ran has fired `playing`.
+	if ( typeof player.paused === 'function' && ! player.paused() ) {
+		markStarted();
+	}
+
+	// On the viewer's own pause, report the milestone nearest the share watched so
+	// far. report() drops it unless it is higher than the last one sent, so pausing
+	// again at the same spot sends nothing.
+	player.on( 'pause', () => {
+		// At the end of a video the browser fires `pause` and then `ended`. Let `ended`
+		// report it, floored: rounding here would credit a viewer who watched 88% and
+		// skipped to the end with a full watch.
+		if ( typeof player.ended === 'function' && player.ended() ) {
+			return;
+		}
+
+		if ( isViewerPause() ) {
+			report( nearestMilestone( watchedPercent( player ) ) );
+		}
+	} );
+
+	// On end, report the highest milestone actually watched. `timeupdate` stops a
+	// little short of the end on most browsers, so END_SLACK_SECONDS lets a full watch
+	// reach 100; a viewer who skipped to the end still reports only what they played.
+	player.on( 'ended', () => {
+		report( highestMilestoneReached( watchedPercent( player, END_SLACK_SECONDS ) ) );
+	} );
+
+	// Leaving the page often comes with no pause at all: the viewer switches tabs or
+	// closes it mid-video, or after GoDAM paused it for a layer. Report the milestone
+	// nearest the share watched, as a pause does. `visibilitychange` to hidden is the
+	// last event mobile browsers reliably fire; `pagehide` covers navigating away on
+	// browsers that skip it. Both can fire for one exit, and report() sends only a new
+	// high, so at most one goes out.
+	const reportOnLeave = () => {
+		// A player the viewer never started (or only hover-previewed) has no view.
+		if ( ! started ) {
+			return;
+		}
 
 		const percent = watchedPercent( player );
 
-		MILESTONES.forEach( ( milestone ) => {
-			if ( milestone > 0 && percent >= milestone ) {
-				report( milestone );
-			}
-		} );
-	} );
+		if ( percent <= 0 ) {
+			return;
+		}
 
-	// `timeupdate` stops a little short of the end on most browsers, so 100 would
-	// otherwise never fire for someone who watched the whole thing. Still count only
-	// what was played: skipping to the end and letting it finish is not watching it.
-	player.on( 'ended', () => {
-		const percent = watchedPercent( player, END_SLACK_SECONDS );
+		report( nearestMilestone( percent ) );
+	};
 
-		MILESTONES.forEach( ( milestone ) => {
-			if ( percent >= milestone ) {
-				report( milestone );
-			}
-		} );
+	const onVisibilityChange = () => {
+		if ( 'hidden' === document.visibilityState ) {
+			reportOnLeave();
+		}
+	};
+
+	document.addEventListener( 'visibilitychange', onVisibilityChange );
+	window.addEventListener( 'pagehide', reportOnLeave );
+
+	// A disposed player (a closed gallery modal, say) can no longer be read.
+	player.on( 'dispose', () => {
+		document.removeEventListener( 'visibilitychange', onVisibilityChange );
+		window.removeEventListener( 'pagehide', reportOnLeave );
+		document.removeEventListener( 'keydown', onViewerInput, true );
 	} );
 }
 
@@ -480,6 +638,8 @@ export {
 	getSessionId,
 	readCookie,
 	watchedPercent,
+	nearestMilestone,
+	highestMilestoneReached,
 	privacyOptedOut,
 	marketingConsentWithheld,
 	hubspotOptedOut,
