@@ -183,7 +183,9 @@ export default class TranscriptManager {
 	 * @return {string} The track URL, with `rev` added when the row has a revision.
 	 */
 	trackSrc( caption ) {
-		if ( ! caption.revision ) {
+		// A signed URL is new with every signature, and the CDN refuses one with a parameter
+		// the token doesn't cover (403), so `rev` goes only on an unsigned one.
+		if ( ! caption.revision || /[?&](bcdn_)?token=/.test( caption.vtt_path ) ) {
 			return caption.vtt_path;
 		}
 		const separator = caption.vtt_path.includes( '?' ) ? '&' : '?';
