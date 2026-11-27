@@ -13,6 +13,7 @@ import { registerBlockType } from '@wordpress/blocks';
  */
 import Edit from './edit';
 import save from './save';
+import deprecated from './deprecated';
 import icon from '../../images/godam-video-filled.svg';
 
 /**
@@ -31,4 +32,5 @@ registerBlockType( 'godam/video', {
 	 * @see ./save.js
 	 */
 	save,
+	deprecated,
 } );

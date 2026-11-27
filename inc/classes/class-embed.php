@@ -32,6 +32,15 @@ class Embed {
 	const LLMS_AV_PROG_AUTO_PLAY_OPTION = 'llms_av_prog_auto_play';
 
 	/**
+	 * Attachment IDs found for GoDAM job IDs during this request; 0 when none.
+	 *
+	 * @since 2.11.1
+	 *
+	 * @var array<string, int>
+	 */
+	private $attachment_ids_by_job = array();
+
+	/**
 	 * Construct method.
 	 */
 	protected function __construct() {
@@ -45,6 +54,7 @@ class Embed {
 	 */
 	public function setup_hooks() {
 		add_action( 'init', array( $this, 'register_oembed_provider' ) );
+		add_action( 'init', array( $this, 'register_local_embed_handler' ) );
 		add_filter( 'pre_oembed_result', array( $this, 'pre_oembed_result' ), 10, 2 );
 	}
 
@@ -78,6 +88,15 @@ class Embed {
 		// Only intercept GoDAM specific URLs.
 		if ( ! $this->is_godam_url( $url ) ) {
 			return null;
+		}
+
+		// A video that's in this site's media library plays in the site's own
+		// player, so it doesn't depend on GoDAM's oEmbed API, which only
+		// embeds videos shared publicly.
+		$local_html = $this->get_local_embed_html( $url );
+
+		if ( '' !== $local_html ) {
+			return $local_html;
 		}
 
 		$embed_url = RTGODAM_API_BASE . '/api/method/godam_core.api.oembed.get_oembed';
@@ -117,6 +136,259 @@ class Embed {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Register an embed handler for GoDAM share URLs of videos in the media library.
+	 *
+	 * WordPress runs embed handlers before its oEmbed cache when it embeds a
+	 * URL in post content (and when ACF's oEmbed field falls back to it), so
+	 * the player renders, with its scripts, on every view. The oEmbed HTML
+	 * cache would keep the markup but skip the scripts.
+	 *
+	 * The pattern is built from the whole API base, so a base with a port
+	 * (https://godam.local:8443) matches the share URLs built from it.
+	 *
+	 * @since 2.11.1
+	 *
+	 * @return void
+	 */
+	public function register_local_embed_handler() {
+		$host = wp_parse_url( RTGODAM_API_BASE, PHP_URL_HOST );
+
+		if ( ! is_string( $host ) || '' === $host ) {
+			return;
+		}
+
+		wp_embed_register_handler(
+			'godam-local-video',
+			self::get_share_url_pattern( RTGODAM_API_BASE ),
+			array( $this, 'render_local_embed' ),
+			9
+		);
+	}
+
+	/**
+	 * The regex an embed handler matches GoDAM share URLs with.
+	 *
+	 * @since 2.11.1
+	 *
+	 * @param string $api_base The GoDAM API base, e.g. https://app.godam.io.
+	 *
+	 * @return string The regex. It matches http and https, whatever scheme the base uses.
+	 */
+	public static function get_share_url_pattern( string $api_base ): string {
+		$base = (string) preg_replace( '#^https?://#i', '', untrailingslashit( $api_base ) );
+
+		return '#^https?://' . preg_quote( $base, '#' ) . '/web/video/[A-Za-z0-9_-]+/?(?:[?\#].*)?$#i';
+	}
+
+	/**
+	 * Embed handler callback: render a GoDAM share URL with the site's own player.
+	 *
+	 * Inside a filter that runs shortcodes later, such as `the_content`, it
+	 * returns the `[godam_video]` shortcode rather than its HTML, as core's own
+	 * video embed handler does. Embeds run at priority 8, before `wpautop`,
+	 * which would add `<p>` and `<br />` tags inside the player markup; the
+	 * shortcode renders at priority 11, after it.
+	 *
+	 * In a REST request (the block editor's Embed preview) it returns false:
+	 * the preview's sandbox gets no player styles, so the player couldn't
+	 * render there.
+	 *
+	 * @since 2.11.1
+	 *
+	 * @param array  $matches The regex matches.
+	 * @param array  $attr    Embed attributes.
+	 * @param string $url     The URL being embedded.
+	 *
+	 * @return string|false The shortcode or player HTML, or false to let WordPress try oEmbed.
+	 */
+	public function render_local_embed( $matches, $attr, $url ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundBeforeLastUsed -- signature set by wp_embed_register_handler().
+		if ( wp_is_serving_rest_request() ) {
+			return false;
+		}
+
+		$attachment_id = $this->get_local_attachment_id( (string) $url );
+
+		if ( $attachment_id <= 0 ) {
+			return false;
+		}
+
+		$shortcode = sprintf( '[godam_video id="%d"]', $attachment_id );
+
+		if ( self::shortcodes_run_later() ) {
+			return $shortcode;
+		}
+
+		return (string) do_shortcode( $shortcode );
+	}
+
+	/**
+	 * Render a GoDAM share URL with the site's own player, when its video is in the media library.
+	 *
+	 * The share URL is RTGODAM_API_BASE/web/video/<job ID>. The Vimeo
+	 * migration writes these into ACF fields; they can also be pasted into
+	 * content.
+	 *
+	 * @since 2.11.1
+	 *
+	 * @param string $url GoDAM share URL.
+	 *
+	 * @return string The player HTML, or '' when the URL isn't a share URL of a video in the media library.
+	 */
+	public function get_local_embed_html( string $url ): string {
+		$attachment_id = $this->get_local_attachment_id( $url );
+
+		if ( $attachment_id <= 0 ) {
+			return '';
+		}
+
+		return (string) do_shortcode( sprintf( '[godam_video id="%d"]', $attachment_id ) );
+	}
+
+	/**
+	 * The media library video a GoDAM share URL renders locally, if any.
+	 *
+	 * @since 2.11.1
+	 *
+	 * @param string $url GoDAM share URL.
+	 *
+	 * @return int Attachment ID, or 0 when the URL isn't a share URL of a video in the media library, or shouldn't render locally.
+	 */
+	private function get_local_attachment_id( string $url ): int {
+		if ( ! $this->is_godam_url( $url ) ) {
+			return 0;
+		}
+
+		$job_id = self::get_share_url_job_id( $url );
+
+		if ( '' === $job_id ) {
+			return 0;
+		}
+
+		$attachment_id = $this->find_attachment_id_by_job_id( $job_id );
+
+		if ( $attachment_id <= 0 ) {
+			return 0;
+		}
+
+		/**
+		 * Filters whether a GoDAM share URL renders with the site's own player.
+		 *
+		 * Return false to embed the video through GoDAM's oEmbed API instead,
+		 * as LifterLMS lessons do: their player integration talks to the
+		 * embedded iframe.
+		 *
+		 * @since 2.11.1
+		 *
+		 * @param bool   $render_locally Whether to render with the site's own player. Default true.
+		 * @param string $url            The GoDAM share URL.
+		 * @param int    $attachment_id  ID of the video in the media library.
+		 */
+		if ( ! apply_filters( 'rtgodam_render_share_url_locally', true, $url, $attachment_id ) ) {
+			return 0;
+		}
+
+		return $attachment_id;
+	}
+
+	/**
+	 * Whether the filter running now also runs `do_shortcode()`.
+	 *
+	 * `the_content`, `widget_text_content` and `widget_block_content` run
+	 * embeds at priority 8 and shortcodes at 11.
+	 *
+	 * @since 2.11.1
+	 *
+	 * @return bool
+	 */
+	private static function shortcodes_run_later(): bool {
+		$filter = current_filter();
+
+		return is_string( $filter ) && '' !== $filter && false !== has_filter( $filter, 'do_shortcode' );
+	}
+
+	/**
+	 * Read the GoDAM job ID from a share URL.
+	 *
+	 * @since 2.11.1
+	 *
+	 * @param string $url GoDAM share URL, RTGODAM_API_BASE/web/video/<job ID>.
+	 *
+	 * @return string The job ID, or '' when the URL has none.
+	 */
+	public static function get_share_url_job_id( string $url ): string {
+		$path = wp_parse_url( $url, PHP_URL_PATH );
+
+		if ( is_string( $path ) && preg_match( '#^/web/video/([A-Za-z0-9_-]+)/?$#', $path, $matches ) ) {
+			return $matches[1];
+		}
+
+		return '';
+	}
+
+	/**
+	 * Find the media library attachment for a GoDAM job ID.
+	 *
+	 * Matches transcoded uploads (`rtgodam_transcoding_job_id`) and media
+	 * imported from GoDAM, including migrated Vimeo videos
+	 * (`_godam_original_id`).
+	 *
+	 * @since 2.11.1
+	 *
+	 * @param string $job_id GoDAM job ID.
+	 *
+	 * @return int Attachment ID, or 0 when none.
+	 */
+	private function find_attachment_id_by_job_id( string $job_id ): int {
+		if ( isset( $this->attachment_ids_by_job[ $job_id ] ) ) {
+			return $this->attachment_ids_by_job[ $job_id ];
+		}
+
+		global $wpdb;
+
+		if ( ! is_object( $wpdb ) ) {
+			return 0;
+		}
+
+		/**
+		 * Fires before looking the attachment up, so integrations that
+		 * centralize media on another site can switch context first.
+		 *
+		 * @since 2.2.0
+		 */
+		do_action( 'rtgodam_before_attachment_lookup' );
+
+		try {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- cached per request in $attachment_ids_by_job.
+			$attachment_id = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT pm.post_id
+					 FROM {$wpdb->postmeta} pm
+					 INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+					 WHERE pm.meta_key IN ('rtgodam_transcoding_job_id', '_godam_original_id')
+					   AND pm.meta_value = %s
+					   AND p.post_type = 'attachment'
+					   AND p.post_status <> 'trash'
+					 ORDER BY pm.post_id ASC
+					 LIMIT 1",
+					$job_id
+				)
+			);
+		} finally {
+			/**
+			 * Fires after the lookup, so integrations can restore the
+			 * context switched in `rtgodam_before_attachment_lookup`.
+			 *
+			 * @since 2.2.0
+			 */
+			do_action( 'rtgodam_after_attachment_lookup' );
+		}
+
+		$this->attachment_ids_by_job[ $job_id ] = $attachment_id;
+
+		return $attachment_id;
 	}
 
 	/**

@@ -36,6 +36,8 @@ import {
 	MediaReplaceFlow,
 	useBlockProps,
 	InnerBlocks,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- Same hook core/image uses to draw block border supports on an inner element.
+	__experimentalUseBorderProps as useBorderProps,
 	// eslint-disable-next-line import/no-unresolved -- resolver false positive: package resolves fine at build time, eslint-plugin-import can't parse @wordpress/block-editor's exports map.
 } from '@wordpress/block-editor';
 import { useRef, useEffect, useState, useMemo } from '@wordpress/element';
@@ -727,6 +729,20 @@ function VideoEdit( {
 		...( computedMaxWidth ? { style: { maxWidth: computedMaxWidth } } : {} ),
 	} );
 
+	// The border skips the block wrapper (see block.json) and is drawn on the
+	// video itself, so it does not run around the caption. A radius also clips
+	// the video's corners.
+	const borderProps = useBorderProps( attributes );
+	const hasBorder = !! borderProps.className || Object.keys( borderProps.style || {} ).length > 0;
+	const videoWrapperClassName = clsx( 'godam-video-wrapper', borderProps.className );
+	const videoWrapperStyle = hasBorder
+		? {
+			...borderProps.style,
+			boxSizing: 'border-box',
+			...( attributes?.style?.border?.radius ? { overflow: 'hidden' } : {} ),
+		}
+		: undefined;
+
 	function onSelectPoster( image ) {
 		const nextAttributes = {
 			poster: image.url,
@@ -1158,7 +1174,7 @@ function VideoEdit( {
 
 					<figure { ...blockProps } data-test-id="godam-video-canvas">
 						<div className="godam-video-canvas-frame">
-							<div className="godam-video-wrapper">
+							<div className={ videoWrapperClassName } style={ videoWrapperStyle }>
 								{ showOverlay && (
 									<div
 										className={ `godam-video-overlay-container godam-overlay-alignment-${ verticalAlignment }` }

@@ -26,7 +26,7 @@
 
 STAGED_FILES=$(git diff --cached --name-only)
 
-STAGED_PHP_FILES=$(echo "$STAGED_FILES" | grep -E '\.php$' | grep -Ev '^(\.git|\.github|\.husky|\.idea|node_modules|tests|languages|bin)/')
+STAGED_PHP_FILES=$(echo "$STAGED_FILES" | grep -E '\.php$' | grep -Ev '^(\.claude|\.git|\.github|\.husky|\.idea|node_modules|tests|languages|bin)/')
 STAGED_HOOK_CHECK_FILES=$(echo "$STAGED_FILES" | grep -E '^bin/hook-check/.*\.php$')
 
 if [ -z "$STAGED_PHP_FILES" ] && [ -z "$STAGED_HOOK_CHECK_FILES" ]; then

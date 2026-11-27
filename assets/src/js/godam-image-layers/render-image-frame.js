@@ -41,12 +41,14 @@ function makeImageAdapter( frame, img ) {
 		el: () => frame,
 		// The one real override: content rect = the rendered <img> box relative
 		// to the positioned frame. Kept in sync with the image on resize.
+		// The size excludes the image's border (`clientWidth`), so the origin
+		// does too: `clientLeft`/`clientTop` are the left and top border widths.
 		computeContentRect: () => {
 			const frameRect = frame.getBoundingClientRect();
 			const imgRect = img.getBoundingClientRect();
 			return {
-				left: Math.round( imgRect.left - frameRect.left ),
-				top: Math.round( imgRect.top - frameRect.top ),
+				left: Math.round( imgRect.left - frameRect.left + ( img.clientLeft || 0 ) ),
+				top: Math.round( imgRect.top - frameRect.top + ( img.clientTop || 0 ) ),
 				width: Math.round( img.clientWidth || imgRect.width ),
 				height: Math.round( img.clientHeight || imgRect.height ),
 			};

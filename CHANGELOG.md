@@ -1,5 +1,15 @@
 # Changelog #
 
+## v2.11.1 (November 27, 2026) ##
+
+- Feat: The Vimeo migration now also replaces Vimeo videos in Elementor's Video widget, WPBakery's Video element and, if you opt in, ACF oEmbed and URL fields. The completion screen shows how many it found and replaced in each place.
+- Tweak: A GoDAM video link for a video in your media library now plays in your site's own GoDAM player, including videos that aren't shared publicly. LifterLMS lessons using Advanced Videos keep the embedded player.
+- Tweak: The GoDAM Video, Image and Video Gallery blocks now have a border radius setting in Styles > Border & Shadow. The GoDAM Image block also takes a border color, style and width.
+- Tweak: Marketo and HubSpot tracking now sends one event per view, when the viewer pauses, leaves the page or reaches the end, carrying how much they watched. GoDAM's own pauses, such as for a form layer, and skipping to the end don't count.
+- Fix: The GoDAM Image block now shows the image's current version, with its current size, on the page and in the editor. Before, it could show the local uploads file instead of GoDAM's CDN copy, or an older version after the image was replaced.
+- Fix: The Vimeo migration no longer corrupts other blocks on a migrated post, strips iframes from Custom HTML blocks, or links the new block to the attachment page instead of the video file.
+- Fix: The bandwidth-exceeded notice no longer says videos may stop being served from the CDN. Videos keep playing.
+
 ## v2.11.0 (November 19, 2026) ##
 
 - Feat: GoDAM videos now work with LearnDash Video Progression on lessons and topics. Turn on "Use GoDAM Video" to use a GoDAM Video block or a picked video, or paste a GoDAM video URL into LearnDash's Video URL field. Mark Complete stays locked until the video ends, and the player follows LearnDash's Autostart, Video Resume and controls settings.

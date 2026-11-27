@@ -13,6 +13,9 @@ import {
 	MediaUploadCheck,
 	MediaReplaceFlow,
 	useBlockProps,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- Same hook core/image uses to draw block border supports on the <img>.
+	__experimentalUseBorderProps as useBorderProps,
+	// eslint-disable-next-line import/no-unresolved -- resolver false positive: package resolves fine at build time, eslint-plugin-import can't parse @wordpress/block-editor's exports map.
 } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
 import { useDispatch, useSelect } from '@wordpress/data';
@@ -25,6 +28,7 @@ import { plus, trash } from '@wordpress/icons';
  * Internal dependencies
  */
 import { CustomizeVideoIcon } from '../godam-player/icons';
+import { getCurrentImageUrl } from './current-image-url';
 import { initImageFrame } from '../../js/godam-image-layers/render-image-frame.js';
 import './editor.scss';
 
@@ -97,15 +101,27 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 	}
 
 	const blockProps = useBlockProps( { className: 'godam-image' } );
+	// Border supports skip the wrapper (see block.json), so the border is drawn
+	// on the image itself and follows its edges, as in core/image.
+	const borderProps = useBorderProps( attributes );
+	const imgClassName = [ 'godam-image__img', borderProps.className ].filter( Boolean ).join( ' ' );
 	const hasImage = !! url;
 
-	// Fetch the attachment's authored layers so the editor canvas can preview the
-	// same hotspot / product-hotspot overlays the front end renders. rtgodam_meta
-	// is exposed as a REST field on attachments (see Meta_Rest_Fields).
-	const rtgodamMeta = useSelect(
-		( select ) => ( id ? select( coreStore ).getEntityRecord( 'postType', 'attachment', id )?.rtgodam_meta : null ),
+	// The attachment record: its authored layers, so the editor canvas can preview
+	// the same hotspot / product-hotspot overlays the front end renders (rtgodam_meta
+	// is exposed as a REST field on attachments, see Meta_Rest_Fields), and its
+	// current URL.
+	const media = useSelect(
+		( select ) => ( id ? select( coreStore ).getEntityRecord( 'postType', 'attachment', id ) : null ),
 		[ id ],
 	);
+	const rtgodamMeta = media?.rtgodam_meta ?? null;
+
+	// Show the image the front end prints: the attachment's current URL (GoDAM's CDN
+	// copy, or the latest version after a replace) rather than the URL saved when the
+	// image was picked, unless the saved URL is a different image. Display only: the
+	// saved attributes are left alone, so opening a post doesn't change it.
+	const imageUrl = getCurrentImageUrl( url, media );
 
 	// Keep only drawable layers (mirror render.php): hotspot layers with hotspots
 	// and Woo layers with product hotspots.
@@ -144,7 +160,7 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 			return undefined;
 		}
 		return initImageFrame( frame );
-	}, [ showLayers, layersJson, url, instanceId ] );
+	}, [ showLayers, layersJson, imageUrl, instanceId ] );
 
 	// The inspector "Image Selection" panel mirrors the GoDAM Video block: an
 	// outlined "Add Image" button when empty, or a "Customize Image" button plus
@@ -184,12 +200,12 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 			) }
 			<div className="godam-image-selection__item">
 				<img
-					src={ url }
+					src={ imageUrl }
 					alt=""
 					className="godam-image-selection__item-thumbnail"
 				/>
 				<span className="godam-image-selection__item-title">
-					{ alt || url }
+					{ alt || imageUrl }
 				</span>
 				<Button
 					icon={ trash }
@@ -209,7 +225,7 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 				<BlockControls group="other">
 					<MediaReplaceFlow
 						mediaId={ id }
-						mediaURL={ url }
+						mediaURL={ imageUrl }
 						allowedTypes={ ALLOWED_MEDIA_TYPES }
 						accept="image/*"
 						onSelect={ onSelectImage }
@@ -280,16 +296,16 @@ function ImageEdit( { attributes, setAttributes, isSelected } ) {
 							style={ { position: 'relative', display: 'inline-block', maxWidth: '100%', lineHeight: 0 } }
 						>
 							<img
-								className="godam-image__img"
-								src={ url }
+								className={ imgClassName }
+								src={ imageUrl }
 								alt={ alt || '' }
-								style={ { display: 'block', width: '100%', height: 'auto' } }
+								style={ { display: 'block', width: '100%', height: 'auto', boxSizing: 'border-box', ...borderProps.style } }
 							/>
 							<div className="easydam-layer hotspot-layer godam-image-layer"></div>
 						</div>
 					) : (
 						<div className="godam-image__frame">
-							<img className="godam-image__img" src={ url } alt={ alt || '' } />
+							<img className={ imgClassName } src={ imageUrl } alt={ alt || '' } style={ borderProps.style } />
 						</div>
 					) }
 				</figure>

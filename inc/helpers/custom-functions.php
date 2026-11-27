@@ -3944,6 +3944,64 @@ function rtgodam_sanitize_hotspot_links( $layers ) {
 }
 
 /**
+ * Whether an image URL saved on a block is this attachment's image.
+ *
+ * A block saves both the attachment ID and the image URL. They stop describing the same
+ * image when the block is copied or imported to another site, where the same ID can be
+ * a different image. The URL is this attachment's when it is:
+ *
+ * - the attachment's current URL, ignoring the query string (`?v=v2` and `?v=v3` are
+ *   two versions of the same file);
+ * - the local upload, with any extension (`…/uploads/2026/11/photo.png` for the attached
+ *   file `2026/11/photo.png`, or `photo.webp` for a converted copy);
+ * - a file in this attachment's folder on the GoDAM CDN, which keeps its folder when the
+ *   image is replaced, even by a file with another name.
+ *
+ * Anything else, including a URL that can't be told apart, counts as another image.
+ *
+ * @since 2.11.1
+ *
+ * @param string $url           Image URL saved on the block.
+ * @param int    $attachment_id Attachment ID saved on the block.
+ * @param string $current_url   The attachment's current full-size URL, or '' if unknown.
+ * @return bool
+ */
+function rtgodam_is_attachment_image_url( $url, $attachment_id, $current_url = '' ) {
+	$saved_path = (string) wp_parse_url( (string) $url, PHP_URL_PATH );
+	if ( '' === $saved_path ) {
+		return false;
+	}
+	$saved_host = strtolower( (string) wp_parse_url( (string) $url, PHP_URL_HOST ) );
+
+	$current_path = (string) wp_parse_url( (string) $current_url, PHP_URL_PATH );
+	$current_host = strtolower( (string) wp_parse_url( (string) $current_url, PHP_URL_HOST ) );
+	if ( '' !== $current_path && $current_host === $saved_host && $current_path === $saved_path ) {
+		return true;
+	}
+
+	// The local upload. `_wp_attached_file` is relative to the uploads folder; an absolute
+	// path (some migrated sites) never matches here, and the URL is treated as another image.
+	$attached_file = ltrim( (string) get_post_meta( $attachment_id, '_wp_attached_file', true ), '/' );
+	if ( '' !== $attached_file ) {
+		$attached_stem = '/' . preg_replace( '/\.[a-z0-9]+$/i', '', $attached_file );
+		$saved_stem    = preg_replace( '/\.[a-z0-9]+$/i', '', $saved_path );
+		if ( substr( $saved_stem, -strlen( $attached_stem ) ) === $attached_stem ) {
+			return true;
+		}
+	}
+
+	// The attachment's folder on the GoDAM CDN.
+	$saved_dir   = substr( $saved_path, 0, (int) strrpos( $saved_path, '/' ) + 1 );
+	$godam_url   = (string) get_post_meta( $attachment_id, 'rtgodam_transcoded_url', true );
+	$godam_host  = strtolower( (string) wp_parse_url( $godam_url, PHP_URL_HOST ) );
+	$godam_path  = (string) wp_parse_url( $godam_url, PHP_URL_PATH );
+	$godam_dir   = substr( $godam_path, 0, (int) strrpos( $godam_path, '/' ) + 1 );
+	$godam_files = '' !== $godam_host && strlen( $godam_dir ) > 1;
+
+	return $godam_files && $godam_host === $saved_host && $godam_dir === $saved_dir;
+}
+
+/**
  * Return a CSS colour only when it is a plain colour value.
  *
  * Meant for colours that are printed into a style attribute, where an escaped
@@ -4113,4 +4171,55 @@ function rtgodam_is_transcoder_file_url( $url ) {
 	}
 
 	return false;
+}
+
+/**
+ * Splits a block's `style.border.radius` into its four corners as CSS values.
+ *
+ * The block editor saves either one value for all corners, or an array with
+ * `topLeft`, `topRight`, `bottomRight` and `bottomLeft`, any of which may be
+ * missing. Numbers get `px`, and a preset reference such as
+ * `var:preset|border-radius|md` becomes `var(--wp--preset--border-radius--md)`.
+ * A value with characters that cannot be part of a length is dropped, so the
+ * result is safe to print in a `style` attribute.
+ *
+ * @since 2.11.1
+ *
+ * @param mixed $radius Saved radius.
+ *
+ * @return array|null `array( 'tl' => …, 'tr' => …, 'br' => …, 'bl' => … )`, with an empty string for a corner that is not set, or null when no corner is set.
+ */
+function rtgodam_get_border_radius_corners( $radius ) {
+	$to_css = static function ( $value ) {
+		if ( is_int( $value ) || is_float( $value ) ) {
+			return $value . 'px';
+		}
+		if ( ! is_string( $value ) ) {
+			return '';
+		}
+
+		$value = trim( $value );
+		if ( 0 === strpos( $value, 'var:' ) ) {
+			$value = 'var(--wp--' . str_replace( '|', '--', substr( $value, 4 ) ) . ')';
+		}
+
+		return 1 === preg_match( '/^[a-zA-Z0-9.%()\-\s,+*\/]+$/', $value ) ? $value : '';
+	};
+
+	if ( is_array( $radius ) ) {
+		$values = array(
+			$to_css( $radius['topLeft'] ?? '' ),
+			$to_css( $radius['topRight'] ?? '' ),
+			$to_css( $radius['bottomRight'] ?? '' ),
+			$to_css( $radius['bottomLeft'] ?? '' ),
+		);
+	} else {
+		$values = array_fill( 0, 4, $to_css( $radius ) );
+	}
+
+	if ( '' === implode( '', $values ) ) {
+		return null;
+	}
+
+	return array_combine( array( 'tl', 'tr', 'br', 'bl' ), $values );
 }
