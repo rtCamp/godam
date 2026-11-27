@@ -448,3 +448,7 @@ When Data is Sent:
 Service Provider: [Adobe Marketo Engage](https://business.adobe.com/products/marketo/adobe-marketo.html)
 
 [Terms of Service](https://www.adobe.com/legal/terms.html) | [Privacy Policy](https://www.adobe.com/privacy/policy.html)
+
+== Credits ==
+
+GoDAM uses Font Awesome Free icons by Fonticons, Inc. (CC BY 4.0, https://fontawesome.com/license/free), country flags from flag-icons by Panayiotis Lipiridis (MIT) and the Analytics library by David Wells (MIT). Full notices are in THIRD-PARTY-LICENSES.txt, and font credits in FONT-CREDITS.txt, both in the plugin folder.
